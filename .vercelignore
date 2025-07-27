@@ -1,0 +1,73 @@
+# Arquivos e pastas a serem ignorados no deploy Vercel
+
+# Virtual environments
+venv/
+env/
+.env
+.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Tests
+tests/
+test_*
+
+# Development
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Frontend node_modules (se não for usado no backend)
+src/frontend/node_modules/
+src/frontend/dist/
+
+# Documentação
+docs/
+README.md
+CHANGELOG.md
+
+# Git
+.git/
+.gitignore
+
+# Deploy específico
+deploy/render.yaml
+
+# Tools
+tools/
+
+# Cache temporário
+.cache/
+*.tmp
+
+# Backup files
+*.bak
+*.backup
+
+# Large data files (manter apenas os essenciais)
+data/structured/
+data/*.pdf
+
+# Arquivos de configuração locais
+.env.local
+.env.development
+config.local.py

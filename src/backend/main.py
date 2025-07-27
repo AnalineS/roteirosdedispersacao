@@ -22,6 +22,10 @@ from services.personas import get_personas, get_persona_prompt
 # Importar otimizações de performance
 from core.performance import performance_cache, response_optimizer, usability_monitor
 
+# Importar monitoramento de produção
+from core.monitoring.production_health import production_health, track_request_middleware, get_health_status, get_detailed_health
+from core.monitoring.production_logging import log_request, log_security_event, log_error, log_startup
+
 app = Flask(__name__)
 
 # Configuração CORS restritiva e segura
@@ -69,6 +73,39 @@ def add_security_headers(response):
     
     # Remover headers que revelam informações do servidor
     response.headers.pop('Server', None)
+    
+    return response
+
+# Middleware de logging para todas as requisições
+@app.before_request
+def before_request():
+    """Middleware executado antes de cada requisição"""
+    request.start_time = time.time()
+
+@app.after_request
+def after_request(response):
+    """Middleware executado após cada requisição com logging"""
+    # Adicionar headers de segurança
+    response = add_security_headers(response)
+    
+    # Calcular tempo de resposta
+    response_time_ms = (time.time() - getattr(request, 'start_time', time.time())) * 1000
+    
+    # Log da requisição
+    client_ip = request.environ.get('HTTP_X_FORWARDED_FOR', request.remote_addr)
+    user_agent = request.headers.get('User-Agent', 'unknown')
+    
+    log_request(
+        method=request.method,
+        path=request.path,
+        status_code=response.status_code,
+        response_time_ms=response_time_ms,
+        client_ip=client_ip,
+        user_agent=user_agent
+    )
+    
+    # Rastrear para monitoramento
+    track_request_middleware(response_time_ms, response.status_code)
     
     return response
 
@@ -748,26 +785,55 @@ def chat_api():
 
 @app.route('/api/health', methods=['GET'])
 def health_check():
-    """Verificação de saúde da API com métricas de performance"""
+    """Verificação de saúde básica da API"""
     start_time = time.time()
     
-    # Verificações básicas
-    health_status = {
-        "status": "healthy",
-        "pdf_loaded": len(md_text) > 0,
-        "timestamp": datetime.now().isoformat(),
-        "personas": list(PERSONAS.keys()),
-        "performance": {
-            "cache_hit_rate": f"{performance_cache.hit_rate:.1f}%",
-            "cache_size": len(performance_cache.cache),
-            "response_time_ms": 0  # Será preenchido abaixo
+    try:
+        # Health check básico legado
+        health_status = {
+            "status": "healthy",
+            "pdf_loaded": len(md_text) > 0,
+            "timestamp": datetime.now().isoformat(),
+            "personas": list(PERSONAS.keys()),
+            "performance": {
+                "cache_hit_rate": f"{performance_cache.hit_rate:.1f}%",
+                "cache_size": len(performance_cache.cache),
+                "response_time_ms": int((time.time() - start_time) * 1000)
+            }
         }
-    }
-    
-    # Adicionar tempo de resposta
-    health_status["performance"]["response_time_ms"] = int((time.time() - start_time) * 1000)
-    
-    return jsonify(health_status)
+        
+        # Rastrear requisição
+        response_time_ms = (time.time() - start_time) * 1000
+        track_request_middleware(response_time_ms, 200)
+        
+        return jsonify(health_status)
+        
+    except Exception as e:
+        response_time_ms = (time.time() - start_time) * 1000
+        track_request_middleware(response_time_ms, 500)
+        return jsonify({"status": "error", "error": str(e)}), 500
+
+@app.route('/health', methods=['GET'])
+def production_health_check():
+    """Health check enterprise para produção (Render.com)"""
+    return jsonify(get_health_status())
+
+@app.route('/api/health/detailed', methods=['GET'])
+def detailed_health_check():
+    """Health check detalhado com métricas completas"""
+    return jsonify(get_detailed_health())
+
+@app.route('/api/monitoring/status', methods=['GET'])
+def monitoring_status():
+    """Status do sistema de monitoramento"""
+    return jsonify({
+        "monitoring_enabled": os.environ.get('MONITORING_ENABLED', 'false'),
+        "health_check_enabled": os.environ.get('HEALTH_CHECK_ENABLED', 'false'),
+        "metrics_collection": os.environ.get('METRICS_COLLECTION_ENABLED', 'false'),
+        "error_reporting": os.environ.get('ERROR_REPORTING_ENABLED', 'false'),
+        "cache_enabled": os.environ.get('CACHE_ENABLED', 'false'),
+        "timestamp": datetime.now().isoformat()
+    })
 
 @app.route('/api/info', methods=['GET'])
 def api_info():

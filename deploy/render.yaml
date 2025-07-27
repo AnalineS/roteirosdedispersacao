@@ -3,7 +3,14 @@ services:
     name: roteiro-dispensacao
     env: python
     plan: free
-    buildCommand: pip install -r requirements.txt
+    region: oregon  # Região otimizada para performance
+    buildCommand: |
+      echo "🚀 Starting production build..."
+      pip install --upgrade pip
+      pip install -r requirements.txt
+      echo "✅ Dependencies installed successfully"
+      python -c "import sys; print(f'✅ Python version: {sys.version}')"
+      echo "✅ Build completed successfully"
     startCommand: python src/backend/main.py
     envVars:
       - key: PYTHON_VERSION
@@ -54,5 +61,48 @@ services:
         value: true
       - key: STREAMLIT_BROWSER_GATHER_USAGE_STATS
         value: false
+      # Configurações de Produção
+      - key: LOG_LEVEL
+        value: "INFO"
+      - key: MONITORING_ENABLED
+        value: "true"
+      - key: CACHE_ENABLED
+        value: "true"
+      - key: CACHE_TTL_MINUTES
+        value: "120"
+      - key: MAX_CACHE_SIZE
+        value: "1000"
+      # Configurações de Performance
+      - key: GUNICORN_WORKERS
+        value: "2"
+      - key: GUNICORN_THREADS
+        value: "4"
+      - key: GUNICORN_TIMEOUT
+        value: "30"
+      # Configurações de Segurança
+      - key: SECURITY_HEADERS_ENABLED
+        value: "true"
+      - key: RATE_LIMITING_ENABLED
+        value: "true"
+      - key: CORS_ORIGINS
+        value: "https://roteiro-dispensacao.onrender.com"
+      # Monitoramento e Observabilidade
+      - key: HEALTH_CHECK_ENABLED
+        value: "true"
+      - key: METRICS_COLLECTION_ENABLED
+        value: "true"
+      - key: ERROR_REPORTING_ENABLED
+        value: "true"
     healthCheckPath: /health
+    # Configurações de Auto-scaling e Health
+    autoDeploy: true
+    buildFilter:
+      paths:
+      - src/**
+      - requirements.txt
+      - deploy/render.yaml
+      ignoredPaths:
+      - README.md
+      - docs/**
+      - tests/**
 
