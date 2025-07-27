@@ -314,7 +314,7 @@ Citação: {citation_format}
         """
         validation_score = {
             "has_section_number": bool(re.search(r'\d+\.\d+(\.\d+)?', response_text)),
-            "has_page_reference": "página" in response_text.lower() or "p\." in response_text,
+            "has_page_reference": "página" in response_text.lower() or "p\\." in response_text,
             "has_thesis_reference": "tese" in response_text.lower(),
             "has_formal_citation": any(phrase in response_text.lower() 
                                      for phrase in ["conforme", "segundo", "de acordo com"]),

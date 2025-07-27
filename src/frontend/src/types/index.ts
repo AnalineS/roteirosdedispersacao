@@ -9,6 +9,7 @@ export interface ApiResponse<T> {
 
 // Persona Types
 export interface Persona {
+  id: string
   name: string
   description: string
   avatar: string
