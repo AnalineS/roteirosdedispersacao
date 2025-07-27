@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """
-Comparação Backend Simplificado vs Backend Completo
+Validação Científica do Sistema PQT-U
 Senior Clinical Pharmacist especializado em Scientific Validation of Medical Systems
+
+Este é o arquivo principal de testes científicos consolidado.
+Para testes específicos de desenvolvimento, veja a pasta development/
 
 Data: 27 de Janeiro de 2025
 Fase: 3.3.2 - Testes de qualidade científica
@@ -358,7 +361,7 @@ Data: {datetime.now().strftime("%d/%m/%Y")}
 Validação: Backend Atual - Fase 3.3.2
 """
     
-    report_path = Path("tests/scientific_quality/BACKEND_COMPARISON_REPORT.md")
+    report_path = Path("tests/scientific_quality/reports/latest_validation_report.md")
     report_path.parent.mkdir(parents=True, exist_ok=True)
     
     with open(report_path, 'w', encoding='utf-8') as f:

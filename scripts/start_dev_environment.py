@@ -74,7 +74,7 @@ class DevEnvironment:
             return False
         
         # Verificar arquivos principais
-        backend_main = self.backend_path / "app.py"
+        backend_main = self.backend_path / "main.py"
         if not backend_main.exists():
             self.log(f"❌ Arquivo principal do backend não encontrado: {backend_main}")
             return False
@@ -154,7 +154,7 @@ class DevEnvironment:
             
             # Iniciar processo do backend
             self.backend_process = subprocess.Popen([
-                sys.executable, 'app.py'
+                sys.executable, 'main.py'
             ], cwd=self.backend_path, env=env,
                stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                universal_newlines=True, bufsize=1)

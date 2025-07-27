@@ -191,11 +191,11 @@ Entregar um site com chatbot de duas personas funcionais baseado em LangFlow + K
   - [x] Verificar persistência de histórico
   - [x] Testar tratamento de erros
 
-- [ ] **3.3.2** Testes de qualidade científica
-  - [ ] Bateria de perguntas específicas da tese
-  - [ ] Validação de precisão de protocolos médicos
-  - [ ] Testes de detecção de limitações
-  - [ ] Verificação de coerência das personas
+- [x] **3.3.2** Testes de qualidade científica ✅ **CONCLUÍDO**
+  - [x] Bateria de perguntas específicas da tese
+  - [x] Validação de precisão de protocolos médicos
+  - [x] Testes de detecção de limitações
+  - [x] Verificação de coerência das personas
 
 ---
 
@@ -245,6 +245,7 @@ Entregar um site com chatbot de duas personas funcionais baseado em LangFlow + K
   - [ ] Guia de uso do chatbot
   - [ ] FAQ sobre limitações
   - [ ] Informações sobre a base de conhecimento
+  - [ ] Apresentação em formato.pptx para introdução do site como parte da tese academica do doutorado da UNB focando no aspecto social e academico, na tecnologia, nos custos para manter e na inovação do proposto. O Público alvo é o orientador do doutorado que irá aprovar o projeto.
 
 ---
 
