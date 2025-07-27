@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify
 from flask_cors import CORS
 import os
 import re
@@ -28,9 +28,12 @@ allowed_origins = [
     "http://127.0.0.1:3000"   # Para desenvolvimento local
 ]
 
-# Em produção, usar apenas o domínio de produção
-if os.environ.get('FLASK_ENV') == 'production':
+# Em produção, usar apenas o domínio de produção - validação rigorosa
+flask_env = os.environ.get('FLASK_ENV', '').lower()
+if flask_env == 'production' or 'render.com' in os.environ.get('RENDER_SERVICE_URL', ''):
+    # Forçar apenas HTTPS em produção
     allowed_origins = ["https://roteiro-dispensacao.onrender.com"]
+    logger.info("CORS configurado para PRODUÇÃO - apenas HTTPS permitido")
 
 CORS(app, 
      origins=allowed_origins,
@@ -567,12 +570,21 @@ def answer_question(question, persona):
 
 @app.route('/')
 def index():
-    """Página principal"""
-    return render_template('index.html')
-
-@app.route('/tese')
-def tese():
-    return render_template('tese.html')
+    """Informações da API - Backend puro"""
+    return jsonify({
+        "message": "Roteiro de Dispensação API",
+        "version": "v6.0",
+        "status": "online",
+        "endpoints": {
+            "health": "/health",
+            "chat": "/api/chat",
+            "personas": "/api/personas", 
+            "scope": "/api/scope",
+            "feedback": "/api/feedback",
+            "stats": "/api/stats"
+        },
+        "frontend_url": "https://roteiro-dispensacao-frontend.onrender.com"
+    })
 
 @app.route('/script.js')
 def serve_script():
@@ -1146,7 +1158,36 @@ def stats_api():
             "timestamp": datetime.now().isoformat()
         }), 500
 
+def validate_environment_variables():
+    """Valida variáveis de ambiente obrigatórias"""
+    required_vars = {
+        'OPENROUTER_API_KEY': 'Chave da API OpenRouter',
+        'HUGGINGFACE_API_KEY': 'Chave da API Hugging Face'
+    }
+    
+    missing_vars = []
+    for var, description in required_vars.items():
+        if not os.environ.get(var):
+            missing_vars.append(f"  - {var}: {description}")
+    
+    if missing_vars:
+        logger.critical("❌ VARIÁVEIS DE AMBIENTE OBRIGATÓRIAS AUSENTES:")
+        for var in missing_vars:
+            logger.critical(var)
+        logger.critical("Configure as variáveis antes de iniciar a aplicação!")
+        raise SystemExit(1)
+    
+    logger.info("✅ Todas as variáveis de ambiente obrigatórias estão configuradas")
+
 if __name__ == '__main__':
+    # Criar diretório de logs se não existir
+    logs_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'logs')
+    if not os.path.exists(logs_dir):
+        os.makedirs(logs_dir)
+    
+    # Validação de ambiente primeiro
+    validate_environment_variables()
+    
     # Inicialização
     logger.info("Iniciando aplicação v6...")
     

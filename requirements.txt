@@ -27,7 +27,7 @@ faiss-cpu>=1.7.4
 astrapy>=1.0.0
 
 # === DOCUMENT PROCESSING ===
-pypdf2==3.0.1
+pypdf>=4.0.0
 python-docx==0.8.11
 markdown==3.5.1
 unstructured>=0.10.0
@@ -53,6 +53,6 @@ pydantic==2.5.0
 # === ENCODING SUPPORT ===
 chardet>=5.2.0
 
-# === DEVELOPMENT (OPCIONAL) ===
-pytest==7.4.3
-black==23.11.0
+# === DEVELOPMENT (OPCIONAL) - NÃO INSTALAR EM PRODUÇÃO ===
+# pytest==7.4.3
+# black==23.11.0
