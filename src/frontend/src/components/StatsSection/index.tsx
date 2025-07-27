@@ -1,6 +1,6 @@
 import React from 'react'
 import { motion } from 'framer-motion'
-import { useQuery } from 'react-query'
+import { useQuery } from '@tanstack/react-query'
 import { statsApi } from '@services/api'
 import { 
   ChartBarIcon, 
@@ -10,17 +10,15 @@ import {
 } from '@heroicons/react/24/outline'
 
 const StatsSection: React.FC = () => {
-  const { data: statsData, isLoading } = useQuery(
-    'system-stats',
-    statsApi.getStats,
-    {
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      retry: 1,
-    }
-  )
+  const { data: statsData, isLoading } = useQuery({
+    queryKey: ['system-stats'],
+    queryFn: statsApi.getStats,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 1,
+  })
 
   const stats = React.useMemo(() => {
-    if (!statsData?.system_stats) {
+    if (!(statsData as any)?.system_stats) {
       return [
         { label: 'Consultas Realizadas', value: '10K+', icon: ChartBarIcon },
         { label: 'Profissionais Atendidos', value: '2.5K+', icon: UserGroupIcon },
@@ -29,7 +27,7 @@ const StatsSection: React.FC = () => {
       ]
     }
 
-    const systemStats = statsData.system_stats
+    const systemStats = (statsData as any).system_stats
     return [
       {
         label: 'Total de Feedbacks',

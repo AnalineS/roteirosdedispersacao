@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer, useCallback } from 'react'
-import { useMutation, useQuery } from 'react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { chatApi, personasApi } from '@services/api'
 import type { Message, Persona } from '@/types'
 
@@ -74,7 +74,9 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
   const {
     data: personasData,
     isLoading: isPersonasLoading,
-  } = useQuery('personas', personasApi.getAll, {
+  } = useQuery({
+    queryKey: ['personas'],
+    queryFn: personasApi.getAll,
     staleTime: 10 * 60 * 1000, // 10 minutes
   })
 
@@ -145,7 +147,7 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
 
   const value = {
     state,
-    personas: personasData?.personas,
+    personas: personasData || {},
     isPersonasLoading,
     sendMessage,
     setSelectedPersona,
