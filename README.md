@@ -4,26 +4,59 @@ Sistema de orientação farmacêutica com IA baseado em tese de doutorado sobre 
 
 ## 📁 Estrutura do Projeto
 
+### 🏗️ **NOVA ESTRUTURA REORGANIZADA (v2.0.0)**
+
 ```
-📦 Site roteiro de dispensação/
-├── 🏥 src/backend/               # Backend Flask
-│   ├── main.py                  # 🚀 Arquivo principal
-│   ├── development/             # Versões para desenvolvimento/teste
-│   ├── services/                # Serviços e lógica de negócio
-│   └── prompts/                 # Prompts das personas
-├── 🌐 src/frontend/             # Frontend React + TypeScript
-│   ├── src/                     # Código fonte React
-│   └── dist/                    # Build de produção
-├── 📊 data/                     # Base de conhecimento
-│   ├── knowledge_base/          # Tese e documentos fonte
-│   └── structured_knowledge/    # Dados estruturados
-├── 🧪 tests/                    # Testes automatizados
-│   ├── scientific_quality/      # Validação científica
-│   ├── integration/             # Testes de integração
-│   └── unit/                    # Testes unitários
-├── 🚀 deploy/                   # Configurações de deploy
-├── 📚 docs/                     # Documentação
-└── 🔧 scripts/                  # Scripts de desenvolvimento
+📦 Site-Roteiro-Dispensacao/
+├── 📋 README.md & CHANGELOG.md           # Documentação principal
+├── 📋 REPOSITORY_STRUCTURE.md           # Guia completo da estrutura
+│
+├── 🏥 src/                              # CÓDIGO FONTE
+│   ├── backend/                         # Backend Python Flask
+│   │   ├── main.py                      # 🚀 Ponto de entrada
+│   │   ├── api/                         # Endpoints da API
+│   │   ├── core/                        # Lógica central
+│   │   │   ├── personas/               # Dr. Gasnelio + Gá
+│   │   │   ├── validation/             # Detectores de escopo
+│   │   │   └── rag/                    # Sistema RAG
+│   │   ├── config/                      # Configurações & prompts
+│   │   └── utils/                       # Utilitários
+│   └── frontend/                        # Frontend React + TypeScript
+│       ├── src/components/              # Componentes React
+│       ├── src/pages/                   # Páginas da aplicação
+│       └── src/services/                # Serviços de API
+│
+├── 📊 data/                             # BASE DE CONHECIMENTO
+│   ├── hanseniase_thesis.md/.pdf       # Tese original
+│   ├── structured/                      # Dados estruturados JSON
+│   └── embeddings/                      # Vetores e índices
+│
+├── 🧪 tests/                            # TESTES E VALIDAÇÃO
+│   ├── unit/                           # Testes unitários
+│   ├── integration/                     # Testes de integração
+│   ├── quality/                         # Validação de qualidade
+│   │   ├── scientific/                 # Precisão científica
+│   │   ├── usability/                  # Testes de usabilidade
+│   │   └── security/                   # Testes de segurança
+│   └── reports/                         # Relatórios consolidados
+│
+├── 📚 docs/                             # DOCUMENTAÇÃO
+│   ├── ARCHITECTURE.md                 # Arquitetura do sistema
+│   ├── DEVELOPMENT.md                  # Guia de desenvolvimento
+│   ├── SECURITY.md                     # Guia de segurança
+│   ├── personas/                       # Docs das personas
+│   └── api/                            # Documentação da API
+│
+├── 🚀 deploy/                           # DEPLOY E PRODUÇÃO
+│   ├── render.yaml                     # Configuração Render.com
+│   ├── docker/                         # Containers Docker
+│   ├── scripts/                        # Scripts de deploy
+│   └── env/                            # Variáveis de ambiente
+│
+└── 🔧 tools/                            # FERRAMENTAS
+    ├── validation/                      # Scripts de validação
+    ├── data_processing/                 # Processamento de dados
+    └── monitoring/                      # Monitoramento
 ```
 
 ## 🚀 Início Rápido
@@ -31,7 +64,7 @@ Sistema de orientação farmacêutica com IA baseado em tese de doutorado sobre 
 ### 1. Desenvolvimento Local
 ```bash
 # Usar script automatizado
-python scripts/start_dev_environment.py
+python tools/monitoring/start_dev_environment.py
 
 # Ou manualmente:
 # Backend
