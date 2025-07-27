@@ -42,7 +42,7 @@ const HeroSection: React.FC = () => {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="inline-flex items-center px-4 py-2 bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 rounded-full text-sm font-medium mb-6"
             >
-              <BeakerIcon className="w-4 h-4 mr-2" />
+              <BeakerIcon className="w-4 h-4 mr-2" aria-hidden="true" />
               Baseado em Pesquisa Científica
             </motion.div>
 
@@ -80,18 +80,30 @@ const HeroSection: React.FC = () => {
             >
               <Link
                 to="/chat"
-                className="inline-flex items-center justify-center px-8 py-4 bg-primary-600 text-white font-semibold rounded-xl hover:bg-primary-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+                className="inline-flex items-center justify-center px-8 py-4 bg-primary-600 text-white font-semibold rounded-xl hover:bg-primary-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 focus-visible-ring"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    e.currentTarget.click();
+                  }
+                }}
               >
-                <ChatBubbleLeftRightIcon className="w-5 h-5 mr-2" />
+                <ChatBubbleLeftRightIcon className="w-5 h-5 mr-2" aria-hidden="true" />
                 Iniciar Conversa
-                <ArrowRightIcon className="w-4 h-4 ml-2" />
+                <ArrowRightIcon className="w-4 h-4 ml-2" aria-hidden="true" />
               </Link>
 
               <Link
                 to="/about"
-                className="inline-flex items-center justify-center px-8 py-4 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-semibold rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 shadow-sm hover:shadow-md"
+                className="inline-flex items-center justify-center px-8 py-4 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-semibold rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 shadow-sm hover:shadow-md focus-visible-ring"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    e.currentTarget.click();
+                  }
+                }}
               >
-                <BookOpenIcon className="w-5 h-5 mr-2" />
+                <BookOpenIcon className="w-5 h-5 mr-2" aria-hidden="true" />
                 Sobre o Projeto
               </Link>
             </motion.div>
@@ -108,7 +120,7 @@ const HeroSection: React.FC = () => {
                 return (
                   <div key={stat.label} className="text-center lg:text-left">
                     <div className="flex items-center justify-center lg:justify-start mb-2">
-                      <Icon className="w-5 h-5 text-primary-600 dark:text-primary-400 mr-2" />
+                      <Icon className="w-5 h-5 text-primary-600 dark:text-primary-400 mr-2" aria-hidden="true" />
                       <span className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                         {stat.value}
                       </span>

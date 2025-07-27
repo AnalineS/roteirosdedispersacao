@@ -46,11 +46,13 @@ const ChatPage: React.FC = () => {
               <button
                 onClick={() => setIsSidebarOpen(!isSidebarOpen)}
                 className="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                aria-label={isSidebarOpen ? 'Fechar sidebar' : 'Abrir sidebar'}
+                aria-expanded={isSidebarOpen}
               >
                 {isSidebarOpen ? (
-                  <XMarkIcon className="w-5 h-5" />
+                  <XMarkIcon className="w-5 h-5" aria-hidden="true" />
                 ) : (
-                  <Bars3Icon className="w-5 h-5" />
+                  <Bars3Icon className="w-5 h-5" aria-hidden="true" />
                 )}
               </button>
 
@@ -100,7 +102,12 @@ const ChatPage: React.FC = () => {
         </AnimatePresence>
 
         {/* Chat Area */}
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div 
+          className="flex-1 flex flex-col overflow-hidden"
+          id="chat-section"
+          role="region"
+          aria-label="Área de conversa"
+        >
           {!selectedPersona ? (
             /* Persona Selection */
             <div className="flex-1 flex items-center justify-center p-6">
@@ -129,7 +136,12 @@ const ChatPage: React.FC = () => {
           ) : (
             /* Messages Area */
             <>
-              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              <div 
+                className="flex-1 overflow-y-auto p-4 space-y-4"
+                role="log"
+                aria-live="polite"
+                aria-label="Histórico de mensagens"
+              >
                 {/* Welcome Message */}
                 {state.messages.length === 0 && (
                   <motion.div

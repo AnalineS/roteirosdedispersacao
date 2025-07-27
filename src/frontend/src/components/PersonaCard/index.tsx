@@ -14,6 +14,13 @@ const PersonaCard: React.FC<PersonaCardProps> = ({
   onSelect, 
   isSelected = false 
 }) => {
+  const handleKeyPress = (event: React.KeyboardEvent) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault()
+      onSelect()
+    }
+  }
+
   return (
     <motion.div
       className={`card-hover p-6 cursor-pointer transition-all duration-300 ${
@@ -22,11 +29,20 @@ const PersonaCard: React.FC<PersonaCardProps> = ({
           : ''
       }`}
       onClick={onSelect}
+      onKeyDown={handleKeyPress}
       whileHover={{ y: -4 }}
       whileTap={{ scale: 0.98 }}
+      role="button"
+      tabIndex={0}
+      aria-pressed={isSelected}
+      aria-label={`Selecionar ${persona.name} - ${persona.role || 'Assistente'}`}
+      aria-describedby={`persona-desc-${persona.id || persona.name.toLowerCase()}`}
     >
       {/* Avatar */}
-      <div className="flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-primary-500 to-secondary-500 text-white font-bold text-xl mb-4 mx-auto">
+      <div 
+        className="flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-primary-500 to-secondary-500 text-white font-bold text-xl mb-4 mx-auto"
+        aria-hidden="true"
+      >
         {persona.avatar || persona.name.charAt(0)}
       </div>
 
@@ -43,7 +59,10 @@ const PersonaCard: React.FC<PersonaCardProps> = ({
       </div>
 
       {/* Description */}
-      <p className="text-gray-600 dark:text-gray-400 text-sm text-center mb-6 leading-relaxed">
+      <p 
+        className="text-gray-600 dark:text-gray-400 text-sm text-center mb-6 leading-relaxed"
+        id={`persona-desc-${persona.id || persona.name.toLowerCase()}`}
+      >
         {persona.description}
       </p>
 
@@ -51,14 +70,19 @@ const PersonaCard: React.FC<PersonaCardProps> = ({
       {persona.capabilities && persona.capabilities.length > 0 && (
         <div className="mb-6">
           <div className="flex items-center text-xs text-gray-500 dark:text-gray-400 mb-2">
-            <SparklesIcon className="w-3 h-3 mr-1" />
+            <SparklesIcon className="w-3 h-3 mr-1" aria-hidden="true" />
             Especialidades
           </div>
-          <div className="flex flex-wrap gap-1">
+          <div 
+            className="flex flex-wrap gap-1"
+            role="list"
+            aria-label="Especialidades do assistente"
+          >
             {persona.capabilities.slice(0, 3).map((capability: string, index: number) => (
               <span
                 key={index}
                 className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-2 py-1 rounded-full"
+                role="listitem"
               >
                 {capability}
               </span>
@@ -94,6 +118,8 @@ const PersonaCard: React.FC<PersonaCardProps> = ({
         }`}
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
+        aria-label={`${isSelected ? 'Já selecionado' : 'Iniciar conversa com'} ${persona.name}`}
+        aria-pressed={isSelected}
       >
         {isSelected ? 'Selecionado' : 'Conversar'}
       </motion.button>

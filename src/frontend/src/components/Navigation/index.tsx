@@ -32,12 +32,24 @@ const Navigation: React.FC = () => {
   }
 
   return (
-    <nav className="glass sticky top-0 z-50 border-b">
+    <nav 
+      className="glass sticky top-0 z-50 border-b"
+      id="navigation"
+      role="navigation"
+      aria-label="Navegação principal"
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-lg flex items-center justify-center">
+          <Link 
+            to="/" 
+            className="flex items-center space-x-2"
+            aria-label="Roteiro Dispensação - Voltar para página inicial"
+          >
+            <div 
+              className="w-8 h-8 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-lg flex items-center justify-center"
+              aria-hidden="true"
+            >
               <span className="text-white font-bold text-sm">PQT</span>
             </div>
             <span className="font-bold text-xl text-gradient">
@@ -59,7 +71,7 @@ const Navigation: React.FC = () => {
                       : 'text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-800'
                   }`}
                 >
-                  <Icon className="w-4 h-4" />
+                  <Icon className="w-4 h-4" aria-hidden="true" />
                   <span>{item.name}</span>
                 </Link>
               )
@@ -73,11 +85,13 @@ const Navigation: React.FC = () => {
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              aria-label={isMobileMenuOpen ? 'Fechar menu' : 'Abrir menu'}
+              aria-expanded={isMobileMenuOpen}
             >
               {isMobileMenuOpen ? (
-                <XMarkIcon className="w-6 h-6" />
+                <XMarkIcon className="w-6 h-6" aria-hidden="true" />
               ) : (
-                <Bars3Icon className="w-6 h-6" />
+                <Bars3Icon className="w-6 h-6" aria-hidden="true" />
               )}
             </button>
           </div>
@@ -108,7 +122,7 @@ const Navigation: React.FC = () => {
                         : 'text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-800'
                     }`}
                   >
-                    <Icon className="w-5 h-5" />
+                    <Icon className="w-5 h-5" aria-hidden="true" />
                     <span>{item.name}</span>
                   </Link>
                 )

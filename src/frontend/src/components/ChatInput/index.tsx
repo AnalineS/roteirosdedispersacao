@@ -64,6 +64,8 @@ const ChatInput: React.FC = () => {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           className="flex flex-wrap gap-2 mb-3"
+          role="region"
+          aria-label="Sugestões de perguntas"
         >
           {[
             "Qual a dosagem de rifampicina?",
@@ -74,6 +76,7 @@ const ChatInput: React.FC = () => {
               key={index}
               onClick={() => setMessage(suggestion)}
               className="px-3 py-1.5 text-sm bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+              aria-label={`Usar sugestão: ${suggestion}`}
             >
               {suggestion}
             </button>
@@ -82,19 +85,29 @@ const ChatInput: React.FC = () => {
       )}
 
       {/* Input Form */}
-      <form onSubmit={handleSubmit} className="relative">
+      <form 
+        onSubmit={handleSubmit} 
+        className="relative"
+        role="search"
+        aria-label="Enviar mensagem para o assistente"
+      >
         <div className="glass rounded-2xl border border-gray-200 dark:border-gray-700 focus-within:border-primary-500 dark:focus-within:border-primary-400 transition-colors">
           <div className="flex items-end space-x-3 p-4">
             {/* Attachment Buttons */}
-            <div className="flex items-center space-x-1">
+            <div 
+              className="flex items-center space-x-1"
+              role="group"
+              aria-label="Anexos"
+            >
               <button
                 type="button"
                 onClick={() => handleFileUpload('image')}
                 className="p-2 text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
                 title="Anexar imagem"
+                aria-label="Anexar imagem (funcionalidade em desenvolvimento)"
                 disabled={isDisabled}
               >
-                <PhotoIcon className="w-5 h-5" />
+                <PhotoIcon className="w-5 h-5" aria-hidden="true" />
               </button>
 
               <button
@@ -102,9 +115,10 @@ const ChatInput: React.FC = () => {
                 onClick={() => handleFileUpload('document')}
                 className="p-2 text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
                 title="Anexar documento"
+                aria-label="Anexar documento (funcionalidade em desenvolvimento)"
                 disabled={isDisabled}
               >
-                <DocumentIcon className="w-5 h-5" />
+                <DocumentIcon className="w-5 h-5" aria-hidden="true" />
               </button>
 
               <button
@@ -116,9 +130,11 @@ const ChatInput: React.FC = () => {
                     : 'text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400'
                 }`}
                 title={isRecording ? 'Parar gravação' : 'Gravar áudio'}
+                aria-label={isRecording ? 'Parar gravação de áudio' : 'Gravar áudio (funcionalidade em desenvolvimento)'}
+                aria-pressed={isRecording}
                 disabled={isDisabled}
               >
-                <MicrophoneIcon className={`w-5 h-5 ${isRecording ? 'animate-pulse' : ''}`} />
+                <MicrophoneIcon className={`w-5 h-5 ${isRecording ? 'animate-pulse' : ''}`} aria-hidden="true" />
               </button>
             </div>
 
@@ -138,7 +154,13 @@ const ChatInput: React.FC = () => {
                 rows={1}
                 maxLength={1000}
                 disabled={isDisabled}
+                aria-label="Campo de mensagem"
+                aria-describedby="message-help"
+                aria-required="true"
               />
+              <div className="sr-only" id="message-help">
+                Digite sua pergunta sobre hanseníase e dispensação de medicamentos. Pressione Enter para enviar ou Shift+Enter para nova linha.
+              </div>
             </div>
 
             {/* Send Button */}
@@ -152,17 +174,23 @@ const ChatInput: React.FC = () => {
               }`}
               whileHover={message.trim() && !isDisabled ? { scale: 1.05 } : {}}
               whileTap={message.trim() && !isDisabled ? { scale: 0.95 } : {}}
+              aria-label={message.trim() && !isDisabled ? 'Enviar mensagem' : 'Digite uma mensagem para enviar'}
             >
-              <PaperAirplaneIcon className="w-5 h-5" />
+              <PaperAirplaneIcon className="w-5 h-5" aria-hidden="true" />
             </motion.button>
           </div>
 
           {/* Character Count */}
           {message.length > 800 && (
             <div className="px-4 pb-2">
-              <div className={`text-xs text-right ${
-                message.length > 950 ? 'text-error-500' : 'text-warning-500'
-              }`}>
+              <div 
+                className={`text-xs text-right ${
+                  message.length > 950 ? 'text-error-500' : 'text-warning-500'
+                }`}
+                role="status"
+                aria-live="polite"
+                aria-label={`${message.length} de 1000 caracteres`}
+              >
                 {message.length}/1000
               </div>
             </div>
@@ -175,8 +203,11 @@ const ChatInput: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="flex items-center justify-center mt-2 text-sm text-gray-500 dark:text-gray-400"
+            role="status"
+            aria-live="polite"
+            aria-label="Enviando mensagem"
           >
-            <div className="flex space-x-1 mr-2">
+            <div className="flex space-x-1 mr-2" aria-hidden="true">
               <div className="w-1 h-1 bg-gray-400 rounded-full animate-bounce"></div>
               <div className="w-1 h-1 bg-gray-400 rounded-full animate-bounce animation-delay-200"></div>
               <div className="w-1 h-1 bg-gray-400 rounded-full animate-bounce animation-delay-400"></div>
@@ -190,6 +221,8 @@ const ChatInput: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="text-center mt-2 text-sm text-gray-500 dark:text-gray-400"
+            role="status"
+            aria-live="polite"
           >
             Selecione um assistente virtual para começar a conversar
           </motion.div>

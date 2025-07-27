@@ -19,6 +19,9 @@ from services.scope_detection_system import detect_question_scope, get_limitatio
 from services.enhanced_rag_system import get_enhanced_context, cache_rag_response, add_rag_feedback, get_rag_stats
 from services.personas import get_personas, get_persona_prompt
 
+# Importar otimizações de performance
+from core.performance import performance_cache, response_optimizer, usability_monitor
+
 app = Flask(__name__)
 
 # Configuração CORS restritiva e segura
@@ -511,8 +514,9 @@ def format_persona_answer(answer, persona, confidence=0.8):
             "name": "Assistente"
         }
 
+@response_optimizer.measure_time
 def answer_question(question, persona):
-    """Responde à pergunta usando o sistema de IA com detecção de escopo"""
+    """Responde à pergunta usando o sistema de IA com detecção de escopo e cache otimizado"""
     global md_text
     
     if not md_text:
@@ -523,6 +527,19 @@ def answer_question(question, persona):
         )
     
     try:
+        # PERFORMANCE: Verificar cache primeiro
+        cached_response = performance_cache.get(question, persona)
+        if cached_response:
+            logger.info(f"Resposta obtida do cache (hit rate: {performance_cache.hit_rate:.1f}%)")
+            return cached_response
+        
+        # PERFORMANCE: Tentar resposta rápida para perguntas comuns
+        quick_response = response_optimizer.get_quick_response(question, persona)
+        if quick_response:
+            formatted_response = format_persona_answer(quick_response['answer'], persona, 0.95)
+            performance_cache.set(question, persona, formatted_response)
+            return formatted_response
+        
         # NOVA FUNCIONALIDADE: Detectar escopo da pergunta
         scope_analysis = detect_question_scope(question)
         logger.info(f"Análise de escopo - No escopo: {scope_analysis['is_in_scope']}, Categoria: {scope_analysis['category']}")
@@ -531,16 +548,20 @@ def answer_question(question, persona):
         if not scope_analysis['is_in_scope']:
             limitation_response = get_limitation_response(persona, question)
             if limitation_response:
-                return format_persona_answer(limitation_response, persona, 0.9)
+                formatted_response = format_persona_answer(limitation_response, persona, 0.9)
+                performance_cache.set(question, persona, formatted_response)
+                return formatted_response
         
         # Se está no escopo, continuar processamento normal
-        # SISTEMA RAG APRIMORADO: Encontra contexto relevante otimizado
-        context = get_enhanced_context(question, max_chunks=3)
+        # PERFORMANCE: Contexto otimizado com busca rápida
+        context = response_optimizer.optimize_context_search(md_text, question, max_chunks=3)
         request_id = f"answer_{int(datetime.now().timestamp() * 1000)}"
-        logger.info(f"[{request_id}] Contexto RAG obtido: {len(context)} caracteres")
+        logger.info(f"[{request_id}] Contexto otimizado obtido: {len(context)} caracteres")
         
-        # Obtém resposta da IA
-        ai_response = get_free_ai_response(question, persona, context)
+        # Obtém resposta da IA com timeout otimizado
+        ai_response = response_optimizer.optimize_api_call(
+            get_free_ai_response, question, persona, context
+        )
         
         if not ai_response:
             # Fallback para resposta baseada em regras
@@ -553,12 +574,18 @@ def answer_question(question, persona):
         elif scope_analysis['confidence_level'] == 'low':
             confidence = 0.6
         
-        # CACHE RAG: Armazenar resposta no cache para futuras consultas
+        # Formatar resposta final
+        formatted_response = format_persona_answer(ai_response, persona, confidence)
+        
+        # CACHE: Armazenar resposta para futuras consultas
+        performance_cache.set(question, persona, formatted_response)
+        
+        # CACHE RAG: Armazenar também no sistema RAG
         if ai_response and confidence > 0.7:
             cache_rag_response(question, ai_response, confidence)
-            logger.info(f"[{request_id}] Resposta cacheada no sistema RAG")
+            logger.info(f"[{request_id}] Resposta cacheada em ambos os sistemas")
         
-        return format_persona_answer(ai_response, persona, confidence)
+        return formatted_response
         
     except Exception as e:
         logger.error(f"Erro ao processar pergunta: {e}")
@@ -721,13 +748,26 @@ def chat_api():
 
 @app.route('/api/health', methods=['GET'])
 def health_check():
-    """Verificação de saúde da API"""
-    return jsonify({
+    """Verificação de saúde da API com métricas de performance"""
+    start_time = time.time()
+    
+    # Verificações básicas
+    health_status = {
         "status": "healthy",
         "pdf_loaded": len(md_text) > 0,
         "timestamp": datetime.now().isoformat(),
-        "personas": list(PERSONAS.keys())
-    })
+        "personas": list(PERSONAS.keys()),
+        "performance": {
+            "cache_hit_rate": f"{performance_cache.hit_rate:.1f}%",
+            "cache_size": len(performance_cache.cache),
+            "response_time_ms": 0  # Será preenchido abaixo
+        }
+    }
+    
+    # Adicionar tempo de resposta
+    health_status["performance"]["response_time_ms"] = int((time.time() - start_time) * 1000)
+    
+    return jsonify(health_status)
 
 @app.route('/api/info', methods=['GET'])
 def api_info():
@@ -1126,6 +1166,18 @@ def stats_api():
             "limits_configured": rate_limiter.limits
         }
         
+        # Estatísticas de performance
+        performance_stats = {
+            "cache": performance_cache.get_stats(),
+            "optimization": {
+                "quick_responses_available": True,
+                "parallel_processing": True,
+                "context_optimization": True,
+                "timeout_optimization": True
+            },
+            "monitoring": usability_monitor.get_comprehensive_report()
+        }
+        
         # Estatísticas da aplicação
         app_stats = {
             "api_version": "8.0.0",
@@ -1138,6 +1190,7 @@ def stats_api():
             "system_stats": {
                 "rag_system": rag_stats,
                 "rate_limiter": rate_limiter_stats,
+                "performance": performance_stats,
                 "application": app_stats
             },
             "metadata": {
@@ -1157,6 +1210,95 @@ def stats_api():
             "error_code": "STATS_GENERATION_ERROR",
             "timestamp": datetime.now().isoformat()
         }), 500
+
+@app.route('/api/usability/monitor', methods=['GET'])
+@check_rate_limit('general')
+def usability_monitoring():
+    """Endpoint para monitoramento de usabilidade"""
+    try:
+        request_id = f"monitor_{int(datetime.now().timestamp() * 1000)}"
+        logger.info(f"[{request_id}] Solicitação de monitoramento de usabilidade")
+        
+        # Obter relatório completo
+        report = usability_monitor.get_comprehensive_report()
+        
+        # Adicionar metadados
+        response = {
+            "monitoring_report": report,
+            "metadata": {
+                "request_id": request_id,
+                "timestamp": datetime.now().isoformat(),
+                "api_version": "8.0.0",
+                "monitoring_version": "1.0.0"
+            },
+            "recommendations": generate_usability_recommendations(report)
+        }
+        
+        logger.info(f"[{request_id}] Relatório de monitoramento gerado")
+        return jsonify(response), 200
+        
+    except Exception as e:
+        logger.error(f"Erro ao gerar relatório de monitoramento: {e}", exc_info=True)
+        return jsonify({
+            "error": "Erro interno ao gerar relatório de monitoramento",
+            "error_code": "MONITORING_GENERATION_ERROR",
+            "timestamp": datetime.now().isoformat()
+        }), 500
+
+def generate_usability_recommendations(report):
+    """Gera recomendações baseadas no relatório"""
+    recommendations = []
+    
+    perf = report.get('performance', {})
+    usability = report.get('usability', {})
+    accessibility = report.get('accessibility', {})
+    health = report.get('health', {})
+    
+    # Recomendações de performance
+    if perf.get('avg_response_time', 0) > 1500:
+        recommendations.append({
+            "category": "performance",
+            "priority": "high",
+            "message": f"Tempo médio de resposta alto: {perf.get('avg_response_time', 0):.0f}ms (meta: <1500ms)",
+            "action": "Otimizar consultas e cache"
+        })
+    
+    if perf.get('cache_hit_rate', 0) < 50:
+        recommendations.append({
+            "category": "performance", 
+            "priority": "medium",
+            "message": f"Taxa de acerto do cache baixa: {perf.get('cache_hit_rate', 0):.1f}% (meta: >50%)",
+            "action": "Revisar estratégia de cache"
+        })
+    
+    # Recomendações de usabilidade
+    if usability.get('error_rate_pct', 0) > 5:
+        recommendations.append({
+            "category": "usability",
+            "priority": "high", 
+            "message": f"Taxa de erro alta: {usability.get('error_rate_pct', 0):.1f}% (meta: <5%)",
+            "action": "Investigar causas dos erros"
+        })
+    
+    # Recomendações de acessibilidade
+    if accessibility.get('accessibility_score', 100) < 80:
+        recommendations.append({
+            "category": "accessibility",
+            "priority": "medium",
+            "message": f"Score de acessibilidade baixo: {accessibility.get('accessibility_score', 100):.0f} (meta: >80)",
+            "action": "Melhorar recursos de acessibilidade"
+        })
+    
+    # Se tudo estiver bem
+    if not recommendations:
+        recommendations.append({
+            "category": "general",
+            "priority": "info",
+            "message": "Sistema operando dentro dos parâmetros normais",
+            "action": "Continuar monitoramento"
+        })
+    
+    return recommendations
 
 def validate_environment_variables():
     """Valida variáveis de ambiente obrigatórias"""
