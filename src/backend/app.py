@@ -14,6 +14,7 @@ import time
 from services.dr_gasnelio_enhanced import get_enhanced_dr_gasnelio_prompt, validate_dr_gasnelio_response
 from services.ga_enhanced import get_enhanced_ga_prompt, validate_ga_response
 from services.scope_detection_system import detect_question_scope, get_limitation_response
+from services.enhanced_rag_system import get_enhanced_context, cache_rag_response, add_rag_feedback, get_rag_stats
 from services.personas import get_personas, get_persona_prompt
 
 app = Flask(__name__)
@@ -369,8 +370,9 @@ def answer_question(question, persona):
                 return format_persona_answer(limitation_response, persona, 0.9)
         
         # Se está no escopo, continuar processamento normal
-        # Encontra contexto relevante
-        context = find_relevant_context(question, md_text)
+        # SISTEMA RAG APRIMORADO: Encontra contexto relevante otimizado
+        context = get_enhanced_context(question, max_chunks=3)
+        logger.info(f"[{request_id}] Contexto RAG obtido: {len(context)} caracteres")
         
         # Obtém resposta da IA
         ai_response = get_free_ai_response(question, persona, context)
@@ -385,6 +387,11 @@ def answer_question(question, persona):
             confidence = 0.9
         elif scope_analysis['confidence_level'] == 'low':
             confidence = 0.6
+        
+        # CACHE RAG: Armazenar resposta no cache para futuras consultas
+        if ai_response and confidence > 0.7:
+            cache_rag_response(question, ai_response, confidence)
+            logger.info(f"[{request_id}] Resposta cacheada no sistema RAG")
         
         return format_persona_answer(ai_response, persona, confidence)
         
@@ -847,6 +854,121 @@ def get_confidence_explanation(confidence_level: str) -> str:
         "low": "Tópico com cobertura limitada ou situação não explicitamente abordada"
     }
     return explanations.get(confidence_level, "Nível de confiança não determinado")
+
+@app.route('/api/feedback', methods=['POST'])
+@check_rate_limit('general')
+def feedback_api():
+    """Endpoint para receber feedback sobre qualidade das respostas"""
+    try:
+        request_id = f"feedback_{int(datetime.now().timestamp() * 1000)}"
+        logger.info(f"[{request_id}] Feedback recebido")
+        
+        # Validações
+        if not request.is_json:
+            return jsonify({
+                "error": "Content-Type deve ser application/json",
+                "error_code": "INVALID_CONTENT_TYPE",
+                "request_id": request_id
+            }), 400
+        
+        data = request.get_json()
+        required_fields = ['question', 'response', 'rating']
+        
+        for field in required_fields:
+            if field not in data:
+                return jsonify({
+                    "error": f"Campo '{field}' é obrigatório",
+                    "error_code": "MISSING_FIELD",
+                    "required_fields": required_fields,
+                    "request_id": request_id
+                }), 400
+        
+        question = data['question'].strip()
+        response = data['response'].strip()
+        rating = data['rating']
+        comments = data.get('comments', '').strip()
+        
+        # Validar rating
+        if not isinstance(rating, int) or rating < 1 or rating > 5:
+            return jsonify({
+                "error": "Rating deve ser um número inteiro entre 1 e 5",
+                "error_code": "INVALID_RATING",
+                "request_id": request_id
+            }), 400
+        
+        # Adicionar feedback ao sistema RAG
+        add_rag_feedback(question, response, rating, comments)
+        
+        logger.info(f"[{request_id}] Feedback processado - Rating: {rating}")
+        
+        return jsonify({
+            "message": "Feedback recebido com sucesso",
+            "request_id": request_id,
+            "timestamp": datetime.now().isoformat(),
+            "feedback_summary": {
+                "rating": rating,
+                "has_comments": bool(comments)
+            }
+        }), 200
+        
+    except Exception as e:
+        logger.error(f"[{request_id}] Erro ao processar feedback: {e}", exc_info=True)
+        return jsonify({
+            "error": "Erro interno ao processar feedback",
+            "error_code": "FEEDBACK_PROCESSING_ERROR",
+            "request_id": request_id,
+            "timestamp": datetime.now().isoformat()
+        }), 500
+
+@app.route('/api/stats', methods=['GET'])
+@check_rate_limit('general')
+def stats_api():
+    """Endpoint para estatísticas do sistema"""
+    try:
+        request_id = f"stats_{int(datetime.now().timestamp() * 1000)}"
+        logger.info(f"[{request_id}] Solicitação de estatísticas")
+        
+        # Obter estatísticas RAG
+        rag_stats = get_rag_stats()
+        
+        # Estatísticas do rate limiter
+        rate_limiter_stats = {
+            "active_ips": len(rate_limiter.requests),
+            "total_endpoints": len(rate_limiter.limits),
+            "limits_configured": rate_limiter.limits
+        }
+        
+        # Estatísticas da aplicação
+        app_stats = {
+            "api_version": "8.0.0",
+            "uptime_info": "Disponível desde o início da sessão",
+            "available_personas": list(get_personas().keys()),
+            "knowledge_base_loaded": len(md_text) > 0 if 'md_text' in globals() else False
+        }
+        
+        response = {
+            "system_stats": {
+                "rag_system": rag_stats,
+                "rate_limiter": rate_limiter_stats,
+                "application": app_stats
+            },
+            "metadata": {
+                "request_id": request_id,
+                "timestamp": datetime.now().isoformat(),
+                "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S UTC")
+            }
+        }
+        
+        logger.info(f"[{request_id}] Estatísticas retornadas")
+        return jsonify(response), 200
+        
+    except Exception as e:
+        logger.error(f"Erro ao gerar estatísticas: {e}", exc_info=True)
+        return jsonify({
+            "error": "Erro interno ao gerar estatísticas",
+            "error_code": "STATS_GENERATION_ERROR",
+            "timestamp": datetime.now().isoformat()
+        }), 500
 
 if __name__ == '__main__':
     # Inicialização
