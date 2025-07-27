@@ -129,7 +129,7 @@ def check_rate_limit(endpoint_type: str = 'general'):
     return decorator
 
 # Variáveis globais
-MD_PATH = 'PDFs/Roteiro de Dsispensação - Hanseníase.md'
+MD_PATH = 'data/knowledge_base/Roteiro de Dsispensação - Hanseníase.md'
 md_text = ""
 
 # Usar personas do sistema otimizado
@@ -372,6 +372,7 @@ def answer_question(question, persona):
         # Se está no escopo, continuar processamento normal
         # SISTEMA RAG APRIMORADO: Encontra contexto relevante otimizado
         context = get_enhanced_context(question, max_chunks=3)
+        request_id = f"answer_{int(datetime.now().timestamp() * 1000)}"
         logger.info(f"[{request_id}] Contexto RAG obtido: {len(context)} caracteres")
         
         # Obtém resposta da IA

@@ -95,15 +95,20 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
       dispatch({ type: 'SET_LOADING', payload: true })
       dispatch({ type: 'SET_ERROR', payload: null })
     },
-    onSuccess: (response) => {
+    onSuccess: (response: any) => {
       const assistantMessage: Message = {
         id: crypto.randomUUID(),
         role: 'assistant',
-        content: response.content || response.answer || 'Resposta recebida',
+        content: response.answer || response.content || 'Resposta recebida',
         timestamp: new Date(),
         persona: state.selectedPersona || undefined,
-        confidence: response.confidence,
-        metadata: response.metadata,
+        confidence: response.confidence || 0.8,
+        metadata: {
+          processing_time_ms: response.processing_time_ms,
+          request_id: response.request_id,
+          api_version: response.api_version,
+          scope_analysis: response.scope_analysis,
+        },
       }
       dispatch({ type: 'ADD_MESSAGE', payload: assistantMessage })
       dispatch({ type: 'SET_LOADING', payload: false })
