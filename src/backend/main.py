@@ -9,6 +9,8 @@ import json
 from collections import defaultdict
 import threading
 import time
+import html
+import bleach
 
 # Importar sistemas otimizados
 from services.dr_gasnelio_enhanced import get_enhanced_dr_gasnelio_prompt, validate_dr_gasnelio_response
@@ -18,9 +20,53 @@ from services.enhanced_rag_system import get_enhanced_context, cache_rag_respons
 from services.personas import get_personas, get_persona_prompt
 
 app = Flask(__name__)
-CORS(app)
 
-# Configuração avançada de logging
+# Configuração CORS restritiva e segura
+allowed_origins = [
+    "https://roteiro-dispensacao.onrender.com",
+    "http://localhost:3000",  # Para desenvolvimento
+    "http://127.0.0.1:3000"   # Para desenvolvimento local
+]
+
+# Em produção, usar apenas o domínio de produção
+if os.environ.get('FLASK_ENV') == 'production':
+    allowed_origins = ["https://roteiro-dispensacao.onrender.com"]
+
+CORS(app, 
+     origins=allowed_origins,
+     methods=['GET', 'POST', 'OPTIONS'],
+     allow_headers=['Content-Type', 'Authorization'],
+     supports_credentials=False,
+     max_age=86400)  # Cache preflight por 24h
+
+# Headers de segurança obrigatórios
+@app.after_request
+def add_security_headers(response):
+    """Adiciona headers de segurança essenciais"""
+    # Prevenir XSS
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'DENY'
+    response.headers['X-XSS-Protection'] = '1; mode=block'
+    
+    # HSTS para HTTPS obrigatório
+    if request.is_secure:
+        response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+    
+    # CSP básico para prevenir injeções
+    response.headers['Content-Security-Policy'] = (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline'; "
+        "style-src 'self' 'unsafe-inline'; "
+        "img-src 'self' data: https:; "
+        "connect-src 'self' https://api-inference.huggingface.co https://openrouter.ai"
+    )
+    
+    # Remover headers que revelam informações do servidor
+    response.headers.pop('Server', None)
+    
+    return response
+
+# Configuração avançada de logging com segurança
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -31,6 +77,23 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Logger específico para eventos de segurança
+security_logger = logging.getLogger('security')
+security_handler = logging.FileHandler('logs/security.log', mode='a') if os.path.exists('logs') else logging.StreamHandler()
+security_handler.setFormatter(logging.Formatter('%(asctime)s - SECURITY - %(levelname)s - %(message)s'))
+security_logger.addHandler(security_handler)
+security_logger.setLevel(logging.WARNING)
+
+def log_security_event(event_type: str, client_ip: str, details: dict = None):
+    """Log estruturado de eventos de segurança"""
+    event_data = {
+        'event_type': event_type,
+        'client_ip': client_ip,
+        'timestamp': datetime.now().isoformat(),
+        'details': details or {}
+    }
+    security_logger.warning(f"SECURITY_EVENT: {json.dumps(event_data)}")
+
 # Rate Limiting System
 class SimpleRateLimiter:
     """Sistema simples de rate limiting em memória"""
@@ -39,12 +102,18 @@ class SimpleRateLimiter:
         self.requests = defaultdict(list)
         self.lock = threading.Lock()
         
-        # Configurações de rate limiting
+        # Configurações de rate limiting mais restritivas para segurança
         self.limits = {
-            'chat': {'max_requests': 30, 'window_minutes': 1},      # 30 req/min para chat
-            'general': {'max_requests': 100, 'window_minutes': 1},   # 100 req/min para outros endpoints
-            'scope': {'max_requests': 60, 'window_minutes': 1}       # 60 req/min para scope
+            'chat': {'max_requests': 20, 'window_minutes': 1},      # 20 req/min para chat (reduzido)
+            'general': {'max_requests': 50, 'window_minutes': 1},   # 50 req/min para outros endpoints (reduzido)
+            'scope': {'max_requests': 30, 'window_minutes': 1},     # 30 req/min para scope (reduzido)
+            'suspicious': {'max_requests': 5, 'window_minutes': 60} # IPs suspeitos: 5 por hora
         }
+        
+        # Lista de IPs suspeitos e bloqueados (em produção, usar Redis/banco)
+        self.suspicious_ips = set()
+        self.blocked_ips = set()
+        self.abuse_attempts = defaultdict(int)
         
         # Thread para limpeza periódica
         self.cleanup_thread = threading.Thread(target=self._cleanup_old_requests, daemon=True)
@@ -52,13 +121,27 @@ class SimpleRateLimiter:
     
     def is_allowed(self, client_ip: str, endpoint_type: str = 'general') -> tuple[bool, dict]:
         """
-        Verifica se requisição é permitida
+        Verifica se requisição é permitida com controles de segurança
         
         Returns:
             (is_allowed, info_dict)
         """
         with self.lock:
             now = datetime.now()
+            
+            # Verificar se IP está bloqueado
+            if client_ip in self.blocked_ips:
+                log_security_event('BLOCKED_IP_ACCESS', client_ip, {'endpoint_type': endpoint_type})
+                return False, {
+                    'blocked': True,
+                    'reason': 'IP bloqueado por atividade suspeita'
+                }
+            
+            # Verificar se é IP suspeito
+            if client_ip in self.suspicious_ips:
+                endpoint_type = 'suspicious'
+                log_security_event('SUSPICIOUS_IP_ACCESS', client_ip, {'endpoint_type': endpoint_type})
+            
             endpoint_limit = self.limits.get(endpoint_type, self.limits['general'])
             window_start = now - timedelta(minutes=endpoint_limit['window_minutes'])
             
@@ -74,12 +157,38 @@ class SimpleRateLimiter:
             
             if is_allowed:
                 self.requests[key].append(now)
+            else:
+                # Incrementar tentativas de abuso
+                self.abuse_attempts[client_ip] += 1
+                log_security_event('RATE_LIMIT_EXCEEDED', client_ip, {
+                    'endpoint_type': endpoint_type,
+                    'current_count': current_count,
+                    'limit': endpoint_limit['max_requests'],
+                    'abuse_attempts': self.abuse_attempts[client_ip]
+                })
+                
+                # Marcar como suspeito após 3 tentativas de abuso
+                if self.abuse_attempts[client_ip] >= 3:
+                    self.suspicious_ips.add(client_ip)
+                    log_security_event('IP_MARKED_SUSPICIOUS', client_ip, {
+                        'abuse_attempts': self.abuse_attempts[client_ip]
+                    })
+                
+                # Bloquear após 10 tentativas de abuso
+                if self.abuse_attempts[client_ip] >= 10:
+                    self.blocked_ips.add(client_ip)
+                    log_security_event('IP_BLOCKED', client_ip, {
+                        'abuse_attempts': self.abuse_attempts[client_ip],
+                        'reason': 'Excesso de tentativas de rate limit'
+                    })
             
             return is_allowed, {
                 'current_count': current_count + (1 if is_allowed else 0),
                 'limit': endpoint_limit['max_requests'],
                 'window_minutes': endpoint_limit['window_minutes'],
-                'reset_time': (now + timedelta(minutes=endpoint_limit['window_minutes'])).isoformat()
+                'reset_time': (now + timedelta(minutes=endpoint_limit['window_minutes'])).isoformat(),
+                'is_suspicious': client_ip in self.suspicious_ips,
+                'abuse_attempts': self.abuse_attempts[client_ip]
             }
     
     def _cleanup_old_requests(self):
@@ -96,6 +205,52 @@ class SimpleRateLimiter:
                     # Remover chaves vazias
                     if not self.requests[key]:
                         del self.requests[key]
+
+def validate_and_sanitize_input(user_input):
+    """
+    Validação e sanitização robusta de entrada do usuário
+    """
+    if not user_input or not isinstance(user_input, str):
+        raise ValueError("Input inválido")
+    
+    # Limite de tamanho
+    if len(user_input) > 2000:
+        raise ValueError("Pergunta muito longa (máximo 2000 caracteres)")
+    
+    # Detectar tentativas de injeção
+    dangerous_patterns = [
+        r'<script[^>]*>.*?</script>',  # Scripts
+        r'javascript:',               # JavaScript URLs
+        r'on\w+\s*=',                # Event handlers
+        r'<iframe[^>]*>',            # iFrames
+        r'<object[^>]*>',            # Objects
+        r'<embed[^>]*>',             # Embeds
+        r'expression\s*\(',          # CSS expressions
+        r'@import',                  # CSS imports
+        r'data:.*base64',            # Data URLs suspeitas
+    ]
+    
+    for pattern in dangerous_patterns:
+        if re.search(pattern, user_input, re.IGNORECASE):
+            raise ValueError("Input contém conteúdo potencialmente perigoso")
+    
+    # Sanitização com bleach (mais robusta)
+    allowed_tags = []  # Sem tags HTML permitidas
+    cleaned_input = bleach.clean(user_input, tags=allowed_tags, strip=True)
+    
+    # Escape HTML adicional
+    cleaned_input = html.escape(cleaned_input)
+    
+    # Remover caracteres de controle
+    cleaned_input = re.sub(r'[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]', '', cleaned_input)
+    
+    # Normalizar espaços
+    cleaned_input = re.sub(r'\s+', ' ', cleaned_input).strip()
+    
+    if not cleaned_input:
+        raise ValueError("Input vazio após sanitização")
+    
+    return cleaned_input
 
 # Instância global do rate limiter
 rate_limiter = SimpleRateLimiter()
@@ -220,8 +375,14 @@ Responda de acordo com o estilo da persona {persona_config['name']}:"""
         # Usando API gratuita do Hugging Face (exemplo com modelo de texto)
         api_url = "https://api-inference.huggingface.co/models/microsoft/DialoGPT-medium"
         
+        # Usar variável de ambiente para token Hugging Face
+        hf_token = os.environ.get('HUGGINGFACE_API_KEY')
+        if not hf_token:
+            logger.error("HUGGINGFACE_API_KEY não configurado")
+            return None
+            
         headers = {
-            "Authorization": "Bearer hf_xxx",  # Token gratuito do Hugging Face
+            "Authorization": f"Bearer {hf_token}",
             "Content-Type": "application/json"
         }
         
@@ -496,11 +657,25 @@ def chat_api():
                 "received": personality_id
             }), 400
 
-        # Sanitização adicional - remover caracteres potencialmente perigosos
-        question = re.sub(r'[<>"\']', '', question)
+        # Validação e sanitização robusta de input
+        try:
+            question = validate_and_sanitize_input(question)
+        except ValueError as e:
+            client_ip = request.remote_addr or 'unknown'
+            log_security_event('MALICIOUS_INPUT_ATTEMPT', client_ip, {
+                'error': str(e),
+                'request_id': request_id,
+                'input_length': len(question) if question else 0
+            })
+            return jsonify({
+                "error": f"Input inválido: {str(e)}",
+                "error_code": "INVALID_INPUT",
+                "request_id": request_id
+            }), 400
         
-        # Log dos parâmetros validados
-        logger.info(f"[{request_id}] Parâmetros válidos - Persona: {personality_id}, Pergunta: {len(question)} chars")
+        # Log dos parâmetros validados (SEM conteúdo sensível)
+        client_ip = request.remote_addr or 'unknown'
+        logger.info(f"[{request_id}] Parâmetros válidos - IP: {client_ip}, Persona: {personality_id}, Pergunta: {len(question)} chars")
         
         # Processar pergunta
         logger.info(f"[{request_id}] Iniciando processamento da pergunta")
@@ -984,8 +1159,14 @@ if __name__ == '__main__':
     
     # Inicia o servidor
     port = int(os.environ.get('PORT', 5000))
-    debug = os.environ.get('FLASK_ENV') == 'development'
+    # Forçar debug=False em produção por segurança
+    debug = os.environ.get('FLASK_ENV') == 'development' and os.environ.get('FLASK_DEBUG') != 'false'
+    
+    # Nunca ativar debug em produção
+    if os.environ.get('FLASK_ENV') == 'production':
+        debug = False
     
     logger.info(f"Servidor iniciado na porta {port}")
+    logger.info(f"Debug mode: {debug}")
     logger.info(f"Personas disponíveis: {list(PERSONAS.keys())}")
     app.run(host='0.0.0.0', port=port, debug=debug) 

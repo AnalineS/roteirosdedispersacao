@@ -6,7 +6,7 @@
 
 ```bash
 # OpenRouter API Key - OBRIGATÓRIO para funcionar
-OPENROUTER_API_KEY=sk-or-v1-xxxxxxxxxxxxxxxxxxxxxxxxx
+OPENROUTER_API_KEY=your-actual-openrouter-api-key-here
 
 # Modelo Kimie K2 Free (20 req/min, 1000/dia)
 KIMIE_K2_MODEL=moonshotai/kimi-k2:free
@@ -19,7 +19,7 @@ KIMIE_K2_MODEL_FALLBACK=moonshotai/kimi-k2
 
 ```bash
 # Token de acesso do Astra DB
-ASTRA_DB_TOKEN=AstraCS:xxxxxxxxxxxxxxxxxxxxxxx
+ASTRA_DB_TOKEN=your-actual-astra-db-token-here
 
 # Endpoint da instância
 ASTRA_DB_ENDPOINT=https://xxxxx-xxxxx.apps.astra.datastax.com
@@ -32,7 +32,7 @@ ASTRA_DB_KEYSPACE=roteiro_dispensacao_bot
 
 ```bash
 # API Key para modelos de embedding
-HUGGINGFACE_API_KEY=hf_xxxxxxxxxxxxxxxxxxxxxxxxx
+HUGGINGFACE_API_KEY=your-actual-huggingface-token-here
 ```
 
 ## 🚀 Como Obter as Chaves

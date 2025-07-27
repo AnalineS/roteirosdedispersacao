@@ -401,9 +401,13 @@ if __name__ == '__main__':
     logger.info("Iniciando servidor backend simplificado para testes de integração...")
     
     port = int(os.environ.get('PORT', 5000))
-    debug = os.environ.get('FLASK_ENV') == 'development'
+    # Forçar debug=False em produção por segurança
+    debug = os.environ.get('FLASK_ENV') == 'development' and os.environ.get('FLASK_DEBUG') != 'false'
+    if os.environ.get('FLASK_ENV') == 'production':
+        debug = False
     
     logger.info(f"Servidor iniciado na porta {port}")
+    logger.info(f"Debug mode: {debug}")
     logger.info(f"Personas disponíveis: {list(PERSONAS.keys())}")
     
     app.run(host='0.0.0.0', port=port, debug=debug)

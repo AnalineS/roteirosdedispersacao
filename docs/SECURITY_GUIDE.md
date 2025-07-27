@@ -4,13 +4,13 @@
 
 **TODAS AS CHAVES EXPOSTAS DEVEM SER REVOGADAS IMEDIATAMENTE:**
 
-### 🚨 Chaves Comprometidas:
-1. **Astra DB Token**: `AstraCS:KqDbAUpYXnOJt...` 
-2. **OpenRouter API**: `sk-or-v1-3509520fd3...`
-3. **Hugging Face**: `hf_kFRODIbtkTArsUY...`
-4. **GitHub PAT**: `ghp_Xs9HfIzjDhoUq...`
-5. **Render API**: `rnd_PdHEt2X7PABBh...`
-6. **LangFlow**: `sk-AfrAhjgpTxkAdH...`
+### 🚨 Tipos de Chaves a Verificar:
+1. **Astra DB Token**: `AstraCS:XXXXXXXX...` (EXEMPLO - use variáveis de ambiente)
+2. **OpenRouter API**: `sk-or-v1-XXXXXXXX...` (EXEMPLO - use variáveis de ambiente)
+3. **Hugging Face**: `hf_XXXXXXXX...` (EXEMPLO - use variáveis de ambiente)
+4. **GitHub PAT**: `ghp_XXXXXXXX...` (EXEMPLO - use variáveis de ambiente)
+5. **Render API**: `rnd_XXXXXXXX...` (EXEMPLO - use variáveis de ambiente)
+6. **LangFlow**: `sk-XXXXXXXX...` (EXEMPLO - use variáveis de ambiente)
 
 ## 🔄 PROCEDIMENTO DE ROTAÇÃO DE CHAVES
 
@@ -26,7 +26,7 @@
 ### 2. OpenRouter
 ```bash
 # 1. Acesse openrouter.ai/keys
-# 2. Revogue a chave sk-or-v1-3509520fd3...
+# 2. Revogue a chave existente
 # 3. Gere nova chave
 # 4. Atualize OPENROUTER_API_KEY no Render
 ```
@@ -34,7 +34,7 @@
 ### 3. Hugging Face
 ```bash
 # 1. Acesse huggingface.co/settings/tokens
-# 2. Revogue hf_kFRODIbtkTArsUY...
+# 2. Revogue a chave existente
 # 3. Gere novo token "Read"
 # 4. Atualize HUGGINGFACE_API_KEY no Render
 ```
@@ -42,7 +42,7 @@
 ### 4. GitHub PAT
 ```bash
 # 1. Acesse github.com/settings/tokens
-# 2. Revogue ghp_Xs9HfIzjDhoUq...
+# 2. Revogue a chave existente
 # 3. Gere novo token com escopo mínimo
 # 4. Atualize nos repositórios necessários
 ```
@@ -50,7 +50,7 @@
 ### 5. Render API
 ```bash
 # 1. Acesse dashboard.render.com/account
-# 2. Revogue rnd_PdHEt2X7PABBh...
+# 2. Revogue a chave existente
 # 3. Gere nova chave
 # 4. Atualize scripts de deploy
 ```
