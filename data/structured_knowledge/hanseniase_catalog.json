@@ -1,0 +1,222 @@
+{
+  "document_info": {
+    "title": "Roteiro para Dispensação - Hanseníase (PQT-U)",
+    "authors": [
+      "Sâmara Caroline Franco Akkati",
+      "Sabrina Oliveira Campos de França", 
+      "Laura Beatriz Gomes Brandão",
+      "Barbara Manuela Cardoso Sodré",
+      "Rafael Santos Santana"
+    ],
+    "type": "clinical_protocol",
+    "focus": "pharmaceutical_dispensing_protocol",
+    "date_processed": "2025-01-27"
+  },
+  
+  "clinical_presentations": {
+    "pqt_u_adulto": {
+      "name": "Poliquimioterapia Única Adulto",
+      "code": "PQT-U Adulto",
+      "target_population": "Adultos > 50kg",
+      "monthly_supervised_dose": {
+        "rifampicina": "300mg + 300mg (total: 600mg)",
+        "dapsona": "100mg",
+        "clofazimina": "100mg + 100mg + 100mg (total: 300mg)"
+      },
+      "daily_self_administered": {
+        "clofazimina": "50mg",
+        "dapsona": "100mg"
+      },
+      "duration": {
+        "paucibacilar": "6 meses",
+        "multibacilar": "12 meses"
+      }
+    },
+    "pqt_u_infantil": {
+      "name": "Poliquimioterapia Única Infantil", 
+      "code": "PQT-U Infantil",
+      "target_population": "Crianças 30-50kg ou adultos 30-50kg",
+      "monthly_supervised_dose": {
+        "rifampicina": "300mg + 150mg (total: 450mg)",
+        "dapsona": "50mg", 
+        "clofazimina": "150mg"
+      },
+      "daily_self_administered": {
+        "clofazimina": "50mg (dias alternados)",
+        "dapsona": "50mg"
+      },
+      "duration": {
+        "paucibacilar": "6 meses",
+        "multibacilar": "12 meses"
+      }
+    },
+    "pediatric_under_30kg": {
+      "name": "Esquema Pediátrico < 30kg",
+      "target_population": "Crianças < 30kg",
+      "monthly_supervised_dose": {
+        "rifampicina": "10mg/kg/dose",
+        "clofazimina": "6mg/kg/dose",
+        "dapsona": "2mg/kg/dose"
+      },
+      "daily_self_administered": {
+        "clofazimina": "1mg/kg/dia",
+        "dapsona": "2mg/kg/dia (máx. 50mg/dia)"
+      },
+      "special_requirements": "Prescrição apenas por médicos"
+    }
+  },
+
+  "medications": {
+    "rifampicina": {
+      "mechanism": "Inibe RNA polimerase, bloqueando síntese de RNA bacteriano",
+      "rule": "Sempre usada em associação",
+      "max_dose": "600mg/dia",
+      "other_indications": ["tuberculose", "meningite bacteriana", "endocardite infecciosa"],
+      "adverse_reactions": [
+        "dor abdominal", "náusea", "vômito", "diarreia", 
+        "icterícia", "disfunção hepática", "trombocitopenia", 
+        "síndrome de Stevens-Johnson"
+      ],
+      "interactions": [
+        "Anticoncepcionais orais: reduz eficácia",
+        "Cefazolina: distúrbio grave de coagulação",
+        "Nerivapina/etravirina: reduz eficácia desses fármacos"
+      ]
+    },
+    "clofazimina": {
+      "mechanism": "Inibe crescimento bacteriano ao ligar-se ao DNA",
+      "max_dose_adult": "300mg/dia",
+      "max_dose_pediatric": "150mg/dia",
+      "other_indications": ["tuberculose resistente a medicamentos"],
+      "adverse_reactions": [
+        "descoloração da pele (vermelho a castanho escuro)",
+        "ictiose",
+        "urina/expectoração/suor rosados",
+        "diarreia", "cólicas leves"
+      ],
+      "interactions": [
+        "Suco de laranja/antiácidos: reduz absorção"
+      ],
+      "special_notes": "Pigmentação da pele é reversível após suspensão"
+    },
+    "dapsona": {
+      "mechanism": "Antagonista do ácido para-aminobenzóico, interfere na síntese do folato",
+      "max_dose": "100mg/dia",
+      "other_indications": [
+        "acne", "dermatite herpetiforme", 
+        "infecção HIV", "pneumonia por Pneumocystis"
+      ],
+      "adverse_reactions": [
+        "dermatose bolhosa", "eritema multiforme/nodoso",
+        "hepatite tóxica", "icterícia colestática", "anemia hemolítica"
+      ],
+      "interactions": [
+        "Antimaláricos: aumenta risco de hemólise"
+      ]
+    }
+  },
+
+  "dispensing_protocol": {
+    "etapa_01_avaliacao_inicial": {
+      "prescribers": {
+        "general": "Médico e enfermeiro podem prescrever",
+        "pediatric_under_30kg": "Apenas médicos"
+      },
+      "availability": {
+        "sus": "Disponível pelo SUS em UBS e unidades de referência",
+        "farmacia_popular": "Não disponível",
+        "generics": "Não possui similares ou genéricos (medicamento importado via OPAS)"
+      },
+      "dispensing_rules": {
+        "frequency": "Dispensação mensal",
+        "prescription": "Prescrição em duas vias (uma retida, uma carimbada)",
+        "quantity": "Quantidade necessária para um mês",
+        "stock_management": "Farmácia mantém estoque extra"
+      }
+    },
+    
+    "etapa_02_orientacoes_cuidado": {
+      "administration_guidelines": {
+        "timing": "Medicamentos autoadministrados à noite, após jantar",
+        "food": "Clofazimina e dapsona junto das refeições",
+        "restrictions": [
+          "Não ingerir com suco de laranja",
+          "Evitar bebidas alcoólicas",
+          "Não tomar autoadministrada no dia da supervisionada"
+        ]
+      },
+      "storage_disposal": {
+        "storage": "Local seco, protegido da luz, 15-30°C",
+        "disposal": "Encaminhar medicamentos vencidos à UBS ou drogaria"
+      }
+    },
+
+    "etapa_03_pos_dispensacao": {
+      "essential_interventions": [
+        "Confirmar nome dos medicamentos, indicações e esquema",
+        "Ensinar armazenamento e descarte", 
+        "Alertar sobre interações",
+        "Estimular comparecimento à unidade para avaliação dermato-neurológica",
+        "Orientar métodos contraceptivos de barreira para mulheres",
+        "Esclarecer importância da adesão total",
+        "Orientar relato imediato de reações adversas",
+        "Agendar consulta a cada 28 dias",
+        "Checar Caderneta do Paciente com Hanseníase",
+        "Estimular atividade física regular"
+      ],
+      "monthly_follow_up": [
+        "Perguntar sobre última dose autoadministrada",
+        "Para gestantes: orientar vitamina K no final da gravidez",
+        "Para lactantes: alertar sobre hiperpigmentação transitória no bebê",
+        "Reforçar presença nas consultas/exames"
+      ]
+    }
+  },
+
+  "safety_profile": {
+    "contraindications": [
+      "Reações alérgicas a rifampicina, sulfa, dapsona ou clofazimina",
+      "Pacientes < 30kg (avaliação médica obrigatória)",
+      "Suspeita de gravidez (informar o médico)",
+      "Planejamento de gravidez (aguardar término do tratamento)"
+    ],
+
+    "special_populations": {
+      "pediatric": "Esquema conforme peso; <30kg dividir dose mensal em 2-3 tomadas",
+      "pregnancy_lactation": "Não contraindicado, mas maior risco de prematuridade e baixo peso",
+      "elderly": "Cautela por risco de efeitos graves",
+      "renal_impairment": {
+        "clofazimina": "Sem ajuste leve/moderado; grave: cautela",
+        "rifampicina": "Sem ajuste",
+        "dapsona": "Usar com cautela"
+      },
+      "hepatic_impairment": {
+        "rifampicina": "Interromper em hepatotoxicidade",
+        "clofazimina": "Evitar, salvo benefício relevante", 
+        "dapsona": "Sem ajuste"
+      }
+    },
+
+    "adverse_events_vigimed": {
+      "total_reports": 98,
+      "period": "até abril/2023",
+      "most_common": {
+        "erupcao_cutanea": "14.29%",
+        "prurido": "11.22%",
+        "nausea": "7.14%", 
+        "vomito": "6.12%",
+        "hepatotoxicidade_hiperpigmentacao": "5.10%"
+      }
+    }
+  },
+
+  "clinical_references": {
+    "national_guideline": {
+      "title": "Protocolo Clínico e Diretrizes Terapêuticas Hanseníase",
+      "year": "2022",
+      "organization": "Ministério da Saúde",
+      "url": "https://www.gov.br/saude/pt-br/assuntos/saude-de-a-a-z/h/hanseniase/publicacoes/protocolo-clinico-e-diretrizes-terapeuticas-da-hanseniase-2022"
+    },
+    "regulatory_source": "ANVISA - Vigimed"
+  }
+}

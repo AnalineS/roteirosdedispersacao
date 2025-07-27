@@ -1,0 +1,55 @@
+# === REQUIREMENTS UNIFICADO - ROTEIRO DE DISPENSAÇÃO ===
+# Baseado no PRD: LangFlow + Kimie K2 via OpenRouter + custo zero
+
+# === CORE WEB FRAMEWORK ===
+flask==2.3.3
+streamlit==1.28.1
+gunicorn==21.2.0
+
+# === LANGFLOW & LANGCHAIN ===
+langflow>=1.0.0
+langchain>=0.1.0
+langchain-community>=0.0.20
+
+# === OPENROUTER + KIMIE K2 ===
+openai>=1.12.0
+httpx==0.25.2
+
+# === RAG & EMBEDDINGS ===
+# Hugging Face para embeddings (conforme PRD)
+sentence-transformers>=2.2.0
+transformers>=4.30.0
+
+# Vetorização FAISS (opção 1 - gratuita)
+faiss-cpu>=1.7.4
+
+# Astra DB (opção 2) - ATUALIZADO conforme checklist
+astrapy>=1.0.0
+
+# === DOCUMENT PROCESSING ===
+pypdf2==3.0.1
+python-docx==0.8.11
+markdown==3.5.1
+unstructured>=0.10.0
+
+# === DATA PROCESSING ===
+pandas>=2.0.0
+numpy>=1.21.0
+
+# === MACHINE LEARNING ===
+scikit-learn>=1.3.0
+
+# === HTTP & API ===
+requests==2.31.0
+flask-cors==4.0.0
+
+# === UTILITIES ===
+python-dotenv==1.0.0
+pydantic==2.5.0
+
+# === ENCODING SUPPORT ===
+chardet>=5.2.0
+
+# === DEVELOPMENT (OPCIONAL) ===
+pytest==7.4.3
+black==23.11.0

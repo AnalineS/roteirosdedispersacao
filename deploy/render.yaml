@@ -1,0 +1,58 @@
+services:
+  - type: web
+    name: roteiro-dispensacao
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python app_unified.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: PORT
+        value: 10000
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: ASTRA_DB_TOKEN
+        sync: false
+      - key: ASTRA_DB_ENDPOINT
+        sync: false
+      - key: ASTRA_DB_KEYSPACE
+        value: roteiro_dispensacao_bot
+      - key: ASTRA_DB_COLLECTION_NAME
+        value: "hanseniase_knowledge_base"
+      - key: ASTRA_DB_VECTOR_DIMENSION
+        value: "1536"
+      - key: ASTRA_DB_METRIC
+        value: "cosine"
+      - key: ASTRA_DB_HYBRID_SEARCH
+        value: "true"
+      - key: HUGGINGFACE_API_KEY
+        sync: false
+      - key: LANGFLOW_API_KEY
+        sync: false
+      - key: LANGFLOW_API_URL
+        sync: false
+      - key: OPENROUTER_API_URL
+        value: "https://openrouter.ai/api/v1"
+      - key: KIMIE_K2_MODEL
+        value: "moonshotai/kimi-k2:free"
+      - key: KIMIE_K2_MODEL_FALLBACK
+        value: "moonshotai/kimi-k2"
+      - key: RATE_LIMIT_PER_MINUTE
+        value: "20"
+      - key: RATE_LIMIT_PER_DAY
+        value: "1000"
+      - key: SITE_URL
+        value: "https://roteiro-dispensacao.onrender.com"
+      - key: SITE_NAME
+        value: "Roteiro de Dispensação"
+      - key: FLASK_ENV
+        value: production
+      - key: FLASK_DEBUG
+        value: false
+      - key: STREAMLIT_SERVER_HEADLESS
+        value: true
+      - key: STREAMLIT_BROWSER_GATHER_USAGE_STATS
+        value: false
+    healthCheckPath: /health
+

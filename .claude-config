@@ -1,0 +1,29 @@
+{
+  "name": "site-roteiro-dispensacao",
+  "description": "Chatbot médico com automação Claude Code",
+  "version": "2.0.0",
+  "automation": {
+    "enabled": true,
+    "auto_execute_scripts": true
+  },
+  "claude_commands": {
+    "setup": "claude-automation/setup-commands.md",
+    "validate": "claude-automation/validation-commands.md",
+    "deploy": "claude-automation/deploy-commands.md"
+  },
+  "personas": {
+    "dr_gasnelio": {
+      "role": "technical_expert",
+      "avatar": "https://i.postimg.cc/NfdHCVM7/Chat-GPT-Image-13-de-jul-de-2025-00-09-29.png"
+    },
+    "ga": {
+      "role": "friendly_helper", 
+      "avatar": "https://i.postimg.cc/j5YwJYgK/Chat-GPT-Image-13-de-jul-de-2025-00-14-18.png"
+    }
+  },
+  "rules": [
+    "PRESERVE persona functionality at all costs",
+    "ALL responses must be based on thesis knowledge",
+    "Keep costs at zero using free tiers only"
+  ]
+}
