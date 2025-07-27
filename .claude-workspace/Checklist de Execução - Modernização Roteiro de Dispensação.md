@@ -116,44 +116,73 @@ Entregar um site com chatbot de duas personas funcionais baseado em LangFlow + K
 ## 🌐 FASE 3: DESENVOLVIMENTO DO SITE COMPLETO
 
 ### 3.1 Backend Otimizado
-- [ ] **3.1.1** API robusta e documentada
-  - [ ] Finalizar endpoint `/api/chat` com validações
-  - [ ] Implementar endpoint `/api/personas` com informações completas
-  - [ ] Criar endpoint `/api/scope` para verificar tópicos cobertos
-  - [ ] Implementar logs detalhados para monitoramento
-  - [ ] Adicionar rate limiting básico
+- [x] **3.1.1** API robusta e documentada ✅ **CONCLUÍDO**
+  - [x] Finalizar endpoint `/api/chat` com validações
+  - [x] Implementar endpoint `/api/personas` com informações completas
+  - [x] Criar endpoint `/api/scope` para verificar tópicos cobertos
+  - [x] Implementar logs detalhados para monitoramento
+  - [x] Adicionar rate limiting básico
 
-- [ ] **3.1.2** Sistema RAG aprimorado
-  - [ ] Implementar chunking inteligente por seções da tese
-  - [ ] Otimizar retrieval para maior precisão contextual
-  - [ ] Implementar cache de respostas frequentes
-  - [ ] Criar sistema de feedback de qualidade
+- [x] **3.1.2** Sistema RAG aprimorado ✅ **CONCLUÍDO**
+  - [x] Implementar chunking inteligente por seções da tese
+  - [x] Otimizar retrieval para maior precisão contextual
+  - [x] Implementar cache de respostas frequentes
+  - [x] Criar sistema de feedback de qualidade
 
-- [ ] **3.1.3** Validação de qualidade em tempo real
-  - [ ] Implementar score de fidelidade à tese
-  - [ ] Criar alertas para respostas de baixa qualidade
-  - [ ] Implementar fallback para respostas incertas
-  - [ ] Desenvolver métricas de desempenho das personas
+- [x] **3.1.3** Validação de qualidade em tempo real ✅ **CONCLUÍDO**
+  - [x] Implementar score de fidelidade à tese
+  - [x] Criar alertas para respostas de baixa qualidade
+  - [x] Implementar fallback para respostas incertas
+  - [x] Desenvolver métricas de desempenho das personas
 
 ### 3.2 Frontend Moderno e Funcional
-- [ ] **3.2.1** Interface principal do site
-  - [ ] Criar página inicial atrativa sobre o projeto
-  - [ ] Desenvolver seção "Sobre a Tese" com informações relevantes
-  - [ ] Implementar navegação intuitiva
-  - [ ] Adicionar seção de contato e informações acadêmicas
+- [ ] **3.2.1** Interface principal modernizada
+  - [ ] Redesign da página inicial com hero section impactante
+  - [ ] Seção "Sobre o Projeto" com informações da tese e objetivos
+  - [ ] Card de apresentação das personas com preview das capacidades
+  - [ ] Navegação aprimorada com smooth scroll e indicadores
+  - [ ] Footer com informações acadêmicas e contato
+  - [ ] Implementar modo escuro/claro com toggle
 
-- [ ] **3.2.2** Interface do chatbot preservada e melhorada
-  - [ ] Manter design atual do chat
-  - [ ] Preservar avatares funcionais das personas
-  - [ ] Implementar seleção visual clara de personas
-  - [ ] Adicionar indicadores de status e carregamento
-  - [ ] Manter histórico de conversas
+- [ ] **3.2.2** Interface do chatbot aprimorada
+  - [ ] Preservar e melhorar seleção visual de personas
+  - [ ] Redesign da área de chat com glass effect modernizado
+  - [ ] Animações de transição suaves entre personas
+  - [ ] Indicadores de digitação e status de IA mais expressivos
+  - [ ] Histórico de conversas com busca e filtros
+  - [ ] Sistema de feedback integrado (rating 1-5 estrelas)
 
-- [ ] **3.2.3** Experiência do usuário otimizada
-  - [ ] Implementar responsividade para diferentes dispositivos
-  - [ ] Adicionar tooltips explicativos sobre as personas
-  - [ ] Criar onboarding sutil para novos usuários
-  - [ ] Implementar feedback visual para qualidade das respostas
+- [ ] **3.2.3** Funcionalidades avançadas do chat
+  - [ ] Export de conversas em PDF/DOCX aprimorado
+  - [ ] Compartilhamento de conversas via link
+  - [ ] Suggestions de perguntas baseadas no contexto
+  - [ ] Preview de limitações de escopo antes do envio
+  - [ ] Sistema de favoritos para respostas importantes
+  - [ ] Modo de leitura otimizado para mobile
+
+- [ ] **3.2.4** Experiência do usuário otimizada
+  - [ ] Responsividade completa (mobile-first)
+  - [ ] Onboarding interativo para novos usuários
+  - [ ] Tooltips contextuais com informações das personas
+  - [ ] Accessibility completa (WCAG 2.1 AA)
+  - [ ] Performance otimizada (lazy loading, code splitting)
+  - [ ] PWA básico com cache offline
+
+- [ ] **3.2.5** Sistema de qualidade visual
+  - [ ] Indicadores visuais de confiança das respostas
+  - [ ] Badges de validação científica
+  - [ ] Alertas visuais para limitações de escopo
+  - [ ] Sistema de notificações não-intrusivas
+  - [ ] Loading states personalizados por persona
+  - [ ] Micro-interações para melhor feedback
+
+- [ ] **3.2.6** Recursos educacionais integrados
+  - [ ] Glossário interativo de termos técnicos
+  - [ ] FAQ dinâmico baseado em perguntas frequentes
+  - [ ] Seção de recursos sobre hanseníase PQT-U
+  - [ ] Links para referências da tese
+  - [ ] Galeria de casos de uso das personas
+  - [ ] Tutorial interativo do sistema
 
 ### 3.3 Integração e Testes Completos
 - [ ] **3.3.1** Integração backend-frontend
