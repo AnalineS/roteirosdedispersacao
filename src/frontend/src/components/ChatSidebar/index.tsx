@@ -160,7 +160,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({ isOpen, onToggle }) => {
               Especialidades
             </h3>
             <div className="space-y-1">
-              {selectedPersona.capabilities.map((capability, index) => (
+              {selectedPersona.capabilities.map((capability: string, index: number) => (
                 <div
                   key={index}
                   className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-2 py-1 rounded"

@@ -155,7 +155,7 @@ const ChatPage: React.FC = () => {
                         <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
                           Exemplos de perguntas:
                         </p>
-                        {selectedPersona.example_questions.slice(0, 3).map((question, index) => (
+                        {selectedPersona.example_questions.slice(0, 3).map((question: any, index: number) => (
                           <button
                             key={index}
                             className="block w-full text-left p-3 bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-sm"

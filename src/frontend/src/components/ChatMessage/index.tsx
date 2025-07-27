@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import type { Message, Persona } from '@types'
+import type { Message, Persona } from '@/types'
 import { 
   ClipboardDocumentIcon,
   HandThumbUpIcon,

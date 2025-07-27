@@ -3,7 +3,6 @@ import { motion } from 'framer-motion'
 import { 
   BookOpenIcon,
   BeakerIcon,
-  AcademicCapIcon,
   UserGroupIcon,
   ShieldCheckIcon,
   SparklesIcon

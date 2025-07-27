@@ -7,7 +7,7 @@ import type {
   ScopeAnalysis,
   FeedbackData,
   SystemStats 
-} from '@types'
+} from '@/types'
 
 // Create axios instance
 const api = axios.create({

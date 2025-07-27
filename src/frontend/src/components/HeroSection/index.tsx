@@ -103,7 +103,7 @@ const HeroSection: React.FC = () => {
               transition={{ duration: 0.8, delay: 0.6 }}
               className="grid grid-cols-1 sm:grid-cols-3 gap-6"
             >
-              {stats.map((stat, index) => {
+              {stats.map((stat) => {
                 const Icon = stat.icon
                 return (
                   <div key={stat.label} className="text-center lg:text-left">

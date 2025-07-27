@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useReducer, useCallback } from 'react'
 import { useMutation, useQuery } from 'react-query'
 import { chatApi, personasApi } from '@services/api'
-import type { Message, Persona } from '@types'
+import type { Message, Persona } from '@/types'
 
 interface ChatState {
   messages: Message[]

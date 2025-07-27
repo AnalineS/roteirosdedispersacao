@@ -2,7 +2,7 @@ import React from 'react'
 import { motion } from 'framer-motion'
 import { useChat } from '@hooks/useChat'
 import PersonaCard from '@components/PersonaCard'
-import type { Persona } from '@types'
+import type { Persona } from '@/types'
 
 interface PersonaSelectorProps {
   personas: Record<string, Persona> | undefined

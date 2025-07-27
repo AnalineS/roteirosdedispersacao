@@ -14,7 +14,7 @@ import {
 
 const Navigation: React.FC = () => {
   const location = useLocation()
-  const { theme } = useTheme()
+  const { } = useTheme()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   const navigation = [

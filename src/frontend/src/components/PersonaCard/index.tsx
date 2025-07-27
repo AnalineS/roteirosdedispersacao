@@ -1,6 +1,6 @@
 import React from 'react'
 import { motion } from 'framer-motion'
-import type { Persona } from '@types'
+import type { Persona } from '@/types'
 import { ChatBubbleLeftIcon, SparklesIcon } from '@heroicons/react/24/outline'
 
 interface PersonaCardProps {
@@ -55,7 +55,7 @@ const PersonaCard: React.FC<PersonaCardProps> = ({
             Especialidades
           </div>
           <div className="flex flex-wrap gap-1">
-            {persona.capabilities.slice(0, 3).map((capability, index) => (
+            {persona.capabilities.slice(0, 3).map((capability: string, index: number) => (
               <span
                 key={index}
                 className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-2 py-1 rounded-full"
