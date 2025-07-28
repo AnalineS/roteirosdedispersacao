@@ -3,22 +3,57 @@ services:
     name: roteiro-dispensacao
     env: python
     plan: free
-    buildCommand: pip install -r requirements.txt
-    startCommand: python src/backend/main.py
+    buildCommand: |
+      echo "🚀 Iniciando build otimizado para produção..."
+      pip install --no-cache-dir --upgrade pip
+      pip install --no-cache-dir -r requirements.txt
+      echo "📦 Dependências instaladas"
+      python --version
+      echo "✅ Build concluído com sucesso"
+    startCommand: |
+      echo "🚀 Iniciando aplicação em produção..."
+      cd src/backend
+      python main.py
     healthCheckPath: /api/health
     envVars:
+      # === CONFIGURAÇÃO GERAL ===
       - key: FLASK_ENV
         value: production
       - key: FLASK_DEBUG
         value: false
       - key: PORT
         value: 10000
+      
+      # === CONFIGURAÇÃO PYTHON ===
       - key: PYTHONPATH
         value: /opt/render/project/src:/opt/render/project/src/backend
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      
+      # === APIs EXTERNAS ===
       - key: HUGGINGFACE_API_KEY
-        sync: false
-      - key: OPENROUTER_API_KEY  
-        sync: false
+        value: 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
+      - key: OPENROUTER_API_KEY
+        value: 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
+      
+      # === CONFIGURAÇÃO DE LOGS ===
+      - key: LOG_LEVEL
+        value: INFO
+      - key: LOG_FORMAT
+        value: structured
+      
+      # === CONFIGURAÇÃO DE PERFORMANCE ===
+      - key: CACHE_ENABLED
+        value: "true"
+      - key: TIMEOUT_SECONDS
+        value: "30"
+      
+      # === MONITORAMENTO ===
+      - key: HEALTH_CHECK_ENABLED
+        value: "true"
+      - key: METRICS_ENABLED
+        value: "true"
+        
     autoDeploy: true
     region: oregon
     runtime: python-3.11.0
@@ -26,6 +61,6 @@ services:
       minInstances: 1
       maxInstances: 3
     disk:
-      name: data
+      name: roteiro-data
       mountPath: /opt/render/project/data
       sizeGB: 1

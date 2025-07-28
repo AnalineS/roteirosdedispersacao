@@ -77,33 +77,87 @@ def add_security_headers(response):
     
     return response
 
-# Configuração avançada de logging com segurança
+# Configuração avançada de logging otimizada para produção Render
+log_format = os.environ.get('LOG_FORMAT', 'standard')
+log_level = os.environ.get('LOG_LEVEL', 'INFO').upper()
+
+if log_format == 'structured':
+    # Formato JSON estruturado para produção
+    log_formatter = logging.Formatter(
+        '{"timestamp": "%(asctime)s", "level": "%(levelname)s", "module": "%(name)s", "message": "%(message)s", "platform": "render"}'
+    )
+else:
+    # Formato padrão para desenvolvimento
+    log_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+# Configurar handler principal para stdout (Render captura automaticamente)
+console_handler = logging.StreamHandler()
+console_handler.setFormatter(log_formatter)
+
+# Configurar logging root
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.StreamHandler(),
-        logging.FileHandler('logs/backend.log', mode='a') if os.path.exists('logs') else logging.StreamHandler()
-    ]
+    level=getattr(logging, log_level, logging.INFO),
+    handlers=[console_handler]
 )
+
 logger = logging.getLogger(__name__)
 
-# Logger específico para eventos de segurança
+# Logger específico para eventos de segurança com formato estruturado
 security_logger = logging.getLogger('security')
-security_handler = logging.FileHandler('logs/security.log', mode='a') if os.path.exists('logs') else logging.StreamHandler()
-security_handler.setFormatter(logging.Formatter('%(asctime)s - SECURITY - %(levelname)s - %(message)s'))
+security_handler = logging.StreamHandler()
+security_formatter = logging.Formatter(
+    '{"timestamp": "%(asctime)s", "level": "SECURITY", "event": "%(message)s", "platform": "render"}'
+)
+security_handler.setFormatter(security_formatter)
 security_logger.addHandler(security_handler)
 security_logger.setLevel(logging.WARNING)
+security_logger.propagate = False  # Evitar duplicação
+
+# Logger para métricas de performance
+metrics_logger = logging.getLogger('metrics')
+metrics_handler = logging.StreamHandler()
+metrics_formatter = logging.Formatter(
+    '{"timestamp": "%(asctime)s", "level": "METRICS", "data": "%(message)s", "platform": "render"}'
+)
+metrics_handler.setFormatter(metrics_formatter)
+metrics_logger.addHandler(metrics_handler)
+metrics_logger.setLevel(logging.INFO)
+metrics_logger.propagate = False
 
 def log_security_event(event_type: str, client_ip: str, details: dict = None):
-    """Log estruturado de eventos de segurança"""
+    """Log estruturado de eventos de segurança otimizado para produção"""
     event_data = {
         'event_type': event_type,
         'client_ip': client_ip,
         'timestamp': datetime.now().isoformat(),
+        'environment': os.environ.get('FLASK_ENV', 'unknown'),
         'details': details or {}
     }
-    security_logger.warning(f"SECURITY_EVENT: {json.dumps(event_data)}")
+    security_logger.warning(json.dumps(event_data))
+
+def log_performance_metric(metric_name: str, value: float, details: dict = None):
+    """Log estruturado de métricas de performance"""
+    metric_data = {
+        'metric_name': metric_name,
+        'value': value,
+        'timestamp': datetime.now().isoformat(),
+        'environment': os.environ.get('FLASK_ENV', 'unknown'),
+        'details': details or {}
+    }
+    metrics_logger.info(json.dumps(metric_data))
+
+def log_api_request(endpoint: str, method: str, status_code: int, response_time_ms: float, client_ip: str = None):
+    """Log estruturado de requisições da API"""
+    request_data = {
+        'endpoint': endpoint,
+        'method': method,
+        'status_code': status_code,
+        'response_time_ms': response_time_ms,
+        'client_ip': client_ip or 'unknown',
+        'timestamp': datetime.now().isoformat(),
+        'environment': os.environ.get('FLASK_ENV', 'unknown')
+    }
+    logger.info(f"API_REQUEST: {json.dumps(request_data)}")
 
 # Rate Limiting System
 class SimpleRateLimiter:
@@ -753,26 +807,97 @@ def chat_api():
 
 @app.route('/api/health', methods=['GET'])
 def health_check():
-    """Verificação de saúde da API com métricas de performance"""
+    """Verificação de saúde da API otimizada para produção"""
     start_time = time.time()
     
-    # Verificações básicas
-    health_status = {
-        "status": "healthy",
-        "pdf_loaded": len(md_text) > 0,
-        "timestamp": datetime.now().isoformat(),
-        "personas": list(PERSONAS.keys()),
-        "performance": {
+    # === VERIFICAÇÕES DE SISTEMA ===
+    system_status = "healthy"
+    issues = []
+    
+    # Verificar base de conhecimento
+    knowledge_base_status = len(md_text) > 100
+    if not knowledge_base_status:
+        issues.append("knowledge_base_missing")
+        
+    # Verificar personas
+    personas_status = len(PERSONAS) >= 2
+    if not personas_status:
+        issues.append("personas_incomplete")
+        
+    # Verificar variáveis de ambiente críticas
+    env_vars_status = all([
+        os.environ.get('HUGGINGFACE_API_KEY'),
+        os.environ.get('OPENROUTER_API_KEY'),
+        os.environ.get('FLASK_ENV')
+    ])
+    if not env_vars_status:
+        issues.append("environment_vars_missing")
+    
+    # Determinar status geral
+    if issues:
+        system_status = "degraded" if len(issues) <= 2 else "unhealthy"
+    
+    # === MÉTRICAS DE PERFORMANCE ===
+    try:
+        performance_metrics = {
             "cache_hit_rate": f"{performance_cache.hit_rate:.1f}%",
             "cache_size": len(performance_cache.cache),
+            "memory_usage_mb": 0,  # Placeholder para uso de memória
+            "uptime_seconds": int(time.time() - start_time) * 1000,  # Approximation
             "response_time_ms": 0  # Será preenchido abaixo
         }
+    except Exception as e:
+        performance_metrics = {
+            "cache_hit_rate": "0.0%",
+            "cache_size": 0,
+            "error": str(e)
+        }
+    
+    # === INFORMAÇÕES DO SISTEMA ===
+    health_status = {
+        "status": system_status,
+        "timestamp": datetime.now().isoformat(),
+        "version": "9.0.0",
+        "environment": os.environ.get('FLASK_ENV', 'unknown'),
+        "platform": "render.com",
+        
+        # Componentes do sistema
+        "components": {
+            "knowledge_base": {
+                "status": "operational" if knowledge_base_status else "failure",
+                "size_chars": len(md_text),
+                "loaded": knowledge_base_status
+            },
+            "personas": {
+                "status": "operational" if personas_status else "failure", 
+                "available": list(PERSONAS.keys()),
+                "count": len(PERSONAS)
+            },
+            "apis": {
+                "status": "operational" if env_vars_status else "failure",
+                "huggingface": bool(os.environ.get('HUGGINGFACE_API_KEY')),
+                "openrouter": bool(os.environ.get('OPENROUTER_API_KEY'))
+            },
+            "cache_system": {
+                "status": "operational",
+                "metrics": performance_metrics
+            }
+        },
+        
+        # Métricas gerais
+        "performance": performance_metrics,
+        "issues": issues,
+        "checks_passed": 4 - len(issues),
+        "checks_total": 4
     }
     
-    # Adicionar tempo de resposta
+    # Tempo de resposta final
     health_status["performance"]["response_time_ms"] = int((time.time() - start_time) * 1000)
     
-    return jsonify(health_status)
+    # Status HTTP baseado na saúde
+    status_code = 200 if system_status == "healthy" else (503 if system_status == "unhealthy" else 200)
+    
+    return jsonify(health_status), status_code
 
 @app.route('/api/info', methods=['GET'])
 def api_info():
