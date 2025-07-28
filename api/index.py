@@ -11,11 +11,15 @@ CORS(app,
      methods=['GET', 'POST', 'OPTIONS'],
      allow_headers=['Content-Type', 'Authorization'])
 
-@app.route('/')
-@app.route('/health')
-@app.route('/<path:path>')
+@app.route('/', methods=['GET', 'POST', 'OPTIONS'])
+@app.route('/health', methods=['GET', 'POST', 'OPTIONS'])
+@app.route('/<path:path>', methods=['GET', 'POST', 'OPTIONS'])
 def handle_all(path=None):
     """Handle all routes"""
+    
+    # Handle CORS preflight
+    if request.method == 'OPTIONS':
+        return jsonify({}), 200
     
     # Health check
     if request.path.endswith('/health') or path == 'health':
