@@ -1,11 +1,6 @@
 {
   "version": 2,
   "name": "roteiro-dispensacao",
-  "functions": {
-    "api/main.py": {
-      "runtime": "@vercel/python@4.0.0"
-    }
-  },
   "headers": [
     {
       "source": "/api/(.*)",
