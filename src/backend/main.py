@@ -12,15 +12,31 @@ import time
 import html
 import bleach
 
-# Importar sistemas otimizados - ATIVADO PARA RENDER
-from services.dr_gasnelio_enhanced import get_enhanced_dr_gasnelio_prompt, validate_dr_gasnelio_response
-from services.ga_enhanced import get_enhanced_ga_prompt, validate_ga_response
-from services.scope_detection_system import detect_question_scope, get_limitation_response
-from services.enhanced_rag_system import get_enhanced_context, cache_rag_response, add_rag_feedback, get_rag_stats
-from services.personas import get_personas, get_persona_prompt
+# Importar sistemas otimizados - VERSÃO SIMPLIFICADA PARA RENDER
+try:
+    from services.dr_gasnelio_enhanced import get_enhanced_dr_gasnelio_prompt, validate_dr_gasnelio_response
+    from services.ga_enhanced import get_enhanced_ga_prompt, validate_ga_response
+    from services.scope_detection_system import detect_question_scope, get_limitation_response
+    from services.enhanced_rag_system import get_enhanced_context, cache_rag_response, add_rag_feedback, get_rag_stats
+    from services.personas import get_personas, get_persona_prompt
+    ADVANCED_FEATURES = True
+except ImportError as e:
+    print(f"Advanced features disabled due to missing dependencies: {e}")
+    ADVANCED_FEATURES = False
 
-# Importar otimizações de performance - DESABILITADO TEMPORARIAMENTE
-# from core.performance import performance_cache, response_optimizer, usability_monitor
+# Performance cache simples sem dependências externas
+class SimpleCache:
+    def __init__(self):
+        self.cache = {}
+        self.hits = 0
+        self.misses = 0
+    
+    @property
+    def hit_rate(self):
+        total = self.hits + self.misses
+        return (self.hits / total * 100) if total > 0 else 0
+
+performance_cache = SimpleCache()
 
 app = Flask(__name__)
 

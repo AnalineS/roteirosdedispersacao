@@ -1,5 +1,5 @@
-# REQUIREMENTS SIMPLIFICADO PARA RENDER (PLANO GRATUITO)
-# Apenas dependências essenciais para funcionamento básico
+# REQUIREMENTS MÍNIMO PARA RENDER (PLANO GRATUITO)
+# Apenas dependências absolutamente essenciais
 
 # === CORE WEB FRAMEWORK ===
 flask==2.3.3
@@ -14,17 +14,3 @@ bleach==6.0.0
 
 # === UTILITIES ===
 python-dotenv==1.0.0
-
-# === ENCODING SUPPORT ===
-chardet==5.2.0
-
-# === OPENROUTER API ===
-openai==1.12.0
-httpx==0.25.2
-
-# === BASIC DATA PROCESSING ===
-pandas==2.0.3
-numpy==1.24.4
-
-# === HUGGING FACE (API only) ===
-transformers==4.35.0
