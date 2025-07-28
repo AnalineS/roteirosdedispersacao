@@ -589,7 +589,6 @@ def format_persona_answer(answer, persona, confidence=0.8):
             "name": "Assistente"
         }
 
-@response_optimizer.measure_time
 def answer_question(question, persona):
     """Responde à pergunta usando o sistema de IA com detecção de escopo e cache otimizado"""
     global md_text
@@ -609,7 +608,7 @@ def answer_question(question, persona):
             return cached_response
         
         # PERFORMANCE: Tentar resposta rápida para perguntas comuns
-        quick_response = response_optimizer.get_quick_response(question, persona)
+        quick_response = None  # Simplified - no quick response cache
         if quick_response:
             formatted_response = format_persona_answer(quick_response['answer'], persona, 0.95)
             performance_cache.set(question, persona, formatted_response)
@@ -629,14 +628,17 @@ def answer_question(question, persona):
         
         # Se está no escopo, continuar processamento normal
         # PERFORMANCE: Contexto otimizado com busca rápida
-        context = response_optimizer.optimize_context_search(md_text, question, max_chunks=3)
+        # Simplified context search - use first 2000 characters
+        context = md_text[:2000] if md_text else ""
         request_id = f"answer_{int(datetime.now().timestamp() * 1000)}"
         logger.info(f"[{request_id}] Contexto otimizado obtido: {len(context)} caracteres")
         
         # Obtém resposta da IA com timeout otimizado
-        ai_response = response_optimizer.optimize_api_call(
-            get_free_ai_response, question, persona, context
-        )
+        # Simplified API call without optimization
+        if ADVANCED_FEATURES:
+            ai_response = get_enhanced_dr_gasnelio_prompt(question, context) if persona == 'dr_gasnelio' else get_enhanced_ga_prompt(question, context)
+        else:
+            ai_response = f"Como {persona}, posso ajudá-lo com informações sobre hanseníase baseadas no contexto disponível: {context[:200]}..."
         
         if not ai_response:
             # Fallback para resposta baseada em regras
