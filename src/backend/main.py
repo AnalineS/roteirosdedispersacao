@@ -19,8 +19,8 @@ from services.scope_detection_system import detect_question_scope, get_limitatio
 from services.enhanced_rag_system import get_enhanced_context, cache_rag_response, add_rag_feedback, get_rag_stats
 from services.personas import get_personas, get_persona_prompt
 
-# Importar otimizações de performance - ATIVADO PARA RENDER
-from core.performance import performance_cache, response_optimizer, usability_monitor
+# Importar otimizações de performance - DESABILITADO TEMPORARIAMENTE
+# from core.performance import performance_cache, response_optimizer, usability_monitor
 
 app = Flask(__name__)
 
