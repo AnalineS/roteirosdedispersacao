@@ -381,16 +381,79 @@ md_text = ""
 PERSONAS = get_personas()
 
 def extract_md_text(md_path):
-    """Extrai texto do arquivo Markdown"""
+    """Extrai texto do arquivo Markdown com diagnóstico aprimorado"""
     global md_text
+    
+    # Debug: informações do ambiente
+    import os
+    current_dir = os.getcwd()
+    logger.info(f"🔍 Diretório de trabalho: {current_dir}")
+    logger.info(f"🔍 Tentando carregar: {md_path}")
+    
+    # Listar conteúdo dos diretórios
     try:
+        if os.path.exists('.'):
+            root_files = [f for f in os.listdir('.') if f.startswith('data') or f.endswith('.md')]
+            logger.info(f"🔍 Arquivos relevantes na raiz: {root_files}")
+            
+        if os.path.exists('data'):
+            data_files = os.listdir('data')
+            logger.info(f"🔍 Arquivos em data/: {data_files}")
+    except Exception as e:
+        logger.error(f"❌ Erro ao listar diretórios: {e}")
+    
+    # Tentar carregar o arquivo
+    try:
+        logger.info(f"📁 Verificando se existe: {os.path.exists(md_path)}")
         with open(md_path, 'r', encoding='utf-8') as file:
             text = file.read()
-        logger.info(f"Arquivo Markdown extraído com sucesso. Total de caracteres: {len(text)}")
+        logger.info(f"✅ Arquivo Markdown carregado! {len(text)} caracteres")
         return text
+        
+    except FileNotFoundError:
+        logger.warning(f"❌ Arquivo não encontrado: {md_path}")
+        
+        # Tentar paths alternativos
+        alternative_paths = [
+            'data/roteiro_hanseniase_basico.md',
+            '../data/Roteiro de Dsispensação - Hanseníase.md',
+            '../../data/Roteiro de Dsispensação - Hanseníase.md',
+            './data/roteiro_hanseniase_basico.md'
+        ]
+        
+        for alt_path in alternative_paths:
+            try:
+                logger.info(f"🔄 Testando: {alt_path}")
+                with open(alt_path, 'r', encoding='utf-8') as file:
+                    text = file.read()
+                logger.info(f"✅ Sucesso com alternativo! {len(text)} caracteres de {alt_path}")
+                return text
+            except:
+                continue
+                
+        # Se nada funcionar, usar conteúdo básico
+        logger.warning("⚠️ Usando conteúdo básico de fallback")
+        return """
+# Roteiro de Dispensação para Hanseníase - Sistema Básico
+
+Este é um sistema especializado em fornecer informações sobre hanseníase e seu tratamento.
+
+## Tratamento PQT-U
+- Rifampicina: 600mg uma vez por mês
+- Dapsona: 100mg diariamente  
+- Clofazimina: 300mg uma vez por mês + 50mg diariamente
+
+## Efeitos Adversos Comuns
+- Rifampicina: coloração avermelhada na urina
+- Dapsona: anemia, metahemoglobinemia
+- Clofazimina: hiperpigmentação da pele
+
+Para informações mais detalhadas, consulte sempre um profissional de saúde qualificado.
+"""
+        
     except Exception as e:
-        logger.error(f"Erro ao extrair arquivo Markdown: {e}")
-        return ""
+        logger.error(f"❌ Erro inesperado ao carregar MD: {e}")
+        return "Sistema em modo de emergência. Consulte um profissional de saúde."
 
 def find_relevant_context(question, full_text, max_length=3000):
     """Encontra o contexto mais relevante para a pergunta usando busca simples"""
