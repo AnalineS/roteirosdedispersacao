@@ -12,7 +12,7 @@ import time
 import html
 import bleach
 
-# Importar sistemas otimizados - VERSÃO SIMPLIFICADA PARA RENDER
+# Importar sistemas otimizados - VERSÃO INCREMENTAL PARA RENDER
 try:
     from services.dr_gasnelio_enhanced import get_enhanced_dr_gasnelio_prompt, validate_dr_gasnelio_response
     from services.ga_enhanced import get_enhanced_ga_prompt, validate_ga_response
@@ -21,8 +21,17 @@ try:
     from services.personas import get_personas, get_persona_prompt
     ADVANCED_FEATURES = True
 except ImportError as e:
-    print(f"Advanced features disabled due to missing dependencies: {e}")
+    print(f"Advanced features disabled, using fallback: {e}")
     ADVANCED_FEATURES = False
+
+# Importar RAG simples
+try:
+    from services.simple_rag import generate_context_from_rag
+    RAG_AVAILABLE = True
+    print("✅ RAG simples carregado com sucesso")
+except ImportError as e:
+    print(f"RAG simples indisponível: {e}")
+    RAG_AVAILABLE = False
 
 # Performance cache simples sem dependências externas
 class SimpleCache:
@@ -628,8 +637,14 @@ def answer_question(question, persona):
         
         # Se está no escopo, continuar processamento normal
         # PERFORMANCE: Contexto otimizado com busca rápida
-        # Simplified context search - use first 2000 characters
-        context = md_text[:2000] if md_text else ""
+        # Context search com RAG simples ou fallback
+        if RAG_AVAILABLE and md_text:
+            context, rag_metadata = generate_context_from_rag(question, md_text, max_context_length=1500)
+            logger.info(f"RAG simples usado: {rag_metadata}")
+        else:
+            # Fallback - usar primeiros 2000 caracteres
+            context = md_text[:2000] if md_text else ""
+            logger.info("Usando fallback de contexto")
         request_id = f"answer_{int(datetime.now().timestamp() * 1000)}"
         logger.info(f"[{request_id}] Contexto otimizado obtido: {len(context)} caracteres")
         

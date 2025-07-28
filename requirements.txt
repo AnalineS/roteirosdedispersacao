@@ -1,5 +1,5 @@
-# REQUIREMENTS MÍNIMO PARA RENDER (PLANO GRATUITO)
-# Apenas dependências absolutamente essenciais
+# REQUIREMENTS INCREMENTAL PARA RENDER (PLANO GRATUITO)
+# Testando limites - adicionando dependências uma por vez
 
 # === CORE WEB FRAMEWORK ===
 flask==2.3.3
@@ -14,3 +14,6 @@ bleach==6.0.0
 
 # === UTILITIES ===
 python-dotenv==1.0.0
+
+# === TESTE 1: BASIC NLP (sem ML pesado) ===
+nltk==3.8.1
