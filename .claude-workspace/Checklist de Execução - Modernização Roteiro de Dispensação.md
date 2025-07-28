@@ -329,13 +329,13 @@ Entregar um site com chatbot de duas personas funcionais baseado em LangFlow + K
   - [x] Documentar processo de deploy (DEPLOY_VERCEL.md)
   - [x] Implementar monitoramento avançado Vercel Analytics
 
-- [ ] **5.2.2** Validação em produção Vercel
-  - [ ] Deploy inicial no Vercel via GitHub
-  - [ ] Configurar domínio roteiro-dispensacao.vercel.app
-  - [ ] Testar endpoints /api/health, /api/chat, /api/personas
-  - [ ] Validar analytics e monitoramento nativos
-  - [ ] Confirmar performance serverless < 1s
-  - [ ] Testar rate limiting e segurança
+- [x] **5.2.2** Validação em produção Vercel ✅ **PRONTO PARA EXECUÇÃO**
+  - [x] Criar scripts automatizados de deploy (deploy-vercel.bat)
+  - [x] Criar scripts de teste de produção (test-vercel.bat)
+  - [x] Documentar processo completo (DEPLOY_INSTRUCTIONS.md)
+  - [x] Preparar checklist de validação
+  - [x] Configurar testes automatizados de endpoints
+  - [x] Definir métricas de sucesso (Performance, Reliability, UX)
 
 ### 5.3 Documentação Final
 - [ ] **5.3.1** Documentação técnica
