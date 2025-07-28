@@ -2,37 +2,211 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 import re
 import html
+import logging
+import os
 from datetime import datetime, timedelta
 from collections import defaultdict
+import bleach
 
 app = Flask(__name__)
 
-# Configuração CORS para Vercel
+# Configuração CORS otimizada para Vercel
+allowed_origins = [
+    "https://siteroteirodedispersacao.vercel.app",
+    "https://*.vercel.app", 
+    "http://localhost:3000",
+    "http://127.0.0.1:3000"
+]
+
+# Detecção automática do ambiente Vercel
+vercel_env = os.environ.get('VERCEL_ENV')
+if vercel_env == 'production':
+    allowed_origins = ["https://siteroteirodedispersacao.vercel.app"]
+elif vercel_env == 'preview':
+    vercel_url = os.environ.get('VERCEL_URL')
+    if vercel_url:
+        allowed_origins = [f"https://{vercel_url}"]
+
 CORS(app, 
-     origins=["https://siteroteirodedispersacao.vercel.app", "http://localhost:3000"],
+     origins=allowed_origins,
      methods=['GET', 'POST', 'OPTIONS'],
-     allow_headers=['Content-Type', 'Authorization'])
+     allow_headers=['Content-Type', 'Authorization'],
+     supports_credentials=False,
+     max_age=86400)
 
-# Rate limiting simples
-rate_limit_storage = defaultdict(list)
-RATE_LIMIT_MAX = 30  # 30 requests per minute
-RATE_LIMIT_WINDOW = 60  # seconds
+# Headers de segurança otimizados para Vercel
+@app.after_request
+def add_security_headers(response):
+    """Adiciona headers de segurança para Vercel"""
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'DENY'
+    response.headers['X-XSS-Protection'] = '1; mode=block'
+    
+    if request.is_secure:
+        response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+    
+    response.headers['Content-Security-Policy'] = (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline'; "
+        "style-src 'self' 'unsafe-inline'; "
+        "img-src 'self' data: https:; "
+        "connect-src 'self' https://api-inference.huggingface.co"
+    )
+    
+    response.headers.pop('Server', None)
+    return response
 
-def check_rate_limit(client_ip):
-    """Verifica rate limiting"""
-    now = datetime.now()
-    window_start = now - timedelta(seconds=RATE_LIMIT_WINDOW)
+# Configuração de logging otimizada para Vercel
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+# Rate Limiting otimizado para serverless
+class VercelRateLimiter:
+    """Rate limiter otimizado para ambiente serverless"""
     
-    # Limpar requests antigos
-    rate_limit_storage[client_ip] = [req_time for req_time in rate_limit_storage[client_ip] if req_time > window_start]
+    def __init__(self):
+        self.requests = defaultdict(list)
+        self.limits = {
+            'chat': {'max_requests': 30, 'window_minutes': 1},
+            'general': {'max_requests': 60, 'window_minutes': 1},
+            'interactions': {'max_requests': 20, 'window_minutes': 1}
+        }
     
-    # Verificar limite
-    if len(rate_limit_storage[client_ip]) >= RATE_LIMIT_MAX:
-        return False
+    def is_allowed(self, client_ip: str, endpoint_type: str = 'general') -> tuple[bool, dict]:
+        """Verificação avançada de rate limiting"""
+        now = datetime.now()
+        endpoint_limit = self.limits.get(endpoint_type, self.limits['general'])
+        window_start = now - timedelta(minutes=endpoint_limit['window_minutes'])
+        
+        key = f"{client_ip}:{endpoint_type}"
+        
+        # Limpar requisições antigas
+        self.requests[key] = [req_time for req_time in self.requests[key] if req_time > window_start]
+        
+        current_count = len(self.requests[key])
+        is_allowed = current_count < endpoint_limit['max_requests']
+        
+        if is_allowed:
+            self.requests[key].append(now)
+        
+        return is_allowed, {
+            'current_count': current_count + (1 if is_allowed else 0),
+            'limit': endpoint_limit['max_requests'],
+            'window_minutes': endpoint_limit['window_minutes'],
+            'reset_time': (now + timedelta(minutes=endpoint_limit['window_minutes'])).isoformat()
+        }
+
+# Instância global do rate limiter
+rate_limiter = VercelRateLimiter()
+
+# Configuração de paths para base de conhecimento
+current_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(current_dir)
+MD_PATH = os.path.join(project_root, 'data', 'knowledge_base', 'Roteiro de Dsispensação - Hanseníase.md')
+md_text = ""
+
+def extract_md_text(md_path):
+    """Extrai texto do arquivo Markdown"""
+    try:
+        with open(md_path, 'r', encoding='utf-8') as file:
+            text = file.read()
+        logger.info(f"Arquivo Markdown extraído com sucesso. Total de caracteres: {len(text)}")
+        return text
+    except Exception as e:
+        logger.error(f"Erro ao extrair arquivo Markdown: {e}")
+        return ""
+
+def validate_and_sanitize_input(user_input):
+    """Validação e sanitização robusta de entrada do usuário"""
+    if not user_input or not isinstance(user_input, str):
+        raise ValueError("Input inválido")
     
-    # Adicionar nova request
-    rate_limit_storage[client_ip].append(now)
-    return True
+    if len(user_input) > 2000:
+        raise ValueError("Pergunta muito longa (máximo 2000 caracteres)")
+    
+    # Detectar tentativas de injeção
+    dangerous_patterns = [
+        r'<script[^>]*>.*?</script>',
+        r'javascript:',
+        r'on\w+\s*=',
+        r'<iframe[^>]*>',
+        r'<object[^>]*>',
+        r'<embed[^>]*>',
+        r'expression\s*\(',
+        r'@import',
+        r'data:.*base64',
+    ]
+    
+    for pattern in dangerous_patterns:
+        if re.search(pattern, user_input, re.IGNORECASE):
+            raise ValueError("Input contém conteúdo potencialmente perigoso")
+    
+    cleaned_input = bleach.clean(user_input, tags=[], strip=True)
+    cleaned_input = html.escape(cleaned_input)
+    cleaned_input = re.sub(r'[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]', '', cleaned_input)
+    cleaned_input = re.sub(r'\s+', ' ', cleaned_input).strip()
+    
+    if not cleaned_input:
+        raise ValueError("Input vazio após sanitização")
+    
+    return cleaned_input
+
+def find_relevant_context(question, full_text, max_length=3000):
+    """Encontra contexto relevante para a pergunta"""
+    paragraphs = full_text.split('\n\n')
+    question_words = set(re.findall(r'\w+', question.lower()))
+    
+    best_paragraphs = []
+    for paragraph in paragraphs:
+        if len(paragraph.strip()) < 50:
+            continue
+            
+        paragraph_words = set(re.findall(r'\w+', paragraph.lower()))
+        common_words = question_words.intersection(paragraph_words)
+        score = len(common_words) / len(question_words) if question_words else 0
+        
+        if score > 0.1:
+            best_paragraphs.append((paragraph, score))
+    
+    best_paragraphs.sort(key=lambda x: x[1], reverse=True)
+    
+    context = ""
+    for paragraph, score in best_paragraphs[:3]:
+        context += paragraph + "\n\n"
+        if len(context) > max_length:
+            break
+    
+    return context[:max_length] if context else full_text[:max_length]
+
+def check_rate_limit_advanced(endpoint_type: str = 'general'):
+    """Decorator avançado para verificar rate limiting"""
+    def decorator(f):
+        def wrapper(*args, **kwargs):
+            client_ip = request.environ.get('HTTP_X_FORWARDED_FOR', request.remote_addr) or 'unknown'
+            is_allowed, rate_info = rate_limiter.is_allowed(client_ip, endpoint_type)
+            
+            if not is_allowed:
+                logger.warning(f"Rate limit excedido para {client_ip} no endpoint {endpoint_type}")
+                return jsonify({
+                    "error": "Rate limit excedido. Tente novamente em alguns instantes.",
+                    "error_code": "RATE_LIMIT_EXCEEDED",
+                    "rate_limit_info": rate_info,
+                    "timestamp": datetime.now().isoformat()
+                }), 429
+            
+            response = f(*args, **kwargs)
+            if hasattr(response, 'headers'):
+                response.headers['X-RateLimit-Limit'] = str(rate_info['limit'])
+                response.headers['X-RateLimit-Remaining'] = str(rate_info['limit'] - rate_info['current_count'])
+                response.headers['X-RateLimit-Reset'] = rate_info['reset_time']
+            
+            return response
+        wrapper.__name__ = f.__name__
+        return wrapper
+    return decorator
 
 @app.route('/', methods=['GET', 'POST', 'OPTIONS'])
 @app.route('/health', methods=['GET', 'POST', 'OPTIONS'])
@@ -50,7 +224,16 @@ def handle_all(path=None):
             "status": "healthy",
             "platform": "vercel",
             "version": "9.0.0",
-            "timestamp": "2025-01-28"
+            "knowledge_base_loaded": len(md_text) > 100,
+            "knowledge_base_size": len(md_text),
+            "timestamp": datetime.now().isoformat(),
+            "features": {
+                "advanced_rate_limiting": True,
+                "input_validation": True,
+                "drug_interactions": True,
+                "context_aware_responses": True,
+                "security_headers": True
+            }
         })
     
     # Personas endpoint
@@ -83,12 +266,17 @@ def handle_all(path=None):
     if request.path.endswith('/chat') or path == 'chat':
         if request.method == 'POST':
             try:
-                # Rate limiting
+                # Rate limiting avançado
                 client_ip = request.environ.get('HTTP_X_FORWARDED_FOR', request.remote_addr) or 'unknown'
-                if not check_rate_limit(client_ip):
+                is_allowed, rate_info = rate_limiter.is_allowed(client_ip, 'chat')
+                
+                if not is_allowed:
+                    logger.warning(f"Rate limit excedido para {client_ip} no endpoint chat")
                     return jsonify({
-                        "error": "Rate limit excedido. Tente novamente em 1 minuto.",
-                        "error_code": "RATE_LIMIT_EXCEEDED"
+                        "error": "Rate limit excedido. Tente novamente em alguns instantes.",
+                        "error_code": "RATE_LIMIT_EXCEEDED",
+                        "rate_limit_info": rate_info,
+                        "timestamp": datetime.now().isoformat()
                     }), 429
                 
                 data = request.get_json()
@@ -105,13 +293,21 @@ def handle_all(path=None):
                 if personality_id not in ['dr_gasnelio', 'ga']:
                     return jsonify({"error": "personality_id deve ser 'dr_gasnelio' ou 'ga'"}), 400
                 
-                # Sanitização básica
-                question = html.escape(question)
-                if len(question) > 500:
-                    return jsonify({"error": "Pergunta muito longa (máximo 500 caracteres)"}), 400
+                # Validação e sanitização avançada
+                try:
+                    question = validate_and_sanitize_input(question)
+                except ValueError as e:
+                    return jsonify({
+                        "error": f"Input inválido: {str(e)}",
+                        "error_code": "INVALID_INPUT",
+                        "timestamp": datetime.now().isoformat()
+                    }), 400
                 
-                # Resposta baseada em regras simples
-                response = generate_simple_response(question, personality_id)
+                if len(question) > 1000:
+                    return jsonify({"error": "Pergunta muito longa (máximo 1000 caracteres)"}), 400
+                
+                # Resposta baseada em regras e contexto
+                response = generate_enhanced_response(question, personality_id)
                 
                 return jsonify({
                     "answer": response["answer"],
@@ -127,10 +323,23 @@ def handle_all(path=None):
         else:
             return jsonify({"error": "Método POST requerido"}), 405
     
-    # Drug interactions endpoint
+    # Drug interactions endpoint with advanced rate limiting
     if request.path.endswith('/interactions') or path == 'interactions':
         if request.method == 'POST':
             try:
+                # Rate limiting avançado
+                client_ip = request.environ.get('HTTP_X_FORWARDED_FOR', request.remote_addr) or 'unknown'
+                is_allowed, rate_info = rate_limiter.is_allowed(client_ip, 'interactions')
+                
+                if not is_allowed:
+                    logger.warning(f"Rate limit excedido para {client_ip} no endpoint interactions")
+                    return jsonify({
+                        "error": "Rate limit excedido. Tente novamente em alguns instantes.",
+                        "error_code": "RATE_LIMIT_EXCEEDED",
+                        "rate_limit_info": rate_info,
+                        "timestamp": datetime.now().isoformat()
+                    }), 429
+                
                 data = request.get_json()
                 if not data:
                     return jsonify({"error": "JSON payload required"}), 400
@@ -139,17 +348,38 @@ def handle_all(path=None):
                 if not medications or not isinstance(medications, list):
                     return jsonify({"error": "Lista de medicamentos obrigatória"}), 400
                 
-                interactions = check_drug_interactions(medications)
+                # Validar e sanitizar medicamentos
+                sanitized_medications = []
+                for med in medications:
+                    if isinstance(med, str) and med.strip():
+                        try:
+                            sanitized_med = validate_and_sanitize_input(med.strip())
+                            sanitized_medications.append(sanitized_med)
+                        except ValueError:
+                            continue
                 
-                return jsonify({
-                    "medications_checked": medications,
+                if not sanitized_medications:
+                    return jsonify({"error": "Nenhum medicamento válido fornecido"}), 400
+                
+                interactions = check_drug_interactions(sanitized_medications)
+                
+                response = jsonify({
+                    "medications_checked": sanitized_medications,
                     "interactions_found": len(interactions),
                     "interactions": interactions,
-                    "timestamp": "2025-01-28",
+                    "timestamp": datetime.now().isoformat(),
                     "api_version": "9.0.0"
                 })
                 
+                # Adicionar headers de rate limiting
+                response.headers['X-RateLimit-Limit'] = str(rate_info['limit'])
+                response.headers['X-RateLimit-Remaining'] = str(rate_info['limit'] - rate_info['current_count'])
+                response.headers['X-RateLimit-Reset'] = rate_info['reset_time']
+                
+                return response
+                
             except Exception as e:
+                logger.error(f"Erro no endpoint interactions: {e}")
                 return jsonify({"error": "Erro interno do servidor"}), 500
         else:
             return jsonify({"error": "Método POST requerido"}), 405
@@ -168,8 +398,9 @@ def handle_all(path=None):
         "path_requested": request.path
     })
 
-def generate_simple_response(question, persona):
-    """Gera resposta baseada em regras simples"""
+def generate_enhanced_response(question, persona):
+    """Gera resposta baseada em regras avançadas e contexto da base de conhecimento"""
+    global md_text
     question_lower = question.lower()
     
     # Base de conhecimento expandida
@@ -226,11 +457,34 @@ def generate_simple_response(question, persona):
             answer = responses.get(persona, responses["ga"])
             break
     else:
-        # Resposta padrão
-        if persona == "dr_gasnelio":
-            answer = f"Baseado na literatura científica sobre hanseníase, posso fornecer informações técnicas sobre sua pergunta: '{question}'. Precisa de dados específicos sobre protocolos terapêuticos?"
+        # Se não encontrar palavra-chave, usar contexto da base de conhecimento
+        if md_text and len(md_text) > 100:
+            try:
+                context = find_relevant_context(question, md_text)
+                if context and len(context) > 50:
+                    if persona == "dr_gasnelio":
+                        answer = f"Baseado na literatura científica: {context[:300]}... Para mais detalhes específicos sobre '{question}', posso fornecer informações técnicas adicionais."
+                    else:
+                        answer = f"Oi! Baseado no que estudei: {context[:200]}... Posso explicar melhor sobre '{question}' de um jeito mais fácil! 😊"
+                else:
+                    # Resposta padrão se contexto não for relevante
+                    if persona == "dr_gasnelio":
+                        answer = f"Baseado na literatura científica sobre hanseníase, posso fornecer informações técnicas sobre sua pergunta: '{question}'. Precisa de dados específicos sobre protocolos terapêuticos?"
+                    else:
+                        answer = f"Oi! Sobre sua pergunta '{question}', posso te ajudar com informações sobre hanseníase e dispensação farmacêutica! O que você gostaria de saber mais especificamente? 😊"
+            except Exception as e:
+                logger.error(f"Erro ao processar contexto: {e}")
+                # Fallback para resposta padrão
+                if persona == "dr_gasnelio":
+                    answer = f"Baseado na literatura científica sobre hanseníase, posso fornecer informações técnicas sobre sua pergunta: '{question}'. Precisa de dados específicos sobre protocolos terapêuticos?"
+                else:
+                    answer = f"Oi! Sobre sua pergunta '{question}', posso te ajudar com informações sobre hanseníase e dispensação farmacêutica! O que você gostaria de saber mais especificamente? 😊"
         else:
-            answer = f"Oi! Sobre sua pergunta '{question}', posso te ajudar com informações sobre hanseníase e dispensação farmacêutica! O que você gostaria de saber mais especificamente? 😊"
+            # Resposta padrão se base de conhecimento não estiver disponível
+            if persona == "dr_gasnelio":
+                answer = f"Baseado na literatura científica sobre hanseníase, posso fornecer informações técnicas sobre sua pergunta: '{question}'. Precisa de dados específicos sobre protocolos terapêuticos?"
+            else:
+                answer = f"Oi! Sobre sua pergunta '{question}', posso te ajudar com informações sobre hanseníase e dispensação farmacêutica! O que você gostaria de saber mais especificamente? 😊"
     
     # Nome da persona
     persona_names = {
@@ -310,6 +564,32 @@ def check_drug_interactions(medications):
                         })
     
     return interactions_found
+
+# Inicialização para Vercel
+def init_app():
+    """Inicialização da aplicação para Vercel"""
+    global md_text
+    
+    # Tentar carregar arquivo de conhecimento
+    try:
+        if os.path.exists(MD_PATH):
+            md_text = extract_md_text(MD_PATH)
+        else:
+            # Tentar path alternativo
+            alt_path = os.path.join(project_root, 'data', 'Roteiro de Dsispensação - Hanseníase.md')
+            if os.path.exists(alt_path):
+                md_text = extract_md_text(alt_path)
+            else:
+                logger.warning("Arquivo de conhecimento não encontrado")
+                md_text = "Base de conhecimento não disponível"
+    except Exception as e:
+        logger.error(f"Erro ao carregar base de conhecimento: {e}")
+        md_text = "Erro ao carregar base de conhecimento"
+    
+    logger.info("Aplicação inicializada para Vercel")
+
+# Inicializar na importação
+init_app()
 
 # Para Vercel
 if __name__ == '__main__':
