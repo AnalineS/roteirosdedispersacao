@@ -38,10 +38,10 @@ if flask_env == 'production' or render_service_url:
     # Usar URL do Render se disponível, senão usar padrão
     if render_service_url:
         allowed_origins = [render_service_url]
-        logger.info(f"CORS configurado para PRODUÇÃO RENDER - {render_service_url}")
+        print(f"CORS configurado para PRODUÇÃO RENDER - {render_service_url}")
     else:
         allowed_origins = ["https://roteiro-dispensacao.onrender.com"]
-        logger.info("CORS configurado para PRODUÇÃO - apenas HTTPS permitido")
+        print("CORS configurado para PRODUÇÃO - apenas HTTPS permitido")
 
 CORS(app, 
      origins=allowed_origins,
