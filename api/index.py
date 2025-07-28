@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 import re
 import html
@@ -8,24 +8,20 @@ from datetime import datetime, timedelta
 from collections import defaultdict
 import bleach
 
-app = Flask(__name__)
+# Configurar Flask para servir arquivos estáticos do frontend
+app = Flask(__name__, static_folder='../src/frontend/dist', static_url_path='')
 
-# Configuração CORS otimizada para Vercel
+# Configuração CORS otimizada para Render
 allowed_origins = [
-    "https://siteroteirodedispersacao.vercel.app",
-    "https://*.vercel.app", 
+    "https://roteiro-dispensacao.onrender.com",
     "http://localhost:3000",
     "http://127.0.0.1:3000"
 ]
 
-# Detecção automática do ambiente Vercel
-vercel_env = os.environ.get('VERCEL_ENV')
-if vercel_env == 'production':
-    allowed_origins = ["https://siteroteirodedispersacao.vercel.app"]
-elif vercel_env == 'preview':
-    vercel_url = os.environ.get('VERCEL_URL')
-    if vercel_url:
-        allowed_origins = [f"https://{vercel_url}"]
+# Detecção automática do ambiente Render
+render_env = os.environ.get('RENDER')
+if render_env:
+    allowed_origins = ["https://roteiro-dispensacao.onrender.com"]
 
 CORS(app, 
      origins=allowed_origins,
@@ -34,10 +30,10 @@ CORS(app,
      supports_credentials=False,
      max_age=86400)
 
-# Headers de segurança otimizados para Vercel
+# Headers de segurança otimizados para Render
 @app.after_request
 def add_security_headers(response):
-    """Adiciona headers de segurança para Vercel"""
+    """Adiciona headers de segurança para Render"""
     response.headers['X-Content-Type-Options'] = 'nosniff'
     response.headers['X-Frame-Options'] = 'DENY'
     response.headers['X-XSS-Protection'] = '1; mode=block'
@@ -56,7 +52,7 @@ def add_security_headers(response):
     response.headers.pop('Server', None)
     return response
 
-# Configuração de logging otimizada para Vercel
+# Configuração de logging otimizada para Render
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -64,7 +60,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Rate Limiting otimizado para serverless
-class VercelRateLimiter:
+class RenderRateLimiter:
     """Rate limiter otimizado para ambiente serverless"""
     
     def __init__(self):
@@ -100,7 +96,7 @@ class VercelRateLimiter:
         }
 
 # Instância global do rate limiter
-rate_limiter = VercelRateLimiter()
+rate_limiter = RenderRateLimiter()
 
 # Configuração de paths para base de conhecimento
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -208,21 +204,62 @@ def check_rate_limit_advanced(endpoint_type: str = 'general'):
         return wrapper
     return decorator
 
-@app.route('/', methods=['GET', 'POST', 'OPTIONS'])
+# Rota principal para servir o frontend React
+@app.route('/')
+def index():
+    """Servir o frontend React"""
+    try:
+        return send_from_directory(app.static_folder, 'index.html')
+    except:
+        # Fallback para informações da API se frontend não estiver disponível
+        return jsonify({
+            "message": "Roteiro de Dispensação API - Render",
+            "version": "6.0",
+            "status": "online",
+            "frontend_url": "https://roteiro-dispensacao.onrender.com",
+            "endpoints": {
+                "chat": "/api/chat",
+                "feedback": "/api/feedback",
+                "health": "/health",
+                "personas": "/api/personas",
+                "scope": "/api/scope",
+                "stats": "/api/stats"
+            }
+        })
+
 @app.route('/health', methods=['GET', 'POST', 'OPTIONS'])
+@app.route('/api/<path:api_path>', methods=['GET', 'POST', 'OPTIONS'])
 @app.route('/<path:path>', methods=['GET', 'POST', 'OPTIONS'])
-def handle_all(path=None):
+def handle_all(path=None, api_path=None):
     """Handle all routes"""
     
     # Handle CORS preflight
     if request.method == 'OPTIONS':
         return jsonify({}), 200
+        
+    # Se for uma rota de API, processar normalmente
+    if api_path or request.path.startswith('/api/') or request.path.startswith('/health'):
+        pass  # Continuar com o processamento da API
+    else:
+        # Se não for API, tentar servir arquivo estático do frontend
+        try:
+            # Primeiro tentar servir o arquivo solicitado
+            if path:
+                return send_from_directory(app.static_folder, path)
+            else:
+                return send_from_directory(app.static_folder, 'index.html')
+        except:
+            # Se não encontrar o arquivo, servir o index.html (SPA routing)
+            try:
+                return send_from_directory(app.static_folder, 'index.html')
+            except:
+                pass  # Continuar com processamento da API
     
     # Health check
     if request.path.endswith('/health') or path == 'health':
         return jsonify({
             "status": "healthy",
-            "platform": "vercel",
+            "platform": "render",
             "version": "9.0.0",
             "knowledge_base_loaded": len(md_text) > 100,
             "knowledge_base_size": len(md_text),
@@ -257,7 +294,7 @@ def handle_all(path=None):
                 "total_personas": 2,
                 "available_persona_ids": ["dr_gasnelio", "ga"],
                 "api_version": "9.0.0",
-                "platform": "vercel",
+                "platform": "render",
                 "timestamp": "2025-01-28"
             }
         })
@@ -386,7 +423,7 @@ def handle_all(path=None):
     
     # Default response
     return jsonify({
-        "message": "Roteiro de Dispensação API - Vercel",
+        "message": "Roteiro de Dispensação API - Render",
         "version": "9.0.0", 
         "status": "online",
         "endpoints": {
@@ -565,9 +602,9 @@ def check_drug_interactions(medications):
     
     return interactions_found
 
-# Inicialização para Vercel
+# Inicialização para Render
 def init_app():
-    """Inicialização da aplicação para Vercel"""
+    """Inicialização da aplicação para Render"""
     global md_text
     
     # Tentar carregar arquivo de conhecimento
@@ -586,11 +623,11 @@ def init_app():
         logger.error(f"Erro ao carregar base de conhecimento: {e}")
         md_text = "Erro ao carregar base de conhecimento"
     
-    logger.info("Aplicação inicializada para Vercel")
+    logger.info("Aplicação inicializada para Render")
 
 # Inicializar na importação
 init_app()
 
-# Para Vercel
+# Para Render
 if __name__ == '__main__':
     app.run()

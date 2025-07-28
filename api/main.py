@@ -21,10 +21,10 @@ backend_path = os.path.join(src_path, 'backend')
 
 sys.path.extend([project_root, src_path, backend_path])
 
-# Configuração simplificada para Vercel - sem dependências complexas
-imports_success = False  # Usar apenas funcionalidades básicas para Vercel
+# Configuração simplificada para Render - sem dependências complexas
+imports_success = False  # Usar apenas funcionalidades básicas para Render
 
-# Imports complexos comentados para deploy no Vercel
+# Imports complexos comentados para deploy no Render
 # try:
 #     from src.backend.services.dr_gasnelio_enhanced import get_enhanced_dr_gasnelio_prompt, validate_dr_gasnelio_response
 #     from src.backend.services.ga_enhanced import get_enhanced_ga_prompt, validate_ga_response
@@ -44,24 +44,20 @@ imports_success = False  # Usar apenas funcionalidades básicas para Vercel
 #     imports_success = False
 #     print(f"Warning: Some imports failed: {e}")
 
-app = Flask(__name__)
+# Configurar Flask para servir arquivos estáticos do frontend
+app = Flask(__name__, static_folder='../src/frontend/dist', static_url_path='')
 
-# Configuração CORS para Vercel
+# Configuração CORS para Render
 allowed_origins = [
-    "https://roteiro-dispensacao.vercel.app",
-    "https://*.vercel.app",
+    "https://roteiro-dispensacao.onrender.com",
     "http://localhost:3000",
     "http://127.0.0.1:3000"
 ]
 
-# Detecção automática do ambiente Vercel
-vercel_env = os.environ.get('VERCEL_ENV')
-if vercel_env == 'production':
-    allowed_origins = ["https://roteiro-dispensacao.vercel.app"]
-elif vercel_env == 'preview':
-    vercel_url = os.environ.get('VERCEL_URL')
-    if vercel_url:
-        allowed_origins = [f"https://{vercel_url}"]
+# Detecção automática do ambiente Render
+render_env = os.environ.get('RENDER')
+if render_env:
+    allowed_origins = ["https://roteiro-dispensacao.onrender.com"]
 
 CORS(app, 
      origins=allowed_origins,
@@ -70,10 +66,10 @@ CORS(app,
      supports_credentials=False,
      max_age=86400)
 
-# Headers de segurança otimizados para Vercel
+# Headers de segurança otimizados para Render
 @app.after_request
 def add_security_headers(response):
-    """Adiciona headers de segurança para Vercel"""
+    """Adiciona headers de segurança para Render"""
     response.headers['X-Content-Type-Options'] = 'nosniff'
     response.headers['X-Frame-Options'] = 'DENY'
     response.headers['X-XSS-Protection'] = '1; mode=block'
@@ -92,7 +88,7 @@ def add_security_headers(response):
     response.headers.pop('Server', None)
     return response
 
-# Configuração de logging otimizada para Vercel
+# Configuração de logging otimizada para Render
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -100,7 +96,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Rate Limiting simplificado para serverless
-class VercelRateLimiter:
+class RenderRateLimiter:
     """Rate limiter otimizado para ambiente serverless"""
     
     def __init__(self):
@@ -136,7 +132,7 @@ class VercelRateLimiter:
         }
 
 # Instância global do rate limiter
-rate_limiter = VercelRateLimiter()
+rate_limiter = RenderRateLimiter()
 
 def check_rate_limit(endpoint_type: str = 'general'):
     """Decorator para verificar rate limiting"""
@@ -267,7 +263,7 @@ def find_relevant_context(question, full_text, max_length=3000):
 
 def get_free_ai_response(question, persona, context):
     """Obtém resposta de IA com fallback"""
-    # Comentado para deploy no Vercel - usar apenas respostas baseadas em regras
+    # Comentado para deploy no Render - usar apenas respostas baseadas em regras
     return generate_rule_based_response(question, persona, context)
     
     # try:
@@ -390,26 +386,44 @@ def answer_question(question, persona):
 
 @app.route('/')
 def index():
-    """Informações da API"""
-    return jsonify({
-        "message": "Roteiro de Dispensação API - Vercel",
-        "version": "9.0.0",
-        "status": "online",
-        "platform": "Vercel Serverless",
-        "endpoints": {
-            "health": "/api/health",
-            "chat": "/api/chat",
-            "personas": "/api/personas"
-        }
-    })
+    """Servir o frontend React"""
+    try:
+        return send_from_directory(app.static_folder, 'index.html')
+    except:
+        # Fallback para informações da API se frontend não estiver disponível
+        return jsonify({
+            "message": "Roteiro de Dispensação API - Render",
+            "version": "9.0.0",
+            "status": "online",
+            "platform": "Render",
+            "endpoints": {
+                "health": "/api/health",
+                "chat": "/api/chat",
+                "personas": "/api/personas"
+            }
+        })
+
+@app.route('/<path:path>')
+def serve_frontend(path):
+    """Servir arquivos estáticos do frontend ou redirecionar para o index.html (SPA)"""
+    try:
+        # Tentar servir o arquivo solicitado
+        return send_from_directory(app.static_folder, path)
+    except:
+        # Se o arquivo não existir, servir o index.html (para roteamento SPA)
+        try:
+            return send_from_directory(app.static_folder, 'index.html')
+        except:
+            # Fallback final
+            return jsonify({"error": "Frontend não encontrado"}), 404
 
 @app.route('/api/health', methods=['GET'])
 def health_check():
-    """Health check para Vercel"""
+    """Health check para Render"""
     try:
         return jsonify({
             "status": "healthy",
-            "platform": "vercel",
+            "platform": "render",
             "version": "9.0.0",
             "knowledge_base_loaded": len(md_text) > 0,
             "timestamp": datetime.now().isoformat(),
@@ -512,7 +526,7 @@ def get_personas_api():
                 "total_personas": len(personas_data),
                 "available_persona_ids": list(personas_data.keys()),
                 "api_version": "9.0.0",
-                "platform": "vercel",
+                "platform": "render",
                 "timestamp": datetime.now().isoformat()
             }
         }), 200
@@ -524,9 +538,9 @@ def get_personas_api():
             "timestamp": datetime.now().isoformat()
         }), 500
 
-# Inicialização para Vercel
+# Inicialização para Render
 def init_app():
-    """Inicialização da aplicação para Vercel"""
+    """Inicialização da aplicação para Render"""
     global md_text
     
     # Tentar carregar arquivo de conhecimento
@@ -545,7 +559,7 @@ def init_app():
         logger.error(f"Erro ao carregar base de conhecimento: {e}")
         md_text = "Erro ao carregar base de conhecimento"
     
-    logger.info("Aplicação inicializada para Vercel")
+    logger.info("Aplicação inicializada para Render")
 
 # Inicializar na importação
 init_app()
@@ -555,6 +569,6 @@ if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
 
-# Exportar app para Vercel
-# O Vercel procura por uma variável chamada 'app' ou função handler
+# Exportar app para Render
+# O Render usa WSGI padrão com Gunicorn
 handler = app
