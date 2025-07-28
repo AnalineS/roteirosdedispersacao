@@ -23,7 +23,7 @@ openai==1.12.0
 httpx==0.25.2
 
 # === BASIC DATA PROCESSING ===
-pandas==2.0.3
+# pandas==2.0.3  # REMOVIDO: Não utilizado no codebase - usar JSON + numpy para operações matemáticas
 numpy==1.24.4
 
 # === HUGGING FACE (API only) ===

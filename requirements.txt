@@ -23,4 +23,4 @@ openai==1.12.0
 httpx==0.25.2
 
 # === TESTE 3: DATA PROCESSING ===
-pandas==2.0.3
+# pandas==2.0.3  # REMOVIDO: Não utilizado no codebase - ver análise de compatibilidade
