@@ -32,9 +32,9 @@ services:
       
       # === APIs EXTERNAS ===
       - key: HUGGINGFACE_API_KEY
-        value: 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
+        sync: false  # Configurar no dashboard do Render
       - key: OPENROUTER_API_KEY
-        value: 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
+        sync: false  # Configurar no dashboard do Render
       
       # === CONFIGURAÇÃO DE LOGS ===
       - key: LOG_LEVEL
