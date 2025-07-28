@@ -33,6 +33,15 @@ except ImportError as e:
     print(f"RAG simples indisponível: {e}")
     RAG_AVAILABLE = False
 
+# TESTE 2: Importar OpenAI client
+try:
+    from services.openai_integration import test_openai_connection, get_ai_response_mock
+    OPENAI_TEST_AVAILABLE = True
+    print("✅ OpenAI integration carregado com sucesso")
+except ImportError as e:
+    print(f"OpenAI integration indisponível: {e}")
+    OPENAI_TEST_AVAILABLE = False
+
 # Performance cache simples sem dependências externas
 class SimpleCache:
     def __init__(self):
@@ -374,7 +383,7 @@ def check_rate_limit(endpoint_type: str = 'general'):
     return decorator
 
 # Variáveis globais
-MD_PATH = 'data/Roteiro de Dsispensação - Hanseníase.md'
+MD_PATH = '../../data/Roteiro de Dsispensação - Hanseníase.md'
 md_text = ""
 
 # Usar personas do sistema otimizado
@@ -712,10 +721,16 @@ def answer_question(question, persona):
         logger.info(f"[{request_id}] Contexto otimizado obtido: {len(context)} caracteres")
         
         # Obtém resposta da IA com timeout otimizado
-        # Simplified API call without optimization
+        # API call com testes incrementais
         if ADVANCED_FEATURES:
+            # Tentar usar funcionalidades avançadas
             ai_response = get_enhanced_dr_gasnelio_prompt(question, context) if persona == 'dr_gasnelio' else get_enhanced_ga_prompt(question, context)
+        elif OPENAI_TEST_AVAILABLE:
+            # Usar integração OpenAI de teste
+            ai_response = get_ai_response_mock(question, context, persona)
+            logger.info("Usando resposta OpenAI simulada")
         else:
+            # Fallback básico
             ai_response = f"Como {persona}, posso ajudá-lo com informações sobre hanseníase baseadas no contexto disponível: {context[:200]}..."
         
         if not ai_response:
@@ -994,6 +1009,33 @@ def health_check():
     status_code = 200 if system_status == "healthy" else (503 if system_status == "unhealthy" else 200)
     
     return jsonify(health_status), status_code
+
+@app.route('/api/test-status', methods=['GET'])
+def test_status():
+    """Status dos testes incrementais"""
+    
+    openai_test = None
+    if OPENAI_TEST_AVAILABLE:
+        openai_test = test_openai_connection()
+    
+    return jsonify({
+        "test_results": {
+            "test_1_nltk": {
+                "status": "passed" if RAG_AVAILABLE else "failed",
+                "description": "NLTK + RAG simples",
+                "available": RAG_AVAILABLE
+            },
+            "test_2_openai": {
+                "status": "passed" if OPENAI_TEST_AVAILABLE else "failed", 
+                "description": "OpenAI client + HTTPx",
+                "available": OPENAI_TEST_AVAILABLE,
+                "connection_test": openai_test
+            }
+        },
+        "advanced_features": ADVANCED_FEATURES,
+        "knowledge_base_loaded": len(md_text) > 0,
+        "knowledge_base_size": len(md_text)
+    })
 
 @app.route('/api/info', methods=['GET'])
 def api_info():
