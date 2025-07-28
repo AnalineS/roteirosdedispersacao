@@ -1,12 +1,12 @@
 {
   "version": 2,
   "name": "roteiro-dispensacao",
-  "builds": [
-    {
-      "src": "api/main.py",
-      "use": "@vercel/python"
-    }
-  ],
+  // "builds": [
+  //   {
+  //     "src": "api/main.py",
+  //     "use": "@vercel/python"
+  //   }
+  // ],
   "routes": [
     {
       "src": "/api/(.*)",
@@ -24,10 +24,12 @@
       "dest": "/index.html"
     }
   ],
+  // Configuração comentada para resolver conflito builds/functions
   "functions": {
     "api/main.py": {
-      "maxDuration": 30,
-      "memory": 512
+      "runtime": "python3.9"
+      // "maxDuration": 30,
+      // "memory": 512
     }
   },
   "headers": [
