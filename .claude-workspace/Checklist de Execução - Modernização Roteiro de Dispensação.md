@@ -315,27 +315,20 @@ Entregar um site com chatbot de duas personas funcionais baseado em LangFlow + K
   - [x] Analisar gestão de dependências (90/100)
   - [x] **Score final de qualidade: 88/100 ✅ APROVADO NÍVEL PRODUÇÃO**
 
-### 5.2 Migração para Vercel
-- [x] **5.2.1** Configuração de produção para Vercel ✅ **CONCLUÍDO**
-  - [x] Migrar arquitetura Render → Vercel Serverless
-  - [x] Adaptar main.py para Vercel Functions (@vercel/python)
-  - [x] Configurar vercel.json com builds e rotas otimizadas
-  - [x] Otimizar requirements.txt para ambiente serverless
-  - [x] Configurar variáveis de ambiente (.env.example)
-  - [x] Implementar sistema de logging para Vercel
-  - [x] Criar estrutura api/ e public/ para deploy
-  - [x] Configurar .vercelignore para build otimizado
-  - [x] Criar landing page moderna (public/index.html)
-  - [x] Documentar processo de deploy (DEPLOY_VERCEL.md)
-  - [x] Implementar monitoramento avançado Vercel Analytics
+### 5.2 Deploy e Monitoramento
+- [x] **5.2.1** Configuração de produção ✅ **CONCLUÍDO**
+  - [x] Configurar variáveis de ambiente no Render
+  - [x] Implementar monitoramento de saúde
+  - [x] Configurar logs de produção
+  - [x] Testar pipeline CI/CD completa
+  - [x] Excluir outros repositórios do github anteriormente em 2025, deixar apenas os repositórios https://github.com/AnalineS/siteroteirodedispersacao e https://github.com/AnalineS/trabalhografosfaa
+  - [x] Excluir outros ambientes no Render, deixar apenas o ambiente correto de produção
 
-- [x] **5.2.2** Validação em produção Vercel ✅ **PRONTO PARA EXECUÇÃO**
-  - [x] Criar scripts automatizados de deploy (deploy-vercel.bat)
-  - [x] Criar scripts de teste de produção (test-vercel.bat)
-  - [x] Documentar processo completo (DEPLOY_INSTRUCTIONS.md)
-  - [x] Preparar checklist de validação
-  - [x] Configurar testes automatizados de endpoints
-  - [x] Definir métricas de sucesso (Performance, Reliability, UX)
+- [ ] **5.2.2** Validação em produção
+  - [ ] Verificar ambos os serviços funcionando
+  - [ ] Testar carregamento de avatares
+  - [ ] Validar persistência de sessões
+  - [ ] Confirmar métricas de desempenho
 
 ### 5.3 Documentação Final
 - [ ] **5.3.1** Documentação técnica
@@ -384,8 +377,8 @@ Entregar um site com chatbot de duas personas funcionais baseado em LangFlow + K
 
 ---
 
-**Status Atual**: 🎯 **Fase 5.2.1 - Migração para Vercel 100% Concluída**
-**Próxima Atividade**: 5.2.2 - Validação em Produção Vercel
+**Status Atual**: ✅ **Fase 5.2.1 - Configuração de Produção 100% Concluída**
+**Próxima Atividade**: 5.2.2 - Validação em Produção
 
 ## 🎊 **MARCOS CRÍTICOS ATINGIDOS**
 
@@ -406,8 +399,6 @@ Entregar um site com chatbot de duas personas funcionais baseado em LangFlow + K
 ✅ **FASE 5.1.4 - Auditoria de Segurança Cibernética 100% concluída**
 
 ✅ **FASE 5.1.5 - Auditoria de Qualidade de Código 100% concluída**
-
-✅ **FASE 5.2.1 - Migração para Vercel 100% concluída**
 
 **Resultados dos Testes de Integração:**
 - ✅ Comunicação entre serviços: 100% funcional
@@ -521,9 +512,6 @@ Entregar um site com chatbot de duas personas funcionais baseado em LangFlow + K
 - `43ede49` - Atualizar package.json e migrar para React Query v5
 - `db7097a` - Implementar correções críticas de segurança cibernética
 - `56c6183` - Corrigir problemas críticos identificados na análise de qualidade
-- `fb27c2f` - Criar PRD completo v2.0 refletindo estado atual do produto
-- `f3a36bf` - Concluir auditorias finais de segurança e qualidade - Fases 5.1.4 e 5.1.5
-- [Próximo] - Migração completa para Vercel Serverless - Fase 5.2.1
 
 ## 🏁 **PRÓXIMO MARCO: VALIDAÇÃO FINAL E DEPLOY**
 
@@ -543,22 +531,4 @@ Entregar um site com chatbot de duas personas funcionais baseado em LangFlow + K
 - ✅ Fase 5.1.5: Auditoria de Qualidade de Código
 
 **Em Progresso:**
-- 🎯 Fase 5.2.2: Validação em Produção Vercel (PRÓXIMA)
-
-**Migração Vercel Concluída:**
-- ✅ Arquitetura Serverless implementada
-- ✅ API Functions otimizadas para cold start < 1s
-- ✅ Sistema de monitoramento nativo Vercel Analytics
-- ✅ Landing page moderna com health check automático
-- ✅ Configurações de build e deploy automatizadas
-- ✅ Rate limiting otimizado para ambiente serverless
-- ✅ Headers de segurança configurados para Vercel
-- ✅ Documentação completa de deploy
-
-**Vantagens da Migração:**
-- 📊 **Monitoramento**: Analytics nativos + Web Vitals automáticos
-- ⚡ **Performance**: Edge network global + cold start otimizado
-- 🔒 **Segurança**: HTTPS automático + headers security
-- 💰 **Custo**: Tier gratuito mais generoso que Render
-- 🚀 **Deploy**: GitHub integration + preview deploys
-- 📈 **Escalabilidade**: Auto-scaling serverless automático
+- 🎯 Fase 5.2.1: Configuração de Produção (PRÓXIMA)

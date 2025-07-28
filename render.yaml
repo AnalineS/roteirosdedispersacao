@@ -1,0 +1,66 @@
+services:
+  - type: web
+    name: roteiro-dispensacao
+    env: python
+    plan: free
+    buildCommand: |
+      echo "🚀 Iniciando build otimizado para produção..."
+      pip install --no-cache-dir --upgrade pip
+      pip install --no-cache-dir -r requirements.txt
+      echo "📦 Dependências instaladas"
+      python --version
+      echo "✅ Build concluído com sucesso"
+    startCommand: |
+      echo "🚀 Iniciando aplicação em produção..."
+      cd src/backend
+      python main.py
+    healthCheckPath: /api/health
+    envVars:
+      # === CONFIGURAÇÃO GERAL ===
+      - key: FLASK_ENV
+        value: production
+      - key: FLASK_DEBUG
+        value: false
+      - key: PORT
+        value: 10000
+      
+      # === CONFIGURAÇÃO PYTHON ===
+      - key: PYTHONPATH
+        value: /opt/render/project/src:/opt/render/project/src/backend
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      
+      # === APIs EXTERNAS ===
+      - key: HUGGINGFACE_API_KEY
+        sync: false  # Configurar no dashboard do Render
+      - key: OPENROUTER_API_KEY
+        sync: false  # Configurar no dashboard do Render
+      
+      # === CONFIGURAÇÃO DE LOGS ===
+      - key: LOG_LEVEL
+        value: INFO
+      - key: LOG_FORMAT
+        value: structured
+      
+      # === CONFIGURAÇÃO DE PERFORMANCE ===
+      - key: CACHE_ENABLED
+        value: "true"
+      - key: TIMEOUT_SECONDS
+        value: "30"
+      
+      # === MONITORAMENTO ===
+      - key: HEALTH_CHECK_ENABLED
+        value: "true"
+      - key: METRICS_ENABLED
+        value: "true"
+        
+    autoDeploy: true
+    region: oregon
+    runtime: python-3.11.0
+    scaling:
+      minInstances: 1
+      maxInstances: 3
+    disk:
+      name: roteiro-data
+      mountPath: /opt/render/project/data
+      sizeGB: 1

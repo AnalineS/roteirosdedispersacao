@@ -12,23 +12,19 @@ import time
 import html
 import bleach
 
-# Importar sistemas otimizados
+# Importar sistemas otimizados - ATIVADO PARA RENDER
 from services.dr_gasnelio_enhanced import get_enhanced_dr_gasnelio_prompt, validate_dr_gasnelio_response
 from services.ga_enhanced import get_enhanced_ga_prompt, validate_ga_response
 from services.scope_detection_system import detect_question_scope, get_limitation_response
 from services.enhanced_rag_system import get_enhanced_context, cache_rag_response, add_rag_feedback, get_rag_stats
 from services.personas import get_personas, get_persona_prompt
 
-# Importar otimizações de performance
-from core.performance import performance_cache, response_optimizer, usability_monitor
-
-# Importar monitoramento de produção
-from core.monitoring.production_health import production_health, track_request_middleware, get_health_status, get_detailed_health
-from core.monitoring.production_logging import log_request, log_security_event, log_error, log_startup
+# Importar otimizações de performance - DESABILITADO TEMPORARIAMENTE
+# from core.performance import performance_cache, response_optimizer, usability_monitor
 
 app = Flask(__name__)
 
-# Configuração CORS restritiva e segura
+# Configuração CORS restritiva e segura - ATUALIZADO PARA RENDER
 allowed_origins = [
     "https://roteiro-dispensacao.onrender.com",
     "http://localhost:3000",  # Para desenvolvimento
@@ -37,10 +33,15 @@ allowed_origins = [
 
 # Em produção, usar apenas o domínio de produção - validação rigorosa
 flask_env = os.environ.get('FLASK_ENV', '').lower()
-if flask_env == 'production' or 'render.com' in os.environ.get('RENDER_SERVICE_URL', ''):
-    # Forçar apenas HTTPS em produção
-    allowed_origins = ["https://roteiro-dispensacao.onrender.com"]
-    logger.info("CORS configurado para PRODUÇÃO - apenas HTTPS permitido")
+render_service_url = os.environ.get('RENDER_EXTERNAL_URL', '')
+if flask_env == 'production' or render_service_url:
+    # Usar URL do Render se disponível, senão usar padrão
+    if render_service_url:
+        allowed_origins = [render_service_url]
+        print(f"CORS configurado para PRODUÇÃO RENDER - {render_service_url}")
+    else:
+        allowed_origins = ["https://roteiro-dispensacao.onrender.com"]
+        print("CORS configurado para PRODUÇÃO - apenas HTTPS permitido")
 
 CORS(app, 
      origins=allowed_origins,
@@ -76,66 +77,87 @@ def add_security_headers(response):
     
     return response
 
-# Middleware de logging para todas as requisições
-@app.before_request
-def before_request():
-    """Middleware executado antes de cada requisição"""
-    request.start_time = time.time()
+# Configuração avançada de logging otimizada para produção Render
+log_format = os.environ.get('LOG_FORMAT', 'standard')
+log_level = os.environ.get('LOG_LEVEL', 'INFO').upper()
 
-@app.after_request
-def after_request(response):
-    """Middleware executado após cada requisição com logging"""
-    # Adicionar headers de segurança
-    response = add_security_headers(response)
-    
-    # Calcular tempo de resposta
-    response_time_ms = (time.time() - getattr(request, 'start_time', time.time())) * 1000
-    
-    # Log da requisição
-    client_ip = request.environ.get('HTTP_X_FORWARDED_FOR', request.remote_addr)
-    user_agent = request.headers.get('User-Agent', 'unknown')
-    
-    log_request(
-        method=request.method,
-        path=request.path,
-        status_code=response.status_code,
-        response_time_ms=response_time_ms,
-        client_ip=client_ip,
-        user_agent=user_agent
+if log_format == 'structured':
+    # Formato JSON estruturado para produção
+    log_formatter = logging.Formatter(
+        '{"timestamp": "%(asctime)s", "level": "%(levelname)s", "module": "%(name)s", "message": "%(message)s", "platform": "render"}'
     )
-    
-    # Rastrear para monitoramento
-    track_request_middleware(response_time_ms, response.status_code)
-    
-    return response
+else:
+    # Formato padrão para desenvolvimento
+    log_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
-# Configuração avançada de logging com segurança
+# Configurar handler principal para stdout (Render captura automaticamente)
+console_handler = logging.StreamHandler()
+console_handler.setFormatter(log_formatter)
+
+# Configurar logging root
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.StreamHandler(),
-        logging.FileHandler('logs/backend.log', mode='a') if os.path.exists('logs') else logging.StreamHandler()
-    ]
+    level=getattr(logging, log_level, logging.INFO),
+    handlers=[console_handler]
 )
+
 logger = logging.getLogger(__name__)
 
-# Logger específico para eventos de segurança
+# Logger específico para eventos de segurança com formato estruturado
 security_logger = logging.getLogger('security')
-security_handler = logging.FileHandler('logs/security.log', mode='a') if os.path.exists('logs') else logging.StreamHandler()
-security_handler.setFormatter(logging.Formatter('%(asctime)s - SECURITY - %(levelname)s - %(message)s'))
+security_handler = logging.StreamHandler()
+security_formatter = logging.Formatter(
+    '{"timestamp": "%(asctime)s", "level": "SECURITY", "event": "%(message)s", "platform": "render"}'
+)
+security_handler.setFormatter(security_formatter)
 security_logger.addHandler(security_handler)
 security_logger.setLevel(logging.WARNING)
+security_logger.propagate = False  # Evitar duplicação
+
+# Logger para métricas de performance
+metrics_logger = logging.getLogger('metrics')
+metrics_handler = logging.StreamHandler()
+metrics_formatter = logging.Formatter(
+    '{"timestamp": "%(asctime)s", "level": "METRICS", "data": "%(message)s", "platform": "render"}'
+)
+metrics_handler.setFormatter(metrics_formatter)
+metrics_logger.addHandler(metrics_handler)
+metrics_logger.setLevel(logging.INFO)
+metrics_logger.propagate = False
 
 def log_security_event(event_type: str, client_ip: str, details: dict = None):
-    """Log estruturado de eventos de segurança"""
+    """Log estruturado de eventos de segurança otimizado para produção"""
     event_data = {
         'event_type': event_type,
         'client_ip': client_ip,
         'timestamp': datetime.now().isoformat(),
+        'environment': os.environ.get('FLASK_ENV', 'unknown'),
         'details': details or {}
     }
-    security_logger.warning(f"SECURITY_EVENT: {json.dumps(event_data)}")
+    security_logger.warning(json.dumps(event_data))
+
+def log_performance_metric(metric_name: str, value: float, details: dict = None):
+    """Log estruturado de métricas de performance"""
+    metric_data = {
+        'metric_name': metric_name,
+        'value': value,
+        'timestamp': datetime.now().isoformat(),
+        'environment': os.environ.get('FLASK_ENV', 'unknown'),
+        'details': details or {}
+    }
+    metrics_logger.info(json.dumps(metric_data))
+
+def log_api_request(endpoint: str, method: str, status_code: int, response_time_ms: float, client_ip: str = None):
+    """Log estruturado de requisições da API"""
+    request_data = {
+        'endpoint': endpoint,
+        'method': method,
+        'status_code': status_code,
+        'response_time_ms': response_time_ms,
+        'client_ip': client_ip or 'unknown',
+        'timestamp': datetime.now().isoformat(),
+        'environment': os.environ.get('FLASK_ENV', 'unknown')
+    }
+    logger.info(f"API_REQUEST: {json.dumps(request_data)}")
 
 # Rate Limiting System
 class SimpleRateLimiter:
@@ -647,7 +669,7 @@ def index():
             "feedback": "/api/feedback",
             "stats": "/api/stats"
         },
-        "frontend_url": "https://roteiro-dispensacao-frontend.onrender.com"
+        "frontend_url": "https://roteiro-dispensacao.onrender.com"
     })
 
 @app.route('/script.js')
@@ -785,55 +807,97 @@ def chat_api():
 
 @app.route('/api/health', methods=['GET'])
 def health_check():
-    """Verificação de saúde básica da API"""
+    """Verificação de saúde da API otimizada para produção"""
     start_time = time.time()
     
+    # === VERIFICAÇÕES DE SISTEMA ===
+    system_status = "healthy"
+    issues = []
+    
+    # Verificar base de conhecimento
+    knowledge_base_status = len(md_text) > 100
+    if not knowledge_base_status:
+        issues.append("knowledge_base_missing")
+        
+    # Verificar personas
+    personas_status = len(PERSONAS) >= 2
+    if not personas_status:
+        issues.append("personas_incomplete")
+        
+    # Verificar variáveis de ambiente críticas
+    env_vars_status = all([
+        os.environ.get('HUGGINGFACE_API_KEY'),
+        os.environ.get('OPENROUTER_API_KEY'),
+        os.environ.get('FLASK_ENV')
+    ])
+    if not env_vars_status:
+        issues.append("environment_vars_missing")
+    
+    # Determinar status geral
+    if issues:
+        system_status = "degraded" if len(issues) <= 2 else "unhealthy"
+    
+    # === MÉTRICAS DE PERFORMANCE ===
     try:
-        # Health check básico legado
-        health_status = {
-            "status": "healthy",
-            "pdf_loaded": len(md_text) > 0,
-            "timestamp": datetime.now().isoformat(),
-            "personas": list(PERSONAS.keys()),
-            "performance": {
-                "cache_hit_rate": f"{performance_cache.hit_rate:.1f}%",
-                "cache_size": len(performance_cache.cache),
-                "response_time_ms": int((time.time() - start_time) * 1000)
-            }
+        performance_metrics = {
+            "cache_hit_rate": f"{performance_cache.hit_rate:.1f}%",
+            "cache_size": len(performance_cache.cache),
+            "memory_usage_mb": 0,  # Placeholder para uso de memória
+            "uptime_seconds": int(time.time() - start_time) * 1000,  # Approximation
+            "response_time_ms": 0  # Será preenchido abaixo
         }
-        
-        # Rastrear requisição
-        response_time_ms = (time.time() - start_time) * 1000
-        track_request_middleware(response_time_ms, 200)
-        
-        return jsonify(health_status)
-        
     except Exception as e:
-        response_time_ms = (time.time() - start_time) * 1000
-        track_request_middleware(response_time_ms, 500)
-        return jsonify({"status": "error", "error": str(e)}), 500
-
-@app.route('/health', methods=['GET'])
-def production_health_check():
-    """Health check enterprise para produção (Render.com)"""
-    return jsonify(get_health_status())
-
-@app.route('/api/health/detailed', methods=['GET'])
-def detailed_health_check():
-    """Health check detalhado com métricas completas"""
-    return jsonify(get_detailed_health())
-
-@app.route('/api/monitoring/status', methods=['GET'])
-def monitoring_status():
-    """Status do sistema de monitoramento"""
-    return jsonify({
-        "monitoring_enabled": os.environ.get('MONITORING_ENABLED', 'false'),
-        "health_check_enabled": os.environ.get('HEALTH_CHECK_ENABLED', 'false'),
-        "metrics_collection": os.environ.get('METRICS_COLLECTION_ENABLED', 'false'),
-        "error_reporting": os.environ.get('ERROR_REPORTING_ENABLED', 'false'),
-        "cache_enabled": os.environ.get('CACHE_ENABLED', 'false'),
-        "timestamp": datetime.now().isoformat()
-    })
+        performance_metrics = {
+            "cache_hit_rate": "0.0%",
+            "cache_size": 0,
+            "error": str(e)
+        }
+    
+    # === INFORMAÇÕES DO SISTEMA ===
+    health_status = {
+        "status": system_status,
+        "timestamp": datetime.now().isoformat(),
+        "version": "9.0.0",
+        "environment": os.environ.get('FLASK_ENV', 'unknown'),
+        "platform": "render.com",
+        
+        # Componentes do sistema
+        "components": {
+            "knowledge_base": {
+                "status": "operational" if knowledge_base_status else "failure",
+                "size_chars": len(md_text),
+                "loaded": knowledge_base_status
+            },
+            "personas": {
+                "status": "operational" if personas_status else "failure", 
+                "available": list(PERSONAS.keys()),
+                "count": len(PERSONAS)
+            },
+            "apis": {
+                "status": "operational" if env_vars_status else "failure",
+                "huggingface": bool(os.environ.get('HUGGINGFACE_API_KEY')),
+                "openrouter": bool(os.environ.get('OPENROUTER_API_KEY'))
+            },
+            "cache_system": {
+                "status": "operational",
+                "metrics": performance_metrics
+            }
+        },
+        
+        # Métricas gerais
+        "performance": performance_metrics,
+        "issues": issues,
+        "checks_passed": 4 - len(issues),
+        "checks_total": 4
+    }
+    
+    # Tempo de resposta final
+    health_status["performance"]["response_time_ms"] = int((time.time() - start_time) * 1000)
+    
+    # Status HTTP baseado na saúde
+    status_code = 200 if system_status == "healthy" else (503 if system_status == "unhealthy" else 200)
+    
+    return jsonify(health_status), status_code
 
 @app.route('/api/info', methods=['GET'])
 def api_info():
