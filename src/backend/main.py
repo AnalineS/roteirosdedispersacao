@@ -365,7 +365,7 @@ def check_rate_limit(endpoint_type: str = 'general'):
     return decorator
 
 # Variáveis globais
-MD_PATH = 'data/knowledge_base/Roteiro de Dsispensação - Hanseníase.md'
+MD_PATH = 'data/Roteiro de Dsispensação - Hanseníase.md'
 md_text = ""
 
 # Usar personas do sistema otimizado
