@@ -1,15 +1,10 @@
 {
   "version": 2,
   "name": "roteiro-dispensacao",
-  "framework": null,
   "builds": [
     {
       "src": "api/main.py",
-      "use": "@vercel/python",
-      "config": {
-        "maxLambdaSize": "50mb",
-        "includeFiles": "data/**"
-      }
+      "use": "@vercel/python"
     }
   ],
   "routes": [
@@ -32,25 +27,9 @@
   "functions": {
     "api/main.py": {
       "maxDuration": 30,
-      "memory": 512,
-      "runtime": "python3.11"
+      "memory": 512
     }
   },
-  "env": {
-    "PYTHON_VERSION": "3.11",
-    "VERCEL_ENV": "@vercel-env",
-    "MONITORING_ENABLED": "true",
-    "CACHE_ENABLED": "true",
-    "HEALTH_CHECK_ENABLED": "true",
-    "METRICS_COLLECTION_ENABLED": "true",
-    "ERROR_REPORTING_ENABLED": "true"
-  },
-  "regions": ["iad1"],
-  "outputDirectory": "public",
-  "installCommand": "pip install -r requirements.txt",
-  "buildCommand": "echo 'Build completed'",
-  "devCommand": "python api/main.py",
-  "ignoreCommand": "git diff --quiet HEAD^ HEAD .",
   "headers": [
     {
       "source": "/api/(.*)",

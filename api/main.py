@@ -21,25 +21,28 @@ backend_path = os.path.join(src_path, 'backend')
 
 sys.path.extend([project_root, src_path, backend_path])
 
-# Importar sistemas otimizados
-try:
-    from src.backend.services.dr_gasnelio_enhanced import get_enhanced_dr_gasnelio_prompt, validate_dr_gasnelio_response
-    from src.backend.services.ga_enhanced import get_enhanced_ga_prompt, validate_ga_response
-    from src.backend.services.scope_detection_system import detect_question_scope, get_limitation_response
-    from src.backend.services.enhanced_rag_system import get_enhanced_context, cache_rag_response, add_rag_feedback, get_rag_stats
-    from src.backend.services.personas import get_personas, get_persona_prompt
-    
-    # Importar otimizações de performance
-    from src.backend.core.performance import performance_cache, response_optimizer, usability_monitor
-    
-    # Importar monitoramento de produção
-    from src.backend.core.monitoring.production_health import production_health, track_request_middleware, get_health_status, get_detailed_health
-    from src.backend.core.monitoring.production_logging import log_request, log_security_event, log_error, log_startup
-    
-    imports_success = True
-except ImportError as e:
-    imports_success = False
-    print(f"Warning: Some imports failed: {e}")
+# Configuração simplificada para Vercel - sem dependências complexas
+imports_success = False  # Usar apenas funcionalidades básicas para Vercel
+
+# Imports complexos comentados para deploy no Vercel
+# try:
+#     from src.backend.services.dr_gasnelio_enhanced import get_enhanced_dr_gasnelio_prompt, validate_dr_gasnelio_response
+#     from src.backend.services.ga_enhanced import get_enhanced_ga_prompt, validate_ga_response
+#     from src.backend.services.scope_detection_system import detect_question_scope, get_limitation_response
+#     from src.backend.services.enhanced_rag_system import get_enhanced_context, cache_rag_response, add_rag_feedback, get_rag_stats
+#     from src.backend.services.personas import get_personas, get_persona_prompt
+#     
+#     # Importar otimizações de performance
+#     from src.backend.core.performance import performance_cache, response_optimizer, usability_monitor
+#     
+#     # Importar monitoramento de produção
+#     from src.backend.core.monitoring.production_health import production_health, track_request_middleware, get_health_status, get_detailed_health
+#     from src.backend.core.monitoring.production_logging import log_request, log_security_event, log_error, log_startup
+#     
+#     imports_success = True
+# except ImportError as e:
+#     imports_success = False
+#     print(f"Warning: Some imports failed: {e}")
 
 app = Flask(__name__)
 
@@ -264,42 +267,45 @@ def find_relevant_context(question, full_text, max_length=3000):
 
 def get_free_ai_response(question, persona, context):
     """Obtém resposta de IA com fallback"""
-    try:
-        hf_token = os.environ.get('HUGGINGFACE_API_KEY')
-        if not hf_token:
-            return generate_rule_based_response(question, persona, context)
-            
-        api_url = "https://api-inference.huggingface.co/models/microsoft/DialoGPT-medium"
-        
-        headers = {
-            "Authorization": f"Bearer {hf_token}",
-            "Content-Type": "application/json"
-        }
-        
-        prompt = f"Contexto: {context}\n\nPergunta: {question}\n\nResposta:"
-        
-        payload = {
-            "inputs": prompt,
-            "parameters": {
-                "max_length": 500,
-                "temperature": 0.7,
-                "do_sample": True
-            }
-        }
-        
-        response = requests.post(api_url, headers=headers, json=payload, timeout=15)
-        
-        if response.status_code == 200:
-            result = response.json()
-            if isinstance(result, list) and len(result) > 0:
-                ai_response = result[0].get('generated_text', '').replace(prompt, '').strip()
-                return ai_response if ai_response else generate_rule_based_response(question, persona, context)
-        
-        return generate_rule_based_response(question, persona, context)
-        
-    except Exception as e:
-        logger.error(f"Erro ao obter resposta da API: {e}")
-        return generate_rule_based_response(question, persona, context)
+    # Comentado para deploy no Vercel - usar apenas respostas baseadas em regras
+    return generate_rule_based_response(question, persona, context)
+    
+    # try:
+    #     hf_token = os.environ.get('HUGGINGFACE_API_KEY')
+    #     if not hf_token:
+    #         return generate_rule_based_response(question, persona, context)
+    #         
+    #     api_url = "https://api-inference.huggingface.co/models/microsoft/DialoGPT-medium"
+    #     
+    #     headers = {
+    #         "Authorization": f"Bearer {hf_token}",
+    #         "Content-Type": "application/json"
+    #     }
+    #     
+    #     prompt = f"Contexto: {context}\n\nPergunta: {question}\n\nResposta:"
+    #     
+    #     payload = {
+    #         "inputs": prompt,
+    #         "parameters": {
+    #             "max_length": 500,
+    #             "temperature": 0.7,
+    #             "do_sample": True
+    #         }
+    #     }
+    #     
+    #     response = requests.post(api_url, headers=headers, json=payload, timeout=15)
+    #     
+    #     if response.status_code == 200:
+    #         result = response.json()
+    #         if isinstance(result, list) and len(result) > 0:
+    #             ai_response = result[0].get('generated_text', '').replace(prompt, '').strip()
+    #             return ai_response if ai_response else generate_rule_based_response(question, persona, context)
+    #     
+    #     return generate_rule_based_response(question, persona, context)
+    #     
+    # except Exception as e:
+    #     logger.error(f"Erro ao obter resposta da API: {e}")
+    #     return generate_rule_based_response(question, persona, context)
 
 def generate_rule_based_response(question, persona, context):
     """Gera resposta baseada em regras"""
