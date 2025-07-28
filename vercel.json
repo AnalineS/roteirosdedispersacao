@@ -1,20 +1,9 @@
 {
   "version": 2,
-  "name": "roteiro-dispensacao",
   "builds": [
     {
       "src": "api/*.py",
       "use": "@vercel/python"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/main.py"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
     }
   ]
 }
