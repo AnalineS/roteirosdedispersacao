@@ -1,6 +1,12 @@
 {
   "version": 2,
   "name": "roteiro-dispensacao",
+  "builds": [
+    {
+      "src": "api/*.py",
+      "use": "@vercel/python"
+    }
+  ],
   "headers": [
     {
       "source": "/api/(.*)",
@@ -12,16 +18,14 @@
       ]
     }
   ],
-  "redirects": [
+  "routes": [
     {
-      "source": "/health",
-      "destination": "/api/health"
-    }
-  ],
-  "rewrites": [
+      "src": "/api/(.*)",
+      "dest": "/api/main.py"
+    },
     {
-      "source": "/api/:path*",
-      "destination": "/api/main.py"
+      "src": "/health",
+      "dest": "/api/health"
     }
   ]
 }
