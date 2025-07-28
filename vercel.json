@@ -1,23 +1,6 @@
 {
   "version": 2,
   "name": "roteiro-dispensacao",
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/main.py"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/public/$1"
-    },
-    {
-      "handle": "filesystem"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
-    }
-  ],
   "functions": {
     "api/main.py": {
       "runtime": "python3.9"
