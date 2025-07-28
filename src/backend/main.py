@@ -12,19 +12,19 @@ import time
 import html
 import bleach
 
-# Importar sistemas otimizados
+# Importar sistemas otimizados - ATIVADO PARA RENDER
 from services.dr_gasnelio_enhanced import get_enhanced_dr_gasnelio_prompt, validate_dr_gasnelio_response
 from services.ga_enhanced import get_enhanced_ga_prompt, validate_ga_response
 from services.scope_detection_system import detect_question_scope, get_limitation_response
 from services.enhanced_rag_system import get_enhanced_context, cache_rag_response, add_rag_feedback, get_rag_stats
 from services.personas import get_personas, get_persona_prompt
 
-# Importar otimizações de performance
+# Importar otimizações de performance - ATIVADO PARA RENDER
 from core.performance import performance_cache, response_optimizer, usability_monitor
 
 app = Flask(__name__)
 
-# Configuração CORS restritiva e segura
+# Configuração CORS restritiva e segura - ATUALIZADO PARA RENDER
 allowed_origins = [
     "https://roteiro-dispensacao.onrender.com",
     "http://localhost:3000",  # Para desenvolvimento
@@ -33,10 +33,15 @@ allowed_origins = [
 
 # Em produção, usar apenas o domínio de produção - validação rigorosa
 flask_env = os.environ.get('FLASK_ENV', '').lower()
-if flask_env == 'production' or 'render.com' in os.environ.get('RENDER_SERVICE_URL', ''):
-    # Forçar apenas HTTPS em produção
-    allowed_origins = ["https://roteiro-dispensacao.onrender.com"]
-    logger.info("CORS configurado para PRODUÇÃO - apenas HTTPS permitido")
+render_service_url = os.environ.get('RENDER_EXTERNAL_URL', '')
+if flask_env == 'production' or render_service_url:
+    # Usar URL do Render se disponível, senão usar padrão
+    if render_service_url:
+        allowed_origins = [render_service_url]
+        logger.info(f"CORS configurado para PRODUÇÃO RENDER - {render_service_url}")
+    else:
+        allowed_origins = ["https://roteiro-dispensacao.onrender.com"]
+        logger.info("CORS configurado para PRODUÇÃO - apenas HTTPS permitido")
 
 CORS(app, 
      origins=allowed_origins,
@@ -610,7 +615,7 @@ def index():
             "feedback": "/api/feedback",
             "stats": "/api/stats"
         },
-        "frontend_url": "https://roteiro-dispensacao-frontend.onrender.com"
+        "frontend_url": "https://roteiro-dispensacao.onrender.com"
     })
 
 @app.route('/script.js')
