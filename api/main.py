@@ -550,12 +550,11 @@ def init_app():
 # Inicializar na importação
 init_app()
 
-# Handler para Vercel
-def handler(request, context):
-    """Handler principal para Vercel"""
-    return app(request, context)
-
 # Para desenvolvimento local
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
+
+# Exportar app para Vercel
+# O Vercel procura por uma variável chamada 'app' ou função handler
+handler = app
