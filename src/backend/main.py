@@ -821,16 +821,16 @@ def answer_question(question, persona):
 def find_frontend_dist():
     """Encontra o diretório dist do frontend em vários locais possíveis"""
     possible_paths = [
-        # Caminho CORRETO no Render (confirmado que existe)
+        # Caminho REAL confirmado pelos logs do Render!
+        '/opt/render/project/src/src/frontend/dist',
+        # Caminho alternativo 
         '/opt/render/project/src/frontend/dist',
-        # Caminho relativo ao script atual (backend está em src/backend, frontend em src/frontend)
+        # Caminho relativo ao script atual (backend está em src/src/backend, frontend em src/src/frontend)
         os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'frontend', 'dist'),
         # Caminhos relativos para diferentes situações
         '../frontend/dist',
         '../../src/frontend/dist',
         # Desenvolvimento local
-        'src/frontend/dist',
-        # Caminho se executado da raiz do projeto
         'src/frontend/dist'
     ]
     
@@ -854,7 +854,8 @@ def index():
         else:
             raise FileNotFoundError("Frontend não encontrado")
             
-    except FileNotFoundError:
+    except (FileNotFoundError, Exception) as e:
+        logger.error(f"Erro na função index(): {e}")
         # Se não encontrar o frontend, mostrar informações da API
         return jsonify({
             "message": "Roteiro de Dispensação API",
