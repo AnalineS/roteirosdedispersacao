@@ -62,11 +62,6 @@ services:
         
     autoDeploy: true
     region: oregon
-    runtime: python-3.11.0
-    scaling:
-      minInstances: 1
-      maxInstances: 3
-    disk:
-      name: roteiro-data
-      mountPath: /opt/render/project/data
-      sizeGB: 1
+    runtime: python-3.12
+    # Scaling removido - plano free usa apenas 1 instância
+    # Disk removido - não necessário para esta aplicação
