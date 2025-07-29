@@ -18,8 +18,9 @@ services:
       echo "✅ Build completo concluído com sucesso"
     startCommand: |
       echo "🚀 Iniciando aplicação em produção..."
-      cd src/backend
-      python main.py
+      echo "Diretório atual: $(pwd)"
+      echo "Listando conteúdo: $(ls -la)"
+      python src/backend/main.py
     healthCheckPath: /api/health
     envVars:
       # === CONFIGURAÇÃO GERAL ===
