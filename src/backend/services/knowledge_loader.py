@@ -13,7 +13,24 @@ logger = logging.getLogger(__name__)
 class StructuredKnowledgeBase:
     """Carregador e consulta de base de conhecimento estruturada"""
     
-    def __init__(self, data_path: str = "../../data/structured"):
+    def __init__(self, data_path: str = None):
+        # Detectar caminho automaticamente baseado no ambiente
+        if data_path is None:
+            # Tentar vários caminhos possíveis
+            possible_paths = [
+                "../../data/structured",  # Desenvolvimento local
+                "./data/structured",      # Render.com
+                "../data/structured",     # Alternativo
+                "data/structured"         # Raiz do projeto
+            ]
+            
+            for path in possible_paths:
+                if os.path.exists(path):
+                    data_path = path
+                    break
+            else:
+                data_path = "data/structured"  # Fallback
+        
         self.data_path = data_path
         self.knowledge_base = {}
         self.load_all_data()
@@ -21,6 +38,13 @@ class StructuredKnowledgeBase:
     def load_all_data(self):
         """Carrega todos os arquivos JSON da base estruturada"""
         try:
+            logger.info(f"🔍 Tentando carregar dados de: {self.data_path}")
+            
+            # Verificar se diretório existe
+            if not os.path.exists(self.data_path):
+                logger.warning(f"⚠️ Diretório não encontrado: {self.data_path}")
+                return
+            
             # Mapear arquivos para suas estruturas
             file_mappings = {
                 'clinical_taxonomy.json': 'clinical_taxonomy',
@@ -97,35 +121,43 @@ class StructuredKnowledgeBase:
         if not isinstance(faq_data, dict):
             return []
         
-        matches = []
-        question_lower = question.lower()
+        # Navegar na estrutura das FAQs
+        matched_faqs = []
         
-        # Buscar em categorias
-        for category, items in faq_data.items():
-            if isinstance(items, list):
-                for item in items:
-                    if isinstance(item, dict):
-                        # Buscar na pergunta e resposta
-                        item_question = item.get('question', '').lower()
-                        item_answer = item.get('answer', '').lower()
+        # Percorrer categorias de FAQ
+        for category_key, category_data in faq_data.items():
+            if category_key == 'metadata':
+                continue
+                
+            if isinstance(category_data, dict):
+                for faq_key, faq_item in category_data.items():
+                    if isinstance(faq_item, dict) and 'question' in faq_item:
+                        # Verificar correspondência
+                        question_lower = question.lower()
+                        faq_question = faq_item['question'].lower()
+                        keywords = faq_item.get('keywords', [])
                         
-                        # Calcular relevância simples
-                        question_words = set(question_lower.split())
-                        item_words = set(item_question.split() + item_answer.split())
+                        # Pontuação de relevância
+                        score = 0
                         
-                        common_words = question_words.intersection(item_words)
-                        if common_words:
-                            relevance = len(common_words) / len(question_words)
-                            matches.append({
-                                'category': category,
-                                'question': item.get('question', ''),
-                                'answer': item.get('answer', ''),
-                                'relevance': relevance
+                        # Palavras na pergunta
+                        for word in question_lower.split():
+                            if word in faq_question:
+                                score += 2
+                            if any(word in keyword for keyword in keywords):
+                                score += 1
+                        
+                        if score > 0:
+                            matched_faqs.append({
+                                'question': faq_item['question'],
+                                'answer': faq_item.get('gasnelio_answer', faq_item.get('ga_answer', 'Resposta não disponível')),
+                                'score': score,
+                                'category': category_key
                             })
         
         # Ordenar por relevância
-        matches.sort(key=lambda x: x['relevance'], reverse=True)
-        return matches[:3]  # Top 3 matches
+        matched_faqs.sort(key=lambda x: x['score'], reverse=True)
+        return matched_faqs
     
     def get_dispensing_workflow_step(self, step_name: str) -> Dict[str, Any]:
         """Obtém passo específico do workflow de dispensação"""
