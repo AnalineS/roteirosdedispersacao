@@ -17,6 +17,8 @@ services:
     healthCheckPath: /api/health
     envVars:
       # === CONFIGURAÇÃO GERAL ===
+      - key: FLASK_APP
+        value: main.py
       - key: FLASK_ENV
         value: production
       - key: FLASK_DEBUG

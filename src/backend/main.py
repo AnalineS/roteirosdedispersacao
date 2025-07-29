@@ -821,8 +821,8 @@ def answer_question(question, persona):
 def index():
     """Servir o frontend React"""
     try:
-        # Tentar servir o frontend React
-        return send_from_directory('../frontend/dist', 'index.html')
+        # Tentar servir o frontend React - Caminho corrigido para Render
+        return send_from_directory('../../src/frontend/dist', 'index.html')
     except FileNotFoundError:
         # Se não encontrar o frontend, mostrar informações da API
         return jsonify({
@@ -847,12 +847,12 @@ def index():
 def serve_react_app(path):
     """Serve arquivos estáticos do React ou retorna index.html para rotas do React Router"""
     try:
-        # Tentar servir o arquivo solicitado
-        return send_from_directory('../frontend/dist', path)
+        # Tentar servir o arquivo solicitado - Caminho corrigido para Render
+        return send_from_directory('../../src/frontend/dist', path)
     except FileNotFoundError:
         # Se não encontrar, retornar index.html para o React Router lidar
         try:
-            return send_from_directory('../frontend/dist', 'index.html')
+            return send_from_directory('../../src/frontend/dist', 'index.html')
         except FileNotFoundError:
             return "Frontend not found", 404
 
