@@ -19,9 +19,7 @@ try:
     from services.scope_detection_system import detect_question_scope, get_limitation_response
     from services.enhanced_rag_system import get_enhanced_context, cache_rag_response, add_rag_feedback, get_rag_stats
     from services.personas import get_personas, get_persona_prompt
-    from services.knowledge_loader import get_structured_knowledge_base
     ADVANCED_FEATURES = True
-    print("✅ Todos os sistemas avançados carregados com sucesso!")
 except ImportError as e:
     print(f"Advanced features disabled, using fallback: {e}")
     ADVANCED_FEATURES = False
@@ -55,29 +53,8 @@ class SimpleCache:
     def hit_rate(self):
         total = self.hits + self.misses
         return (self.hits / total * 100) if total > 0 else 0
-    
-    def get_stats(self):
-        """Retorna estatísticas do cache"""
-        return {
-            "hits": self.hits,
-            "misses": self.misses,
-            "hit_rate": self.hit_rate,
-            "total_entries": len(self.cache)
-        }
-
-# Classe para simular usability_monitor temporariamente
-class UsabilityMonitor:
-    def get_comprehensive_report(self):
-        """Retorna relatório básico de usabilidade"""
-        return {
-            "status": "operational",
-            "response_time_avg": "800ms",
-            "user_satisfaction": "85%",
-            "system_health": "good"
-        }
 
 performance_cache = SimpleCache()
-usability_monitor = UsabilityMonitor()
 
 app = Flask(__name__)
 
