@@ -416,7 +416,20 @@ def check_rate_limit(endpoint_type: str = 'general'):
     return decorator
 
 # Variáveis globais
-MD_PATH = '../../data/Roteiro de Dsispensação - Hanseníase.md'
+# Tentar múltiplos caminhos possíveis para o arquivo MD
+MD_PATHS = [
+    '../../data/Roteiro de Dsispensação - Hanseníase.md',
+    '../../data/roteiro_hanseniase_basico.md',
+    '../data/Roteiro de Dsispensação - Hanseníase.md',
+    'data/Roteiro de Dsispensação - Hanseníase.md'
+]
+MD_PATH = None
+for path in MD_PATHS:
+    if os.path.exists(path):
+        MD_PATH = path
+        break
+if not MD_PATH:
+    MD_PATH = MD_PATHS[0]  # Fallback
 md_text = ""
 
 # Usar personas do sistema otimizado
@@ -828,21 +841,7 @@ def index():
             "frontend_url": "https://roteiro-dispensacao.onrender.com"
         })
 
-@app.route('/script.js')
-def serve_script():
-    """Serve o arquivo script.js"""
-    try:
-        return send_from_directory('../frontend/dist', 'script.js')
-    except FileNotFoundError:
-        return "Script not found", 404
-
-@app.route('/tese.js')
-def serve_tese_script():
-    """Serve o arquivo tese.js"""
-    try:
-        return send_from_directory('../frontend/dist', 'tese.js')
-    except FileNotFoundError:
-        return "Tese script not found", 404
+# Rotas removidas - script.js e tese.js não existem no build React moderno
 
 @app.route('/<path:path>')
 def serve_react_app(path):
@@ -1631,6 +1630,29 @@ def generate_usability_recommendations(report):
         })
     
     return recommendations
+
+@app.route('/api/debug', methods=['GET'])
+def debug_info():
+    """Endpoint de debug para verificar estado do sistema"""
+    return jsonify({
+        "status": "debug",
+        "md_path": MD_PATH,
+        "md_loaded": bool(md_text),
+        "md_length": len(md_text) if md_text else 0,
+        "knowledge_base": {
+            "advanced_features": ADVANCED_FEATURES,
+            "cache_type": "advanced" if ADVANCED_CACHE else "simple"
+        },
+        "environment": {
+            "flask_env": os.environ.get('FLASK_ENV', 'not_set'),
+            "render": os.environ.get('RENDER', 'not_set'),
+            "port": os.environ.get('PORT', '5000')
+        },
+        "frontend_paths": {
+            "dist_exists": os.path.exists('../frontend/dist'),
+            "index_exists": os.path.exists('../frontend/dist/index.html') if os.path.exists('../frontend/dist') else False
+        }
+    })
 
 def validate_environment_variables():
     """Valida variáveis de ambiente obrigatórias"""
