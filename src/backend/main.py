@@ -44,26 +44,37 @@ except ImportError as e:
     print(f"OpenAI integration indisponível: {e}")
     OPENAI_TEST_AVAILABLE = False
 
-# Performance cache simples sem dependências externas
-class SimpleCache:
-    def __init__(self):
-        self.cache = {}
-        self.hits = 0
-        self.misses = 0
+# Importar cache avançado
+try:
+    from services.advanced_cache import PerformanceCache
+    performance_cache = PerformanceCache(max_size=1000, ttl_minutes=60)
+    ADVANCED_CACHE = True
+    print("✅ Cache avançado carregado com sucesso!")
+except ImportError as e:
+    print(f"⚠️ Cache avançado indisponível, usando fallback: {e}")
+    # Performance cache simples sem dependências externas
+    class SimpleCache:
+        def __init__(self):
+            self.cache = {}
+            self.hits = 0
+            self.misses = 0
+        
+        @property
+        def hit_rate(self):
+            total = self.hits + self.misses
+            return (self.hits / total * 100) if total > 0 else 0
+        
+        def get_stats(self):
+            """Retorna estatísticas do cache"""
+            return {
+                "hits": self.hits,
+                "misses": self.misses,
+                "hit_rate": self.hit_rate,
+                "total_entries": len(self.cache)
+            }
     
-    @property
-    def hit_rate(self):
-        total = self.hits + self.misses
-        return (self.hits / total * 100) if total > 0 else 0
-    
-    def get_stats(self):
-        """Retorna estatísticas do cache"""
-        return {
-            "hits": self.hits,
-            "misses": self.misses,
-            "hit_rate": self.hit_rate,
-            "total_entries": len(self.cache)
-        }
+    performance_cache = SimpleCache()
+    ADVANCED_CACHE = False
 
 # Classe para simular usability_monitor temporariamente
 class UsabilityMonitor:
@@ -76,7 +87,6 @@ class UsabilityMonitor:
             "system_health": "good"
         }
 
-performance_cache = SimpleCache()
 usability_monitor = UsabilityMonitor()
 
 app = Flask(__name__)
@@ -711,12 +721,18 @@ def answer_question(question, persona):
             logger.info(f"Resposta obtida do cache (hit rate: {performance_cache.hit_rate:.1f}%)")
             return cached_response
         
-        # PERFORMANCE: Tentar resposta rápida para perguntas comuns
-        quick_response = None  # Simplified - no quick response cache
-        if quick_response:
-            formatted_response = format_persona_answer(quick_response['answer'], persona, 0.95)
-            performance_cache.set(question, persona, formatted_response)
-            return formatted_response
+        # NOVA FUNCIONALIDADE: Buscar resposta na base de conhecimento estruturada
+        if ADVANCED_FEATURES:
+            try:
+                structured_kb = get_structured_knowledge_base()
+                enhanced_response = structured_kb.get_enhanced_response(question, persona)
+                if enhanced_response:
+                    logger.info("Resposta obtida da base de conhecimento estruturada")
+                    formatted_response = format_persona_answer(enhanced_response, persona, 0.95)
+                    performance_cache.set(question, persona, formatted_response)
+                    return formatted_response
+            except Exception as e:
+                logger.warning(f"Erro ao buscar na base estruturada: {e}")
         
         # NOVA FUNCIONALIDADE: Detectar escopo da pergunta
         scope_analysis = detect_question_scope(question)
