@@ -7,9 +7,15 @@ services:
       echo "🚀 Iniciando build otimizado para produção..."
       pip install --no-cache-dir --upgrade pip
       pip install --no-cache-dir -r requirements.txt
-      echo "📦 Dependências instaladas"
+      echo "📦 Dependências Python instaladas"
+      echo "🔨 Buildando frontend React..."
+      cd src/frontend
+      npm install
+      npm run build
+      echo "✅ Frontend buildado com sucesso"
+      cd ../..
       python --version
-      echo "✅ Build concluído com sucesso"
+      echo "✅ Build completo concluído com sucesso"
     startCommand: |
       echo "🚀 Iniciando aplicação em produção..."
       cd src/backend

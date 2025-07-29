@@ -821,8 +821,18 @@ def answer_question(question, persona):
 def index():
     """Servir o frontend React"""
     try:
-        # Tentar servir o frontend React - Caminho corrigido para Render
-        return send_from_directory('../../src/frontend/dist', 'index.html')
+        # Determinar caminho do frontend baseado no ambiente
+        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        frontend_dist = os.path.join(base_dir, 'src', 'frontend', 'dist')
+        
+        logger.info(f"Tentando servir frontend de: {frontend_dist}")
+        logger.info(f"Arquivo index.html existe: {os.path.exists(os.path.join(frontend_dist, 'index.html'))}")
+        
+        if os.path.exists(os.path.join(frontend_dist, 'index.html')):
+            return send_from_directory(frontend_dist, 'index.html')
+        else:
+            raise FileNotFoundError("Frontend não encontrado")
+            
     except FileNotFoundError:
         # Se não encontrar o frontend, mostrar informações da API
         return jsonify({
@@ -830,6 +840,11 @@ def index():
             "version": "v6.0",
             "status": "online",
             "frontend_status": "not_found",
+            "debug_info": {
+                "working_dir": os.getcwd(),
+                "script_dir": os.path.dirname(os.path.abspath(__file__)),
+                "expected_frontend": os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'src', 'frontend', 'dist')
+            },
             "endpoints": {
                 "health": "/health",
                 "chat": "/api/chat",
@@ -847,14 +862,33 @@ def index():
 def serve_react_app(path):
     """Serve arquivos estáticos do React ou retorna index.html para rotas do React Router"""
     try:
-        # Tentar servir o arquivo solicitado - Caminho corrigido para Render
-        return send_from_directory('../../src/frontend/dist', path)
+        # Determinar caminho do frontend baseado no ambiente
+        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        frontend_dist = os.path.join(base_dir, 'src', 'frontend', 'dist')
+        
+        # Tentar servir o arquivo solicitado
+        if os.path.exists(os.path.join(frontend_dist, path)):
+            return send_from_directory(frontend_dist, path)
+        else:
+            raise FileNotFoundError(f"Arquivo {path} não encontrado")
+            
     except FileNotFoundError:
         # Se não encontrar, retornar index.html para o React Router lidar
         try:
-            return send_from_directory('../../src/frontend/dist', 'index.html')
-        except FileNotFoundError:
-            return "Frontend not found", 404
+            base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            frontend_dist = os.path.join(base_dir, 'src', 'frontend', 'dist')
+            
+            if os.path.exists(os.path.join(frontend_dist, 'index.html')):
+                return send_from_directory(frontend_dist, 'index.html')
+            else:
+                return jsonify({
+                    "error": "Frontend not found",
+                    "path_requested": path,
+                    "frontend_dir": frontend_dist,
+                    "dir_exists": os.path.exists(frontend_dist)
+                }), 404
+        except Exception as e:
+            return f"Frontend error: {str(e)}", 404
 
 @app.route('/api/chat', methods=['POST'])
 @check_rate_limit('chat')
@@ -1680,6 +1714,27 @@ if __name__ == '__main__':
     logs_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'logs')
     if not os.path.exists(logs_dir):
         os.makedirs(logs_dir)
+    
+    # DEBUG: Informações de ambiente e estrutura de diretórios
+    logger.info("=== DEBUG: Informações de Ambiente ===")
+    logger.info(f"Diretório de trabalho atual: {os.getcwd()}")
+    logger.info(f"Localização do script: {os.path.abspath(__file__)}")
+    logger.info(f"Diretório do script: {os.path.dirname(os.path.abspath(__file__))}")
+    
+    # Verificar estrutura de diretórios
+    base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    frontend_dist = os.path.join(base_dir, 'src', 'frontend', 'dist')
+    logger.info(f"Base dir calculado: {base_dir}")
+    logger.info(f"Frontend dist esperado: {frontend_dist}")
+    logger.info(f"Frontend dist existe: {os.path.exists(frontend_dist)}")
+    
+    if os.path.exists(frontend_dist):
+        try:
+            files = os.listdir(frontend_dist)
+            logger.info(f"Arquivos no frontend dist: {files}")
+            logger.info(f"index.html existe: {os.path.exists(os.path.join(frontend_dist, 'index.html'))}")
+        except Exception as e:
+            logger.error(f"Erro ao listar frontend dist: {e}")
     
     # Validação de ambiente primeiro
     validate_environment_variables()
