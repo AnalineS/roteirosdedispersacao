@@ -818,20 +818,38 @@ def answer_question(question, persona):
         )
 
 @app.route('/')
+def find_frontend_dist():
+    """Encontra o diretório dist do frontend em vários locais possíveis"""
+    possible_paths = [
+        # Caminho esperado no Render
+        '/opt/render/project/src/frontend/dist',
+        # Caso o script esteja em local diferente
+        os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'frontend', 'dist'),
+        # Caminhos relativos
+        '../frontend/dist',
+        '../../src/frontend/dist',
+        # Caminho absoluto alternativo
+        '/opt/render/project/frontend/dist',
+        # Desenvolvimento local
+        'src/frontend/dist'
+    ]
+    
+    for path in possible_paths:
+        abs_path = os.path.abspath(path)
+        logger.info(f"Verificando caminho: {abs_path}")
+        if os.path.exists(os.path.join(abs_path, 'index.html')):
+            logger.info(f"Frontend encontrado em: {abs_path}")
+            return abs_path
+    
+    logger.error("Frontend não encontrado em nenhum dos caminhos possíveis")
+    return None
+
 def index():
     """Servir o frontend React"""
     try:
-        # Determinar caminho do frontend baseado no ambiente
-        # Script está em /opt/render/project/src/backend/main.py
-        # Frontend deve estar em /opt/render/project/src/frontend/dist
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        src_dir = os.path.dirname(script_dir)  # /opt/render/project/src
-        frontend_dist = os.path.join(src_dir, 'frontend', 'dist')
+        frontend_dist = find_frontend_dist()
         
-        logger.info(f"Tentando servir frontend de: {frontend_dist}")
-        logger.info(f"Arquivo index.html existe: {os.path.exists(os.path.join(frontend_dist, 'index.html'))}")
-        
-        if os.path.exists(os.path.join(frontend_dist, 'index.html')):
+        if frontend_dist:
             return send_from_directory(frontend_dist, 'index.html')
         else:
             raise FileNotFoundError("Frontend não encontrado")
@@ -846,8 +864,13 @@ def index():
             "debug_info": {
                 "working_dir": os.getcwd(),
                 "script_dir": os.path.dirname(os.path.abspath(__file__)),
-                "src_dir": os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-                "expected_frontend": os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'frontend', 'dist')
+                "all_possible_paths": [
+                    '/opt/render/project/src/frontend/dist',
+                    os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'frontend', 'dist'),
+                    '../frontend/dist',
+                    '../../src/frontend/dist'
+                ],
+                "frontend_search_result": find_frontend_dist()
             },
             "endpoints": {
                 "health": "/health",
@@ -866,15 +889,9 @@ def index():
 def serve_react_app(path):
     """Serve arquivos estáticos do React ou retorna index.html para rotas do React Router"""
     try:
-        # Determinar caminho do frontend baseado no ambiente
-        # Script está em /opt/render/project/src/backend/main.py
-        # Frontend deve estar em /opt/render/project/src/frontend/dist
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        src_dir = os.path.dirname(script_dir)  # /opt/render/project/src
-        frontend_dist = os.path.join(src_dir, 'frontend', 'dist')
+        frontend_dist = find_frontend_dist()
         
-        # Tentar servir o arquivo solicitado
-        if os.path.exists(os.path.join(frontend_dist, path)):
+        if frontend_dist and os.path.exists(os.path.join(frontend_dist, path)):
             return send_from_directory(frontend_dist, path)
         else:
             raise FileNotFoundError(f"Arquivo {path} não encontrado")
@@ -882,11 +899,9 @@ def serve_react_app(path):
     except FileNotFoundError:
         # Se não encontrar, retornar index.html para o React Router lidar
         try:
-            script_dir = os.path.dirname(os.path.abspath(__file__))
-            src_dir = os.path.dirname(script_dir)  # /opt/render/project/src
-            frontend_dist = os.path.join(src_dir, 'frontend', 'dist')
+            frontend_dist = find_frontend_dist()
             
-            if os.path.exists(os.path.join(frontend_dist, 'index.html')):
+            if frontend_dist:
                 return send_from_directory(frontend_dist, 'index.html')
             else:
                 return jsonify({
@@ -1729,30 +1744,50 @@ if __name__ == '__main__':
     logger.info(f"Localização do script: {os.path.abspath(__file__)}")
     logger.info(f"Diretório do script: {os.path.dirname(os.path.abspath(__file__))}")
     
-    # Verificar estrutura de diretórios
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    src_dir = os.path.dirname(script_dir)
-    frontend_dist = os.path.join(src_dir, 'frontend', 'dist')
-    logger.info(f"Script dir: {script_dir}")
-    logger.info(f"Src dir calculado: {src_dir}")
-    logger.info(f"Frontend dist esperado: {frontend_dist}")
-    logger.info(f"Diretório src existe: {os.path.exists(src_dir)}")
-    logger.info(f"Frontend dist existe: {os.path.exists(frontend_dist)}")
+    # Verificar estrutura de diretórios e procurar frontend
+    logger.info("=== PROCURANDO FRONTEND ===")
+    frontend_dist = find_frontend_dist()
     
-    if os.path.exists(src_dir):
-        try:
-            src_contents = os.listdir(src_dir)
-            logger.info(f"Conteúdo do diretório src: {src_contents}")
-        except Exception as e:
-            logger.error(f"Erro ao listar src: {e}")
-    
-    if os.path.exists(frontend_dist):
+    if frontend_dist:
+        logger.info(f"✅ Frontend encontrado em: {frontend_dist}")
         try:
             files = os.listdir(frontend_dist)
-            logger.info(f"Arquivos no frontend dist: {files}")
-            logger.info(f"index.html existe: {os.path.exists(os.path.join(frontend_dist, 'index.html'))}")
+            logger.info(f"Arquivos no frontend: {files[:10]}...")  # Primeiros 10 arquivos
         except Exception as e:
-            logger.error(f"Erro ao listar frontend dist: {e}")
+            logger.error(f"Erro ao listar frontend: {e}")
+    else:
+        logger.error("❌ Frontend NÃO encontrado")
+        
+        # Debug adicional - listar estrutura de diretórios
+        logger.info("=== ESTRUTURA DE DIRETÓRIOS ===")
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        logger.info(f"Script dir: {script_dir}")
+        
+        # Listar diretório pai do script
+        parent_dir = os.path.dirname(script_dir)
+        logger.info(f"Parent dir: {parent_dir}")
+        if os.path.exists(parent_dir):
+            try:
+                contents = os.listdir(parent_dir)
+                logger.info(f"Conteúdo parent: {contents}")
+            except Exception as e:
+                logger.error(f"Erro ao listar parent: {e}")
+        
+        # Listar /opt/render/project se existir
+        if os.path.exists('/opt/render/project'):
+            try:
+                project_contents = os.listdir('/opt/render/project')
+                logger.info(f"Conteúdo /opt/render/project: {project_contents}")
+                
+                if 'src' in project_contents:
+                    src_contents = os.listdir('/opt/render/project/src')
+                    logger.info(f"Conteúdo /opt/render/project/src: {src_contents}")
+                    
+                    if 'frontend' in src_contents:
+                        frontend_contents = os.listdir('/opt/render/project/src/frontend')
+                        logger.info(f"Conteúdo /opt/render/project/src/frontend: {frontend_contents}")
+            except Exception as e:
+                logger.error(f"Erro ao listar estrutura do projeto: {e}")
     
     # Validação de ambiente primeiro
     validate_environment_variables()
