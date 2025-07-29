@@ -11,15 +11,19 @@ services:
       echo "🔨 Buildando frontend React..."
       cd src/frontend
       npm install
+      echo "📝 Listando antes do build: $(ls -la)"
       npm run build
+      echo "📁 Verificando se dist foi criado: $(ls -la dist/ || echo 'Dist não foi criado')"
       echo "✅ Frontend buildado com sucesso"
       cd ../..
       python --version
       echo "✅ Build completo concluído com sucesso"
     startCommand: |
-      echo "🚀 Iniciando aplicação em produção..."
+      echo "🚀 Iniciando aplicação em produção - Corrigido..."
+      cd /opt/render/project
       echo "Diretório atual: $(pwd)"
       echo "Listando conteúdo: $(ls -la)"
+      echo "Verificando src/frontend/dist: $(ls -la src/frontend/dist/ || echo 'Dist não encontrado')"
       python src/backend/main.py
     healthCheckPath: /api/health
     envVars:
