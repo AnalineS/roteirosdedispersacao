@@ -206,6 +206,36 @@ class StructuredKnowledgeBase:
         """Obtém limitações de escopo do sistema"""
         return self.knowledge_base.get('scope_limitations', {})
     
+    def get_enhanced_response(self, question: str, persona: str) -> str:
+        """Gera resposta otimizada usando base estruturada"""
+        # Buscar FAQs relevantes
+        relevant_faqs = self.search_faq(question)
+        
+        if relevant_faqs:
+            # Usar primeira FAQ como resposta base
+            faq = relevant_faqs[0]
+            
+            # Adaptar para persona
+            if persona == "ga":
+                response = f"Oi! 😊\n\n{faq['answer']}\n\nEspero ter ajudado! Se tiver mais dúvidas, pode perguntar! 💝"
+            else:  # dr_gasnelio
+                response = f"**{faq['question']}**\n\n{faq['answer']}\n\n*Baseado na tese sobre roteiro de dispensação para hanseníase.*"
+            
+            return response
+        
+        # Buscar informações de medicamentos
+        medication_keywords = ['rifampicina', 'clofazimina', 'dapsona']
+        for keyword in medication_keywords:
+            if keyword in question.lower():
+                med_info = self.get_medication_info(keyword)
+                if med_info:
+                    if persona == "ga":
+                        return f"Oi! 😊\n\nSobre {keyword}: {med_info.get('description', 'Medicamento do tratamento de hanseníase')}\n\nPode ficar tranquilo(a)! 💝"
+                    else:
+                        return f"**INFORMAÇÕES TÉCNICAS - {keyword.upper()}**\n\n{med_info.get('description', 'Medicamento componente da PQT-U')}\n\n*Baseado nos protocolos da tese.*"
+        
+        return None  # Não encontrou resposta estruturada
+    
     def get_statistics(self) -> Dict[str, Any]:
         """Obtém estatísticas da base de conhecimento"""
         stats = {
