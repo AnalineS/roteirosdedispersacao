@@ -821,16 +821,16 @@ def answer_question(question, persona):
 def find_frontend_dist():
     """Encontra o diretório dist do frontend em vários locais possíveis"""
     possible_paths = [
-        # Caminho esperado no Render
+        # Caminho CORRETO no Render (confirmado que existe)
         '/opt/render/project/src/frontend/dist',
-        # Caso o script esteja em local diferente
+        # Caminho relativo ao script atual (backend está em src/backend, frontend em src/frontend)
         os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'frontend', 'dist'),
-        # Caminhos relativos
+        # Caminhos relativos para diferentes situações
         '../frontend/dist',
         '../../src/frontend/dist',
-        # Caminho absoluto alternativo
-        '/opt/render/project/frontend/dist',
         # Desenvolvimento local
+        'src/frontend/dist',
+        # Caminho se executado da raiz do projeto
         'src/frontend/dist'
     ]
     
@@ -870,7 +870,7 @@ def index():
                     '../frontend/dist',
                     '../../src/frontend/dist'
                 ],
-                "frontend_search_result": find_frontend_dist()
+                "frontend_search_result": "None - frontend not found"
             },
             "endpoints": {
                 "health": "/health",
