@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import os
 import re
@@ -806,31 +806,56 @@ def answer_question(question, persona):
 
 @app.route('/')
 def index():
-    """Informações da API - Backend puro"""
-    return jsonify({
-        "message": "Roteiro de Dispensação API",
-        "version": "v6.0",
-        "status": "online",
-        "endpoints": {
-            "health": "/health",
-            "chat": "/api/chat",
-            "personas": "/api/personas", 
-            "scope": "/api/scope",
-            "feedback": "/api/feedback",
-            "stats": "/api/stats"
-        },
-        "frontend_url": "https://roteiro-dispensacao.onrender.com"
-    })
+    """Servir o frontend React"""
+    try:
+        # Tentar servir o frontend React
+        return send_from_directory('../frontend/dist', 'index.html')
+    except FileNotFoundError:
+        # Se não encontrar o frontend, mostrar informações da API
+        return jsonify({
+            "message": "Roteiro de Dispensação API",
+            "version": "v6.0",
+            "status": "online",
+            "frontend_status": "not_found",
+            "endpoints": {
+                "health": "/health",
+                "chat": "/api/chat",
+                "personas": "/api/personas", 
+                "scope": "/api/scope",
+                "feedback": "/api/feedback",
+                "stats": "/api/stats"
+            },
+            "frontend_url": "https://roteiro-dispensacao.onrender.com"
+        })
 
 @app.route('/script.js')
 def serve_script():
     """Serve o arquivo script.js"""
-    return app.send_static_file('script.js')
+    try:
+        return send_from_directory('../frontend/dist', 'script.js')
+    except FileNotFoundError:
+        return "Script not found", 404
 
 @app.route('/tese.js')
 def serve_tese_script():
     """Serve o arquivo tese.js"""
-    return app.send_static_file('tese.js')
+    try:
+        return send_from_directory('../frontend/dist', 'tese.js')
+    except FileNotFoundError:
+        return "Tese script not found", 404
+
+@app.route('/<path:path>')
+def serve_react_app(path):
+    """Serve arquivos estáticos do React ou retorna index.html para rotas do React Router"""
+    try:
+        # Tentar servir o arquivo solicitado
+        return send_from_directory('../frontend/dist', path)
+    except FileNotFoundError:
+        # Se não encontrar, retornar index.html para o React Router lidar
+        try:
+            return send_from_directory('../frontend/dist', 'index.html')
+        except FileNotFoundError:
+            return "Frontend not found", 404
 
 @app.route('/api/chat', methods=['POST'])
 @check_rate_limit('chat')
@@ -1650,11 +1675,11 @@ if __name__ == '__main__':
     # Inicia o servidor
     port = int(os.environ.get('PORT', 5000))
     # Forçar debug=False em produção por segurança
-    debug = os.environ.get('FLASK_ENV') == 'development' and os.environ.get('FLASK_DEBUG') != 'false'
+    debug = False  # SEMPRE desativado para segurança
     
-    # Nunca ativar debug em produção
-    if os.environ.get('FLASK_ENV') == 'production':
-        debug = False
+    # Só ativar em desenvolvimento local explícito
+    if os.environ.get('FLASK_ENV') == 'development' and os.environ.get('RENDER') is None:
+        debug = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
     
     logger.info(f"Servidor iniciado na porta {port}")
     logger.info(f"Debug mode: {debug}")
