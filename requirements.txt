@@ -1,26 +1,23 @@
-# REQUIREMENTS INCREMENTAL PARA RENDER (PLANO GRATUITO)
-# Testando limites - adicionando dependências uma por vez
+# Roteiro de Dispensação - PythonAnywhere
+# Dependências otimizadas para ambiente gratuito
 
-# === CORE WEB FRAMEWORK ===
-flask==2.3.3
-flask-cors==4.0.0
-gunicorn==21.2.0
+# === CORE FLASK ===
+Flask==2.3.3
+Flask-CORS==4.0.0
 
-# === HTTP & API ===
+# === AI & ML (versões leves) ===
+openai==1.12.0
+
+# === UTILIDADES ===
+python-dotenv==1.0.0
 requests==2.31.0
 
-# === SECURITY ===
-bleach==6.0.0
-
-# === UTILITIES ===
-python-dotenv==1.0.0
-
-# === TESTE 1: BASIC NLP (APROVADO) ===
+# === PROCESSAMENTO TEXTO ===
 nltk==3.8.1
 
-# === TESTE 2: API CLIENTS (APROVADO) ===
-openai==1.12.0
-httpx==0.25.2
+# === SEGURANÇA ===
+bleach==6.0.0
 
-# === TESTE 3: DATA PROCESSING ===
-# pandas==2.0.3  # REMOVIDO: Não utilizado no codebase - ver análise de compatibilidade
+# === COMPATIBILIDADE ===
+typing-extensions==4.12.2
+Werkzeug==2.3.7

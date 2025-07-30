@@ -1,9 +1,0 @@
-{
-  "name": "roteiro-dispensacao",
-  "version": "1.0.0",
-  "description": "Sistema de roteiro de dispensação para hanseníase",
-  "scripts": {
-    "build": "echo 'Build completed'"
-  },
-  "dependencies": {}
-}

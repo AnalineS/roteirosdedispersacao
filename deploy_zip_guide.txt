@@ -1,0 +1,79 @@
+# 📦 DEPLOY PYTHONANYWHERE COM ZIP - GUIA COMPLETO
+
+## PASSO 1: CRIAR O ZIP
+Execute no CMD:
+```cmd
+cd "C:\Users\Ana\Meu Drive\Site roteiro de dispensação"
+create_deployment_zip.bat
+```
+
+Isso criará: `roteiro_dispensacao_deploy.zip`
+
+## PASSO 2: UPLOAD NO PYTHONANYWHERE
+
+### 2.1 Acesse: https://www.pythonanywhere.com/user/analines/files/home/analines
+### 2.2 Clique "Upload a file"
+### 2.3 Selecione `roteiro_dispensacao_deploy.zip`
+### 2.4 Aguarde upload completar
+
+## PASSO 3: DESCOMPACTAR NO TERMINAL
+
+### 3.1 Abra terminal: Aba "Tasks & consoles" -> "Bash console"
+### 3.2 Execute comandos:
+
+```bash
+# Ir para diretório home
+cd ~/
+
+# Descompactar ZIP
+unzip roteiro_dispensacao_deploy.zip -d mysite/
+
+# Verificar arquivos
+ls -la mysite/
+
+# Instalar dependências
+cd mysite
+pip3.10 install --user -r requirements.txt
+```
+
+## PASSO 4: CONFIGURAR WEB APP
+
+### 4.1 Na aba "Web" -> "Add a new web app"
+### 4.2 Manual configuration -> Python 3.10
+### 4.3 Source code: `/home/analines/mysite`
+### 4.4 WSGI file: `/var/www/analines_pythonanywhere_com_wsgi.py`
+
+### 4.5 Editar arquivo WSGI (substituir todo conteúdo):
+```python
+import sys
+import os
+
+# Configurar chave API (IMPORTANTE!)
+os.environ['OPENAI_API_KEY'] = 'SUA_CHAVE_OPENAI_AQUI'
+os.environ['FLASK_ENV'] = 'production'
+
+project_home = '/home/analines/mysite'
+if project_home not in sys.path:
+    sys.path = [project_home] + sys.path
+
+sys.path.append(os.path.join(project_home, 'src'))
+
+from src.backend.main import app as application
+
+if __name__ == "__main__":
+    application.run()
+```
+
+## PASSO 5: ATIVAR
+
+### 5.1 Salvar arquivo WSGI
+### 5.2 Voltar aba "Web" -> "Reload analines.pythonanywhere.com"
+### 5.3 Acessar: https://analines.pythonanywhere.com
+
+## 🎯 RESULTADO:
+Site funcionando 24/7 em: https://analines.pythonanywhere.com
+
+## ⚠️ IMPORTANTE:
+- Lembre de colocar sua chave OpenAI no arquivo WSGI
+- Se der erro, verificar logs na aba "Web" -> "Error log"
+- Arquivos ficam em /home/analines/mysite/
