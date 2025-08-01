@@ -80,7 +80,7 @@ const HeroSection: React.FC = () => {
             >
               <Link
                 to="/chat"
-                className="inline-flex items-center justify-center px-8 py-4 bg-primary-600 text-white font-semibold rounded-xl hover:bg-primary-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 focus-visible-ring"
+                className="btn-medical-primary px-8 py-4 font-semibold rounded-xl focus-visible-ring"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
@@ -95,7 +95,7 @@ const HeroSection: React.FC = () => {
 
               <Link
                 to="/about"
-                className="inline-flex items-center justify-center px-8 py-4 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-semibold rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 shadow-sm hover:shadow-md focus-visible-ring"
+                className="inline-flex items-center justify-center px-8 py-4 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-semibold rounded-xl border border-primary-200 dark:border-primary-700 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:border-primary-300 dark:hover:border-primary-600 transition-all duration-200 shadow-sm hover:shadow-md focus-visible-ring"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
@@ -143,11 +143,11 @@ const HeroSection: React.FC = () => {
           >
             <div className="relative">
               {/* Main illustration container */}
-              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 glass">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 glass-medical">
                 {/* Chat interface mockup */}
                 <div className="space-y-4">
                   <div className="flex items-center space-x-3 mb-6">
-                    <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-full flex items-center justify-center">
+                    <div className="w-10 h-10 bg-medical-primary rounded-full flex items-center justify-center">
                       <span className="text-white font-bold text-sm">Dr</span>
                     </div>
                     <div>

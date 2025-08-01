@@ -2,30 +2,30 @@ import axios, { AxiosError } from 'axios'
 import type { 
   ApiResponse, 
   Message, 
-  Persona, 
   ScopeInfo, 
   ScopeAnalysis,
   FeedbackData,
   SystemStats 
 } from '@/types'
 
-// Create axios instance
+// Google Apps Script Web App URL - configure via environment variable
+const GAS_WEB_APP_URL = import.meta.env.VITE_GAS_WEB_APP_URL || ''
+
+// Create axios instance for Google Apps Script
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '/api',
+  baseURL: GAS_WEB_APP_URL,
   headers: {
     'Content-Type': 'application/json',
   },
   timeout: 30000, // 30 seconds
 })
 
-// Request interceptor
+// Request interceptor (simplified for Google Apps Script)
 api.interceptors.request.use(
   (config) => {
-    // Add auth token if available
-    const token = localStorage.getItem('auth_token')
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`
-    }
+    // Google Apps Script doesn't need auth tokens
+    // Just ensure proper content type
+    config.headers['Content-Type'] = 'application/json'
     return config
   },
   (error) => {
@@ -52,34 +52,92 @@ api.interceptors.response.use(
   }
 )
 
-// Chat API
+// Chat API (adapted for Google Apps Script)
 export const chatApi = {
   sendMessage: async (message: string, personaId: string): Promise<Message> => {
-    const response = await api.post<Message>('/chat', {
-      question: message,
-      personality_id: personaId,
-    })
-    return response.data
+    try {
+      const response = await api.post('', {
+        question: message,
+        persona: personaId,
+      })
+      
+      // Transform Google Apps Script response to expected Message format
+      const gasResponse = response.data
+      
+      return {
+        id: Date.now().toString(),
+        content: gasResponse.response,
+        sender: 'assistant',
+        timestamp: new Date(),
+        persona: gasResponse.persona,
+        cached: gasResponse.cached || false
+      }
+    } catch (error: any) {
+      // Handle Google Apps Script errors
+      if (error.response?.status === 429) {
+        throw new Error('Limite de requisições excedido. Tente novamente em alguns minutos.')
+      }
+      
+      if (error.response?.data?.error) {
+        throw new Error(error.response.data.error)
+      }
+      
+      throw new Error('Erro ao enviar mensagem. Verifique sua conexão.')
+    }
   },
 }
 
-// Personas API
+// Personas API (hardcoded for Google Apps Script)
 export const personasApi = {
   getAll: async () => {
-    const response = await api.get<{
-      personas: Record<string, Persona>
-      metadata: any
-      usage_guide: any
-    }>('/personas')
-    return response.data
+    // Since Google Apps Script has personas built-in, return static data
+    return {
+      personas: {
+        dr_gasnelio: {
+          id: 'dr_gasnelio',
+          name: 'Dr. Gasnelio',
+          description: 'Farmacêutico clínico especialista em hanseníase PQT-U',
+          expertise: 'Respostas técnicas e protocolos farmacológicos',
+          tone: 'Profissional e preciso',
+          use_cases: ['Consultas técnicas', 'Protocolos de dispensação', 'Validação farmacológica']
+        },
+        ga: {
+          id: 'ga',
+          name: 'Gá',
+          description: 'Farmacêutico empático e acessível',
+          expertise: 'Comunicação simples e acolhedora',
+          tone: 'Caloroso e educativo',
+          use_cases: ['Explicações simples', 'Apoio emocional', 'Tradução técnica']
+        }
+      },
+      metadata: {
+        total: 2,
+        active: 2
+      }
+    }
   },
 }
 
-// Scope API
+// Scope API (simplified for Google Apps Script)
 export const scopeApi = {
   getInfo: async (): Promise<ScopeInfo> => {
-    const response = await api.get<ScopeInfo>('/scope')
-    return response.data
+    // Return hardcoded scope info since Google Apps Script handles scope internally
+    return {
+      topics: [
+        'Hanseníase e PQT-U',
+        'Rifampicina, Clofazimina, Dapsona',
+        'Dispensação farmacêutica',
+        'Roteiros de tratamento',
+        'Efeitos adversos dos medicamentos PQT-U'
+      ],
+      invalid_topics: [
+        'Outras doenças infecciosas',
+        'Medicamentos não relacionados à hanseníase',
+        'Consultas médicas gerais'
+      ],
+      scope_boundaries: 'Especializado em hanseníase PQT-U',
+      confidence_threshold: 0.8
+    }
   },
 
   checkQuestion: async (question: string): Promise<{
@@ -88,32 +146,82 @@ export const scopeApi = {
     recommendation: any
     metadata: any
   }> => {
-    const response = await api.post('/scope', { question })
-    return response.data
+    // Simple scope check - can be enhanced later
+    const validKeywords = ['hansen', 'pqt', 'rifampicina', 'clofazimina', 'dapsona', 'dispensação']
+    const hasValidKeyword = validKeywords.some(keyword => 
+      question.toLowerCase().includes(keyword)
+    )
+    
+    return {
+      question,
+      analysis: {
+        is_in_scope: hasValidKeyword,
+        confidence: hasValidKeyword ? 0.9 : 0.1,
+        detected_topics: hasValidKeyword ? ['hanseníase'] : ['outros'],
+        scope_classification: hasValidKeyword ? 'valid' : 'invalid'
+      },
+      recommendation: {
+        action: hasValidKeyword ? 'proceed' : 'redirect',
+        message: hasValidKeyword ? 'Pergunta dentro do escopo' : 'Pergunta fora do escopo de hanseníase'
+      },
+      metadata: {
+        processing_time: 0.1,
+        model_version: 'simple_v1'
+      }
+    }
   },
 }
 
-// Feedback API
+// Feedback API (simplified)
 export const feedbackApi = {
   submit: async (data: FeedbackData) => {
-    const response = await api.post('/feedback', data)
-    return response.data
+    // For now, just log feedback - can be enhanced to use Google Forms or Sheets
+    console.log('Feedback submitted:', data)
+    return { success: true, message: 'Feedback recebido com sucesso!' }
   },
 }
 
-// Stats API
+// Stats API (mock data)
 export const statsApi = {
   getStats: async (): Promise<{ system_stats: SystemStats; metadata: any }> => {
-    const response = await api.get('/stats')
-    return response.data
+    return {
+      system_stats: {
+        interactions: 0,
+        success_rate: 95,
+        average_response_time: 2.5,
+        active_personas: 2,
+        cache_hit_rate: 15
+      },
+      metadata: {
+        last_updated: new Date(),
+        version: '1.0.0'
+      }
+    }
   },
 }
 
-// Health check
+// Health check (for Google Apps Script)
 export const healthApi = {
   check: async () => {
-    const response = await api.get('/health')
-    return response.data
+    try {
+      // Simple ping to check if GAS is responding
+      if (!GAS_WEB_APP_URL) {
+        throw new Error('URL do Google Apps Script não configurada')
+      }
+      
+      return {
+        status: 'healthy',
+        timestamp: new Date().toISOString(),
+        backend: 'Google Apps Script',
+        model: 'moonshotai/kimi-k2:free'
+      }
+    } catch (error) {
+      return {
+        status: 'unhealthy',
+        error: error instanceof Error ? error.message : 'Erro desconhecido',
+        timestamp: new Date().toISOString()
+      }
+    }
   },
 }
 

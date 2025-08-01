@@ -23,28 +23,30 @@ const PersonaCard: React.FC<PersonaCardProps> = ({
 
   return (
     <motion.div
-      className={`card-hover p-6 cursor-pointer transition-all duration-300 ${
+      className={`card-medical hover-lift p-6 cursor-pointer transition-all duration-300 ${
         isSelected 
-          ? 'ring-2 ring-primary-500 bg-primary-50 dark:bg-primary-900/20' 
-          : ''
+          ? 'ring-2 ring-primary-500 bg-primary-50 dark:bg-primary-900/20 shadow-glow' 
+          : 'hover:shadow-primary-500/15'
       }`}
       onClick={onSelect}
       onKeyDown={handleKeyPress}
-      whileHover={{ y: -4 }}
+      whileHover={{ y: -6, scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
       role="button"
       tabIndex={0}
       aria-pressed={isSelected}
       aria-label={`Selecionar ${persona.name} - ${persona.role || 'Assistente'}`}
-      aria-describedby={`persona-desc-${persona.id || persona.name.toLowerCase()}`}
+      aria-describedby={`persona-desc-${persona.id || persona.name?.toLowerCase() || 'persona'}`}
     >
       {/* Avatar */}
-      <div 
-        className="flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-primary-500 to-secondary-500 text-white font-bold text-xl mb-4 mx-auto"
+      <motion.div 
+        className="flex items-center justify-center w-16 h-16 rounded-full bg-medical-primary text-white font-bold text-xl mb-4 mx-auto shadow-lg"
         aria-hidden="true"
+        whileHover={{ scale: 1.1, rotate: 5 }}
+        transition={{ type: "spring", stiffness: 300 }}
       >
-        {persona.avatar || persona.name.charAt(0)}
-      </div>
+        {persona.avatar || persona.name?.charAt(0) || '?'}
+      </motion.div>
 
       {/* Name and Role */}
       <div className="text-center mb-4">
@@ -61,7 +63,7 @@ const PersonaCard: React.FC<PersonaCardProps> = ({
       {/* Description */}
       <p 
         className="text-gray-600 dark:text-gray-400 text-sm text-center mb-6 leading-relaxed"
-        id={`persona-desc-${persona.id || persona.name.toLowerCase()}`}
+        id={`persona-desc-${persona.id || persona.name?.toLowerCase() || 'persona'}`}
       >
         {persona.description}
       </p>
@@ -111,17 +113,17 @@ const PersonaCard: React.FC<PersonaCardProps> = ({
 
       {/* Action Button */}
       <motion.button
-        className={`w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 ${
+        className={`w-full py-3 px-4 rounded-lg font-medium transition-all duration-300 focus-ring-offset ${
           isSelected
-            ? 'bg-primary-600 text-white'
-            : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-primary-100 dark:hover:bg-primary-900/20 hover:text-primary-700 dark:hover:text-primary-300'
+            ? 'btn-primary text-white shadow-lg'
+            : 'btn-secondary hover:btn-glass'
         }`}
-        whileHover={{ scale: 1.02 }}
+        whileHover={{ scale: 1.02, y: -2 }}
         whileTap={{ scale: 0.98 }}
         aria-label={`${isSelected ? 'Já selecionado' : 'Iniciar conversa com'} ${persona.name}`}
         aria-pressed={isSelected}
       >
-        {isSelected ? 'Selecionado' : 'Conversar'}
+        {isSelected ? '✓ Selecionado' : 'Conversar'}
       </motion.button>
 
       {/* Greeting Preview */}

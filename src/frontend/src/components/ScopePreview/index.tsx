@@ -90,7 +90,7 @@ const ScopePreview: React.FC<ScopePreviewProps> = ({ onClose }) => {
                       Níveis de confiança:
                     </p>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs">
-                      {Object.entries(scopeData.confidence_levels).map(([level, description]) => (
+                      {Object.entries(scopeData.confidence_levels || {}).map(([level, description]) => (
                         <div
                           key={level}
                           className="flex items-center space-x-2 bg-white dark:bg-gray-800 rounded px-2 py-1"

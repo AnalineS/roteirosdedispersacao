@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useChat } from '@hooks/useChat'
@@ -6,6 +6,7 @@ import PersonaCard from '@components/PersonaCard'
 import HeroSection from '@components/HeroSection'
 import FeatureSection from '@components/FeatureSection'
 import StatsSection from '@components/StatsSection'
+import ColorSchemePreview from '@components/ColorSchemePreview'
 import { 
   ChatBubbleLeftRightIcon,
   BookOpenIcon,
@@ -15,6 +16,7 @@ import {
 
 const HomePage: React.FC = () => {
   const { personas, isPersonasLoading, setSelectedPersona } = useChat()
+  const [showColorPreview, setShowColorPreview] = useState(false)
 
   const features = [
     {
@@ -123,16 +125,35 @@ const HomePage: React.FC = () => {
               Inicie uma conversa com nossos especialistas virtuais e obtenha 
               orientações precisas sobre dispensação de medicamentos.
             </p>
-            <Link
-              to="/chat"
-              className="inline-flex items-center px-8 py-4 bg-white text-primary-600 font-semibold rounded-xl hover:bg-gray-50 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
-            >
-              <ChatBubbleLeftRightIcon className="w-5 h-5 mr-2" />
-              Iniciar Chat
-            </Link>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Link
+                to="/chat"
+                className="inline-flex items-center justify-center px-8 py-4 bg-white text-primary-600 font-semibold rounded-xl hover:bg-gray-50 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+              >
+                <ChatBubbleLeftRightIcon className="w-5 h-5 mr-2" />
+                Iniciar Chat
+              </Link>
+              <button
+                onClick={() => setShowColorPreview(true)}
+                className="inline-flex items-center justify-center px-6 py-4 bg-white/20 text-white font-medium rounded-xl hover:bg-white/30 transition-all duration-200 backdrop-blur-sm border border-white/20"
+              >
+                Ver Esquemas de Cores
+              </button>
+            </div>
           </motion.div>
         </div>
       </section>
+
+      {/* Color Scheme Preview Modal */}
+      {showColorPreview && (
+        <ColorSchemePreview
+          onClose={() => setShowColorPreview(false)}
+          onSelect={(schemeId) => {
+            console.log('Esquema selecionado:', schemeId)
+            // Aqui você pode implementar a lógica para aplicar o esquema
+          }}
+        />
+      )}
     </div>
   )
 }

@@ -42,12 +42,14 @@ export interface ResponseFormat {
 // Chat Types
 export interface Message {
   id: string
-  role: 'user' | 'assistant' | 'system'
+  role?: 'user' | 'assistant' | 'system'
   content: string
   timestamp: Date
   persona?: string
   confidence?: number
   metadata?: MessageMetadata
+  sender?: 'user' | 'assistant' | 'system'
+  cached?: boolean
 }
 
 export interface MessageMetadata {
@@ -60,22 +62,29 @@ export interface MessageMetadata {
 // Scope Types
 export interface ScopeAnalysis {
   is_in_scope: boolean
-  confidence_level: 'high' | 'medium' | 'low'
-  category: string
-  scope_score: number
-  reasoning: string
+  confidence_level?: 'high' | 'medium' | 'low'
+  category?: string
+  scope_score?: number
+  reasoning?: string
   redirect_suggestion?: string
+  confidence?: number
+  detected_topics?: string[]
+  scope_classification?: string
 }
 
 export interface ScopeInfo {
-  knowledge_scope: {
+  knowledge_scope?: {
     primary_focus: string
     source: string
     covered_topics: Record<string, string[]>
     explicitly_not_covered: string[]
   }
-  confidence_levels: Record<string, string>
-  metadata: ApiMetadata
+  confidence_levels?: Record<string, string>
+  metadata?: ApiMetadata
+  topics?: string[]
+  invalid_topics?: string[]
+  scope_boundaries?: string
+  confidence_threshold?: number
 }
 
 // Feedback Types
@@ -88,7 +97,7 @@ export interface FeedbackData {
 
 // Stats Types
 export interface SystemStats {
-  rag_system: {
+  rag_system?: {
     total_feedback: number
     average_rating: number
     rating_distribution: Record<number, number>
@@ -97,17 +106,22 @@ export interface SystemStats {
       max_cache_size: number
     }
   }
-  rate_limiter: {
+  rate_limiter?: {
     active_ips: number
     total_endpoints: number
     limits_configured: Record<string, any>
   }
-  application: {
+  application?: {
     api_version: string
     uptime_info: string
     available_personas: string[]
     knowledge_base_loaded: boolean
   }
+  interactions?: number
+  success_rate?: number
+  average_response_time?: number
+  active_personas?: number
+  cache_hit_rate?: number
 }
 
 // Common Types

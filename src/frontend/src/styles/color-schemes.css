@@ -1,0 +1,286 @@
+/* ============================================
+   ESQUEMAS DE CORES PROFISSIONAIS
+   Para sistema médico/farmacêutico de hanseníase
+   ============================================ */
+
+/* ============================================
+   ESQUEMA 1: CONFIÁVEL E TRADICIONAL
+   Azul médico clássico + Verde terapêutico
+   Transmite confiança e autoridade médica
+   ============================================ */
+:root[data-color-scheme="traditional"] {
+  /* Cores primárias - Azul médico profissional */
+  --color-primary-50: #eff8ff;
+  --color-primary-100: #dbeafe;
+  --color-primary-200: #bfdbfe;
+  --color-primary-300: #93c5fd;
+  --color-primary-400: #60a5fa;
+  --color-primary-500: #2563eb; /* Azul médico principal */
+  --color-primary-600: #1d4ed8;
+  --color-primary-700: #1e40af;
+  --color-primary-800: #1e3a8a;
+  --color-primary-900: #1e3a8a;
+  --color-primary-950: #172554;
+
+  /* Cores secundárias - Verde terapêutico */
+  --color-secondary-50: #f0fdf4;
+  --color-secondary-100: #dcfce7;
+  --color-secondary-200: #bbf7d0;
+  --color-secondary-300: #86efac;
+  --color-secondary-400: #4ade80;
+  --color-secondary-500: #22c55e; /* Verde saúde */
+  --color-secondary-600: #16a34a;
+  --color-secondary-700: #15803d;
+  --color-secondary-800: #166534;
+  --color-secondary-900: #14532d;
+
+  /* Cores de apoio */
+  --color-accent: #0ea5e9; /* Azul ciano médico */
+  --color-warning: #f59e0b; /* Amarelo âmbar para alertas */
+  --color-success: #10b981; /* Verde esmeralda para sucesso */
+  --color-error: #ef4444; /* Vermelho médico para erros */
+}
+
+/* ============================================
+   ESQUEMA 2: MODERNO E TECNOLÓGICO
+   Violeta inovação + Ciano tecnológico
+   Transmite modernidade e inovação
+   ============================================ */
+:root[data-color-scheme="modern"] {
+  /* Cores primárias - Violeta inovação */
+  --color-primary-50: #faf5ff;
+  --color-primary-100: #f3e8ff;
+  --color-primary-200: #e9d5ff;
+  --color-primary-300: #d8b4fe;
+  --color-primary-400: #c084fc;
+  --color-primary-500: #8b5cf6; /* Violeta principal */
+  --color-primary-600: #7c3aed;
+  --color-primary-700: #6d28d9;
+  --color-primary-800: #5b21b6;
+  --color-primary-900: #4c1d95;
+  --color-primary-950: #2e1065;
+
+  /* Cores secundárias - Ciano tecnológico */
+  --color-secondary-50: #ecfeff;
+  --color-secondary-100: #cffafe;
+  --color-secondary-200: #a5f3fc;
+  --color-secondary-300: #67e8f9;
+  --color-secondary-400: #22d3ee;
+  --color-secondary-500: #06b6d4; /* Ciano principal */
+  --color-secondary-600: #0891b2;
+  --color-secondary-700: #0e7490;
+  --color-secondary-800: #155e75;
+  --color-secondary-900: #164e63;
+
+  /* Cores de apoio */
+  --color-accent: #3b82f6; /* Azul tech */
+  --color-warning: #f97316; /* Laranja vibrante */
+  --color-success: #059669; /* Verde tech */
+  --color-error: #dc2626; /* Vermelho tech */
+}
+
+/* ============================================
+   ESQUEMA 3: ACESSÍVEL E AMIGÁVEL
+   Verde calmo + Azul oceano
+   Transmite calma e acessibilidade
+   ============================================ */
+:root[data-color-scheme="accessible"] {
+  /* Cores primárias - Verde calmo e terapêutico */
+  --color-primary-50: #f0fdfa;
+  --color-primary-100: #ccfbf1;
+  --color-primary-200: #99f6e4;
+  --color-primary-300: #5eead4;
+  --color-primary-400: #2dd4bf;
+  --color-primary-500: #14b8a6; /* Verde-água principal */
+  --color-primary-600: #0d9488;
+  --color-primary-700: #0f766e;
+  --color-primary-800: #115e59;
+  --color-primary-900: #134e4a;
+  --color-primary-950: #042f2e;
+
+  /* Cores secundárias - Azul oceano tranquilo */
+  --color-secondary-50: #f0f9ff;
+  --color-secondary-100: #e0f2fe;
+  --color-secondary-200: #bae6fd;
+  --color-secondary-300: #7dd3fc;
+  --color-secondary-400: #38bdf8;
+  --color-secondary-500: #0ea5e9; /* Azul oceano */
+  --color-secondary-600: #0284c7;
+  --color-secondary-700: #0369a1;
+  --color-secondary-800: #075985;
+  --color-secondary-900: #0c4a6e;
+
+  /* Cores de apoio */
+  --color-accent: #06b6d4; /* Ciano suave */
+  --color-warning: #eab308; /* Amarelo acessível */
+  --color-success: #16a34a; /* Verde natural */
+  --color-error: #dc2626; /* Vermelho acessível */
+}
+
+/* ============================================
+   APLICAÇÃO DOS ESQUEMAS - CLASSES UTILITÁRIAS
+   ============================================ */
+
+/* Esquema Tradicional */
+.scheme-traditional {
+  --tw-color-primary-50: var(--color-primary-50);
+  --tw-color-primary-500: var(--color-primary-500);
+  --tw-color-primary-600: var(--color-primary-600);
+  --tw-color-secondary-500: var(--color-secondary-500);
+}
+
+/* Esquema Moderno */
+.scheme-modern {
+  --tw-color-primary-50: var(--color-primary-50);
+  --tw-color-primary-500: var(--color-primary-500);
+  --tw-color-primary-600: var(--color-primary-600);
+  --tw-color-secondary-500: var(--color-secondary-500);
+}
+
+/* Esquema Acessível */
+.scheme-accessible {
+  --tw-color-primary-50: var(--color-primary-50);
+  --tw-color-primary-500: var(--color-primary-500);
+  --tw-color-primary-600: var(--color-primary-600);
+  --tw-color-secondary-500: var(--color-secondary-500);
+}
+
+/* ============================================
+   GRADIENTES ESPECIAIS PARA CADA ESQUEMA
+   ============================================ */
+
+/* Gradientes Tradicionais */
+.gradient-traditional-primary {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+}
+
+.gradient-traditional-secondary {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+}
+
+.gradient-traditional-hero {
+  background: linear-gradient(135deg, #eff8ff 0%, #f0fdf4 50%, #eff8ff 100%);
+}
+
+/* Gradientes Modernos */
+.gradient-modern-primary {
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+}
+
+.gradient-modern-secondary {
+  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+}
+
+.gradient-modern-hero {
+  background: linear-gradient(135deg, #faf5ff 0%, #ecfeff 50%, #faf5ff 100%);
+}
+
+/* Gradientes Acessíveis */
+.gradient-accessible-primary {
+  background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
+}
+
+.gradient-accessible-secondary {
+  background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+}
+
+.gradient-accessible-hero {
+  background: linear-gradient(135deg, #f0fdfa 0%, #f0f9ff 50%, #f0fdfa 100%);
+}
+
+/* ============================================
+   MODO ESCURO PARA CADA ESQUEMA
+   ============================================ */
+
+/* Esquema Tradicional - Modo Escuro */
+:root[data-color-scheme="traditional"][data-theme="dark"] {
+  --color-primary-50: #172554;
+  --color-primary-500: #60a5fa;
+  --color-primary-600: #3b82f6;
+  --color-secondary-500: #4ade80;
+}
+
+/* Esquema Moderno - Modo Escuro */
+:root[data-color-scheme="modern"][data-theme="dark"] {
+  --color-primary-50: #2e1065;
+  --color-primary-500: #c084fc;
+  --color-primary-600: #a855f7;
+  --color-secondary-500: #22d3ee;
+}
+
+/* Esquema Acessível - Modo Escuro */
+:root[data-color-scheme="accessible"][data-theme="dark"] {
+  --color-primary-50: #042f2e;
+  --color-primary-500: #2dd4bf;
+  --color-primary-600: #14b8a6;
+  --color-secondary-500: #38bdf8;
+}
+
+/* ============================================
+   ANIMAÇÕES E EFEITOS ESPECIAIS
+   ============================================ */
+
+/* Efeito glassmorphism para cada esquema */
+.glass-traditional {
+  backdrop-filter: blur(12px);
+  background: rgba(37, 99, 235, 0.1);
+  border: 1px solid rgba(37, 99, 235, 0.2);
+}
+
+.glass-modern {
+  backdrop-filter: blur(12px);
+  background: rgba(139, 92, 246, 0.1);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+.glass-accessible {
+  backdrop-filter: blur(12px);
+  background: rgba(20, 184, 166, 0.1);
+  border: 1px solid rgba(20, 184, 166, 0.2);
+}
+
+/* Sombras coloridas para cada esquema */
+.shadow-traditional {
+  box-shadow: 0 10px 25px -3px rgba(37, 99, 235, 0.1), 0 4px 6px -2px rgba(37, 99, 235, 0.05);
+}
+
+.shadow-modern {
+  box-shadow: 0 10px 25px -3px rgba(139, 92, 246, 0.1), 0 4px 6px -2px rgba(139, 92, 246, 0.05);
+}
+
+.shadow-accessible {
+  box-shadow: 0 10px 25px -3px rgba(20, 184, 166, 0.1), 0 4px 6px -2px rgba(20, 184, 166, 0.05);
+}
+
+/* ============================================
+   INDICADORES VISUAIS PARA DEMONSTRAÇÃO
+   ============================================ */
+
+.color-scheme-preview {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.color-preview-card {
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  text-align: center;
+  color: white;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Demonstração visual dos esquemas */
+.preview-traditional .color-preview-card:nth-child(1) { background: #2563eb; }
+.preview-traditional .color-preview-card:nth-child(2) { background: #22c55e; }
+.preview-traditional .color-preview-card:nth-child(3) { background: #0ea5e9; }
+
+.preview-modern .color-preview-card:nth-child(1) { background: #8b5cf6; }
+.preview-modern .color-preview-card:nth-child(2) { background: #06b6d4; }
+.preview-modern .color-preview-card:nth-child(3) { background: #3b82f6; }
+
+.preview-accessible .color-preview-card:nth-child(1) { background: #14b8a6; }
+.preview-accessible .color-preview-card:nth-child(2) { background: #0ea5e9; }
+.preview-accessible .color-preview-card:nth-child(3) { background: #06b6d4; }

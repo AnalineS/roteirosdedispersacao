@@ -18,7 +18,7 @@ const StatsSection: React.FC = () => {
   })
 
   const stats = React.useMemo(() => {
-    if (!(statsData as any)?.system_stats) {
+    if (!statsData?.system_stats) {
       return [
         { label: 'Consultas Realizadas', value: '10K+', icon: ChartBarIcon },
         { label: 'Profissionais Atendidos', value: '2.5K+', icon: UserGroupIcon },
@@ -27,26 +27,26 @@ const StatsSection: React.FC = () => {
       ]
     }
 
-    const systemStats = (statsData as any).system_stats
+    const systemStats = statsData.system_stats
     return [
       {
-        label: 'Total de Feedbacks',
-        value: systemStats.rag_system.total_feedback.toLocaleString(),
+        label: 'Interações Totais',
+        value: systemStats.interactions?.toLocaleString() || '0',
         icon: ChartBarIcon,
       },
       {
-        label: 'Avaliação Média',
-        value: `${systemStats.rag_system.average_rating.toFixed(1)}/5`,
+        label: 'Taxa de Sucesso',
+        value: `${systemStats.success_rate || 0}%`,
         icon: StarIcon,
       },
       {
-        label: 'IPs Ativos',
-        value: systemStats.rate_limiter.active_ips.toLocaleString(),
+        label: 'Personas Ativas',
+        value: systemStats.active_personas?.toLocaleString() || '2',
         icon: UserGroupIcon,
       },
       {
-        label: 'Respostas em Cache',
-        value: systemStats.rag_system.cache_stats.cached_responses.toLocaleString(),
+        label: 'Cache Hit Rate',
+        value: `${systemStats.cache_hit_rate || 0}%`,
         icon: ClockIcon,
       },
     ]
@@ -94,12 +94,16 @@ const StatsSection: React.FC = () => {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.6, delay: index * 0.1 }}
-                  className="card p-8 text-center hover:shadow-lg transition-all duration-300"
+                  className="card depth-2 hover-lift p-8 text-center hover:depth-3 transition-all duration-300"
                 >
                   {/* Icon */}
-                  <div className="w-12 h-12 bg-primary-100 dark:bg-primary-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <motion.div 
+                    className="w-12 h-12 bg-gradient-to-br from-primary-100 to-primary-200 dark:from-primary-900/20 dark:to-primary-800/20 rounded-full flex items-center justify-center mx-auto mb-4 hover-scale"
+                    whileHover={{ rotate: 360 }}
+                    transition={{ duration: 0.5 }}
+                  >
                     <Icon className="w-6 h-6 text-primary-600 dark:text-primary-400" />
-                  </div>
+                  </motion.div>
 
                   {/* Value */}
                   <motion.div
