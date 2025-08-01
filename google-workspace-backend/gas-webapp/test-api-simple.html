@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Teste Simples da API</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .info {
+            background-color: #e3f2fd;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        code {
+            background-color: #f5f5f5;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        pre {
+            background-color: #263238;
+            color: #aed581;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>📋 Instruções para Testar a API</h1>
+    
+    <div class="info">
+        <p>⚠️ <strong>Importante:</strong> Devido às limitações de CORS do Google Apps Script, use uma das seguintes opções para testar:</p>
+    </div>
+
+    <h2>Opção 1: Teste via Terminal (curl)</h2>
+    <p>Abra o terminal/prompt de comando e execute:</p>
+    <pre>curl -X POST https://script.google.com/macros/s/AKfycbwvlqGCG_drawIcux1aTGqH0EyC3hLg4aGBnT4Qo9YcQWARmY9PkBRl33ZoVEPfsnF83g/exec \
+  -H "Content-Type: application/json" \
+  -d '{"question": "Qual a dose de rifampicina para adultos?", "persona": "dr_gasnelio"}'</pre>
+
+    <h2>Opção 2: Teste via Postman</h2>
+    <ol>
+        <li>Baixe e instale o <a href="https://www.postman.com/downloads/" target="_blank">Postman</a></li>
+        <li>Crie uma nova requisição POST</li>
+        <li>URL: <code>https://script.google.com/macros/s/AKfycbwvlqGCG_drawIcux1aTGqH0EyC3hLg4aGBnT4Qo9YcQWARmY9PkBRl33ZoVEPfsnF83g/exec</code></li>
+        <li>Headers: <code>Content-Type: application/json</code></li>
+        <li>Body (raw JSON):
+            <pre>{
+  "question": "Qual a dose de rifampicina para adultos?",
+  "persona": "dr_gasnelio"
+}</pre>
+        </li>
+    </ol>
+
+    <h2>Opção 3: Integração no Frontend</h2>
+    <p>Para integrar no seu site React, atualize o arquivo <code>src/frontend/src/services/api.ts</code>:</p>
+    <pre>const API_URL = 'https://script.google.com/macros/s/AKfycbwvlqGCG_drawIcux1aTGqH0EyC3hLg4aGBnT4Qo9YcQWARmY9PkBRl33ZoVEPfsnF83g/exec';</pre>
+
+    <h2>Opção 4: Teste Python</h2>
+    <p>Crie um arquivo Python para testar:</p>
+    <pre>import requests
+import json
+
+url = "https://script.google.com/macros/s/AKfycbwvlqGCG_drawIcux1aTGqH0EyC3hLg4aGBnT4Qo9YcQWARmY9PkBRl33ZoVEPfsnF83g/exec"
+data = {
+    "question": "Qual a dose de rifampicina para adultos?",
+    "persona": "dr_gasnelio"
+}
+
+response = requests.post(url, json=data)
+print(json.dumps(response.json(), indent=2, ensure_ascii=False))</pre>
+
+    <h2>🔧 Solução de Problemas</h2>
+    <ul>
+        <li><strong>Erro de CORS:</strong> Use uma das opções acima ao invés de testar direto do navegador</li>
+        <li><strong>Erro 500:</strong> Verifique se configurou a OPENROUTER_API_KEY nas propriedades do script</li>
+        <li><strong>Resposta vazia:</strong> Verifique os logs no Google Apps Script Editor</li>
+    </ul>
+</body>
+</html>

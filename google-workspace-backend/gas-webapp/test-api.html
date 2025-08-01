@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Teste da API - Roteiro de Dispensação</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #34495e;
+        }
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            resize: vertical;
+            min-height: 100px;
+        }
+        select, input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+        .response {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #ecf0f1;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            display: none;
+        }
+        .error {
+            background-color: #e74c3c;
+            color: white;
+        }
+        .success {
+            background-color: #2ecc71;
+            color: white;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Teste da API - Roteiro de Dispensação</h1>
+        
+        <div class="form-group">
+            <label for="apiUrl">URL da API:</label>
+            <input type="text" id="apiUrl" placeholder="Cole aqui a URL do seu Web App" value="">
+        </div>
+        
+        <div class="form-group">
+            <label for="persona">Escolha a Persona:</label>
+            <select id="persona">
+                <option value="dr_gasnelio">Dr. Gasnelio (Técnico)</option>
+                <option value="ga">Gá (Empático)</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="question">Sua Pergunta:</label>
+            <textarea id="question" placeholder="Ex: Qual a dose de rifampicina para adultos?">Qual a dose de rifampicina para adultos?</textarea>
+        </div>
+        
+        <button onclick="testAPI()">Enviar Pergunta</button>
+        
+        <div class="loading">
+            ⏳ Processando...
+        </div>
+        
+        <div id="response" class="response"></div>
+    </div>
+
+    <script>
+        // Tenta recuperar a URL salva no localStorage
+        window.onload = function() {
+            const savedUrl = localStorage.getItem('apiUrl');
+            if (savedUrl) {
+                document.getElementById('apiUrl').value = savedUrl;
+            }
+        };
+
+        async function testAPI() {
+            const apiUrl = document.getElementById('apiUrl').value.trim();
+            const persona = document.getElementById('persona').value;
+            const question = document.getElementById('question').value.trim();
+            
+            if (!apiUrl) {
+                showResponse('Por favor, insira a URL da API', 'error');
+                return;
+            }
+            
+            if (!question) {
+                showResponse('Por favor, insira uma pergunta', 'error');
+                return;
+            }
+            
+            // Salva a URL no localStorage
+            localStorage.setItem('apiUrl', apiUrl);
+            
+            // Desabilita o botão e mostra loading
+            const button = document.querySelector('button');
+            button.disabled = true;
+            document.querySelector('.loading').style.display = 'block';
+            document.getElementById('response').style.display = 'none';
+            
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        question: question,
+                        persona: persona
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResponse(
+                        `✅ Resposta da ${persona === 'dr_gasnelio' ? 'Dr. Gasnelio' : 'Gá'}:\n\n${data.response}\n\n` +
+                        `📊 Detalhes:\n` +
+                        `- Persona: ${data.persona}\n` +
+                        `- Cache: ${data.cached ? 'Sim' : 'Não'}\n` +
+                        `- Timestamp: ${data.timestamp}`,
+                        'success'
+                    );
+                } else {
+                    showResponse(`❌ Erro: ${data.error || 'Erro desconhecido'}`, 'error');
+                }
+            } catch (error) {
+                showResponse(`❌ Erro de conexão: ${error.message}`, 'error');
+            } finally {
+                // Reabilita o botão e esconde loading
+                button.disabled = false;
+                document.querySelector('.loading').style.display = 'none';
+            }
+        }
+        
+        function showResponse(message, type) {
+            const responseDiv = document.getElementById('response');
+            responseDiv.textContent = message;
+            responseDiv.className = 'response ' + type;
+            responseDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
