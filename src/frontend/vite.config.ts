@@ -11,9 +11,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'robots.txt', 'avatar-*.png'],
       manifest: {
-        name: 'Roteiro de Dispensação - Hanseníase',
-        short_name: 'Dispensação',
-        description: 'Sistema inteligente para apoiar profissionais de saúde na dispensação segura de medicamentos',
+        name: 'Roteiro de Dispensação - Assistentes Educacionais',
+        short_name: 'Roteiro PQT-U',
+        description: 'Plataforma educacional com assistentes virtuais Dr. Gasnelio e Gá para orientação sobre poliquimioterapia de hanseníase',
         start_url: '/',
         display: 'standalone',
         theme_color: '#1976d2',
@@ -101,6 +101,39 @@ export default defineConfig({
               expiration: {
                 maxEntries: 50,
                 maxAgeSeconds: 60 * 60 * 24 // 24 hours
+              }
+            }
+          },
+          {
+            urlPattern: /^https:\/\/openrouter\.ai\//,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'openrouter-cache',
+              expiration: {
+                maxEntries: 30,
+                maxAgeSeconds: 60 * 15 // 15 minutes for AI responses
+              }
+            }
+          },
+          {
+            urlPattern: /\/educational-components\//,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'educational-components',
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60 * 24 * 7 // 1 week for educational resources
+              }
+            }
+          },
+          {
+            urlPattern: /\.(woff|woff2|ttf|eot)$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'fonts-cache',
+              expiration: {
+                maxEntries: 20,
+                maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year for fonts
               }
             }
           }
