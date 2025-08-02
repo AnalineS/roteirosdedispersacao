@@ -7,9 +7,6 @@ import { AnimationOptimizer } from '@utils/performanceOptimizer'
 import EnhancedPersonaSelector from '@components/PersonaSelector/EnhancedPersonaSelector'
 import { 
   ChatBubbleLeftRightIcon,
-  BookOpenIcon,
-  InformationCircleIcon,
-  Bars3Icon,
   AcademicCapIcon,
   UserGroupIcon,
   HeartIcon
@@ -21,7 +18,6 @@ const ColorSchemePreview = React.lazy(() => import('@components/ColorSchemePrevi
 const HomePage: React.FC = () => {
   const { personas, isPersonasLoading, selectedPersona } = useChat()
   const [showColorPreview, setShowColorPreview] = useState(false)
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [showPersonaSelector, setShowPersonaSelector] = useState(false)
   
   // Get optimized animation variants
@@ -29,79 +25,6 @@ const HomePage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
-      {/* Header Responsivo */}
-      <header className="glass sticky top-0 z-50 border-b border-gray-200/50 dark:border-gray-700/50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            {/* Logo Responsivo */}
-            <Link to="/" className="flex items-center space-x-2 flex-shrink-0">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm sm:text-base">RD</span>
-              </div>
-              <div className="hidden sm:block">
-                <div className="font-bold text-lg lg:text-xl text-gradient">Roteiro de Dispensação</div>
-                <div className="text-xs text-gray-600 dark:text-gray-400">Sistema PQT-U Hanseníase</div>
-              </div>
-              <div className="sm:hidden">
-                <div className="font-bold text-sm text-gradient">Roteiro PQT-U</div>
-              </div>
-            </Link>
-
-            {/* Navigation Desktop */}
-            <nav className="hidden md:flex items-center space-x-6">
-              <a href="#recursos" className="flex items-center space-x-1 text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
-                <BookOpenIcon className="w-4 h-4" />
-                <span>Recursos</span>
-              </a>
-              <a href="#sobre" className="flex items-center space-x-1 text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
-                <InformationCircleIcon className="w-4 h-4" />
-                <span>Sobre</span>
-              </a>
-              <Link to="/chat" className="flex items-center space-x-1 btn-primary btn-sm">
-                <ChatBubbleLeftRightIcon className="w-4 h-4" />
-                <span>Chat</span>
-              </Link>
-            </nav>
-
-            {/* Mobile Menu Button */}
-            <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors touch-target"
-              aria-label={isMobileMenuOpen ? 'Fechar menu' : 'Abrir menu'}
-              aria-expanded={isMobileMenuOpen}
-            >
-              <Bars3Icon className="w-6 h-6" />
-            </button>
-          </div>
-
-          {/* Mobile Navigation */}
-          {isMobileMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="md:hidden border-t border-gray-200 dark:border-gray-700 py-4"
-            >
-              <div className="space-y-2">
-                <a href="#recursos" className="flex items-center space-x-2 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors touch-target">
-                  <BookOpenIcon className="w-5 h-5" />
-                  <span>Recursos</span>
-                </a>
-                <a href="#sobre" className="flex items-center space-x-2 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors touch-target">
-                  <InformationCircleIcon className="w-5 h-5" />
-                  <span>Sobre</span>
-                </a>
-                <Link to="/chat" className="flex items-center space-x-2 p-3 rounded-lg bg-primary-500 text-white hover:bg-primary-600 transition-colors touch-target">
-                  <ChatBubbleLeftRightIcon className="w-5 h-5" />
-                  <span>Iniciar Chat</span>
-                </Link>
-              </div>
-            </motion.div>
-          )}
-        </div>
-      </header>
-
-
       {/* Conteúdo Principal */}
       <main className="flex-1">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
@@ -123,17 +46,17 @@ const HomePage: React.FC = () => {
             </p>
             
             {/* CTA Buttons Responsivos */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center max-w-2xl mx-auto">
               <button 
                 onClick={() => setShowPersonaSelector(true)}
-                className="w-full sm:w-auto btn-primary btn-lg flex items-center justify-center space-x-2 touch-target-large"
+                className="w-full sm:w-auto btn-primary btn-lg flex items-center justify-center space-x-3 touch-target-large px-8 py-4"
               >
                 <ChatBubbleLeftRightIcon className="w-5 h-5" />
                 <span>Escolher Assistente Virtual</span>
               </button>
               <Link 
                 to="/chat" 
-                className={`w-full sm:w-auto btn-lg flex items-center justify-center space-x-2 touch-target-large ${
+                className={`w-full sm:w-auto btn-lg flex items-center justify-center space-x-3 touch-target-large px-8 py-4 ${
                   selectedPersona ? 'btn-success' : 'btn-secondary'
                 }`}
               >
@@ -173,7 +96,7 @@ const HomePage: React.FC = () => {
           </motion.section>
 
           {/* Grid de Recursos Educacionais */}
-          <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 mb-12 lg:mb-16">
+          <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
             {/* Card de Assistentes Inteligentes */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -266,12 +189,12 @@ const HomePage: React.FC = () => {
                 Acesso a informações técnicas baseadas em pesquisa científica sobre PQT-U 
                 e dispensação farmacêutica especializada.
               </p>
-              <a href="#recursos" className="btn-secondary btn-md w-full flex items-center justify-center space-x-2 touch-target">
+              <Link to="/resources" className="btn-secondary btn-md w-full flex items-center justify-center space-x-2 touch-target">
                 <span>Explorar recursos</span>
                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/>
                 </svg>
-              </a>
+              </Link>
             </motion.div>
 
             {/* Card de Educação Continuada */}
@@ -291,12 +214,12 @@ const HomePage: React.FC = () => {
                 Materiais educacionais e recursos para aprimoramento profissional 
                 na área de hanseníase e dispensação de medicamentos.
               </p>
-              <a href="#sobre" className="btn-secondary btn-md w-full flex items-center justify-center space-x-2 touch-target">
+              <Link to="/about" className="btn-secondary btn-md w-full flex items-center justify-center space-x-2 touch-target">
                 <span>Saiba mais</span>
                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/>
                 </svg>
-              </a>
+              </Link>
             </motion.div>
           </section>
 
@@ -313,7 +236,7 @@ const HomePage: React.FC = () => {
               <span>Estatísticas do Sistema</span>
             </motion.h2>
             
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 lg:gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
               <motion.div
                 variants={animationVariants.scale}
                 initial="initial"
