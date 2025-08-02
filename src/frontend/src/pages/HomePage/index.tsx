@@ -3,133 +3,156 @@ import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useChat } from '@hooks/useChat'
 import ColorSchemePreview from '@components/ColorSchemePreview'
+import { 
+  ChatBubbleLeftRightIcon,
+  BookOpenIcon,
+  InformationCircleIcon,
+  Bars3Icon
+} from '@heroicons/react/24/outline'
 
 const HomePage: React.FC = () => {
   const { personas, isPersonasLoading, setSelectedPersona } = useChat()
   const [showColorPreview, setShowColorPreview] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   return (
-    <div className="medical-app">
-      {/* Header Médico */}
-      <header className="medical-header">
-        <div className="header-content">
-          <div className="header-brand">
-            <div className="brand-icon">RD</div>
-            <div>
-              <div className="brand-title">Roteiro de Dispensação</div>
-              <div className="brand-subtitle">Sistema PQT-U Hanseníase</div>
-            </div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
+      {/* Header Responsivo */}
+      <header className="glass sticky top-0 z-50 border-b border-gray-200/50 dark:border-gray-700/50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            {/* Logo Responsivo */}
+            <Link to="/" className="flex items-center space-x-2 flex-shrink-0">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-sm sm:text-base">RD</span>
+              </div>
+              <div className="hidden sm:block">
+                <div className="font-bold text-lg lg:text-xl text-gradient">Roteiro de Dispensação</div>
+                <div className="text-xs text-gray-600 dark:text-gray-400">Sistema PQT-U Hanseníase</div>
+              </div>
+              <div className="sm:hidden">
+                <div className="font-bold text-sm text-gradient">Roteiro PQT-U</div>
+              </div>
+            </Link>
+
+            {/* Navigation Desktop */}
+            <nav className="hidden md:flex items-center space-x-6">
+              <a href="#recursos" className="flex items-center space-x-1 text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
+                <BookOpenIcon className="w-4 h-4" />
+                <span>Recursos</span>
+              </a>
+              <a href="#sobre" className="flex items-center space-x-1 text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
+                <InformationCircleIcon className="w-4 h-4" />
+                <span>Sobre</span>
+              </a>
+              <Link to="/chat" className="flex items-center space-x-1 btn-primary btn-sm">
+                <ChatBubbleLeftRightIcon className="w-4 h-4" />
+                <span>Chat</span>
+              </Link>
+            </nav>
+
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors touch-target"
+              aria-label={isMobileMenuOpen ? 'Fechar menu' : 'Abrir menu'}
+              aria-expanded={isMobileMenuOpen}
+            >
+              <Bars3Icon className="w-6 h-6" />
+            </button>
           </div>
-          <nav className="header-nav">
-            <a href="#recursos" className="nav-item">Recursos</a>
-            <a href="#sobre" className="nav-item">Sobre</a>
-            <Link to="/chat" className="nav-item">Chat</Link>
-          </nav>
-          <button className="menu-toggle" aria-label="Menu">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
-            </svg>
-          </button>
+
+          {/* Mobile Navigation */}
+          {isMobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="md:hidden border-t border-gray-200 dark:border-gray-700 py-4"
+            >
+              <div className="space-y-2">
+                <a href="#recursos" className="flex items-center space-x-2 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors touch-target">
+                  <BookOpenIcon className="w-5 h-5" />
+                  <span>Recursos</span>
+                </a>
+                <a href="#sobre" className="flex items-center space-x-2 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors touch-target">
+                  <InformationCircleIcon className="w-5 h-5" />
+                  <span>Sobre</span>
+                </a>
+                <Link to="/chat" className="flex items-center space-x-2 p-3 rounded-lg bg-primary-500 text-white hover:bg-primary-600 transition-colors touch-target">
+                  <ChatBubbleLeftRightIcon className="w-5 h-5" />
+                  <span>Iniciar Chat</span>
+                </Link>
+              </div>
+            </motion.div>
+          )}
         </div>
       </header>
 
-      {/* Sidebar Médico */}
-      <aside className="medical-sidebar">
-        <div className="sidebar-content">
-          <div className="sidebar-section">
-            <h3 className="section-title">Sistema</h3>
-            <ul className="sidebar-nav">
-              <li className="sidebar-nav-item">
-                <a href="#" className="sidebar-nav-link active">
-                  <span className="nav-icon">🏠</span>
-                  <span>Início</span>
-                </a>
-              </li>
-              <li className="sidebar-nav-item">
-                <Link to="/chat" className="sidebar-nav-link">
-                  <span className="nav-icon">💬</span>
-                  <span>Chat</span>
-                </Link>
-              </li>
-              <li className="sidebar-nav-item">
-                <a href="#recursos" className="sidebar-nav-link">
-                  <span className="nav-icon">📚</span>
-                  <span>Recursos</span>
-                </a>
-              </li>
-            </ul>
-          </div>
-          
-          <div className="sidebar-section">
-            <h3 className="section-title">Especialistas</h3>
-            <ul className="sidebar-nav">
-              <li className="sidebar-nav-item">
-                <a href="#" className="sidebar-nav-link">
-                  <span className="nav-icon">👨‍⚕️</span>
-                  <span>Dr. Gasnelio</span>
-                  <span className="nav-badge">Online</span>
-                </a>
-              </li>
-              <li className="sidebar-nav-item">
-                <a href="#" className="sidebar-nav-link">
-                  <span className="nav-icon">👩‍⚕️</span>
-                  <span>Gá</span>
-                  <span className="nav-badge">Online</span>
-                </a>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </aside>
 
       {/* Conteúdo Principal */}
-      <main className="medical-content">
-        <div className="content-container">
-          {/* Hero Section */}
-          <section className="medical-hero fade-in-up">
-            <h1 className="hero-title">Sistema Inteligente de Dispensação PQT-U</h1>
-            <p className="hero-subtitle">
+      <main className="flex-1">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+          {/* Hero Section Responsivo */}
+          <motion.section 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-12 lg:mb-16"
+          >
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-gray-900 dark:text-white mb-4 lg:mb-6">
+              <span className="text-gradient">Sistema Inteligente</span>
+              <br className="hidden sm:block" />
+              <span className="block sm:inline"> de Dispensação PQT-U</span>
+            </h1>
+            <p className="text-base sm:text-lg lg:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto mb-8 lg:mb-10 leading-relaxed">
               Assistente virtual especializado em poliquimioterapia única para hanseníase. 
               Obtenha orientações precisas e baseadas em evidências científicas para dispensação segura de medicamentos.
             </p>
-            <div className="hero-actions">
-              <Link to="/chat" className="btn-medical btn-primary">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h4l4 4 4-4h4c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
-                </svg>
-                Iniciar Conversa
+            
+            {/* CTA Buttons Responsivos */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <Link 
+                to="/chat" 
+                className="w-full sm:w-auto btn-primary btn-lg flex items-center justify-center space-x-2 touch-target-large"
+              >
+                <ChatBubbleLeftRightIcon className="w-5 h-5" />
+                <span>Iniciar Conversa</span>
               </Link>
               <button 
                 onClick={() => setShowColorPreview(true)}
-                className="btn-medical btn-secondary"
+                className="w-full sm:w-auto btn-secondary btn-lg flex items-center justify-center space-x-2 touch-target-large"
               >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-.99 0-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8z"/>
                 </svg>
-                Ver Esquemas de Cores
+                <span className="hidden sm:inline">Ver Esquemas de Cores</span>
+                <span className="sm:hidden">Esquemas</span>
               </button>
             </div>
-          </section>
+          </motion.section>
 
-          {/* Cards de Especialistas e Recursos */}
-          <section className="medical-cards slide-in-right">
+          {/* Grid de Cards Responsivo */}
+          <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 mb-12 lg:mb-16">
             {/* Card de Especialistas */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
-              className="medical-card"
+              className="card-medical p-6 text-center"
             >
-              <div className="card-icon">👨‍⚕️</div>
-              <h3 className="card-title">Especialistas Virtuais</h3>
-              <p className="card-description">
+              <div className="w-16 h-16 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl">👨‍⚕️</span>
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">Especialistas Virtuais</h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
                 Nossos especialistas virtuais estão prontos para ajudar com diferentes aspectos 
                 da dispensação de medicamentos para hanseníase.
               </p>
-              <Link to="/chat" className="card-action">
-                Conversar agora
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <Link to="/chat" className="btn-primary btn-md w-full flex items-center justify-center space-x-2 touch-target">
+                <span>Conversar agora</span>
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/>
                 </svg>
               </Link>
@@ -137,13 +160,19 @@ const HomePage: React.FC = () => {
 
             {/* Cards de Personas Dinâmicos */}
             {isPersonasLoading ? (
-              <div className="medical-card">
-                <div className="card-icon pulse-animation">⏳</div>
-                <h3 className="card-title">Carregando especialistas...</h3>
-                <p className="card-description">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="card-medical p-6 text-center"
+              >
+                <div className="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
+                  <span className="text-2xl">⏳</span>
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">Carregando especialistas...</h3>
+                <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
                   Aguarde enquanto conectamos você aos nossos especialistas virtuais.
                 </p>
-              </div>
+              </motion.div>
             ) : (
               personas && Object.entries(personas).map(([id, persona], index) => (
                 <motion.div
@@ -152,25 +181,26 @@ const HomePage: React.FC = () => {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.6, delay: index * 0.1 }}
-                  className="medical-card"
+                  className="card-medical p-6 text-center"
                 >
-                  <div className="card-icon">
-                    {persona.avatar === 'Dr' ? '👨‍⚕️' : '👩‍⚕️'}
+                  <div className="w-16 h-16 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="text-2xl">
+                      {persona.avatar === 'Dr' ? '👨‍⚕️' : '👩‍⚕️'}
+                    </span>
                   </div>
-                  <h3 className="card-title">{persona.name}</h3>
-                  <p className="card-description">{persona.description}</p>
-                  <div style={{ marginBottom: '1rem' }}>
-                    <small style={{ color: 'var(--medical-gray-600)' }}>
-                      <strong>Especialidade:</strong> {persona.role}
-                    </small>
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{persona.name}</h3>
+                  <p className="text-gray-600 dark:text-gray-300 mb-3 leading-relaxed">{persona.description}</p>
+                  <div className="mb-4">
+                    <span className="badge-primary text-xs">
+                      {persona.role}
+                    </span>
                   </div>
                   <button
                     onClick={() => {
                       setSelectedPersona(id)
                       window.location.href = '/chat'
                     }}
-                    className="btn-medical btn-primary"
-                    style={{ width: '100%' }}
+                    className="btn-primary btn-md w-full touch-target"
                   >
                     Conversar com {persona.name}
                   </button>
@@ -179,67 +209,112 @@ const HomePage: React.FC = () => {
             )}
 
             {/* Card de Base de Conhecimento */}
-            <div className="medical-card">
-              <div className="card-icon">📚</div>
-              <h3 className="card-title">Base de Conhecimento</h3>
-              <p className="card-description">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="card-medical p-6 text-center"
+            >
+              <div className="w-16 h-16 bg-gradient-to-br from-accent-500 to-primary-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl">📚</span>
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">Base de Conhecimento</h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
                 Acesso a informações técnicas baseadas em pesquisa científica sobre PQT-U 
                 e dispensação farmacêutica especializada.
               </p>
-              <a href="#recursos" className="card-action">
-                Explorar recursos
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <a href="#recursos" className="btn-secondary btn-md w-full flex items-center justify-center space-x-2 touch-target">
+                <span>Explorar recursos</span>
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/>
                 </svg>
               </a>
-            </div>
+            </motion.div>
 
             {/* Card de Educação Continuada */}
-            <div className="medical-card">
-              <div className="card-icon">🎯</div>
-              <h3 className="card-title">Educação Continuada</h3>
-              <p className="card-description">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="card-medical p-6 text-center md:col-span-2 lg:col-span-1"
+            >
+              <div className="w-16 h-16 bg-gradient-to-br from-secondary-500 to-accent-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl">🎯</span>
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">Educação Continuada</h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
                 Materiais educacionais e recursos para aprimoramento profissional 
                 na área de hanseníase e dispensação de medicamentos.
               </p>
-              <a href="#sobre" className="card-action">
-                Saiba mais
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <a href="#sobre" className="btn-secondary btn-md w-full flex items-center justify-center space-x-2 touch-target">
+                <span>Saiba mais</span>
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/>
                 </svg>
               </a>
-            </div>
+            </motion.div>
           </section>
 
           {/* Estatísticas do Sistema */}
-          <section className="medical-status">
-            <h2 className="status-title">
-              <div className="status-icon">📊</div>
-              Estatísticas do Sistema
-            </h2>
-            <div className="medical-cards">
-              <div className="medical-card">
-                <div className="card-icon">💬</div>
-                <h3 className="card-title">10K+</h3>
-                <p className="card-description">Consultas Realizadas</p>
-              </div>
-              <div className="medical-card">
-                <div className="card-icon">👥</div>
-                <h3 className="card-title">2.5K+</h3>
-                <p className="card-description">Profissionais Atendidos</p>
-              </div>
-              <div className="medical-card">
-                <div className="card-icon">✅</div>
-                <h3 className="card-title">98%</h3>
-                <p className="card-description">Taxa de Precisão</p>
-              </div>
+          <section className="text-center mb-12">
+            <motion.h2 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-8 flex items-center justify-center space-x-2"
+            >
+              <span className="text-2xl">📊</span>
+              <span>Estatísticas do Sistema</span>
+            </motion.h2>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 lg:gap-8">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.1 }}
+                className="card-medical p-6 text-center"
+              >
+                <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <span className="text-xl">💬</span>
+                </div>
+                <h3 className="text-2xl sm:text-3xl font-bold text-primary-600 dark:text-primary-400 mb-1">10K+</h3>
+                <p className="text-gray-600 dark:text-gray-300 text-sm sm:text-base">Consultas Realizadas</p>
+              </motion.div>
+              
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.2 }}
+                className="card-medical p-6 text-center"
+              >
+                <div className="w-12 h-12 bg-gradient-to-br from-secondary-500 to-secondary-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <span className="text-xl">👥</span>
+                </div>
+                <h3 className="text-2xl sm:text-3xl font-bold text-secondary-600 dark:text-secondary-400 mb-1">2.5K+</h3>
+                <p className="text-gray-600 dark:text-gray-300 text-sm sm:text-base">Profissionais Atendidos</p>
+              </motion.div>
+              
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.3 }}
+                className="card-medical p-6 text-center sm:col-span-3 lg:col-span-1"
+              >
+                <div className="w-12 h-12 bg-gradient-to-br from-success-500 to-success-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <span className="text-xl">✅</span>
+                </div>
+                <h3 className="text-2xl sm:text-3xl font-bold text-success-600 dark:text-success-400 mb-1">98%</h3>
+                <p className="text-gray-600 dark:text-gray-300 text-sm sm:text-base">Taxa de Precisão</p>
+              </motion.div>
             </div>
           </section>
         </div>
       </main>
-
-      {/* Overlay para mobile */}
-      <div className="sidebar-overlay"></div>
 
       {/* Color Scheme Preview Modal */}
       {showColorPreview && (

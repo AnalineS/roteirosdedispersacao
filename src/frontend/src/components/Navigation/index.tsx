@@ -58,21 +58,22 @@ const Navigation: React.FC = () => {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden md:flex items-center space-x-6 lg:space-x-8">
             {navigation.map((item) => {
               const Icon = item.icon
               return (
                 <Link
                   key={item.name}
                   to={item.href}
-                  className={`flex items-center space-x-1 px-3 py-2 rounded-lg font-medium transition-all duration-200 ${
+                  className={`flex items-center space-x-1 px-3 py-2 rounded-lg font-medium transition-all duration-200 touch-target ${
                     isActive(item.href)
                       ? 'bg-primary-100 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
                       : 'text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-800'
                   }`}
                 >
                   <Icon className="w-4 h-4" aria-hidden="true" />
-                  <span>{item.name}</span>
+                  <span className="hidden lg:inline">{item.name}</span>
+                  <span className="lg:hidden sr-only">{item.name}</span>
                 </Link>
               )
             })}
@@ -84,7 +85,7 @@ const Navigation: React.FC = () => {
             <ThemeToggle />
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors touch-target"
               aria-label={isMobileMenuOpen ? 'Fechar menu' : 'Abrir menu'}
               aria-expanded={isMobileMenuOpen}
             >
@@ -108,7 +109,7 @@ const Navigation: React.FC = () => {
             transition={{ duration: 0.2 }}
             className="md:hidden border-t border-gray-200 dark:border-gray-700"
           >
-            <div className="px-4 py-2 space-y-1">
+            <div className="px-4 py-3 space-y-2">
               {navigation.map((item) => {
                 const Icon = item.icon
                 return (
@@ -116,7 +117,7 @@ const Navigation: React.FC = () => {
                     key={item.name}
                     to={item.href}
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className={`flex items-center space-x-2 px-3 py-2 rounded-lg font-medium transition-all duration-200 ${
+                    className={`flex items-center space-x-3 px-4 py-3 rounded-lg font-medium transition-all duration-200 touch-target ${
                       isActive(item.href)
                         ? 'bg-primary-100 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
                         : 'text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-800'

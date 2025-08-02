@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useReducer, useCallback } from 'react'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { chatApi, personasApi } from '@services/api'
+import { errorHandler } from '@utils/errorHandler'
 import type { Message, Persona } from '@/types'
 
 interface ChatState {
@@ -48,6 +49,7 @@ interface ChatContextType {
   state: ChatState
   personas: Record<string, Persona> | undefined
   isPersonasLoading: boolean
+  personasError: any
   sendMessage: (message: string) => void
   setSelectedPersona: (personaId: string) => void
   clearChat: () => void
@@ -70,20 +72,34 @@ interface ChatProviderProps {
 export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
   const [state, dispatch] = useReducer(chatReducer, initialState)
 
-  // Load personas
+  // Load personas with error handling
   const {
     data: personasData,
     isLoading: isPersonasLoading,
+    error: personasError,
   } = useQuery({
     queryKey: ['personas'],
-    queryFn: personasApi.getAll,
+    queryFn: () => errorHandler.withRetry(
+      () => personasApi.getAll(),
+      'load-personas',
+      2 // max retries for personas
+    ),
     staleTime: 10 * 60 * 1000, // 10 minutes
+    retry: (failureCount, error) => {
+      // Let error handler manage retries
+      const processedError = errorHandler.processError(error, 'personas-query')
+      return processedError.retryable && failureCount < 2
+    }
   })
 
-  // Send message mutation
+  // Send message mutation with enhanced error handling
   const sendMessageMutation = useMutation({
     mutationFn: ({ message, personaId }: { message: string; personaId: string }) =>
-      chatApi.sendMessage(message, personaId),
+      errorHandler.withRetry(
+        () => chatApi.sendMessage(message, personaId),
+        `sendMessage-${personaId}`,
+        3 // max retries
+      ),
     onMutate: ({ message }) => {
       // Add user message immediately
       const userMessage: Message = {
@@ -114,24 +130,62 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
       }
       dispatch({ type: 'ADD_MESSAGE', payload: assistantMessage })
       dispatch({ type: 'SET_LOADING', payload: false })
+      
+      // Clear any previous errors
+      dispatch({ type: 'SET_ERROR', payload: null })
     },
     onError: (error: any) => {
       dispatch({ type: 'SET_LOADING', payload: false })
+      
+      // Process error through error handler
+      const processedError = errorHandler.processError(error, 'chat-send-message')
+      const userMessage = errorHandler.getUserMessage(processedError)
+      
+      // Log for debugging
+      errorHandler.logError(processedError)
+      
+      // Set user-friendly error message
       dispatch({ 
         type: 'SET_ERROR', 
-        payload: error.response?.data?.error || 'Erro ao enviar mensagem' 
+        payload: userMessage
       })
+      
+      // Add error context message for better UX
+      if (processedError.retryable) {
+        setTimeout(() => {
+          dispatch({
+            type: 'SET_ERROR',
+            payload: `${userMessage} Tentando novamente automaticamente...`
+          })
+        }, 2000)
+      }
     },
   })
 
   const sendMessage = useCallback((message: string) => {
+    // Clear any existing errors
+    dispatch({ type: 'SET_ERROR', payload: null })
+    
+    // Validation
+    if (!message.trim()) {
+      dispatch({ type: 'SET_ERROR', payload: 'Por favor, digite uma mensagem' })
+      return
+    }
+    
     if (!state.selectedPersona) {
-      dispatch({ type: 'SET_ERROR', payload: 'Selecione uma persona primeiro' })
+      dispatch({ type: 'SET_ERROR', payload: 'Selecione um especialista virtual primeiro' })
+      return
+    }
+
+    // Check for offensive content (basic check)
+    const offensiveWords = ['spam', 'teste123']
+    if (offensiveWords.some(word => message.toLowerCase().includes(word))) {
+      dispatch({ type: 'SET_ERROR', payload: 'Mensagem contém conteúdo não permitido' })
       return
     }
 
     sendMessageMutation.mutate({
-      message,
+      message: message.trim(),
       personaId: state.selectedPersona,
     })
   }, [state.selectedPersona, sendMessageMutation])
@@ -147,8 +201,9 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
 
   const value = {
     state,
-    personas: personasData || {},
+    personas: (personasData as any)?.personas || personasData || {},
     isPersonasLoading,
+    personasError,
     sendMessage,
     setSelectedPersona,
     clearChat,
