@@ -54,43 +54,38 @@ const API_CONFIG = {
   MAX_RETRIES: parseInt(import.meta.env.VITE_RETRY_ATTEMPTS || '3')
 }
 
-// Determine which backend to use
-const getApiBaseUrl = () => {
-  // In production, prefer Cloud Run
-  if (API_CONFIG.ENVIRONMENT === 'production' && API_CONFIG.CLOUD_RUN_URL) {
-    return API_CONFIG.CLOUD_RUN_URL
-  }
-  
-  // Fallback to Google Apps Script
+
+// Synchronous version for immediate use
+const getApiBaseUrlSync = () => {
+  // Prioritize Google Apps Script in production until Cloud Run is stable
   if (API_CONFIG.GAS_WEB_APP_URL) {
     return API_CONFIG.GAS_WEB_APP_URL
   }
   
-  // Production fallback (usar Cloud Run atual)
-  return 'https://roteiro-dispensacao-api-1016586236354.us-central1.run.app'
+  return 'https://script.google.com/macros/s/AKfycbyLemOPBnH6ZPq_AE3x7NW85I4UFW9pITrAap9dVg5Oj9IannQVgDWWOE_WJ0L6ltWD2w/exec'
 }
 
-const API_BASE_URL = getApiBaseUrl()
-const IS_CLOUD_RUN = API_BASE_URL.includes('run.app') || API_BASE_URL.includes('localhost')
+const API_BASE_URL = getApiBaseUrlSync()
+const IS_CLOUD_RUN = false // Force Google Apps Script for now
 
-// Create axios instance with intelligent backend detection
+// Create axios instance with Google Apps Script priority
 const api = axios.create({
-  baseURL: IS_CLOUD_RUN ? API_BASE_URL : API_CONFIG.GAS_WEB_APP_URL,
+  baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
   timeout: API_CONFIG.TIMEOUT,
 })
 
-// Debug logging for development
-if (API_CONFIG.ENVIRONMENT === 'development') {
-  console.log('🔧 API Configuration:', {
-    baseUrl: API_BASE_URL,
-    isCloudRun: IS_CLOUD_RUN,
-    environment: API_CONFIG.ENVIRONMENT,
-    timeout: API_CONFIG.TIMEOUT
-  })
-}
+// Debug logging for all environments to help with debugging
+console.log('🔧 API Configuration:', {
+  baseUrl: API_BASE_URL,
+  isCloudRun: IS_CLOUD_RUN,
+  environment: API_CONFIG.ENVIRONMENT,
+  timeout: API_CONFIG.TIMEOUT,
+  gasUrl: API_CONFIG.GAS_WEB_APP_URL,
+  cloudRunUrl: API_CONFIG.CLOUD_RUN_URL
+})
 
 // Request interceptor with enhanced logging
 api.interceptors.request.use(
@@ -166,53 +161,35 @@ export const chatApi = {
     try {
       let response
       
-      if (IS_CLOUD_RUN) {
-        // Google Cloud Run / Flask backend
-        response = await api.post('/api/chat', {
-          question: message,
-          personality_id: personaId,
-        })
-        
-        const cloudRunResponse = response.data
-        
-        return {
-          data: {
-            message: {
-              id: cloudRunResponse.request_id || Date.now().toString(),
-              content: cloudRunResponse.answer,
-              sender: 'assistant',
-              timestamp: new Date(),
-              persona: cloudRunResponse.persona,
-              cached: false,
-              confidence: cloudRunResponse.confidence || 0.8
-            }
-          },
-          request_id: cloudRunResponse.request_id,
-          timestamp: new Date().toISOString()
-        }
-      } else {
-        // Google Apps Script (Legacy)
-        response = await api.post('', {
-          question: message,
-          persona: personaId,
-        })
-        
-        const gasResponse = response.data
-        
-        return {
-          data: {
-            message: {
-              id: Date.now().toString(),
-              content: gasResponse.response,
-              sender: 'assistant',
-              timestamp: new Date(),
-              persona: gasResponse.persona,
-              cached: gasResponse.cached || false
-            }
-          },
-          request_id: Date.now().toString(),
-          timestamp: new Date().toISOString()
-        }
+      // Always use Google Apps Script for now
+      console.log('📤 Sending message to Google Apps Script:', { message, personaId })
+      
+      response = await api.post('', {
+        question: message,
+        persona: personaId,
+      })
+      
+      console.log('📥 Response from Google Apps Script:', response.data)
+      
+      const gasResponse = response.data
+      
+      // Handle different response formats
+      const responseText = gasResponse.response || gasResponse.answer || gasResponse.content || 'Resposta recebida'
+      
+      return {
+        data: {
+          message: {
+            id: gasResponse.id || Date.now().toString(),
+            content: responseText,
+            sender: 'assistant',
+            timestamp: new Date(),
+            persona: gasResponse.persona || personaId,
+            cached: gasResponse.cached || false,
+            confidence: gasResponse.confidence || 0.8
+          }
+        },
+        request_id: gasResponse.request_id || Date.now().toString(),
+        timestamp: new Date().toISOString()
       }
     } catch (error: unknown) {
       return handleApiError(error)
@@ -224,13 +201,9 @@ export const chatApi = {
 export const personasApi = {
   getAll: async () => {
     try {
-      if (IS_CLOUD_RUN) {
-        // Get personas from Cloud Run backend
-        const response = await api.get('/api/personas')
-        return response.data
-      } else {
-        // Fallback to static data for Google Apps Script
-        return {
+      // Always use static data for Google Apps Script
+      console.log('📋 Using static personas data for Google Apps Script')
+      return {
           personas: {
             dr_gasnelio: {
               id: 'dr_gasnelio',
@@ -238,12 +211,21 @@ export const personasApi = {
               avatar: 'Dr',
               role: 'Farmacêutico Clínico',
               description: 'Farmacêutico clínico especialista em hanseníase PQT-U',
-              expertise: 'Respostas técnicas e protocolos farmacológicos',
-              tone: 'Profissional e preciso',
-              use_cases: ['Consultas técnicas', 'Protocolos de dispensação', 'Validação farmacológica'],
+              greeting: 'Olá! Como posso ajudar com a dispensação de PQT-U hoje?',
+              system_prompt: 'Você é Dr. Gasnelio, um farmacêutico clínico especialista em hanseníase e dispensação de PQT-U.',
+              audience: 'Profissionais de saúde',
+              language_style: 'Técnico e preciso',
               capabilities: ['Protocolos farmacológicos', 'Dispensação PQT-U', 'Validação técnica'],
               example_questions: ['Qual a dosagem correta de rifampicina para um paciente de 65kg?'],
-              greeting: 'Olá! Como posso ajudar com a dispensação de PQT-U hoje?'
+              limitations: {
+                scope: 'Hanseníase e dispensação de medicamentos PQT-U',
+                not_covered: ['Outras doenças', 'Medicamentos não relacionados'],
+                redirects_to: {}
+              },
+              response_format: {
+                structure: ['Informação técnica', 'Protocolo', 'Recomendações'],
+                tone: 'Profissional e preciso'
+              }
             },
             ga: {
               id: 'ga',
@@ -251,12 +233,21 @@ export const personasApi = {
               avatar: 'Gá',
               role: 'Farmacêutico Educador',
               description: 'Farmacêutico empático e acessível',
-              expertise: 'Comunicação simples e acolhedora',
-              tone: 'Caloroso e educativo',
-              use_cases: ['Explicações simples', 'Apoio emocional', 'Tradução técnica'],
+              greeting: 'Oi! Estou aqui para ajudar com suas dúvidas sobre o tratamento de hanseníase.',
+              system_prompt: 'Você é Gá, um farmacêutico educador empático especializado em comunicação clara sobre hanseníase.',
+              audience: 'Pacientes e familiares',
+              language_style: 'Simples e acolhedor',
               capabilities: ['Educação ao paciente', 'Comunicação empática', 'Orientações práticas'],
               example_questions: ['Como explicar os efeitos colaterais para um paciente idoso?'],
-              greeting: 'Oi! Estou aqui para ajudar com suas dúvidas sobre o tratamento de hanseníase.'
+              limitations: {
+                scope: 'Hanseníase e educação do paciente',
+                not_covered: ['Outras doenças', 'Prescrições médicas'],
+                redirects_to: {}
+              },
+              response_format: {
+                structure: ['Explicação simples', 'Orientações práticas', 'Apoio'],
+                tone: 'Caloroso e educativo'
+              }
             }
           },
           metadata: {
@@ -264,7 +255,6 @@ export const personasApi = {
             active: 2
           }
         }
-      }
     } catch (error) {
       console.warn('Error fetching personas, using fallback:', error)
       // Return fallback data

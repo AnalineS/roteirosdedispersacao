@@ -202,10 +202,14 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
     dispatch({ type: 'CLEAR_CHAT' })
   }, [])
 
+  const extractedPersonas = personasData && typeof personasData === 'object' && 'personas' in personasData 
+    ? (personasData as { personas: Record<string, Persona> }).personas 
+    : {}
+
   const value = {
     state,
     selectedPersona: state.selectedPersona,
-    personas: (personasData as { personas?: Record<string, Persona> })?.personas || personasData || {},
+    personas: extractedPersonas,
     isPersonasLoading,
     personasError,
     sendMessage,
