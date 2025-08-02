@@ -93,7 +93,7 @@ app = Flask(__name__)
 
 # Configuração CORS restritiva e segura - ATUALIZADO PARA RENDER
 allowed_origins = [
-    "https://roteiro-dispensacao.onrender.com",
+    "https://roteiros-de-dispensacao.web.app",
     "http://localhost:3000",  # Para desenvolvimento
     "http://127.0.0.1:3000"   # Para desenvolvimento local
 ]
@@ -107,7 +107,7 @@ if flask_env == 'production' or render_service_url:
         allowed_origins = [render_service_url]
         print(f"CORS configurado para PRODUÇÃO RENDER - {render_service_url}")
     else:
-        allowed_origins = ["https://roteiro-dispensacao.onrender.com"]
+        allowed_origins = ["https://roteiros-de-dispensacao.web.app"]
         print("CORS configurado para PRODUÇÃO - apenas HTTPS permitido")
 
 CORS(app, 
@@ -881,7 +881,7 @@ def index():
                 "feedback": "/api/feedback",
                 "stats": "/api/stats"
             },
-            "frontend_url": "https://roteiro-dispensacao.onrender.com"
+            "frontend_url": "https://roteiros-de-dispensacao.web.app"
         })
 
 # Rotas removidas - script.js e tese.js não existem no build React moderno

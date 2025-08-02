@@ -44,7 +44,7 @@ function App() {
         console.error('🚨 Critical App Error:', error, errorInfo)
         
         // Send to monitoring service in production
-        if (process.env.NODE_ENV === 'production') {
+        if (import.meta.env.PROD) {
           // Example: Sentry.captureException(error, { extra: errorInfo })
         }
       }}

@@ -258,7 +258,7 @@ export class ErrorHandler {
     }
 
     // Send to monitoring service in production
-    if (process.env.NODE_ENV === 'production') {
+    if (import.meta.env.PROD) {
       this.reportToMonitoring(error)
     }
   }

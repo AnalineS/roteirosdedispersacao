@@ -3,6 +3,8 @@
  * Optimizes animations, lazy loading, and performance monitoring
  */
 
+import type { ComponentType } from 'react'
+
 // Performance monitoring
 export class PerformanceMonitor {
   private static instance: PerformanceMonitor
@@ -207,7 +209,7 @@ export const AnimationOptimizer = {
 // Lazy loading utilities
 export const LazyLoadManager = {
   // Create intersection observer for lazy loading
-  createObserver(callback: (entries: IntersectionObserverEntry[]) => void, options?: IntersectionObserverInit) {
+  createObserver(callback: (entries: IntersectionObserverEntry[]) => void, options?: object) {
     return new IntersectionObserver(callback, {
       rootMargin: '50px',
       threshold: 0.1,
@@ -239,7 +241,7 @@ export const LazyLoadManager = {
 
   // Lazy load component with intersection observer
   createLazyComponent<T>(
-    importFn: () => Promise<{ default: React.ComponentType<T> }>
+    importFn: () => Promise<{ default: ComponentType<T> }>
   ) {
     // Note: React.lazy needs to be used in component context
     // This is a utility for creating lazy components
@@ -317,14 +319,14 @@ export const MemoryOptimizer = {
     wait: number,
     immediate?: boolean
   ): (...args: Parameters<T>) => void {
-    let timeout: NodeJS.Timeout | null = null
+    let timeout: number | null = null
     
     return (...args: Parameters<T>) => {
       const callNow = immediate && !timeout
       
-      if (timeout) clearTimeout(timeout)
+      if (timeout) window.clearTimeout(timeout)
       
-      timeout = setTimeout(() => {
+      timeout = window.setTimeout(() => {
         timeout = null
         if (!immediate) func.apply(null, args)
       }, wait)
@@ -344,7 +346,7 @@ export const MemoryOptimizer = {
       if (!inThrottle) {
         func.apply(null, args)
         inThrottle = true
-        setTimeout(() => inThrottle = false, limit)
+        window.setTimeout(() => inThrottle = false, limit)
       }
     }
   }

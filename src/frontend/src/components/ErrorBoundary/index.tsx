@@ -71,7 +71,7 @@ class ErrorBoundary extends Component<Props, State> {
     }
 
     // Send to error tracking service (Sentry, LogRocket, etc.)
-    if (process.env.NODE_ENV === 'production') {
+    if (import.meta.env.PROD) {
       // In production, send to error tracking service
       console.log('📊 Error Report:', errorReport)
       
@@ -177,7 +177,7 @@ class ErrorBoundary extends Component<Props, State> {
                 </button>
 
                 {/* Development-only debug info */}
-                {process.env.NODE_ENV === 'development' && (
+                {import.meta.env.DEV && (
                   <details className="mt-4 text-left">
                     <summary className="cursor-pointer text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400">
                       Detalhes Técnicos (Dev)
