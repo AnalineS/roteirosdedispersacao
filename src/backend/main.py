@@ -91,24 +91,40 @@ usability_monitor = UsabilityMonitor()
 
 app = Flask(__name__)
 
-# Configuração CORS restritiva e segura - ATUALIZADO PARA RENDER
+# Configuração CORS para Google Cloud + Firebase - ATUALIZADO
 allowed_origins = [
     "https://roteiros-de-dispensacao.web.app",
+    "https://roteiros-de-dispensacao.firebaseapp.com",
     "http://localhost:3000",  # Para desenvolvimento
     "http://127.0.0.1:3000"   # Para desenvolvimento local
 ]
 
-# Em produção, usar apenas o domínio de produção - validação rigorosa
+# Configuração específica para ambientes de produção
 flask_env = os.environ.get('FLASK_ENV', '').lower()
+cloud_run_url = os.environ.get('CLOUD_RUN_SERVICE_URL', '')
 render_service_url = os.environ.get('RENDER_EXTERNAL_URL', '')
-if flask_env == 'production' or render_service_url:
-    # Usar URL do Render se disponível, senão usar padrão
-    if render_service_url:
-        allowed_origins = [render_service_url]
-        print(f"CORS configurado para PRODUÇÃO RENDER - {render_service_url}")
+
+if flask_env == 'production':
+    if cloud_run_url:
+        # Produção Google Cloud Run + Firebase
+        allowed_origins = [
+            "https://roteiros-de-dispensacao.web.app",
+            "https://roteiros-de-dispensacao.firebaseapp.com",
+            "https://roteirosdedispensacao.com",
+            "https://www.roteirosdedispensacao.com"
+        ]
+        print(f"CORS configurado para GOOGLE CLOUD RUN - {cloud_run_url}")
+    elif render_service_url:
+        # Fallback para Render
+        allowed_origins = [render_service_url, "https://roteiros-de-dispensacao.web.app"]
+        print(f"CORS configurado para RENDER - {render_service_url}")
     else:
-        allowed_origins = ["https://roteiros-de-dispensacao.web.app"]
-        print("CORS configurado para PRODUÇÃO - apenas HTTPS permitido")
+        # Padrão Firebase apenas
+        allowed_origins = [
+            "https://roteiros-de-dispensacao.web.app", 
+            "https://roteiros-de-dispensacao.firebaseapp.com"
+        ]
+        print("CORS configurado para FIREBASE HOSTING")
 
 CORS(app, 
      origins=allowed_origins,

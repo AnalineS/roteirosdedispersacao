@@ -21,3 +21,6 @@ bleach==6.0.0
 # === COMPATIBILIDADE ===
 typing-extensions==4.12.2
 Werkzeug==2.3.7
+
+# === PRODUÇÃO (CLOUD RUN) ===
+gunicorn==21.2.0
