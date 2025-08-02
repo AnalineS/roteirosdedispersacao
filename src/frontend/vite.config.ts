@@ -11,8 +11,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'robots.txt', 'avatar-*.png'],
       manifest: {
-        name: 'Roteiro de Dispensação - Assistentes Educacionais',
-        short_name: 'Roteiro PQT-U',
+        name: 'Roteiros de Dispensação – PQT-U',
+        short_name: 'RoteirosDisp',
         description: 'Plataforma educacional com assistentes virtuais Dr. Gasnelio e Gá para orientação sobre poliquimioterapia de hanseníase',
         start_url: '/',
         display: 'standalone',

@@ -2,6 +2,7 @@
   "name": "roteiro-dispensacao-frontend",
   "version": "2.0.0",
   "description": "Frontend moderno para o sistema de roteiro de dispensação de hanseníase",
+  "homepage": "https://roteirosdedispensacao.com/",
   "private": true,
   "scripts": {
     "dev": "vite",
