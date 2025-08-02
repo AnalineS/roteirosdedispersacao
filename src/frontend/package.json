@@ -19,6 +19,7 @@
     "@tailwindcss/typography": "^0.5.16",
     "@tanstack/react-query": "^5.61.9",
     "axios": "^1.7.9",
+    "canvas-confetti": "^1.9.3",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "focus-trap-react": "^10.3.0",
@@ -35,6 +36,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.18.0",
+    "@types/canvas-confetti": "^1.9.0",
     "@types/node": "^22.10.2",
     "@types/react": "^18.3.17",
     "@types/react-dom": "^18.3.5",

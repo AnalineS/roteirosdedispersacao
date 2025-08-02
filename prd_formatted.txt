@@ -1,0 +1,97 @@
+
+
+Documento de Requisitos do Produto (PRD) detalha a modernização do site e do chatbot de Roteiro de Dispensação, utilizando a metodologia PREVC. O projeto visa melhorar a usabilidade e o desempenho, adicionando um chatbot moderno com suporte a duas personas (técnica e leiga) baseado em RAG com Kimie K2 via OpenRouter, hospedado no google cloud com fire base com CI/CD. Documento de Requisitos do Produto (PRD): Modernização do Site e Chatbot de Roteiro de Dispensação 
+1. 
+
+================================================================================
+
+Introdução  1.1.Objetivo do Documento Este Documento de Requisitos do Produto (PRD) tem como objetivo principal **definir os requisitos, a arquitetura, a metodologia de desenvolvimento e os critérios de aceitação para a modernização do site e do chatbot de Roteiro de Dispensação**. O documento servirá como guia para a equipe de desenvolvimento e como base para a comunicação com os stakeholders, garantindo que o produto final atenda às expectativas e necessidades do público-alvo. Ele detalha as fases de Planejamento, Revisão, Execução, Validação e Confirmação (PREVC), as tecnologias a serem utilizadas e os critérios para a entrega bem-sucedida do projeto.  
+1.2. 
+
+================================================================================
+
+Escopo do Projeto O escopo deste projeto abrange a **revisão e atualização do site existente, atualmente hospedado na plataforma Render, e a evolução significativa do chatbot integrado**. As principais atividades incluem: * **Modernização do Site**: Implementação de CI/CD , refatoração da aplicação, e utilização de arquivos .env ou Secret Files para gerenciamento seguro de variáveis de ambiente. * **Evolução do Chatbot**: * Suporte a **duas personas distintas**: uma técnica (Dr. Gasnelio) e outra leiga (Gá, ). * Base de conhecimento proveniente de uma tese de doutorado, processada com **arquitetura RAG (Retrieval-Augmented Generation)**. * Implementação do RAG e vetorização Astra DB. * Integração de uma nova camada de backend com o modelo de linguagem **Kimie K2 Free**, acessado via **OpenRouter**. * **Infraestrutura e Automação**: Análise do projeto atual, configuração de ambiente, pipeline CI/CD acionada por `git push`, e criação de serviços . * **Fluxo de Desenvolvimento e Integração**: Detalhamento da arquitetura RAG (MarkdownLoader, Splitter, Embeddings, Banco de Dados Vetorial, LLM), montagem do fluxo e publicação como API, e uso de `PromptTemplate` com injeção dinâmica de persona via backend. O projeto será desenvolvido com a **premissa de custo zero ou minimo**, utilizando ferramentas e serviços gratuitos sempre que possível. O objetivo principal é melhorar a usabilidade, otimizar o desempenho e adicionar um chatbot mais moderno e eficaz. 
+1.3. 
+
+================================================================================
+
+Definições, Acrônimos e Abreviações * **PRD**: Documento de Requisitos do Produto (Product Requirements Document). * **PREVC**: Metodologia de desenvolvimento composta por Planejamento (P), Revisão (R), Execução (E), Validação (V) e Confirmação (C). * **CI/CD**: Integração Contínua/Entrega Contínua (Continuous Integration/Continuous Delivery). * **RAG**: Geração Aumentada por Recuperação (Retrieval-Augmented Generation). * **LLM**: Modelo de Linguagem Grande (Large Language Model). * **API**: Interface de Programação de Aplicações (Application Programming Interface).  **Astra DB**: Banco de dados vetorial gerenciado pela DataStax. **OpenRouter**: Plataforma que fornece acesso unificado a diversos LLMs via API. * **Kimie K2 (Kimi K2)**: Modelo de linguagem grande desenvolvido pela Moonshot AI. * **Hugging Face**: Plataforma e comunidade de machine learning focado em NLP e modelos de transformadores.  * **MoE**: Mixture-of-Experts (Arquitetura de modelo de linguagem). 
+2. 
+
+================================================================================
+
+Metodologia PREVC A **metodologia PREVC (Planejamento, Revisão, Execução, Validação e Confirmação)** será adotada para estruturar o desenvolvimento e a modernização do site e do chatbot. Esta abordagem visa garantir um ciclo de vida de projeto organizado e iterativo, assegurando que todos os aspectos do produto sejam considerados e validados em cada etapa. O **Planejamento (P)** envolve a definição clara do escopo, objetivos, tecnologias, metas e personas. A **Revisão (R)** consiste na análise técnica do ambiente atual, testes de fluxos e revisão da base de conhecimento. A **Execução (E)** abrange a implementação prática, incluindo a implantação CI/CD, upload da base de conhecimento e criação de rotas de backend. A **Validação (V)** foca em testes de funcionalidade, usabilidade e coerência dos resultados. Por fim, a **Confirmação (C)** é a etapa final de verificação do sistema em produção, segurança dos dados e documentação de entrega. Esta estrutura cíclica permite ajustes contínuos e assegura a entrega de um produto que atenda às expectativas dos stakeholders e às necessidades do público-alvo. 
+2.1. 
+
+================================================================================
+
+Planejamento (P) A fase de **Planejamento (P)** da metodologia PREVC concentra-se na **definição clara dos objetivos, escopo, tecnologias, metas, stakeholders, público-alvo, personas do chatbot, requisitos funcionais e não-funcionais, arquitetura proposta e ferramentas a serem utilizadas**. Esta etapa é fundamental para estabelecer uma base sólida para o projeto, alinhando expectativas e garantindo que todos os envolvidos tenham uma compreensão comum do que será desenvolvido e como será realizado. O planejamento detalhado permite antecipar desafios, definir métricas de sucesso e estruturar as fases subsequentes de Revisão, Execução, Validação e Confirmação. A Seção 3 deste documento é dedicada a detalhar os elementos do Planejamento. 
+2.2. 
+
+================================================================================
+
+Revisão (R) A fase de **Revisão (R)** da metodologia PREVC concentra-se na **análise detalhada do estado atual do projeto e dos componentes que serão modernizados**, descrevendo o fluxo de dados para transformar novos dados em embeddings e armazená-los, bem como o processo de consulta semântica ao banco vetorial .  num chatbot, detalhando a ingestão e manutenção incremental da base de conhecimento. 
+2.3. 
+
+================================================================================
+
+Execução (E) A fase de **Execução (E)** da metodologia PREVC é onde ocorre a **implementação prática de todos os componentes planejados e revisados**. Esta etapa envolve a configuração do ambiente e da infraestrutura, o desenvolvimento e a integração do chatbot, o desenvolvimento e a atualização do site, a implementação da pipeline de CI/CD e a integração com serviços externos como OpenRouter e Kimie K
+2. 
+
+================================================================================
+
+A execução deve seguir o plano estabelecido, utilizando as tecnologias e ferramentas selecionadas, e garantindo a qualidade do código e a aderência aos requisitos. A Seção 5 deste documento detalha as atividades e considerações da fase de Execução. 
+2.4. 
+
+================================================================================
+
+Validação (V) A fase de **Validação (V)** da metodologia PREVC tem como objetivo **assegurar que o produto desenvolvido atenda aos requisitos especificados e às expectativas dos stakeholders**. Esta etapa envolve a realização de testes de funcionalidade, testes de usabilidade e a verificação da coerência das personas do chatbot. Os critérios de aceitação definidos para o site e para o chatbot serão utilizados para avaliar se o produto está pronto para a fase de Confirmação. A Seção 6 deste documento descreve os critérios de aceitação e os tipos de testes a serem realizados durante a Validação. 
+2.5. 
+
+================================================================================
+
+Confirmação (C) A fase de **Confirmação (C)** da metodologia PREVC representa a **etapa final do ciclo de desenvolvimento, focando na verificação final do sistema em produção, na revisão de segurança dos dados e na documentação de entrega**. É o momento de garantir que o produto está totalmente funcional, seguro e pronto para ser utilizado pelo público-alvo. Esta fase também inclui a preparação para a escalabilidade do sistema, considerando futuras expansões ou aumento de carga. A Seção 7 deste documento detalha as atividades e entregáveis da fase de Confirmação. 
+3. 
+
+================================================================================
+
+Planejamento (P) 
+3.1. 
+
+================================================================================
+
+Objetivos e Metas O **objetivo principal** deste projeto é a **modernização do site e do chatbot de Roteiro de Dispensação**, visando **melhorar significativamente a usabilidade, otimizar o desempenho e introduzir um novo chatbot mais moderno e eficaz**. Este chatbot deve ser capaz de atender a duas personas distintas: uma técnica e outra leiga, utilizando uma base de conhecimento específica (uma tese de doutorado) por meio da arquitetura RAG.  
+3.2. 
+
+================================================================================
+
+Stakeholders e Expectativas Os principais **stakeholders** deste projeto e suas respectivas expectativas são: | Stakeholder | Expectativas | Interesse no Projeto | |---------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------| | **Estudantes de Doutorado** | Acesso a informações técnicas detalhadas da tese de forma fácil e rápida. ferramenta de apoio para pesquisas e estudos. | Alto. utilização direta da base de conhecimento e das funcionalidades técnicas. | | **Professores da UNB** | Disseminação do conhecimento produzido na tese ferramenta de apoio ao ensino e à orientação de alunos. visibilidade do trabalho acadêmico. | Alto, validação e aplicação prática do conhecimento gerado. | | **Autores da Tese** | Amplo alcance e impacto da pesquisa, reconhecimento do trabalho desenvolvido. ferramenta útil para a comunidade. | Muito Alto, o projeto é uma extensão direta de seu trabalho acadêmico. | | **Pacientes e Familiares** | Acesso a informações claras, simples e confiáveis sobre a doença e o roteiro de dispensação, suporte e orientação de forma acessível. | Médio a Alto, benefício direto com a persona leiga do chatbot. | | **Comunidade Acadêmica (Geral)** | Acesso a um repositório de conhecimento especializado e a uma ferramenta de IA aplicada à saúde. | Médio, interesse em novas aplicações de IA e em conteúdo de pesquisa. | | **Equipe de Desenvolvimento** | Sucesso do projeto,  aprendizado e aplicação de novas tecnologias, entrega dentro do escopo, prazo e orçamento (gratuito). | Alto, responsabilidade direta pela execução e qualidade do produto. | A expectativa geral é que o site e o chatbot modernizados se tornem uma **ferramenta valiosa para a disseminação de conhecimento sobre o roteiro de dispensação**, atendendo a um público diversificado e contribuindo para a prática da farmácia clínica. 
+3.3. 
+
+================================================================================
+
+Público-Alvo O **público-alvo** do site e do chatbot modernizados é amplo e diversificado, refletindo os próprios stakeholders e suas necessidades de informação. Não há limitações rígidas quanto a idade, gênero, classe social ou formação acadêmica. No entanto, inicialmente, o foco geográfico pode ser em **Brasília**, devido à origem universitária do projeto (UNB). Os principais segmentos do público-alvo incluem: * **Acadêmicos e Pesquisadores**: Estudantes de graduação, pós-graduação (especialmente doutorado), professores e pesquisadores das áreas de saúde, farmácia e ciências afins, que buscam informações técnicas e detalhadas sobre o roteiro de dispensação e a tese que o fundamenta. * **Profissionais de Saúde**: Farmacêuticos clínicos, médicos, enfermeiros e outros profissionais de saúde que atuam na linha de frente do cuidado ao paciente e podem se beneficiar de informações sobre o roteiro de dispensação para hanseníase e, futuramente, outras doenças. * **Pacientes e seus Familiares**: Indivíduos afetados pela hanseníase (e posteriormente outras doenças) e seus cuidadores, que necessitam de informações claras, compreensíveis e empáticas sobre a doença, o tratamento e o roteiro de dispensação. Este grupo se beneficiará especialmente da persona leiga do chatbot ("Gá"). * **Gestores e Formuladores de Políticas Públicas**: Profissionais envolvidos na gestão de saúde pública e na elaboração de políticas relacionadas ao fornecimento de medicamentos e ao cuidado de doenças específicas. * **Público em Geral Interessado em Saúde**: Qualquer pessoa que tenha interesse em aprender mais sobre hanseníase, roteiros de dispensação ou o uso de IA na área da saúde. A capacidade do chatbot de se comunicar através de duas personas distintas visa justamente atender a essa diversidade de público, oferecendo tanto profundidade técnica quanto simplicidade e empatia, conforme a necessidade do usuário. 
+3.4. 
+
+================================================================================
+
+Personas do Chatbot O chatbot modernizado deverá suportar **duas personas distintas**, permitindo que os usuários escolham o estilo de interação mais adequado às suas necessidades e nível de conhecimento. A definição clara dessas personas é crucial para orientar o desenvolvimento da lógica de geração de respostas e a construção dos `PromptTemplates`. 
+1. 
+
+================================================================================
+
+**Dr. Gasnelio (Persona Técnica - anteriormente "Professor")**: * **Perfil**: Especialista em farmácia clínica, com foco em roteiros de dispensação. Apresenta-se como um professor ou pesquisador de mestrado/doutorado. * **Objetivo**: Fornecer informações técnicas, precisas e detalhadas extraídas da tese de doutorado. Auxiliar em pesquisas acadêmicas e na compreensão profunda dos conceitos. * **Tom de Voz**: Culto, profissional, objetivo, direto e formal. * **Linguagem**: Utiliza terminologia técnica e científica adequada. As respostas devem ser estruturadas e fundamentadas. * **Exemplo de Saudação**: "Saudações! Sou o Dr. Gasnelio. Minha pesquisa foca no roteiro de dispensação para a prática da farmácia clínica. Como posso auxiliá-lo hoje com informações técnicas?" . * **Público-Alvo Primário**: Estudantes de doutorado, professores, pesquisadores, profissionais de saúde com formação técnica. 
+2. 
+
+================================================================================
+
+**Gá (Persona Leiga - "Amigo")**: * **Perfil**: Amigável, empático, paciente e bem-humorado. Apresenta-se como um amigo que explica coisas complexas de forma simples. * **Objetivo**: Explicar conceitos relacionados à hanseníase e ao roteiro de dispensação de forma acessível, clara e compreensível para um público leigo. Oferecer suporte e orientação de maneira acolhedora. * **Tom de Voz**: Descontraído, caloroso, encorajador, solidário e informal (mas sempre respeitoso). * **Linguagem**: Utiliza linguagem cotidiana, evita jargões técnicos ou os explica de forma simples. Pode usar analogias e exemplos concretos. As respostas devem ser curtas, diretas e focadas na compreensão do usuário. * **Exemplo de Saudação**: "Oi! Sou o Gá, seu amigo virtual para tirar dúvidas sobre saúde. Vou tentar explicar as coisas de um jeito bem fácil, tá bom? O que você gostaria de saber?" * **Público-Alvo Primário**: Pacientes, familiares de pacientes, público em geral sem formação específica na área, crianças (com supervisão). A **injeção dinâmica de `PromptTemplates`** no backend será a técnica utilizada para orientar o LLM (Kimie K2) a adotar o comportamento e o estilo de linguagem da persona selecionada pelo usuário. Esses templates conterão instruções contextuais específicas para cada persona, que serão combinadas com a pergunta do usuário e os trechos relevantes da tese recuperados pelo RAG. ** * **Base de Conhecimento**: O cerne do chatbot será uma base de conhecimento derivada de uma tese de doutorado. Esta base será processada e disponibilizada para o sistema RAG. * **Arquitetura RAG**: O fluxo RAG **Ingestão de Dados**: A tese de doutorado, provavelmente em formato Markdown ou PDF **Astra DB**: Uma opção de banco de dados vetorial escalável e gerenciada, baseada no Apache Cassandra e oferecida pela DataStax. Pode ser considerada se houver necessidade de maior escalabilidade ou funcionalidades gerenciadas, embora possa ter implicações de custo fora do plano gratuito. Um artigo detalhou a integração de LangFlow com AstraDB . * **Recuperação (Retrieval)**: Quando o usuário fizer uma pergunta, ela será convertida em um embedding (usando o mesmo modelo de embedding). Esse embedding de consulta será usado para buscar os "k" chunks mais similares no banco de dados vetorial (Astra DB). * **Geração de Resposta (Kimie K2 via OpenRouter)**: * **Integração com LLM**: será configurado para enviar o prompt, enriquecido com os chunks relevantes recuperados e o contexto da persona, para um modelo de linguagem grande (LLM). * **Kimie K2 Free via OpenRouter**: O LLM escolhido será o Kimie K2 Free, acessado através da API da OpenRouter. A OpenRouter atua como uma camada de abstração, simplificando o acesso a diversos modelos LLM. A documentação do Kimi K2 , e seu repositório GitHub , indicam que é um modelo MoE (Mixture-of-Experts) com 32 bilhões de parâmetros ativados e 1 trilhão de parâmetros no total, projetado para tarefas de código e agentes. * **Prompt Engineering**: Será utilizado um `PromptTemplate` para estruturar o input para o LLM. Este template será dinamicamente preenchido com o contexto da persona selecionada (técnica ou leiga), a pergunta do usuário e os chunks de texto relevantes recuperados do banco vetorial. * **: * **Comunicação com o Chatbot**: O backend  será responsável por receber as requisições do frontend (interação do usuário com o chatbot) e a seleção da persona. * **Injeção Dinâmica de Persona**: Com base na escolha do usuário, o backend injetará dinamicamente as instruções da persona (Dr. Gasnelio - técnica, ou Gá - leiga) no `PromptTemplate` antes de enviar a solicitação para a API do LLM via OpenRouter. * **Gerenciamento de Conversa**: O backend também poderá ser responsável por gerenciar o estado da conversa, como o histórico de mensagens, se necessário para a coesão das respostas. **Fluxo de Dados:** 
+1. 
+
+================================================================================
+
+**Inicialização/Atualização da Base de Conhecimento**: * O conteúdo da tese de doutorado é carregado e processado (splitter). * Os chunks de texto são convertidos em embeddings. * Os embeddings são armazenados no banco de dados vetorial (Astra DB). * Este processo pode ser executado como um script separado . 
+2. 
+
+================================================================================
+

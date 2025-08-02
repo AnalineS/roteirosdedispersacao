@@ -47,6 +47,7 @@ const chatReducer = (state: ChatState, action: ChatAction): ChatState => {
 
 interface ChatContextType {
   state: ChatState
+  selectedPersona: string | null
   personas: Record<string, Persona> | undefined
   isPersonasLoading: boolean
   personasError: any
@@ -201,6 +202,7 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
 
   const value = {
     state,
+    selectedPersona: state.selectedPersona,
     personas: (personasData as any)?.personas || personasData || {},
     isPersonasLoading,
     personasError,
