@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   ChevronLeftIcon,
@@ -15,7 +15,7 @@ import confetti from 'canvas-confetti'
 interface StepContent {
   title: string
   description: string
-  icon: React.ComponentType<any>
+  icon: React.ComponentType<{ className?: string }>
   image?: string
   tips?: string[]
   warnings?: string[]
@@ -56,19 +56,23 @@ const InteractiveStepGuide: React.FC<InteractiveStepGuideProps> = ({
   const [isPlaying, setIsPlaying] = useState(autoPlay)
   const [showCompletionAnimation, setShowCompletionAnimation] = useState(false)
 
-  // Auto-play functionality
-  useEffect(() => {
-    if (isPlaying && currentStep < steps.length - 1) {
-      const timer = setTimeout(() => {
-        handleNext()
-      }, autoPlayDelay)
-      return () => clearTimeout(timer)
-    } else if (isPlaying && currentStep === steps.length - 1) {
-      setIsPlaying(false)
-    }
-  }, [isPlaying, currentStep, steps.length, autoPlayDelay])
 
-  const handleNext = () => {
+  const handleCompletion = useCallback(() => {
+    setShowCompletionAnimation(true)
+    
+    // Trigger confetti
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 }
+    })
+
+    setTimeout(() => {
+      onComplete?.()
+    }, 2000)
+  }, [onComplete])
+
+  const handleNext = useCallback(() => {
     const step = steps[currentStep]
     
     // Validate current step if validation function exists
@@ -91,7 +95,19 @@ const InteractiveStepGuide: React.FC<InteractiveStepGuideProps> = ({
       // Guide completed
       handleCompletion()
     }
-  }
+  }, [steps, currentStep, handleCompletion])
+
+  // Auto-play functionality
+  useEffect(() => {
+    if (isPlaying && currentStep < steps.length - 1) {
+      const timer = setTimeout(() => {
+        handleNext()
+      }, autoPlayDelay)
+      return () => clearTimeout(timer)
+    } else if (isPlaying && currentStep === steps.length - 1) {
+      setIsPlaying(false)
+    }
+  }, [isPlaying, currentStep, steps.length, autoPlayDelay, handleNext])
 
   const handlePrevious = () => {
     if (currentStep > 0) {
@@ -115,20 +131,7 @@ const InteractiveStepGuide: React.FC<InteractiveStepGuideProps> = ({
     }))
   }
 
-  const handleCompletion = () => {
-    setShowCompletionAnimation(true)
-    
-    // Trigger confetti
-    confetti({
-      particleCount: 100,
-      spread: 70,
-      origin: { y: 0.6 }
-    })
-
-    setTimeout(() => {
-      onComplete?.()
-    }, 2000)
-  }
+  // handleCompletion moved above handleNext to avoid reference error
 
   const handleRestart = () => {
     setCurrentStep(0)

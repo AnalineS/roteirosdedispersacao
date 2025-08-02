@@ -2,7 +2,7 @@ import React, { createContext, useContext, useReducer, useCallback } from 'react
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { chatApi, personasApi } from '@services/api'
 import { errorHandler } from '@utils/errorHandler'
-import type { Message, Persona } from '@/types'
+import type { Message, Persona, ApiResponse, ChatResponse } from '@/types'
 
 interface ChatState {
   messages: Message[]
@@ -50,7 +50,7 @@ interface ChatContextType {
   selectedPersona: string | null
   personas: Record<string, Persona> | undefined
   isPersonasLoading: boolean
-  personasError: any
+  personasError: Error | null
   sendMessage: (message: string) => void
   setSelectedPersona: (personaId: string) => void
   clearChat: () => void
@@ -114,19 +114,21 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
       dispatch({ type: 'SET_LOADING', payload: true })
       dispatch({ type: 'SET_ERROR', payload: null })
     },
-    onSuccess: (response: any) => {
+    onSuccess: (response: ApiResponse<ChatResponse>) => {
+      const message = response.data?.message
+      if (!message) {
+        throw new Error('Invalid response format')
+      }
+      
       const assistantMessage: Message = {
-        id: crypto.randomUUID(),
+        id: message.id || crypto.randomUUID(),
         role: 'assistant',
-        content: response.answer || response.content || 'Resposta recebida',
-        timestamp: new Date(),
-        persona: state.selectedPersona || undefined,
-        confidence: response.confidence || 0.8,
+        content: message.content,
+        timestamp: message.timestamp,
+        persona: message.persona,
+        confidence: message.confidence || 0.8,
         metadata: {
-          processing_time_ms: response.processing_time_ms,
           request_id: response.request_id,
-          api_version: response.api_version,
-          scope_analysis: response.scope_analysis,
         },
       }
       dispatch({ type: 'ADD_MESSAGE', payload: assistantMessage })
@@ -135,7 +137,7 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
       // Clear any previous errors
       dispatch({ type: 'SET_ERROR', payload: null })
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       dispatch({ type: 'SET_LOADING', payload: false })
       
       // Process error through error handler
@@ -203,7 +205,7 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
   const value = {
     state,
     selectedPersona: state.selectedPersona,
-    personas: (personasData as any)?.personas || personasData || {},
+    personas: (personasData as { personas?: Record<string, Persona> })?.personas || personasData || {},
     isPersonasLoading,
     personasError,
     sendMessage,

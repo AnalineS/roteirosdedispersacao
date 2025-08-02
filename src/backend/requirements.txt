@@ -1,26 +1,33 @@
-# Roteiro de Dispensação - PythonAnywhere
-# Dependências otimizadas para ambiente gratuito
+# Roteiro de Dispensação - Backend Avançado
+# Dependências para sistema completo com RAG e IA
 
 # === CORE FLASK ===
-Flask==2.3.3
+Flask==3.0.0
 Flask-CORS==4.0.0
+Werkzeug==3.0.1
 
-# === AI & ML (versões leves) ===
-openai==1.12.0
+# === AI & ML ===
+openai==1.54.0
 
 # === UTILIDADES ===
-python-dotenv==1.0.0
+python-dotenv==1.0.1
 requests==2.31.0
+pydantic==2.5.0
 
 # === PROCESSAMENTO TEXTO ===
-nltk==3.8.1
+nltk==3.9.1
 
 # === SEGURANÇA ===
-bleach==6.0.0
+bleach==6.1.0
 
 # === COMPATIBILIDADE ===
 typing-extensions==4.12.2
-Werkzeug==2.3.7
 
-# === PRODUÇÃO (CLOUD RUN) ===
+# === PRODUÇÃO ===
 gunicorn==21.2.0
+
+# === CACHE & PERFORMANCE ===
+redis==5.0.1
+
+# === MONITORING ===
+psutil==5.9.6

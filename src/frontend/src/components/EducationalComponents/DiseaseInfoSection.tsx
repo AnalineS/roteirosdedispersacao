@@ -9,7 +9,7 @@ import {
 interface Section {
   id: string
   title: string
-  icon: React.ComponentType<any>
+  icon: React.ComponentType<{ className?: string }>
   content: React.ReactNode
   difficulty: 'basic' | 'intermediate' | 'advanced'
   estimatedReadTime: number // in minutes
@@ -72,7 +72,7 @@ const DiseaseInfoSection: React.FC<DiseaseInfoSectionProps> = ({
 
   // Cleanup intervals on unmount
   useEffect(() => {
-    const intervals: NodeJS.Timeout[] = []
+    const intervals: ReturnType<typeof setInterval>[] = []
     
     return () => {
       intervals.forEach(interval => clearInterval(interval))

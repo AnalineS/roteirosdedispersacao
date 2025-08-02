@@ -1,4 +1,4 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react'
+import { Component, ErrorInfo, ReactNode } from 'react'
 import { ExclamationTriangleIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
 
 interface Props {
@@ -229,34 +229,6 @@ class ErrorBoundary extends Component<Props, State> {
 
 export default ErrorBoundary
 
-// Hook for functional components to access error boundary context
-export const useErrorHandler = () => {
-  return {
-    reportError: (error: Error, context?: string) => {
-      console.error(`Manual Error Report [${context || 'Unknown Context'}]:`, error)
-      
-      // Could trigger error boundary by throwing
-      // throw error
-    },
-    
-    logError: (message: string, details?: any) => {
-      console.error('Application Error:', message, details)
-    }
-  }
-}
-
-// HOC for wrapping components with error boundary
-export const withErrorBoundary = <P extends object>(
-  Component: React.ComponentType<P>,
-  errorFallback?: ReactNode
-) => {
-  const WrappedComponent = (props: P) => (
-    <ErrorBoundary fallback={errorFallback}>
-      <Component {...props} />
-    </ErrorBoundary>
-  )
-  
-  WrappedComponent.displayName = `withErrorBoundary(${Component.displayName || Component.name})`
-  
-  return WrappedComponent
-}
+// Utilities moved to separate files:
+// - useErrorHandler: src/hooks/useErrorHandler.tsx  
+// - withErrorBoundary: src/utils/withErrorBoundary.tsx

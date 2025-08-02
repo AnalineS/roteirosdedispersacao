@@ -210,7 +210,7 @@ const ChatPage: React.FC = () => {
                           Exemplos de perguntas:
                         </p>
                         <div className="space-y-2 max-w-md mx-auto">
-                          {selectedPersona.example_questions.slice(0, 3).map((question: any, index: number) => (
+                          {selectedPersona.example_questions.slice(0, 3).map((question: string, index: number) => (
                             <button
                               key={index}
                               className="block w-full text-left p-3 bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-xs sm:text-sm touch-target"

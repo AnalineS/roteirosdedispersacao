@@ -109,7 +109,7 @@ export interface SystemStats {
   rate_limiter?: {
     active_ips: number
     total_endpoints: number
-    limits_configured: Record<string, any>
+    limits_configured: Record<string, number | string | boolean>
   }
   application?: {
     api_version: string
@@ -155,7 +155,12 @@ export type ExportFormat = 'pdf' | 'docx'
 export interface ApiError {
   message: string
   code?: string
-  details?: any
+  details?: Record<string, unknown>
+}
+
+export interface ChatResponse {
+  message: Message
+  metadata?: MessageMetadata
 }
 
 // Toast Types

@@ -1,12 +1,44 @@
 import axios, { AxiosError } from 'axios'
 import type { 
   ApiResponse, 
-  Message, 
+  ChatResponse,
   ScopeInfo, 
   ScopeAnalysis,
   FeedbackData,
   SystemStats 
 } from '@/types'
+
+// Helper function to handle API errors
+const handleApiError = (error: unknown): never => {
+  const isAxiosError = (err: unknown): err is AxiosError => {
+    return typeof err === 'object' && err !== null && 'isAxiosError' in err
+  }
+  
+  if (isAxiosError(error)) {
+    if (error.response?.status === 429) {
+      throw new Error('Limite de requisições excedido. Tente novamente em alguns minutos.')
+    }
+    
+    const errorData = error.response?.data as { error?: string; message?: string } | undefined
+    if (errorData?.error) {
+      throw new Error(errorData.error)
+    }
+    
+    if (errorData?.message) {
+      throw new Error(errorData.message)
+    }
+    
+    if (!error.response) {
+      throw new Error('Erro de conexão. Verifique sua internet.')
+    }
+  }
+  
+  if (error instanceof Error) {
+    throw new Error(error.message)
+  }
+  
+  throw new Error('Erro desconhecido.')
+}
 
 // API Configuration for multiple backends
 const API_CONFIG = {
@@ -97,7 +129,7 @@ api.interceptors.response.use(
     }
     return response
   },
-  (error: AxiosError<ApiResponse<any>>) => {
+  (error: AxiosError<ApiResponse<unknown>>) => {
     // Enhanced error logging
     console.error('📥 API Error:', {
       status: error.response?.status,
@@ -130,7 +162,7 @@ api.interceptors.response.use(
 
 // Chat API (adapted for multiple backends)
 export const chatApi = {
-  sendMessage: async (message: string, personaId: string): Promise<Message> => {
+  sendMessage: async (message: string, personaId: string): Promise<ApiResponse<ChatResponse>> => {
     try {
       let response
       
@@ -144,13 +176,19 @@ export const chatApi = {
         const cloudRunResponse = response.data
         
         return {
-          id: cloudRunResponse.request_id || Date.now().toString(),
-          content: cloudRunResponse.answer,
-          sender: 'assistant',
-          timestamp: new Date(),
-          persona: cloudRunResponse.persona,
-          cached: false,
-          confidence: cloudRunResponse.confidence || 0.8
+          data: {
+            message: {
+              id: cloudRunResponse.request_id || Date.now().toString(),
+              content: cloudRunResponse.answer,
+              sender: 'assistant',
+              timestamp: new Date(),
+              persona: cloudRunResponse.persona,
+              cached: false,
+              confidence: cloudRunResponse.confidence || 0.8
+            }
+          },
+          request_id: cloudRunResponse.request_id,
+          timestamp: new Date().toISOString()
         }
       } else {
         // Google Apps Script (Legacy)
@@ -162,35 +200,22 @@ export const chatApi = {
         const gasResponse = response.data
         
         return {
-          id: Date.now().toString(),
-          content: gasResponse.response,
-          sender: 'assistant',
-          timestamp: new Date(),
-          persona: gasResponse.persona,
-          cached: gasResponse.cached || false
+          data: {
+            message: {
+              id: Date.now().toString(),
+              content: gasResponse.response,
+              sender: 'assistant',
+              timestamp: new Date(),
+              persona: gasResponse.persona,
+              cached: gasResponse.cached || false
+            }
+          },
+          request_id: Date.now().toString(),
+          timestamp: new Date().toISOString()
         }
       }
-    } catch (error: any) {
-      // Handle rate limiting (common to both backends)
-      if (error.response?.status === 429) {
-        throw new Error('Limite de requisições excedido. Tente novamente em alguns minutos.')
-      }
-      
-      // Handle backend-specific errors
-      if (error.response?.data?.error) {
-        throw new Error(error.response.data.error)
-      }
-      
-      if (error.response?.data?.message) {
-        throw new Error(error.response.data.message)
-      }
-      
-      // Network errors
-      if (!error.response) {
-        throw new Error('Erro de conexão. Verifique sua internet.')
-      }
-      
-      throw new Error('Erro ao enviar mensagem. Tente novamente.')
+    } catch (error: unknown) {
+      return handleApiError(error)
     }
   },
 }
@@ -289,8 +314,8 @@ export const scopeApi = {
   checkQuestion: async (question: string): Promise<{
     question: string
     analysis: ScopeAnalysis
-    recommendation: any
-    metadata: any
+    recommendation: Record<string, unknown>
+    metadata: Record<string, unknown>
   }> => {
     // Simple scope check - can be enhanced later
     const validKeywords = ['hansen', 'pqt', 'rifampicina', 'clofazimina', 'dapsona', 'dispensação']
@@ -329,7 +354,7 @@ export const feedbackApi = {
 
 // Stats API (mock data)
 export const statsApi = {
-  getStats: async (): Promise<{ system_stats: SystemStats; metadata: any }> => {
+  getStats: async (): Promise<{ system_stats: SystemStats; metadata: Record<string, unknown> }> => {
     return {
       system_stats: {
         interactions: 0,
@@ -395,16 +420,19 @@ export const healthApi = {
         data: response.data,
         message: 'Conexão estabelecida com sucesso!'
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('❌ Erro na conexão:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido'
+      const isAxiosError = (err: unknown): err is AxiosError => typeof err === 'object' && err !== null && 'isAxiosError' in err
+      
       return {
         success: false,
-        error: error.message || 'Erro desconhecido',
+        error: errorMessage,
         details: {
-          status: error.response?.status,
-          statusText: error.response?.statusText,
-          url: error.config?.url,
-          method: error.config?.method
+          status: isAxiosError(error) ? error.response?.status : undefined,
+          statusText: isAxiosError(error) ? error.response?.statusText : undefined,
+          url: isAxiosError(error) ? error.config?.url : undefined,
+          method: isAxiosError(error) ? error.config?.method : undefined
         }
       }
     }

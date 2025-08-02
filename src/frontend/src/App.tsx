@@ -5,7 +5,7 @@ import { AnimatePresence } from 'framer-motion'
 import Layout from '@components/Layout'
 import ErrorBoundary from '@components/ErrorBoundary'
 import { SkeletonPage } from '@components/SkeletonLoader'
-import { ThemeProvider } from '@hooks/useTheme'
+import { ThemeProvider } from '@components/ThemeProvider'
 import { ChatProvider } from '@hooks/useChat'
 import { performanceMonitor, BundleOptimizer } from '@utils/performanceOptimizer'
 

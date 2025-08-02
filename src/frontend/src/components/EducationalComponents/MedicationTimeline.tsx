@@ -275,7 +275,7 @@ const MedicationTimeline: React.FC<MedicationTimelineProps> = ({
               <ClockIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
               <div>
                 <p className="text-sm font-semibold text-primary-900 dark:text-primary-100">
-                  Próxima fase em {phases.find(p => getPhaseStatus(p) === 'upcoming')?.startWeek! - currentWeek} semanas
+                  Próxima fase em {(phases.find(p => getPhaseStatus(p) === 'upcoming')?.startWeek || 0) - currentWeek} semanas
                 </p>
                 <p className="text-xs text-primary-700 dark:text-primary-300">
                   Continue seguindo o tratamento conforme prescrito

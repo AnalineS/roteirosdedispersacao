@@ -5,6 +5,7 @@ import {
   ExclamationTriangleIcon, 
   XMarkIcon 
 } from '@heroicons/react/24/outline'
+// Hook moved to: src/hooks/useConnectivity.tsx
 
 interface ConnectivityDetectorProps {
   onConnectionChange?: (isOnline: boolean) => void
@@ -128,65 +129,6 @@ const ConnectivityDetector: React.FC<ConnectivityDetectorProps> = ({
       )}
     </AnimatePresence>
   )
-}
-
-// Hook for using connectivity status
-export const useConnectivity = () => {
-  const [isOnline, setIsOnline] = useState(navigator.onLine)
-  const [connectionHistory, setConnectionHistory] = useState<{
-    timestamp: Date
-    status: 'online' | 'offline'
-  }[]>([])
-
-  useEffect(() => {
-    const handleOnline = () => {
-      setIsOnline(true)
-      setConnectionHistory(prev => [...prev.slice(-9), {
-        timestamp: new Date(),
-        status: 'online'
-      }])
-    }
-
-    const handleOffline = () => {
-      setIsOnline(false)
-      setConnectionHistory(prev => [...prev.slice(-9), {
-        timestamp: new Date(),
-        status: 'offline'
-      }])
-    }
-
-    window.addEventListener('online', handleOnline)
-    window.addEventListener('offline', handleOffline)
-
-    // Initial status
-    setConnectionHistory([{
-      timestamp: new Date(),
-      status: navigator.onLine ? 'online' : 'offline'
-    }])
-
-    return () => {
-      window.removeEventListener('online', handleOnline)
-      window.removeEventListener('offline', handleOffline)
-    }
-  }, [])
-
-  const getConnectionQuality = () => {
-    // Simple quality assessment based on recent connection history
-    const recent = connectionHistory.slice(-5)
-    const offlineCount = recent.filter(h => h.status === 'offline').length
-    
-    if (offlineCount === 0) return 'excellent'
-    if (offlineCount <= 1) return 'good'
-    if (offlineCount <= 2) return 'fair'
-    return 'poor'
-  }
-
-  return {
-    isOnline,
-    connectionHistory,
-    connectionQuality: getConnectionQuality(),
-    lastStatusChange: connectionHistory[connectionHistory.length - 1]?.timestamp
-  }
 }
 
 export default ConnectivityDetector

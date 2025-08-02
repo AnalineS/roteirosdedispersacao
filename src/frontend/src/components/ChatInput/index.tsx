@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useChat } from '@hooks/useChat'
-import { useFormValidation, ValidationRules, ValidationMessage } from '@components/FormValidation'
+import { ValidationMessage } from '@components/FormValidation'
 import { 
   PaperAirplaneIcon,
   MicrophoneIcon,
@@ -15,18 +15,41 @@ const ChatInput: React.FC = () => {
   const [isRecording, setIsRecording] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-  // Form validation setup
-  const validationRules = {
-    message: [
-      ValidationRules.required('Digite uma mensagem'),
-      ValidationRules.minLength(3, 'Mensagem muito curta (mínimo 3 caracteres)'),
-      ValidationRules.maxLength(1000, 'Mensagem muito longa (máximo 1000 caracteres)'),
-      ValidationRules.medicalText(),
-      ValidationRules.hanseniasiRelated()
-    ]
-  }
+  // Simple validation state
+  const [messageValidation, setMessageValidation] = useState({
+    errors: [] as string[],
+    warnings: [] as string[],
+    infos: [] as string[]
+  })
 
-  const { getFieldStatus, validateField, touchField } = useFormValidation(validationRules)
+  // Simple validation function
+  const validateMessage = (value: string) => {
+    const errors: string[] = []
+    const warnings: string[] = []
+    const infos: string[] = []
+
+    if (!value.trim()) {
+      errors.push('Digite uma mensagem')
+    } else if (value.length < 3) {
+      errors.push('Mensagem muito curta (mínimo 3 caracteres)')
+    } else if (value.length > 1000) {
+      errors.push('Mensagem muito longa (máximo 1000 caracteres)')
+    }
+
+    const medicalKeywords = ['dosagem', 'medicamento', 'tratamento', 'sintoma', 'diagnóstico', 'paciente', 'farmácia', 'dispensação']
+    const hasKeywords = medicalKeywords.some(keyword => value.toLowerCase().includes(keyword))
+    if (!hasKeywords && value.length >= 10) {
+      warnings.push('Texto deve estar relacionado ao contexto médico')
+    }
+
+    const hanseniasiKeywords = ['hansen', 'pqt', 'rifampicina', 'clofazimina', 'dapsona', 'dispensação']
+    const hasHanseniasiKeywords = hanseniasiKeywords.some(keyword => value.toLowerCase().includes(keyword))
+    if (!hasHanseniasiKeywords) {
+      infos.push('Para consultas sobre hanseníase, use termos específicos como "PQT", "rifampicina", "dispensação"')
+    }
+
+    return { errors, warnings, infos }
+  }
 
   // Auto-resize textarea
   useEffect(() => {
@@ -47,9 +70,9 @@ const ChatInput: React.FC = () => {
     e.preventDefault()
     
     // Validate message before sending
-    const validation = validateField('message', message, true)
-    if (!validation.isValid || !message.trim() || state.isLoading || !state.selectedPersona) {
-      touchField('message')
+    const validation = validateMessage(message)
+    setMessageValidation(validation)
+    if (validation.errors.length > 0 || !message.trim() || state.isLoading || !state.selectedPersona) {
       return
     }
 
@@ -75,7 +98,6 @@ const ChatInput: React.FC = () => {
   }
 
   const isDisabled = state.isLoading || !state.selectedPersona
-  const messageValidation = getFieldStatus('message')
 
   return (
     <div className="space-y-3">
@@ -166,9 +188,8 @@ const ChatInput: React.FC = () => {
                 value={message}
                 onChange={(e) => {
                   setMessage(e.target.value)
-                  validateField('message', e.target.value)
+                  setMessageValidation(validateMessage(e.target.value))
                 }}
-                onBlur={() => touchField('message')}
                 onKeyDown={handleKeyDown}
                 placeholder={
                   !state.selectedPersona 
@@ -182,7 +203,7 @@ const ChatInput: React.FC = () => {
                 aria-label="Campo de mensagem"
                 aria-describedby="message-help message-validation"
                 aria-required="true"
-                aria-invalid={messageValidation.errors.length > 0 && messageValidation.isTouched}
+                aria-invalid={messageValidation.errors.length > 0}
               />
               <div className="sr-only" id="message-help">
                 Digite sua pergunta sobre hanseníase e dispensação de medicamentos. Pressione Enter para enviar ou Shift+Enter para nova linha.
@@ -228,7 +249,7 @@ const ChatInput: React.FC = () => {
 
           {/* Validation Messages */}
           <AnimatePresence>
-            {messageValidation.isTouched && (messageValidation.errors.length > 0 || messageValidation.warnings.length > 0) && (
+            {(messageValidation.errors.length > 0 || messageValidation.warnings.length > 0 || messageValidation.infos.length > 0) && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
@@ -236,7 +257,7 @@ const ChatInput: React.FC = () => {
                 className="px-4 pb-3 space-y-1"
                 id="message-validation"
               >
-                {messageValidation.errors.map((error, index) => (
+                {messageValidation.errors.map((error: string, index: number) => (
                   <ValidationMessage
                     key={`error-${index}`}
                     type="error"
@@ -244,7 +265,7 @@ const ChatInput: React.FC = () => {
                     className="text-xs"
                   />
                 ))}
-                {messageValidation.warnings.map((warning, index) => (
+                {messageValidation.warnings.map((warning: string, index: number) => (
                   <ValidationMessage
                     key={`warning-${index}`}
                     type="warning"
@@ -252,7 +273,7 @@ const ChatInput: React.FC = () => {
                     className="text-xs"
                   />
                 ))}
-                {messageValidation.infos.map((info, index) => (
+                {messageValidation.infos.map((info: string, index: number) => (
                   <ValidationMessage
                     key={`info-${index}`}
                     type="info"

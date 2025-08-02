@@ -8,6 +8,17 @@ interface ScopePreviewProps {
   onClose: () => void
 }
 
+interface KnowledgeScope {
+  primary_focus: string
+  source: string
+  covered_topics: Record<string, string[]>
+  explicitly_not_covered: string[]
+}
+
+interface ScopeData {
+  knowledge_scope: KnowledgeScope
+}
+
 const ScopePreview: React.FC<ScopePreviewProps> = ({ onClose }) => {
   const { data: scopeData, isLoading } = useQuery({
     queryKey: ['scope-info'],
@@ -41,10 +52,10 @@ const ScopePreview: React.FC<ScopePreviewProps> = ({ onClose }) => {
                 <div className="space-y-3">
                   <div>
                     <p className="text-sm text-primary-800 dark:text-primary-200 mb-2">
-                      <strong>Foco principal:</strong> {(scopeData as any)?.knowledge_scope?.primary_focus}
+                      <strong>Foco principal:</strong> {(scopeData as ScopeData)?.knowledge_scope?.primary_focus}
                     </p>
                     <p className="text-sm text-primary-700 dark:text-primary-300">
-                      <strong>Fonte:</strong> {(scopeData as any)?.knowledge_scope.source}
+                      <strong>Fonte:</strong> {(scopeData as ScopeData)?.knowledge_scope.source}
                     </p>
                   </div>
 
@@ -54,7 +65,7 @@ const ScopePreview: React.FC<ScopePreviewProps> = ({ onClose }) => {
                       Tópicos cobertos:
                     </p>
                     <div className="flex flex-wrap gap-1">
-                      {Object.keys((scopeData as any)?.knowledge_scope.covered_topics).map((topic: string) => (
+                      {Object.keys((scopeData as ScopeData)?.knowledge_scope.covered_topics || {}).map((topic: string) => (
                         <span
                           key={topic}
                           className="px-2 py-1 bg-primary-200 dark:bg-primary-800 text-primary-800 dark:text-primary-200 rounded-full text-xs"
@@ -66,13 +77,13 @@ const ScopePreview: React.FC<ScopePreviewProps> = ({ onClose }) => {
                   </div>
 
                   {/* Not Covered */}
-                  {(scopeData as any)?.knowledge_scope.explicitly_not_covered.length > 0 && (
+                  {((scopeData as ScopeData)?.knowledge_scope.explicitly_not_covered?.length || 0) > 0 && (
                     <div>
                       <p className="text-sm font-medium text-primary-800 dark:text-primary-200 mb-1">
                         Não coberto:
                       </p>
                       <div className="flex flex-wrap gap-1">
-                        {(scopeData as any)?.knowledge_scope.explicitly_not_covered.map((topic: string) => (
+                        {(scopeData as ScopeData)?.knowledge_scope.explicitly_not_covered?.map((topic: string) => (
                           <span
                             key={topic}
                             className="px-2 py-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full text-xs"

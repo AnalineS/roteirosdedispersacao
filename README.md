@@ -1,151 +1,112 @@
-# 🏥 Sistema de Dispensação PQT-U para Hanseníase
+# 🏥 Roteiro de Dispensação - Hanseníase
 
-Sistema de orientação farmacêutica com IA baseado em tese de doutorado sobre roteiro de dispensação para hanseníase.
+Sistema moderno de apoio à dispensação farmacêutica para hanseníase, desenvolvido com tecnologias de ponta e IA.
+
+## 🚀 Tecnologias
+
+### Frontend
+- **React 18** + **TypeScript**
+- **Vite** para build otimizado
+- **TailwindCSS** para estilização
+- **PWA** com Service Worker
+- **React Query** para gerenciamento de estado
+
+### Backend
+- **Flask 3.0** + **Python**
+- **OpenAI API** para IA conversacional
+- **Sistema RAG** avançado
+- **Redis** para cache
+- **Pydantic** para validação
 
 ## 📁 Estrutura do Projeto
 
-### 🏗️ **NOVA ESTRUTURA REORGANIZADA (v2.0.0)**
-
 ```
-📦 Site-Roteiro-Dispensacao/
-├── 📋 README.md & CHANGELOG.md           # Documentação principal
-├── 📋 REPOSITORY_STRUCTURE.md           # Guia completo da estrutura
-│
-├── 🏥 src/                              # CÓDIGO FONTE
-│   ├── backend/                         # Backend Python Flask
-│   │   ├── main.py                      # 🚀 Ponto de entrada
-│   │   ├── api/                         # Endpoints da API
-│   │   ├── core/                        # Lógica central
-│   │   │   ├── personas/               # Dr. Gasnelio + Gá
-│   │   │   ├── validation/             # Detectores de escopo
-│   │   │   └── rag/                    # Sistema RAG
-│   │   ├── config/                      # Configurações & prompts
-│   │   └── utils/                       # Utilitários
-│   └── frontend/                        # Frontend React + TypeScript
-│       ├── src/components/              # Componentes React
-│       ├── src/pages/                   # Páginas da aplicação
-│       └── src/services/                # Serviços de API
-│
-├── 📊 data/                             # BASE DE CONHECIMENTO
-│   ├── hanseniase_thesis.md/.pdf       # Tese original
-│   ├── structured/                      # Dados estruturados JSON
-│   └── embeddings/                      # Vetores e índices
-│
-├── 🧪 tests/                            # TESTES E VALIDAÇÃO
-│   ├── unit/                           # Testes unitários
-│   ├── integration/                     # Testes de integração
-│   ├── quality/                         # Validação de qualidade
-│   │   ├── scientific/                 # Precisão científica
-│   │   ├── usability/                  # Testes de usabilidade
-│   │   └── security/                   # Testes de segurança
-│   └── reports/                         # Relatórios consolidados
-│
-├── 📚 docs/                             # DOCUMENTAÇÃO
-│   ├── ARCHITECTURE.md                 # Arquitetura do sistema
-│   ├── DEVELOPMENT.md                  # Guia de desenvolvimento
-│   ├── SECURITY.md                     # Guia de segurança
-│   ├── personas/                       # Docs das personas
-│   └── api/                            # Documentação da API
-│
-├── 🚀 deploy/                           # DEPLOY E PRODUÇÃO
-│   ├── render.yaml                     # Configuração Render.com
-│   ├── docker/                         # Containers Docker
-│   ├── scripts/                        # Scripts de deploy
-│   └── env/                            # Variáveis de ambiente
-│
-└── 🔧 tools/                            # FERRAMENTAS
-    ├── validation/                      # Scripts de validação
-    ├── data_processing/                 # Processamento de dados
-    └── monitoring/                      # Monitoramento
+├── src/
+│   ├── frontend/          # React App moderna
+│   │   ├── src/
+│   │   │   ├── components/    # Componentes React
+│   │   │   ├── pages/         # Páginas da aplicação
+│   │   │   ├── hooks/         # Hooks customizados
+│   │   │   ├── services/      # APIs e serviços
+│   │   │   └── styles/        # Estilos CSS
+│   │   └── public/        # Assets estáticos
+│   └── backend/           # API Flask avançada
+│       ├── core/          # Funcionalidades principais
+│       ├── services/      # Serviços de negócio
+│       └── config/        # Configurações
+├── data/                  # Base de conhecimento
+├── docs/                  # Documentação
+└── firebase.json          # Configuração de deploy
 ```
 
-## 🚀 Início Rápido
+## 🛠️ Desenvolvimento
 
-### 1. Desenvolvimento Local
+### Frontend
 ```bash
-# Usar script automatizado
-python tools/monitoring/start_dev_environment.py
-
-# Ou manualmente:
-# Backend
-cd src/backend
-python main.py
-
-# Frontend (novo terminal)
 cd src/frontend
 npm install
-npm run dev
+npm run dev          # Desenvolvimento
+npm run build        # Build para produção
+npm run type-check   # Verificação de tipos
+npm run lint         # Linting
 ```
 
-### 2. Acesso ao Sistema
-- **Frontend:** http://localhost:3000
-- **Backend API:** http://localhost:5000
-- **Health Check:** http://localhost:5000/api/health
-
-## 🧪 Testes
-
-### Validação Científica
+### Backend
 ```bash
-cd tests/scientific_quality
-python test_scientific_validation.py
+cd src/backend
+pip install -r requirements.txt
+python main.py       # Servidor desenvolvimento
 ```
 
-### Testes de Integração
+## 🚀 Deploy
+
+### Firebase Hosting (Frontend)
 ```bash
-cd tests/integration
-python test_backend_frontend.py
+cd src/frontend
+npm run build
+firebase deploy
 ```
+
+### Cloud Run (Backend)
+```bash
+cd src/backend
+docker build -t roteiro-backend .
+# Deploy via Google Cloud Console
+```
+
+## 🔒 Segurança
+
+- **CSP Headers** configurados
+- **Rate Limiting** implementado
+- **Input Validation** com Pydantic
+- **CORS** configurado adequadamente
+- Ver `POLITICAS_SEGURANCA_GLOBAL.md` para detalhes
+
+## 📋 Features
+
+- ✅ Chat IA com personas especializadas
+- ✅ Sistema educacional interativo
+- ✅ Timeline de medicamentos
+- ✅ Componentes acessíveis
+- ✅ PWA completo
+- ✅ Sistema RAG avançado
+- ✅ Cache inteligente
+- ✅ Monitoramento de performance
 
 ## 👥 Personas Disponíveis
 
 - **Dr. Gasnelio** - Farmacêutico técnico especialista
 - **Gá** - Assistente empático e acolhedor
 
-## 📋 Status do Projeto
+## 🌐 URLs
 
-- ✅ **Backend Principal:** Funcional e validado
-- ✅ **Frontend React:** Interface moderna completa
-- ✅ **Validação Científica:** Framework dual implementado
-- ✅ **Testes de Integração:** 100% funcionais
-- ✅ **Deploy:** Configurado para Render
-
-## 🔧 Para Desenvolvedores
-
-### Estrutura Recomendada
-1. **Desenvolvimento normal:** Use `src/backend/main.py`
-2. **Testes específicos:** Use arquivos em `development/`
-3. **Validação científica:** Execute testes em `tests/scientific_quality/`
-
-### Arquivos Importantes
-- `src/backend/README.md` - Guia do backend
-- `tests/scientific_quality/README.md` - Guia dos testes científicos
-- `docs/` - Documentação técnica completa
-
-## 📚 Documentação Completa
-
-### 📋 Product Requirements Document (PRD)
-- **[PRD Completo](docs/PRD_COMPLETE.md)** - Especificação técnica detalhada
-- **[Arquitetura](docs/ARCHITECTURE.md)** - Estrutura técnica unificada
-- **[Desenvolvimento](docs/DEVELOPMENT.md)** - Guia para desenvolvedores
-- **[Segurança](docs/SECURITY.md)** - Práticas de segurança
-
-### 🎯 Métricas de Qualidade Atingidas
-- **Segurança:** 90/100 (Nível Enterprise)
-- **Qualidade de Código:** 88/100 (Nível Produção)  
-- **Usabilidade:** 83.3/100 (Aprovado)
-- **Acessibilidade:** 100/100 (WCAG 2.1 AA+)
-- **Performance:** 88/100 (Otimizada)
+- **Produção**: https://roteirosdedispensacao.com/
+- **API**: Configurável via variáveis de ambiente
 
 ## 📚 Baseado em Pesquisa Científica
 
 Sistema desenvolvido com base em tese de doutorado sobre roteiro de dispensação farmacêutica para hanseníase, seguindo protocolos do PCDT Hanseníase 2022 do Ministério da Saúde.
 
-### 🚀 Funcionalidades Implementadas
-- ✅ **Duas Personas IA:** Dr. Gasnelio (técnico) + Gá (empático)
-- ✅ **Interface Moderna:** React + TypeScript + TailwindCSS
-- ✅ **Sistema RAG:** Base de conhecimento estruturada
-- ✅ **Performance:** Cache inteligente < 1.5s
-- ✅ **Acessibilidade:** WCAG 2.1 AA+ completa
-- ✅ **Segurança:** Headers OWASP + Rate limiting
-- ✅ **PWA:** Progressive Web App pronto
-- ✅ **Monitoramento:** Sistema de métricas em tempo real
+## 📝 Licença
+
+Projeto educacional para apoio à dispensação farmacêutica.

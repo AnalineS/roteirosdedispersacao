@@ -4,7 +4,7 @@ export interface AppError {
   id: string
   type: 'network' | 'api' | 'validation' | 'permission' | 'unknown'
   message: string
-  originalError?: any
+  originalError?: Error | unknown
   context?: string
   timestamp: Date
   retryable: boolean
@@ -27,7 +27,7 @@ export class ErrorHandler {
   /**
    * Process and categorize different error types
    */
-  processError(error: any, context?: string): AppError {
+  processError(error: Error | unknown, context?: string): AppError {
     const errorId = `err_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
     
     // Handle Axios errors
@@ -35,13 +35,23 @@ export class ErrorHandler {
       return this.handleAxiosError(error, errorId, context)
     }
     
+    // Type guards
+    const hasResponse = (err: unknown): err is { response: unknown } => 
+      typeof err === 'object' && err !== null && 'response' in err
+    
+    const hasRequest = (err: unknown): err is { request: unknown } => 
+      typeof err === 'object' && err !== null && 'request' in err
+    
+    const hasName = (err: unknown): err is { name: string } => 
+      typeof err === 'object' && err !== null && 'name' in err
+    
     // Handle React Query errors
-    if (error?.response || error?.request) {
+    if (hasResponse(error) || hasRequest(error)) {
       return this.handleAPIError(error, errorId, context)
     }
     
     // Handle validation errors
-    if (error?.name === 'ValidationError') {
+    if (hasName(error) && error.name === 'ValidationError') {
       return this.handleValidationError(error, errorId, context)
     }
     
@@ -49,8 +59,8 @@ export class ErrorHandler {
     return this.handleGenericError(error, errorId, context)
   }
 
-  private isAxiosError(error: any): error is AxiosError {
-    return error?.isAxiosError === true
+  private isAxiosError(error: unknown): error is AxiosError {
+    return typeof error === 'object' && error !== null && 'isAxiosError' in error && (error as { isAxiosError: boolean }).isAxiosError === true
   }
 
   private handleAxiosError(error: AxiosError, errorId: string, context?: string): AppError {
@@ -115,7 +125,8 @@ export class ErrorHandler {
 
     // Client errors (4xx)
     if (response.status >= 400) {
-      const apiMessage = (response.data as any)?.error || (response.data as any)?.message
+      const responseData = response.data as { error?: string; message?: string } | undefined
+      const apiMessage = responseData?.error || responseData?.message
       return {
         id: errorId,
         type: 'validation',
@@ -131,8 +142,18 @@ export class ErrorHandler {
     return this.handleGenericError(error, errorId, context)
   }
 
-  private handleAPIError(error: any, errorId: string, context?: string): AppError {
-    const apiMessage = error?.response?.data?.error || error?.response?.data?.message || error?.message
+  private handleAPIError(error: unknown, errorId: string, context?: string): AppError {
+    const hasResponse = (err: unknown): err is { response: { data: { error?: string; message?: string } } } =>
+      typeof err === 'object' && err !== null && 'response' in err
+    
+    const hasMessage = (err: unknown): err is { message: string } =>
+      typeof err === 'object' && err !== null && 'message' in err
+    
+    const apiMessage = hasResponse(error) 
+      ? error.response?.data?.error || error.response?.data?.message
+      : hasMessage(error)
+      ? error.message
+      : undefined
     
     return {
       id: errorId,
@@ -146,11 +167,14 @@ export class ErrorHandler {
     }
   }
 
-  private handleValidationError(error: any, errorId: string, context?: string): AppError {
+  private handleValidationError(error: unknown, errorId: string, context?: string): AppError {
+    const hasMessage = (err: unknown): err is { message: string } =>
+      typeof err === 'object' && err !== null && 'message' in err
+      
     return {
       id: errorId,
       type: 'validation',
-      message: error.message || 'Dados fornecidos são inválidos.',
+      message: hasMessage(error) ? error.message : 'Dados fornecidos são inválidos.',
       originalError: error,
       context,
       timestamp: new Date(),
@@ -159,11 +183,14 @@ export class ErrorHandler {
     }
   }
 
-  private handleGenericError(error: any, errorId: string, context?: string): AppError {
+  private handleGenericError(error: unknown, errorId: string, context?: string): AppError {
+    const hasMessage = (err: unknown): err is { message: string } =>
+      typeof err === 'object' && err !== null && 'message' in err
+      
     return {
       id: errorId,
       type: 'unknown',
-      message: error?.message || 'Erro inesperado.',
+      message: hasMessage(error) ? error.message : 'Erro inesperado.',
       originalError: error,
       context,
       timestamp: new Date(),
@@ -304,9 +331,15 @@ export class ErrorHandler {
    * Check if error should trigger offline mode
    */
   isOfflineError(error: AppError): boolean {
+    const hasCode = (err: unknown): err is { code: string } =>
+      typeof err === 'object' && err !== null && 'code' in err
+    
+    const hasMessage = (err: unknown): err is { message: string } =>
+      typeof err === 'object' && err !== null && 'message' in err
+      
     return error.type === 'network' && 
-           (error.originalError?.code === 'NETWORK_ERROR' ||
-            error.originalError?.message?.includes('Network Error'))
+           ((hasCode(error.originalError) && error.originalError.code === 'NETWORK_ERROR') ||
+            (hasMessage(error.originalError) && error.originalError.message.includes('Network Error')))
   }
 
   /**

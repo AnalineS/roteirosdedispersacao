@@ -39,7 +39,7 @@ const MedicalTooltip: React.FC<MedicalTooltipProps> = ({
   const [hasBeenViewed, setHasBeenViewed] = useState(false)
   const triggerRef = useRef<HTMLSpanElement>(null)
   const tooltipRef = useRef<HTMLDivElement>(null)
-  const timeoutRef = useRef<NodeJS.Timeout>()
+  const timeoutRef = useRef<ReturnType<typeof setTimeout>>()
   const { selectedPersona } = useChat()
 
   // Check if term has been viewed before

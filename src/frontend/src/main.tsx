@@ -12,7 +12,7 @@ import './styles/redesign.css'
 import './styles/desktop-optimized.css'
 import './styles/mobile-optimizations.css'
 import './styles/critical-fixes.css'
-import './utils/medical-app.js'
+// Removido: import './utils/medical-app.js' - funcionalidade integrada nos componentes React
 
 // Create a query client
 const queryClient = new QueryClient({

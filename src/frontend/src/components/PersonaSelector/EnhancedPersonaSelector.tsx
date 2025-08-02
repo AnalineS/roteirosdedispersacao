@@ -360,8 +360,8 @@ const EnhancedPersonaSelector: React.FC<EnhancedPersonaSelectorProps> = ({
                   onSelect={() => {
                     setSelectedPersona(id)
                     // Track selection for analytics
-                    if (typeof window !== 'undefined' && (window as any).gtag) {
-                      (window as any).gtag('event', 'select_persona', {
+                    if (typeof window !== 'undefined' && (window as typeof window & { gtag?: (...args: unknown[]) => void }).gtag) {
+                      (window as typeof window & { gtag: (...args: unknown[]) => void }).gtag('event', 'select_persona', {
                         persona_id: id,
                         persona_name: persona.name
                       })

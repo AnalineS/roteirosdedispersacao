@@ -5,6 +5,27 @@
 
 import type { ComponentType } from 'react'
 
+// Performance API types
+interface LayoutShift extends PerformanceEntry {
+  value: number
+  hadRecentInput: boolean
+}
+
+interface PerformanceEventTiming extends PerformanceEntry {
+  processingStart: number
+}
+
+interface NetworkInformation {
+  effectiveType: string
+  downlink: number
+}
+
+interface MemoryInfo {
+  usedJSHeapSize: number
+  totalJSHeapSize: number
+  jsHeapSizeLimit: number
+}
+
 // Performance monitoring
 export class PerformanceMonitor {
   private static instance: PerformanceMonitor
@@ -37,7 +58,7 @@ export class PerformanceMonitor {
       // FID - First Input Delay (via event timing)
       new PerformanceObserver((entryList) => {
         for (const entry of entryList.getEntries()) {
-          const fid = (entry as any).processingStart - entry.startTime
+          const fid = (entry as PerformanceEventTiming & { processingStart: number }).processingStart - entry.startTime
           this.metrics.set('FID', fid)
           console.log('📊 FID:', fid)
         }
@@ -47,8 +68,8 @@ export class PerformanceMonitor {
       let clsScore = 0
       new PerformanceObserver((entryList) => {
         for (const entry of entryList.getEntries()) {
-          if (!(entry as any).hadRecentInput) {
-            clsScore += (entry as any).value
+          if (!(entry as LayoutShift & { hadRecentInput: boolean }).hadRecentInput) {
+            clsScore += (entry as LayoutShift & { value: number }).value
           }
         }
         this.metrics.set('CLS', clsScore)
@@ -107,9 +128,9 @@ export const AnimationOptimizer = {
   // Check device performance capability
   isLowEndDevice(): boolean {
     // Check various indicators of device performance
-    const connection = (navigator as any).connection
+    const connection = (navigator as Navigator & { connection?: NetworkInformation }).connection
     const hardwareConcurrency = navigator.hardwareConcurrency || 1
-    const deviceMemory = (navigator as any).deviceMemory || 1
+    const deviceMemory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory || 1
 
     // Low-end indicators
     if (hardwareConcurrency <= 2) return true
@@ -304,17 +325,19 @@ export const MemoryOptimizer = {
   // Monitor memory usage
   monitorMemory() {
     if ('memory' in performance) {
-      const memory = (performance as any).memory
-      console.log('📊 Memory Usage:', {
-        used: Math.round(memory.usedJSHeapSize / 1024 / 1024) + ' MB',
-        total: Math.round(memory.totalJSHeapSize / 1024 / 1024) + ' MB',
-        limit: Math.round(memory.jsHeapSizeLimit / 1024 / 1024) + ' MB'
-      })
+      const memory = (performance as Performance & { memory?: MemoryInfo }).memory
+      if (memory) {
+        console.log('📊 Memory Usage:', {
+          used: Math.round(memory.usedJSHeapSize / 1024 / 1024) + ' MB',
+          total: Math.round(memory.totalJSHeapSize / 1024 / 1024) + ' MB',
+          limit: Math.round(memory.jsHeapSizeLimit / 1024 / 1024) + ' MB'
+        })
+      }
     }
   },
 
   // Debounce function for performance
-  debounce<T extends (...args: any[]) => any>(
+  debounce<T extends (...args: unknown[]) => unknown>(
     func: T,
     wait: number,
     immediate?: boolean
@@ -336,7 +359,7 @@ export const MemoryOptimizer = {
   },
 
   // Throttle function for performance
-  throttle<T extends (...args: any[]) => any>(
+  throttle<T extends (...args: unknown[]) => unknown>(
     func: T,
     limit: number
   ): (...args: Parameters<T>) => void {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   CheckCircleIcon, 
@@ -6,12 +6,6 @@ import {
   InformationCircleIcon 
 } from '@heroicons/react/24/outline'
 
-// Validation rules interface
-interface ValidationRule {
-  test: (value: string) => boolean
-  message: string
-  level: 'error' | 'warning' | 'info'
-}
 
 // Field validation state
 interface FieldValidation {
@@ -23,8 +17,8 @@ interface FieldValidation {
   infos: string[]
 }
 
-// Form validation hook
-export const useFormValidation = (validationRules: Record<string, ValidationRule[]>) => {
+// Hook moved to: src/hooks/useFormValidation.tsx
+/* const useFormValidation = (validationRules: Record<string, ValidationRule[]>) => {
   const [fields, setFields] = useState<Record<string, FieldValidation>>({})
   const [isFormValid, setIsFormValid] = useState(false)
 
@@ -121,10 +115,10 @@ export const useFormValidation = (validationRules: Record<string, ValidationRule
     touchField,
     getFieldStatus
   }
-}
+} */
 
-// Common validation rules
-export const ValidationRules = {
+// Rules moved to: src/utils/validationRules.ts
+/* const ValidationRules = {
   required: (message = 'Este campo é obrigatório'): ValidationRule => ({
     test: (value: string) => value.trim().length > 0,
     message,
@@ -224,7 +218,7 @@ export const ValidationRules = {
     message,
     level: 'info'
   })
-}
+} */
 
 // Validation message component
 interface ValidationMessageProps {
@@ -463,10 +457,8 @@ export const ValidationSummary: React.FC<ValidationSummaryProps> = ({
   )
 }
 
-export default {
-  useFormValidation,
-  ValidationRules,
-  ValidationMessage,
-  ValidatedInput,
-  ValidationSummary
-}
+// Export only the components (no duplicated exports)
+
+// Utilities moved to separate files:
+// - useFormValidation: src/hooks/useFormValidation.tsx
+// - ValidationRules: src/utils/validationRules.ts
