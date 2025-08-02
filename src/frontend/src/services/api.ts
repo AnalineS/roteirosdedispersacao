@@ -50,32 +50,78 @@ const api = axios.create({
   timeout: API_CONFIG.TIMEOUT,
 })
 
-// Request interceptor (simplified for Google Apps Script)
+// Debug logging for development
+if (API_CONFIG.ENVIRONMENT === 'development') {
+  console.log('🔧 API Configuration:', {
+    baseUrl: API_BASE_URL,
+    isCloudRun: IS_CLOUD_RUN,
+    environment: API_CONFIG.ENVIRONMENT,
+    timeout: API_CONFIG.TIMEOUT
+  })
+}
+
+// Request interceptor with enhanced logging
 api.interceptors.request.use(
   (config) => {
-    // Google Apps Script doesn't need auth tokens
-    // Just ensure proper content type
+    // Ensure proper content type
     config.headers['Content-Type'] = 'application/json'
+    
+    // Log requests in development
+    if (API_CONFIG.ENVIRONMENT === 'development') {
+      console.log('📤 API Request:', {
+        method: config.method?.toUpperCase(),
+        url: `${config.baseURL}${config.url}`,
+        headers: config.headers,
+        data: config.data
+      })
+    }
+    
     return config
   },
   (error) => {
+    console.error('📤 Request Error:', error)
     return Promise.reject(error)
   }
 )
 
-// Response interceptor
+// Response interceptor with enhanced error handling
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Log successful responses in development
+    if (API_CONFIG.ENVIRONMENT === 'development') {
+      console.log('📥 API Response:', {
+        status: response.status,
+        url: response.config.url,
+        data: response.data
+      })
+    }
+    return response
+  },
   (error: AxiosError<ApiResponse<any>>) => {
+    // Enhanced error logging
+    console.error('📥 API Error:', {
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      url: error.config?.url,
+      method: error.config?.method,
+      data: error.response?.data,
+      message: error.message
+    })
+
     // Handle rate limiting
     if (error.response?.status === 429) {
       const retryAfter = error.response.headers['x-ratelimit-reset']
-      console.warn(`Rate limit exceeded. Retry after: ${retryAfter}`)
+      console.warn(`⏰ Rate limit exceeded. Retry after: ${retryAfter}`)
+    }
+
+    // Handle CORS errors
+    if (error.message.includes('CORS') || error.message.includes('Network Error')) {
+      console.error('🚫 CORS Error detected - check backend CORS configuration')
     }
 
     // Handle network errors
     if (!error.response) {
-      console.error('Network error:', error.message)
+      console.error('🌐 Network error:', error.message)
     }
 
     return Promise.reject(error)
@@ -337,6 +383,32 @@ export const healthApi = {
       }
     }
   },
+
+  // Teste simples de conexão CORS
+  testConnection: async () => {
+    try {
+      console.log('🔍 Testando conexão com backend...')
+      const response = await api.get('/api/test')
+      console.log('✅ Conexão bem-sucedida:', response.data)
+      return {
+        success: true,
+        data: response.data,
+        message: 'Conexão estabelecida com sucesso!'
+      }
+    } catch (error: any) {
+      console.error('❌ Erro na conexão:', error)
+      return {
+        success: false,
+        error: error.message || 'Erro desconhecido',
+        details: {
+          status: error.response?.status,
+          statusText: error.response?.statusText,
+          url: error.config?.url,
+          method: error.config?.method
+        }
+      }
+    }
+  }
 }
 
 // Export API configuration for debugging

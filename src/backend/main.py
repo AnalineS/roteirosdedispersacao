@@ -128,10 +128,26 @@ if flask_env == 'production':
 
 CORS(app, 
      origins=allowed_origins,
-     methods=['GET', 'POST', 'OPTIONS'],
-     allow_headers=['Content-Type', 'Authorization'],
+     methods=['GET', 'POST', 'OPTIONS', 'HEAD'],
+     allow_headers=['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
      supports_credentials=False,
      max_age=86400)  # Cache preflight por 24h
+
+print(f"🔗 CORS ativo para: {allowed_origins}")
+
+# ROTA DE TESTE PARA DEBUG CORS
+@app.route('/api/test', methods=['GET', 'OPTIONS'])
+def test_cors():
+    """Rota de teste para verificar CORS"""
+    return jsonify({
+        "status": "ok",
+        "message": "Backend conectado com sucesso!",
+        "timestamp": datetime.now().isoformat(),
+        "cors_headers": dict(request.headers),
+        "origin": request.origin,
+        "method": request.method,
+        "environment": os.environ.get('FLASK_ENV', 'development')
+    })
 
 # Headers de segurança obrigatórios
 @app.after_request
