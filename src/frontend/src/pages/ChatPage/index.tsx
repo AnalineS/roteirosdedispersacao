@@ -1,10 +1,10 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, Suspense } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useChat } from '@hooks/useChat'
-import PersonaSelector from '@components/PersonaSelector'
+import { AnimationOptimizer } from '@utils/performanceOptimizer'
+import { SkeletonMessage } from '@components/SkeletonLoader'
 import ChatMessage from '@components/ChatMessage'
 import ChatInput from '@components/ChatInput'
-import ScopePreview from '@components/ScopePreview'
 import ChatSidebar from '@components/ChatSidebar'
 import { 
   Bars3Icon, 
@@ -13,11 +13,18 @@ import {
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
 
+// Lazy load components
+const PersonaSelector = React.lazy(() => import('@components/PersonaSelector'))
+const ScopePreview = React.lazy(() => import('@components/ScopePreview'))
+
 const ChatPage: React.FC = () => {
   const { state, personas, isPersonasLoading } = useChat()
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [showScopePreview, setShowScopePreview] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  
+  // Get optimized animations
+  const animationVariants = AnimationOptimizer.createOptimizedVariants()
 
   // Auto scroll to bottom when new messages arrive
   useEffect(() => {
@@ -98,7 +105,22 @@ const ChatPage: React.FC = () => {
         {/* Scope Preview */}
         <AnimatePresence>
           {showScopePreview && (
-            <ScopePreview onClose={() => setShowScopePreview(false)} />
+            <Suspense fallback={
+              <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md w-full mx-4">
+                  <div className="animate-pulse space-y-4">
+                    <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-48"></div>
+                    <div className="space-y-2">
+                      {Array.from({ length: 4 }).map((_, i) => (
+                        <div key={i} className="h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            }>
+              <ScopePreview onClose={() => setShowScopePreview(false)} />
+            </Suspense>
           )}
         </AnimatePresence>
 
@@ -114,8 +136,9 @@ const ChatPage: React.FC = () => {
             <div className="flex-1 flex items-center justify-center p-4 sm:p-6">
               <div className="max-w-4xl w-full">
                 <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  variants={animationVariants.slideUp}
+                  initial="initial"
+                  animate="animate"
                   className="text-center mb-6 sm:mb-8"
                 >
                   <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-3 sm:mb-4">
@@ -127,11 +150,26 @@ const ChatPage: React.FC = () => {
                   </p>
                 </motion.div>
 
-                <PersonaSelector
-                  personas={personas}
-                  isLoading={isPersonasLoading}
-                  selectedPersona={state.selectedPersona}
-                />
+                <Suspense fallback={
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                      <div key={i} className="card-medical p-6 text-center space-y-4">
+                        <div className="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto animate-pulse" />
+                        <div className="space-y-2">
+                          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24 mx-auto animate-pulse" />
+                          <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-32 mx-auto animate-pulse" />
+                        </div>
+                        <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                      </div>
+                    ))}
+                  </div>
+                }>
+                  <PersonaSelector
+                    personas={personas}
+                    isLoading={isPersonasLoading}
+                    selectedPersona={state.selectedPersona}
+                  />
+                </Suspense>
               </div>
             </div>
           ) : (
@@ -146,8 +184,9 @@ const ChatPage: React.FC = () => {
                 {/* Welcome Message */}
                 {state.messages.length === 0 && (
                   <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
+                    variants={animationVariants.fade}
+                    initial="initial"
+                    animate="animate"
                     className="max-w-2xl mx-auto text-center py-6 sm:py-8"
                   >
                     <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -199,22 +238,12 @@ const ChatPage: React.FC = () => {
                   {/* Loading Message */}
                   {state.isLoading && (
                     <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
+                      variants={animationVariants.slideUp}
+                      initial="initial"
+                      animate="animate"
                       className="flex justify-start"
                     >
-                      <div className="bg-gray-100 dark:bg-gray-800 rounded-2xl rounded-bl-sm p-3 sm:p-4 max-w-xs sm:max-w-sm">
-                        <div className="flex items-center space-x-2">
-                          <div className="flex space-x-1">
-                            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                          </div>
-                          <span className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                            {selectedPersona.name} está digitando...
-                          </span>
-                        </div>
-                      </div>
+                      <SkeletonMessage />
                     </motion.div>
                   )}
 

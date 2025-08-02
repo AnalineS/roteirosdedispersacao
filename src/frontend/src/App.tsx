@@ -1,12 +1,13 @@
-import { Suspense, lazy } from 'react'
+import { Suspense, lazy, useEffect } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
 
 import Layout from '@components/Layout'
-import LoadingScreen from '@components/LoadingScreen'
 import ErrorBoundary from '@components/ErrorBoundary'
+import { SkeletonPage } from '@components/SkeletonLoader'
 import { ThemeProvider } from '@hooks/useTheme'
 import { ChatProvider } from '@hooks/useChat'
+import { performanceMonitor, BundleOptimizer } from '@utils/performanceOptimizer'
 
 // Lazy load pages
 const HomePage = lazy(() => import('@pages/HomePage'))
@@ -16,6 +17,26 @@ const ResourcesPage = lazy(() => import('@pages/ResourcesPage'))
 const NotFoundPage = lazy(() => import('@pages/NotFoundPage'))
 
 function App() {
+  // Initialize performance monitoring
+  useEffect(() => {
+    // Preload critical resources
+    BundleOptimizer.preloadCriticalResources()
+    
+    // Report performance after page load
+    const reportPerformance = () => {
+      setTimeout(() => {
+        performanceMonitor.reportPerformance()
+      }, 3000)
+    }
+    
+    if (document.readyState === 'complete') {
+      reportPerformance()
+    } else {
+      window.addEventListener('load', reportPerformance)
+      return () => window.removeEventListener('load', reportPerformance)
+    }
+  }, [])
+
   return (
     <ErrorBoundary
       onError={(error, errorInfo) => {
@@ -39,7 +60,7 @@ function App() {
                       index
                       element={
                         <ErrorBoundary>
-                          <Suspense fallback={<LoadingScreen />}>
+                          <Suspense fallback={<SkeletonPage type="home" />}>
                             <HomePage />
                           </Suspense>
                         </ErrorBoundary>
@@ -49,7 +70,7 @@ function App() {
                       path="chat"
                       element={
                         <ErrorBoundary>
-                          <Suspense fallback={<LoadingScreen />}>
+                          <Suspense fallback={<SkeletonPage type="chat" />}>
                             <ChatPage />
                           </Suspense>
                         </ErrorBoundary>
@@ -59,7 +80,7 @@ function App() {
                       path="about"
                       element={
                         <ErrorBoundary>
-                          <Suspense fallback={<LoadingScreen />}>
+                          <Suspense fallback={<SkeletonPage type="about" />}>
                             <AboutPage />
                           </Suspense>
                         </ErrorBoundary>
@@ -69,7 +90,7 @@ function App() {
                       path="resources"
                       element={
                         <ErrorBoundary>
-                          <Suspense fallback={<LoadingScreen />}>
+                          <Suspense fallback={<SkeletonPage type="about" />}>
                             <ResourcesPage />
                           </Suspense>
                         </ErrorBoundary>
@@ -79,7 +100,7 @@ function App() {
                       path="*"
                       element={
                         <ErrorBoundary>
-                          <Suspense fallback={<LoadingScreen />}>
+                          <Suspense fallback={<SkeletonPage type="about" />}>
                             <NotFoundPage />
                           </Suspense>
                         </ErrorBoundary>

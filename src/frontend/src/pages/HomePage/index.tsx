@@ -1,8 +1,9 @@
-import React, { useState } from 'react'
+import React, { useState, Suspense } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useChat } from '@hooks/useChat'
-import ColorSchemePreview from '@components/ColorSchemePreview'
+import { AnimationOptimizer } from '@utils/performanceOptimizer'
+import { SkeletonPersonaCard } from '@components/SkeletonLoader'
 import { 
   ChatBubbleLeftRightIcon,
   BookOpenIcon,
@@ -10,10 +11,17 @@ import {
   Bars3Icon
 } from '@heroicons/react/24/outline'
 
+// Lazy load heavy components
+const ColorSchemePreview = React.lazy(() => import('@components/ColorSchemePreview'))
+
 const HomePage: React.FC = () => {
   const { personas, isPersonasLoading, setSelectedPersona } = useChat()
   const [showColorPreview, setShowColorPreview] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  
+  // Get optimized animation variants
+  const animationVariants = AnimationOptimizer.createOptimizedVariants()
+  const animationConfig = AnimationOptimizer.getOptimizedConfig()
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
@@ -95,9 +103,9 @@ const HomePage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
           {/* Hero Section Responsivo */}
           <motion.section 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
+            variants={animationVariants.slideUp}
+            initial="initial"
+            animate="animate"
             className="text-center mb-12 lg:mb-16"
           >
             <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-gray-900 dark:text-white mb-4 lg:mb-6">
@@ -161,26 +169,25 @@ const HomePage: React.FC = () => {
             {/* Cards de Personas Dinâmicos */}
             {isPersonasLoading ? (
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="card-medical p-6 text-center"
+                variants={animationVariants.fade}
+                initial="initial"
+                animate="animate"
+                className="md:col-span-2 lg:col-span-1"
               >
-                <div className="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
-                  <span className="text-2xl">⏳</span>
-                </div>
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">Carregando especialistas...</h3>
-                <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-                  Aguarde enquanto conectamos você aos nossos especialistas virtuais.
-                </p>
+                <SkeletonPersonaCard />
               </motion.div>
             ) : (
               personas && Object.entries(personas).map(([id, persona], index) => (
                 <motion.div
                   key={id}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                  variants={animationVariants.scale}
+                  initial="initial"
+                  whileInView="animate"
+                  viewport={{ once: true, margin: '-50px' }}
+                  transition={{ 
+                    duration: animationConfig.animationDuration,
+                    delay: index * animationConfig.staggerDelay 
+                  }}
                   className="card-medical p-6 text-center"
                 >
                   <div className="w-16 h-16 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -210,10 +217,11 @@ const HomePage: React.FC = () => {
 
             {/* Card de Base de Conhecimento */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.2 }}
+              variants={animationVariants.scale}
+              initial="initial"
+              whileInView="animate"
+              viewport={{ once: true, margin: '-50px' }}
+              transition={{ delay: 0.2 }}
               className="card-medical p-6 text-center"
             >
               <div className="w-16 h-16 bg-gradient-to-br from-accent-500 to-primary-500 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -234,10 +242,11 @@ const HomePage: React.FC = () => {
 
             {/* Card de Educação Continuada */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.3 }}
+              variants={animationVariants.scale}
+              initial="initial"
+              whileInView="animate"
+              viewport={{ once: true, margin: '-50px' }}
+              transition={{ delay: 0.3 }}
               className="card-medical p-6 text-center md:col-span-2 lg:col-span-1"
             >
               <div className="w-16 h-16 bg-gradient-to-br from-secondary-500 to-accent-500 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -260,9 +269,10 @@ const HomePage: React.FC = () => {
           {/* Estatísticas do Sistema */}
           <section className="text-center mb-12">
             <motion.h2 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
+              variants={animationVariants.slideUp}
+              initial="initial"
+              whileInView="animate"
+              viewport={{ once: true, margin: '-50px' }}
               className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-8 flex items-center justify-center space-x-2"
             >
               <span className="text-2xl">📊</span>
@@ -271,9 +281,10 @@ const HomePage: React.FC = () => {
             
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 lg:gap-8">
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
+                variants={animationVariants.scale}
+                initial="initial"
+                whileInView="animate"
+                viewport={{ once: true, margin: '-50px' }}
                 transition={{ delay: 0.1 }}
                 className="card-medical p-6 text-center"
               >
@@ -285,9 +296,10 @@ const HomePage: React.FC = () => {
               </motion.div>
               
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
+                variants={animationVariants.scale}
+                initial="initial"
+                whileInView="animate"
+                viewport={{ once: true, margin: '-50px' }}
                 transition={{ delay: 0.2 }}
                 className="card-medical p-6 text-center"
               >
@@ -299,9 +311,10 @@ const HomePage: React.FC = () => {
               </motion.div>
               
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
+                variants={animationVariants.scale}
+                initial="initial"
+                whileInView="animate"
+                viewport={{ once: true, margin: '-50px' }}
                 transition={{ delay: 0.3 }}
                 className="card-medical p-6 text-center sm:col-span-3 lg:col-span-1"
               >
@@ -318,12 +331,27 @@ const HomePage: React.FC = () => {
 
       {/* Color Scheme Preview Modal */}
       {showColorPreview && (
-        <ColorSchemePreview
-          onClose={() => setShowColorPreview(false)}
-          onSelect={(schemeId) => {
-            console.log('Esquema selecionado:', schemeId)
-          }}
-        />
+        <Suspense fallback={
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-6">
+              <div className="animate-pulse space-y-4">
+                <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-48"></div>
+                <div className="grid grid-cols-3 gap-4">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <div key={i} className="h-20 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        }>
+          <ColorSchemePreview
+            onClose={() => setShowColorPreview(false)}
+            onSelect={(schemeId) => {
+              console.log('Esquema selecionado:', schemeId)
+            }}
+          />
+        </Suspense>
       )}
     </div>
   )
