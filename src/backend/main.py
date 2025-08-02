@@ -467,6 +467,16 @@ md_text = ""
 # Usar personas do sistema otimizado
 PERSONAS = get_personas()
 
+# Carregar knowledge base estruturada na inicialização
+if ADVANCED_FEATURES:
+    logger.info("📚 Carregando knowledge base estruturada...")
+    try:
+        structured_kb = get_structured_knowledge_base()
+        kb_stats = structured_kb.get_statistics()
+        logger.info(f"✅ Knowledge base carregada: {kb_stats}")
+    except Exception as e:
+        logger.error(f"❌ Erro ao carregar knowledge base estruturada: {e}")
+
 def extract_md_text(md_path):
     """Extrai texto do arquivo Markdown com diagnóstico aprimorado"""
     global md_text
@@ -1078,8 +1088,19 @@ def health_check():
     system_status = "healthy"
     issues = []
     
-    # Verificar base de conhecimento
-    knowledge_base_status = len(md_text) > 100
+    # Verificar base de conhecimento (MD + estruturada)
+    md_available = len(md_text) > 100
+    structured_available = False
+    
+    if ADVANCED_FEATURES:
+        try:
+            structured_kb = get_structured_knowledge_base()
+            kb_stats = structured_kb.get_statistics()
+            structured_available = kb_stats['loaded_successfully'] > 0
+        except Exception:
+            structured_available = False
+    
+    knowledge_base_status = md_available or structured_available
     if not knowledge_base_status:
         issues.append("knowledge_base_missing")
         
@@ -1123,14 +1144,18 @@ def health_check():
         "timestamp": datetime.now().isoformat(),
         "version": "9.0.0",
         "environment": os.environ.get('FLASK_ENV', 'unknown'),
-        "platform": "render.com",
+        "platform": "google-cloud-run",
         
         # Componentes do sistema
         "components": {
             "knowledge_base": {
                 "status": "operational" if knowledge_base_status else "failure",
                 "size_chars": len(md_text),
-                "loaded": knowledge_base_status
+                "loaded": knowledge_base_status,
+                "sources": {
+                    "markdown": len(md_text) > 100,
+                    "structured": structured_available if 'structured_available' in locals() else False
+                }
             },
             "personas": {
                 "status": "operational" if personas_status else "failure", 
@@ -1828,12 +1853,24 @@ if __name__ == '__main__':
     # Inicialização
     logger.info("Iniciando aplicação v6...")
     
-    # Carrega o PDF
+    # Carrega o conhecimento (MD + estruturado)
     if os.path.exists(MD_PATH):
         md_text = extract_md_text(MD_PATH)
+        logger.info(f"✅ MD carregado: {len(md_text)} chars")
     else:
         logger.warning(f"Arquivo Markdown não encontrado: {MD_PATH}")
         md_text = "Arquivo Markdown não disponível"
+        
+    # Se MD falhou, usar knowledge base estruturada como fallback
+    if ADVANCED_FEATURES and len(md_text) < 100:
+        try:
+            structured_kb = get_structured_knowledge_base()
+            kb_stats = structured_kb.get_statistics()
+            if kb_stats['loaded_successfully'] > 0:
+                md_text = f"Knowledge base estruturada carregada: {kb_stats['loaded_successfully']} categorias"
+                logger.info("✅ Usando knowledge base estruturada como fonte principal")
+        except Exception as e:
+            logger.error(f"❌ Fallback para knowledge base estruturada falhou: {e}")
     
     # Inicia o servidor
     port = int(os.environ.get('PORT', 5000))

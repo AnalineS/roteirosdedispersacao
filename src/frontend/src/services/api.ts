@@ -39,12 +39,10 @@ const handleApiError = (error: unknown): ApiResponse<ChatResponse> => {
   }
 }
 
-// API Configuration for multiple backends
+// API Configuration for Cloud Run backend
 const API_CONFIG = {
-  // Google Cloud Run (Primary)
-  CLOUD_RUN_URL: import.meta.env.VITE_API_URL || '',
-  // Google Apps Script (Legacy fallback)
-  GAS_WEB_APP_URL: import.meta.env.VITE_GAS_WEB_APP_URL || '',
+  // Google Cloud Run (Only backend)
+  CLOUD_RUN_URL: import.meta.env.VITE_API_URL,
   // Environment
   ENVIRONMENT: import.meta.env.VITE_ENVIRONMENT || 'development',
   // Timeout settings
@@ -56,15 +54,17 @@ const API_CONFIG = {
 
 // Synchronous version for immediate use
 const getApiBaseUrlSync = () => {
-  // Force Google Apps Script URL for production
-  const gasUrl = 'https://script.google.com/macros/s/AKfycbyLemOPBnH6ZPq_AE3x7NW85I4UFW9pITrAap9dVg5Oj9IannQVgDWWOE_WJ0L6ltWD2w/exec'
+  const cloudRunUrl = import.meta.env.VITE_API_URL
+  if (!cloudRunUrl) {
+    throw new Error('VITE_API_URL não configurada nas variáveis de ambiente')
+  }
   
-  console.log('🔗 Using hardcoded Google Apps Script URL:', gasUrl)
-  return gasUrl
+  console.log('🔗 Using Cloud Run backend:', cloudRunUrl)
+  return cloudRunUrl
 }
 
 const API_BASE_URL = getApiBaseUrlSync()
-const IS_CLOUD_RUN = false // Force Google Apps Script for now
+const IS_CLOUD_RUN = true // Always Cloud Run now
 
 // Create axios instance with Google Apps Script priority
 const api = axios.create({
@@ -81,29 +81,9 @@ console.log('🔧 API Configuration:', {
   isCloudRun: IS_CLOUD_RUN,
   environment: API_CONFIG.ENVIRONMENT,
   timeout: API_CONFIG.TIMEOUT,
-  gasUrl: API_CONFIG.GAS_WEB_APP_URL,
   cloudRunUrl: API_CONFIG.CLOUD_RUN_URL
 })
 
-// Test immediate connection
-console.log('🔄 Testing Google Apps Script connectivity...')
-fetch(API_BASE_URL, {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  body: JSON.stringify({
-    question: 'teste de conectividade',
-    persona: 'dr_gasnelio'
-  })
-}).then(response => {
-  console.log('✅ Connection test successful:', response.status)
-  return response.text()
-}).then(data => {
-  console.log('📥 Response data:', data.substring(0, 200) + '...')
-}).catch(error => {
-  console.error('❌ Connection test failed:', error)
-})
 
 // Request interceptor with enhanced logging
 api.interceptors.request.use(
@@ -177,13 +157,12 @@ api.interceptors.response.use(
 export const chatApi = {
   sendMessage: async (message: string, personaId: string): Promise<ApiResponse<ChatResponse>> => {
     try {
-      console.log('📤 Sending message to Google Apps Script:', { 
+      console.log('📤 Sending message to Cloud Run:', { 
         message, 
         personaId, 
         url: API_BASE_URL 
       })
       
-      // Try with different approaches for CORS
       const requestData = {
         question: message,
         persona: personaId,
@@ -191,94 +170,29 @@ export const chatApi = {
       
       console.log('📋 Request data:', requestData)
       
-      // First try with fetch and different headers
-      const response = await fetch(API_BASE_URL, {
-        method: 'POST',
-        mode: 'cors', // Explicitly set CORS mode
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: JSON.stringify(requestData)
-      })
+      const response = await api.post('/api/chat', requestData)
       
-      console.log('📊 Response status:', response.status, response.statusText)
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-      
-      const responseText = await response.text()
-      console.log('📥 Raw response:', responseText.substring(0, 500) + '...')
-      
-      let gasResponse
-      try {
-        gasResponse = JSON.parse(responseText)
-      } catch (parseError) {
-        console.error('❌ JSON parse error:', parseError)
-        // If it's not JSON, treat as plain text response
-        gasResponse = { response: responseText }
-      }
-      
-      console.log('📋 Parsed response:', gasResponse)
-      
-      // Handle different response formats
-      const responseContent = gasResponse.response || gasResponse.answer || gasResponse.content || responseText || 'Resposta recebida'
+      console.log('📊 Response status:', response.status)
+      console.log('📥 Response data:', response.data)
       
       return {
         data: {
           message: {
-            id: gasResponse.id || Date.now().toString(),
-            content: responseContent,
+            id: response.data.id || Date.now().toString(),
+            content: response.data.response || response.data.answer || 'Resposta recebida',
             sender: 'assistant',
             timestamp: new Date(),
-            persona: gasResponse.persona || personaId,
-            cached: gasResponse.cached || false,
-            confidence: gasResponse.confidence || 0.8
+            persona: response.data.persona || personaId,
+            cached: response.data.cached || false,
+            confidence: response.data.confidence || 0.8
           }
         },
-        request_id: gasResponse.request_id || Date.now().toString(),
+        request_id: response.data.request_id || Date.now().toString(),
         timestamp: new Date().toISOString()
       }
     } catch (error: unknown) {
-      console.error('❌ Send message error (first attempt):', error)
-      
-      // Try fallback method with form data
-      try {
-        console.log('🔄 Trying fallback method with form data...')
-        
-        const formData = new FormData()
-        formData.append('question', message)
-        formData.append('persona', personaId)
-        
-        const fallbackResponse = await fetch(API_BASE_URL, {
-          method: 'POST',
-          mode: 'no-cors', // Try no-cors mode
-          body: formData
-        })
-        
-        console.log('📊 Fallback response status:', fallbackResponse.status)
-        
-        // With no-cors, we can't read the response, so simulate a response
-        return {
-          data: {
-            message: {
-              id: Date.now().toString(),
-              content: `Mensagem enviada para ${personaId}: "${message}". Aguardando resposta...`,
-              sender: 'assistant',
-              timestamp: new Date(),
-              persona: personaId,
-              cached: false,
-              confidence: 0.8
-            }
-          },
-          request_id: Date.now().toString(),
-          timestamp: new Date().toISOString()
-        }
-      } catch (fallbackError) {
-        console.error('❌ Fallback method also failed:', fallbackError)
-        return handleApiError(error)
-      }
+      console.error('❌ Send message error:', error)
+      return handleApiError(error)
     }
   },
 }
@@ -287,8 +201,16 @@ export const chatApi = {
 export const personasApi = {
   getAll: async () => {
     try {
-      // Always use static data for Google Apps Script
-      console.log('📋 Using static personas data for Google Apps Script')
+      // Try to get from Cloud Run first, fallback to static
+      try {
+        const response = await api.get('/api/personas')
+        console.log('📋 Personas loaded from Cloud Run API')
+        return response.data
+      } catch (error) {
+        console.warn('⚠️ Cloud Run personas failed, using static data:', error)
+      }
+      
+      console.log('📋 Using static personas data')
       return {
           personas: {
             dr_gasnelio: {
@@ -463,17 +385,7 @@ export const healthApi = {
           performance: response.data.performance
         }
       } else {
-        // Simple ping to check if GAS is responding
-        if (!API_CONFIG.GAS_WEB_APP_URL) {
-          throw new Error('URL do Google Apps Script não configurada')
-        }
-        
-        return {
-          status: 'healthy',
-          timestamp: new Date().toISOString(),
-          backend: 'Google Apps Script',
-          model: 'moonshotai/kimi-k2:free'
-        }
+        throw new Error('Backend não é Cloud Run')
       }
     } catch (error) {
       return {

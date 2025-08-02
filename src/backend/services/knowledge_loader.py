@@ -16,20 +16,34 @@ class StructuredKnowledgeBase:
     def __init__(self, data_path: str = None):
         # Detectar caminho automaticamente baseado no ambiente
         if data_path is None:
-            # Tentar vários caminhos possíveis
-            possible_paths = [
-                "../../data/structured",  # Desenvolvimento local
-                "./data/structured",      # Render.com
-                "../data/structured",     # Alternativo
-                "data/structured"         # Raiz do projeto
-            ]
-            
-            for path in possible_paths:
-                if os.path.exists(path):
-                    data_path = path
-                    break
+            # Usar variável de ambiente se disponível
+            env_data_path = os.environ.get('DATA_PATH')
+            if env_data_path and os.path.exists(env_data_path):
+                data_path = env_data_path
             else:
-                data_path = "data/structured"  # Fallback
+                # Tentar vários caminhos possíveis
+                base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+                possible_paths = [
+                    "/app/data/structured",                         # Cloud Run/Docker (priority)
+                    os.path.join(base_dir, "../../data/structured"), # Desenvolvimento local (src/backend -> root)
+                    os.path.join(base_dir, "../data/structured"),   # Alternativo
+                    os.path.join(base_dir, "data/structured"),      # Dentro do backend
+                    "./data/structured",                            # Render.com
+                    "../data/structured",                           # Alternativo
+                    "data/structured"                               # Raiz do projeto
+                ]
+                
+                logger.info(f"🔍 Base dir: {base_dir}")
+                logger.info(f"🔍 Procurando data em: {possible_paths}")
+                
+                for path in possible_paths:
+                    if os.path.exists(path):
+                        data_path = path
+                        logger.info(f"✅ Encontrado data path: {path}")
+                        break
+                else:
+                    data_path = "data/structured"  # Fallback
+                    logger.warning(f"⚠️ Usando fallback path: {data_path}")
         
         self.data_path = data_path
         self.knowledge_base = {}

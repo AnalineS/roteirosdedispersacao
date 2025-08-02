@@ -29,8 +29,9 @@ RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir -r requirements.txt \
     && pip install --no-cache-dir gunicorn==21.2.0
 
-# Copiar código da aplicação
+# Copiar código da aplicação e dados
 COPY src/ src/
+COPY data/ data/
 
 # Ajustar permissões
 RUN chown -R appuser:appuser /app
