@@ -1,12 +1,69 @@
-# ===== SECURITY - NUNCA COMMITAR =====
+# ==========================================
+# SEGURANÇA CRÍTICA - NUNCA COMMITAR
+# ==========================================
+
+# Arquivos de ambiente e configuração
 .env
+.env.*
+!.env.example
 .env.local
+.env.development
+.env.test
 .env.production
-*.pem
+.env.staging
+.env_*
+
+# Chaves e certificados
 *.key
+*.pem
+*.p12
+*.pfx
+*.crt
+*.cer
+*.der
+*.csr
+*.srl
+secrets.json
+service-account.json
+credentials.json
+config.yaml
+render.yaml
+
+# Tokens e autenticação
+token.txt
+auth.json
+api_keys.txt
+*.token
+.secrets/
 secrets/
 
-# ===== PYTHON =====
+# Arquivos de configuração sensíveis
+docker-compose.override.yml
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*~
+
+# ==========================================
+# ARQUIVOS DE SISTEMA
+# ==========================================
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ==========================================
+# LINGUAGENS E FRAMEWORKS
+# ==========================================
+
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
@@ -24,51 +81,148 @@ parts/
 sdist/
 var/
 wheels/
-pip-wheel-metadata/
-share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
 MANIFEST
-
-# ===== VIRTUAL ENVIRONMENTS =====
 venv/
 env/
 ENV/
-env.bak/
-venv.bak/
+.venv/
+.ENV/
 
-# ===== IDEs =====
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# ===== LOGS =====
-*.log
-logs/
-
-# ===== CACHE =====
-.cache/
-.pytest_cache/
-.coverage
-htmlcov/
-
-# ===== OS =====
-.DS_Store
-Thumbs.db
-
-# ===== NODE.JS / FRONTEND =====
+# Node.js
 node_modules/
-*/node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-package-lock.json
+.pnpm-debug.log*
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
 
-# ===== TEMPORARY FILES =====
-tmp/
-temp/
+# ==========================================
+# CLOUD E DEPLOYMENT
+# ==========================================
+
+# Firebase
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+.firebaserc
+
+# Google Cloud
+gcloud-config.json
+service-key.json
+application_default_credentials.json
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+
+# Kubernetes
+*.kubeconfig
+kube-config
+
+# ==========================================
+# DESENVOLVIMENTO E TESTE
+# ==========================================
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# Databases
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+
+# Cache
+.cache/
+.parcel-cache/
+.next/
+.nuxt/
+.vuepress/dist/
+
+# ==========================================
+# ARQUIVOS TEMPORÁRIOS
+# ==========================================
+
+# Backups
+*.bak
+*.backup
+*.old
+*.orig
 *.tmp
-nul
+temp/
+tmp/
+
+# Archives
+*.zip
+*.tar.gz
+*.tgz
+*.rar
+*.7z
+
+# ==========================================
+# MONITORAMENTO E ANÁLISE
+# ==========================================
+
+# Sentry
+.sentryclirc
+
+# Analytics
+.vercel
+.analytics/
+
+# ==========================================
+# DOCUMENTAÇÃO SENSÍVEL
+# ==========================================
+
+# Arquivos de documentação com informações sensíveis
+PRIVATE_*
+CONFIDENTIAL_*
+INTERNAL_*
+/docs/internal/
+/docs/private/
+
+# ==========================================
+# ASSETS GRANDES
+# ==========================================
+
+# Arquivos grandes que não devem ir pro Git
+*.mov
+*.mp4
+*.avi
+*.mkv
+*.iso
+*.dmg
+
+# ==========================================
+# CONFIGURAÇÕES ESPECÍFICAS DO PROJETO
+# ==========================================
+
+# Específicos do Roteiro de Dispensação
+/uploads/
+/storage/
+/cache/
+/sessions/
+backend_config.json
+frontend_config.json
