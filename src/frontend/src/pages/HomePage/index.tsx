@@ -3,25 +3,29 @@ import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useChat } from '@hooks/useChat'
 import { AnimationOptimizer } from '@utils/performanceOptimizer'
-import { SkeletonPersonaCard } from '@components/SkeletonLoader'
+// import { SkeletonPersonaCard } from '@components/SkeletonLoader' // Removed - not used anymore
+import EnhancedPersonaSelector from '@components/PersonaSelector/EnhancedPersonaSelector'
 import { 
   ChatBubbleLeftRightIcon,
   BookOpenIcon,
   InformationCircleIcon,
-  Bars3Icon
+  Bars3Icon,
+  AcademicCapIcon,
+  UserGroupIcon,
+  HeartIcon
 } from '@heroicons/react/24/outline'
 
 // Lazy load heavy components
 const ColorSchemePreview = React.lazy(() => import('@components/ColorSchemePreview'))
 
 const HomePage: React.FC = () => {
-  const { personas, isPersonasLoading, setSelectedPersona } = useChat()
+  const { personas, isPersonasLoading, selectedPersona } = useChat()
   const [showColorPreview, setShowColorPreview] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [showPersonaSelector, setShowPersonaSelector] = useState(false)
   
   // Get optimized animation variants
   const animationVariants = AnimationOptimizer.createOptimizedVariants()
-  const animationConfig = AnimationOptimizer.getOptimizedConfig()
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
@@ -120,29 +124,57 @@ const HomePage: React.FC = () => {
             
             {/* CTA Buttons Responsivos */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Link 
-                to="/chat" 
+              <button 
+                onClick={() => setShowPersonaSelector(true)}
                 className="w-full sm:w-auto btn-primary btn-lg flex items-center justify-center space-x-2 touch-target-large"
               >
                 <ChatBubbleLeftRightIcon className="w-5 h-5" />
-                <span>Iniciar Conversa</span>
-              </Link>
-              <button 
-                onClick={() => setShowColorPreview(true)}
-                className="w-full sm:w-auto btn-secondary btn-lg flex items-center justify-center space-x-2 touch-target-large"
-              >
-                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-.99 0-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8z"/>
-                </svg>
-                <span className="hidden sm:inline">Ver Esquemas de Cores</span>
-                <span className="sm:hidden">Esquemas</span>
+                <span>Escolher Assistente Virtual</span>
               </button>
+              <Link 
+                to="/chat" 
+                className={`w-full sm:w-auto btn-lg flex items-center justify-center space-x-2 touch-target-large ${
+                  selectedPersona ? 'btn-success' : 'btn-secondary'
+                }`}
+              >
+                <ChatBubbleLeftRightIcon className="w-5 h-5" />
+                <span>{selectedPersona ? 'Continuar Conversa' : 'Ir para Chat'}</span>
+              </Link>
             </div>
+
+            {/* Indicador de Persona Selecionada */}
+            {selectedPersona && personas && personas[selectedPersona] && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mt-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 max-w-md mx-auto"
+              >
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
+                    <span className="text-green-600 dark:text-green-400">✓</span>
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="text-sm font-medium text-green-800 dark:text-green-200">
+                      Assistente Selecionado
+                    </h4>
+                    <p className="text-xs text-green-600 dark:text-green-400">
+                      {personas[selectedPersona].name} - {personas[selectedPersona].role}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setShowPersonaSelector(true)}
+                    className="text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 text-xs"
+                  >
+                    Trocar
+                  </button>
+                </div>
+              </motion.div>
+            )}
           </motion.section>
 
-          {/* Grid de Cards Responsivo */}
+          {/* Grid de Recursos Educacionais */}
           <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 mb-12 lg:mb-16">
-            {/* Card de Especialistas */}
+            {/* Card de Assistentes Inteligentes */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -151,69 +183,71 @@ const HomePage: React.FC = () => {
               className="card-medical p-6 text-center"
             >
               <div className="w-16 h-16 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl">👨‍⚕️</span>
+                <UserGroupIcon className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">Especialistas Virtuais</h3>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">Assistentes Especializados</h3>
               <p className="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
-                Nossos especialistas virtuais estão prontos para ajudar com diferentes aspectos 
-                da dispensação de medicamentos para hanseníase.
+                Dr. Gasnelio (técnico) e Gá (amigável) - cada um adaptado ao seu nível de conhecimento e necessidades.
               </p>
-              <Link to="/chat" className="btn-primary btn-md w-full flex items-center justify-center space-x-2 touch-target">
-                <span>Conversar agora</span>
+              <button 
+                onClick={() => setShowPersonaSelector(true)}
+                className="btn-primary btn-md w-full flex items-center justify-center space-x-2 touch-target"
+              >
+                <span>Escolher Assistente</span>
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/>
+                </svg>
+              </button>
+            </motion.div>
+
+            {/* Card de Aprendizagem Adaptativa */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              className="card-medical p-6 text-center"
+            >
+              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <AcademicCapIcon className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">Aprendizagem Adaptativa</h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
+                Sistema inteligente que se adapta ao seu nível de conhecimento, oferecendo explicações personalizadas.
+              </p>
+              <Link to="/chat" className="btn-secondary btn-md w-full flex items-center justify-center space-x-2 touch-target">
+                <span>Explorar Sistema</span>
                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/>
                 </svg>
               </Link>
             </motion.div>
 
-            {/* Cards de Personas Dinâmicos */}
-            {isPersonasLoading ? (
-              <motion.div
-                variants={animationVariants.fade}
-                initial="initial"
-                animate="animate"
-                className="md:col-span-2 lg:col-span-1"
+            {/* Card de Suporte Emocional */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="card-medical p-6 text-center"
+            >
+              <div className="w-16 h-16 bg-gradient-to-br from-pink-500 to-rose-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <HeartIcon className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">Suporte Humanizado</h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
+                Abordagem empática e acolhedora, especialmente para pacientes e familiares que buscam orientação.
+              </p>
+              <button 
+                onClick={() => setShowPersonaSelector(true)}
+                className="btn-secondary btn-md w-full flex items-center justify-center space-x-2 touch-target"
               >
-                <SkeletonPersonaCard />
-              </motion.div>
-            ) : (
-              personas && Object.entries(personas).map(([id, persona], index) => (
-                <motion.div
-                  key={id}
-                  variants={animationVariants.scale}
-                  initial="initial"
-                  whileInView="animate"
-                  viewport={{ once: true, margin: '-50px' }}
-                  transition={{ 
-                    duration: animationConfig.animationDuration,
-                    delay: index * animationConfig.staggerDelay 
-                  }}
-                  className="card-medical p-6 text-center"
-                >
-                  <div className="w-16 h-16 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span className="text-2xl">
-                      {persona.avatar === 'Dr' ? '👨‍⚕️' : '👩‍⚕️'}
-                    </span>
-                  </div>
-                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{persona.name}</h3>
-                  <p className="text-gray-600 dark:text-gray-300 mb-3 leading-relaxed">{persona.description}</p>
-                  <div className="mb-4">
-                    <span className="badge-primary text-xs">
-                      {persona.role}
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => {
-                      setSelectedPersona(id)
-                      window.location.href = '/chat'
-                    }}
-                    className="btn-primary btn-md w-full touch-target"
-                  >
-                    Conversar com {persona.name}
-                  </button>
-                </motion.div>
-              ))
-            )}
+                <span>Conhecer Gá</span>
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/>
+                </svg>
+              </button>
+            </motion.div>
 
             {/* Card de Base de Conhecimento */}
             <motion.div
@@ -328,6 +362,55 @@ const HomePage: React.FC = () => {
           </section>
         </div>
       </main>
+
+      {/* Enhanced Persona Selector Modal */}
+      {showPersonaSelector && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 p-4 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+                Escolha seu Assistente Virtual
+              </h2>
+              <button
+                onClick={() => setShowPersonaSelector(false)}
+                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                aria-label="Fechar"
+              >
+                <svg className="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="p-6">
+              <EnhancedPersonaSelector
+                personas={personas}
+                isLoading={isPersonasLoading}
+                selectedPersona={selectedPersona}
+              />
+            </div>
+            <div className="sticky bottom-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 p-4">
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={() => setShowPersonaSelector(false)}
+                  className="btn-secondary"
+                >
+                  Fechar
+                </button>
+                {selectedPersona && (
+                  <Link
+                    to="/chat"
+                    onClick={() => setShowPersonaSelector(false)}
+                    className="btn-primary flex items-center space-x-2"
+                  >
+                    <ChatBubbleLeftRightIcon className="w-4 h-4" />
+                    <span>Ir para Chat</span>
+                  </Link>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Color Scheme Preview Modal */}
       {showColorPreview && (
