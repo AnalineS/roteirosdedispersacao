@@ -65,11 +65,12 @@ const Navigation: React.FC = () => {
                 <Link
                   key={item.name}
                   to={item.href}
-                  className={`flex items-center space-x-1 px-3 py-2 rounded-lg font-medium transition-all duration-200 touch-target ${
+                  className={`flex items-center space-x-1 px-3 py-2 rounded-lg font-medium transition-all duration-200 touch-target focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-gray-900 ${
                     isActive(item.href)
                       ? 'bg-primary-100 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
                       : 'text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-800'
                   }`}
+                  aria-current={isActive(item.href) ? 'page' : undefined}
                 >
                   <Icon className="w-4 h-4" aria-hidden="true" />
                   <span className="hidden lg:inline">{item.name}</span>
@@ -85,9 +86,10 @@ const Navigation: React.FC = () => {
             <ThemeToggle />
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors touch-target"
+              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors touch-target focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-gray-900"
               aria-label={isMobileMenuOpen ? 'Fechar menu' : 'Abrir menu'}
               aria-expanded={isMobileMenuOpen}
+              aria-controls="mobile-menu"
             >
               {isMobileMenuOpen ? (
                 <XMarkIcon className="w-6 h-6" aria-hidden="true" />
@@ -108,6 +110,9 @@ const Navigation: React.FC = () => {
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.2 }}
             className="md:hidden border-t border-gray-200 dark:border-gray-700"
+            id="mobile-menu"
+            role="menu"
+            aria-label="Menu de navegação móvel"
           >
             <div className="px-4 py-3 space-y-2">
               {navigation.map((item) => {
@@ -117,11 +122,13 @@ const Navigation: React.FC = () => {
                     key={item.name}
                     to={item.href}
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className={`flex items-center space-x-3 px-4 py-3 rounded-lg font-medium transition-all duration-200 touch-target ${
+                    className={`flex items-center space-x-3 px-4 py-3 rounded-lg font-medium transition-all duration-200 touch-target focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-gray-900 ${
                       isActive(item.href)
                         ? 'bg-primary-100 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
                         : 'text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-800'
                     }`}
+                    role="menuitem"
+                    aria-current={isActive(item.href) ? 'page' : undefined}
                   >
                     <Icon className="w-5 h-5" aria-hidden="true" />
                     <span>{item.name}</span>

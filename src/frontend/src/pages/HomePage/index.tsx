@@ -5,6 +5,7 @@ import { useChat } from '@hooks/useChat'
 import { AnimationOptimizer } from '@utils/performanceOptimizer'
 // import { SkeletonPersonaCard } from '@components/SkeletonLoader' // Removed - not used anymore
 import EnhancedPersonaSelector from '@components/PersonaSelector/EnhancedPersonaSelector'
+import { HomePageSEO } from '@components/SEOHead'
 import { 
   ChatBubbleLeftRightIcon,
   AcademicCapIcon,
@@ -25,6 +26,7 @@ const HomePage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
+      <HomePageSEO />
       {/* Conteúdo Principal */}
       <main className="flex-1">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
@@ -288,18 +290,27 @@ const HomePage: React.FC = () => {
 
       {/* Enhanced Persona Selector Modal */}
       {showPersonaSelector && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto">
+        <div 
+          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="persona-modal-title"
+          aria-describedby="persona-modal-description"
+        >
           <div className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 p-4 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+              <h2 
+                id="persona-modal-title"
+                className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100"
+              >
                 Escolha seu Assistente Virtual
               </h2>
               <button
                 onClick={() => setShowPersonaSelector(false)}
-                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                aria-label="Fechar"
+                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-gray-900"
+                aria-label="Fechar modal"
               >
-                <svg className="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>

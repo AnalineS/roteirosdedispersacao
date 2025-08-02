@@ -27,7 +27,7 @@ const ThemeToggle: React.FC = () => {
             <motion.button
               key={themeOption.key}
               onClick={() => setTheme(themeOption.key)}
-              className={`relative p-2 rounded-md transition-colors ${
+              className={`relative p-2 rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-gray-900 ${
                 isActive
                   ? 'text-primary-600 dark:text-primary-400'
                   : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
@@ -38,6 +38,7 @@ const ThemeToggle: React.FC = () => {
               aria-pressed={isActive}
               role="radio"
               aria-checked={isActive}
+              tabIndex={isActive ? 0 : -1}
             >
               {isActive && (
                 <motion.div

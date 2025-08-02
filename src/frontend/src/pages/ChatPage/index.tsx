@@ -6,11 +6,12 @@ import { SkeletonMessage } from '@components/SkeletonLoader'
 import ChatMessage from '@components/ChatMessage'
 import ChatInput from '@components/ChatInput'
 import ChatSidebar from '@components/ChatSidebar'
+import { ErrorState } from '@components/FeedbackStates'
+import { ChatPageSEO } from '@components/SEOHead'
 import { 
   Bars3Icon, 
   XMarkIcon, 
-  InformationCircleIcon,
-  ExclamationTriangleIcon
+  InformationCircleIcon
 } from '@heroicons/react/24/outline'
 
 // Lazy load components
@@ -37,6 +38,7 @@ const ChatPage: React.FC = () => {
 
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-900">
+      <ChatPageSEO />
       {/* Sidebar */}
       <ChatSidebar 
         isOpen={isSidebarOpen} 
@@ -254,17 +256,19 @@ const ChatPage: React.FC = () => {
                       animate={{ opacity: 1, y: 0 }}
                       className="flex justify-center px-4"
                     >
-                      <div className="bg-error-100 dark:bg-error-900/20 border border-error-200 dark:border-error-800 rounded-lg p-3 sm:p-4 max-w-md w-full flex items-start space-x-3">
-                        <ExclamationTriangleIcon className="w-5 h-5 text-error-500 flex-shrink-0 mt-0.5" />
-                        <div className="min-w-0 flex-1">
-                          <p className="text-error-800 dark:text-error-200 font-medium text-sm">
-                            Erro na comunicação
-                          </p>
-                          <p className="text-error-600 dark:text-error-300 text-xs sm:text-sm mt-1 break-words">
-                            {state.error}
-                          </p>
-                        </div>
-                      </div>
+                      <ErrorState
+                        title="Erro na comunicação"
+                        message={state.error}
+                        variant={state.error.includes('conexão') || state.error.includes('internet') ? 'network' : 'error'}
+                        action={{
+                          label: 'Tentar novamente',
+                          onClick: () => {
+                            // Could trigger a retry mechanism
+                            window.location.reload()
+                          }
+                        }}
+                        className="max-w-md w-full"
+                      />
                     </motion.div>
                   )}
                 </div>

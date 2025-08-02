@@ -90,7 +90,7 @@ function App() {
                       path="resources"
                       element={
                         <ErrorBoundary>
-                          <Suspense fallback={<SkeletonPage type="about" />}>
+                          <Suspense fallback={<SkeletonPage type="resources" />}>
                             <ResourcesPage />
                           </Suspense>
                         </ErrorBoundary>
@@ -100,7 +100,7 @@ function App() {
                       path="*"
                       element={
                         <ErrorBoundary>
-                          <Suspense fallback={<SkeletonPage type="about" />}>
+                          <Suspense fallback={<SkeletonPage type="notfound" />}>
                             <NotFoundPage />
                           </Suspense>
                         </ErrorBoundary>

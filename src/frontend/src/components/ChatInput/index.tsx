@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useChat } from '@hooks/useChat'
+import { useFormValidation, ValidationRules, ValidationMessage } from '@components/FormValidation'
 import { 
   PaperAirplaneIcon,
   MicrophoneIcon,
@@ -13,6 +14,19 @@ const ChatInput: React.FC = () => {
   const [message, setMessage] = useState('')
   const [isRecording, setIsRecording] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  // Form validation setup
+  const validationRules = {
+    message: [
+      ValidationRules.required('Digite uma mensagem'),
+      ValidationRules.minLength(3, 'Mensagem muito curta (mínimo 3 caracteres)'),
+      ValidationRules.maxLength(1000, 'Mensagem muito longa (máximo 1000 caracteres)'),
+      ValidationRules.medicalText(),
+      ValidationRules.hanseniasiRelated()
+    ]
+  }
+
+  const { getFieldStatus, validateField, touchField } = useFormValidation(validationRules)
 
   // Auto-resize textarea
   useEffect(() => {
@@ -31,7 +45,13 @@ const ChatInput: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!message.trim() || state.isLoading || !state.selectedPersona) return
+    
+    // Validate message before sending
+    const validation = validateField('message', message, true)
+    if (!validation.isValid || !message.trim() || state.isLoading || !state.selectedPersona) {
+      touchField('message')
+      return
+    }
 
     sendMessage(message.trim())
     setMessage('')
@@ -55,6 +75,7 @@ const ChatInput: React.FC = () => {
   }
 
   const isDisabled = state.isLoading || !state.selectedPersona
+  const messageValidation = getFieldStatus('message')
 
   return (
     <div className="space-y-3">
@@ -143,7 +164,11 @@ const ChatInput: React.FC = () => {
               <textarea
                 ref={textareaRef}
                 value={message}
-                onChange={(e) => setMessage(e.target.value)}
+                onChange={(e) => {
+                  setMessage(e.target.value)
+                  validateField('message', e.target.value)
+                }}
+                onBlur={() => touchField('message')}
                 onKeyDown={handleKeyDown}
                 placeholder={
                   !state.selectedPersona 
@@ -155,8 +180,9 @@ const ChatInput: React.FC = () => {
                 maxLength={1000}
                 disabled={isDisabled}
                 aria-label="Campo de mensagem"
-                aria-describedby="message-help"
+                aria-describedby="message-help message-validation"
                 aria-required="true"
+                aria-invalid={messageValidation.errors.length > 0 && messageValidation.isTouched}
               />
               <div className="sr-only" id="message-help">
                 Digite sua pergunta sobre hanseníase e dispensação de medicamentos. Pressione Enter para enviar ou Shift+Enter para nova linha.
@@ -166,15 +192,19 @@ const ChatInput: React.FC = () => {
             {/* Send Button */}
             <motion.button
               type="submit"
-              disabled={isDisabled || !message.trim()}
+              disabled={isDisabled || !message.trim() || (messageValidation.errors.length > 0)}
               className={`p-2 rounded-lg transition-all duration-200 ${
-                message.trim() && !isDisabled
+                message.trim() && !isDisabled && messageValidation.errors.length === 0
                   ? 'bg-primary-600 text-white hover:bg-primary-700 shadow-lg hover:shadow-xl'
                   : 'bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'
               }`}
-              whileHover={message.trim() && !isDisabled ? { scale: 1.05 } : {}}
-              whileTap={message.trim() && !isDisabled ? { scale: 0.95 } : {}}
-              aria-label={message.trim() && !isDisabled ? 'Enviar mensagem' : 'Digite uma mensagem para enviar'}
+              whileHover={message.trim() && !isDisabled && messageValidation.errors.length === 0 ? { scale: 1.05 } : {}}
+              whileTap={message.trim() && !isDisabled && messageValidation.errors.length === 0 ? { scale: 0.95 } : {}}
+              aria-label={
+                message.trim() && !isDisabled && messageValidation.errors.length === 0 
+                  ? 'Enviar mensagem' 
+                  : 'Corrija os erros na mensagem para enviar'
+              }
             >
               <PaperAirplaneIcon className="w-5 h-5" aria-hidden="true" />
             </motion.button>
@@ -195,6 +225,44 @@ const ChatInput: React.FC = () => {
               </div>
             </div>
           )}
+
+          {/* Validation Messages */}
+          <AnimatePresence>
+            {messageValidation.isTouched && (messageValidation.errors.length > 0 || messageValidation.warnings.length > 0) && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="px-4 pb-3 space-y-1"
+                id="message-validation"
+              >
+                {messageValidation.errors.map((error, index) => (
+                  <ValidationMessage
+                    key={`error-${index}`}
+                    type="error"
+                    message={error}
+                    className="text-xs"
+                  />
+                ))}
+                {messageValidation.warnings.map((warning, index) => (
+                  <ValidationMessage
+                    key={`warning-${index}`}
+                    type="warning"
+                    message={warning}
+                    className="text-xs"
+                  />
+                ))}
+                {messageValidation.infos.map((info, index) => (
+                  <ValidationMessage
+                    key={`info-${index}`}
+                    type="info"
+                    message={info}
+                    className="text-xs"
+                  />
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Status Messages */}

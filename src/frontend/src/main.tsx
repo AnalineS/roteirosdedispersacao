@@ -3,12 +3,15 @@ import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from 'react-hot-toast'
+import { HelmetProvider } from 'react-helmet-async'
 
 import App from './App'
 import './styles/globals.css'
 import './styles/layout-fixes.css'
 import './styles/redesign.css'
 import './styles/desktop-optimized.css'
+import './styles/mobile-optimizations.css'
+import './styles/critical-fixes.css'
 import './utils/medical-app.js'
 
 // Create a query client
@@ -38,30 +41,32 @@ if ('serviceWorker' in navigator) {
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <BrowserRouter>
-      <QueryClientProvider client={queryClient}>
-        <App />
-        <Toaster
-          position="top-center"
-          toastOptions={{
-            duration: 4000,
-            style: {
-              background: '#363636',
-              color: '#fff',
-            },
-            success: {
+    <HelmetProvider>
+      <BrowserRouter>
+        <QueryClientProvider client={queryClient}>
+          <App />
+          <Toaster
+            position="top-center"
+            toastOptions={{
+              duration: 4000,
               style: {
-                background: '#16a34a',
+                background: '#363636',
+                color: '#fff',
               },
-            },
-            error: {
-              style: {
-                background: '#dc2626',
+              success: {
+                style: {
+                  background: '#16a34a',
+                },
               },
-            },
-          }}
-        />
-      </QueryClientProvider>
-    </BrowserRouter>
+              error: {
+                style: {
+                  background: '#dc2626',
+                },
+              },
+            }}
+          />
+        </QueryClientProvider>
+      </BrowserRouter>
+    </HelmetProvider>
   </React.StrictMode>
 )

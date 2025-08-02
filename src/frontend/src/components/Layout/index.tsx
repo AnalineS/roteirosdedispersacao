@@ -4,11 +4,13 @@ import { motion } from 'framer-motion'
 import Navigation from '../Navigation'
 import Footer from '../Footer'
 import SkipNavigation from '../SkipNavigation'
+import ConnectivityDetector from '../ConnectivityDetector'
 
 const Layout: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <SkipNavigation />
+      <ConnectivityDetector />
       <Navigation />
       
       <main 

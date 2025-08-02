@@ -1,0 +1,500 @@
+/* Critical fixes for layout, z-index, and positioning issues */
+
+/* Z-index hierarchy fixes */
+.z-index-hierarchy {
+  /* Base layer */
+  --z-base: 1;
+  /* Content layers */
+  --z-content: 10;
+  --z-elevated: 20;
+  /* UI elements */
+  --z-header: 30;
+  --z-sidebar: 35;
+  --z-dropdown: 40;
+  /* Overlays */
+  --z-modal-backdrop: 50;
+  --z-modal: 51;
+  --z-popover: 52;
+  --z-tooltip: 53;
+  /* Notifications */
+  --z-toast: 60;
+  --z-notification: 61;
+  /* Debug/dev tools */
+  --z-debug: 99;
+}
+
+/* Apply z-index hierarchy */
+.glass {
+  z-index: var(--z-header);
+}
+
+.modal-backdrop {
+  z-index: var(--z-modal-backdrop);
+}
+
+.modal-content {
+  z-index: var(--z-modal);
+}
+
+.dropdown-menu {
+  z-index: var(--z-dropdown);
+}
+
+.toast-container {
+  z-index: var(--z-toast);
+}
+
+.connectivity-detector {
+  z-index: var(--z-notification);
+}
+
+/* Fix overflow issues */
+.overflow-fix {
+  overflow: hidden;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  hyphens: auto;
+}
+
+/* Chat container overflow fixes */
+.chat-container {
+  height: 100vh;
+  overflow: hidden;
+}
+
+.chat-messages {
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-height: calc(100vh - 140px);
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+.chat-input-container {
+  position: sticky;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid rgb(229 231 235 / 0.8);
+  z-index: var(--z-elevated);
+}
+
+.dark .chat-input-container {
+  background: rgba(17, 24, 39, 0.95);
+  border-top-color: rgb(75 85 99 / 0.8);
+}
+
+/* Modal position fixes */
+.modal-positioned {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-height: 90vh;
+  max-width: 90vw;
+  overflow-y: auto;
+}
+
+/* Mobile modal fixes */
+@media (max-width: 768px) {
+  .modal-positioned {
+    top: 5%;
+    transform: translate(-50%, 0);
+    max-height: 90vh;
+    width: calc(100vw - 32px);
+  }
+}
+
+/* Sidebar positioning fixes */
+.sidebar-fixed {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  overflow-y: auto;
+  z-index: var(--z-sidebar);
+}
+
+/* Mobile sidebar overlay */
+@media (max-width: 1024px) {
+  .sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: var(--z-modal-backdrop);
+  }
+  
+  .sidebar-mobile {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 280px;
+    z-index: var(--z-modal);
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+  
+  .sidebar-mobile.open {
+    transform: translateX(0);
+  }
+}
+
+/* Navigation fixes */
+.navigation-sticky {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-header);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* Content layout fixes */
+.main-content {
+  min-height: calc(100vh - 64px); /* Account for header */
+  position: relative;
+  z-index: var(--z-content);
+}
+
+/* Button focus and hover state fixes */
+.btn-fix {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.btn-fix:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+  z-index: var(--z-elevated);
+}
+
+.btn-fix:disabled {
+  pointer-events: none;
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Input field fixes */
+.input-fix {
+  position: relative;
+  z-index: var(--z-base);
+}
+
+.input-fix:focus {
+  z-index: var(--z-elevated);
+}
+
+/* Card hover effects fix */
+.card-hover-fix {
+  transition: all 0.2s ease;
+  will-change: transform, box-shadow;
+}
+
+.card-hover-fix:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Animation performance fixes */
+.animate-optimized {
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  transform-style: preserve-3d;
+}
+
+.animate-optimized.done {
+  will-change: auto;
+}
+
+/* Prevent layout shift */
+.no-layout-shift {
+  contain: layout style;
+}
+
+/* Text selection improvements */
+.text-selectable {
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+}
+
+.text-not-selectable {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Loading state fixes */
+.loading-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(2px);
+  z-index: var(--z-elevated);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dark .loading-overlay {
+  background: rgba(17, 24, 39, 0.8);
+}
+
+/* Image loading fixes */
+.image-optimized {
+  object-fit: cover;
+  object-position: center;
+  transition: opacity 0.3s ease;
+}
+
+.image-optimized[data-loaded="false"] {
+  opacity: 0;
+}
+
+.image-optimized[data-loaded="true"] {
+  opacity: 1;
+}
+
+/* Scrollbar consistency */
+.scrollbar-styled {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(156 163 175) rgb(243 244 246);
+}
+
+.dark .scrollbar-styled {
+  scrollbar-color: rgb(75 85 99) rgb(31 41 55);
+}
+
+.scrollbar-styled::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.scrollbar-styled::-webkit-scrollbar-track {
+  background: rgb(243 244 246);
+  border-radius: 3px;
+}
+
+.dark .scrollbar-styled::-webkit-scrollbar-track {
+  background: rgb(31 41 55);
+}
+
+.scrollbar-styled::-webkit-scrollbar-thumb {
+  background: rgb(156 163 175);
+  border-radius: 3px;
+}
+
+.scrollbar-styled::-webkit-scrollbar-thumb:hover {
+  background: rgb(107 114 128);
+}
+
+.dark .scrollbar-styled::-webkit-scrollbar-thumb {
+  background: rgb(75 85 99);
+}
+
+.dark .scrollbar-styled::-webkit-scrollbar-thumb:hover {
+  background: rgb(107 114 128);
+}
+
+/* Fix for viewport units on mobile */
+.full-height-mobile {
+  height: 100vh;
+  height: 100dvh; /* Dynamic viewport height */
+}
+
+/* Content safety margins */
+.safe-content {
+  padding-left: max(16px, env(safe-area-inset-left));
+  padding-right: max(16px, env(safe-area-inset-right));
+  padding-top: max(16px, env(safe-area-inset-top));
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+}
+
+/* Typography improvements */
+.text-optimized {
+  text-rendering: optimizeLegibility;
+  font-feature-settings: 'kern' 1, 'liga' 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Focus trap for modals */
+.focus-trap {
+  outline: none;
+}
+
+.focus-trap:focus-within {
+  outline: none;
+}
+
+/* Better contrast in high contrast mode */
+@media (prefers-contrast: high) {
+  .high-contrast-fix {
+    border: 2px solid;
+    background-color: Canvas;
+    color: CanvasText;
+  }
+  
+  .btn-fix {
+    border: 2px solid ButtonText;
+    background-color: ButtonFace;
+    color: ButtonText;
+  }
+  
+  .btn-fix:hover {
+    background-color: Highlight;
+    color: HighlightText;
+  }
+}
+
+/* Reduced motion alternatives */
+@media (prefers-reduced-motion: reduce) {
+  .motion-reduced {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  .parallax {
+    transform: none !important;
+  }
+  
+  .hover-effects:hover {
+    transform: none !important;
+  }
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  .print-friendly {
+    background: white !important;
+    color: black !important;
+    box-shadow: none !important;
+  }
+  
+  .glass {
+    background: white !important;
+    border: 1px solid #ccc !important;
+  }
+}
+
+/* Error boundary styling fixes */
+.error-boundary {
+  min-height: 50vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+}
+
+.error-boundary .error-content {
+  max-width: 500px;
+  width: 100%;
+}
+
+/* Loading spinner positioning */
+.spinner-centered {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Form validation states */
+.input-error {
+  border-color: rgb(239 68 68);
+  box-shadow: 0 0 0 1px rgb(239 68 68);
+}
+
+.input-success {
+  border-color: rgb(34 197 94);
+  box-shadow: 0 0 0 1px rgb(34 197 94);
+}
+
+/* Tooltip positioning */
+.tooltip-positioned {
+  position: absolute;
+  z-index: var(--z-tooltip);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.tooltip-top {
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 8px;
+}
+
+.tooltip-bottom {
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 8px;
+}
+
+.tooltip-left {
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-right: 8px;
+}
+
+.tooltip-right {
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-left: 8px;
+}
+
+/* Grid layout fixes */
+.grid-auto-fit {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.grid-auto-fill {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+/* Flexbox gap fallback for older browsers */
+.flex-gap-fallback > * + * {
+  margin-left: 1rem;
+}
+
+.flex-gap-fallback.vertical > * + * {
+  margin-left: 0;
+  margin-top: 1rem;
+}
+
+/* Sticky footer */
+.sticky-footer-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.sticky-footer-content {
+  flex: 1;
+}
+
+/* Dark mode image filters */
+.dark .image-invert {
+  filter: invert(1) hue-rotate(180deg);
+}
+
+.dark .image-darken {
+  filter: brightness(0.8) contrast(1.2);
+}

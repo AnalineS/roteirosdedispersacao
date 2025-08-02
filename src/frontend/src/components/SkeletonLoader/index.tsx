@@ -190,7 +190,7 @@ export const SkeletonShimmer: React.FC<SkeletonLoaderProps> = (props) => (
 )
 
 // Loading page skeleton
-export const SkeletonPage: React.FC<{ type?: 'home' | 'chat' | 'about' }> = ({ type = 'home' }) => {
+export const SkeletonPage: React.FC<{ type?: 'home' | 'chat' | 'about' | 'resources' | 'notfound' }> = ({ type = 'home' }) => {
   switch (type) {
     case 'home':
       return (
@@ -243,6 +243,67 @@ export const SkeletonPage: React.FC<{ type?: 'home' | 'chat' | 'about' }> = ({ t
               </div>
             </div>
           </div>
+        </div>
+      )
+    
+    case 'resources':
+      return (
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+          <SkeletonNavigation />
+          <main className="flex-1 p-6 lg:p-8">
+            <div className="max-w-6xl mx-auto space-y-8">
+              {/* Page header */}
+              <div className="text-center space-y-4">
+                <SkeletonLoader variant="text" width="40%" height="2.5rem" className="mx-auto" />
+                <SkeletonLoader variant="text" lines={2} className="max-w-2xl mx-auto" />
+              </div>
+              
+              {/* Resource sections */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Main content */}
+                <div className="lg:col-span-2 space-y-8">
+                  {Array.from({ length: 4 }).map((_, index) => (
+                    <div key={index} className="card p-6 space-y-4">
+                      <SkeletonLoader variant="text" width="50%" height="1.5rem" />
+                      <SkeletonLoader variant="text" lines={4} />
+                      <div className="flex space-x-3">
+                        <SkeletonLoader variant="button" width="100px" />
+                        <SkeletonLoader variant="button" width="120px" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                {/* Sidebar */}
+                <div className="space-y-6">
+                  {Array.from({ length: 3 }).map((_, index) => (
+                    <div key={index} className="card p-4 space-y-3">
+                      <SkeletonLoader variant="text" width="60%" height="1.25rem" />
+                      <SkeletonLoader variant="text" lines={3} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </main>
+        </div>
+      )
+    
+    case 'notfound':
+      return (
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+          <SkeletonNavigation />
+          <main className="flex-1 flex items-center justify-center p-6">
+            <div className="max-w-md w-full text-center space-y-6">
+              <div className="w-24 h-24 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto animate-pulse" />
+              <SkeletonLoader variant="text" width="70%" height="2rem" className="mx-auto" />
+              <SkeletonLoader variant="text" lines={2} />
+              <div className="space-y-3">
+                <SkeletonLoader variant="button" width="150px" className="mx-auto" />
+                <SkeletonLoader variant="button" width="120px" className="mx-auto" />
+              </div>
+            </div>
+          </main>
         </div>
       )
     
