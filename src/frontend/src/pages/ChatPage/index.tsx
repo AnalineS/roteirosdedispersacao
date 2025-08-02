@@ -29,7 +29,7 @@ const ChatPage: React.FC = () => {
     : null
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex">
+    <div className="chat-page-container">
       {/* Sidebar */}
       <ChatSidebar 
         isOpen={isSidebarOpen} 
@@ -37,9 +37,9 @@ const ChatPage: React.FC = () => {
       />
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col">
+      <div className="chat-main-content">
         {/* Header */}
-        <header className="glass border-b bg-white/80 dark:bg-gray-900/80 sticky top-0 z-40">
+        <header className="chat-header">
           <div className="px-4 py-4 flex items-center justify-between">
             <div className="flex items-center space-x-4">
               {/* Mobile sidebar toggle */}

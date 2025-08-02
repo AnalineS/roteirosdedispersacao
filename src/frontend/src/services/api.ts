@@ -96,18 +96,28 @@ export const personasApi = {
         dr_gasnelio: {
           id: 'dr_gasnelio',
           name: 'Dr. Gasnelio',
+          avatar: 'Dr',
+          role: 'Farmacêutico Clínico',
           description: 'Farmacêutico clínico especialista em hanseníase PQT-U',
           expertise: 'Respostas técnicas e protocolos farmacológicos',
           tone: 'Profissional e preciso',
-          use_cases: ['Consultas técnicas', 'Protocolos de dispensação', 'Validação farmacológica']
+          use_cases: ['Consultas técnicas', 'Protocolos de dispensação', 'Validação farmacológica'],
+          capabilities: ['Protocolos farmacológicos', 'Dispensação PQT-U', 'Validação técnica'],
+          example_questions: ['Qual a dosagem correta de rifampicina para um paciente de 65kg?'],
+          greeting: 'Olá! Como posso ajudar com a dispensação de PQT-U hoje?'
         },
         ga: {
           id: 'ga',
           name: 'Gá',
+          avatar: 'Gá',
+          role: 'Farmacêutico Educador',
           description: 'Farmacêutico empático e acessível',
           expertise: 'Comunicação simples e acolhedora',
           tone: 'Caloroso e educativo',
-          use_cases: ['Explicações simples', 'Apoio emocional', 'Tradução técnica']
+          use_cases: ['Explicações simples', 'Apoio emocional', 'Tradução técnica'],
+          capabilities: ['Educação ao paciente', 'Comunicação empática', 'Orientações práticas'],
+          example_questions: ['Como explicar os efeitos colaterais para um paciente idoso?'],
+          greeting: 'Oi! Estou aqui para ajudar com suas dúvidas sobre o tratamento de hanseníase.'
         }
       },
       metadata: {

@@ -6,6 +6,10 @@ import { Toaster } from 'react-hot-toast'
 
 import App from './App'
 import './styles/globals.css'
+import './styles/layout-fixes.css'
+import './styles/redesign.css'
+import './styles/desktop-optimized.css'
+import './utils/medical-app.js'
 
 // Create a query client
 const queryClient = new QueryClient({

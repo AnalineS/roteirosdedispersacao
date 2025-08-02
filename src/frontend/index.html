@@ -30,7 +30,290 @@
     <title>Roteiro de Dispensação - Hanseníase</title>
   </head>
   <body>
+    <!-- Skip to main content link for accessibility -->
+    <a href="#main-content" class="skip-to-content sr-only focus:not-sr-only">Skip to main content</a>
+    
+    <!-- Loading screen -->
+    <div class="loading-screen" id="loading-screen">
+      <div class="loading-content">
+        <div class="loading-logo">
+          <div class="brand-logo">PQT</div>
+        </div>
+        <div class="loading-text">Carregando Sistema de Dispensação...</div>
+        <div class="loading-progress">
+          <div class="progress-bar"></div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Main app container -->
     <div id="root"></div>
+    
+    <!-- Notifications container -->
+    <div class="notifications-container" id="notifications-container"></div>
+    
+    <!-- Main React application -->
     <script type="module" src="/src/main.tsx"></script>
+    
+    <!-- Enhanced application layer -->
+    <script src="/app-enhanced.js" defer></script>
+    
+    <!-- Development tools (only in dev) -->
+    <script>
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        // Load diagnostic tools in development
+        const debugScript = document.createElement('script');
+        debugScript.src = '/debug-tool.js';
+        debugScript.defer = true;
+        document.head.appendChild(debugScript);
+        
+        const validationScript = document.createElement('script');
+        validationScript.src = '/validation-suite.js';
+        validationScript.defer = true;
+        document.head.appendChild(validationScript);
+      }
+    </script>
+    
+    <!-- Loading screen styles -->
+    <style>
+      .loading-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        opacity: 1;
+        transition: opacity 0.5s ease-in-out;
+      }
+      
+      .loading-screen.fade-out {
+        opacity: 0;
+        pointer-events: none;
+      }
+      
+      .loading-content {
+        text-align: center;
+        color: white;
+      }
+      
+      .loading-logo {
+        margin-bottom: 2rem;
+        animation: pulse 2s infinite;
+      }
+      
+      .loading-logo .brand-logo {
+        width: 80px;
+        height: 80px;
+        background: white;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        color: #1976d2;
+        font-size: 2rem;
+        margin: 0 auto;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      }
+      
+      .loading-text {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 2rem;
+        opacity: 0.9;
+      }
+      
+      .loading-progress {
+        width: 200px;
+        height: 4px;
+        background: rgba(255,255,255,0.2);
+        border-radius: 2px;
+        overflow: hidden;
+        margin: 0 auto;
+      }
+      
+      .progress-bar {
+        width: 100%;
+        height: 100%;
+        background: white;
+        border-radius: 2px;
+        animation: loading 2s infinite;
+        transform: translateX(-100%);
+      }
+      
+      .notifications-container {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        z-index: 1000;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        pointer-events: none;
+      }
+      
+      .notification {
+        background: white;
+        border-radius: 8px;
+        padding: 1rem;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        border-left: 4px solid #1976d2;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        max-width: 400px;
+        pointer-events: auto;
+        animation: slideIn 0.3s ease-out;
+      }
+      
+      .notification.notification-success {
+        border-left-color: #10b981;
+      }
+      
+      .notification.notification-warning {
+        border-left-color: #f59e0b;
+      }
+      
+      .notification.notification-error {
+        border-left-color: #ef4444;
+      }
+      
+      .notification-icon {
+        font-size: 1.25rem;
+        font-weight: 600;
+      }
+      
+      .notification-message {
+        flex: 1;
+        font-size: 0.875rem;
+        line-height: 1.4;
+      }
+      
+      .notification-close {
+        background: none;
+        border: none;
+        font-size: 1.25rem;
+        cursor: pointer;
+        color: #6b7280;
+        padding: 0.25rem;
+        border-radius: 4px;
+        transition: background-color 0.15s;
+      }
+      
+      .notification-close:hover {
+        background-color: #f3f4f6;
+      }
+      
+      @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+      }
+      
+      @keyframes loading {
+        0% { transform: translateX(-100%); }
+        50% { transform: translateX(0%); }
+        100% { transform: translateX(100%); }
+      }
+      
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translateX(100%);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+      
+      @keyframes slideOut {
+        from {
+          opacity: 1;
+          transform: translateX(0);
+        }
+        to {
+          opacity: 0;
+          transform: translateX(100%);
+        }
+      }
+      
+      /* Skip link styles */
+      .skip-to-content {
+        position: absolute;
+        top: -40px;
+        left: 6px;
+        background: #1976d2;
+        color: white;
+        padding: 8px 16px;
+        text-decoration: none;
+        border-radius: 4px;
+        font-weight: 600;
+        z-index: 1000;
+        transition: top 0.15s;
+      }
+      
+      .skip-to-content:focus {
+        top: 6px;
+      }
+      
+      /* Critical error fallback */
+      .critical-error {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #fef2f2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+      }
+      
+      .error-content {
+        max-width: 500px;
+        padding: 2rem;
+        text-align: center;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        border: 1px solid #fecaca;
+      }
+      
+      .error-content h2 {
+        color: #dc2626;
+        margin-bottom: 1rem;
+      }
+      
+      .error-content button {
+        background: #1976d2;
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+        margin-top: 1rem;
+      }
+      
+      .error-content details {
+        margin-top: 1rem;
+        text-align: left;
+      }
+      
+      .error-content pre {
+        background: #f3f4f6;
+        padding: 1rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        overflow-x: auto;
+        white-space: pre-wrap;
+      }
+    </style>
   </body>
 </html>

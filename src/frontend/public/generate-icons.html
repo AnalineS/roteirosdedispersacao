@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gerador de Ícones PWA</title>
+</head>
+<body>
+    <h1>Gerador de Ícones PWA</h1>
+    <canvas id="canvas"></canvas>
+    <br>
+    <button onclick="downloadIcon(192)">Download 192x192</button>
+    <button onclick="downloadIcon(512)">Download 512x512</button>
+    <button onclick="downloadIcon(144)">Download 144x144</button>
+    <button onclick="downloadIcon(72)">Download 72x72</button>
+    <button onclick="downloadIcon(96)">Download 96x96</button>
+    <button onclick="downloadIcon(128)">Download 128x128</button>
+    <button onclick="downloadIcon(152)">Download 152x152</button>
+    <button onclick="downloadIcon(180)">Download 180x180</button>
+    <button onclick="downloadIcon(384)">Download 384x384</button>
+
+    <script>
+        function createIcon(size) {
+            const canvas = document.getElementById('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            
+            // Background gradient
+            const gradient = ctx.createLinearGradient(0, 0, size, size);
+            gradient.addColorStop(0, '#2563eb'); // primary-600
+            gradient.addColorStop(1, '#1e40af'); // primary-700
+            
+            // Background
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, size, size);
+            
+            // Icon text
+            ctx.fillStyle = 'white';
+            ctx.font = `bold ${size * 0.3}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('RD', size/2, size/2 - size*0.05);
+            
+            // Subtitle
+            ctx.font = `${size * 0.08}px Arial`;
+            ctx.fillText('PQT-U', size/2, size/2 + size*0.15);
+            
+            return canvas;
+        }
+        
+        function downloadIcon(size) {
+            const canvas = createIcon(size);
+            const link = document.createElement('a');
+            link.download = `icon-${size}.png`;
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+        
+        // Create initial 192x192 icon
+        createIcon(192);
+    </script>
+</body>
+</html>

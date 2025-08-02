@@ -45,6 +45,27 @@
     @apply border-border;
   }
 
+  /* SVG Reset - Fix para ícones gigantes */
+  svg {
+    display: inline-block;
+    vertical-align: middle;
+    flex-shrink: 0;
+  }
+
+  /* Forçar tamanhos corretos para classes Tailwind em SVGs */
+  svg.w-3 { width: 0.75rem !important; }
+  svg.h-3 { height: 0.75rem !important; }
+  svg.w-4 { width: 1rem !important; }
+  svg.h-4 { height: 1rem !important; }
+  svg.w-5 { width: 1.25rem !important; }
+  svg.h-5 { height: 1.25rem !important; }
+  svg.w-6 { width: 1.5rem !important; }
+  svg.h-6 { height: 1.5rem !important; }
+  svg.w-8 { width: 2rem !important; }
+  svg.h-8 { height: 2rem !important; }
+  svg.w-12 { width: 3rem !important; }
+  svg.h-12 { height: 3rem !important; }
+
   html {
     @apply scroll-smooth;
     font-size: 16px; /* Base font size */

@@ -41,7 +41,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({ isOpen, onToggle }) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="lg:hidden fixed inset-0 bg-black/50 z-40"
+            className={`sidebar-overlay ${isOpen ? 'active' : ''}`}
             onClick={onToggle}
           />
         )}
@@ -52,7 +52,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({ isOpen, onToggle }) => {
         initial={{ x: -320 }}
         animate={{ x: isOpen ? 0 : -320 }}
         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-        className="fixed lg:relative inset-y-0 left-0 w-80 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 z-50 flex flex-col"
+        className={`chat-sidebar ${isOpen ? 'open' : ''}`}
       >
         {/* Header */}
         <div className="p-4 border-b border-gray-200 dark:border-gray-800">

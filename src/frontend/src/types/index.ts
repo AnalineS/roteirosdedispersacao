@@ -139,7 +139,7 @@ export type Theme = 'light' | 'dark' | 'system'
 export interface NavItem {
   label: string
   href: string
-  icon?: React.ComponentType<{ className?: string }>
+  icon?: import('react').ComponentType<{ className?: string }>
 }
 
 // Form Types

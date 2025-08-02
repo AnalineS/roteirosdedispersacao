@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useTheme } from '@hooks/useTheme'
+// import { useTheme } from '@hooks/useTheme'
 import ThemeToggle from '../ThemeToggle'
 import { 
   HomeIcon, 
@@ -14,7 +14,7 @@ import {
 
 const Navigation: React.FC = () => {
   const location = useLocation()
-  const { } = useTheme()
+  // const theme = useTheme() // Não usado atualmente
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   const navigation = [
