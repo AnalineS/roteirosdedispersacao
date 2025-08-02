@@ -69,13 +69,21 @@ const ChatInput: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     
+    console.log('🚀 Form submit triggered:', { 
+      message: message.trim(), 
+      persona: state.selectedPersona,
+      isLoading: state.isLoading 
+    })
+    
     // Validate message before sending
     const validation = validateMessage(message)
     setMessageValidation(validation)
     if (validation.errors.length > 0 || !message.trim() || state.isLoading || !state.selectedPersona) {
+      console.log('❌ Validation failed:', { validation, hasMessage: !!message.trim(), isLoading: state.isLoading, hasPersona: !!state.selectedPersona })
       return
     }
 
+    console.log('✅ Sending message:', message.trim())
     sendMessage(message.trim())
     setMessage('')
   }
