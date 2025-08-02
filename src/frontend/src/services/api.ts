@@ -34,8 +34,8 @@ const getApiBaseUrl = () => {
     return API_CONFIG.GAS_WEB_APP_URL
   }
   
-  // Development fallback
-  return 'http://localhost:5000'
+  // Production fallback (usar Cloud Run atual)
+  return 'https://roteiro-dispensacao-api-1016586236354.us-central1.run.app'
 }
 
 const API_BASE_URL = getApiBaseUrl()
