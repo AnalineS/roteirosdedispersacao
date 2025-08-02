@@ -1,0 +1,67 @@
+name: Deploy Frontend to Firebase Hosting
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: 'src/frontend/package-lock.json'
+        
+    - name: Install frontend dependencies
+      working-directory: ./src/frontend
+      run: npm ci
+      
+    - name: Build frontend
+      working-directory: ./src/frontend
+      run: npm run build
+      env:
+        VITE_API_URL: https://roteiro-dispensacao-api-1016586236354.us-central1.run.app
+        VITE_ENVIRONMENT: production
+        VITE_FIREBASE_PROJECT_ID: roteiros-de-dispensacao
+        VITE_FIREBASE_APP_ID: roteiros-de-dispensacao
+        VITE_DOMAIN: roteirosdedispensacao.com
+        VITE_ENABLE_ANALYTICS: true
+        VITE_ENABLE_PWA: true
+        VITE_ENABLE_NOTIFICATIONS: true
+        VITE_DEFAULT_PERSONA: dr_gasnelio
+        VITE_AVAILABLE_PERSONAS: dr_gasnelio,ga
+        VITE_CACHE_DURATION: 300000
+        VITE_REQUEST_TIMEOUT: 30000
+        VITE_RETRY_ATTEMPTS: 3
+        VITE_DEBUG_MODE: false
+        VITE_LOG_LEVEL: error
+        
+    - name: Deploy to Firebase Hosting
+      uses: FirebaseExtended/action-hosting-deploy@v0
+      with:
+        repoToken: ${{ secrets.GITHUB_TOKEN }}
+        firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_ROTEIROS_DE_DISPENSACAO }}
+        channelId: live
+        projectId: roteiros-de-dispensacao
+        entryPoint: ./
+        
+    - name: Comment on PR
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: '🚀 Deploy preview disponível em: https://roteiros-de-dispensacao.web.app'
+          })
