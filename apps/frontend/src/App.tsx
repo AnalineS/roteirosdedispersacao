@@ -18,6 +18,24 @@ const ResourcesPage = lazy(() => import('@pages/ResourcesPage'))
 const NotFoundPage = lazy(() => import('@pages/NotFoundPage'))
 
 function App() {
+  // Remove loading screen when React app is ready
+  useEffect(() => {
+    const removeLoadingScreen = () => {
+      const loadingScreen = document.getElementById('loading-screen')
+      if (loadingScreen) {
+        loadingScreen.classList.add('fade-out')
+        setTimeout(() => {
+          loadingScreen.style.display = 'none'
+        }, 500)
+      }
+    }
+
+    // Remove loading screen immediately when App component mounts
+    const timer = setTimeout(removeLoadingScreen, 100)
+    
+    return () => clearTimeout(timer)
+  }, [])
+
   // Initialize performance monitoring
   useEffect(() => {
     // Preload critical resources

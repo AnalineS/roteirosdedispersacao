@@ -39,24 +39,12 @@ if ('serviceWorker' in navigator) {
   })
 }
 
-// Enhanced render with loading screen management
-const rootElement = document.getElementById('root')!
-const root = ReactDOM.createRoot(rootElement)
-
-// Remove loading screen after React starts rendering
-const removeLoadingOnMount = () => {
-  const event = new CustomEvent('reactMounted')
-  window.dispatchEvent(event)
-}
-
-root.render(
+ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <HelmetProvider>
       <BrowserRouter>
         <QueryClientProvider client={queryClient}>
-          <div onLoad={removeLoadingOnMount}>
-            <App />
-          </div>
+          <App />
           <Toaster
             position="top-center"
             toastOptions={{
@@ -82,9 +70,3 @@ root.render(
     </HelmetProvider>
   </React.StrictMode>
 )
-
-// Ensure loading screen is removed when React is ready
-setTimeout(() => {
-  const event = new CustomEvent('reactReady')
-  window.dispatchEvent(event)
-}, 100)

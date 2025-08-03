@@ -56,15 +56,19 @@
     <!-- Main React application loaded by Vite -->
     <script type="module" src="/src/main.tsx"></script>
     
-    <!-- Loading screen removal and error handling -->
+    <!-- Simple loading screen removal + cache busting -->
     <script>
-      // Remove loading screen when React app loads successfully
-      let loadingRemoved = false;
+      // Force cache refresh for PWA
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          for(let registration of registrations) {
+            registration.update();
+          }
+        });
+      }
       
-      function removeLoadingScreen() {
-        if (loadingRemoved) return;
-        loadingRemoved = true;
-        
+      // Simple timeout fallback - remove loading after 5 seconds
+      setTimeout(() => {
         const loadingScreen = document.getElementById('loading-screen');
         if (loadingScreen) {
           loadingScreen.classList.add('fade-out');
@@ -72,37 +76,7 @@
             loadingScreen.style.display = 'none';
           }, 500);
         }
-      }
-      
-      // Remove loading after React renders
-      window.addEventListener('DOMContentLoaded', () => {
-        const observer = new MutationObserver((mutations) => {
-          const root = document.getElementById('root');
-          if (root && root.children.length > 0) {
-            removeLoadingScreen();
-            observer.disconnect();
-          }
-        });
-        
-        const root = document.getElementById('root');
-        if (root) {
-          observer.observe(root, { childList: true, subtree: true });
-        }
-      });
-      
-      // Safety timeout - remove loading after 10 seconds regardless
-      setTimeout(() => {
-        if (!loadingRemoved) {
-          console.warn('⚠️ Loading screen timeout - forcing removal');
-          removeLoadingScreen();
-        }
-      }, 10000);
-      
-      // Error fallback - if JavaScript fails completely
-      window.addEventListener('error', (e) => {
-        console.error('Critical error detected:', e);
-        setTimeout(removeLoadingScreen, 2000);
-      });
+      }, 5000);
     </script>
     
     <!-- Loading screen styles -->
