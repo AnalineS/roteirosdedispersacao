@@ -36,7 +36,7 @@ jobs:
           --project roteiro-dispensacao-hanseniase
         
         # Deploy to Cloud Run with environment variables
-        gcloud run deploy roteiro-dispensacao-api \
+        URL=$(gcloud run deploy roteiro-dispensacao-api \
           --image gcr.io/roteiro-dispensacao-hanseniase/roteiro-dispensacao-api:${{ github.sha }} \
           --platform managed \
           --region us-central1 \
@@ -48,7 +48,9 @@ jobs:
           --timeout 300 \
           --set-env-vars="ENVIRONMENT=production,DOMAIN=roteirosdedispensacao.com,OPENROUTER_API_KEY=${{ secrets.OPENROUTER_API_KEY }},HUGGINGFACE_API_KEY=${{ secrets.HUGGINGFACE_API_KEY }},ASTRA_DB_APPLICATION_TOKEN=${{ secrets.ASTRA_DB_APPLICATION_TOKEN }},ASTRA_DB_API_ENDPOINT=${{ secrets.ASTRA_DB_API_ENDPOINT }}" \
           --project roteiro-dispensacao-hanseniase \
-          --format="value(status.url)"
+          --format="value(status.url)")
+        
+        echo "backend-url=$URL" >> $GITHUB_OUTPUT
 
   build-and-deploy-frontend:
     runs-on: ubuntu-latest
@@ -107,10 +109,5 @@ jobs:
             issue_number: context.issue.number,
             owner: context.repo.owner,
             repo: context.repo.repo,
-            body: `🚀 Deploy completo realizado!
-            
-📱 **Frontend:** https://roteiros-de-dispensacao.web.app
-⚙️ **Backend:** ${{ needs.deploy-backend.outputs.backend-url }}
-            
-✅ Ambos os serviços foram atualizados automaticamente.`
+            body: '🚀 Deploy completo realizado!\n\n📱 **Frontend:** https://roteiros-de-dispensacao.web.app\n⚙️ **Backend:** ${{ needs.deploy-backend.outputs.backend-url }}\n\n✅ Ambos os serviços foram atualizados automaticamente.'
           })

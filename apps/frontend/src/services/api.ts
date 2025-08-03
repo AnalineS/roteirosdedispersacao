@@ -41,10 +41,10 @@ const handleApiError = (error: unknown): ApiResponse<ChatResponse> => {
 
 // API Configuration for Cloud Run backend
 const API_CONFIG = {
-  // Google Cloud Run (Only backend)
-  CLOUD_RUN_URL: import.meta.env.VITE_API_URL,
+  // Google Cloud Run (Only backend) - usando URL de produção como fallback
+  CLOUD_RUN_URL: import.meta.env.VITE_API_URL || 'https://roteiros-de-dispensacao.web.app',
   // Environment
-  ENVIRONMENT: import.meta.env.VITE_ENVIRONMENT || 'development',
+  ENVIRONMENT: import.meta.env.VITE_ENVIRONMENT || 'production',
   // Timeout settings
   TIMEOUT: parseInt(import.meta.env.VITE_REQUEST_TIMEOUT || '30000'),
   // Retry settings
@@ -54,12 +54,12 @@ const API_CONFIG = {
 
 // Synchronous version for immediate use
 const getApiBaseUrlSync = () => {
-  const cloudRunUrl = import.meta.env.VITE_API_URL
-  if (!cloudRunUrl) {
-    throw new Error('VITE_API_URL não configurada nas variáveis de ambiente')
-  }
+  // Prioridade: variável de ambiente > URL de produção > fallback local
+  const cloudRunUrl = import.meta.env.VITE_API_URL || 
+                      'https://roteiros-de-dispensacao.web.app' ||
+                      'http://localhost:5000'
   
-  console.log('🔗 Using Cloud Run backend:', cloudRunUrl)
+  console.log('🔗 Using backend URL:', cloudRunUrl)
   return cloudRunUrl
 }
 
@@ -165,7 +165,7 @@ export const chatApi = {
       
       const requestData = {
         question: message,
-        persona: personaId,
+        personality_id: personaId,
       }
       
       console.log('📋 Request data:', requestData)
