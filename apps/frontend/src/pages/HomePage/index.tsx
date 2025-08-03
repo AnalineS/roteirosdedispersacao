@@ -2,7 +2,7 @@ import React, { useState, Suspense } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useChat } from '@hooks/useChat'
-import { AnimationOptimizer } from '@utils/performanceOptimizer'
+// import { AnimationOptimizer } from '@utils/performanceOptimizer' // Temporariamente removido
 // import { SkeletonPersonaCard } from '@components/SkeletonLoader' // Removed - not used anymore
 import EnhancedPersonaSelector from '@components/PersonaSelector/EnhancedPersonaSelector'
 import { HomePageSEO } from '@components/SEOHead'
@@ -21,8 +21,27 @@ const HomePage: React.FC = () => {
   const [showColorPreview, setShowColorPreview] = useState(false)
   const [showPersonaSelector, setShowPersonaSelector] = useState(false)
   
-  // Get optimized animation variants
-  const animationVariants = AnimationOptimizer.createOptimizedVariants()
+  // Get optimized animation variants - Temporariamente removido
+  // const animationVariants = AnimationOptimizer.createOptimizedVariants()
+  
+  // Usar animações simples por enquanto
+  const animationVariants = {
+    fadeIn: {
+      initial: { opacity: 0, y: 20 },
+      animate: { opacity: 1, y: 0 },
+      transition: { duration: 0.3 }
+    },
+    slideUp: {
+      initial: { opacity: 0, y: 30 },
+      animate: { opacity: 1, y: 0 },
+      transition: { duration: 0.4 }
+    },
+    scale: {
+      initial: { opacity: 0, scale: 0.9 },
+      animate: { opacity: 1, scale: 1 },
+      transition: { duration: 0.3 }
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">

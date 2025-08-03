@@ -8,7 +8,7 @@ import { SkeletonPage } from '@components/SkeletonLoader'
 import { ThemeProvider } from '@components/ThemeProvider'
 import { ChatProvider } from '@hooks/useChat'
 import { DebugPanel } from '@components/DebugPanel'
-import { performanceMonitor, BundleOptimizer } from '@utils/performanceOptimizer'
+// import { performanceMonitor, BundleOptimizer } from '@utils/performanceOptimizer' // Temporariamente removido
 
 // Lazy load pages
 const HomePage = lazy(() => import('@pages/HomePage'))
@@ -36,25 +36,25 @@ function App() {
     return () => clearTimeout(timer)
   }, [])
 
-  // Initialize performance monitoring
-  useEffect(() => {
-    // Preload critical resources
-    BundleOptimizer.preloadCriticalResources()
-    
-    // Report performance after page load
-    const reportPerformance = () => {
-      setTimeout(() => {
-        performanceMonitor.reportPerformance()
-      }, 3000)
-    }
-    
-    if (document.readyState === 'complete') {
-      reportPerformance()
-    } else {
-      window.addEventListener('load', reportPerformance)
-      return () => window.removeEventListener('load', reportPerformance)
-    }
-  }, [])
+  // Initialize performance monitoring - Temporariamente removido
+  // useEffect(() => {
+  //   // Preload critical resources
+  //   BundleOptimizer.preloadCriticalResources()
+  //   
+  //   // Report performance after page load
+  //   const reportPerformance = () => {
+  //     setTimeout(() => {
+  //       performanceMonitor.reportPerformance()
+  //     }, 3000)
+  //   }
+  //   
+  //   if (document.readyState === 'complete') {
+  //     reportPerformance()
+  //   } else {
+  //     window.addEventListener('load', reportPerformance)
+  //     return () => window.removeEventListener('load', reportPerformance)
+  //   }
+  // }, [])
 
   return (
     <ErrorBoundary
