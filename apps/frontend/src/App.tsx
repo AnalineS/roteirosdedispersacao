@@ -1,21 +1,4 @@
-import { Suspense, lazy, useEffect } from 'react'
-import { Routes, Route } from 'react-router-dom'
-import { AnimatePresence } from 'framer-motion'
-
-import Layout from '@components/Layout'
-import ErrorBoundary from '@components/ErrorBoundary'
-import { SkeletonPage } from '@components/SkeletonLoader'
-import { ThemeProvider } from '@components/ThemeProvider'
-import { ChatProvider } from '@hooks/useChat'
-import { DebugPanel } from '@components/DebugPanel'
-// import { performanceMonitor, BundleOptimizer } from '@utils/performanceOptimizer' // Temporariamente removido
-
-// Lazy load pages
-const HomePage = lazy(() => import('@pages/HomePage'))
-const ChatPage = lazy(() => import('@pages/ChatPage'))
-const AboutPage = lazy(() => import('@pages/AboutPage'))
-const ResourcesPage = lazy(() => import('@pages/ResourcesPage'))
-const NotFoundPage = lazy(() => import('@pages/NotFoundPage'))
+import { useEffect } from 'react'
 
 function App() {
   // Remove loading screen when React app is ready
@@ -23,6 +6,7 @@ function App() {
     const removeLoadingScreen = () => {
       const loadingScreen = document.getElementById('loading-screen')
       if (loadingScreen) {
+        console.log('🎯 React App renderizou! Removendo loading screen...')
         loadingScreen.classList.add('fade-out')
         setTimeout(() => {
           loadingScreen.style.display = 'none'
@@ -36,106 +20,35 @@ function App() {
     return () => clearTimeout(timer)
   }, [])
 
-  // Initialize performance monitoring - Temporariamente removido
-  // useEffect(() => {
-  //   // Preload critical resources
-  //   BundleOptimizer.preloadCriticalResources()
-  //   
-  //   // Report performance after page load
-  //   const reportPerformance = () => {
-  //     setTimeout(() => {
-  //       performanceMonitor.reportPerformance()
-  //     }, 3000)
-  //   }
-  //   
-  //   if (document.readyState === 'complete') {
-  //     reportPerformance()
-  //   } else {
-  //     window.addEventListener('load', reportPerformance)
-  //     return () => window.removeEventListener('load', reportPerformance)
-  //   }
-  // }, [])
-
   return (
-    <ErrorBoundary
-      onError={(error, errorInfo) => {
-        // Log critical app-level errors
-        console.error('🚨 Critical App Error:', error, errorInfo)
-        
-        // Send to monitoring service in production
-        if (import.meta.env.PROD) {
-          // Example: Sentry.captureException(error, { extra: errorInfo })
-        }
-      }}
-    >
-      <ThemeProvider>
-        <ErrorBoundary>
-          <ChatProvider>
-            <ErrorBoundary>
-              <AnimatePresence mode="wait">
-                <Routes>
-                  <Route path="/" element={<Layout />}>
-                    <Route
-                      index
-                      element={
-                        <ErrorBoundary>
-                          <Suspense fallback={<SkeletonPage type="home" />}>
-                            <HomePage />
-                          </Suspense>
-                        </ErrorBoundary>
-                      }
-                    />
-                    <Route
-                      path="chat"
-                      element={
-                        <ErrorBoundary>
-                          <Suspense fallback={<SkeletonPage type="chat" />}>
-                            <ChatPage />
-                          </Suspense>
-                        </ErrorBoundary>
-                      }
-                    />
-                    <Route
-                      path="about"
-                      element={
-                        <ErrorBoundary>
-                          <Suspense fallback={<SkeletonPage type="about" />}>
-                            <AboutPage />
-                          </Suspense>
-                        </ErrorBoundary>
-                      }
-                    />
-                    <Route
-                      path="resources"
-                      element={
-                        <ErrorBoundary>
-                          <Suspense fallback={<SkeletonPage type="resources" />}>
-                            <ResourcesPage />
-                          </Suspense>
-                        </ErrorBoundary>
-                      }
-                    />
-                    <Route
-                      path="*"
-                      element={
-                        <ErrorBoundary>
-                          <Suspense fallback={<SkeletonPage type="notfound" />}>
-                            <NotFoundPage />
-                          </Suspense>
-                        </ErrorBoundary>
-                      }
-                    />
-                  </Route>
-                </Routes>
-              </AnimatePresence>
-            </ErrorBoundary>
-          </ChatProvider>
-        </ErrorBoundary>
-        
-        {/* FASE 3: Debug Panel para diagnóstico */}
-        {(import.meta.env.DEV || import.meta.env.VITE_DEBUG === 'true') && <DebugPanel />}
-      </ThemeProvider>
-    </ErrorBoundary>
+    <div style={{ 
+      minHeight: '100vh', 
+      padding: '2rem',
+      fontFamily: 'system-ui, sans-serif',
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      color: 'white',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center'
+    }}>
+      <h1 style={{ fontSize: '3rem', marginBottom: '1rem', textAlign: 'center' }}>
+        🎉 React Funcionando!
+      </h1>
+      <p style={{ fontSize: '1.2rem', marginBottom: '2rem', textAlign: 'center' }}>
+        Roteiros de Dispensação - Assistentes Educacionais
+      </p>
+      <div style={{ 
+        background: 'rgba(255,255,255,0.1)', 
+        padding: '1.5rem', 
+        borderRadius: '10px',
+        textAlign: 'center'
+      }}>
+        <p>✅ React está renderizando corretamente</p>
+        <p>✅ JavaScript funcionando</p>
+        <p>✅ Tela de loading foi removida</p>
+      </div>
+    </div>
   )
 }
 
