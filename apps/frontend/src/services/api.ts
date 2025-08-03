@@ -1,3 +1,7 @@
+// Re-export debugApi como api principal
+export { debugApi as chatApi, debugApi as personasApi, debugApi as default } from './debugApi'
+
+// Manter imports para compatibilidade
 import axios, { AxiosError } from 'axios'
 import type { 
   ApiResponse, 

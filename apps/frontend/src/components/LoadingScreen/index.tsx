@@ -1,7 +1,27 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
+import { useNavigate } from 'react-router-dom'
 
 const LoadingScreen: React.FC = () => {
+  const [loadingTime, setLoadingTime] = useState(0)
+  const navigate = useNavigate()
+  
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setLoadingTime(prev => prev + 1)
+    }, 1000)
+    
+    // Timeout de segurança - 5 segundos
+    const timeout = setTimeout(() => {
+      console.warn('⚠️ Loading timeout - navegando para chat')
+      navigate('/chat')
+    }, 5000)
+    
+    return () => {
+      clearInterval(interval)
+      clearTimeout(timeout)
+    }
+  }, [navigate])
   return (
     <div className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-950">
       <div className="text-center">
@@ -52,8 +72,35 @@ const LoadingScreen: React.FC = () => {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
         >
-          Preparando o sistema de apoio à dispensação...
+          {loadingTime < 2 && 'Preparando o sistema de apoio à dispensação...'}
+          {loadingTime >= 2 && loadingTime < 4 && 'Conectando com os assistentes...'}
+          {loadingTime >= 4 && 'Finalizando configurações...'}
         </motion.p>
+        
+        {/* Aviso de timeout */}
+        {loadingTime >= 3 && (
+          <motion.div
+            className="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg max-w-sm mx-auto"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <p className="text-sm text-yellow-800 dark:text-yellow-200">
+              ⚠️ Conexão lenta detectada. Redirecionando...
+            </p>
+          </motion.div>
+        )}
+        
+        {/* Botão de emergência */}
+        {loadingTime >= 2 && (
+          <motion.button
+            onClick={() => navigate('/chat')}
+            className="mt-4 px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
+            Continuar sem esperar
+          </motion.button>
+        )}
       </div>
     </div>
   )
