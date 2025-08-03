@@ -1,7 +1,8 @@
-import React, { createContext, useContext, useReducer, useCallback } from 'react'
+import React, { createContext, useContext, useReducer, useCallback, useEffect } from 'react'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { debugApi as chatApi, debugApi as personasApi } from '@services/debugApi'
 import { errorHandler } from '@utils/errorHandler'
+import { LOCAL_PERSONAS, getLocalPersonas, generateOfflineResponse } from '@/data/localPersonas'
 import type { Message, Persona, ApiResponse, ChatResponse } from '@/types'
 
 interface ChatState {
@@ -73,34 +74,47 @@ interface ChatProviderProps {
 export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
   const [state, dispatch] = useReducer(chatReducer, initialState)
 
-  // Load personas with error handling
+  // Load personas with error handling and fallback
   const {
     data: personasData,
     isLoading: isPersonasLoading,
     error: personasError,
   } = useQuery({
     queryKey: ['personas'],
-    queryFn: () => errorHandler.withRetry(
-      () => personasApi.getPersonas(),
-      'load-personas',
-      2 // max retries for personas
-    ),
+    queryFn: async () => {
+      try {
+        // Tentar carregar do backend
+        return await errorHandler.withRetry(
+          () => personasApi.getPersonas(),
+          'load-personas',
+          2 // max retries for personas
+        )
+      } catch (error) {
+        console.warn('⚠️ Backend indisponível, usando personas locais')
+        // Usar fallback local se backend falhar
+        return getLocalPersonas()
+      }
+    },
     staleTime: 10 * 60 * 1000, // 10 minutes
-    retry: (failureCount, error) => {
-      // Let error handler manage retries
-      const processedError = errorHandler.processError(error, 'personas-query')
-      return processedError.retryable && failureCount < 2
-    }
+    retry: false, // Não retry, já temos fallback
+    initialData: getLocalPersonas() // Dados iniciais para evitar loading
   })
 
-  // Send message mutation with enhanced error handling
+  // Send message mutation with enhanced error handling and offline support
   const sendMessageMutation = useMutation({
-    mutationFn: ({ message, personaId }: { message: string; personaId: string }) =>
-      errorHandler.withRetry(
-        () => chatApi.sendMessage(message, personaId),
-        `sendMessage-${personaId}`,
-        3 // max retries
-      ),
+    mutationFn: async ({ message, personaId }: { message: string; personaId: string }) => {
+      try {
+        return await errorHandler.withRetry(
+          () => chatApi.sendMessage(message, personaId),
+          `sendMessage-${personaId}`,
+          3 // max retries
+        )
+      } catch (error) {
+        console.warn('⚠️ Backend offline, gerando resposta local')
+        // Gerar resposta offline
+        return generateOfflineResponse(personaId, message)
+      }
+    },
     onMutate: ({ message }) => {
       // Add user message immediately
       const userMessage: Message = {
@@ -114,7 +128,19 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
       dispatch({ type: 'SET_LOADING', payload: true })
       dispatch({ type: 'SET_ERROR', payload: null })
     },
-    onSuccess: (response: ApiResponse<ChatResponse>) => {
+    onSuccess: (response: any) => {
+      // Verificar se é resposta offline
+      if (response.status === 'offline') {
+        const offlineMessage = response.data?.message
+        if (offlineMessage) {
+          dispatch({ type: 'ADD_MESSAGE', payload: offlineMessage })
+          dispatch({ type: 'SET_LOADING', payload: false })
+          dispatch({ type: 'SET_ERROR', payload: '⚠️ Modo offline - Respostas limitadas' })
+        }
+        return
+      }
+      
+      // Resposta normal do backend
       const message = response.data?.message
       if (!message) {
         throw new Error('Invalid response format')
