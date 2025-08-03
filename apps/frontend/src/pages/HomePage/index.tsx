@@ -5,6 +5,7 @@ import { useChat } from '@hooks/useChat'
 // import { AnimationOptimizer } from '@utils/performanceOptimizer' // Temporariamente removido
 // import { SkeletonPersonaCard } from '@components/SkeletonLoader' // Removed - not used anymore
 import EnhancedPersonaSelector from '@components/PersonaSelector/EnhancedPersonaSelector'
+import DiagnosticPanel from '@components/DiagnosticPanel'
 import { HomePageSEO } from '@components/SEOHead'
 import { 
   ChatBubbleLeftRightIcon,
@@ -389,6 +390,9 @@ const HomePage: React.FC = () => {
           />
         </Suspense>
       )}
+
+      {/* Diagnostic Panel for debugging */}
+      <DiagnosticPanel />
     </div>
   )
 }
