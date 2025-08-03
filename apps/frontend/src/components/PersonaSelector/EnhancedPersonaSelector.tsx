@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useChat } from '@hooks/useChat'
-import { usePersona } from '@hooks/usePersona'
+// import { usePersona } from '@hooks/usePersona' // Temporariamente desabilitado
 import PersonaCard from '@components/PersonaCard'
-import ProfileDetector from './ProfileDetector'
+// import ProfileDetector from './ProfileDetector' // Temporariamente desabilitado
 import type { Persona } from '@/types'
 import { 
   QuestionMarkCircleIcon, 
@@ -28,7 +28,9 @@ const EnhancedPersonaSelector: React.FC<EnhancedPersonaSelectorProps> = ({
   selectedPersona
 }) => {
   const { setSelectedPersona } = useChat()
-  const { autoDetectEnabled, toggleAutoDetect } = usePersona()
+  // const { autoDetectEnabled, toggleAutoDetect } = usePersona() // Temporariamente desabilitado
+  const autoDetectEnabled = false
+  const toggleAutoDetect = () => {}
   const [showQuiz, setShowQuiz] = useState(false)
   const [showProfileDetector, setShowProfileDetector] = useState(false)
   // const [selectionMode, setSelectionMode] = useState<'manual' | 'guided' | 'smart'>('manual')
@@ -386,8 +388,8 @@ const EnhancedPersonaSelector: React.FC<EnhancedPersonaSelectorProps> = ({
           </div>
         </div>
 
-        {/* Profile Detector */}
-        {showProfileDetector && (
+        {/* Profile Detector - Temporariamente desabilitado */}
+        {/* {showProfileDetector && (
           <ProfileDetector
             onComplete={(personaId) => {
               setShowProfileDetector(false)
@@ -404,7 +406,7 @@ const EnhancedPersonaSelector: React.FC<EnhancedPersonaSelectorProps> = ({
               // setSelectionMode('manual')
             }}
           />
-        )}
+        )} */}
         
         {/* Persona cards */}
         {!showQuiz && !showProfileDetector && (
