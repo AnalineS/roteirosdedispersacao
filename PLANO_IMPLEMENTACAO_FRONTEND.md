@@ -155,9 +155,20 @@ Implementar sistema educacional adaptativo com Dr. Gasnelio (técnico) e Gá (em
   - Atualizado `EXPOSE $PORT` para ser dinâmico
   - Corrigido healthcheck para `${PORT:-8080}` com fallback
 - **✅ Status:** **RESOLVIDO** - Dockerfile agora aceita PORT dinâmico do Cloud Run
-- **📋 Próxima Ação:** Fazer commit, push e testar deploy
+- **📋 Resultado:** Backend deployado com sucesso
 
-### **Problema #003 - [Placeholder para próximos problemas]**
+### **Problema #003 - Site em Branco - CSP Bloqueando React** ✅ **RESOLVIDO**
+- **📅 Data:** 03/08/2025  
+- **🔍 Causa:** Content Security Policy muito restritivo no firebase.json bloqueando JavaScript do React
+- **⚠️ Sintoma:** Página completamente branca, loading screen não removido, React não executa
+- **🔧 Solução Aplicada:** Simplificar CSP no Firebase Hosting
+  - Removido restrições excessivas do Google Analytics
+  - Mantido apenas `script-src 'self' 'unsafe-inline' 'unsafe-eval'`
+  - Simplificado connect-src para APIs essenciais
+- **✅ Status:** **RESOLVIDO** - CSP agora permite execução do React
+- **📋 Próxima Ação:** Aguardar deploy automático e testar
+
+### **Problema #004 - [Placeholder para próximos problemas]**
 - **📅 Data:** 
 - **🔍 Causa:** 
 - **⚠️ Sintoma:** 
