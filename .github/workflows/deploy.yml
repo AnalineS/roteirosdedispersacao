@@ -109,7 +109,6 @@ jobs:
         firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_ROTEIROS_DE_DISPENSACAO }}
         channelId: live
         projectId: roteiros-de-dispensacao
-        entryPoint: ./
         
     - name: Comment on PR
       if: github.event_name == 'pull_request'
