@@ -26,6 +26,12 @@ jobs:
       with:
         project_id: pelagic-range-467602-d3
         
+    - name: Enable required APIs
+      run: |
+        gcloud services enable cloudbuild.googleapis.com --project=pelagic-range-467602-d3
+        gcloud services enable run.googleapis.com --project=pelagic-range-467602-d3
+        gcloud services enable containerregistry.googleapis.com --project=pelagic-range-467602-d3
+      
     - name: Configure Docker for gcloud
       run: gcloud auth configure-docker
       
@@ -33,10 +39,12 @@ jobs:
       id: deploy
       working-directory: ./apps/backend
       run: |
-        # Build and submit image to Cloud Build
+        # Build and submit image to Cloud Build with explicit source
         gcloud builds submit \
           --tag gcr.io/pelagic-range-467602-d3/roteiro-dispensacao-api:${{ github.sha }} \
-          --project pelagic-range-467602-d3
+          --project pelagic-range-467602-d3 \
+          --timeout=20m \
+          --machine-type=e2-standard-2
         
         # Deploy to Cloud Run with environment variables
         URL=$(gcloud run deploy roteiro-dispensacao-api \
