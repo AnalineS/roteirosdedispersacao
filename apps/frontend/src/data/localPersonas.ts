@@ -48,7 +48,7 @@ export function getLocalPersonas() {
 }
 
 // Função para simular chat offline
-export function generateOfflineResponse(personaId: string, message: string) {
+export function generateOfflineResponse(personaId: string, _message: string) {
   const persona = LOCAL_PERSONAS[personaId as keyof typeof LOCAL_PERSONAS]
   
   if (!persona) {

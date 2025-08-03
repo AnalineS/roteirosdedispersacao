@@ -1,9 +1,9 @@
-import React, { createContext, useContext, useReducer, useCallback, useEffect } from 'react'
+import React, { createContext, useContext, useReducer, useCallback } from 'react'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { debugApi as chatApi, debugApi as personasApi } from '@services/debugApi'
 import { errorHandler } from '@utils/errorHandler'
-import { LOCAL_PERSONAS, getLocalPersonas, generateOfflineResponse } from '@/data/localPersonas'
-import type { Message, Persona, ApiResponse, ChatResponse } from '@/types'
+import { getLocalPersonas, generateOfflineResponse } from '@/data/localPersonas'
+import type { Message, Persona } from '@/types'
 
 interface ChatState {
   messages: Message[]

@@ -9,9 +9,13 @@ LABEL description="Backend Flask para chatbot educacional sobre hanseníase"
 # Configurar diretório de trabalho
 WORKDIR /app
 
+# Configurar para evitar warnings do debconf
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
 # Instalar dependências do sistema necessárias
-RUN apt-get update && apt-get install -y \
-    apt-utils \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     g++ \
     python3-dev \
@@ -22,9 +26,14 @@ RUN apt-get update && apt-get install -y \
 # Criar usuário não-root para segurança
 RUN groupadd -r appuser && useradd -r -g appuser appuser
 
+# Criar ambiente virtual para evitar warnings do pip
+ENV VIRTUAL_ENV=/app/venv
+RUN python -m venv $VIRTUAL_ENV
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
 # Copiar e instalar dependências Python primeiro (para cache do Docker)
-COPY requirements.txt .
-RUN pip install --no-cache-dir --upgrade pip \
+COPY --chown=appuser:appuser requirements.txt .
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel \
     && pip install --no-cache-dir -r requirements.txt \
     && pip install --no-cache-dir gunicorn==21.2.0
 
@@ -36,8 +45,6 @@ RUN chown -R appuser:appuser /app
 USER appuser
 
 # Variáveis de ambiente para produção
-ENV PYTHONUNBUFFERED=1
-ENV PYTHONDONTWRITEBYTECODE=1
 ENV FLASK_ENV=production
 ENV PORT=8080
 ENV WORKERS=1
