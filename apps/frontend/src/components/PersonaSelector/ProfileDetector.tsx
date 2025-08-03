@@ -1,19 +1,75 @@
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { usePersona } from '@hooks/usePersona'
 import {
   LightBulbIcon,
   ArrowRightIcon,
   CheckCircleIcon
 } from '@heroicons/react/24/outline'
 
+// Importar tipos de detecção
+type ProfileDetection = {
+  recommended: 'dr_gasnelio' | 'ga'
+  confidence: number
+  explanation: string
+}
+
 interface ProfileDetectorProps {
   onComplete: (personaId: string) => void
   onSkip?: () => void
+  // Receber função de detecção como prop
+  detectProfile?: (text: string) => ProfileDetection
 }
 
-const ProfileDetector: React.FC<ProfileDetectorProps> = ({ onComplete, onSkip }) => {
-  const { detectProfile, setSelectedPersona } = usePersona()
+// Função de detecção padrão (standalone)
+const defaultDetectProfile = (text: string): ProfileDetection => {
+  const technicalKeywords = [
+    'posologia', 'farmacocinética', 'mecanismo de ação',
+    'interações medicamentosas', 'farmacologia clínica',
+    'protocolo', 'diretrizes técnicas', 'evidência científica',
+    'PQT-U', 'baciloscopia', 'multibacilar', 'paucibacilar',
+    'rifampicina', 'dapsona', 'clofazimina', 'esquema terapêutico'
+  ]
+  
+  const empatheticKeywords = [
+    'como tomar', 'efeitos', 'normal', 'preocupado',
+    'posso', 'faz mal', 'é perigoso', 'vai passar',
+    'medo', 'ansioso', 'família', 'cuidador',
+    'dói', 'sinto', 'ajuda', 'entender', 'explicar'
+  ]
+  
+  const lowerText = text.toLowerCase()
+  const technicalScore = technicalKeywords.reduce((count, keyword) => 
+    count + (lowerText.includes(keyword) ? 1 : 0), 0
+  )
+  const empatheticScore = empatheticKeywords.reduce((count, keyword) => 
+    count + (lowerText.includes(keyword) ? 1 : 0), 0
+  )
+  
+  const totalScore = Math.max(technicalScore + empatheticScore, 1)
+  const confidence = Math.abs(technicalScore - empatheticScore) / totalScore
+  
+  let explanation = ''
+  let recommended: 'dr_gasnelio' | 'ga' = 'ga'
+  
+  if (technicalScore > empatheticScore) {
+    recommended = 'dr_gasnelio'
+    explanation = 'Detectamos termos técnicos em sua mensagem. Dr. Gasnelio pode fornecer informações mais detalhadas.'
+  } else if (empatheticScore > technicalScore) {
+    recommended = 'ga'
+    explanation = 'Percebemos que você busca orientações práticas. Gá pode explicar de forma mais simples e acolhedora.'
+  } else {
+    recommended = 'ga'
+    explanation = 'Para uma primeira conversa, Gá pode ser mais adequada para entender suas necessidades.'
+  }
+  
+  return { recommended, confidence, explanation }
+}
+
+const ProfileDetector: React.FC<ProfileDetectorProps> = ({ 
+  onComplete, 
+  onSkip, 
+  detectProfile = defaultDetectProfile 
+}) => {
   const [userInput, setUserInput] = useState('')
   const [detection, setDetection] = useState<ReturnType<typeof detectProfile> | null>(null)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
@@ -33,7 +89,6 @@ const ProfileDetector: React.FC<ProfileDetectorProps> = ({ onComplete, onSkip })
 
   const handleConfirmDetection = () => {
     if (detection) {
-      setSelectedPersona(detection.recommended)
       onComplete(detection.recommended)
     }
   }

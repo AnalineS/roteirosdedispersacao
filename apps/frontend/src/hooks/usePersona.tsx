@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useChat } from './useChat'
+import type { Persona } from '@/types'
 
 // Indicadores para detecção de perfil
 const PROFILE_INDICATORS = {
@@ -37,8 +37,13 @@ interface PersonaTransition {
   timestamp: Date
 }
 
-export const usePersona = () => {
-  const { selectedPersona, setSelectedPersona, personas } = useChat()
+interface UsePersonaProps {
+  selectedPersona: string | null
+  personas: Record<string, Persona> | undefined
+  onPersonaChange: (personaId: string) => void
+}
+
+export const usePersona = ({ selectedPersona, personas, onPersonaChange }: UsePersonaProps) => {
   const [personaHistory, setPersonaHistory] = useState<PersonaTransition[]>([])
   const [autoDetectEnabled, setAutoDetectEnabled] = useState(true)
   const [lastDetection, setLastDetection] = useState<ProfileDetection | null>(null)
@@ -49,13 +54,13 @@ export const usePersona = () => {
     const savedAutoDetect = localStorage.getItem('auto-detect-persona')
     
     if (savedPreference && !selectedPersona) {
-      setSelectedPersona(savedPreference)
+      onPersonaChange(savedPreference)
     }
     
     if (savedAutoDetect !== null) {
       setAutoDetectEnabled(savedAutoDetect === 'true')
     }
-  }, [selectedPersona, setSelectedPersona])
+  }, [selectedPersona, onPersonaChange])
 
   // Salvar preferência quando mudar
   useEffect(() => {
@@ -136,7 +141,7 @@ export const usePersona = () => {
     }
     
     setPersonaHistory(prev => [...prev, transition])
-    setSelectedPersona(to)
+    onPersonaChange(to)
     
     // Analytics
     if (typeof window !== 'undefined' && (window as any).gtag) {
@@ -146,7 +151,7 @@ export const usePersona = () => {
         reason
       })
     }
-  }, [selectedPersona, setSelectedPersona])
+  }, [selectedPersona, onPersonaChange])
 
   // Obter sugestão de transição com contexto
   const getTransitionSuggestion = useCallback((currentPersona: string, suggestedPersona: string): string => {
@@ -186,7 +191,7 @@ export const usePersona = () => {
     lastDetection,
     
     // Métodos
-    setSelectedPersona,
+    setSelectedPersona: onPersonaChange,
     detectProfile,
     checkTransitionTrigger,
     transitionPersona,

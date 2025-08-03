@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { usePersona } from '@hooks/usePersona'
+import type { Persona } from '@/types'
 import {
   ArrowRightIcon,
   XMarkIcon,
@@ -10,7 +10,9 @@ import {
 
 interface PersonaTransitionSuggestionProps {
   suggestedPersona: string
-  currentMessage: string // Used for analytics/context
+  currentPersona: string
+  personas: Record<string, Persona>
+  currentMessage: string // Used for analytics and reasoning context
   onAccept: () => void
   onDecline: () => void
   onDismiss: () => void
@@ -18,37 +20,45 @@ interface PersonaTransitionSuggestionProps {
 
 const PersonaTransitionSuggestion: React.FC<PersonaTransitionSuggestionProps> = ({
   suggestedPersona,
+  currentPersona,
+  personas,
   currentMessage, // Used for analytics and reasoning context
   onAccept,
   onDecline,
   onDismiss
 }) => {
-  const { 
-    selectedPersona, 
-    personas, 
-    getTransitionSuggestion 
-  } = usePersona()
   
   const [showDetails, setShowDetails] = useState(false)
 
-  if (!selectedPersona || !personas) return null
+  if (!currentPersona || !personas) return null
 
-  const currentPersona = personas[selectedPersona]
+  const currentPersonaData = personas[currentPersona]
   const targetPersona = personas[suggestedPersona]
   
-  if (!currentPersona || !targetPersona) return null
+  if (!currentPersonaData || !targetPersona) return null
 
-  const suggestionText = getTransitionSuggestion(selectedPersona, suggestedPersona)
+  // Função de sugestão inline (standalone)
+  const getTransitionSuggestion = (current: string, suggested: string): string => {
+    const suggestions = {
+      'dr_gasnelio_to_ga': 'Percebi que minha explicação ficou muito técnica. Que tal conversar com Gá? Ela explica de forma mais simples e acolhedora.',
+      'ga_to_dr_gasnelio': 'Que bom que quer saber mais! Para informações técnicas detalhadas, Dr. Gasnelio é o especialista ideal. Posso apresentá-lo?'
+    }
+    
+    const key = `${current}_to_${suggested}`
+    return suggestions[key as keyof typeof suggestions] || 'Talvez outro assistente possa ajudar melhor com sua pergunta.'
+  }
+  
+  const suggestionText = getTransitionSuggestion(currentPersona, suggestedPersona)
 
   const getPersonaEmoji = (personaId: string) => {
     return personaId === 'dr_gasnelio' ? '👨‍⚕️' : '🤝'
   }
 
   const getTransitionReason = () => {
-    if (selectedPersona === 'dr_gasnelio' && suggestedPersona === 'ga') {
+    if (currentPersona === 'dr_gasnelio' && suggestedPersona === 'ga') {
       return 'Sua mensagem indica que você pode preferir explicações mais simples e acolhedoras.'
     }
-    if (selectedPersona === 'ga' && suggestedPersona === 'dr_gasnelio') {
+    if (currentPersona === 'ga' && suggestedPersona === 'dr_gasnelio') {
       return 'Percebi que você está buscando informações mais técnicas e detalhadas.'
     }
     return 'Outro assistente pode ser mais adequado para sua necessidade atual.'
@@ -88,9 +98,9 @@ const PersonaTransitionSuggestion: React.FC<PersonaTransitionSuggestionProps> = 
             {/* Transition visualization */}
             <div className="flex items-center justify-center space-x-3">
               <div className="text-center">
-                <div className="text-2xl mb-1">{getPersonaEmoji(selectedPersona)}</div>
+                <div className="text-2xl mb-1">{getPersonaEmoji(currentPersona)}</div>
                 <div className="text-xs text-gray-500 dark:text-gray-400">
-                  {currentPersona.name}
+                  {currentPersonaData.name}
                 </div>
               </div>
               
@@ -151,7 +161,7 @@ const PersonaTransitionSuggestion: React.FC<PersonaTransitionSuggestionProps> = 
                 onClick={onDecline}
                 className="flex-1 px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
               >
-                Continuar com {currentPersona.name}
+                Continuar com {currentPersonaData.name}
               </button>
               <button
                 onClick={onAccept}
