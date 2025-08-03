@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useChat } from '@hooks/useChat'
+import { usePersona } from '@hooks/usePersona'
 import PersonaCard from '@components/PersonaCard'
+import ProfileDetector from './ProfileDetector'
 import type { Persona } from '@/types'
 import { 
   QuestionMarkCircleIcon, 
@@ -9,7 +11,9 @@ import {
   HeartIcon,
   ChevronRightIcon,
   SparklesIcon,
-  InformationCircleIcon
+  InformationCircleIcon,
+  CpuChipIcon,
+  UserIcon
 } from '@heroicons/react/24/outline'
 
 interface EnhancedPersonaSelectorProps {
@@ -24,7 +28,10 @@ const EnhancedPersonaSelector: React.FC<EnhancedPersonaSelectorProps> = ({
   selectedPersona
 }) => {
   const { setSelectedPersona } = useChat()
+  const { autoDetectEnabled, toggleAutoDetect } = usePersona()
   const [showQuiz, setShowQuiz] = useState(false)
+  const [showProfileDetector, setShowProfileDetector] = useState(false)
+  // const [selectionMode, setSelectionMode] = useState<'manual' | 'guided' | 'smart'>('manual')
   const [quizStep, setQuizStep] = useState(0)
   const [userProfile, setUserProfile] = useState({
     knowledge: 'unsure',
@@ -325,28 +332,82 @@ const EnhancedPersonaSelector: React.FC<EnhancedPersonaSelectorProps> = ({
       </AnimatePresence>
 
       <div className="space-y-6">
-        {/* Header with help button */}
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+        {/* Header with selection options */}
+        <div className="text-center space-y-4">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
             Escolha seu assistente virtual
           </h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-4">
+          <p className="text-gray-600 dark:text-gray-400">
             Cada assistente tem um jeito especial de explicar as informações
           </p>
           
-          {!showQuiz && (
-            <button
-              onClick={() => setShowQuiz(true)}
-              className="inline-flex items-center text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 font-medium"
-            >
-              <QuestionMarkCircleIcon className="w-5 h-5 mr-2" />
-              Não sei qual escolher
-            </button>
+          {/* Selection Mode Toggle */}
+          {!showQuiz && !showProfileDetector && (
+            <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+              <button
+                onClick={() => setShowProfileDetector(true)}
+                className="inline-flex items-center px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition-colors"
+              >
+                <CpuChipIcon className="w-5 h-5 mr-2" />
+                Detecção Inteligente
+              </button>
+              
+              <button
+                onClick={() => setShowQuiz(true)}
+                className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg font-medium transition-colors"
+              >
+                <QuestionMarkCircleIcon className="w-5 h-5 mr-2" />
+                Questionário Guiado
+              </button>
+              
+              <button
+                onClick={() => { /* setSelectionMode('manual') */ }}
+                className="inline-flex items-center px-4 py-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 font-medium transition-colors"
+              >
+                <UserIcon className="w-5 h-5 mr-2" />
+                Escolha Manual
+              </button>
+            </div>
           )}
+          
+          {/* Auto-detect toggle */}
+          <div className="flex items-center justify-center space-x-2 text-sm">
+            <label className="flex items-center space-x-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={autoDetectEnabled}
+                onChange={toggleAutoDetect}
+                className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+              />
+              <span className="text-gray-600 dark:text-gray-400">
+                Detecção automática durante o chat
+              </span>
+            </label>
+          </div>
         </div>
 
+        {/* Profile Detector */}
+        {showProfileDetector && (
+          <ProfileDetector
+            onComplete={(personaId) => {
+              setShowProfileDetector(false)
+              // Analytics
+              if (typeof window !== 'undefined' && (window as any).gtag) {
+                (window as any).gtag('event', 'select_persona', {
+                  persona_id: personaId,
+                  selection_method: 'smart_detection'
+                })
+              }
+            }}
+            onSkip={() => {
+              setShowProfileDetector(false)
+              // setSelectionMode('manual')
+            }}
+          />
+        )}
+        
         {/* Persona cards */}
-        {!showQuiz && (
+        {!showQuiz && !showProfileDetector && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {Object.entries(personas).map(([id, persona], index) => (
               <motion.div
@@ -363,7 +424,8 @@ const EnhancedPersonaSelector: React.FC<EnhancedPersonaSelectorProps> = ({
                     if (typeof window !== 'undefined' && (window as typeof window & { gtag?: (...args: unknown[]) => void }).gtag) {
                       (window as typeof window & { gtag: (...args: unknown[]) => void }).gtag('event', 'select_persona', {
                         persona_id: id,
-                        persona_name: persona.name
+                        persona_name: persona.name,
+                        selection_method: 'manual'
                       })
                     }
                   }}
@@ -375,7 +437,7 @@ const EnhancedPersonaSelector: React.FC<EnhancedPersonaSelectorProps> = ({
         )}
 
         {/* Educational tip */}
-        {!showQuiz && (
+        {!showQuiz && !showProfileDetector && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
