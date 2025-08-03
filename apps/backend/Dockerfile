@@ -49,7 +49,7 @@ USER appuser
 
 # Variáveis de ambiente para produção
 ENV FLASK_ENV=production
-ENV PORT=8080
+# PORT será definido pelo Cloud Run dinamicamente - remover linha fixa
 ENV WORKERS=1
 ENV THREADS=8
 ENV TIMEOUT=300
@@ -57,12 +57,12 @@ ENV KEEPALIVE=2
 ENV MAX_REQUESTS=1000
 ENV MAX_REQUESTS_JITTER=100
 
-# Expor porta padrão do Cloud Run
-EXPOSE 8080
+# Expor porta dinamicamente (Cloud Run define via PORT env var)
+EXPOSE $PORT
 
-# Health check
+# Health check usando PORT dinâmico
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:$PORT/api/health || exit 1
+    CMD curl -f http://localhost:${PORT:-8080}/api/health || exit 1
 
 # Comando otimizado para Cloud Run
 CMD exec gunicorn \
