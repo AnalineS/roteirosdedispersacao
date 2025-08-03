@@ -154,29 +154,6 @@ export default defineConfig({
       '@assets': path.resolve(__dirname, './src/assets')
     }
   },
-  build: {
-    // Otimizações para reduzir bundle size
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          // Separar vendor libraries em chunks próprios
-          'react-vendor': ['react', 'react-dom'],
-          'router-vendor': ['react-router-dom'],
-          'query-vendor': ['@tanstack/react-query'],
-          'framer-vendor': ['framer-motion'],
-          'icons-vendor': ['@heroicons/react']
-        }
-      }
-    },
-    // Chunk size warning em 300KB (menor que 500KB)
-    chunkSizeWarningLimit: 300,
-    // Otimizar sourcemaps para produção
-    sourcemap: false,
-    // Minificação avançada
-    minify: 'esbuild',
-    // Compression
-    reportCompressedSize: true
-  },
   server: {
     port: 3000
   }

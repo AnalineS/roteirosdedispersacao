@@ -166,9 +166,25 @@ Implementar sistema educacional adaptativo com Dr. Gasnelio (técnico) e Gá (em
   - Mantido apenas `script-src 'self' 'unsafe-inline' 'unsafe-eval'`
   - Simplificado connect-src para APIs essenciais
 - **✅ Status:** **RESOLVIDO** - CSP agora permite execução do React
-- **📋 Próxima Ação:** Aguardar deploy automático e testar
+- **📋 Resultado:** AppMinimal funcionou perfeitamente
 
-### **Problema #004 - [Placeholder para próximos problemas]**
+### **Problema #004 - Bundle JavaScript Muito Grande** ✅ **IDENTIFICADO**
+- **📅 Data:** 03/08/2025
+- **🔍 Causa:** Bundle único de 514KB causando timeout/erro de memória
+- **⚠️ Sintoma:** Loading screen carrega mas React não renderiza conteúdo
+- **🔧 Solução Aplicada:** AppMinimal com bundle de 179KB
+- **✅ Status:** **CAUSA CONFIRMADA** - Bundle grande era o problema
+- **📋 Resultado:** Site funcionou perfeitamente com versão minimal
+
+### **Problema #005 - Code Splitting Causando Nova Tela Branca** ❌ **NOVO PROBLEMA**
+- **📅 Data:** 03/08/2025
+- **🔍 Causa:** Implementação de code splitting com lazy loading introduziu erro
+- **⚠️ Sintoma:** Tela branca voltou após implementar Suspense e lazy loading
+- **🔧 Solução em Andamento:** Reverter para versão estável e implementar gradualmente
+- **✅ Status:** **EM INVESTIGAÇÃO**
+- **📋 Próxima Ação:** Restaurar AppMinimal e implementar otimizações graduais
+
+### **Problema #006 - [Placeholder para próximos problemas]**
 - **📅 Data:** 
 - **🔍 Causa:** 
 - **⚠️ Sintoma:** 
