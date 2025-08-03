@@ -1,8 +1,10 @@
-// Re-export debugApi como api principal
-export { debugApi as chatApi, debugApi as personasApi, debugApi as default } from './debugApi'
+/**
+ * API Service - Implementação única consolidada
+ * Compatível com React Query + sistema de fallback offline + logs para debug
+ */
 
-// Manter imports para compatibilidade
-import axios, { AxiosError } from 'axios'
+import axios, { AxiosInstance, AxiosResponse, AxiosError } from 'axios'
+import { getLocalPersonas, generateOfflineResponse } from '@/data/localPersonas'
 import type { 
   ApiResponse, 
   ChatResponse,
@@ -12,433 +14,317 @@ import type {
   SystemStats 
 } from '@/types'
 
-// Helper function to handle API errors
-const handleApiError = (error: unknown): ApiResponse<ChatResponse> => {
-  console.error('🚨 API Error Details:', error)
-  
-  let errorMessage = 'Erro desconhecido'
-  
-  if (error instanceof Error) {
-    errorMessage = error.message
+// Interface para logs de debug
+interface DebugLog {
+  timestamp: string
+  type: 'request' | 'response' | 'error'
+  url: string
+  method: string
+  data?: any
+  status?: number
+  error?: string
+}
+
+// Classe principal do serviço de API
+class ApiService {
+  public api: AxiosInstance
+  private logs: DebugLog[] = []
+  private baseUrl: string
+
+  constructor() {
+    this.baseUrl = this.determineBaseUrl()
     
-    // Check for CORS error
-    if (error.message.includes('fetch') || error.message.includes('CORS')) {
-      errorMessage = 'Erro de conectividade. Verifique se o Google Apps Script está configurado corretamente.'
-    }
-  }
-  
-  // Return a proper error response instead of throwing
-  return {
-    error: errorMessage,
-    data: {
-      message: {
-        id: Date.now().toString(),
-        content: `Erro: ${errorMessage}. Tente novamente em alguns minutos.`,
-        sender: 'assistant',
-        timestamp: new Date(),
-        persona: 'system'
+    this.api = axios.create({
+      baseURL: this.baseUrl,
+      timeout: 30000,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
       }
-    },
-    timestamp: new Date().toISOString()
-  }
-}
-
-// API Configuration for Cloud Run backend
-const API_CONFIG = {
-  // Google Cloud Run (Only backend) - usando URL de produção como fallback
-  CLOUD_RUN_URL: import.meta.env.VITE_API_URL || 'https://roteiros-de-dispensacao.web.app',
-  // Environment
-  ENVIRONMENT: import.meta.env.VITE_ENVIRONMENT || 'production',
-  // Timeout settings
-  TIMEOUT: parseInt(import.meta.env.VITE_REQUEST_TIMEOUT || '30000'),
-  // Retry settings
-  MAX_RETRIES: parseInt(import.meta.env.VITE_RETRY_ATTEMPTS || '3')
-}
-
-
-// Synchronous version for immediate use
-const getApiBaseUrlSync = () => {
-  // Prioridade: variável de ambiente > URL de produção > fallback local
-  const cloudRunUrl = import.meta.env.VITE_API_URL || 
-                      'https://roteiros-de-dispensacao.web.app' ||
-                      'http://localhost:5000'
-  
-  console.log('🔗 Using backend URL:', cloudRunUrl)
-  return cloudRunUrl
-}
-
-const API_BASE_URL = getApiBaseUrlSync()
-const IS_CLOUD_RUN = true // Always Cloud Run now
-
-// Create axios instance with Google Apps Script priority
-const api = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  timeout: API_CONFIG.TIMEOUT,
-})
-
-// Debug logging for all environments to help with debugging
-console.log('🔧 API Configuration:', {
-  baseUrl: API_BASE_URL,
-  isCloudRun: IS_CLOUD_RUN,
-  environment: API_CONFIG.ENVIRONMENT,
-  timeout: API_CONFIG.TIMEOUT,
-  cloudRunUrl: API_CONFIG.CLOUD_RUN_URL
-})
-
-
-// Request interceptor with enhanced logging
-api.interceptors.request.use(
-  (config) => {
-    // Ensure proper content type
-    config.headers['Content-Type'] = 'application/json'
-    
-    // Log requests in development
-    if (API_CONFIG.ENVIRONMENT === 'development') {
-      console.log('📤 API Request:', {
-        method: config.method?.toUpperCase(),
-        url: `${config.baseURL}${config.url}`,
-        headers: config.headers,
-        data: config.data
-      })
-    }
-    
-    return config
-  },
-  (error) => {
-    console.error('📤 Request Error:', error)
-    return Promise.reject(error)
-  }
-)
-
-// Response interceptor with enhanced error handling
-api.interceptors.response.use(
-  (response) => {
-    // Log successful responses in development
-    if (API_CONFIG.ENVIRONMENT === 'development') {
-      console.log('📥 API Response:', {
-        status: response.status,
-        url: response.config.url,
-        data: response.data
-      })
-    }
-    return response
-  },
-  (error: AxiosError<ApiResponse<unknown>>) => {
-    // Enhanced error logging
-    console.error('📥 API Error:', {
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      url: error.config?.url,
-      method: error.config?.method,
-      data: error.response?.data,
-      message: error.message
     })
 
-    // Handle rate limiting
-    if (error.response?.status === 429) {
-      const retryAfter = error.response.headers['x-ratelimit-reset']
-      console.warn(`⏰ Rate limit exceeded. Retry after: ${retryAfter}`)
-    }
-
-    // Handle CORS errors
-    if (error.message.includes('CORS') || error.message.includes('Network Error')) {
-      console.error('🚫 CORS Error detected - check backend CORS configuration')
-    }
-
-    // Handle network errors
-    if (!error.response) {
-      console.error('🌐 Network error:', error.message)
-    }
-
-    return Promise.reject(error)
+    this.setupInterceptors()
+    console.log(`🔗 API Service inicializado: ${this.baseUrl}`)
   }
-)
 
-// Chat API (adapted for multiple backends)
-export const chatApi = {
-  sendMessage: async (message: string, personaId: string): Promise<ApiResponse<ChatResponse>> => {
-    try {
-      console.log('📤 Sending message to Cloud Run:', { 
-        message, 
-        personaId, 
-        url: API_BASE_URL 
-      })
+  private determineBaseUrl(): string {
+    const fallbackUrls = [
+      import.meta.env.VITE_API_URL,
+      'https://roteiros-de-dispensacao.web.app',
+      'https://roteiro-dispensacao-api-1016586236354.us-central1.run.app'
+    ]
+
+    for (const url of fallbackUrls) {
+      if (url && url !== 'undefined') {
+        return url
+      }
+    }
+
+    return 'https://roteiros-de-dispensacao.web.app'
+  }
+
+  private setupInterceptors(): void {
+    // Request Interceptor com logs
+    this.api.interceptors.request.use(
+      (config) => {
+        const log: DebugLog = {
+          timestamp: new Date().toISOString(),
+          type: 'request',
+          url: config.url || '',
+          method: config.method?.toUpperCase() || 'GET',
+          data: config.data
+        }
+        
+        this.addLog(log)
+        console.log(`📤 [${log.method}] ${config.baseURL}${config.url}`)
+        
+        return config
+      },
+      (error) => {
+        console.error('❌ Request Error:', error)
+        return Promise.reject(error)
+      }
+    )
+
+    // Response Interceptor com logs
+    this.api.interceptors.response.use(
+      (response: AxiosResponse) => {
+        const log: DebugLog = {
+          timestamp: new Date().toISOString(),
+          type: 'response',
+          url: response.config.url || '',
+          method: response.config.method?.toUpperCase() || 'GET',
+          status: response.status,
+          data: response.data
+        }
+        
+        this.addLog(log)
+        console.log(`📥 [${response.status}] ${response.config.method?.toUpperCase()} ${response.config.url}`)
+        
+        return response
+      },
+      (error: AxiosError) => {
+        const log: DebugLog = {
+          timestamp: new Date().toISOString(),
+          type: 'error',
+          url: error.config?.url || '',
+          method: error.config?.method?.toUpperCase() || 'GET',
+          status: error.response?.status,
+          error: error.message
+        }
+        
+        this.addLog(log)
+        console.error(`❌ [${error.response?.status || 'NETWORK'}] ${error.config?.method?.toUpperCase()} ${error.config?.url}`)
+        
+        return Promise.reject(this.processError(error))
+      }
+    )
+  }
+
+  private addLog(log: DebugLog): void {
+    this.logs.push(log)
+    if (this.logs.length > 50) {
+      this.logs = this.logs.slice(-50)
+    }
+  }
+
+  private processError(error: AxiosError): Error {
+    if (error.response) {
+      const status = error.response.status
+      const data = error.response.data as any
       
+      switch (status) {
+        case 400:
+          return new Error(data?.message || 'Dados inválidos')
+        case 404:
+          return new Error('Endpoint não encontrado')
+        case 500:
+          return new Error('Erro interno do servidor')
+        default:
+          return new Error(`Erro do servidor (${status})`)
+      }
+    } else if (error.request) {
+      return new Error('Sem conexão com o servidor')
+    } else {
+      return new Error(`Erro na requisição: ${error.message}`)
+    }
+  }
+
+  // Método para testar conectividade
+  async testConnection(): Promise<{ success: boolean; status?: number; error?: string }> {
+    try {
+      const response = await this.api.get('/api/health')
+      return { success: true, status: response.status }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido'
+      return { success: false, error: errorMessage }
+    }
+  }
+
+  // Método para enviar mensagens de chat
+  async sendMessage(message: string, personaId: string): Promise<any> {
+    try {
       const requestData = {
         question: message,
-        personality_id: personaId,
+        personality_id: personaId
       }
       
-      console.log('📋 Request data:', requestData)
-      
-      const response = await api.post('/api/chat', requestData)
-      
-      console.log('📊 Response status:', response.status)
-      console.log('📥 Response data:', response.data)
-      
-      return {
-        data: {
-          message: {
-            id: response.data.id || Date.now().toString(),
-            content: response.data.response || response.data.answer || 'Resposta recebida',
-            sender: 'assistant',
-            timestamp: new Date(),
-            persona: response.data.persona || personaId,
-            cached: response.data.cached || false,
-            confidence: response.data.confidence || 0.8
-          }
-        },
-        request_id: response.data.request_id || Date.now().toString(),
-        timestamp: new Date().toISOString()
-      }
-    } catch (error: unknown) {
-      console.error('❌ Send message error:', error)
-      return handleApiError(error)
-    }
-  },
-}
-
-// Personas API (supports both backends)
-export const personasApi = {
-  getAll: async () => {
-    try {
-      // Try to get from Cloud Run first, fallback to static
-      try {
-        const response = await api.get('/api/personas')
-        console.log('📋 Personas loaded from Cloud Run API')
-        return response.data
-      } catch (error) {
-        console.warn('⚠️ Cloud Run personas failed, using static data:', error)
-      }
-      
-      console.log('📋 Using static personas data')
-      return {
-          personas: {
-            dr_gasnelio: {
-              id: 'dr_gasnelio',
-              name: 'Dr. Gasnelio',
-              avatar: 'Dr',
-              role: 'Farmacêutico Clínico',
-              description: 'Farmacêutico clínico especialista em hanseníase PQT-U',
-              greeting: 'Olá! Como posso ajudar com a dispensação de PQT-U hoje?',
-              system_prompt: 'Você é Dr. Gasnelio, um farmacêutico clínico especialista em hanseníase e dispensação de PQT-U.',
-              audience: 'Profissionais de saúde',
-              language_style: 'Técnico e preciso',
-              capabilities: ['Protocolos farmacológicos', 'Dispensação PQT-U', 'Validação técnica'],
-              example_questions: ['Qual a dosagem correta de rifampicina para um paciente de 65kg?'],
-              limitations: {
-                scope: 'Hanseníase e dispensação de medicamentos PQT-U',
-                not_covered: ['Outras doenças', 'Medicamentos não relacionados'],
-                redirects_to: {}
-              },
-              response_format: {
-                structure: ['Informação técnica', 'Protocolo', 'Recomendações'],
-                tone: 'Profissional e preciso'
-              }
-            },
-            ga: {
-              id: 'ga',
-              name: 'Gá',
-              avatar: 'Gá',
-              role: 'Farmacêutico Educador',
-              description: 'Farmacêutico empático e acessível',
-              greeting: 'Oi! Estou aqui para ajudar com suas dúvidas sobre o tratamento de hanseníase.',
-              system_prompt: 'Você é Gá, um farmacêutico educador empático especializado em comunicação clara sobre hanseníase.',
-              audience: 'Pacientes e familiares',
-              language_style: 'Simples e acolhedor',
-              capabilities: ['Educação ao paciente', 'Comunicação empática', 'Orientações práticas'],
-              example_questions: ['Como explicar os efeitos colaterais para um paciente idoso?'],
-              limitations: {
-                scope: 'Hanseníase e educação do paciente',
-                not_covered: ['Outras doenças', 'Prescrições médicas'],
-                redirects_to: {}
-              },
-              response_format: {
-                structure: ['Explicação simples', 'Orientações práticas', 'Apoio'],
-                tone: 'Caloroso e educativo'
-              }
-            }
-          },
-          metadata: {
-            total: 2,
-            active: 2
-          }
-        }
+      const response = await this.api.post<ApiResponse<ChatResponse>>('/api/chat', requestData)
+      return response.data
     } catch (error) {
-      console.warn('Error fetching personas, using fallback:', error)
-      // Return fallback data
-      return {
-        personas: {
-          dr_gasnelio: {
-            id: 'dr_gasnelio',
-            name: 'Dr. Gasnelio',
-            role: 'Farmacêutico Clínico',
-            description: 'Especialista em hanseníase'
-          },
-          ga: {
-            id: 'ga',
-            name: 'Gá',
-            role: 'Farmacêutico Educador',
-            description: 'Comunicação empática'
-          }
-        },
-        metadata: { total: 2, active: 2 }
-      }
+      console.warn('⚠️ Backend offline, gerando resposta local')
+      return generateOfflineResponse(personaId, message)
     }
-  },
+  }
+
+  // Método para obter personas
+  async getPersonas(): Promise<any> {
+    try {
+      const response = await this.api.get('/api/personas')
+      return response.data
+    } catch (error) {
+      console.warn('⚠️ Backend offline, usando personas locais')
+      return getLocalPersonas()
+    }
+  }
+
+  // Obter logs de debug
+  getLogs(): DebugLog[] {
+    return [...this.logs]
+  }
+
+  // Informações de status para debug
+  getStatus(): {
+    baseUrl: string
+    environment: string
+    totalLogs: number
+    lastLog?: DebugLog
+  } {
+    return {
+      baseUrl: this.baseUrl,
+      environment: import.meta.env.MODE,
+      totalLogs: this.logs.length,
+      lastLog: this.logs[this.logs.length - 1]
+    }
+  }
 }
 
-// Scope API (simplified for Google Apps Script)
+// Instância singleton
+const apiService = new ApiService()
+
+// === EXPORTS PRINCIPAIS (para useChat e DebugPanel) ===
+export const chatApi = apiService
+export const personasApi = apiService
+
+// === COMPATIBILIDADE COM APIs EXISTENTES ===
+
+// API para análise de escopo
 export const scopeApi = {
-  getInfo: async (): Promise<ScopeInfo> => {
-    // Return hardcoded scope info since Google Apps Script handles scope internally
-    return {
-      topics: [
-        'Hanseníase e PQT-U',
-        'Rifampicina, Clofazimina, Dapsona',
-        'Dispensação farmacêutica',
-        'Roteiros de tratamento',
-        'Efeitos adversos dos medicamentos PQT-U'
-      ],
-      invalid_topics: [
-        'Outras doenças infecciosas',
-        'Medicamentos não relacionados à hanseníase',
-        'Consultas médicas gerais'
-      ],
-      scope_boundaries: 'Especializado em hanseníase PQT-U',
-      confidence_threshold: 0.8
-    }
-  },
-
-  checkQuestion: async (question: string): Promise<{
-    question: string
-    analysis: ScopeAnalysis
-    recommendation: Record<string, unknown>
-    metadata: Record<string, unknown>
-  }> => {
-    // Simple scope check - can be enhanced later
-    const validKeywords = ['hansen', 'pqt', 'rifampicina', 'clofazimina', 'dapsona', 'dispensação']
-    const hasValidKeyword = validKeywords.some(keyword => 
-      question.toLowerCase().includes(keyword)
-    )
-    
-    return {
-      question,
-      analysis: {
-        is_in_scope: hasValidKeyword,
-        confidence: hasValidKeyword ? 0.9 : 0.1,
-        detected_topics: hasValidKeyword ? ['hanseníase'] : ['outros'],
-        scope_classification: hasValidKeyword ? 'valid' : 'invalid'
-      },
-      recommendation: {
-        action: hasValidKeyword ? 'proceed' : 'redirect',
-        message: hasValidKeyword ? 'Pergunta dentro do escopo' : 'Pergunta fora do escopo de hanseníase'
-      },
-      metadata: {
-        processing_time: 0.1,
-        model_version: 'simple_v1'
-      }
-    }
-  },
-}
-
-// Feedback API (simplified)
-export const feedbackApi = {
-  submit: async (data: FeedbackData) => {
-    // For now, just log feedback - can be enhanced to use Google Forms or Sheets
-    console.log('Feedback submitted:', data)
-    return { success: true, message: 'Feedback recebido com sucesso!' }
-  },
-}
-
-// Stats API (mock data)
-export const statsApi = {
-  getStats: async (): Promise<{ system_stats: SystemStats; metadata: Record<string, unknown> }> => {
-    return {
-      system_stats: {
-        interactions: 0,
-        success_rate: 95,
-        average_response_time: 2.5,
-        active_personas: 2,
-        cache_hit_rate: 15
-      },
-      metadata: {
-        last_updated: new Date(),
-        version: '1.0.0'
-      }
-    }
-  },
-}
-
-// Health check (supports both backends)
-export const healthApi = {
-  check: async () => {
+  analyzeQuestion: async (question: string): Promise<ScopeInfo> => {
     try {
-      if (IS_CLOUD_RUN) {
-        // Check Cloud Run health
-        const response = await api.get('/api/health')
-        return {
-          status: response.data.status || 'healthy',
-          timestamp: response.data.timestamp || new Date().toISOString(),
-          backend: 'Google Cloud Run',
-          version: response.data.version,
-          components: response.data.components,
-          performance: response.data.performance
-        }
-      } else {
-        throw new Error('Backend não é Cloud Run')
-      }
+      const response = await apiService.api.post('/api/scope/analyze', { question })
+      return response.data
+    } catch (error) {
+      console.warn('⚠️ Scope API offline')
+      return {
+        inScope: true,
+        confidence: 0.5,
+        persona: 'dr_gasnelio',
+        reasoning: 'Análise offline - assumindo escopo válido'
+      } as ScopeInfo
+    }
+  },
+
+  getAnalysis: async (questionId: string): Promise<ScopeAnalysis> => {
+    try {
+      const response = await apiService.api.get(`/api/scope/analysis/${questionId}`)
+      return response.data
+    } catch (error) {
+      console.warn('⚠️ Scope analysis offline')
+      return {
+        id: questionId,
+        is_in_scope: true,
+        analysis: 'Análise não disponível offline',
+        recommendations: []
+      } as ScopeAnalysis
+    }
+  },
+
+  // Compatibilidade com método antigo
+  getInfo: async (question: string): Promise<any> => {
+    return scopeApi.analyzeQuestion(question)
+  }
+}
+
+// API para feedback
+export const feedbackApi = {
+  submitFeedback: async (feedbackData: FeedbackData): Promise<ApiResponse<any>> => {
+    try {
+      const response = await apiService.api.post('/api/feedback', feedbackData)
+      return response.data
+    } catch (error) {
+      console.warn('⚠️ Feedback API offline')
+      return {
+        data: null,
+        error: 'Feedback não pôde ser enviado (offline)',
+        timestamp: new Date().toISOString()
+      } as ApiResponse<any>
+    }
+  }
+}
+
+// API para estatísticas
+export const statsApi = {
+  getSystemStats: async (): Promise<SystemStats> => {
+    try {
+      const response = await apiService.api.get('/api/stats')
+      return response.data
+    } catch (error) {
+      console.warn('⚠️ Stats API offline')
+      return {
+        users: 0,
+        questions: 0,
+        responses: 0,
+        uptime: '0s'
+      } as SystemStats
+    }
+  },
+
+  // Compatibilidade com método antigo
+  getStats: async (): Promise<any> => {
+    const stats = await statsApi.getSystemStats()
+    return {
+      system_stats: stats
+    }
+  }
+}
+
+// API de health check
+export const healthApi = {
+  checkHealth: async (): Promise<any> => {
+    return apiService.testConnection()
+  },
+
+  getDetailedHealth: async (): Promise<any> => {
+    try {
+      const response = await apiService.api.get('/api/health')
+      return response.data
     } catch (error) {
       return {
-        status: 'unhealthy',
-        error: error instanceof Error ? error.message : 'Erro desconhecido',
-        timestamp: new Date().toISOString(),
-        backend: IS_CLOUD_RUN ? 'Google Cloud Run' : 'Google Apps Script'
-      }
-    }
-  },
-
-  // Teste simples de conexão CORS
-  testConnection: async () => {
-    try {
-      console.log('🔍 Testando conexão com backend...')
-      const response = await api.get('/api/test')
-      console.log('✅ Conexão bem-sucedida:', response.data)
-      return {
-        success: true,
-        data: response.data,
-        message: 'Conexão estabelecida com sucesso!'
-      }
-    } catch (error: unknown) {
-      console.error('❌ Erro na conexão:', error)
-      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido'
-      const isAxiosError = (err: unknown): err is AxiosError => typeof err === 'object' && err !== null && 'isAxiosError' in err
-      
-      return {
-        success: false,
-        error: errorMessage,
-        details: {
-          status: isAxiosError(error) ? error.response?.status : undefined,
-          statusText: isAxiosError(error) ? error.response?.statusText : undefined,
-          url: isAxiosError(error) ? error.config?.url : undefined,
-          method: isAxiosError(error) ? error.config?.method : undefined
-        }
+        status: 'offline',
+        error: error instanceof Error ? error.message : 'Erro desconhecido'
       }
     }
   }
 }
 
-// Export API configuration for debugging
+// Configuração da API
 export const getApiConfig = () => ({
-  baseUrl: API_BASE_URL,
-  isCloudRun: IS_CLOUD_RUN,
-  environment: API_CONFIG.ENVIRONMENT,
-  timeout: API_CONFIG.TIMEOUT,
-  maxRetries: API_CONFIG.MAX_RETRIES
+  baseUrl: apiService.getStatus().baseUrl,
+  environment: import.meta.env.MODE,
+  timeout: 30000
 })
 
 // Export default
-export default api
+export default apiService

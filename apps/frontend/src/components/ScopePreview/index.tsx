@@ -22,7 +22,7 @@ interface ScopeData {
 const ScopePreview: React.FC<ScopePreviewProps> = ({ onClose }) => {
   const { data: scopeData, isLoading } = useQuery({
     queryKey: ['scope-info'],
-    queryFn: scopeApi.getInfo,
+    queryFn: () => scopeApi.getInfo(''),
     staleTime: 10 * 60 * 1000, // 10 minutes
   })
 
@@ -111,7 +111,7 @@ const ScopePreview: React.FC<ScopePreviewProps> = ({ onClose }) => {
                             level === 'medium' ? 'bg-warning-500' : 'bg-error-500'
                           }`}></div>
                           <span className="capitalize font-medium">{level}:</span>
-                          <span className="text-gray-600 dark:text-gray-400">{description}</span>
+                          <span className="text-gray-600 dark:text-gray-400">{String(description)}</span>
                         </div>
                       ))}
                     </div>
