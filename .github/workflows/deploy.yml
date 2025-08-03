@@ -24,7 +24,7 @@ jobs:
     - name: Setup Google Cloud CLI
       uses: google-github-actions/setup-gcloud@v2
       with:
-        project_id: roteiro-dispensacao-hanseniase
+        project_id: pelagic-range-467602-d3
         
     - name: Configure Docker for gcloud
       run: gcloud auth configure-docker
@@ -35,12 +35,12 @@ jobs:
       run: |
         # Build and submit image to Cloud Build
         gcloud builds submit \
-          --tag gcr.io/roteiro-dispensacao-hanseniase/roteiro-dispensacao-api:${{ github.sha }} \
-          --project roteiro-dispensacao-hanseniase
+          --tag gcr.io/pelagic-range-467602-d3/roteiro-dispensacao-api:${{ github.sha }} \
+          --project pelagic-range-467602-d3
         
         # Deploy to Cloud Run with environment variables
         URL=$(gcloud run deploy roteiro-dispensacao-api \
-          --image gcr.io/roteiro-dispensacao-hanseniase/roteiro-dispensacao-api:${{ github.sha }} \
+          --image gcr.io/pelagic-range-467602-d3/roteiro-dispensacao-api:${{ github.sha }} \
           --platform managed \
           --region us-central1 \
           --allow-unauthenticated \
@@ -50,7 +50,7 @@ jobs:
           --max-instances 10 \
           --timeout 300 \
           --set-env-vars="ENVIRONMENT=production,DOMAIN=roteirosdedispensacao.com,OPENROUTER_API_KEY=${{ secrets.OPENROUTER_API_KEY }},HUGGINGFACE_API_KEY=${{ secrets.HUGGINGFACE_API_KEY }},ASTRA_DB_APPLICATION_TOKEN=${{ secrets.ASTRA_DB_APPLICATION_TOKEN }},ASTRA_DB_API_ENDPOINT=${{ secrets.ASTRA_DB_API_ENDPOINT }}" \
-          --project roteiro-dispensacao-hanseniase \
+          --project pelagic-range-467602-d3 \
           --format="value(status.url)")
         
         echo "backend-url=$URL" >> $GITHUB_OUTPUT
