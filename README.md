@@ -2,6 +2,20 @@
 
 Sistema moderno de apoio à dispensação farmacêutica para hanseníase, desenvolvido com tecnologias de ponta e IA.
 
+## 📁 Estrutura do Projeto
+
+```
+roteiro-dispensacao/
+├── 📱 apps/              # Aplicações principais
+│   ├── backend/          # API Flask + Python
+│   └── frontend/         # React + TypeScript
+├── 📊 data/              # Base de conhecimento
+├── 📚 docs/              # Documentação
+├── 🛠️  scripts/          # Scripts de deploy e setup
+├── 🔧 .github/           # CI/CD workflows
+└── ⚙️  firebase.json     # Configuração Firebase
+```
+
 ## 🚀 Tecnologias
 
 ### Frontend

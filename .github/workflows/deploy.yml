@@ -28,7 +28,7 @@ jobs:
       
     - name: Build and deploy backend to Cloud Run
       id: deploy
-      working-directory: ./src/backend
+      working-directory: ./apps/backend
       run: |
         # Build and submit image to Cloud Build
         gcloud builds submit \
@@ -63,14 +63,14 @@ jobs:
       with:
         node-version: '18'
         cache: 'npm'
-        cache-dependency-path: 'src/frontend/package-lock.json'
+        cache-dependency-path: 'apps/frontend/package-lock.json'
         
     - name: Install frontend dependencies
-      working-directory: ./src/frontend
+      working-directory: ./apps/frontend
       run: npm ci
       
     - name: Build frontend
-      working-directory: ./src/frontend
+      working-directory: ./apps/frontend
       run: npm run build
       env:
         VITE_API_URL: https://roteiro-dispensacao-api-1016586236354.us-central1.run.app
