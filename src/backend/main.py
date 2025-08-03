@@ -464,11 +464,9 @@ if not MD_PATH:
     MD_PATH = MD_PATHS[0]  # Fallback
 md_text = ""
 
-# Usar personas do sistema otimizado
-PERSONAS = get_personas()
-
-# Carregar knowledge base estruturada na inicialização
+# Usar personas do sistema otimizado ou fallback
 if ADVANCED_FEATURES:
+    PERSONAS = get_personas()
     logger.info("📚 Carregando knowledge base estruturada...")
     try:
         structured_kb = get_structured_knowledge_base()
@@ -476,6 +474,25 @@ if ADVANCED_FEATURES:
         logger.info(f"✅ Knowledge base carregada: {kb_stats}")
     except Exception as e:
         logger.error(f"❌ Erro ao carregar knowledge base estruturada: {e}")
+else:
+    # Fallback personas quando sistemas avançados não estão disponíveis
+    PERSONAS = {
+        'dr_gasnelio': {
+            'id': 'dr_gasnelio',
+            'name': 'Dr. Gasnelio',
+            'role': 'Farmacêutico Clínico',
+            'description': 'Farmacêutico clínico especialista em hanseníase',
+            'greeting': 'Olá! Como posso ajudar com a dispensação de PQT-U hoje?'
+        },
+        'ga': {
+            'id': 'ga', 
+            'name': 'Gá',
+            'role': 'Farmacêutico Educador',
+            'description': 'Farmacêutico empático e acessível',
+            'greeting': 'Oi! Estou aqui para ajudar com suas dúvidas sobre hanseníase.'
+        }
+    }
+    logger.info("📋 Usando personas de fallback (sistemas avançados indisponíveis)")
 
 def extract_md_text(md_path):
     """Extrai texto do arquivo Markdown com diagnóstico aprimorado"""
