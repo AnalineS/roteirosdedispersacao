@@ -9,17 +9,20 @@ LABEL description="Backend Flask para chatbot educacional sobre hanseníase"
 # Configurar diretório de trabalho
 WORKDIR /app
 
-# Configurar para evitar warnings do debconf
-ENV DEBIAN_FRONTEND=noninteractive
+# Configurar para evitar warnings do debconf ANTES de qualquer instalação
+ARG DEBIAN_FRONTEND=noninteractive
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-# Instalar dependências do sistema necessárias
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# Instalar dependências do sistema necessárias com configuração completa
+RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
     gcc \
     g++ \
     python3-dev \
     curl \
+    ca-certificates \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 

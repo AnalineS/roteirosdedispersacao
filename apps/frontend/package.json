@@ -59,8 +59,5 @@
     "vite": "^6.0.8",
     "vite-plugin-pwa": "^0.21.2",
     "vitest": "^3.2.4"
-  },
-  "overrides": {
-    "inflight": "npm:lru-cache@^10.0.0"
   }
 }
