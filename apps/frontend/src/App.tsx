@@ -7,6 +7,7 @@ import ErrorBoundary from '@components/ErrorBoundary'
 import { SkeletonPage } from '@components/SkeletonLoader'
 import { ThemeProvider } from '@components/ThemeProvider'
 import { ChatProvider } from '@hooks/useChat'
+import { DebugPanel } from '@components/DebugPanel'
 import { performanceMonitor, BundleOptimizer } from '@utils/performanceOptimizer'
 
 // Lazy load pages
@@ -112,6 +113,9 @@ function App() {
             </ErrorBoundary>
           </ChatProvider>
         </ErrorBoundary>
+        
+        {/* FASE 3: Debug Panel para diagnóstico */}
+        {(import.meta.env.DEV || import.meta.env.VITE_DEBUG === 'true') && <DebugPanel />}
       </ThemeProvider>
     </ErrorBoundary>
   )

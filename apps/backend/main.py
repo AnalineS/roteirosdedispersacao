@@ -91,13 +91,22 @@ usability_monitor = UsabilityMonitor()
 
 app = Flask(__name__)
 
-# Configuração CORS para Google Cloud + Firebase - ATUALIZADO
+# FASE 4: Configuração CORS mais permissiva para debug
 allowed_origins = [
     "https://roteiros-de-dispensacao.web.app",
     "https://roteiros-de-dispensacao.firebaseapp.com",
     "http://localhost:3000",  # Para desenvolvimento
-    "http://127.0.0.1:3000"   # Para desenvolvimento local
+    "http://127.0.0.1:3000",   # Para desenvolvimento local
+    "http://localhost:5173",   # Vite dev server
+    "http://127.0.0.1:5173",   # Vite dev server local
+    "https://localhost:3000",  # HTTPS local
+    "https://127.0.0.1:3000"   # HTTPS local
 ]
+
+# Adicionar origins dinâmicos em desenvolvimento
+if os.getenv('ENVIRONMENT') == 'development':
+    # Permitir qualquer origin em desenvolvimento
+    allowed_origins.append("*")
 
 # Configuração específica para ambientes de produção
 flask_env = os.environ.get('FLASK_ENV', '').lower()
@@ -1098,14 +1107,33 @@ def chat_api():
 
 @app.route('/api/health', methods=['GET'])
 def health_check():
-    """Verificação de saúde da API otimizada para produção"""
+    """FASE 4: Verificação de saúde robusta com debug completo"""
     start_time = time.time()
+    client_ip = request.environ.get('HTTP_X_FORWARDED_FOR', request.environ.get('REMOTE_ADDR', 'unknown'))
     
-    # === VERIFICAÇÕES DE SISTEMA ===
+    # Log da requisição de health
+    logger.info(f"🔍 Health check solicitado por {client_ip}")
+    
+    # === VERIFICAÇÕES DE SISTEMA EXPANDIDAS ===
     system_status = "healthy"
     issues = []
+    debug_info = {}
     
-    # Verificar base de conhecimento (MD + estruturada)
+    # 1. Verificar variáveis de ambiente críticas
+    env_vars = {
+        'HUGGINGFACE_API_KEY': bool(os.environ.get('HUGGINGFACE_API_KEY')),
+        'OPENROUTER_API_KEY': bool(os.environ.get('OPENROUTER_API_KEY')),
+        'FLASK_ENV': os.environ.get('FLASK_ENV', 'not_set'),
+        'ENVIRONMENT': os.environ.get('ENVIRONMENT', 'not_set'),
+        'PORT': os.environ.get('PORT', 'not_set'),
+        'DOMAIN': os.environ.get('DOMAIN', 'not_set')
+    }
+    
+    env_vars_status = env_vars['HUGGINGFACE_API_KEY'] and env_vars['OPENROUTER_API_KEY']
+    if not env_vars_status:
+        issues.append("environment_vars_missing")
+    
+    # 2. Verificar base de conhecimento
     md_available = len(md_text) > 100
     structured_available = False
     
@@ -1114,26 +1142,31 @@ def health_check():
             structured_kb = get_structured_knowledge_base()
             kb_stats = structured_kb.get_statistics()
             structured_available = kb_stats['loaded_successfully'] > 0
-        except Exception:
-            structured_available = False
+            debug_info['knowledge_base_stats'] = kb_stats
+        except Exception as e:
+            debug_info['knowledge_base_error'] = str(e)
     
     knowledge_base_status = md_available or structured_available
     if not knowledge_base_status:
         issues.append("knowledge_base_missing")
         
-    # Verificar personas
+    # 3. Verificar personas
     personas_status = len(PERSONAS) >= 2
     if not personas_status:
         issues.append("personas_incomplete")
-        
-    # Verificar variáveis de ambiente críticas
-    env_vars_status = all([
-        os.environ.get('HUGGINGFACE_API_KEY'),
-        os.environ.get('OPENROUTER_API_KEY'),
-        os.environ.get('FLASK_ENV')
-    ])
-    if not env_vars_status:
-        issues.append("environment_vars_missing")
+    
+    # 4. Verificar sistemas avançados
+    systems_status = {
+        'advanced_features': ADVANCED_FEATURES,
+        'rag_available': RAG_AVAILABLE,
+        'openai_test': OPENAI_TEST_AVAILABLE,
+        'advanced_cache': ADVANCED_CACHE
+    }
+    
+    # 5. Verificar CORS
+    cors_origins = len(allowed_origins)
+    debug_info['cors_origins_count'] = cors_origins
+    debug_info['cors_origins'] = allowed_origins
     
     # Determinar status geral
     if issues:

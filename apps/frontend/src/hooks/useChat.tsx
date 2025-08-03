@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useReducer, useCallback } from 'react'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { chatApi, personasApi } from '@services/api'
+import { debugApi as chatApi, debugApi as personasApi } from '@services/debugApi'
 import { errorHandler } from '@utils/errorHandler'
 import type { Message, Persona, ApiResponse, ChatResponse } from '@/types'
 
@@ -81,7 +81,7 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
   } = useQuery({
     queryKey: ['personas'],
     queryFn: () => errorHandler.withRetry(
-      () => personasApi.getAll(),
+      () => personasApi.getPersonas(),
       'load-personas',
       2 // max retries for personas
     ),
