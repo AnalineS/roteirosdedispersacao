@@ -3,15 +3,49 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Navigation from '@/components/Navigation';
+import PersonaAvatar from '@/components/chat/PersonaAvatar';
+import ContextualSuggestions from '@/components/chat/ContextualSuggestions';
+import ConversationHistory from '@/components/chat/ConversationHistory';
 import { usePersonas } from '@/hooks/usePersonas';
 import { useChat } from '@/hooks/useChat';
+import { useConversationHistory } from '@/hooks/useConversationHistory';
 
 export default function ChatPage() {
   const { personas, loading: personasLoading, error: personasError } = usePersonas();
-  const { messages, loading: chatLoading, error: chatError, sendMessage, clearMessages } = useChat();
+  const { messages, loading: chatLoading, error: chatError, sendMessage } = useChat({ persistToLocalStorage: false });
+  const {
+    createConversation,
+    switchToConversation,
+    deleteConversation,
+    renameConversation,
+    addMessageToConversation,
+    getCurrentMessages,
+    getConversationsForPersona,
+    currentConversationId
+  } = useConversationHistory();
+  
   const [inputValue, setInputValue] = useState('');
   const [selectedPersona, setSelectedPersona] = useState<string | null>(null);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isPersonaTyping, setIsPersonaTyping] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  
+  // Detectar dispositivo móvel
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  
+  // Usar mensagens da conversa atual em vez do hook useChat
+  const currentMessages = getCurrentMessages();
 
   // Carregar persona selecionada do localStorage
   useEffect(() => {
@@ -19,27 +53,25 @@ export default function ChatPage() {
       const storedPersona = localStorage.getItem('selectedPersona');
       if (storedPersona && personas[storedPersona]) {
         setSelectedPersona(storedPersona);
+        // Criar conversa se não houver uma ativa
+        if (!currentConversationId) {
+          createConversation(storedPersona);
+        }
       }
     }
-  }, [personas]);
+  }, [personas, currentConversationId, createConversation]);
 
   // Scroll automático para última mensagem
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [currentMessages]);
 
-  // Enviar mensagem de boas-vindas quando persona for selecionada
+  // Adicionar mensagens ao histórico de conversas
   useEffect(() => {
-    if (selectedPersona && personas[selectedPersona] && messages.length === 0) {
-      const persona = personas[selectedPersona];
-      const welcomeMessage = `Olá! Eu sou ${persona.name}, ${persona.description}. Como posso ajudá-lo hoje com questões sobre hanseníase e PQT-U?`;
-      
-      // Simular mensagem de boas-vindas
-      setTimeout(() => {
-        sendMessage('_welcome_', selectedPersona);
-      }, 500);
-    }
-  }, [selectedPersona, personas, messages.length]);
+    messages.forEach(message => {
+      addMessageToConversation(message);
+    });
+  }, [messages, addMessageToConversation]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,8 +79,14 @@ export default function ChatPage() {
 
     const messageText = inputValue.trim();
     setInputValue('');
+    setShowSuggestions(false);
+    setIsPersonaTyping(true);
     
-    await sendMessage(messageText, selectedPersona);
+    try {
+      await sendMessage(messageText, selectedPersona);
+    } finally {
+      setIsPersonaTyping(false);
+    }
   };
 
   const handlePersonaChange = (personaId: string) => {
@@ -56,7 +94,31 @@ export default function ChatPage() {
     if (typeof window !== 'undefined') {
       localStorage.setItem('selectedPersona', personaId);
     }
-    clearMessages(); // Limpar histórico ao trocar persona
+    // Criar nova conversa para a persona selecionada
+    createConversation(personaId);
+  };
+  
+  const handleNewConversation = (personaId: string) => {
+    const conversationId = createConversation(personaId);
+    setSelectedPersona(personaId);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('selectedPersona', personaId);
+    }
+  };
+  
+  const handleConversationSelect = (conversationId: string) => {
+    switchToConversation(conversationId);
+    // Encontrar a persona desta conversa
+    const allConversations = Object.values(personas).flatMap(persona => 
+      getConversationsForPersona(Object.keys(personas).find(id => personas[id] === persona) || '')
+    );
+    const selectedConv = allConversations.find(conv => conv.id === conversationId);
+    if (selectedConv) {
+      setSelectedPersona(selectedConv.personaId);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('selectedPersona', selectedConv.personaId);
+      }
+    }
   };
 
   if (personasLoading) {
@@ -89,34 +151,69 @@ export default function ChatPage() {
   return (
     <>
       <Navigation currentPersona={currentPersona?.name} />
+      
+      {/* Conversation History Sidebar */}
+      <ConversationHistory
+        conversations={Object.values(personas).flatMap(persona => {
+          const personaId = Object.keys(personas).find(id => personas[id] === persona);
+          return personaId ? getConversationsForPersona(personaId) : [];
+        })}
+        currentConversationId={currentConversationId}
+        personas={personas}
+        onConversationSelect={handleConversationSelect}
+        onNewConversation={handleNewConversation}
+        onDeleteConversation={deleteConversation}
+        onRenameConversation={renameConversation}
+        isVisible={showHistory}
+        onToggle={() => setShowHistory(!showHistory)}
+      />
       <div style={{
         height: '100vh',
         display: 'flex',
         flexDirection: 'column',
-        background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)'
+        background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+        marginLeft: showHistory && !isMobile ? '320px' : '0',
+        transition: 'margin-left 0.3s ease'
       }} className="main-content">
       {/* Header */}
       <div style={{
         background: '#1976d2',
         color: 'white',
-        padding: '15px 20px',
+        padding: isMobile ? '12px 15px' : '15px 20px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
+        boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+        minHeight: '60px'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
           <Link href="/" style={{ color: 'white', textDecoration: 'none', fontSize: '1.5rem' }}>
             ←
           </Link>
-          {currentPersona && (
+          {currentPersona && selectedPersona && (
             <>
-              <span style={{ fontSize: '2rem' }}>{currentPersona.avatar}</span>
-              <div>
-                <h2 style={{ margin: 0, fontSize: '1.2rem' }}>{currentPersona.name}</h2>
-                <p style={{ margin: 0, fontSize: '0.9rem', opacity: 0.8 }}>
-                  {currentPersona.personality}
-                </p>
+              <PersonaAvatar 
+                persona={currentPersona}
+                personaId={selectedPersona}
+                size="medium"
+                showStatus={true}
+                isTyping={isPersonaTyping}
+              />
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <h2 style={{ 
+                  margin: 0, 
+                  fontSize: isMobile ? '1rem' : '1.2rem',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis'
+                }}>
+                  {currentPersona.name}
+                </h2>
+                {!isMobile && (
+                  <p style={{ margin: 0, fontSize: '0.9rem', opacity: 0.8 }}>
+                    {currentPersona.personality}
+                  </p>
+                )}
               </div>
             </>
           )}
@@ -127,18 +224,19 @@ export default function ChatPage() {
           value={selectedPersona || ''}
           onChange={(e) => handlePersonaChange(e.target.value)}
           style={{
-            padding: '8px 12px',
+            padding: isMobile ? '6px 10px' : '8px 12px',
             borderRadius: '8px',
             border: 'none',
             background: 'rgba(255,255,255,0.2)',
             color: 'white',
-            fontSize: '0.9rem'
+            fontSize: isMobile ? '0.8rem' : '0.9rem',
+            maxWidth: isMobile ? '140px' : 'auto'
           }}
         >
           <option value="">Escolher assistente...</option>
           {Object.entries(personas).map(([id, persona]) => (
             <option key={id} value={id} style={{ color: 'black' }}>
-              {persona.avatar} {persona.name}
+              {persona.name}
             </option>
           ))}
         </select>
@@ -148,10 +246,10 @@ export default function ChatPage() {
       <div style={{
         flex: 1,
         overflowY: 'auto',
-        padding: '20px',
+        padding: isMobile ? '15px 10px' : '20px',
         display: 'flex',
         flexDirection: 'column',
-        gap: '15px'
+        gap: isMobile ? '12px' : '15px'
       }}>
         {!selectedPersona && (
           <div style={{
@@ -167,7 +265,7 @@ export default function ChatPage() {
           </div>
         )}
 
-        {messages.map((message) => (
+        {currentMessages.map((message) => (
           <div
             key={`${message.role}-${message.timestamp}`}
             style={{
@@ -178,28 +276,38 @@ export default function ChatPage() {
           >
             <div
               style={{
-                maxWidth: '70%',
-                padding: '12px 16px',
+                maxWidth: isMobile ? '85%' : '70%',
+                padding: isMobile ? '10px 14px' : '12px 16px',
                 borderRadius: '18px',
                 background: message.role === 'user' 
                   ? '#1976d2' 
                   : 'white',
                 color: message.role === 'user' ? 'white' : '#333',
                 boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                fontSize: '0.95rem',
-                lineHeight: '1.4'
+                fontSize: isMobile ? '0.9rem' : '0.95rem',
+                lineHeight: '1.4',
+                wordBreak: 'break-word'
               }}
             >
-              {message.role === 'assistant' && currentPersona && (
+              {message.role === 'assistant' && currentPersona && selectedPersona && (
                 <div style={{ 
-                  fontSize: '0.8rem', 
-                  opacity: 0.7, 
-                  marginBottom: '5px',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '5px'
+                  gap: '8px',
+                  marginBottom: '8px'
                 }}>
-                  {currentPersona.avatar} {currentPersona.name}
+                  <PersonaAvatar 
+                    persona={currentPersona}
+                    personaId={selectedPersona}
+                    size="small"
+                  />
+                  <span style={{
+                    fontSize: '0.8rem', 
+                    fontWeight: 'bold',
+                    color: '#1976d2'
+                  }}>
+                    {currentPersona.name}
+                  </span>
                 </div>
               )}
               <div style={{ whiteSpace: 'pre-wrap' }}>
@@ -209,24 +317,33 @@ export default function ChatPage() {
           </div>
         ))}
 
-        {chatLoading && (
+        {chatLoading && currentPersona && selectedPersona && (
           <div style={{
             display: 'flex',
             justifyContent: 'flex-start',
             marginBottom: '10px'
           }}>
             <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
               padding: '12px 16px',
               borderRadius: '18px',
               background: 'white',
               boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
             }}>
+              <PersonaAvatar 
+                persona={currentPersona}
+                personaId={selectedPersona}
+                size="small"
+                isTyping={true}
+              />
               <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ccc', animation: 'pulse 1.5s infinite' }}></div>
-                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ccc', animation: 'pulse 1.5s infinite 0.5s' }}></div>
-                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ccc', animation: 'pulse 1.5s infinite 1s' }}></div>
+                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#4caf50', animation: 'pulse 1.5s infinite' }}></div>
+                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#4caf50', animation: 'pulse 1.5s infinite 0.5s' }}></div>
+                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#4caf50', animation: 'pulse 1.5s infinite 1s' }}></div>
                 <span style={{ marginLeft: '8px', fontSize: '0.9rem', color: '#666' }}>
-                  {currentPersona?.name} está pensando...
+                  {currentPersona.name} está pensando...
                 </span>
               </div>
             </div>
@@ -250,49 +367,74 @@ export default function ChatPage() {
       </div>
 
       {/* Input Area */}
-      <form
-        onSubmit={handleSendMessage}
-        style={{
-          padding: '20px',
-          background: 'white',
-          borderTop: '1px solid #eee',
-          display: 'flex',
-          gap: '10px'
-        }}
-      >
-        <input
-          type="text"
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          placeholder={selectedPersona ? `Pergunte ao ${currentPersona?.name}...` : "Selecione um assistente primeiro..."}
-          disabled={!selectedPersona || chatLoading}
+      <div style={{
+        position: 'relative',
+        padding: isMobile ? '15px 10px' : '20px',
+        background: 'white',
+        borderTop: '1px solid #eee'
+      }}>
+        {/* Contextual Suggestions */}
+        {selectedPersona && currentPersona && (
+          <ContextualSuggestions
+            persona={currentPersona}
+            personaId={selectedPersona}
+            currentInput={inputValue}
+            onSuggestionClick={(suggestion) => {
+              setInputValue(suggestion);
+              inputRef.current?.focus();
+            }}
+            isVisible={showSuggestions && (inputValue.length === 0 || inputValue.length > 2)}
+          />
+        )}
+        
+        <form
+          onSubmit={handleSendMessage}
           style={{
-            flex: 1,
-            padding: '12px 16px',
-            borderRadius: '25px',
-            border: '1px solid #ddd',
-            fontSize: '1rem',
-            outline: 'none',
-            background: selectedPersona ? 'white' : '#f5f5f5'
-          }}
-        />
-        <button
-          type="submit"
-          disabled={!selectedPersona || !inputValue.trim() || chatLoading}
-          style={{
-            padding: '12px 20px',
-            borderRadius: '25px',
-            border: 'none',
-            background: (!selectedPersona || !inputValue.trim() || chatLoading) ? '#ccc' : '#1976d2',
-            color: 'white',
-            cursor: (!selectedPersona || !inputValue.trim() || chatLoading) ? 'not-allowed' : 'pointer',
-            fontSize: '1rem',
-            fontWeight: 'bold'
+            display: 'flex',
+            gap: isMobile ? '8px' : '10px',
+            alignItems: 'flex-end'
           }}
         >
-          {chatLoading ? '⏳' : '➤'}
-        </button>
-      </form>
+          <input
+            ref={inputRef}
+            type="text"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onFocus={() => setShowSuggestions(true)}
+            onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+            placeholder={selectedPersona ? `Pergunte ao ${currentPersona?.name}...` : "Selecione um assistente primeiro..."}
+            disabled={!selectedPersona || chatLoading}
+            style={{
+              flex: 1,
+              padding: isMobile ? '12px 14px' : '12px 16px',
+              borderRadius: '25px',
+              border: '1px solid #ddd',
+              fontSize: isMobile ? '16px' : '1rem', // 16px previne zoom no iOS
+              outline: 'none',
+              background: selectedPersona ? 'white' : '#f5f5f5',
+              minHeight: isMobile ? '44px' : 'auto' // Tamanho mínimo para touch
+            }}
+          />
+          <button
+            type="submit"
+            disabled={!selectedPersona || !inputValue.trim() || chatLoading}
+            style={{
+              padding: isMobile ? '12px 18px' : '12px 20px',
+              borderRadius: '25px',
+              border: 'none',
+              background: (!selectedPersona || !inputValue.trim() || chatLoading) ? '#ccc' : '#1976d2',
+              color: 'white',
+              cursor: (!selectedPersona || !inputValue.trim() || chatLoading) ? 'not-allowed' : 'pointer',
+              fontSize: isMobile ? '1.1rem' : '1rem',
+              fontWeight: 'bold',
+              minHeight: isMobile ? '44px' : 'auto',
+              minWidth: isMobile ? '44px' : 'auto'
+            }}
+          >
+            {chatLoading ? '⏳' : '➤'}
+          </button>
+        </form>
+      </div>
 
       <style jsx>{`
         @keyframes pulse {
