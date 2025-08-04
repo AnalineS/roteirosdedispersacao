@@ -1,7 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Otimizado para Cloud Run
-  output: 'standalone',
+  // Otimizado para Firebase Hosting
+  output: 'export',
+  trailingSlash: true,
   
   // Configurações de performance
   compress: true,
@@ -12,28 +13,7 @@ const nextConfig = {
     unoptimized: true // Para compatibilidade com Cloud Run
   },
 
-  // Headers de segurança
-  async headers() {
-    return [
-      {
-        source: '/(.*)',
-        headers: [
-          {
-            key: 'X-Frame-Options',
-            value: 'DENY'
-          },
-          {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff'
-          },
-          {
-            key: 'Referrer-Policy',
-            value: 'strict-origin-when-cross-origin'
-          }
-        ]
-      }
-    ]
-  }
+  // Headers movidos para firebase.json para export mode
 }
 
 module.exports = nextConfig
