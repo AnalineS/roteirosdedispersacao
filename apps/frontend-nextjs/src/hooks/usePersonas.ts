@@ -5,6 +5,7 @@
 
 import { useState, useEffect } from 'react';
 import { getPersonas, type Persona, type PersonasResponse } from '@/services/api';
+import { filterValidPersonas } from '@/constants/avatars';
 
 export function usePersonas() {
   const [personas, setPersonas] = useState<PersonasResponse>({});
@@ -17,7 +18,9 @@ export function usePersonas() {
         setLoading(true);
         setError(null);
         const personasData = await getPersonas();
-        setPersonas(personasData);
+        // Filtrar apenas personas com avatares configurados
+        const validPersonas = filterValidPersonas(personasData);
+        setPersonas(validPersonas);
       } catch (err) {
         console.error('Erro ao carregar personas:', err);
         setError(err instanceof Error ? err.message : 'Erro desconhecido');
@@ -39,6 +42,10 @@ export function usePersonas() {
       persona
     }));
   };
+  
+  const getValidPersonasCount = (): number => {
+    return Object.keys(personas).length;
+  };
 
   return {
     personas,
@@ -46,23 +53,21 @@ export function usePersonas() {
     error,
     getPersonaById,
     getPersonasList,
-    refetch: () => {
-      setLoading(true);
-      loadPersonas();
+    getValidPersonasCount,
+    refetch: async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const personasData = await getPersonas();
+        const validPersonas = filterValidPersonas(personasData);
+        setPersonas(validPersonas);
+      } catch (err) {
+        console.error('Erro ao carregar personas:', err);
+        setError(err instanceof Error ? err.message : 'Erro desconhecido');
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
-  async function loadPersonas() {
-    try {
-      setLoading(true);
-      setError(null);
-      const personasData = await getPersonas();
-      setPersonas(personasData);
-    } catch (err) {
-      console.error('Erro ao carregar personas:', err);
-      setError(err instanceof Error ? err.message : 'Erro desconhecido');
-    } finally {
-      setLoading(false);
-    }
-  }
 }

@@ -5,7 +5,7 @@ import Navigation from '@/components/Navigation';
 import { usePersonas } from '@/hooks/usePersonas';
 
 export default function HomePage() {
-  const { personas, loading, error } = usePersonas();
+  const { personas, loading, error, getValidPersonasCount } = usePersonas();
 
   if (loading) {
     return (
@@ -202,7 +202,7 @@ export default function HomePage() {
         <p>Plataforma educacional com assistentes virtuais especializados</p>
         <p>Baseado em evidências científicas e diretrizes do Ministério da Saúde</p>
         <p style={{ marginTop: '20px', fontSize: '0.75rem' }}>
-          Conectado com IA e prompts especializados • {Object.keys(personas).length} assistentes disponíveis
+          Conectado com IA e prompts especializados • {getValidPersonasCount()} assistentes disponíveis
         </p>
       </div>
     </div>

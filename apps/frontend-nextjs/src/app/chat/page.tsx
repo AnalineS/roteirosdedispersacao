@@ -1,14 +1,16 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import Navigation from '@/components/Navigation';
 import PersonaAvatar from '@/components/chat/PersonaAvatar';
 import ContextualSuggestions from '@/components/chat/ContextualSuggestions';
 import ConversationHistory from '@/components/chat/ConversationHistory';
+import RoutingIndicator from '@/components/chat/RoutingIndicator';
 import { usePersonas } from '@/hooks/usePersonas';
 import { useChat } from '@/hooks/useChat';
 import { useConversationHistory } from '@/hooks/useConversationHistory';
+import { useIntelligentRouting } from '@/hooks/useIntelligentRouting';
 
 export default function ChatPage() {
   const { personas, loading: personasLoading, error: personasError } = usePersonas();
@@ -30,6 +32,10 @@ export default function ChatPage() {
   const [isPersonaTyping, setIsPersonaTyping] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [pendingQuestion, setPendingQuestion] = useState<string>('');
+  
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   
   // Detectar dispositivo móvel
   useEffect(() => {
@@ -41,11 +47,33 @@ export default function ChatPage() {
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
   
   // Usar mensagens da conversa atual em vez do hook useChat
   const currentMessages = getCurrentMessages();
+  
+  // Hook de roteamento inteligente
+  const {
+    currentAnalysis,
+    isAnalyzing,
+    shouldShowRouting,
+    getRecommendedPersona,
+    analyzeQuestion,
+    acceptRecommendation,
+    rejectRecommendation,
+    clearAnalysis,
+    getExplanation
+  } = useIntelligentRouting(personas, {
+    enabled: true,
+    debounceMs: 1000,
+    minConfidenceThreshold: 0.6
+  });
+  
+  // Analisar pergunta quando o usuário digita (apenas se não há persona selecionada)
+  useEffect(() => {
+    if (!selectedPersona && inputValue.length > 10) {
+      analyzeQuestion(inputValue);
+    }
+  }, [inputValue, selectedPersona, analyzeQuestion]);
 
   // Carregar persona selecionada do localStorage
   useEffect(() => {
@@ -75,17 +103,28 @@ export default function ChatPage() {
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inputValue.trim() || !selectedPersona || chatLoading) return;
+    if (!inputValue.trim()) return;
 
     const messageText = inputValue.trim();
-    setInputValue('');
-    setShowSuggestions(false);
-    setIsPersonaTyping(true);
     
-    try {
-      await sendMessage(messageText, selectedPersona);
-    } finally {
-      setIsPersonaTyping(false);
+    // Se não há persona selecionada, analisar primeiro
+    if (!selectedPersona) {
+      setPendingQuestion(messageText);
+      await analyzeQuestion(messageText);
+      return;
+    }
+    
+    // Enviar mensagem normalmente
+    if (!chatLoading) {
+      setInputValue('');
+      setShowSuggestions(false);
+      setIsPersonaTyping(true);
+      
+      try {
+        await sendMessage(messageText, selectedPersona);
+      } finally {
+        setIsPersonaTyping(false);
+      }
     }
   };
 
@@ -96,6 +135,15 @@ export default function ChatPage() {
     }
     // Criar nova conversa para a persona selecionada
     createConversation(personaId);
+    
+    // Limpar análise de roteamento
+    clearAnalysis();
+    
+    // Se há uma pergunta pendente, enviá-la agora
+    if (pendingQuestion) {
+      setInputValue(pendingQuestion);
+      setPendingQuestion('');
+    }
   };
   
   const handleNewConversation = (personaId: string) => {
@@ -119,7 +167,22 @@ export default function ChatPage() {
         localStorage.setItem('selectedPersona', selectedConv.personaId);
       }
     }
+    clearAnalysis();
   };
+  
+  // Handlers para roteamento inteligente
+  const handleAcceptRouting = useCallback((personaId: string) => {
+    acceptRecommendation();
+    handlePersonaChange(personaId);
+  }, [acceptRecommendation]);
+  
+  const handleRejectRouting = useCallback(() => {
+    rejectRecommendation(selectedPersona || '');
+  }, [rejectRecommendation, selectedPersona]);
+  
+  const handleShowExplanation = useCallback(() => {
+    console.log('Explicação do roteamento:', getExplanation());
+  }, [getExplanation]);
 
   if (personasLoading) {
     return (
@@ -251,7 +314,7 @@ export default function ChatPage() {
         flexDirection: 'column',
         gap: isMobile ? '12px' : '15px'
       }}>
-        {!selectedPersona && (
+        {!selectedPersona && !shouldShowRouting() && (
           <div style={{
             textAlign: 'center',
             padding: '40px',
@@ -260,9 +323,26 @@ export default function ChatPage() {
             margin: '20px'
           }}>
             <p style={{ fontSize: '1.1rem', color: '#666' }}>
-              Selecione um assistente virtual no menu acima para começar a conversa
+              {pendingQuestion 
+                ? 'Analisando sua pergunta para encontrar o melhor especialista...'
+                : 'Digite sua pergunta ou selecione um assistente no menu acima'
+              }
             </p>
           </div>
+        )}
+        
+        {/* Indicador de Roteamento Inteligente */}
+        {shouldShowRouting() && currentAnalysis && getRecommendedPersona() && (
+          <RoutingIndicator
+            analysis={currentAnalysis}
+            recommendedPersona={getRecommendedPersona()!}
+            currentPersonaId={selectedPersona}
+            personas={personas}
+            onAcceptRouting={handleAcceptRouting}
+            onRejectRouting={handleRejectRouting}
+            onShowExplanation={handleShowExplanation}
+            isMobile={isMobile}
+          />
         )}
 
         {currentMessages.map((message) => (
@@ -402,8 +482,14 @@ export default function ChatPage() {
             onChange={(e) => setInputValue(e.target.value)}
             onFocus={() => setShowSuggestions(true)}
             onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-            placeholder={selectedPersona ? `Pergunte ao ${currentPersona?.name}...` : "Selecione um assistente primeiro..."}
-            disabled={!selectedPersona || chatLoading}
+            placeholder={
+              selectedPersona 
+                ? `Pergunte ao ${currentPersona?.name}...` 
+                : isAnalyzing
+                  ? "Analisando pergunta..."
+                  : "Digite sua pergunta aqui..."
+            }
+            disabled={chatLoading}
             style={{
               flex: 1,
               padding: isMobile ? '12px 14px' : '12px 16px',

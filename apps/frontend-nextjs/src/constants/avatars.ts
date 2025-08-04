@@ -21,3 +21,23 @@ export const getPersonaAvatar = (personaId: string): string => {
 export const getUniversityLogo = (logoType: keyof typeof UNIVERSITY_LOGOS): string => {
   return UNIVERSITY_LOGOS[logoType];
 };
+
+/**
+ * Verifica se uma persona tem avatar configurado
+ */
+export const hasPersonaAvatar = (personaId: string): boolean => {
+  return personaId in PERSONA_AVATARS;
+};
+
+/**
+ * Filtra personas que têm avatares configurados
+ */
+export const filterValidPersonas = <T>(personas: Record<string, T>): Record<string, T> => {
+  const validPersonas: Record<string, T> = {};
+  Object.entries(personas).forEach(([id, persona]) => {
+    if (hasPersonaAvatar(id)) {
+      validPersonas[id] = persona;
+    }
+  });
+  return validPersonas;
+};
