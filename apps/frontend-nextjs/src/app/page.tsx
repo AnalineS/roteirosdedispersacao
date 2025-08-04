@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Navigation from '@/components/Navigation';
 import { usePersonas } from '@/hooks/usePersonas';
 
 export default function HomePage() {
@@ -59,12 +60,14 @@ export default function HomePage() {
   const personasList = Object.entries(personas);
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
-      color: 'white',
-      padding: '20px'
-    }}>
+    <>
+      <Navigation />
+      <div style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
+        color: 'white',
+        padding: '20px'
+      }}>
       {/* Header */}
       <div style={{
         maxWidth: '1200px',
@@ -203,5 +206,6 @@ export default function HomePage() {
         </p>
       </div>
     </div>
+    </>
   );
 }

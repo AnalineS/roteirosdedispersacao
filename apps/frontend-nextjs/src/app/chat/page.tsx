@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import Navigation from '@/components/Navigation';
 import { usePersonas } from '@/hooks/usePersonas';
 import { useChat } from '@/hooks/useChat';
 
@@ -86,12 +87,14 @@ export default function ChatPage() {
   const currentPersona = selectedPersona ? personas[selectedPersona] : null;
 
   return (
-    <div style={{
-      height: '100vh',
-      display: 'flex',
-      flexDirection: 'column',
-      background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)'
-    }}>
+    <>
+      <Navigation currentPersona={currentPersona?.name} />
+      <div style={{
+        height: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)'
+      }} className="main-content">
       {/* Header */}
       <div style={{
         background: '#1976d2',
@@ -298,5 +301,6 @@ export default function ChatPage() {
         }
       `}</style>
     </div>
+    </>
   );
 }
