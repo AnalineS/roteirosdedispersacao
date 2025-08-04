@@ -176,13 +176,16 @@ Implementar sistema educacional adaptativo com Dr. Gasnelio (técnico) e Gá (em
 - **✅ Status:** **CAUSA CONFIRMADA** - Bundle grande era o problema
 - **📋 Resultado:** Site funcionou perfeitamente com versão minimal
 
-### **Problema #005 - Code Splitting Causando Nova Tela Branca** ❌ **NOVO PROBLEMA**
+### **Problema #005 - Code Splitting Causando Nova Tela Branca** ✅ **RESOLVIDO**
 - **📅 Data:** 03/08/2025
 - **🔍 Causa:** Implementação de code splitting com lazy loading introduziu erro
 - **⚠️ Sintoma:** Tela branca voltou após implementar Suspense e lazy loading
-- **🔧 Solução em Andamento:** Reverter para versão estável e implementar gradualmente
-- **✅ Status:** **EM INVESTIGAÇÃO**
-- **📋 Próxima Ação:** Restaurar AppMinimal e implementar otimizações graduais
+- **🔧 Solução Aplicada:** Criar AppSimple sem dependências pesadas
+  - Removido ChatProvider e React Query
+  - Implementado com componentes inline simples
+  - Bundle reduzido para 169KB (< 200KB limite)
+- **✅ Status:** **RESOLVIDO** - AppSimple funcionando perfeitamente
+- **📋 Resultado:** Site estável com HomePage funcional e seleção de personas
 
 ### **Problema #006 - [Placeholder para próximos problemas]**
 - **📅 Data:** 
@@ -194,36 +197,45 @@ Implementar sistema educacional adaptativo com Dr. Gasnelio (técnico) e Gá (em
 
 ---
 
+## 📚 **LIÇÕES APRENDIDAS**
+
+### **Bundle Size Critical:**
+- ✅ **< 200KB:** Funciona perfeitamente em todos os dispositivos
+- ⚠️ **200-400KB:** Pode funcionar mas com risco
+- ❌ **> 400KB:** Causa tela branca (timeout/memória)
+
+### **Estratégia Vencedora:**
+1. **Começar simples:** Mínimo viável primeiro
+2. **Testar cada mudança:** Deploy incremental
+3. **Evitar dependências pesadas:** ChatProvider, React Query, Framer Motion
+4. **Estilo inline:** Mais leve que frameworks CSS
+5. **Componentes simples:** Funcionalidade sobre complexidade
+
+---
+
 ## 🔄 **ARQUITETURA ATUAL**
 
-### **Estrutura de Hooks:**
+### **Estrutura Simplificada (AppSimple):**
 ```
-useChat (Provider Principal)
-├── Estado global de mensagens
-├── Gerenciamento básico de personas
-└── Comunicação com API
+AppSimple (169KB) ✅
+├── Sem providers pesados
+├── React Router básico
+├── Componentes inline
+└── Estado local simples
 
-usePersona (INDEPENDENTE) ✅
-├── Interface: UsePersonaProps
-├── Detecção inteligente de perfil
-├── Sugestões de transição
-├── Analytics de personas
-└── Sem dependência de useChat
-
-usePersonaWithChat (WRAPPER) ✅
-├── Combina useChat + usePersona
-├── Facilita uso nos componentes
-└── Mantém compatibilidade
+HomePageSimple ✅
+├── Seleção de personas inline
+├── Estilos CSS inline
+├── LocalStorage para persistência
+└── Navegação direta para /chat
 ```
 
-### **Componentes Principais:**
+### **Componentes Disponíveis (para uso futuro):**
 ```
-App.tsx
-├── ChatProvider
-├── Routes
-    ├── HomePage (com EnhancedPersonaSelector)
-    ├── ChatPage 
-    └── NotFoundPage
+useChat + ChatProvider (PESADO - 400KB+)
+usePersona + EnhancedPersonaSelector (PESADO)
+App completo com todas as features (PESADO)
+AppMinimal (179KB - fallback simples)
 ```
 
 ---
