@@ -258,12 +258,112 @@ AppMinimal (179KB - fallback simples)
 
 ---
 
+---
+
+## 🚀 **NOVA ESTRATÉGIA: IMPLEMENTAÇÃO INCREMENTAL**
+
+*Baseada nas lições aprendidas sobre bundle size e estabilidade*
+
+### **🎯 FILOSOFIA:** 
+Construir incrementalmente mantendo sempre bundle < 200KB, testando cada funcionalidade antes de prosseguir.
+
+### **📋 ETAPAS INCREMENTAIS (Pós-FASE 6):**
+
+#### **ETAPA INC-1: Chat Básico Simples** 📝
+- **Bundle Target:** < 190KB (atual: 169KB)
+- **Incremento:** +21KB máximo
+- **Funcionalidade:** ChatPageSimple com localStorage, sem API
+- **Arquivos:** `ChatPageSimple.tsx`, `AppSimple v2`
+- **Teste:** HomePage → Seleção persona → Chat offline funcionando
+- **Fallback:** Reverter para AppSimple atual se bundle > 200KB
+
+#### **ETAPA INC-2: Conexão API Minimalista** 🔌
+- **Bundle Target:** < 195KB
+- **Incremento:** +5KB máximo
+- **Funcionalidade:** Fetch nativo sem React Query
+- **Arquivos:** `api-simple.ts`, integração com ChatPageSimple
+- **Teste:** Mensagem real enviada para backend + resposta
+- **Fallback:** Chat offline se API falhar ou bundle explodir
+
+#### **ETAPA INC-3: Estados de Loading Simples** ⏳
+- **Bundle Target:** < 200KB
+- **Incremento:** +5KB máximo
+- **Funcionalidade:** Loading states com CSS inline simples
+- **Arquivos:** `LoadingSimple.tsx` (componente inline)
+- **Teste:** UX fluida durante chamadas API
+- **Fallback:** Estados instantâneos se bundle > 200KB
+
+#### **ETAPA INC-4: Error Handling Básico** ⚠️
+- **Bundle Target:** < 205KB
+- **Incremento:** +5KB máximo
+- **Funcionalidade:** Try/catch e UI de erro simples
+- **Arquivos:** `ErrorHandling.ts`, UI de erro inline
+- **Teste:** Cenários de falha da API com feedback visual
+- **Fallback:** Console.log apenas se UI quebrar
+
+#### **ETAPA INC-5: Navegação Melhorada** 🧭
+- **Bundle Target:** < 210KB
+- **Incremento:** +5KB máximo
+- **Funcionalidade:** Menu de navegação e breadcrumbs simples
+- **Arquivos:** `NavigationSimple.tsx` (CSS inline)
+- **Teste:** Fluxo completo: Home → Chat → Navegação → Voltar
+- **Fallback:** Links diretos se navegação pesar muito
+
+#### **ETAPA INC-6: Personas Dinâmicas** 👥
+- **Bundle Target:** < 220KB
+- **Incremento:** +10KB máximo
+- **Funcionalidade:** Carregamento de personas da API
+- **Arquivos:** `personas-api-simple.ts`, dynamic loading
+- **Teste:** Personas do backend vs hardcoded funcionando
+- **Fallback:** Personas hardcoded se API falhar
+
+#### **ETAPA INC-7: Persistência de Chat** 💾
+- **Bundle Target:** < 230KB
+- **Incremento:** +10KB máximo
+- **Funcionalidade:** Histórico de conversas em localStorage
+- **Arquivos:** `chat-storage-simple.ts`, history management
+- **Teste:** Refresh da página mantém conversa
+- **Fallback:** Session-only se localStorage quebrar
+
+#### **ETAPA INC-8: UX Enhancements** ✨
+- **Bundle Target:** < 240KB
+- **Incremento:** +10KB máximo
+- **Funcionalidade:** Animações CSS básicas, feedback visual
+- **Arquivos:** Estilos inline melhorados, micro-interactions
+- **Teste:** Transições suaves sem travamentos
+- **Fallback:** UI estática se animações pesarem
+
+#### **ETAPA INC-9: Recursos Avançados Seletivos** 🔧
+- **Bundle Target:** < 250KB
+- **Incremento:** +10KB máximo
+- **Funcionalidade:** Cherry-pick das funcionalidades das FASES 2-6
+- **Arquivos:** Implementação seletiva dos recursos mais críticos
+- **Teste:** Funcionalidades avançadas priorizadas funcionando
+- **Fallback:** Versão básica se recursos avançados quebrarem
+
+#### **ETAPA INC-10: Otimização Final** 🏆
+- **Bundle Target:** < 270KB
+- **Incremento:** +20KB máximo
+- **Funcionalidade:** Code splitting cirúrgico apenas onde necessário
+- **Arquivos:** Otimizações pontuais, lazy loading seletivo
+- **Teste:** Performance audit completo, Lighthouse > 90
+- **Fallback:** Versão pré-otimização se quebrar
+
+### **🔄 REGRAS DE IMPLEMENTAÇÃO:**
+1. **Testar cada etapa completamente** antes de prosseguir
+2. **Bundle size check** obrigatório a cada commit
+3. **Fallback strategy** definida antes de começar cada etapa
+4. **Deploy incremental** - uma etapa por vez
+5. **Rollback imediato** se qualquer problema aparecer
+
+---
+
 ## 🚨 **PRÓXIMAS AÇÕES PRIORITÁRIAS**
 
-1. **✅ CONCLUÍDO:** Homepage carregando perfeitamente
-2. **✅ CONCLUÍDO:** Arquitetura `usePersona` refatorada
-3. **🔥 PRÓXIMO:** Implementar Fase 1.2 - Estrutura de Navegação Base
-4. **🎯 EM ANDAMENTO:** Continuar roadmap - foco na navegação e componentes educacionais
+1. **✅ CONCLUÍDO:** AppSimple (169KB) funcionando estável
+2. **🔥 PRÓXIMO:** ETAPA INC-1 - Chat Básico Simples
+3. **🎯 ESTRATÉGIA:** Incrementos de 5-10KB testados rigorosamente
+4. **⚡ REGRA OURO:** Bundle < 200KB sempre, funcionalidade nunca quebrar
 
 ---
 
