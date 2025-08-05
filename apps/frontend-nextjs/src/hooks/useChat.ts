@@ -169,8 +169,8 @@ export function useChat(options: UseChatOptions = {}) {
       const currentMessages = retryCount === 0 ? [...messages, userMessage] : messages;
       
       const request: ChatRequest = {
-        message: message.trim(),
-        persona: personaId,
+        question: message.trim(),
+        personality_id: personaId,
         conversation_history: currentMessages.slice(-10), // Últimas 10 mensagens para contexto
         // Incluir informações de sentimento se disponível
         ...(sentiment && {
@@ -223,8 +223,8 @@ export function useChat(options: UseChatOptions = {}) {
       const response = result as ChatResponse;
       const assistantMessage: ChatMessage = {
         role: 'assistant',
-        content: response.response,
-        timestamp: response.timestamp,
+        content: response.answer,
+        timestamp: response.timestamp ? new Date(response.timestamp).getTime() : Date.now(),
         persona: response.persona
       };
 
