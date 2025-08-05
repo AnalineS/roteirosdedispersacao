@@ -29,12 +29,29 @@ export interface ChatMessage {
   content: string;
   timestamp: number;
   persona?: string;
+  metadata?: {
+    isFallback?: boolean;
+    fallbackSource?: 'cache' | 'local_knowledge' | 'emergency' | 'generic';
+    confidence?: number;
+    suggestion?: string;
+    emergency_contact?: string;
+  };
 }
 
 export interface ChatRequest {
   message: string;
   persona: string;
   conversation_history?: ChatMessage[];
+  sentiment?: {
+    category: string;
+    score: number;
+    magnitude: number;
+  };
+  knowledge_context?: {
+    context: string;
+    confidence: number;
+    sources: string[];
+  };
 }
 
 export interface ChatResponse {

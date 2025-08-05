@@ -1,24 +1,48 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, lazy, Suspense } from 'react';
 import Link from 'next/link';
 import Navigation from '@/components/Navigation';
 import PersonaAvatar from '@/components/chat/PersonaAvatar';
 import PersonaToggle from '@/components/chat/PersonaToggle';
-import ConversationExporter from '@/components/chat/ConversationExporter';
-import ContextualSuggestions from '@/components/chat/ContextualSuggestions';
-import ConversationHistory from '@/components/chat/ConversationHistory';
-import RoutingIndicator from '@/components/chat/RoutingIndicator';
+
+// Lazy load dos componentes mais pesados
+const ConversationExporter = lazy(() => import('@/components/chat/ConversationExporter'));
+const ContextualSuggestions = lazy(() => import('@/components/chat/ContextualSuggestions'));
+const ConversationHistory = lazy(() => import('@/components/chat/ConversationHistory'));
+const RoutingIndicator = lazy(() => import('@/components/chat/RoutingIndicator'));
+const SentimentIndicator = lazy(() => import('@/components/chat/SentimentIndicator').then(module => ({ default: module.SentimentIndicator })));
+const KnowledgeIndicator = lazy(() => import('@/components/chat/KnowledgeIndicator').then(module => ({ default: module.KnowledgeIndicator })));
+const FallbackIndicator = lazy(() => import('@/components/chat/FallbackIndicator').then(module => ({ default: module.FallbackIndicator })));
+const SystemHealthWarning = lazy(() => import('@/components/chat/FallbackIndicator').then(module => ({ default: module.SystemHealthWarning })));
 import { usePersonas } from '@/hooks/usePersonas';
 import { useChat } from '@/hooks/useChat';
 import { useConversationHistory } from '@/hooks/useConversationHistory';
 import { useIntelligentRouting } from '@/hooks/useIntelligentRouting';
 import { useUserProfile, useProfileDetection } from '@/hooks/useUserProfile';
 import { theme } from '@/config/theme';
+import { ChatComponentLoader, SidebarLoader, IndicatorLoader } from '@/components/LoadingSpinner';
 
 export default function ChatPage() {
   const { personas, loading: personasLoading, error: personasError } = usePersonas();
-  const { messages, loading: chatLoading, error: chatError, sendMessage } = useChat({ persistToLocalStorage: false });
+  const { 
+    messages, 
+    loading: chatLoading, 
+    error: chatError, 
+    sendMessage,
+    currentSentiment,
+    personaSwitchSuggestion,
+    knowledgeStats,
+    lastSearchResult,
+    isSearchingKnowledge,
+    fallbackState,
+    resetFallback,
+    resetSystemFailures
+  } = useChat({ 
+    persistToLocalStorage: false, 
+    enableSentimentAnalysis: true,
+    enableKnowledgeEnrichment: true
+  });
   const { profile, updateProfile, getRecommendedPersona } = useUserProfile();
   const { detectProfile } = useProfileDetection();
   const {
@@ -247,20 +271,22 @@ export default function ChatPage() {
       <Navigation currentPersona={currentPersona?.name} />
       
       {/* Conversation History Sidebar */}
-      <ConversationHistory
-        conversations={Object.values(personas).flatMap(persona => {
-          const personaId = Object.keys(personas).find(id => personas[id] === persona);
-          return personaId ? getConversationsForPersona(personaId) : [];
-        })}
-        currentConversationId={currentConversationId}
-        personas={personas}
-        onConversationSelect={handleConversationSelect}
-        onNewConversation={handleNewConversation}
-        onDeleteConversation={deleteConversation}
-        onRenameConversation={renameConversation}
-        isVisible={showHistory}
-        onToggle={() => setShowHistory(!showHistory)}
-      />
+      <Suspense fallback={<SidebarLoader />}>
+        <ConversationHistory
+          conversations={Object.values(personas).flatMap(persona => {
+            const personaId = Object.keys(personas).find(id => personas[id] === persona);
+            return personaId ? getConversationsForPersona(personaId) : [];
+          })}
+          currentConversationId={currentConversationId}
+          personas={personas}
+          onConversationSelect={handleConversationSelect}
+          onNewConversation={handleNewConversation}
+          onDeleteConversation={deleteConversation}
+          onRenameConversation={renameConversation}
+          isVisible={showHistory}
+          onToggle={() => setShowHistory(!showHistory)}
+        />
+      </Suspense>
       <div style={{
         height: '100vh',
         display: 'flex',
@@ -315,11 +341,13 @@ export default function ChatPage() {
         
         {/* Controls: Persona Toggle + Export */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <ConversationExporter 
-            messages={currentMessages}
-            currentPersona={currentPersona}
-            isMobile={isMobile}
-          />
+          <Suspense fallback={<ChatComponentLoader message="Exportar" />}>
+            <ConversationExporter 
+              messages={currentMessages}
+              currentPersona={currentPersona}
+              isMobile={isMobile}
+            />
+          </Suspense>
           <PersonaToggle
             personas={personas}
             selectedPersona={selectedPersona}
@@ -338,6 +366,14 @@ export default function ChatPage() {
         flexDirection: 'column',
         gap: isMobile ? '12px' : '15px'
       }}>
+        {/* Aviso de sistema degradado/crítico */}
+        <Suspense fallback={null}>
+          <SystemHealthWarning 
+            systemHealth={fallbackState.systemHealth}
+            onResetFailures={resetSystemFailures}
+          />
+        </Suspense>
+        
         {!selectedPersona && !shouldShowRouting() && (
           <div style={{
             textAlign: 'center',
@@ -356,22 +392,24 @@ export default function ChatPage() {
         )}
         
         {/* Indicador de Roteamento Inteligente */}
-        {(() => {
-          const recommendedPersona = getRoutingRecommendedPersona();
-          
-          return shouldShowRouting() && currentAnalysis && recommendedPersona && (
-            <RoutingIndicator
-              analysis={currentAnalysis}
-              recommendedPersona={recommendedPersona}
-              currentPersonaId={selectedPersona}
-              personas={personas}
-              onAcceptRouting={handleAcceptRouting}
-              onRejectRouting={handleRejectRouting}
-              onShowExplanation={handleShowExplanation}
-              isMobile={isMobile}
-            />
-          );
-        })()}
+        <Suspense fallback={<ChatComponentLoader message="Analisando..." />}>
+          {(() => {
+            const recommendedPersona = getRoutingRecommendedPersona();
+            
+            return shouldShowRouting() && currentAnalysis && recommendedPersona && (
+              <RoutingIndicator
+                analysis={currentAnalysis}
+                recommendedPersona={recommendedPersona}
+                currentPersonaId={selectedPersona}
+                personas={personas}
+                onAcceptRouting={handleAcceptRouting}
+                onRejectRouting={handleRejectRouting}
+                onShowExplanation={handleShowExplanation}
+                isMobile={isMobile}
+              />
+            );
+          })()}
+        </Suspense>
 
         {currentMessages.map((message) => (
           <div
@@ -421,6 +459,50 @@ export default function ChatPage() {
               <div style={{ whiteSpace: 'pre-wrap' }}>
                 {message.content}
               </div>
+              
+              {/* Indicar se é resposta de fallback */}
+              {message.metadata?.isFallback && (
+                <div style={{
+                  marginTop: '8px',
+                  padding: '6px 10px',
+                  backgroundColor: theme.colors.warning[50],
+                  border: `1px solid ${theme.colors.warning[200]}`,
+                  borderRadius: '6px',
+                  fontSize: '0.75rem',
+                  color: theme.colors.warning[700]
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span>🛡️</span>
+                    <span>
+                      Resposta de fallback ({
+                        message.metadata.fallbackSource === 'cache' ? 'Cache Local' :
+                        message.metadata.fallbackSource === 'local_knowledge' ? 'Base Local' :
+                        message.metadata.fallbackSource === 'emergency' ? 'Sistema de Emergência' :
+                        'Genérico'
+                      })
+                    </span>
+                    {message.metadata.confidence && (
+                      <span style={{ opacity: 0.7 }}>
+                        - {Math.round(message.metadata.confidence * 100)}%
+                      </span>
+                    )}
+                  </div>
+                  {message.metadata.suggestion && (
+                    <div style={{ marginTop: '4px', fontStyle: 'italic' }}>
+                      {message.metadata.suggestion}
+                    </div>
+                  )}
+                  {message.metadata.emergency_contact && (
+                    <div style={{ 
+                      marginTop: '4px', 
+                      fontWeight: 'bold',
+                      color: theme.colors.danger[600]
+                    }}>
+                      {message.metadata.emergency_contact}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         ))}
@@ -481,18 +563,101 @@ export default function ChatPage() {
         background: 'white',
         borderTop: '1px solid #eee'
       }}>
+        {/* Indicadores de IA */}
+        {(currentSentiment || lastSearchResult || isSearchingKnowledge || fallbackState.isActive || fallbackState.result) && selectedPersona && (
+          <div style={{ 
+            position: 'absolute', 
+            top: '-50px', 
+            right: '20px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            flexWrap: 'wrap',
+            justifyContent: 'flex-end'
+          }}>
+            {/* Indicador de Fallback */}
+            <Suspense fallback={<IndicatorLoader />}>
+              <FallbackIndicator
+                isActive={fallbackState.isActive}
+                result={fallbackState.result}
+                systemHealth={fallbackState.systemHealth}
+                attempts={fallbackState.attempts}
+                showDetails={!isMobile}
+                onRetry={() => {
+                  // Reenviar última mensagem se possível
+                  const lastUserMessage = currentMessages
+                    .slice()
+                    .reverse()
+                    .find(msg => msg.role === 'user');
+                  if (lastUserMessage && selectedPersona) {
+                    sendMessage(lastUserMessage.content, selectedPersona);
+                  }
+                }}
+                onDismiss={resetFallback}
+              />
+            </Suspense>
+            
+            {/* Indicador de Conhecimento */}
+            <Suspense fallback={<IndicatorLoader />}>
+              <KnowledgeIndicator
+                searchResult={lastSearchResult}
+                stats={knowledgeStats}
+                isSearching={isSearchingKnowledge}
+                showDetails={!isMobile}
+              />
+            </Suspense>
+            
+            {/* Indicador de Sentimento */}
+            {currentSentiment && (
+              <Suspense fallback={<IndicatorLoader />}>
+                <SentimentIndicator 
+                  sentiment={currentSentiment} 
+                  showDetails={!isMobile} 
+                  size={isMobile ? 'small' : 'medium'}
+                />
+              </Suspense>
+            )}
+            
+            {/* Sugestão de troca de persona baseada no sentimento */}
+            {personaSwitchSuggestion && personas[personaSwitchSuggestion] && (
+              <div style={{
+                padding: '8px 12px',
+                background: theme.colors.warning[50],
+                color: theme.colors.warning[700],
+                borderRadius: '8px',
+                fontSize: '0.85rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                border: `1px solid ${theme.colors.warning[200]}`,
+                maxWidth: isMobile ? '200px' : 'none'
+              }}
+              onClick={() => handlePersonaChange(personaSwitchSuggestion)}
+              >
+                <span>💡</span>
+                <span>
+                  Sugestão: {personas[personaSwitchSuggestion].name} pode ajudar melhor
+                </span>
+              </div>
+            )}
+          </div>
+        )}
         {/* Contextual Suggestions */}
         {selectedPersona && currentPersona && (
-          <ContextualSuggestions
-            persona={currentPersona}
-            personaId={selectedPersona}
-            currentInput={inputValue}
-            onSuggestionClick={(suggestion) => {
-              setInputValue(suggestion);
-              inputRef.current?.focus();
-            }}
-            isVisible={showSuggestions && (inputValue.length === 0 || inputValue.length > 2)}
-          />
+          <Suspense fallback={null}>
+            <ContextualSuggestions
+              persona={currentPersona}
+              personaId={selectedPersona}
+              currentInput={inputValue}
+              onSuggestionClick={(suggestion) => {
+                setInputValue(suggestion);
+                inputRef.current?.focus();
+              }}
+              isVisible={showSuggestions && (inputValue.length === 0 || inputValue.length > 2)}
+            />
+          </Suspense>
         )}
         
         <form

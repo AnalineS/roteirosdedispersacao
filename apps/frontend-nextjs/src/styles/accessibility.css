@@ -1,0 +1,219 @@
+/**
+ * Estilos de Acessibilidade (WCAG 2.1 AA)
+ * Garante contraste adequado e foco visível
+ */
+
+/* Focus styles globais */
+*:focus {
+  outline: 2px solid #2563eb !important;
+  outline-offset: 2px !important;
+}
+
+/* Melhor contraste para links */
+a {
+  color: #1976d2;
+  text-decoration: underline;
+}
+
+a:hover {
+  color: #1565c0;
+  text-decoration: none;
+}
+
+a:focus {
+  background-color: rgba(37, 99, 235, 0.1);
+  border-radius: 4px;
+  padding: 2px;
+}
+
+/* Skip navigation link */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  background: #000;
+  color: #fff;
+  padding: 8px;
+  text-decoration: none;
+  border-radius: 4px;
+  z-index: 1000;
+}
+
+.skip-link:focus {
+  top: 6px;
+}
+
+/* Botões com melhor contraste */
+button {
+  cursor: pointer;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+button:focus {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+/* Inputs acessíveis */
+input, textarea, select {
+  border: 2px solid #d1d5db;
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 16px; /* Previne zoom no iOS */
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+input:invalid {
+  border-color: #dc2626;
+}
+
+/* Labels sempre visíveis */
+label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: #374151;
+}
+
+/* Screen reader only content */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.focus\:not-sr-only:focus {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: 0;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  * {
+    border-color: currentColor !important;
+  }
+  
+  button, input, textarea, select {
+    border: 2px solid currentColor !important;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Color contrast fixes */
+.text-primary {
+  color: #1976d2 !important;
+}
+
+.text-secondary {
+  color: #424242 !important;
+}
+
+.text-success {
+  color: #2e7d32 !important;
+}
+
+.text-warning {
+  color: #f57c00 !important;
+}
+
+.text-error {
+  color: #d32f2f !important;
+}
+
+/* Focus indicators for interactive elements */
+[role="button"]:focus,
+[role="link"]:focus,
+[role="menuitem"]:focus,
+[role="tab"]:focus {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+  background-color: rgba(37, 99, 235, 0.1);
+}
+
+/* Ensure clickable areas are at least 44px */
+button, 
+[role="button"],
+a,
+input[type="button"],
+input[type="submit"] {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Loading states */
+[aria-busy="true"] {
+  cursor: wait;
+}
+
+/* Error states */
+[aria-invalid="true"] {
+  border-color: #dc2626 !important;
+  background-color: rgba(220, 38, 38, 0.05);
+}
+
+/* Status messages */
+[role="alert"] {
+  background-color: #fef2f2;
+  border: 1px solid #fca5a5;
+  border-radius: 4px;
+  padding: 12px;
+  color: #991b1b;
+}
+
+[role="status"] {
+  background-color: #f0f9ff;
+  border: 1px solid #93c5fd;
+  border-radius: 4px;
+  padding: 12px;
+  color: #1e40af;
+}
+
+/* Keyboard navigation indicators */
+.keyboard-navigation *:focus {
+  outline: 3px solid #2563eb !important;
+  outline-offset: 2px !important;
+}
+
+/* Touch targets */
+@media (pointer: coarse) {
+  button,
+  [role="button"],
+  a,
+  input {
+    min-height: 48px;
+    min-width: 48px;
+  }
+}

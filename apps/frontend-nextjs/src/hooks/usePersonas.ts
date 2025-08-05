@@ -6,6 +6,7 @@
 import { useState, useEffect } from 'react';
 import { getPersonas, type Persona, type PersonasResponse } from '@/services/api';
 import { filterValidPersonas } from '@/constants/avatars';
+import { PersonasCache } from '@/utils/apiCache';
 
 export function usePersonas() {
   const [personas, setPersonas] = useState<PersonasResponse>({});
@@ -17,9 +18,22 @@ export function usePersonas() {
       try {
         setLoading(true);
         setError(null);
+        
+        // Verificar cache primeiro
+        const cachedPersonas = PersonasCache.get();
+        if (cachedPersonas) {
+          setPersonas(cachedPersonas);
+          setLoading(false);
+          return;
+        }
+        
+        // Buscar do servidor se não há cache
         const personasData = await getPersonas();
         // Filtrar apenas personas com avatares configurados
         const validPersonas = filterValidPersonas(personasData);
+        
+        // Salvar no cache
+        PersonasCache.set(validPersonas);
         setPersonas(validPersonas);
       } catch (err) {
         console.error('Erro ao carregar personas:', err);

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, memo } from 'react';
 import { Persona } from '@/services/api';
 import { getPersonaAvatar } from '@/constants/avatars';
 import { theme, getPersonaTheme } from '@/config/theme';
@@ -26,7 +26,7 @@ interface PersonaAvatarProps {
   className?: string;
 }
 
-export default function PersonaAvatar({ 
+const PersonaAvatar = memo(function PersonaAvatar({ 
   persona, 
   personaId,
   size = 'medium', 
@@ -168,9 +168,11 @@ export default function PersonaAvatar({
         {!imageError && avatarUrl ? (
           <img
             src={avatarUrl}
-            alt={`Avatar de ${persona.name}`}
+            alt={`Avatar de ${persona.name}, especialista em ${persona.target_audience || 'saúde'}`}
             loading="lazy"
             decoding="async"
+            width={parseInt(sizeStyles.width)}
+            height={parseInt(sizeStyles.height)}
             style={{
               width: '100%',
               height: '100%',
@@ -257,4 +259,6 @@ export default function PersonaAvatar({
       `}</style>
     </div>
   );
-}
+});
+
+export default PersonaAvatar;
