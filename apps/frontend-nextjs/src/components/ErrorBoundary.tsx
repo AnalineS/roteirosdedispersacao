@@ -1,6 +1,7 @@
 'use client';
 
 import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { theme } from '@/config/theme';
 
 interface Props {
   children: ReactNode;
@@ -57,7 +58,7 @@ class ErrorBoundary extends Component<Props, State> {
           flexDirection: 'column',
           justifyContent: 'center',
           alignItems: 'center',
-          background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
+          background: theme.gradients.primary,
           color: 'white',
           padding: '20px',
           textAlign: 'center'
@@ -122,7 +123,7 @@ class ErrorBoundary extends Component<Props, State> {
                   borderRadius: '8px',
                   border: 'none',
                   background: 'white',
-                  color: '#1976d2',
+                  color: theme.colors.primary[500],
                   fontSize: '1rem',
                   fontWeight: 'bold',
                   cursor: 'pointer',
@@ -155,7 +156,7 @@ class ErrorBoundary extends Component<Props, State> {
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.background = 'white';
-                  e.currentTarget.style.color = '#1976d2';
+                  e.currentTarget.style.color = theme.colors.primary[500];
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.background = 'transparent';

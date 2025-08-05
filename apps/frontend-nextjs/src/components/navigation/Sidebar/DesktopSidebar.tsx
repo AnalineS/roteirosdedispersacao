@@ -8,6 +8,7 @@ import { useProgressData } from '../Progress';
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation';
 import Tooltip from '@/components/common/Tooltip';
 import KeyboardShortcuts, { useKeyboardShortcuts } from '@/components/common/KeyboardShortcuts';
+import { theme } from '@/config/theme';
 
 interface DesktopSidebarProps {
   categories: NavigationCategory[];
@@ -56,10 +57,10 @@ export default function DesktopSidebar({ categories, currentPersona, isActive }:
 
   const getLevelColor = (level?: string) => {
     switch (level) {
-      case 'beginner': return '#4caf50';
-      case 'intermediate': return '#ff9800';
-      case 'advanced': return '#f44336';
-      default: return '#2196f3';
+      case 'beginner': return theme.colors.educational.success;
+      case 'intermediate': return theme.colors.educational.warning;
+      case 'advanced': return theme.colors.educational.error;
+      default: return theme.colors.primary[500];
     }
   };
 
@@ -83,7 +84,7 @@ export default function DesktopSidebar({ categories, currentPersona, isActive }:
         left: 0,
         width: '320px',
         height: '100vh',
-        background: 'linear-gradient(180deg, #1976d2 0%, #1565c0 100%)',
+        background: theme.gradients.primary,
         color: 'white',
         overflowY: 'auto',
         boxShadow: '4px 0 20px rgba(0,0,0,0.1)',

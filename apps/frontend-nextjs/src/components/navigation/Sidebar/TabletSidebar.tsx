@@ -6,6 +6,7 @@ import { NavigationCategory } from './index';
 import ProgressIndicator from '../Progress/ProgressIndicator';
 import { useProgressData } from '../Progress';
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation';
+import { theme } from '@/config/theme';
 
 interface TabletSidebarProps {
   isCollapsed: boolean;
@@ -62,10 +63,10 @@ export default function TabletSidebar({
 
   const getLevelColor = (level?: string) => {
     switch (level) {
-      case 'beginner': return '#4caf50';
-      case 'intermediate': return '#ff9800';
-      case 'advanced': return '#f44336';
-      default: return '#2196f3';
+      case 'beginner': return theme.colors.educational.success;
+      case 'intermediate': return theme.colors.educational.warning;
+      case 'advanced': return theme.colors.educational.error;
+      default: return theme.colors.primary[500];
     }
   };
 
@@ -91,7 +92,7 @@ export default function TabletSidebar({
         left: 0,
         width: sidebarWidth,
         height: '100vh',
-        background: 'linear-gradient(180deg, #1976d2 0%, #1565c0 100%)',
+        background: theme.gradients.primary,
         color: 'white',
         overflowY: 'auto',
         overflowX: 'hidden',
@@ -114,7 +115,7 @@ export default function TabletSidebar({
           width: '30px',
           height: '30px',
           borderRadius: '50%',
-          background: '#1976d2',
+          background: theme.colors.primary[500],
           border: '2px solid white',
           color: 'white',
           fontSize: '0.8rem',

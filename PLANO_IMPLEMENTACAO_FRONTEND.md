@@ -99,7 +99,7 @@ Implementar sistema educacional adaptativo com Dr. Gasnelio (técnico) e Gá (em
 
 #### **Fase 3.2: Sistema de Respostas** 🔄 **EM ANDAMENTO**
 - ⏳ **PENDENTE:** Análise de sentimento
-- ⏳ **PENDENTE:** Integração com o ASTRA BD para base de conhecimento RAG do backend
+- ⏳ **PENDENTE:** Integração com o ASTRA BD para base de conhecimento RAG do backend para o chat
 - ⏳ **PENDENTE:** Base de conhecimento estruturada
 - ✅ Manutenção de contexto básica implementada
 - ⏳ **PENDENTE:** Fallbacks inteligentes

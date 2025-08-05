@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { theme } from '@/config/theme';
 
 interface ChecklistItem {
   id: string;
@@ -33,20 +34,20 @@ interface VisualCardProps {
 const hanseniaseInfographic: InfographicData = {
   title: 'Dados Epidemiológicos da Hanseníase no Brasil',
   items: [
-    { label: 'Casos Novos/Ano', value: '27.864', icon: '📊', color: '#3b82f6' },
-    { label: 'Taxa por 100mil hab', value: '13,23', icon: '📈', color: '#059669' },
-    { label: 'Cura Esperada', value: '95%', icon: '💚', color: '#22c55e' },
-    { label: 'Tempo de Tratamento', value: '6-12 meses', icon: '⏰', color: '#f59e0b' }
+    { label: 'Casos Novos/Ano', value: '27.864', icon: '📊', color: theme.colors.primary[500] },
+    { label: 'Taxa por 100mil hab', value: '13,23', icon: '📈', color: theme.colors.secondary[600] },
+    { label: 'Cura Esperada', value: '95%', icon: '💚', color: theme.colors.educational.success },
+    { label: 'Tempo de Tratamento', value: '6-12 meses', icon: '⏰', color: theme.colors.educational.warning }
   ]
 };
 
 const pqtuInfographic: InfographicData = {
   title: 'Esquema PQT-U - Componentes',
   items: [
-    { label: 'Rifampicina', value: '600mg', icon: '🔴', color: '#dc2626' },
-    { label: 'Dapsona', value: '100mg', icon: '🔵', color: '#2563eb' },
-    { label: 'Clofazimina', value: '300mg', icon: '🟤', color: '#92400e' },
-    { label: 'Administração', value: 'Dose única', icon: '💊', color: '#7c3aed' }
+    { label: 'Rifampicina', value: '600mg', icon: '🔴', color: theme.colors.educational.error },
+    { label: 'Dapsona', value: '100mg', icon: '🔵', color: theme.colors.primary[600] },
+    { label: 'Clofazimina', value: '300mg', icon: '🟤', color: theme.colors.educational.warning },
+    { label: 'Administração', value: 'Dose única', icon: '💊', color: theme.colors.educational.progress }
   ]
 };
 
@@ -215,7 +216,7 @@ export default function VisualCard({
             <div className="flex items-center gap-2">
               <div 
                 className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-white"
-                style={{ backgroundColor: completionRate === 100 ? '#22c55e' : completionRate > 50 ? '#f59e0b' : '#ef4444' }}
+                style={{ backgroundColor: completionRate === 100 ? theme.colors.educational.success : completionRate > 50 ? theme.colors.educational.warning : theme.colors.educational.error }}
               >
                 {completionRate}%
               </div>
@@ -228,7 +229,7 @@ export default function VisualCard({
               className="h-3 rounded-full transition-all duration-500"
               style={{ 
                 width: `${completionRate}%`,
-                backgroundColor: completionRate === 100 ? '#22c55e' : completionRate > 50 ? '#f59e0b' : '#ef4444'
+                backgroundColor: completionRate === 100 ? theme.colors.educational.success : completionRate > 50 ? theme.colors.educational.warning : theme.colors.educational.error
               }}
             />
           </div>

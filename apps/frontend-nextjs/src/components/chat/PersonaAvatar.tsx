@@ -3,6 +3,7 @@
 import { useState, useCallback, useMemo } from 'react';
 import { Persona } from '@/services/api';
 import { getPersonaAvatar } from '@/constants/avatars';
+import { theme, getPersonaTheme } from '@/config/theme';
 
 // Validação de URL segura
 const isValidImageUrl = (url: string): boolean => {
@@ -40,7 +41,12 @@ export default function PersonaAvatar({
   
   const avatarUrl = useMemo(() => {
     const url = getPersonaAvatar(personaId);
-    return url && isValidImageUrl(url) ? url : null;
+    // Para caminhos locais, não precisamos validar URL
+    return url ? url : null;
+  }, [personaId]);
+
+  const personaTheme = useMemo(() => {
+    return getPersonaTheme(personaId);
   }, [personaId]);
 
   const sizeStyles = useMemo(() => {
@@ -105,34 +111,36 @@ export default function PersonaAvatar({
           ...sizeStyles,
           borderRadius: '50%',
           background: imageError || !avatarUrl 
-            ? 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)' 
+            ? `linear-gradient(135deg, ${personaTheme.primaryColor} 0%, ${personaTheme.secondaryColor} 100%)` 
             : 'white',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           color: 'white',
           fontWeight: 'bold',
-          boxShadow: '0 4px 12px rgba(25, 118, 210, 0.3)',
+          boxShadow: `0 4px 12px ${personaTheme.primaryColor}30`,
           transition: 'all 0.3s ease',
-          border: isTyping ? '3px solid #4caf50' : '3px solid #f0f0f0',
+          border: isTyping 
+            ? `3px solid ${theme.colors.educational.success}` 
+            : `3px solid ${personaTheme.accentColor}40`,
           animation: isTyping ? 'pulse 2s infinite' : 'none',
           overflow: 'hidden'
         }}
         onMouseEnter={(e) => {
           if (onClick && !isLoading) {
             e.currentTarget.style.transform = 'scale(1.1)';
-            e.currentTarget.style.boxShadow = '0 6px 20px rgba(25, 118, 210, 0.4)';
+            e.currentTarget.style.boxShadow = `0 6px 20px ${personaTheme.primaryColor}40`;
           }
         }}
         onMouseLeave={(e) => {
           if (onClick) {
             e.currentTarget.style.transform = 'scale(1)';
-            e.currentTarget.style.boxShadow = '0 4px 12px rgba(25, 118, 210, 0.3)';
+            e.currentTarget.style.boxShadow = `0 4px 12px ${personaTheme.primaryColor}30`;
           }
         }}
         onFocus={(e) => {
           if (onClick) {
-            e.currentTarget.style.outline = '2px solid #1976d2';
+            e.currentTarget.style.outline = `2px solid ${personaTheme.primaryColor}`;
             e.currentTarget.style.outlineOffset = '2px';
           }
         }}

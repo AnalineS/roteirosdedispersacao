@@ -3,6 +3,9 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
+import { theme } from '@/config/theme';
+import { getUniversityLogo } from '@/constants/avatars';
+import Image from 'next/image';
 
 interface NavigationProps {
   currentPersona?: string;
@@ -72,7 +75,7 @@ export default function Navigation({ currentPersona }: NavigationProps) {
           top: '20px',
           left: '20px',
           zIndex: 1000,
-          background: '#1976d2',
+          background: theme.colors.primary[500],
           color: 'white',
           border: 'none',
           borderRadius: '50%',
@@ -112,7 +115,7 @@ export default function Navigation({ currentPersona }: NavigationProps) {
           left: isMenuOpen ? 0 : '-300px',
           width: '280px',
           height: '100vh',
-          background: 'linear-gradient(180deg, #1976d2 0%, #1565c0 100%)',
+          background: theme.gradients.primary,
           color: 'white',
           transition: 'left 0.3s ease',
           zIndex: 999,
@@ -126,21 +129,69 @@ export default function Navigation({ currentPersona }: NavigationProps) {
           padding: '20px',
           borderBottom: '1px solid rgba(255,255,255,0.1)'
         }}>
-          <h2 style={{
-            margin: 0,
-            fontSize: '1.2rem',
-            fontWeight: 'bold'
+          {/* Logo da UnB e Título */}
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '12px',
+            marginBottom: '10px'
           }}>
-            PQT-U Educacional
-          </h2>
-          {currentPersona && (
-            <p style={{
-              margin: '5px 0 0',
-              fontSize: '0.9rem',
-              opacity: 0.8
+            <div style={{
+              width: '40px',
+              height: '40px',
+              background: 'white',
+              borderRadius: '8px',
+              padding: '6px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
             }}>
-              Assistente: {currentPersona}
-            </p>
+              <Image
+                src={getUniversityLogo('unb_symbol')}
+                alt="UnB"
+                width={28}
+                height={28}
+                style={{ objectFit: 'contain' }}
+              />
+            </div>
+            <div>
+              <h2 style={{
+                margin: 0,
+                fontSize: '1.1rem',
+                fontWeight: 'bold'
+              }}>
+                Roteiros de Dispensação
+              </h2>
+              <p style={{
+                margin: '2px 0 0',
+                fontSize: '0.8rem',
+                opacity: 0.8
+              }}>
+                PQT-U Educacional
+              </p>
+            </div>
+          </div>
+          
+          {/* Programa acadêmico */}
+          <div style={{
+            fontSize: '0.75rem',
+            opacity: 0.7,
+            marginBottom: currentPersona ? '8px' : '0'
+          }}>
+            PPGCF • Universidade de Brasília
+          </div>
+          
+          {currentPersona && (
+            <div style={{
+              padding: '8px 12px',
+              background: 'rgba(255,255,255,0.1)',
+              borderRadius: '6px',
+              fontSize: '0.85rem'
+            }}>
+              <span style={{ opacity: 0.8 }}>Assistente ativo:</span>
+              <br />
+              <strong>{currentPersona}</strong>
+            </div>
           )}
         </div>
 
@@ -203,17 +254,52 @@ export default function Navigation({ currentPersona }: NavigationProps) {
           bottom: 0,
           left: 0,
           right: 0,
-          padding: '20px',
+          padding: '16px 20px',
           borderTop: '1px solid rgba(255,255,255,0.1)',
           background: 'rgba(0,0,0,0.1)'
         }}>
+          {/* Logo PPGCF */}
           <div style={{
-            fontSize: '0.8rem',
-            opacity: 0.7,
-            textAlign: 'center'
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: '12px'
           }}>
-            <p style={{ margin: '0 0 5px' }}>Sistema Educacional</p>
-            <p style={{ margin: 0 }}>Hanseníase PQT-U</p>
+            <div style={{
+              width: '32px',
+              height: '32px',
+              background: 'white',
+              borderRadius: '6px',
+              padding: '4px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <Image
+                src={getUniversityLogo('ppgcf_logo')}
+                alt="PPGCF"
+                width={24}
+                height={24}
+                style={{ objectFit: 'contain' }}
+              />
+            </div>
+          </div>
+          
+          <div style={{
+            fontSize: '0.75rem',
+            opacity: 0.8,
+            textAlign: 'center',
+            lineHeight: '1.4'
+          }}>
+            <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
+              Sistema Educacional
+            </div>
+            <div style={{ marginBottom: '4px' }}>
+              Roteiros de Dispensação PQT-U
+            </div>
+            <div style={{ opacity: 0.6 }}>
+              PPGCF - UnB
+            </div>
           </div>
         </div>
       </nav>

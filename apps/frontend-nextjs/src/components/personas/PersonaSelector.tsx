@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Persona } from '@/services/api';
 import { getPersonaAvatar } from '@/constants/avatars';
+import { theme } from '@/config/theme';
 
 interface PersonaSelectorProps {
   personas: Record<string, Persona>;
@@ -172,7 +173,7 @@ export default function PersonaSelector({ personas, onPersonaSelect }: PersonaSe
         onClick={() => setCurrentStep('question1')}
         style={{
           background: 'white',
-          color: '#1976d2',
+          color: theme.colors.primary[500],
           border: 'none',
           padding: '15px 40px',
           borderRadius: '30px',
@@ -366,7 +367,7 @@ export default function PersonaSelector({ personas, onPersonaSelect }: PersonaSe
             onClick={() => handlePersonaSelect(recommendation.personaId)}
             style={{
               background: 'white',
-              color: '#1976d2',
+              color: theme.colors.primary[500],
               border: 'none',
               padding: '15px 40px',
               borderRadius: '30px',

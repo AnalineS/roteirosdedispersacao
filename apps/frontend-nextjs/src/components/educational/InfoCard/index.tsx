@@ -2,6 +2,7 @@
 
 import { useState, ReactNode } from 'react';
 import Link from 'next/link';
+import { theme } from '@/config/theme';
 
 interface InfoCardData {
   id: string;
