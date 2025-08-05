@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import Navigation from '@/components/Navigation';
+import EducationalLayout from '@/components/layout/EducationalLayout';
 import Link from 'next/link';
 
 interface Module {
@@ -186,10 +186,8 @@ export default function ModulesPage() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f8fafc' }}>
-      <Navigation />
-      
-      <div className="main-content" style={{ padding: '20px' }}>
+    <EducationalLayout>
+      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         {/* Header */}
         <div style={{ marginBottom: '30px' }}>
           <h1 style={{ 
@@ -520,6 +518,6 @@ export default function ModulesPage() {
           </div>
         )}
       </div>
-    </div>
+    </EducationalLayout>
   );
 }

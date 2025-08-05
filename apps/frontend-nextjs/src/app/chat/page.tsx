@@ -11,10 +11,13 @@ import { usePersonas } from '@/hooks/usePersonas';
 import { useChat } from '@/hooks/useChat';
 import { useConversationHistory } from '@/hooks/useConversationHistory';
 import { useIntelligentRouting } from '@/hooks/useIntelligentRouting';
+import { useUserProfile, useProfileDetection } from '@/hooks/useUserProfile';
 
 export default function ChatPage() {
   const { personas, loading: personasLoading, error: personasError } = usePersonas();
   const { messages, loading: chatLoading, error: chatError, sendMessage } = useChat({ persistToLocalStorage: false });
+  const { profile, updateProfile, getRecommendedPersona } = useUserProfile();
+  const { detectProfile } = useProfileDetection();
   const {
     createConversation,
     switchToConversation,
@@ -56,7 +59,7 @@ export default function ChatPage() {
     currentAnalysis,
     isAnalyzing,
     shouldShowRouting,
-    getRecommendedPersona,
+    getRecommendedPersona: getRoutingRecommendedPersona,
     analyzeQuestion,
     acceptRecommendation,
     rejectRecommendation,
@@ -75,19 +78,44 @@ export default function ChatPage() {
     }
   }, [inputValue, selectedPersona, analyzeQuestion]);
 
-  // Carregar persona selecionada do localStorage
+  // Carregar persona baseada no perfil do usuário ou localStorage
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const storedPersona = localStorage.getItem('selectedPersona');
-      if (storedPersona && personas[storedPersona]) {
-        setSelectedPersona(storedPersona);
+    if (personas && Object.keys(personas).length > 0) {
+      let selectedPersonaId = null;
+      
+      // Prioridade 1: Persona do perfil do usuário
+      if (profile && profile.selectedPersona && personas[profile.selectedPersona]) {
+        selectedPersonaId = profile.selectedPersona;
+      }
+      // Prioridade 2: Recomendação baseada no perfil
+      else if (profile) {
+        selectedPersonaId = getRecommendedPersona();
+      }
+      // Prioridade 3: localStorage (compatibilidade com versão anterior)
+      else if (typeof window !== 'undefined') {
+        const storedPersona = localStorage.getItem('selectedPersona');
+        if (storedPersona && personas[storedPersona]) {
+          selectedPersonaId = storedPersona;
+        }
+      }
+      // Prioridade 4: Padrão empático
+      else {
+        selectedPersonaId = 'ga';
+      }
+
+      if (selectedPersonaId && selectedPersonaId !== selectedPersona) {
+        setSelectedPersona(selectedPersonaId);
+        // Atualizar perfil se necessário
+        if (profile && profile.selectedPersona !== selectedPersonaId) {
+          updateProfile({ selectedPersona: selectedPersonaId });
+        }
         // Criar conversa se não houver uma ativa
         if (!currentConversationId) {
-          createConversation(storedPersona);
+          createConversation(selectedPersonaId);
         }
       }
     }
-  }, [personas, currentConversationId, createConversation]);
+  }, [personas, profile, selectedPersona, currentConversationId, createConversation, getRecommendedPersona, updateProfile]);
 
   // Scroll automático para última mensagem
   useEffect(() => {
@@ -332,18 +360,22 @@ export default function ChatPage() {
         )}
         
         {/* Indicador de Roteamento Inteligente */}
-        {shouldShowRouting() && currentAnalysis && getRecommendedPersona() && (
-          <RoutingIndicator
-            analysis={currentAnalysis}
-            recommendedPersona={getRecommendedPersona()!}
-            currentPersonaId={selectedPersona}
-            personas={personas}
-            onAcceptRouting={handleAcceptRouting}
-            onRejectRouting={handleRejectRouting}
-            onShowExplanation={handleShowExplanation}
-            isMobile={isMobile}
-          />
-        )}
+        {(() => {
+          const recommendedPersona = getRoutingRecommendedPersona();
+          
+          return shouldShowRouting() && currentAnalysis && recommendedPersona && (
+            <RoutingIndicator
+              analysis={currentAnalysis}
+              recommendedPersona={recommendedPersona}
+              currentPersonaId={selectedPersona}
+              personas={personas}
+              onAcceptRouting={handleAcceptRouting}
+              onRejectRouting={handleRejectRouting}
+              onShowExplanation={handleShowExplanation}
+              isMobile={isMobile}
+            />
+          );
+        })()}
 
         {currentMessages.map((message) => (
           <div

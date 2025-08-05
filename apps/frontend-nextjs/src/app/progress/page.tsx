@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Navigation from '@/components/Navigation';
+import EducationalLayout from '@/components/layout/EducationalLayout';
+import ProgressSystem, { useProgressData } from '@/components/navigation/Progress';
 import { usePersonas } from '@/hooks/usePersonas';
 
-interface ProgressData {
+interface PageProgressData {
   totalTime: number;
   modulesStarted: number;
   modulesCompleted: number;
@@ -43,7 +44,8 @@ interface LearningPathItem {
 export default function ProgressPage() {
   const { personas, loading: personasLoading } = usePersonas();
   const [selectedPersona, setSelectedPersona] = useState<string | null>(null);
-  const [progressData, setProgressData] = useState<ProgressData>({
+  const userProgressData = useProgressData();
+  const [progressData, setProgressData] = useState<PageProgressData>({
     totalTime: 185, // minutos
     modulesStarted: 6,
     modulesCompleted: 3,
@@ -202,28 +204,15 @@ export default function ProgressPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f8fafc' }}>
-      <Navigation currentPersona={currentPersona?.name} />
-      
-      <div className="main-content" style={{ padding: '20px' }}>
-        {/* Header */}
-        <div style={{ marginBottom: '30px' }}>
-          <h1 style={{ 
-            fontSize: '2.5rem', 
-            fontWeight: 'bold', 
-            color: '#1976d2',
-            marginBottom: '10px' 
-          }}>
-            Seu Progresso
-          </h1>
-          <p style={{ 
-            fontSize: '1.1rem', 
-            color: '#666',
-            margin: 0 
-          }}>
-            Acompanhe sua jornada de aprendizado em PQT-U
-          </p>
-        </div>
+    <EducationalLayout currentPersona={selectedPersona || undefined}>
+      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+        {/* Global Progress Component */}
+        <ProgressSystem 
+          type="global" 
+          data={userProgressData} 
+          size="large" 
+          showDetails={true} 
+        />
 
         {/* Overview Statistics */}
         <div style={{
@@ -599,6 +588,6 @@ export default function ProgressPage() {
           </div>
         </div>
       </div>
-    </div>
+    </EducationalLayout>
   );
 }
