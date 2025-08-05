@@ -410,7 +410,7 @@ export function AutoGlossary({ children, terms = defaultGlossaryTerms, className
       
       if (term) {
         return (
-          <Tooltip key={index} content={term.definition} variant="educational">
+          <Tooltip key={index} content={term.definition}>
             <span className="text-blue-600 underline decoration-dotted cursor-help">
               {part}
             </span>

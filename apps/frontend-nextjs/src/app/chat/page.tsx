@@ -4,6 +4,8 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import Navigation from '@/components/Navigation';
 import PersonaAvatar from '@/components/chat/PersonaAvatar';
+import PersonaToggle from '@/components/chat/PersonaToggle';
+import ConversationExporter from '@/components/chat/ConversationExporter';
 import ContextualSuggestions from '@/components/chat/ContextualSuggestions';
 import ConversationHistory from '@/components/chat/ConversationHistory';
 import RoutingIndicator from '@/components/chat/RoutingIndicator';
@@ -12,6 +14,7 @@ import { useChat } from '@/hooks/useChat';
 import { useConversationHistory } from '@/hooks/useConversationHistory';
 import { useIntelligentRouting } from '@/hooks/useIntelligentRouting';
 import { useUserProfile, useProfileDetection } from '@/hooks/useUserProfile';
+import { theme } from '@/config/theme';
 
 export default function ChatPage() {
   const { personas, loading: personasLoading, error: personasError } = usePersonas();
@@ -229,7 +232,7 @@ export default function ChatPage() {
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: '2rem', marginBottom: '20px' }}>⚠️</div>
           <p>Erro ao carregar chat: {personasError}</p>
-          <Link href="/" style={{ color: '#1976d2', textDecoration: 'underline' }}>
+          <Link href="/" style={{ color: theme.colors.primary[500], textDecoration: 'underline' }}>
             Voltar ao início
           </Link>
         </div>
@@ -268,7 +271,7 @@ export default function ChatPage() {
       }} className="main-content">
       {/* Header */}
       <div style={{
-        background: '#1976d2',
+        background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
         color: 'white',
         padding: isMobile ? '12px 15px' : '15px 20px',
         display: 'flex',
@@ -310,27 +313,20 @@ export default function ChatPage() {
           )}
         </div>
         
-        {/* Seletor de Persona */}
-        <select
-          value={selectedPersona || ''}
-          onChange={(e) => handlePersonaChange(e.target.value)}
-          style={{
-            padding: isMobile ? '6px 10px' : '8px 12px',
-            borderRadius: '8px',
-            border: 'none',
-            background: 'rgba(255,255,255,0.2)',
-            color: 'white',
-            fontSize: isMobile ? '0.8rem' : '0.9rem',
-            maxWidth: isMobile ? '140px' : 'auto'
-          }}
-        >
-          <option value="">Escolher assistente...</option>
-          {Object.entries(personas).map(([id, persona]) => (
-            <option key={id} value={id} style={{ color: 'black' }}>
-              {persona.name}
-            </option>
-          ))}
-        </select>
+        {/* Controls: Persona Toggle + Export */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <ConversationExporter 
+            messages={currentMessages}
+            currentPersona={currentPersona}
+            isMobile={isMobile}
+          />
+          <PersonaToggle
+            personas={personas}
+            selectedPersona={selectedPersona}
+            onPersonaChange={handlePersonaChange}
+            isMobile={isMobile}
+          />
+        </div>
       </div>
 
       {/* Messages Area */}
@@ -392,7 +388,7 @@ export default function ChatPage() {
                 padding: isMobile ? '10px 14px' : '12px 16px',
                 borderRadius: '18px',
                 background: message.role === 'user' 
-                  ? '#1976d2' 
+                  ? theme.colors.primary[500] 
                   : 'white',
                 color: message.role === 'user' ? 'white' : '#333',
                 boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
@@ -416,7 +412,7 @@ export default function ChatPage() {
                   <span style={{
                     fontSize: '0.8rem', 
                     fontWeight: 'bold',
-                    color: '#1976d2'
+                    color: theme.colors.primary[500]
                   }}>
                     {currentPersona.name}
                   </span>
@@ -451,9 +447,9 @@ export default function ChatPage() {
                 isTyping={true}
               />
               <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#4caf50', animation: 'pulse 1.5s infinite' }}></div>
-                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#4caf50', animation: 'pulse 1.5s infinite 0.5s' }}></div>
-                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#4caf50', animation: 'pulse 1.5s infinite 1s' }}></div>
+                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: theme.colors.educational.success, animation: 'pulse 1.5s infinite' }}></div>
+                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: theme.colors.educational.success, animation: 'pulse 1.5s infinite 0.5s' }}></div>
+                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: theme.colors.educational.success, animation: 'pulse 1.5s infinite 1s' }}></div>
                 <span style={{ marginLeft: '8px', fontSize: '0.9rem', color: '#666' }}>
                   {currentPersona.name} está pensando...
                 </span>
@@ -540,7 +536,7 @@ export default function ChatPage() {
               padding: isMobile ? '12px 18px' : '12px 20px',
               borderRadius: '25px',
               border: 'none',
-              background: (!selectedPersona || !inputValue.trim() || chatLoading) ? '#ccc' : '#1976d2',
+              background: (!selectedPersona || !inputValue.trim() || chatLoading) ? '#ccc' : theme.colors.primary[500],
               color: 'white',
               cursor: (!selectedPersona || !inputValue.trim() || chatLoading) ? 'not-allowed' : 'pointer',
               fontSize: isMobile ? '1.1rem' : '1rem',

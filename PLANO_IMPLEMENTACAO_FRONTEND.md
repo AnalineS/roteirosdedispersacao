@@ -116,6 +116,7 @@ Implementar sistema educacional adaptativo com Dr. Gasnelio (técnico) e Gá (em
 #### **Fase 4.1: Módulos de Conteúdo**
 - ✅ Estrutura de páginas criada (modules/, dashboard/, resources/)
 - ⏳ **PENDENTE:** "Sobre a Doença" (hanseníase) - content population
+- ⏳ **PENDENTE:** "Sobre a Tese" (Pergunte para maiores informações) 
 - ⏳ **PENDENTE:** "Diagnóstico" (sintomas, exames) - content population
 - ⏳ **PENDENTE:** "Tratamento" (PQT-U) - content population
 - ⏳ **PENDENTE:** "Roteiro de Dispensação" - content population
@@ -138,7 +139,7 @@ Implementar sistema educacional adaptativo com Dr. Gasnelio (técnico) e Gá (em
 
 #### **Fase 5.2: Acessibilidade**
 - ✅ Responsive design implementado
-- ✅ Skip links e navegação por teclado básica
+- ✅ Skip links e navegação por teclado
 - ⏳ **PENDENTE:** WCAG AAA compliance completo
 - ⏳ **PENDENTE:** Text-to-speech
 - ⏳ **PENDENTE:** Modo de leitura simplificada
