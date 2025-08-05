@@ -39,8 +39,8 @@ export interface ChatMessage {
 }
 
 export interface ChatRequest {
-  message: string;
-  persona: string;
+  question: string;
+  personality_id: string;
   conversation_history?: ChatMessage[];
   sentiment?: {
     category: string;
@@ -55,11 +55,14 @@ export interface ChatRequest {
 }
 
 export interface ChatResponse {
-  response: string;
+  answer: string;
   persona: string;
-  timestamp: number;
+  timestamp?: string;
   request_id: string;
-  processing_time: number;
+  processing_time_ms?: number;
+  confidence?: number;
+  name?: string;
+  api_version?: string;
   metadata?: {
     tokens_used?: number;
     model_used?: string;
@@ -122,7 +125,7 @@ export async function sendChatMessage(request: ChatRequest): Promise<ChatRespons
  */
 export async function checkAPIHealth() {
   try {
-    const response = await fetch(`${API_BASE_URL}/health`);
+    const response = await fetch(`${API_BASE_URL}/api/health`);
     return response.ok;
   } catch (error) {
     console.error('Erro ao verificar saúde da API:', error);

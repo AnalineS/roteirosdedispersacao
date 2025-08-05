@@ -1,0 +1,203 @@
+{
+  "faq_hanseniase_pqtu": {
+    "metadata": {
+      "version": "1.0",
+      "created": "2025-01-27",
+      "source": "Tese de doutorado - Roteiro de Dispensação Hanseníase",
+      "purpose": "FAQ otimizado para respostas rápidas das personas Dr. Gasnelio e Gá",
+      "categories": ["medicamentos", "administracao", "efeitos_adversos", "dispensacao", "populacoes_especiais", "seguranca"]
+    },
+
+    "medicamentos": {
+      "o_que_e_pqtu": {
+        "question": "O que é PQT-U?",
+        "gasnelio_answer": "PQT-U (Poliquimioterapia Única) é o esquema terapêutico padrão para hanseníase, composto por rifampicina 600mg, clofazimina 300mg/50mg e dapsona 100mg, administrado por 12 meses independentemente da classificação operacional.",
+        "ga_answer": "PQT-U é o remédio usado para tratar hanseníase. São 3 medicamentos juntos que você toma por 1 ano. Eles trabalham em equipe para curar completamente a hanseníase.",
+        "keywords": ["pqt-u", "poliquimioterapia", "esquema", "medicamentos"],
+        "priority": "high"
+      },
+
+      "porque_3_medicamentos": {
+        "question": "Por que são usados 3 medicamentos juntos?",
+        "gasnelio_answer": "A terapia tripla previne resistência bacteriana através de mecanismos de ação distintos: rifampicina (inibição RNA polimerase), clofazimina (ligação ao DNA) e dapsona (antagonismo PABA). Esta combinação garante eficácia bactericida e bacteriostática.",
+        "ga_answer": "São 3 remédios porque cada um ataca a bactéria de um jeito diferente. Assim, a bactéria não consegue ficar resistente e o tratamento funciona melhor. É como ter 3 soldados lutando contra o mesmo inimigo.",
+        "keywords": ["combinação", "resistência", "mecanismo", "eficácia"],
+        "priority": "high"
+      },
+
+      "diferenca_medicamentos": {
+        "question": "Qual a diferença entre cada medicamento?",
+        "gasnelio_answer": "Rifampicina: bactericida rápida, inibe RNA polimerase; Clofazimina: bactericida lenta, liga-se ao DNA, anti-inflamatória; Dapsona: bacteriostática, antagonista do PABA. Rifampicina é tomada apenas mensalmente, clofazimina e dapsona também diariamente.",
+        "ga_answer": "Rifampicina (vermelha): mata rápido a bactéria, só mensal. Clofazimina (preta): mata devagar e diminui inflamação, mensal + diária. Dapsona (branca): impede crescimento da bactéria, mensal + diária.",
+        "keywords": ["rifampicina", "clofazimina", "dapsona", "diferenças"],
+        "priority": "high"
+      }
+    },
+
+    "administracao": {
+      "como_tomar_supervisionada": {
+        "question": "Como funciona a dose supervisionada?",
+        "gasnelio_answer": "Dose supervisionada mensal: rifampicina 600mg + clofazimina 300mg + dapsona 100mg, administrada na unidade de saúde sob observação direta do profissional, a cada 28 dias, preferencialmente após desjejum.",
+        "ga_answer": "Uma vez por mês você vem na unidade de saúde e toma os remédios aqui, na frente do profissional. É importante para garantir que você está tomando certo e ver como está seu tratamento.",
+        "keywords": ["supervisionada", "mensal", "unidade", "observação"],
+        "priority": "high"
+      },
+
+      "como_tomar_diaria": {
+        "question": "Como tomar a dose diária em casa?",
+        "gasnelio_answer": "Dose autoadministrada diária: clofazimina 50mg + dapsona 100mg, tomada em domicílio, preferencialmente à noite após jantar. Não administrar no dia da dose supervisionada.",
+        "ga_answer": "Todo dia em casa você toma 2 remédios: a clofazimina (preta) e a dapsona (branca). Melhor à noite, depois do jantar. No dia que vier na unidade, não tome em casa.",
+        "keywords": ["diária", "casa", "noite", "autoadministrada"],
+        "priority": "high"
+      },
+
+      "esqueci_dose": {
+        "question": "O que fazer se esquecer uma dose?",
+        "gasnelio_answer": "Se esquecer dose diária: tomar assim que lembrar no mesmo dia. Se lembrar no dia seguinte, tomar a dose normal e não dobrar. Se esquecer dose supervisionada, procurar a unidade o mais breve possível.",
+        "ga_answer": "Se esqueceu a dose de casa: lembre no mesmo dia, pode tomar. Se só lembrar no outro dia, tome só a dose normal. Se perdeu a consulta do mês, procure a unidade o mais rápido possível.",
+        "keywords": ["esqueceu", "dose", "perdida", "orientação"],
+        "priority": "medium"
+      }
+    },
+
+    "efeitos_adversos": {
+      "urina_laranja": {
+        "question": "Por que a urina fica laranja?",
+        "gasnelio_answer": "A rifampicina causa coloração alaranjada da urina, lágrimas e saliva em >90% dos pacientes. É efeito esperado, não grave, reversível e não requer intervenção. Orientar que é normal e temporário.",
+        "ga_answer": "A rifampicina deixa o xixi, as lágrimas e a saliva meio laranja. Isso é normal, não é perigoso. Acontece com quase todo mundo. Quando parar o remédio, volta ao normal.",
+        "keywords": ["urina", "laranja", "rifampicina", "normal"],
+        "priority": "high"
+      },
+
+      "pele_escura": {
+        "question": "Por que a pele fica escura?",
+        "gasnelio_answer": "A clofazimina causa hiperpigmentação cutânea em >90% dos pacientes, variando de vermelho a castanho escuro. É reversível após descontinuação, podendo levar meses a anos. Efeito estético, não grave.",
+        "ga_answer": "A clofazimina pode escurecer sua pele, deixando ela mais vermelha ou marrom. É temporário, mas pode demorar meses ou anos para voltar ao normal depois que parar o remédio. Não faz mal à saúde.",
+        "keywords": ["pele", "escura", "clofazimina", "pigmentação"],
+        "priority": "high"
+      },
+
+      "quando_preocupar": {
+        "question": "Quando devo me preocupar com efeitos colaterais?",
+        "gasnelio_answer": "Procurar atendimento imediato se: icterícia, eritema extenso com bolhas, febre + mal-estar + erupção cutânea, palidez extrema, dor abdominal intensa. Hemograma urgente se sinais de anemia.",
+        "ga_answer": "Venha urgente se tiver: pele ou olhos amarelos, manchas vermelhas com bolhas pelo corpo, febre com mal-estar e vermelhidão, ficar muito pálido, ou dor forte na barriga.",
+        "keywords": ["preocupar", "urgente", "sinais", "perigo"],
+        "priority": "high"
+      }
+    },
+
+    "dispensacao": {
+      "documentos_necessarios": {
+        "question": "Que documentos preciso levar?",
+        "gasnelio_answer": "Prescrição médica ou de enfermeiro em duas vias (para <30kg apenas médica), documento de identidade, Caderneta do Paciente com Hanseníase, e resultados de exames se solicitados.",
+        "ga_answer": "Traga sempre: a receita (duas folhas iguais), seu documento, a caderneta da hanseníase, e os exames se o médico pediu. Para criança pequena, só receita de médico vale.",
+        "keywords": ["documentos", "prescrição", "caderneta", "identidade"],
+        "priority": "medium"
+      },
+
+      "quanto_tempo_demora": {
+        "question": "Quanto tempo demora a dispensação?",
+        "gasnelio_answer": "Primeira dispensação: 25-30 minutos (avaliação + orientações extensas). Dispensações subsequentes: 10-15 minutos (verificações + orientações de reforço). Tempo adicional se identificados problemas.",
+        "ga_answer": "Na primeira vez demora mais, uns 30 minutos, porque o farmacêutico explica tudo direitinho. Nas próximas vezes é mais rápido, uns 15 minutos, só para verificar como está indo.",
+        "keywords": ["tempo", "dispensação", "primeira", "demora"],
+        "priority": "medium"
+      },
+
+      "medicamento_falta": {
+        "question": "E se faltar medicamento na farmácia?",
+        "gasnelio_answer": "Protocolo de falta: contatar outras unidades da rede, solicitação urgente à coordenação municipal/estadual, comunicar ao paciente sobre prazo, garantir continuidade sem interrupção >48h.",
+        "ga_answer": "Se faltar remédio aqui, a gente liga para outras unidades para conseguir, ou faz pedido urgente. Te avisamos quando chegar. O importante é não ficar sem remédio por mais de 2 dias.",
+        "keywords": ["falta", "medicamento", "protocolo", "urgente"],
+        "priority": "medium"
+      }
+    },
+
+    "populacoes_especiais": {
+      "gravidez_seguro": {
+        "question": "Posso tomar PQT-U grávida?",
+        "gasnelio_answer": "Sim, PQT-U é segura na gravidez. Manter tratamento completo. Suplementar vitamina K no terceiro trimestre. Monitorar prematuridade. Clofazimina pode causar pigmentação transitória no recém-nascido.",
+        "ga_answer": "Sim, pode tomar na gravidez. É seguro para você e o bebê. O médico pode dar vitamina K no final da gravidez. O bebê pode nascer meio rosadinho por causa da clofazimina, mas volta ao normal.",
+        "keywords": ["gravidez", "seguro", "vitamina K", "bebê"],
+        "priority": "high"
+      },
+
+      "amamentacao": {
+        "question": "Posso amamentar tomando PQT-U?",
+        "gasnelio_answer": "Sim, PQT-U é compatível com amamentação. Clofazimina pode causar coloração rosada temporária do leite materno. Monitorar bebê para sinais de hemólise. Não interromper aleitamento.",
+        "ga_answer": "Sim, pode amamentar normalmente. O leite pode ficar meio rosado por causa da clofazimina, mas não faz mal ao bebê. Continue amamentando tranquila.",
+        "keywords": ["amamentação", "leite", "seguro", "bebê"],
+        "priority": "high"
+      },
+
+      "crianca_dose": {
+        "question": "Como é a dose para criança?",
+        "gasnelio_answer": "Crianças <30kg: cálculo por peso (rifampicina 10mg/kg, clofazimina 6mg/kg supervisionada + 1mg/kg diária, dapsona 2mg/kg). Prescrição apenas médica. Doses podem ser divididas se necessário.",
+        "ga_answer": "Para criança pequena (menos de 30kg), a dose é calculada pelo peso. Só médico pode receitar. Às vezes precisa dividir o comprimido. A família ajuda a dar o remédio certinho.",
+        "keywords": ["criança", "peso", "cálculo", "médico"],
+        "priority": "high"
+      }
+    },
+
+    "seguranca": {
+      "exames_necessarios": {
+        "question": "Que exames preciso fazer?",
+        "gasnelio_answer": "Baseline: hemograma, função hepática (ALT/AST/bilirrubinas), creatinina, G6PD se disponível. Seguimento: hemograma mensal primeiros 3 meses, depois trimestral. Função hepática se sintomas.",
+        "ga_answer": "Antes de começar: exame de sangue completo, fígado e rim. Durante o tratamento: exame de sangue todo mês nos primeiros 3 meses, depois a cada 3 meses. Se sentir algo diferente, pode precisar de mais exames.",
+        "keywords": ["exames", "hemograma", "fígado", "acompanhamento"],
+        "priority": "medium"
+      },
+
+      "interacao_anticoncepcional": {
+        "question": "PQT-U corta o efeito do anticoncepcional?",
+        "gasnelio_answer": "Sim, rifampicina induz enzimas hepáticas reduzindo eficácia dos anticoncepcionais orais. Orientar uso de métodos de barreira adicionais (preservativo) durante todo o tratamento e 1 mês após.",
+        "ga_answer": "Sim, a rifampicina pode diminuir o efeito da pílula. Para não engravidar, use camisinha também durante todo o tratamento e 1 mês depois de terminar.",
+        "keywords": ["anticoncepcional", "pílula", "camisinha", "gravidez"],
+        "priority": "high"
+      },
+
+      "alcool_tratamento": {
+        "question": "Posso beber álcool durante o tratamento?",
+        "gasnelio_answer": "Não recomendado. Álcool potencializa hepatotoxicidade da rifampicina e pode interferir na adesão. Se uso ocasional, orientar moderação extrema e monitoramento hepático intensificado.",
+        "ga_answer": "É melhor não beber álcool durante o tratamento. Pode sobrecarregar o fígado junto com os remédios. Se beber raramente, seja bem pouco e conte para o médico.",
+        "keywords": ["álcool", "fígado", "moderação", "hepatotoxicidade"],
+        "priority": "medium"
+      }
+    },
+
+    "limitacoes_conhecimento": {
+      "escopo_tese": {
+        "question": "Sobre o que este sistema pode responder?",
+        "gasnelio_answer": "Este sistema baseia-se exclusivamente na tese sobre roteiro de dispensação para hanseníase PQT-U. Cobertura: protocolos de dispensação, medicamentos (rifampicina, clofazimina, dapsona), doses, administração, efeitos adversos, populações especiais e farmácovigilância.",
+        "ga_answer": "Eu posso te ajudar com tudo sobre o tratamento da hanseníase com PQT-U: como tomar os remédios, efeitos que podem aparecer, cuidados especiais, e como funciona a dispensação na farmácia.",
+        "keywords": ["escopo", "hanseníase", "PQT-U", "dispensação"],
+        "priority": "high"
+      },
+
+      "nao_cobertura": {
+        "question": "O que este sistema NÃO pode responder?",
+        "gasnelio_answer": "NÃO cobrimos: outros esquemas de hanseníase, diagnóstico clínico, outros medicamentos, outras doenças, questões legais específicas, dosagens não padronizadas, ou informações não contidas na tese de referência.",
+        "ga_answer": "Eu não posso falar sobre: diagnóstico da hanseníase, outros remédios que não sejam PQT-U, outras doenças, ou coisas que não estão no material que estudei. Para isso, procure seu médico.",
+        "keywords": ["limitações", "não cobre", "diagnóstico", "outros"],
+        "priority": "high"
+      }
+    },
+
+    "search_optimization": {
+      "high_frequency_terms": [
+        "dose", "como tomar", "efeitos", "gravidez", "criança", "supervisionada", 
+        "diária", "urina laranja", "pele escura", "anticoncepcional", "exames",
+        "quanto tempo", "esqueci", "falta medicamento", "urgente", "preocupar"
+      ],
+      "persona_specific": {
+        "gasnelio_preferred": [
+          "mecanismo de ação", "farmacocinética", "contraindicação", "monitorização",
+          "hepatotoxicidade", "farmacológico", "posologia", "protocolo"
+        ],
+        "ga_preferred": [
+          "como funciona", "por que", "o que fazer", "é normal", "faz mal",
+          "posso", "tem problema", "é perigoso", "vai passar"
+        ]
+      }
+    }
+  }
+}

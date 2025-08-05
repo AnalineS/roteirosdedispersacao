@@ -457,12 +457,17 @@ def check_rate_limit(endpoint_type: str = 'general'):
     return decorator
 
 # Variáveis globais
-# Tentar múltiplos caminhos possíveis para o arquivo MD
+# Definir caminhos possíveis para o conhecimento base (container-friendly)
 MD_PATHS = [
-    '../../data/Roteiro de Dsispensação - Hanseníase.md',
-    '../../data/roteiro_hanseniase_basico.md',
-    '../data/Roteiro de Dsispensação - Hanseníase.md',
-    'data/Roteiro de Dsispensação - Hanseníase.md'
+    # Backend local paths (após cópia)
+    'data/knowledge_base/Roteiro de Dsispensação - Hanseníase.md',
+    'data/knowledge_base/roteiro_hanseniase_basico.md',
+    # Container paths
+    '/app/data/Roteiro de Dsispensação - Hanseníase.md',
+    '/app/data/roteiro_hanseniase_basico.md',
+    # Legacy paths (manter para compatibilidade)
+    'data/Roteiro de Dsispensação - Hanseníase.md',
+    'data/roteiro_hanseniase_basico.md'
 ]
 MD_PATH = None
 for path in MD_PATHS:
@@ -536,11 +541,11 @@ def extract_md_text(md_path):
     except FileNotFoundError:
         logger.warning(f"❌ Arquivo não encontrado: {md_path}")
         
-        # Tentar paths alternativos
+        # Tentar paths alternativos (backend local primeiro)
         alternative_paths = [
+            'data/knowledge_base/roteiro_hanseniase_basico.md',
+            'data/knowledge_base/Roteiro de Dsispensação - Hanseníase.md',
             'data/roteiro_hanseniase_basico.md',
-            '../data/Roteiro de Dsispensação - Hanseníase.md',
-            '../../data/Roteiro de Dsispensação - Hanseníase.md',
             './data/roteiro_hanseniase_basico.md'
         ]
         
@@ -554,24 +559,57 @@ def extract_md_text(md_path):
             except:
                 continue
                 
-        # Se nada funcionar, usar conteúdo básico
-        logger.warning("⚠️ Usando conteúdo básico de fallback")
+        # Se nada funcionar, usar conteúdo básico expandido
+        logger.warning("⚠️ Usando knowledge base de fallback expandida")
         return """
-# Roteiro de Dispensação para Hanseníase - Sistema Básico
+# Roteiro de Dispensação para Hanseníase - Sistema de Fallback
 
-Este é um sistema especializado em fornecer informações sobre hanseníase e seu tratamento.
+Este sistema fornece informações baseadas no roteiro de dispensação para hanseníase PQT-U.
 
-## Tratamento PQT-U
-- Rifampicina: 600mg uma vez por mês
-- Dapsona: 100mg diariamente  
-- Clofazimina: 300mg uma vez por mês + 50mg diariamente
+## POLIQUIMIOTERAPIA ÚNICA (PQT-U) - ESQUEMA PADRÃO
 
-## Efeitos Adversos Comuns
-- Rifampicina: coloração avermelhada na urina
-- Dapsona: anemia, metahemoglobinemia
-- Clofazimina: hiperpigmentação da pele
+### Medicamentos e Dosagens
+**RIFAMPICINA**
+- Dose adultos: 600mg uma vez por mês (supervisionada)
+- Dose pediatria: 10-20mg/kg (máximo 600mg)
+- Administração: Via oral, jejum
+- Efeito adverso principal: Coloração alaranjada da urina, suor e lágrimas
 
-Para informações mais detalhadas, consulte sempre um profissional de saúde qualificado.
+**CLOFAZIMINA**
+- Dose adultos: 300mg mensal (supervisionada) + 50mg diária (autoadministrada)
+- Dose pediatria: 6-12mg/kg mensal + 1mg/kg diária
+- Efeito adverso principal: Hiperpigmentação da pele (reversível)
+
+**DAPSONA**  
+- Dose adultos: 100mg diariamente (autoadministrada)
+- Dose pediatria: 2mg/kg diariamente
+- Contraindicação: Deficiência de G6PD grave
+- Efeito adverso: Anemia, metahemoglobinemia
+
+### Duração do Tratamento
+- PQT-U: 12 meses de tratamento
+- Total de doses: 12 doses mensais supervisionadas
+
+### Orientações de Dispensação
+1. Verificar prescrição médica
+2. Calcular doses conforme peso
+3. Orientar sobre horários de administração
+4. Explicar efeitos adversos esperados
+5. Reforçar importância da adesão
+6. Agendar retornos mensais
+
+### Monitoramento
+- Função hepática (rifampicina)
+- Coloração da pele (clofazimina)  
+- Hemograma (dapsona)
+- Adesão ao tratamento
+
+### Populações Especiais
+**Gravidez**: PQT-U é segura, manter tratamento
+**Pediatria**: Ajustar doses conforme peso
+**Idosos**: Monitoramento renal e hepático
+
+Para informações detalhadas específicas, consulte sempre o protocolo oficial do Ministério da Saúde.
 """
         
     except Exception as e:
@@ -612,102 +650,131 @@ def find_relevant_context(question, full_text, max_length=3000):
     return context[:max_length] if context else full_text[:max_length]
 
 def get_free_ai_response(question, persona, context):
-    """Obtém resposta de modelo AI gratuito via API pública com sistema otimizado"""
+    """Obtém resposta de modelo AI gratuito via OpenRouter com redundância"""
     try:
+        # Modelos com redundância (usar variáveis de ambiente do GitHub/Cloud Run)
+        models = [
+            "meta-llama/llama-3.2-3b-instruct:free",  # Primário
+            "kimie-kimie/k2-chat:free"                 # Redundância
+        ]
+        
         # Para Dr. Gasnelio, usar sistema otimizado
         if persona == "dr_gasnelio":
-            # Obter prompt otimizado
             optimized_prompt = get_enhanced_dr_gasnelio_prompt(question)
-            full_prompt = f"""{optimized_prompt}
+            system_content = f"""{optimized_prompt}
 
 Contexto da tese sobre roteiro de dispensação para hanseníase:
 {context}
-
-Pergunta do usuário: {question}
 
 Responda seguindo RIGOROSAMENTE o formato técnico estruturado:"""
         elif persona == "ga":
-            # Para Gá, usar sistema otimizado empático
             optimized_prompt = get_enhanced_ga_prompt(question)
-            full_prompt = f"""{optimized_prompt}
+            system_content = f"""{optimized_prompt}
 
 Contexto da tese sobre roteiro de dispensação para hanseníase:
 {context}
 
-Responda seguindo seu jeito carinhoso e acessível, sempre lembrando que você está falando com uma pessoa que pode estar preocupada ou confusa sobre o tratamento:"""
+Responda seguindo seu jeito carinhoso e acessível:"""
         else:
             # Fallback para outras personas
             persona_config = PERSONAS[persona]
-            system_prompt = persona_config.get("system_prompt", "")
-            full_prompt = f"""Contexto da tese sobre roteiro de dispensação para hanseníase:
+            system_content = f"""Contexto da tese sobre roteiro de dispensação para hanseníase:
 {context}
 
-{system_prompt}
-
-Pergunta do usuário: {question}
+{persona_config.get("system_prompt", "")}
 
 Responda de acordo com o estilo da persona {persona_config['name']}:"""
 
-        # Usando API gratuita do Hugging Face (exemplo com modelo de texto)
-        api_url = "https://api-inference.huggingface.co/models/microsoft/DialoGPT-medium"
+        # Configuração OpenRouter
+        openrouter_api_key = os.environ.get('OPENROUTER_API_KEY')
+        if not openrouter_api_key:
+            logger.error("OPENROUTER_API_KEY não configurado")
+            return generate_rule_based_response(question, persona, context)
         
-        # Usar variável de ambiente para token Hugging Face
-        hf_token = os.environ.get('HUGGINGFACE_API_KEY')
-        if not hf_token:
-            logger.error("HUGGINGFACE_API_KEY não configurado")
-            return None
-            
         headers = {
-            "Authorization": f"Bearer {hf_token}",
-            "Content-Type": "application/json"
+            "Authorization": f"Bearer {openrouter_api_key}",
+            "Content-Type": "application/json",
+            "HTTP-Referer": "https://github.com/roteiro-dispensacao",
+            "X-Title": "Roteiro de Dispensação"
         }
         
-        payload = {
-            "inputs": full_prompt,
-            "parameters": {
-                "max_length": 500,
-                "temperature": 0.7,
-                "do_sample": True
-            }
-        }
+        messages = [
+            {"role": "system", "content": system_content},
+            {"role": "user", "content": question}
+        ]
         
-        response = requests.post(api_url, headers=headers, json=payload, timeout=30)
-        
-        if response.status_code == 200:
-            result = response.json()
-            if isinstance(result, list) and len(result) > 0:
-                ai_response = result[0].get('generated_text', '').replace(full_prompt, '').strip()
-            elif isinstance(result, dict):
-                ai_response = result.get('generated_text', '').replace(full_prompt, '').strip()
-            else:
-                ai_response = ""
-            
-            # Validar qualidade das respostas otimizadas
-            if persona == "dr_gasnelio" and ai_response:
-                validation_result = validate_dr_gasnelio_response(ai_response, question)
-                logger.info(f"Qualidade da resposta Dr. Gasnelio: {validation_result['quality_score']:.1f}%")
+        # Tentar todos os modelos com redundância
+        for attempt, model in enumerate(models):
+            try:
+                logger.info(f"Tentativa {attempt + 1}: Testando modelo {model.split('/')[-1]}")
                 
-                # Se qualidade muito baixa, usar fallback
-                if validation_result['quality_score'] < 50:
-                    logger.warning("Qualidade baixa detectada, usando fallback")
-                    return generate_rule_based_response(question, persona, context)
-            
-            elif persona == "ga" and ai_response:
-                validation_result = validate_ga_response(ai_response, question)
-                logger.info(f"Score de empatia do Gá: {validation_result['empathy_score']:.1f}%")
+                payload = {
+                    "model": model,
+                    "messages": messages,
+                    "temperature": 0.7,
+                    "max_tokens": 1000
+                }
                 
-                # Se empatia muito baixa, usar fallback
-                if validation_result['empathy_score'] < 60:
-                    logger.warning("Empatia baixa detectada, usando fallback")
-                    return generate_rule_based_response(question, persona, context)
-            
-            return ai_response if ai_response else generate_rule_based_response(question, persona, context)
+                response = requests.post(
+                    "https://openrouter.ai/api/v1/chat/completions",
+                    headers=headers,
+                    json=payload,
+                    timeout=30
+                )
+                
+                if response.status_code == 200:
+                    result = response.json()
+                    ai_response = result["choices"][0]["message"]["content"]
+                    
+                    logger.info(f"✅ Resposta obtida do modelo {model.split('/')[-1]} (redundância ativa)")
+                    
+                    # Validar qualidade das respostas otimizadas
+                    if persona == "dr_gasnelio" and ai_response:
+                        validation_result = validate_dr_gasnelio_response(ai_response, question)
+                        logger.info(f"Qualidade da resposta Dr. Gasnelio: {validation_result['quality_score']:.1f}%")
+                        
+                        if validation_result['quality_score'] < 50:
+                            logger.warning("Qualidade baixa detectada, tentando próximo modelo")
+                            if attempt < len(models) - 1:
+                                continue
+                            return generate_rule_based_response(question, persona, context)
+                    
+                    elif persona == "ga" and ai_response:
+                        validation_result = validate_ga_response(ai_response, question)
+                        logger.info(f"Score de empatia do Gá: {validation_result['empathy_score']:.1f}%")
+                        
+                        if validation_result['empathy_score'] < 60:
+                            logger.warning("Empatia baixa detectada, tentando próximo modelo")
+                            if attempt < len(models) - 1:
+                                continue
+                            return generate_rule_based_response(question, persona, context)
+                    
+                    return ai_response
+                    
+                else:
+                    logger.warning(f"Erro no modelo {model}: {response.status_code} - {response.text}")
+                    if attempt < len(models) - 1:
+                        logger.info("Tentando próximo modelo disponível...")
+                        continue
+                    
+            except requests.exceptions.Timeout:
+                logger.warning(f"Timeout no modelo {model}")
+                if attempt < len(models) - 1:
+                    logger.info("Tentando próximo modelo por timeout...")
+                    continue
+                    
+            except Exception as e:
+                logger.warning(f"Erro no modelo {model}: {e}")
+                if attempt < len(models) - 1:
+                    logger.info("Tentando próximo modelo por erro...")
+                    continue
         
-        # Fallback: resposta baseada em regras
+        # Se todos os modelos falharam, usar fallback
+        logger.error("❌ Todos os modelos AI falharam, usando resposta baseada em regras")
         return generate_rule_based_response(question, persona, context)
         
     except Exception as e:
-        logger.error(f"Erro ao obter resposta da API: {e}")
+        logger.error(f"Erro crítico ao obter resposta da API: {e}")
         return generate_rule_based_response(question, persona, context)
 
 def generate_rule_based_response(question, persona, context):
@@ -886,101 +953,44 @@ def answer_question(question, persona):
         )
 
 @app.route('/')
-def find_frontend_dist():
-    """Encontra o diretório dist do frontend em vários locais possíveis"""
-    possible_paths = [
-        # Caminho REAL confirmado pelos logs do Render!
-        '/opt/render/project/src/src/frontend/dist',
-        # Caminho alternativo 
-        '/opt/render/project/src/frontend/dist',
-        # Caminho relativo ao script atual (backend está em src/src/backend, frontend em src/src/frontend)
-        os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'frontend', 'dist'),
-        # Caminhos relativos para diferentes situações
-        '../frontend/dist',
-        '../../src/frontend/dist',
-        # Desenvolvimento local
-        'src/frontend/dist'
-    ]
-    
-    for path in possible_paths:
-        abs_path = os.path.abspath(path)
-        logger.info(f"Verificando caminho: {abs_path}")
-        if os.path.exists(os.path.join(abs_path, 'index.html')):
-            logger.info(f"Frontend encontrado em: {abs_path}")
-            return abs_path
-    
-    logger.error("Frontend não encontrado em nenhum dos caminhos possíveis")
-    return None
-
 def index():
-    """Servir o frontend React"""
-    try:
-        frontend_dist = find_frontend_dist()
-        
-        if frontend_dist:
-            return send_from_directory(frontend_dist, 'index.html')
-        else:
-            raise FileNotFoundError("Frontend não encontrado")
-            
-    except (FileNotFoundError, Exception) as e:
-        logger.error(f"Erro na função index(): {e}")
-        # Se não encontrar o frontend, mostrar informações da API
-        return jsonify({
-            "message": "Roteiro de Dispensação API",
-            "version": "v6.0",
-            "status": "online",
-            "frontend_status": "not_found",
-            "debug_info": {
-                "working_dir": os.getcwd(),
-                "script_dir": os.path.dirname(os.path.abspath(__file__)),
-                "all_possible_paths": [
-                    '/opt/render/project/src/frontend/dist',
-                    os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'frontend', 'dist'),
-                    '../frontend/dist',
-                    '../../src/frontend/dist'
-                ],
-                "frontend_search_result": "None - frontend not found"
+    """API info endpoint - Backend only deployment"""
+    logger.info("Root endpoint accessed - returning API information")
+    
+    return jsonify({
+        "message": "Roteiro de Dispensação - Backend API",
+        "version": "v10.0",
+        "status": "online",
+        "deployment_type": "backend_only",
+        "description": "API especializada em hanseníase com sistema de personas educacionais",
+        "endpoints": {
+            "health": "/api/health",
+            "chat": "/api/chat", 
+            "personas": "/api/personas",
+            "scope": "/api/scope",
+            "feedback": "/api/feedback",
+            "stats": "/api/stats",
+            "test": "/api/test"
+        },
+        "frontend_url": "https://roteiros-de-dispensacao.web.app",
+        "documentation": {
+            "chat_endpoint": {
+                "method": "POST",
+                "url": "/api/chat",
+                "required_fields": ["question", "personality_id"],
+                "example": {
+                    "question": "Qual a dose de rifampicina?",
+                    "personality_id": "dr_gasnelio"
+                }
             },
-            "endpoints": {
-                "health": "/health",
-                "chat": "/api/chat",
-                "personas": "/api/personas", 
-                "scope": "/api/scope",
-                "feedback": "/api/feedback",
-                "stats": "/api/stats"
-            },
-            "frontend_url": "https://roteiros-de-dispensacao.web.app"
-        })
+            "available_personas": ["dr_gasnelio", "ga"]
+        },
+        "cors_enabled": True,
+        "rate_limiting": True,
+        "timestamp": datetime.now().isoformat()
+    })
 
-# Rotas removidas - script.js e tese.js não existem no build React moderno
-
-@app.route('/<path:path>')
-def serve_react_app(path):
-    """Serve arquivos estáticos do React ou retorna index.html para rotas do React Router"""
-    try:
-        frontend_dist = find_frontend_dist()
-        
-        if frontend_dist and os.path.exists(os.path.join(frontend_dist, path)):
-            return send_from_directory(frontend_dist, path)
-        else:
-            raise FileNotFoundError(f"Arquivo {path} não encontrado")
-            
-    except FileNotFoundError:
-        # Se não encontrar, retornar index.html para o React Router lidar
-        try:
-            frontend_dist = find_frontend_dist()
-            
-            if frontend_dist:
-                return send_from_directory(frontend_dist, 'index.html')
-            else:
-                return jsonify({
-                    "error": "Frontend not found",
-                    "path_requested": path,
-                    "frontend_dir": frontend_dist,
-                    "dir_exists": os.path.exists(frontend_dist)
-                }), 404
-        except Exception as e:
-            return f"Frontend error: {str(e)}", 404
+# Frontend routes removed - Backend only deployment
 
 @app.route('/api/chat', methods=['POST'])
 @check_rate_limit('chat')
@@ -1276,7 +1286,7 @@ def api_info():
             "dr_gasnelio": "Farmacêutico clínico especialista em hanseníase PQT-U com validação técnica e respostas de limitação profissionais",
             "ga": "Farmacêutico empático que explica de forma simples com respostas carinhosas para limitações"
         },
-        "model": "Enhanced Personas + Scope Detection + Rule-based + Free AI API",
+        "model": "Enhanced Personas + Scope Detection + Rule-based + Free AI APIs with Redundancy",
         "pdf_source": "Roteiro de Dispensação para Hanseníase",
         "enhancements": {
             "dr_gasnelio": {
@@ -1297,7 +1307,13 @@ def api_info():
                 "automatic_scope_detection": True,
                 "intelligent_redirection": True,
                 "confidence_scoring": True,
-                "category_classification": True
+                "category_classification": True,
+                "ai_model_redundancy": True,
+                "available_models": [
+                    "meta-llama/llama-3.2-3b-instruct:free",
+                    "kimie-kimie/k2-chat:free"
+                ],
+                "automatic_fallback": True
             }
         }
     })
@@ -1852,50 +1868,9 @@ if __name__ == '__main__':
     logger.info(f"Localização do script: {os.path.abspath(__file__)}")
     logger.info(f"Diretório do script: {os.path.dirname(os.path.abspath(__file__))}")
     
-    # Verificar estrutura de diretórios e procurar frontend
-    logger.info("=== PROCURANDO FRONTEND ===")
-    frontend_dist = find_frontend_dist()
-    
-    if frontend_dist:
-        logger.info(f"✅ Frontend encontrado em: {frontend_dist}")
-        try:
-            files = os.listdir(frontend_dist)
-            logger.info(f"Arquivos no frontend: {files[:10]}...")  # Primeiros 10 arquivos
-        except Exception as e:
-            logger.error(f"Erro ao listar frontend: {e}")
-    else:
-        logger.error("❌ Frontend NÃO encontrado")
-        
-        # Debug adicional - listar estrutura de diretórios
-        logger.info("=== ESTRUTURA DE DIRETÓRIOS ===")
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        logger.info(f"Script dir: {script_dir}")
-        
-        # Listar diretório pai do script
-        parent_dir = os.path.dirname(script_dir)
-        logger.info(f"Parent dir: {parent_dir}")
-        if os.path.exists(parent_dir):
-            try:
-                contents = os.listdir(parent_dir)
-                logger.info(f"Conteúdo parent: {contents}")
-            except Exception as e:
-                logger.error(f"Erro ao listar parent: {e}")
-        
-        # Listar /opt/render/project se existir
-        if os.path.exists('/opt/render/project'):
-            try:
-                project_contents = os.listdir('/opt/render/project')
-                logger.info(f"Conteúdo /opt/render/project: {project_contents}")
-                
-                if 'src' in project_contents:
-                    src_contents = os.listdir('/opt/render/project/src')
-                    logger.info(f"Conteúdo /opt/render/project/src: {src_contents}")
-                    
-                    if 'frontend' in src_contents:
-                        frontend_contents = os.listdir('/opt/render/project/src/frontend')
-                        logger.info(f"Conteúdo /opt/render/project/src/frontend: {frontend_contents}")
-            except Exception as e:
-                logger.error(f"Erro ao listar estrutura do projeto: {e}")
+    # Backend-only deployment - Skip frontend checks
+    logger.info("=== BACKEND-ONLY DEPLOYMENT ===")
+    logger.info("Frontend não será servido por este backend (deployment separado)")
     
     # Validação de ambiente primeiro
     validate_environment_variables()

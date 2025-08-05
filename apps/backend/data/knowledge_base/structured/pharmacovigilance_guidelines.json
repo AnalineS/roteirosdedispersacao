@@ -1,0 +1,326 @@
+{
+  "pharmacovigilance_guidelines": {
+    "regulatory_framework": {
+      "primary_authority": "ANVISA",
+      "reporting_system": "VigiMed",
+      "national_protocol": {
+        "title": "Protocolo Clínico e Diretrizes Terapêuticas Hanseníase",
+        "year": "2022",
+        "organization": "Ministério da Saúde",
+        "url": "https://www.gov.br/saude/pt-br/assuntos/saude-de-a-a-z/h/hanseniase/publicacoes/protocolo-clinico-e-diretrizes-terapeuticas-da-hanseniase-2022"
+      }
+    },
+
+    "adverse_events_surveillance": {
+      "vigimed_data": {
+        "period": "até abril/2023",
+        "total_reports": 98,
+        "top_adverse_events": {
+          "erupcao_cutanea": {
+            "percentage": "14.29%",
+            "severity": "mild_to_moderate",
+            "management": "Sintomático, pode continuar tratamento"
+          },
+          "prurido": {
+            "percentage": "11.22%", 
+            "severity": "mild",
+            "management": "Anti-histamínicos, hidratação da pele"
+          },
+          "nausea": {
+            "percentage": "7.14%",
+            "severity": "mild_to_moderate",
+            "management": "Administrar com alimentos, fracionamento de doses"
+          },
+          "vomito": {
+            "percentage": "6.12%",
+            "severity": "mild_to_moderate", 
+            "management": "Antieméticos, administração com alimentos"
+          },
+          "hepatotoxicidade_hiperpigmentacao": {
+            "percentage": "5.10%",
+            "severity": "moderate_to_severe",
+            "management": "Monitoramento hepático, avaliação de descontinuação"
+          }
+        }
+      }
+    },
+
+    "adverse_events_classification": {
+      "by_medication": {
+        "rifampicina": {
+          "common": [
+            {
+              "event": "Coloração alaranjada (urina, lágrimas, saliva)",
+              "frequency": "Muito comum (>90%)",
+              "severity": "Não grave",
+              "action": "Orientar que é esperado e reversível"
+            },
+            {
+              "event": "Dor abdominal",
+              "frequency": "Comum (10-30%)",
+              "severity": "Leve a moderada",
+              "action": "Administrar com alimentos"
+            },
+            {
+              "event": "Náusea e vômito",
+              "frequency": "Comum (10-20%)",
+              "severity": "Leve a moderada", 
+              "action": "Fracionamento, antieméticos"
+            }
+          ],
+          "serious": [
+            {
+              "event": "Hepatotoxicidade",
+              "frequency": "Raro (1-5%)",
+              "severity": "Grave",
+              "action": "Interromper medicamento, avaliar função hepática"
+            },
+            {
+              "event": "Trombocitopenia",
+              "frequency": "Raro (<1%)",
+              "severity": "Grave",
+              "action": "Hemograma, possível descontinuação"
+            },
+            {
+              "event": "Síndrome de Stevens-Johnson",
+              "frequency": "Muito raro (<0.1%)",
+              "severity": "Muito grave",
+              "action": "Descontinuar imediatamente, hospitalização"
+            }
+          ]
+        },
+        "clofazimina": {
+          "common": [
+            {
+              "event": "Hiperpigmentação da pele",
+              "frequency": "Muito comum (>90%)",
+              "severity": "Não grave (estético)",
+              "action": "Orientar reversibilidade lenta (meses a anos)"
+            },
+            {
+              "event": "Coloração de secreções (rosada)",
+              "frequency": "Muito comum (>90%)",
+              "severity": "Não grave",
+              "action": "Orientar que é temporário"
+            },
+            {
+              "event": "Diarreia leve",
+              "frequency": "Comum (10-20%)",
+              "severity": "Leve",
+              "action": "Hidratação, probióticos se necessário"
+            }
+          ],
+          "serious": [
+            {
+              "event": "Obstrução intestinal",
+              "frequency": "Raro (uso prolongado)",
+              "severity": "Grave",
+              "action": "Descontinuar, avaliação cirúrgica"
+            },
+            {
+              "event": "Prolongamento QT",
+              "frequency": "Raro",
+              "severity": "Potencialmente grave",
+              "action": "ECG, monitoramento cardíaco"
+            }
+          ]
+        },
+        "dapsona": {
+          "common": [
+            {
+              "event": "Anemia leve",
+              "frequency": "Comum (10-30%)",
+              "severity": "Leve a moderada",
+              "action": "Hemograma, suplementação de ferro"
+            },
+            {
+              "event": "Metahemoglobinemia leve",
+              "frequency": "Comum (dose-dependente)",
+              "severity": "Leve",
+              "action": "Monitoramento, redução de dose se necessário"
+            }
+          ],
+          "serious": [
+            {
+              "event": "Anemia hemolítica",
+              "frequency": "Raro (especialmente em G6PD deficiente)",
+              "severity": "Grave",
+              "action": "Descontinuar, suporte hematológico"
+            },
+            {
+              "event": "Síndrome de Stevens-Johnson",
+              "frequency": "Muito raro",
+              "severity": "Muito grave",
+              "action": "Descontinuar imediatamente, hospitalização"
+            },
+            {
+              "event": "Hepatite tóxica",
+              "frequency": "Raro",
+              "severity": "Grave",
+              "action": "Avaliar função hepática, possível descontinuação"
+            }
+          ]
+        }
+      }
+    },
+
+    "monitoring_protocols": {
+      "baseline_assessment": {
+        "mandatory": [
+          "Hemograma completo",
+          "Função hepática (ALT, AST, bilirrubinas)",
+          "Função renal (creatinina, ureia)",
+          "Teste de G6PD (se disponível)"
+        ],
+        "recommended": [
+          "ECG (se fatores de risco cardiovascular)",
+          "Exame oftalmológico (baseline)",
+          "Avaliação nutricional"
+        ]
+      },
+      "ongoing_monitoring": {
+        "monthly_first_3_months": [
+          "Hemograma completo",
+          "Sinais/sintomas de hepatotoxicidade",
+          "Avaliação clínica dirigida",
+          "Questionário de efeitos adversos"
+        ],
+        "trimestral_thereafter": [
+          "Hemograma completo",
+          "Função hepática (se indicado)",
+          "Avaliação dermato-neurológica",
+          "Revisão de medicações concomitantes"
+        ]
+      },
+      "alert_parameters": {
+        "hematologic": {
+          "hemoglobin": "< 10 g/dL ou queda > 2 g/dL",
+          "platelets": "< 100.000/mm³",
+          "leukocytes": "< 3.000/mm³"
+        },
+        "hepatic": {
+          "alt_ast": "> 3x limite superior normal",
+          "bilirubin": "> 2x limite superior normal",
+          "clinical_signs": "Icterícia, dor abdominal intensa"
+        },
+        "dermatologic": {
+          "severe_rash": "Eritema extenso, bolhas, descamação",
+          "mucosal_involvement": "Lesões em mucosas",
+          "systemic_symptoms": "Febre, mal-estar associados"
+        }
+      }
+    },
+
+    "reporting_procedures": {
+      "when_to_report": [
+        "Todos os eventos adversos graves",
+        "Eventos adversos inesperados",
+        "Falha terapêutica",
+        "Uso off-label com eventos adversos",
+        "Interações medicamentosas clinicamente significativas"
+      ],
+      "reporting_timeline": {
+        "serious_unexpected": "Imediato (24-48 horas)",
+        "serious_expected": "7 dias",
+        "non_serious": "15 dias"
+      },
+      "reporting_channels": {
+        "primary": {
+          "system": "NOTIVISA (ANVISA)",
+          "access": "https://www.gov.br/anvisa/pt-br/assuntos/fiscalizacao-e-monitoramento/notificacoes/sistema-notivisa"
+        },
+        "secondary": {
+          "vigilancia_municipal": "Secretaria Municipal de Saúde",
+          "vigilancia_estadual": "Secretaria Estadual de Saúde", 
+          "coordination": "Coordenação Nacional de Hanseníase"
+        }
+      },
+      "required_information": [
+        "Dados do paciente (idade, sexo, peso)",
+        "Medicamentos suspeitos (doses, datas)",
+        "Descrição detalhada do evento",
+        "Evolução clínica",
+        "Medicações concomitantes",
+        "Medidas tomadas",
+        "Desfecho"
+      ]
+    },
+
+    "risk_mitigation_strategies": {
+      "patient_selection": {
+        "screening": [
+          "História de alergias medicamentosas",
+          "Comorbidades relevantes",
+          "Medicações concomitantes",
+          "Status de G6PD se possível"
+        ],
+        "contraindications": [
+          "Hipersensibilidade conhecida",
+          "Hepatopatia grave ativa",
+          "Anemia grave não tratada",
+          "Gravidez (avaliação risco-benefício)"
+        ]
+      },
+      "dose_optimization": {
+        "weight_based": "Ajuste rigoroso para < 30kg",
+        "renal_adjustment": "Considerar em disfunção renal",
+        "hepatic_adjustment": "Monitoramento intensivo em hepatopatia",
+        "elderly": "Início com doses menores se indicado"
+      },
+      "education_programs": {
+        "patient_education": [
+          "Reconhecimento de sinais de alerta",
+          "Importância do relato de sintomas",
+          "Adesão ao monitoramento",
+          "Evitar automedicação"
+        ],
+        "healthcare_provider_training": [
+          "Reconhecimento de eventos adversos",
+          "Procedimentos de notificação",
+          "Manejo de emergências",
+          "Comunicação de riscos"
+        ]
+      }
+    },
+
+    "signal_detection": {
+      "periodic_review": {
+        "frequency": "Trimestral",
+        "scope": "Análise de tendências de eventos adversos",
+        "participants": [
+          "Farmacêuticos clínicos",
+          "Médicos especialistas",
+          "Epidemiologistas",
+          "Representantes da vigilância"
+        ]
+      },
+      "pattern_recognition": [
+        "Aumento na frequência de eventos conhecidos",
+        "Aparecimento de novos padrões de eventos",
+        "Clusters temporais ou geográficos",
+        "Associações com lotes específicos"
+      ],
+      "investigation_triggers": [
+        "Eventos adversos graves não relatados previamente",
+        "Aumento de 50% na frequência de eventos",
+        "Mortes ou hospitalizações",
+        "Falhas terapêuticas inesperadas"
+      ]
+    },
+
+    "quality_assurance": {
+      "data_quality": [
+        "Completude dos relatos",
+        "Consistência das informações",
+        "Seguimento adequado dos casos",
+        "Avaliação de causalidade"
+      ],
+      "system_performance": [
+        "Taxa de subnotificação estimada",
+        "Tempo de resposta a sinais",
+        "Efetividade das medidas de mitigação",
+        "Satisfação dos notificadores"
+      ]
+    }
+  }
+}

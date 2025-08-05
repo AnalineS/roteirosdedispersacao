@@ -23,10 +23,16 @@ class ChatbotService:
         self.vectorizer = TfidfVectorizer(max_features=1000)
         self.document_vectors = None
         
-        # Configurações OpenRouter
+        # Configurações OpenRouter - APIs com redundância
         self.openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
         self.openrouter_url = "https://openrouter.ai/api/v1/chat/completions"
-        self.model = "meta-llama/llama-3.2-3b-instruct:free"
+        
+        # Modelos com redundância (ordem de prioridade)
+        self.models = [
+            "meta-llama/llama-3.2-3b-instruct:free",  # Primário
+            "kimie-kimie/k2-chat:free"                 # Redundância
+        ]
+        self.current_model_index = 0
         
         # Carregar base de conhecimento
         self._load_knowledge_base()
@@ -98,7 +104,7 @@ class ChatbotService:
             return []
     
     def _call_openrouter_api(self, messages: List[Dict], temperature: float = 0.7) -> Optional[str]:
-        """Chama a API do OpenRouter"""
+        """Chama a API do OpenRouter com redundância entre modelos"""
         if not self.openrouter_api_key:
             logger.warning("API key do OpenRouter não configurada")
             return None
@@ -110,34 +116,57 @@ class ChatbotService:
             "X-Title": "Roteiro de Dispensação"
         }
         
-        data = {
-            "model": self.model,
-            "messages": messages,
-            "temperature": temperature,
-            "max_tokens": 1000
-        }
-        
-        try:
-            response = requests.post(
-                self.openrouter_url,
-                headers=headers,
-                json=data,
-                timeout=30
-            )
-            
-            if response.status_code == 200:
-                result = response.json()
-                return result["choices"][0]["message"]["content"]
-            else:
-                logger.error(f"Erro na API: {response.status_code} - {response.text}")
-                return None
+        # Tentar todos os modelos disponíveis
+        for attempt, model in enumerate(self.models):
+            try:
+                data = {
+                    "model": model,
+                    "messages": messages,
+                    "temperature": temperature,
+                    "max_tokens": 1000
+                }
                 
-        except requests.exceptions.Timeout:
-            logger.error("Timeout na chamada da API")
-            return None
-        except Exception as e:
-            logger.error(f"Erro ao chamar API: {e}")
-            return None
+                logger.info(f"Tentativa {attempt + 1}: Usando modelo {model}")
+                
+                response = requests.post(
+                    self.openrouter_url,
+                    headers=headers,
+                    json=data,
+                    timeout=30
+                )
+                
+                if response.status_code == 200:
+                    result = response.json()
+                    content = result["choices"][0]["message"]["content"]
+                    
+                    # Sucesso - atualizar modelo preferencial
+                    if attempt != self.current_model_index:
+                        logger.info(f"Modelo {model} funcionou, atualizando preferência")
+                        self.current_model_index = attempt
+                    
+                    logger.info(f"✅ Resposta obtida do modelo {model}")
+                    return content
+                    
+                else:
+                    logger.warning(f"Erro no modelo {model}: {response.status_code} - {response.text}")
+                    if attempt < len(self.models) - 1:
+                        logger.info(f"Tentando próximo modelo disponível...")
+                        continue
+                    
+            except requests.exceptions.Timeout:
+                logger.warning(f"Timeout no modelo {model}")
+                if attempt < len(self.models) - 1:
+                    logger.info(f"Tentando próximo modelo disponível...")
+                    continue
+                    
+            except Exception as e:
+                logger.warning(f"Erro no modelo {model}: {e}")
+                if attempt < len(self.models) - 1:
+                    logger.info(f"Tentando próximo modelo disponível...")
+                    continue
+        
+        logger.error("❌ Todos os modelos falharam")
+        return None
     
     def _generate_fallback_response(self, message: str, persona: Dict, context: List[Dict]) -> str:
         """Gera resposta fallback quando API não está disponível"""
