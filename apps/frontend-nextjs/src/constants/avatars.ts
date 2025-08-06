@@ -6,6 +6,7 @@
 export const PERSONA_AVATARS = {
   'dr-gasnelio': '/images/avatars/dr-gasnelio.png',
   'dr_gasnelio': '/images/avatars/dr-gasnelio.png',
+  'gasnelio': '/images/avatars/dr-gasnelio.png',
   'ga': '/images/avatars/ga.png'
 } as const;
 
@@ -16,7 +17,25 @@ export const UNIVERSITY_LOGOS = {
 } as const;
 
 export const getPersonaAvatar = (personaId: string): string => {
-  return PERSONA_AVATARS[personaId as keyof typeof PERSONA_AVATARS] || '';
+  // Normalizar IDs para cobrir variações comuns
+  const normalizedId = personaId?.toLowerCase().replace(/[-_\s]/g, '');
+  
+  // Buscar primeira correspondência exata
+  const directMatch = PERSONA_AVATARS[personaId as keyof typeof PERSONA_AVATARS];
+  if (directMatch) {
+    console.log(`[getPersonaAvatar] personaId: "${personaId}" found directly:`, directMatch);
+    return directMatch;
+  }
+  
+  // Se não encontrou, buscar por ID normalizado
+  const entries = Object.entries(PERSONA_AVATARS);
+  const match = entries.find(([key]) => 
+    key.toLowerCase().replace(/[-_\s]/g, '') === normalizedId
+  );
+  
+  const result = match?.[1] || '';
+  console.log(`[getPersonaAvatar] personaId: "${personaId}", normalized: "${normalizedId}", available keys:`, Object.keys(PERSONA_AVATARS), 'result:', result);
+  return result;
 };
 
 export const getUniversityLogo = (logoType: keyof typeof UNIVERSITY_LOGOS): string => {

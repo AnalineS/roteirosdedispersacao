@@ -41,6 +41,8 @@ const PersonaAvatar = memo(function PersonaAvatar({
   
   const avatarUrl = useMemo(() => {
     const url = getPersonaAvatar(personaId);
+    // Debug: verificar se os avatares estão sendo encontrados
+    console.log(`[PersonaAvatar] personaId: ${personaId}, avatarUrl: ${url}`);
     // Para caminhos locais, não precisamos validar URL
     return url ? url : null;
   }, [personaId]);

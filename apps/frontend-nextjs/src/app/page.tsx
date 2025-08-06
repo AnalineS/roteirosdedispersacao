@@ -149,7 +149,7 @@ export default function HomePage() {
                   <path d="M9 11H3v9h6v-9zm5-7h-4v16h4V4zm5 3h-4v13h4V7z"/>
                 </svg>
               </div>
-              <h4 style={{ fontSize: '0.875rem', fontWeight: '600', color: '#1e293b' }}>Baseado em Evidências</h4>
+              <h3 style={{ fontSize: '0.875rem', fontWeight: '600', color: '#1e293b' }}>Baseado em Evidências</h3>
               <p style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.5rem' }}>
                 Diretrizes do Ministério da Saúde
               </p>
@@ -171,7 +171,7 @@ export default function HomePage() {
                   <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"/>
                 </svg>
               </div>
-              <h4 style={{ fontSize: '0.875rem', fontWeight: '600', color: '#1e293b' }}>Seguro e Confiável</h4>
+              <h3 style={{ fontSize: '0.875rem', fontWeight: '600', color: '#1e293b' }}>Seguro e Confiável</h3>
               <p style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.5rem' }}>
                 Validado por especialistas
               </p>
@@ -194,7 +194,7 @@ export default function HomePage() {
                   <path d="M12 6v6l4 2"/>
                 </svg>
               </div>
-              <h4 style={{ fontSize: '0.875rem', fontWeight: '600', color: '#1e293b' }}>Disponível 24/7</h4>
+              <h3 style={{ fontSize: '0.875rem', fontWeight: '600', color: '#1e293b' }}>Disponível 24/7</h3>
               <p style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.5rem' }}>
                 Acesso sempre que precisar
               </p>
@@ -233,7 +233,7 @@ export default function HomePage() {
                 color: '#1e293b',
                 marginBottom: '1rem'
               }}>
-                🎓 Sobre a Pesquisa
+                Sobre a Pesquisa
               </h2>
               <p style={{ 
                 fontSize: '1.125rem',
@@ -246,14 +246,14 @@ export default function HomePage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-lg" style={{ marginBottom: '2rem' }}>
               <div>
-                <h3 style={{ 
+                <h4 style={{ 
                   fontSize: '1.25rem', 
                   fontWeight: '600', 
                   color: '#0284c7',
                   marginBottom: '1rem'
                 }}>
-                  🎯 Motivação
-                </h3>
+                  Motivação
+                </h4>
                 <p style={{ 
                   fontSize: '0.95rem', 
                   color: '#64748b', 
@@ -276,14 +276,14 @@ export default function HomePage() {
               </div>
 
               <div>
-                <h3 style={{ 
+                <h4 style={{ 
                   fontSize: '1.25rem', 
                   fontWeight: '600', 
                   color: '#0284c7',
                   marginBottom: '1rem'
                 }}>
-                  📊 Resultados
-                </h3>
+                  Resultados
+                </h4>
                 <p style={{ 
                   fontSize: '0.95rem', 
                   color: '#64748b', 
@@ -322,7 +322,7 @@ export default function HomePage() {
                 alignItems: 'center',
                 gap: '0.5rem'
               }}>
-                🤖 Dr. Gasnelio - Assistente de IA
+                Dr. Gasnelio - Assistente de IA
               </h3>
               <p style={{ 
                 fontSize: '0.95rem', 

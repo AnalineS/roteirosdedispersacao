@@ -225,9 +225,9 @@ export default function PersonaSelector({ personas, onPersonaSelect }: PersonaSe
         </p>
         
         <div className="grid grid-cols-2 gap-md" style={{ maxWidth: '400px', margin: '0 auto' }}>
-          <div 
+          <button 
             className="card card-flat"
-            style={{ cursor: 'pointer', transition: 'all 0.2s ease' }}
+            style={{ cursor: 'pointer', transition: 'all 0.2s ease', border: 'none', background: 'inherit', textAlign: 'center', width: '100%' }}
             onClick={() => handlePersonaSelect('dr_gasnelio')}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = 'translateY(-2px)';
@@ -237,6 +237,15 @@ export default function PersonaSelector({ personas, onPersonaSelect }: PersonaSe
               e.currentTarget.style.transform = 'translateY(0)';
               e.currentTarget.style.boxShadow = 'none';
             }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handlePersonaSelect('dr_gasnelio');
+              }
+            }}
+            aria-label="Escolher Dr. Gasnelio como assistente - Técnico e detalhado"
+            role="button"
+            tabIndex={0}
           >
             <div style={{
               width: '60px',
@@ -258,11 +267,11 @@ export default function PersonaSelector({ personas, onPersonaSelect }: PersonaSe
             <p style={{ fontSize: '0.75rem', color: '#64748b' }}>
               Técnico e detalhado
             </p>
-          </div>
+          </button>
           
-          <div 
+          <button 
             className="card card-flat"
-            style={{ cursor: 'pointer', transition: 'all 0.2s ease' }}
+            style={{ cursor: 'pointer', transition: 'all 0.2s ease', border: 'none', background: 'inherit', textAlign: 'center', width: '100%' }}
             onClick={() => handlePersonaSelect('ga')}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = 'translateY(-2px)';
@@ -272,6 +281,15 @@ export default function PersonaSelector({ personas, onPersonaSelect }: PersonaSe
               e.currentTarget.style.transform = 'translateY(0)';
               e.currentTarget.style.boxShadow = 'none';
             }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handlePersonaSelect('ga');
+              }
+            }}
+            aria-label="Escolher Gá como assistente - Clara e acolhedora"
+            role="button"
+            tabIndex={0}
           >
             <div style={{
               width: '60px',
@@ -293,7 +311,7 @@ export default function PersonaSelector({ personas, onPersonaSelect }: PersonaSe
             <p style={{ fontSize: '0.75rem', color: '#64748b' }}>
               Clara e acolhedora
             </p>
-          </div>
+          </button>
         </div>
       </div>
     </div>
