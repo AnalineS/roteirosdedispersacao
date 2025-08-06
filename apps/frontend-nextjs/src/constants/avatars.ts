@@ -4,8 +4,9 @@
  */
 
 export const PERSONA_AVATARS = {
-  dr_gasnelio: '/images/avatars/dr-gasnelio.png',
-  ga: '/images/avatars/ga.png'
+  'dr-gasnelio': '/images/avatars/dr-gasnelio.png',
+  'dr_gasnelio': '/images/avatars/dr-gasnelio.png',
+  'ga': '/images/avatars/ga.png'
 } as const;
 
 export const UNIVERSITY_LOGOS = {

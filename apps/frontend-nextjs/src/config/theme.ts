@@ -127,6 +127,12 @@ export const theme = {
   
   // Configurações de persona
   personas: {
+    'dr-gasnelio': {
+      primaryColor: '#0284c7',   // azul principal
+      secondaryColor: '#075985', // azul escuro
+      accentColor: '#38bdf8',    // azul médio
+      avatar: '/images/avatars/dr-gasnelio.png'
+    },
     'dr_gasnelio': {
       primaryColor: '#0284c7',   // azul principal
       secondaryColor: '#075985', // azul escuro

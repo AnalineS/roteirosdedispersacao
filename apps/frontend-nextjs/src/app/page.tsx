@@ -217,9 +217,146 @@ export default function HomePage() {
             />
           </div>
 
+          {/* About the Thesis Section */}
+          <div style={{ 
+            maxWidth: '900px', 
+            margin: '4rem auto',
+            padding: '2rem',
+            background: 'rgba(255, 255, 255, 0.8)',
+            borderRadius: '16px',
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)'
+          }}>
+            <div className="text-center" style={{ marginBottom: '2rem' }}>
+              <h2 style={{
+                fontSize: '2rem',
+                fontWeight: '600',
+                color: '#1e293b',
+                marginBottom: '1rem'
+              }}>
+                🎓 Sobre a Pesquisa
+              </h2>
+              <p style={{ 
+                fontSize: '1.125rem',
+                color: '#64748b',
+                lineHeight: '1.75'
+              }}>
+                Conheça a pesquisa de doutorado que fundamenta esta plataforma
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-lg" style={{ marginBottom: '2rem' }}>
+              <div>
+                <h3 style={{ 
+                  fontSize: '1.25rem', 
+                  fontWeight: '600', 
+                  color: '#0284c7',
+                  marginBottom: '1rem'
+                }}>
+                  🎯 Motivação
+                </h3>
+                <p style={{ 
+                  fontSize: '0.95rem', 
+                  color: '#64748b', 
+                  lineHeight: '1.6',
+                  marginBottom: '1rem'
+                }}>
+                  Como tornar o momento da dispensação mais humano, seguro e eficaz? 
+                  Esta tese nasceu da necessidade de padronizar e humanizar o cuidado farmacêutico.
+                </p>
+                <ul style={{ 
+                  fontSize: '0.9rem', 
+                  color: '#64748b', 
+                  paddingLeft: '1.5rem',
+                  lineHeight: '1.5'
+                }}>
+                  <li>Padronização no processo de dispensação</li>
+                  <li>Melhoria na comunicação farmacêutico-paciente</li>
+                  <li>Protocolos específicos para hanseníase/PQT-U</li>
+                </ul>
+              </div>
+
+              <div>
+                <h3 style={{ 
+                  fontSize: '1.25rem', 
+                  fontWeight: '600', 
+                  color: '#0284c7',
+                  marginBottom: '1rem'
+                }}>
+                  📊 Resultados
+                </h3>
+                <p style={{ 
+                  fontSize: '0.95rem', 
+                  color: '#64748b', 
+                  lineHeight: '1.6',
+                  marginBottom: '1rem'
+                }}>
+                  Primeiro roteiro validado especificamente para PQT-U no Brasil, 
+                  com impacto comprovado na qualidade do cuidado farmacêutico.
+                </p>
+                <ul style={{ 
+                  fontSize: '0.9rem', 
+                  color: '#64748b', 
+                  paddingLeft: '1.5rem',
+                  lineHeight: '1.5'
+                }}>
+                  <li>Alto grau de concordância entre especialistas</li>
+                  <li>Melhoria na adesão terapêutica</li>
+                  <li>Ferramenta pronta para implementação no SUS</li>
+                </ul>
+              </div>
+            </div>
+
+            <div style={{
+              padding: '1.5rem',
+              background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
+              borderRadius: '12px',
+              border: '1px solid #e0f2fe',
+              marginBottom: '2rem'
+            }}>
+              <h3 style={{ 
+                fontSize: '1.1rem', 
+                fontWeight: '600', 
+                color: '#0369a1',
+                marginBottom: '0.75rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}>
+                🤖 Dr. Gasnelio - Assistente de IA
+              </h3>
+              <p style={{ 
+                fontSize: '0.95rem', 
+                color: '#0369a1', 
+                lineHeight: '1.6',
+                margin: 0
+              }}>
+                Esta plataforma representa a <strong>evolução digital da tese</strong>, 
+                tornando o conhecimento científico acessível através de inteligência artificial. 
+                Dr. Gasnelio foi treinado com todo conteúdo da pesquisa e oferece suporte 
+                baseado em evidências para aprimorar a prática farmacêutica.
+              </p>
+            </div>
+
+            <div className="text-center">
+              <p style={{
+                fontSize: '0.875rem',
+                color: '#94a3b8',
+                marginBottom: '0.5rem'
+              }}>
+                <strong>Tese de Doutorado</strong> - Programa de Pós-Graduação em Ciências Farmacêuticas
+              </p>
+              <p style={{
+                fontSize: '0.75rem',
+                color: '#cbd5e1'
+              }}>
+                Universidade de Brasília (UnB) • 2025
+              </p>
+            </div>
+          </div>
+
           {/* Footer */}
           <div className="text-center" style={{
-            marginTop: '4rem',
+            marginTop: '2rem',
             paddingTop: '2rem',
             borderTop: '1px solid #e2e8f0'
           }}>
