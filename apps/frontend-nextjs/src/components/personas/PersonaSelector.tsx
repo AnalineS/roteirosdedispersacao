@@ -250,16 +250,20 @@ export default function PersonaSelector({ personas, onPersonaSelect }: PersonaSe
             <div style={{
               width: '60px',
               height: '60px',
-              backgroundColor: '#0284c7',
               borderRadius: '12px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
+              overflow: 'hidden',
               margin: '0 auto 1rem',
-              color: 'white',
-              fontSize: '1.5rem'
+              boxShadow: '0 4px 12px rgba(2, 132, 199, 0.3)'
             }}>
-              {personas.dr_gasnelio?.avatar || '👨‍⚕️'}
+              <img 
+                src={getPersonaAvatar('dr_gasnelio')} 
+                alt="Dr. Gasnelio"
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover'
+                }}
+              />
             </div>
             <h4 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '0.5rem' }}>
               Dr. Gasnelio
@@ -294,16 +298,20 @@ export default function PersonaSelector({ personas, onPersonaSelect }: PersonaSe
             <div style={{
               width: '60px',
               height: '60px',
-              backgroundColor: '#22c55e',
               borderRadius: '12px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
+              overflow: 'hidden',
               margin: '0 auto 1rem',
-              color: 'white',
-              fontSize: '1.5rem'
+              boxShadow: '0 4px 12px rgba(34, 197, 94, 0.3)'
             }}>
-              {personas.ga?.avatar || '😊'}
+              <img 
+                src={getPersonaAvatar('ga')} 
+                alt="Gá"
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover'
+                }}
+              />
             </div>
             <h4 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '0.5rem' }}>
               Gá
@@ -407,16 +415,20 @@ export default function PersonaSelector({ personas, onPersonaSelect }: PersonaSe
             <div style={{
               width: '80px',
               height: '80px',
-              backgroundColor: recommendation.personaId === 'dr_gasnelio' ? '#0284c7' : '#22c55e',
               borderRadius: '16px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'white',
-              fontSize: '2rem',
-              flexShrink: 0
+              overflow: 'hidden',
+              flexShrink: 0,
+              boxShadow: '0 6px 20px rgba(0, 0, 0, 0.15)'
             }}>
-              {recommendedPersona.avatar}
+              <img 
+                src={getPersonaAvatar(recommendation.personaId)} 
+                alt={recommendedPersona.name}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover'
+                }}
+              />
             </div>
             
             <div style={{ flex: 1 }}>
@@ -469,16 +481,20 @@ export default function PersonaSelector({ personas, onPersonaSelect }: PersonaSe
             <div style={{
               width: '50px',
               height: '50px',
-              backgroundColor: alternativePersonaId === 'dr_gasnelio' ? '#f0f9ff' : '#f0fdf4',
               borderRadius: '12px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: alternativePersonaId === 'dr_gasnelio' ? '#0284c7' : '#22c55e',
-              fontSize: '1.25rem',
-              flexShrink: 0
+              overflow: 'hidden',
+              flexShrink: 0,
+              boxShadow: '0 3px 10px rgba(0, 0, 0, 0.1)'
             }}>
-              {alternativePersona.avatar}
+              <img 
+                src={getPersonaAvatar(alternativePersonaId)} 
+                alt={alternativePersona.name}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover'
+                }}
+              />
             </div>
             
             <div style={{ flex: 1 }}>

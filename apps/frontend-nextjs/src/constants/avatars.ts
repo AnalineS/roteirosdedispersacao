@@ -46,7 +46,22 @@ export const getUniversityLogo = (logoType: keyof typeof UNIVERSITY_LOGOS): stri
  * Verifica se uma persona tem avatar configurado
  */
 export const hasPersonaAvatar = (personaId: string): boolean => {
-  return personaId in PERSONA_AVATARS;
+  // Normalizar IDs para cobrir variações comuns
+  const normalizedId = personaId?.toLowerCase().replace(/[-_\s]/g, '');
+  
+  // Verificar se existe diretamente
+  if (personaId in PERSONA_AVATARS) {
+    return true;
+  }
+  
+  // Verificar IDs normalizados
+  const entries = Object.entries(PERSONA_AVATARS);
+  const match = entries.find(([key]) => 
+    key.toLowerCase().replace(/[-_\s]/g, '') === normalizedId
+  );
+  
+  console.log(`[hasPersonaAvatar] personaId: "${personaId}", normalized: "${normalizedId}", found:`, !!match);
+  return !!match;
 };
 
 /**

@@ -58,7 +58,10 @@ export function usePersonas() {
   };
   
   const getValidPersonasCount = (): number => {
-    return Object.keys(personas).length;
+    const count = Object.keys(personas).length;
+    console.log('[usePersonas] getValidPersonasCount:', { personas, count });
+    // Retorna contagem ou fallback para 2 (Dr. Gasnelio + Gá)
+    return count > 0 ? count : 2;
   };
 
   return {
