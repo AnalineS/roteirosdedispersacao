@@ -1,29 +1,11 @@
 import type { Metadata, Viewport } from 'next'
 import ErrorBoundary from '@/components/ErrorBoundary'
 import OfflineIndicator from '@/components/OfflineIndicator'
+import SITE_CONFIG from '@/lib/config'
+import '@/styles/globals.css'
 import '@/styles/accessibility.css'
 
-export const metadata: Metadata = {
-  metadataBase: new URL('https://roteirosdedispensacao.com'),
-  title: 'Roteiros de Dispensação – Assistentes Educacionais',
-  description: 'Plataforma educacional com assistentes virtuais Dr. Gasnelio e Gá para orientação sobre poliquimioterapia de hanseníase (PQT-U)',
-  keywords: 'hanseníase, PQT-U, educação médica, assistente educacional, Dr. Gasnelio, Gá, poliquimioterapia, aprendizagem adaptativa',
-  authors: [{ name: 'Roteiro de Dispensação - Assistentes Educacionais' }],
-  openGraph: {
-    type: 'website',
-    url: '/',
-    title: 'Roteiros de Dispensação - Assistentes Educacionais',
-    description: 'Plataforma educacional com Dr. Gasnelio e Gá - assistentes virtuais especializados em PQT-U para hanseníase',
-    images: ['/og-image.png']
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Roteiros de Dispensação - Assistentes Educacionais',
-    description: 'Plataforma educacional com Dr. Gasnelio e Gá - assistentes virtuais especializados em PQT-U para hanseníase',
-    images: ['/og-image.png']
-  },
-  manifest: '/manifest.webmanifest'
-}
+export const metadata: Metadata = SITE_CONFIG.getMetadata()
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -44,7 +26,6 @@ export default function RootLayout({
       <head>
         <link rel="icon" type="image/png" href="/favicon.png" />
         <link rel="apple-touch-icon" href="/icon-192.png" />
-        <link rel="canonical" href="https://roteirosdedispensacao.com/" />
       </head>
       <body>
         {/* No JavaScript fallback */}

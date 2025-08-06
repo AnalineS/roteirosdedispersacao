@@ -8,6 +8,8 @@ const nextConfig = {
   compress: true,
   poweredByHeader: false,
   
+  // Múltiplos domínios suportados via configuração dinâmica
+  
   // Configurações de imagem
   images: {
     unoptimized: true, // Para compatibilidade com Cloud Run

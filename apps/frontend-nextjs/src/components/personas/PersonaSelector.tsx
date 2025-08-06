@@ -20,75 +20,114 @@ interface UserProfile {
 interface Question {
   id: string;
   text: string;
-  emoji: string;
   options: {
     id: string;
     text: string;
     value: UserProfile['type'] | UserProfile['focus'];
-    emoji: string;
+    icon: JSX.Element;
   }[];
 }
 
 const questions: Question[] = [
   {
     id: 'profile',
-    text: 'Para oferecer a melhor experiência, qual dessas opções melhor descreve você?',
-    emoji: '🎯',
+    text: 'Qual é o seu perfil?',
     options: [
       {
         id: 'professional',
         text: 'Profissional de saúde',
         value: 'professional',
-        emoji: '👨‍⚕️'
+        icon: (
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+          </svg>
+        )
       },
       {
         id: 'student',
-        text: 'Estudante da área da saúde',
+        text: 'Estudante',
         value: 'student',
-        emoji: '📚'
+        icon: (
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M12 14l9-5-9-5-9 5 9 5z"/>
+            <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/>
+          </svg>
+        )
       },
       {
         id: 'patient',
         text: 'Paciente ou familiar',
         value: 'patient',
-        emoji: '🤗'
+        icon: (
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+          </svg>
+        )
       },
       {
         id: 'caregiver',
-        text: 'Cuidador ou pessoa interessada',
+        text: 'Cuidador',
         value: 'caregiver',
-        emoji: '💙'
+        icon: (
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        )
       }
     ]
   },
   {
     id: 'focus',
-    text: 'Sobre o que gostaria de conversar?',
-    emoji: '🔍',
+    text: 'Qual é o seu interesse principal?',
     options: [
       {
         id: 'technical',
-        text: 'Informações técnicas sobre medicamentos',
+        text: 'Informações técnicas',
         value: 'technical',
-        emoji: '🧬'
+        icon: (
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M12 1v6m0 6v6m11-11h-6m-6 0H1"/>
+          </svg>
+        )
       },
       {
         id: 'practical',
-        text: 'Como tomar corretamente os remédios',
+        text: 'Orientações práticas',
         value: 'practical',
-        emoji: '💊'
+        icon: (
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+          </svg>
+        )
       },
       {
         id: 'effects',
-        text: 'Efeitos que posso sentir',
+        text: 'Efeitos e cuidados',
         value: 'effects',
-        emoji: '🌡️'
+        icon: (
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"/>
+          </svg>
+        )
       },
       {
         id: 'general',
-        text: 'Dúvidas sobre o tratamento',
+        text: 'Informações gerais',
         value: 'general',
-        emoji: '❓'
+        icon: (
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+        )
       }
     ]
   }
@@ -104,8 +143,7 @@ export default function PersonaSelector({ personas, onPersonaSelect }: PersonaSe
   const calculateRecommendation = (): { personaId: string; confidence: number; explanation: string } => {
     const { profile, focus } = answers;
     
-    // Lógica de recomendação baseada na estratégia UX
-    let personaId = 'ga'; // padrão empático
+    let personaId = 'ga';
     let confidence = 0.5;
     let explanation = '';
 
@@ -113,21 +151,21 @@ export default function PersonaSelector({ personas, onPersonaSelect }: PersonaSe
       if (focus === 'technical') {
         personaId = 'dr_gasnelio';
         confidence = 0.9;
-        explanation = 'Recomendo Dr. Gasnelio por sua expertise técnica e científica, ideal para profissionais da saúde.';
+        explanation = 'Com base no seu perfil profissional e interesse técnico, Dr. Gasnelio é o assistente mais adequado.';
       } else {
         personaId = 'dr_gasnelio';
         confidence = 0.7;
-        explanation = 'Dr. Gasnelio pode fornecer informações precisas, mas pode alternar para Gá se preferir explicações mais simples.';
+        explanation = 'Dr. Gasnelio pode fornecer as informações detalhadas que você busca.';
       }
     } else {
       if (focus === 'technical') {
         personaId = 'dr_gasnelio';
         confidence = 0.6;
-        explanation = 'Dr. Gasnelio tem as informações técnicas que procura, mas Gá pode explicar de forma mais acessível.';
+        explanation = 'Dr. Gasnelio tem conhecimento técnico, mas Gá pode ser uma alternativa mais acessível.';
       } else {
         personaId = 'ga';
         confidence = 0.9;
-        explanation = 'Gá é perfeita para explicações claras e acolhedoras, focando no seu bem-estar.';
+        explanation = 'Gá oferece explicações claras e acolhedoras, ideal para o seu perfil.';
       }
     }
 
@@ -160,88 +198,102 @@ export default function PersonaSelector({ personas, onPersonaSelect }: PersonaSe
   };
 
   const renderIntro = () => (
-    <div style={{ textAlign: 'center', maxWidth: '600px', margin: '0 auto' }}>
-      <div style={{ fontSize: '3rem', marginBottom: '20px' }}>🤖✨</div>
-      <h2 style={{ fontSize: '2rem', marginBottom: '20px', color: 'white' }}>
-        Assistentes Virtuais Especializados
-      </h2>
-      <p style={{ fontSize: '1.2rem', marginBottom: '30px', opacity: 0.9, lineHeight: '1.6' }}>
-        Tenho dois especialistas prontos para ajudar você com hanseníase PQT-U.
-        Para recomendar o melhor assistente, preciso conhecer um pouco sobre você.
+    <div className="text-center">
+      <p style={{ 
+        fontSize: '1rem',
+        color: '#64748b',
+        marginBottom: '2rem'
+      }}>
+        Para oferecer a melhor experiência, vamos personalizar o atendimento.
       </p>
+      
       <button
         onClick={() => setCurrentStep('question1')}
-        style={{
-          background: 'white',
-          color: theme.colors.primary[500],
-          border: 'none',
-          padding: '15px 40px',
-          borderRadius: '30px',
-          fontSize: '1.1rem',
-          fontWeight: 'bold',
-          cursor: 'pointer',
-          boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
-          transition: 'all 0.3s ease'
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.transform = 'translateY(-2px)';
-          e.currentTarget.style.boxShadow = '0 6px 30px rgba(0,0,0,0.3)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.transform = 'translateY(0)';
-          e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.2)';
-        }}
+        className="btn btn-primary btn-lg"
+        style={{ marginBottom: '1rem' }}
       >
-        Começar Questionário
+        Personalizar Atendimento
       </button>
       
-      <div style={{ marginTop: '40px', opacity: 0.7 }}>
-        <p style={{ fontSize: '0.9rem' }}>
-          Ou escolha diretamente um assistente:
+      <div style={{ marginTop: '2rem' }}>
+        <p style={{ 
+          fontSize: '0.875rem',
+          color: '#94a3b8',
+          marginBottom: '1rem'
+        }}>
+          Ou escolha diretamente:
         </p>
-        <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', marginTop: '15px' }}>
-          <button
+        
+        <div className="grid grid-cols-2 gap-md" style={{ maxWidth: '400px', margin: '0 auto' }}>
+          <div 
+            className="card card-flat"
+            style={{ cursor: 'pointer', transition: 'all 0.2s ease' }}
             onClick={() => handlePersonaSelect('dr_gasnelio')}
-            style={{
-              background: 'rgba(255,255,255,0.1)',
-              border: '1px solid rgba(255,255,255,0.3)',
-              color: 'white',
-              padding: '8px 16px',
-              borderRadius: '20px',
-              fontSize: '0.9rem',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease'
-            }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(255,255,255,0.2)';
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = 'var(--shadow-md)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = 'none';
             }}
           >
-            👨‍⚕️ Dr. Gasnelio
-          </button>
-          <button
+            <div style={{
+              width: '60px',
+              height: '60px',
+              backgroundColor: '#0284c7',
+              borderRadius: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 1rem',
+              color: 'white',
+              fontSize: '1.5rem'
+            }}>
+              {personas.dr_gasnelio?.avatar || '👨‍⚕️'}
+            </div>
+            <h4 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '0.5rem' }}>
+              Dr. Gasnelio
+            </h4>
+            <p style={{ fontSize: '0.75rem', color: '#64748b' }}>
+              Técnico e detalhado
+            </p>
+          </div>
+          
+          <div 
+            className="card card-flat"
+            style={{ cursor: 'pointer', transition: 'all 0.2s ease' }}
             onClick={() => handlePersonaSelect('ga')}
-            style={{
-              background: 'rgba(255,255,255,0.1)',
-              border: '1px solid rgba(255,255,255,0.3)',
-              color: 'white',
-              padding: '8px 16px',
-              borderRadius: '20px',
-              fontSize: '0.9rem',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease'
-            }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(255,255,255,0.2)';
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = 'var(--shadow-md)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = 'none';
             }}
           >
-            😊 Gá
-          </button>
+            <div style={{
+              width: '60px',
+              height: '60px',
+              backgroundColor: '#22c55e',
+              borderRadius: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 1rem',
+              color: 'white',
+              fontSize: '1.5rem'
+            }}>
+              {personas.ga?.avatar || '😊'}
+            </div>
+            <h4 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '0.5rem' }}>
+              Gá
+            </h4>
+            <p style={{ fontSize: '0.75rem', color: '#64748b' }}>
+              Clara e acolhedora
+            </p>
+          </div>
         </div>
       </div>
     </div>
@@ -251,69 +303,62 @@ export default function PersonaSelector({ personas, onPersonaSelect }: PersonaSe
     const question = questions[questionIndex];
     
     return (
-      <div style={{ textAlign: 'center', maxWidth: '700px', margin: '0 auto' }}>
-        <div style={{ fontSize: '2.5rem', marginBottom: '20px' }}>{question.emoji}</div>
-        <h3 style={{ fontSize: '1.5rem', marginBottom: '30px', color: 'white', lineHeight: '1.4' }}>
+      <div>
+        <h3 style={{ 
+          fontSize: '1.25rem',
+          fontWeight: '600',
+          color: '#1e293b',
+          marginBottom: '2rem',
+          textAlign: 'center'
+        }}>
           {question.text}
         </h3>
         
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-          gap: '15px',
-          marginBottom: '30px'
-        }}>
+        <div className="grid grid-cols-2 gap-md" style={{ maxWidth: '600px', margin: '0 auto' }}>
           {question.options.map((option) => (
             <button
               key={option.id}
               onClick={() => handleAnswer(question.id, option.value)}
+              className="card"
               style={{
-                background: 'rgba(255, 255, 255, 0.1)',
-                backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-                borderRadius: '12px',
-                padding: '20px',
-                color: 'white',
                 cursor: 'pointer',
-                textAlign: 'left',
-                transition: 'all 0.3s ease',
-                transform: 'translate3d(0, 0, 0)'
+                transition: 'all 0.2s ease',
+                border: '2px solid transparent',
+                textAlign: 'left'
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-3px) translate3d(0, 0, 0)';
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)';
-                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.4)';
+                e.currentTarget.style.borderColor = '#0284c7';
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = 'var(--shadow-md)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0) translate3d(0, 0, 0)';
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
-                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+                e.currentTarget.style.borderColor = 'transparent';
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = 'none';
               }}
             >
-              <div style={{ fontSize: '1.5rem', marginBottom: '8px' }}>{option.emoji}</div>
-              <div style={{ fontSize: '1rem', fontWeight: 'bold' }}>{option.text}</div>
+              <div style={{ color: '#0284c7', marginBottom: '0.75rem' }}>
+                {option.icon}
+              </div>
+              <div style={{ 
+                fontSize: '0.875rem',
+                fontWeight: '500',
+                color: '#1e293b'
+              }}>
+                {option.text}
+              </div>
             </button>
           ))}
         </div>
 
-        <button
-          onClick={() => setCurrentStep(currentStep === 'question1' ? 'intro' : 'question1')}
-          style={{
-            background: 'transparent',
-            border: '1px solid rgba(255,255,255,0.3)',
-            color: 'white',
-            padding: '10px 20px',
-            borderRadius: '20px',
-            fontSize: '0.9rem',
-            cursor: 'pointer',
-            opacity: 0.7,
-            transition: 'all 0.2s ease'
-          }}
-          onMouseEnter={(e) => { e.currentTarget.style.opacity = '1'; }}
-          onMouseLeave={(e) => { e.currentTarget.style.opacity = '0.7'; }}
-        >
-          ← Voltar
-        </button>
+        <div className="text-center" style={{ marginTop: '2rem' }}>
+          <button
+            onClick={() => setCurrentStep(currentStep === 'question1' ? 'intro' : 'question1')}
+            className="btn btn-ghost btn-sm"
+          >
+            ← Voltar
+          </button>
+        </div>
       </div>
     );
   };
@@ -325,142 +370,137 @@ export default function PersonaSelector({ personas, onPersonaSelect }: PersonaSe
     const alternativePersona = personas[alternativePersonaId];
 
     return (
-      <div style={{ textAlign: 'center', maxWidth: '800px', margin: '0 auto' }}>
-        <div style={{ fontSize: '2.5rem', marginBottom: '20px' }}>✨🎯</div>
-        <h3 style={{ fontSize: '1.8rem', marginBottom: '20px', color: 'white' }}>
-          Recomendação Personalizada
+      <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+        <h3 style={{ 
+          fontSize: '1.25rem',
+          fontWeight: '600',
+          color: '#1e293b',
+          marginBottom: '2rem',
+          textAlign: 'center'
+        }}>
+          Assistente Recomendado
         </h3>
         
-        <div style={{
-          background: 'rgba(255, 255, 255, 0.15)',
-          borderRadius: '16px',
-          padding: '30px',
-          marginBottom: '30px',
-          border: '2px solid rgba(255, 255, 255, 0.3)'
+        <div className="card" style={{
+          border: '2px solid #0284c7',
+          marginBottom: '1.5rem'
         }}>
-          <div style={{ fontSize: '3rem', marginBottom: '15px' }}>
-            {recommendedPersona.avatar}
-          </div>
-          <h4 style={{ fontSize: '1.5rem', marginBottom: '10px', color: 'white' }}>
-            {recommendedPersona.name}
-          </h4>
-          <p style={{ fontSize: '1rem', marginBottom: '15px', opacity: 0.9 }}>
-            {recommendedPersona.personality}
-          </p>
-          <p style={{ fontSize: '0.95rem', marginBottom: '20px', opacity: 0.8, lineHeight: '1.4' }}>
-            {recommendation.explanation}
-          </p>
-          
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', marginBottom: '20px' }}>
+          <div className="flex items-center gap-lg">
             <div style={{
-              background: 'rgba(76, 175, 80, 0.2)',
-              padding: '8px 16px',
-              borderRadius: '20px',
-              fontSize: '0.85rem',
-              border: '1px solid rgba(76, 175, 80, 0.5)'
+              width: '80px',
+              height: '80px',
+              backgroundColor: recommendation.personaId === 'dr_gasnelio' ? '#0284c7' : '#22c55e',
+              borderRadius: '16px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'white',
+              fontSize: '2rem',
+              flexShrink: 0
             }}>
-              {Math.round(recommendation.confidence * 100)}% de compatibilidade
+              {recommendedPersona.avatar}
+            </div>
+            
+            <div style={{ flex: 1 }}>
+              <h4 style={{ 
+                fontSize: '1.25rem',
+                fontWeight: '600',
+                marginBottom: '0.5rem'
+              }}>
+                {recommendedPersona.name}
+              </h4>
+              <p style={{ 
+                fontSize: '0.875rem',
+                color: '#64748b',
+                marginBottom: '0.75rem'
+              }}>
+                {recommendedPersona.personality}
+              </p>
+              <p style={{ 
+                fontSize: '0.875rem',
+                color: '#64748b'
+              }}>
+                {recommendation.explanation}
+              </p>
+              
+              <div className="badge badge-success" style={{ marginTop: '0.75rem' }}>
+                {Math.round(recommendation.confidence * 100)}% compatível
+              </div>
             </div>
           </div>
-
+          
           <button
             onClick={() => handlePersonaSelect(recommendation.personaId)}
-            style={{
-              background: 'white',
-              color: theme.colors.primary[500],
-              border: 'none',
-              padding: '15px 40px',
-              borderRadius: '30px',
-              fontSize: '1.1rem',
-              fontWeight: 'bold',
-              cursor: 'pointer',
-              boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
-              transition: 'all 0.3s ease'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 6px 30px rgba(0,0,0,0.3)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.2)';
-            }}
+            className="btn btn-primary"
+            style={{ width: '100%', marginTop: '1.5rem' }}
           >
-            Conversar com {recommendedPersona.name}
+            Iniciar conversa com {recommendedPersona.name}
           </button>
         </div>
 
-        <div style={{ marginBottom: '30px' }}>
-          <p style={{ fontSize: '1rem', marginBottom: '15px', opacity: 0.8 }}>
-            Ou escolha o outro especialista:
+        <div className="card card-flat">
+          <p style={{ 
+            fontSize: '0.875rem',
+            color: '#64748b',
+            marginBottom: '1rem'
+          }}>
+            Alternativa disponível:
           </p>
           
-          <div style={{
-            background: 'rgba(255, 255, 255, 0.1)',
-            borderRadius: '12px',
-            padding: '20px',
-            border: '1px solid rgba(255, 255, 255, 0.2)'
-          }}>
-            <div style={{ fontSize: '2rem', marginBottom: '10px' }}>
+          <div className="flex items-center gap-md">
+            <div style={{
+              width: '50px',
+              height: '50px',
+              backgroundColor: alternativePersonaId === 'dr_gasnelio' ? '#f0f9ff' : '#f0fdf4',
+              borderRadius: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: alternativePersonaId === 'dr_gasnelio' ? '#0284c7' : '#22c55e',
+              fontSize: '1.25rem',
+              flexShrink: 0
+            }}>
               {alternativePersona.avatar}
             </div>
-            <h5 style={{ fontSize: '1.2rem', marginBottom: '8px', color: 'white' }}>
-              {alternativePersona.name}
-            </h5>
-            <p style={{ fontSize: '0.9rem', marginBottom: '15px', opacity: 0.8 }}>
-              {alternativePersona.personality}
-            </p>
+            
+            <div style={{ flex: 1 }}>
+              <h5 style={{ 
+                fontSize: '1rem',
+                fontWeight: '500'
+              }}>
+                {alternativePersona.name}
+              </h5>
+              <p style={{ 
+                fontSize: '0.75rem',
+                color: '#94a3b8'
+              }}>
+                {alternativePersona.personality}
+              </p>
+            </div>
             
             <button
               onClick={() => handlePersonaSelect(alternativePersonaId)}
-              style={{
-                background: 'transparent',
-                border: '1px solid rgba(255,255,255,0.4)',
-                color: 'white',
-                padding: '10px 25px',
-                borderRadius: '20px',
-                fontSize: '0.9rem',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
-                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.6)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'transparent';
-                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.4)';
-              }}
+              className="btn btn-secondary btn-sm"
             >
-              Conversar com {alternativePersona.name}
+              Escolher
             </button>
           </div>
         </div>
 
-        <button
-          onClick={() => setCurrentStep('question2')}
-          style={{
-            background: 'transparent',
-            border: '1px solid rgba(255,255,255,0.3)',
-            color: 'white',
-            padding: '10px 20px',
-            borderRadius: '20px',
-            fontSize: '0.9rem',
-            cursor: 'pointer',
-            opacity: 0.7,
-            transition: 'all 0.2s ease'
-          }}
-          onMouseEnter={(e) => { e.currentTarget.style.opacity = '1'; }}
-          onMouseLeave={(e) => { e.currentTarget.style.opacity = '0.7'; }}
-        >
-          ← Refazer questionário
-        </button>
+        <div className="text-center" style={{ marginTop: '2rem' }}>
+          <button
+            onClick={() => setCurrentStep('intro')}
+            className="btn btn-ghost btn-sm"
+          >
+            ← Refazer seleção
+          </button>
+        </div>
       </div>
     );
   };
 
   return (
-    <div style={{ padding: '40px 20px', minHeight: '60vh', display: 'flex', alignItems: 'center' }}>
+    <div style={{ padding: '2rem 0' }}>
       {currentStep === 'intro' && renderIntro()}
       {currentStep === 'question1' && renderQuestion(0)}
       {currentStep === 'question2' && renderQuestion(1)}

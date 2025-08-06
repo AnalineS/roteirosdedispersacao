@@ -120,7 +120,7 @@ Implementar sistema educacional adaptativo com Dr. Gasnelio (técnico) e Gá (em
 #### **Fase 4.1: Módulos de Conteúdo**
 - ✅ Estrutura de páginas criada (modules/, dashboard/, resources/)
 - ⏳ **PENDENTE:** "Sobre a Doença" (hanseníase) - content population
-- ⏳ **PENDENTE:** "Sobre a Tese" (Pergunte para maiores informações) 
+- ⏳ **PENDENTE:** "Sobre a Tese" (me pergunte para maiores informações e definição de textos) 
 - ⏳ **PENDENTE:** "Diagnóstico" (sintomas, exames) - content population
 - ⏳ **PENDENTE:** "Tratamento" (PQT-U) - content population
 - ⏳ **PENDENTE:** "Roteiro de Dispensação" - content population
@@ -432,7 +432,7 @@ Next.js App Router ✅
 *Baseada nas lições aprendidas sobre bundle size e estabilidade*
 
 ### **🎯 FILOSOFIA:** 
-Construir incrementalmente mantendo sempre bundle < 200KB, testando cada funcionalidade antes de prosseguir.
+Construir incrementalmente , testando cada funcionalidade antes de prosseguir.
 
 
 

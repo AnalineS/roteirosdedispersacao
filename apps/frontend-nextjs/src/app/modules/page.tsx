@@ -24,6 +24,18 @@ export default function ModulesPage() {
 
   const modules: Module[] = [
     {
+      id: 'sobre-a-tese',
+      title: 'Sobre a Tese',
+      description: 'Conheça a pesquisa de doutorado que fundamenta esta plataforma: metodologia, objetivos e contribuições para o cuidado farmacêutico.',
+      category: 'Fundamentos',
+      difficulty: 'Básico',
+      duration: '15 min',
+      topics: ['Contexto da pesquisa', 'Metodologia científica', 'Roteiro de dispensação', 'Resultados e impactos', 'Dr. Gasnelio IA'],
+      completed: false,
+      progress: 0,
+      icon: '🎓'
+    },
+    {
       id: 'hanseniase-intro',
       title: 'Introdução à Hanseníase',
       description: 'Fundamentos sobre a doença: histórico, epidemiologia, transmissão e prevenção. Base essencial para profissionais de saúde.',
@@ -33,7 +45,8 @@ export default function ModulesPage() {
       topics: ['História da hanseníase', 'Epidemiologia mundial', 'Transmissão', 'Prevenção', 'Mitos e verdades'],
       completed: true,
       progress: 100,
-      icon: '🔬'
+      icon: '🔬',
+      prerequisite: 'sobre-a-tese'
     },
     {
       id: 'microbiologia',

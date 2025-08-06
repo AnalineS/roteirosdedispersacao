@@ -14,17 +14,21 @@ export default function HomePage() {
 
   if (loading) {
     return (
-      <div style={{
+      <div className="flex items-center justify-center" style={{
         minHeight: '100vh',
-        background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
-        color: 'white',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center'
+        backgroundColor: '#f8fafc'
       }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '2rem', marginBottom: '20px' }}>⏳</div>
-          <p>Carregando assistentes virtuais...</p>
+        <div className="text-center">
+          <div className="animate-pulse mb-4">
+            <div style={{
+              width: '60px',
+              height: '60px',
+              borderRadius: '12px',
+              backgroundColor: '#e2e8f0',
+              margin: '0 auto'
+            }}></div>
+          </div>
+          <p style={{ color: '#64748b', fontSize: '0.875rem' }}>Carregando assistentes...</p>
         </div>
       </div>
     );
@@ -32,28 +36,16 @@ export default function HomePage() {
 
   if (error) {
     return (
-      <div style={{
+      <div className="flex items-center justify-center" style={{
         minHeight: '100vh',
-        background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
-        color: 'white',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center'
+        backgroundColor: '#f8fafc'
       }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '2rem', marginBottom: '20px' }}>⚠️</div>
-          <p>Erro ao carregar assistentes: {error}</p>
+        <div className="card text-center" style={{ maxWidth: '400px' }}>
+          <h3 style={{ color: '#ef4444', marginBottom: '1rem' }}>Erro ao carregar</h3>
+          <p className="text-muted mb-4">{error}</p>
           <button 
             onClick={() => window.location.reload()}
-            style={{
-              marginTop: '20px',
-              padding: '10px 20px',
-              background: 'white',
-              color: '#1976d2',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: 'pointer'
-            }}
+            className="btn btn-primary"
           >
             Tentar Novamente
           </button>
@@ -63,15 +55,12 @@ export default function HomePage() {
   }
 
   const handlePersonaSelect = (personaId: string, userProfile: UserProfile) => {
-    // Salvar perfil com persona selecionada
     const profileWithPersona = {
       ...userProfile,
       selectedPersona: personaId
     };
     
     saveProfile(profileWithPersona);
-    
-    // Navegar para o chat
     router.push('/chat');
   };
 
@@ -79,54 +68,175 @@ export default function HomePage() {
     <EducationalLayout showSidebar={false} showBreadcrumbs={false}>
       <div style={{
         minHeight: '100vh',
-        background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
-        color: 'white',
-        padding: '20px',
-        margin: '-20px',
-        position: 'relative'
+        backgroundColor: '#ffffff',
+        position: 'relative',
+        overflow: 'hidden'
       }}>
-        {/* Header */}
+        {/* Subtle background pattern */}
         <div style={{
-          maxWidth: '1200px',
-          margin: '0 auto',
-          textAlign: 'center',
-          paddingTop: '40px'
-        }}>
-          <h1 style={{ 
-            fontSize: '3rem', 
-            marginBottom: '20px',
-            fontWeight: 'bold'
-          }}>
-            Sistema Inteligente de Dispensação PQT-U
-          </h1>
-          
-          <p style={{ 
-            fontSize: '1.25rem', 
-            marginBottom: '40px',
-            opacity: 0.9
-          }}>
-            Assistente virtual especializado em poliquimioterapia única para hanseníase
-          </p>
-        </div>
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: '50%',
+          background: 'linear-gradient(180deg, #f0f9ff 0%, #ffffff 100%)',
+          zIndex: 0
+        }}></div>
 
-        {/* Persona Selector */}
-        <PersonaSelector 
-          personas={personas}
-          onPersonaSelect={handlePersonaSelect}
-        />
-
-        {/* Footer Info */}
-        <div style={{
-          textAlign: 'center',
-          marginTop: '80px',
-          opacity: 0.7,
-          fontSize: '0.875rem'
+        {/* Content */}
+        <div className="container" style={{
+          position: 'relative',
+          zIndex: 1,
+          paddingTop: '4rem',
+          paddingBottom: '4rem'
         }}>
-          <p>Plataforma educacional com assistentes virtuais especializados</p>
-          <p>Baseado em evidências científicas e diretrizes do Ministério da Saúde</p>
-          <p style={{ marginTop: '20px', fontSize: '0.75rem' }}>
-            Sistema com IA e prompts especializados • {getValidPersonasCount()} assistentes disponíveis
-          </p>
+          {/* Logo/Header Section */}
+          <div className="text-center mb-5">
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '80px',
+              height: '80px',
+              backgroundColor: '#0284c7',
+              borderRadius: '16px',
+              marginBottom: '2rem',
+              boxShadow: '0 10px 25px -5px rgba(2, 132, 199, 0.2)'
+            }}>
+              <span style={{ 
+                color: 'white', 
+                fontSize: '2rem', 
+                fontWeight: '700'
+              }}>RD</span>
+            </div>
+            
+            <h1 style={{ 
+              fontSize: '2.5rem',
+              fontWeight: '700',
+              color: '#1e293b',
+              marginBottom: '1rem',
+              letterSpacing: '-0.02em'
+            }}>
+              Roteiros de Dispensação
+            </h1>
+            
+            <p style={{ 
+              fontSize: '1.125rem',
+              color: '#64748b',
+              maxWidth: '600px',
+              margin: '0 auto',
+              lineHeight: '1.75'
+            }}>
+              Sistema inteligente de orientação para dispensação de medicamentos do programa PQT-U para hanseníase
+            </p>
+          </div>
+
+          {/* Features Grid */}
+          <div className="grid grid-cols-3 gap-lg mb-5" style={{ maxWidth: '800px', margin: '3rem auto' }}>
+            <div className="text-center">
+              <div style={{
+                width: '48px',
+                height: '48px',
+                backgroundColor: '#f0f9ff',
+                borderRadius: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 1rem',
+                border: '1px solid #e0f2fe'
+              }}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0284c7" strokeWidth="2">
+                  <path d="M9 11H3v9h6v-9zm5-7h-4v16h4V4zm5 3h-4v13h4V7z"/>
+                </svg>
+              </div>
+              <h4 style={{ fontSize: '0.875rem', fontWeight: '600', color: '#1e293b' }}>Baseado em Evidências</h4>
+              <p style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.5rem' }}>
+                Diretrizes do Ministério da Saúde
+              </p>
+            </div>
+            
+            <div className="text-center">
+              <div style={{
+                width: '48px',
+                height: '48px',
+                backgroundColor: '#f0fdf4',
+                borderRadius: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 1rem',
+                border: '1px solid #dcfce7'
+              }}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2">
+                  <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"/>
+                </svg>
+              </div>
+              <h4 style={{ fontSize: '0.875rem', fontWeight: '600', color: '#1e293b' }}>Seguro e Confiável</h4>
+              <p style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.5rem' }}>
+                Validado por especialistas
+              </p>
+            </div>
+            
+            <div className="text-center">
+              <div style={{
+                width: '48px',
+                height: '48px',
+                backgroundColor: '#f0f9ff',
+                borderRadius: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 1rem',
+                border: '1px solid #e0f2fe'
+              }}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0284c7" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <path d="M12 6v6l4 2"/>
+                </svg>
+              </div>
+              <h4 style={{ fontSize: '0.875rem', fontWeight: '600', color: '#1e293b' }}>Disponível 24/7</h4>
+              <p style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.5rem' }}>
+                Acesso sempre que precisar
+              </p>
+            </div>
+          </div>
+
+          {/* Persona Selector with new styling */}
+          <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+            <h2 className="text-center" style={{
+              fontSize: '1.5rem',
+              fontWeight: '600',
+              color: '#1e293b',
+              marginBottom: '2rem'
+            }}>
+              Escolha seu assistente virtual
+            </h2>
+            <PersonaSelector 
+              personas={personas}
+              onPersonaSelect={handlePersonaSelect}
+            />
+          </div>
+
+          {/* Footer */}
+          <div className="text-center" style={{
+            marginTop: '4rem',
+            paddingTop: '2rem',
+            borderTop: '1px solid #e2e8f0'
+          }}>
+            <p style={{ 
+              fontSize: '0.875rem', 
+              color: '#94a3b8',
+              marginBottom: '0.5rem'
+            }}>
+              Desenvolvido pela Universidade de Brasília
+            </p>
+            <p style={{ 
+              fontSize: '0.75rem', 
+              color: '#cbd5e1'
+            }}>
+              {getValidPersonasCount()} assistentes especializados disponíveis
+            </p>
+          </div>
         </div>
       </div>
     </EducationalLayout>
