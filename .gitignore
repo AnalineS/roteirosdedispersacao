@@ -228,3 +228,9 @@ INTERNAL_*
 /sessions/
 backend_config.json
 frontend_config.json
+
+# Arquivos de desenvolvimento e testes locais
+/tests/
+/scripts/start_dev_environment.py
+requirements.txt
+REORGANIZATION_PLAN.md
