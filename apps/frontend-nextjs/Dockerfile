@@ -15,7 +15,7 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Build the application
+# Build the application for standalone output
 RUN npm run build
 
 # Production image, copy all the files and run next
@@ -34,9 +34,11 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 USER nextjs
 
-EXPOSE $PORT
+# Expose port (Cloud Run will inject the PORT environment variable)
+EXPOSE 8080
 
-ENV PORT $PORT
+# Set hostname to listen on all interfaces
 ENV HOSTNAME "0.0.0.0"
 
-CMD ["node", "server.js"]
+# Command that respects the PORT environment variable from Cloud Run
+CMD ["sh", "-c", "node server.js"]
