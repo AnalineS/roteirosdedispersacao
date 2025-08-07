@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Configurado para Cloud Run com standalone output
-  output: 'standalone',
+  // Configurado para exportação estática para Firebase
+  output: 'export',
   
   // Configurações de performance
   compress: true,
