@@ -92,6 +92,7 @@ jobs:
           --execution-environment gen2 \
           --cpu-throttling \
           --session-affinity \
+          --port 8080 \
           --set-env-vars="ENVIRONMENT=production,DOMAIN=roteirosdedispensacao.com,OPENROUTER_API_KEY=${{ secrets.OPENROUTER_API_KEY }},HUGGINGFACE_API_KEY=${{ secrets.HUGGINGFACE_API_KEY }},ASTRA_DB_APPLICATION_TOKEN=${{ secrets.ASTRA_DB_APPLICATION_TOKEN }},ASTRA_DB_API_ENDPOINT=${{ secrets.ASTRA_DB_API_ENDPOINT }}" \
           --project pelagic-range-467602-d3 \
           --format="value(status.url)")
