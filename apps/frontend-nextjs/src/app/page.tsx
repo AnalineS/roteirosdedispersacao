@@ -162,7 +162,7 @@ export default function HomePage() {
                   color: '#64748b',
                   margin: '0.5rem 0 0 0'
                 }}>
-                  Sistema Inteligente de Orientação • Hanseníase PQT-U
+                  Sistema Inteligente de Orientação • Hanseníase
                 </p>
               </div>
             </div>
@@ -638,6 +638,7 @@ export default function HomePage() {
                 }}>
                   Foco no Paciente
                 </h3>
+                <div style={{ height: '0.75rem' }}></div>
                 <p style={{
                   fontSize: '0.875rem',
                   color: '#64748b',
