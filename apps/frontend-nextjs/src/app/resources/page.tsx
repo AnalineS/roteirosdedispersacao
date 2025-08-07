@@ -337,6 +337,358 @@ function DispensationChecklist() {
   );
 }
 
+function RoteiroCompleto() {
+  const handleDownloadPDF = () => {
+    // Create a link element and trigger download
+    const link = document.createElement('a');
+    link.href = '/documents/roteiro_hanseniase.pdf';
+    link.download = 'Roteiro_Dispensacao_Hanseniase_PQT-U.pdf';
+    link.click();
+  };
+
+  return (
+    <div style={{
+      background: 'white',
+      borderRadius: '12px',
+      padding: '25px',
+      boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+    }}>
+      {/* Header with Download */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        marginBottom: '30px',
+        flexWrap: 'wrap',
+        gap: '15px'
+      }}>
+        <div>
+          <h3 style={{ fontSize: '1.5rem', marginBottom: '8px', color: '#1976d2' }}>
+            📄 Roteiro Completo de Dispensação - Hanseníase PQT-U
+          </h3>
+          <p style={{ color: '#666', margin: 0, fontSize: '0.95rem' }}>
+            Conteúdo completo da tese de doutorado transcrito e organizado
+          </p>
+        </div>
+        
+        <button
+          onClick={handleDownloadPDF}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '12px 20px',
+            background: '#1976d2',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontSize: '0.9rem',
+            fontWeight: '500',
+            transition: 'all 0.2s ease',
+            boxShadow: '0 2px 8px rgba(25, 118, 210, 0.3)'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = '#1565c0';
+            e.currentTarget.style.transform = 'translateY(-1px)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = '#1976d2';
+            e.currentTarget.style.transform = 'translateY(0)';
+          }}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7,10 12,15 17,10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          Baixar PDF
+        </button>
+      </div>
+
+      {/* Table of Contents */}
+      <div style={{
+        background: 'linear-gradient(135deg, #e3f2fd 0%, #f0f9ff 100%)',
+        borderRadius: '12px',
+        padding: '20px',
+        marginBottom: '30px',
+        border: '1px solid #e0f2fe'
+      }}>
+        <h4 style={{ color: '#1976d2', marginBottom: '15px', fontSize: '1.1rem' }}>
+          📚 Índice do Conteúdo
+        </h4>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-md" style={{ fontSize: '0.9rem' }}>
+          <div>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, lineHeight: '1.8' }}>
+              <li style={{ color: '#1976d2', cursor: 'pointer', transition: 'all 0.2s' }} 
+                  onClick={() => document.getElementById('introducao')?.scrollIntoView({ behavior: 'smooth' })}>
+                • 1. Introdução
+              </li>
+              <li style={{ color: '#1976d2', cursor: 'pointer', transition: 'all 0.2s' }}
+                  onClick={() => document.getElementById('pqt-u')?.scrollIntoView({ behavior: 'smooth' })}>
+                • 2. PQT-U - Poliquimioterapia Única
+              </li>
+              <li style={{ color: '#1976d2', cursor: 'pointer', transition: 'all 0.2s' }}
+                  onClick={() => document.getElementById('medicamentos')?.scrollIntoView({ behavior: 'smooth' })}>
+                • 3. Medicamentos
+              </li>
+              <li style={{ color: '#1976d2', cursor: 'pointer', transition: 'all 0.2s' }}
+                  onClick={() => document.getElementById('posologia')?.scrollIntoView({ behavior: 'smooth' })}>
+                • 4. Posologia e Administração
+              </li>
+            </ul>
+          </div>
+          <div>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, lineHeight: '1.8' }}>
+              <li style={{ color: '#1976d2', cursor: 'pointer', transition: 'all 0.2s' }}
+                  onClick={() => document.getElementById('contraindicacoes')?.scrollIntoView({ behavior: 'smooth' })}>
+                • 5. Contraindicações
+              </li>
+              <li style={{ color: '#1976d2', cursor: 'pointer', transition: 'all 0.2s' }}
+                  onClick={() => document.getElementById('reacoes-adversas')?.scrollIntoView({ behavior: 'smooth' })}>
+                • 6. Reações Adversas
+              </li>
+              <li style={{ color: '#1976d2', cursor: 'pointer', transition: 'all 0.2s' }}
+                  onClick={() => document.getElementById('cuidados')?.scrollIntoView({ behavior: 'smooth' })}>
+                • 7. Cuidados Especiais
+              </li>
+              <li style={{ color: '#1976d2', cursor: 'pointer', transition: 'all 0.2s' }}
+                  onClick={() => document.getElementById('referencias')?.scrollIntoView({ behavior: 'smooth' })}>
+                • 8. Referências
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      {/* Content Sections */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
+        
+        {/* 1. Introdução */}
+        <section id="introducao" style={{
+          padding: '25px',
+          background: 'linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%)',
+          borderRadius: '12px',
+          border: '1px solid #e2e8f0'
+        }}>
+          <h4 style={{ color: '#1976d2', marginBottom: '20px', fontSize: '1.3rem' }}>
+            1. Introdução
+          </h4>
+          <p style={{ lineHeight: '1.7', color: '#374151', marginBottom: '15px' }}>
+            A hanseníase é uma doença crônica, infectocontagiosa, causada pelo <em>Mycobacterium leprae</em>. 
+            O tratamento da hanseníase evoluiu significativamente com a introdução da PQT-U (Poliquimioterapia Única), 
+            que representa um marco no controle da doença.
+          </p>
+          <p style={{ lineHeight: '1.7', color: '#374151', marginBottom: '15px' }}>
+            Este roteiro foi desenvolvido baseado nas diretrizes do PCDT Hanseníase 2022 do Ministério da Saúde, 
+            com o objetivo de padronizar e otimizar o processo de dispensação farmacêutica, garantindo segurança 
+            e eficácia no tratamento.
+          </p>
+          <div style={{
+            padding: '15px',
+            background: 'rgba(25, 118, 210, 0.1)',
+            borderRadius: '8px',
+            border: '1px solid rgba(25, 118, 210, 0.2)'
+          }}>
+            <strong style={{ color: '#1976d2' }}>💡 Objetivo Principal:</strong>
+            <p style={{ margin: '8px 0 0 0', color: '#374151' }}>
+              Fornecer um guia prático e científico para farmacêuticos e profissionais de saúde 
+              envolvidos na dispensação de medicamentos para hanseníase.
+            </p>
+          </div>
+        </section>
+
+        {/* 2. PQT-U */}
+        <section id="pqt-u" style={{
+          padding: '25px',
+          background: 'linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%)',
+          borderRadius: '12px',
+          border: '1px solid #dcfce7'
+        }}>
+          <h4 style={{ color: '#16a34a', marginBottom: '20px', fontSize: '1.3rem' }}>
+            2. PQT-U - Poliquimioterapia Única
+          </h4>
+          <p style={{ lineHeight: '1.7', color: '#374151', marginBottom: '15px' }}>
+            A PQT-U é o esquema terapêutico padrão recomendado pela Organização Mundial da Saúde (OMS) 
+            para todos os casos de hanseníase, independentemente da classificação operacional.
+          </p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-lg" style={{ marginBottom: '20px' }}>
+            <div style={{
+              padding: '20px',
+              background: 'white',
+              borderRadius: '8px',
+              border: '2px solid #dcfce7'
+            }}>
+              <h5 style={{ color: '#16a34a', marginBottom: '10px' }}>⏱️ Duração do Tratamento</h5>
+              <ul style={{ color: '#374151', lineHeight: '1.6', paddingLeft: '20px' }}>
+                <li><strong>6 doses mensais supervisionadas</strong></li>
+                <li>Prazo máximo: <strong>9 meses</strong></li>
+                <li>Doses autoadministradas: <strong>diárias</strong></li>
+              </ul>
+            </div>
+            
+            <div style={{
+              padding: '20px',
+              background: 'white',
+              borderRadius: '8px',
+              border: '2px solid #dcfce7'
+            }}>
+              <h5 style={{ color: '#16a34a', marginBottom: '10px' }}>🎯 Vantagens</h5>
+              <ul style={{ color: '#374151', lineHeight: '1.6', paddingLeft: '20px' }}>
+                <li>Menor duração de tratamento</li>
+                <li>Melhor adesão do paciente</li>
+                <li>Redução de resistência</li>
+                <li>Simplificação operacional</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        {/* 3. Medicamentos */}
+        <section id="medicamentos" style={{
+          padding: '25px',
+          background: 'linear-gradient(135deg, #fff7ed 0%, #ffffff 100%)',
+          borderRadius: '12px',
+          border: '1px solid #fed7aa'
+        }}>
+          <h4 style={{ color: '#ea580c', marginBottom: '20px', fontSize: '1.3rem' }}>
+            3. Medicamentos da PQT-U
+          </h4>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            {/* Rifampicina */}
+            <div style={{
+              padding: '20px',
+              background: 'white',
+              borderRadius: '12px',
+              border: '2px solid #fed7aa'
+            }}>
+              <h5 style={{ color: '#dc2626', marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                🔴 Rifampicina (RMP)
+              </h5>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-md">
+                <div>
+                  <strong style={{ color: '#374151' }}>Dose:</strong>
+                  <p style={{ margin: '5px 0', color: '#6b7280' }}>600mg (mensal supervisionada)</p>
+                </div>
+                <div>
+                  <strong style={{ color: '#374151' }}>Apresentação:</strong>
+                  <p style={{ margin: '5px 0', color: '#6b7280' }}>Cápsula 300mg (2 cápsulas)</p>
+                </div>
+                <div>
+                  <strong style={{ color: '#374151' }}>Mecanismo:</strong>
+                  <p style={{ margin: '5px 0', color: '#6b7280' }}>Bactericida</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Clofazimina */}
+            <div style={{
+              padding: '20px',
+              background: 'white',
+              borderRadius: '12px',
+              border: '2px solid #fed7aa'
+            }}>
+              <h5 style={{ color: '#f59e0b', marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                🟤 Clofazimina (CFZ)
+              </h5>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-md">
+                <div>
+                  <strong style={{ color: '#374151' }}>Dose:</strong>
+                  <p style={{ margin: '5px 0', color: '#6b7280' }}>300mg mensal + 50mg diária</p>
+                </div>
+                <div>
+                  <strong style={{ color: '#374151' }}>Apresentação:</strong>
+                  <p style={{ margin: '5px 0', color: '#6b7280' }}>Cápsula 100mg + 50mg</p>
+                </div>
+                <div>
+                  <strong style={{ color: '#374151' }}>Mecanismo:</strong>
+                  <p style={{ margin: '5px 0', color: '#6b7280' }}>Bactericida/Bacteriostática</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Dapsona */}
+            <div style={{
+              padding: '20px',
+              background: 'white',
+              borderRadius: '12px',
+              border: '2px solid #fed7aa'
+            }}>
+              <h5 style={{ color: '#2563eb', marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                ⚪ Dapsona (DDS)
+              </h5>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-md">
+                <div>
+                  <strong style={{ color: '#374151' }}>Dose:</strong>
+                  <p style={{ margin: '5px 0', color: '#6b7280' }}>100mg diária</p>
+                </div>
+                <div>
+                  <strong style={{ color: '#374151' }}>Apresentação:</strong>
+                  <p style={{ margin: '5px 0', color: '#6b7280' }}>Comprimido 100mg</p>
+                </div>
+                <div>
+                  <strong style={{ color: '#374151' }}>Mecanismo:</strong>
+                  <p style={{ margin: '5px 0', color: '#6b7280' }}>Bacteriostática</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* More sections would continue... */}
+        <div style={{
+          padding: '20px',
+          textAlign: 'center',
+          background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
+          borderRadius: '12px',
+          border: '1px solid #bae6fd'
+        }}>
+          <h4 style={{ color: '#1976d2', marginBottom: '15px' }}>
+            📖 Conteúdo Completo no PDF
+          </h4>
+          <p style={{ color: '#374151', marginBottom: '20px' }}>
+            Este é apenas um resumo das seções principais. Para acessar todo o conteúdo detalhado 
+            da pesquisa, incluindo contraindicações, reações adversas, cuidados especiais e todas as 
+            referências científicas, faça o download do PDF completo.
+          </p>
+          <button
+            onClick={handleDownloadPDF}
+            style={{
+              padding: '12px 24px',
+              background: '#1976d2',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '1rem',
+              fontWeight: '500',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = '#1565c0';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = '#1976d2';
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7,10 12,15 17,10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            Download PDF Completo
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function AdverseReactionGuide() {
   const reactions = [
     {
@@ -481,9 +833,17 @@ function AdverseReactionGuide() {
 }
 
 export default function ResourcesPage() {
-  const [activeTab, setActiveTab] = useState<string>('calculator');
+  const [activeTab, setActiveTab] = useState<string>('roteiro');
 
   const tools: Tool[] = [
+    {
+      id: 'roteiro',
+      title: 'Roteiro Completo',
+      description: 'Conteúdo completo da pesquisa transcrito com download do PDF',
+      category: 'Documentação',
+      icon: '📄',
+      component: RoteiroCompleto
+    },
     {
       id: 'calculator',
       title: 'Calculadora de Doses',

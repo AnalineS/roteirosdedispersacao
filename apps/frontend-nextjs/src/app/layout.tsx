@@ -79,11 +79,6 @@ export default function RootLayout({
         
         <OfflineIndicator />
         
-        {/* Skip to main content link for accessibility */}
-        <a href="#main-content" className="skip-link">
-          Skip to main content
-        </a>
-        
         <main id="main-content">
           <ErrorBoundary>
             {children}
