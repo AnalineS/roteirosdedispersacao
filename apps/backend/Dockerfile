@@ -58,7 +58,7 @@ ENV KEEPALIVE=2
 ENV MAX_REQUESTS=1000
 ENV MAX_REQUESTS_JITTER=100
 
-# Expor porta padrão (Cloud Run sempre define PORT)
+# Expor porta padrão para Cloud Run
 EXPOSE 8080
 
 # Health check otimizado para Cloud Run
