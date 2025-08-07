@@ -39,6 +39,7 @@ EXPOSE 8080
 
 # Set hostname to listen on all interfaces
 ENV HOSTNAME "0.0.0.0"
+ENV PORT ${PORT:-8080}
 
 # Command that respects the PORT environment variable from Cloud Run
-CMD ["sh", "-c", "node server.js"]
+CMD ["sh", "-c", "PORT=${PORT:-8080} node server.js"]
