@@ -1,11 +1,9 @@
 'use client';
 
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import EducationalLayout from '@/components/layout/EducationalLayout';
 import { usePersonas } from '@/hooks/usePersonas';
 import { useUserProfile } from '@/hooks/useUserProfile';
-import PersonaSelector from '@/components/personas/PersonaSelector';
 import { getUniversityLogo, getPersonaAvatar } from '@/constants/avatars';
 import type { UserProfile } from '@/hooks/useUserProfile';
 
@@ -13,7 +11,6 @@ export default function HomePage() {
   const { personas, loading, error, getValidPersonasCount } = usePersonas();
   const { saveProfile } = useUserProfile();
   const router = useRouter();
-  const [showPersonaSelector, setShowPersonaSelector] = useState(false);
 
   if (loading) {
     return (
@@ -140,16 +137,27 @@ export default function HomePage() {
               alignItems: 'center',
               gap: '1rem'
             }}>
-              <img 
-                src={getUniversityLogo('unb_circle')} 
-                alt="Universidade de Brasília"
-                style={{
-                  width: '80px',
-                  height: '80px',
-                  objectFit: 'contain',
-                  borderRadius: '50%'
-                }}
-              />
+              <div style={{
+                width: '80px',
+                height: '80px',
+                borderRadius: '50%',
+                overflow: 'hidden',
+                backgroundColor: '#1e3a5f',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <img 
+                  src={getUniversityLogo('unb_symbol')} 
+                  alt="Universidade de Brasília"
+                  style={{
+                    width: '60%',
+                    height: '60%',
+                    objectFit: 'contain',
+                    filter: 'brightness(0) invert(1)'
+                  }}
+                />
+              </div>
               <div style={{ textAlign: 'left' }}>
                 <h1 style={{ 
                   fontSize: '2.5rem',
@@ -479,95 +487,27 @@ export default function HomePage() {
               </button>
             </div>
             
-            {/* Personalização de Atendimento - Logo abaixo dos cards */}
+            {/* Informação sobre os assistentes */}
             <div style={{ 
               marginTop: '2rem', 
               textAlign: 'center',
               padding: '1.5rem',
-              background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
+              background: 'linear-gradient(135deg, #fefce8 0%, #fef3c7 100%)',
               borderRadius: '12px',
-              border: '1px solid #e2e8f0'
+              border: '1px solid #fef3c7'
             }}>
               <p style={{ 
-                fontSize: '1.125rem',
-                color: '#374151',
-                marginBottom: '1.5rem',
+                fontSize: '1rem', 
+                color: '#92400e', 
+                lineHeight: '1.6',
+                margin: 0,
                 fontWeight: '500'
               }}>
-                Para oferecer uma experiência otimizada, podemos personalizar o atendimento.
-              </p>
-              
-              <button
-                onClick={() => setShowPersonaSelector(!showPersonaSelector)}
-                style={{
-                  padding: '12px 32px',
-                  fontSize: '1rem',
-                  fontWeight: '600',
-                  color: 'white',
-                  background: '#1976d2',
-                  border: 'none',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                  boxShadow: '0 4px 16px rgba(25, 118, 210, 0.3)',
-                  marginBottom: '1rem'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = '#1565c0';
-                  e.currentTarget.style.transform = 'translateY(-1px)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = '#1976d2';
-                  e.currentTarget.style.transform = 'translateY(0)';
-                }}
-              >
-                Personalizar Atendimento
-              </button>
-              
-              <p style={{ 
-                fontSize: '0.95rem', 
-                color: '#64748b', 
-                lineHeight: '1.6',
-                margin: '0.5rem 0 0 0'
-              }}>
-                Ambos assistentes foram treinados com o conteúdo completo da pesquisa de doutorado, 
+                <strong>Clique no assistente de sua preferência para iniciar.</strong><br/>
+                Ambos foram treinados com o conteúdo completo da pesquisa de doutorado, 
                 garantindo respostas baseadas em evidências científicas e diretrizes oficiais do Ministério da Saúde.
               </p>
             </div>
-            
-            {/* Questionário de Personalização Expandido */}
-            {showPersonaSelector && (
-              <div style={{ 
-                marginTop: '1.5rem',
-                padding: '2rem',
-                background: 'rgba(255, 255, 255, 0.95)',
-                borderRadius: '12px',
-                border: '1px solid #e2e8f0',
-                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)'
-              }}>
-                <h3 style={{
-                  fontSize: '1.25rem',
-                  fontWeight: '600',
-                  color: '#1e293b',
-                  marginBottom: '1.5rem',
-                  textAlign: 'center'
-                }}>
-                  Personalize sua Experiência
-                </h3>
-                <p style={{
-                  fontSize: '0.95rem',
-                  color: '#64748b',
-                  marginBottom: '1.5rem',
-                  textAlign: 'center'
-                }}>
-                  Responda algumas perguntas rápidas para receber atendimento personalizado
-                </p>
-                <PersonaSelector 
-                  personas={personas}
-                  onPersonaSelect={handlePersonaSelect}
-                />
-              </div>
-            )}
           </div>
 
           {/* Sobre a Pesquisa Section */}
