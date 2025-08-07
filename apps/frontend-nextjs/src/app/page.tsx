@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import EducationalLayout from '@/components/layout/EducationalLayout';
 import { usePersonas } from '@/hooks/usePersonas';
@@ -12,6 +13,7 @@ export default function HomePage() {
   const { personas, loading, error, getValidPersonasCount } = usePersonas();
   const { saveProfile } = useUserProfile();
   const router = useRouter();
+  const [showPersonaSelector, setShowPersonaSelector] = useState(false);
 
   if (loading) {
     return (
@@ -66,7 +68,26 @@ export default function HomePage() {
   };
 
   return (
-    <EducationalLayout showSidebar={false} showBreadcrumbs={false}>
+    <>
+      {/* CSS para responsividade */}
+      <style jsx>{`
+        .assistants-container {
+          display: flex;
+          flex-direction: row;
+          gap: 32px;
+          align-items: flex-start;
+          margin-bottom: 2.5rem;
+          flex-wrap: wrap;
+        }
+        
+        @media (max-width: 768px) {
+          .assistants-container {
+            flex-direction: column;
+          }
+        }
+      `}</style>
+      
+      <EducationalLayout showSidebar={false} showBreadcrumbs={false}>
       <div style={{
         minHeight: '100vh',
         backgroundColor: '#ffffff',
@@ -242,7 +263,8 @@ export default function HomePage() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-lg" style={{ marginBottom: '2.5rem' }}>
+            {/* Cards dos Assistentes - Layout Flex Horizontal */}
+            <div className="assistants-container">
               {/* Dr. Gasnelio Card - Clickable */}
               <button
                 onClick={() => {
@@ -255,14 +277,15 @@ export default function HomePage() {
                   handlePersonaSelect('dr_gasnelio', userProfile);
                 }}
                 style={{
+                  flex: '1',
+                  minWidth: '300px',
                   padding: '2rem',
                   background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
                   borderRadius: '16px',
                   border: '2px solid #e0f2fe',
                   textAlign: 'center',
                   cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  width: '100%'
+                  transition: 'all 0.3s ease'
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = 'translateY(-4px)';
@@ -349,14 +372,15 @@ export default function HomePage() {
                   handlePersonaSelect('ga', userProfile);
                 }}
                 style={{
+                  flex: '1',
+                  minWidth: '300px',
                   padding: '2rem',
                   background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
                   borderRadius: '16px',
                   border: '2px solid #dcfce7',
                   textAlign: 'center',
                   cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  width: '100%'
+                  transition: 'all 0.3s ease'
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = 'translateY(-4px)';
@@ -452,41 +476,59 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Personalização Avançada (Opcional) */}
-          <div style={{ maxWidth: '600px', margin: '2rem auto', textAlign: 'center' }}>
+          {/* Personalização de Atendimento */}
+          <div style={{ maxWidth: '700px', margin: '3rem auto', textAlign: 'center' }}>
             <p style={{ 
-              fontSize: '0.95rem',
-              color: '#64748b',
-              marginBottom: '1.5rem'
+              fontSize: '1.125rem',
+              color: '#374151',
+              marginBottom: '2rem',
+              fontWeight: '500'
             }}>
-              Prefere um atendimento mais personalizado baseado no seu perfil?
+              Baseado no seu perfil? Para oferecer a melhor experiência, vamos personalizar o atendimento.
             </p>
             
-            <details style={{
-              padding: '1.5rem',
-              background: 'rgba(255, 255, 255, 0.6)',
-              borderRadius: '12px',
-              border: '1px solid #e2e8f0',
-              textAlign: 'left'
-            }}>
-              <summary style={{
+            <button
+              onClick={() => setShowPersonaSelector(!showPersonaSelector)}
+              style={{
+                padding: '12px 32px',
                 fontSize: '1rem',
                 fontWeight: '600',
-                color: '#374151',
+                color: 'white',
+                background: '#1976d2',
+                border: 'none',
+                borderRadius: '8px',
                 cursor: 'pointer',
-                marginBottom: '1rem',
-                textAlign: 'center'
+                transition: 'all 0.2s ease',
+                boxShadow: '0 4px 16px rgba(25, 118, 210, 0.3)'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = '#1565c0';
+                e.currentTarget.style.transform = 'translateY(-1px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = '#1976d2';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }}
+            >
+              {showPersonaSelector ? 'Ocultar Personalização' : 'Personalizar Atendimento'}
+            </button>
+            
+            {/* PersonaSelector Expandido */}
+            {showPersonaSelector && (
+              <div style={{ 
+                marginTop: '2rem',
+                padding: '2rem',
+                background: 'rgba(255, 255, 255, 0.9)',
+                borderRadius: '12px',
+                border: '1px solid #e2e8f0',
+                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)'
               }}>
-                ⚙️ Personalização Avançada
-              </summary>
-              
-              <div style={{ marginTop: '1rem' }}>
                 <PersonaSelector 
                   personas={personas}
                   onPersonaSelect={handlePersonaSelect}
                 />
               </div>
-            </details>
+            )}
           </div>
 
           {/* Sobre a Pesquisa Section */}
@@ -692,5 +734,6 @@ export default function HomePage() {
         </div>
       </div>
     </EducationalLayout>
+    </>
   );
 }
