@@ -13,6 +13,7 @@ export const PERSONA_AVATARS = {
 export const UNIVERSITY_LOGOS = {
   unb_symbol: '/images/logos/unb-simbolo.png',     // Logo principal para header
   unb_logo: '/images/logos/unb-logo.webp',        // Logo completa
+  unb_circle: '/images/logos/unb-circle.png',     // Logo circular da UnB
   ppgcf_logo: '/images/logos/ppgcf-logo.png'      // Logo do programa
 } as const;
 
