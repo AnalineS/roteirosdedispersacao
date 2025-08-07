@@ -126,19 +126,28 @@ export default function HomePage() {
           paddingBottom: '4rem'
         }}>
           {/* Header Institucional */}
-          <div className="flex items-center justify-start mb-5" style={{ maxWidth: '900px', margin: '0 auto 2rem' }}>
+          <div className="flex items-center justify-start mb-5" style={{ 
+            maxWidth: '900px', 
+            margin: '0 auto 2rem',
+            padding: '1.5rem',
+            background: 'white',
+            borderRadius: '12px',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+            border: '1px solid #e2e8f0'
+          }}>
             <div style={{
               display: 'flex',
               alignItems: 'center',
               gap: '1rem'
             }}>
               <img 
-                src={getUniversityLogo('unb_symbol')} 
+                src={getUniversityLogo('unb_circle')} 
                 alt="Universidade de Brasília"
                 style={{
                   width: '80px',
                   height: '80px',
-                  objectFit: 'contain'
+                  objectFit: 'contain',
+                  borderRadius: '50%'
                 }}
               />
               <div style={{ textAlign: 'left' }}>
@@ -246,82 +255,6 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Personalização de Atendimento - ACIMA DOS ASSISTENTES */}
-          <div style={{ maxWidth: '700px', margin: '3rem auto', textAlign: 'center' }}>
-            <p style={{ 
-              fontSize: '1.125rem',
-              color: '#374151',
-              marginBottom: '2rem',
-              fontWeight: '500'
-            }}>
-              Baseado no seu perfil? Para oferecer a melhor experiência, vamos personalizar o atendimento.
-            </p>
-            
-            <button
-              onClick={() => setShowPersonaSelector(!showPersonaSelector)}
-              style={{
-                padding: '12px 32px',
-                fontSize: '1rem',
-                fontWeight: '600',
-                color: 'white',
-                background: '#1976d2',
-                border: 'none',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                boxShadow: '0 4px 16px rgba(25, 118, 210, 0.3)',
-                marginBottom: '2rem'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = '#1565c0';
-                e.currentTarget.style.transform = 'translateY(-1px)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = '#1976d2';
-                e.currentTarget.style.transform = 'translateY(0)';
-              }}
-            >
-              {showPersonaSelector ? 'Ocultar Personalização' : 'Personalizar Atendimento'}
-            </button>
-            
-            {/* Quadro sobre treinamento dos assistentes */}
-            <div style={{
-              padding: '1.5rem',
-              background: 'linear-gradient(135deg, #fefce8 0%, #fef3c7 100%)',
-              borderRadius: '12px',
-              border: '1px solid #fef3c7',
-              textAlign: 'center'
-            }}>
-              <p style={{ 
-                fontSize: '1rem', 
-                color: '#92400e', 
-                lineHeight: '1.6',
-                margin: 0,
-                fontWeight: '500'
-              }}>
-                <strong>Ambos assistentes foram treinados</strong> com o conteúdo completo da pesquisa de doutorado, 
-                garantindo respostas baseadas em evidências científicas e diretrizes oficiais do Ministério da Saúde.
-              </p>
-            </div>
-            
-            {/* PersonaSelector Expandido */}
-            {showPersonaSelector && (
-              <div style={{ 
-                marginTop: '2rem',
-                padding: '2rem',
-                background: 'rgba(255, 255, 255, 0.9)',
-                borderRadius: '12px',
-                border: '1px solid #e2e8f0',
-                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)'
-              }}>
-                <PersonaSelector 
-                  personas={personas}
-                  onPersonaSelect={handlePersonaSelect}
-                />
-              </div>
-            )}
-          </div>
-
           {/* Seção dos Assistentes Virtuais */}
           <div style={{ 
             maxWidth: '900px', 
@@ -351,9 +284,10 @@ export default function HomePage() {
                 Dois especialistas em IA, cada um desenvolvido para atender suas necessidades específicas no cuidado farmacêutico
               </p>
             </div>
-
+            
             {/* Cards dos Assistentes - Layout Flex Horizontal */}
             <div className="assistants-container">
+            
               {/* Dr. Gasnelio Card - Clickable */}
               <button
                 onClick={() => {
@@ -445,7 +379,7 @@ export default function HomePage() {
                   fontSize: '0.875rem',
                   fontWeight: '600'
                 }}>
-                  👨‍⚕️ Clique para conversar
+                  Clique para conversar
                 </div>
               </button>
 
@@ -540,10 +474,83 @@ export default function HomePage() {
                   fontSize: '0.875rem',
                   fontWeight: '600'
                 }}>
-                  🤗 Clique para conversar
+                  Clique para conversar
                 </div>
               </button>
             </div>
+            
+            {/* Personalização de Atendimento - Logo abaixo dos cards */}
+            <div style={{ 
+              marginTop: '2rem', 
+              textAlign: 'center',
+              padding: '1.5rem',
+              background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
+              borderRadius: '12px',
+              border: '1px solid #e2e8f0'
+            }}>
+              <p style={{ 
+                fontSize: '1.125rem',
+                color: '#374151',
+                marginBottom: '1.5rem',
+                fontWeight: '500'
+              }}>
+                Para oferecer uma experiência otimizada, podemos personalizar o atendimento.
+              </p>
+              
+              <button
+                onClick={() => setShowPersonaSelector(!showPersonaSelector)}
+                style={{
+                  padding: '12px 32px',
+                  fontSize: '1rem',
+                  fontWeight: '600',
+                  color: 'white',
+                  background: '#1976d2',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  boxShadow: '0 4px 16px rgba(25, 118, 210, 0.3)',
+                  marginBottom: '1rem'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = '#1565c0';
+                  e.currentTarget.style.transform = 'translateY(-1px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = '#1976d2';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                }}
+              >
+                Personalizar Atendimento
+              </button>
+              
+              <p style={{ 
+                fontSize: '0.95rem', 
+                color: '#64748b', 
+                lineHeight: '1.6',
+                margin: '0.5rem 0 0 0'
+              }}>
+                Ambos assistentes foram treinados com o conteúdo completo da pesquisa de doutorado, 
+                garantindo respostas baseadas em evidências científicas e diretrizes oficiais do Ministério da Saúde.
+              </p>
+            </div>
+            
+            {/* PersonaSelector Expandido */}
+            {showPersonaSelector && (
+              <div style={{ 
+                marginTop: '1.5rem',
+                padding: '2rem',
+                background: 'rgba(255, 255, 255, 0.95)',
+                borderRadius: '12px',
+                border: '1px solid #e2e8f0',
+                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)'
+              }}>
+                <PersonaSelector 
+                  personas={personas}
+                  onPersonaSelect={handlePersonaSelect}
+                />
+              </div>
+            )}
           </div>
 
           {/* Sobre a Pesquisa Section */}
@@ -598,37 +605,47 @@ export default function HomePage() {
             </div>
 
             {/* Três Cards Horizontais */}
-            <div style={{
-              display: 'flex',
-              flexDirection: 'row',
-              gap: '24px',
-              alignItems: 'flex-start',
-              marginBottom: '2rem',
-              flexWrap: 'wrap'
-            }} className="research-cards">
+            <div className="research-cards">
               {/* Card 1: Fundamentação Científica */}
               <div style={{
                 flex: '1',
-                minWidth: '280px',
+                minWidth: '250px',
                 padding: '2rem',
-                background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
+                background: 'white',
                 borderRadius: '16px',
-                border: '2px solid #e0f2fe'
+                border: '1px solid #e2e8f0',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
+                textAlign: 'center'
               }}>
+                <div style={{
+                  width: '48px',
+                  height: '48px',
+                  backgroundColor: '#f0f9ff',
+                  borderRadius: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 1rem'
+                }}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0284c7" strokeWidth="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14,2 14,8 20,8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                  </svg>
+                </div>
                 <h3 style={{
-                  fontSize: '1.25rem',
+                  fontSize: '1.125rem',
                   fontWeight: '700',
-                  color: '#0369a1',
-                  marginBottom: '1rem',
-                  textAlign: 'center'
+                  color: '#1e293b',
+                  marginBottom: '0.75rem'
                 }}>
                   Fundamentação Científica
                 </h3>
                 <p style={{
-                  fontSize: '1rem',
-                  color: '#374151',
-                  lineHeight: '1.6',
-                  textAlign: 'center'
+                  fontSize: '0.875rem',
+                  color: '#64748b',
+                  lineHeight: '1.6'
                 }}>
                   Baseado em diretrizes do Ministério da Saúde, da OMS e em evidências científicas, o roteiro estrutura o ato da dispensação de forma lógica e completa.
                 </p>
@@ -637,26 +654,40 @@ export default function HomePage() {
               {/* Card 2: Foco no Paciente */}
               <div style={{
                 flex: '1',
-                minWidth: '280px',
+                minWidth: '250px',
                 padding: '2rem',
-                background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
+                background: 'white',
                 borderRadius: '16px',
-                border: '2px solid #dcfce7'
+                border: '1px solid #e2e8f0',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
+                textAlign: 'center'
               }}>
+                <div style={{
+                  width: '48px',
+                  height: '48px',
+                  backgroundColor: '#f0fdf4',
+                  borderRadius: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 1rem'
+                }}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                  </svg>
+                </div>
                 <h3 style={{
-                  fontSize: '1.25rem',
+                  fontSize: '1.125rem',
                   fontWeight: '700',
-                  color: '#16a34a',
-                  marginBottom: '1rem',
-                  textAlign: 'center'
+                  color: '#1e293b',
+                  marginBottom: '0.75rem'
                 }}>
                   Foco no Paciente
                 </h3>
                 <p style={{
-                  fontSize: '1rem',
-                  color: '#374151',
-                  lineHeight: '1.6',
-                  textAlign: 'center'
+                  fontSize: '0.875rem',
+                  color: '#64748b',
+                  lineHeight: '1.6'
                 }}>
                   O roteiro prioriza a orientação sobre medicamentos, o manejo de reações adversas e a promoção da autonomia do paciente no tratamento.
                 </p>
@@ -665,28 +696,43 @@ export default function HomePage() {
               {/* Card 3: Validação por Especialistas */}
               <div style={{
                 flex: '1',
-                minWidth: '280px',
+                minWidth: '250px',
                 padding: '2rem',
-                background: 'linear-gradient(135deg, #fff7ed 0%, #fed7aa 100%)',
+                background: 'white',
                 borderRadius: '16px',
-                border: '2px solid #fed7aa'
+                border: '1px solid #e2e8f0',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
+                textAlign: 'center'
               }}>
+                <div style={{
+                  width: '48px',
+                  height: '48px',
+                  backgroundColor: '#fff7ed',
+                  borderRadius: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 1rem'
+                }}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ea580c" strokeWidth="2">
+                    <circle cx="12" cy="8" r="7"/>
+                    <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/>
+                  </svg>
+                </div>
                 <h3 style={{
-                  fontSize: '1.25rem',
+                  fontSize: '1.125rem',
                   fontWeight: '700',
-                  color: '#ea580c',
-                  marginBottom: '1rem',
-                  textAlign: 'center'
+                  color: '#1e293b',
+                  marginBottom: '0.75rem'
                 }}>
                   Validação por Especialistas
                 </h3>
                 <p style={{
-                  fontSize: '1rem',
-                  color: '#374151',
-                  lineHeight: '1.6',
-                  textAlign: 'center'
+                  fontSize: '0.875rem',
+                  color: '#64748b',
+                  lineHeight: '1.6'
                 }}>
-                  Submetido a um rigoroso processo de validação por juízes, garantindo sua relevância e aplicabilidade clínica.
+                  Submetido a um rigoroso processo de validação, garantindo sua relevância e aplicabilidade clínica.
                 </p>
               </div>
             </div>
@@ -705,7 +751,7 @@ export default function HomePage() {
                 margin: '0 0 1rem 0',
                 fontWeight: '500'
               }}>
-                📄 <strong>Acesse o conteúdo completo da pesquisa</strong>
+                <strong>Acesse o conteúdo completo da pesquisa</strong>
               </p>
               <a
                 href="/resources"
