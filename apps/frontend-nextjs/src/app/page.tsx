@@ -80,8 +80,21 @@ export default function HomePage() {
           flex-wrap: wrap;
         }
         
+        .research-cards {
+          display: flex;
+          flex-direction: row;
+          gap: 24px;
+          align-items: flex-start;
+          margin-bottom: 2rem;
+          flex-wrap: wrap;
+        }
+        
         @media (max-width: 768px) {
           .assistants-container {
+            flex-direction: column;
+          }
+          
+          .research-cards {
             flex-direction: column;
           }
         }
@@ -233,7 +246,83 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Seção Sobre a Pesquisa - MOVIDA PARA ANTES */}
+          {/* Personalização de Atendimento - ACIMA DOS ASSISTENTES */}
+          <div style={{ maxWidth: '700px', margin: '3rem auto', textAlign: 'center' }}>
+            <p style={{ 
+              fontSize: '1.125rem',
+              color: '#374151',
+              marginBottom: '2rem',
+              fontWeight: '500'
+            }}>
+              Baseado no seu perfil? Para oferecer a melhor experiência, vamos personalizar o atendimento.
+            </p>
+            
+            <button
+              onClick={() => setShowPersonaSelector(!showPersonaSelector)}
+              style={{
+                padding: '12px 32px',
+                fontSize: '1rem',
+                fontWeight: '600',
+                color: 'white',
+                background: '#1976d2',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                boxShadow: '0 4px 16px rgba(25, 118, 210, 0.3)',
+                marginBottom: '2rem'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = '#1565c0';
+                e.currentTarget.style.transform = 'translateY(-1px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = '#1976d2';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }}
+            >
+              {showPersonaSelector ? 'Ocultar Personalização' : 'Personalizar Atendimento'}
+            </button>
+            
+            {/* Quadro sobre treinamento dos assistentes */}
+            <div style={{
+              padding: '1.5rem',
+              background: 'linear-gradient(135deg, #fefce8 0%, #fef3c7 100%)',
+              borderRadius: '12px',
+              border: '1px solid #fef3c7',
+              textAlign: 'center'
+            }}>
+              <p style={{ 
+                fontSize: '1rem', 
+                color: '#92400e', 
+                lineHeight: '1.6',
+                margin: 0,
+                fontWeight: '500'
+              }}>
+                <strong>Ambos assistentes foram treinados</strong> com o conteúdo completo da pesquisa de doutorado, 
+                garantindo respostas baseadas em evidências científicas e diretrizes oficiais do Ministério da Saúde.
+              </p>
+            </div>
+            
+            {/* PersonaSelector Expandido */}
+            {showPersonaSelector && (
+              <div style={{ 
+                marginTop: '2rem',
+                padding: '2rem',
+                background: 'rgba(255, 255, 255, 0.9)',
+                borderRadius: '12px',
+                border: '1px solid #e2e8f0',
+                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)'
+              }}>
+                <PersonaSelector 
+                  personas={personas}
+                  onPersonaSelect={handlePersonaSelect}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Seção dos Assistentes Virtuais */}
           <div style={{ 
             maxWidth: '900px', 
             margin: '3rem auto',
@@ -455,80 +544,6 @@ export default function HomePage() {
                 </div>
               </button>
             </div>
-
-            <div style={{
-              padding: '1.5rem',
-              background: 'linear-gradient(135deg, #fefce8 0%, #fef3c7 100%)',
-              borderRadius: '12px',
-              border: '1px solid #fef3c7',
-              textAlign: 'center'
-            }}>
-              <p style={{ 
-                fontSize: '1rem', 
-                color: '#92400e', 
-                lineHeight: '1.6',
-                margin: 0,
-                fontWeight: '500'
-              }}>
-                <strong>Ambos assistentes foram treinados</strong> com o conteúdo completo da pesquisa de doutorado, 
-                garantindo respostas baseadas em evidências científicas e diretrizes oficiais do Ministério da Saúde.
-              </p>
-            </div>
-          </div>
-
-          {/* Personalização de Atendimento */}
-          <div style={{ maxWidth: '700px', margin: '3rem auto', textAlign: 'center' }}>
-            <p style={{ 
-              fontSize: '1.125rem',
-              color: '#374151',
-              marginBottom: '2rem',
-              fontWeight: '500'
-            }}>
-              Baseado no seu perfil? Para oferecer a melhor experiência, vamos personalizar o atendimento.
-            </p>
-            
-            <button
-              onClick={() => setShowPersonaSelector(!showPersonaSelector)}
-              style={{
-                padding: '12px 32px',
-                fontSize: '1rem',
-                fontWeight: '600',
-                color: 'white',
-                background: '#1976d2',
-                border: 'none',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                boxShadow: '0 4px 16px rgba(25, 118, 210, 0.3)'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = '#1565c0';
-                e.currentTarget.style.transform = 'translateY(-1px)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = '#1976d2';
-                e.currentTarget.style.transform = 'translateY(0)';
-              }}
-            >
-              {showPersonaSelector ? 'Ocultar Personalização' : 'Personalizar Atendimento'}
-            </button>
-            
-            {/* PersonaSelector Expandido */}
-            {showPersonaSelector && (
-              <div style={{ 
-                marginTop: '2rem',
-                padding: '2rem',
-                background: 'rgba(255, 255, 255, 0.9)',
-                borderRadius: '12px',
-                border: '1px solid #e2e8f0',
-                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)'
-              }}>
-                <PersonaSelector 
-                  personas={personas}
-                  onPersonaSelect={handlePersonaSelect}
-                />
-              </div>
-            )}
           </div>
 
           {/* Sobre a Pesquisa Section */}
@@ -546,64 +561,133 @@ export default function HomePage() {
                 fontSize: '2.25rem',
                 fontWeight: '700',
                 color: '#1e293b',
-                marginBottom: '1rem'
+                marginBottom: '2rem'
               }}>
                 Sobre a Pesquisa
               </h2>
-              <p style={{
-                fontSize: '1.125rem',
-                color: '#64748b',
-                lineHeight: '1.75',
-                maxWidth: '600px',
-                margin: '0 auto'
-              }}>
-                Conheça os fundamentos científicos por trás desta plataforma educacional
-              </p>
+              
+              {/* Parágrafos introdutórios */}
+              <div style={{ textAlign: 'left', maxWidth: '800px', margin: '0 auto 2.5rem' }}>
+                <p style={{
+                  fontSize: '1.125rem',
+                  color: '#374151',
+                  lineHeight: '1.75',
+                  marginBottom: '1.5rem'
+                }}>
+                  Essa tese nasceu de uma inquietação comum a muitos profissionais da farmácia: como tornar o momento da dispensação mais humano, seguro e eficaz?
+                </p>
+                
+                <p style={{
+                  fontSize: '1.125rem',
+                  color: '#374151',
+                  lineHeight: '1.75',
+                  marginBottom: '1.5rem'
+                }}>
+                  Realizada no âmbito do Programa de Pós-Graduação em Ciências Farmacêuticas da Universidade de Brasília (UnB), a pesquisa propõe a elaboração e validação de um roteiro de dispensação de medicamentos específico para pacientes em tratamento.
+                </p>
+                
+                <p style={{
+                  fontSize: '1.125rem',
+                  color: '#374151',
+                  lineHeight: '1.75',
+                  marginBottom: '2.5rem'
+                }}>
+                  Mais do que um guia técnico, é uma ferramenta que valoriza a escuta, a clareza nas orientações e o cuidado centrado no paciente. O objetivo é padronizar e aprimorar o cuidado farmacêutico, aumentando a adesão ao tratamento e a segurança do paciente através de uma comunicação clínica estruturada.
+                </p>
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-lg" style={{ marginBottom: '2rem' }}>
-              <div>
+            {/* Três Cards Horizontais */}
+            <div style={{
+              display: 'flex',
+              flexDirection: 'row',
+              gap: '24px',
+              alignItems: 'flex-start',
+              marginBottom: '2rem',
+              flexWrap: 'wrap'
+            }} className="research-cards">
+              {/* Card 1: Fundamentação Científica */}
+              <div style={{
+                flex: '1',
+                minWidth: '280px',
+                padding: '2rem',
+                background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
+                borderRadius: '16px',
+                border: '2px solid #e0f2fe'
+              }}>
                 <h3 style={{
                   fontSize: '1.25rem',
-                  fontWeight: '600',
-                  color: '#0f172a',
-                  marginBottom: '1rem'
+                  fontWeight: '700',
+                  color: '#0369a1',
+                  marginBottom: '1rem',
+                  textAlign: 'center'
                 }}>
                   Fundamentação Científica
                 </h3>
-                <ul style={{
-                  fontSize: '0.95rem',
-                  color: '#475569',
+                <p style={{
+                  fontSize: '1rem',
+                  color: '#374151',
                   lineHeight: '1.6',
-                  paddingLeft: '1.5rem'
+                  textAlign: 'center'
                 }}>
-                  <li>Baseado em tese de doutorado em Ciências Farmacêuticas</li>
-                  <li>Seguindo diretrizes do PCDT Hanseníase 2022</li>
-                  <li>Validado com protocolos do Ministério da Saúde</li>
-                  <li>Desenvolvido com metodologia científica rigorosa</li>
-                </ul>
+                  Baseado em diretrizes do Ministério da Saúde, da OMS e em evidências científicas, o roteiro estrutura o ato da dispensação de forma lógica e completa.
+                </p>
               </div>
 
-              <div>
+              {/* Card 2: Foco no Paciente */}
+              <div style={{
+                flex: '1',
+                minWidth: '280px',
+                padding: '2rem',
+                background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
+                borderRadius: '16px',
+                border: '2px solid #dcfce7'
+              }}>
                 <h3 style={{
                   fontSize: '1.25rem',
-                  fontWeight: '600',
-                  color: '#0f172a',
-                  marginBottom: '1rem'
+                  fontWeight: '700',
+                  color: '#16a34a',
+                  marginBottom: '1rem',
+                  textAlign: 'center'
                 }}>
-                  Objetivos da Pesquisa
+                  Foco no Paciente
                 </h3>
-                <ul style={{
-                  fontSize: '0.95rem',
-                  color: '#475569',
+                <p style={{
+                  fontSize: '1rem',
+                  color: '#374151',
                   lineHeight: '1.6',
-                  paddingLeft: '1.5rem'
+                  textAlign: 'center'
                 }}>
-                  <li>Melhorar a qualidade da dispensação farmacêutica</li>
-                  <li>Reduzir erros relacionados ao PQT-U</li>
-                  <li>Capacitar profissionais de saúde</li>
-                  <li>Apoiar o cuidado centrado no paciente</li>
-                </ul>
+                  O roteiro prioriza a orientação sobre medicamentos, o manejo de reações adversas e a promoção da autonomia do paciente no tratamento.
+                </p>
+              </div>
+
+              {/* Card 3: Validação por Especialistas */}
+              <div style={{
+                flex: '1',
+                minWidth: '280px',
+                padding: '2rem',
+                background: 'linear-gradient(135deg, #fff7ed 0%, #fed7aa 100%)',
+                borderRadius: '16px',
+                border: '2px solid #fed7aa'
+              }}>
+                <h3 style={{
+                  fontSize: '1.25rem',
+                  fontWeight: '700',
+                  color: '#ea580c',
+                  marginBottom: '1rem',
+                  textAlign: 'center'
+                }}>
+                  Validação por Especialistas
+                </h3>
+                <p style={{
+                  fontSize: '1rem',
+                  color: '#374151',
+                  lineHeight: '1.6',
+                  textAlign: 'center'
+                }}>
+                  Submetido a um rigoroso processo de validação por juízes, garantindo sua relevância e aplicabilidade clínica.
+                </p>
               </div>
             </div>
 
