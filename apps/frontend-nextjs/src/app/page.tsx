@@ -535,7 +535,7 @@ export default function HomePage() {
               </p>
             </div>
             
-            {/* PersonaSelector Expandido */}
+            {/* Questionário de Personalização Expandido */}
             {showPersonaSelector && (
               <div style={{ 
                 marginTop: '1.5rem',
@@ -545,6 +545,23 @@ export default function HomePage() {
                 border: '1px solid #e2e8f0',
                 boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)'
               }}>
+                <h3 style={{
+                  fontSize: '1.25rem',
+                  fontWeight: '600',
+                  color: '#1e293b',
+                  marginBottom: '1.5rem',
+                  textAlign: 'center'
+                }}>
+                  Personalize sua Experiência
+                </h3>
+                <p style={{
+                  fontSize: '0.95rem',
+                  color: '#64748b',
+                  marginBottom: '1.5rem',
+                  textAlign: 'center'
+                }}>
+                  Responda algumas perguntas rápidas para receber atendimento personalizado
+                </p>
                 <PersonaSelector 
                   personas={personas}
                   onPersonaSelect={handlePersonaSelect}
@@ -605,17 +622,23 @@ export default function HomePage() {
             </div>
 
             {/* Três Cards Horizontais */}
-            <div className="research-cards">
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+              gap: '1.5rem',
+              marginBottom: '2rem'
+            }}>
               {/* Card 1: Fundamentação Científica */}
               <div style={{
-                flex: '1',
-                minWidth: '250px',
                 padding: '2rem',
                 background: 'white',
                 borderRadius: '16px',
                 border: '1px solid #e2e8f0',
                 boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
-                textAlign: 'center'
+                textAlign: 'center',
+                display: 'flex',
+                flexDirection: 'column',
+                minHeight: '280px'
               }}>
                 <div style={{
                   width: '48px',
@@ -645,7 +668,8 @@ export default function HomePage() {
                 <p style={{
                   fontSize: '0.875rem',
                   color: '#64748b',
-                  lineHeight: '1.6'
+                  lineHeight: '1.6',
+                  flex: '1'
                 }}>
                   Baseado em diretrizes do Ministério da Saúde, da OMS e em evidências científicas, o roteiro estrutura o ato da dispensação de forma lógica e completa.
                 </p>
@@ -653,14 +677,15 @@ export default function HomePage() {
 
               {/* Card 2: Foco no Paciente */}
               <div style={{
-                flex: '1',
-                minWidth: '250px',
                 padding: '2rem',
                 background: 'white',
                 borderRadius: '16px',
                 border: '1px solid #e2e8f0',
                 boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
-                textAlign: 'center'
+                textAlign: 'center',
+                display: 'flex',
+                flexDirection: 'column',
+                minHeight: '280px'
               }}>
                 <div style={{
                   width: '48px',
@@ -687,7 +712,8 @@ export default function HomePage() {
                 <p style={{
                   fontSize: '0.875rem',
                   color: '#64748b',
-                  lineHeight: '1.6'
+                  lineHeight: '1.6',
+                  flex: '1'
                 }}>
                   O roteiro prioriza a orientação sobre medicamentos, o manejo de reações adversas e a promoção da autonomia do paciente no tratamento.
                 </p>
@@ -695,14 +721,15 @@ export default function HomePage() {
 
               {/* Card 3: Validação por Especialistas */}
               <div style={{
-                flex: '1',
-                minWidth: '250px',
                 padding: '2rem',
                 background: 'white',
                 borderRadius: '16px',
                 border: '1px solid #e2e8f0',
                 boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
-                textAlign: 'center'
+                textAlign: 'center',
+                display: 'flex',
+                flexDirection: 'column',
+                minHeight: '280px'
               }}>
                 <div style={{
                   width: '48px',
@@ -730,7 +757,8 @@ export default function HomePage() {
                 <p style={{
                   fontSize: '0.875rem',
                   color: '#64748b',
-                  lineHeight: '1.6'
+                  lineHeight: '1.6',
+                  flex: '1'
                 }}>
                   Submetido a um rigoroso processo de validação, garantindo sua relevância e aplicabilidade clínica.
                 </p>
