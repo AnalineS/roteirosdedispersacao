@@ -137,27 +137,16 @@ export default function HomePage() {
               alignItems: 'center',
               gap: '1rem'
             }}>
-              <div style={{
-                width: '80px',
-                height: '80px',
-                borderRadius: '50%',
-                overflow: 'hidden',
-                backgroundColor: '#1e3a5f',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}>
-                <img 
-                  src={getUniversityLogo('unb_symbol')} 
-                  alt="Universidade de Brasília"
-                  style={{
-                    width: '60%',
-                    height: '60%',
-                    objectFit: 'contain',
-                    filter: 'brightness(0) invert(1)'
-                  }}
-                />
-              </div>
+              <img 
+                src={getUniversityLogo('unb_logo2')} 
+                alt="Universidade de Brasília"
+                style={{
+                  width: '80px',
+                  height: '80px',
+                  objectFit: 'contain',
+                  borderRadius: '50%'
+                }}
+              />
               <div style={{ textAlign: 'left' }}>
                 <h1 style={{ 
                   fontSize: '2.5rem',

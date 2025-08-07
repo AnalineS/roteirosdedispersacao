@@ -11,8 +11,9 @@ export const PERSONA_AVATARS = {
 } as const;
 
 export const UNIVERSITY_LOGOS = {
-  unb_symbol: '/images/logos/unb-simbolo.png',     // Logo principal para header
+  unb_symbol: '/images/logos/unb-simbolo.png',     // Logo símbolo
   unb_logo: '/images/logos/unb-logo.webp',        // Logo completa
+  unb_logo2: '/images/logos/unb-logo2.png',       // Logo circular para header
   ppgcf_logo: '/images/logos/ppgcf-logo.png'      // Logo do programa
 } as const;
 
