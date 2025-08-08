@@ -359,3 +359,6 @@ export const SystemHealthWarning: React.FC<{
     </div>
   );
 };
+
+// Export default para lazy loading
+export default FallbackIndicator;

@@ -267,3 +267,6 @@ export const ContextPreview: React.FC<{
     </div>
   );
 };
+
+// Export default para lazy loading
+export default KnowledgeIndicator;

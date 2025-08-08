@@ -95,14 +95,25 @@ export default function ConversationHistory({
     setEditingTitle('');
   };
 
-  const groupedConversations = conversations.reduce((groups, conv) => {
-    const personaId = conv.personaId;
-    if (!groups[personaId]) {
-      groups[personaId] = [];
-    }
-    groups[personaId].push(conv);
-    return groups;
-  }, {} as Record<string, ConversationSummary[]>);
+  const groupedConversations = useMemo(() => {
+    return conversations.reduce((groups, conv) => {
+      const personaId = conv.personaId;
+      if (!groups[personaId]) {
+        groups[personaId] = [];
+      }
+      groups[personaId].push(conv);
+      return groups;
+    }, {} as Record<string, ConversationSummary[]>);
+  }, [conversations]);
+
+  // Handlers memoizados para evitar re-renders
+  const handleNewConversation = useCallback((personaId: string) => {
+    onNewConversation(personaId);
+  }, [onNewConversation]);
+
+  const handleConversationSelect = useCallback((conversationId: string) => {
+    onConversationSelect(conversationId);
+  }, [onConversationSelect]);
 
   return (
     <>
@@ -222,7 +233,7 @@ export default function ConversationHistory({
                     </div>
                   </div>
                   <button
-                    onClick={() => onNewConversation(personaId)}
+                    onClick={() => handleNewConversation(personaId)}
                     style={{
                       background: 'none',
                       border: 'none',
@@ -252,7 +263,7 @@ export default function ConversationHistory({
                     }}
                     onMouseEnter={() => setHoveredId(conversation.id)}
                     onMouseLeave={() => setHoveredId(null)}
-                    onClick={() => onConversationSelect(conversation.id)}
+                    onClick={() => handleConversationSelect(conversation.id)}
                   >
                     {editingId === conversation.id ? (
                       <div style={{ display: 'flex', gap: '5px' }}>

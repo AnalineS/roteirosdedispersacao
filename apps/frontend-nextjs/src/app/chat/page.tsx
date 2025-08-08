@@ -11,22 +11,33 @@ const ConversationExporter = lazy(() => import('@/components/chat/ConversationEx
 const ContextualSuggestions = lazy(() => import('@/components/chat/ContextualSuggestions'));
 const ConversationHistory = lazy(() => import('@/components/chat/ConversationHistory'));
 const RoutingIndicator = lazy(() => import('@/components/chat/RoutingIndicator'));
-const SentimentIndicator = lazy(() => import('@/components/chat/SentimentIndicator').then(module => ({ default: module.SentimentIndicator })));
-const KnowledgeIndicator = lazy(() => import('@/components/chat/KnowledgeIndicator').then(module => ({ default: module.KnowledgeIndicator })));
-const FallbackIndicator = lazy(() => import('@/components/chat/FallbackIndicator').then(module => ({ default: module.FallbackIndicator })));
+const SentimentIndicator = lazy(() => import('@/components/chat/SentimentIndicator'));
+const KnowledgeIndicator = lazy(() => import('@/components/chat/KnowledgeIndicator'));
+const FallbackIndicator = lazy(() => import('@/components/chat/FallbackIndicator'));
 const SystemHealthWarning = lazy(() => import('@/components/chat/FallbackIndicator').then(module => ({ default: module.SystemHealthWarning })));
 import { usePersonas } from '@/hooks/usePersonas';
 import { useChat } from '@/hooks/useChat';
 import { useConversationHistory } from '@/hooks/useConversationHistory';
 import { useIntelligentRouting } from '@/hooks/useIntelligentRouting';
-import { useUserProfile, useProfileDetection } from '@/hooks/useUserProfile';
+import { useUserProfile } from '@/hooks/useUserProfile';
 import { theme } from '@/config/theme';
 import { ChatComponentLoader, SidebarLoader, IndicatorLoader } from '@/components/LoadingSpinner';
+import { type ChatMessage } from '@/services/api';
 
 export default function ChatPage() {
   const { personas, loading: personasLoading, error: personasError } = usePersonas();
+  const {
+    createConversation,
+    switchToConversation,
+    deleteConversation,
+    renameConversation,
+    addMessageToConversation,
+    getCurrentMessages,
+    getConversationsForPersona,
+    currentConversationId
+  } = useConversationHistory();
+  const { profile, updateProfile, getRecommendedPersona } = useUserProfile();
   const { 
-    messages, 
     loading: chatLoading, 
     error: chatError, 
     sendMessage,
@@ -41,20 +52,12 @@ export default function ChatPage() {
   } = useChat({ 
     persistToLocalStorage: false, 
     enableSentimentAnalysis: true,
-    enableKnowledgeEnrichment: true
+    enableKnowledgeEnrichment: true,
+    onMessageReceived: useCallback((message: ChatMessage) => {
+      // Adicionar resposta da IA ao histórico de conversas
+      addMessageToConversation(message);
+    }, [addMessageToConversation])
   });
-  const { profile, updateProfile, getRecommendedPersona } = useUserProfile();
-  const { detectProfile } = useProfileDetection();
-  const {
-    createConversation,
-    switchToConversation,
-    deleteConversation,
-    renameConversation,
-    addMessageToConversation,
-    getCurrentMessages,
-    getConversationsForPersona,
-    currentConversationId
-  } = useConversationHistory();
   
   const [inputValue, setInputValue] = useState('');
   const [selectedPersona, setSelectedPersona] = useState<string | null>(null);
@@ -66,6 +69,23 @@ export default function ChatPage() {
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  
+  // Função helper para obter todas as conversas com validações
+  const getAllConversations = useCallback(() => {
+    if (!personas || Object.keys(personas).length === 0) {
+      return [];
+    }
+    
+    try {
+      return Object.keys(personas).flatMap(personaId => {
+        if (!personaId || !personas[personaId]) return [];
+        return getConversationsForPersona(personaId);
+      });
+    } catch (error) {
+      console.error('Erro ao obter conversas:', error);
+      return [];
+    }
+  }, [personas, getConversationsForPersona]);
   
   // Detectar dispositivo móvel
   useEffect(() => {
@@ -149,12 +169,30 @@ export default function ChatPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [currentMessages]);
 
-  // Adicionar mensagens ao histórico de conversas
-  useEffect(() => {
-    messages.forEach(message => {
-      addMessageToConversation(message);
-    });
-  }, [messages, addMessageToConversation]);
+  // Função wrapper para enviar mensagens e adicionar ao histórico
+  const sendMessageWithHistory = useCallback(async (messageText: string, personaId: string) => {
+    const userMessage = {
+      role: 'user' as const,
+      content: messageText,
+      timestamp: Date.now(),
+      persona: personaId
+    };
+    
+    // Adicionar mensagem do usuário ao histórico imediatamente
+    addMessageToConversation(userMessage);
+    
+    try {
+      // Usar o sendMessage original que retornará a resposta
+      await sendMessage(messageText, personaId);
+      
+      // A resposta será automaticamente adicionada pelo useChat hooks
+      // Precisamos interceptar isso - vou fazer isso no próximo passo
+      
+    } catch (error) {
+      console.error('Erro ao enviar mensagem:', error);
+      // Adicionar mensagem de erro ao histórico se necessário
+    }
+  }, [sendMessage, addMessageToConversation]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -176,7 +214,7 @@ export default function ChatPage() {
       setIsPersonaTyping(true);
       
       try {
-        await sendMessage(messageText, selectedPersona);
+        await sendMessageWithHistory(messageText, selectedPersona);
       } finally {
         setIsPersonaTyping(false);
       }
@@ -211,10 +249,8 @@ export default function ChatPage() {
   
   const handleConversationSelect = (conversationId: string) => {
     switchToConversation(conversationId);
-    // Encontrar a persona desta conversa
-    const allConversations = Object.values(personas).flatMap(persona => 
-      getConversationsForPersona(Object.keys(personas).find(id => personas[id] === persona) || '')
-    );
+    // Encontrar a persona desta conversa com função helper
+    const allConversations = getAllConversations();
     const selectedConv = allConversations.find(conv => conv.id === conversationId);
     if (selectedConv) {
       setSelectedPersona(selectedConv.personaId);
@@ -273,10 +309,7 @@ export default function ChatPage() {
       {/* Conversation History Sidebar */}
       <Suspense fallback={<SidebarLoader />}>
         <ConversationHistory
-          conversations={Object.values(personas).flatMap(persona => {
-            const personaId = Object.keys(personas).find(id => personas[id] === persona);
-            return personaId ? getConversationsForPersona(personaId) : [];
-          })}
+          conversations={getAllConversations()}
           currentConversationId={currentConversationId}
           personas={personas}
           onConversationSelect={handleConversationSelect}

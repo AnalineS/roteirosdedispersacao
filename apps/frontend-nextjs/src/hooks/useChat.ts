@@ -16,6 +16,7 @@ interface UseChatOptions {
   storageKey?: string;
   enableSentimentAnalysis?: boolean;
   enableKnowledgeEnrichment?: boolean;
+  onMessageReceived?: (message: ChatMessage) => void;
 }
 
 export function useChat(options: UseChatOptions = {}) {
@@ -23,7 +24,8 @@ export function useChat(options: UseChatOptions = {}) {
     persistToLocalStorage = true, 
     storageKey = 'chat-history',
     enableSentimentAnalysis = true,
-    enableKnowledgeEnrichment = true
+    enableKnowledgeEnrichment = true,
+    onMessageReceived
   } = options;
 
   // Carregar histórico do localStorage se disponível (memoizado)
@@ -40,9 +42,15 @@ export function useChat(options: UseChatOptions = {}) {
   }, [persistToLocalStorage, storageKey]);
 
   const [messages, setMessages] = useState<ChatMessage[]>(loadFromStorage);
+  const messagesRef = useRef<ChatMessage[]>(messages);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [personaSwitchSuggestion, setPersonaSwitchSuggestion] = useState<string | null>(null);
+  
+  // Manter ref sincronizada com state
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
   
   // Análise de sentimento
   const { 
@@ -157,16 +165,19 @@ export function useChat(options: UseChatOptions = {}) {
 
     // Adicionar mensagem do usuário apenas na primeira tentativa
     if (retryCount === 0) {
-      const newMessages = [...messages, userMessage];
-      setMessages(newMessages);
-      saveToStorage(newMessages);
+      setMessages(prev => {
+        const newMessages = [...prev, userMessage];
+        messagesRef.current = newMessages;
+        saveToStorage(newMessages);
+        return newMessages;
+      });
     }
 
     setLoading(true);
     setError(null);
 
     try {
-      const currentMessages = retryCount === 0 ? [...messages, userMessage] : messages;
+      const currentMessages = retryCount === 0 ? [...messagesRef.current, userMessage] : messagesRef.current;
       
       const request: ChatRequest = {
         question: message.trim(),
@@ -211,9 +222,18 @@ export function useChat(options: UseChatOptions = {}) {
           }
         };
 
-        const finalMessages = [...currentMessages, assistantMessage];
-        setMessages(finalMessages);
-        saveToStorage(finalMessages);
+        setMessages(prev => {
+          const finalMessages = [...prev, assistantMessage];
+          messagesRef.current = finalMessages;
+          saveToStorage(finalMessages);
+          
+          // Chamar callback se fornecido
+          if (onMessageReceived) {
+            onMessageReceived(assistantMessage);
+          }
+          
+          return finalMessages;
+        });
         
         setLoading(false);
         return;
@@ -228,9 +248,18 @@ export function useChat(options: UseChatOptions = {}) {
         persona: response.persona
       };
 
-      const finalMessages = [...currentMessages, assistantMessage];
-      setMessages(finalMessages);
-      saveToStorage(finalMessages);
+      setMessages(prev => {
+        const finalMessages = [...prev, assistantMessage];
+        messagesRef.current = finalMessages;
+        saveToStorage(finalMessages);
+        
+        // Chamar callback se fornecido
+        if (onMessageReceived) {
+          onMessageReceived(assistantMessage);
+        }
+        
+        return finalMessages;
+      });
       setLoading(false);
 
     } catch (err) {
@@ -255,7 +284,7 @@ export function useChat(options: UseChatOptions = {}) {
     if (retryCount >= maxRetries) {
       setLoading(false);
     }
-  }, [messages, saveToStorage, analyzeSentiment, enableSentimentAnalysis]);
+  }, [saveToStorage, analyzeSentiment, enableSentimentAnalysis]);
 
   const clearMessages = useCallback(() => {
     setMessages([]);
@@ -269,8 +298,8 @@ export function useChat(options: UseChatOptions = {}) {
   }, [persistToLocalStorage, storageKey, enableSentimentAnalysis, clearSentimentHistory]);
 
   const getMessagesForPersona = useCallback((personaId: string) => {
-    return messages.filter(msg => msg.persona === personaId);
-  }, [messages]);
+    return messagesRef.current.filter(msg => msg.persona === personaId);
+  }, []);
 
   return {
     messages,

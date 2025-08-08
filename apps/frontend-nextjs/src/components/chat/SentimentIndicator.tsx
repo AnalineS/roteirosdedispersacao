@@ -241,3 +241,6 @@ export const SentimentHistory: React.FC<{
     </div>
   );
 };
+
+// Export default para lazy loading
+export default SentimentIndicator;
