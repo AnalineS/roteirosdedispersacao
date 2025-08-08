@@ -18,12 +18,13 @@ const isValidImageUrl = (url: string): boolean => {
 interface PersonaAvatarProps {
   persona: Persona;
   personaId: string;
-  size?: 'small' | 'medium' | 'large';
+  size?: 'tiny' | 'small' | 'medium' | 'large';
   showStatus?: boolean;
   isTyping?: boolean;
   onClick?: () => void;
   ariaLabel?: string;
   className?: string;
+  style?: React.CSSProperties;
 }
 
 const PersonaAvatar = memo(function PersonaAvatar({ 
@@ -34,7 +35,8 @@ const PersonaAvatar = memo(function PersonaAvatar({
   isTyping = false,
   onClick,
   ariaLabel,
-  className = ''
+  className = '',
+  style = {}
 }: PersonaAvatarProps) {
   const [imageError, setImageError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -53,6 +55,8 @@ const PersonaAvatar = memo(function PersonaAvatar({
 
   const sizeStyles = useMemo(() => {
     switch (size) {
+      case 'tiny':
+        return { width: '24px', height: '24px', fontSize: '0.75rem' };
       case 'small':
         return { width: '32px', height: '32px', fontSize: '1rem' };
       case 'large':
@@ -102,7 +106,8 @@ const PersonaAvatar = memo(function PersonaAvatar({
         position: 'relative',
         display: 'inline-block',
         cursor: onClick ? 'pointer' : 'default',
-        outline: 'none'
+        outline: 'none',
+        ...style
       }}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
@@ -210,8 +215,8 @@ const PersonaAvatar = memo(function PersonaAvatar({
             position: 'absolute',
             bottom: '2px',
             right: '2px',
-            width: size === 'small' ? '8px' : size === 'large' ? '16px' : '12px',
-            height: size === 'small' ? '8px' : size === 'large' ? '16px' : '12px',
+            width: size === 'tiny' ? '6px' : size === 'small' ? '8px' : size === 'large' ? '16px' : '12px',
+            height: size === 'tiny' ? '6px' : size === 'small' ? '8px' : size === 'large' ? '16px' : '12px',
             borderRadius: '50%',
             background: isTyping ? '#4caf50' : '#2196f3',
             border: '2px solid white',

@@ -122,27 +122,32 @@ export default function ConversationHistory({
         onClick={onToggle}
         style={{
           position: 'fixed',
-          top: '80px',
-          left: isVisible ? '320px' : '20px',
-          zIndex: 1001,
+          top: isMobile ? '70px' : '80px',
+          left: isVisible ? (isMobile ? 'calc(85vw - 48px)' : '290px') : (isMobile ? '15px' : '20px'),
+          zIndex: 1003,
           background: '#1976d2',
           color: 'white',
           border: 'none',
           borderRadius: '50%',
-          width: '48px',
-          height: '48px',
-          fontSize: '1.2rem',
+          width: '44px',
+          height: '44px',
+          fontSize: '1.1rem',
           cursor: 'pointer',
           boxShadow: '0 4px 12px rgba(25, 118, 210, 0.3)',
-          transition: 'all 0.3s ease'
+          transition: 'all 0.3s ease',
+          touchAction: 'manipulation'
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.transform = 'scale(1.1)';
-          e.currentTarget.style.boxShadow = '0 6px 20px rgba(25, 118, 210, 0.4)';
+          if (!isMobile) {
+            e.currentTarget.style.transform = 'scale(1.1)';
+            e.currentTarget.style.boxShadow = '0 6px 20px rgba(25, 118, 210, 0.4)';
+          }
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.transform = 'scale(1)';
-          e.currentTarget.style.boxShadow = '0 4px 12px rgba(25, 118, 210, 0.3)';
+          if (!isMobile) {
+            e.currentTarget.style.transform = 'scale(1)';
+            e.currentTarget.style.boxShadow = '0 4px 12px rgba(25, 118, 210, 0.3)';
+          }
         }}
       >
         {isVisible ? '✕' : '💬'}
@@ -153,13 +158,14 @@ export default function ConversationHistory({
         style={{
           position: 'fixed',
           top: 0,
-          left: isVisible ? 0 : '-320px',
-          width: '320px',
+          left: isVisible ? 0 : (isMobile ? '-100%' : '-320px'),
+          width: isMobile ? '85vw' : '320px',
+          maxWidth: '320px',
           height: '100vh',
           background: 'white',
           borderRight: '1px solid #e0e0e0',
           boxShadow: '2px 0 10px rgba(0,0,0,0.1)',
-          zIndex: 1000,
+          zIndex: 1002,
           transition: 'left 0.3s ease',
           display: 'flex',
           flexDirection: 'column',
@@ -400,7 +406,7 @@ export default function ConversationHistory({
       </div>
 
       {/* Overlay */}
-      {isVisible && (
+      {isVisible && isMobile && (
         <div
           style={{
             position: 'fixed',
@@ -408,8 +414,9 @@ export default function ConversationHistory({
             left: 0,
             right: 0,
             bottom: 0,
-            background: 'rgba(0,0,0,0.3)',
-            zIndex: 999
+            background: 'rgba(0,0,0,0.4)',
+            zIndex: 1001,
+            touchAction: 'none'
           }}
           onClick={onToggle}
         />

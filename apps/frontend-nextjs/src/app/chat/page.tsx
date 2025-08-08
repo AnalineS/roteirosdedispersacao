@@ -326,8 +326,9 @@ export default function ChatPage() {
         flexDirection: 'column',
         background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
         marginLeft: showHistory && !isMobile ? '320px' : '0',
-        transition: 'margin-left 0.3s ease'
-      }} className="main-content">
+        transition: 'margin-left 0.3s ease',
+        position: 'relative'
+      }} className="main-content chat-container">
       {/* Header */}
       <div style={{
         background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
@@ -592,9 +593,10 @@ export default function ChatPage() {
       {/* Input Area */}
       <div style={{
         position: 'relative',
-        padding: isMobile ? '15px 10px' : '20px',
+        padding: isMobile ? '15px 10px 15px 10px' : '20px',
         background: 'white',
-        borderTop: '1px solid #eee'
+        borderTop: '1px solid #eee',
+        paddingBottom: isMobile ? 'max(15px, env(safe-area-inset-bottom))' : '20px'
       }}>
         {/* Indicadores de IA */}
         {(currentSentiment || lastSearchResult || isSearchingKnowledge || fallbackState.isActive || fallbackState.result) && selectedPersona && (
@@ -752,6 +754,33 @@ export default function ChatPage() {
         @keyframes pulse {
           0%, 80%, 100% { opacity: 0.3; }
           40% { opacity: 1; }
+        }
+        
+        /* Mobile-specific styles for chat */
+        @media (max-width: 767px) {
+          .chat-container {
+            height: 100vh !important;
+            height: 100dvh !important; /* Dynamic viewport height */
+          }
+          
+          /* Ensure proper touch behavior */
+          .chat-container * {
+            touch-action: manipulation;
+          }
+          
+          /* Fix input area on mobile */
+          .chat-container .input-area {
+            position: sticky !important;
+            bottom: 0;
+            padding-bottom: max(15px, env(safe-area-inset-bottom)) !important;
+          }
+        }
+        
+        /* Tablet adjustments */
+        @media (min-width: 768px) and (max-width: 1023px) {
+          .chat-container {
+            margin-left: 0 !important;
+          }
         }
       `}</style>
     </div>

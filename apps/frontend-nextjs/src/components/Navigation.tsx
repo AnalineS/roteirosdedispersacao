@@ -72,21 +72,24 @@ export default function Navigation({ currentPersona }: NavigationProps) {
         onClick={() => setIsMenuOpen(!isMenuOpen)}
         style={{
           position: 'fixed',
-          top: '20px',
-          left: '20px',
-          zIndex: 1000,
+          top: '15px',
+          left: '15px',
+          zIndex: 1002,
           background: theme.colors.primary[500],
           color: 'white',
           border: 'none',
           borderRadius: '50%',
-          width: '50px',
-          height: '50px',
-          fontSize: '1.5rem',
+          width: '44px',
+          height: '44px',
+          fontSize: '1.3rem',
           cursor: 'pointer',
           boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
-          display: 'block'
+          display: 'none',
+          alignItems: 'center',
+          justifyContent: 'center',
+          touchAction: 'manipulation'
         }}
-        className="lg:hidden"
+        className="mobile-menu-btn"
       >
         {isMenuOpen ? '✕' : '☰'}
       </button>
@@ -112,17 +115,18 @@ export default function Navigation({ currentPersona }: NavigationProps) {
         style={{
           position: 'fixed',
           top: 0,
-          left: isMenuOpen ? 0 : '-300px',
-          width: '280px',
+          left: isMenuOpen ? 0 : '-100%',
+          width: '100%',
+          maxWidth: '320px',
           height: '100vh',
           background: theme.gradients.primary,
           color: 'white',
           transition: 'left 0.3s ease',
-          zIndex: 999,
+          zIndex: 1001,
           overflowY: 'auto',
           boxShadow: '4px 0 20px rgba(0,0,0,0.1)'
         }}
-        className="lg:left-0"
+        className="nav-sidebar"
       >
         {/* Header */}
         <div style={{
@@ -304,11 +308,52 @@ export default function Navigation({ currentPersona }: NavigationProps) {
         </div>
       </nav>
 
-      {/* Desktop: Push content when sidebar is visible */}
+      {/* Responsive Styles */}
       <style jsx global>{`
-        @media (min-width: 1024px) {
+        /* Mobile styles */
+        @media (max-width: 767px) {
+          .mobile-menu-btn {
+            display: flex !important;
+          }
+          
+          .nav-sidebar {
+            width: 85vw !important;
+            max-width: 320px !important;
+          }
+          
           .main-content {
-            margin-left: 280px;
+            margin-left: 0 !important;
+          }
+        }
+        
+        /* Tablet styles */
+        @media (min-width: 768px) and (max-width: 1023px) {
+          .mobile-menu-btn {
+            display: flex !important;
+          }
+          
+          .nav-sidebar {
+            width: 320px !important;
+          }
+          
+          .main-content {
+            margin-left: 0 !important;
+          }
+        }
+        
+        /* Desktop styles */
+        @media (min-width: 1024px) {
+          .mobile-menu-btn {
+            display: none !important;
+          }
+          
+          .nav-sidebar {
+            left: 0 !important;
+            width: 280px !important;
+          }
+          
+          .main-content {
+            margin-left: 280px !important;
             transition: margin-left 0.3s ease;
           }
         }
