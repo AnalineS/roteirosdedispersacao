@@ -698,8 +698,8 @@ Responda de acordo com o estilo da persona {persona_config['name']}:"""
 
         # Configuração OpenRouter
         openrouter_api_key = os.environ.get('OPENROUTER_API_KEY')
-        if not openrouter_api_key:
-            logger.error("OPENROUTER_API_KEY não configurado")
+        if not openrouter_api_key or openrouter_api_key == 'dev_key_placeholder':
+            logger.error("OPENROUTER_API_KEY não configurado ou usando placeholder")
             return generate_rule_based_response(question, persona, context)
         
         headers = {
@@ -958,7 +958,7 @@ def answer_question(question, persona):
     except Exception as e:
         logger.error(f"Erro ao processar pergunta: {e}")
         return format_persona_answer(
-            "Desculpe, ocorreu um erro técnico ao processar sua pergunta. Tente novamente.", 
+            "Desculpe, ocorreu um erro tecnico ao processar sua pergunta. Tente novamente.", 
             persona, 
             0.0
         )
@@ -1141,9 +1141,13 @@ def health_check():
     debug_info = {}
     
     # 1. Verificar variáveis de ambiente críticas
+    # Verificar se as keys são válidas (não placeholders)
+    huggingface_key = os.environ.get('HUGGINGFACE_API_KEY', '')
+    openrouter_key = os.environ.get('OPENROUTER_API_KEY', '')
+    
     env_vars = {
-        'HUGGINGFACE_API_KEY': bool(os.environ.get('HUGGINGFACE_API_KEY')),
-        'OPENROUTER_API_KEY': bool(os.environ.get('OPENROUTER_API_KEY')),
+        'HUGGINGFACE_API_KEY': bool(huggingface_key and huggingface_key != 'dev_key_placeholder'),
+        'OPENROUTER_API_KEY': bool(openrouter_key and openrouter_key != 'dev_key_placeholder'),
         'FLASK_ENV': os.environ.get('FLASK_ENV', 'not_set'),
         'ENVIRONMENT': os.environ.get('ENVIRONMENT', 'not_set'),
         'PORT': os.environ.get('PORT', 'not_set'),
@@ -1235,8 +1239,8 @@ def health_check():
             },
             "apis": {
                 "status": "operational" if env_vars_status else "failure",
-                "huggingface": bool(os.environ.get('HUGGINGFACE_API_KEY')),
-                "openrouter": bool(os.environ.get('OPENROUTER_API_KEY'))
+                "huggingface": env_vars['HUGGINGFACE_API_KEY'],
+                "openrouter": env_vars['OPENROUTER_API_KEY']
             },
             "cache_system": {
                 "status": "operational",
@@ -1855,7 +1859,8 @@ def validate_environment_variables():
     
     missing_vars = []
     for var, description in required_vars.items():
-        if not os.environ.get(var):
+        value = os.environ.get(var)
+        if not value or value == 'dev_key_placeholder':
             missing_vars.append(f"  - {var}: {description}")
     
     # Em desenvolvimento, apenas avisar sobre as chaves ausentes
