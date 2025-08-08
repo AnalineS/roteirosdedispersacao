@@ -1,11 +1,22 @@
+# -*- coding: utf-8 -*-
+import sys
+import os
+# Garantir encoding UTF-8 no Windows
+if sys.platform == "win32":
+    import io
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
+
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
-import os
 import re
 import logging
 from datetime import datetime, timedelta
 import requests
 import json
+# Carregar variáveis de ambiente do .env
+from dotenv import load_dotenv
+load_dotenv()
 from collections import defaultdict
 import threading
 import time
@@ -21,7 +32,7 @@ try:
     from services.personas import get_personas, get_persona_prompt
     from services.knowledge_loader import get_structured_knowledge_base
     ADVANCED_FEATURES = True
-    print("✅ Todos os sistemas avançados carregados com sucesso!")
+    print("✓ Todos os sistemas avançados carregados com sucesso!")
 except ImportError as e:
     print(f"Advanced features disabled, using fallback: {e}")
     ADVANCED_FEATURES = False
@@ -30,7 +41,7 @@ except ImportError as e:
 try:
     from services.simple_rag import generate_context_from_rag
     RAG_AVAILABLE = True
-    print("✅ RAG simples carregado com sucesso")
+    print("✓ RAG simples carregado com sucesso")
 except ImportError as e:
     print(f"RAG simples indisponível: {e}")
     RAG_AVAILABLE = False
@@ -39,7 +50,7 @@ except ImportError as e:
 try:
     from services.openai_integration import test_openai_connection, get_ai_response_mock
     OPENAI_TEST_AVAILABLE = True
-    print("✅ OpenAI integration carregado com sucesso")
+    print("✓ OpenAI integration carregado com sucesso")
 except ImportError as e:
     print(f"OpenAI integration indisponível: {e}")
     OPENAI_TEST_AVAILABLE = False
@@ -49,9 +60,9 @@ try:
     from services.advanced_cache import PerformanceCache
     performance_cache = PerformanceCache(max_size=1000, ttl_minutes=60)
     ADVANCED_CACHE = True
-    print("✅ Cache avançado carregado com sucesso!")
+    print("✓ Cache avançado carregado com sucesso!")
 except ImportError as e:
-    print(f"⚠️ Cache avançado indisponível, usando fallback: {e}")
+    print(f"⚠ Cache avançado indisponível, usando fallback: {e}")
     # Performance cache simples sem dependências externas
     class SimpleCache:
         def __init__(self):
@@ -485,7 +496,7 @@ if ADVANCED_FEATURES:
     try:
         structured_kb = get_structured_knowledge_base()
         kb_stats = structured_kb.get_statistics()
-        logger.info(f"✅ Knowledge base carregada: {kb_stats}")
+        logger.info(f"✓ Knowledge base carregada: {kb_stats}")
     except Exception as e:
         logger.error(f"❌ Erro ao carregar knowledge base estruturada: {e}")
 else:
@@ -535,7 +546,7 @@ def extract_md_text(md_path):
         logger.info(f"📁 Verificando se existe: {os.path.exists(md_path)}")
         with open(md_path, 'r', encoding='utf-8') as file:
             text = file.read()
-        logger.info(f"✅ Arquivo Markdown carregado! {len(text)} caracteres")
+        logger.info(f"✓ Arquivo Markdown carregado! {len(text)} caracteres")
         return text
         
     except FileNotFoundError:
@@ -554,13 +565,13 @@ def extract_md_text(md_path):
                 logger.info(f"🔄 Testando: {alt_path}")
                 with open(alt_path, 'r', encoding='utf-8') as file:
                     text = file.read()
-                logger.info(f"✅ Sucesso com alternativo! {len(text)} caracteres de {alt_path}")
+                logger.info(f"✓ Sucesso com alternativo! {len(text)} caracteres de {alt_path}")
                 return text
             except:
                 continue
                 
         # Se nada funcionar, usar conteúdo básico expandido
-        logger.warning("⚠️ Usando knowledge base de fallback expandida")
+        logger.warning("⚠ Usando knowledge base de fallback expandida")
         return """
 # Roteiro de Dispensação para Hanseníase - Sistema de Fallback
 
@@ -726,7 +737,7 @@ Responda de acordo com o estilo da persona {persona_config['name']}:"""
                     result = response.json()
                     ai_response = result["choices"][0]["message"]["content"]
                     
-                    logger.info(f"✅ Resposta obtida do modelo {model.split('/')[-1]} (redundância ativa)")
+                    logger.info(f"✓ Resposta obtida do modelo {model.split('/')[-1]} (redundância ativa)")
                     
                     # Validar qualidade das respostas otimizadas
                     if persona == "dr_gasnelio" and ai_response:
@@ -1329,7 +1340,7 @@ def get_personas_api():
         # Obter personas com informações completas
         personas_data = get_personas()
         
-        # Enriquecer com metadados adicionais
+        # Enriquecer com metadados adicionais para compatibilidade com frontend
         enriched_personas = {}
         for persona_id, persona_info in personas_data.items():
             enriched_personas[persona_id] = {
@@ -1847,14 +1858,23 @@ def validate_environment_variables():
         if not os.environ.get(var):
             missing_vars.append(f"  - {var}: {description}")
     
-    if missing_vars:
-        logger.critical("❌ VARIÁVEIS DE AMBIENTE OBRIGATÓRIAS AUSENTES:")
-        for var in missing_vars:
-            logger.critical(var)
-        logger.critical("Configure as variáveis antes de iniciar a aplicação!")
-        raise SystemExit(1)
+    # Em desenvolvimento, apenas avisar sobre as chaves ausentes
+    is_development = os.environ.get('FLASK_ENV', '').lower() == 'development' or os.environ.get('ENVIRONMENT', '').lower() == 'development'
     
-    logger.info("✅ Todas as variáveis de ambiente obrigatórias estão configuradas")
+    if missing_vars:
+        if is_development:
+            logger.warning("⚠ VARIÁVEIS DE AMBIENTE AUSENTES (modo desenvolvimento):")
+            for var in missing_vars:
+                logger.warning(var)
+            logger.warning("IA estará limitada sem as chaves. Configure as variáveis para funcionalidade completa.")
+        else:
+            logger.critical("❌ VARIÁVEIS DE AMBIENTE OBRIGATÓRIAS AUSENTES:")
+            for var in missing_vars:
+                logger.critical(var)
+            logger.critical("Configure as variáveis antes de iniciar a aplicação!")
+            raise SystemExit(1)
+    else:
+        logger.info("✓ Todas as variáveis de ambiente obrigatórias estão configuradas")
 
 if __name__ == '__main__':
     # Criar diretório de logs se não existir
@@ -1881,7 +1901,7 @@ if __name__ == '__main__':
     # Carrega o conhecimento (MD + estruturado)
     if os.path.exists(MD_PATH):
         md_text = extract_md_text(MD_PATH)
-        logger.info(f"✅ MD carregado: {len(md_text)} chars")
+        logger.info(f"✓ MD carregado: {len(md_text)} chars")
     else:
         logger.warning(f"Arquivo Markdown não encontrado: {MD_PATH}")
         md_text = "Arquivo Markdown não disponível"
@@ -1893,7 +1913,7 @@ if __name__ == '__main__':
             kb_stats = structured_kb.get_statistics()
             if kb_stats['loaded_successfully'] > 0:
                 md_text = f"Knowledge base estruturada carregada: {kb_stats['loaded_successfully']} categorias"
-                logger.info("✅ Usando knowledge base estruturada como fonte principal")
+                logger.info("✓ Usando knowledge base estruturada como fonte principal")
         except Exception as e:
             logger.error(f"❌ Fallback para knowledge base estruturada falhou: {e}")
     

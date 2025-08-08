@@ -27,7 +27,7 @@ interface ModernChatContainerProps {
   
   // Indicadores IA
   currentSentiment?: {
-    primary: string;
+    category: string;
     confidence: number;
     score: number;
   } | null;

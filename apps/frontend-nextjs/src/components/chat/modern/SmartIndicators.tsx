@@ -6,7 +6,7 @@ import PersonaAvatar from '../PersonaAvatar';
 
 interface SmartIndicatorsProps {
   sentiment?: {
-    primary: string;
+    category: string;
     confidence: number;
     score: number;
   } | null;
@@ -290,7 +290,7 @@ export default function SmartIndicators({
         <StatusBar>
           {sentiment?.confidence && sentiment.confidence > 0.7 && (
             <SentimentIndicator 
-              sentiment={sentiment.primary} 
+              sentiment={sentiment.category} 
               confidence={sentiment.confidence} 
             />
           )}
