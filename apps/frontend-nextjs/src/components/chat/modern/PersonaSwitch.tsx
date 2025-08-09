@@ -58,7 +58,7 @@ export default function PersonaSwitch({
       <span
         style={{
           padding: `0 ${modernChatTheme.spacing.sm}`,
-          fontSize: modernChatTheme.typography.small.fontSize,
+          fontSize: modernChatTheme.typography.meta.fontSize,
           fontWeight: isDrGasnelio ? '600' : '400',
           color: isDrGasnelio ? modernChatTheme.colors.personas.gasnelio.primary : modernChatTheme.colors.neutral.textMuted,
           transition: 'all 0.3s ease',
@@ -118,7 +118,7 @@ export default function PersonaSwitch({
       <span
         style={{
           padding: `0 ${modernChatTheme.spacing.sm}`,
-          fontSize: modernChatTheme.typography.small.fontSize,
+          fontSize: modernChatTheme.typography.meta.fontSize,
           fontWeight: !isDrGasnelio ? '600' : '400',
           color: !isDrGasnelio ? modernChatTheme.colors.personas.ga.primary : modernChatTheme.colors.neutral.textMuted,
           transition: 'all 0.3s ease',
@@ -134,7 +134,7 @@ export default function PersonaSwitch({
         <span
           style={{
             marginLeft: modernChatTheme.spacing.sm,
-            fontSize: modernChatTheme.typography.small.fontSize,
+            fontSize: modernChatTheme.typography.meta.fontSize,
             fontWeight: '600',
             color: isDrGasnelio 
               ? modernChatTheme.colors.personas.gasnelio.primary 
