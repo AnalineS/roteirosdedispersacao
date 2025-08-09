@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, Suspense, lazy } from 'react';
 import Link from 'next/link';
 import Navigation from '@/components/Navigation';
 import ModernChatContainer from '@/components/chat/modern/ModernChatContainer';
+import DebugPersonas from '@/components/DebugPersonas';
 
 // Lazy load dos componentes complementares
 const ConversationHistory = lazy(() => import('@/components/chat/ConversationHistory'));
@@ -52,7 +53,7 @@ export default function ChatPage() {
   });
   
   const [inputValue, setInputValue] = useState('');
-  const [selectedPersona, setSelectedPersona] = useState<string | null>(null);
+  const [selectedPersona, setSelectedPersona] = useState<string | null>('ga'); // Padrão: Gá (empático)
   const [showHistory, setShowHistory] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [pendingQuestion, setPendingQuestion] = useState<string>('');
@@ -114,7 +115,7 @@ export default function ChatPage() {
 
   // Carregar persona baseada no perfil do usuário ou localStorage
   useEffect(() => {
-    if (personas && Object.keys(personas).length > 0) {
+    if (personas && Object.keys(personas).length > 0 && !selectedPersona) {
       let selectedPersonaId = null;
       
       // Prioridade 1: Persona do perfil do usuário
@@ -123,33 +124,54 @@ export default function ChatPage() {
       }
       // Prioridade 2: Recomendação baseada no perfil
       else if (profile) {
-        selectedPersonaId = getRecommendedPersona();
+        const recommended = getRecommendedPersona();
+        if (recommended && personas[recommended]) {
+          selectedPersonaId = recommended;
+        }
       }
+      
       // Prioridade 3: localStorage (compatibilidade com versão anterior)
-      else if (typeof window !== 'undefined') {
+      if (!selectedPersonaId && typeof window !== 'undefined') {
         const storedPersona = localStorage.getItem('selectedPersona');
         if (storedPersona && personas[storedPersona]) {
           selectedPersonaId = storedPersona;
         }
       }
-      // Prioridade 4: Padrão empático
-      else {
-        selectedPersonaId = 'ga';
+      
+      // Prioridade 4: Usar a primeira persona disponível (dr_gasnelio ou ga)
+      if (!selectedPersonaId) {
+        // Preferir 'ga' se disponível, senão usar a primeira
+        if (personas['ga']) {
+          selectedPersonaId = 'ga';
+        } else if (personas['dr_gasnelio']) {
+          selectedPersonaId = 'dr_gasnelio';
+        } else {
+          // Usar a primeira persona disponível
+          selectedPersonaId = Object.keys(personas)[0];
+        }
       }
 
-      if (selectedPersonaId && selectedPersonaId !== selectedPersona) {
+      if (selectedPersonaId) {
+        console.log('[ChatPage] Setting initial persona:', selectedPersonaId);
         setSelectedPersona(selectedPersonaId);
+        
+        // Salvar no localStorage
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('selectedPersona', selectedPersonaId);
+        }
+        
         // Atualizar perfil se necessário
         if (profile && profile.selectedPersona !== selectedPersonaId) {
           updateProfile({ selectedPersona: selectedPersonaId });
         }
+        
         // Criar conversa se não houver uma ativa
         if (!currentConversationId) {
           createConversation(selectedPersonaId);
         }
       }
     }
-  }, [personas, profile, selectedPersona, currentConversationId, createConversation, getRecommendedPersona, updateProfile]);
+  }, [personas]); // Removendo dependências desnecessárias para evitar loops
 
 
   // Função wrapper para enviar mensagens e adicionar ao histórico
@@ -326,6 +348,9 @@ export default function ChatPage() {
           showHistory={showHistory}
         />
       </div>
+      
+      {/* Debug component - remover em produção */}
+      <DebugPersonas />
     </>
   );
 }

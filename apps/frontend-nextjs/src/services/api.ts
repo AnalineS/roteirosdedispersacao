@@ -88,7 +88,9 @@ export async function getPersonas(): Promise<PersonasResponse> {
     }
 
     const data = await response.json();
-    return data;
+    // O backend retorna { personas: {...}, metadata: {...} }
+    // Precisamos apenas do objeto personas
+    return data.personas || data;
   } catch (error) {
     console.error('Erro ao buscar personas:', error);
     throw error;

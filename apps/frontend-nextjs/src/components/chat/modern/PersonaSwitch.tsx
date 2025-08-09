@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { Persona } from '@/services/api';
-import PersonaAvatar from '../PersonaAvatar';
 import { modernChatTheme, getPersonaColors } from '@/config/modernTheme';
 
 interface PersonaSwitchProps {
@@ -19,207 +18,153 @@ export default function PersonaSwitch({
   isMobile = false 
 }: PersonaSwitchProps) {
   const [isTransitioning, setIsTransitioning] = useState(false);
+  
+  // Garantir que sempre haja uma persona selecionada
+  const actualSelected = selected || 'ga';
+  const personaIds = Object.keys(personas);
+  const isDrGasnelio = actualSelected === 'dr_gasnelio';
 
-  const handlePersonaChange = async (personaId: string) => {
-    if (personaId === selected || isTransitioning) return;
+  const handleToggle = () => {
+    if (isTransitioning) return;
     
     setIsTransitioning(true);
     
-    // Micro-interação: delay para animação visual
+    // Alternar entre as duas personas
+    const newPersona = isDrGasnelio ? 'ga' : 'dr_gasnelio';
+    
     setTimeout(() => {
-      onChange(personaId);
+      onChange(newPersona);
       setIsTransitioning(false);
-    }, 150);
-  };
-
-  const getPersonaDisplayType = (persona: Persona, personaId: string) => {
-    if (personaId === 'gasnelio') return 'Técnico';
-    if (personaId === 'ga') return 'Empático';
-    return persona.personality?.split(' ')[0] || 'Assistente';
+    }, 200);
   };
 
   return (
     <div 
-      className="persona-switch"
+      className="persona-switch-container"
       style={{
         display: 'flex',
+        alignItems: 'center',
+        gap: modernChatTheme.spacing.md,
         background: 'rgba(255, 255, 255, 0.95)',
-        borderRadius: modernChatTheme.borderRadius.lg,
-        padding: '4px',
-        gap: '4px',
+        borderRadius: '50px',
+        padding: '6px',
         backdropFilter: 'blur(10px)',
         border: `1px solid ${modernChatTheme.colors.neutral.border}`,
-        boxShadow: modernChatTheme.shadows.moderate,
-        transition: modernChatTheme.transitions.normal,
-        minWidth: isMobile ? 'auto' : '280px',
-        flexDirection: isMobile ? 'column' : 'row'
+        boxShadow: modernChatTheme.shadows.subtle,
+        transition: modernChatTheme.transitions.normal
       }}
     >
-      {Object.entries(personas).map(([personaId, persona]) => {
-        const isActive = selected === personaId;
-        const colors = getPersonaColors(personaId);
-        
-        return (
-          <button
-            key={personaId}
-            onClick={() => handlePersonaChange(personaId)}
-            disabled={isTransitioning}
-            className="persona-tab"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: modernChatTheme.spacing.sm,
-              padding: isMobile ? '10px 12px' : '8px 12px',
-              borderRadius: modernChatTheme.borderRadius.md,
-              border: 'none',
-              background: isActive ? colors.primary : 'transparent',
-              color: isActive ? 'white' : modernChatTheme.colors.neutral.text,
-              cursor: isTransitioning ? 'wait' : 'pointer',
-              transition: `all ${modernChatTheme.transitions.normal}`,
-              position: 'relative',
-              overflow: 'hidden',
-              flex: isMobile ? 1 : 'auto',
-              minWidth: 0,
-              opacity: isTransitioning ? 0.7 : 1,
-              transform: isActive && !isTransitioning ? 'translateY(-1px)' : 'translateY(0)'
-            }}
-            onMouseEnter={(e) => {
-              if (!isActive && !isTransitioning) {
-                e.currentTarget.style.background = modernChatTheme.colors.neutral.surface;
-                e.currentTarget.style.transform = 'translateY(-1px)';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!isActive) {
-                e.currentTarget.style.background = 'transparent';
-                e.currentTarget.style.transform = 'translateY(0)';
-              }
-            }}
-            aria-label={`Alternar para ${persona.name}`}
-            aria-pressed={isActive}
-          >
-            {/* Avatar */}
-            <PersonaAvatar 
-              persona={persona}
-              personaId={personaId}
-              size="small"
-              style={{
-                flexShrink: 0,
-                filter: isActive ? 'brightness(1.1)' : 'none'
-              }}
-            />
-            
-            {/* Info */}
-            <div 
-              className="persona-info"
-              style={{
-                flex: 1,
-                minWidth: 0,
-                textAlign: 'left'
-              }}
-            >
-              <div 
-                className="persona-name"
-                style={{
-                  fontSize: modernChatTheme.typography.persona.fontSize,
-                  fontWeight: modernChatTheme.typography.persona.fontWeight,
-                  lineHeight: modernChatTheme.typography.persona.lineHeight,
-                  margin: 0,
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis'
-                }}
-              >
-                {persona.name}
-              </div>
-              
-              {!isMobile && (
-                <div 
-                  className="persona-type"
-                  style={{
-                    fontSize: modernChatTheme.typography.meta.fontSize,
-                    lineHeight: modernChatTheme.typography.meta.lineHeight,
-                    opacity: isActive ? 0.9 : 0.6,
-                    margin: '2px 0 0 0',
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis'
-                  }}
-                >
-                  {getPersonaDisplayType(persona, personaId)}
-                </div>
-              )}
-            </div>
-            
-            {/* Active Indicator */}
-            {isActive && (
-              <div 
-                className="active-indicator"
-                style={{
-                  position: 'absolute',
-                  bottom: '2px',
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  width: '20px',
-                  height: '2px',
-                  background: 'rgba(255, 255, 255, 0.8)',
-                  borderRadius: '1px',
-                  animation: 'slideIn 200ms ease'
-                }}
-              />
-            )}
-            
-            {/* Ripple effect on click */}
-            {isTransitioning && (
-              <div
-                style={{
-                  position: 'absolute',
-                  inset: 0,
-                  background: 'radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%)',
-                  animation: 'ripple 300ms ease-out'
-                }}
-              />
-            )}
-          </button>
-        );
-      })}
+      {/* Label Esquerda - Dr. Gasnelio */}
+      <span
+        style={{
+          padding: `0 ${modernChatTheme.spacing.sm}`,
+          fontSize: modernChatTheme.typography.small.fontSize,
+          fontWeight: isDrGasnelio ? '600' : '400',
+          color: isDrGasnelio ? modernChatTheme.colors.personas.gasnelio.primary : modernChatTheme.colors.neutral.textMuted,
+          transition: 'all 0.3s ease',
+          whiteSpace: 'nowrap',
+          display: isMobile ? 'none' : 'block'
+        }}
+      >
+        Dr. Gasnelio
+      </span>
+      
+      {/* Toggle Switch */}
+      <button
+        onClick={handleToggle}
+        disabled={isTransitioning}
+        className="toggle-switch"
+        style={{
+          position: 'relative',
+          width: '60px',
+          height: '32px',
+          borderRadius: '50px',
+          border: 'none',
+          background: isDrGasnelio 
+            ? modernChatTheme.colors.personas.gasnelio.primary 
+            : modernChatTheme.colors.personas.ga.primary,
+          cursor: isTransitioning ? 'wait' : 'pointer',
+          transition: 'background 0.3s ease',
+          padding: 0,
+          outline: 'none',
+          boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)'
+        }}
+        aria-label={`Mudar para ${isDrGasnelio ? 'Gá' : 'Dr. Gasnelio'}`}
+        aria-pressed={isDrGasnelio}
+      >
+        {/* Slider */}
+        <div
+          style={{
+            position: 'absolute',
+            top: '4px',
+            left: isDrGasnelio ? '4px' : '32px',
+            width: '24px',
+            height: '24px',
+            borderRadius: '50%',
+            background: 'white',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+            transition: 'left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '14px'
+          }}
+        >
+          {isDrGasnelio ? '👨‍⚕️' : '🤝'}
+        </div>
+      </button>
+      
+      {/* Label Direita - Gá */}
+      <span
+        style={{
+          padding: `0 ${modernChatTheme.spacing.sm}`,
+          fontSize: modernChatTheme.typography.small.fontSize,
+          fontWeight: !isDrGasnelio ? '600' : '400',
+          color: !isDrGasnelio ? modernChatTheme.colors.personas.ga.primary : modernChatTheme.colors.neutral.textMuted,
+          transition: 'all 0.3s ease',
+          whiteSpace: 'nowrap',
+          display: isMobile ? 'none' : 'block'
+        }}
+      >
+        Gá
+      </span>
+      
+      {/* Mobile Labels */}
+      {isMobile && (
+        <span
+          style={{
+            marginLeft: modernChatTheme.spacing.sm,
+            fontSize: modernChatTheme.typography.small.fontSize,
+            fontWeight: '600',
+            color: isDrGasnelio 
+              ? modernChatTheme.colors.personas.gasnelio.primary 
+              : modernChatTheme.colors.personas.ga.primary,
+            transition: 'all 0.3s ease'
+          }}
+        >
+          {isDrGasnelio ? 'Dr. Gasnelio' : 'Gá'}
+        </span>
+      )}
 
       <style jsx>{`
-        @keyframes slideIn {
-          from {
-            opacity: 0;
-            transform: translateX(-50%) scaleX(0);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(-50%) scaleX(1);
-          }
+        .toggle-switch:focus-visible {
+          outline: 2px solid ${isDrGasnelio 
+            ? modernChatTheme.colors.personas.gasnelio.primary 
+            : modernChatTheme.colors.personas.ga.primary};
+          outline-offset: 3px;
         }
-
-        @keyframes ripple {
-          from {
-            transform: scale(0);
-            opacity: 1;
-          }
-          to {
-            transform: scale(2);
-            opacity: 0;
-          }
+        
+        .toggle-switch:hover:not(:disabled) {
+          filter: brightness(1.1);
         }
-
-        .persona-tab:focus-visible {
-          outline: 2px solid ${selected ? 'rgba(255, 255, 255, 0.5)' : modernChatTheme.colors.neutral.text};
-          outline-offset: 2px;
+        
+        .toggle-switch:active:not(:disabled) {
+          transform: scale(0.98);
         }
 
         @media (max-width: ${modernChatTheme.breakpoints.mobile}) {
-          .persona-switch {
-            width: 100% !important;
-            min-width: unset !important;
-          }
-          
-          .persona-tab {
-            justify-content: center !important;
+          .persona-switch-container {
+            padding: 5px !important;
           }
         }
       `}</style>
