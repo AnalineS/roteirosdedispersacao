@@ -97,10 +97,10 @@ export default function PersonaSwitch({
         <div
           style={{
             position: 'absolute',
-            top: '4px',
-            left: isDrGasnelio ? '4px' : '32px',
-            width: '24px',
-            height: '24px',
+            top: '3px',
+            left: isDrGasnelio ? '3px' : '31px',
+            width: '26px',
+            height: '26px',
             borderRadius: '50%',
             background: 'white',
             boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
@@ -115,8 +115,8 @@ export default function PersonaSwitch({
             src={isDrGasnelio ? '/images/avatars/dr-gasnelio.png' : '/images/avatars/ga.png'}
             alt={isDrGasnelio ? 'Dr. Gasnelio' : 'Gá'}
             style={{
-              width: '20px',
-              height: '20px',
+              width: '22px',
+              height: '22px',
               borderRadius: '50%',
               objectFit: 'cover'
             }}
@@ -153,8 +153,8 @@ export default function PersonaSwitch({
             src={isDrGasnelio ? '/images/avatars/dr-gasnelio.png' : '/images/avatars/ga.png'}
             alt={isDrGasnelio ? 'Dr. Gasnelio' : 'Gá'}
             style={{
-              width: '20px',
-              height: '20px',
+              width: '22px',
+              height: '22px',
               borderRadius: '50%',
               objectFit: 'cover'
             }}

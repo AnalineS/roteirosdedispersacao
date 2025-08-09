@@ -117,41 +117,6 @@ export default function ConversationHistory({
 
   return (
     <>
-      {/* Toggle Button */}
-      <button
-        onClick={onToggle}
-        style={{
-          position: 'fixed',
-          top: isMobile ? '70px' : '80px',
-          left: isVisible ? (isMobile ? 'calc(85vw - 48px)' : '290px') : (isMobile ? '15px' : '20px'),
-          zIndex: 1003,
-          background: '#1976d2',
-          color: 'white',
-          border: 'none',
-          borderRadius: '50%',
-          width: '44px',
-          height: '44px',
-          fontSize: '1.1rem',
-          cursor: 'pointer',
-          boxShadow: '0 4px 12px rgba(25, 118, 210, 0.3)',
-          transition: 'all 0.3s ease',
-          touchAction: 'manipulation'
-        }}
-        onMouseEnter={(e) => {
-          if (!isMobile) {
-            e.currentTarget.style.transform = 'scale(1.1)';
-            e.currentTarget.style.boxShadow = '0 6px 20px rgba(25, 118, 210, 0.4)';
-          }
-        }}
-        onMouseLeave={(e) => {
-          if (!isMobile) {
-            e.currentTarget.style.transform = 'scale(1)';
-            e.currentTarget.style.boxShadow = '0 4px 12px rgba(25, 118, 210, 0.3)';
-          }
-        }}
-      >
-        {isVisible ? '✕' : '💬'}
-      </button>
 
       {/* Sidebar */}
       <div
@@ -164,9 +129,9 @@ export default function ConversationHistory({
           height: '100vh',
           background: 'white',
           borderRight: '1px solid #e0e0e0',
-          boxShadow: '2px 0 10px rgba(0,0,0,0.1)',
-          zIndex: 1002,
-          transition: 'left 0.3s ease',
+          boxShadow: '4px 0 20px rgba(0,0,0,0.15)',
+          zIndex: 999,
+          transition: 'left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden'
@@ -414,8 +379,8 @@ export default function ConversationHistory({
             left: 0,
             right: 0,
             bottom: 0,
-            background: 'rgba(0,0,0,0.4)',
-            zIndex: 1001,
+            background: 'rgba(0,0,0,0.5)',
+            zIndex: 998,
             touchAction: 'none'
           }}
           onClick={onToggle}

@@ -16,6 +16,8 @@ interface ModernChatInputProps {
   suggestions?: string[];
   onSuggestionClick?: (suggestion: string) => void;
   showSuggestions?: boolean;
+  onHistoryToggle?: () => void;
+  showHistory?: boolean;
 }
 
 const SendIcon = () => (
@@ -29,6 +31,20 @@ const SendIcon = () => (
   >
     <path d="m22 2-7 20-4-9-9-4z"/>
     <path d="M22 2 11 13"/>
+  </svg>
+);
+
+const HistoryIcon = () => (
+  <svg 
+    width="20" 
+    height="20" 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2"
+  >
+    <path d="M3 3v5h5"/>
+    <path d="M3.05 13A9 9 0 1 0 6 5.3l-3 3.7"/>
   </svg>
 );
 
@@ -135,7 +151,9 @@ export default function ModernChatInput({
   placeholder,
   suggestions,
   onSuggestionClick,
-  showSuggestions = false
+  showSuggestions = false,
+  onHistoryToggle,
+  showHistory = false
 }: ModernChatInputProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isFocused, setIsFocused] = useState(false);
@@ -222,6 +240,47 @@ export default function ModernChatInput({
             opacity: isDisabled ? 0.6 : 1
           }}
         >
+          {/* Botão de Histórico */}
+          {onHistoryToggle && (
+            <button
+              type="button"
+              onClick={onHistoryToggle}
+              aria-label={showHistory ? 'Fechar histórico' : 'Mostrar histórico'}
+              style={{
+                width: '40px',
+                height: '40px',
+                borderRadius: '50%',
+                border: 'none',
+                background: showHistory ? 
+                  (colors?.primary || modernChatTheme.colors.personas.gasnelio.primary) : 
+                  modernChatTheme.colors.neutral.border,
+                color: showHistory ? 'white' : modernChatTheme.colors.neutral.textMuted,
+                margin: '4px',
+                cursor: 'pointer',
+                transition: `all ${modernChatTheme.transitions.normal}`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+                touchAction: 'manipulation'
+              }}
+              onMouseEnter={(e) => {
+                if (!isMobile) {
+                  e.currentTarget.style.transform = 'scale(1.05)';
+                  e.currentTarget.style.boxShadow = `0 2px 8px ${colors?.alpha || 'rgba(0,0,0,0.2)'}`;
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isMobile) {
+                  e.currentTarget.style.transform = 'scale(1)';
+                  e.currentTarget.style.boxShadow = 'none';
+                }
+              }}
+            >
+              <HistoryIcon />
+            </button>
+          )}
+          
           <input
             ref={inputRef}
             type="text"

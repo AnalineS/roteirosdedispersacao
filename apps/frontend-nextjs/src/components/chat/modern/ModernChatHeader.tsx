@@ -240,7 +240,7 @@ export default function ModernChatHeader({
         alignItems: 'center',
         justifyContent: 'space-between',
         boxShadow: modernChatTheme.shadows.moderate,
-        minHeight: isMobile ? '80px' : '96px',
+        minHeight: isMobile ? '88px' : '100px',
         position: 'sticky',
         top: 0,
         zIndex: modernChatTheme.zIndex.sticky,
@@ -264,7 +264,7 @@ export default function ModernChatHeader({
           <BackButton isMobile={isMobile} />
         </div>
         
-        {/* Right - Actions */}
+        {/* Right - Actions (sem botão de histórico) */}
         <div 
           className="header-actions"
           style={{
@@ -273,6 +273,15 @@ export default function ModernChatHeader({
             gap: modernChatTheme.spacing.sm
           }}
         >
+          {/* Toggle de Personas */}
+          <div style={{ marginRight: modernChatTheme.spacing.sm }}>
+            <PersonaSwitch
+              personas={personas}
+              selected={selectedPersona}
+              onChange={onPersonaChange}
+              isMobile={isMobile}
+            />
+          </div>
           {onExport && (
             <ExportButton 
               onExport={onExport} 
@@ -280,49 +289,28 @@ export default function ModernChatHeader({
               disabled={!hasMessages}
             />
           )}
-          {onHistoryToggle && (
-            <HistoryToggle 
-              onToggle={onHistoryToggle} 
-              isActive={showHistory}
-              isMobile={isMobile}
-            />
-          )}
         </div>
       </div>
 
-      {/* Bottom Row - Persona Selection */}
-      <div 
-        className="header-personas"
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: isMobile ? 'space-between' : 'center',
-          width: '100%'
-        }}
-      >
-        {isMobile && (
+      {/* Bottom Row - Persona Info (mobile) */}
+      {isMobile && (
+        <div 
+          className="header-personas"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '100%',
+            marginTop: modernChatTheme.spacing.sm
+          }}
+        >
           <PersonaIndicator 
             persona={currentPersona} 
             personaId={selectedPersona || undefined} 
             isMobile={isMobile} 
           />
-        )}
-        
-        <div style={{
-          flex: isMobile ? '0 0 auto' : 1,
-          display: 'flex',
-          justifyContent: 'center'
-        }}>
-          <PersonaSwitch
-            personas={personas}
-            selected={selectedPersona}
-            onChange={onPersonaChange}
-            isMobile={isMobile}
-          />
         </div>
-        
-        {isMobile && <div style={{ width: '120px' }} />} {/* Spacer para centralizar */}
-      </div>
+      )}
 
       <style jsx>{`
         @media (max-width: ${modernChatTheme.breakpoints.mobile}) {

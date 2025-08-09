@@ -53,7 +53,7 @@ export default function ChatPage() {
   });
   
   const [inputValue, setInputValue] = useState('');
-  const [selectedPersona, setSelectedPersona] = useState<string | null>('ga'); // Padrão: Gá (empático)
+  const [selectedPersona, setSelectedPersona] = useState<string | null>(null); // Será definido baseado na URL ou preferência
   const [showHistory, setShowHistory] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [pendingQuestion, setPendingQuestion] = useState<string>('');
@@ -138,15 +138,15 @@ export default function ChatPage() {
         }
       }
       
-      // Prioridade 4: Usar a primeira persona disponível (dr_gasnelio ou ga)
+      // Prioridade 4: Usar 'ga' como padrão quando não há preferência específica
       if (!selectedPersonaId) {
-        // Preferir 'ga' se disponível, senão usar a primeira
+        // Sempre preferir 'ga' como padrão
         if (personas['ga']) {
           selectedPersonaId = 'ga';
         } else if (personas['dr_gasnelio']) {
           selectedPersonaId = 'dr_gasnelio';
         } else {
-          // Usar a primeira persona disponível
+          // Usar a primeira persona disponível como fallback
           selectedPersonaId = Object.keys(personas)[0];
         }
       }
@@ -324,11 +324,12 @@ export default function ChatPage() {
         />
       </Suspense>
       
-      {/* Container com sidebar offset */}
+      {/* Container com sidebar offset - corrigido para não sobrepor */}
       <div style={{
         marginLeft: showHistory && !isMobile ? '320px' : '0',
         transition: 'margin-left 0.3s ease',
-        position: 'relative'
+        position: 'relative',
+        zIndex: 1
       }}>
         <ModernChatContainer
           personas={personas}

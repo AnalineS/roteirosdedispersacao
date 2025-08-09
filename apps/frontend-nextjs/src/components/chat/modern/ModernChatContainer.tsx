@@ -245,6 +245,8 @@ export default function ModernChatContainer({
           suggestions={suggestions}
           showSuggestions={showSuggestions}
           onSuggestionClick={onSuggestionClick}
+          onHistoryToggle={onHistoryToggle}
+          showHistory={showHistory}
         />
       </div>
 
