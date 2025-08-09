@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback, Suspense, lazy } from 'react';
 import Link from 'next/link';
 import Navigation from '@/components/Navigation';
 import ModernChatContainer from '@/components/chat/modern/ModernChatContainer';
-import DebugPersonas from '@/components/DebugPersonas';
 
 // Lazy load dos componentes complementares
 const ConversationHistory = lazy(() => import('@/components/chat/ConversationHistory'));
@@ -348,9 +347,6 @@ export default function ChatPage() {
           showHistory={showHistory}
         />
       </div>
-      
-      {/* Debug component - remover em produção */}
-      <DebugPersonas />
     </>
   );
 }
