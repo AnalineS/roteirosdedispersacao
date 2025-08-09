@@ -4,6 +4,14 @@ import Link from 'next/link';
 import { Persona } from '@/services/api';
 import { modernChatTheme, getPersonaColors } from '@/config/modernTheme';
 import PersonaSwitch from './PersonaSwitch';
+import { 
+  ArrowLeftIcon, 
+  HistoryIcon, 
+  ExportIcon, 
+  MenuIcon, 
+  CloseIcon,
+  InfoIcon 
+} from '@/components/icons';
 
 interface ModernChatHeaderProps {
   personas: Record<string, Persona>;
@@ -22,32 +30,36 @@ const BackButton = ({ isMobile }: { isMobile?: boolean }) => (
     style={{
       display: 'flex',
       alignItems: 'center',
-      justifyContent: 'center',
-      width: isMobile ? '40px' : '44px',
-      height: isMobile ? '40px' : '44px',
-      borderRadius: '50%',
+      gap: modernChatTheme.spacing.sm,
+      padding: `${modernChatTheme.spacing.sm} ${isMobile ? modernChatTheme.spacing.sm : modernChatTheme.spacing.md}`,
+      borderRadius: modernChatTheme.borderRadius.md,
       background: 'rgba(255, 255, 255, 0.1)',
       color: 'white',
       textDecoration: 'none',
-      fontSize: isMobile ? '1.2rem' : '1.4rem',
+      fontSize: modernChatTheme.typography.meta.fontSize,
+      fontWeight: '500',
       transition: modernChatTheme.transitions.normal,
-      backdropFilter: 'blur(10px)'
+      backdropFilter: 'blur(10px)',
+      border: '1px solid rgba(255, 255, 255, 0.1)'
     }}
     onMouseEnter={(e) => {
       if (!isMobile) {
         e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
-        e.currentTarget.style.transform = 'scale(1.05)';
+        e.currentTarget.style.transform = 'translateY(-1px)';
+        e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.3)';
       }
     }}
     onMouseLeave={(e) => {
       if (!isMobile) {
         e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
-        e.currentTarget.style.transform = 'scale(1)';
+        e.currentTarget.style.transform = 'translateY(0)';
+        e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
       }
     }}
     aria-label="Voltar ao início"
   >
-    ←
+    <ArrowLeftIcon size={16} />
+    {!isMobile && <span>Início</span>}
   </Link>
 );
 
@@ -65,22 +77,23 @@ const HistoryToggle = ({
     style={{
       display: 'flex',
       alignItems: 'center',
-      justifyContent: 'center',
-      width: isMobile ? '40px' : '44px',
-      height: isMobile ? '40px' : '44px',
-      borderRadius: '50%',
+      gap: modernChatTheme.spacing.sm,
+      padding: `${modernChatTheme.spacing.sm} ${isMobile ? modernChatTheme.spacing.sm : modernChatTheme.spacing.md}`,
+      borderRadius: modernChatTheme.borderRadius.md,
       background: isActive ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.1)',
       color: 'white',
-      border: 'none',
-      fontSize: isMobile ? '1.1rem' : '1.2rem',
+      border: `1px solid ${isActive ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.1)'}`,
+      fontSize: modernChatTheme.typography.meta.fontSize,
+      fontWeight: '500',
       cursor: 'pointer',
       transition: modernChatTheme.transitions.normal,
       backdropFilter: 'blur(10px)'
     }}
     onMouseEnter={(e) => {
       if (!isMobile) {
-        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
-        e.currentTarget.style.transform = 'scale(1.05)';
+        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.25)';
+        e.currentTarget.style.transform = 'translateY(-1px)';
+        e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.4)';
       }
     }}
     onMouseLeave={(e) => {
@@ -88,13 +101,17 @@ const HistoryToggle = ({
         e.currentTarget.style.background = isActive ? 
           'rgba(255, 255, 255, 0.2)' : 
           'rgba(255, 255, 255, 0.1)';
-        e.currentTarget.style.transform = 'scale(1)';
+        e.currentTarget.style.transform = 'translateY(0)';
+        e.currentTarget.style.borderColor = isActive ? 
+          'rgba(255, 255, 255, 0.3)' : 
+          'rgba(255, 255, 255, 0.1)';
       }
     }}
-    title={isActive ? 'Fechar conversas' : 'Mostrar conversas'}
-    aria-label={isActive ? 'Fechar conversas' : 'Mostrar conversas'}
+    title={isActive ? 'Fechar histórico' : 'Mostrar histórico'}
+    aria-label={isActive ? 'Fechar histórico' : 'Mostrar histórico'}
   >
-    💬
+    {isActive ? <CloseIcon size={16} /> : <HistoryIcon size={16} />}
+    {!isMobile && <span>{isActive ? 'Fechar' : 'Histórico'}</span>}
   </button>
 );
 
@@ -113,35 +130,38 @@ const ExportButton = ({
     style={{
       display: 'flex',
       alignItems: 'center',
-      justifyContent: 'center',
-      width: isMobile ? '40px' : '44px',
-      height: isMobile ? '40px' : '44px',
-      borderRadius: '50%',
+      gap: modernChatTheme.spacing.sm,
+      padding: `${modernChatTheme.spacing.sm} ${isMobile ? modernChatTheme.spacing.sm : modernChatTheme.spacing.md}`,
+      borderRadius: modernChatTheme.borderRadius.md,
       background: disabled ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.1)',
       color: disabled ? 'rgba(255, 255, 255, 0.5)' : 'white',
-      border: 'none',
-      fontSize: isMobile ? '1.1rem' : '1.2rem',
+      border: `1px solid ${disabled ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.1)'}`,
+      fontSize: modernChatTheme.typography.meta.fontSize,
+      fontWeight: '500',
       cursor: disabled ? 'not-allowed' : 'pointer',
       transition: modernChatTheme.transitions.normal,
       backdropFilter: 'blur(10px)',
-      opacity: disabled ? 0.5 : 1
+      opacity: disabled ? 0.6 : 1
     }}
     onMouseEnter={(e) => {
       if (!isMobile && !disabled) {
         e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
-        e.currentTarget.style.transform = 'scale(1.05)';
+        e.currentTarget.style.transform = 'translateY(-1px)';
+        e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.3)';
       }
     }}
     onMouseLeave={(e) => {
       if (!isMobile && !disabled) {
         e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
-        e.currentTarget.style.transform = 'scale(1)';
+        e.currentTarget.style.transform = 'translateY(0)';
+        e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
       }
     }}
     title={disabled ? "Nenhuma conversa para exportar" : "Exportar conversa"}
     aria-label={disabled ? "Nenhuma conversa para exportar" : "Exportar conversa"}
   >
-    📤
+    <ExportIcon size={16} />
+    {!isMobile && <span>Exportar</span>}
   </button>
 );
 
@@ -156,24 +176,29 @@ const PersonaIndicator = ({
 }) => {
   if (!persona || !isMobile) return null;
 
+  const avatarSrc = personaId === 'dr_gasnelio' ? '/images/avatars/dr-gasnelio.png' : '/images/avatars/ga.png';
+
   return (
     <div
       style={{
         display: 'flex',
         alignItems: 'center',
         gap: modernChatTheme.spacing.sm,
-        background: 'rgba(255, 255, 255, 0.1)',
+        background: 'rgba(255, 255, 255, 0.15)',
         padding: `${modernChatTheme.spacing.xs} ${modernChatTheme.spacing.sm}`,
         borderRadius: modernChatTheme.borderRadius.lg,
-        backdropFilter: 'blur(10px)'
+        backdropFilter: 'blur(10px)',
+        border: '1px solid rgba(255, 255, 255, 0.1)'
       }}
     >
-      <div
+      <img 
+        src={avatarSrc}
+        alt={persona.name}
         style={{
-          width: '8px',
-          height: '8px',
+          width: '20px',
+          height: '20px',
           borderRadius: '50%',
-          background: getPersonaColors(personaId || 'gasnelio').primary
+          objectFit: 'cover'
         }}
       />
       <span
@@ -215,7 +240,7 @@ export default function ModernChatHeader({
         alignItems: 'center',
         justifyContent: 'space-between',
         boxShadow: modernChatTheme.shadows.moderate,
-        minHeight: isMobile ? '64px' : '72px',
+        minHeight: isMobile ? '80px' : '96px',
         position: 'sticky',
         top: 0,
         zIndex: modernChatTheme.zIndex.sticky,
@@ -223,77 +248,111 @@ export default function ModernChatHeader({
         borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
       }}
     >
-      {/* Left Section */}
+      {/* Top Row - Navigation & Status */}
       <div 
-        className="header-left"
+        className="header-top"
         style={{
           display: 'flex',
           alignItems: 'center',
-          gap: modernChatTheme.spacing.md
+          justifyContent: 'space-between',
+          width: '100%',
+          marginBottom: isMobile ? '0' : modernChatTheme.spacing.sm
         }}
       >
-        <BackButton isMobile={isMobile} />
-        <PersonaIndicator persona={currentPersona} personaId={selectedPersona || undefined} isMobile={isMobile} />
+        {/* Left - Back button */}
+        <div className="header-navigation">
+          <BackButton isMobile={isMobile} />
+        </div>
+        
+        {/* Right - Actions */}
+        <div 
+          className="header-actions"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: modernChatTheme.spacing.sm
+          }}
+        >
+          {onExport && (
+            <ExportButton 
+              onExport={onExport} 
+              isMobile={isMobile} 
+              disabled={!hasMessages}
+            />
+          )}
+          {onHistoryToggle && (
+            <HistoryToggle 
+              onToggle={onHistoryToggle} 
+              isActive={showHistory}
+              isMobile={isMobile}
+            />
+          )}
+        </div>
       </div>
 
-      {/* Center Section - PersonaSwitch */}
+      {/* Bottom Row - Persona Selection */}
       <div 
-        className="header-center"
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          flex: 1,
-          margin: `0 ${modernChatTheme.spacing.md}`
-        }}
-      >
-        <PersonaSwitch
-          personas={personas}
-          selected={selectedPersona}
-          onChange={onPersonaChange}
-          isMobile={isMobile}
-        />
-      </div>
-
-      {/* Right Section */}
-      <div 
-        className="header-right"
+        className="header-personas"
         style={{
           display: 'flex',
           alignItems: 'center',
-          gap: modernChatTheme.spacing.sm
+          justifyContent: isMobile ? 'space-between' : 'center',
+          width: '100%'
         }}
       >
-        {onExport && (
-          <ExportButton 
-            onExport={onExport} 
+        {isMobile && (
+          <PersonaIndicator 
+            persona={currentPersona} 
+            personaId={selectedPersona || undefined} 
             isMobile={isMobile} 
-            disabled={!hasMessages}
           />
         )}
-        {onHistoryToggle && (
-          <HistoryToggle 
-            onToggle={onHistoryToggle} 
-            isActive={showHistory}
+        
+        <div style={{
+          flex: isMobile ? '0 0 auto' : 1,
+          display: 'flex',
+          justifyContent: 'center'
+        }}>
+          <PersonaSwitch
+            personas={personas}
+            selected={selectedPersona}
+            onChange={onPersonaChange}
             isMobile={isMobile}
           />
-        )}
+        </div>
+        
+        {isMobile && <div style={{ width: '120px' }} />} {/* Spacer para centralizar */}
       </div>
 
       <style jsx>{`
         @media (max-width: ${modernChatTheme.breakpoints.mobile}) {
-          .header-center {
-            margin: 0 ${modernChatTheme.spacing.sm} !important;
+          .header-top {
+            margin-bottom: ${modernChatTheme.spacing.sm} !important;
+          }
+          
+          .header-actions {
+            gap: ${modernChatTheme.spacing.xs} !important;
           }
           
           .modern-chat-header {
-            flex-wrap: wrap;
-            gap: ${modernChatTheme.spacing.sm};
+            padding: ${modernChatTheme.spacing.md} ${modernChatTheme.spacing.md} !important;
+            min-height: 88px !important;
+          }
+          
+          .header-personas {
+            margin-top: ${modernChatTheme.spacing.sm};
           }
         }
 
         /* Smooth gradient animation on persona switch */
         .modern-chat-header {
           transition: background ${modernChatTheme.transitions.spring};
+        }
+        
+        /* Improved button hover effects */
+        .header-actions button:hover,
+        .header-navigation a:hover {
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
       `}</style>
     </header>

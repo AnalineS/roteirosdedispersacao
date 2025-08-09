@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, Suspense, lazy } from 'react';
 import Link from 'next/link';
 import Navigation from '@/components/Navigation';
 import ModernChatContainer from '@/components/chat/modern/ModernChatContainer';
+import { LoadingIcon, AlertIcon } from '@/components/icons';
 
 // Lazy load dos componentes complementares
 const ConversationHistory = lazy(() => import('@/components/chat/ConversationHistory'));
@@ -281,7 +282,7 @@ export default function ChatPage() {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
         <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '2rem', marginBottom: '20px' }}>⏳</div>
+          <LoadingIcon size={48} spinning={true} />
           <p>Carregando chat...</p>
         </div>
       </div>
@@ -292,7 +293,7 @@ export default function ChatPage() {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
         <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '2rem', marginBottom: '20px' }}>⚠️</div>
+          <AlertIcon size={48} color={theme.colors.primary[500]} />
           <p>Erro ao carregar chat: {personasError}</p>
           <Link href="/" style={{ color: theme.colors.primary[500], textDecoration: 'underline' }}>
             Voltar ao início

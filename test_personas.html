@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Personas</title>
+</head>
+<body>
+    <h1>Testing Persona Avatar Matching</h1>
+    <div id="results"></div>
+    
+    <script>
+        // Simular o PERSONA_AVATARS
+        const PERSONA_AVATARS = {
+            'dr-gasnelio': '/images/avatars/dr-gasnelio.png',
+            'dr_gasnelio': '/images/avatars/dr-gasnelio.png',
+            'gasnelio': '/images/avatars/dr-gasnelio.png',
+            'ga': '/images/avatars/ga.png'
+        };
+        
+        // IDs que vêm do backend
+        const backendIds = ['dr_gasnelio', 'ga'];
+        
+        // Função hasPersonaAvatar
+        const hasPersonaAvatar = (personaId) => {
+            const normalizedId = personaId?.toLowerCase().replace(/[-_\s]/g, '');
+            
+            if (personaId in PERSONA_AVATARS) {
+                return true;
+            }
+            
+            const entries = Object.entries(PERSONA_AVATARS);
+            const match = entries.find(([key]) => 
+                key.toLowerCase().replace(/[-_\s]/g, '') === normalizedId
+            );
+            
+            return !!match;
+        };
+        
+        // Testar
+        const results = document.getElementById('results');
+        
+        backendIds.forEach(id => {
+            const hasAvatar = hasPersonaAvatar(id);
+            const normalizedId = id?.toLowerCase().replace(/[-_\s]/g, '');
+            
+            results.innerHTML += `
+                <p>
+                    ID: "${id}"<br>
+                    Normalized: "${normalizedId}"<br>
+                    Direct match: ${id in PERSONA_AVATARS}<br>
+                    Has avatar: ${hasAvatar}<br>
+                    ---
+                </p>
+            `;
+        });
+        
+        // Mostrar todas as chaves normalizadas de PERSONA_AVATARS
+        results.innerHTML += '<h3>PERSONA_AVATARS keys (normalized):</h3>';
+        Object.keys(PERSONA_AVATARS).forEach(key => {
+            const normalized = key.toLowerCase().replace(/[-_\s]/g, '');
+            results.innerHTML += `<p>"${key}" → "${normalized}"</p>`;
+        });
+    </script>
+</body>
+</html>

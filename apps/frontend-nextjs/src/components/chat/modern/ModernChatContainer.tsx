@@ -8,6 +8,7 @@ import MessageBubble from './MessageBubble';
 import SmartIndicators from './SmartIndicators';
 import ModernChatInput from './ModernChatInput';
 import ExportChatModal from './ExportChatModal';
+import { ChatIcon } from '@/components/icons';
 
 interface ModernChatContainerProps {
   // Personas e seleção
@@ -114,8 +115,8 @@ export default function ModernChatContainer({
           border: `1px solid ${modernChatTheme.colors.neutral.border}`
         }}
       >
-        <div style={{ fontSize: '3rem', marginBottom: modernChatTheme.spacing.lg }}>
-          💬
+        <div style={{ marginBottom: modernChatTheme.spacing.lg }}>
+          <ChatIcon size={48} color={modernChatTheme.colors.neutral.textMuted} />
         </div>
         <h3
           style={{

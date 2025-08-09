@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Persona } from '@/services/api';
 import { modernChatTheme, getPersonaColors } from '@/config/modernTheme';
+import { ToggleIcon } from '@/components/icons';
 
 interface PersonaSwitchProps {
   personas: Record<string, Persona>;
@@ -47,7 +48,7 @@ export default function PersonaSwitch({
         gap: modernChatTheme.spacing.md,
         background: 'rgba(255, 255, 255, 0.95)',
         borderRadius: '50px',
-        padding: '6px',
+        padding: '8px',
         backdropFilter: 'blur(10px)',
         border: `1px solid ${modernChatTheme.colors.neutral.border}`,
         boxShadow: modernChatTheme.shadows.subtle,
@@ -107,10 +108,19 @@ export default function PersonaSwitch({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontSize: '14px'
+            overflow: 'hidden'
           }}
         >
-          {isDrGasnelio ? '👨‍⚕️' : '🤝'}
+          <img 
+            src={isDrGasnelio ? '/images/avatars/dr-gasnelio.png' : '/images/avatars/ga.png'}
+            alt={isDrGasnelio ? 'Dr. Gasnelio' : 'Gá'}
+            style={{
+              width: '20px',
+              height: '20px',
+              borderRadius: '50%',
+              objectFit: 'cover'
+            }}
+          />
         </div>
       </button>
       
@@ -129,21 +139,39 @@ export default function PersonaSwitch({
         Gá
       </span>
       
-      {/* Mobile Labels */}
+      {/* Mobile Labels com Avatar */}
       {isMobile && (
-        <span
+        <div
           style={{
-            marginLeft: modernChatTheme.spacing.sm,
-            fontSize: modernChatTheme.typography.meta.fontSize,
-            fontWeight: '600',
-            color: isDrGasnelio 
-              ? modernChatTheme.colors.personas.gasnelio.primary 
-              : modernChatTheme.colors.personas.ga.primary,
-            transition: 'all 0.3s ease'
+            display: 'flex',
+            alignItems: 'center',
+            gap: modernChatTheme.spacing.sm,
+            marginLeft: modernChatTheme.spacing.sm
           }}
         >
-          {isDrGasnelio ? 'Dr. Gasnelio' : 'Gá'}
-        </span>
+          <img 
+            src={isDrGasnelio ? '/images/avatars/dr-gasnelio.png' : '/images/avatars/ga.png'}
+            alt={isDrGasnelio ? 'Dr. Gasnelio' : 'Gá'}
+            style={{
+              width: '20px',
+              height: '20px',
+              borderRadius: '50%',
+              objectFit: 'cover'
+            }}
+          />
+          <span
+            style={{
+              fontSize: modernChatTheme.typography.meta.fontSize,
+              fontWeight: '600',
+              color: isDrGasnelio 
+                ? modernChatTheme.colors.personas.gasnelio.primary 
+                : modernChatTheme.colors.personas.ga.primary,
+              transition: 'all 0.3s ease'
+            }}
+          >
+            {isDrGasnelio ? 'Dr. Gasnelio' : 'Gá'}
+          </span>
+        </div>
       )}
 
       <style jsx>{`

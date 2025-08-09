@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Personas API</title>
+</head>
+<body>
+    <h1>Testing Personas API</h1>
+    <button onclick="testPersonas()">Test Personas</button>
+    <div id="results"></div>
+    
+    <script>
+        async function testPersonas() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<p>Loading...</p>';
+            
+            try {
+                const response = await fetch('http://127.0.0.1:5000/api/personas');
+                const data = await response.json();
+                
+                results.innerHTML = '<h3>Raw Response:</h3>';
+                results.innerHTML += '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                
+                if (data.personas) {
+                    results.innerHTML += '<h3>Personas found:</h3>';
+                    Object.keys(data.personas).forEach(id => {
+                        results.innerHTML += `<p>✓ ${id}: ${data.personas[id].name}</p>`;
+                    });
+                } else {
+                    results.innerHTML += '<p style="color: red;">No personas field in response!</p>';
+                }
+                
+            } catch (error) {
+                results.innerHTML = '<p style="color: red;">Error: ' + error.message + '</p>';
+            }
+        }
+        
+        // Auto-test on load
+        window.onload = testPersonas;
+    </script>
+</body>
+</html>
