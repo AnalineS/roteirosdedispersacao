@@ -96,6 +96,9 @@ export default function ModernChatContainer({
   // Placeholder state quando não há persona selecionada
   const EmptyState = () => (
     <div
+      role="status"
+      aria-live="polite"
+      aria-label="Seleção de assistente necessária"
       style={{
         flex: 1,
         display: 'flex',
@@ -146,6 +149,10 @@ export default function ModernChatContainer({
   const MessagesArea = () => (
     <div
       className="messages-area"
+      role="log"
+      aria-live="polite"
+      aria-label="Histórico da conversa"
+      tabIndex={0}
       style={{
         flex: 1,
         overflowY: 'auto',
@@ -153,7 +160,14 @@ export default function ModernChatContainer({
           `${modernChatTheme.spacing.lg} ${modernChatTheme.spacing.md}` :
           `${modernChatTheme.spacing.xl} ${modernChatTheme.spacing.xl}`,
         scrollBehavior: 'smooth',
-        scrollPaddingBottom: modernChatTheme.spacing.xl
+        scrollPaddingBottom: modernChatTheme.spacing.xl,
+        outline: 'none'
+      }}
+      onFocus={(e) => {
+        e.currentTarget.style.boxShadow = `inset 0 0 0 2px ${modernChatTheme.colors.personas.gasnelio.primary}`;
+      }}
+      onBlur={(e) => {
+        e.currentTarget.style.boxShadow = 'none';
       }}
     >
       {messages.map((message, index) => {
@@ -180,6 +194,9 @@ export default function ModernChatContainer({
       {/* Indicador de digitação integrado */}
       {isLoading && currentPersona && (
         <div
+          role="status"
+          aria-live="polite"
+          aria-label={`${currentPersona.name} está digitando uma resposta`}
           style={{
             display: 'flex',
             justifyContent: 'flex-start',
@@ -203,6 +220,9 @@ export default function ModernChatContainer({
     <div
       ref={containerRef}
       className="modern-chat-container"
+      role="main"
+      aria-label="Interface de chat com assistentes educacionais"
+      id="main-content"
       style={{
         height: '100dvh', // Dynamic viewport height para mobile
         display: 'flex',
@@ -315,7 +335,16 @@ export default function ModernChatContainer({
 
         /* Focus management */
         .modern-chat-container *:focus {
-          outline: 2px solid ${modernChatTheme.colors.personas.gasnelio.alpha};
+          outline: 2px solid ${modernChatTheme.colors.personas.gasnelio.primary};
+          outline-offset: 2px;
+        }
+
+        .modern-chat-container *:focus:not(:focus-visible) {
+          outline: none;
+        }
+
+        .modern-chat-container *:focus-visible {
+          outline: 2px solid ${modernChatTheme.colors.personas.gasnelio.primary};
           outline-offset: 2px;
         }
 
@@ -330,9 +359,46 @@ export default function ModernChatContainer({
           }
         }
 
+        /* High contrast support */
+        @media (prefers-contrast: high) {
+          .modern-chat-container {
+            border: 2px solid currentColor;
+          }
+          
+          .modern-chat-container button,
+          .modern-chat-container input,
+          .modern-chat-container textarea {
+            border: 2px solid currentColor !important;
+          }
+        }
+
+        /* Improve readability for users with dyslexia */
+        .modern-chat-container {
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+          line-height: 1.5;
+          letter-spacing: 0.02em;
+        }
+
         /* Dark mode support preparation */
         @media (prefers-color-scheme: dark) {
           /* Future dark mode implementation */
+          .modern-chat-container {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e0e0e0;
+          }
+        }
+
+        /* Screen reader only content */
+        .sr-only {
+          position: absolute;
+          width: 1px;
+          height: 1px;
+          padding: 0;
+          margin: -1px;
+          overflow: hidden;
+          clip: rect(0, 0, 0, 0);
+          white-space: nowrap;
+          border: 0;
         }
       `}</style>
     </div>

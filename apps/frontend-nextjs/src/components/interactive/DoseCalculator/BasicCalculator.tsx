@@ -72,13 +72,17 @@ export default function BasicCalculator({ onCalculationComplete }: BasicCalculat
   };
 
   return (
-    <div style={{
-      background: 'white',
-      border: `1px solid ${modernChatTheme.colors.neutral.border}`,
-      borderRadius: modernChatTheme.borderRadius.lg,
-      padding: modernChatTheme.spacing.xl,
-      boxShadow: modernChatTheme.shadows.subtle
-    }}>
+    <div 
+      role="application"
+      aria-label="Calculadora de doses PQT-U para hanseníase"
+      style={{
+        background: 'white',
+        border: `1px solid ${modernChatTheme.colors.neutral.border}`,
+        borderRadius: modernChatTheme.borderRadius.lg,
+        padding: modernChatTheme.spacing.xl,
+        boxShadow: modernChatTheme.shadows.subtle
+      }}
+    >
       {/* Header Educacional com Persona Dr. Gasnelio */}
       {/* TODO: Integrar PersonaEducationalMessage quando disponível */}
       <div style={{
@@ -136,59 +140,115 @@ export default function BasicCalculator({ onCalculationComplete }: BasicCalculat
       }}>
         {/* Peso */}
         <div>
-          <label style={{
-            display: 'block',
-            marginBottom: modernChatTheme.spacing.xs,
-            fontSize: modernChatTheme.typography.meta.fontSize,
-            fontWeight: '600',
-            color: modernChatTheme.colors.neutral.text
-          }}>
+          <label 
+            htmlFor="weight-input"
+            style={{
+              display: 'block',
+              marginBottom: modernChatTheme.spacing.xs,
+              fontSize: modernChatTheme.typography.meta.fontSize,
+              fontWeight: '600',
+              color: modernChatTheme.colors.neutral.text
+            }}
+          >
             Peso (kg) *
           </label>
           <input
+            id="weight-input"
             type="number"
             value={profile.weight || ''}
             onChange={(e) => handleInputChange('weight', Number(e.target.value))}
             min="1"
             max="200"
             step="0.1"
+            required
+            aria-required="true"
+            aria-describedby="weight-error"
+            aria-invalid={profile.weight <= 0 ? 'true' : 'false'}
             style={{
               width: '100%',
               padding: modernChatTheme.spacing.sm,
-              border: `1px solid ${modernChatTheme.colors.neutral.border}`,
+              border: `2px solid ${profile.weight <= 0 && profile.weight !== 0 ? modernChatTheme.colors.status.error : modernChatTheme.colors.neutral.border}`,
               borderRadius: modernChatTheme.borderRadius.sm,
-              fontSize: modernChatTheme.typography.message.fontSize
+              fontSize: modernChatTheme.typography.message.fontSize,
+              outline: 'none'
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.border = `2px solid ${modernChatTheme.colors.personas.gasnelio.primary}`;
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.border = `2px solid ${profile.weight <= 0 && profile.weight !== 0 ? modernChatTheme.colors.status.error : modernChatTheme.colors.neutral.border}`;
             }}
             placeholder="Ex: 70"
           />
+          {profile.weight <= 0 && profile.weight !== 0 && (
+            <div 
+              id="weight-error" 
+              role="alert" 
+              style={{
+                color: modernChatTheme.colors.status.error,
+                fontSize: '12px',
+                marginTop: '4px'
+              }}
+            >
+              Peso deve ser maior que 0 kg
+            </div>
+          )}
         </div>
 
         {/* Idade */}
         <div>
-          <label style={{
-            display: 'block',
-            marginBottom: modernChatTheme.spacing.xs,
-            fontSize: modernChatTheme.typography.meta.fontSize,
-            fontWeight: '600',
-            color: modernChatTheme.colors.neutral.text
-          }}>
+          <label 
+            htmlFor="age-input"
+            style={{
+              display: 'block',
+              marginBottom: modernChatTheme.spacing.xs,
+              fontSize: modernChatTheme.typography.meta.fontSize,
+              fontWeight: '600',
+              color: modernChatTheme.colors.neutral.text
+            }}
+          >
             Idade (anos) *
           </label>
           <input
+            id="age-input"
             type="number"
             value={profile.age || ''}
             onChange={(e) => handleInputChange('age', Number(e.target.value))}
             min="1"
             max="120"
+            required
+            aria-required="true"
+            aria-describedby="age-error"
+            aria-invalid={profile.age <= 0 ? 'true' : 'false'}
             style={{
               width: '100%',
               padding: modernChatTheme.spacing.sm,
-              border: `1px solid ${modernChatTheme.colors.neutral.border}`,
+              border: `2px solid ${profile.age <= 0 && profile.age !== 0 ? modernChatTheme.colors.status.error : modernChatTheme.colors.neutral.border}`,
               borderRadius: modernChatTheme.borderRadius.sm,
-              fontSize: modernChatTheme.typography.message.fontSize
+              fontSize: modernChatTheme.typography.message.fontSize,
+              outline: 'none'
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.border = `2px solid ${modernChatTheme.colors.personas.gasnelio.primary}`;
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.border = `2px solid ${profile.age <= 0 && profile.age !== 0 ? modernChatTheme.colors.status.error : modernChatTheme.colors.neutral.border}`;
             }}
             placeholder="Ex: 35"
           />
+          {profile.age <= 0 && profile.age !== 0 && (
+            <div 
+              id="age-error" 
+              role="alert" 
+              style={{
+                color: modernChatTheme.colors.status.error,
+                fontSize: '12px',
+                marginTop: '4px'
+              }}
+            >
+              Idade deve ser maior que 0 anos
+            </div>
+          )}
         </div>
       </div>
 
@@ -224,14 +284,27 @@ export default function BasicCalculator({ onCalculationComplete }: BasicCalculat
               display: 'flex',
               alignItems: 'center',
               gap: modernChatTheme.spacing.xs,
-              fontSize: modernChatTheme.typography.meta.fontSize
+              fontSize: modernChatTheme.typography.meta.fontSize,
+              cursor: 'pointer'
             }}>
               <input
+                id="pregnant-checkbox"
                 type="checkbox"
                 checked={profile.isPregnant || false}
                 onChange={(e) => handleInputChange('isPregnant', e.target.checked)}
+                aria-describedby="pregnant-desc"
+                style={{
+                  width: '16px',
+                  height: '16px',
+                  cursor: 'pointer'
+                }}
               />
-              <span>Gestante</span>
+              <span>
+                Gestante
+                <span className="sr-only" id="pregnant-desc">
+                  Marcar se a paciente está grávida para ajustes na medicação
+                </span>
+              </span>
             </label>
 
             <label style={{
@@ -283,6 +356,7 @@ export default function BasicCalculator({ onCalculationComplete }: BasicCalculat
       <button
         onClick={handleCalculate}
         disabled={isCalculating || profile.weight <= 0 || profile.age <= 0}
+        aria-describedby="calculate-button-desc"
         style={{
           width: '100%',
           padding: modernChatTheme.spacing.md,
@@ -290,15 +364,28 @@ export default function BasicCalculator({ onCalculationComplete }: BasicCalculat
             ? modernChatTheme.colors.personas.gasnelio.primary
             : modernChatTheme.colors.neutral.textMuted,
           color: 'white',
-          border: 'none',
+          border: '2px solid transparent',
           borderRadius: modernChatTheme.borderRadius.md,
           fontSize: modernChatTheme.typography.message.fontSize,
           fontWeight: '600',
           cursor: profile.weight > 0 && profile.age > 0 ? 'pointer' : 'not-allowed',
           opacity: isCalculating ? 0.7 : 1,
-          marginBottom: modernChatTheme.spacing.xl
+          marginBottom: modernChatTheme.spacing.xl,
+          minHeight: '48px',
+          outline: 'none'
+        }}
+        onFocus={(e) => {
+          if (!e.currentTarget.disabled) {
+            e.currentTarget.style.border = `2px solid ${modernChatTheme.colors.neutral.text}`;
+          }
+        }}
+        onBlur={(e) => {
+          e.currentTarget.style.border = '2px solid transparent';
         }}
       >
+        <span className="sr-only" id="calculate-button-desc">
+          Calcular doses de medicamentos PQT-U baseado no peso e idade informados
+        </span>
         <div style={{ display: 'flex', alignItems: 'center', gap: modernChatTheme.spacing.sm, justifyContent: 'center' }}>
           {isCalculating ? (
             <>

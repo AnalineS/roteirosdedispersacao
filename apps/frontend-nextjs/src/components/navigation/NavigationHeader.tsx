@@ -344,6 +344,29 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
         </Tooltip>
       </div>
 
+      {/* Skip to content link for keyboard users */}
+      <a
+        href="#main-content"
+        style={{
+          position: 'absolute',
+          top: '-40px',
+          left: '8px',
+          background: unbColors.primary,
+          color: unbColors.white,
+          padding: '8px 16px',
+          textDecoration: 'none',
+          borderRadius: '4px',
+          fontSize: '14px',
+          fontWeight: '600',
+          zIndex: 10000,
+          transition: 'top 200ms ease'
+        }}
+        onFocus={(e) => { e.currentTarget.style.top = '8px'; }}
+        onBlur={(e) => { e.currentTarget.style.top = '-40px'; }}
+      >
+        Pular para o conteúdo principal
+      </a>
+
       {/* Navegação Principal - Centro (Desktop/Tablet) */}
       {!isMobile && (
         <nav 
@@ -355,7 +378,7 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
             gap: isTablet ? '16px' : '32px'
           }}
           role="navigation"
-          aria-label="Main navigation menu"
+          aria-label="Navegação principal do sistema educacional"
         >
           {navigationCategories.map((category) => {
             const IconComponent = getCategoryIcon(category.id);
@@ -366,6 +389,17 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
                 {hasDropdown ? (
                   <button
                     onClick={() => toggleDropdown(category.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Escape') {
+                        setDropdownsOpen(prev => ({...prev, [category.id]: false}));
+                      }
+                      if (e.key === 'ArrowDown' && dropdownsOpen[category.id]) {
+                        e.preventDefault();
+                        const dropdown = e.currentTarget.parentElement?.querySelector('[role="menu"]');
+                        const firstMenuItem = dropdown?.querySelector('[role="menuitem"]') as HTMLElement;
+                        firstMenuItem?.focus();
+                      }
+                    }}
                     onBlur={(e) => {
                       // Fechar dropdown se clicar fora
                       setTimeout(() => {
@@ -379,7 +413,7 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
                       alignItems: 'center',
                       gap: '8px',
                       background: 'none',
-                      border: 'none',
+                      border: `2px solid ${dropdownsOpen[category.id] ? unbColors.white : 'transparent'}`,
                       color: unbColors.white,
                       padding: '8px 12px',
                       borderRadius: '8px',
@@ -387,12 +421,17 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
                       fontSize: isTablet ? '0.9rem' : '1rem',
                       fontWeight: '500',
                       transition: 'all 200ms ease',
-                      opacity: dropdownsOpen[category.id] ? 1 : 0.9
+                      opacity: dropdownsOpen[category.id] ? 1 : 0.9,
+                      outline: 'none'
                     }}
                     onMouseEnter={(e) => { e.currentTarget.style.background = unbColors.alpha.secondary; }}
                     onMouseLeave={(e) => { e.currentTarget.style.background = 'none'; }}
+                    onFocus={(e) => { e.currentTarget.style.background = unbColors.alpha.secondary; e.currentTarget.style.border = `2px solid ${unbColors.white}`; }}
+                    onBlur={(e) => { e.currentTarget.style.background = 'none'; e.currentTarget.style.border = '2px solid transparent'; }}
                     aria-expanded={dropdownsOpen[category.id]}
-                    aria-haspopup="true"
+                    aria-haspopup="menu"
+                    aria-label={`Abrir menu ${category.label}: ${category.description}`}
+                    aria-describedby={`category-${category.id}-desc`}
                   >
                     <IconComponent size={isTablet ? 18 : 20} variant="unb" color={unbColors.white} />
                     {!isTablet && <span>{category.label}</span>}
@@ -429,9 +468,25 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
                   </Link>
                 )}
 
+                {/* Hidden description for screen readers */}
+                <span
+                  id={`category-${category.id}-desc`}
+                  style={{
+                    position: 'absolute',
+                    left: '-10000px',
+                    width: '1px',
+                    height: '1px',
+                    overflow: 'hidden'
+                  }}
+                >
+                  {category.description}
+                </span>
+
                 {/* Dropdown Menu */}
                 {hasDropdown && dropdownsOpen[category.id] && (
                   <div
+                    role="menu"
+                    aria-labelledby={`category-${category.id}-button`}
                     style={{
                       position: 'absolute',
                       top: '100%',
@@ -455,6 +510,15 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
                           <Link
                             href={item.href}
                             onClick={closeAllDropdowns}
+                            role="menuitem"
+                            tabIndex={-1}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Escape') {
+                                setDropdownsOpen(prev => ({...prev, [category.id]: false}));
+                                const button = e.currentTarget.closest('[role="button"]') as HTMLElement;
+                                button?.focus();
+                              }
+                            }}
                             style={{
                               display: 'flex',
                               alignItems: 'center',
@@ -465,7 +529,9 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
                               borderRadius: '8px',
                               margin: '4px',
                               transition: 'all 200ms ease',
-                              background: isActive(item.href) ? unbColors.alpha.primary : 'transparent'
+                              background: isActive(item.href) ? unbColors.alpha.primary : 'transparent',
+                              outline: 'none',
+                              border: '2px solid transparent'
                             }}
                             onMouseEnter={(e) => { 
                               if (!isActive(item.href)) {
@@ -477,6 +543,17 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
                                 e.currentTarget.style.background = 'transparent'; 
                               }
                             }}
+                            onFocus={(e) => { 
+                              e.currentTarget.style.background = unbColors.alpha.secondary;
+                              e.currentTarget.style.border = `2px solid ${unbColors.primary}`;
+                            }}
+                            onBlur={(e) => { 
+                              if (!isActive(item.href)) {
+                                e.currentTarget.style.background = 'transparent';
+                              }
+                              e.currentTarget.style.border = '2px solid transparent';
+                            }}
+                            aria-describedby={`item-${item.id}-desc`}
                           >
                             <ItemIcon size={20} variant="unb" />
                             <div style={{ flex: 1 }}>
@@ -590,19 +667,30 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
         {isMobile && (
           <button
             onClick={toggleMobileMenu}
+            onKeyDown={(e) => {
+              if (e.key === 'Escape' && isMobileMenuOpen) {
+                setIsMobileMenuOpen(false);
+              }
+            }}
             style={{
               background: 'none',
-              border: 'none',
+              border: `2px solid transparent`,
               color: unbColors.white,
               padding: '8px',
               cursor: 'pointer',
               borderRadius: '8px',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center'
+              justifyContent: 'center',
+              minWidth: '44px',
+              minHeight: '44px',
+              outline: 'none'
             }}
-            aria-label="Toggle mobile menu"
+            onFocus={(e) => { e.currentTarget.style.border = `2px solid ${unbColors.white}`; }}
+            onBlur={(e) => { e.currentTarget.style.border = '2px solid transparent'; }}
+            aria-label={isMobileMenuOpen ? 'Fechar menu de navegação' : 'Abrir menu de navegação'}
             aria-expanded={isMobileMenuOpen}
+            aria-controls="mobile-navigation-menu"
           >
             {isMobileMenuOpen ? (
               <CloseIcon size={24} color={unbColors.white} />

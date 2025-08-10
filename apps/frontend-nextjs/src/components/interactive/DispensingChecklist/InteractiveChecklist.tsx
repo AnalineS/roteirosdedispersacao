@@ -186,15 +186,19 @@ export default function InteractiveChecklist({
   };
 
   return (
-    <div>
+    <div role="application" aria-label="Sistema interativo de checklist para dispensação PQT-U">
       {/* Header with Progress */}
-      <div style={{
-        background: `linear-gradient(135deg, ${modernChatTheme.colors.personas.gasnelio.primary}15, ${modernChatTheme.colors.personas.ga.primary}15)`,
-        padding: modernChatTheme.spacing.xl,
-        borderRadius: modernChatTheme.borderRadius.lg,
-        marginBottom: modernChatTheme.spacing.lg,
-        border: `1px solid ${modernChatTheme.colors.neutral.border}`
-      }}>
+      <header 
+        role="banner"
+        aria-label="Cabeçalho da sessão de dispensação"
+        style={{
+          background: `linear-gradient(135deg, ${modernChatTheme.colors.personas.gasnelio.primary}15, ${modernChatTheme.colors.personas.ga.primary}15)`,
+          padding: modernChatTheme.spacing.xl,
+          borderRadius: modernChatTheme.borderRadius.lg,
+          marginBottom: modernChatTheme.spacing.lg,
+          border: `1px solid ${modernChatTheme.colors.neutral.border}`
+        }}
+      >
         <div style={{
           display: 'flex',
           justifyContent: 'space-between',
@@ -252,7 +256,12 @@ export default function InteractiveChecklist({
         </div>
 
         {/* Progress Bar */}
-        <div>
+        <div role="progressbar" 
+          aria-valuenow={session.totalProgress}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-label={`Progresso geral: ${session.totalProgress}% concluído`}
+        >
           <div style={{
             display: 'flex',
             justifyContent: 'space-between',
@@ -266,11 +275,14 @@ export default function InteractiveChecklist({
             }}>
               Progresso Geral
             </span>
-            <span style={{
-              fontSize: modernChatTheme.typography.meta.fontSize,
-              color: modernChatTheme.colors.personas.gasnelio.primary,
-              fontWeight: '700'
-            }}>
+            <span 
+              id="progress-percentage"
+              style={{
+                fontSize: modernChatTheme.typography.meta.fontSize,
+                color: modernChatTheme.colors.personas.gasnelio.primary,
+                fontWeight: '700'
+              }}
+            >
               {session.totalProgress}%
             </span>
           </div>
@@ -390,7 +402,7 @@ export default function InteractiveChecklist({
             )}
           </div>
         )}
-      </div>
+      </header>
 
       {/* Stage Navigation */}
       <div style={{
@@ -519,18 +531,28 @@ export default function InteractiveChecklist({
           </h3>
           
           <textarea
+            id="pharmacist-notes"
             value={session.pharmacistNotes}
             onChange={(e) => handlePharmacistNotesChange(e.target.value)}
             placeholder="Registre observações importantes sobre a dispensação, condições especiais do paciente, intercorrências, etc..."
+            aria-label="Observações do farmacêutico"
+            aria-describedby="notes-help-text"
             style={{
               width: '100%',
               minHeight: '120px',
               padding: modernChatTheme.spacing.md,
-              border: `1px solid ${modernChatTheme.colors.neutral.border}`,
+              border: `2px solid ${modernChatTheme.colors.neutral.border}`,
               borderRadius: modernChatTheme.borderRadius.md,
               fontSize: modernChatTheme.typography.meta.fontSize,
               resize: 'vertical',
-              fontFamily: 'inherit'
+              fontFamily: 'inherit',
+              outline: 'none'
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.border = `2px solid ${modernChatTheme.colors.personas.gasnelio.primary}`;
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.border = `2px solid ${modernChatTheme.colors.neutral.border}`;
             }}
           />
           

@@ -126,7 +126,30 @@ export default function MobileNavigation({
         ref={menuRef}
         role="dialog"
         aria-modal="true"
-        aria-label="Mobile navigation menu"
+        aria-label="Menu de navegação mobile"
+        aria-labelledby="mobile-menu-title"
+        id="mobile-navigation-menu"
+        onKeyDown={(e) => {
+          if (e.key === 'Escape') {
+            onClose();
+          }
+          // Trap focus within dialog
+          if (e.key === 'Tab') {
+            const focusableElements = menuRef.current?.querySelectorAll(
+              'button, a, input, [tabindex]:not([tabindex="-1"])'
+            );
+            const firstFocusable = focusableElements?.[0] as HTMLElement;
+            const lastFocusable = focusableElements?.[focusableElements.length - 1] as HTMLElement;
+            
+            if (e.shiftKey && document.activeElement === firstFocusable) {
+              e.preventDefault();
+              lastFocusable?.focus();
+            } else if (!e.shiftKey && document.activeElement === lastFocusable) {
+              e.preventDefault();
+              firstFocusable?.focus();
+            }
+          }
+        }}
         style={{
           position: 'fixed',
           top: 0,
@@ -152,11 +175,14 @@ export default function MobileNavigation({
           background: 'rgba(0,0,0,0.1)'
         }}>
           <div>
-            <h2 style={{
-              margin: 0,
-              fontSize: '1.3rem',
-              fontWeight: 'bold'
-            }}>
+            <h2 
+              id="mobile-menu-title"
+              style={{
+                margin: 0,
+                fontSize: '1.3rem',
+                fontWeight: 'bold'
+              }}
+            >
               Menu de Navegação
             </h2>
             <p style={{
@@ -172,20 +198,29 @@ export default function MobileNavigation({
             onClick={onClose}
             style={{
               background: 'rgba(255,255,255,0.1)',
-              border: 'none',
+              border: '2px solid transparent',
               color: unbColors.white,
-              width: '40px',
-              height: '40px',
+              width: '44px',
+              height: '44px',
               borderRadius: '50%',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              transition: 'all 200ms ease'
+              transition: 'all 200ms ease',
+              outline: 'none'
             }}
             onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.2)'; }}
             onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; }}
-            aria-label="Fechar menu"
+            onFocus={(e) => { 
+              e.currentTarget.style.background = 'rgba(255,255,255,0.2)';
+              e.currentTarget.style.border = `2px solid ${unbColors.white}`;
+            }}
+            onBlur={(e) => { 
+              e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+              e.currentTarget.style.border = '2px solid transparent';
+            }}
+            aria-label="Fechar menu de navegação"
           >
             <CloseIcon size={20} color={unbColors.white} />
           </button>
@@ -224,7 +259,11 @@ export default function MobileNavigation({
         )}
 
         {/* Navegação */}
-        <nav style={{ padding: '16px 0' }} role="navigation">
+        <nav 
+          style={{ padding: '16px 0' }} 
+          role="navigation"
+          aria-label="Categorias de navegação"
+        >
           {categories.map((category) => (
             <div key={category.id} style={{ marginBottom: '4px' }}>
               {/* Category Header */}
@@ -233,7 +272,7 @@ export default function MobileNavigation({
                 style={{
                   width: '100%',
                   background: 'none',
-                  border: 'none',
+                  border: '2px solid transparent',
                   color: unbColors.white,
                   padding: '14px 20px',
                   display: 'flex',
@@ -242,11 +281,23 @@ export default function MobileNavigation({
                   cursor: 'pointer',
                   fontSize: '1rem',
                   fontWeight: '600',
-                  transition: 'all 200ms ease'
+                  transition: 'all 200ms ease',
+                  textAlign: 'left',
+                  minHeight: '44px',
+                  outline: 'none'
                 }}
                 onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
                 onMouseLeave={(e) => { e.currentTarget.style.background = 'none'; }}
+                onFocus={(e) => { 
+                  e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                  e.currentTarget.style.border = `2px solid ${unbColors.white}`;
+                }}
+                onBlur={(e) => { 
+                  e.currentTarget.style.background = 'none';
+                  e.currentTarget.style.border = '2px solid transparent';
+                }}
                 aria-expanded={expandedCategories.has(category.id)}
+                aria-label={`${expandedCategories.has(category.id) ? 'Recolher' : 'Expandir'} categoria ${category.label}: ${category.description}`}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <span style={{ fontSize: '1.2rem' }}>{category.icon}</span>
@@ -274,13 +325,18 @@ export default function MobileNavigation({
                           onClick={onClose}
                           style={{
                             flex: 1,
-                            display: 'block',
+                            display: 'flex',
                             padding: '12px 20px 12px 40px',
                             color: unbColors.white,
                             textDecoration: 'none',
                             borderLeft: isActive(item.href) ? '3px solid white' : '3px solid transparent',
                             background: isActive(item.href) ? 'rgba(255,255,255,0.15)' : 'transparent',
-                            transition: 'all 200ms ease'
+                            transition: 'all 200ms ease',
+                            minHeight: '44px',
+                            alignItems: 'center',
+                            outline: 'none',
+                            borderTop: '2px solid transparent',
+                            borderBottom: '2px solid transparent'
                           }}
                           onMouseEnter={(e) => {
                             if (!isActive(item.href)) {
@@ -292,6 +348,20 @@ export default function MobileNavigation({
                               e.currentTarget.style.background = 'transparent';
                             }
                           }}
+                          onFocus={(e) => {
+                            e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
+                            e.currentTarget.style.borderTop = `2px solid ${unbColors.white}`;
+                            e.currentTarget.style.borderBottom = `2px solid ${unbColors.white}`;
+                          }}
+                          onBlur={(e) => {
+                            if (!isActive(item.href)) {
+                              e.currentTarget.style.background = 'transparent';
+                            }
+                            e.currentTarget.style.borderTop = '2px solid transparent';
+                            e.currentTarget.style.borderBottom = '2px solid transparent';
+                          }}
+                          aria-current={isActive(item.href) ? 'page' : undefined}
+                          aria-describedby={`mobile-item-${item.id}-desc`}
                         >
                           <div style={{
                             display: 'flex',
@@ -363,19 +433,28 @@ export default function MobileNavigation({
                             onClick={() => toggleItem(item.id)}
                             style={{
                               background: 'rgba(255,255,255,0.1)',
-                              border: 'none',
+                              border: '2px solid transparent',
                               color: unbColors.white,
-                              width: '32px',
-                              minHeight: '100%',
+                              width: '44px',
+                              minHeight: '44px',
                               cursor: 'pointer',
                               fontSize: '0.8rem',
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
-                              transition: 'all 200ms ease'
+                              transition: 'all 200ms ease',
+                              outline: 'none'
+                            }}
+                            onFocus={(e) => {
+                              e.currentTarget.style.background = 'rgba(255,255,255,0.2)';
+                              e.currentTarget.style.border = `2px solid ${unbColors.white}`;
+                            }}
+                            onBlur={(e) => {
+                              e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+                              e.currentTarget.style.border = '2px solid transparent';
                             }}
                             aria-expanded={expandedItems.has(item.id)}
-                            aria-label={`${expandedItems.has(item.id) ? 'Recolher' : 'Expandir'} ${item.label}`}
+                            aria-label={`${expandedItems.has(item.id) ? 'Recolher' : 'Expandir'} subitens de ${item.label}`}
                           >
                             {expandedItems.has(item.id) ? '−' : '+'}
                           </button>

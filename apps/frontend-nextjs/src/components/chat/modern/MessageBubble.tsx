@@ -51,15 +51,17 @@ const MessageMeta = ({ timestamp }: { timestamp: number }) => {
   };
 
   return (
-    <span 
+    <time 
+      dateTime={new Date(timestamp).toISOString()}
       style={{
         fontSize: modernChatTheme.typography.meta.fontSize,
         opacity: 0.7,
         fontWeight: '400'
       }}
+      aria-label={`Mensagem enviada em ${formatTime(timestamp)}`}
     >
       {formatTime(timestamp)}
-    </span>
+    </time>
   );
 };
 
@@ -151,6 +153,9 @@ export default function MessageBubble({
   return (
     <div
       className={`message-wrapper ${isUser ? 'user' : 'assistant'}`}
+      role="group"
+      aria-labelledby={`${messageId}-sender`}
+      aria-describedby={`${messageId}-content`}
       style={{
         display: 'flex',
         gap: modernChatTheme.spacing.md,
@@ -179,8 +184,17 @@ export default function MessageBubble({
       )}
       
       {/* Message Content */}
-      <div 
+      <article 
         className={`message-bubble ${isUser ? 'user-bubble' : 'assistant-bubble'}`}
+        role="article"
+        aria-label={`Mensagem de ${isUser ? 'usuário' : persona?.name || 'assistente'}`}
+        tabIndex={0}
+        onKeyDown={(e) => {
+          // Allow copying message content with keyboard
+          if (e.key === 'c' && (e.ctrlKey || e.metaKey)) {
+            navigator.clipboard?.writeText(message.content);
+          }
+        }}
         style={{
           maxWidth: isMobile ? '85%' : 'min(80%, 600px)',
           padding: `${modernChatTheme.spacing.md} ${modernChatTheme.spacing.lg}`,
@@ -189,6 +203,7 @@ export default function MessageBubble({
           wordWrap: 'break-word',
           lineHeight: modernChatTheme.typography.message.lineHeight,
           fontSize: modernChatTheme.typography.message.fontSize,
+          outline: 'none',
           
           // User message styling
           ...(isUser ? {
@@ -249,10 +264,12 @@ export default function MessageBubble({
         {/* Message Content */}
         <div 
           className="message-content"
+          id={`${messageId}-content`}
           style={{
             whiteSpace: 'pre-wrap',
             margin: 0
           }}
+          aria-label={isUser ? 'Sua mensagem' : `Resposta de ${persona?.name || 'assistente'}`}
         >
           {message.content}
         </div>
@@ -284,7 +301,16 @@ export default function MessageBubble({
             isVisible={!isSubmitting}
           />
         )}
-      </div>
+        {/* Screen reader helper for user identification */}
+        {isUser && (
+          <span className="sr-only" id={`${messageId}-sender`}>Você disse:</span>
+        )}
+        
+        {/* Copy to clipboard hint for screen readers */}
+        <span className="sr-only">
+          Pressione Ctrl+C para copiar esta mensagem. Use Tab para navegar para o próximo elemento.
+        </span>
+      </article>
     </div>
   );
 }

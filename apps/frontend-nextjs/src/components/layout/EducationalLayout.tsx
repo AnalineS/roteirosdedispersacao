@@ -23,23 +23,23 @@ export default function EducationalLayout({
   footerVariant = 'full'
 }: EducationalLayoutProps) {
   return (
-    <div className="educational-layout">
+    <div className="educational-layout" role="document">
       {/* Navigation Header */}
       {showHeader && (
         <NavigationHeader currentPersona={currentPersona} />
       )}
       
       {/* Main Content Area */}
-      <div className="main-content">
+      <div className="main-content" role="main">
         {/* Breadcrumbs Header */}
         {showBreadcrumbs && (
-          <header className="content-header">
+          <header className="content-header" role="navigation" aria-label="Breadcrumb navigation">
             <EducationalBreadcrumbs />
           </header>
         )}
         
         {/* Page Content */}
-        <main className="content-main">
+        <main className="content-main" id="main-content" tabIndex={-1}>
           {children}
         </main>
       </div>
@@ -117,6 +117,53 @@ export default function EducationalLayout({
         /* Smooth scroll behavior */
         html {
           scroll-behavior: smooth;
+        }
+
+        /* Respect user's reduced motion preference */
+        @media (prefers-reduced-motion: reduce) {
+          html {
+            scroll-behavior: auto;
+          }
+        }
+
+        /* Improve focus visibility */
+        .educational-layout *:focus {
+          outline: 2px solid #003366;
+          outline-offset: 2px;
+        }
+
+        .educational-layout *:focus:not(:focus-visible) {
+          outline: none;
+        }
+
+        .educational-layout *:focus-visible {
+          outline: 2px solid #003366;
+          outline-offset: 2px;
+        }
+
+        /* High contrast mode support */
+        @media (prefers-contrast: high) {
+          .educational-layout {
+            border: 2px solid currentColor;
+          }
+          
+          .content-header,
+          .content-main {
+            border: 1px solid currentColor;
+          }
+        }
+
+        /* Screen reader improvements */
+        .sr-only {
+          position: absolute;
+          width: 1px;
+          height: 1px;
+          padding: 0;
+          margin: -1px;
+          overflow: hidden;
+          clip: rect(0, 0, 0, 0);
+          white-space: nowrap;
+          border: 0;
         }
         
         /* Layout sem header (casos especiais) */
