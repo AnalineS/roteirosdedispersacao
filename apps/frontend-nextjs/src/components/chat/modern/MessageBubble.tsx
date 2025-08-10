@@ -3,7 +3,9 @@
 import { useState } from 'react';
 import { ChatMessage, Persona } from '@/services/api';
 import PersonaAvatar from '../PersonaAvatar';
+import FeedbackWidget from '../FeedbackWidget';
 import { modernChatTheme, getPersonaColors } from '@/config/modernTheme';
+import { useFeedback, type FeedbackData } from '@/hooks/useFeedback';
 
 interface MessageBubbleProps {
   message: ChatMessage;
@@ -12,6 +14,8 @@ interface MessageBubbleProps {
   isUser?: boolean;
   isMobile?: boolean;
   isLast?: boolean;
+  previousMessage?: ChatMessage; // Para obter a pergunta do usuário
+  enableFeedback?: boolean;
 }
 
 const MessageMeta = ({ timestamp }: { timestamp: number }) => {
@@ -105,7 +109,9 @@ export default function MessageBubble({
   personaId = 'gasnelio',
   isUser = false, 
   isMobile = false,
-  isLast = false
+  isLast = false,
+  previousMessage,
+  enableFeedback = true
 }: MessageBubbleProps) {
   const [isVisible, setIsVisible] = useState(false);
   
@@ -115,6 +121,32 @@ export default function MessageBubble({
   });
 
   const colors = persona ? getPersonaColors(personaId) : null;
+
+  // Feedback handling
+  const { submitFeedback, isSubmitting } = useFeedback({
+    onSuccess: (response) => {
+      console.log('Feedback enviado com sucesso:', response);
+    },
+    onError: (error) => {
+      console.error('Erro ao enviar feedback:', error);
+    },
+    enableOfflineQueue: true
+  });
+
+  const handleFeedbackSubmit = async (feedbackData: FeedbackData) => {
+    try {
+      await submitFeedback(feedbackData);
+    } catch (error) {
+      // Erro já tratado no hook
+      console.warn('Feedback submission failed:', error);
+    }
+  };
+
+  // Determinar se deve mostrar feedback
+  const shouldShowFeedback = !isUser && enableFeedback && persona && previousMessage;
+  
+  // Gerar ID único para a mensagem se não existir
+  const messageId = message.timestamp ? `msg_${message.timestamp}` : `msg_${Date.now()}`;
 
   return (
     <div
@@ -239,6 +271,18 @@ export default function MessageBubble({
           >
             <MessageMeta timestamp={message.timestamp} />
           </div>
+        )}
+
+        {/* Feedback Widget - Only for assistant messages */}
+        {shouldShowFeedback && (
+          <FeedbackWidget
+            messageId={messageId}
+            personaId={personaId}
+            question={previousMessage.content}
+            response={message.content}
+            onFeedbackSubmit={handleFeedbackSubmit}
+            isVisible={!isSubmitting}
+          />
         )}
       </div>
     </div>

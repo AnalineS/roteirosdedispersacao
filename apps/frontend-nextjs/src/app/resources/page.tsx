@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import Navigation from '@/components/Navigation';
+import EducationalLayout from '@/components/layout/EducationalLayout';
 
 interface Tool {
   id: string;
@@ -873,110 +873,106 @@ export default function ResourcesPage() {
   const ActiveComponent = tools.find(tool => tool.id === activeTab)?.component || DoseCalculator;
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f8fafc' }}>
-      <Navigation />
-      
-      <div className="main-content" style={{ padding: '20px' }}>
-        {/* Header */}
-        <div style={{ marginBottom: '30px' }}>
-          <h1 style={{ 
-            fontSize: '2.5rem', 
-            fontWeight: 'bold', 
-            color: '#1976d2',
-            marginBottom: '10px' 
-          }}>
-            Recursos Práticos
-          </h1>
-          <p style={{ 
-            fontSize: '1.1rem', 
-            color: '#666',
-            margin: 0 
-          }}>
-            Ferramentas para apoiar sua prática profissional
-          </p>
-        </div>
-
-        {/* Tool Tabs */}
-        <div style={{
-          background: 'white',
-          borderRadius: '12px',
-          padding: '20px',
-          marginBottom: '30px',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+    <EducationalLayout>
+      {/* Header */}
+      <div style={{ marginBottom: '30px' }}>
+        <h1 style={{ 
+          fontSize: '2.5rem', 
+          fontWeight: 'bold', 
+          color: '#1976d2',
+          marginBottom: '10px' 
         }}>
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-            gap: '15px',
-            marginBottom: '20px'
-          }}>
-            {tools.map((tool) => (
-              <button
-                key={tool.id}
-                onClick={() => setActiveTab(tool.id)}
-                style={{
-                  background: activeTab === tool.id ? '#1976d2' : '#f8f9fa',
-                  color: activeTab === tool.id ? 'white' : '#333',
-                  border: activeTab === tool.id ? '2px solid #1976d2' : '2px solid #e0e0e0',
-                  borderRadius: '12px',
-                  padding: '20px',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                  textAlign: 'left'
-                }}
-                onMouseEnter={(e) => {
-                  if (activeTab !== tool.id) {
-                    e.currentTarget.style.background = '#e3f2fd';
-                    e.currentTarget.style.borderColor = '#1976d2';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (activeTab !== tool.id) {
-                    e.currentTarget.style.background = '#f8f9fa';
-                    e.currentTarget.style.borderColor = '#e0e0e0';
-                  }
-                }}
-              >
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  marginBottom: '8px'
-                }}>
-                  <span style={{ fontSize: '1.5rem' }}>{tool.icon}</span>
-                  <div>
-                    <h3 style={{
-                      margin: 0,
-                      fontSize: '1.1rem',
-                      fontWeight: 'bold'
-                    }}>
-                      {tool.title}
-                    </h3>
-                    <div style={{
-                      fontSize: '0.8rem',
-                      opacity: 0.8,
-                      marginTop: '2px'
-                    }}>
-                      {tool.category}
-                    </div>
+          Recursos Práticos
+        </h1>
+        <p style={{ 
+          fontSize: '1.1rem', 
+          color: '#666',
+          margin: 0 
+        }}>
+          Ferramentas para apoiar sua prática profissional
+        </p>
+      </div>
+
+      {/* Tool Tabs */}
+      <div style={{
+        background: 'white',
+        borderRadius: '12px',
+        padding: '20px',
+        marginBottom: '30px',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+      }}>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          gap: '15px',
+          marginBottom: '20px'
+        }}>
+          {tools.map((tool) => (
+            <button
+              key={tool.id}
+              onClick={() => setActiveTab(tool.id)}
+              style={{
+                background: activeTab === tool.id ? '#1976d2' : '#f8f9fa',
+                color: activeTab === tool.id ? 'white' : '#333',
+                border: activeTab === tool.id ? '2px solid #1976d2' : '2px solid #e0e0e0',
+                borderRadius: '12px',
+                padding: '20px',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                textAlign: 'left'
+              }}
+              onMouseEnter={(e) => {
+                if (activeTab !== tool.id) {
+                  e.currentTarget.style.background = '#e3f2fd';
+                  e.currentTarget.style.borderColor = '#1976d2';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (activeTab !== tool.id) {
+                  e.currentTarget.style.background = '#f8f9fa';
+                  e.currentTarget.style.borderColor = '#e0e0e0';
+                }
+              }}
+            >
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                marginBottom: '8px'
+              }}>
+                <span style={{ fontSize: '1.5rem' }}>{tool.icon}</span>
+                <div>
+                  <h3 style={{
+                    margin: 0,
+                    fontSize: '1.1rem',
+                    fontWeight: 'bold'
+                  }}>
+                    {tool.title}
+                  </h3>
+                  <div style={{
+                    fontSize: '0.8rem',
+                    opacity: 0.8,
+                    marginTop: '2px'
+                  }}>
+                    {tool.category}
                   </div>
                 </div>
-                <p style={{
-                  margin: 0,
-                  fontSize: '0.9rem',
-                  opacity: 0.9,
-                  lineHeight: 1.4
-                }}>
-                  {tool.description}
-                </p>
-              </button>
-            ))}
-          </div>
+              </div>
+              <p style={{
+                margin: 0,
+                fontSize: '0.9rem',
+                opacity: 0.9,
+                lineHeight: 1.4
+              }}>
+                {tool.description}
+              </p>
+            </button>
+          ))}
         </div>
-
-        {/* Active Tool */}
-        <ActiveComponent />
       </div>
-    </div>
+
+      {/* Active Tool */}
+      <ActiveComponent />
+    </EducationalLayout>
   );
 }

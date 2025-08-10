@@ -448,6 +448,13 @@ export async function runAccessibilityValidation(): Promise<AccessibilityTestRes
   return await validator.runAccessibilityTests(document);
 }
 
+// Teste básico para Jest
+describe('Accessibility Validator', () => {
+  it('should export runAccessibilityValidation function', () => {
+    expect(typeof runAccessibilityValidation).toBe('function');
+  });
+});
+
 // Executar testes automaticamente em desenvolvimento
 if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
   // Aguardar carregamento da página

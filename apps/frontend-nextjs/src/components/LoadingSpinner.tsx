@@ -74,7 +74,7 @@ export const ChatComponentLoader: React.FC<{ message?: string }> = ({
   <LoadingSpinner size="small" message={message} inline />
 );
 
-export const SidebarLoader: React.FC = () => (
+export const ContentLoader: React.FC = () => (
   <div style={{
     padding: '20px',
     display: 'flex',
@@ -86,6 +86,9 @@ export const SidebarLoader: React.FC = () => (
     <LoadingSpinner size="medium" message="Carregando histórico..." />
   </div>
 );
+
+// Alias para compatibilidade (sidebar foi removido)
+export const SidebarLoader = ContentLoader;
 
 export const IndicatorLoader: React.FC = () => (
   <div style={{

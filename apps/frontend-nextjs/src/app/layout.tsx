@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import ErrorBoundary from '@/components/ErrorBoundary'
 import OfflineIndicator from '@/components/OfflineIndicator'
+import GoogleAnalytics from '@/components/GoogleAnalytics'
 import SITE_CONFIG from '@/lib/config'
 import '@/styles/globals.css'
 import '@/styles/accessibility.css'
@@ -29,6 +30,9 @@ export default function RootLayout({
       </head>
       <body>
         {/* No JavaScript fallback */}
+        {/* Google Analytics */}
+        <GoogleAnalytics GA_MEASUREMENT_ID={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID} />
+        
         <noscript>
           <div style={{
             background: '#f44336',

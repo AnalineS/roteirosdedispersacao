@@ -97,7 +97,7 @@ export default function HomePage() {
         }
       `}</style>
       
-      <EducationalLayout showSidebar={false} showBreadcrumbs={false}>
+      <EducationalLayout showBreadcrumbs={false}>
       <div style={{
         minHeight: '100vh',
         backgroundColor: '#ffffff',
@@ -746,79 +746,6 @@ export default function HomePage() {
               </a>
             </div>
           </section>
-
-          {/* Footer Institucional */}
-          <footer style={{
-            marginTop: '4rem',
-            paddingTop: '3rem',
-            borderTop: '2px solid #e2e8f0',
-            background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)'
-          }}>
-            <div className="text-center" style={{ maxWidth: '800px', margin: '0 auto' }}>
-              <div className="flex items-center justify-center gap-lg mb-3" style={{ flexWrap: 'wrap' }}>
-                <img 
-                  src={getUniversityLogo('unb_symbol')} 
-                  alt="UnB"
-                  style={{
-                    width: '50px',
-                    height: '50px',
-                    objectFit: 'contain'
-                  }}
-                />
-                <div style={{
-                  width: '2px',
-                  height: '40px',
-                  backgroundColor: '#cbd5e1'
-                }}></div>
-                <img 
-                  src={getUniversityLogo('ppgcf_logo')} 
-                  alt="PPGCF"
-                  style={{
-                    width: '60px',
-                    height: '50px',
-                    objectFit: 'contain'
-                  }}
-                />
-              </div>
-              
-              <p style={{
-                fontSize: '1rem',
-                color: '#64748b',
-                fontWeight: '600',
-                marginBottom: '0.5rem'
-              }}>
-                Tese de Doutorado - Programa de Pós-Graduação em Ciências Farmacêuticas
-              </p>
-              
-              <p style={{
-                fontSize: '0.875rem',
-                color: '#94a3b8',
-                marginBottom: '1.5rem'
-              }}>
-                Universidade de Brasília (UnB) • 2025
-              </p>
-              
-              <div style={{
-                padding: '1rem',
-                background: 'rgba(59, 130, 246, 0.05)',
-                borderRadius: '8px',
-                border: '1px solid rgba(59, 130, 246, 0.1)',
-                display: 'inline-block'
-              }}>
-                <p style={{
-                  fontSize: '0.875rem',
-                  color: '#3b82f6',
-                  margin: 0,
-                  fontWeight: '500'
-                }}>
-                  {(() => {
-                    const count = getValidPersonasCount();
-                    return count > 0 ? count : 2;
-                  })()} assistentes especializados disponíveis
-                </p>
-              </div>
-            </div>
-          </footer>
         </div>
       </div>
     </EducationalLayout>

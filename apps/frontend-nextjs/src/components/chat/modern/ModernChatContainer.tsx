@@ -156,17 +156,26 @@ export default function ModernChatContainer({
         scrollPaddingBottom: modernChatTheme.spacing.xl
       }}
     >
-      {messages.map((message, index) => (
-        <MessageBubble
-          key={`${message.role}-${message.timestamp}-${index}`}
-          message={message}
-          persona={message.role === 'assistant' ? (currentPersona || undefined) : undefined}
-          personaId={selectedPersona || 'gasnelio'}
-          isUser={message.role === 'user'}
-          isMobile={isMobile}
-          isLast={index === messages.length - 1}
-        />
-      ))}
+      {messages.map((message, index) => {
+        // Encontrar a mensagem anterior (pergunta do usuário) para contexto de feedback
+        const previousMessage = message.role === 'assistant' && index > 0 
+          ? messages[index - 1] 
+          : undefined;
+
+        return (
+          <MessageBubble
+            key={`${message.role}-${message.timestamp}-${index}`}
+            message={message}
+            persona={message.role === 'assistant' ? (currentPersona || undefined) : undefined}
+            personaId={selectedPersona || 'gasnelio'}
+            isUser={message.role === 'user'}
+            isMobile={isMobile}
+            isLast={index === messages.length - 1}
+            previousMessage={previousMessage}
+            enableFeedback={true}
+          />
+        );
+      })}
       
       {/* Indicador de digitação integrado */}
       {isLoading && currentPersona && (

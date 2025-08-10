@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Navigation from '@/components/Navigation';
+import EducationalLayout from '@/components/layout/EducationalLayout';
 import { usePersonas } from '@/hooks/usePersonas';
 import EducationalDashboard from '@/components/educational/EducationalDashboard';
 
@@ -35,9 +35,8 @@ export default function DashboardPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f8fafc' }}>
-      <Navigation currentPersona={currentPersona?.name} />
+    <EducationalLayout currentPersona={currentPersona?.name}>
       <EducationalDashboard currentPersona={currentPersona?.name} />
-    </div>
+    </EducationalLayout>
   );
 }

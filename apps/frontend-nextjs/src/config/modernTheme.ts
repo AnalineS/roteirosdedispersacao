@@ -6,17 +6,38 @@ export const modernChatTheme = {
       accent: '#F1F5F9'
     },
     
+    // Paleta UnB Institucional
+    unb: {
+      primary: '#003366',      // Azul institucional UnB
+      secondary: '#0066CC',    // Azul secundário
+      accent: '#00AA44',       // Verde complementar
+      neutral: '#666666',      // Cinza neutro
+      white: '#FFFFFF',        // Branco
+      gradients: {
+        primary: 'linear-gradient(135deg, #003366 0%, #0066CC 100%)',
+        secondary: 'linear-gradient(135deg, #0066CC 0%, #00AA44 100%)',
+        header: 'linear-gradient(90deg, #003366 0%, #0066CC 100%)'
+      },
+      alpha: {
+        primary: 'rgba(0, 51, 102, 0.1)',
+        secondary: 'rgba(0, 102, 204, 0.1)',
+        accent: 'rgba(0, 170, 68, 0.1)'
+      }
+    },
+    
     personas: {
       gasnelio: {
         primary: '#0EA5E9',
         gradient: 'linear-gradient(135deg, #0EA5E9 0%, #0284C7 100%)',
         bubble: '#EFF6FF',
+        background: '#EFF6FF',
         alpha: 'rgba(14, 165, 233, 0.1)'
       },
       ga: {
         primary: '#10B981',
         gradient: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
         bubble: '#ECFDF5',
+        background: '#ECFDF5',
         alpha: 'rgba(16, 185, 129, 0.1)'
       }
     },
@@ -90,6 +111,7 @@ export const modernChatTheme = {
   transitions: {
     fast: '150ms ease',
     normal: '200ms ease',
+    medium: '250ms ease',
     slow: '300ms ease',
     spring: '400ms cubic-bezier(0.4, 0, 0.2, 1)'
   },
@@ -125,6 +147,19 @@ export const getCSSVariables = () => {
     '--color-bg-secondary': theme.colors.background.secondary,
     '--color-bg-accent': theme.colors.background.accent,
     
+    // Cores UnB
+    '--unb-primary': theme.colors.unb.primary,
+    '--unb-secondary': theme.colors.unb.secondary,
+    '--unb-accent': theme.colors.unb.accent,
+    '--unb-neutral': theme.colors.unb.neutral,
+    '--unb-white': theme.colors.unb.white,
+    '--unb-gradient-primary': theme.colors.unb.gradients.primary,
+    '--unb-gradient-secondary': theme.colors.unb.gradients.secondary,
+    '--unb-gradient-header': theme.colors.unb.gradients.header,
+    '--unb-alpha-primary': theme.colors.unb.alpha.primary,
+    '--unb-alpha-secondary': theme.colors.unb.alpha.secondary,
+    '--unb-alpha-accent': theme.colors.unb.alpha.accent,
+    
     '--color-text': theme.colors.neutral.text,
     '--color-text-muted': theme.colors.neutral.textMuted,
     '--color-border': theme.colors.neutral.border,
@@ -159,4 +194,9 @@ export const getCSSVariables = () => {
     '--transition-slow': theme.transitions.slow,
     '--transition-spring': theme.transitions.spring
   };
+};
+
+// Helper para acessar cores UnB
+export const getUnbColors = () => {
+  return modernChatTheme.colors.unb;
 };

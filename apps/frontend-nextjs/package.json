@@ -2,12 +2,41 @@
   "name": "roteiros-dispensacao-nextjs",
   "version": "1.0.0",
   "private": true,
+  "description": "Sistema QA abrangente para recursos educativos de hanseníase",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:ci": "jest --ci --coverage --watchAll=false",
+    "test:unit": "jest --testPathPattern=/tests/",
+    "test:integration": "jest --testPathPattern=/tests/integration/",
+    "test:educational": "jest --testPathPattern=/tests/educational/",
+    "test:clinical-cases": "jest --testPathPattern=clinicalCasesQA.test.ts",
+    "test:dose-calculator": "jest --testPathPattern=doseCalculatorQA.test.ts",
+    "test:interactive-components": "jest --testPathPattern=interactiveComponentsQA.test.ts",
+    "test:performance": "jest --testPathPattern=performance --runInBand",
+    "test:a11y": "jest --testPathPattern=accessibility --runInBand",
+    "test:personas": "jest --testPathPattern=personas",
+    "test:consistency": "jest --testPathPattern=consistency",
+    "qa:run": "ts-node scripts/runQA.ts",
+    "qa:full": "npm run qa:run -- --suite=full",
+    "qa:targeted": "npm run qa:run -- --types=clinical_accuracy,educational_value",
+    "qa:report": "ts-node scripts/generateQAReport.ts",
+    "qa:validate-deploy": "npm run qa:run -- --validate-deploy",
+    "qa:monitor": "ts-node scripts/startQAMonitoring.ts",
+    "qa:dashboard": "next dev --port 3001 -- --qa-dashboard",
+    "analyze:bundle": "ANALYZE=true npm run build",
+    "audit:security": "npm audit --audit-level moderate",
+    "audit:licenses": "license-checker --summary",
+    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
+    "pre-commit": "lint-staged",
+    "prepare": "echo 'Skipping husky install in subproject'"
   },
   "dependencies": {
     "jspdf": "^3.0.1",
@@ -16,11 +45,84 @@
     "react-dom": "^18.3.0"
   },
   "devDependencies": {
+    "@jest/globals": "^29.7.0",
+    "@next/bundle-analyzer": "^15.4.6",
+    "@testing-library/jest-dom": "^6.1.0",
+    "@testing-library/react": "^14.1.0",
+    "@testing-library/user-event": "^14.5.0",
+    "@types/jest": "^29.5.0",
     "@types/node": "^20.0.0",
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",
     "eslint": "^8.57.0",
     "eslint-config-next": "^14.2.18",
-    "typescript": "^5.0.0"
-  }
+    "husky": "^8.0.0",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "license-checker": "^25.0.1",
+    "lint-staged": "^15.0.0",
+    "prettier": "^3.0.0",
+    "string-replace-loader": "^3.2.0",
+    "ts-jest": "^29.1.0",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.0.0",
+    "webpack-bundle-analyzer": "^4.10.2"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "jsdom",
+    "setupFilesAfterEnv": [
+      "<rootDir>/jest.setup.js"
+    ],
+    "testMatch": [
+      "<rootDir>/src/**/__tests__/**/*.{js,jsx,ts,tsx}",
+      "<rootDir>/src/**/*.{test,spec}.{js,jsx,ts,tsx}",
+      "<rootDir>/src/tests/**/*.{js,jsx,ts,tsx}"
+    ],
+    "moduleNameMapper": {
+      "^@/(.*)$": "<rootDir>/src/$1"
+    },
+    "collectCoverageFrom": [
+      "src/**/*.{ts,tsx}",
+      "!src/**/*.d.ts",
+      "!src/tests/**",
+      "!src/**/*.stories.{ts,tsx}"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 95,
+        "functions": 95,
+        "lines": 95,
+        "statements": 95
+      }
+    },
+    "transform": {
+      "^.+\\.(js|jsx|ts|tsx)$": ["babel-jest"]
+    },
+    "transformIgnorePatterns": [
+      "node_modules/(?!(.*\\.mjs$))"
+    ]
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,css,md}": [
+      "prettier --write"
+    ]
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "keywords": [
+    "education",
+    "healthcare",
+    "hanseniase",
+    "qa",
+    "quality-assurance",
+    "pharmacology",
+    "clinical-cases"
+  ]
 }

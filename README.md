@@ -96,6 +96,33 @@ docker build -t roteiro-backend .
 - **CORS** configurado adequadamente
 - Ver `POLITICAS_SEGURANCA_GLOBAL.md` para detalhes
 
+## 📁 Estrutura do Repositório
+
+```
+roteiro-dispensacao/
+├── 📁 apps/                     # Aplicações principais
+│   ├── backend/                 # Flask API modular (6 blueprints)
+│   └── frontend-nextjs/         # Next.js 14 (aplicação principal)
+├── 📁 data/                     # Base de conhecimento centralizada
+│   ├── structured/              # JSONs estruturados médicos
+│   └── embeddings/              # Vetores para RAG
+├── 📁 docs/                     # Documentação consolidada
+│   ├── project/                 # Documentos principais
+│   ├── qa-reports/              # Relatórios QA (ver QA_MASTER_REPORT.md)
+│   ├── deployment/              # Guias deploy
+│   └── archived/                # Histórico
+├── 📁 tests/                    # Testes centralizados
+│   ├── backend/                 # Testes backend Python
+│   ├── integration/             # Testes integração
+│   └── scientific/              # Validação científica
+├── 📁 tools/                    # Ferramentas desenvolvimento
+│   ├── diagnostics/             # Scripts diagnóstico
+│   ├── qa-validation/           # Suites validação
+│   ├── deploy/                  # Scripts deploy
+│   └── dev-environment/         # Setup desenvolvimento
+└── 📁 temp/                     # Arquivos temporários
+```
+
 ## 📋 Features
 
 - ✅ Chat IA com personas especializadas

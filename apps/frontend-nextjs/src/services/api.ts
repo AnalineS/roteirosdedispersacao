@@ -158,3 +158,49 @@ export async function detectQuestionScope(question: string) {
     throw error;
   }
 }
+
+/**
+ * API Client para requisições HTTP
+ */
+export const apiClient = {
+  async post<T>(endpoint: string, data: any): Promise<T> {
+    try {
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error(`Erro na requisição POST para ${endpoint}:`, error);
+      throw error;
+    }
+  },
+
+  async get<T>(endpoint: string): Promise<T> {
+    try {
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error(`Erro na requisição GET para ${endpoint}:`, error);
+      throw error;
+    }
+  },
+};

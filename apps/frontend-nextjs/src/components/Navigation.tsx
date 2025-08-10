@@ -6,6 +6,16 @@ import { useState } from 'react';
 import { theme } from '@/config/theme';
 import { getUniversityLogo } from '@/constants/avatars';
 import Image from 'next/image';
+import { 
+  BookOpenIcon,
+  ClipboardListIcon,
+  HeartPulseIcon,
+  TargetIcon,
+  TrophyIcon,
+  StethoscopeIcon,
+  LockIcon,
+  CalculatorIcon
+} from '@/components/ui/EducationalIcons';
 
 interface NavigationProps {
   currentPersona?: string;
@@ -20,47 +30,62 @@ export default function Navigation({ currentPersona }: NavigationProps) {
       id: 'home',
       label: 'Início',
       href: '/',
-      icon: '🏠',
+      icon: HeartPulseIcon,
       description: 'Seleção de assistentes virtuais'
     },
     {
       id: 'dashboard',
       label: 'Dashboard',
       href: '/dashboard',
-      icon: '📊',
+      icon: TrophyIcon,
       description: 'Progresso educacional e recursos'
     },
     {
       id: 'chat',
       label: 'Conversar',
       href: '/chat',
-      icon: '💬',
+      icon: StethoscopeIcon,
       description: 'Chat com assistentes especializados'
     },
     {
       id: 'modules',
       label: 'Módulos',
       href: '/modules',
-      icon: '📚',
+      icon: BookOpenIcon,
       description: 'Conteúdo educacional estruturado'
     },
     {
       id: 'resources',
       label: 'Recursos',
       href: '/resources',
-      icon: '🎯',
+      icon: CalculatorIcon,
       description: 'Calculadoras, checklists e ferramentas'
     },
     {
       id: 'progress',
       label: 'Progresso',
       href: '/progress',
-      icon: '📈',
+      icon: TargetIcon,
       description: 'Acompanhe seu aprendizado'
+    },
+    {
+      id: 'about',
+      label: 'Sobre',
+      href: '/sobre',
+      icon: StethoscopeIcon,
+      description: 'Sobre o pesquisador e o projeto'
+    },
+    {
+      id: 'compliance',
+      label: 'Conformidade',
+      href: '/conformidade',
+      icon: LockIcon,
+      description: 'Regulamentações e compliance'
     }
   ];
 
   const isActive = (href: string) => {
+    if (!pathname) return false;
     if (href === '/') return pathname === '/';
     return pathname.startsWith(href);
   };
@@ -231,7 +256,7 @@ export default function Navigation({ currentPersona }: NavigationProps) {
                 alignItems: 'center',
                 gap: '12px'
               }}>
-                <span style={{ fontSize: '1.2rem' }}>{item.icon}</span>
+                <item.icon size={20} color="white" />
                 <div>
                   <div style={{ 
                     fontWeight: isActive(item.href) ? 'bold' : 'normal',
