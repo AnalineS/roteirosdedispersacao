@@ -520,7 +520,7 @@ export default function SobrePage() {
               <h4 style={{
                 fontSize: '16px',
                 fontWeight: '600',
-                color: modernChatTheme.colors.status.warning,
+                color: '#F59E0B',
                 marginBottom: modernChatTheme.spacing.sm
               }}>
                 💊 Dispensação em Doenças Negligenciadas
