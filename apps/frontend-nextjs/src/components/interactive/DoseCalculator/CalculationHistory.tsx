@@ -64,8 +64,8 @@ export default function CalculationHistoryComponent({
           onClick={onClearHistory}
           style={{
             padding: `${modernChatTheme.spacing.xs} ${modernChatTheme.spacing.sm}`,
-            background: modernChatTheme.colors.status.error + '15',
-            color: modernChatTheme.colors.status.error,
+            background: '#EF4444' + '15',
+            color: '#EF4444',
             border: `1px solid ${modernChatTheme.colors.status.error}30`,
             borderRadius: modernChatTheme.borderRadius.sm,
             fontSize: modernChatTheme.typography.meta.fontSize,
@@ -163,8 +163,8 @@ function HistoryItem({
           {isRecent && (
             <span style={{
               padding: `${modernChatTheme.spacing.xs} ${modernChatTheme.spacing.xs}`,
-              background: modernChatTheme.colors.status.success + '20',
-              color: modernChatTheme.colors.status.success,
+              background: '#10B981' + '20',
+              color: '#10B981',
               fontSize: '10px',
               fontWeight: '600',
               borderRadius: modernChatTheme.borderRadius.sm,

@@ -149,12 +149,12 @@ export default function CertificateGenerator({
             alignItems: 'center',
             gap: modernChatTheme.spacing.sm,
             padding: `${modernChatTheme.spacing.sm} ${modernChatTheme.spacing.lg}`,
-            background: modernChatTheme.colors.status.success + '15',
+            background: '#10B981' + '15',
             border: `1px solid ${modernChatTheme.colors.status.success}30`,
             borderRadius: modernChatTheme.borderRadius.md,
             fontSize: '14px',
             fontWeight: '600',
-            color: modernChatTheme.colors.status.success
+            color: '#10B981'
           }}>
             <CheckCircleIcon size={18} color="currentColor" /> <span>CERTIFICADO OFICIAL</span> • ID: {certificate.id}
           </div>
@@ -338,7 +338,7 @@ export default function CertificateGenerator({
               style={{
                 width: '100%',
                 padding: modernChatTheme.spacing.md,
-                background: modernChatTheme.colors.status.info,
+                background: '#3B82F6',
                 color: 'white',
                 border: 'none',
                 borderRadius: modernChatTheme.borderRadius.md,

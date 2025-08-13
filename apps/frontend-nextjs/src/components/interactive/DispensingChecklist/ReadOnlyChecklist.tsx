@@ -75,14 +75,14 @@ export default function ReadOnlyChecklist({
         
         {showEducationalInfo && (
           <div style={{
-            background: modernChatTheme.colors.status.info + '10',
+            background: '#3B82F6' + '10',
             padding: modernChatTheme.spacing.md,
             borderRadius: modernChatTheme.borderRadius.sm,
             border: `1px solid ${modernChatTheme.colors.status.info}20`
           }}>
             <p style={{
               fontSize: '12px',
-              color: modernChatTheme.colors.status.info,
+              color: '#3B82F6',
               margin: 0
             }}>
               💡 <strong>Modo demonstrativo:</strong> Faça login para usar a versão interativa com salvamento e personalização
@@ -399,7 +399,7 @@ export default function ReadOnlyChecklist({
                                         <span style={{
                                           marginLeft: modernChatTheme.spacing.xs,
                                           fontSize: '10px',
-                                          color: modernChatTheme.colors.status.warning,
+                                          color: '#F59E0B',
                                           fontWeight: '600'
                                         }}>
                                           • OBRIGATÓRIO
@@ -456,7 +456,7 @@ export default function ReadOnlyChecklist({
                           <h5 style={{
                             fontSize: modernChatTheme.typography.meta.fontSize,
                             fontWeight: '600',
-                            color: modernChatTheme.colors.status.success,
+                            color: '#10B981',
                             marginBottom: modernChatTheme.spacing.xs
                           }}>
                             ✅ Continuar dispensação se:
@@ -481,7 +481,7 @@ export default function ReadOnlyChecklist({
                           <h5 style={{
                             fontSize: modernChatTheme.typography.meta.fontSize,
                             fontWeight: '600',
-                            color: modernChatTheme.colors.status.error,
+                            color: '#EF4444',
                             marginBottom: modernChatTheme.spacing.xs
                           }}>
                             ⚠️ Encaminhar ao prescritor se:
@@ -506,7 +506,7 @@ export default function ReadOnlyChecklist({
                           <h5 style={{
                             fontSize: modernChatTheme.typography.meta.fontSize,
                             fontWeight: '600',
-                            color: modernChatTheme.colors.status.warning,
+                            color: '#F59E0B',
                             marginBottom: modernChatTheme.spacing.xs
                           }}>
                             📦 Solicitar medicamento se:

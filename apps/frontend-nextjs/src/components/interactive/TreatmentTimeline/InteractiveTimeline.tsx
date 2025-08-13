@@ -396,7 +396,7 @@ export default function InteractiveTimeline({
               onClick={() => handleMilestoneToggle(nextMilestone.id)}
               style={{
                 padding: `${modernChatTheme.spacing.xs} ${modernChatTheme.spacing.sm}`,
-                background: modernChatTheme.colors.status.success,
+                background: '#10B981',
                 color: 'white',
                 border: 'none',
                 borderRadius: modernChatTheme.borderRadius.sm,

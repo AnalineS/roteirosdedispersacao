@@ -112,7 +112,7 @@ export default function BasicCalculator({ onCalculationComplete }: BasicCalculat
           <strong>Dr. Gasnelio:</strong> "Bem-vindo à calculadora de doses PQT-U. Utilizamos protocolos baseados na minha pesquisa de doutorado para garantir cálculos precisos e seguros."
         </p>
         <div style={{
-          background: modernChatTheme.colors.status.warning + '15',
+          background: '#F59E0B' + '15',
           padding: modernChatTheme.spacing.sm,
           borderRadius: modernChatTheme.borderRadius.sm,
           border: `1px solid ${modernChatTheme.colors.status.warning}30`
@@ -121,7 +121,7 @@ export default function BasicCalculator({ onCalculationComplete }: BasicCalculat
             display: 'flex', 
             alignItems: 'center', 
             gap: modernChatTheme.spacing.xs, 
-            color: modernChatTheme.colors.status.warning, 
+            color: '#F59E0B', 
             fontWeight: 'bold',
             justifyContent: 'center'
           }}>
@@ -185,7 +185,7 @@ export default function BasicCalculator({ onCalculationComplete }: BasicCalculat
               id="weight-error" 
               role="alert" 
               style={{
-                color: modernChatTheme.colors.status.error,
+                color: '#EF4444',
                 fontSize: '12px',
                 marginTop: '4px'
               }}
@@ -241,7 +241,7 @@ export default function BasicCalculator({ onCalculationComplete }: BasicCalculat
               id="age-error" 
               role="alert" 
               style={{
-                color: modernChatTheme.colors.status.error,
+                color: '#EF4444',
                 fontSize: '12px',
                 marginTop: '4px'
               }}
@@ -573,7 +573,7 @@ export default function BasicCalculator({ onCalculationComplete }: BasicCalculat
           <div style={{
             marginTop: modernChatTheme.spacing.xl,
             padding: modernChatTheme.spacing.lg,
-            background: modernChatTheme.colors.status.info + '10',
+            background: '#3B82F6' + '10',
             borderRadius: modernChatTheme.borderRadius.md,
             border: `1px solid ${modernChatTheme.colors.status.info}30`,
             textAlign: 'center'
@@ -591,7 +591,7 @@ export default function BasicCalculator({ onCalculationComplete }: BasicCalculat
             <p style={{
               fontSize: modernChatTheme.typography.meta.fontSize,
               fontWeight: '600',
-              color: modernChatTheme.colors.status.info
+              color: '#3B82F6'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: modernChatTheme.spacing.xs, justifyContent: 'center' }}>
                 <LockIcon size={16} color="currentColor" />

@@ -130,11 +130,11 @@ export default function ExportOptions({ result, isAvailable }: ExportOptionsProp
       {exportStatus === 'success' && (
         <div style={{
           padding: modernChatTheme.spacing.md,
-          background: modernChatTheme.colors.status.success + '20',
+          background: '#10B981' + '20',
           border: `1px solid ${modernChatTheme.colors.status.success}30`,
           borderRadius: modernChatTheme.borderRadius.md,
           marginBottom: modernChatTheme.spacing.lg,
-          color: modernChatTheme.colors.status.success,
+          color: '#10B981',
           textAlign: 'center'
         }}>
           ✅ Exportação realizada com sucesso!
@@ -144,11 +144,11 @@ export default function ExportOptions({ result, isAvailable }: ExportOptionsProp
       {exportStatus === 'error' && (
         <div style={{
           padding: modernChatTheme.spacing.md,
-          background: modernChatTheme.colors.status.error + '20',
+          background: '#EF4444' + '20',
           border: `1px solid ${modernChatTheme.colors.status.error}30`,
           borderRadius: modernChatTheme.borderRadius.md,
           marginBottom: modernChatTheme.spacing.lg,
-          color: modernChatTheme.colors.status.error,
+          color: '#EF4444',
           textAlign: 'center'
         }}>
           ❌ Erro na exportação. Tente novamente.
@@ -310,13 +310,13 @@ export default function ExportOptions({ result, isAvailable }: ExportOptionsProp
           <div style={{
             marginBottom: modernChatTheme.spacing.lg,
             padding: modernChatTheme.spacing.sm,
-            background: modernChatTheme.colors.status.info + '10',
+            background: '#3B82F6' + '10',
             border: `1px solid ${modernChatTheme.colors.status.info}20`,
             borderRadius: modernChatTheme.borderRadius.sm
           }}>
             <p style={{
               fontSize: '11px',
-              color: modernChatTheme.colors.status.info,
+              color: '#3B82F6',
               margin: 0
             }}>
               🔒 <strong>Privacidade:</strong> O email será enviado com criptografia e não armazenamos seu endereço de email.
@@ -350,7 +350,7 @@ export default function ExportOptions({ result, isAvailable }: ExportOptionsProp
       <div style={{
         marginTop: modernChatTheme.spacing.xl,
         padding: modernChatTheme.spacing.md,
-        background: modernChatTheme.colors.status.warning + '10',
+        background: '#F59E0B' + '10',
         border: `1px solid ${modernChatTheme.colors.status.warning}20`,
         borderRadius: modernChatTheme.borderRadius.sm
       }}>

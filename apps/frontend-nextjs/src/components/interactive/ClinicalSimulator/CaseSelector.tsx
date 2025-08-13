@@ -370,7 +370,7 @@ export default function CaseSelector({
                       <div style={{
                         width: '32px',
                         height: '32px',
-                        background: modernChatTheme.colors.status.success,
+                        background: '#10B981',
                         borderRadius: '50%',
                         display: 'flex',
                         alignItems: 'center',

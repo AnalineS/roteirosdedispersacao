@@ -175,7 +175,7 @@ const KnowledgeIndicator = ({ isSearching, stats }: { isSearching: boolean; stat
         alignItems: 'center',
         gap: modernChatTheme.spacing.xs,
         fontSize: modernChatTheme.typography.meta.fontSize,
-        color: modernChatTheme.colors.status.info
+        color: '#3B82F6'
       }}
     >
       {isSearching ? (
@@ -205,10 +205,10 @@ const KnowledgeIndicator = ({ isSearching, stats }: { isSearching: boolean; stat
 const FallbackBadge = ({ type }: { type?: string }) => {
   const getFallbackInfo = (type?: string) => {
     switch (type) {
-      case 'cache': return { icon: '🔄', label: 'Cache', color: modernChatTheme.colors.status.info };
-      case 'local_knowledge': return { icon: '📚', label: 'Local', color: modernChatTheme.colors.status.success };
-      case 'emergency': return { icon: '🚨', label: 'Emergência', color: modernChatTheme.colors.status.error };
-      default: return { icon: '🛡️', label: 'Fallback', color: modernChatTheme.colors.status.warning };
+      case 'cache': return { icon: '🔄', label: 'Cache', color: '#3B82F6' };
+      case 'local_knowledge': return { icon: '📚', label: 'Local', color: '#10B981' };
+      case 'emergency': return { icon: '🚨', label: 'Emergência', color: '#EF4444' };
+      default: return { icon: '🛡️', label: 'Fallback', color: '#F59E0B' };
     }
   };
 

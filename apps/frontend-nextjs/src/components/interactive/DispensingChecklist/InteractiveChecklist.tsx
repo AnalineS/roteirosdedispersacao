@@ -416,7 +416,7 @@ export default function InteractiveChecklist({
                 title="Pausar sessão (Alt+P)"
                 style={{
                   padding: `${modernChatTheme.spacing.xs} ${modernChatTheme.spacing.sm}`,
-                  background: modernChatTheme.colors.status.warning,
+                  background: '#F59E0B',
                   color: 'white',
                   border: 'none',
                   borderRadius: modernChatTheme.borderRadius.sm,
@@ -437,7 +437,7 @@ export default function InteractiveChecklist({
                 title="Retomar sessão (Alt+P)"
                 style={{
                   padding: `${modernChatTheme.spacing.xs} ${modernChatTheme.spacing.sm}`,
-                  background: modernChatTheme.colors.status.success,
+                  background: '#10B981',
                   color: 'white',
                   border: 'none',
                   borderRadius: modernChatTheme.borderRadius.sm,
@@ -806,7 +806,7 @@ function StageDetailView({
                           <span style={{
                             marginLeft: modernChatTheme.spacing.xs,
                             fontSize: '10px',
-                            color: modernChatTheme.colors.status.error,
+                            color: '#EF4444',
                             fontWeight: '600'
                           }}>
                             • OBRIGATÓRIO
@@ -856,7 +856,7 @@ function StageDetailView({
                                   }}
                                   style={{
                                     padding: `${modernChatTheme.spacing.xs} ${modernChatTheme.spacing.sm}`,
-                                    background: modernChatTheme.colors.status.success,
+                                    background: '#10B981',
                                     color: 'white',
                                     border: 'none',
                                     borderRadius: modernChatTheme.borderRadius.sm,
@@ -891,11 +891,11 @@ function StageDetailView({
                                 <p style={{
                                   margin: 0,
                                   padding: modernChatTheme.spacing.xs,
-                                  background: modernChatTheme.colors.status.info + '10',
+                                  background: '#3B82F6' + '10',
                                   border: `1px solid ${modernChatTheme.colors.status.info}20`,
                                   borderRadius: modernChatTheme.borderRadius.sm,
                                   fontSize: '11px',
-                                  color: modernChatTheme.colors.status.info,
+                                  color: '#3B82F6',
                                   fontStyle: 'italic',
                                   marginBottom: modernChatTheme.spacing.xs
                                 }}>

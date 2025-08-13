@@ -119,14 +119,14 @@ export default function StaticTimeline({
 
         {showEducationalInfo && (
           <div style={{
-            background: modernChatTheme.colors.status.info + '10',
+            background: '#3B82F6' + '10',
             padding: modernChatTheme.spacing.md,
             borderRadius: modernChatTheme.borderRadius.sm,
             border: `1px solid ${modernChatTheme.colors.status.info}20`
           }}>
             <p style={{
               fontSize: '12px',
-              color: modernChatTheme.colors.status.info,
+              color: '#3B82F6',
               margin: 0
             }}>
               💡 <strong>Versão demonstrativa:</strong> Faça login para personalizar cronograma, receber lembretes e acompanhar progresso real
@@ -431,10 +431,10 @@ function CalendarView({
               <div style={{
                 marginTop: modernChatTheme.spacing.md,
                 padding: modernChatTheme.spacing.xs,
-                background: modernChatTheme.colors.status.success + '20',
+                background: '#10B981' + '20',
                 borderRadius: modernChatTheme.borderRadius.sm,
                 fontSize: '11px',
-                color: modernChatTheme.colors.status.success,
+                color: '#10B981',
                 fontWeight: '600',
                 textAlign: 'center'
               }}>

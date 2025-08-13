@@ -368,14 +368,14 @@ function EnhancedBasicCalculator({
           <div style={{
             marginTop: modernChatTheme.spacing.lg,
             padding: modernChatTheme.spacing.md,
-            background: modernChatTheme.colors.status.info + '10',
+            background: '#3B82F6' + '10',
             borderRadius: modernChatTheme.borderRadius.sm,
             border: `1px solid ${modernChatTheme.colors.status.info}20`
           }}>
             <h5 style={{
               fontSize: modernChatTheme.typography.meta.fontSize,
               fontWeight: '600',
-              color: modernChatTheme.colors.status.info,
+              color: '#3B82F6',
               marginBottom: modernChatTheme.spacing.sm
             }}>
               📊 Resumo do Tratamento

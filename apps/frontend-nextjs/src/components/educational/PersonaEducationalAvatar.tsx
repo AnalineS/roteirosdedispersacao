@@ -126,7 +126,7 @@ export default function PersonaEducationalAvatar({
             right: '-2px',
             width: size === 'small' ? '12px' : '16px',
             height: size === 'small' ? '12px' : '16px',
-            background: modernChatTheme.colors.status.success,
+            background: '#10B981',
             borderRadius: '50%',
             border: '2px solid white',
             display: 'flex',

@@ -230,18 +230,18 @@ function FeatureComparison() {
           </div>
           <div style={{ 
             fontWeight: '600', 
-            color: modernChatTheme.colors.status.warning,
+            color: '#F59E0B',
             padding: modernChatTheme.spacing.sm,
-            background: modernChatTheme.colors.status.warning + '10',
+            background: '#F59E0B' + '10',
             borderRadius: modernChatTheme.borderRadius.sm
           }}>
             👁️ Demonstrativo (Atual)
           </div>
           <div style={{ 
             fontWeight: '600', 
-            color: modernChatTheme.colors.status.success,
+            color: '#10B981',
             padding: modernChatTheme.spacing.sm,
-            background: modernChatTheme.colors.status.success + '10',
+            background: '#10B981' + '10',
             borderRadius: modernChatTheme.borderRadius.sm
           }}>
             🔓 Interativo (Logado)
@@ -279,7 +279,7 @@ function FeatureComparison() {
               <div style={{
                 padding: modernChatTheme.spacing.sm,
                 fontSize: modernChatTheme.typography.meta.fontSize,
-                color: modernChatTheme.colors.status.success
+                color: '#10B981'
               }}>
                 {feature.interactive}
               </div>

@@ -79,12 +79,12 @@ export default function SimulatorIntroduction({
           alignItems: 'center',
           gap: modernChatTheme.spacing.sm,
           padding: `${modernChatTheme.spacing.sm} ${modernChatTheme.spacing.lg}`,
-          background: modernChatTheme.colors.status.info + '15',
+          background: '#3B82F6' + '15',
           border: `1px solid ${modernChatTheme.colors.status.info}30`,
           borderRadius: modernChatTheme.borderRadius.md,
           fontSize: '14px',
           fontWeight: '600',
-          color: modernChatTheme.colors.status.info
+          color: '#3B82F6'
         }}>
           <TargetIcon size={18} color="currentColor" /> <span>FUNDAMENTADO EM PESQUISA ACADÊMICA</span> • Baseado na tese de doutorado
         </div>
@@ -335,7 +335,7 @@ function IntroductionSection() {
           </p>
 
           <div style={{
-            background: modernChatTheme.colors.status.success + '10',
+            background: '#10B981' + '10',
             padding: modernChatTheme.spacing.lg,
             borderRadius: modernChatTheme.borderRadius.md,
             border: `1px solid ${modernChatTheme.colors.status.success}20`,
@@ -344,7 +344,7 @@ function IntroductionSection() {
             <h3 style={{
               fontSize: '18px',
               fontWeight: '600',
-              color: modernChatTheme.colors.status.success,
+              color: '#10B981',
               marginBottom: modernChatTheme.spacing.sm,
               display: 'flex',
               alignItems: 'center',
@@ -501,7 +501,7 @@ function IntroductionSection() {
               <h4 style={{
                 fontSize: modernChatTheme.typography.persona.fontSize,
                 fontWeight: '600',
-                color: modernChatTheme.colors.status.info,
+                color: '#3B82F6',
                 marginBottom: modernChatTheme.spacing.sm
               }}>
                 <HomeIcon size={18} color="currentColor" /> Instituições
@@ -702,7 +702,7 @@ function MethodologySection() {
           </h3>
           
           <div style={{
-            background: modernChatTheme.colors.status.info + '10',
+            background: '#3B82F6' + '10',
             padding: modernChatTheme.spacing.lg,
             borderRadius: modernChatTheme.borderRadius.md,
             border: `1px solid ${modernChatTheme.colors.status.info}20`
@@ -718,7 +718,7 @@ function MethodologySection() {
                 <h4 style={{
                   fontSize: modernChatTheme.typography.persona.fontSize,
                   fontWeight: '600',
-                  color: modernChatTheme.colors.status.info,
+                  color: '#3B82F6',
                   marginBottom: modernChatTheme.spacing.sm
                 }}>
                   <TargetIcon size={18} color="currentColor" /> Métricas Pedagógicas
@@ -735,7 +735,7 @@ function MethodologySection() {
                 <h4 style={{
                   fontSize: modernChatTheme.typography.persona.fontSize,
                   fontWeight: '600',
-                  color: modernChatTheme.colors.status.info,
+                  color: '#3B82F6',
                   marginBottom: modernChatTheme.spacing.sm
                 }}>
                   <TrophyIcon size={18} color="currentColor" /> Certificação Reconhecida
@@ -763,7 +763,7 @@ function CategoriesSection() {
       title: 'Pediátrico',
       level: 'Básico',
       time: '15min',
-      color: modernChatTheme.colors.status.success,
+      color: '#10B981',
       description: 'Cálculos por peso, orientação familiar e cuidados especiais para crianças',
       topics: ['Prescrição médica obrigatória < 30kg', 'Fórmulas pediátricas', 'Comunicação com família']
     },
@@ -781,7 +781,7 @@ function CategoriesSection() {
       title: 'Gravidez',
       level: 'Avançado',
       time: '25min',
-      color: modernChatTheme.colors.status.warning,
+      color: '#F59E0B',
       description: 'Segurança fetal, orientações específicas e cuidados na lactação',
       topics: ['Vitamina K no parto', 'Pigmentação no recém-nascido', 'Seguimento especializado']
     },
@@ -799,7 +799,7 @@ function CategoriesSection() {
       title: 'Complicações',
       level: 'Complexo',
       time: '35min',
-      color: modernChatTheme.colors.status.error,
+      color: '#EF4444',
       description: 'Eventos adversos graves, emergências e decisões clínicas complexas',
       topics: ['Hepatotoxicidade', 'Reações alérgicas', 'Manejo de crises']
     }
@@ -827,7 +827,7 @@ function CategoriesSection() {
       <div style={{
         marginBottom: modernChatTheme.spacing.xl,
         padding: modernChatTheme.spacing.lg,
-        background: modernChatTheme.colors.status.info + '10',
+        background: '#3B82F6' + '10',
         borderRadius: modernChatTheme.borderRadius.md,
         border: `1px solid ${modernChatTheme.colors.status.info}20`
       }}>
@@ -1005,7 +1005,7 @@ function CategoriesSection() {
             <div style={{
               fontSize: '32px',
               fontWeight: '700',
-              color: modernChatTheme.colors.status.success,
+              color: '#10B981',
               marginBottom: modernChatTheme.spacing.sm
             }}>
               95%
@@ -1059,7 +1059,7 @@ function CategoriesSection() {
             <div style={{
               fontSize: '32px',
               fontWeight: '700',
-              color: modernChatTheme.colors.status.warning,
+              color: '#F59E0B',
               marginBottom: modernChatTheme.spacing.sm
             }}>
               100%

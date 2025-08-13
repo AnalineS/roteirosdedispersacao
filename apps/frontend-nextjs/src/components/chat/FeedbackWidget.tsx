@@ -324,7 +324,7 @@ export default function FeedbackWidget({
           alignItems: 'center',
           gap: modernChatTheme.spacing.sm,
           padding: `${modernChatTheme.spacing.sm} ${modernChatTheme.spacing.md}`,
-          background: modernChatTheme.colors.status.success + '20',
+          background: '#10B981' + '20',
           border: `1px solid ${modernChatTheme.colors.status.success}40`,
           borderRadius: modernChatTheme.borderRadius.md,
           marginTop: modernChatTheme.spacing.sm,
@@ -342,7 +342,7 @@ export default function FeedbackWidget({
           <div style={{
             fontSize: modernChatTheme.typography.meta.fontSize,
             fontWeight: '600',
-            color: modernChatTheme.colors.status.success
+            color: '#10B981'
           }}>
             {personaData ? `Obrigado pelo feedback sobre ${personaData.name}!` : 'Obrigado pelo seu feedback!'}
           </div>
@@ -371,12 +371,12 @@ export default function FeedbackWidget({
           alignItems: 'center',
           gap: modernChatTheme.spacing.sm,
           padding: `${modernChatTheme.spacing.sm} ${modernChatTheme.spacing.md}`,
-          background: modernChatTheme.colors.status.error + '15',
+          background: '#EF4444' + '15',
           border: `1px solid ${modernChatTheme.colors.status.error}40`,
           borderRadius: modernChatTheme.borderRadius.md,
           marginTop: modernChatTheme.spacing.sm,
           fontSize: modernChatTheme.typography.meta.fontSize,
-          color: modernChatTheme.colors.status.error
+          color: '#EF4444'
         }}
       >
         <span>⚠️</span>

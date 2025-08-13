@@ -453,10 +453,10 @@ export default function ExportChatModal({
               style={{
                 marginTop: modernChatTheme.spacing.lg,
                 padding: modernChatTheme.spacing.md,
-                background: modernChatTheme.colors.status.success + '20',
+                background: '#10B981' + '20',
                 border: `1px solid ${modernChatTheme.colors.status.success}40`,
                 borderRadius: modernChatTheme.borderRadius.md,
-                color: modernChatTheme.colors.status.success,
+                color: '#10B981',
                 fontSize: modernChatTheme.typography.meta.fontSize,
                 textAlign: 'center',
                 animation: 'slideUp 300ms ease'
