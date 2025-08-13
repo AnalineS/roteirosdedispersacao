@@ -100,13 +100,15 @@ interface MedicalGlossaryProps {
   inline?: boolean;
   showSearch?: boolean;
   maxResults?: number;
+  children?: React.ReactNode;
 }
 
 export default function MedicalGlossary({ 
   term, 
   inline = false, 
   showSearch = true,
-  maxResults = 5 
+  maxResults = 5,
+  children 
 }: MedicalGlossaryProps) {
   const [searchTerm, setSearchTerm] = useState(term || '');
   const [isOpen, setIsOpen] = useState(false);
@@ -154,7 +156,7 @@ export default function MedicalGlossary({
           aria-describedby={`tooltip-${specificTerm.id}`}
           title={`Clique para ver explicação simples de "${specificTerm.technical}"`}
         >
-          {specificTerm.technical}
+          {children || specificTerm.technical}
         </button>
         
         {isOpen && (
