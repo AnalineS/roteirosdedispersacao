@@ -544,7 +544,7 @@ export default function SobrePage() {
               <h4 style={{
                 fontSize: '16px',
                 fontWeight: '600',
-                color: modernChatTheme.colors.status.success,
+                color: '#10B981',
                 marginBottom: modernChatTheme.spacing.sm
               }}>
                 🏥 Atenção Primária à Saúde
@@ -568,7 +568,7 @@ export default function SobrePage() {
               <h4 style={{
                 fontSize: '16px',
                 fontWeight: '600',
-                color: modernChatTheme.colors.status.info,
+                color: '#3B82F6',
                 marginBottom: modernChatTheme.spacing.sm
               }}>
                 🩸 Hematologia Clínica
@@ -738,7 +738,7 @@ export default function SobrePage() {
                   rel="noopener noreferrer"
                   style={{
                     padding: `${modernChatTheme.spacing.xs} ${modernChatTheme.spacing.sm}`,
-                    background: modernChatTheme.colors.status.success,
+                    background: '#10B981',
                     color: 'white',
                     textDecoration: 'none',
                     borderRadius: modernChatTheme.borderRadius.sm,
@@ -791,7 +791,7 @@ export default function SobrePage() {
                   rel="noopener noreferrer"
                   style={{
                     padding: `${modernChatTheme.spacing.xs} ${modernChatTheme.spacing.sm}`,
-                    background: modernChatTheme.colors.status.info,
+                    background: '#3B82F6',
                     color: 'white',
                     textDecoration: 'none',
                     borderRadius: modernChatTheme.borderRadius.sm,
