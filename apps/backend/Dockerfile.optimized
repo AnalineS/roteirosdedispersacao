@@ -1,0 +1,97 @@
+# Dockerfile otimizado para Cloud Run com sentence-transformers
+FROM python:3.11-slim
+
+LABEL maintainer="Roteiro de Dispensação API"
+LABEL version="2.0.0"
+
+WORKDIR /app
+
+# Configurações de ambiente
+ARG DEBIAN_FRONTEND=noninteractive
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV TRANSFORMERS_CACHE=/tmp/transformers_cache
+ENV SENTENCE_TRANSFORMERS_HOME=/tmp/st_cache
+
+# Instalar dependências do sistema de forma otimizada
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    gcc g++ python3-dev curl ca-certificates && \
+    rm -rf /var/lib/apt/lists/* && \
+    apt-get clean
+
+# Criar usuário não-root
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
+# Criar e ativar ambiente virtual
+ENV VIRTUAL_ENV=/app/venv
+RUN python -m venv $VIRTUAL_ENV
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
+# Instalar dependências Python em camadas para cache eficiente
+COPY --chown=appuser:appuser requirements_optimized.txt .
+
+# Passo 1: Instalar dependências básicas primeiro
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
+    pip install --no-cache-dir \
+    Flask==3.0.0 \
+    Flask-CORS==4.0.0 \
+    Werkzeug==3.0.1 \
+    python-dotenv==1.0.1 \
+    requests==2.31.0 \
+    pydantic==2.5.0 \
+    bleach==6.1.0 \
+    cachetools==5.3.2 \
+    gunicorn==21.2.0
+
+# Passo 2: Instalar torch CPU only (mais leve)
+RUN pip install --no-cache-dir \
+    torch==2.0.1 --index-url https://download.pytorch.org/whl/cpu
+
+# Passo 3: Instalar sentence-transformers e faiss
+RUN pip install --no-cache-dir \
+    sentence-transformers==2.2.2 \
+    faiss-cpu==1.7.4
+
+# Passo 4: Instalar Google Cloud libs
+RUN pip install --no-cache-dir \
+    google-cloud-firestore==2.11.1
+
+# Passo 5: Instalar OpenAI
+RUN pip install --no-cache-dir \
+    openai==1.54.0
+
+# Pré-download do modelo pequeno e eficiente
+RUN python -c "from sentence_transformers import SentenceTransformer; model = SentenceTransformer('all-MiniLM-L6-v2'); print('Model cached')"
+
+# Copiar código da aplicação
+COPY . .
+
+# Ajustar permissões
+RUN chown -R appuser:appuser /app
+USER appuser
+
+# Variáveis de ambiente
+ENV FLASK_ENV=production
+ENV PORT=8080
+
+# Configurações otimizadas para Cloud Run
+ENV WORKERS=1
+ENV THREADS=4
+ENV TIMEOUT=300
+
+EXPOSE 8080
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:8080/api/health || exit 1
+
+# Comando otimizado
+CMD exec gunicorn \
+    --bind 0.0.0.0:${PORT} \
+    --workers $WORKERS \
+    --threads $THREADS \
+    --timeout $TIMEOUT \
+    --preload \
+    --log-level info \
+    main_simple:app

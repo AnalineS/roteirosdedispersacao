@@ -35,10 +35,9 @@ RUN python -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 # Copiar e instalar dependências Python primeiro (para cache do Docker)
-COPY --chown=appuser:appuser requirements.txt .
+COPY --chown=appuser:appuser requirements_minimal.txt .
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel \
-    && pip install --no-cache-dir -r requirements.txt \
-    && pip install --no-cache-dir gunicorn==21.2.0
+    && pip install --no-cache-dir -r requirements_minimal.txt
 
 # Copiar código da aplicação
 COPY . .

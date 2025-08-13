@@ -6,13 +6,11 @@ IMPORTANTE: Todas as variáveis devem ser configuradas no Google Cloud ou GitHub
 """
 
 import os
-from dotenv import load_dotenv
 from dataclasses import dataclass
 from typing import Optional
 import logging
 
-# Carregar variáveis de ambiente
-load_dotenv()
+# NÃO usar dotenv - apenas variáveis de ambiente do GitHub Secrets/Cloud Run
 
 @dataclass
 class AppConfig:

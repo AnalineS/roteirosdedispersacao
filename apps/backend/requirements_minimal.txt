@@ -1,0 +1,16 @@
+# Roteiro de Dispensação - Deploy Rápido
+# Versão mínima para testar o deploy
+
+# === CORE ===
+Flask==3.0.0
+Flask-CORS==4.0.0
+Werkzeug==3.0.1
+openai==1.54.0
+requests==2.31.0
+pydantic==2.5.0
+bleach==6.1.0
+cachetools==5.3.2
+gunicorn==21.2.0
+
+# === FIRESTORE CACHE ===
+google-cloud-firestore==2.11.1
