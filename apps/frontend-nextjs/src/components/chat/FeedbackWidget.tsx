@@ -329,7 +329,7 @@ export default function FeedbackWidget({
           borderRadius: modernChatTheme.borderRadius.md,
           marginTop: modernChatTheme.spacing.sm,
           fontSize: modernChatTheme.typography.meta.fontSize,
-          color: modernChatTheme.colors.status.success,
+          color: '#10B981',
           animation: 'slideUp 300ms ease'
         }}
       >
