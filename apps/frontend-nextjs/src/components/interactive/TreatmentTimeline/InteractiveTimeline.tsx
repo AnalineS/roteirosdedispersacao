@@ -118,9 +118,9 @@ export default function InteractiveTimeline({
 
   const getPhaseColor = () => {
     switch (treatmentPhase) {
-      case 'initial': return modernChatTheme.colors.status.info;
+      case 'initial': return '#3B82F6';
       case 'continuation': return modernChatTheme.colors.personas.gasnelio.primary;
-      case 'final': return modernChatTheme.colors.status.warning;
+      case 'final': return '#F59E0B';
       case 'follow_up': return modernChatTheme.colors.personas.ga.primary;
       default: return modernChatTheme.colors.neutral.textMuted;
     }
@@ -128,10 +128,10 @@ export default function InteractiveTimeline({
 
   const getStatusColor = () => {
     switch (timeline.status) {
-      case 'active': return modernChatTheme.colors.status.success;
-      case 'completed': return modernChatTheme.colors.status.success;
-      case 'interrupted': return modernChatTheme.colors.status.error;
-      case 'paused': return modernChatTheme.colors.status.warning;
+      case 'active': return '#10B981';
+      case 'completed': return '#10B981';
+      case 'interrupted': return '#EF4444';
+      case 'paused': return '#F59E0B';
       default: return modernChatTheme.colors.neutral.textMuted;
     }
   };
@@ -279,10 +279,10 @@ export default function InteractiveTimeline({
                   fontSize: '16px',
                   fontWeight: '700',
                   color: adherenceRate >= 80 
-                    ? modernChatTheme.colors.status.success
+                    ? '#10B981'
                     : adherenceRate >= 60 
-                      ? modernChatTheme.colors.status.warning
-                      : modernChatTheme.colors.status.error
+                      ? '#F59E0B'
+                      : '#EF4444'
                 }}>
                   {adherenceRate}%
                 </span>
@@ -296,10 +296,10 @@ export default function InteractiveTimeline({
               }}>
                 <div style={{
                   background: adherenceRate >= 80 
-                    ? modernChatTheme.colors.status.success
+                    ? '#10B981'
                     : adherenceRate >= 60 
-                      ? modernChatTheme.colors.status.warning
-                      : modernChatTheme.colors.status.error,
+                      ? '#F59E0B'
+                      : '#EF4444',
                   height: '100%',
                   width: `${adherenceRate}%`,
                   transition: modernChatTheme.transitions.medium
@@ -582,11 +582,11 @@ function OverviewTab({
                   width: '30px',
                   height: '30px',
                   background: milestone.completed 
-                    ? modernChatTheme.colors.status.success
+                    ? '#10B981'
                     : 'white',
                   border: `3px solid ${
                     milestone.completed 
-                      ? modernChatTheme.colors.status.success
+                      ? '#10B981'
                       : modernChatTheme.colors.personas.gasnelio.primary
                   }`,
                   borderRadius: '50%',
@@ -618,7 +618,7 @@ function OverviewTab({
           title="Marcos Concluídos"
           value={`${timeline.milestones.filter(m => m.completed).length}/${timeline.milestones.length}`}
           subtitle="marcos do tratamento"
-          color={modernChatTheme.colors.status.success}
+          color={'#10B981'}
         />
 
         <SummaryCard
@@ -645,8 +645,8 @@ function OverviewTab({
           value={`${timeline.adverseEvents.length}`}
           subtitle="registrados"
           color={timeline.adverseEvents.length > 0 
-            ? modernChatTheme.colors.status.warning
-            : modernChatTheme.colors.status.success
+            ? '#F59E0B'
+            : '#10B981'
           }
         />
       </div>

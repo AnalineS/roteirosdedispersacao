@@ -324,7 +324,7 @@ export default function ExportChatModal({
                     width: '20px',
                     height: '20px',
                     border: '2px solid #ccc',
-                    borderTop: `2px solid ${modernChatTheme.colors.status.info}`,
+                    borderTop: `2px solid ${'#3B82F6'}`,
                     borderRadius: '50%',
                     animation: 'spin 1s linear infinite'
                   }}
@@ -381,7 +381,7 @@ export default function ExportChatModal({
                     width: '20px',
                     height: '20px',
                     border: '2px solid #ccc',
-                    borderTop: `2px solid ${modernChatTheme.colors.status.info}`,
+                    borderTop: `2px solid ${'#3B82F6'}`,
                     borderRadius: '50%',
                     animation: 'spin 1s linear infinite'
                   }}
@@ -438,7 +438,7 @@ export default function ExportChatModal({
                     width: '20px',
                     height: '20px',
                     border: '2px solid #ccc',
-                    borderTop: `2px solid ${modernChatTheme.colors.status.info}`,
+                    borderTop: `2px solid ${'#3B82F6'}`,
                     borderRadius: '50%',
                     animation: 'spin 1s linear infinite'
                   }}
@@ -454,7 +454,7 @@ export default function ExportChatModal({
                 marginTop: modernChatTheme.spacing.lg,
                 padding: modernChatTheme.spacing.md,
                 background: '#10B981' + '20',
-                border: `1px solid ${modernChatTheme.colors.status.success}40`,
+                border: `1px solid ${'#10B981'}40`,
                 borderRadius: modernChatTheme.borderRadius.md,
                 color: '#10B981',
                 fontSize: modernChatTheme.typography.meta.fontSize,

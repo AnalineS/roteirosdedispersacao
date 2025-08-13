@@ -131,7 +131,7 @@ export default function ExportOptions({ result, isAvailable }: ExportOptionsProp
         <div style={{
           padding: modernChatTheme.spacing.md,
           background: '#10B981' + '20',
-          border: `1px solid ${modernChatTheme.colors.status.success}30`,
+          border: `1px solid ${'#10B981'}30`,
           borderRadius: modernChatTheme.borderRadius.md,
           marginBottom: modernChatTheme.spacing.lg,
           color: '#10B981',
@@ -145,7 +145,7 @@ export default function ExportOptions({ result, isAvailable }: ExportOptionsProp
         <div style={{
           padding: modernChatTheme.spacing.md,
           background: '#EF4444' + '20',
-          border: `1px solid ${modernChatTheme.colors.status.error}30`,
+          border: `1px solid ${'#EF4444'}30`,
           borderRadius: modernChatTheme.borderRadius.md,
           marginBottom: modernChatTheme.spacing.lg,
           color: '#EF4444',
@@ -311,7 +311,7 @@ export default function ExportOptions({ result, isAvailable }: ExportOptionsProp
             marginBottom: modernChatTheme.spacing.lg,
             padding: modernChatTheme.spacing.sm,
             background: '#3B82F6' + '10',
-            border: `1px solid ${modernChatTheme.colors.status.info}20`,
+            border: `1px solid ${'#3B82F6'}20`,
             borderRadius: modernChatTheme.borderRadius.sm
           }}>
             <p style={{
@@ -351,7 +351,7 @@ export default function ExportOptions({ result, isAvailable }: ExportOptionsProp
         marginTop: modernChatTheme.spacing.xl,
         padding: modernChatTheme.spacing.md,
         background: '#F59E0B' + '10',
-        border: `1px solid ${modernChatTheme.colors.status.warning}20`,
+        border: `1px solid ${'#F59E0B'}20`,
         borderRadius: modernChatTheme.borderRadius.sm
       }}>
         <p style={{

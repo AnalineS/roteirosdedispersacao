@@ -285,7 +285,7 @@ export default function CaseSelector({
                 background: 'white',
                 border: `2px solid ${
                   completed 
-                    ? modernChatTheme.colors.status.success + '50'
+                    ? '#10B981' + '50'
                     : available 
                       ? modernChatTheme.colors.neutral.border
                       : modernChatTheme.colors.neutral.border + '50'
@@ -512,7 +512,7 @@ export default function CaseSelector({
                       padding: modernChatTheme.spacing.md,
                       background: available 
                         ? (completed 
-                            ? modernChatTheme.colors.status.success
+                            ? '#10B981'
                             : modernChatTheme.colors.personas.gasnelio.primary)
                         : modernChatTheme.colors.neutral.textMuted,
                       color: 'white',

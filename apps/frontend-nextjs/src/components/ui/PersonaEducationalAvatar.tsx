@@ -175,9 +175,9 @@ export const PersonaEducationalMessage: React.FC<PersonaEducationalMessageProps>
   // Cores por tipo de mensagem
   const messageColors = {
     info: persona.color,
-    success: modernChatTheme.colors.status.success,
-    warning: modernChatTheme.colors.status.warning,
-    tips: modernChatTheme.colors.status.info
+    success: '#10B981',
+    warning: '#F59E0B',
+    tips: '#3B82F6'
   };
 
   return (

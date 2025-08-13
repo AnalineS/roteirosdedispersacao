@@ -137,19 +137,19 @@ export default function TreatmentTimelineContainer({
           gap: modernChatTheme.spacing.sm,
           padding: `${modernChatTheme.spacing.sm} ${modernChatTheme.spacing.lg}`,
           background: userType === 'authenticated' 
-            ? modernChatTheme.colors.status.success + '15'
-            : modernChatTheme.colors.status.info + '15',
+            ? '#10B981' + '15'
+            : '#3B82F6' + '15',
           border: `1px solid ${
             userType === 'authenticated' 
-              ? modernChatTheme.colors.status.success + '30'
-              : modernChatTheme.colors.status.info + '30'
+              ? '#10B981' + '30'
+              : '#3B82F6' + '30'
           }`,
           borderRadius: modernChatTheme.borderRadius.lg,
           fontSize: modernChatTheme.typography.meta.fontSize,
           fontWeight: '600',
           color: userType === 'authenticated' 
-            ? modernChatTheme.colors.status.success
-            : modernChatTheme.colors.status.info
+            ? '#10B981'
+            : '#3B82F6'
         }}>
           {userType === 'authenticated' ? (
             <>
@@ -380,7 +380,7 @@ function TimelineFeatureComparison() {
                 padding: modernChatTheme.spacing.sm,
                 fontSize: modernChatTheme.typography.meta.fontSize,
                 color: feature.demo === '✅' 
-                  ? modernChatTheme.colors.status.success
+                  ? '#10B981'
                   : modernChatTheme.colors.neutral.textMuted
               }}>
                 {feature.demo}

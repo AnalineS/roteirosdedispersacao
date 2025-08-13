@@ -38,11 +38,11 @@ export default function ReadOnlyChecklist({
     switch (severity) {
       case 'high':
       case 'critical':
-        return modernChatTheme.colors.status.error;
+        return '#EF4444';
       case 'medium':
-        return modernChatTheme.colors.status.warning;
+        return '#F59E0B';
       default:
-        return modernChatTheme.colors.status.info;
+        return '#3B82F6';
     }
   };
 
@@ -78,7 +78,7 @@ export default function ReadOnlyChecklist({
             background: '#3B82F6' + '10',
             padding: modernChatTheme.spacing.md,
             borderRadius: modernChatTheme.borderRadius.sm,
-            border: `1px solid ${modernChatTheme.colors.status.info}20`
+            border: `1px solid ${'#3B82F6'}20`
           }}>
             <p style={{
               fontSize: '12px',
@@ -321,11 +321,11 @@ export default function ReadOnlyChecklist({
                               fontSize: '12px',
                               padding: `${modernChatTheme.spacing.xs} ${modernChatTheme.spacing.sm}`,
                               background: activity.allItemsRequired 
-                                ? modernChatTheme.colors.status.error + '20'
-                                : modernChatTheme.colors.status.info + '20',
+                                ? '#EF4444' + '20'
+                                : '#3B82F6' + '20',
                               color: activity.allItemsRequired 
-                                ? modernChatTheme.colors.status.error
-                                : modernChatTheme.colors.status.info,
+                                ? '#EF4444'
+                                : '#3B82F6',
                               borderRadius: modernChatTheme.borderRadius.sm,
                               fontWeight: '600'
                             }}>
@@ -356,11 +356,11 @@ export default function ReadOnlyChecklist({
                                     gap: modernChatTheme.spacing.sm,
                                     padding: modernChatTheme.spacing.sm,
                                     background: item.required 
-                                      ? modernChatTheme.colors.status.warning + '05'
+                                      ? '#F59E0B' + '05'
                                       : modernChatTheme.colors.background.secondary,
                                     borderRadius: modernChatTheme.borderRadius.sm,
                                     border: item.required 
-                                      ? `1px solid ${modernChatTheme.colors.status.warning}20`
+                                      ? `1px solid ${'#F59E0B'}20`
                                       : `1px solid ${modernChatTheme.colors.neutral.border}20`
                                   }}
                                 >
@@ -369,12 +369,12 @@ export default function ReadOnlyChecklist({
                                     height: '20px',
                                     borderRadius: '50%',
                                     border: `2px solid ${item.required 
-                                      ? modernChatTheme.colors.status.warning
+                                      ? '#F59E0B'
                                       : modernChatTheme.colors.neutral.border}`,
                                     background: item.completed 
                                       ? (item.required 
-                                          ? modernChatTheme.colors.status.warning
-                                          : modernChatTheme.colors.status.success)
+                                          ? '#F59E0B'
+                                          : '#10B981')
                                       : 'transparent',
                                     display: 'flex',
                                     alignItems: 'center',

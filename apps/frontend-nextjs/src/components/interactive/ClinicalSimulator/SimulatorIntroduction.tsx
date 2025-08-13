@@ -80,7 +80,7 @@ export default function SimulatorIntroduction({
           gap: modernChatTheme.spacing.sm,
           padding: `${modernChatTheme.spacing.sm} ${modernChatTheme.spacing.lg}`,
           background: '#3B82F6' + '15',
-          border: `1px solid ${modernChatTheme.colors.status.info}30`,
+          border: `1px solid ${'#3B82F6'}30`,
           borderRadius: modernChatTheme.borderRadius.md,
           fontSize: '14px',
           fontWeight: '600',
@@ -307,7 +307,7 @@ function IntroductionSection() {
         gap: modernChatTheme.spacing.md,
         marginBottom: modernChatTheme.spacing.lg
       }}>
-        <StarIcon size={32} color={modernChatTheme.colors.status.warning} />
+        <StarIcon size={32} color={'#F59E0B'} />
         <h2 style={{
           fontSize: '24px',
           fontWeight: '700',
@@ -338,7 +338,7 @@ function IntroductionSection() {
             background: '#10B981' + '10',
             padding: modernChatTheme.spacing.lg,
             borderRadius: modernChatTheme.borderRadius.md,
-            border: `1px solid ${modernChatTheme.colors.status.success}20`,
+            border: `1px solid ${'#10B981'}20`,
             marginBottom: modernChatTheme.spacing.lg
           }}>
             <h3 style={{
@@ -705,7 +705,7 @@ function MethodologySection() {
             background: '#3B82F6' + '10',
             padding: modernChatTheme.spacing.lg,
             borderRadius: modernChatTheme.borderRadius.md,
-            border: `1px solid ${modernChatTheme.colors.status.info}20`
+            border: `1px solid ${'#3B82F6'}20`
           }}>
             <div style={{
               display: 'grid',
@@ -759,7 +759,7 @@ function MethodologySection() {
 function CategoriesSection() {
   const categories = [
     {
-      icon: <ChildIcon size={32} color={modernChatTheme.colors.status.success} />,
+      icon: <ChildIcon size={32} color={'#10B981'} />,
       title: 'Pediátrico',
       level: 'Básico',
       time: '15min',
@@ -777,7 +777,7 @@ function CategoriesSection() {
       topics: ['Protocolos adulto/infantil', 'Adesão em zona rural', 'Orientações trabalhistas']
     },
     {
-      icon: <PregnancyIcon size={32} color={modernChatTheme.colors.status.warning} />,
+      icon: <PregnancyIcon size={32} color={'#F59E0B'} />,
       title: 'Gravidez',
       level: 'Avançado',
       time: '25min',
@@ -795,7 +795,7 @@ function CategoriesSection() {
       topics: ['Anticoncepcionais', 'Anticoagulantes', 'Antirretrovirais']
     },
     {
-      icon: <AlertTriangleIcon size={32} color={modernChatTheme.colors.status.error} />,
+      icon: <AlertTriangleIcon size={32} color={'#EF4444'} />,
       title: 'Complicações',
       level: 'Complexo',
       time: '35min',
@@ -829,7 +829,7 @@ function CategoriesSection() {
         padding: modernChatTheme.spacing.lg,
         background: '#3B82F6' + '10',
         borderRadius: modernChatTheme.borderRadius.md,
-        border: `1px solid ${modernChatTheme.colors.status.info}20`
+        border: `1px solid ${'#3B82F6'}20`
       }}>
         <p style={{
           fontSize: modernChatTheme.typography.persona.fontSize,

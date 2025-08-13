@@ -115,7 +115,7 @@ export default function BasicCalculator({ onCalculationComplete }: BasicCalculat
           background: '#F59E0B' + '15',
           padding: modernChatTheme.spacing.sm,
           borderRadius: modernChatTheme.borderRadius.sm,
-          border: `1px solid ${modernChatTheme.colors.status.warning}30`
+          border: `1px solid ${'#F59E0B'}30`
         }}>
           <div style={{ 
             display: 'flex', 
@@ -167,7 +167,7 @@ export default function BasicCalculator({ onCalculationComplete }: BasicCalculat
             style={{
               width: '100%',
               padding: modernChatTheme.spacing.sm,
-              border: `2px solid ${profile.weight <= 0 && profile.weight !== 0 ? modernChatTheme.colors.status.error : modernChatTheme.colors.neutral.border}`,
+              border: `2px solid ${profile.weight <= 0 && profile.weight !== 0 ? '#EF4444' : modernChatTheme.colors.neutral.border}`,
               borderRadius: modernChatTheme.borderRadius.sm,
               fontSize: modernChatTheme.typography.message.fontSize,
               outline: 'none'
@@ -176,7 +176,7 @@ export default function BasicCalculator({ onCalculationComplete }: BasicCalculat
               e.currentTarget.style.border = `2px solid ${modernChatTheme.colors.personas.gasnelio.primary}`;
             }}
             onBlur={(e) => {
-              e.currentTarget.style.border = `2px solid ${profile.weight <= 0 && profile.weight !== 0 ? modernChatTheme.colors.status.error : modernChatTheme.colors.neutral.border}`;
+              e.currentTarget.style.border = `2px solid ${profile.weight <= 0 && profile.weight !== 0 ? '#EF4444' : modernChatTheme.colors.neutral.border}`;
             }}
             placeholder="Ex: 70"
           />
@@ -223,7 +223,7 @@ export default function BasicCalculator({ onCalculationComplete }: BasicCalculat
             style={{
               width: '100%',
               padding: modernChatTheme.spacing.sm,
-              border: `2px solid ${profile.age <= 0 && profile.age !== 0 ? modernChatTheme.colors.status.error : modernChatTheme.colors.neutral.border}`,
+              border: `2px solid ${profile.age <= 0 && profile.age !== 0 ? '#EF4444' : modernChatTheme.colors.neutral.border}`,
               borderRadius: modernChatTheme.borderRadius.sm,
               fontSize: modernChatTheme.typography.message.fontSize,
               outline: 'none'
@@ -232,7 +232,7 @@ export default function BasicCalculator({ onCalculationComplete }: BasicCalculat
               e.currentTarget.style.border = `2px solid ${modernChatTheme.colors.personas.gasnelio.primary}`;
             }}
             onBlur={(e) => {
-              e.currentTarget.style.border = `2px solid ${profile.age <= 0 && profile.age !== 0 ? modernChatTheme.colors.status.error : modernChatTheme.colors.neutral.border}`;
+              e.currentTarget.style.border = `2px solid ${profile.age <= 0 && profile.age !== 0 ? '#EF4444' : modernChatTheme.colors.neutral.border}`;
             }}
             placeholder="Ex: 35"
           />
@@ -426,19 +426,19 @@ export default function BasicCalculator({ onCalculationComplete }: BasicCalculat
                 padding: modernChatTheme.spacing.md,
                 borderRadius: modernChatTheme.borderRadius.sm,
                 background: alert.severity === 'critical' || alert.severity === 'high' 
-                  ? modernChatTheme.colors.status.error + '15'
-                  : modernChatTheme.colors.status.warning + '15',
+                  ? '#EF4444' + '15'
+                  : '#F59E0B' + '15',
                 border: `1px solid ${
                   alert.severity === 'critical' || alert.severity === 'high'
-                    ? modernChatTheme.colors.status.error + '30'
-                    : modernChatTheme.colors.status.warning + '30'
+                    ? '#EF4444' + '30'
+                    : '#F59E0B' + '30'
                 }`
               }}
             >
               <strong style={{
                 color: alert.severity === 'critical' || alert.severity === 'high'
-                  ? modernChatTheme.colors.status.error
-                  : modernChatTheme.colors.status.warning
+                  ? '#EF4444'
+                  : '#F59E0B'
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: modernChatTheme.spacing.xs }}>
                   {alert.severity === 'critical' ? <ZapIcon size={18} color="currentColor" /> : 
@@ -575,7 +575,7 @@ export default function BasicCalculator({ onCalculationComplete }: BasicCalculat
             padding: modernChatTheme.spacing.lg,
             background: '#3B82F6' + '10',
             borderRadius: modernChatTheme.borderRadius.md,
-            border: `1px solid ${modernChatTheme.colors.status.info}30`,
+            border: `1px solid ${'#3B82F6'}30`,
             textAlign: 'center'
           }}>
             <p style={{

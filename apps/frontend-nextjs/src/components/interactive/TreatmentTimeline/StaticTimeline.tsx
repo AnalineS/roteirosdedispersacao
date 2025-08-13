@@ -34,10 +34,10 @@ export default function StaticTimeline({
 
   const getMilestoneColor = (type: string) => {
     switch (type) {
-      case 'start': return modernChatTheme.colors.status.success;
+      case 'start': return '#10B981';
       case 'monthly_visit': return modernChatTheme.colors.personas.gasnelio.primary;
-      case 'mid_treatment': return modernChatTheme.colors.status.warning;
-      case 'completion': return modernChatTheme.colors.status.success;
+      case 'mid_treatment': return '#F59E0B';
+      case 'completion': return '#10B981';
       case 'follow_up': return modernChatTheme.colors.personas.ga.primary;
       default: return modernChatTheme.colors.neutral.textMuted;
     }
@@ -122,7 +122,7 @@ export default function StaticTimeline({
             background: '#3B82F6' + '10',
             padding: modernChatTheme.spacing.md,
             borderRadius: modernChatTheme.borderRadius.sm,
-            border: `1px solid ${modernChatTheme.colors.status.info}20`
+            border: `1px solid ${'#3B82F6'}20`
           }}>
             <p style={{
               fontSize: '12px',
@@ -360,7 +360,7 @@ function CalendarView({
               border: `1px solid ${modernChatTheme.colors.neutral.border}`,
               borderRadius: modernChatTheme.borderRadius.md,
               background: index < 2 
-                ? modernChatTheme.colors.status.success + '10'
+                ? '#10B981' + '10'
                 : modernChatTheme.colors.background.secondary
             }}
           >
@@ -485,11 +485,11 @@ function ListView({
               border: `1px solid ${modernChatTheme.colors.neutral.border}`,
               borderRadius: modernChatTheme.borderRadius.md,
               background: index < 2 
-                ? modernChatTheme.colors.status.success + '10'
+                ? '#10B981' + '10'
                 : 'white',
               borderLeft: `4px solid ${
                 index < 2 
-                  ? modernChatTheme.colors.status.success
+                  ? '#10B981'
                   : modernChatTheme.colors.neutral.border
               }`
             }}

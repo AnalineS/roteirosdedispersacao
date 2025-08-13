@@ -241,7 +241,7 @@ export default function SobrePage() {
               padding: modernChatTheme.spacing.lg,
               border: `1px solid ${modernChatTheme.colors.neutral.border}`,
               borderRadius: modernChatTheme.borderRadius.md,
-              borderLeft: `4px solid ${modernChatTheme.colors.status.info}`
+              borderLeft: `4px solid ${'#3B82F6'}`
             }}>
               <h3 style={{
                 fontSize: '18px',
@@ -263,7 +263,7 @@ export default function SobrePage() {
               padding: modernChatTheme.spacing.lg,
               border: `1px solid ${modernChatTheme.colors.neutral.border}`,
               borderRadius: modernChatTheme.borderRadius.md,
-              borderLeft: `4px solid ${modernChatTheme.colors.status.success}`
+              borderLeft: `4px solid ${'#10B981'}`
             }}>
               <h3 style={{
                 fontSize: '18px',
@@ -381,7 +381,7 @@ export default function SobrePage() {
               </h3>
               <div style={{
                 padding: modernChatTheme.spacing.md,
-                background: `${modernChatTheme.colors.status.info}10`,
+                background: `${'#3B82F6'}10`,
                 borderRadius: modernChatTheme.borderRadius.md,
                 marginBottom: modernChatTheme.spacing.sm
               }}>
@@ -513,9 +513,9 @@ export default function SobrePage() {
 
             <div style={{
               padding: modernChatTheme.spacing.lg,
-              border: `1px solid ${modernChatTheme.colors.status.warning}30`,
+              border: `1px solid ${'#F59E0B'}30`,
               borderRadius: modernChatTheme.borderRadius.md,
-              background: `${modernChatTheme.colors.status.warning}05`
+              background: `${'#F59E0B'}05`
             }}>
               <h4 style={{
                 fontSize: '16px',
@@ -537,9 +537,9 @@ export default function SobrePage() {
 
             <div style={{
               padding: modernChatTheme.spacing.lg,
-              border: `1px solid ${modernChatTheme.colors.status.success}30`,
+              border: `1px solid ${'#10B981'}30`,
               borderRadius: modernChatTheme.borderRadius.md,
-              background: `${modernChatTheme.colors.status.success}05`
+              background: `${'#10B981'}05`
             }}>
               <h4 style={{
                 fontSize: '16px',
@@ -561,9 +561,9 @@ export default function SobrePage() {
 
             <div style={{
               padding: modernChatTheme.spacing.lg,
-              border: `1px solid ${modernChatTheme.colors.status.info}30`,
+              border: `1px solid ${'#3B82F6'}30`,
               borderRadius: modernChatTheme.borderRadius.md,
-              background: `${modernChatTheme.colors.status.info}05`
+              background: `${'#3B82F6'}05`
             }}>
               <h4 style={{
                 fontSize: '16px',

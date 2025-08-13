@@ -66,7 +66,7 @@ export default function CalculationHistoryComponent({
             padding: `${modernChatTheme.spacing.xs} ${modernChatTheme.spacing.sm}`,
             background: '#EF4444' + '15',
             color: '#EF4444',
-            border: `1px solid ${modernChatTheme.colors.status.error}30`,
+            border: `1px solid ${'#EF4444'}30`,
             borderRadius: modernChatTheme.borderRadius.sm,
             fontSize: modernChatTheme.typography.meta.fontSize,
             cursor: 'pointer'
@@ -168,7 +168,7 @@ function HistoryItem({
               fontSize: '10px',
               fontWeight: '600',
               borderRadius: modernChatTheme.borderRadius.sm,
-              border: `1px solid ${modernChatTheme.colors.status.success}30`
+              border: `1px solid ${'#10B981'}30`
             }}>
               ⭐ RECENTE
             </span>
@@ -210,8 +210,8 @@ function HistoryItem({
         {item.result.safetyAlerts.length > 0 && (
           <div style={{ 
             color: item.result.safetyAlerts.some(a => a.severity === 'high' || a.severity === 'critical')
-              ? modernChatTheme.colors.status.error 
-              : modernChatTheme.colors.status.warning 
+              ? '#EF4444' 
+              : '#F59E0B' 
           }}>
             <strong>Alertas:</strong> {item.result.safetyAlerts.length}
           </div>

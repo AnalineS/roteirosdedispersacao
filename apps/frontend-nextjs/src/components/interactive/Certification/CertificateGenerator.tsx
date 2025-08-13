@@ -113,7 +113,7 @@ export default function CertificateGenerator({
           }}>
             {/* TODO: Adicionar PersonaEducationalAvatar do Dr. Gasnelio */}
             <div style={{ textAlign: 'center' }}>
-              <TrophyIcon size={48} color={modernChatTheme.colors.status.success} />
+              <TrophyIcon size={48} color={'#10B981'} />
               <div style={{ 
                 display: 'flex', 
                 justifyContent: 'center', 
@@ -121,9 +121,9 @@ export default function CertificateGenerator({
                 marginTop: modernChatTheme.spacing.xs
               }}>
                 {/* Estrelas de celebração */}
-                <TargetIcon size={20} color={modernChatTheme.colors.status.warning} />
-                <TargetIcon size={24} color={modernChatTheme.colors.status.warning} />
-                <TargetIcon size={20} color={modernChatTheme.colors.status.warning} />
+                <TargetIcon size={20} color={'#F59E0B'} />
+                <TargetIcon size={24} color={'#F59E0B'} />
+                <TargetIcon size={20} color={'#F59E0B'} />
               </div>
             </div>
             {/* TODO: Adicionar PersonaEducationalAvatar da Gá */}
@@ -150,7 +150,7 @@ export default function CertificateGenerator({
             gap: modernChatTheme.spacing.sm,
             padding: `${modernChatTheme.spacing.sm} ${modernChatTheme.spacing.lg}`,
             background: '#10B981' + '15',
-            border: `1px solid ${modernChatTheme.colors.status.success}30`,
+            border: `1px solid ${'#10B981'}30`,
             borderRadius: modernChatTheme.borderRadius.md,
             fontSize: '14px',
             fontWeight: '600',
@@ -302,7 +302,7 @@ export default function CertificateGenerator({
             textAlign: 'center'
           }}>
             <div style={{ marginBottom: modernChatTheme.spacing.md, display: 'flex', justifyContent: 'center' }}>
-              <TargetIcon size={32} color={modernChatTheme.colors.status.info} />
+              <TargetIcon size={32} color={'#3B82F6'} />
             </div>
             <h3 style={{
               fontSize: modernChatTheme.typography.persona.fontSize,

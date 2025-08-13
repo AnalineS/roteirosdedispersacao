@@ -184,8 +184,8 @@ const KnowledgeIndicator = ({ isSearching, stats }: { isSearching: boolean; stat
             style={{
               width: '12px',
               height: '12px',
-              border: `2px solid ${modernChatTheme.colors.status.info}40`,
-              borderTop: `2px solid ${modernChatTheme.colors.status.info}`,
+              border: `2px solid ${'#3B82F6'}40`,
+              borderTop: `2px solid ${'#3B82F6'}`,
               borderRadius: '50%',
               animation: 'spin 1s linear infinite'
             }}

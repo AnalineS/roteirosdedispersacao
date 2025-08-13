@@ -313,15 +313,15 @@ export default function InteractiveChecklist({
             <span style={{
               padding: `${modernChatTheme.spacing.xs} ${modernChatTheme.spacing.sm}`,
               background: session.status === 'completed' 
-                ? modernChatTheme.colors.status.success + '20'
+                ? '#10B981' + '20'
                 : session.status === 'paused'
-                  ? modernChatTheme.colors.status.warning + '20'
-                  : modernChatTheme.colors.status.info + '20',
+                  ? '#F59E0B' + '20'
+                  : '#3B82F6' + '20',
               color: session.status === 'completed' 
-                ? modernChatTheme.colors.status.success
+                ? '#10B981'
                 : session.status === 'paused'
-                  ? modernChatTheme.colors.status.warning
-                  : modernChatTheme.colors.status.info,
+                  ? '#F59E0B'
+                  : '#3B82F6',
               borderRadius: modernChatTheme.borderRadius.sm,
               fontSize: '12px',
               fontWeight: '600'
@@ -513,13 +513,13 @@ export default function InteractiveChecklist({
                 background: isCurrent 
                   ? modernChatTheme.colors.personas.gasnelio.bubble
                   : stage.isCompleted
-                    ? modernChatTheme.colors.status.success + '10'
+                    ? '#10B981' + '10'
                     : 'white',
                 border: `2px solid ${
                   isCurrent 
                     ? modernChatTheme.colors.personas.gasnelio.primary
                     : stage.isCompleted
-                      ? modernChatTheme.colors.status.success
+                      ? '#10B981'
                       : modernChatTheme.colors.neutral.border
                 }`,
                 borderRadius: modernChatTheme.borderRadius.md,
@@ -546,7 +546,7 @@ export default function InteractiveChecklist({
                   color: isCurrent 
                     ? modernChatTheme.colors.personas.gasnelio.primary
                     : stage.isCompleted
-                      ? modernChatTheme.colors.status.success
+                      ? '#10B981'
                       : modernChatTheme.colors.neutral.textMuted
                 }}>
                   {progress}%
@@ -769,12 +769,12 @@ function StageDetailView({
                       padding: modernChatTheme.spacing.sm,
                       marginBottom: modernChatTheme.spacing.sm,
                       background: item.completed 
-                        ? modernChatTheme.colors.status.success + '10'
+                        ? '#10B981' + '10'
                         : modernChatTheme.colors.background.secondary,
                       borderRadius: modernChatTheme.borderRadius.sm,
                       border: `1px solid ${
                         item.completed 
-                          ? modernChatTheme.colors.status.success + '30'
+                          ? '#10B981' + '30'
                           : modernChatTheme.colors.neutral.border
                       }`
                     }}
@@ -892,7 +892,7 @@ function StageDetailView({
                                   margin: 0,
                                   padding: modernChatTheme.spacing.xs,
                                   background: '#3B82F6' + '10',
-                                  border: `1px solid ${modernChatTheme.colors.status.info}20`,
+                                  border: `1px solid ${'#3B82F6'}20`,
                                   borderRadius: modernChatTheme.borderRadius.sm,
                                   fontSize: '11px',
                                   color: '#3B82F6',

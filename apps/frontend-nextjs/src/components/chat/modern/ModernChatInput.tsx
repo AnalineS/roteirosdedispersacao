@@ -356,7 +356,7 @@ export default function ModernChatInput({
               marginTop: modernChatTheme.spacing.xs,
               fontSize: modernChatTheme.typography.meta.fontSize,
               color: value.length > 950 ? 
-                modernChatTheme.colors.status.warning : 
+                '#F59E0B' : 
                 modernChatTheme.colors.neutral.textMuted
             }}
           >

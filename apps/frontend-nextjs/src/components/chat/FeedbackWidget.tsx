@@ -325,7 +325,7 @@ export default function FeedbackWidget({
           gap: modernChatTheme.spacing.sm,
           padding: `${modernChatTheme.spacing.sm} ${modernChatTheme.spacing.md}`,
           background: '#10B981' + '20',
-          border: `1px solid ${modernChatTheme.colors.status.success}40`,
+          border: `1px solid ${'#10B981'}40`,
           borderRadius: modernChatTheme.borderRadius.md,
           marginTop: modernChatTheme.spacing.sm,
           fontSize: modernChatTheme.typography.meta.fontSize,
@@ -372,7 +372,7 @@ export default function FeedbackWidget({
           gap: modernChatTheme.spacing.sm,
           padding: `${modernChatTheme.spacing.sm} ${modernChatTheme.spacing.md}`,
           background: '#EF4444' + '15',
-          border: `1px solid ${modernChatTheme.colors.status.error}40`,
+          border: `1px solid ${'#EF4444'}40`,
           borderRadius: modernChatTheme.borderRadius.md,
           marginTop: modernChatTheme.spacing.sm,
           fontSize: modernChatTheme.typography.meta.fontSize,
@@ -595,10 +595,10 @@ export default function FeedbackWidget({
           border: `1px solid ${modernChatTheme.colors.neutral.border}`,
           borderRadius: modernChatTheme.borderRadius.md,
           background: selectedRating === 5 
-            ? modernChatTheme.colors.status.success + '20' 
+            ? '#10B981' + '20' 
             : 'white',
           color: selectedRating === 5 
-            ? modernChatTheme.colors.status.success 
+            ? '#10B981' 
             : modernChatTheme.colors.neutral.textMuted,
           fontSize: modernChatTheme.typography.meta.fontSize,
           cursor: feedbackState === 'submitting' ? 'wait' : 'pointer',
@@ -607,8 +607,8 @@ export default function FeedbackWidget({
         }}
         onMouseEnter={(e) => {
           if (feedbackState !== 'submitting' && selectedRating !== 5) {
-            e.currentTarget.style.background = modernChatTheme.colors.status.success + '10';
-            e.currentTarget.style.color = modernChatTheme.colors.status.success;
+            e.currentTarget.style.background = '#10B981' + '10';
+            e.currentTarget.style.color = '#10B981';
           }
         }}
         onMouseLeave={(e) => {
@@ -635,10 +635,10 @@ export default function FeedbackWidget({
           border: `1px solid ${modernChatTheme.colors.neutral.border}`,
           borderRadius: modernChatTheme.borderRadius.md,
           background: selectedRating === 2 
-            ? modernChatTheme.colors.status.warning + '20' 
+            ? '#F59E0B' + '20' 
             : 'white',
           color: selectedRating === 2 
-            ? modernChatTheme.colors.status.warning 
+            ? '#F59E0B' 
             : modernChatTheme.colors.neutral.textMuted,
           fontSize: modernChatTheme.typography.meta.fontSize,
           cursor: feedbackState === 'submitting' ? 'wait' : 'pointer',
@@ -647,8 +647,8 @@ export default function FeedbackWidget({
         }}
         onMouseEnter={(e) => {
           if (feedbackState !== 'submitting' && selectedRating !== 2) {
-            e.currentTarget.style.background = modernChatTheme.colors.status.warning + '10';
-            e.currentTarget.style.color = modernChatTheme.colors.status.warning;
+            e.currentTarget.style.background = '#F59E0B' + '10';
+            e.currentTarget.style.color = '#F59E0B';
           }
         }}
         onMouseLeave={(e) => {

@@ -85,7 +85,7 @@ const FallbackIndicator = ({ metadata }: { metadata: any }) => {
         marginTop: modernChatTheme.spacing.sm,
         padding: `${modernChatTheme.spacing.xs} ${modernChatTheme.spacing.sm}`,
         backgroundcolor: '#F59E0B' + '15',
-        border: `1px solid ${modernChatTheme.colors.status.warning}40`,
+        border: `1px solid ${'#F59E0B'}40`,
         borderRadius: modernChatTheme.borderRadius.sm,
         fontSize: modernChatTheme.typography.meta.fontSize,
         color: '#F59E0B',

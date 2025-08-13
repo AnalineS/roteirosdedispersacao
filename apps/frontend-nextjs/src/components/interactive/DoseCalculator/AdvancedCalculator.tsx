@@ -370,7 +370,7 @@ function EnhancedBasicCalculator({
             padding: modernChatTheme.spacing.md,
             background: '#3B82F6' + '10',
             borderRadius: modernChatTheme.borderRadius.sm,
-            border: `1px solid ${modernChatTheme.colors.status.info}20`
+            border: `1px solid ${'#3B82F6'}20`
           }}>
             <h5 style={{
               fontSize: modernChatTheme.typography.meta.fontSize,
