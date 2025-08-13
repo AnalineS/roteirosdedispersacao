@@ -90,12 +90,55 @@ jobs:
       id: deploy
       working-directory: ./apps/backend
       run: |
-        # Build and submit image to Cloud Build with explicit source and security
-        gcloud builds submit \
+        # Build and submit image to Cloud Build (async para evitar erro de logs)
+        echo "🏗️ Iniciando Cloud Build..."
+        BUILD_ID=$(gcloud builds submit \
           --tag gcr.io/${{ secrets.GCP_PROJECT_ID }}/roteiro-dispensacao-api:${{ github.sha }} \
           --project ${{ secrets.GCP_PROJECT_ID }} \
           --timeout=20m \
-          --machine-type=e2-highcpu-8
+          --machine-type=e2-highcpu-8 \
+          --async \
+          --format="value(id)")
+        
+        echo "📋 Build ID: $BUILD_ID"
+        echo "🔗 Logs disponíveis em: https://console.cloud.google.com/cloud-build/builds/$BUILD_ID?project=${{ secrets.GCP_PROJECT_ID }}"
+        
+        # Aguardar build completar sem acessar logs detalhados
+        echo "⏳ Aguardando build completar (máximo 15 minutos)..."
+        TIMEOUT=180 # 15 minutos (180 x 5 segundos)
+        COUNTER=0
+        
+        while [ $COUNTER -lt $TIMEOUT ]; do
+          sleep 5
+          COUNTER=$((COUNTER + 1))
+          
+          # Verificar status do build
+          STATUS=$(gcloud builds describe $BUILD_ID \
+            --project=${{ secrets.GCP_PROJECT_ID }} \
+            --format="value(status)" 2>/dev/null || echo "WORKING")
+          
+          echo "📊 Status ($((COUNTER * 5))s): $STATUS"
+          
+          if [ "$STATUS" = "SUCCESS" ]; then
+            echo "✅ Build completado com sucesso!"
+            break
+          elif [ "$STATUS" = "FAILURE" ] || [ "$STATUS" = "TIMEOUT" ] || [ "$STATUS" = "CANCELLED" ]; then
+            echo "❌ Build falhou com status: $STATUS"
+            echo "🔗 Verifique detalhes em: https://console.cloud.google.com/cloud-build/builds/$BUILD_ID?project=${{ secrets.GCP_PROJECT_ID }}"
+            exit 1
+          fi
+        done
+        
+        # Verificação final
+        FINAL_STATUS=$(gcloud builds describe $BUILD_ID \
+          --project=${{ secrets.GCP_PROJECT_ID }} \
+          --format="value(status)")
+        
+        if [ "$FINAL_STATUS" != "SUCCESS" ]; then
+          echo "❌ Build não completou no tempo esperado. Status: $FINAL_STATUS"
+          echo "🔗 Verifique: https://console.cloud.google.com/cloud-build/builds/$BUILD_ID?project=${{ secrets.GCP_PROJECT_ID }}"
+          exit 1
+        fi
         
         # Deploy to Cloud Run with enhanced security settings and new environment variables
         URL=$(gcloud run deploy roteiro-dispensacao-api \
