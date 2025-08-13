@@ -40,6 +40,16 @@ try:
 except ImportError:
     ENHANCED_SERVICES = False
 
+# Import Medical Disclaimers
+try:
+    from core.security.medical_disclaimers import (
+        medical_disclaimer_system, add_medical_disclaimers, 
+        get_medical_disclaimers, record_disclaimer_acknowledgment
+    )
+    MEDICAL_DISCLAIMERS_AVAILABLE = True
+except ImportError:
+    MEDICAL_DISCLAIMERS_AVAILABLE = False
+
 try:
     from services.simple_rag import generate_context_from_rag
     BASIC_RAG = True
@@ -424,6 +434,37 @@ async def chat_api():
                 context_length=metadata.get('context_length', 0)
             )
         
+        # Adicionar disclaimers médicos à resposta
+        if MEDICAL_DISCLAIMERS_AVAILABLE:
+            try:
+                request_context = {
+                    'endpoint': request.endpoint or '/chat',
+                    'persona': personality_id,
+                    'method': request.method
+                }
+                
+                applicable_disclaimers = get_medical_disclaimers(request_context)
+                
+                if applicable_disclaimers:
+                    disclaimer_data = medical_disclaimer_system.format_disclaimer_response(
+                        applicable_disclaimers, 
+                        include_content=False  # Só incluir metadata para não sobrecarregar
+                    )
+                    response['medical_disclaimers'] = disclaimer_data
+                    
+                    # Adicionar headers HTTP
+                    disclaimer_headers = medical_disclaimer_system.get_disclaimer_headers(applicable_disclaimers)
+                    
+                    flask_response = jsonify(response)
+                    for header, value in disclaimer_headers.items():
+                        flask_response.headers[header] = value
+                    
+                    return flask_response, 200
+                    
+            except Exception as disclaimer_error:
+                logger.warning(f"[{request_id}] Erro ao adicionar disclaimers: {disclaimer_error}")
+                # Continuar sem disclaimers se houver erro
+        
         return jsonify(response), 200
         
     except Exception as e:
@@ -453,6 +494,74 @@ async def chat_api():
             "request_id": request_id,
             "processing_time_ms": processing_time,
             "message": "Tente novamente em alguns instantes"
+        }), 500
+
+# Endpoint para disclaimers médicos
+@chat_bp.route('/chat/disclaimers', methods=['GET', 'POST'])
+def medical_disclaimers_endpoint():
+    """Endpoint para gerenciar disclaimers médicos"""
+    if not MEDICAL_DISCLAIMERS_AVAILABLE:
+        return jsonify({
+            "error": "Sistema de disclaimers médicos não disponível",
+            "error_code": "DISCLAIMERS_UNAVAILABLE"
+        }), 503
+    
+    try:
+        if request.method == 'GET':
+            # Obter disclaimers baseado no contexto
+            request_context = {
+                'endpoint': request.args.get('endpoint', '/general'),
+                'persona': request.args.get('persona', ''),
+                'method': 'GET'
+            }
+            
+            applicable_disclaimers = get_medical_disclaimers(request_context)
+            disclaimer_data = medical_disclaimer_system.format_disclaimer_response(
+                applicable_disclaimers, 
+                include_content=True  # Incluir conteúdo completo na consulta
+            )
+            
+            return jsonify(disclaimer_data), 200
+        
+        elif request.method == 'POST':
+            # Registrar acknowledgment de disclaimer
+            data = request.get_json()
+            if not data:
+                return jsonify({
+                    "error": "Payload JSON requerido",
+                    "error_code": "MISSING_PAYLOAD"
+                }), 400
+            
+            user_id = data.get('user_id')
+            disclaimer_type = data.get('disclaimer_type')
+            
+            if not user_id or not disclaimer_type:
+                return jsonify({
+                    "error": "user_id e disclaimer_type são obrigatórios",
+                    "error_code": "MISSING_FIELDS"
+                }), 400
+            
+            success = record_disclaimer_acknowledgment(user_id, disclaimer_type)
+            
+            if success:
+                return jsonify({
+                    "success": True,
+                    "message": "Acknowledgment registrado com sucesso",
+                    "user_id": user_id,
+                    "disclaimer_type": disclaimer_type,
+                    "timestamp": datetime.now().isoformat()
+                }), 200
+            else:
+                return jsonify({
+                    "error": "Falha ao registrar acknowledgment",
+                    "error_code": "ACKNOWLEDGMENT_FAILED"
+                }), 400
+                
+    except Exception as e:
+        logger.error(f"Erro no endpoint de disclaimers: {e}")
+        return jsonify({
+            "error": "Erro interno no sistema de disclaimers",
+            "error_code": "DISCLAIMERS_ERROR"
         }), 500
 
 # Endpoint para teste de conectividade do chat

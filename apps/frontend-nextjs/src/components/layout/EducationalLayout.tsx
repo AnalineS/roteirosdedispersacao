@@ -4,6 +4,8 @@ import { ReactNode } from 'react';
 import NavigationHeader from '@/components/navigation/NavigationHeader';
 import EducationalBreadcrumbs from '@/components/navigation/Breadcrumbs';
 import EducationalFooter from '@/components/navigation/EducationalFooter';
+import LanguageToggle from '@/components/accessibility/LanguageToggle';
+import FocusIndicator, { SkipLink } from '@/components/accessibility/FocusIndicator';
 
 interface EducationalLayoutProps {
   children: ReactNode;
@@ -24,6 +26,23 @@ export default function EducationalLayout({
 }: EducationalLayoutProps) {
   return (
     <div className="educational-layout" role="document">
+      {/* Indicador de foco global */}
+      <FocusIndicator 
+        enabled={true}
+        animation={true}
+      />
+      
+      {/* Skip links para navegação rápida */}
+      <SkipLink href="#main-content">
+        Pular para o conteúdo principal
+      </SkipLink>
+      <SkipLink href="#navigation">
+        Pular para navegação
+      </SkipLink>
+      <SkipLink href="#footer">
+        Pular para rodapé
+      </SkipLink>
+      
       {/* Navigation Header */}
       {showHeader && (
         <NavigationHeader currentPersona={currentPersona} />

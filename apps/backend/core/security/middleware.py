@@ -30,6 +30,13 @@ import ipaddress
 import user_agents
 from urllib.parse import urlparse, parse_qs
 
+# Import do Redis Rate Limiter
+try:
+    from core.performance.redis_rate_limiter import distributed_rate_limiter, get_distributed_rate_limiter_stats
+    REDIS_RATE_LIMITER_AVAILABLE = True
+except ImportError:
+    REDIS_RATE_LIMITER_AVAILABLE = False
+
 
 # Logger específico para segurança
 security_logger = logging.getLogger('security.middleware')
@@ -401,7 +408,17 @@ class SecurityMiddleware:
     def __init__(self, app: Flask = None):
         self.app = app
         self.attack_detector = AttackPatternDetector()
-        self.rate_limiter = IntelligentRateLimiter()
+        
+        # Use Redis rate limiter se disponível, senão fallback para local
+        if REDIS_RATE_LIMITER_AVAILABLE:
+            self.rate_limiter = distributed_rate_limiter
+            self.use_redis_rate_limiter = True
+            security_logger.info("🔥 Redis Rate Limiter ativado")
+        else:
+            self.rate_limiter = IntelligentRateLimiter()
+            self.use_redis_rate_limiter = False
+            security_logger.info("⚠️ Usando Rate Limiter local (Redis indisponível)")
+        
         self.security_events: List[SecurityEvent] = []
         self.blocked_requests_count = 0
         self.total_requests_count = 0
@@ -676,17 +693,30 @@ class SecurityMiddleware:
         recent_events = [e for e in self.security_events if e.timestamp > last_hour]
         daily_events = [e for e in self.security_events if e.timestamp > last_24h]
         
-        return {
+        base_stats = {
             'total_requests': self.total_requests_count,
             'blocked_requests': self.blocked_requests_count,
             'block_rate': (self.blocked_requests_count / max(1, self.total_requests_count)) * 100,
             'events_last_hour': len(recent_events),
             'events_last_24h': len(daily_events),
-            'active_clients': len(self.rate_limiter.client_profiles),
-            'blocked_ips': len(self.rate_limiter.blocked_ips),
             'top_attack_types': self._get_top_attack_types(daily_events),
-            'severity_distribution': self._get_severity_distribution(daily_events)
+            'severity_distribution': self._get_severity_distribution(daily_events),
+            'rate_limiter_type': 'redis_distributed' if self.use_redis_rate_limiter else 'local'
         }
+        
+        # Adicionar estatísticas específicas do rate limiter
+        if self.use_redis_rate_limiter and hasattr(self.rate_limiter, 'get_stats'):
+            rate_limiter_stats = self.rate_limiter.get_stats()
+            base_stats['rate_limiter_stats'] = rate_limiter_stats
+        else:
+            # Stats do rate limiter local
+            if hasattr(self.rate_limiter, 'client_profiles') and hasattr(self.rate_limiter, 'blocked_ips'):
+                base_stats.update({
+                    'active_clients': len(self.rate_limiter.client_profiles),
+                    'blocked_ips': len(self.rate_limiter.blocked_ips)
+                })
+        
+        return base_stats
     
     def _get_top_attack_types(self, events: List[SecurityEvent]) -> Dict[str, int]:
         """Obtém tipos de ataque mais comuns"""

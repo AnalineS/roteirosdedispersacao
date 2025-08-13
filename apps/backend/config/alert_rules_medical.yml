@@ -1,0 +1,250 @@
+# Regras de Alerta Prometheus para Plataforma Médico-Educacional
+# Roteiros de Dispensação PQT-U
+#
+# Alertas específicos para sistemas críticos de uma plataforma educacional médica
+# com foco em segurança de dados médicos, performance de IA e compliance
+
+groups:
+  # ===== ALERTAS CRÍTICOS DE SISTEMA =====
+  - name: medical_platform_critical
+    interval: 30s
+    rules:
+      # Sistema indisponível
+      - alert: MedicalPlatformDown
+        expr: up{job="roteiro-dispensacao-backend"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          medical_impact: system_unavailable
+          compliance_risk: high
+        annotations:
+          summary: "🚨 Plataforma médica educacional indisponível"
+          description: "A plataforma educacional para dispensação PQT-U está indisponível há {{ $value }} minutos. Isso afeta profissionais de saúde que dependem do sistema para consultas médicas."
+          impact: "Profissionais de saúde sem acesso a informações críticas sobre hanseníase"
+          action: "Verificar logs do sistema e restaurar serviço imediatamente"
+          
+      # CPU crítico - pode afetar cálculos médicos
+      - alert: MedicalPlatformHighCPU
+        expr: medical_platform_system_cpu_usage_percent > 90
+        for: 5m
+        labels:
+          severity: critical
+          medical_impact: performance_degradation
+          compliance_risk: medium
+        annotations:
+          summary: "🔥 CPU alto na plataforma médica ({{ $value }}%)"
+          description: "CPU acima de 90% por mais de 5 minutos pode afetar cálculos de dosagem e performance de IA médica"
+          impact: "Risco de lentidão em cálculos médicos críticos"
+          action: "Investigar processos consumindo CPU e escalar recursos se necessário"
+          
+      # Memória crítica
+      - alert: MedicalPlatformHighMemory
+        expr: medical_platform_system_memory_usage_percent > 95
+        for: 3m
+        labels:
+          severity: critical
+          medical_impact: system_stability
+          compliance_risk: medium
+        annotations:
+          summary: "🧠 Memória crítica na plataforma médica ({{ $value }}%)"
+          description: "Uso de memória acima de 95% pode causar instabilidade em sistemas de IA médica"
+          impact: "Risco de falhas em processamento de consultas médicas"
+          action: "Liberar memória ou escalar recursos imediatamente"
+          
+      # Disco cheio - crítico para logs de auditoria médica
+      - alert: MedicalPlatformDiskFull
+        expr: medical_platform_system_disk_usage_percent > 95
+        for: 2m
+        labels:
+          severity: critical
+          medical_impact: data_loss_risk
+          compliance_risk: high
+        annotations:
+          summary: "💾 Disco quase cheio na plataforma médica ({{ $value }}%)"
+          description: "Espaço em disco crítico pode interromper logs de auditoria e conformidade LGPD"
+          impact: "Risco de perda de dados de auditoria médica"
+          action: "Limpar logs antigos ou expandir armazenamento urgentemente"
+
+  # ===== ALERTAS DE PERFORMANCE MÉDICA =====
+  - name: medical_platform_performance
+    interval: 1m
+    rules:
+      # Tempo de resposta alto para consultas médicas
+      - alert: SlowMedicalQueries
+        expr: rate(medical_platform_http_request_duration_seconds_sum{endpoint=~".*chat.*|.*calculate.*"}[5m]) / rate(medical_platform_http_request_duration_seconds_count{endpoint=~".*chat.*|.*calculate.*"}[5m]) > 10
+        for: 3m
+        labels:
+          severity: warning
+          medical_impact: user_experience
+          compliance_risk: low
+        annotations:
+          summary: "🐌 Consultas médicas lentas ({{ $value }}s média)"
+          description: "Tempo de resposta para consultas médicas acima de 10 segundos"
+          impact: "Experiência degradada para profissionais de saúde"
+          action: "Otimizar queries RAG ou escalar recursos de IA"
+          
+      # Taxa de erro alta em endpoints médicos
+      - alert: HighMedicalErrorRate
+        expr: rate(medical_platform_http_requests_total{status_code=~"5.*",endpoint=~".*chat.*|.*calculate.*"}[5m]) / rate(medical_platform_http_requests_total{endpoint=~".*chat.*|.*calculate.*"}[5m]) * 100 > 5
+        for: 2m
+        labels:
+          severity: warning
+          medical_impact: service_reliability
+          compliance_risk: medium
+        annotations:
+          summary: "❌ Alta taxa de erro em serviços médicos ({{ $value }}%)"
+          description: "Taxa de erro acima de 5% em endpoints de consulta médica"
+          impact: "Consultas médicas falhando, afetando profissionais de saúde"
+          action: "Investigar logs de erro e corrigir problemas de backend"
+          
+      # Sistema RAG lento
+      - alert: SlowRAGSystem
+        expr: rate(medical_platform_ai_rag_query_duration_seconds_sum[5m]) / rate(medical_platform_ai_rag_query_duration_seconds_count[5m]) > 5
+        for: 2m
+        labels:
+          severity: warning
+          medical_impact: ai_performance
+          compliance_risk: low
+        annotations:
+          summary: "🤖 Sistema RAG médico lento ({{ $value }}s média)"
+          description: "Queries RAG para conhecimento médico levando mais de 5 segundos"
+          impact: "IA médica respondendo lentamente"
+          action: "Otimizar índices de busca ou cache de conhecimento médico"
+
+  # ===== ALERTAS DE SEGURANÇA MÉDICA =====
+  - name: medical_platform_security
+    interval: 30s
+    rules:
+      # Eventos de segurança críticos
+      - alert: CriticalSecurityEvent
+        expr: increase(medical_platform_security_events_total{severity="critical"}[5m]) > 0
+        for: 0m
+        labels:
+          severity: critical
+          medical_impact: data_security
+          compliance_risk: critical
+        annotations:
+          summary: "🚨 Evento de segurança crítico detectado"
+          description: "{{ $value }} eventos de segurança críticos nos últimos 5 minutos"
+          impact: "Possível comprometimento de dados médicos"
+          action: "Investigar imediatamente e ativar protocolo de segurança"
+          
+      # Falhas de validação de entrada médica
+      - alert: MedicalInputValidationFailures
+        expr: increase(medical_platform_input_validation_failures_total[10m]) > 10
+        for: 1m
+        labels:
+          severity: warning
+          medical_impact: data_integrity
+          compliance_risk: medium
+        annotations:
+          summary: "⚠️ Múltiplas falhas de validação de dados médicos"
+          description: "{{ $value }} falhas de validação de entrada nos últimos 10 minutos"
+          impact: "Possível tentativa de inserção de dados médicos inválidos"
+          action: "Revisar logs de validação e fortalecer controles de entrada"
+          
+      # Tentativas de acesso não autorizadas
+      - alert: UnauthorizedMedicalAccess
+        expr: increase(medical_platform_http_requests_total{status_code="403"}[5m]) > 5
+        for: 2m
+        labels:
+          severity: warning
+          medical_impact: access_control
+          compliance_risk: high
+        annotations:
+          summary: "🔒 Múltiplas tentativas de acesso não autorizado"
+          description: "{{ $value }} tentativas de acesso negado nos últimos 5 minutos"
+          impact: "Possível tentativa de acesso não autorizado a dados médicos"
+          action: "Verificar logs de autenticação e considerar bloqueio de IP"
+
+  # ===== ALERTAS DE IA MÉDICA =====
+  - name: medical_ai_system
+    interval: 1m
+    rules:
+      # QA Score baixo para respostas médicas
+      - alert: LowMedicalQAScore
+        expr: medical_platform_ai_qa_score < 0.7
+        for: 3m
+        labels:
+          severity: warning
+          medical_impact: response_quality
+          compliance_risk: medium
+        annotations:
+          summary: "📉 Score de qualidade de IA médica baixo ({{ $value }})"
+          description: "Score médio de QA para respostas médicas abaixo de 0.7"
+          impact: "Qualidade das respostas médicas pode estar comprometida"
+          action: "Revisar configurações de IA e treinar modelos se necessário"
+          
+      # Desbalanceamento entre personas médicas
+      - alert: PersonaImbalance
+        expr: abs(medical_platform_persona_requests_total{persona="dr_gasnelio"} - medical_platform_persona_requests_total{persona="ga"}) / (medical_platform_persona_requests_total{persona="dr_gasnelio"} + medical_platform_persona_requests_total{persona="ga"}) > 0.8
+        for: 10m
+        labels:
+          severity: info
+          medical_impact: user_preference
+          compliance_risk: low
+        annotations:
+          summary: "⚖️ Desbalanceamento no uso de personas médicas"
+          description: "Uma das personas (Dr. Gasnelio ou Gá) está sendo muito mais utilizada que a outra"
+          impact: "Possível preferência por estilo de comunicação médica"
+          action: "Monitorar padrões de uso e ajustar interface se necessário"
+          
+      # Cache médico com baixa eficiência
+      - alert: LowMedicalCacheHitRate
+        expr: rate(medical_platform_cache_requests_total{hit_miss="hit"}[10m]) / rate(medical_platform_cache_requests_total[10m]) < 0.3
+        for: 5m
+        labels:
+          severity: info
+          medical_impact: performance
+          compliance_risk: low
+        annotations:
+          summary: "📦 Taxa de hit do cache médico baixa ({{ $value }})"
+          description: "Cache de conhecimento médico com eficiência abaixo de 30%"
+          impact: "Consultas médicas mais lentas devido a cache ineficiente"
+          action: "Revisar estratégia de cache para dados médicos"
+
+  # ===== ALERTAS DE COMPLIANCE MÉDICO =====
+  - name: medical_compliance
+    interval: 5m
+    rules:
+      # Visualizações de disclaimer médico baixas
+      - alert: LowMedicalDisclaimerViews
+        expr: increase(medical_platform_medical_disclaimer_views_total{action="view"}[1h]) < 10
+        for: 30m
+        labels:
+          severity: info
+          medical_impact: legal_compliance
+          compliance_risk: medium
+        annotations:
+          summary: "📋 Poucas visualizações de disclaimers médicos"
+          description: "Menos de 10 visualizações de disclaimers médicos na última hora"
+          impact: "Possível problema com exibição de avisos legais médicos"
+          action: "Verificar sistema de disclaimers e interface de usuário"
+          
+      # Cálculos de dosagem com falhas
+      - alert: DosageCalculationFailures
+        expr: increase(medical_platform_dosage_calculations_total{success="false"}[10m]) > 2
+        for: 1m
+        labels:
+          severity: critical
+          medical_impact: medication_safety
+          compliance_risk: critical
+        annotations:
+          summary: "💊 Falhas em cálculos de dosagem médica"
+          description: "{{ $value }} falhas em cálculos de dosagem nos últimos 10 minutos"
+          impact: "Risco de cálculos incorretos de medicação PQT-U"
+          action: "Investigar algoritmos de cálculo e validar fórmulas médicas IMEDIATAMENTE"
+          
+      # Eventos LGPD
+      - alert: LGPDComplianceEvent
+        expr: increase(medical_platform_lgpd_compliance_events_total[1h]) > 0
+        for: 0m
+        labels:
+          severity: info
+          medical_impact: data_privacy
+          compliance_risk: high
+        annotations:
+          summary: "⚖️ Evento de compliance LGPD registrado"
+          description: "{{ $value }} eventos relacionados a LGPD nas últimas horas"
+          impact: "Atividade relacionada a proteção de dados pessoais de saúde"
+          action: "Revisar logs de LGPD e documentar conformidade"

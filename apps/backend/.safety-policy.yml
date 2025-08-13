@@ -1,0 +1,120 @@
+# Safety Security Policy for Medical Educational Platform
+# Configuração para análise de vulnerabilidades em dependências Python
+# 
+# Focado em:
+# - Detecção de vulnerabilidades em bibliotecas médicas críticas
+# - Conformidade com padrões de segurança para sistemas de saúde
+# - Alertas específicos para dependências de IA/ML usadas na plataforma
+
+# Configuração geral
+version: "3.0"
+
+# Configurações de scanning
+security-updates:
+  # Verificar vulnerabilidades de severidade mínima
+  minimum-severity: medium
+  
+  # Incluir vulnerabilidades não confirmadas
+  include-unpublished: true
+  
+  # Timeout para scanning
+  timeout: 300
+
+# Dependências críticas para plataforma médica
+critical-packages:
+  # Framework web
+  - flask
+  - flask-cors
+  - werkzeug
+  
+  # Segurança
+  - bleach
+  - pydantic
+  - requests
+  
+  # IA e ML (crítico para personas médicas)
+  - openai
+  - sentence-transformers
+  - scikit-learn
+  - numpy
+  
+  # Cache e performance
+  - redis
+  - psutil
+
+# Ignore rules para falsos positivos conhecidos
+ignore:
+  # Exemplo: vulnerabilidade conhecida mas não aplicável
+  # - id: "12345"
+  #   reason: "Not applicable to our medical use case"
+  #   expires: "2024-12-31"
+
+# Configurações de relatório
+reporting:
+  # Incluir contexto médico nas vulnerabilidades
+  include-medical-context: true
+  
+  # Formato de saída
+  format: "json"
+  
+  # Arquivo de saída
+  output-file: "safety-report.json"
+
+# Configurações específicas para compliance médico
+medical-compliance:
+  # Padrões de conformidade
+  standards:
+    - "LGPD"
+    - "ANVISA-RDC-4-2009"
+    - "CFM-2314-2022"
+  
+  # Categorias críticas de vulnerabilidade para sistemas médicos
+  critical-categories:
+    - "injection"
+    - "authentication-bypass" 
+    - "data-exposure"
+    - "privilege-escalation"
+    - "remote-code-execution"
+  
+  # Alertas especiais para bibliotecas médicas
+  medical-library-alerts:
+    - package: "openai"
+      reason: "Core AI functionality for medical personas"
+      action: "immediate-update-required"
+    - package: "bleach"
+      reason: "Input sanitization for medical data"
+      action: "immediate-update-required"
+    - package: "pydantic"
+      reason: "Data validation for medical calculations"
+      action: "immediate-update-required"
+
+# Configurações de notificação
+notifications:
+  # Webhook para alertas críticos
+  webhook:
+    enabled: false
+    url: ""
+  
+  # Email para vulnerabilidades críticas
+  email:
+    enabled: false
+    recipients: []
+  
+  # Slack integration
+  slack:
+    enabled: false
+    webhook-url: ""
+
+# Configurações de CI/CD
+ci-cd:
+  # Falhar build em vulnerabilidades críticas
+  fail-on-critical: true
+  
+  # Falhar build em vulnerabilidades altas
+  fail-on-high: true
+  
+  # Permitir vulnerabilidades médias (com review)
+  fail-on-medium: false
+  
+  # Timeout para CI
+  timeout: 180

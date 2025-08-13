@@ -72,8 +72,8 @@ export default function BasicCalculator({ onCalculationComplete }: BasicCalculat
   };
 
   return (
-    <div 
-      role="application"
+    <section 
+      role="main"
       aria-label="Calculadora de doses PQT-U para hanseníase"
       style={{
         background: 'white',
@@ -601,6 +601,6 @@ export default function BasicCalculator({ onCalculationComplete }: BasicCalculat
           </div>
         </div>
       )}
-    </div>
+    </section>
   );
 }

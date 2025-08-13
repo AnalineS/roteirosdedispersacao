@@ -317,7 +317,32 @@ export default function HomePage() {
                   e.currentTarget.style.boxShadow = 'none';
                   e.currentTarget.style.borderColor = '#e0f2fe';
                 }}
+                onFocus={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-4px)';
+                  e.currentTarget.style.boxShadow = '0 12px 40px rgba(2, 132, 199, 0.2)';
+                  e.currentTarget.style.borderColor = '#0284c7';
+                  e.currentTarget.style.outline = '3px solid #0284c7';
+                  e.currentTarget.style.outlineOffset = '2px';
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = 'none';
+                  e.currentTarget.style.borderColor = '#e0f2fe';
+                  e.currentTarget.style.outline = 'none';
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    const nextButton = e.currentTarget.nextElementSibling as HTMLButtonElement;
+                    nextButton?.focus();
+                  } else if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    e.currentTarget.click();
+                  }
+                }}
+                tabIndex={0}
                 aria-label="Selecionar Dr. Gasnelio - O Especialista Técnico"
+                aria-describedby="gasnelio-description"
               >
                 <div style={{
                   width: '80px',
@@ -353,14 +378,16 @@ export default function HomePage() {
                 }}>
                   O Especialista Técnico
                 </p>
-                <ul style={{ 
-                  fontSize: '0.9rem', 
-                  color: '#0369a1', 
-                  textAlign: 'left',
-                  paddingLeft: '1.5rem',
-                  lineHeight: '1.6',
-                  marginBottom: '1.5rem'
-                }}>
+                <ul 
+                  id="gasnelio-description"
+                  style={{ 
+                    fontSize: '0.9rem', 
+                    color: '#0369a1', 
+                    textAlign: 'left',
+                    paddingLeft: '1.5rem',
+                    lineHeight: '1.6',
+                    marginBottom: '1.5rem'
+                  }}>
                   <li>Respostas detalhadas e científicas</li>
                   <li>Referências às diretrizes oficiais</li>
                   <li>Ideal para profissionais e estudantes</li>
@@ -412,7 +439,32 @@ export default function HomePage() {
                   e.currentTarget.style.boxShadow = 'none';
                   e.currentTarget.style.borderColor = '#dcfce7';
                 }}
+                onFocus={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-4px)';
+                  e.currentTarget.style.boxShadow = '0 12px 40px rgba(34, 197, 94, 0.2)';
+                  e.currentTarget.style.borderColor = '#22c55e';
+                  e.currentTarget.style.outline = '3px solid #22c55e';
+                  e.currentTarget.style.outlineOffset = '2px';
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = 'none';
+                  e.currentTarget.style.borderColor = '#dcfce7';
+                  e.currentTarget.style.outline = 'none';
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    const prevButton = e.currentTarget.previousElementSibling as HTMLButtonElement;
+                    prevButton?.focus();
+                  } else if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    e.currentTarget.click();
+                  }
+                }}
+                tabIndex={0}
                 aria-label="Selecionar Gá - A Assistente Acolhedora"
+                aria-describedby="ga-description"
               >
                 <div style={{
                   width: '80px',
@@ -448,14 +500,16 @@ export default function HomePage() {
                 }}>
                   A Assistente Acolhedora
                 </p>
-                <ul style={{ 
-                  fontSize: '0.9rem', 
-                  color: '#16a34a', 
-                  textAlign: 'left',
-                  paddingLeft: '1.5rem',
-                  lineHeight: '1.6',
-                  marginBottom: '1.5rem'
-                }}>
+                <ul 
+                  id="ga-description"
+                  style={{ 
+                    fontSize: '0.9rem', 
+                    color: '#16a34a', 
+                    textAlign: 'left',
+                    paddingLeft: '1.5rem',
+                    lineHeight: '1.6',
+                    marginBottom: '1.5rem'
+                  }}>
                   <li>Explicações claras e acessíveis</li>
                   <li>Linguagem humanizada e empática</li>
                   <li>Ideal para pacientes e familiares</li>

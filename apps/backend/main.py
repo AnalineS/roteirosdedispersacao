@@ -27,6 +27,9 @@ from core.dependencies import dependency_injector
 # Import blueprints
 from blueprints import ALL_BLUEPRINTS
 
+# Import Security Middleware
+from core.security.middleware import SecurityMiddleware
+
 # Configurar logging
 logging.basicConfig(
     level=getattr(logging, config.LOG_LEVEL),
@@ -54,6 +57,9 @@ def create_app():
     
     # Configurar headers de segurança
     setup_security_headers(app)
+    
+    # Inicializar Security Middleware
+    security_middleware = SecurityMiddleware(app)
     
     # Registrar blueprints
     register_blueprints(app)

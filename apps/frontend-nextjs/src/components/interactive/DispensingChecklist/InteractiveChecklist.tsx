@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { 
   WorkflowStage, 
   DispensingSession, 
@@ -25,6 +25,7 @@ export default function InteractiveChecklist({
   onSessionSave,
   onSessionComplete
 }: InteractiveChecklistProps) {
+  const announcementRef = useRef<HTMLDivElement>(null);
   const [session, setSession] = useState<DispensingSession>(() => ({
     id: `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
     patientName: patientName || '',
@@ -47,6 +48,16 @@ export default function InteractiveChecklist({
   const [expandedActivity, setExpandedActivity] = useState<string | null>(null);
   const [autoSave, setAutoSave] = useState(true);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [announcement, setAnnouncement] = useState<string>('');
+
+  // Anunciar mudanças para leitores de tela
+  const announceChange = useCallback((message: string) => {
+    setAnnouncement(message);
+    if (announcementRef.current) {
+      announcementRef.current.textContent = message;
+    }
+    setTimeout(() => setAnnouncement(''), 1000);
+  }, []);
 
   // Auto-save functionality
   useEffect(() => {
@@ -99,11 +110,16 @@ export default function InteractiveChecklist({
             item.completed = !item.completed;
             item.timestamp = new Date();
             
+            // Anunciar mudança
+            const itemStatus = item.completed ? 'marcado como concluído' : 'desmarcado';
+            announceChange(`Item ${item.text} ${itemStatus}`);
+            
             // Update stage completion status
             const stageProgress = calculateStageProgress(stage);
             stage.isCompleted = stageProgress === 100;
             if (stage.isCompleted) {
               stage.completedAt = new Date();
+              announceChange(`Etapa ${stage.title} concluída!`);
             }
           }
         }
@@ -117,12 +133,13 @@ export default function InteractiveChecklist({
       if (allCompleted && newSession.status === 'in_progress') {
         newSession.status = 'completed';
         newSession.endTime = new Date();
+        announceChange('Sessão de dispensação concluída com sucesso!');
         onSessionComplete?.(newSession);
       }
 
       return newSession;
     });
-  }, [config.allowEdit, calculateStageProgress, calculateOverallProgress, onSessionComplete]);
+  }, [config.allowEdit, calculateStageProgress, calculateOverallProgress, onSessionComplete, announceChange]);
 
   const handleAddNote = useCallback((stageId: string, activityId: string, itemId: string, note: string) => {
     if (!config.allowNotes) return;
@@ -156,8 +173,9 @@ export default function InteractiveChecklist({
     if (config.allowSave) {
       onSessionSave?.(session);
       setLastSaved(new Date());
+      announceChange('Sessão salva com sucesso');
     }
-  }, [config.allowSave, session, onSessionSave]);
+  }, [config.allowSave, session, onSessionSave, announceChange]);
 
   const handlePauseSession = useCallback(() => {
     setSession(prevSession => ({
@@ -165,14 +183,16 @@ export default function InteractiveChecklist({
       status: 'paused'
     }));
     handleSave();
-  }, [handleSave]);
+    announceChange('Sessão pausada');
+  }, [handleSave, announceChange]);
 
   const handleResumeSession = useCallback(() => {
     setSession(prevSession => ({
       ...prevSession,
       status: 'in_progress'
     }));
-  }, []);
+    announceChange('Sessão retomada');
+  }, [announceChange]);
 
   const getStageIcon = (stage: WorkflowStage) => {
     if (stage.isCompleted) return '✅';
@@ -185,8 +205,66 @@ export default function InteractiveChecklist({
     return session.stages.findIndex(stage => !stage.isCompleted);
   };
 
+  // Navegação por teclado
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Alt + S para salvar
+      if (e.altKey && e.key === 's') {
+        e.preventDefault();
+        handleSave();
+      }
+      // Alt + P para pausar/retomar
+      if (e.altKey && e.key === 'p') {
+        e.preventDefault();
+        if (session.status === 'in_progress') {
+          handlePauseSession();
+        } else if (session.status === 'paused') {
+          handleResumeSession();
+        }
+      }
+      // Tab para navegar entre etapas
+      if (e.key === 'Tab' && !e.shiftKey) {
+        const currentIndex = session.stages.findIndex(s => s.id === expandedStage);
+        if (currentIndex < session.stages.length - 1) {
+          const nextStage = session.stages[currentIndex + 1];
+          setExpandedStage(nextStage.id);
+          announceChange(`Navegando para ${nextStage.title}`);
+        }
+      }
+      // Shift + Tab para voltar
+      if (e.key === 'Tab' && e.shiftKey) {
+        const currentIndex = session.stages.findIndex(s => s.id === expandedStage);
+        if (currentIndex > 0) {
+          const prevStage = session.stages[currentIndex - 1];
+          setExpandedStage(prevStage.id);
+          announceChange(`Voltando para ${prevStage.title}`);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [session, expandedStage, handleSave, handlePauseSession, handleResumeSession, announceChange]);
+
   return (
-    <div role="application" aria-label="Sistema interativo de checklist para dispensação PQT-U">
+    <section role="main" aria-label="Sistema interativo de checklist para dispensação PQT-U">
+      {/* Região de anúncios ARIA para leitores de tela */}
+      <div 
+        ref={announcementRef}
+        role="status" 
+        aria-live="polite" 
+        aria-atomic="true"
+        className="sr-only"
+        style={{
+          position: 'absolute',
+          left: '-10000px',
+          width: '1px',
+          height: '1px',
+          overflow: 'hidden'
+        }}
+      >
+        {announcement}
+      </div>
       {/* Header with Progress */}
       <header 
         role="banner"
@@ -312,6 +390,8 @@ export default function InteractiveChecklist({
           }}>
             <button
               onClick={handleSave}
+              aria-label="Salvar sessão agora (Alt+S)"
+              title="Salvar agora (Alt+S)"
               style={{
                 padding: `${modernChatTheme.spacing.xs} ${modernChatTheme.spacing.sm}`,
                 background: modernChatTheme.colors.personas.gasnelio.primary,
@@ -332,6 +412,8 @@ export default function InteractiveChecklist({
             {session.status === 'in_progress' ? (
               <button
                 onClick={handlePauseSession}
+                aria-label="Pausar sessão atual (Alt+P)"
+                title="Pausar sessão (Alt+P)"
                 style={{
                   padding: `${modernChatTheme.spacing.xs} ${modernChatTheme.spacing.sm}`,
                   background: modernChatTheme.colors.status.warning,
@@ -351,6 +433,8 @@ export default function InteractiveChecklist({
             ) : session.status === 'paused' && (
               <button
                 onClick={handleResumeSession}
+                aria-label="Retomar sessão pausada (Alt+P)"
+                title="Retomar sessão (Alt+P)"
                 style={{
                   padding: `${modernChatTheme.spacing.xs} ${modernChatTheme.spacing.sm}`,
                   background: modernChatTheme.colors.status.success,
@@ -416,9 +500,14 @@ export default function InteractiveChecklist({
           const isCurrent = index === getCurrentStageIndex();
           
           return (
-            <div
+            <button
               key={stage.id}
-              onClick={() => setExpandedStage(stage.id)}
+              onClick={() => {
+                setExpandedStage(stage.id);
+                announceChange(`Visualizando ${stage.title}`);
+              }}
+              aria-expanded={expandedStage === stage.id}
+              aria-label={`${stage.title} - ${progress}% concluído ${isCurrent ? '- Etapa atual' : ''}`}
               style={{
                 padding: modernChatTheme.spacing.md,
                 background: isCurrent 
@@ -436,7 +525,10 @@ export default function InteractiveChecklist({
                 borderRadius: modernChatTheme.borderRadius.md,
                 cursor: 'pointer',
                 transition: modernChatTheme.transitions.medium,
-                transform: expandedStage === stage.id ? 'scale(1.02)' : 'scale(1)'
+                transform: expandedStage === stage.id ? 'scale(1.02)' : 'scale(1)',
+                width: '100%',
+                textAlign: 'left',
+                font: 'inherit'
               }}
             >
               <div style={{
@@ -492,7 +584,7 @@ export default function InteractiveChecklist({
                   🎯 ETAPA ATUAL
                 </div>
               )}
-            </div>
+            </button>
           );
         })}
       </div>
@@ -569,7 +661,7 @@ export default function InteractiveChecklist({
           </div>
         </div>
       )}
-    </div>
+    </section>
   );
 }
 

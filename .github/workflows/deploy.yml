@@ -4,13 +4,32 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
+
 # Security permissions
 permissions:
   contents: read
   packages: write
   id-token: write
   security-events: write
+
 env:
+  # Google Cloud Configuration
+  GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  GCP_REGION: ${{ secrets.GCP_REGION }}
+  
+  # Firebase Configuration  
+  FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+  NEXT_PUBLIC_FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+  NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_AUTH_DOMAIN }}
+  NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+  NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_STORAGE_BUCKET }}
+  NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}
+  NEXT_PUBLIC_FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+  
+  # Google Analytics
+  NEXT_PUBLIC_GA_MEASUREMENT_ID: ${{ secrets.GA_MEASUREMENT_ID }}
+  
   # Security environment variables
   NODE_OPTIONS: --max-old-space-size=4096
   DOCKER_BUILDKIT: 1
@@ -55,14 +74,14 @@ jobs:
     - name: Setup Google Cloud CLI
       uses: google-github-actions/setup-gcloud@v2
       with:
-        project_id: pelagic-range-467602-d3
+        project_id: ${{ secrets.GCP_PROJECT_ID }}
         
     - name: Enable required APIs
       run: |
-        gcloud services enable cloudbuild.googleapis.com --project=pelagic-range-467602-d3
-        gcloud services enable run.googleapis.com --project=pelagic-range-467602-d3
-        gcloud services enable containerregistry.googleapis.com --project=pelagic-range-467602-d3
-        gcloud services enable artifactregistry.googleapis.com --project=pelagic-range-467602-d3
+        gcloud services enable cloudbuild.googleapis.com --project=${{ secrets.GCP_PROJECT_ID }}
+        gcloud services enable run.googleapis.com --project=${{ secrets.GCP_PROJECT_ID }}
+        gcloud services enable containerregistry.googleapis.com --project=${{ secrets.GCP_PROJECT_ID }}
+        gcloud services enable artifactregistry.googleapis.com --project=${{ secrets.GCP_PROJECT_ID }}
       
     - name: Configure Docker for gcloud
       run: gcloud auth configure-docker
@@ -73,16 +92,16 @@ jobs:
       run: |
         # Build and submit image to Cloud Build with explicit source and security
         gcloud builds submit \
-          --tag gcr.io/pelagic-range-467602-d3/roteiro-dispensacao-api:${{ github.sha }} \
-          --project pelagic-range-467602-d3 \
+          --tag gcr.io/${{ secrets.GCP_PROJECT_ID }}/roteiro-dispensacao-api:${{ github.sha }} \
+          --project ${{ secrets.GCP_PROJECT_ID }} \
           --timeout=20m \
           --machine-type=e2-highcpu-8
         
-        # Deploy to Cloud Run with enhanced security settings
+        # Deploy to Cloud Run with enhanced security settings and new environment variables
         URL=$(gcloud run deploy roteiro-dispensacao-api \
-          --image gcr.io/pelagic-range-467602-d3/roteiro-dispensacao-api:${{ github.sha }} \
+          --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/roteiro-dispensacao-api:${{ github.sha }} \
           --platform managed \
-          --region us-central1 \
+          --region ${{ secrets.GCP_REGION }} \
           --allow-unauthenticated \
           --memory 1Gi \
           --cpu 1 \
@@ -93,8 +112,8 @@ jobs:
           --cpu-throttling \
           --session-affinity \
           --port 8080 \
-          --set-env-vars="ENVIRONMENT=production,DOMAIN=roteirosdedispensacao.com,OPENROUTER_API_KEY=${{ secrets.OPENROUTER_API_KEY }},HUGGINGFACE_API_KEY=${{ secrets.HUGGINGFACE_API_KEY }},ASTRA_DB_APPLICATION_TOKEN=${{ secrets.ASTRA_DB_APPLICATION_TOKEN }},ASTRA_DB_API_ENDPOINT=${{ secrets.ASTRA_DB_API_ENDPOINT }}" \
-          --project pelagic-range-467602-d3 \
+          --set-env-vars="ENVIRONMENT=production,SECRET_KEY=${{ secrets.SECRET_KEY }},GCP_PROJECT_ID=${{ secrets.GCP_PROJECT_ID }},FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }},OPENROUTER_API_KEY=${{ secrets.OPENROUTER_API_KEY }},HUGGINGFACE_API_KEY=${{ secrets.HUGGINGFACE_API_KEY }},PROMETHEUS_ENABLED=true,METRICS_ENABLED=true,REDIS_ENABLED=false" \
+          --project ${{ secrets.GCP_PROJECT_ID }} \
           --format="value(status.url)")
         
         echo "backend-url=$URL" >> $GITHUB_OUTPUT
@@ -134,7 +153,18 @@ jobs:
       working-directory: ./apps/frontend-nextjs
       run: npm run build
       env:
-        NEXT_PUBLIC_API_URL: https://roteiro-dispensacao-api-1016586236354.us-central1.run.app
+        # Firebase/Google Cloud Configuration
+        NEXT_PUBLIC_FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+        NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_AUTH_DOMAIN }}
+        NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+        NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_STORAGE_BUCKET }}
+        NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}
+        NEXT_PUBLIC_FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+        NEXT_PUBLIC_GA_MEASUREMENT_ID: ${{ secrets.GA_MEASUREMENT_ID }}
+        
+        # API Backend URL (will be updated dynamically)
+        NEXT_PUBLIC_API_URL: ${{ needs.deploy-backend.outputs.backend-url }}
+        
         # Security environment variables
         NODE_ENV: production
         GENERATE_SOURCEMAP: false
@@ -154,9 +184,9 @@ jobs:
       uses: FirebaseExtended/action-hosting-deploy@v0
       with:
         repoToken: ${{ secrets.GITHUB_TOKEN }}
-        firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_ROTEIROS_DE_DISPENSACAO }}
+        firebaseServiceAccount: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
         channelId: live
-        projectId: roteiros-de-dispensacao
+        projectId: ${{ secrets.FIREBASE_PROJECT_ID }}
         
     - name: Comment on PR with security info
       if: github.event_name == 'pull_request'
@@ -167,5 +197,5 @@ jobs:
             issue_number: context.issue.number,
             owner: context.repo.owner,
             repo: context.repo.repo,
-            body: '🚀 Deploy completo realizado com security hardening!\n\n📱 **Frontend:** https://roteiros-de-dispensacao.web.app\n⚙️ **Backend:** ${{ needs.deploy-backend.outputs.backend-url }}\n🔒 **Security:** Vulnerability scans completed\n\n✅ Todos os serviços foram atualizados com medidas de segurança aprimoradas.'
+            body: '🚀 Deploy completo realizado com security hardening!\n\n📱 **Frontend:** https://${{ secrets.FIREBASE_PROJECT_ID }}.web.app\n⚙️ **Backend:** ${{ needs.deploy-backend.outputs.backend-url }}\n🔒 **Security:** Vulnerability scans completed\n🏥 **Medical Platform:** LGPD + CFM-2314-2022 + ANVISA compliance\n\n✅ Todos os serviços foram atualizados com medidas de segurança aprimoradas para plataforma médica.'
           })

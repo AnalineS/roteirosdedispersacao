@@ -20,6 +20,13 @@ except ImportError:
 # Import dependências existentes
 from core.dependencies import get_config
 
+# Import sistema Prometheus (opcional)
+try:
+    from core.metrics.prometheus_metrics import get_prometheus_metrics, is_prometheus_enabled
+    PROMETHEUS_AVAILABLE = True
+except ImportError:
+    PROMETHEUS_AVAILABLE = False
+
 # Configurar logger
 logger = logging.getLogger(__name__)
 
@@ -383,3 +390,19 @@ if METRICS_AVAILABLE:
     
     # Registrar o callback
     performance_monitor.add_alert_callback(medical_alert_callback)
+
+@metrics_bp.route('/metrics/prometheus', methods=['GET'])
+def prometheus_metrics():
+    """Endpoint para métricas no formato Prometheus"""
+    try:
+        if not PROMETHEUS_AVAILABLE or not is_prometheus_enabled():
+            return "# Prometheus metrics not available or disabled\n", 200, {'Content-Type': 'text/plain'}
+        
+        # Obter métricas no formato Prometheus
+        metrics_data, content_type = get_prometheus_metrics()
+        
+        return metrics_data, 200, {'Content-Type': content_type}
+        
+    except Exception as e:
+        logger.error(f"Erro ao obter métricas Prometheus: {e}")
+        return f"# Error retrieving metrics: {str(e)}\n", 500, {'Content-Type': 'text/plain'}

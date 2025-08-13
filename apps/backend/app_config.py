@@ -100,18 +100,36 @@ class AppConfig:
     ASTRA_DB_TOKEN: Optional[str] = os.getenv('ASTRA_DB_TOKEN')
     ASTRA_DB_KEYSPACE: Optional[str] = os.getenv('ASTRA_DB_KEYSPACE')
     
-    # Redis Config (Google Cloud Memorystore)
+    # Redis Config (Redis Cloud)
     REDIS_ENABLED: bool = os.getenv('REDIS_ENABLED', '').lower() == 'true'
     REDIS_URL: Optional[str] = os.getenv('REDIS_URL')
     REDIS_PASSWORD: Optional[str] = os.getenv('REDIS_PASSWORD')
+    REDIS_USERNAME: str = os.getenv('REDIS_USERNAME', 'default')
+    REDIS_MAX_CONNECTIONS: int = int(os.getenv('REDIS_MAX_CONNECTIONS', 20))
+    REDIS_SOCKET_TIMEOUT: int = int(os.getenv('REDIS_SOCKET_TIMEOUT', 3))
+    REDIS_HEALTH_CHECK_INTERVAL: int = int(os.getenv('REDIS_HEALTH_CHECK_INTERVAL', 30))
+    
+    # Email Config (para alertas)
+    EMAIL_ENABLED: bool = os.getenv('EMAIL_ENABLED', '').lower() == 'true'
+    EMAIL_FROM: Optional[str] = os.getenv('EMAIL_FROM')
+    EMAIL_SMTP_HOST: str = os.getenv('EMAIL_SMTP_HOST', 'smtp.gmail.com')
+    EMAIL_SMTP_PORT: int = int(os.getenv('EMAIL_SMTP_PORT', 587))
+    EMAIL_PASSWORD: Optional[str] = os.getenv('EMAIL_PASSWORD')  # App password
     
     # Google Cloud Config
     GCP_PROJECT_ID: Optional[str] = os.getenv('GCP_PROJECT_ID')
     GCP_REGION: Optional[str] = os.getenv('GCP_REGION')
     
-    # Monitoring Config
+    # Monitoring Config (SPRINT 6.2.1 - Prometheus Integration)
     METRICS_ENABLED: bool = os.getenv('METRICS_ENABLED', '').lower() != 'false'
+    PROMETHEUS_ENABLED: bool = os.getenv('PROMETHEUS_ENABLED', 'true').lower() == 'true'
     PROMETHEUS_PORT: int = int(os.getenv('PROMETHEUS_PORT', 9090))
+    PROMETHEUS_METRICS_PATH: str = os.getenv('PROMETHEUS_METRICS_PATH', '/metrics')
+    PROMETHEUS_PUSH_GATEWAY: Optional[str] = os.getenv('PROMETHEUS_PUSH_GATEWAY')
+    PROMETHEUS_JOB_NAME: str = os.getenv('PROMETHEUS_JOB_NAME', 'roteiro-dispensacao-backend')
+    METRICS_COLLECT_INTERVAL: int = int(os.getenv('METRICS_COLLECT_INTERVAL', '15'))
+    METRICS_RETENTION_DAYS: int = int(os.getenv('METRICS_RETENTION_DAYS', '30'))
+    MEDICAL_METRICS_NAMESPACE: str = os.getenv('MEDICAL_METRICS_NAMESPACE', 'medical_platform')
     
     # Embeddings Config (SPRINT 1.2)
     EMBEDDINGS_ENABLED: bool = os.getenv('EMBEDDINGS_ENABLED', '').lower() == 'true'
@@ -162,6 +180,9 @@ class AppConfig:
         
         if self.REDIS_ENABLED:
             required.extend(['REDIS_URL', 'REDIS_PASSWORD'])
+        
+        if self.EMAIL_ENABLED:
+            required.extend(['EMAIL_FROM', 'EMAIL_PASSWORD'])
             
         if os.getenv('ENVIRONMENT') == 'production':
             required.extend(['GCP_PROJECT_ID', 'GCP_REGION'])
