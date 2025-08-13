@@ -401,6 +401,10 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
                       }
                     }}
                     onBlur={(e) => {
+                      // Reset visual styles
+                      e.currentTarget.style.background = 'none'; 
+                      e.currentTarget.style.border = '2px solid transparent';
+                      
                       // Fechar dropdown se clicar fora
                       setTimeout(() => {
                         if (!e.currentTarget.parentElement?.contains(document.activeElement)) {
@@ -427,7 +431,6 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
                     onMouseEnter={(e) => { e.currentTarget.style.background = unbColors.alpha.secondary; }}
                     onMouseLeave={(e) => { e.currentTarget.style.background = 'none'; }}
                     onFocus={(e) => { e.currentTarget.style.background = unbColors.alpha.secondary; e.currentTarget.style.border = `2px solid ${unbColors.white}`; }}
-                    onBlur={(e) => { e.currentTarget.style.background = 'none'; e.currentTarget.style.border = '2px solid transparent'; }}
                     aria-expanded={dropdownsOpen[category.id]}
                     aria-haspopup="menu"
                     aria-label={`Abrir menu ${category.label}: ${category.description}`}
