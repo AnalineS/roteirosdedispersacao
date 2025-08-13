@@ -78,4 +78,4 @@ CMD exec gunicorn \
     --log-level info \
     --access-logfile - \
     --error-logfile - \
-    main:app
+    main_simple:app
