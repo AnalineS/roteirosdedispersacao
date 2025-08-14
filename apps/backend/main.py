@@ -34,7 +34,7 @@ except ImportError:
         SESSION_COOKIE_HTTPONLY = True
         SESSION_COOKIE_SAMESITE = 'Lax'
         HOST = os.environ.get('HOST', '0.0.0.0')
-        PORT = int(os.environ.get('PORT', 5000))
+        PORT = int(os.environ.get('PORT', 8080))
         LOG_LEVEL = 'INFO'
         LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
         CORS_ORIGINS = os.environ.get('CORS_ORIGINS', '').split(',') if os.environ.get('CORS_ORIGINS') else []
@@ -65,8 +65,10 @@ except ImportError:
 try:
     from blueprints import ALL_BLUEPRINTS
     BLUEPRINTS_AVAILABLE = True
-except ImportError:
+    logger.info("✓ Blueprints importados com sucesso")
+except ImportError as e:
     BLUEPRINTS_AVAILABLE = False
+    logger.warning(f"⚠️  Blueprints não disponíveis: {e}")
     # Criar blueprints mínimos
     from flask import Blueprint
     
@@ -80,7 +82,9 @@ except ImportError:
             "status": "healthy",
             "timestamp": datetime.now().isoformat(),
             "version": "minimal_v1.0",
-            "environment": EnvironmentConfig.get_current() if CONFIG_AVAILABLE else 'development'
+            "environment": EnvironmentConfig.get_current() if CONFIG_AVAILABLE else 'development',
+            "port": int(os.environ.get('PORT', 8080)),
+            "fallback_mode": True
         })
     
     # Test blueprint simples  
@@ -90,12 +94,14 @@ except ImportError:
     def test():
         from datetime import datetime
         return jsonify({
-            "message": "API funcionando",
+            "message": "API funcionando em modo minimal",
             "method": request.method,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
+            "port": int(os.environ.get('PORT', 8080))
         })
     
     ALL_BLUEPRINTS = [simple_health_bp, simple_test_bp]
+    logger.info("✓ Blueprints mínimos criados")
 
 # Import Security Middleware (com fallback)
 try:
@@ -374,6 +380,11 @@ def check_rate_limit(endpoint_type: str = 'default'):
 
 # Criar aplicação
 app = create_app()
+
+# Garantir que app está sempre disponível para Gunicorn
+# Mesmo quando não executado como __main__
+if not globals().get('app'):
+    app = create_app()
 
 # Execução da aplicação
 if __name__ == '__main__':
