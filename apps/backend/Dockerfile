@@ -64,7 +64,7 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:${PORT:-8080}/api/health || exit 1
 
-# Comando otimizado para Cloud Run com fallback para porta padrão
+# Comando otimizado para Cloud Run com diagnósticos
 CMD exec gunicorn \
     --bind 0.0.0.0:${PORT:-8080} \
     --workers $WORKERS \
@@ -77,4 +77,6 @@ CMD exec gunicorn \
     --log-level info \
     --access-logfile - \
     --error-logfile - \
+    --capture-output \
+    --enable-stdio-inheritance \
     main:app

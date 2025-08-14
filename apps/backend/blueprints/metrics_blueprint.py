@@ -20,12 +20,13 @@ except ImportError:
 # Import dependências existentes
 from core.dependencies import get_config
 
-# Import sistema Prometheus (opcional)
+# Google Cloud Monitoring integration
 try:
-    from core.metrics.prometheus_metrics import get_prometheus_metrics, is_prometheus_enabled
-    PROMETHEUS_AVAILABLE = True
+    from google.cloud import monitoring_v3
+    from google.cloud import logging as cloud_logging
+    GOOGLE_CLOUD_AVAILABLE = True
 except ImportError:
-    PROMETHEUS_AVAILABLE = False
+    GOOGLE_CLOUD_AVAILABLE = False
 
 # Configurar logger
 logger = logging.getLogger(__name__)
@@ -391,18 +392,37 @@ if METRICS_AVAILABLE:
     # Registrar o callback
     performance_monitor.add_alert_callback(medical_alert_callback)
 
-@metrics_bp.route('/metrics/prometheus', methods=['GET'])
-def prometheus_metrics():
-    """Endpoint para métricas no formato Prometheus"""
+@metrics_bp.route('/metrics/cloud', methods=['GET'])
+def cloud_metrics():
+    """Endpoint para métricas compatíveis com Google Cloud Monitoring"""
     try:
-        if not PROMETHEUS_AVAILABLE or not is_prometheus_enabled():
-            return "# Prometheus metrics not available or disabled\n", 200, {'Content-Type': 'text/plain'}
+        if not GOOGLE_CLOUD_AVAILABLE:
+            return jsonify({
+                "error": "Google Cloud Monitoring not available",
+                "message": "Install google-cloud-monitoring package"
+            }), 503
         
-        # Obter métricas no formato Prometheus
-        metrics_data, content_type = get_prometheus_metrics()
+        # Obter métricas no formato compatível com Cloud Monitoring
+        current_metrics = get_current_metrics()
         
-        return metrics_data, 200, {'Content-Type': content_type}
+        # Transformar para formato Cloud Monitoring
+        cloud_metrics_data = {
+            "metrics": {
+                "medical_platform/requests_total": current_metrics.get("endpoints", {}),
+                "medical_platform/response_time_ms": current_metrics.get("system", {}).get("uptime_seconds", 0),
+                "medical_platform/cpu_usage": current_metrics.get("system", {}).get("cpu_usage_percent", 0),
+                "medical_platform/memory_usage": current_metrics.get("system", {}).get("memory_usage_percent", 0),
+                "medical_platform/ai_requests": current_metrics.get("ai_metrics", {})
+            },
+            "timestamp": datetime.now().isoformat(),
+            "format": "google_cloud_monitoring"
+        }
+        
+        return jsonify(cloud_metrics_data), 200
         
     except Exception as e:
-        logger.error(f"Erro ao obter métricas Prometheus: {e}")
-        return f"# Error retrieving metrics: {str(e)}\n", 500, {'Content-Type': 'text/plain'}
+        logger.error(f"Erro ao obter métricas Cloud: {e}")
+        return jsonify({
+            "error": "Error retrieving Cloud metrics",
+            "details": str(e)
+        }), 500

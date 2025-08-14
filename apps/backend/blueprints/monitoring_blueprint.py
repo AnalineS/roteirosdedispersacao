@@ -243,30 +243,35 @@ def usability_monitoring():
 
 @monitoring_bp.route('/metrics', methods=['GET'])
 def get_metrics():
-    """Endpoint para métricas em formato Prometheus (futuro)"""
+    """Endpoint para métricas em formato compatível com Google Cloud Monitoring"""
     try:
         request_id = f"metrics_{int(datetime.now().timestamp() * 1000)}"
         
-        # Por enquanto, retornamos JSON (futuro: formato Prometheus)
+        # Retornamos JSON compatível com Google Cloud Monitoring
         cache = get_cache()
         config = get_config()
         
+        # Métricas no formato Cloud Monitoring
+        cache_hit_rate = 0
+        if cache and hasattr(cache, 'get_stats'):
+            cache_hit_rate = cache.get_stats().get('hit_rate', 0)
+        
         metrics = {
-            "# TYPE http_requests_total counter",
-            "http_requests_total{method=\"GET\",endpoint=\"/api/chat\"} 0",
-            "http_requests_total{method=\"POST\",endpoint=\"/api/chat\"} 0",
-            "# TYPE cache_hit_rate gauge",
-            f"cache_hit_rate {cache.get_stats()['hit_rate'] if cache and hasattr(cache, 'get_stats') else 0}",
-            "# TYPE response_time_seconds histogram",
-            "response_time_seconds_sum 0",
-            "response_time_seconds_count 0"
+            "medical_platform/http_requests_total": {
+                "method_GET_endpoint_api_chat": 0,
+                "method_POST_endpoint_api_chat": 0
+            },
+            "medical_platform/cache_hit_rate": cache_hit_rate,
+            "medical_platform/response_time_ms": {
+                "sum": 0,
+                "count": 0
+            }
         }
         
-        # Por enquanto retornamos como JSON para compatibilidade
         response = {
-            "format": "prometheus_compatible",
-            "metrics": list(metrics),
-            "note": "Formato Prometheus será implementado em versão futura",
+            "format": "google_cloud_monitoring",
+            "metrics": metrics,
+            "resource_type": "cloud_run_revision",
             "timestamp": datetime.now().isoformat(),
             "request_id": request_id
         }

@@ -15,5 +15,12 @@ gunicorn==21.2.0
 # === ESSENTIALS FOR MAIN.PY ===
 typing-extensions==4.12.2
 
+# === CRITICAL MISSING DEPENDENCIES ===
+python-dateutil==2.8.2
+jsonschema==4.23.0
+
 # === FIRESTORE CACHE ===
 google-cloud-firestore==2.11.1
+
+# === CLOUD RUN COMPATIBILITY ===
+google-cloud-logging==3.8.0

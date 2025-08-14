@@ -21,9 +21,9 @@ class AppConfig:
     DEBUG: bool = os.getenv('FLASK_ENV') == 'development'
     TESTING: bool = os.getenv('TESTING', '').lower() == 'true'
     
-    # Server Config
+    # Server Config - Cloud Run compatible
     HOST: str = os.getenv('HOST', '0.0.0.0')
-    PORT: int = int(os.getenv('PORT', 5000))
+    PORT: int = int(os.getenv('PORT', 8080))  # Cloud Run default port
     
     # CORS Config
     @property
@@ -118,16 +118,12 @@ class AppConfig:
     GCP_PROJECT_ID: Optional[str] = os.getenv('GCP_PROJECT_ID')
     GCP_REGION: Optional[str] = os.getenv('GCP_REGION')
     
-    # Monitoring Config (SPRINT 6.2.1 - Prometheus Integration)
+    # Monitoring Config (Google Cloud Monitoring)
     METRICS_ENABLED: bool = os.getenv('METRICS_ENABLED', '').lower() != 'false'
-    PROMETHEUS_ENABLED: bool = os.getenv('PROMETHEUS_ENABLED', 'true').lower() == 'true'
-    PROMETHEUS_PORT: int = int(os.getenv('PROMETHEUS_PORT', 9090))
-    PROMETHEUS_METRICS_PATH: str = os.getenv('PROMETHEUS_METRICS_PATH', '/metrics')
-    PROMETHEUS_PUSH_GATEWAY: Optional[str] = os.getenv('PROMETHEUS_PUSH_GATEWAY')
-    PROMETHEUS_JOB_NAME: str = os.getenv('PROMETHEUS_JOB_NAME', 'roteiro-dispensacao-backend')
     METRICS_COLLECT_INTERVAL: int = int(os.getenv('METRICS_COLLECT_INTERVAL', '15'))
     METRICS_RETENTION_DAYS: int = int(os.getenv('METRICS_RETENTION_DAYS', '30'))
     MEDICAL_METRICS_NAMESPACE: str = os.getenv('MEDICAL_METRICS_NAMESPACE', 'medical_platform')
+    GOOGLE_CLOUD_MONITORING_ENABLED: bool = os.getenv('GOOGLE_CLOUD_MONITORING_ENABLED', 'true').lower() == 'true'
     
     # Embeddings Config (SPRINT 1.2)
     EMBEDDINGS_ENABLED: bool = os.getenv('EMBEDDINGS_ENABLED', '').lower() == 'true'

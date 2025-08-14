@@ -37,4 +37,5 @@ redis[hiredis]==5.0.1
 
 # === MONITORING ===
 psutil==5.9.6
-prometheus-client==0.19.0
+google-cloud-monitoring==2.21.0
+google-cloud-logging==3.10.0
