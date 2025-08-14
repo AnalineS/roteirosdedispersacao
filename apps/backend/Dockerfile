@@ -35,12 +35,18 @@ RUN python -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 # Copiar e instalar dependências Python primeiro (para cache do Docker)
-COPY --chown=appuser:appuser requirements_minimal.txt .
+COPY --chown=appuser:appuser requirements_optimized.txt .
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel \
-    && pip install --no-cache-dir -r requirements_minimal.txt
+    && pip install --no-cache-dir -r requirements_optimized.txt
 
-# Copiar código da aplicação
-COPY . .
+# Copiar código da aplicação (excluindo arquivos desnecessários)
+COPY --chown=appuser:appuser . .
+
+# Remover arquivos desnecessários após cópia
+RUN rm -rf __pycache__ .pytest_cache logs temp \
+    && rm -f requirements.txt requirements_optimized.txt \
+    && find . -name "*.pyc" -delete \
+    && find . -name "__pycache__" -type d -exec rm -rf {} + || true
 
 # Ajustar permissões
 RUN chown -R appuser:appuser /app

@@ -1,26 +1,32 @@
-# Roteiro de Dispensação - Deploy Rápido
-# Versão mínima para testar o deploy
+# Roteiro de Dispensação - Deploy Otimizado
+# Versão balanceada: funcionalidades completas + deploy <10 minutos
 
-# === CORE ===
+# === CORE FLASK ===
 Flask==3.0.0
 Flask-CORS==4.0.0
 Werkzeug==3.0.1
-openai==1.54.0
-requests==2.31.0
-pydantic==2.5.0
-bleach==6.1.0
-cachetools==5.3.2
 gunicorn==21.2.0
 
-# === ESSENTIALS FOR MAIN.PY ===
-typing-extensions==4.12.2
+# === AI & APIS ===
+openai==1.54.0
+requests==2.31.0
+sentence-transformers==2.2.2
 
-# === CRITICAL MISSING DEPENDENCIES ===
-python-dateutil==2.8.2
+# === VALIDATION & SECURITY ===
+pydantic==2.5.0
+bleach==6.1.0
 jsonschema==4.23.0
 
-# === FIRESTORE CACHE ===
+# === CACHE & PERFORMANCE ===
+cachetools==5.3.2
+
+# === MONITORING (CRITICAL) ===
+psutil==5.9.6
+
+# === GOOGLE CLOUD (ESSENTIALS) ===
+google-cloud-logging==3.8.0
 google-cloud-firestore==2.11.1
 
-# === CLOUD RUN COMPATIBILITY ===
-google-cloud-logging==3.8.0
+# === PYTHON COMPATIBILITY ===
+typing-extensions==4.12.2
+python-dateutil==2.8.2

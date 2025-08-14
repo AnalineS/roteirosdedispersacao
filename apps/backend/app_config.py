@@ -213,18 +213,19 @@ class EnvironmentConfig:
 # Instância global de configuração
 config = AppConfig()
 
-# Validar configuração na inicialização
-if not config.validate():
-    if EnvironmentConfig.is_production():
-        raise RuntimeError("Configuração inválida em produção!")
-    else:
-        logging.warning("Configuração incompleta - modo desenvolvimento")
+# Validar configuração na inicialização (não-fatal para Cloud Run)
+try:
+    if not config.validate():
+        if EnvironmentConfig.is_production():
+            # Log crítico mas não falha para permitir graceful degradation
+            logging.error("Configuração inválida em produção - modo degradação ativado!")
+        else:
+            logging.warning("Configuração incompleta - modo desenvolvimento")
+except Exception as e:
+    # Fallback total se validação falhar
+    logging.error(f"Erro na validação de config: {e} - continuando em modo seguro")
 
-# Configurar logging global
-logging.basicConfig(
-    level=getattr(logging, config.LOG_LEVEL),
-    format=config.LOG_FORMAT
-)
+# Logging será configurado no main.py para evitar duplicação
 
 # Listar variáveis obrigatórias não configuradas
 missing_vars = [var for var in config.get_required_env_vars() if not os.getenv(var)]

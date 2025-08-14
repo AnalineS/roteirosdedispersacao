@@ -42,3 +42,9 @@ gunicorn==21.2.0
 
 # === TIPO DE BUILD ===
 typing-extensions==4.12.2
+
+# === CRITICAL MISSING DEPENDENCIES ===
+psutil==5.9.6  # Para blueprints health/monitoring
+google-cloud-logging==3.8.0  # Para Cloud Run logs
+jsonschema==4.23.0  # Para validação
+python-dateutil==2.8.2  # Para datetime utils

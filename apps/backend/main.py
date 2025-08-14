@@ -61,6 +61,13 @@ except ImportError:
             return type('obj', (object,), {'cache': None, 'rag_service': None, 'qa_framework': None})()
     dependency_injector = SimpleDependencyInjector()
 
+# Configurar logging ANTES de usar logger
+logging.basicConfig(
+    level=getattr(logging, config.LOG_LEVEL if CONFIG_AVAILABLE else 'INFO'),
+    format=config.LOG_FORMAT if CONFIG_AVAILABLE else '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
 # Import blueprints (com fallback)
 try:
     from blueprints import ALL_BLUEPRINTS
@@ -77,7 +84,6 @@ except ImportError as e:
     
     @simple_health_bp.route('/health')
     def health():
-        from datetime import datetime
         return jsonify({
             "status": "healthy",
             "timestamp": datetime.now().isoformat(),
@@ -92,7 +98,6 @@ except ImportError as e:
     
     @simple_test_bp.route('/test', methods=['GET', 'POST'])
     def test():
-        from datetime import datetime
         return jsonify({
             "message": "API funcionando em modo minimal",
             "method": request.method,
@@ -115,12 +120,7 @@ except ImportError:
             pass
     SecurityMiddleware = SimpleSecurityMiddleware
 
-# Configurar logging
-logging.basicConfig(
-    level=getattr(logging, config.LOG_LEVEL),
-    format=config.LOG_FORMAT
-)
-logger = logging.getLogger(__name__)
+# Logger já configurado acima
 
 def create_app():
     """Factory function para criar aplicação Flask"""
@@ -129,7 +129,7 @@ def create_app():
     # Configurar Flask com settings do config
     app.config['SECRET_KEY'] = config.SECRET_KEY
     app.config['DEBUG'] = config.DEBUG
-    app.config['TESTING'] = config.TESTING
+    app.config['TESTING'] = getattr(config, 'TESTING', False)
     app.config['MAX_CONTENT_LENGTH'] = config.MAX_CONTENT_LENGTH
     
     # Configurar sessões
@@ -380,11 +380,6 @@ def check_rate_limit(endpoint_type: str = 'default'):
 
 # Criar aplicação
 app = create_app()
-
-# Garantir que app está sempre disponível para Gunicorn
-# Mesmo quando não executado como __main__
-if not globals().get('app'):
-    app = create_app()
 
 # Execução da aplicação
 if __name__ == '__main__':
