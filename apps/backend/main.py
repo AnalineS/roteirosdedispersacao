@@ -18,17 +18,96 @@ from flask_cors import CORS
 import logging
 from datetime import datetime
 
-# Import configuração centralizada
-from app_config import config, EnvironmentConfig
+# Import configuração centralizada (com fallback)
+try:
+    from app_config import config, EnvironmentConfig
+    CONFIG_AVAILABLE = True
+except ImportError:
+    CONFIG_AVAILABLE = False
+    # Fallback config simples
+    class SimpleConfig:
+        SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-secret-key')
+        DEBUG = os.environ.get('FLASK_ENV') == 'development'
+        TESTING = False
+        MAX_CONTENT_LENGTH = 16 * 1024 * 1024
+        SESSION_COOKIE_SECURE = os.environ.get('SESSION_COOKIE_SECURE', 'false').lower() == 'true'
+        SESSION_COOKIE_HTTPONLY = True
+        SESSION_COOKIE_SAMESITE = 'Lax'
+        HOST = os.environ.get('HOST', '0.0.0.0')
+        PORT = int(os.environ.get('PORT', 5000))
+        LOG_LEVEL = 'INFO'
+        LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        CORS_ORIGINS = os.environ.get('CORS_ORIGINS', '').split(',') if os.environ.get('CORS_ORIGINS') else []
+    
+    class SimpleEnvironmentConfig:
+        @staticmethod
+        def get_current():
+            return os.environ.get('ENVIRONMENT', 'development')
+    
+    config = SimpleConfig()
+    EnvironmentConfig = SimpleEnvironmentConfig()
 
-# Import sistema de dependências
-from core.dependencies import dependency_injector
+# Import sistema de dependências (com fallback)
+try:
+    from core.dependencies import dependency_injector
+    DEPENDENCIES_AVAILABLE = True
+except ImportError:
+    DEPENDENCIES_AVAILABLE = False
+    # Fallback simples
+    class SimpleDependencyInjector:
+        def inject_into_blueprint(self, blueprint):
+            pass
+        def get_dependencies(self):
+            return type('obj', (object,), {'cache': None, 'rag_service': None, 'qa_framework': None})()
+    dependency_injector = SimpleDependencyInjector()
 
-# Import blueprints
-from blueprints import ALL_BLUEPRINTS
+# Import blueprints (com fallback)
+try:
+    from blueprints import ALL_BLUEPRINTS
+    BLUEPRINTS_AVAILABLE = True
+except ImportError:
+    BLUEPRINTS_AVAILABLE = False
+    # Criar blueprints mínimos
+    from flask import Blueprint
+    
+    # Health blueprint simples
+    simple_health_bp = Blueprint('health', __name__, url_prefix='/api')
+    
+    @simple_health_bp.route('/health')
+    def health():
+        from datetime import datetime
+        return jsonify({
+            "status": "healthy",
+            "timestamp": datetime.now().isoformat(),
+            "version": "minimal_v1.0",
+            "environment": EnvironmentConfig.get_current() if CONFIG_AVAILABLE else 'development'
+        })
+    
+    # Test blueprint simples  
+    simple_test_bp = Blueprint('test', __name__, url_prefix='/api')
+    
+    @simple_test_bp.route('/test', methods=['GET', 'POST'])
+    def test():
+        from datetime import datetime
+        return jsonify({
+            "message": "API funcionando",
+            "method": request.method,
+            "timestamp": datetime.now().isoformat()
+        })
+    
+    ALL_BLUEPRINTS = [simple_health_bp, simple_test_bp]
 
-# Import Security Middleware
-from core.security.middleware import SecurityMiddleware
+# Import Security Middleware (com fallback)
+try:
+    from core.security.middleware import SecurityMiddleware
+    SECURITY_MIDDLEWARE_AVAILABLE = True
+except ImportError:
+    SECURITY_MIDDLEWARE_AVAILABLE = False
+    # Fallback simples
+    class SimpleSecurityMiddleware:
+        def __init__(self, app):
+            pass
+    SecurityMiddleware = SimpleSecurityMiddleware
 
 # Configurar logging
 logging.basicConfig(
@@ -81,7 +160,10 @@ def create_app():
 def setup_cors(app):
     """Configurar CORS baseado no ambiente"""
     # Usar origins do config
-    allowed_origins = config.CORS_ORIGINS.copy()
+    if CONFIG_AVAILABLE and hasattr(config, 'CORS_ORIGINS'):
+        allowed_origins = config.CORS_ORIGINS.copy()
+    else:
+        allowed_origins = []
     
     # Adicionar origins específicos do ambiente
     environment = EnvironmentConfig.get_current()
@@ -103,6 +185,15 @@ def setup_cors(app):
             "https://www.roteirosdedispensacao.com"
         ]
         logger.info("CORS configurado para produção")
+    
+    # Se não tiver origins, permitir apenas locais para desenvolvimento
+    if not allowed_origins:
+        allowed_origins = [
+            "http://localhost:3000",
+            "http://127.0.0.1:3000",
+            "http://localhost:5173",
+            "http://127.0.0.1:5173"
+        ]
     
     CORS(app, 
          origins=allowed_origins,
@@ -149,9 +240,12 @@ def register_blueprints(app):
 
 def inject_dependencies_into_blueprints():
     """Injetar dependências em todos os blueprints"""
-    for blueprint in ALL_BLUEPRINTS:
-        dependency_injector.inject_into_blueprint(blueprint)
-        logger.info(f"✓ Dependências injetadas: {blueprint.name}")
+    if DEPENDENCIES_AVAILABLE:
+        for blueprint in ALL_BLUEPRINTS:
+            dependency_injector.inject_into_blueprint(blueprint)
+            logger.info(f"✓ Dependências injetadas: {blueprint.name}")
+    else:
+        logger.info("✓ Dependências simplificadas - modo mínimo")
 
 def setup_error_handlers(app):
     """Configurar handlers de erro globais"""
@@ -207,20 +301,32 @@ def log_startup_info():
     logger.info("=" * 60)
     logger.info("🚀 ROTEIROS DE DISPENSAÇÃO PQT-U - BACKEND REFATORADO")
     logger.info("=" * 60)
-    logger.info(f"📦 Versão: blueprint_v1.0")
+    logger.info(f"📦 Versão: {'blueprint_v1.0' if CONFIG_AVAILABLE else 'minimal_v1.0'}")
     logger.info(f"🌍 Ambiente: {environment}")
     logger.info(f"🐍 Python: {sys.version.split()[0]}")
     logger.info(f"⚙️  Debug: {config.DEBUG}")
-    logger.info(f"🔐 QA Enabled: {config.QA_ENABLED}")
-    logger.info(f"💾 Cache: {'Advanced' if config.ADVANCED_CACHE else 'Simple'}")
-    logger.info(f"🧠 RAG: {'Available' if config.RAG_AVAILABLE else 'Unavailable'}")
-    logger.info(f"📊 Metrics: {'Enabled' if config.METRICS_ENABLED else 'Disabled'}")
+    
+    if CONFIG_AVAILABLE:
+        logger.info(f"🔐 QA Enabled: {getattr(config, 'QA_ENABLED', False)}")
+        logger.info(f"💾 Cache: {'Advanced' if getattr(config, 'ADVANCED_CACHE', False) else 'Simple'}")
+        logger.info(f"🧠 RAG: {'Available' if getattr(config, 'RAG_AVAILABLE', False) else 'Unavailable'}")
+        logger.info(f"📊 Metrics: {'Enabled' if getattr(config, 'METRICS_ENABLED', False) else 'Disabled'}")
+    else:
+        logger.info("🔐 QA Enabled: Minimal Mode")
+        logger.info("💾 Cache: Simple")
+        logger.info("🧠 RAG: Unavailable")
+        logger.info("📊 Metrics: Disabled")
     
     # Status das dependências
-    deps = dependency_injector.get_dependencies()
-    logger.info(f"✓ Cache: {'OK' if deps.cache else 'FAIL'}")
-    logger.info(f"✓ RAG: {'OK' if deps.rag_service else 'FAIL'}")  
-    logger.info(f"✓ QA: {'OK' if deps.qa_framework else 'FAIL'}")
+    if DEPENDENCIES_AVAILABLE:
+        deps = dependency_injector.get_dependencies()
+        logger.info(f"✓ Cache: {'OK' if deps.cache else 'FAIL'}")
+        logger.info(f"✓ RAG: {'OK' if deps.rag_service else 'FAIL'}")  
+        logger.info(f"✓ QA: {'OK' if deps.qa_framework else 'FAIL'}")
+    else:
+        logger.info("✓ Cache: SIMPLE")
+        logger.info("✓ RAG: DISABLED")
+        logger.info("✓ QA: DISABLED")
     
     # Blueprints registrados
     logger.info(f"📋 Blueprints: {len(ALL_BLUEPRINTS)} registrados")

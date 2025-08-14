@@ -12,5 +12,8 @@ bleach==6.1.0
 cachetools==5.3.2
 gunicorn==21.2.0
 
+# === ESSENTIALS FOR MAIN.PY ===
+typing-extensions==4.12.2
+
 # === FIRESTORE CACHE ===
 google-cloud-firestore==2.11.1
