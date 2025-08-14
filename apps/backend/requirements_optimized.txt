@@ -24,7 +24,7 @@ cachetools==5.3.2  # Cache em memória local
 google-cloud-firestore==2.11.1  # Cache persistente no Firebase
 
 # === UTILIDADES ===
-python-dotenv==1.0.1
+# python-dotenv removido - usamos apenas GitHub Secrets via os.environ
 requests==2.31.0
 pydantic==2.5.0
 
