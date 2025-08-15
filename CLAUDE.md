@@ -41,18 +41,6 @@ npm run lint                   # ESLint
 npm run type-check            # TypeScript validation
 ```
 
-### Legacy Frontend (Vite) - Deprecated
-```bash
-cd apps/frontend
-npm install
-npm run dev                    # Development (port 5173)
-npm run build                  # Production build
-npm run type-check            # TypeScript validation
-npm run lint                   # ESLint with 49 warning limit
-```
-
-**Note**: The Vite frontend has bundle size limitations (<200KB) and is considered deprecated. All new development should use the Next.js application.
-
 ## Architecture Overview
 
 ### Backend Architecture
@@ -121,16 +109,6 @@ The system uses a hybrid knowledge architecture:
 - `POST /api/feedback`: User feedback collection for ML improvement
 - `GET /api/stats`: System performance metrics
 - `GET /api/usability/monitor`: UX monitoring data
-
-## Environment Variables
-
-Required for backend operation:
-```
-OPENROUTER_API_KEY=xxx          # Primary AI service
-HUGGINGFACE_API_KEY=xxx         # Backup AI service  
-FLASK_ENV=development|production
-PORT=5000                       # Server port
-ENVIRONMENT=development|production
 ```
 
 ## Security Considerations
@@ -179,7 +157,46 @@ cd apps/backend
 # Deployment handled by Cloud Run from repository
 ```
 
-## Development Guidelines
+## Development Guidelines and code review
+1 Functionality & Correctness
+
+↳ Requirements: code does what it should
+↳ Logic: works for all expected inputs, including edge cases
+↳ Integration: works without breaking the existing features
+↳ Testing: includes tests for features and edge cases
+
+——
+
+2 Readability & Clarity
+
+↳ Clarity: code is easy to read
+↳ Style: follows project style guidelines
+↳ Documentation: understandable and correct
+↳ Comments: explains why, not just what
+
+——
+
+3 Performance & Efficiency
+
+↳ Algorithms: uses efficient algorithms and data structures
+↳ Scalability: works efficiently as users or data grow
+↳ Bottlenecks: avoid repeated computations or unnecessary operations
+↳ Reuse: no repeated code; instead, use shared code
+↳ Resources: uses cpu and memory effectively
+↳ Caching: reuse results to speed things up if needed
+
+——
+
+4 Security & Stability
+
+↳ Validation: sanitizes all inputs
+↳ Vulnerabilities: protects against common security holes
+↳ Data: handle sensitive information securely
+↳ Error Handling: does proper error handling and fails gracefully
+↳ Observability: simple to monitor and debug
+↳ Compatibility: works with older versions and features
+↳ API Design: simple and consistent
+↳ Dependencies: uses only safe and needed libraries
 
 ### Code Patterns
 1. **Error Handling**: All API endpoints use comprehensive error handling with request IDs
@@ -201,11 +218,6 @@ The system includes several performance enhancements:
 - **Image Optimization**: Next.js optimized image loading
 - **PWA Features**: Service Worker implementation for offline capability
 
-## Common Issues & Solutions
-
-### Bundle Size (Legacy Frontend)
-- **Issue**: Vite frontend has <200KB limitation
-- **Solution**: Use Next.js frontend for all new development
 
 ### AI Model Availability
 - **Issue**: Free tier models may have rate limits
