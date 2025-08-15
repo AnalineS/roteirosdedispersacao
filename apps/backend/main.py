@@ -267,12 +267,14 @@ def setup_error_handlers(app):
             "error": "Endpoint não encontrado",
             "error_code": "NOT_FOUND",
             "available_endpoints": [
-                "/api/health",
-                "/api/test", 
-                "/api/chat",
-                "/api/personas",
-                "/api/feedback",
-                "/api/stats"
+                "/api/v1/health",
+                "/api/v1/health/live",
+                "/api/v1/health/ready", 
+                "/api/v1/chat",
+                "/api/v1/personas",
+                "/api/v1/feedback",
+                "/api/v1/monitoring/stats",
+                "/api/v1/docs"
             ],
             "timestamp": datetime.now().isoformat()
         }), 404
@@ -353,20 +355,25 @@ def setup_root_routes(app):
         """Rota raiz - informações da API"""
         return jsonify({
             "api_name": "Roteiros de Dispensação PQT-U",
-            "version": "blueprint_v1.0", 
-            "description": "Sistema educacional para dispensação farmacêutica",
+            "version": "v1.0.0", 
+            "api_version": "v1",
+            "description": "Sistema educacional para dispensação farmacêutica - API Enterprise Grade",
             "author": "Doutorando Nélio Gomes de Moura Júnior - UnB",
             "environment": EnvironmentConfig.get_current(),
             "status": "operational",
             "blueprints": [bp.name for bp in ALL_BLUEPRINTS],
             "documentation": {
+                "openapi_url": "/api/v1/docs",
+                "swagger_ui": "/api/v1/docs/swagger",
                 "endpoints": [
-                    {"path": "/api/health", "description": "Health check"},
-                    {"path": "/api/test", "description": "Teste de conectividade"},
-                    {"path": "/api/chat", "description": "Chat com personas"},
-                    {"path": "/api/personas", "description": "Informações de personas"},
-                    {"path": "/api/feedback", "description": "Sistema de feedback"},
-                    {"path": "/api/stats", "description": "Estatísticas do sistema"}
+                    {"path": "/api/v1/health", "description": "Health check básico"},
+                    {"path": "/api/v1/health/live", "description": "Kubernetes liveness probe"},
+                    {"path": "/api/v1/health/ready", "description": "Kubernetes readiness probe"},
+                    {"path": "/api/v1/chat", "description": "Chat com personas especializadas"},
+                    {"path": "/api/v1/personas", "description": "Informações de personas disponíveis"},
+                    {"path": "/api/v1/feedback", "description": "Sistema de feedback e avaliação"},
+                    {"path": "/api/v1/monitoring/stats", "description": "Estatísticas e métricas do sistema"},
+                    {"path": "/api/v1/docs", "description": "Documentação médica especializada"}
                 ]
             },
             "timestamp": datetime.now().isoformat()
