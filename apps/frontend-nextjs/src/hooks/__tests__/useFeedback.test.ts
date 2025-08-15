@@ -65,7 +65,7 @@ describe('useFeedback', () => {
     
     expect(result.current.lastSubmittedFeedback).not.toBeNull();
     expect(result.current.error).toBeNull();
-    expect(mockApiClient.post).toHaveBeenCalledWith('/api/feedback', {
+    expect(mockApiClient.post).toHaveBeenCalledWith('/api/v1/feedback', {
       question: validFeedback.question,
       response: validFeedback.response,
       rating: validFeedback.rating,
@@ -246,7 +246,7 @@ describe('useFeedback', () => {
       await result.current.submitFeedback(feedbackWithoutComments);
     });
     
-    expect(mockApiClient.post).toHaveBeenCalledWith('/api/feedback', {
+    expect(mockApiClient.post).toHaveBeenCalledWith('/api/v1/feedback', {
       question: feedbackWithoutComments.question,
       response: feedbackWithoutComments.response,
       rating: feedbackWithoutComments.rating,

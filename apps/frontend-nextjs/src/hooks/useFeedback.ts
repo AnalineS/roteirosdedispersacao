@@ -88,7 +88,7 @@ export function useFeedback(options: UseFeedbackOptions = {}) {
       // Tentativas com retry
       for (let attempt = 1; attempt <= retryAttempts; attempt++) {
         try {
-          const response = await apiClient.post<FeedbackResponse>('/api/feedback', apiData);
+          const response = await apiClient.post<FeedbackResponse>('/api/v1/feedback', apiData);
           
           setLastSubmittedFeedback(response);
           onSuccess?.(response);
@@ -307,7 +307,7 @@ export function useFeedbackStats() {
     try {
       // Aqui poderia ser uma chamada específica para stats de feedback
       // Por ora, usar o endpoint de stats geral
-      const response = await apiClient.get<any>('/api/stats');
+      const response = await apiClient.get<any>('/api/v1/feedback/stats');
       
       // Extrair dados de feedback se disponível
       const mockStats: FeedbackStats = {

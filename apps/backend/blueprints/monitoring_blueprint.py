@@ -17,7 +17,7 @@ from core.dependencies import get_cache, get_rag, get_qa, get_config
 logger = logging.getLogger(__name__)
 
 # Criar blueprint
-monitoring_bp = Blueprint('monitoring', __name__, url_prefix='/api')
+monitoring_bp = Blueprint('monitoring', __name__, url_prefix='/api/v1')
 
 class UsabilityMonitor:
     """Monitor de usabilidade temporário (será substituído por sistema real)"""

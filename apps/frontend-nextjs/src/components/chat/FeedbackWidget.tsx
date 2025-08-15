@@ -109,7 +109,7 @@ export default function FeedbackWidget({
   useEffect(() => {
     const fetchPersonaData = async () => {
       try {
-        const response = await fetch('/api/personas');
+        const response = await fetch('/api/v1/personas');
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}`);
         }

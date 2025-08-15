@@ -17,7 +17,7 @@ from core.dependencies import get_cache, get_config
 logger = logging.getLogger(__name__)
 
 # Criar blueprint
-feedback_bp = Blueprint('feedback', __name__, url_prefix='/api')
+feedback_bp = Blueprint('feedback', __name__, url_prefix='/api/v1')
 
 def validate_feedback_data(data: Dict[str, Any]) -> tuple[bool, Optional[str]]:
     """Valida dados de feedback"""

@@ -29,7 +29,7 @@ describe('API Service', () => {
 
       const result = await getPersonas();
       expect(result).toEqual(mockPersonas);
-      expect(mockFetch).toHaveBeenCalledWith('http://127.0.0.1:5000/api/personas', {
+      expect(mockFetch).toHaveBeenCalledWith('http://127.0.0.1:5000/api/v1/personas', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

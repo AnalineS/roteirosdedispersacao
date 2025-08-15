@@ -102,7 +102,7 @@ class AttackPatternDetector:
         # Padrões de Path Traversal
         self.path_traversal_patterns = [
             r"\.\./",
-            r"\.\.\\"",
+            r"\.\.\\",
             r"%2e%2e%2f",
             r"%2e%2e%5c",
             r"\.\.%2f",

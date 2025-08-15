@@ -17,6 +17,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import logging
 from datetime import datetime
+from core.versioning import APIVersionManager
 
 # Import configuração centralizada (com fallback)
 try:
@@ -142,6 +143,10 @@ def create_app():
     
     # Configurar headers de segurança
     setup_security_headers(app)
+    
+    # Configurar sistema de versionamento
+    version_manager = APIVersionManager(app)
+    app.version_manager = version_manager
     
     # Inicializar Security Middleware
     security_middleware = SecurityMiddleware(app)

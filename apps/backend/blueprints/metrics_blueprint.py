@@ -32,7 +32,7 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 # Criar blueprint
-metrics_bp = Blueprint('metrics', __name__, url_prefix='/api')
+metrics_bp = Blueprint('metrics', __name__, url_prefix='/api/v1')
 
 @metrics_bp.route('/metrics', methods=['GET'])
 def get_system_metrics():

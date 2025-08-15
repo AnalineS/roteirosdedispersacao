@@ -76,7 +76,7 @@ export interface ChatResponse {
  */
 export async function getPersonas(): Promise<PersonasResponse> {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/personas`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/personas`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -102,7 +102,7 @@ export async function getPersonas(): Promise<PersonasResponse> {
  */
 export async function sendChatMessage(request: ChatRequest): Promise<ChatResponse> {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/chat`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/chat`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -127,7 +127,7 @@ export async function sendChatMessage(request: ChatRequest): Promise<ChatRespons
  */
 export async function checkAPIHealth() {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/health`);
+    const response = await fetch(`${API_BASE_URL}/api/v1/health`);
     return response.ok;
   } catch (error) {
     console.error('Erro ao verificar saúde da API:', error);
@@ -140,7 +140,7 @@ export async function checkAPIHealth() {
  */
 export async function detectQuestionScope(question: string) {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/scope`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/scope`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

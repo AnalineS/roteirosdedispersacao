@@ -60,7 +60,7 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 # Criar blueprint
-chat_bp = Blueprint('chat', __name__, url_prefix='/api')
+chat_bp = Blueprint('chat', __name__, url_prefix='/api/v1')
 
 def validate_and_sanitize_input(text: str) -> str:
     """

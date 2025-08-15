@@ -23,7 +23,7 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 # Criar blueprint
-personas_bp = Blueprint('personas', __name__, url_prefix='/api')
+personas_bp = Blueprint('personas', __name__, url_prefix='/api/v1')
 
 def get_persona_capabilities(persona_id: str) -> List[str]:
     """Retorna capacidades específicas da persona"""
