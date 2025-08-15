@@ -1,0 +1,172 @@
+# ============================================================================
+# DOCKERFILE PRODUCTION - SOLUÇÃO DEFINITIVA
+# Sistema Educacional para Dispensação PQT-U
+# Multi-stage build otimizado para Cloud Run com lazy loading
+# ============================================================================
+
+# === STAGE 1: BUILD DEPENDENCIES ===
+FROM python:3.11-slim as builder
+
+# Metadados
+LABEL stage="builder"
+LABEL maintainer="Roteiro de Dispensação API"
+LABEL version="2.0.0"
+LABEL description="Backend Flask com lazy loading e build otimizado"
+
+# Configurações de build
+ARG DEBIAN_FRONTEND=noninteractive
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+# Instalar dependências de build
+RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
+    gcc \
+    g++ \
+    python3-dev \
+    curl \
+    ca-certificates \
+    git \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Criar ambiente virtual
+ENV VIRTUAL_ENV=/opt/venv
+RUN python -m venv $VIRTUAL_ENV
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
+# Copiar requirements e instalar dependências
+COPY requirements_production.txt .
+
+# Instalar dependências com otimizações
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
+    pip install --no-cache-dir -r requirements_production.txt && \
+    # Limpar cache desnecessário
+    find $VIRTUAL_ENV -name "*.pyc" -delete && \
+    find $VIRTUAL_ENV -name "__pycache__" -type d -exec rm -rf {} + || true
+
+# === STAGE 2: RUNTIME ===
+FROM python:3.11-slim as runtime
+
+# Metadados de runtime
+LABEL maintainer="Roteiro de Dispensação API"
+LABEL version="2.0.0"
+LABEL description="Runtime otimizado com lazy loading"
+
+# Configurações de runtime
+ARG DEBIAN_FRONTEND=noninteractive
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+# Instalar apenas dependências de runtime mínimas
+RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
+    curl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Criar usuário não-root para segurança
+RUN groupadd -r appuser && useradd -r -g appuser -s /bin/false appuser
+
+# Configurar diretório de trabalho
+WORKDIR /app
+
+# Copiar ambiente virtual do builder
+COPY --from=builder /opt/venv /opt/venv
+ENV VIRTUAL_ENV=/opt/venv
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
+# Copiar código da aplicação
+COPY --chown=appuser:appuser . .
+
+# Limpar arquivos desnecessários
+RUN rm -rf __pycache__ .pytest_cache logs temp \
+    && rm -f requirements*.txt \
+    && find . -name "*.pyc" -delete \
+    && find . -name "__pycache__" -type d -exec rm -rf {} + || true \
+    # Criar diretórios necessários
+    && mkdir -p cache/embeddings logs \
+    && chown -R appuser:appuser cache logs
+
+# Ajustar permissões finais
+RUN chown -R appuser:appuser /app
+
+# Usuário não-root para execução
+USER appuser
+
+# === CONFIGURAÇÕES DE PRODUÇÃO ===
+
+# Variáveis de ambiente para Cloud Run
+ENV WORKERS=1
+ENV THREADS=4
+ENV TIMEOUT=300
+ENV KEEPALIVE=2
+ENV MAX_REQUESTS=1000
+ENV MAX_REQUESTS_JITTER=100
+
+# Configurações específicas da aplicação
+ENV FLASK_ENV=production
+ENV ENVIRONMENT=production
+
+# === FEATURE FLAGS OTIMIZADOS ===
+# Por padrão, funcionalidades pesadas estão desabilitadas
+# Podem ser habilitadas via environment variables no Cloud Run
+ENV EMBEDDINGS_ENABLED=false
+ENV ADVANCED_FEATURES=false
+ENV RAG_AVAILABLE=false
+ENV ADVANCED_CACHE=false
+
+# Expor porta padrão para Cloud Run
+EXPOSE 8080
+
+# === HEALTH CHECK OTIMIZADO ===
+# Health check usa endpoint lazy que não carrega dependências pesadas
+HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
+    CMD curl -f http://localhost:${PORT:-8080}/api/v1/health || exit 1
+
+# === COMANDO OTIMIZADO ===
+# Comando sem --preload para evitar timeout na inicialização
+# Lazy loading carrega dependências conforme necessário
+CMD exec gunicorn \
+    --bind 0.0.0.0:${PORT:-8080} \
+    --workers $WORKERS \
+    --threads $THREADS \
+    --timeout $TIMEOUT \
+    --keep-alive $KEEPALIVE \
+    --max-requests $MAX_REQUESTS \
+    --max-requests-jitter $MAX_REQUESTS_JITTER \
+    --worker-class sync \
+    --log-level info \
+    --access-logfile - \
+    --error-logfile - \
+    --capture-output \
+    --enable-stdio-inheritance \
+    main:app
+
+# ============================================================================
+# INSTRUÇÕES DE BUILD:
+#
+# 1. Build da imagem:
+#    docker build -f Dockerfile.production -t roteiro-api:prod .
+#
+# 2. Teste local:
+#    docker run -p 8080:8080 -e EMBEDDINGS_ENABLED=false roteiro-api:prod
+#
+# 3. Deploy Cloud Run:
+#    gcloud run deploy --image gcr.io/PROJECT/roteiro-api:prod
+#
+# 4. Habilitar funcionalidades avançadas (opcional):
+#    --set-env-vars="EMBEDDINGS_ENABLED=true,ADVANCED_FEATURES=true"
+#
+# OTIMIZAÇÕES IMPLEMENTADAS:
+# - Multi-stage build reduz tamanho final
+# - Lazy loading evita timeout na inicialização  
+# - Feature flags permitem controle granular
+# - Health check otimizado para Kubernetes
+# - Sem --preload para evitar problemas de memória
+# - User não-root para segurança
+# - Cache layers otimizados
+# ============================================================================

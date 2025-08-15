@@ -35,9 +35,9 @@ RUN python -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 # Copiar e instalar dependências Python primeiro (para cache do Docker)
-COPY --chown=appuser:appuser requirements_optimized.txt .
+COPY --chown=appuser:appuser requirements_production.txt .
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel \
-    && pip install --no-cache-dir -r requirements_optimized.txt
+    && pip install --no-cache-dir -r requirements_production.txt
 
 # Copiar código da aplicação (excluindo arquivos desnecessários)
 COPY --chown=appuser:appuser . .
@@ -54,14 +54,21 @@ USER appuser
 
 # Variáveis de ambiente para produção
 ENV FLASK_ENV=production
+ENV ENVIRONMENT=production
 
-# Configurações para Cloud Run
+# Configurações para Cloud Run otimizadas
 ENV WORKERS=1
-ENV THREADS=8
+ENV THREADS=4
 ENV TIMEOUT=300
 ENV KEEPALIVE=2
 ENV MAX_REQUESTS=1000
 ENV MAX_REQUESTS_JITTER=100
+
+# Feature flags - por padrão desabilitados para evitar timeout
+ENV EMBEDDINGS_ENABLED=false
+ENV ADVANCED_FEATURES=false
+ENV RAG_AVAILABLE=false
+ENV ADVANCED_CACHE=false
 
 # Expor porta padrão para Cloud Run
 EXPOSE 8080
@@ -70,7 +77,7 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:${PORT:-8080}/api/v1/health || exit 1
 
-# Comando otimizado para Cloud Run com diagnósticos
+# Comando otimizado para Cloud Run sem preload (lazy loading)
 CMD exec gunicorn \
     --bind 0.0.0.0:${PORT:-8080} \
     --workers $WORKERS \
@@ -79,7 +86,7 @@ CMD exec gunicorn \
     --keep-alive $KEEPALIVE \
     --max-requests $MAX_REQUESTS \
     --max-requests-jitter $MAX_REQUESTS_JITTER \
-    --preload \
+    --worker-class sync \
     --log-level info \
     --access-logfile - \
     --error-logfile - \

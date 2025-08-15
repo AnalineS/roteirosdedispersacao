@@ -140,24 +140,45 @@ jobs:
           exit 1
         fi
         
-        # Deploy to Cloud Run with enhanced security settings and new environment variables
+        # Deploy to Cloud Run with SOLUÇÃO DEFINITIVA - Configurações anti-timeout otimizadas
         URL=$(gcloud run deploy roteiro-dispensacao-api \
           --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/roteiro-dispensacao-api:${{ github.sha }} \
           --platform managed \
           --region ${{ secrets.GCP_REGION }} \
           --allow-unauthenticated \
-          --memory 1Gi \
-          --cpu 1 \
-          --concurrency 80 \
+          --memory 2Gi \
+          --cpu 2 \
+          --concurrency 40 \
           --max-instances 10 \
-          --timeout 300 \
+          --min-instances 0 \
+          --timeout 900 \
           --execution-environment gen2 \
           --cpu-throttling \
           --session-affinity \
           --port 8080 \
-          --set-env-vars="ENVIRONMENT=production,SECRET_KEY=${{ secrets.SECRET_KEY }},GCP_PROJECT_ID=${{ secrets.GCP_PROJECT_ID }},FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }},OPENROUTER_API_KEY=${{ secrets.OPENROUTER_API_KEY }},HUGGINGFACE_API_KEY=${{ secrets.HUGGINGFACE_API_KEY }},PROMETHEUS_ENABLED=true,METRICS_ENABLED=true,REDIS_ENABLED=false" \
+          --no-traffic \
+          --tag=stable \
+          --set-env-vars="ENVIRONMENT=production,FLASK_ENV=production,SECRET_KEY=${{ secrets.SECRET_KEY }},GCP_PROJECT_ID=${{ secrets.GCP_PROJECT_ID }},FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }},OPENROUTER_API_KEY=${{ secrets.OPENROUTER_API_KEY }},HUGGINGFACE_API_KEY=${{ secrets.HUGGINGFACE_API_KEY }},EMBEDDINGS_ENABLED=false,ADVANCED_FEATURES=false,RAG_AVAILABLE=false,ADVANCED_CACHE=false,PROMETHEUS_ENABLED=true,METRICS_ENABLED=true,REDIS_ENABLED=false,LOG_LEVEL=INFO,GUNICORN_WORKERS=1,GUNICORN_THREADS=4,GUNICORN_TIMEOUT=300" \
           --project ${{ secrets.GCP_PROJECT_ID }} \
           --format="value(status.url)")
+        
+        echo "🔍 Aguardando estabilização do serviço (30s)..."
+        sleep 30
+        
+        # Testar health checks antes de direcionar tráfego
+        echo "🏥 Testando health checks..."
+        HEALTH_URL="$URL/api/v1/health"
+        if curl -f -s "$HEALTH_URL" > /dev/null; then
+          echo "✅ Health check passou - direcionando tráfego"
+          gcloud run services update-traffic roteiro-dispensacao-api \
+            --to-tags=stable=100 \
+            --region ${{ secrets.GCP_REGION }} \
+            --project ${{ secrets.GCP_PROJECT_ID }}
+        else
+          echo "❌ Health check falhou - mantendo versão anterior"
+          echo "🔗 Verificar logs em: https://console.cloud.google.com/run/detail/${{ secrets.GCP_REGION }}/roteiro-dispensacao-api/logs?project=${{ secrets.GCP_PROJECT_ID }}"
+          exit 1
+        fi
         
         echo "backend-url=$URL" >> $GITHUB_OUTPUT
         
