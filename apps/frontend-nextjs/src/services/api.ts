@@ -3,7 +3,43 @@
  * Conecta com o backend Python que usa prompts de IA e personas
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5000';
+// Configuração inteligente de API URL
+const getApiUrl = () => {
+  // Se tiver variável de ambiente configurada, use ela
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL;
+  }
+  
+  // Detectar ambiente automaticamente
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    
+    // Produção - Firebase Hosting
+    if (hostname.includes('web.app') || hostname.includes('firebaseapp.com')) {
+      return 'https://roteiro-dispensacao-api.onrender.com';
+    }
+    
+    // Produção - Domínio customizado
+    if (hostname.includes('roteirosdedispensacao.com')) {
+      return 'https://roteiro-dispensacao-api.onrender.com';
+    }
+    
+    // Produção - Vercel
+    if (hostname.includes('vercel.app')) {
+      return 'https://roteiro-dispensacao-api.onrender.com';
+    }
+    
+    // Desenvolvimento local
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      return 'http://localhost:8080';
+    }
+  }
+  
+  // Fallback para desenvolvimento
+  return 'http://localhost:8080';
+};
+
+const API_BASE_URL = getApiUrl();
 
 export interface Persona {
   name: string;

@@ -237,32 +237,47 @@ def setup_cors(app):
             "http://localhost:3000",
             "http://127.0.0.1:3000", 
             "http://localhost:5173",
-            "http://127.0.0.1:5173"
+            "http://127.0.0.1:5173",
+            "http://localhost:8080",
+            "http://127.0.0.1:8080"
         ])
         logger.info("CORS configurado para desenvolvimento")
     elif environment == 'production':
-        # Apenas origens específicas em produção
+        # Origens de produção
         allowed_origins = [
             "https://roteiros-de-dispensacao.web.app",
             "https://roteiros-de-dispensacao.firebaseapp.com",
             "https://roteirosdedispensacao.com",
-            "https://www.roteirosdedispensacao.com"
+            "https://www.roteirosdedispensacao.com",
+            "http://roteirosdedispensacao.com",  # Adicionar HTTP também
+            "http://www.roteirosdedispensacao.com"
         ]
+        
+        # Se estiver rodando no Cloud Run, adicionar origens dinâmicas
+        if os.environ.get('K_SERVICE'):
+            # Cloud Run service URL se disponível
+            cloud_run_url = os.environ.get('CLOUD_RUN_SERVICE_URL')
+            if cloud_run_url:
+                allowed_origins.append(cloud_run_url)
+                logger.info(f"Cloud Run URL adicionada ao CORS: {cloud_run_url}")
+        
         logger.info("CORS configurado para produção")
     
-    # Se não tiver origins, permitir apenas locais para desenvolvimento
+    # Se não tiver origins, permitir todos em desenvolvimento
     if not allowed_origins:
-        allowed_origins = [
-            "http://localhost:3000",
-            "http://127.0.0.1:3000",
-            "http://localhost:5173",
-            "http://127.0.0.1:5173"
-        ]
+        if environment == 'development':
+            allowed_origins = ["*"]
+        else:
+            allowed_origins = [
+                "https://roteiros-de-dispensacao.web.app",
+                "https://roteirosdedispensacao.com"
+            ]
     
     CORS(app, 
          origins=allowed_origins,
-         methods=['GET', 'POST', 'OPTIONS', 'HEAD'],
-         allow_headers=['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
+         methods=['GET', 'POST', 'OPTIONS', 'HEAD', 'PUT', 'DELETE'],
+         allow_headers=['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'Access-Control-Request-Method', 'Access-Control-Request-Headers'],
+         expose_headers=['Content-Length', 'X-Request-Id'],
          supports_credentials=False,
          max_age=86400)  # Cache preflight por 24h
     
