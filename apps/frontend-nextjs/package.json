@@ -39,7 +39,8 @@
     "prepare": "echo 'Skipping husky install in subproject'"
   },
   "dependencies": {
-    "jspdf": "^3.0.1",
+    "firebase": "^10.14.0",
+    "jspdf": "^2.5.2",
     "next": "^14.2.18",
     "react": "^18.3.0",
     "react-dom": "^18.3.0"

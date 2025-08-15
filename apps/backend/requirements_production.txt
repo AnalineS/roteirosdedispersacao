@@ -10,9 +10,12 @@ Flask-CORS==4.0.0
 Werkzeug==3.0.1
 gunicorn==21.2.0
 
+# === AUTHENTICATION ===
+PyJWT==2.8.0  # Para validação de tokens Firebase JWT
+
 # === AI & ML ESSENCIAL ===
 openai==1.54.0  # Para OpenRouter/AI - CRÍTICO
-requests==2.31.0
+requests==2.31.0  # Para requisições HTTP e chaves Firebase
 
 # === EMBEDDINGS - LAZY LOADING ===
 # Embeddings são opcionais, mas devem estar disponíveis se EMBEDDINGS_ENABLED=true

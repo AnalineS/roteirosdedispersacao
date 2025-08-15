@@ -1,4 +1,8 @@
 {
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
   "hosting": {
     "site": "roteirosdispensacao",
       "public": "apps/frontend-nextjs/out",
@@ -90,7 +94,7 @@
             },
             {
               "key": "Content-Security-Policy",
-              "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https://openrouter.ai https://*.run.app; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; frame-src 'none'; worker-src 'self' blob:; media-src 'self' data: blob:; object-src 'none'; base-uri 'self';"
+              "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.firebaseapp.com https://*.googleapis.com; connect-src 'self' https://openrouter.ai https://*.run.app https://*.firebaseapp.com https://*.googleapis.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; frame-src 'none'; worker-src 'self' blob:; media-src 'self' data: blob:; object-src 'none'; base-uri 'self';"
             }
           ]
         }

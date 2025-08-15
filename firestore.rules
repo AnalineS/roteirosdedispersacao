@@ -1,0 +1,182 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ==============================================
+    // USER PROFILES
+    // ==============================================
+    
+    // Users can only access their own profile
+    match /user_profiles/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      
+      // Allow creation for new authenticated users
+      allow create: if request.auth != null && 
+                    request.auth.uid == userId &&
+                    validateUserProfile(resource.data);
+                    
+      // Ensure data integrity on updates
+      allow update: if request.auth != null && 
+                    request.auth.uid == userId &&
+                    validateUserProfileUpdate(resource.data, request.resource.data);
+    }
+    
+    // ==============================================
+    // CONVERSATIONS
+    // ==============================================
+    
+    // Users can only access their own conversations
+    match /conversations/{conversationId} {
+      allow read, write: if request.auth != null && 
+                         request.auth.uid == resource.data.userId;
+                         
+      allow create: if request.auth != null &&
+                    request.auth.uid == request.resource.data.userId &&
+                    validateConversation(request.resource.data);
+                    
+      allow update: if request.auth != null &&
+                    request.auth.uid == resource.data.userId &&
+                    request.auth.uid == request.resource.data.userId &&
+                    validateConversationUpdate(resource.data, request.resource.data);
+                    
+      allow delete: if request.auth != null &&
+                    request.auth.uid == resource.data.userId;
+    }
+    
+    // ==============================================
+    // FEEDBACK
+    // ==============================================
+    
+    // Users can create feedback and read their own
+    match /feedback/{feedbackId} {
+      allow create: if request.auth != null &&
+                    (request.resource.data.userId == request.auth.uid || 
+                     request.resource.data.userId == null) &&
+                    validateFeedback(request.resource.data);
+                    
+      allow read: if request.auth != null &&
+                  request.auth.uid == resource.data.userId;
+                  
+      // Users can't update or delete feedback (only admins in functions)
+    }
+    
+    // ==============================================
+    // ANALYTICS & SESSIONS
+    // ==============================================
+    
+    // Users can create and read their own sessions
+    match /sessions/{sessionId} {
+      allow create: if request.auth != null &&
+                    (request.resource.data.userId == request.auth.uid ||
+                     request.resource.data.userId == null) &&
+                    validateSession(request.resource.data);
+                    
+      allow read, update: if request.auth != null &&
+                          request.auth.uid == resource.data.userId;
+    }
+    
+    // Learning progress tracking
+    match /learning_progress/{progressId} {
+      allow read, write: if request.auth != null &&
+                         request.auth.uid == resource.data.userId;
+                         
+      allow create: if request.auth != null &&
+                    request.auth.uid == request.resource.data.userId &&
+                    validateLearningProgress(request.resource.data);
+    }
+    
+    // ==============================================
+    // ADMIN-ONLY COLLECTIONS
+    // ==============================================
+    
+    // Analytics aggregation (admin only)
+    match /analytics/{document=**} {
+      allow read, write: if false; // Only admin functions can access
+    }
+    
+    // System metrics (admin only)
+    match /system_metrics/{document=**} {
+      allow read, write: if false; // Only admin functions can access
+    }
+    
+    // ==============================================
+    // VALIDATION FUNCTIONS
+    // ==============================================
+    
+    function validateUserProfile(data) {
+      return data.keys().hasAll(['uid', 'type', 'focus', 'confidence', 'preferences', 'createdAt']) &&
+             data.uid is string &&
+             data.type in ['professional', 'student', 'patient', 'caregiver'] &&
+             data.focus in ['technical', 'practical', 'effects', 'general'] &&
+             data.confidence is number &&
+             data.confidence >= 0 &&
+             data.confidence <= 1 &&
+             data.preferences is map &&
+             data.createdAt is timestamp;
+    }
+    
+    function validateUserProfileUpdate(existing, incoming) {
+      return incoming.uid == existing.uid &&
+             incoming.createdAt == existing.createdAt &&
+             incoming.updatedAt is timestamp &&
+             incoming.updatedAt > existing.updatedAt;
+    }
+    
+    function validateConversation(data) {
+      return data.keys().hasAll(['userId', 'personaId', 'title', 'messages', 'createdAt']) &&
+             data.userId is string &&
+             data.personaId is string &&
+             data.title is string &&
+             data.messages is list &&
+             data.messages.size() <= 200 && // Max 200 messages per conversation
+             data.createdAt is timestamp &&
+             data.syncStatus in ['synced', 'pending', 'conflict', 'failed'];
+    }
+    
+    function validateConversationUpdate(existing, incoming) {
+      return incoming.userId == existing.userId &&
+             incoming.id == existing.id &&
+             incoming.createdAt == existing.createdAt &&
+             incoming.updatedAt is timestamp &&
+             incoming.lastActivity is timestamp;
+    }
+    
+    function validateFeedback(data) {
+      return data.keys().hasAll(['type', 'message', 'createdAt']) &&
+             data.type in ['rating', 'bug', 'suggestion', 'general'] &&
+             data.message is string &&
+             data.message.size() <= 1000 && // Max 1000 chars
+             data.createdAt is timestamp &&
+             (!data.keys().hasAny(['rating']) || 
+              (data.rating is number && data.rating >= 1 && data.rating <= 5));
+    }
+    
+    function validateSession(data) {
+      return data.keys().hasAll(['startTime']) &&
+             data.startTime is timestamp &&
+             (!data.keys().hasAny(['endTime']) || data.endTime is timestamp) &&
+             (!data.keys().hasAny(['pageViews']) || data.pageViews is list) &&
+             (!data.keys().hasAny(['interactions']) || data.interactions is list);
+    }
+    
+    function validateLearningProgress(data) {
+      return data.keys().hasAll(['userId', 'moduleId', 'status', 'progressPercentage']) &&
+             data.userId is string &&
+             data.moduleId is string &&
+             data.status in ['not_started', 'in_progress', 'completed'] &&
+             data.progressPercentage is number &&
+             data.progressPercentage >= 0 &&
+             data.progressPercentage <= 100;
+    }
+    
+    // ==============================================
+    // DEFAULT DENY
+    // ==============================================
+    
+    // Deny all other access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,6 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { UserProfileRepository } from '@/lib/firebase/firestore';
+import { FirestoreUserProfile } from '@/lib/firebase/types';
+import { FEATURES } from '@/lib/firebase/config';
 
 export interface UserProfile {
   type: 'professional' | 'student' | 'patient' | 'caregiver';
@@ -24,11 +28,14 @@ export interface UserProfile {
 interface UserProfileHook {
   profile: UserProfile | null;
   isLoading: boolean;
-  saveProfile: (profile: UserProfile) => void;
-  updateProfile: (updates: Partial<UserProfile>) => void;
-  clearProfile: () => void;
+  syncStatus: 'idle' | 'syncing' | 'error';
+  saveProfile: (profile: UserProfile) => Promise<void>;
+  updateProfile: (updates: Partial<UserProfile>) => Promise<void>;
+  clearProfile: () => Promise<void>;
   getRecommendedPersona: () => string;
   hasProfile: boolean;
+  isUsingFirestore: boolean;
+  forceSync: () => Promise<void>;
 }
 
 const STORAGE_KEY = 'userProfile';
@@ -41,11 +48,48 @@ const defaultPreferences = {
 };
 
 export function useUserProfile(): UserProfileHook {
+  const auth = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'error'>('idle');
+  
+  // Flags para controlar o tipo de persistência
+  const useFirestore = auth.isAuthenticated && FEATURES.FIRESTORE_ENABLED;
+  const useLocalStorage = !useFirestore || !FEATURES.AUTH_ENABLED;
 
-  // Carregar perfil salvo
+  // Carregar perfil (localStorage ou Firestore)
   useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        setIsLoading(true);
+
+        if (useFirestore && auth.user) {
+          // Carregar do Firestore
+          await loadFromFirestore();
+        } else if (useLocalStorage) {
+          // Carregar do localStorage
+          loadFromLocalStorage();
+        }
+      } catch (error) {
+        console.error('Erro ao carregar perfil:', error);
+        
+        // Fallback para localStorage em caso de erro do Firestore
+        if (useFirestore) {
+          loadFromLocalStorage();
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadProfile();
+  }, [auth.user, auth.isAuthenticated, useFirestore, useLocalStorage]);
+
+  // ============================================
+  // FUNÇÕES DE CARREGAMENTO
+  // ============================================
+
+  const loadFromLocalStorage = useCallback(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
@@ -60,21 +104,107 @@ export function useUserProfile(): UserProfileHook {
         }
       }
     } catch (error) {
-      console.error('Erro ao carregar perfil do usuário:', error);
+      console.error('Erro ao carregar do localStorage:', error);
       localStorage.removeItem(STORAGE_KEY);
-    } finally {
-      setIsLoading(false);
+      throw error;
     }
   }, []);
 
-  const saveProfile = (newProfile: UserProfile) => {
+  const loadFromFirestore = useCallback(async () => {
+    if (!auth.user) return;
+
     try {
-      // Adicionar timestamp e histórico
+      setSyncStatus('syncing');
+      
+      // Primeiro verificar se há perfil no contexto de auth
+      if (auth.profile) {
+        const localProfile = convertFirestoreToLocal(auth.profile);
+        setProfile(localProfile);
+        setSyncStatus('idle');
+        return;
+      }
+
+      // Se não, carregar diretamente do Firestore
+      const result = await UserProfileRepository.getProfile(auth.user.uid);
+      
+      if (result.success && result.data) {
+        const localProfile = convertFirestoreToLocal(result.data);
+        setProfile(localProfile);
+        setSyncStatus('idle');
+
+        // Também salvar no localStorage como backup
+        if (useLocalStorage) {
+          saveToLocalStorageOnly(localProfile);
+        }
+      } else {
+        // Perfil não existe no Firestore - usar localStorage se disponível
+        if (useLocalStorage) {
+          loadFromLocalStorage();
+        }
+        setSyncStatus('idle');
+      }
+    } catch (error) {
+      setSyncStatus('error');
+      console.error('Erro ao carregar do Firestore:', error);
+      throw error;
+    }
+  }, [auth.user, auth.profile, useLocalStorage]);
+
+  // ============================================
+  // FUNÇÕES DE CONVERSÃO
+  // ============================================
+
+  const convertFirestoreToLocal = useCallback((firestoreProfile: FirestoreUserProfile): UserProfile => {
+    return {
+      type: firestoreProfile.type,
+      focus: firestoreProfile.focus,
+      confidence: firestoreProfile.confidence,
+      explanation: firestoreProfile.explanation,
+      selectedPersona: firestoreProfile.selectedPersona,
+      preferences: firestoreProfile.preferences,
+      history: firestoreProfile.history
+    };
+  }, []);
+
+  const convertLocalToFirestore = useCallback((localProfile: UserProfile): Partial<FirestoreUserProfile> => {
+    if (!auth.user) throw new Error('Usuário não autenticado');
+
+    return {
+      uid: auth.user.uid,
+      email: auth.user.email || undefined,
+      displayName: auth.user.displayName || undefined,
+      type: localProfile.type,
+      focus: localProfile.focus,
+      confidence: localProfile.confidence,
+      explanation: localProfile.explanation,
+      selectedPersona: localProfile.selectedPersona,
+      preferences: { ...defaultPreferences, ...localProfile.preferences },
+      history: {
+        lastPersona: localProfile.history?.lastPersona || localProfile.selectedPersona || 'ga',
+        conversationCount: localProfile.history?.conversationCount || 0,
+        lastAccess: new Date().toISOString(),
+        preferredTopics: localProfile.history?.preferredTopics || [],
+        totalSessions: (localProfile.history?.conversationCount || 0) + 1,
+        totalTimeSpent: localProfile.history?.totalTimeSpent || 0,
+        completedModules: localProfile.history?.completedModules || [],
+        achievements: localProfile.history?.achievements || []
+      },
+      isAnonymous: auth.isAnonymous,
+      version: '2.0'
+    };
+  }, [auth.user, auth.isAnonymous]);
+
+  // ============================================
+  // FUNÇÕES DE SALVAMENTO
+  // ============================================
+
+  const saveToLocalStorageOnly = useCallback((profileToSave: UserProfile) => {
+    try {
       const enrichedProfile: UserProfile = {
-        ...newProfile,
-        preferences: { ...defaultPreferences, ...newProfile.preferences },
+        ...profileToSave,
+        preferences: { ...defaultPreferences, ...profileToSave.preferences },
         history: {
-          lastPersona: newProfile.selectedPersona || 'ga',
+          lastPersona: profileToSave.selectedPersona || 'ga',
           conversationCount: (profile?.history?.conversationCount || 0) + 1,
           lastAccess: new Date().toISOString(),
           preferredTopics: profile?.history?.preferredTopics || []
@@ -88,14 +218,59 @@ export function useUserProfile(): UserProfileHook {
       };
 
       localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
+    } catch (error) {
+      console.error('Erro ao salvar no localStorage:', error);
+      throw error;
+    }
+  }, [profile]);
+
+  const saveProfile = async (newProfile: UserProfile): Promise<void> => {
+    try {
+      setSyncStatus('syncing');
+
+      // Atualizar estado local imediatamente
+      const enrichedProfile: UserProfile = {
+        ...newProfile,
+        preferences: { ...defaultPreferences, ...newProfile.preferences },
+        history: {
+          lastPersona: newProfile.selectedPersona || 'ga',
+          conversationCount: (profile?.history?.conversationCount || 0) + 1,
+          lastAccess: new Date().toISOString(),
+          preferredTopics: profile?.history?.preferredTopics || []
+        }
+      };
+
       setProfile(enrichedProfile);
+
+      // Salvar no localStorage se habilitado
+      if (useLocalStorage) {
+        saveToLocalStorageOnly(enrichedProfile);
+      }
+
+      // Salvar no Firestore se disponível
+      if (useFirestore && auth.user) {
+        const firestoreProfile = convertLocalToFirestore(enrichedProfile);
+        const result = await auth.updateUserProfile(firestoreProfile as FirestoreUserProfile);
+        
+        if (!result.success) {
+          console.error('Erro ao salvar no Firestore:', result.error);
+          setSyncStatus('error');
+          return;
+        }
+      }
+
+      setSyncStatus('idle');
     } catch (error) {
       console.error('Erro ao salvar perfil do usuário:', error);
+      setSyncStatus('error');
+      throw error;
     }
   };
 
-  const updateProfile = (updates: Partial<UserProfile>) => {
-    if (!profile) return;
+  const updateProfile = async (updates: Partial<UserProfile>): Promise<void> => {
+    if (!profile) {
+      throw new Error('Nenhum perfil para atualizar');
+    }
 
     const updatedProfile = {
       ...profile,
@@ -108,15 +283,32 @@ export function useUserProfile(): UserProfileHook {
       }
     };
 
-    saveProfile(updatedProfile);
+    await saveProfile(updatedProfile);
   };
 
-  const clearProfile = () => {
+  const clearProfile = async (): Promise<void> => {
     try {
-      localStorage.removeItem(STORAGE_KEY);
+      setSyncStatus('syncing');
+
+      // Limpar do Firestore se disponível
+      if (useFirestore && auth.user) {
+        const result = await UserProfileRepository.deleteProfile(auth.user.uid);
+        if (!result.success) {
+          console.error('Erro ao deletar do Firestore:', result.error);
+        }
+      }
+
+      // Limpar localStorage
+      if (useLocalStorage) {
+        localStorage.removeItem(STORAGE_KEY);
+      }
+
       setProfile(null);
+      setSyncStatus('idle');
     } catch (error) {
       console.error('Erro ao limpar perfil do usuário:', error);
+      setSyncStatus('error');
+      throw error;
     }
   };
 
@@ -149,14 +341,24 @@ export function useUserProfile(): UserProfileHook {
     }
   };
 
+  // Função de sincronização manual
+  const forceSync = async (): Promise<void> => {
+    if (useFirestore && auth.user) {
+      await loadFromFirestore();
+    }
+  };
+
   return {
     profile,
     isLoading,
+    syncStatus,
     saveProfile,
     updateProfile,
     clearProfile,
     getRecommendedPersona,
-    hasProfile: profile !== null
+    hasProfile: profile !== null,
+    isUsingFirestore: useFirestore,
+    forceSync
   };
 }
 

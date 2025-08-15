@@ -142,6 +142,15 @@ try:
 except ImportError:
     OPTIMIZATIONS_AVAILABLE = False
 
+# Import JWT Authentication (com fallback)
+try:
+    from core.auth.jwt_validator import configure_jwt_from_env, create_auth_middleware
+    JWT_AUTH_AVAILABLE = True
+except ImportError:
+    JWT_AUTH_AVAILABLE = False
+    configure_jwt_from_env = None
+    create_auth_middleware = None
+
 # Logger já configurado acima
 
 def create_app():
@@ -173,6 +182,18 @@ def create_app():
     if SECURITY_MIDDLEWARE_AVAILABLE and SecurityMiddleware:
         security_middleware = SecurityMiddleware(app)
         logger.info("✅ Security Middleware avançado inicializado")
+    
+    # Inicializar JWT Authentication
+    if JWT_AUTH_AVAILABLE:
+        try:
+            configure_jwt_from_env()
+            auth_middleware = create_auth_middleware()
+            app.before_request(auth_middleware)
+            logger.info("🔐 JWT Authentication configurado (Firebase)")
+        except Exception as e:
+            logger.warning(f"⚠️ Erro ao configurar JWT: {e}")
+    else:
+        logger.info("ℹ️ JWT Authentication não disponível - sistema funciona sem autenticação")
     
     # Inicializar otimizações de performance e segurança
     if OPTIMIZATIONS_AVAILABLE:

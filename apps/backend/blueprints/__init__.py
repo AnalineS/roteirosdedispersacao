@@ -12,6 +12,14 @@ from .monitoring_blueprint import monitoring_bp
 from .metrics_blueprint import metrics_bp
 from .docs_blueprint import docs_bp
 
+# Import user blueprint (com fallback)
+try:
+    from .user_blueprint import user_bp
+    USER_BP_AVAILABLE = True
+except ImportError:
+    USER_BP_AVAILABLE = False
+    user_bp = None
+
 # Importar swagger ui blueprint
 try:
     from core.openapi.spec import swagger_ui_blueprint
@@ -31,6 +39,10 @@ ALL_BLUEPRINTS = [
     docs_bp
 ]
 
+# Adicionar user blueprint se disponível
+if USER_BP_AVAILABLE and user_bp:
+    ALL_BLUEPRINTS.append(user_bp)
+
 # Adicionar swagger ui se disponível
 if SWAGGER_AVAILABLE and swagger_ui_blueprint:
     ALL_BLUEPRINTS.append(swagger_ui_blueprint)
@@ -43,6 +55,7 @@ __all__ = [
     'monitoring_bp',
     'metrics_bp',
     'docs_bp',
+    'user_bp',
     'swagger_ui_blueprint',
     'ALL_BLUEPRINTS'
 ]
