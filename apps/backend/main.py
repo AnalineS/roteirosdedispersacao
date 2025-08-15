@@ -80,30 +80,80 @@ except ImportError as e:
     # Criar blueprints mínimos
     from flask import Blueprint
     
-    # Health blueprint simples
-    simple_health_bp = Blueprint('health', __name__, url_prefix='/api')
+    # Health blueprint simples com compatibilidade v1
+    simple_health_bp = Blueprint('health', __name__)
     
-    @simple_health_bp.route('/health')
+    # Registrar em ambos os paths para compatibilidade
+    @simple_health_bp.route('/api/health')
+    @simple_health_bp.route('/api/v1/health')
     def health():
         return jsonify({
             "status": "healthy",
             "timestamp": datetime.now().isoformat(),
-            "version": "minimal_v1.0",
+            "version": "fallback_v1.0.0",
+            "api_version": "v1",
             "environment": EnvironmentConfig.get_current() if CONFIG_AVAILABLE else 'development',
             "port": int(os.environ.get('PORT', 8080)),
-            "fallback_mode": True
+            "mode": "fallback",
+            "endpoints": {
+                "health": "/api/v1/health",
+                "personas": "/api/v1/personas", 
+                "chat": "/api/v1/chat"
+            }
+        })
+
+    # Kubernetes health checks
+    @simple_health_bp.route('/api/v1/health/live')
+    def health_live():
+        return jsonify({"status": "alive", "timestamp": datetime.now().isoformat()})
+    
+    @simple_health_bp.route('/api/v1/health/ready')
+    def health_ready():
+        return jsonify({"status": "ready", "timestamp": datetime.now().isoformat()})
+    
+    # Personas fallback
+    @simple_health_bp.route('/api/v1/personas')
+    def personas_fallback():
+        return jsonify({
+            "personas": {
+                "dr_gasnelio": {
+                    "name": "Dr. Gasnelio",
+                    "description": "Farmacêutico especialista em hanseníase",
+                    "avatar": "dr_gasnelio.png",
+                    "status": "fallback_mode"
+                },
+                "ga": {
+                    "name": "Gá",
+                    "description": "Assistente empática",
+                    "avatar": "ga.png", 
+                    "status": "fallback_mode"
+                }
+            },
+            "mode": "fallback"
+        })
+    
+    # Chat fallback
+    @simple_health_bp.route('/api/v1/chat', methods=['POST'])
+    def chat_fallback():
+        return jsonify({
+            "answer": "Sistema está em modo de manutenção. Tente novamente em alguns instantes.",
+            "persona": "sistema",
+            "mode": "fallback",
+            "request_id": f"fallback-{datetime.now().timestamp()}"
         })
     
     # Test blueprint simples  
-    simple_test_bp = Blueprint('test', __name__, url_prefix='/api')
+    simple_test_bp = Blueprint('test', __name__)
     
-    @simple_test_bp.route('/test', methods=['GET', 'POST'])
+    @simple_test_bp.route('/api/test', methods=['GET', 'POST'])
+    @simple_test_bp.route('/api/v1/test', methods=['GET', 'POST'])
     def test():
         return jsonify({
-            "message": "API funcionando em modo minimal",
+            "message": "API funcionando em modo fallback",
             "method": request.method,
             "timestamp": datetime.now().isoformat(),
-            "port": int(os.environ.get('PORT', 8080))
+            "port": int(os.environ.get('PORT', 8080)),
+            "mode": "fallback"
         })
     
     ALL_BLUEPRINTS = [simple_health_bp, simple_test_bp]
