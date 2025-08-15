@@ -68,7 +68,7 @@ EXPOSE 8080
 
 # Health check otimizado para Cloud Run
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:${PORT:-8080}/api/health || exit 1
+    CMD curl -f http://localhost:${PORT:-8080}/api/v1/health || exit 1
 
 # Comando otimizado para Cloud Run com diagnósticos
 CMD exec gunicorn \

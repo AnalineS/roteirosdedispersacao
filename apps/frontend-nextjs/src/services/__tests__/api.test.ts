@@ -75,7 +75,7 @@ describe('API Service', () => {
       const result = await sendChatMessage(request);
       
       expect(result).toEqual(mockResponse);
-      expect(mockFetch).toHaveBeenCalledWith('http://127.0.0.1:5000/api/chat', {
+      expect(mockFetch).toHaveBeenCalledWith('http://127.0.0.1:5000/api/v1/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -129,7 +129,7 @@ describe('API Service', () => {
       const result = await checkAPIHealth();
       
       expect(result).toBe(true);
-      expect(mockFetch).toHaveBeenCalledWith('http://127.0.0.1:5000/api/health');
+      expect(mockFetch).toHaveBeenCalledWith('http://127.0.0.1:5000/api/v1/health');
     });
 
     it('should handle health check error', async () => {
