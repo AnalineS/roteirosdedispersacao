@@ -36,11 +36,23 @@ class AppConfig:
     OPENROUTER_API_KEY: Optional[str] = os.getenv('OPENROUTER_API_KEY')
     HUGGINGFACE_API_KEY: Optional[str] = os.getenv('HUGGINGFACE_API_KEY')
     
-    # Feature Flags
-    ADVANCED_FEATURES: bool = os.getenv('ADVANCED_FEATURES', '').lower() != 'false'
-    RAG_AVAILABLE: bool = os.getenv('RAG_AVAILABLE', '').lower() != 'false'
-    OPENAI_TEST_AVAILABLE: bool = os.getenv('OPENAI_TEST_AVAILABLE', '').lower() != 'false'
-    ADVANCED_CACHE: bool = os.getenv('ADVANCED_CACHE', '').lower() != 'false'
+    # Feature Flags - Padrão conservador para evitar timeout Cloud Run
+    EMBEDDINGS_ENABLED: bool = os.getenv('EMBEDDINGS_ENABLED', 'false').lower() == 'true'
+    ADVANCED_FEATURES: bool = os.getenv('ADVANCED_FEATURES', 'false').lower() == 'true'
+    RAG_AVAILABLE: bool = os.getenv('RAG_AVAILABLE', 'false').lower() == 'true'
+    OPENAI_TEST_AVAILABLE: bool = os.getenv('OPENAI_TEST_AVAILABLE', 'false').lower() == 'true'
+    ADVANCED_CACHE: bool = os.getenv('ADVANCED_CACHE', 'false').lower() == 'true'
+    
+    # Embeddings Config - Configuração unificada para ML features
+    EMBEDDING_MODEL: str = os.getenv('EMBEDDING_MODEL', 'sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2')
+    EMBEDDING_DEVICE: str = os.getenv('EMBEDDING_DEVICE', 'cpu')  # cpu/cuda
+    EMBEDDINGS_MAX_LENGTH: int = int(os.getenv('EMBEDDINGS_MAX_LENGTH', 512))
+    EMBEDDING_BATCH_SIZE: int = int(os.getenv('EMBEDDING_BATCH_SIZE', 32))
+    EMBEDDING_CACHE_SIZE: int = int(os.getenv('EMBEDDING_CACHE_SIZE', 1000))
+    
+    # Vector DB Config
+    VECTOR_DB_PATH: str = os.getenv('VECTOR_DB_PATH', './cache/embeddings')
+    SEMANTIC_SIMILARITY_THRESHOLD: float = float(os.getenv('SEMANTIC_SIMILARITY_THRESHOLD', '0.7'))
     
     # Cache Config
     CACHE_MAX_SIZE: int = int(os.getenv('CACHE_MAX_SIZE', 1000))
@@ -125,15 +137,6 @@ class AppConfig:
     MEDICAL_METRICS_NAMESPACE: str = os.getenv('MEDICAL_METRICS_NAMESPACE', 'medical_platform')
     GOOGLE_CLOUD_MONITORING_ENABLED: bool = os.getenv('GOOGLE_CLOUD_MONITORING_ENABLED', 'true').lower() == 'true'
     
-    # Embeddings Config (SPRINT 1.2)
-    EMBEDDINGS_ENABLED: bool = os.getenv('EMBEDDINGS_ENABLED', '').lower() == 'true'
-    EMBEDDING_MODEL: str = os.getenv('EMBEDDING_MODEL', 'sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2')
-    EMBEDDING_DEVICE: str = os.getenv('EMBEDDING_DEVICE', 'cpu')  # cpu/cuda
-    VECTOR_DB_PATH: str = os.getenv('VECTOR_DB_PATH', './data/embeddings/')
-    EMBEDDING_CACHE_SIZE: int = int(os.getenv('EMBEDDING_CACHE_SIZE', 1000))
-    SEMANTIC_SIMILARITY_THRESHOLD: float = float(os.getenv('SEMANTIC_SIMILARITY_THRESHOLD', 0.7))
-    EMBEDDING_BATCH_SIZE: int = int(os.getenv('EMBEDDING_BATCH_SIZE', 32))
-    EMBEDDINGS_MAX_LENGTH: int = int(os.getenv('EMBEDDINGS_MAX_LENGTH', 512))
     
     # Data Redaction for Logs
     REDACT_PATTERNS = [

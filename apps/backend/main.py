@@ -17,7 +17,14 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import logging
 from datetime import datetime
-from core.versioning import APIVersionManager
+
+# Imports opcionais com fallback
+try:
+    from core.versioning import APIVersionManager
+    VERSIONING_AVAILABLE = True
+except ImportError:
+    VERSIONING_AVAILABLE = False
+    APIVersionManager = None
 
 # Import configuração centralizada (com fallback)
 try:
@@ -69,95 +76,55 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Import blueprints (com fallback)
+# Import blueprints (com fallback inteligente)
 try:
     from blueprints import ALL_BLUEPRINTS
     BLUEPRINTS_AVAILABLE = True
-    logger.info("✓ Blueprints importados com sucesso")
+    logger.info("✓ Blueprints completos importados com sucesso")
 except ImportError as e:
     BLUEPRINTS_AVAILABLE = False
-    logger.warning(f"⚠️  Blueprints não disponíveis: {e}")
-    # Criar blueprints mínimos
-    from flask import Blueprint
+    logger.warning(f"⚠️  Blueprints principais não disponíveis: {e}")
+    logger.info("🧠 Ativando Sistema de Fallback Inteligente...")
     
-    # Health blueprint simples com compatibilidade v1
-    simple_health_bp = Blueprint('health', __name__)
-    
-    # Registrar em ambos os paths para compatibilidade
-    @simple_health_bp.route('/api/health')
-    @simple_health_bp.route('/api/v1/health')
-    def health():
-        return jsonify({
-            "status": "healthy",
-            "timestamp": datetime.now().isoformat(),
-            "version": "fallback_v1.0.0",
-            "api_version": "v1",
-            "environment": EnvironmentConfig.get_current() if CONFIG_AVAILABLE else 'development',
-            "port": int(os.environ.get('PORT', 8080)),
-            "mode": "fallback",
-            "endpoints": {
-                "health": "/api/v1/health",
-                "personas": "/api/v1/personas", 
-                "chat": "/api/v1/chat"
-            }
-        })
-
-    # Kubernetes health checks
-    @simple_health_bp.route('/api/v1/health/live')
-    def health_live():
-        return jsonify({"status": "alive", "timestamp": datetime.now().isoformat()})
-    
-    @simple_health_bp.route('/api/v1/health/ready')
-    def health_ready():
-        return jsonify({"status": "ready", "timestamp": datetime.now().isoformat()})
-    
-    # Personas fallback
-    @simple_health_bp.route('/api/v1/personas')
-    def personas_fallback():
-        return jsonify({
-            "personas": {
-                "dr_gasnelio": {
-                    "name": "Dr. Gasnelio",
-                    "description": "Farmacêutico especialista em hanseníase",
-                    "avatar": "dr_gasnelio.png",
-                    "status": "fallback_mode"
-                },
-                "ga": {
-                    "name": "Gá",
-                    "description": "Assistente empática",
-                    "avatar": "ga.png", 
-                    "status": "fallback_mode"
-                }
-            },
-            "mode": "fallback"
-        })
-    
-    # Chat fallback
-    @simple_health_bp.route('/api/v1/chat', methods=['POST'])
-    def chat_fallback():
-        return jsonify({
-            "answer": "Sistema está em modo de manutenção. Tente novamente em alguns instantes.",
-            "persona": "sistema",
-            "mode": "fallback",
-            "request_id": f"fallback-{datetime.now().timestamp()}"
-        })
-    
-    # Test blueprint simples  
-    simple_test_bp = Blueprint('test', __name__)
-    
-    @simple_test_bp.route('/api/test', methods=['GET', 'POST'])
-    @simple_test_bp.route('/api/v1/test', methods=['GET', 'POST'])
-    def test():
-        return jsonify({
-            "message": "API funcionando em modo fallback",
-            "method": request.method,
-            "timestamp": datetime.now().isoformat(),
-            "port": int(os.environ.get('PORT', 8080)),
-            "mode": "fallback"
-        })
-    
-    ALL_BLUEPRINTS = [simple_health_bp, simple_test_bp]
-    logger.info("✓ Blueprints mínimos criados")
+    # Usar sistema de fallback inteligente
+    try:
+        from core.fallback import create_intelligent_fallback_blueprints
+        ALL_BLUEPRINTS = create_intelligent_fallback_blueprints()
+        logger.info("✅ Sistema de Fallback Inteligente ativado com sucesso!")
+        logger.info(f"📋 {len(ALL_BLUEPRINTS)} blueprints inteligentes criados")
+    except ImportError as fallback_error:
+        logger.error(f"❌ Erro ao carregar Fallback Inteligente: {fallback_error}")
+        logger.info("🔄 Usando fallback básico de emergência...")
+        
+        # Fallback de emergência ultra-básico
+        from flask import Blueprint
+        
+        emergency_bp = Blueprint('emergency', __name__)
+        
+        @emergency_bp.route('/api/v1/health', methods=['GET'])
+        @emergency_bp.route('/api/health', methods=['GET'])
+        def emergency_health():
+            return jsonify({
+                "status": "emergency_mode",
+                "timestamp": datetime.now().isoformat(),
+                "version": "emergency_v1.0.0",
+                "api_version": "v1",
+                "environment": EnvironmentConfig.get_current() if CONFIG_AVAILABLE else 'development',
+                "port": int(os.environ.get('PORT', 8080)),
+                "mode": "emergency_fallback",
+                "message": "Sistema em modo de emergência - funcionalidade limitada"
+            })
+        
+        @emergency_bp.route('/api/v1/health/live', methods=['GET'])
+        def emergency_live():
+            return jsonify({"status": "alive", "timestamp": datetime.now().isoformat(), "mode": "emergency"})
+        
+        @emergency_bp.route('/api/v1/health/ready', methods=['GET'])
+        def emergency_ready():
+            return jsonify({"status": "ready", "timestamp": datetime.now().isoformat(), "mode": "emergency"})
+        
+        ALL_BLUEPRINTS = [emergency_bp]
+        logger.warning("⚠️  Sistema em modo de emergência - funcionalidade muito limitada")
 
 # Import Security Middleware (com fallback)
 try:
@@ -165,11 +132,15 @@ try:
     SECURITY_MIDDLEWARE_AVAILABLE = True
 except ImportError:
     SECURITY_MIDDLEWARE_AVAILABLE = False
-    # Fallback simples
-    class SimpleSecurityMiddleware:
-        def __init__(self, app):
-            pass
-    SecurityMiddleware = SimpleSecurityMiddleware
+    SecurityMiddleware = None
+
+# Import Performance e Security Optimizations
+try:
+    from core.performance.response_optimizer import init_performance_optimizations
+    from core.security.enhanced_security import init_security_optimizations
+    OPTIMIZATIONS_AVAILABLE = True
+except ImportError:
+    OPTIMIZATIONS_AVAILABLE = False
 
 # Logger já configurado acima
 
@@ -199,7 +170,18 @@ def create_app():
     app.version_manager = version_manager
     
     # Inicializar Security Middleware
-    security_middleware = SecurityMiddleware(app)
+    if SECURITY_MIDDLEWARE_AVAILABLE and SecurityMiddleware:
+        security_middleware = SecurityMiddleware(app)
+        logger.info("✅ Security Middleware avançado inicializado")
+    
+    # Inicializar otimizações de performance e segurança
+    if OPTIMIZATIONS_AVAILABLE:
+        try:
+            init_performance_optimizations(app)
+            init_security_optimizations(app)
+            logger.info("🚀 Otimizações de performance e segurança ativadas")
+        except Exception as e:
+            logger.warning(f"⚠️ Erro ao inicializar otimizações: {e}")
     
     # Registrar blueprints
     register_blueprints(app)

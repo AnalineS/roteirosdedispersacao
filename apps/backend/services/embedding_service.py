@@ -1,25 +1,80 @@
 # -*- coding: utf-8 -*-
 """
-Embedding Service - Sistema de embeddings para RAG semântico
+Embedding Service - Sistema de embeddings para RAG semântico (LAZY LOADING)
 Suporte para modelos multilíngues otimizados para português médico
+Implementa lazy loading para evitar timeout em Cloud Run
 """
 
 import os
 import pickle
 import logging
 import hashlib
-from typing import List, Dict, Optional, Tuple, Any
+from typing import List, Dict, Optional, Tuple, Any, Union
 from datetime import datetime, timedelta
-import numpy as np
 from pathlib import Path
+import threading
 
-# Configuração de imports opcionais
+# Import apenas bibliotecas leves na inicialização
 try:
+    import numpy as np
+    NUMPY_AVAILABLE = True
+except ImportError:
+    NUMPY_AVAILABLE = False
+
+logger = logging.getLogger(__name__)
+
+# Cache global de disponibilidade para evitar re-imports
+_AVAILABILITY_CACHE = {
+    'sentence_transformers': None,  # None = não testado, True/False = resultado
+    'torch': None,
+    'numpy': NUMPY_AVAILABLE
+}
+_CACHE_LOCK = threading.Lock()
+
+def _test_sentence_transformers() -> bool:
+    """
+    Testa disponibilidade do sentence_transformers de forma lazy
+    Retorna True se disponível, False caso contrário
+    """
+    global _AVAILABILITY_CACHE
+    
+    with _CACHE_LOCK:
+        # Se já testamos, retorna cache
+        if _AVAILABILITY_CACHE['sentence_transformers'] is not None:
+            return _AVAILABILITY_CACHE['sentence_transformers']
+        
+        try:
+            # Lazy import - só quando realmente necessário
+            from sentence_transformers import SentenceTransformer
+            import torch
+            
+            # Teste básico de funcionalidade
+            _ = SentenceTransformer
+            _ = torch.tensor([1.0])
+            
+            _AVAILABILITY_CACHE['sentence_transformers'] = True
+            _AVAILABILITY_CACHE['torch'] = True
+            logger.info("✅ sentence_transformers disponível (lazy loaded)")
+            return True
+            
+        except ImportError as e:
+            _AVAILABILITY_CACHE['sentence_transformers'] = False
+            _AVAILABILITY_CACHE['torch'] = False
+            logger.warning(f"❌ sentence_transformers indisponível: {e}")
+            return False
+        except Exception as e:
+            _AVAILABILITY_CACHE['sentence_transformers'] = False
+            logger.error(f"❌ Erro ao testar sentence_transformers: {e}")
+            return False
+
+def _lazy_import_sentence_transformers():
+    """Import lazy do SentenceTransformer quando necessário"""
+    if not _test_sentence_transformers():
+        raise ImportError("sentence_transformers não disponível")
+    
     from sentence_transformers import SentenceTransformer
     import torch
-    SENTENCE_TRANSFORMERS_AVAILABLE = True
-except ImportError:
-    SENTENCE_TRANSFORMERS_AVAILABLE = False
+    return SentenceTransformer, torch
 
 logger = logging.getLogger(__name__)
 
@@ -137,16 +192,25 @@ class EmbeddingCache:
 
 class EmbeddingService:
     """
-    Serviço de embeddings com suporte a modelos multilíngues
+    Serviço de embeddings com suporte a modelos multilíngues (LAZY LOADING)
     Otimizado para conteúdo médico em português
+    Não carrega modelos ML na inicialização para evitar timeout
     """
     
     def __init__(self, config):
         self.config = config
-        self.model: Optional[SentenceTransformer] = None
-        self.model_name = config.EMBEDDING_MODEL
-        self.device = config.EMBEDDING_DEVICE
-        self.cache = EmbeddingCache(config.VECTOR_DB_PATH, config.EMBEDDING_CACHE_SIZE)
+        self.model = None  # Será carregado lazy
+        self.model_name = getattr(config, 'EMBEDDING_MODEL', 'all-MiniLM-L6-v2')
+        self.device = getattr(config, 'EMBEDDING_DEVICE', 'cpu')
+        
+        # Cache só se numpy disponível
+        if NUMPY_AVAILABLE:
+            cache_path = getattr(config, 'VECTOR_DB_PATH', './cache/embeddings')
+            cache_size = getattr(config, 'EMBEDDING_CACHE_SIZE', 1000)
+            self.cache = EmbeddingCache(cache_path, cache_size)
+        else:
+            self.cache = None
+            logger.warning("⚠️ NumPy indisponível - cache de embeddings desabilitado")
         
         # Métricas
         self.stats = {
@@ -154,93 +218,153 @@ class EmbeddingService:
             'cache_hits': 0,
             'cache_misses': 0,
             'model_load_time': 0.0,
-            'avg_embedding_time': 0.0
+            'avg_embedding_time': 0.0,
+            'lazy_loads': 0,
+            'availability_checks': 0
         }
         
-        # Lazy loading do modelo
+        # Estado de lazy loading
         self._model_loaded = False
+        self._load_attempted = False
+        self._load_failed = False
         
-        if not SENTENCE_TRANSFORMERS_AVAILABLE:
-            logger.warning("⚠️ Sentence Transformers não disponível - embeddings desabilitados")
+        logger.info("✅ EmbeddingService inicializado com lazy loading")
     
     def _load_model(self) -> bool:
-        """Carrega modelo de embeddings (lazy loading)"""
-        if self._model_loaded or not SENTENCE_TRANSFORMERS_AVAILABLE:
+        """
+        Carrega modelo de embeddings com lazy loading robusto
+        Usa cache de disponibilidade para evitar múltiplas tentativas
+        """
+        # Se já carregou ou já tentou e falhou, retorna resultado cached
+        if self._model_loaded:
+            return True
+        if self._load_failed:
+            return False
+            
+        # Se já tentou carregar e não conseguiu, não tenta novamente
+        if self._load_attempted:
             return self._model_loaded
+            
+        self._load_attempted = True
+        self.stats['lazy_loads'] += 1
+        
+        # Verificar se embeddings estão habilitados por config
+        embeddings_enabled = getattr(self.config, 'EMBEDDINGS_ENABLED', False)
+        if not embeddings_enabled:
+            logger.info("⚠️ Embeddings desabilitados por configuração")
+            self._load_failed = True
+            return False
+        
+        # Verificar disponibilidade lazy das bibliotecas
+        if not _test_sentence_transformers():
+            logger.warning("⚠️ sentence_transformers não disponível para lazy loading")
+            self._load_failed = True
+            return False
         
         try:
             start_time = datetime.now()
             
+            # Fazer import lazy
+            SentenceTransformer, torch = _lazy_import_sentence_transformers()
+            
             logger.info(f"🧠 Carregando modelo de embeddings: {self.model_name}")
             
+            # Configurar device adequado
+            device = self.device
+            if device == 'auto':
+                device = 'cuda' if torch.cuda.is_available() else 'cpu'
+            
+            # Carregar modelo
             self.model = SentenceTransformer(
                 self.model_name,
-                device=self.device
+                device=device
             )
             
             # Configurar modelo para melhor performance
             if hasattr(self.model, 'max_seq_length'):
-                self.model.max_seq_length = self.config.EMBEDDINGS_MAX_LENGTH
+                max_length = getattr(self.config, 'EMBEDDINGS_MAX_LENGTH', 512)
+                self.model.max_seq_length = max_length
             
             load_time = (datetime.now() - start_time).total_seconds()
             self.stats['model_load_time'] = load_time
             
             self._model_loaded = True
             
-            logger.info(f"✅ Modelo carregado em {load_time:.2f}s - Device: {self.device}")
+            logger.info(f"✅ Modelo de embeddings carregado em {load_time:.2f}s - Device: {device}")
             
             return True
             
         except Exception as e:
             logger.error(f"❌ Erro ao carregar modelo de embeddings: {e}")
+            self._load_failed = True
             return False
     
     def is_available(self) -> bool:
-        """Verifica se o serviço está disponível"""
-        return (
-            SENTENCE_TRANSFORMERS_AVAILABLE and
-            self.config.EMBEDDINGS_ENABLED and
-            self._load_model()
-        )
-    
-    def embed_text(self, text: str) -> Optional[np.ndarray]:
         """
-        Gera embedding para um texto
+        Verifica se o serviço está disponível (com lazy check)
+        Não carrega modelo pesado, apenas verifica disponibilidade
+        """
+        self.stats['availability_checks'] += 1
+        
+        # Verificar configuração
+        embeddings_enabled = getattr(self.config, 'EMBEDDINGS_ENABLED', False)
+        if not embeddings_enabled:
+            return False
+        
+        # Verificar se já tentou carregar e falhou
+        if self._load_failed:
+            return False
+            
+        # Se já carregado, está disponível
+        if self._model_loaded:
+            return True
+        
+        # Fazer apenas teste leve de disponibilidade
+        # Não carrega modelo ainda - será carregado quando necessário
+        return _test_sentence_transformers()
+    
+    def embed_text(self, text: str) -> Optional[Union[list, 'np.ndarray']]:
+        """
+        Gera embedding para um texto (com lazy loading)
         
         Args:
             text: Texto para embedding
             
         Returns:
-            Array numpy com embedding ou None se falhar
+            Array numpy com embedding, lista Python, ou None se falhar
         """
         if not text or not text.strip():
             return None
         
         text = text.strip()
         
-        # Tentar cache primeiro
-        cached_embedding = self.cache.get(text, self.model_name)
-        if cached_embedding is not None:
-            self.stats['cache_hits'] += 1
-            return cached_embedding
+        # Tentar cache primeiro (se disponível)
+        if self.cache and NUMPY_AVAILABLE:
+            cached_embedding = self.cache.get(text, self.model_name)
+            if cached_embedding is not None:
+                self.stats['cache_hits'] += 1
+                return cached_embedding
         
         self.stats['cache_misses'] += 1
         
-        # Carregar modelo se necessário
+        # Carregar modelo com lazy loading
         if not self._load_model():
+            logger.debug(f"❌ Modelo não disponível para embedding: {text[:50]}...")
             return None
         
         try:
             start_time = datetime.now()
             
             # Limitar tamanho do texto
-            if len(text) > self.config.EMBEDDINGS_MAX_LENGTH * 4:  # ~4 chars per token
-                text = text[:self.config.EMBEDDINGS_MAX_LENGTH * 4]
+            max_length = getattr(self.config, 'EMBEDDINGS_MAX_LENGTH', 512) * 4
+            if len(text) > max_length:
+                text = text[:max_length]
+                logger.debug(f"📝 Texto truncado para {max_length} caracteres")
             
             # Gerar embedding
             embedding = self.model.encode(
                 text,
-                convert_to_numpy=True,
+                convert_to_numpy=NUMPY_AVAILABLE,
                 normalize_embeddings=True,  # Importante para similaridade coseno
                 batch_size=1
             )
@@ -254,15 +378,23 @@ class EmbeddingService:
                 self.stats['embeddings_created']
             )
             
-            # Salvar no cache
-            self.cache.set(text, self.model_name, embedding)
+            # Salvar no cache (se disponível e numpy disponível)
+            if self.cache and NUMPY_AVAILABLE and hasattr(embedding, 'shape'):
+                try:
+                    self.cache.set(text, self.model_name, embedding)
+                except Exception as cache_error:
+                    logger.warning(f"Erro ao salvar embedding no cache: {cache_error}")
             
-            logger.debug(f"Embedding gerado: {embedding.shape} em {embedding_time:.3f}s")
+            # Log dependendo do tipo de embedding retornado
+            if hasattr(embedding, 'shape'):
+                logger.debug(f"✅ Embedding gerado: {embedding.shape} em {embedding_time:.3f}s")
+            else:
+                logger.debug(f"✅ Embedding gerado: {len(embedding)} dims em {embedding_time:.3f}s")
             
             return embedding
             
         except Exception as e:
-            logger.error(f"Erro ao gerar embedding: {e}")
+            logger.error(f"❌ Erro ao gerar embedding para '{text[:50]}...': {e}")
             return None
     
     def embed_batch(self, texts: List[str], batch_size: Optional[int] = None) -> List[Optional[np.ndarray]]:
@@ -415,62 +547,193 @@ class EmbeddingService:
         return similarities
     
     def get_statistics(self) -> Dict[str, Any]:
-        """Retorna estatísticas do serviço"""
+        """Retorna estatísticas do serviço (com lazy loading)"""
         stats = dict(self.stats)
         stats.update({
             'model_loaded': self._model_loaded,
+            'load_attempted': self._load_attempted,
+            'load_failed': self._load_failed,
             'model_name': self.model_name,
             'device': self.device,
-            'cache_stats': self.cache.get_stats(),
+            'embeddings_enabled': getattr(self.config, 'EMBEDDINGS_ENABLED', False),
+            'sentence_transformers_available': _test_sentence_transformers(),
+            'numpy_available': NUMPY_AVAILABLE,
+            'cache_enabled': self.cache is not None,
             'available': self.is_available()
         })
+        
+        # Adicionar stats do cache se disponível
+        if self.cache:
+            try:
+                stats['cache_stats'] = self.cache.get_stats()
+            except Exception as e:
+                stats['cache_stats'] = {'error': str(e)}
+        else:
+            stats['cache_stats'] = None
         
         return stats
     
     def save_cache(self):
-        """Força salvamento do cache"""
-        self.cache._save_cache()
+        """Força salvamento do cache (se disponível)"""
+        if self.cache:
+            try:
+                self.cache._save_cache()
+                logger.info("✅ Cache de embeddings salvo")
+            except Exception as e:
+                logger.error(f"❌ Erro ao salvar cache: {e}")
+        else:
+            logger.warning("⚠️ Cache não disponível para salvamento")
     
     def clear_cache(self):
-        """Limpa cache de embeddings"""
-        self.cache._cache.clear()
-        self.cache._metadata.clear()
-        self.cache._save_cache()
-        logger.info("Cache de embeddings limpo")
+        """Limpa cache de embeddings (se disponível)"""
+        if self.cache:
+            try:
+                self.cache._cache.clear()
+                self.cache._metadata.clear()
+                self.cache._save_cache()
+                logger.info("✅ Cache de embeddings limpo")
+            except Exception as e:
+                logger.error(f"❌ Erro ao limpar cache: {e}")
+        else:
+            logger.warning("⚠️ Cache não disponível para limpeza")
 
 # Instância global (lazy loading)
 _embedding_service: Optional[EmbeddingService] = None
 
 def get_embedding_service() -> Optional[EmbeddingService]:
-    """Obtém instância global do serviço de embeddings"""
+    """
+    Obtém instância global do serviço de embeddings (lazy loading)
+    Não falha se dependências pesadas não estiverem disponíveis
+    """
     global _embedding_service
     
     if _embedding_service is None:
         try:
             from app_config import config
             _embedding_service = EmbeddingService(config)
+            logger.debug("✅ EmbeddingService instância global criada")
         except Exception as e:
-            logger.error(f"Erro ao inicializar serviço de embeddings: {e}")
+            logger.warning(f"⚠️ Erro ao inicializar serviço de embeddings: {e}")
             return None
     
     return _embedding_service
 
 def is_embeddings_available() -> bool:
-    """Verifica se embeddings estão disponíveis"""
-    service = get_embedding_service()
-    return service is not None and service.is_available()
+    """
+    Verifica se embeddings estão disponíveis (check leve)
+    Não carrega modelo pesado, apenas verifica configuração e bibliotecas
+    """
+    try:
+        service = get_embedding_service()
+        if service is None:
+            return False
+        return service.is_available()
+    except Exception as e:
+        logger.debug(f"Erro ao verificar disponibilidade de embeddings: {e}")
+        return False
 
-# Funções de conveniência
-def embed_text(text: str) -> Optional[np.ndarray]:
-    """Função de conveniência para gerar embedding"""
-    service = get_embedding_service()
-    if service:
-        return service.embed_text(text)
-    return None
+def get_embedding_stats() -> Dict[str, Any]:
+    """Obtém estatísticas do sistema de embeddings"""
+    try:
+        service = get_embedding_service()
+        if service:
+            return service.get_statistics()
+        else:
+            return {
+                'available': False,
+                'error': 'Service not initialized',
+                'sentence_transformers_available': _test_sentence_transformers(),
+                'numpy_available': NUMPY_AVAILABLE
+            }
+    except Exception as e:
+        return {
+            'available': False,
+            'error': str(e),
+            'sentence_transformers_available': False,
+            'numpy_available': NUMPY_AVAILABLE
+        }
 
-def embed_texts(texts: List[str]) -> List[Optional[np.ndarray]]:
-    """Função de conveniência para gerar embeddings em lote"""
-    service = get_embedding_service()
-    if service:
-        return service.embed_batch(texts)
-    return [None] * len(texts)
+# Funções de conveniência (com fallback robusto)
+def embed_text(text: str) -> Optional[Union[list, 'np.ndarray']]:
+    """
+    Função de conveniência para gerar embedding
+    Retorna None se embeddings não disponíveis
+    """
+    try:
+        service = get_embedding_service()
+        if service and service.is_available():
+            return service.embed_text(text)
+        else:
+            logger.debug("⚠️ Serviço de embeddings não disponível para embed_text")
+            return None
+    except Exception as e:
+        logger.warning(f"❌ Erro em embed_text: {e}")
+        return None
+
+def embed_texts_batch(texts: List[str]) -> List[Optional[Union[list, 'np.ndarray']]]:
+    """Função de conveniência para embedding em lote"""
+    try:
+        service = get_embedding_service()
+        if service and service.is_available():
+            return service.embed_batch(texts)
+        else:
+            logger.debug("⚠️ Serviço de embeddings não disponível para embed_texts_batch")
+            return [None] * len(texts)
+    except Exception as e:
+        logger.warning(f"❌ Erro em embed_texts_batch: {e}")
+        return [None] * len(texts)
+
+# Funções de diagnóstico
+def test_embeddings_system() -> Dict[str, Any]:
+    """
+    Testa sistema de embeddings e retorna diagnóstico completo
+    """
+    results = {
+        'timestamp': datetime.now().isoformat(),
+        'numpy_available': NUMPY_AVAILABLE,
+        'sentence_transformers_test': False,
+        'service_init': False,
+        'model_load': False,
+        'embed_test': False,
+        'error_details': []
+    }
+    
+    try:
+        # Teste 1: sentence_transformers
+        results['sentence_transformers_test'] = _test_sentence_transformers()
+        
+        # Teste 2: Inicialização do serviço
+        service = get_embedding_service()
+        if service:
+            results['service_init'] = True
+            
+            # Teste 3: Disponibilidade
+            if service.is_available():
+                results['service_available'] = True
+                
+                # Teste 4: Embedding simples
+                test_text = "teste de embedding simples"
+                embedding = service.embed_text(test_text)
+                if embedding is not None:
+                    results['embed_test'] = True
+                    if hasattr(embedding, 'shape'):
+                        results['embedding_shape'] = list(embedding.shape)
+                    else:
+                        results['embedding_length'] = len(embedding)
+        
+        # Teste 5: Estatísticas
+        results['stats'] = get_embedding_stats()
+        
+    except Exception as e:
+        results['error_details'].append(str(e))
+        logger.error(f"❌ Erro no teste do sistema de embeddings: {e}")
+    
+    return results
+
+# Aliases para compatibilidade
+def embed_texts(texts: List[str]) -> List[Optional[Union[list, 'np.ndarray']]]:
+    """Alias para embed_texts_batch (compatibilidade)"""
+    return embed_texts_batch(texts)
+
+# Log de inicialização
+logger.info("🧠 EmbeddingService com lazy loading inicializado")

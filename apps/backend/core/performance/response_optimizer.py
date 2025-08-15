@@ -1,25 +1,218 @@
 """
-Response Optimizer para melhorar tempos de resposta
-Objetivo: Otimizar processamento para <1.5s
+Response Optimizer para melhorar tempos de resposta - SOLUÇÃO DEFINITIVA
+Objetivo: Otimizar processamento para <1.5s + compressão + cache
 
 Data: 27 de Janeiro de 2025
-Fase: Otimizações de Usabilidade
+Fase: Otimizações de Performance e Security
 """
 
 import time
+import gzip
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
 import logging
 from functools import wraps
+from typing import Dict, Any, Optional
+from flask import Flask, request, g
+import threading
+from collections import defaultdict
 
 logger = logging.getLogger(__name__)
 
 class ResponseOptimizer:
-    """Otimizador de respostas para performance"""
+    """Otimizador de respostas para performance - VERSÃO DEFINITIVA"""
     
-    def __init__(self):
+    def __init__(self, app: Optional[Flask] = None):
         self.executor = ThreadPoolExecutor(max_workers=4)
         self.timeout_seconds = 10
+        self.compression_threshold = 1024  # Comprimir respostas > 1KB
+        self.cache_stats = defaultdict(int)
+        self.response_times = []
+        self.stats_lock = threading.Lock()
+        self.app = app
+        
+        if app:
+            self.init_app(app)
+    
+    def init_app(self, app: Flask):
+        """Inicializa otimizações com a aplicação Flask"""
+        self.app = app
+        
+        # Configurar middleware de otimização
+        app.before_request(self._before_request)
+        app.after_request(self._after_request)
+        app.after_request(self._add_cache_headers)
+        app.after_request(self._compress_response)
+        
+        logger.info("🚀 ResponseOptimizer DEFINITIVO inicializado")
+    
+    def _before_request(self):
+        """Processamento antes da request"""
+        g.start_time = time.time()
+        g.request_id = f"req_{int(time.time() * 1000)}"
+    
+    def _after_request(self, response):
+        """Processamento após a request - enhanced"""
+        if hasattr(g, 'start_time'):
+            response_time = (time.time() - g.start_time) * 1000
+            
+            # Registrar estatísticas
+            with self.stats_lock:
+                self.response_times.append(response_time)
+                # Manter apenas últimas 1000 medições
+                if len(self.response_times) > 1000:
+                    self.response_times = self.response_times[-1000:]
+            
+            # Adicionar header de tempo de resposta
+            response.headers['X-Response-Time'] = f"{response_time:.2f}ms"
+            
+            # Log de performance para requests lentas
+            if response_time > 1500:  # Meta: <1.5s
+                logger.warning(f"Request lenta: {request.path} - {response_time:.2f}ms")
+            else:
+                logger.debug(f"Request rápida: {request.path} - {response_time:.2f}ms")
+        
+        return response
+    
+    def _add_cache_headers(self, response):
+        """Adiciona headers de cache otimizados"""
+        path = request.path
+        
+        if path.endswith('/health'):
+            # Health checks - cache curto
+            response.cache_control.max_age = 30
+            response.cache_control.public = True
+        elif path.endswith('/personas'):
+            # Personas - cache médio
+            response.cache_control.max_age = 300  # 5 minutos
+            response.cache_control.public = True
+        elif path.endswith('/docs'):
+            # Documentação - cache longo
+            response.cache_control.max_age = 3600  # 1 hora
+            response.cache_control.public = True
+        elif '/chat' in path:
+            # Chat - sem cache
+            response.cache_control.no_cache = True
+            response.cache_control.no_store = True
+            response.cache_control.must_revalidate = True
+        else:
+            # Default - cache curto
+            response.cache_control.max_age = 60
+        
+        # ETag para cacheamento condicional
+        if response.status_code == 200 and '/chat' not in path:
+            response.add_etag()
+        
+        return response
+    
+    def _compress_response(self, response):
+        """Comprime resposta se apropriado"""
+        # Verificar se cliente aceita gzip
+        accept_encoding = request.headers.get('Accept-Encoding', '')
+        if 'gzip' not in accept_encoding.lower():
+            return response
+        
+        # Verificar se resposta é elegível para compressão
+        if (response.status_code != 200 or
+            response.headers.get('Content-Encoding') or
+            len(response.get_data()) < self.compression_threshold):
+            return response
+        
+        # Verificar content-type
+        content_type = response.headers.get('Content-Type', '')
+        compressible_types = [
+            'application/json',
+            'text/plain',
+            'text/html'
+        ]
+        
+        if not any(ct in content_type for ct in compressible_types):
+            return response
+        
+        try:
+            # Comprimir dados
+            original_data = response.get_data()
+            compressed_data = gzip.compress(original_data)
+            
+            # Verificar se compressão vale a pena (economiza pelo menos 10%)
+            compression_ratio = len(compressed_data) / len(original_data)
+            if compression_ratio > 0.9:
+                return response
+            
+            # Aplicar compressão
+            response.set_data(compressed_data)
+            response.headers['Content-Encoding'] = 'gzip'
+            response.headers['Content-Length'] = len(compressed_data)
+            response.headers['Vary'] = 'Accept-Encoding'
+            
+            # Registrar estatística
+            with self.stats_lock:
+                self.cache_stats['compression_applied'] += 1
+                self.cache_stats['bytes_saved'] += (len(original_data) - len(compressed_data))
+            
+            logger.debug(f"Resposta comprimida: {len(original_data)} -> {len(compressed_data)} bytes")
+            
+        except Exception as e:
+            logger.error(f"Erro na compressão: {e}")
+        
+        return response
+    
+    def get_performance_stats(self) -> Dict[str, Any]:
+        """Retorna estatísticas de performance"""
+        with self.stats_lock:
+            if not self.response_times:
+                return {
+                    "response_times": {
+                        "count": 0,
+                        "avg_ms": 0,
+                        "min_ms": 0,
+                        "max_ms": 0,
+                        "p95_ms": 0,
+                        "target_met": True
+                    },
+                    "compression": dict(self.cache_stats),
+                    "recommendations": []
+                }
+            
+            times = sorted(self.response_times)
+            count = len(times)
+            avg_time = sum(times) / count
+            p95_index = int(count * 0.95)
+            p95_time = times[p95_index] if p95_index < count else times[-1]
+            
+            # Verificar se meta de 1.5s está sendo atingida
+            slow_requests = sum(1 for t in times if t > 1500)
+            target_met = (slow_requests / count) < 0.05  # Menos de 5% lentas
+            
+            stats = {
+                "response_times": {
+                    "count": count,
+                    "avg_ms": round(avg_time, 2),
+                    "min_ms": round(min(times), 2),
+                    "max_ms": round(max(times), 2),
+                    "p95_ms": round(p95_time, 2),
+                    "slow_requests": slow_requests,
+                    "target_met": target_met
+                },
+                "compression": dict(self.cache_stats),
+                "recommendations": []
+            }
+            
+            # Gerar recomendações
+            if avg_time > 1000:
+                stats["recommendations"].append("Tempo médio alto - otimizar processamento")
+            
+            if p95_time > 2000:
+                stats["recommendations"].append("P95 acima da meta - investigar gargalos")
+            
+            if not target_met:
+                stats["recommendations"].append("Meta de 1.5s não atingida - revisar performance")
+            
+            compression_rate = self.cache_stats.get('compression_applied', 0) / max(count, 1)
+            if compression_rate < 0.3:
+                stats["recommendations"].append("Taxa de compressão baixa - verificar responses")
+            
+            return stats
         
     def measure_time(self, func):
         """Decorator para medir tempo de execução"""
@@ -162,5 +355,63 @@ class ResponseOptimizer:
         
         return result
 
+# Performance decorators aprimorados
+def cache_response(ttl_seconds: int = 300):
+    """Decorator para cache de resposta simples"""
+    def decorator(f):
+        cache = {}
+        cache_times = {}
+        
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            # Criar chave de cache
+            cache_key = f"{f.__name__}:{hash(str(args) + str(sorted(kwargs.items())))}"
+            
+            # Verificar cache
+            now = time.time()
+            if (cache_key in cache and 
+                cache_key in cache_times and
+                (now - cache_times[cache_key]) < ttl_seconds):
+                return cache[cache_key]
+            
+            # Executar função
+            result = f(*args, **kwargs)
+            
+            # Salvar no cache
+            cache[cache_key] = result
+            cache_times[cache_key] = now
+            
+            # Limpar cache antigo
+            if len(cache) > 100:
+                oldest_key = min(cache_times.keys(), key=cache_times.get)
+                cache.pop(oldest_key, None)
+                cache_times.pop(oldest_key, None)
+            
+            return result
+        
+        return wrapper
+    return decorator
+
+def init_performance_optimizations(app: Flask):
+    """Inicializa todas as otimizações de performance"""
+    global response_optimizer
+    response_optimizer = ResponseOptimizer(app)
+    logger.info("🚀 Otimizações de performance inicializadas na aplicação")
+
+def get_performance_summary() -> Dict[str, Any]:
+    """Retorna resumo completo de performance"""
+    global response_optimizer
+    return {
+        "response_optimization": response_optimizer.get_performance_stats(),
+        "timestamp": time.time()
+    }
+
 # Instância global do otimizador
 response_optimizer = ResponseOptimizer()
+
+# Exports para conveniência
+__all__ = [
+    'ResponseOptimizer', 'response_optimizer', 
+    'init_performance_optimizations', 'get_performance_summary',
+    'cache_response'
+]

@@ -1,21 +1,63 @@
 # -*- coding: utf-8 -*-
 """
-Semantic Search - Sistema de busca semântica para RAG médico
+Semantic Search - Sistema de busca semântica para RAG médico (LAZY LOADING)
 Integra embeddings, vector store e chunking médico com priorização
+Implementa lazy loading para evitar timeout em Cloud Run
 """
 
 import logging
 import hashlib
-from typing import List, Dict, Optional, Tuple, Any
+from typing import List, Dict, Optional, Tuple, Any, Union
 from datetime import datetime
 from dataclasses import dataclass
-import numpy as np
 
-from services.embedding_service import get_embedding_service, embed_text
-from services.vector_store import get_vector_store, VectorDocument
-from services.medical_chunking import MedicalChunk, ChunkPriority
+# Import apenas bibliotecas leves na inicialização
+try:
+    import numpy as np
+    NUMPY_AVAILABLE = True
+except ImportError:
+    NUMPY_AVAILABLE = False
+    # Fallback para lista Python
+    np = None
 
 logger = logging.getLogger(__name__)
+
+# Import obrigatório para SearchResult
+try:
+    from services.medical_chunking import MedicalChunk, ChunkPriority
+    MEDICAL_CHUNKING_AVAILABLE = True
+except ImportError:
+    # Criar dummy class para compatibilidade
+    class MedicalChunk:
+        def __init__(self, **kwargs):
+            for k, v in kwargs.items():
+                setattr(self, k, v)
+    
+    class ChunkPriority:
+        HIGH = 0.9
+        MEDIUM = 0.7
+        LOW = 0.5
+    
+    MEDICAL_CHUNKING_AVAILABLE = False
+
+# Lazy imports - só carregados quando necessário
+def _lazy_import_embedding_service():
+    """Import lazy do embedding service"""
+    try:
+        from services.embedding_service import get_embedding_service, embed_text, is_embeddings_available
+        return get_embedding_service, embed_text, is_embeddings_available
+    except ImportError as e:
+        logger.warning(f"⚠️ Embedding service não disponível: {e}")
+        return None, None, None
+
+def _lazy_import_vector_store():
+    """Import lazy do vector store"""
+    try:
+        from services.vector_store import get_vector_store, VectorDocument
+        return get_vector_store, VectorDocument
+    except ImportError as e:
+        logger.warning(f"⚠️ Vector store não disponível: {e}")
+        return None, None
 
 @dataclass
 class SearchResult:
@@ -46,8 +88,14 @@ class SemanticSearchEngine:
     
     def __init__(self, config):
         self.config = config
-        self.embedding_service = get_embedding_service()
-        self.vector_store = get_vector_store()
+        
+        # Lazy loading dos serviços
+        get_embedding_service_func, embed_text_func, is_embeddings_available_func = _lazy_import_embedding_service()
+        get_vector_store_func, VectorDocument = _lazy_import_vector_store()
+        
+        self.embedding_service = get_embedding_service_func() if get_embedding_service_func else None
+        self.vector_store = get_vector_store_func() if get_vector_store_func else None
+        self.VectorDocument = VectorDocument
         
         # Pesos para diferentes tipos de conteúdo médico
         self.content_weights = config.CONTENT_WEIGHTS
@@ -118,7 +166,7 @@ class SemanticSearchEngine:
                 return False
             
             # Criar documento vetorial
-            doc = VectorDocument(
+            doc = self.VectorDocument(
                 id=chunk_id,
                 text=chunk.content,
                 embedding=embedding,
@@ -183,7 +231,7 @@ class SemanticSearchEngine:
                 if embedding is not None:
                     chunk_id = self._generate_chunk_id(chunk.content, source_file)
                     
-                    doc = VectorDocument(
+                    doc = self.VectorDocument(
                         id=chunk_id,
                         text=chunk.content,
                         embedding=embedding,
@@ -391,7 +439,12 @@ class SemanticSearchEngine:
         context = "\n\n".join(context_parts)
         
         # Adicionar metadata de busca
-        metadata = f"\n\n[Contexto baseado em {len(results)} fontes relevantes - Score médio: {np.mean([r.score for r in results]):.2f}]"
+        if NUMPY_AVAILABLE and np:
+            avg_score = np.mean([r.score for r in results])
+        else:
+            avg_score = sum(r.score for r in results) / len(results)
+        
+        metadata = f"\n\n[Contexto baseado em {len(results)} fontes relevantes - Score médio: {avg_score:.2f}]"
         
         return context + metadata
     
