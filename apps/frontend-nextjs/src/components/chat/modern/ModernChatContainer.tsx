@@ -1,6 +1,6 @@
 'use client';
 
-import React, { memo } from 'react';
+import React, { memo, useRef, useState, useEffect } from 'react';
 import { ChatMessage, Persona } from '@/services/api';
 import { modernChatTheme, getCSSVariables } from '@/config/modernTheme';
 
@@ -10,6 +10,8 @@ import ChatEmptyState from './ChatEmptyState';
 import ChatMessagesArea from './ChatMessagesArea';
 import ModernChatInput from './ModernChatInput';
 import ExportChatModal from './ExportChatModal';
+import MessageBubble from './MessageBubble';
+import SmartIndicators from './SmartIndicators';
 
 interface ModernChatContainerProps {
   // Personas e seleção
@@ -72,7 +74,11 @@ const ModernChatContainer = memo(function ModernChatContainer({
   onSuggestionClick
 }: ModernChatContainerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const [showExportModal, setShowExportModal] = useState(false);
+  
+  // Obter persona atual
+  const currentPersona = selectedPersona ? personas[selectedPersona] : null;
 
   // OTIMIZAÇÃO: Aplicar CSS variables do tema de forma simplificada
   useEffect(() => {

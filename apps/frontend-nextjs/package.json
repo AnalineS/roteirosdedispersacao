@@ -23,13 +23,14 @@
     "test:a11y": "jest --testPathPattern=accessibility --runInBand",
     "test:personas": "jest --testPathPattern=personas",
     "test:consistency": "jest --testPathPattern=consistency",
-    "qa:run": "ts-node scripts/runQA.ts",
+    "qa:run": "node scripts/runQA.js",
     "qa:full": "npm run qa:run -- --suite=full",
     "qa:targeted": "npm run qa:run -- --types=clinical_accuracy,educational_value",
-    "qa:report": "ts-node scripts/generateQAReport.ts",
+    "qa:report": "node scripts/generateQAReport.js",
     "qa:validate-deploy": "npm run qa:run -- --validate-deploy",
-    "qa:monitor": "ts-node scripts/startQAMonitoring.ts",
+    "qa:monitor": "node scripts/startQAMonitoring.js",
     "qa:dashboard": "next dev --port 3001 -- --qa-dashboard",
+    "generate:icons": "node scripts/generatePWAIcons.js",
     "analyze:bundle": "ANALYZE=true npm run build",
     "audit:security": "npm audit --audit-level moderate",
     "audit:licenses": "license-checker --summary",
@@ -39,11 +40,13 @@
     "prepare": "echo 'Skipping husky install in subproject'"
   },
   "dependencies": {
+    "@next/third-parties": "^15.4.6",
     "firebase": "^10.14.0",
     "jspdf": "^2.5.2",
     "next": "^14.2.18",
     "react": "^18.3.0",
-    "react-dom": "^18.3.0"
+    "react-dom": "^18.3.0",
+    "react-ga4": "^2.1.0"
   },
   "devDependencies": {
     "@babel/plugin-transform-private-methods": "^7.27.1",
@@ -64,6 +67,7 @@
     "license-checker": "^25.0.1",
     "lint-staged": "^15.0.0",
     "prettier": "^3.0.0",
+    "sharp": "^0.34.3",
     "string-replace-loader": "^3.2.0",
     "ts-jest": "^29.1.0",
     "ts-node": "^10.9.0",

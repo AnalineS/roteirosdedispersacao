@@ -224,18 +224,12 @@ export function useChat(options: UseChatOptions = {}) {
           }
         };
 
-        setMessages(prev => {
-          const finalMessages = [...prev, assistantMessage];
-          messagesRef.current = finalMessages;
-          saveToStorage(finalMessages);
-          
-          // Chamar callback se fornecido
-          if (onMessageReceived) {
-            onMessageReceived(assistantMessage);
-          }
-          
-          return finalMessages;
-        });
+        addMessage(assistantMessage);
+        
+        // Chamar callback se fornecido
+        if (onMessageReceived) {
+          onMessageReceived(assistantMessage);
+        }
         
         setLoading(false);
         return;
@@ -250,18 +244,12 @@ export function useChat(options: UseChatOptions = {}) {
         persona: response.persona
       };
 
-      setMessages(prev => {
-        const finalMessages = [...prev, assistantMessage];
-        messagesRef.current = finalMessages;
-        saveToStorage(finalMessages);
-        
-        // Chamar callback se fornecido
-        if (onMessageReceived) {
-          onMessageReceived(assistantMessage);
-        }
-        
-        return finalMessages;
-      });
+      addMessage(assistantMessage);
+      
+      // Chamar callback se fornecido
+      if (onMessageReceived) {
+        onMessageReceived(assistantMessage);
+      }
       setLoading(false);
 
     } catch (err) {
@@ -286,18 +274,15 @@ export function useChat(options: UseChatOptions = {}) {
     if (retryCount >= maxRetries) {
       setLoading(false);
     }
-  }, [saveToStorage, analyzeSentiment, enableSentimentAnalysis]);
+  }, [analyzeSentiment, enableSentimentAnalysis, addMessage, onMessageReceived]);
 
-  const clearMessages = useCallback(() => {
-    setMessages([]);
-    if (persistToLocalStorage && typeof window !== 'undefined') {
-      localStorage.removeItem(storageKey);
-    }
+  const handleClearMessages = useCallback(() => {
+    clearMessages();
     // Limpar histórico de sentimento também
     if (enableSentimentAnalysis) {
       clearSentimentHistory();
     }
-  }, [persistToLocalStorage, storageKey, enableSentimentAnalysis, clearSentimentHistory]);
+  }, [clearMessages, enableSentimentAnalysis, clearSentimentHistory]);
 
   const getMessagesForPersona = useCallback((personaId: string) => {
     return messagesRef.current.filter(msg => msg.persona === personaId);
@@ -308,7 +293,7 @@ export function useChat(options: UseChatOptions = {}) {
     loading,
     error,
     sendMessage,
-    clearMessages,
+    clearMessages: handleClearMessages,
     getMessagesForPersona,
     // Análise de sentimento
     currentSentiment,

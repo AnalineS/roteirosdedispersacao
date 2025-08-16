@@ -1,379 +1,274 @@
 /**
- * useAuth Hook - Extended Authentication Utilities
- * Extensões específicas do sistema para o contexto de autenticação
- * Integra com os hooks existentes de perfil e conversas
+ * Hook de Autenticação para Sistema 3 Níveis
  */
 
-'use client';
+import { useState, useEffect, useCallback } from 'react';
+import { authService } from '@/services/auth';
+import {
+  UserProfile,
+  UserRole,
+  AuthState,
+  LoginOptions,
+  RegistrationData,
+  USER_LEVEL_BENEFITS,
+} from '@/types/auth';
 
-import { useCallback, useEffect, useState } from 'react';
-import { useAuth as useAuthContext } from '@/contexts/AuthContext';
-import { UserProfile } from './useUserProfile';
-import { FEATURES } from '@/lib/firebase/config';
+export function useAuth() {
+  const [authState, setAuthState] = useState<AuthState>({
+    user: null,
+    isLoading: true,
+    isAuthenticated: false,
+    error: null,
+  });
 
-// ============================================
-// EXTENDED AUTH UTILITIES
-// ============================================
-
-export interface ExtendedAuthUtils {
-  // Persona recommendations
-  getRecommendedPersona: () => string;
-  canAccessPersona: (personaId: string) => boolean;
-  
-  // Feature access control
-  canAccessAdvancedCalculator: () => boolean;
-  canAccessConversationHistory: () => boolean;
-  canAccessCertificates: () => boolean;
-  canExportData: () => boolean;
-  canAccessAnalytics: () => boolean;
-  
-  // Soft authentication prompts
-  promptAuthForFeature: (feature: string, reason?: string) => void;
-  shouldShowUpgradePrompt: (action: string) => boolean;
-  
-  // Migration utilities
-  needsDataMigration: () => boolean;
-  canMigrateData: () => boolean;
-  
-  // User experience
-  getWelcomeMessage: () => string;
-  getUserDisplayName: () => string;
-  getSessionType: () => 'guest' | 'temporary' | 'registered' | 'premium';
-  
-  // Feature flags specific to user type
-  features: {
-    persistentConversations: boolean;
-    cloudSync: boolean;
-    advancedAnalytics: boolean;
-    certificateGeneration: boolean;
-    emailReports: boolean;
-    customization: boolean;
-    crossDeviceAccess: boolean;
-  };
-}
-
-// ============================================
-// MAIN HOOK
-// ============================================
-
-export function useAuth(): ReturnType<typeof useAuthContext> & ExtendedAuthUtils {
-  const authContext = useAuthContext();
-  const [hasLocalData, setHasLocalData] = useState(false);
-
-  // Check for local data that can be migrated
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const localProfile = localStorage.getItem('userProfile');
-      const localConversations = localStorage.getItem('conversation-history');
-      setHasLocalData(!!(localProfile || localConversations));
+    const unsubscribe = authService.onAuthStateChange(setAuthState);
+    return unsubscribe;
+  }, []);
+
+  // ============================================================================
+  // AUTHENTICATION ACTIONS
+  // ============================================================================
+
+  const loginWithGoogle = useCallback(async (options?: LoginOptions) => {
+    setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
+    
+    try {
+      const user = await authService.loginWithGoogle(options);
+      return user;
+    } catch (error) {
+      setAuthState(prev => ({
+        ...prev,
+        isLoading: false,
+        error: error instanceof Error ? error.message : 'Erro no login',
+      }));
+      throw error;
     }
   }, []);
 
-  // ============================================
-  // PERSONA MANAGEMENT
-  // ============================================
+  const loginWithEmail = useCallback(async (email: string, password: string) => {
+    setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
+    
+    try {
+      const user = await authService.loginWithEmail(email, password);
+      return user;
+    } catch (error) {
+      setAuthState(prev => ({
+        ...prev,
+        isLoading: false,
+        error: error instanceof Error ? error.message : 'Erro no login',
+      }));
+      throw error;
+    }
+  }, []);
 
-  const getRecommendedPersona = useCallback((): string => {
-    // Se tem perfil Firebase, usar lógica avançada
-    if (authContext.profile) {
-      const { type, focus, history } = authContext.profile;
+  const register = useCallback(async (data: RegistrationData) => {
+    setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
+    
+    try {
+      const user = await authService.registerWithEmail(data);
+      return user;
+    } catch (error) {
+      setAuthState(prev => ({
+        ...prev,
+        isLoading: false,
+        error: error instanceof Error ? error.message : 'Erro no registro',
+      }));
+      throw error;
+    }
+  }, []);
+
+  const logout = useCallback(async () => {
+    setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
+    
+    try {
+      await authService.logout();
+    } catch (error) {
+      setAuthState(prev => ({
+        ...prev,
+        isLoading: false,
+        error: error instanceof Error ? error.message : 'Erro no logout',
+      }));
+      throw error;
+    }
+  }, []);
+
+  // ============================================================================
+  // USER MANAGEMENT
+  // ============================================================================
+
+  const updateProfile = useCallback(async (updates: Partial<UserProfile>) => {
+    if (!authState.user) {
+      throw new Error('Usuário não está logado');
+    }
+
+    try {
+      await authService.updateUserProfile(authState.user.uid, updates);
+    } catch (error) {
+      throw error;
+    }
+  }, [authState.user]);
+
+  const upgradeRole = useCallback(async (newRole: UserRole) => {
+    if (!authState.user) {
+      throw new Error('Usuário não está logado');
+    }
+
+    try {
+      await authService.upgradeUserRole(authState.user.uid, newRole);
+    } catch (error) {
+      throw error;
+    }
+  }, [authState.user]);
+
+  // ============================================================================
+  // PERMISSION HELPERS
+  // ============================================================================
+
+  const hasPermission = useCallback((permission: keyof UserProfile['permissions']) => {
+    return authService.hasPermission(authState.user, permission);
+  }, [authState.user]);
+
+  const canAccessFeature = useCallback((feature: string) => {
+    return authService.canAccessFeature(authState.user, feature);
+  }, [authState.user]);
+
+  const hasRole = useCallback((role: UserRole) => {
+    return authState.user?.role === role;
+  }, [authState.user]);
+
+  const isVisitor = useCallback(() => {
+    return !authState.isAuthenticated || authState.user?.role === 'visitor';
+  }, [authState.isAuthenticated, authState.user]);
+
+  const isRegistered = useCallback(() => {
+    return authState.user?.role === 'registered' || authState.user?.role === 'admin';
+  }, [authState.user]);
+
+  const isAdmin = useCallback(() => {
+    return authState.user?.role === 'admin';
+  }, [authState.user]);
+
+  // ============================================================================
+  // USAGE LIMITS
+  // ============================================================================
+
+  const checkUsageLimit = useCallback((action: 'conversation' | 'module' | 'certificate') => {
+    if (!authState.user) {
+      // Limites para visitantes
+      return {
+        canPerform: true, // Permitir ação mas com limitação
+        remaining: 10,
+        limit: 10,
+        message: 'Cadastre-se para ter acesso ilimitado',
+      };
+    }
+
+    const permissions = authState.user.permissions;
+    const usage = authState.user.usage;
+
+    switch (action) {
+      case 'conversation':
+        const dailyConversations = 0; // Buscar do histórico diário
+        return {
+          canPerform: dailyConversations < permissions.maxConversationsPerDay,
+          remaining: permissions.maxConversationsPerDay - dailyConversations,
+          limit: permissions.maxConversationsPerDay,
+          message: permissions.maxConversationsPerDay === 999 ? 'Ilimitado' : undefined,
+        };
       
-      if (history?.lastPersona && history.conversationCount > 2) {
-        return history.lastPersona;
-      }
-
-      if (type === 'professional' || type === 'student') {
-        return focus === 'technical' ? 'dr_gasnelio' : 'ga';
-      } else {
-        return focus === 'technical' ? 'dr_gasnelio' : 'ga';
-      }
-    }
-
-    // Fallback para localStorage (compatibilidade)
-    if (typeof window !== 'undefined') {
-      const localProfile = localStorage.getItem('userProfile');
-      if (localProfile) {
-        try {
-          const profile = JSON.parse(localProfile).profile as UserProfile;
-          if (profile.type === 'professional' && profile.focus === 'technical') {
-            return 'dr_gasnelio';
-          }
-        } catch (error) {
-          console.warn('Erro ao ler perfil local:', error);
-        }
-      }
-    }
-
-    return 'ga'; // Default empático
-  }, [authContext.profile]);
-
-  const canAccessPersona = useCallback((personaId: string): boolean => {
-    // Ambas as personas sempre disponíveis no sistema "soft auth"
-    return personaId === 'dr_gasnelio' || personaId === 'ga';
-  }, []);
-
-  // ============================================
-  // FEATURE ACCESS CONTROL
-  // ============================================
-
-  const canAccessAdvancedCalculator = useCallback((): boolean => {
-    const accessLevel = authContext.getAccessLevel();
-    // Calculadora básica sempre disponível, avançada para autenticados
-    return accessLevel !== 'anonymous' || !FEATURES.AUTH_ENABLED;
-  }, [authContext]);
-
-  const canAccessConversationHistory = useCallback((): boolean => {
-    // Histórico local sempre disponível, cloud apenas para autenticados
-    return true;
-  }, []);
-
-  const canAccessCertificates = useCallback((): boolean => {
-    const accessLevel = authContext.getAccessLevel();
-    // Certificados apenas para usuários com perfil completo
-    return accessLevel === 'premium' || !FEATURES.AUTH_ENABLED;
-  }, [authContext]);
-
-  const canExportData = useCallback((): boolean => {
-    const accessLevel = authContext.getAccessLevel();
-    // Export básico sempre, avançado para autenticados
-    return accessLevel !== 'anonymous' || !FEATURES.AUTH_ENABLED;
-  }, [authContext]);
-
-  const canAccessAnalytics = useCallback((): boolean => {
-    const accessLevel = authContext.getAccessLevel();
-    // Analytics apenas para autenticados
-    return accessLevel !== 'anonymous';
-  }, [authContext]);
-
-  // ============================================
-  // SOFT AUTHENTICATION PROMPTS
-  // ============================================
-
-  const promptAuthForFeature = useCallback((feature: string, reason?: string): void => {
-    if (!authContext.isAuthenticated && FEATURES.AUTH_ENABLED) {
-      // Implementar lógica de prompt suave
-      console.log(`Sugestão de login para: ${feature}`, reason);
-      // Aqui pode ser implementado um modal ou toast
-    }
-  }, [authContext.isAuthenticated]);
-
-  const shouldShowUpgradePrompt = useCallback((action: string): boolean => {
-    if (!FEATURES.AUTH_ENABLED) return false;
-    
-    const accessLevel = authContext.getAccessLevel();
-    
-    // Definir ações que requerem upgrade
-    const premiumActions = [
-      'export_advanced_report',
-      'access_analytics',
-      'generate_certificate',
-      'cloud_sync'
-    ];
-    
-    return accessLevel === 'anonymous' && premiumActions.includes(action);
-  }, [authContext]);
-
-  // ============================================
-  // MIGRATION UTILITIES
-  // ============================================
-
-  const needsDataMigration = useCallback((): boolean => {
-    return authContext.isAuthenticated && hasLocalData && FEATURES.FIRESTORE_ENABLED;
-  }, [authContext.isAuthenticated, hasLocalData]);
-
-  const canMigrateData = useCallback((): boolean => {
-    return authContext.isAuthenticated && hasLocalData && FEATURES.FIRESTORE_ENABLED;
-  }, [authContext.isAuthenticated, hasLocalData]);
-
-  // ============================================
-  // USER EXPERIENCE
-  // ============================================
-
-  const getWelcomeMessage = useCallback((): string => {
-    const displayName = getUserDisplayName();
-    const accessLevel = authContext.getAccessLevel();
-
-    switch (accessLevel) {
-      case 'premium':
-        return `Bem-vindo de volta, ${displayName}! 👨‍⚕️`;
-      case 'authenticated':
-        return `Olá, ${displayName}! 🎓`;
-      case 'anonymous':
-        return 'Bem-vindo à Plataforma Educacional! 📚';
-      default:
-        return 'Bem-vindo! 👋';
-    }
-  }, [authContext]);
-
-  const getUserDisplayName = useCallback((): string => {
-    if (authContext.profile?.displayName) {
-      return authContext.profile.displayName;
-    }
-    
-    if (authContext.user?.displayName) {
-      return authContext.user.displayName;
-    }
-
-    if (authContext.user?.email) {
-      return authContext.user.email.split('@')[0];
-    }
-
-    // Tentar localStorage como fallback
-    if (typeof window !== 'undefined') {
-      const localProfile = localStorage.getItem('userProfile');
-      if (localProfile) {
-        try {
-          const profile = JSON.parse(localProfile).profile as UserProfile;
-          if (profile.type === 'professional') return 'Dr.(a) Usuário';
-          if (profile.type === 'student') return 'Estudante';
-          if (profile.type === 'patient') return 'Paciente';
-          if (profile.type === 'caregiver') return 'Cuidador';
-        } catch (error) {
-          console.warn('Erro ao ler perfil local para nome:', error);
-        }
-      }
-    }
-
-    return 'Visitante';
-  }, [authContext.profile, authContext.user]);
-
-  const getSessionType = useCallback((): 'guest' | 'temporary' | 'registered' | 'premium' => {
-    const accessLevel = authContext.getAccessLevel();
-    
-    if (accessLevel === 'premium') return 'premium';
-    if (accessLevel === 'authenticated') return 'registered';
-    if (authContext.isAnonymous) return 'temporary';
-    return 'guest';
-  }, [authContext]);
-
-  // ============================================
-  // FEATURE FLAGS
-  // ============================================
-
-  const features = {
-    persistentConversations: authContext.isFeatureAvailable('conversations'),
-    cloudSync: authContext.isAuthenticated && FEATURES.FIRESTORE_ENABLED,
-    advancedAnalytics: authContext.isFeatureAvailable('analytics'),
-    certificateGeneration: canAccessCertificates(),
-    emailReports: authContext.isAuthenticated && !!authContext.profile?.preferences?.emailUpdates,
-    customization: authContext.isAuthenticated || !FEATURES.AUTH_ENABLED,
-    crossDeviceAccess: authContext.isAuthenticated && FEATURES.FIRESTORE_ENABLED
-  };
-
-  // ============================================
-  // RETURN EXTENDED CONTEXT
-  // ============================================
-
-  return {
-    ...authContext,
-    
-    // Persona utilities
-    getRecommendedPersona,
-    canAccessPersona,
-    
-    // Feature access
-    canAccessAdvancedCalculator,
-    canAccessConversationHistory,
-    canAccessCertificates,
-    canExportData,
-    canAccessAnalytics,
-    
-    // Soft auth
-    promptAuthForFeature,
-    shouldShowUpgradePrompt,
-    
-    // Migration
-    needsDataMigration,
-    canMigrateData,
-    
-    // UX
-    getWelcomeMessage,
-    getUserDisplayName,
-    getSessionType,
-    
-    // Features
-    features
-  };
-}
-
-// ============================================
-// UTILITY HOOKS
-// ============================================
-
-/**
- * Hook para verificar se uma funcionalidade específica está disponível
- */
-export function useFeatureAccess(feature: string): {
-  isAvailable: boolean;
-  reason?: string;
-  canUpgrade: boolean;
-} {
-  const auth = useAuth();
-
-  const getFeatureAccess = useCallback(() => {
-    switch (feature) {
-      case 'advanced_calculator':
+      case 'module':
+        const dailyModules = 0; // Buscar do histórico diário
         return {
-          isAvailable: auth.canAccessAdvancedCalculator(),
-          reason: !auth.isAuthenticated ? 'Faça login para acessar a calculadora avançada' : undefined,
-          canUpgrade: !auth.isAuthenticated
+          canPerform: dailyModules < permissions.maxModulesPerDay,
+          remaining: permissions.maxModulesPerDay - dailyModules,
+          limit: permissions.maxModulesPerDay,
+          message: permissions.maxModulesPerDay === 999 ? 'Ilimitado' : undefined,
         };
-        
-      case 'conversation_history':
+      
+      case 'certificate':
+        const monthlyCertificates = 0; // Buscar do histórico mensal
         return {
-          isAvailable: auth.canAccessConversationHistory(),
-          reason: undefined,
-          canUpgrade: false
+          canPerform: permissions.canExportCertificates && 
+                     monthlyCertificates < permissions.maxCertificatesPerMonth,
+          remaining: permissions.maxCertificatesPerMonth - monthlyCertificates,
+          limit: permissions.maxCertificatesPerMonth,
+          message: permissions.maxCertificatesPerMonth === 999 ? 'Ilimitado' : 
+                  !permissions.canExportCertificates ? 'Cadastre-se para acessar certificados' : undefined,
         };
-        
-      case 'certificates':
-        return {
-          isAvailable: auth.canAccessCertificates(),
-          reason: !auth.isAuthenticated ? 'Crie uma conta para gerar certificados' : undefined,
-          canUpgrade: !auth.isAuthenticated
-        };
-        
-      case 'analytics':
-        return {
-          isAvailable: auth.canAccessAnalytics(),
-          reason: !auth.isAuthenticated ? 'Analytics disponível apenas para usuários registrados' : undefined,
-          canUpgrade: !auth.isAuthenticated
-        };
-        
+      
       default:
         return {
-          isAvailable: true,
-          canUpgrade: false
+          canPerform: true,
+          remaining: 999,
+          limit: 999,
         };
     }
-  }, [auth, feature]);
+  }, [authState.user]);
 
-  return getFeatureAccess();
-}
+  // ============================================================================
+  // CLEAR ERROR
+  // ============================================================================
 
-/**
- * Hook para gerenciar prompts de autenticação suave
- */
-export function useSoftAuthPrompt() {
-  const auth = useAuth();
-  const [promptHistory, setPromptHistory] = useState<string[]>([]);
-
-  const showPrompt = useCallback((feature: string, reason?: string) => {
-    if (!promptHistory.includes(feature)) {
-      auth.promptAuthForFeature(feature, reason);
-      setPromptHistory(prev => [...prev, feature]);
-    }
-  }, [auth, promptHistory]);
-
-  const resetPromptHistory = useCallback(() => {
-    setPromptHistory([]);
+  const clearError = useCallback(() => {
+    setAuthState(prev => ({ ...prev, error: null }));
   }, []);
 
   return {
-    showPrompt,
-    resetPromptHistory,
-    hasShownPrompt: (feature: string) => promptHistory.includes(feature)
+    // State
+    user: authState.user,
+    isLoading: authState.isLoading,
+    isAuthenticated: authState.isAuthenticated,
+    error: authState.error,
+    
+    // Actions
+    loginWithGoogle,
+    loginWithEmail,
+    register,
+    logout,
+    updateProfile,
+    upgradeRole,
+    clearError,
+    
+    // Permissions
+    hasPermission,
+    canAccessFeature,
+    hasRole,
+    isVisitor,
+    isRegistered,
+    isAdmin,
+    
+    // Usage
+    checkUsageLimit,
+    
+    // Helpers
+    getUserBenefits: () => authState.user ? USER_LEVEL_BENEFITS[authState.user.role] : USER_LEVEL_BENEFITS.visitor,
+    getUserRole: () => authState.user?.role || 'visitor',
   };
 }
 
-export default useAuth;
+// Hook específico para componentes que precisam de autenticação
+export function useRequireAuth(requiredRole?: UserRole) {
+  const auth = useAuth();
+  
+  useEffect(() => {
+    if (!auth.isLoading && !auth.isAuthenticated && requiredRole && requiredRole !== 'visitor') {
+      // Redirecionar para login ou mostrar modal
+      console.warn(`Acesso negado: requer role ${requiredRole}`);
+    }
+  }, [auth.isLoading, auth.isAuthenticated, requiredRole]);
+
+  return auth;
+}
+
+// Hook para verificar permissões específicas
+export function usePermission(permission: keyof UserProfile['permissions']) {
+  const { hasPermission } = useAuth();
+  return hasPermission(permission);
+}
+
+// Hook para limites de uso
+export function useUsageLimit(action: 'conversation' | 'module' | 'certificate') {
+  const { checkUsageLimit } = useAuth();
+  return checkUsageLimit(action);
+}

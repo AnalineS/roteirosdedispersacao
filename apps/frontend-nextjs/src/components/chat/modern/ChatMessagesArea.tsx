@@ -116,10 +116,12 @@ const ChatMessagesArea = memo(function ChatMessagesArea({
     <div className="chat-messages-area" ref={scrollAreaRef}>
       {/* Indicadores IA */}
       <SmartIndicators
-        currentSentiment={currentSentiment}
-        knowledgeStats={knowledgeStats}
-        isSearchingKnowledge={isSearchingKnowledge}
-        fallbackState={fallbackState}
+        sentiment={currentSentiment}
+        knowledge={{
+          isSearching: isSearchingKnowledge || false,
+          stats: knowledgeStats
+        }}
+        fallback={fallbackState}
         isMobile={isMobile}
       />
 
@@ -132,10 +134,13 @@ const ChatMessagesArea = memo(function ChatMessagesArea({
             <MessageBubble
               key={`${message.timestamp}-${index}`}
               message={message}
-              persona={persona}
+              persona={persona || undefined}
+              personaId={selectedPersona || 'gasnelio'}
+              isUser={message.role === 'user'}
+              isMobile={isMobile}
               isLast={index === messages.length - 1}
-              showAvatar={true}
-              showTimestamp={true}
+              previousMessage={index > 0 ? messages[index - 1] : undefined}
+              enableFeedback={message.role === 'assistant'}
             />
           );
         })}

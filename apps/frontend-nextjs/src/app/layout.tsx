@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from 'next'
 import ErrorBoundary from '@/components/ErrorBoundary'
 import OfflineIndicator from '@/components/OfflineIndicator'
 import GoogleAnalytics from '@/components/GoogleAnalytics'
+import { AnalyticsProvider } from '@/components/analytics/AnalyticsProvider'
+import PWAManager from '@/components/pwa/PWAManager'
 import AuthProviderWrapper from '@/components/auth/AuthProviderWrapper'
 import SITE_CONFIG from '@/lib/config'
 import '@/styles/globals.css'
@@ -27,7 +29,14 @@ export default function RootLayout({
     <html lang="pt-BR">
       <head>
         <link rel="icon" type="image/png" href="/favicon.png" />
-        <link rel="apple-touch-icon" href="/icon-192.png" />
+        <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#2563eb" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="PQT-U Educacional" />
+        <meta name="mobile-web-app-capable" content="yes" />
       </head>
       <body>
         {/* No JavaScript fallback */}
@@ -86,11 +95,16 @@ export default function RootLayout({
         
         <main id="main-content">
           <AuthProviderWrapper>
-            <ErrorBoundary>
-              {children}
-            </ErrorBoundary>
+            <AnalyticsProvider>
+              <ErrorBoundary>
+                {children}
+              </ErrorBoundary>
+            </AnalyticsProvider>
           </AuthProviderWrapper>
         </main>
+        
+        {/* PWA Manager - Service Worker desabilitado conforme solicitado */}
+        <PWAManager enableServiceWorker={false} />
         
         {/* Loading screen removal script */}
         <script

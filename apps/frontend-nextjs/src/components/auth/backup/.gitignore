@@ -1,0 +1,3 @@
+# Excluir backup do TypeScript check
+*.ts
+*.tsx

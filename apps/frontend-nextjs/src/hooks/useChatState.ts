@@ -109,15 +109,18 @@ export function useChatState() {
   }, []);
 
   // Computed properties memoizadas
+  const canRetry = state.retryCount < 3;
+  const timeSinceLastCall = state.lastApiCallTime 
+    ? Date.now() - state.lastApiCallTime 
+    : null;
+  
   const computedState = useMemo(() => ({
-    canRetry: state.retryCount < 3,
+    canRetry,
     shouldShowError: state.error !== null && !state.loading,
-    shouldShowRetry: state.error !== null && state.canRetry,
-    timeSinceLastCall: state.lastApiCallTime 
-      ? Date.now() - state.lastApiCallTime 
-      : null,
-    isRateLimited: state.timeSinceLastCall !== null && state.timeSinceLastCall < 1000
-  }), [state]);
+    shouldShowRetry: state.error !== null && canRetry,
+    timeSinceLastCall,
+    isRateLimited: timeSinceLastCall !== null && timeSinceLastCall < 1000
+  }), [state, canRetry, timeSinceLastCall]);
 
   return {
     // State
