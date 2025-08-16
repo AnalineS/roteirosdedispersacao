@@ -736,17 +736,7 @@ export class OptimizedStorage {
 // EXPORTS
 // ============================================
 
-export {
-  UniversalCache,
-  memoize,
-  debounce,
-  throttle,
-  LazyImageLoader,
-  ResourcePreloader,
-  PerformanceMonitor,
-  RequestBatcher,
-  OptimizedStorage
-};
+// Classes and functions are already exported inline above
 
 // Instância global para uso fácil
 export const globalCache = UniversalCache.getInstance('global');

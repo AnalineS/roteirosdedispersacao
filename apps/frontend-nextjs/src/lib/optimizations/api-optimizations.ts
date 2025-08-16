@@ -239,7 +239,7 @@ export class RequestCache {
 // OTIMIZADOR DE FETCH
 // ============================================
 
-interface OptimizedFetchOptions extends RequestInit {
+interface OptimizedFetchOptions extends Omit<RequestInit, 'cache'> {
   timeout?: number;
   retries?: number;
   cache?: boolean;
@@ -457,13 +457,7 @@ export class APIBatcher {
 // EXPORTS
 // ============================================
 
-export {
-  CircuitBreaker,
-  SmartRetry,
-  RequestCache,
-  OptimizedFetch,
-  APIBatcher
-};
+// Classes are already exported inline above
 
 // Instâncias globais
 export const apiCache = RequestCache;
