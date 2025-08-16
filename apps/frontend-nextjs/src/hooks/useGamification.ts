@@ -59,13 +59,8 @@ export function useGamification(): GamificationHook {
   const auth = useAuth();
   
   // Uso opcional do sistema de notificações
-  let notificationSystem: any = null;
-  try {
-    notificationSystem = useNotifications();
-  } catch {
-    // Hook usado fora do NotificationProvider
-    console.warn('useGamification usado fora do NotificationProvider - notificações desabilitadas');
-  }
+  // Note: Hook must be called unconditionally - the provider will handle errors
+  const notificationSystem = useNotifications();
   
   // ============================================================================
   // STATE MANAGEMENT
@@ -86,11 +81,52 @@ export function useGamification(): GamificationHook {
   // INITIALIZATION
   // ============================================================================
 
-  useEffect(() => {
-    initializeGamification();
-  }, [auth.isAuthenticated, auth.user]);
+  const initializeDefaultProgress = useCallback(() => {
+    const defaultProgress: LearningProgress = {
+      userId: auth.user?.uid || 'anonymous',
+      currentLevel: 'paciente',
+      experiencePoints: {
+        total: 0,
+        byCategory: {
+          chat_interactions: 0,
+          quiz_completion: 0,
+          module_completion: 0,
+          streak_bonus: 0,
+          achievement_bonus: 0
+        },
+        level: 0,
+        nextLevelXP: 100
+      },
+      achievements: [],
+      streakData: {
+        currentStreak: 0,
+        longestStreak: 0,
+        lastActivityDate: new Date().toISOString(),
+        isActiveToday: false,
+        streakBreakGrace: 24
+      },
+      moduleProgress: initializeModules(),
+      quizStats: {
+        totalQuizzes: 0,
+        completedQuizzes: 0,
+        averageScore: 0,
+        totalXPFromQuizzes: 0,
+        bestStreak: 0,
+        currentStreak: 0,
+        favoriteTopics: [],
+        weakestTopics: [],
+        timeSpentQuizzes: 0
+      },
+      lastActivity: new Date().toISOString(),
+      totalTimeSpent: 0,
+      preferredPersona: 'ga'
+    };
 
-  const initializeGamification = async () => {
+    setProgress(defaultProgress);
+    saveToStorage(defaultProgress, []);
+  }, [auth.user]); // saveToStorage removed to avoid hoisting issues
+
+  const initializeGamification = useCallback(async () => {
     try {
       setIsLoading(true);
       setSyncStatus('syncing');
@@ -116,7 +152,11 @@ export function useGamification(): GamificationHook {
       setIsLoading(false);
       setSyncStatus('idle');
     }
-  };
+  }, [auth.user, initializeDefaultProgress]); // Other functions removed to avoid hoisting issues
+
+  useEffect(() => {
+    initializeGamification();
+  }, [auth.isAuthenticated, auth.user, initializeGamification]);
 
   // ============================================================================
   // DATA LOADING
@@ -142,7 +182,7 @@ export function useGamification(): GamificationHook {
       console.error('Erro ao carregar do localStorage:', error);
       initializeDefaultProgress();
     }
-  }, []);
+  }, [initializeDefaultProgress]);
 
   const loadFromFirebase = async () => {
     if (!auth.user) return;
@@ -256,51 +296,6 @@ export function useGamification(): GamificationHook {
     } catch (error) {
       console.error('Erro ao carregar leaderboard:', error);
     }
-  };
-
-  const initializeDefaultProgress = () => {
-    const defaultProgress: LearningProgress = {
-      userId: auth.user?.uid || 'anonymous',
-      currentLevel: 'paciente',
-      experiencePoints: {
-        total: 0,
-        byCategory: {
-          chat_interactions: 0,
-          quiz_completion: 0,
-          module_completion: 0,
-          streak_bonus: 0,
-          achievement_bonus: 0
-        },
-        level: 0,
-        nextLevelXP: 100
-      },
-      achievements: [],
-      streakData: {
-        currentStreak: 0,
-        longestStreak: 0,
-        lastActivityDate: new Date().toISOString(),
-        isActiveToday: false,
-        streakBreakGrace: 24
-      },
-      moduleProgress: initializeModules(),
-      quizStats: {
-        totalQuizzes: 0,
-        completedQuizzes: 0,
-        averageScore: 0,
-        totalXPFromQuizzes: 0,
-        bestStreak: 0,
-        currentStreak: 0,
-        favoriteTopics: [],
-        weakestTopics: [],
-        timeSpentQuizzes: 0
-      },
-      lastActivity: new Date().toISOString(),
-      totalTimeSpent: 0,
-      preferredPersona: 'ga'
-    };
-
-    setProgress(defaultProgress);
-    saveToStorage(defaultProgress, []);
   };
 
   const initializeModules = (): ModuleProgress[] => {

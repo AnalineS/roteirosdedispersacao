@@ -761,7 +761,7 @@ Seus direitos: acesso, retificação, exclusão, portabilidade, oposição e rev
   }
 };
 
-export default {
+const LGPDComplianceModule = {
   consentManager,
   dataManager,
   privacyRequestProcessor,
@@ -770,3 +770,5 @@ export default {
   LGPDUtils,
   LGPD_CONFIG
 };
+
+export default LGPDComplianceModule;

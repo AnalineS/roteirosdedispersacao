@@ -202,8 +202,10 @@ export const CONTENT_PRIORITY: Record<UserLevel, Record<ContentType, number>> = 
   }
 };
 
-export default {
+const DisclosureConfig = {
   USER_LEVELS,
   PERSONA_TO_LEVEL,
   CONTENT_PRIORITY
 };
+
+export default DisclosureConfig;

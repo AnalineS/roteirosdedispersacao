@@ -109,7 +109,7 @@ export default function BasicCalculator({ onCalculationComplete }: BasicCalculat
           color: modernChatTheme.colors.neutral.textMuted,
           marginBottom: modernChatTheme.spacing.sm
         }}>
-          <strong>Dr. Gasnelio:</strong> "Bem-vindo à calculadora de doses PQT-U. Utilizamos protocolos baseados na minha pesquisa de doutorado para garantir cálculos precisos e seguros."
+          <strong>Dr. Gasnelio:</strong> &quot;Bem-vindo à calculadora de doses PQT-U. Utilizamos protocolos baseados na minha pesquisa de doutorado para garantir cálculos precisos e seguros.&quot;
         </p>
         <div style={{
           background: '#F59E0B' + '15',

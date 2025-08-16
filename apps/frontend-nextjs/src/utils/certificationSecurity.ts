@@ -806,8 +806,10 @@ export function useCertificationSecurity() {
   };
 }
 
-export default {
+const CertificationSecurityModule = {
   certificationSecurity,
   useCertificationSecurity,
   CERTIFICATION_SECURITY_CONFIG
 };
+
+export default CertificationSecurityModule;

@@ -916,9 +916,11 @@ export function useSecurityMonitoring() {
   };
 }
 
-export default {
+const SecurityMonitoringModule = {
   securityMonitoring,
   alertManager,
   useSecurityMonitoring,
   MONITORING_CONFIG
 };
+
+export default SecurityMonitoringModule;

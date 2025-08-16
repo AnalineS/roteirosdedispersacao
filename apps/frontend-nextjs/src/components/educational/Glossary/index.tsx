@@ -269,7 +269,7 @@ export default function Glossary({
         {filteredTerms.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
             <span className="text-4xl mb-4 block">🔍</span>
-            <p>Nenhum termo encontrado para "{searchTerm}"</p>
+            <p>Nenhum termo encontrado para &quot;{searchTerm}&quot;</p>
           </div>
         ) : (
           <div className="space-y-4">

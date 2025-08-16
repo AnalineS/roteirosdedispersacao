@@ -70,7 +70,7 @@ const sizeConfig = {
   }
 };
 
-export const SentimentIndicator = memo<SentimentIndicatorProps>(({
+const SentimentIndicatorComponent = memo<SentimentIndicatorProps>(({
   sentiment,
   showDetails = false,
   size = 'medium',
@@ -197,6 +197,10 @@ export const SentimentIndicator = memo<SentimentIndicatorProps>(({
     </>
   );
 });
+
+SentimentIndicatorComponent.displayName = 'SentimentIndicator';
+
+export const SentimentIndicator = SentimentIndicatorComponent;
 
 // Componente para mostrar histórico de sentimentos
 export const SentimentHistory: React.FC<{

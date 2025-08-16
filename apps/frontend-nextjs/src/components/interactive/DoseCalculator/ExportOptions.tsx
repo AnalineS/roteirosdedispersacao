@@ -360,7 +360,7 @@ export default function ExportOptions({ result, isAvailable }: ExportOptionsProp
           margin: 0,
           textAlign: 'center'
         }}>
-          ⚖️ <strong>Aviso Legal:</strong> Este material é baseado na tese "Roteiro de Dispensação para Hanseníase PQT-U" 
+          ⚖️ <strong>Aviso Legal:</strong> Este material é baseado na tese &quot;Roteiro de Dispensação para Hanseníase PQT-U&quot; 
           do doutorando Nélio Gomes de Moura Júnior. É uma ferramenta educacional e não substitui consulta médica profissional.
         </p>
       </div>

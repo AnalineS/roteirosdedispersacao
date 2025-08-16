@@ -88,7 +88,7 @@ export default function EducationalQuiz({
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [quizState.isCompleted, quizState.showResults]);
+  }, [quizState.isCompleted, quizState.showResults]); // submitQuiz removed to avoid hoisting issues
 
   // Reset question timer when moving to next question
   useEffect(() => {

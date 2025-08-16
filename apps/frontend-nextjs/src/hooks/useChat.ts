@@ -274,7 +274,7 @@ export function useChat(options: UseChatOptions = {}) {
     if (retryCount >= maxRetries) {
       setLoading(false);
     }
-  }, [analyzeSentiment, enableSentimentAnalysis, addMessage, onMessageReceived]);
+  }, [analyzeSentiment, enableSentimentAnalysis, addMessage, onMessageReceived, enableKnowledgeEnrichment, messagesRef, searchKnowledge, setError, setLastApiCall, setLoading, withFallback]);
 
   const handleClearMessages = useCallback(() => {
     clearMessages();

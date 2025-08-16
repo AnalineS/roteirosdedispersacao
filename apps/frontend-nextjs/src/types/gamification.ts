@@ -435,9 +435,11 @@ export const DEFAULT_ACHIEVEMENTS: Achievement[] = [
   }
 ];
 
-export default {
+const GamificationConfig = {
   XP_RATES,
   LEVEL_REQUIREMENTS,
   BADGE_COLORS,
   DEFAULT_ACHIEVEMENTS
 };
+
+export default GamificationConfig;

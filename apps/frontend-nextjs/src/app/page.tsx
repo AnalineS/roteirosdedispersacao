@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import EducationalLayout from '@/components/layout/EducationalLayout';
 import { usePersonas } from '@/hooks/usePersonas';
 import { useUserProfile } from '@/hooks/useUserProfile';
@@ -139,12 +140,12 @@ export default function HomePage() {
               alignItems: 'center',
               gap: '1rem'
             }}>
-              <img 
+              <Image 
                 src={getUniversityLogo('unb_logo2')} 
                 alt="Universidade de Brasília"
+                width={80}
+                height={80}
                 style={{
-                  width: '80px',
-                  height: '80px',
                   objectFit: 'contain',
                   borderRadius: '50%'
                 }}
@@ -354,12 +355,11 @@ export default function HomePage() {
                   margin: '0 auto 1.5rem',
                   boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
                 }}>
-                  <img 
+                  <Image 
                     src={getPersonaAvatar('dr_gasnelio')} 
                     alt="Dr. Gasnelio"
+                    fill
                     style={{
-                      width: '100%',
-                      height: '100%',
                       objectFit: 'cover'
                     }}
                   />
@@ -476,12 +476,11 @@ export default function HomePage() {
                   margin: '0 auto 1.5rem',
                   boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
                 }}>
-                  <img 
+                  <Image 
                     src={getPersonaAvatar('ga')} 
                     alt="Gá"
+                    fill
                     style={{
-                      width: '100%',
-                      height: '100%',
                       objectFit: 'cover'
                     }}
                   />

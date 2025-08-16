@@ -616,7 +616,7 @@ export default function SmartSearch({
               <div className="text-center py-8 text-gray-500">
                 <div className="text-4xl mb-4">🔍</div>
                 <div className="text-lg font-medium mb-2">Nenhum resultado encontrado</div>
-                <div className="text-sm">Tente termos como "PQT-U", "diagnóstico" ou "dispensação"</div>
+                <div className="text-sm">Tente termos como &quot;PQT-U&quot;, &quot;diagnóstico&quot; ou &quot;dispensação&quot;</div>
               </div>
             ) : (
               <div className="space-y-2">

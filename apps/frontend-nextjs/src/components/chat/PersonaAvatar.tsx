@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useMemo, memo } from 'react';
+import Image from 'next/image';
 import { Persona } from '@/services/api';
 import { getPersonaAvatar } from '@/constants/avatars';
 import { theme, getPersonaTheme } from '@/config/theme';
@@ -173,11 +174,9 @@ const PersonaAvatar = memo(function PersonaAvatar({
         
         {/* Avatar Image or Fallback */}
         {!imageError && avatarUrl ? (
-          <img
+          <Image
             src={avatarUrl}
             alt={`Avatar de ${persona.name}, especialista em ${persona.target_audience || 'saúde'}`}
-            loading="lazy"
-            decoding="async"
             width={parseInt(sizeStyles.width)}
             height={parseInt(sizeStyles.height)}
             style={{

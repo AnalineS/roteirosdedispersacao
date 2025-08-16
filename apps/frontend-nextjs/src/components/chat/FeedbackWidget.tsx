@@ -30,6 +30,7 @@ interface FeedbackData {
 }
 
 interface PersonaData {
+  id: string;
   name: string;
   description: string;
   avatar: string;
@@ -105,61 +106,25 @@ export default function FeedbackWidget({
   const { trackFeedback, trackUserInteraction, trackError } = useGoogleAnalytics();
   const sessionId = useMemo(() => generateSessionId(), []);
 
-  // Fetch persona data from backend on component mount
+  // Load persona data on component mount
   useEffect(() => {
-    const fetchPersonaData = async () => {
+    const loadPersonaData = async () => {
       try {
-        const response = await fetch('/api/v1/personas');
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
-        
-        const data = await response.json();
-        const persona = data.personas?.[personaId];
-        
-        if (persona) {
-          setPersonaData(persona);
-        }
+        const response = await fetch('/api/personas');
+        const personas = await response.json();
+        const persona = personas.find((p: PersonaData) => p.id === personaId);
+        setPersonaData(persona || null);
         setFeedbackState('idle');
-        
       } catch (error) {
-        console.error('Erro ao carregar dados da persona:', error);
-        trackError('persona_load_error', String(error), 'FeedbackWidget');
-        setFeedbackState('idle'); // Continue mesmo sem dados da persona
+        console.error('Error loading persona data:', error);
+        setFeedbackState('idle'); // Fallback to idle even if persona load fails
       }
     };
-    
-    if (personaId) {
-      fetchPersonaData();
-    } else {
-      setFeedbackState('idle');
-    }
-  }, [personaId, trackError]);
-  
-  if (!isVisible || hasSubmittedFeedback) {
-    return null;
-  }
-  
-  // Show loading state while fetching persona data
-  if (feedbackState === 'loading') {
-    return (
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: modernChatTheme.spacing.sm,
-          marginTop: modernChatTheme.spacing.md,
-          padding: modernChatTheme.spacing.sm,
-          fontSize: modernChatTheme.typography.meta.fontSize,
-          color: modernChatTheme.colors.neutral.textMuted,
-          fontStyle: 'italic'
-        }}
-      >
-        <span>⏳ Carregando...</span>
-      </div>
-    );
-  }
 
+    loadPersonaData();
+  }, [personaId]);
+
+  // All hooks must be at the top before any conditional returns
   const handleQuickFeedback = useCallback(async (rating: number) => {
     if (feedbackState === 'submitting') return;
     
