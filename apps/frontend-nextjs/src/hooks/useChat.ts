@@ -3,13 +3,17 @@
  * Usa as personas do backend com prompts de IA
  */
 
-import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
+import { useCallback, useRef, useEffect } from 'react';
 import { sendChatMessage, type ChatMessage, type ChatRequest, type ChatResponse } from '@/services/api';
 import { useSentimentAnalysis } from '@/hooks/useSentimentAnalysis';
 import { shouldSuggestPersonaSwitch, adjustResponseTone, SentimentResult } from '@/services/sentimentAnalysis';
 import { useKnowledgeBase } from '@/hooks/useKnowledgeBase';
 import { useFallback } from '@/hooks/useFallback';
 import { FallbackResult } from '@/services/fallbackSystem';
+
+// OTIMIZAÇÃO CRÍTICA: Hooks especializados para reduzir complexidade
+import { useChatMessages } from '@/hooks/useChatMessages';
+import { useChatState } from '@/hooks/useChatState';
 
 interface UseChatOptions {
   persistToLocalStorage?: boolean;
@@ -28,29 +32,40 @@ export function useChat(options: UseChatOptions = {}) {
     onMessageReceived
   } = options;
 
-  // Carregar histórico do localStorage se disponível (memoizado)
-  const loadFromStorage = useCallback((): ChatMessage[] => {
-    if (!persistToLocalStorage || typeof window === 'undefined') return [];
-    
-    try {
-      const stored = localStorage.getItem(storageKey);
-      return stored ? JSON.parse(stored) : [];
-    } catch (error) {
-      console.error('Erro ao carregar histórico do chat:', error);
-      return [];
-    }
-  }, [persistToLocalStorage, storageKey]);
+  // OTIMIZAÇÃO CRÍTICA: Usar hooks especializados para reduzir complexidade
+  const {
+    messages,
+    messagesRef,
+    addMessage,
+    addMessages,
+    clearMessages,
+    removeMessage,
+    updateMessage,
+    stats: messageStats
+  } = useChatMessages({
+    persistToLocalStorage,
+    storageKey,
+    maxMessages: 200 // Limite para performance
+  });
 
-  const [messages, setMessages] = useState<ChatMessage[]>(loadFromStorage);
-  const messagesRef = useRef<ChatMessage[]>(messages);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [personaSwitchSuggestion, setPersonaSwitchSuggestion] = useState<string | null>(null);
+  const {
+    loading,
+    error,
+    personaSwitchSuggestion,
+    isOnline,
+    retryCount,
+    canRetry,
+    shouldShowError,
+    setLoading,
+    setError,
+    setPersonaSuggestion,
+    setOnlineStatus,
+    incrementRetry,
+    resetRetry,
+    setLastApiCall
+  } = useChatState();
   
-  // Manter ref sincronizada com state
-  useEffect(() => {
-    messagesRef.current = messages;
-  }, [messages]);
+  // OTIMIZAÇÃO: Removido - messagesRef é gerenciado automaticamente pelo useChatMessages
   
   // Análise de sentimento
   const { 
@@ -91,18 +106,9 @@ export function useChat(options: UseChatOptions = {}) {
   
   const lastPersonaRef = useRef<string>('');
 
-  // Salvar no localStorage
-  const saveToStorage = useCallback((newMessages: ChatMessage[]) => {
-    if (!persistToLocalStorage || typeof window === 'undefined') return;
-    
-    try {
-      localStorage.setItem(storageKey, JSON.stringify(newMessages));
-    } catch (error) {
-      console.error('Erro ao salvar histórico do chat:', error);
-    }
-  }, [persistToLocalStorage, storageKey]);
+  // OTIMIZAÇÃO: Removido - localStorage é gerenciado automaticamente pelo useChatMessages
 
-  // Verificar sugestão de troca de persona baseada no sentimento
+  // Verificar sugestão de troca de persona baseada no sentimento (otimizado)
   useEffect(() => {
     if (!enableSentimentAnalysis || !currentSentiment || !lastPersonaRef.current) return;
     
@@ -113,11 +119,11 @@ export function useChat(options: UseChatOptions = {}) {
     
     if (shouldSwitch) {
       const suggestedPersona = lastPersonaRef.current === 'dr-gasnelio' ? 'ga' : 'dr-gasnelio';
-      setPersonaSwitchSuggestion(suggestedPersona);
+      setPersonaSuggestion(suggestedPersona);
     } else {
-      setPersonaSwitchSuggestion(null);
+      setPersonaSuggestion(null);
     }
-  }, [currentSentiment, enableSentimentAnalysis]);
+  }, [currentSentiment, enableSentimentAnalysis, setPersonaSuggestion]);
   
   const sendMessage = useCallback(async (message: string, personaId: string, retryCount = 0) => {
     if (!message.trim()) return;
@@ -163,18 +169,14 @@ export function useChat(options: UseChatOptions = {}) {
       persona: personaId
     };
 
-    // Adicionar mensagem do usuário apenas na primeira tentativa
+    // OTIMIZAÇÃO: Usar hook especializado para adicionar mensagem
     if (retryCount === 0) {
-      setMessages(prev => {
-        const newMessages = [...prev, userMessage];
-        messagesRef.current = newMessages;
-        saveToStorage(newMessages);
-        return newMessages;
-      });
+      addMessage(userMessage);
     }
 
     setLoading(true);
     setError(null);
+    setLastApiCall(Date.now());
 
     try {
       const currentMessages = retryCount === 0 ? [...messagesRef.current, userMessage] : messagesRef.current;

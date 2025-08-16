@@ -1,14 +1,15 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import React, { memo } from 'react';
 import { ChatMessage, Persona } from '@/services/api';
 import { modernChatTheme, getCSSVariables } from '@/config/modernTheme';
+
+// OTIMIZAÇÃO CRÍTICA: Componentes especializados para reduzir complexidade
 import ModernChatHeader from './ModernChatHeader';
-import MessageBubble from './MessageBubble';
-import SmartIndicators from './SmartIndicators';
+import ChatEmptyState from './ChatEmptyState';
+import ChatMessagesArea from './ChatMessagesArea';
 import ModernChatInput from './ModernChatInput';
 import ExportChatModal from './ExportChatModal';
-import { ChatIcon } from '@/components/icons';
 
 interface ModernChatContainerProps {
   // Personas e seleção
@@ -49,7 +50,8 @@ interface ModernChatContainerProps {
   onSuggestionClick?: (suggestion: string) => void;
 }
 
-export default function ModernChatContainer({
+// OTIMIZAÇÃO CRÍTICA: Componente principal simplificado usando subcomponentes especializados
+const ModernChatContainer = memo(function ModernChatContainer({
   personas,
   selectedPersona,
   onPersonaChange,
@@ -69,21 +71,10 @@ export default function ModernChatContainer({
   showSuggestions,
   onSuggestionClick
 }: ModernChatContainerProps) {
-  const messagesEndRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [showExportModal, setShowExportModal] = useState(false);
-  
-  const currentPersona = selectedPersona ? personas[selectedPersona] : null;
 
-  // Auto-scroll para última mensagem
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ 
-      behavior: 'smooth',
-      block: 'end'
-    });
-  }, [messages]);
-
-  // Aplicar CSS variables do tema
+  // OTIMIZAÇÃO: Aplicar CSS variables do tema de forma simplificada
   useEffect(() => {
     if (containerRef.current) {
       const cssVars = getCSSVariables();
@@ -92,58 +83,6 @@ export default function ModernChatContainer({
       });
     }
   }, []);
-
-  // Placeholder state quando não há persona selecionada
-  const EmptyState = () => (
-    <div
-      role="status"
-      aria-live="polite"
-      aria-label="Seleção de assistente necessária"
-      style={{
-        flex: 1,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: modernChatTheme.spacing.xl,
-        textAlign: 'center'
-      }}
-    >
-      <div
-        style={{
-          maxWidth: '400px',
-          background: 'rgba(255, 255, 255, 0.7)',
-          padding: modernChatTheme.spacing.xl,
-          borderRadius: modernChatTheme.borderRadius.lg,
-          backdropFilter: 'blur(10px)',
-          border: `1px solid ${modernChatTheme.colors.neutral.border}`
-        }}
-      >
-        <div style={{ marginBottom: modernChatTheme.spacing.lg }}>
-          <ChatIcon size={48} color={modernChatTheme.colors.neutral.textMuted} />
-        </div>
-        <h3
-          style={{
-            margin: `0 0 ${modernChatTheme.spacing.md}`,
-            color: modernChatTheme.colors.neutral.text,
-            fontSize: modernChatTheme.typography.persona.fontSize,
-            fontWeight: modernChatTheme.typography.persona.fontWeight
-          }}
-        >
-          Selecione um Assistente
-        </h3>
-        <p
-          style={{
-            margin: 0,
-            color: modernChatTheme.colors.neutral.textMuted,
-            fontSize: modernChatTheme.typography.meta.fontSize,
-            lineHeight: '1.5'
-          }}
-        >
-          Escolha Dr. Gasnelio para suporte técnico ou Gá para uma abordagem mais empática
-        </p>
-      </div>
-    </div>
-  );
 
   // Área de mensagens
   const MessagesArea = () => (
@@ -243,11 +182,30 @@ export default function ModernChatContainer({
         hasMessages={messages.length > 0}
       />
 
-      {/* Content Area */}
+      {/* OTIMIZAÇÃO CRÍTICA: Usar componentes especializados */}
       {!selectedPersona ? (
-        <EmptyState />
+        <ChatEmptyState
+          personas={personas}
+          selectedPersona={selectedPersona}
+          onPersonaChange={onPersonaChange}
+          suggestions={suggestions}
+          onSuggestionClick={onSuggestionClick}
+        />
       ) : (
-        <MessagesArea />
+        <ChatMessagesArea
+          messages={messages}
+          personas={personas}
+          selectedPersona={selectedPersona}
+          isLoading={isLoading}
+          isMobile={isMobile}
+          currentSentiment={currentSentiment}
+          knowledgeStats={knowledgeStats}
+          isSearchingKnowledge={isSearchingKnowledge}
+          fallbackState={fallbackState}
+          suggestions={suggestions}
+          showSuggestions={showSuggestions}
+          onSuggestionClick={onSuggestionClick}
+        />
       )}
 
       {/* Input Area */}
@@ -403,4 +361,6 @@ export default function ModernChatContainer({
       `}</style>
     </div>
   );
-}
+});
+
+export default ModernChatContainer;

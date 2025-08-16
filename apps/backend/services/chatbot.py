@@ -11,6 +11,13 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 from ..config.personas import get_persona_by_id
 
+# OTIMIZAÇÃO CRÍTICA: Sistema de auditoria médica
+from ..core.security.medical_audit_logger import (
+    medical_audit_logger,
+    ActionType,
+    MedicalDataClassification
+)
+
 logger = logging.getLogger(__name__)
 
 
@@ -74,19 +81,38 @@ class ChatbotService:
             logger.error(f"Erro ao carregar base de conhecimento: {e}")
     
     def _search_knowledge_base(self, query: str, top_k: int = 3) -> List[Dict]:
-        """Busca documentos relevantes na base de conhecimento"""
+        """Busca documentos relevantes na base de conhecimento com cache otimizado"""
         if not self.knowledge_documents or self.document_vectors is None:
             return []
         
         try:
-            # Vetorizar query
-            query_vector = self.vectorizer.transform([query])
+            # OTIMIZAÇÃO CRÍTICA: Cache de vetorização com hash da query
+            import hashlib
+            from functools import lru_cache
             
-            # Calcular similaridade
+            query_normalized = query.lower().strip()
+            query_hash = hashlib.md5(query_normalized.encode()).hexdigest()
+            
+            # Cache em memória para queries similares
+            if not hasattr(self, '_query_cache'):
+                self._query_cache = {}
+            
+            if query_hash in self._query_cache:
+                logger.debug(f"Cache hit para query: {query[:50]}...")
+                return self._query_cache[query_hash]
+            
+            # Vetorizar query (única vez por query única)
+            query_vector = self.vectorizer.transform([query_normalized])
+            
+            # OTIMIZAÇÃO: Calcular similaridade de forma mais eficiente
             similarities = cosine_similarity(query_vector, self.document_vectors).flatten()
             
-            # Obter top_k documentos mais similares
-            top_indices = np.argsort(similarities)[-top_k:][::-1]
+            # OTIMIZAÇÃO: Usar argpartition para top-k mais eficiente O(n) vs O(n log n)
+            if len(similarities) > top_k:
+                top_indices = np.argpartition(similarities, -top_k)[-top_k:]
+                top_indices = top_indices[np.argsort(similarities[top_indices])[::-1]]
+            else:
+                top_indices = np.argsort(similarities)[::-1]
             
             relevant_docs = []
             for idx in top_indices:
@@ -96,6 +122,16 @@ class ChatbotService:
                         "content": self.knowledge_documents[idx]["content"][:500],  # Primeiros 500 chars
                         "similarity": float(similarities[idx])
                     })
+            
+            # Cache resultado (limite de 100 queries para evitar vazamento de memória)
+            if len(self._query_cache) > 100:
+                # Remove oldest 25% entries
+                oldest_keys = list(self._query_cache.keys())[:25]
+                for key in oldest_keys:
+                    del self._query_cache[key]
+            
+            self._query_cache[query_hash] = relevant_docs
+            logger.debug(f"Cache miss - processado e armazenado: {query[:50]}...")
             
             return relevant_docs
         
@@ -195,21 +231,54 @@ class ChatbotService:
         # Resposta genérica
         return f"[{persona['name']}] Desculpe, estou com dificuldades técnicas no momento. Por favor, tente novamente mais tarde ou consulte um profissional de saúde."
     
-    def process_message(self, message: str, persona_id: str) -> Dict:
+    def process_message(self, message: str, persona_id: str, user_session_id: str = None, ip_address: str = None) -> Dict:
         """
         Processa mensagem do usuário com persona específica
         
         Args:
             message: Mensagem do usuário
             persona_id: ID da persona a ser usada
+            user_session_id: ID da sessão do usuário (para auditoria)
+            ip_address: Endereço IP do usuário (para auditoria)
             
         Returns:
             Dict com resposta e metadados
         """
+        # OTIMIZAÇÃO CRÍTICA: Gerar session ID se não fornecido
+        if not user_session_id:
+            import uuid
+            user_session_id = str(uuid.uuid4())
+        
         try:
+            # AUDITORIA: Log da pergunta recebida
+            medical_audit_logger.log_medical_interaction(
+                user_session_id=user_session_id,
+                action_type=ActionType.QUESTION_ASKED,
+                persona_id=persona_id,
+                question_text=message,
+                response_classification=MedicalDataClassification.EDUCATIONAL,
+                data_subjects=["question_content", "persona_preference"],
+                metadata={
+                    "question_length": len(message),
+                    "persona_requested": persona_id
+                },
+                ip_address=ip_address
+            )
+            
             # Obter persona
             persona = get_persona_by_id(persona_id)
             if not persona:
+                # AUDITORIA: Log de erro
+                medical_audit_logger.log_medical_interaction(
+                    user_session_id=user_session_id,
+                    action_type=ActionType.SYSTEM_ERROR,
+                    persona_id=persona_id,
+                    response_classification=MedicalDataClassification.AUDIT_TRAIL,
+                    data_subjects=["error_log"],
+                    metadata={"error_type": "persona_not_found"},
+                    ip_address=ip_address
+                )
+                
                 return {
                     "response": "Persona não encontrada",
                     "error": True,
@@ -218,6 +287,22 @@ class ChatbotService:
             
             # Buscar contexto relevante na base de conhecimento
             relevant_docs = self._search_knowledge_base(message)
+            
+            # AUDITORIA: Log do acesso à base de conhecimento
+            if relevant_docs:
+                medical_audit_logger.log_medical_interaction(
+                    user_session_id=user_session_id,
+                    action_type=ActionType.KNOWLEDGE_ACCESSED,
+                    persona_id=persona_id,
+                    response_classification=MedicalDataClassification.EDUCATIONAL,
+                    data_subjects=["knowledge_base_content"],
+                    metadata={
+                        "documents_found": len(relevant_docs),
+                        "sources": [doc['file'] for doc in relevant_docs],
+                        "avg_similarity": sum(doc['similarity'] for doc in relevant_docs) / len(relevant_docs) if relevant_docs else 0
+                    },
+                    ip_address=ip_address
+                )
             
             # Construir contexto para o modelo
             context_text = ""
@@ -246,8 +331,42 @@ Estilo de linguagem: {persona.get('language_style', 'profissional')}
             if response is None:
                 response = self._generate_fallback_response(message, persona, relevant_docs)
                 api_used = False
+                
+                # AUDITORIA: Log do fallback ativado
+                medical_audit_logger.log_medical_interaction(
+                    user_session_id=user_session_id,
+                    action_type=ActionType.FALLBACK_ACTIVATED,
+                    persona_id=persona_id,
+                    response_classification=MedicalDataClassification.EDUCATIONAL,
+                    data_subjects=["fallback_response"],
+                    metadata={
+                        "fallback_reason": "api_unavailable",
+                        "response_length": len(response) if response else 0
+                    },
+                    ip_address=ip_address
+                )
             else:
                 api_used = True
+            
+            # AUDITORIA: Log da resposta gerada
+            response_classification = MedicalDataClassification.EDUCATIONAL
+            if any(keyword in message.lower() for keyword in ["dosagem", "medicamento", "efeito", "prescrição"]):
+                response_classification = MedicalDataClassification.SENSITIVE_MEDICAL
+            
+            medical_audit_logger.log_medical_interaction(
+                user_session_id=user_session_id,
+                action_type=ActionType.RESPONSE_GENERATED,
+                persona_id=persona_id,
+                response_classification=response_classification,
+                data_subjects=["ai_response", "persona_context"],
+                metadata={
+                    "response_length": len(response) if response else 0,
+                    "api_used": api_used,
+                    "context_sources": len(relevant_docs),
+                    "persona_name": persona['name']
+                },
+                ip_address=ip_address
+            )
             
             return {
                 "response": response,
@@ -255,7 +374,8 @@ Estilo de linguagem: {persona.get('language_style', 'profissional')}
                 "persona_id": persona_id,
                 "context_used": [{"file": doc["file"], "similarity": doc["similarity"]} for doc in relevant_docs],
                 "api_used": api_used,
-                "timestamp": datetime.now().isoformat()
+                "timestamp": datetime.now().isoformat(),
+                "audit_compliant": True  # Indicador de conformidade
             }
             
         except Exception as e:

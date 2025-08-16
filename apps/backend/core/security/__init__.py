@@ -30,6 +30,7 @@ from .middleware import SecurityMiddleware
 from .zero_trust import ZeroTrustManager, require_authenticated_access
 from .monitoring import SecurityMonitor
 from .cicd_security import SecurityScanner
+from .medical_audit_logger import medical_audit_logger, MedicalAuditLogger, ActionType, MedicalDataClassification
 
 # Versão do sistema de segurança
 __version__ = "1.0.0"
@@ -76,6 +77,10 @@ __all__ = [
     'ZeroTrustManager',
     'SecurityMonitor',
     'SecurityScanner',
+    'MedicalAuditLogger',
+    'medical_audit_logger',
+    'ActionType',
+    'MedicalDataClassification',
     'create_secure_app',
     'require_authenticated_access',
     'get_security_framework',

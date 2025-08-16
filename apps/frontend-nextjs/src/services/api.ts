@@ -22,9 +22,9 @@ const getApiUrl = () => {
       return 'http://localhost:8080';
     }
     
-    // Produção - TEMPORÁRIO: retornar null para usar fallback
-    console.warn('[API] Produção detectada, mas backend indisponível');
-    return null; // Força uso de fallback
+    // Produção - REATIVADO: usar backend otimizado
+    console.log('[API] Produção detectada, conectando ao backend otimizado');
+    return 'https://roteiro-dispensacao-api-992807978726.us-central1.run.app';
   }
   
   // PRIORIDADE 3: Fallback para desenvolvimento  
