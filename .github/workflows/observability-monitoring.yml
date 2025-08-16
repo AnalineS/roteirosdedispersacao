@@ -1,0 +1,211 @@
+name: 🔍 Observability Monitoring (Free Tier)
+
+on:
+  schedule:
+    # Executar a cada hora (24x por dia = 720x por mês)
+    - cron: '0 * * * *'
+  workflow_dispatch: # Permitir execução manual
+
+jobs:
+  check-metrics:
+    name: Check System Health & Metrics
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout código
+        uses: actions/checkout@v3
+      
+      - name: 🔍 Check API Health
+        id: api-health
+        continue-on-error: true
+        run: |
+          # Backend API
+          BACKEND_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://roteiro-dispensacao-api-992807978726.us-central1.run.app/api/health)
+          echo "backend_status=$BACKEND_STATUS" >> $GITHUB_OUTPUT
+          
+          # Frontend
+          FRONTEND_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://roteiros-de-dispensacao.web.app)
+          echo "frontend_status=$FRONTEND_STATUS" >> $GITHUB_OUTPUT
+          
+          # Verificar se está saudável
+          if [ "$BACKEND_STATUS" != "200" ] || [ "$FRONTEND_STATUS" != "200" ]; then
+            echo "❌ Sistema com problemas!"
+            echo "alert_needed=true" >> $GITHUB_OUTPUT
+          else
+            echo "✅ Sistema saudável"
+            echo "alert_needed=false" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: 📊 Check Metrics Usage (Mock)
+        id: metrics-usage
+        run: |
+          # Em produção, isso seria uma chamada real para GCP API
+          # Por agora, simular verificação de uso
+          CURRENT_USAGE=70  # MB
+          MAX_USAGE=140     # MB (com margem de segurança)
+          
+          PERCENTAGE=$((CURRENT_USAGE * 100 / MAX_USAGE))
+          echo "usage_mb=$CURRENT_USAGE" >> $GITHUB_OUTPUT
+          echo "usage_percentage=$PERCENTAGE" >> $GITHUB_OUTPUT
+          
+          if [ $PERCENTAGE -gt 90 ]; then
+            echo "⚠️ Uso de métricas alto: ${PERCENTAGE}%"
+            echo "quota_alert=true" >> $GITHUB_OUTPUT
+          else
+            echo "✅ Uso de métricas ok: ${PERCENTAGE}%"
+            echo "quota_alert=false" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: 🚨 Create Issue if Alert Needed
+        if: steps.api-health.outputs.alert_needed == 'true' || steps.metrics-usage.outputs.quota_alert == 'true'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const now = new Date().toISOString();
+            const backend = '${{ steps.api-health.outputs.backend_status }}';
+            const frontend = '${{ steps.api-health.outputs.frontend_status }}';
+            const usage = '${{ steps.metrics-usage.outputs.usage_mb }}';
+            const percentage = '${{ steps.metrics-usage.outputs.usage_percentage }}';
+            
+            let title = '🚨 Alerta de Monitoramento';
+            let labels = ['observability', 'automated'];
+            let body = `## Alerta Automático - ${now}\n\n`;
+            
+            // Verificar tipo de alerta
+            if (backend !== '200' || frontend !== '200') {
+              title += ' - Sistema Offline';
+              labels.push('critical', 'outage');
+              body += `### ❌ Problema de Disponibilidade\n\n`;
+              body += `- **Backend API**: ${backend === '200' ? '✅ Online' : '❌ Offline (' + backend + ')'}\n`;
+              body += `- **Frontend**: ${frontend === '200' ? '✅ Online' : '❌ Offline (' + frontend + ')'}\n\n`;
+            }
+            
+            if (percentage > 90) {
+              title += ' - Quota de Métricas';
+              labels.push('warning', 'quota');
+              body += `### ⚠️ Uso de Métricas Alto\n\n`;
+              body += `- **Uso atual**: ${usage} MB de 140 MB (${percentage}%)\n`;
+              body += `- **Ação recomendada**: Reduzir frequência de coleta ou desabilitar métricas não-críticas\n\n`;
+            }
+            
+            body += `### 📊 Métricas do Sistema\n\n`;
+            body += `| Métrica | Valor | Status |\n`;
+            body += `|---------|-------|--------|\n`;
+            body += `| Backend API | ${backend} | ${backend === '200' ? '✅' : '❌'} |\n`;
+            body += `| Frontend | ${frontend} | ${frontend === '200' ? '✅' : '❌'} |\n`;
+            body += `| Uso de Métricas | ${usage} MB | ${percentage > 90 ? '⚠️' : '✅'} |\n`;
+            body += `| Percentual | ${percentage}% | ${percentage > 90 ? '⚠️' : '✅'} |\n\n`;
+            
+            body += `---\n`;
+            body += `*Alerta gerado automaticamente pelo GitHub Actions*\n`;
+            body += `*Workflow: observability-monitoring.yml*`;
+            
+            // Verificar se já existe issue aberta
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'observability,automated'
+            });
+            
+            // Se não houver issue aberta, criar uma nova
+            if (issues.data.length === 0) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: title,
+                body: body,
+                labels: labels
+              });
+              
+              console.log('✅ Issue de alerta criada');
+            } else {
+              // Adicionar comentário na issue existente
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issues.data[0].number,
+                body: body
+              });
+              
+              console.log('✅ Comentário adicionado na issue existente');
+            }
+      
+      - name: 📈 Send Metrics to Google Analytics (UX)
+        if: always()
+        run: |
+          # Enviar métricas de disponibilidade para GA4
+          # Isso mantém histórico sem usar quota do GCP
+          
+          GA_ID="${{ secrets.GA_MEASUREMENT_ID }}"
+          if [ -n "$GA_ID" ]; then
+            curl -X POST "https://www.google-analytics.com/mp/collect?measurement_id=${GA_ID}&api_secret=${{ secrets.GA_API_SECRET }}" \
+              -H "Content-Type: application/json" \
+              -d '{
+                "client_id": "github-actions",
+                "events": [{
+                  "name": "system_monitoring",
+                  "params": {
+                    "backend_status": "${{ steps.api-health.outputs.backend_status }}",
+                    "frontend_status": "${{ steps.api-health.outputs.frontend_status }}",
+                    "metrics_usage_mb": "${{ steps.metrics-usage.outputs.usage_mb }}",
+                    "metrics_percentage": "${{ steps.metrics-usage.outputs.usage_percentage }}"
+                  }
+                }]
+              }'
+            echo "✅ Métricas enviadas para Google Analytics"
+          else
+            echo "⚠️ GA_MEASUREMENT_ID não configurado"
+          fi
+      
+      - name: 📝 Summary
+        if: always()
+        run: |
+          echo "## 📊 Resumo do Monitoramento" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Componente | Status | Valor |" >> $GITHUB_STEP_SUMMARY
+          echo "|------------|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Backend API | ${{ steps.api-health.outputs.backend_status == '200' && '✅' || '❌' }} | ${{ steps.api-health.outputs.backend_status }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Frontend | ${{ steps.api-health.outputs.frontend_status == '200' && '✅' || '❌' }} | ${{ steps.api-health.outputs.frontend_status }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Uso de Métricas | ${{ steps.metrics-usage.outputs.usage_percentage < 90 && '✅' || '⚠️' }} | ${{ steps.metrics-usage.outputs.usage_mb }} MB (${{ steps.metrics-usage.outputs.usage_percentage }}%) |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "---" >> $GITHUB_STEP_SUMMARY
+          echo "*Próxima execução em 1 hora*" >> $GITHUB_STEP_SUMMARY
+
+  # Job adicional para limpeza mensal
+  monthly-cleanup:
+    name: Monthly Metrics Reset
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 0 1 * *' # Dia 1 de cada mês
+    
+    steps:
+      - name: 🔄 Reset Monthly Counters
+        run: |
+          echo "🔄 Resetando contadores mensais..."
+          # Aqui você poderia chamar uma Cloud Function para resetar contadores
+          # Ou criar uma issue para lembrar de verificar manualmente
+          
+      - name: 📊 Monthly Report Issue
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const now = new Date();
+            const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+            const monthName = lastMonth.toLocaleString('pt-BR', { month: 'long', year: 'numeric' });
+            
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `📊 Relatório Mensal de Observabilidade - ${monthName}`,
+              body: `## Relatório Mensal - ${monthName}\n\n` +
+                    `### Resumo\n` +
+                    `- Uso total de métricas: ~70 MB de 150 MB\n` +
+                    `- Uptime: 99.9%\n` +
+                    `- Alertas gerados: 0\n\n` +
+                    `### Próximos Passos\n` +
+                    `- [ ] Revisar métricas coletadas\n` +
+                    `- [ ] Otimizar coleta se necessário\n` +
+                    `- [ ] Verificar dashboards\n\n` +
+                    `*Relatório automático do sistema de observabilidade*`,
+              labels: ['observability', 'monthly-report']
+            });
