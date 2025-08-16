@@ -184,10 +184,10 @@ export function useUserProfile(): UserProfileHook {
         conversationCount: localProfile.history?.conversationCount || 0,
         lastAccess: new Date().toISOString(),
         preferredTopics: localProfile.history?.preferredTopics || [],
-        totalSessions: (localProfile.history?.conversationCount || 0) + 1,
-        totalTimeSpent: localProfile.history?.totalTimeSpent || 0,
-        completedModules: localProfile.history?.completedModules || [],
-        achievements: localProfile.history?.achievements || []
+        totalSessions: 0,
+        totalTimeSpent: 0,
+        completedModules: [],
+        achievements: []
       },
       isAnonymous: auth.isAnonymous,
       version: '2.0'

@@ -195,9 +195,8 @@ export function useGoogleAnalyticsUX() {
   useEffect(() => {
     // Verificar se GA está disponível
     if (typeof window !== 'undefined' && (window as any).gtag) {
-      return true;
+      // GA disponível - setup já feito
     }
-    return false;
   }, []);
 
   const trackCognitiveLoad = (score: number, context: string) => {

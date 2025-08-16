@@ -372,7 +372,7 @@ export function useCognitiveLoadTracking() {
   const { trackCognitiveLoad } = useGoogleAnalyticsUX();
 
   const measureAndTrack = () => {
-    const auditor = new CognitiveLoadAuditor();
+    // Usar funções de auditoria diretamente sem instanciar componente
     // Lógica para medir e trackear
   };
 

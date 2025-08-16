@@ -263,7 +263,7 @@ class UXAnalytics {
     this.trackEvent({
       category: 'mobile_experience',
       action: 'mobile_audit',
-      custom_dimensions: metrics
+      custom_dimensions: metrics as unknown as Record<string, string | number>
     });
 
     // Track touch accuracy
@@ -464,7 +464,7 @@ class UXAnalytics {
         const lastEntry = entries[entries.length - 1];
         
         this.trackEvent({
-          category: 'performance',
+          category: 'engagement',
           action: 'lcp',
           value: lastEntry.startTime,
           custom_dimensions: {
@@ -478,7 +478,7 @@ class UXAnalytics {
         const entries = entryList.getEntries();
         entries.forEach((entry) => {
           this.trackEvent({
-            category: 'performance',
+            category: 'engagement',
             action: 'fid',
             value: (entry as any).processingStart - entry.startTime
           });

@@ -9,6 +9,9 @@ module.exports = {
       },
     ],
   ],
+  plugins: [
+    '@babel/plugin-transform-private-methods',
+  ],
   env: {
     test: {
       presets: [
@@ -20,6 +23,9 @@ module.exports = {
             },
           },
         ],
+      ],
+      plugins: [
+        '@babel/plugin-transform-private-methods',
       ],
     },
   },

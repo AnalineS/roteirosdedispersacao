@@ -186,8 +186,8 @@ export function useConversationHistory() {
         userId: auth.user.uid,
         personaId: conversation.personaId,
         title: conversation.title,
-        messages: conversation.messages.map(msg => ({
-          id: msg.id || `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        messages: conversation.messages.map((msg, index) => ({
+          id: `msg_${Date.now()}_${index}_${Math.random().toString(36).substr(2, 9)}`,
           content: msg.content,
           role: msg.role,
           timestamp: new Date(msg.timestamp) as any, // Will be converted to Timestamp

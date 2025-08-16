@@ -225,7 +225,7 @@ export function useMobileExperienceTracking() {
 
 // Hook para tracking de onboarding
 export function useOnboardingTracking(currentStep: number, totalSteps: number) {
-  const { trackOnboardingStep, trackOnboardingAbandonment } = useUXAnalytics();
+  const { trackOnboardingStep, trackOnboardingAbandonment, trackEvent } = useUXAnalytics();
 
   useEffect(() => {
     trackOnboardingStep(currentStep);
