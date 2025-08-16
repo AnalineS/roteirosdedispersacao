@@ -33,7 +33,6 @@ Mapear precisamente os pain points através de dados quantitativos e qualitativo
 
 #### **📝 Tarefas Específicas**
 1. **Implementar Analytics UX** (1 dia)
-   - Hotjar/Microsoft Clarity para heatmaps
    - Google Analytics 4 com eventos customizados
    - Session recordings de 50+ usuários
 

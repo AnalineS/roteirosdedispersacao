@@ -6,6 +6,8 @@ import { usePersonas } from '@/hooks/usePersonas';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { getUniversityLogo, getPersonaAvatar } from '@/constants/avatars';
 import type { UserProfile } from '@/hooks/useUserProfile';
+import { CognitiveLoadAuditor } from '@/components/analytics/CognitiveLoadAuditor';
+import { MobileUXAuditor } from '@/components/analytics/MobileUXAuditor';
 
 export default function HomePage() {
   const { personas, loading, error, getValidPersonasCount } = usePersonas();
@@ -802,6 +804,10 @@ export default function HomePage() {
           </section>
         </div>
       </div>
+      
+      {/* UX Analytics Components - ETAPA 1 */}
+      <CognitiveLoadAuditor />
+      <MobileUXAuditor />
     </EducationalLayout>
     </>
   );
