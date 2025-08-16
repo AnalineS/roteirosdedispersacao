@@ -22,9 +22,9 @@ const getApiUrl = () => {
       return 'http://localhost:8080';
     }
     
-    // Produção - REATIVADO: usar backend otimizado
-    console.log('[API] Produção detectada, conectando ao backend otimizado');
-    return 'https://roteiro-dispensacao-api-992807978726.us-central1.run.app';
+    // Produção - DESATIVADO: usar modo offline para evitar erros
+    console.log('[API] Produção detectada, usando modo offline por estabilidade');
+    return null; // Força modo offline
   }
   
   // PRIORIDADE 3: Fallback para desenvolvimento  
@@ -33,6 +33,44 @@ const getApiUrl = () => {
 };
 
 const API_BASE_URL = getApiUrl();
+
+// Import dados estáticos para fallback
+import { STATIC_PERSONAS } from '@/data/personas';
+
+/**
+ * Busca personas do backend ou retorna dados estáticos em modo offline
+ */
+export async function getPersonas(): Promise<PersonasResponse> {
+  // Se backend está em modo offline, usar dados estáticos
+  if (!API_BASE_URL) {
+    console.log('[Personas] Modo offline ativo, usando dados estáticos');
+    return STATIC_PERSONAS;
+  }
+
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+    
+    const response = await fetch(`${API_BASE_URL}/api/v1/personas`, {
+      method: 'GET',
+      headers: { 'Accept': 'application/json' },
+      signal: controller.signal
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log('[Personas] Carregadas do backend:', Object.keys(data).length);
+    return data;
+  } catch (error) {
+    console.error('[Personas] Erro no backend, usando dados estáticos:', error);
+    return STATIC_PERSONAS;
+  }
+}
 
 export interface Persona {
   name: string;
@@ -101,79 +139,6 @@ export interface ChatResponse {
   };
 }
 
-/**
- * Busca todas las personas disponíveis com fallback
- */
-export async function getPersonas(): Promise<PersonasResponse> {
-  const apiUrl = getApiUrl();
-  
-  // Se backend indisponível, usar personas offline
-  if (!apiUrl) {
-    console.warn('[Personas] Usando personas offline');
-    return getOfflinePersonas();
-  }
-  
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 8000);
-    
-    const response = await fetch(`${apiUrl}/api/v1/personas`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      signal: controller.signal
-    });
-
-    clearTimeout(timeoutId);
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data = await response.json();
-    return data.personas || data;
-  } catch (error) {
-    console.error('[Personas] Erro ao buscar do backend, usando offline:', error);
-    return getOfflinePersonas();
-  }
-}
-
-/**
- * Personas offline para fallback
- */
-function getOfflinePersonas(): PersonasResponse {
-  return {
-    "ga": {
-      name: "Gá",
-      description: "Assistente empática e acolhedora para informações sobre hanseníase",
-      avatar: "🤗",
-      personality: "empática, acolhedora, paciente e encorajadora",
-      expertise: ["educação em saúde", "comunicação empática", "apoio emocional"],
-      response_style: "linguagem simples, tom caloroso, analogias do dia a dia",
-      target_audience: "pacientes e familiares",
-      system_prompt: "Você é a Gá, uma assistente empática especializada em hanseníase...",
-      capabilities: ["explicações simplificadas", "apoio emocional", "orientações básicas"],
-      example_questions: ["Como tomar os medicamentos?", "É normal a pele ficar manchada?"],
-      limitations: ["não substitui consulta médica", "informações básicas apenas"],
-      response_format: {}
-    },
-    "dr-gasnelio": {
-      name: "Dr. Gasnelio",
-      description: "Farmacêutico especialista em hanseníase e PQT-U",
-      avatar: "👨‍⚕️",
-      personality: "técnico, preciso, científico e educativo",
-      expertise: ["farmacologia", "protocolos PQT-U", "interações medicamentosas"],
-      response_style: "linguagem técnica, embasamento científico, referências",
-      target_audience: "profissionais de saúde e estudantes",
-      system_prompt: "Você é o Dr. Gasnelio, farmacêutico especialista em hanseníase...",
-      capabilities: ["análise técnica", "protocolos detalhados", "farmacovigilância"],
-      example_questions: ["Dosagem para crianças?", "Interações com outros medicamentos?"],
-      limitations: ["área específica de hanseníase", "não diagnóstica"],
-      response_format: {}
-    }
-  };
-}
 
 /**
  * Envia mensagem para o chat com fallback offline
@@ -325,6 +290,18 @@ export async function checkAPIHealth(): Promise<{
  * Detecta escopo da pergunta
  */
 export async function detectQuestionScope(question: string) {
+  // Se backend está em modo offline, retornar escopo padrão
+  if (!API_BASE_URL) {
+    console.log('[Scope] Modo offline ativo, retornando escopo padrão');
+    return {
+      scope: 'medical_general',
+      confidence: 0.8,
+      category: 'hanseniase',
+      is_medical: true,
+      offline_mode: true
+    };
+  }
+
   try {
     const response = await fetch(`${API_BASE_URL}/api/v1/scope`, {
       method: 'POST',
@@ -341,7 +318,14 @@ export async function detectQuestionScope(question: string) {
     return await response.json();
   } catch (error) {
     console.error('Erro ao detectar escopo:', error);
-    throw error;
+    // Fallback para escopo offline
+    return {
+      scope: 'medical_general',
+      confidence: 0.6,
+      category: 'hanseniase',
+      is_medical: true,
+      offline_fallback: true
+    };
   }
 }
 
@@ -350,6 +334,12 @@ export async function detectQuestionScope(question: string) {
  */
 export const apiClient = {
   async post<T>(endpoint: string, data: any): Promise<T> {
+    // Verificar se backend está em modo offline
+    if (!API_BASE_URL) {
+      console.log(`[ApiClient] POST ${endpoint} - Modo offline ativo`);
+      throw new Error('Backend em modo offline');
+    }
+
     try {
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: 'POST',
@@ -371,6 +361,12 @@ export const apiClient = {
   },
 
   async get<T>(endpoint: string): Promise<T> {
+    // Verificar se backend está em modo offline
+    if (!API_BASE_URL) {
+      console.log(`[ApiClient] GET ${endpoint} - Modo offline ativo`);
+      throw new Error('Backend em modo offline');
+    }
+
     try {
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: 'GET',

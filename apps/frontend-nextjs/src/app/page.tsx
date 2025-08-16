@@ -5,14 +5,23 @@ import Image from 'next/image';
 import EducationalLayout from '@/components/layout/EducationalLayout';
 import { usePersonas } from '@/hooks/usePersonas';
 import { useUserProfile } from '@/hooks/useUserProfile';
+import { useOnboarding } from '@/hooks/useOnboarding';
 import { getUniversityLogo, getPersonaAvatar } from '@/constants/avatars';
 import type { UserProfile } from '@/hooks/useUserProfile';
 import { CognitiveLoadAuditor } from '@/components/analytics/CognitiveLoadAuditor';
 import { MobileUXAuditor } from '@/components/analytics/MobileUXAuditor';
+import dynamic from 'next/dynamic';
+
+// Lazy load WelcomeWizard for better performance
+const WelcomeWizard = dynamic(() => import('@/components/onboarding/WelcomeWizard'), {
+  ssr: false,
+  loading: () => null
+});
 
 export default function HomePage() {
   const { personas, loading, error, getValidPersonasCount } = usePersonas();
   const { saveProfile } = useUserProfile();
+  const { showWizard, completeOnboarding, skipOnboarding } = useOnboarding();
   const router = useRouter();
 
   if (loading) {
@@ -61,6 +70,26 @@ export default function HomePage() {
     const profileWithPersona = {
       ...userProfile,
       selectedPersona: personaId
+    };
+    
+    saveProfile(profileWithPersona);
+    router.push('/chat');
+  };
+
+  // Handle onboarding completion and navigate to chat
+  const handleOnboardingComplete = (role: any) => {
+    completeOnboarding(role);
+    
+    const userProfile = {
+      type: role.id === 'medical' || role.id === 'student' ? 'professional' as const : 'patient' as const,
+      focus: role.id === 'medical' ? 'technical' as const : 'general' as const,
+      confidence: 0.9,
+      explanation: `Selecionado através do onboarding: ${role.title}`
+    };
+    
+    const profileWithPersona = {
+      ...userProfile,
+      selectedPersona: role.recommendedPersona
     };
     
     saveProfile(profileWithPersona);
@@ -807,6 +836,11 @@ export default function HomePage() {
       {/* UX Analytics Components - ETAPA 1 */}
       <CognitiveLoadAuditor />
       <MobileUXAuditor />
+      
+      {/* Welcome Wizard - ETAPA 3 UX TRANSFORMATION */}
+      {showWizard && (
+        <WelcomeWizard onComplete={handleOnboardingComplete} />
+      )}
     </EducationalLayout>
     </>
   );
