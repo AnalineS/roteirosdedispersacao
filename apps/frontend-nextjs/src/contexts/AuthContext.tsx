@@ -114,6 +114,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
         return { success: false, error: 'Autenticação não está habilitada' };
       }
 
+      if (!auth) {
+        throw new Error('Firebase auth não está disponível');
+      }
+
       const userCredential = await signInWithEmailAndPassword(
         auth, 
         credentials.email, 
@@ -142,6 +146,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       if (!FEATURES.AUTH_ENABLED) {
         return { success: false, error: 'Autenticação não está habilitada' };
+      }
+
+      if (!auth) {
+        throw new Error('Firebase auth não está disponível');
       }
 
       // Criar conta
@@ -176,6 +184,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const logout = async (): Promise<{ success: boolean; error?: string }> => {
     try {
       setLoading(true);
+      if (!auth) {
+        throw new Error('Firebase auth não está disponível');
+      }
       await signOut(auth);
       setProfile(null);
       setError(null);
@@ -192,6 +203,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const resetPassword = async (email: string): Promise<{ success: boolean; error?: string }> => {
     try {
       setError(null);
+      if (!auth) {
+        throw new Error('Firebase auth não está disponível');
+      }
       await sendPasswordResetEmail(auth, email);
       return { success: true };
     } catch (error: any) {
@@ -222,6 +236,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
         return { success: true };
       }
 
+      if (!auth) {
+        throw new Error('Firebase auth não está disponível');
+      }
       await signInAnonymously(auth);
       return { success: true };
     } catch (error: any) {
@@ -245,8 +262,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // Criar credencial para link
       const credential = EmailAuthProvider.credential(credentials.email, credentials.password);
       
-      // Link anonymous account with email/password
-      await linkWithCredential(user, credential);
+      // Link anonymous account with email/password  
+      if (!auth) {
+        throw new Error('Firebase auth não está disponível');
+      }
+      await linkWithCredential(user as User, credential);
 
       // Carregar perfil se existir
       await loadUserProfile(user.uid);
@@ -368,7 +388,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
 
       // Deletar conta do Authentication
-      await deleteUser(user);
+      if (!auth) {
+        throw new Error('Firebase auth não está disponível');
+      }
+      await deleteUser(user as User);
       
       setProfile(null);
       setUser(null);
@@ -450,6 +473,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
       } as AuthUser);
       setLoading(false);
       return;
+    }
+
+    if (!auth) {
+      setLoading(false);
+      return () => {}; // Return empty cleanup function
     }
 
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {

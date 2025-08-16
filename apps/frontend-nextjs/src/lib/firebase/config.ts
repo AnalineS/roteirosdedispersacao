@@ -28,21 +28,42 @@ export const FEATURES = {
   IS_DEVELOPMENT: process.env.NODE_ENV === 'development',
 } as const;
 
-// Inicializar Firebase apenas uma vez
-let app;
-if (!getApps().length) {
-  app = initializeApp(firebaseConfig);
-} else {
-  app = getApps()[0];
+// Verificar se as configurações do Firebase estão válidas
+function hasValidConfig(): boolean {
+  return !!(
+    firebaseConfig.apiKey && 
+    firebaseConfig.authDomain && 
+    firebaseConfig.projectId &&
+    firebaseConfig.apiKey !== '' &&
+    firebaseConfig.authDomain !== '' &&
+    firebaseConfig.projectId !== ''
+  );
 }
 
-// Serviços do Firebase
-export const auth = getAuth(app);
-export const db = getFirestore(app);
+// Inicializar Firebase apenas se configuração estiver válida
+let app: ReturnType<typeof initializeApp> | null = null;
+let auth: ReturnType<typeof getAuth> | null = null;
+let db: ReturnType<typeof getFirestore> | null = null;
+
+if (hasValidConfig()) {
+  if (!getApps().length) {
+    app = initializeApp(firebaseConfig);
+  } else {
+    app = getApps()[0];
+  }
+  
+  // Serviços do Firebase
+  auth = getAuth(app);
+  db = getFirestore(app);
+} else {
+  console.warn('⚠️ Firebase não inicializado - configuração inválida ou incompleta');
+}
+
+export { auth, db };
 
 // Analytics (apenas em produção e se suportado)
 export let analytics: ReturnType<typeof getAnalytics> | null = null;
-if (typeof window !== 'undefined' && FEATURES.ANALYTICS_ENABLED) {
+if (typeof window !== 'undefined' && FEATURES.ANALYTICS_ENABLED && app) {
   isSupported().then((supported) => {
     if (supported) {
       analytics = getAnalytics(app);
@@ -51,7 +72,7 @@ if (typeof window !== 'undefined' && FEATURES.ANALYTICS_ENABLED) {
 }
 
 // Configuração para desenvolvimento (emulators)
-if (FEATURES.IS_DEVELOPMENT && typeof window !== 'undefined') {
+if (FEATURES.IS_DEVELOPMENT && typeof window !== 'undefined' && auth && db) {
   // Auth emulator
   if (!auth.app.options.authDomain?.includes('localhost')) {
     try {
@@ -120,7 +141,7 @@ export function validateFirebaseConfig(): boolean {
 // Controle de estado da rede
 export const networkControl = {
   async enableOffline() {
-    if (FEATURES.FIRESTORE_ENABLED && FEATURES.OFFLINE_MODE) {
+    if (FEATURES.FIRESTORE_ENABLED && FEATURES.OFFLINE_MODE && db) {
       try {
         await disableNetwork(db);
         console.log('📴 Firestore: Modo offline ativado');
@@ -131,7 +152,7 @@ export const networkControl = {
   },
 
   async enableOnline() {
-    if (FEATURES.FIRESTORE_ENABLED) {
+    if (FEATURES.FIRESTORE_ENABLED && db) {
       try {
         await enableNetwork(db);
         console.log('🌐 Firestore: Modo online ativado');
