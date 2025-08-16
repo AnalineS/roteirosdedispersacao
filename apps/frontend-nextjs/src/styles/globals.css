@@ -566,6 +566,183 @@ tr:hover {
   text-transform: uppercase;
 }
 
+/* Progressive Disclosure System Styles - ETAPA 2 + ETAPA 4 */
+
+/* Medical typography styles */
+.text-medical-primary {
+  font-size: clamp(1.25rem, 2.5vw, 1.5rem);
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.text-medical-instruction {
+  font-size: clamp(1rem, 2vw, 1.125rem);
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.text-medical-text {
+  font-size: clamp(0.875rem, 1.8vw, 1rem);
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+.text-medical-dosage {
+  font-size: clamp(1rem, 2vw, 1.125rem);
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--color-primary);
+}
+
+.text-medical-technical {
+  font-size: clamp(0.875rem, 1.8vw, 1rem);
+  font-weight: 400;
+  line-height: 1.7;
+  color: var(--color-text-secondary);
+}
+
+.text-medical-warning {
+  font-size: clamp(0.875rem, 1.8vw, 1rem);
+  font-weight: 500;
+  line-height: 1.6;
+  color: #dc2626;
+}
+
+/* Progressive Cards */
+.progressive-card {
+  transition: all 0.2s ease-in-out;
+}
+
+.progressive-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Medical Cards */
+.medical-card {
+  background: white;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease-in-out;
+}
+
+.medical-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+/* Medical Accordion */
+.medical-accordion .section-header {
+  transition: all 0.2s ease-in-out;
+}
+
+.medical-accordion .section-content {
+  transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out;
+}
+
+/* Touch-friendly interactions */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+  touch-action: manipulation;
+}
+
+/* Mobile-first responsive containers */
+.container-progressive {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+@media (min-width: 640px) {
+  .container-progressive {
+    max-width: 640px;
+    padding: 1.5rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .container-progressive {
+    max-width: 768px;
+    padding: 2rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container-progressive {
+    max-width: 1024px;
+  }
+}
+
+/* Grid utilities for medical content */
+.medical-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.medical-grid-1 {
+  grid-template-columns: 1fr;
+}
+
+.medical-grid-2 {
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 768px) {
+  .medical-grid-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.medical-grid-3 {
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 768px) {
+  .medical-grid-3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .medical-grid-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Progressive disclosure animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes expandContent {
+  from {
+    max-height: 0;
+    opacity: 0;
+  }
+  to {
+    max-height: 1000px;
+    opacity: 1;
+  }
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.3s ease-out;
+}
+
+.expand-content {
+  animation: expandContent 0.3s ease-out;
+}
+
 /* Print styles */
 @media print {
   body {
@@ -575,5 +752,11 @@ tr:hover {
   
   .no-print {
     display: none;
+  }
+  
+  .progressive-card,
+  .medical-card {
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 }

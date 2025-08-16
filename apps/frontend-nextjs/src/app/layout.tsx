@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import ErrorBoundary from '@/components/ErrorBoundary'
 import OfflineIndicator from '@/components/OfflineIndicator'
 import GoogleAnalytics from '@/components/GoogleAnalytics'
+import AuthProviderWrapper from '@/components/auth/AuthProviderWrapper'
 import SITE_CONFIG from '@/lib/config'
 import '@/styles/globals.css'
 import '@/styles/accessibility.css'
@@ -84,9 +85,11 @@ export default function RootLayout({
         <OfflineIndicator />
         
         <main id="main-content">
-          <ErrorBoundary>
-            {children}
-          </ErrorBoundary>
+          <AuthProviderWrapper>
+            <ErrorBoundary>
+              {children}
+            </ErrorBoundary>
+          </AuthProviderWrapper>
         </main>
         
         {/* Loading screen removal script */}
