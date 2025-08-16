@@ -1,5 +1,5 @@
 /**
- * Cognitive Load Auditor Component
+ * Cognitive Load Auditor Component - FIXED VERSION
  * ETAPA 1.2: Cognitive Load Assessment
  * Objetivo: Reduzir de 8.9/10 para <4/10
  */
@@ -18,11 +18,14 @@ interface CognitiveLoadMetrics {
   hierarchyDepth: number;
   informationDensity: number;
   visualNoise: number;
+  medicalComplexity: number;
+  clinicalWorkflowComplexity: number;
+  contextSpecificScore: number;
 }
 
 interface CognitiveLoadIssue {
   type: 'critical' | 'high' | 'medium' | 'low';
-  category: 'elements' | 'text' | 'colors' | 'hierarchy' | 'noise';
+  category: 'elements' | 'text' | 'colors' | 'hierarchy' | 'noise' | 'medical' | 'workflow';
   description: string;
   impact: number;
   recommendation: string;
@@ -66,15 +69,15 @@ export function CognitiveLoadAuditor() {
       if (auditMetrics.overallScore > 8) {
         trackCustomUXEvent('cognitive_overload_critical', 'ux_cognitive_load', auditMetrics.overallScore, {
           page_url: window.location.pathname,
+          medical_complexity: auditMetrics.medicalComplexity,
           elements_count: auditMetrics.elementsCount,
-          text_density: auditMetrics.textDensity,
-          issues_found: detectedIssues.length,
-          critical_issues: detectedIssues.filter(i => i.type === 'critical').length
+          issues_found: detectedIssues.length
         });
       }
 
       console.log('🧠 Cognitive Load Audit:', {
         score: auditMetrics.overallScore,
+        medicalScore: auditMetrics.contextSpecificScore,
         issues: detectedIssues.length,
         critical: detectedIssues.filter(i => i.type === 'critical').length
       });
@@ -126,7 +129,16 @@ export function CognitiveLoadAuditor() {
     // 7. Ruído visual
     const visualNoise = calculateVisualNoise();
 
-    // 8. Score geral (0-10)
+    // 8. Complexidade médica específica
+    const medicalComplexity = calculateMedicalComplexity();
+
+    // 9. Complexidade de fluxo clínico
+    const clinicalWorkflowComplexity = calculateClinicalWorkflowComplexity();
+
+    // 10. Score específico do contexto médico
+    const contextSpecificScore = (medicalComplexity + clinicalWorkflowComplexity) / 2;
+
+    // 11. Score geral (0-10) com peso para contexto médico
     const overallScore = calculateOverallCognitiveLoadScore({
       elementsCount: visibleElements.length,
       textDensity,
@@ -134,7 +146,10 @@ export function CognitiveLoadAuditor() {
       colorComplexity,
       hierarchyDepth,
       informationDensity,
-      visualNoise
+      visualNoise,
+      medicalComplexity,
+      clinicalWorkflowComplexity,
+      contextSpecificScore
     });
 
     return {
@@ -145,7 +160,10 @@ export function CognitiveLoadAuditor() {
       colorComplexity,
       hierarchyDepth,
       informationDensity,
-      visualNoise
+      visualNoise,
+      medicalComplexity,
+      clinicalWorkflowComplexity,
+      contextSpecificScore
     };
   };
 
@@ -160,7 +178,7 @@ export function CognitiveLoadAuditor() {
       colors.add(style.borderColor);
     });
 
-    return Math.min(colors.size / 20, 10); // Normalizado para 0-10
+    return Math.min(colors.size / 20, 10);
   };
 
   const calculateHierarchyDepth = (): number => {
@@ -171,64 +189,79 @@ export function CognitiveLoadAuditor() {
       levels.add(header.tagName);
     });
 
-    return Math.min(levels.size, 6); // Max 6 níveis de hierarquia
+    return Math.min(levels.size, 6);
   };
 
   const calculateInformationDensity = (): number => {
+    // Densidade específica para contexto médico
+    const medicalTerms = document.body.innerText.match(/\b(hanseníase|bacilo|mycobacterium|PQT|WHO|ministério|saúde|paciente|tratamento|dose|mg|comprimido|blister)\b/gi) || [];
+    const technicalDensity = medicalTerms.length / 100;
+    
+    const paragraphs = document.querySelectorAll('p, div, span').length;
+    const avgWordsPerElement = (document.body.innerText.split(' ').length) / paragraphs;
+    
+    return Math.min((technicalDensity * 2 + avgWordsPerElement / 20), 10);
+  };
+
+  const calculateMedicalComplexity = (): number => {
+    const complexMedicalTerms = [
+      'paucibacilar', 'multibacilar', 'clofazimina', 'dapsona', 'rifampicina',
+      'poliquimioterapia', 'dermatologia', 'neurologia', 'oftalmologia'
+    ];
+    
+    const simpleMedicalTerms = [
+      'hanseníase', 'lepra', 'paciente', 'tratamento', 'remédio', 'dose'
+    ];
+    
+    const textContent = document.body.innerText.toLowerCase();
+    const complexCount = complexMedicalTerms.filter(term => textContent.includes(term)).length;
+    const simpleCount = simpleMedicalTerms.filter(term => textContent.includes(term)).length;
+    
+    const complexityRatio = simpleCount > 0 ? complexCount / simpleCount : complexCount;
+    return Math.min(complexityRatio * 3, 10);
+  };
+
+  const calculateClinicalWorkflowComplexity = (): number => {
+    const workflowElements = document.querySelectorAll('[data-step], .step, .workflow, .protocol').length;
+    const navigationItems = document.querySelectorAll('nav a, .menu-item, .tab').length;
+    const formElements = document.querySelectorAll('input, select, textarea, button[type="submit"]').length;
+    
+    const workflowComplexity = (workflowElements * 0.5 + navigationItems * 0.3 + formElements * 0.2) / 10;
+    return Math.min(workflowComplexity, 10);
+  };
+
+  const calculateVisualNoise = (): number => {
     const textElements = document.querySelectorAll('p, span, div, li, td');
     let totalText = 0;
     let totalArea = 0;
 
     textElements.forEach(el => {
       const rect = (el as HTMLElement).getBoundingClientRect();
-      const text = (el as HTMLElement).innerText?.length || 0;
       const area = rect.width * rect.height;
+      const text = (el as HTMLElement).innerText?.length || 0;
       
-      if (area > 0) {
-        totalText += text;
-        totalArea += area;
-      }
+      totalArea += area;
+      totalText += text;
     });
 
-    return totalArea > 0 ? (totalText / totalArea) * 1000 : 0;
-  };
-
-  const calculateVisualNoise = (): number => {
-    let noiseScore = 0;
-
-    // Muitas imagens
-    const images = document.querySelectorAll('img').length;
-    if (images > 10) noiseScore += 2;
-
-    // Muitas cores diferentes
-    const uniqueColors = new Set<string>();
-    document.querySelectorAll('*').forEach(el => {
-      const style = window.getComputedStyle(el as Element);
-      uniqueColors.add(style.backgroundColor);
-    });
-    if (uniqueColors.size > 15) noiseScore += 2;
-
-    // Muitos elementos de animação
-    const animatedElements = document.querySelectorAll('[style*="animation"], .animate');
-    if (animatedElements.length > 5) noiseScore += 1;
-
-    // Elementos sobrepostos
-    const absoluteElements = document.querySelectorAll('[style*="position: absolute"], [style*="position: fixed"]');
-    if (absoluteElements.length > 8) noiseScore += 1;
+    const textAreaRatio = totalArea > 0 ? totalText / totalArea : 0;
+    const noiseScore = Math.min(textAreaRatio * 1000, 10);
 
     return Math.min(noiseScore, 10);
   };
 
   const calculateOverallCognitiveLoadScore = (metrics: Omit<CognitiveLoadMetrics, 'overallScore'>): number => {
-    // Pesos para diferentes fatores
+    // Pesos ajustados para contexto médico
     const weights = {
-      elements: 0.25,      // 25% - Quantidade de elementos
-      text: 0.20,         // 20% - Densidade de texto
-      interactive: 0.15,  // 15% - Elementos interativos
-      colors: 0.15,       // 15% - Complexidade de cores
+      elements: 0.20,      // 20% - Quantidade de elementos
+      text: 0.15,         // 15% - Densidade de texto
+      interactive: 0.12,  // 12% - Elementos interativos
+      colors: 0.10,       // 10% - Complexidade de cores
       hierarchy: 0.10,    // 10% - Profundidade hierárquica
       information: 0.10,  // 10% - Densidade informacional
-      noise: 0.05         // 5% - Ruído visual
+      noise: 0.08,        // 8% - Ruído visual
+      medical: 0.08,      // 8% - Complexidade médica específica
+      workflow: 0.07      // 7% - Complexidade de fluxo clínico
     };
 
     // Normalizar e calcular scores parciais
@@ -239,8 +272,10 @@ export function CognitiveLoadAuditor() {
     const hierarchyScore = Math.min(metrics.hierarchyDepth / 3, 1) * 10;
     const informationScore = Math.min(metrics.informationDensity / 5, 1) * 10;
     const noiseScore = metrics.visualNoise;
+    const medicalScore = metrics.medicalComplexity;
+    const workflowScore = metrics.clinicalWorkflowComplexity;
 
-    // Score final ponderado
+    // Score final ponderado com métricas médicas
     const finalScore = 
       (elementScore * weights.elements) +
       (textScore * weights.text) +
@@ -248,9 +283,11 @@ export function CognitiveLoadAuditor() {
       (colorScore * weights.colors) +
       (hierarchyScore * weights.hierarchy) +
       (informationScore * weights.information) +
-      (noiseScore * weights.noise);
+      (noiseScore * weights.noise) +
+      (medicalScore * weights.medical) +
+      (workflowScore * weights.workflow);
 
-    return Math.round(finalScore * 10) / 10; // Round to 1 decimal place
+    return Math.min(finalScore, 10);
   };
 
   const identifyIssues = (metrics: CognitiveLoadMetrics): CognitiveLoadIssue[] => {
@@ -275,68 +312,49 @@ export function CognitiveLoadAuditor() {
       });
     }
 
-    // Densidade de texto muito alta
-    if (metrics.textDensity > 25) {
+    // Complexidade médica específica
+    if (metrics.medicalComplexity > 7) {
       issues.push({
         type: 'critical',
-        category: 'text',
-        description: 'Densidade de texto excessiva',
+        category: 'medical',
+        description: 'Terminologia médica muito complexa para público geral',
         impact: 3,
-        recommendation: 'Fragmentar texto em seções. Usar bullet points e headers.'
+        recommendation: 'Implementar glossário médico e simplificar linguagem técnica'
       });
-    }
-
-    // Muitos elementos interativos
-    if (metrics.interactiveElements > 40) {
+    } else if (metrics.medicalComplexity > 5) {
       issues.push({
         type: 'high',
-        category: 'elements',
-        description: `Muitas opções de interação (${metrics.interactiveElements})`,
+        category: 'medical',
+        description: 'Densidade alta de termos médicos complexos',
         impact: 2,
-        recommendation: 'Reduzir número de botões e links. Priorizar ações principais.'
+        recommendation: 'Adicionar tooltips explicativos para termos técnicos'
       });
     }
 
-    // Complexidade de cores
-    if (metrics.colorComplexity > 8) {
-      issues.push({
-        type: 'medium',
-        category: 'colors',
-        description: 'Paleta de cores muito complexa',
-        impact: 1,
-        recommendation: 'Usar sistema de cores mais restrito. Max 5 cores principais.'
-      });
-    }
-
-    // Hierarquia muito profunda
-    if (metrics.hierarchyDepth > 4) {
-      issues.push({
-        type: 'medium',
-        category: 'hierarchy',
-        description: 'Hierarquia muito profunda',
-        impact: 1,
-        recommendation: 'Simplificar hierarquia para máximo 3 níveis.'
-      });
-    }
-
-    // Ruído visual
-    if (metrics.visualNoise > 6) {
+    // Complexidade de fluxo clínico
+    if (metrics.clinicalWorkflowComplexity > 6) {
       issues.push({
         type: 'high',
-        category: 'noise',
-        description: 'Muito ruído visual',
-        impact: 2,
-        recommendation: 'Reduzir animações, sobreposições e elementos decorativos.'
+        category: 'workflow',
+        description: 'Fluxo de trabalho clínico muito complexo',
+        impact: 2.5,
+        recommendation: 'Simplificar navegação. Criar wizard step-by-step para processos'
+      });
+    }
+
+    // Score específico do contexto médico
+    if (metrics.contextSpecificScore > 7) {
+      issues.push({
+        type: 'critical',
+        category: 'medical',
+        description: 'Interface não adequada para contexto de hanseníase',
+        impact: 3,
+        recommendation: 'Revisar com profissionais de saúde. Simplificar terminologia'
       });
     }
 
     return issues;
   };
-
-  // Não renderizar componente visual, apenas funciona em background
-  if (process.env.NODE_ENV !== 'development') {
-    return null;
-  }
 
   return (
     <div style={{
@@ -355,11 +373,17 @@ export function CognitiveLoadAuditor() {
       {isAuditing && <div>Analisando...</div>}
       {metrics && (
         <div>
-          <div>Score: {metrics.overallScore}/10</div>
+          <div>Score Geral: {metrics.overallScore.toFixed(1)}/10</div>
+          <div>Score Médico: {metrics.contextSpecificScore.toFixed(1)}/10</div>
           <div>Elementos: {metrics.elementsCount}</div>
+          <div>Complexidade Médica: {metrics.medicalComplexity.toFixed(1)}</div>
+          <div>Workflow Clínico: {metrics.clinicalWorkflowComplexity.toFixed(1)}</div>
           <div>Issues: {issues.length}</div>
           {metrics.overallScore > 8 && (
-            <div style={{ color: '#ff4444' }}>⚠️ CRÍTICO</div>
+            <div style={{ color: '#ff4444' }}>⚠️ COGNITIVE OVERLOAD CRÍTICO</div>
+          )}
+          {metrics.contextSpecificScore > 7 && (
+            <div style={{ color: '#ff8800' }}>⚠️ CONTEXTO MÉDICO INADEQUADO</div>
           )}
         </div>
       )}
