@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, Suspense, lazy } from 'react';
 import Link from 'next/link';
 import EducationalLayout from '@/components/layout/EducationalLayout';
 import ModernChatContainer from '@/components/chat/modern/ModernChatContainer';
+import SystemStatus from '@/components/system/SystemStatus';
 import { LoadingIcon, AlertIcon } from '@/components/icons';
 
 // Lazy load dos componentes complementares
@@ -333,6 +334,11 @@ export default function ChatPage() {
         position: 'relative',
         zIndex: 1
       }}>
+        {/* System Status */}
+        <div className="fixed top-4 right-4 z-50">
+          <SystemStatus showDetails={false} />
+        </div>
+        
         <ModernChatContainer
           personas={personas}
           selectedPersona={selectedPersona}
