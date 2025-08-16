@@ -37,7 +37,7 @@ describe('GoogleAnalytics', () => {
   it('should include GA script when GA_MEASUREMENT_ID is provided', () => {
     // Mock production environment for this test
     const originalEnv = process.env.NODE_ENV;
-    process.env.NODE_ENV = 'production';
+    (process.env as any).NODE_ENV = 'production';
     
     render(<GoogleAnalytics GA_MEASUREMENT_ID={GA_ID} />);
     
@@ -46,7 +46,7 @@ describe('GoogleAnalytics', () => {
     const scripts = document.querySelectorAll('script');
     expect(scripts.length).toBeGreaterThanOrEqual(0);
     
-    process.env.NODE_ENV = originalEnv;
+    (process.env as any).NODE_ENV = originalEnv;
   });
 
   it('should not render when GA_MEASUREMENT_ID is not provided', () => {
@@ -56,17 +56,17 @@ describe('GoogleAnalytics', () => {
 
   it('should not render in development environment', () => {
     const originalEnv = process.env.NODE_ENV;
-    process.env.NODE_ENV = 'development';
+    (process.env as any).NODE_ENV = 'development';
     
     const { container } = render(<GoogleAnalytics GA_MEASUREMENT_ID={GA_ID} />);
     expect(container.firstChild).toBeNull();
     
-    process.env.NODE_ENV = originalEnv;
+    (process.env as any).NODE_ENV = originalEnv;
   });
 
   it('should include proper gtag configuration', () => {
     const originalEnv = process.env.NODE_ENV;
-    process.env.NODE_ENV = 'production';
+    (process.env as any).NODE_ENV = 'production';
     
     render(<GoogleAnalytics GA_MEASUREMENT_ID={GA_ID} />);
     
@@ -74,7 +74,7 @@ describe('GoogleAnalytics', () => {
     // We can verify the component rendered without errors as a basic test
     expect(document.body).toBeInTheDocument();
     
-    process.env.NODE_ENV = originalEnv;
+    (process.env as any).NODE_ENV = originalEnv;
   });
 
   it('should handle invalid GA_MEASUREMENT_ID gracefully', () => {
@@ -85,7 +85,7 @@ describe('GoogleAnalytics', () => {
 
   it('should be accessible', () => {
     const originalEnv = process.env.NODE_ENV;
-    process.env.NODE_ENV = 'production';
+    (process.env as any).NODE_ENV = 'production';
     
     const { container } = render(<GoogleAnalytics GA_MEASUREMENT_ID={GA_ID} />);
     
@@ -93,6 +93,6 @@ describe('GoogleAnalytics', () => {
     // Component should render without accessibility violations
     expect(container).toBeInTheDocument();
     
-    process.env.NODE_ENV = originalEnv;
+    (process.env as any).NODE_ENV = originalEnv;
   });
 });

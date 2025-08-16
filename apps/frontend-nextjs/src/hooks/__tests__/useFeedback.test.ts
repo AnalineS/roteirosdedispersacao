@@ -145,7 +145,7 @@ describe('useFeedback', () => {
     
     // The error should be thrown and also set in the hook state
     expect(thrownError).toBeTruthy();
-    expect(thrownError?.message).toBe('Network error');
+    expect((thrownError as Error)?.message).toBe('Network error');
     expect(result.current.error).toBeTruthy();
     expect(result.current.error).toContain('Network error');
     expect(result.current.lastSubmittedFeedback).toBeNull();

@@ -10,6 +10,13 @@ import { getPersonas, sendChatMessage, checkAPIHealth, detectQuestionScope, apiC
 const mockFetch = jest.fn();
 global.fetch = mockFetch as jest.MockedFunction<typeof fetch>;
 
+// Mock environment
+(global as any).process = {
+  env: {
+    NODE_ENV: 'test'
+  }
+};
+
 describe('API Service', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -25,7 +32,7 @@ describe('API Service', () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({ personas: mockPersonas }),
-      } as Response);
+      } as any);
 
       const result = await getPersonas();
       expect(result).toEqual(mockPersonas);
@@ -38,7 +45,7 @@ describe('API Service', () => {
     });
 
     it('should handle personas fetch error', async () => {
-      mockFetch.mockRejectedValueOnce(new Error('Network error'));
+      mockFetch.mockRejectedValueOnce(new Error('Network error') as any);
 
       await expect(getPersonas()).rejects.toThrow('Network error');
     });
@@ -48,7 +55,7 @@ describe('API Service', () => {
         ok: false,
         status: 500,
         statusText: 'Internal Server Error',
-      } as Response);
+      } as any);
 
       await expect(getPersonas()).rejects.toThrow('HTTP error! status: 500');
     });
@@ -65,7 +72,7 @@ describe('API Service', () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => mockResponse,
-      } as Response);
+      } as any);
 
       const request = {
         question: 'Test message',
@@ -85,7 +92,7 @@ describe('API Service', () => {
     });
 
     it('should handle message send error', async () => {
-      mockFetch.mockRejectedValueOnce(new Error('Network error'));
+      mockFetch.mockRejectedValueOnce(new Error('Network error') as any);
 
       const request = { question: 'Test', personality_id: 'ga' };
       await expect(sendChatMessage(request)).rejects.toThrow('Network error');
@@ -99,7 +106,7 @@ describe('API Service', () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => mockData,
-      } as Response);
+      } as any);
 
       const result = await apiClient.post('/test', { data: 'test' });
       
@@ -114,7 +121,7 @@ describe('API Service', () => {
     });
 
     it('should handle POST request error', async () => {
-      mockFetch.mockRejectedValueOnce(new Error('Network error'));
+      mockFetch.mockRejectedValueOnce(new Error('Network error') as any);
 
       await expect(apiClient.post('/test', {})).rejects.toThrow('Network error');
     });
@@ -124,7 +131,7 @@ describe('API Service', () => {
     it('should check system health', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
-      } as Response);
+      } as any);
 
       const result = await checkAPIHealth();
       
@@ -133,7 +140,7 @@ describe('API Service', () => {
     });
 
     it('should handle health check error', async () => {
-      mockFetch.mockRejectedValueOnce(new Error('Network error'));
+      mockFetch.mockRejectedValueOnce(new Error('Network error') as any);
 
       const result = await checkAPIHealth();
       
@@ -151,7 +158,7 @@ describe('API Service', () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => mockScope,
-      } as Response);
+      } as any);
 
       const result = await detectQuestionScope('Qual a dose de rifampicina?');
       
@@ -173,7 +180,7 @@ describe('API Service', () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => { throw new Error('Invalid JSON'); },
-      } as Response);
+      } as any);
 
       await expect(getPersonas()).rejects.toThrow('Invalid JSON');
     });
@@ -184,7 +191,7 @@ describe('API Service', () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({ answer: 'Please provide a message', request_id: 'req-123' }),
-      } as Response);
+      } as any);
 
       const request = { question: '', personality_id: 'dr_gasnelio' };
       const result = await sendChatMessage(request);
@@ -196,7 +203,7 @@ describe('API Service', () => {
         ok: false,
         status: 400,
         statusText: 'Bad Request',
-      } as Response);
+      } as any);
 
       const request = { question: 'Test', personality_id: 'invalid_persona' };
       await expect(sendChatMessage(request)).rejects.toThrow('HTTP error! status: 400');
