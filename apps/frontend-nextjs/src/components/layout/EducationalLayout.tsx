@@ -3,7 +3,7 @@
 import { ReactNode } from 'react';
 import NavigationHeader from '@/components/navigation/NavigationHeader';
 import EducationalBreadcrumbs from '@/components/navigation/Breadcrumbs';
-import EducationalFooter from '@/components/navigation/EducationalFooter';
+import EducationalFooterSimple from '@/components/navigation/EducationalFooterSimple';
 import LanguageToggle from '@/components/accessibility/LanguageToggle';
 import FocusIndicator, { SkipLink } from '@/components/accessibility/FocusIndicator';
 import VisualHierarchyOptimizer from '@/components/layout/VisualHierarchyOptimizer';
@@ -75,7 +75,7 @@ export default function EducationalLayout({
       {/* Educational Footer */}
       {showFooter && (
         <footer id="footer" role="contentinfo" aria-label="Rodapé da página">
-          <EducationalFooter 
+          <EducationalFooterSimple 
             variant={footerVariant}
             showNavigation={footerVariant === 'full'} 
           />

@@ -203,11 +203,35 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
               category: 'tools'
             },
             {
+              id: 'interaction-checker',
+              label: 'Verificador de Interações',
+              href: '/resources/interactions',
+              icon: '⚠️',
+              description: 'Análise de incompatibilidades medicamentosas',
+              category: 'tools'
+            },
+            {
               id: 'checklist',
               label: 'Checklist Dispensação',
               href: '/resources/checklist',
               icon: '✅',
-              description: 'Lista de verificação',
+              description: 'Lista de verificação procedural',
+              category: 'tools'
+            },
+            {
+              id: 'glossario',
+              label: 'Glossário Médico',
+              href: '/glossario',
+              icon: '📋',
+              description: 'Terminologia técnica de hanseníase',
+              category: 'tools'
+            },
+            {
+              id: 'downloads',
+              label: 'Downloads',
+              href: '/downloads',
+              icon: '📄',
+              description: 'Materiais complementares',
               category: 'tools'
             }
           ]
@@ -233,19 +257,43 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
     },
     {
       id: 'institutional',
-      label: 'Sobre a Tese',
+      label: 'Institucional',
       icon: '🎓',
-      description: 'Pesquisa de doutorado que fundamenta esta plataforma',
+      description: 'Informações sobre a plataforma e pesquisa',
       items: [
         {
-          id: 'sobre-a-tese',
-          label: 'Sobre a Tese',
-          href: '/sobre-a-tese',
-          icon: '📚',
-          description: 'Metodologia, objetivos e contribuições da pesquisa',
+          id: 'institucional-info',
+          label: 'Informações Institucionais',
+          href: '/sobre',
+          icon: '🏦',
+          description: 'Sobre a plataforma e instituições',
           category: 'institutional',
-          level: 'beginner',
-          estimatedTime: '15 min'
+          subItems: [
+            {
+              id: 'sobre-a-tese',
+              label: 'Sobre a Tese',
+              href: '/sobre-a-tese',
+              icon: '📚',
+              description: 'Metodologia, objetivos e contribuições da pesquisa',
+              category: 'institutional'
+            },
+            {
+              id: 'sobre-sistema',
+              label: 'Sobre o Sistema',
+              href: '/sobre',
+              icon: '💻',
+              description: 'Informações sobre a plataforma educacional',
+              category: 'institutional'
+            },
+            {
+              id: 'metodologia',
+              label: 'Metodologia',
+              href: '/metodologia',
+              icon: '🔬',
+              description: 'Métodos científicos e fundamentação teórica',
+              category: 'institutional'
+            }
+          ]
         }
       ]
     }

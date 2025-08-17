@@ -213,7 +213,7 @@ export default function EducationalFooter({
       background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
       borderTop: '2px solid #e2e8f0'
     }}>
-      {/* Sistema de Tabs para Footer - Novo design com 3 seções */}
+      {/* Link para Mapa do Site - Rede de segurança para navegação completa */}
       {showNavigation && variant === 'full' && flags?.new_footer && (
         <div style={{
           background: 'white',
