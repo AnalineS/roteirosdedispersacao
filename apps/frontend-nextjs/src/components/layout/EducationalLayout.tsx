@@ -8,6 +8,7 @@ import LanguageToggle from '@/components/accessibility/LanguageToggle';
 import FocusIndicator, { SkipLink } from '@/components/accessibility/FocusIndicator';
 import VisualHierarchyOptimizer from '@/components/layout/VisualHierarchyOptimizer';
 import MobileFirstFramework from '@/components/mobile/MobileFirstFramework';
+import GlobalPersonaFAB from '@/components/ui/GlobalPersonaFAB';
 
 interface EducationalLayoutProps {
   children: ReactNode;
@@ -80,6 +81,9 @@ export default function EducationalLayout({
           />
         </footer>
       )}
+
+      {/* Global Persona FAB - Disponível em todas as páginas */}
+      <GlobalPersonaFAB />
         </div>
       </MobileFirstFramework>
     </VisualHierarchyOptimizer>

@@ -36,6 +36,7 @@ const WelcomeWizard = dynamic(() => import('@/components/onboarding/WelcomeWizar
   loading: () => null
 });
 
+
 export default function HomePage() {
   const { personas, loading, error, getValidPersonasCount } = usePersonas();
   const { saveProfile } = useUserProfile();
@@ -985,309 +986,6 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Seção FAQ Exclusiva */}
-          <div style={{
-            maxWidth: 'min(1400px, 95vw)',
-            margin: '3rem auto',
-            background: 'linear-gradient(135deg, #fefce8 0%, #fef3c7 100%)',
-            borderRadius: '16px',
-            padding: '2.5rem',
-            border: '2px solid #fbbf24'
-          }}>
-            <h2 style={{
-              fontSize: '2rem',
-              fontWeight: '700',
-              color: '#92400e',
-              textAlign: 'center',
-              marginBottom: '2rem',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '0.75rem'
-            }}>
-              <HelpIcon size={32} color="#92400e" />
-              Perguntas Frequentes
-            </h2>
-
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: '1fr',
-              gap: '1rem',
-              marginBottom: '2rem'
-            }}>
-              <details style={{
-                background: 'white',
-                padding: '1.5rem',
-                borderRadius: '12px',
-                border: '1px solid #fbbf24',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-              }}>
-                <summary style={{
-                  cursor: 'pointer',
-                  fontWeight: '700',
-                  color: '#92400e',
-                  fontSize: '1.1rem',
-                  marginBottom: '0.5rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: '0.5rem 0'
-                }}>
-                  Como escolher entre Dr. Gasnelio e Gá?
-                  <span style={{
-                    fontSize: '1.5rem',
-                    transition: 'transform 0.3s ease',
-                    transform: 'rotate(0deg)'
-                  }}>+</span>
-                </summary>
-                <p style={{ marginTop: '1rem', color: '#78716c', lineHeight: '1.6' }}>
-                  Dr. Gasnelio é ideal para <strong>profissionais de saúde e estudantes</strong> que precisam de linguagem técnica, protocolos detalhados e referências científicas. Gá é perfeita para <strong>pacientes, familiares e comunidade</strong> que buscam explicações simples, acolhedoras e apoio emocional.
-                </p>
-              </details>
-
-              <details style={{
-                background: 'white',
-                padding: '1.5rem',
-                borderRadius: '12px',
-                border: '1px solid #fbbf24',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-              }}>
-                <summary style={{
-                  cursor: 'pointer',
-                  fontWeight: '700',
-                  color: '#92400e',
-                  fontSize: '1.1rem',
-                  marginBottom: '0.5rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: '0.5rem 0'
-                }}>
-                  O tratamento PQT-U é gratuito no SUS?
-                  <span style={{
-                    fontSize: '1.5rem',
-                    transition: 'transform 0.3s ease',
-                    transform: 'rotate(0deg)'
-                  }}>+</span>
-                </summary>
-                <p style={{ marginTop: '1rem', color: '#78716c', lineHeight: '1.6' }}>
-                  <strong>Sim!</strong> O tratamento PQT-U (Poliquimioterapia Única) é 100% gratuito em todas as unidades de saúde do SUS. Inclui medicamentos, consultas, exames e acompanhamento completo durante os 6 meses de tratamento.
-                </p>
-              </details>
-
-              <details style={{
-                background: 'white',
-                padding: '1.5rem',
-                borderRadius: '12px',
-                border: '1px solid #fbbf24',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-              }}>
-                <summary style={{
-                  cursor: 'pointer',
-                  fontWeight: '700',
-                  color: '#92400e',
-                  fontSize: '1.1rem',
-                  marginBottom: '0.5rem'
-                }}>
-                  Posso parar o tratamento se me sentir melhor?
-                </summary>
-                <p style={{ marginTop: '1rem', color: '#78716c', lineHeight: '1.6' }}>
-                  <strong>NUNCA pare o tratamento sem orientação médica!</strong> Mesmo que os sintomas melhorem, é essencial completar os 6 meses completos de PQT-U para garantir a cura e evitar resistência medicamentosa. A hanseníase tem cura, mas apenas com tratamento completo.
-                </p>
-              </details>
-
-              <details style={{
-                background: 'white',
-                padding: '1.5rem',
-                borderRadius: '12px',
-                border: '1px solid #fbbf24',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-              }}>
-                <summary style={{
-                  cursor: 'pointer',
-                  fontWeight: '700',
-                  color: '#92400e',
-                  fontSize: '1.1rem',
-                  marginBottom: '0.5rem'
-                }}>
-                  A hanseníase é contagiosa?
-                </summary>
-                <p style={{ marginTop: '1rem', color: '#78716c', lineHeight: '1.6' }}>
-                  A hanseníase tem <strong>baixa transmissibilidade</strong> e ocorre apenas através de contato íntimo e prolongado com pessoa não tratada. <strong>Após iniciar o tratamento, a pessoa deixa de transmitir em poucos dias.</strong> Não se transmite por abraços, apertos de mão, objetos ou roupas.
-                </p>
-              </details>
-
-              <details style={{
-                background: 'white',
-                padding: '1.5rem',
-                borderRadius: '12px',
-                border: '1px solid #fbbf24',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-              }}>
-                <summary style={{
-                  cursor: 'pointer',
-                  fontWeight: '700',
-                  color: '#92400e',
-                  fontSize: '1.1rem',
-                  marginBottom: '0.5rem'
-                }}>
-                  Quais são os efeitos colaterais do PQT-U?
-                </summary>
-                <p style={{ marginTop: '1rem', color: '#78716c', lineHeight: '1.6' }}>
-                  Os efeitos mais comuns incluem: escurecimento da pele (rifampicina), náuseas leves e raramente reações alérgicas. <strong>Todos os efeitos são monitorados pela equipe médica.</strong> Comunique sempre qualquer sintoma novo ao seu médico ou farmacêutico.
-                </p>
-              </details>
-
-              <details style={{
-                background: 'white',
-                padding: '1.5rem',
-                borderRadius: '12px',
-                border: '1px solid #fbbf24',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-              }}>
-                <summary style={{
-                  cursor: 'pointer',
-                  fontWeight: '700',
-                  color: '#92400e',
-                  fontSize: '1.1rem',
-                  marginBottom: '0.5rem'
-                }}>
-                  Como os familiares devem se cuidar?
-                </summary>
-                <p style={{ marginTop: '1rem', color: '#78716c', lineHeight: '1.6' }}>
-                  Familiares devem fazer <strong>exame dermatoneurológico anual por 5 anos</strong> e podem receber a vacina BCG como prevenção. O convívio normal é seguro - abraços, beijos e vida em família não oferecem risco após o início do tratamento.
-                </p>
-              </details>
-            </div>
-
-            {/* Canais de Suporte */}
-            <div style={{
-              background: 'white',
-              padding: '2rem',
-              borderRadius: '12px',
-              border: '1px solid #fbbf24',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-              marginBottom: '1.5rem'
-            }}>
-              <h3 style={{
-                fontSize: '1.5rem',
-                fontWeight: '600',
-                color: '#92400e',
-                marginBottom: '1.5rem',
-                textAlign: 'center',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '0.75rem'
-              }}>
-                <PhoneIcon size={24} color="#92400e" />
-                Canais de Suporte
-              </h3>
-              
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-                gap: '1.5rem'
-              }}>
-                <div style={{
-                  padding: '1rem',
-                  background: '#fef3c7',
-                  borderRadius: '8px',
-                  border: '1px solid #fcd34d'
-                }}>
-                  <strong style={{ color: '#92400e', fontSize: '1rem' }}>🚨 Emergência Médica</strong>
-                  <div style={{ margin: '0.5rem 0 0', color: '#78716c' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                      <strong>SAMU: 192</strong>
-                      <button
-                        onClick={() => {
-                          navigator.clipboard.writeText('192');
-                          addToast({
-                            type: 'success',
-                            message: 'Número 192 copiado!',
-                            duration: 2000
-                          });
-                        }}
-                        style={{
-                          padding: '0.25rem 0.5rem',
-                          backgroundColor: '#dc2626',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '4px',
-                          fontSize: '0.75rem',
-                          cursor: 'pointer'
-                        }}
-                        aria-label="Copiar número do SAMU"
-                      >
-                        Copiar
-                      </button>
-                    </div>
-                    <strong>Disque Saúde: 136</strong>
-                  </div>
-                </div>
-                
-                <div style={{
-                  padding: '1rem',
-                  background: '#f3f4f6',
-                  borderRadius: '8px',
-                  border: '1px solid #d1d5db'
-                }}>
-                  <strong style={{ color: '#92400e', fontSize: '1rem' }}>🏥 Unidade de Saúde</strong>
-                  <p style={{ margin: '0.5rem 0 0', color: '#78716c' }}>
-                    Procure sua UBS ou ambulatório de referência para consultas e acompanhamento
-                  </p>
-                </div>
-                
-                <div style={{
-                  padding: '1rem',
-                  background: '#e0f2fe',
-                  borderRadius: '8px',
-                  border: '1px solid #bae6fd'
-                }}>
-                  <strong style={{ color: '#92400e', fontSize: '1rem' }}>💬 Chat da Plataforma</strong>
-                  <p style={{ margin: '0.5rem 0 0', color: '#78716c' }}>
-                    Dr. Gasnelio e Gá disponíveis 24/7 para esclarecimentos
-                  </p>
-                </div>
-              </div>
-
-              <button
-                onClick={() => router.push('/contato')}
-                style={{
-                  marginTop: '1.5rem',
-                  padding: '1rem 2rem',
-                  background: '#059669',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  fontSize: '1rem',
-                  fontWeight: '600',
-                  width: '100%'
-                }}
-              >
-                📧 Mais Contatos e Suporte Técnico
-              </button>
-            </div>
-
-            {/* Destaque Especial */}
-            <div style={{
-              textAlign: 'center',
-              padding: '1.5rem',
-              background: 'rgba(220, 38, 38, 0.1)',
-              borderRadius: '12px',
-              border: '2px solid #dc2626'
-            }}>
-              <p style={{
-                fontSize: '1.1rem',
-                color: '#dc2626',
-                margin: 0,
-                fontWeight: '700'
-              }}>
-                ⚠️ <strong>IMPORTANTE:</strong> Esta plataforma é educacional. Em caso de emergência médica, procure atendimento presencial imediatamente.
-              </p>
-            </div>
-          </div>
 
           {/* Sobre a Pesquisa Section */}
           <section style={{
@@ -1532,52 +1230,374 @@ export default function HomePage() {
             </div>
           </section>
 
+          {/* Seção FAQ */}
+          <section id="faq" style={{
+            maxWidth: 'min(1200px, 92vw)',
+            margin: '4rem auto',
+            padding: '2.5rem',
+            background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
+            borderRadius: '16px',
+            border: '1px solid #e2e8f0',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
+          }}>
+            <h2 style={{
+              fontSize: '2rem',
+              fontWeight: '700',
+              color: '#374151',
+              textAlign: 'center',
+              marginBottom: '2rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.75rem'
+            }}>
+              <HelpIcon size={32} color="#374151" />
+              Perguntas Frequentes
+            </h2>
+
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.5rem',
+              marginBottom: '2rem'
+            }}>
+              <details style={{
+                borderBottom: '1px solid #e5e7eb',
+                paddingBottom: '1rem'
+              }}>
+                <summary style={{
+                  cursor: 'pointer',
+                  fontWeight: '700',
+                  color: '#374151',
+                  fontSize: '1.1rem',
+                  padding: '1rem 0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  listStyle: 'none'
+                }}>
+                  Como escolher entre Dr. Gasnelio e Gá?
+                  <span style={{
+                    fontSize: '1.2rem',
+                    transition: 'transform 0.3s ease',
+                    color: '#6b7280'
+                  }}>▼</span>
+                </summary>
+                <div style={{ 
+                  paddingLeft: '0',
+                  paddingRight: '2rem',
+                  paddingBottom: '1rem'
+                }}>
+                  <p style={{ color: '#6b7280', lineHeight: '1.6', margin: 0 }}>
+                    Dr. Gasnelio é ideal para <strong>profissionais de saúde e estudantes</strong> que precisam de linguagem técnica, protocolos detalhados e referências científicas. Gá é perfeita para <strong>pacientes, familiares e comunidade</strong> que buscam explicações simples, acolhedoras e apoio emocional.
+                  </p>
+                </div>
+              </details>
+
+              <details style={{
+                borderBottom: '1px solid #e5e7eb',
+                paddingBottom: '1rem'
+              }}>
+                <summary style={{
+                  cursor: 'pointer',
+                  fontWeight: '700',
+                  color: '#374151',
+                  fontSize: '1.1rem',
+                  padding: '1rem 0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  listStyle: 'none'
+                }}>
+                  O tratamento PQT-U é gratuito no SUS?
+                  <span style={{
+                    fontSize: '1.2rem',
+                    transition: 'transform 0.3s ease',
+                    color: '#6b7280'
+                  }}>▼</span>
+                </summary>
+                <div style={{ 
+                  paddingLeft: '0',
+                  paddingRight: '2rem',
+                  paddingBottom: '1rem'
+                }}>
+                  <p style={{ color: '#6b7280', lineHeight: '1.6', margin: 0 }}>
+                    <strong>Sim!</strong> O tratamento PQT-U (Poliquimioterapia Única) é 100% gratuito em todas as unidades de saúde do SUS. Inclui medicamentos, consultas, exames e acompanhamento completo durante os 6 meses de tratamento.
+                  </p>
+                </div>
+              </details>
+
+              <details style={{
+                borderBottom: '1px solid #e5e7eb',
+                paddingBottom: '1rem'
+              }}>
+                <summary style={{
+                  cursor: 'pointer',
+                  fontWeight: '700',
+                  color: '#374151',
+                  fontSize: '1.1rem',
+                  padding: '1rem 0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  listStyle: 'none'
+                }}>
+                  Posso parar o tratamento se me sentir melhor?
+                  <span style={{
+                    fontSize: '1.2rem',
+                    transition: 'transform 0.3s ease',
+                    color: '#6b7280'
+                  }}>▼</span>
+                </summary>
+                <div style={{ 
+                  paddingLeft: '0',
+                  paddingRight: '2rem',
+                  paddingBottom: '1rem'
+                }}>
+                  <p style={{ color: '#6b7280', lineHeight: '1.6', margin: 0 }}>
+                    <strong>NUNCA pare o tratamento sem orientação médica!</strong> Mesmo que os sintomas melhorem, é essencial completar os 6 meses completos de PQT-U para garantir a cura e evitar resistência medicamentosa. A hanseníase tem cura, mas apenas com tratamento completo.
+                  </p>
+                </div>
+              </details>
+
+              <details style={{
+                borderBottom: '1px solid #e5e7eb',
+                paddingBottom: '1rem'
+              }}>
+                <summary style={{
+                  cursor: 'pointer',
+                  fontWeight: '700',
+                  color: '#374151',
+                  fontSize: '1.1rem',
+                  padding: '1rem 0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  listStyle: 'none'
+                }}>
+                  A hanseníase é contagiosa?
+                  <span style={{
+                    fontSize: '1.2rem',
+                    transition: 'transform 0.3s ease',
+                    color: '#6b7280'
+                  }}>▼</span>
+                </summary>
+                <div style={{ 
+                  paddingLeft: '0',
+                  paddingRight: '2rem',
+                  paddingBottom: '1rem'
+                }}>
+                  <p style={{ color: '#6b7280', lineHeight: '1.6', margin: 0 }}>
+                    A hanseníase tem <strong>baixa transmissibilidade</strong> e ocorre apenas através de contato íntimo e prolongado com pessoa não tratada. <strong>Após iniciar o tratamento, a pessoa deixa de transmitir em poucos dias.</strong> Não se transmite por abraços, apertos de mão, objetos ou roupas.
+                  </p>
+                </div>
+              </details>
+
+              <details style={{
+                borderBottom: '1px solid #e5e7eb',
+                paddingBottom: '1rem'
+              }}>
+                <summary style={{
+                  cursor: 'pointer',
+                  fontWeight: '700',
+                  color: '#374151',
+                  fontSize: '1.1rem',
+                  padding: '1rem 0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  listStyle: 'none'
+                }}>
+                  Quais são os efeitos colaterais do PQT-U?
+                  <span style={{
+                    fontSize: '1.2rem',
+                    transition: 'transform 0.3s ease',
+                    color: '#6b7280'
+                  }}>▼</span>
+                </summary>
+                <div style={{ 
+                  paddingLeft: '0',
+                  paddingRight: '2rem',
+                  paddingBottom: '1rem'
+                }}>
+                  <p style={{ color: '#6b7280', lineHeight: '1.6', margin: 0 }}>
+                    Os efeitos mais comuns incluem: escurecimento da pele (rifampicina), náuseas leves e raramente reações alérgicas. <strong>Todos os efeitos são monitorados pela equipe médica.</strong> Comunique sempre qualquer sintoma novo ao seu médico ou farmacêutico.
+                  </p>
+                </div>
+              </details>
+
+              <details style={{
+                borderBottom: '1px solid #e5e7eb',
+                paddingBottom: '1rem'
+              }}>
+                <summary style={{
+                  cursor: 'pointer',
+                  fontWeight: '700',
+                  color: '#374151',
+                  fontSize: '1.1rem',
+                  padding: '1rem 0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  listStyle: 'none'
+                }}>
+                  Como os familiares devem se cuidar?
+                  <span style={{
+                    fontSize: '1.2rem',
+                    transition: 'transform 0.3s ease',
+                    color: '#6b7280'
+                  }}>▼</span>
+                </summary>
+                <div style={{ 
+                  paddingLeft: '0',
+                  paddingRight: '2rem',
+                  paddingBottom: '1rem'
+                }}>
+                  <p style={{ color: '#6b7280', lineHeight: '1.6', margin: 0 }}>
+                    Familiares devem fazer <strong>exame dermatoneurológico anual por 5 anos</strong> e podem receber a vacina BCG como prevenção. O convívio normal é seguro - abraços, beijos e vida em família não oferecem risco após o início do tratamento.
+                  </p>
+                </div>
+              </details>
+            </div>
+
+            {/* Canais de Suporte */}
+            <div style={{
+              marginBottom: '1.5rem'
+            }}>
+              <h3 style={{
+                fontSize: '1.5rem',
+                fontWeight: '600',
+                color: '#374151',
+                marginBottom: '1.5rem',
+                textAlign: 'center',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.75rem'
+              }}>
+                <PhoneIcon size={24} color="#374151" />
+                Canais de Suporte
+              </h3>
+              
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+                gap: '1.5rem'
+              }}>
+                <div style={{
+                  padding: '1rem',
+                  background: '#fef2f2',
+                  borderRadius: '8px',
+                  border: '1px solid #fecaca'
+                }}>
+                  <strong style={{ color: '#dc2626', fontSize: '1rem' }}>🚨 Emergência Médica</strong>
+                  <div style={{ margin: '0.5rem 0 0', color: '#6b7280' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                      <strong>SAMU: 192</strong>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText('192');
+                          addToast({
+                            type: 'success',
+                            message: 'Número 192 copiado!',
+                            duration: 2000
+                          });
+                        }}
+                        style={{
+                          padding: '0.25rem',
+                          backgroundColor: 'transparent',
+                          color: '#6b7280',
+                          border: 'none',
+                          borderRadius: '4px',
+                          fontSize: '0.9rem',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          transition: 'color 0.2s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.color = '#374151';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.color = '#6b7280';
+                        }}
+                        aria-label="Copiar número do SAMU"
+                        title="Copiar número"
+                      >
+                        📋
+                      </button>
+                    </div>
+                    <strong>Disque Saúde: 136</strong>
+                  </div>
+                </div>
+                
+                <div style={{
+                  padding: '1rem',
+                  background: '#f3f4f6',
+                  borderRadius: '8px',
+                  border: '1px solid #d1d5db'
+                }}>
+                  <strong style={{ color: '#374151', fontSize: '1rem' }}>🏥 Unidade de Saúde</strong>
+                  <p style={{ margin: '0.5rem 0 0', color: '#6b7280' }}>
+                    Procure sua UBS ou ambulatório de referência para consultas e acompanhamento
+                  </p>
+                </div>
+                
+                <div style={{
+                  padding: '1rem',
+                  background: '#eff6ff',
+                  borderRadius: '8px',
+                  border: '1px solid #bfdbfe'
+                }}>
+                  <strong style={{ color: '#374151', fontSize: '1rem' }}>💬 Chat da Plataforma</strong>
+                  <p style={{ margin: '0.5rem 0 0', color: '#6b7280' }}>
+                    Dr. Gasnelio e Gá disponíveis 24/7 para esclarecimentos
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => router.push('/contato')}
+                style={{
+                  marginTop: '1.5rem',
+                  padding: '1rem 2rem',
+                  background: '#374151',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontSize: '1rem',
+                  fontWeight: '600',
+                  width: '100%'
+                }}
+              >
+                📧 Mais Contatos e Suporte Técnico
+              </button>
+            </div>
+
+            {/* Destaque Especial - Em Amarelo */}
+            <div style={{
+              textAlign: 'center',
+              padding: '1.5rem',
+              background: 'linear-gradient(135deg, #fefce8 0%, #fef3c7 100%)',
+              borderRadius: '12px',
+              border: '2px solid #fbbf24'
+            }}>
+              <p style={{
+                fontSize: '1.1rem',
+                color: '#92400e',
+                margin: 0,
+                fontWeight: '700'
+              }}>
+                ⚠️ <strong>IMPORTANTE:</strong> Esta plataforma é educacional. Em caso de emergência médica, procure atendimento presencial imediatamente.
+              </p>
+            </div>
+          </section>
+
         </div>
       </div>
       
       {/* UX Analytics Components - Apenas em desenvolvimento */}
-      {/* FAB (Floating Action Button) para Assistentes */}
-      <div style={{
-        position: 'fixed',
-        bottom: '24px',
-        right: '24px',
-        zIndex: 1000
-      }}>
-        <button
-          onClick={() => document.getElementById('assistentes')?.scrollIntoView({ behavior: 'smooth' })}
-          style={{
-            width: '56px',
-            height: '56px',
-            backgroundColor: '#003366',
-            color: 'white',
-            border: 'none',
-            borderRadius: '50%',
-            cursor: 'pointer',
-            boxShadow: '0 4px 12px rgba(0, 51, 102, 0.3)',
-            transition: 'all 0.3s ease',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'scale(1.1)';
-            e.currentTarget.style.boxShadow = '0 6px 20px rgba(0, 51, 102, 0.4)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'scale(1)';
-            e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 51, 102, 0.3)';
-          }}
-          onKeyDown={(e) => {
-            if (e.key === 'Escape') {
-              e.currentTarget.blur();
-            }
-          }}
-          aria-label="Escolher assistente virtual"
-          tabIndex={0}
-        >
-          <ChatBotIcon size={24} variant="unb" />
-        </button>
-      </div>
 
       {process.env.NODE_ENV === 'development' && (
         <>

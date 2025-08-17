@@ -1,10 +1,10 @@
 # 📋 PLANO DE IMPLEMENTAÇÃO - ROTEIROS DE DISPENSAÇÃO PQT-U
 ## Sistema Educacional para Hanseníase - Plataforma Enterprise-Grade
 
-> **Status Geral:** 🎯 **SISTEMA ENTERPRISE-GRADE COM UX TRANSFORMATION COMPLETA**  
+> **Status Geral:** 🎯 **SISTEMA ENTERPRISE-GRADE COM UX TRANSFORMATION COMPLETA + FAQ/WIZARD OPTIMIZATION**  
 > **Última Atualização:** 17/08/2025  
 > **Responsável:** Claude Code Assistant  
-> **Score Geral:** 98/100 - Q1 2025 COMPLETO + UX Revolution  
+> **Score Geral:** 99/100 - Q1 2025 COMPLETO + UX Revolution + FAQ/WelcomeWizard Enhancement  
 > 
 > **✅ Q1 2025 COMPLETO:** Analytics, PWA, Autenticação, Deploy Production-Ready  
 > **🎨 Q2 2025 NOVO:** Navigation & UX Transformation Package Completo  
@@ -45,6 +45,15 @@ roteiro-dispensacao/
 - **FAQ Exclusivo na Principal**: Transformação do FAQ em seção robusta com 6 perguntas detalhadas
 - **Limpeza de Páginas**: Remoção completa de /faq e /guia com todas as referências
 - **Vida com Hanseníase Público**: Conversão de módulo educacional para recurso público acessível
+
+#### **🔧 FAQ & WelcomeWizard Optimization (17/08/2025 - Continuação)**
+- **FAQ Reposicionado**: Movido para após seção "Sobre a Pesquisa" para fluxo mais natural
+- **Design Accordion Limpo**: Removidos cards, implementado lista expansível clássica
+- **Esquema de Cores Neutro**: Aplicado padrão visual da seção "Sobre a Pesquisa" (#f8fafc)
+- **Ícone SAMU Discreto**: Botão "Copiar" substituído por ícone 📋 discreto com hover suave
+- **WelcomeWizard Cache**: Sistema inteligente de cache por 5 dias (`welcome_wizard_seen`)
+- **Questionário Informativo**: Para usuários logados sem escolha de personas, dados para administradores
+- **Botão "Pular por agora"**: Texto atualizado com melhor UX e funcionalidade de cache
 
 #### **🎨 Modern Design System Implementation**
 - **Ícones Flat Outline**: Substituição completa de emojis por ícones SVG profissionais
@@ -533,6 +542,15 @@ git push origin main
 - [x] **Vida com Hanseníase Público**: Conversão de módulo para página pública /vida-com-hanseniase
 - [x] **Bibliografia Integrada**: Movida para "Sobre a Tese" com 18 referências organizadas
 
+#### **🔧 FAQ & WelcomeWizard Optimization (Continuação do dia)**
+- [x] **FAQ Reposicionamento**: Movido para após "Sobre a Pesquisa" com fluxo de navegação otimizado
+- [x] **Design Accordion Limpo**: Cards removidos, lista expansível implementada com separadores
+- [x] **Cores Neutras**: Esquema de cores da seção "Sobre a Pesquisa" aplicado (#f8fafc, #374151)
+- [x] **Ícone SAMU Discreto**: Botão "Copiar" → ícone 📋 com hover suave e tooltip
+- [x] **Cache Sistema 5 dias**: LocalStorage inteligente para WelcomeWizard (`welcome_wizard_seen`)
+- [x] **Questionário Administrativo**: Para usuários logados, coleta dados sem escolha de personas
+- [x] **Botão "Pular por agora"**: UX aprimorada com texto mais claro e funcionalidade completa
+
 #### **🎨 Modern Design & Large Screen Optimization**
 - [x] **Ícones Flat Outline**: Substituição completa de emojis por ícones SVG profissionais
 - [x] **Header Otimizado**: Remoção de logo e subtítulo duplicado para design limpo
@@ -740,6 +758,9 @@ O sistema **Roteiros de Dispensação PQT-U** completou sua **evolução enterpr
 - ✅ **Modern Design**: Emojis → SVG icons profissionais + header limpo + design consistente
 - ✅ **Large Screen Support**: 1200px → 1800px+ (50% mais largura) + aproveitamento total de monitores grandes
 - ✅ **Navigation Integration**: Seções mescladas + hierarquia otimizada + estrutura simplificada
+- ✅ **FAQ Optimization**: Reposicionado com design accordion + cores neutras + UX aprimorada
+- ✅ **WelcomeWizard Enhancement**: Cache inteligente 5 dias + questionário para administradores + "Pular por agora"
+- ✅ **Micro-interactions**: Ícone SAMU discreto + hover states + transições suaves
 - ✅ **100% responsivo** navegação com clamp() functions (sessão anterior)
 - ✅ **25% mais conteúdo** no footer com melhor organização (sessão anterior)
 - ✅ **UX aprimorada** em skip links e acessibilidade (sessão anterior)
@@ -764,7 +785,7 @@ O sistema está agora **production-ready** com arquitetura enterprise-grade, UX 
 
 ---
 
-**📝 Documento atualizado com UX Optimization & Content Restructuring**  
-**📅 Data: 17/08/2025 (Sessão Final)**  
-**✅ Status: SISTEMA ENTERPRISE-GRADE COM UX OPTIMIZATION & CONTENT RESTRUCTURING COMPLETA**  
-**🎯 Score Final: 99/100 - Content Strategy Revolution + Modern Design + Large Screen Support + Enterprise Backend**
+**📝 Documento atualizado com UX Optimization & Content Restructuring + FAQ/WelcomeWizard Enhancement**  
+**📅 Data: 17/08/2025 (Implementações Completas)**  
+**✅ Status: SISTEMA ENTERPRISE-GRADE COM UX TRANSFORMATION + FAQ/WIZARD OPTIMIZATION COMPLETA**  
+**🎯 Score Final: 99/100 - Content Strategy Revolution + Modern Design + Large Screen Support + FAQ Enhancement + WelcomeWizard Cache + Enterprise Backend**

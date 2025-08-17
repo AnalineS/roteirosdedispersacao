@@ -192,6 +192,155 @@ const PersonaIntroductionStep = ({ selectedRole }: { selectedRole: UserRole }) =
   );
 };
 
+// Componente para questionário informativo (usuários logados)
+const InformativeSurveyStep = ({ onComplete }: { onComplete: (data: any) => void }) => {
+  const [answers, setAnswers] = useState({
+    institution: '',
+    role: '',
+    experience: '',
+    interests: [] as string[]
+  });
+
+  const handleAnswerChange = (field: string, value: any) => {
+    setAnswers(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleInterestToggle = (interest: string) => {
+    setAnswers(prev => ({
+      ...prev,
+      interests: prev.interests.includes(interest)
+        ? prev.interests.filter(i => i !== interest)
+        : [...prev.interests, interest]
+    }));
+  };
+
+  const handleSubmit = () => {
+    // Salvar dados do questionário no localStorage para administradores
+    const surveyData = {
+      timestamp: Date.now(),
+      userId: Date.now().toString(), // Pode ser substituído por user.id quando disponível
+      ...answers
+    };
+    
+    // Salvar dados do survey
+    const existingSurveys = JSON.parse(localStorage.getItem('admin_surveys') || '[]');
+    existingSurveys.push(surveyData);
+    localStorage.setItem('admin_surveys', JSON.stringify(existingSurveys));
+    
+    // Marcar como completado
+    localStorage.setItem('user_survey_completed', 'true');
+    
+    onComplete(surveyData);
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="text-center mb-6">
+        <h3 className="text-xl font-bold text-gray-800 mb-2">
+          📊 Questionário Informativo
+        </h3>
+        <p className="text-gray-600">
+          Ajude-nos a entender melhor nossos usuários (dados para administradores)
+        </p>
+      </div>
+
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Instituição ou Local de Trabalho
+          </label>
+          <input
+            type="text"
+            value={answers.institution}
+            onChange={(e) => handleAnswerChange('institution', e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="Ex: Hospital das Clínicas, UBS Centro, etc."
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Função/Cargo
+          </label>
+          <select
+            value={answers.role}
+            onChange={(e) => handleAnswerChange('role', e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option value="">Selecione sua função</option>
+            <option value="medico">Médico</option>
+            <option value="farmaceutico">Farmacêutico</option>
+            <option value="enfermeiro">Enfermeiro</option>
+            <option value="tecnico">Técnico em Enfermagem</option>
+            <option value="estudante">Estudante</option>
+            <option value="gestor">Gestor de Saúde</option>
+            <option value="pesquisador">Pesquisador</option>
+            <option value="outro">Outro</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Experiência com Hanseníase
+          </label>
+          <select
+            value={answers.experience}
+            onChange={(e) => handleAnswerChange('experience', e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option value="">Selecione sua experiência</option>
+            <option value="nenhuma">Nenhuma experiência</option>
+            <option value="basica">Conhecimento básico</option>
+            <option value="intermediaria">Experiência intermediária</option>
+            <option value="avancada">Experiência avançada</option>
+            <option value="especialista">Especialista na área</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Áreas de Interesse (selecione todas que se aplicam)
+          </label>
+          <div className="space-y-2">
+            {[
+              'Diagnóstico',
+              'Tratamento/PQT-U',
+              'Reações Hansênicas',
+              'Prevenção de Incapacidades',
+              'Aspectos Psicossociais',
+              'Vigilância Epidemiológica',
+              'Educação em Saúde'
+            ].map(interest => (
+              <label key={interest} className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={answers.interests.includes(interest)}
+                  onChange={() => handleInterestToggle(interest)}
+                  className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                />
+                <span className="ml-2 text-sm text-gray-700">{interest}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="flex justify-between pt-4">
+        <button
+          onClick={handleSubmit}
+          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700
+                   transition-colors min-h-[44px] font-medium w-full"
+        >
+          Finalizar Questionário
+        </button>
+      </div>
+    </div>
+  );
+};
+
 // Step 3: Quick Demo
 const QuickDemoStep = ({ selectedRole }: { selectedRole: UserRole }) => {
   const [currentExample, setCurrentExample] = useState(0);
@@ -340,6 +489,14 @@ export function WelcomeWizard({ onComplete }: {
         recommended_persona: selectedRole.recommendedPersona
       });
       
+      // Salvar no cache por 5 dias
+      const cacheData = {
+        timestamp: Date.now(),
+        completed: true,
+        selectedRole: selectedRole.id
+      };
+      localStorage.setItem('welcome_wizard_seen', JSON.stringify(cacheData));
+      
       setIsVisible(false);
       
       // Delay for smooth animation
@@ -352,6 +509,14 @@ export function WelcomeWizard({ onComplete }: {
   const handleSkip = useCallback(() => {
     trackUserInteraction('onboarding_skipped', '', `step_${currentStep}`);
     
+    // Salvar no cache por 5 dias
+    const cacheData = {
+      timestamp: Date.now(),
+      skipped: true,
+      step: currentStep
+    };
+    localStorage.setItem('welcome_wizard_seen', JSON.stringify(cacheData));
+    
     // Default to medical professional if skipped
     const defaultRole = USER_ROLES[0];
     setIsVisible(false);
@@ -361,11 +526,104 @@ export function WelcomeWizard({ onComplete }: {
     }, 300);
   }, [currentStep, onComplete, trackUserInteraction]);
 
-  // Don't show if user is already authenticated and has profile
-  if (user && localStorage.getItem('onboarding_completed')) {
+  // Verificar cache por 5 dias
+  useEffect(() => {
+    const cacheKey = 'welcome_wizard_seen';
+    const cachedData = localStorage.getItem(cacheKey);
+    
+    if (cachedData) {
+      try {
+        const { timestamp, skipped } = JSON.parse(cachedData);
+        const fiveDaysInMs = 5 * 24 * 60 * 60 * 1000;
+        const now = Date.now();
+        
+        if (now - timestamp < fiveDaysInMs) {
+          // Cache ainda válido, não mostrar o wizard
+          setIsVisible(false);
+          return;
+        } else {
+          // Cache expirado, remover
+          localStorage.removeItem(cacheKey);
+        }
+      } catch (error) {
+        // Cache corrompido, remover
+        localStorage.removeItem(cacheKey);
+      }
+    }
+  }, []);
+
+  // Para usuários logados, verificar se já completaram o questionário informativo
+  const isLoggedIn = !!user;
+  const hasCompletedUserSurvey = localStorage.getItem('user_survey_completed');
+  
+  if (isLoggedIn && hasCompletedUserSurvey) {
+    return null;
+  }
+  
+  // Para usuários não logados, verificar onboarding tradicional
+  if (!isLoggedIn && localStorage.getItem('onboarding_completed')) {
     return null;
   }
 
+  // Don't show if cache is valid
+  if (!isVisible) {
+    return null;
+  }
+
+  // Handler para completar o questionário informativo (usuários logados)
+  const handleSurveyComplete = useCallback((surveyData: any) => {
+    trackUserInteraction('user_survey_completed', '', 'informative_survey', surveyData);
+    setIsVisible(false);
+    
+    setTimeout(() => {
+      // Para usuários logados, não passa papel específico
+      onComplete({ id: 'survey_completed', title: 'Questionário Completado' } as any);
+    }, 300);
+  }, [onComplete, trackUserInteraction]);
+
+  // Se usuário logado, mostrar questionário informativo
+  if (isLoggedIn) {
+    return (
+      <div className={`
+        fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4
+        transition-opacity duration-300 ${isVisible ? 'opacity-100' : 'opacity-0'}
+      `}>
+        <div className={`
+          bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto
+          transform transition-transform duration-300 ${isVisible ? 'scale-100' : 'scale-95'}
+        `}>
+          {/* Header para usuários logados */}
+          <div className="border-b border-gray-200 p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-lg font-semibold text-gray-900">
+                  Bem-vindo!
+                </h1>
+                <p className="text-sm text-gray-600">
+                  Questionário rápido para administradores
+                </p>
+              </div>
+              <button
+                onClick={handleSkip}
+                className="text-gray-400 hover:text-gray-600 text-sm px-3 py-1 rounded
+                         hover:bg-gray-100 transition-colors min-h-[44px]"
+                aria-label="Pular por agora"
+              >
+                Pular por agora
+              </button>
+            </div>
+          </div>
+
+          {/* Conteúdo do questionário */}
+          <div className="p-6">
+            <InformativeSurveyStep onComplete={handleSurveyComplete} />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Para usuários não logados, continuar com onboarding tradicional
   const CurrentStepComponent = steps[currentStep - 1]?.component;
   const canProceed = currentStep === 1 ? selectedRole !== null : true;
 
@@ -393,9 +651,9 @@ export function WelcomeWizard({ onComplete }: {
               onClick={handleSkip}
               className="text-gray-400 hover:text-gray-600 text-sm px-3 py-1 rounded
                        hover:bg-gray-100 transition-colors min-h-[44px]"
-              aria-label="Pular apresentação"
+              aria-label="Pular por agora"
             >
-              Pular
+              Pular por agora
             </button>
           </div>
 
