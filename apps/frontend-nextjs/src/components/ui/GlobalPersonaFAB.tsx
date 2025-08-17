@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
 import { getPersonaAvatar } from '@/constants/avatars';
 
@@ -13,7 +13,9 @@ interface GlobalPersonaFABProps {
 export default function GlobalPersonaFAB({ className, style }: GlobalPersonaFABProps) {
   const [isVisible, setIsVisible] = useState(true);
   const [showTooltip, setShowTooltip] = useState(false);
+  const [showCloseButton, setShowCloseButton] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
 
   // Function to determine best persona for user based on saved preferences
   const getBestPersonaForUser = () => {
@@ -60,31 +62,35 @@ export default function GlobalPersonaFAB({ className, style }: GlobalPersonaFABP
 
   const handleClose = () => {
     setIsVisible(false);
-    // Save closed state to localStorage for 24 hours
+    // Save closed state to sessionStorage (só para a sessão atual)
     const closeData = {
       timestamp: Date.now(),
       closed: true
     };
-    localStorage.setItem('fab_closed', JSON.stringify(closeData));
+    sessionStorage.setItem('fab_closed', JSON.stringify(closeData));
   };
 
-  // Check if FAB was closed recently (24 hours)
+  // Check if FAB was closed in this session and if we're on chat page
   useEffect(() => {
-    const fabClosed = localStorage.getItem('fab_closed');
+    // Não mostrar FAB na página do chat
+    if (pathname === '/chat') {
+      setIsVisible(false);
+      return;
+    }
+
+    // Verificar se foi fechado nesta sessão
+    const fabClosed = sessionStorage.getItem('fab_closed');
     if (fabClosed) {
       try {
         const data = JSON.parse(fabClosed);
-        const twentyFourHours = 24 * 60 * 60 * 1000;
-        if (Date.now() - data.timestamp < twentyFourHours) {
+        if (data.closed) {
           setIsVisible(false);
-        } else {
-          localStorage.removeItem('fab_closed');
         }
       } catch (error) {
-        localStorage.removeItem('fab_closed');
+        sessionStorage.removeItem('fab_closed');
       }
     }
-  }, []);
+  }, [pathname]);
 
   if (!isVisible) return null;
 
@@ -96,44 +102,14 @@ export default function GlobalPersonaFAB({ className, style }: GlobalPersonaFABP
         bottom: '24px',
         right: '24px',
         zIndex: 1000,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'flex-end',
-        gap: '8px',
         ...style
       }}
+      onMouseEnter={() => setShowCloseButton(true)}
+      onMouseLeave={() => setShowCloseButton(false)}
     >
-      {/* Close button */}
-      <button
-        onClick={handleClose}
-        style={{
-          width: '28px',
-          height: '28px',
-          backgroundColor: 'rgba(0, 0, 0, 0.6)',
-          color: 'white',
-          border: 'none',
-          borderRadius: '50%',
-          cursor: 'pointer',
-          fontSize: '16px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          transition: 'all 0.2s ease'
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.6)';
-        }}
-        aria-label="Fechar assistente"
-        title="Fechar assistente"
-      >
-        ×
-      </button>
-
-      {/* Main FAB with persona avatar */}
+      {/* Main FAB Container with close button overlay */}
       <div style={{ position: 'relative' }}>
+        {/* Main FAB with persona avatar */}
         <button
           onClick={handleChatClick}
           onMouseEnter={() => setShowTooltip(true)}
@@ -176,6 +152,45 @@ export default function GlobalPersonaFAB({ className, style }: GlobalPersonaFABP
           />
         </button>
 
+        {/* Close button - aparece no hover, posicionado próximo ao FAB */}
+        {showCloseButton && (
+          <button
+            onClick={handleClose}
+            style={{
+              position: 'absolute',
+              top: '-8px',
+              right: '-8px',
+              width: '24px',
+              height: '24px',
+              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+              color: '#333',
+              border: 'none',
+              borderRadius: '50%',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: 'bold',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.2s ease',
+              boxShadow: '0 2px 6px rgba(0, 0, 0, 0.2)',
+              zIndex: 1001
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 1)';
+              e.currentTarget.style.transform = 'scale(1.1)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
+              e.currentTarget.style.transform = 'scale(1)';
+            }}
+            aria-label="Fechar assistente"
+            title="Fechar assistente"
+          >
+            ×
+          </button>
+        )}
+
         {/* Persona name tooltip */}
         {showTooltip && (
           <div style={{
@@ -191,7 +206,8 @@ export default function GlobalPersonaFAB({ className, style }: GlobalPersonaFABP
             opacity: 1,
             transition: 'opacity 0.2s ease',
             pointerEvents: 'none',
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)'
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
+            zIndex: 999
           }}>
             {personaName}
             {/* Small arrow */}
