@@ -2,6 +2,7 @@
 """
 Main Application - Refatorado com Flask Blueprints
 Sistema Educacional para Dispensação PQT-U - Versão Modular
+[FORCE REDEPLOY] - Reativação do backend - 17/08/2025
 """
 
 import sys
