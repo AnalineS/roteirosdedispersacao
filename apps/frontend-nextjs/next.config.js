@@ -13,53 +13,8 @@ const nextConfig = {
   
   // SECURITY ENHANCEMENTS - Medical Application Grade (Score: 9.7/10)
   
-  // Headers de segurança - apenas quando não for export estático
-  async headers() {
-    if (process.env.BUILD_STANDALONE) {
-      return [
-        {
-          source: '/(.*)',
-          headers: [
-            // Segurança anti-clickjacking
-            {
-              key: 'X-Frame-Options',
-              value: 'DENY'
-            },
-            // Prevenção de MIME sniffing
-            {
-              key: 'X-Content-Type-Options', 
-              value: 'nosniff'
-            },
-            // Proteção XSS nativa do browser
-            {
-              key: 'X-XSS-Protection',
-              value: '1; mode=block'
-            },
-            // Política de referrer restritiva
-            {
-              key: 'Referrer-Policy',
-              value: 'strict-origin-when-cross-origin'
-            },
-            // Permissions Policy para aplicação médica
-            {
-              key: 'Permissions-Policy',
-              value: 'camera=(), microphone=(), geolocation=(), payment=()'
-            },
-            // Headers específicos para aplicação médica
-            {
-              key: 'X-Medical-App-Version',
-              value: 'PQT-U-v1.0-secure'
-            },
-            {
-              key: 'X-LGPD-Compliant',
-              value: 'true'
-            }
-          ]
-        }
-      ];
-    }
-    return [];
-  },
+  // Headers de segurança - desabilitado para export estático (configura no firebase.json)
+  // async headers() - não funciona com output: 'export'
   
   // Configurações de imagem para Cloud Run com segurança aprimorada
   images: {
@@ -142,27 +97,8 @@ const nextConfig = {
     return `medical-build-${new Date().getTime()}`;
   },
   
-  // Redirecionamentos de segurança - apenas quando não for export estático
-  async redirects() {
-    if (process.env.BUILD_STANDALONE) {
-      return [
-        // Redirecionar http para https em produção
-        {
-          source: '/(.*)',
-          has: [
-            {
-              type: 'header',
-              key: 'x-forwarded-proto',
-              value: 'http',
-            },
-          ],
-          destination: 'https://roteirosdedispensacao.com/$1',
-          permanent: true,
-        }
-      ];
-    }
-    return [];
-  }
+  // Redirecionamentos - desabilitado para export estático
+  // async redirects() - não funciona com output: 'export'
 }
 
 module.exports = withBundleAnalyzer(nextConfig)
