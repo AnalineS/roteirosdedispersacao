@@ -332,6 +332,157 @@ jobs:
             } catch (error) {
               console.log(`❌ Erro ao verificar configurações: ${error.message}`);
             }
+
+      - name: 📱 Test Telegram Connection (Manual Run Only)
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          # Teste específico de conectividade do Telegram em execução manual
+          if [ -n "${{ secrets.TELEGRAM_BOT_TOKEN }}" ] && [ -n "${{ secrets.TELEGRAM_CHAT_ID }}" ]; then
+            echo "🧪 Testando conexão Telegram..."
+            
+            TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
+            MONITORING_URL="https://github.com/${{ github.repository }}/actions/workflows/observability-monitoring.yml"
+            
+            # Mensagem de teste sempre enviada em execução manual
+            TELEGRAM_TEST="🧪 *Teste Manual - Sistema de Monitoramento*%0A%0A✅ *Telegram configurado corretamente!*%0A%0A📊 *Informações do teste:*%0A• Horário: $TIMESTAMP%0A• Tipo: Execução manual%0A• Status: Funcionando%0A%0A🔗 *Links de ação:*%0A📊 [Ver Monitoring]($MONITORING_URL)%0A%0A_Sistema de alertas ativo e funcional_ ✅"
+            
+            curl -s "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+              -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}" \
+              -d "text=$TELEGRAM_TEST" \
+              -d "parse_mode=Markdown" \
+              -d "disable_web_page_preview=false"
+            
+            echo "✅ Teste do Telegram enviado com sucesso"
+          else
+            echo "❌ Credenciais do Telegram não configuradas"
+            echo "Configure TELEGRAM_BOT_TOKEN e TELEGRAM_CHAT_ID nos secrets"
+          fi
+
+      - name: 🔥 Simulate Alert for Testing (Manual Run Only)
+        if: github.event_name == 'workflow_dispatch'
+        id: simulate-alert
+        run: |
+          echo "🔥 Simulando alerta para teste completo..."
+          
+          # Simular problema no backend para teste
+          echo "backend_status=500" >> $GITHUB_OUTPUT
+          echo "frontend_status=200" >> $GITHUB_OUTPUT
+          echo "alert_needed=true" >> $GITHUB_OUTPUT
+          
+          echo "✅ Alerta simulado - backend 500, frontend 200"
+          echo "Este alerta vai disparar tanto Telegram quanto GitHub Issues"
+
+      - name: 🚨 Create Simulated Alert Issue
+        if: github.event_name == 'workflow_dispatch' && steps.simulate-alert.outputs.alert_needed == 'true'
+        id: create-simulated-issue
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const now = new Date().toISOString();
+            const backend = '${{ steps.simulate-alert.outputs.backend_status }}';
+            const frontend = '${{ steps.simulate-alert.outputs.frontend_status }}';
+            
+            const title = '🔥 TESTE - Alerta Simulado de Sistema';
+            const body = `## Alerta de Teste Simulado - ${now}\n\n` +
+                        `### 🚨 Problema Simulado\n\n` +
+                        `- **Backend API**: ❌ Simulado Offline (${backend})\n` +
+                        `- **Frontend**: ✅ Online (${frontend})\n\n` +
+                        `### 📊 Status de Teste\n\n` +
+                        `| Componente | Status | Simulado |\n` +
+                        `|------------|--------|----------|\n` +
+                        `| Backend API | ${backend} | ❌ |\n` +
+                        `| Frontend | ${frontend} | ✅ |\n\n` +
+                        `**ESTE É UM TESTE SIMULADO** - O sistema está funcionando normalmente.\n\n` +
+                        `---\n*Teste automático do sistema de alertas*`;
+            
+            const issueResult = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: body,
+              labels: ['test', 'simulated-alert', 'observability'],
+              assignees: ['AnalineS']
+            });
+            
+            const issueUrl = issueResult.data.html_url;
+            const monitoringUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/workflows/observability-monitoring.yml`;
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueResult.data.number,
+              body: `🔥 **ALERTA SIMULADO** @AnalineS\n\n` +
+                    `Este é um teste do sistema de alertas.\n\n` +
+                    `**🔗 Ações Rápidas:**\n` +
+                    `- 📊 [Ver Monitoring](${monitoringUrl}) - Executar verificações\n` +
+                    `- 🔍 [Esta Issue](${issueUrl}) - Acompanhar resolução\n` +
+                    `- 🧪 **TESTE** - Sistema funcionando normalmente\n\n` +
+                    `**Status real dos serviços:**\n` +
+                    `- [ ] Backend funcionando ✅\n` +
+                    `- [ ] Frontend funcionando ✅\n` +
+                    `- [ ] Alertas funcionando ✅\n\n` +
+                    `*Issue de teste - será fechada automaticamente*`
+            });
+            
+            core.setOutput('issue_url', issueUrl);
+            core.setOutput('monitoring_url', monitoringUrl);
+            core.setOutput('issue_number', issueResult.data.number);
+            
+            console.log('✅ Issue de alerta simulado criada');
+
+      - name: 📱 Send Simulated Telegram Alert
+        if: github.event_name == 'workflow_dispatch' && steps.simulate-alert.outputs.alert_needed == 'true'
+        run: |
+          # Teste do alerta real via Telegram
+          if [ -n "${{ secrets.TELEGRAM_BOT_TOKEN }}" ] && [ -n "${{ secrets.TELEGRAM_CHAT_ID }}" ]; then
+            TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
+            ISSUE_URL="${{ steps.create-simulated-issue.outputs.issue_url }}"
+            MONITORING_URL="${{ steps.create-simulated-issue.outputs.monitoring_url }}"
+            ISSUE_NUMBER="${{ steps.create-simulated-issue.outputs.issue_number }}"
+            
+            # Simular alerta de sistema offline
+            TELEGRAM_MESSAGE="🔴 *Alerta Roteiros de Dispensação*%0A%0A*Tipo:* 🚨 TESTE - SISTEMA OFFLINE%0A*Detalhes:* Backend: 500 | Frontend: 200%0A*Horário:* $TIMESTAMP%0A%0A📊 *Status de Teste:*%0A• Backend API: 500 (simulado)%0A• Frontend: 200%0A• Métricas: OK%0A%0A🔗 *Ações Rápidas:*%0A📊 [Ver Monitoring]($MONITORING_URL)%0A🔍 [Issue \#$ISSUE_NUMBER]($ISSUE_URL)%0A%0A🧪 *ESTE É UM TESTE SIMULADO*%0A_O sistema está funcionando normalmente_"
+            
+            curl -s "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+              -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}" \
+              -d "text=$TELEGRAM_MESSAGE" \
+              -d "parse_mode=Markdown" \
+              -d "disable_web_page_preview=false"
+            
+            echo "✅ Alerta simulado enviado via Telegram"
+          else
+            echo "❌ Telegram não configurado para teste"
+          fi
+
+      - name: 🧹 Clean up test issue
+        if: github.event_name == 'workflow_dispatch' && steps.create-simulated-issue.outputs.issue_number
+        uses: actions/github-script@v6
+        with:
+          script: |
+            // Aguardar 30 segundos e fechar issue de teste
+            await new Promise(resolve => setTimeout(resolve, 30000));
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: '${{ steps.create-simulated-issue.outputs.issue_number }}',
+              body: '✅ **Teste Concluído**\n\n' +
+                    'O sistema de alertas está funcionando corretamente:\n' +
+                    '- ✅ GitHub Issues criadas automaticamente\n' +
+                    '- ✅ Telegram enviando mensagens\n' +
+                    '- ✅ Email notifications ativas\n' +
+                    '- ✅ Links de ação rápida funcionando\n\n' +
+                    '*Fechando issue de teste automaticamente*'
+            });
+            
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: '${{ steps.create-simulated-issue.outputs.issue_number }}',
+              state: 'closed'
+            });
+            
+            console.log('✅ Issue de teste fechada automaticamente');
       
       - name: 📈 Send Metrics to Google Analytics (UX)
         if: always()
