@@ -178,16 +178,6 @@ export const OPTIMIZED_HEADER_NAVIGATION: NavigationCategory[] = [
         level: 'beginner',
         estimatedTime: '3 min'
       },
-      {
-        id: 'vida-com-hanseniase',
-        label: 'Vida com Hanseníase',
-        href: '/vida-com-hanseniase',
-        icon: '❤️',
-        description: 'Informações públicas sobre qualidade de vida',
-        category: 'tools',
-        level: 'beginner',
-        estimatedTime: '10 min'
-      },
     ]
   },
   
@@ -200,9 +190,9 @@ export const OPTIMIZED_HEADER_NAVIGATION: NavigationCategory[] = [
       {
         id: 'about-thesis',
         label: 'Sobre a Tese',
-        href: '/modules/sobre-a-tese',
+        href: '/sobre-a-tese',
         icon: '📚',
-        description: 'Metodologia e fundamentação',
+        description: 'Metodologia e fundamentação (acesso público)',
         category: 'institutional',
         level: 'advanced',
         estimatedTime: '15 min'

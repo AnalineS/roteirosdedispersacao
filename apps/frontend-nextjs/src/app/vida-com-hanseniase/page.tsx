@@ -1,10 +1,82 @@
 'use client';
 
-import EducationalLayout from '@/components/layout/EducationalLayout';
+import NavigationHeader from '@/components/navigation/NavigationHeader';
+import EducationalFooter from '@/components/navigation/EducationalFooter';
 
 export default function VidaComHansenitePage() {
   return (
-    <EducationalLayout>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      {/* Schema.org JSON-LD para MedicalWebPage */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "MedicalWebPage",
+            "name": "Vida com Hanseníase - Qualidade de Vida e Direitos",
+            "description": "Informações essenciais sobre qualidade de vida, direitos e reintegração social para pessoas com hanseníase.",
+            "url": "https://roteirosdedispensacao.com/vida-com-hanseniase",
+            "medicalAudience": [
+              {
+                "@type": "MedicalAudience",
+                "audienceType": "https://schema.org/Patient"
+              },
+              {
+                "@type": "MedicalAudience",
+                "audienceType": "https://schema.org/Caregiver"
+              }
+            ],
+            "specialty": {
+              "@type": "MedicalSpecialty",
+              "name": "Dermatologia"
+            },
+            "about": {
+              "@type": "MedicalCondition",
+              "name": "Hanseníase",
+              "alternateName": "Lepra",
+              "description": "Informações sobre qualidade de vida com hanseníase"
+            },
+            "lastReviewed": "2024-12-01",
+            "reviewedBy": {
+              "@type": "Organization", 
+              "name": "Universidade de Brasília"
+            },
+            "mainEntity": {
+              "@type": "MedicalCondition",
+              "name": "Hanseníase",
+              "description": "Qualidade de vida, direitos e cuidados para pessoas com hanseníase"
+            },
+            "significantLink": [
+              "https://roteirosdedispensacao.com/chat"
+            ],
+            "breadcrumb": {
+              "@type": "BreadcrumbList",
+              "itemListElement": [
+                {
+                  "@type": "ListItem",
+                  "position": 1,
+                  "name": "Início",
+                  "item": "https://roteirosdedispensacao.com"
+                },
+                {
+                  "@type": "ListItem",
+                  "position": 2,
+                  "name": "Vida com Hanseníase",
+                  "item": "https://roteirosdedispensacao.com/vida-com-hanseniase"
+                }
+              ]
+            }
+          })
+        }}
+      />
+
+      {/* Header público simplificado */}
+      <header role="banner">
+        <NavigationHeader />
+      </header>
+      
+      {/* Conteúdo principal */}
+      <main id="main-content" style={{ flex: 1 }}>
       <div style={{ maxWidth: 'min(1200px, 95vw)', margin: '0 auto', padding: '2rem' }}>
         {/* Header da página */}
         <div style={{
@@ -24,7 +96,7 @@ export default function VidaComHansenitePage() {
             justifyContent: 'center',
             gap: '1rem'
           }}>
-            🌟 Vida com Hanseníase
+            💜 Vida com Hanseníase
           </h1>
           <p style={{ 
             fontSize: 'clamp(1rem, 2.5vw, 1.25rem)', 
@@ -410,6 +482,12 @@ export default function VidaComHansenitePage() {
           </div>
         </div>
       </div>
-    </EducationalLayout>
+      </main>
+      
+      {/* Footer público */}
+      <footer role="contentinfo">
+        <EducationalFooter variant="full" showNavigation={true} />
+      </footer>
+    </div>
   );
 }

@@ -155,9 +155,127 @@ export default function HomePage() {
           .research-cards {
             flex-direction: column;
           }
+          
+          /* Header responsivo - ajustar padding e margens */
+          .container {
+            padding-left: clamp(0.75rem, 3vw, 1rem) !important;
+            padding-right: clamp(0.75rem, 3vw, 1rem) !important;
+          }
+          
+          /* Navegação responsiva */
+          nav {
+            padding: 0.75rem 0 !important;
+          }
+          
+          nav > div {
+            gap: 1rem !important;
+            flex-direction: column !important;
+            align-items: center !important;
+          }
+          
+          nav a {
+            font-size: 0.85rem !important;
+            padding: 0.4rem 0.8rem !important;
+          }
         }
       `}</style>
       
+      {/* Schema.org JSON-LD para MedicalWebPage */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "MedicalWebPage",
+            "name": "Roteiros de Dispensação Hanseníase – Assistentes educacionais com IA",
+            "description": "Plataforma gratuita validada pela UnB para orientar pacientes e profissionais na dispensação da PQT-U para hanseníase.",
+            "url": "https://roteirosdedispensacao.com",
+            "medicalAudience": [
+              {
+                "@type": "MedicalAudience",
+                "audienceType": "https://schema.org/Patient"
+              },
+              {
+                "@type": "MedicalAudience", 
+                "audienceType": "https://schema.org/MedicalAudience",
+                "requiredGender": "unisex",
+                "requiredMinAge": 18,
+                "suggestedMinAge": 18
+              }
+            ],
+            "specialty": {
+              "@type": "MedicalSpecialty",
+              "name": "Farmácia Clínica"
+            },
+            "about": {
+              "@type": "MedicalCondition",
+              "name": "Hanseníase",
+              "alternateName": "Lepra",
+              "description": "Doença infecciosa crônica causada pelo Mycobacterium leprae",
+              "medicalCode": {
+                "@type": "MedicalCode",
+                "code": "A30",
+                "codingSystem": "ICD-10"
+              }
+            },
+            "lastReviewed": "2024-12-01",
+            "reviewedBy": {
+              "@type": "Organization",
+              "name": "Universidade de Brasília",
+              "alternateName": "UnB",
+              "department": "Programa de Pós-Graduação em Ciências Farmacêuticas"
+            },
+            "author": {
+              "@type": "Organization",
+              "name": "Universidade de Brasília",
+              "url": "https://www.unb.br"
+            },
+            "publisher": {
+              "@type": "Organization",
+              "name": "UnB - Programa de Pós-Graduação em Ciências Farmacêuticas"
+            },
+            "mainEntity": {
+              "@type": "MedicalTherapy",
+              "name": "Poliquimioterapia Única para Hanseníase",
+              "alternateName": "PQT-U",
+              "description": "Tratamento medicamentoso padronizado para hanseníase",
+              "administrationRoute": "Oral",
+              "dosageForm": "Comprimido/Cápsula",
+              "activeIngredient": [
+                {
+                  "@type": "Drug",
+                  "name": "Rifampicina"
+                },
+                {
+                  "@type": "Drug", 
+                  "name": "Clofazimina"
+                },
+                {
+                  "@type": "Drug",
+                  "name": "Dapsona"
+                }
+              ]
+            },
+            "significantLink": [
+              "https://roteirosdedispensacao.com/chat",
+              "https://roteirosdedispensacao.com/vida-com-hanseniase",
+              "https://roteirosdedispensacao.com/sobre-a-tese"
+            ],
+            "breadcrumb": {
+              "@type": "BreadcrumbList",
+              "itemListElement": [
+                {
+                  "@type": "ListItem",
+                  "position": 1,
+                  "name": "Início",
+                  "item": "https://roteirosdedispensacao.com"
+                }
+              ]
+            }
+          })
+        }}
+      />
+
       <EducationalLayout showBreadcrumbs={false}>
       <div style={{
         minHeight: '100vh',
@@ -176,24 +294,113 @@ export default function HomePage() {
           zIndex: 0
         }}></div>
 
+        {/* Barra de Navegação Ligeira */}
+        <nav style={{
+          position: 'sticky',
+          top: '0',
+          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+          backdropFilter: 'blur(10px)',
+          borderBottom: '1px solid #e2e8f0',
+          padding: '1rem 0',
+          zIndex: 100
+        }}>
+          <div style={{
+            maxWidth: 'min(1200px, 95vw)',
+            margin: '0 auto',
+            display: 'flex',
+            justifyContent: 'center',
+            gap: '2rem',
+            flexWrap: 'wrap'
+          }}>
+            <a
+              href="#assistentes"
+              style={{
+                color: '#003366',
+                textDecoration: 'none',
+                fontWeight: '600',
+                fontSize: '0.9rem',
+                padding: '0.5rem 1rem',
+                borderRadius: '8px',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#f0f9ff';
+                e.currentTarget.style.transform = 'translateY(-1px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }}
+            >
+              Assistentes
+            </a>
+            <a
+              href="#faq"
+              style={{
+                color: '#003366',
+                textDecoration: 'none',
+                fontWeight: '600',
+                fontSize: '0.9rem',
+                padding: '0.5rem 1rem',
+                borderRadius: '8px',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#f0f9ff';
+                e.currentTarget.style.transform = 'translateY(-1px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }}
+            >
+              Dúvidas
+            </a>
+            <a
+              href="#suporte"
+              style={{
+                color: '#003366',
+                textDecoration: 'none',
+                fontWeight: '600',
+                fontSize: '0.9rem',
+                padding: '0.5rem 1rem',
+                borderRadius: '8px',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#f0f9ff';
+                e.currentTarget.style.transform = 'translateY(-1px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }}
+            >
+              Suporte
+            </a>
+          </div>
+        </nav>
+
         {/* Content */}
         <div className="container" style={{
           position: 'relative',
           zIndex: 1,
-          paddingTop: 'clamp(2rem, 8vw, 4rem)',
+          paddingTop: '0',
           paddingBottom: 'clamp(2rem, 8vw, 4rem)',
           paddingLeft: 'clamp(1rem, 4vw, 2rem)',
           paddingRight: 'clamp(1rem, 4vw, 2rem)'
         }}>
-          {/* Header Institucional */}
+          {/* Header Institucional - Colado na navegação */}
           <div style={{ 
             maxWidth: 'min(1200px, 92vw)', 
-            margin: '0 auto 2rem',
+            margin: '0 auto',
+            marginBottom: '2rem',
             padding: 'clamp(1rem, 3vw, 1.5rem)',
             background: 'white',
-            borderRadius: 'clamp(8px, 2vw, 12px)',
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+            borderRadius: '0 0 clamp(8px, 2vw, 12px) clamp(8px, 2vw, 12px)',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
             border: '1px solid #e2e8f0',
+            borderTop: 'none',
             textAlign: 'center',
             display: 'flex',
             alignItems: 'center',
@@ -216,8 +423,8 @@ export default function HomePage() {
               margin: '0 auto',
               textAlign: 'center'
             }}>
-              Plataforma baseada em pesquisa de doutorado que oferece orientação especializada 
-              para dispensação de medicamentos do programa PQT-U para hanseníase
+              Orientação farmacêutica gratuita para quem trata hanseníase no SUS, 24 h por dia.
+              Plataforma baseada em pesquisa de doutorado que oferece orientações sobre a dispensação de medicamentos, baseada em fatos.
             </HierarchyText>
           </div>
 
@@ -304,7 +511,7 @@ export default function HomePage() {
             </div>
             
             {/* Cards dos Assistentes - Layout Flex Horizontal */}
-            <div className="assistants-container">
+            <div id="assistentes" className="assistants-container" role="main" aria-label="Seleção de assistentes virtuais">
             
               {/* Dr. Gasnelio Card - Clickable */}
               <button
@@ -376,7 +583,7 @@ export default function HomePage() {
                 }}>
                   <Image 
                     src={getPersonaAvatar('dr_gasnelio')} 
-                    alt="Dr. Gasnelio"
+                    alt="Avatar do Dr. Gasnelio - Assistente farmacêutico técnico especializado"
                     width={120}
                     height={120}
                     priority
@@ -388,14 +595,14 @@ export default function HomePage() {
                     }}
                   />
                 </div>
-                <h3 style={{ 
+                <h2 style={{ 
                   fontSize: '1.5rem', 
                   fontWeight: '700', 
                   color: '#003366',
                   marginBottom: '1rem'
                 }}>
                   Dr. Gasnelio
-                </h3>
+                </h2>
                 <p style={{ 
                   fontSize: '1rem', 
                   color: '#003366', 
@@ -421,15 +628,20 @@ export default function HomePage() {
                 </ul>
                 
                 <div style={{
-                  padding: '0.75rem 1.5rem',
-                  background: 'rgba(2, 132, 199, 0.1)',
+                  padding: '1rem 1.5rem',
+                  background: '#003366',
                   borderRadius: '8px',
-                  border: '1px solid rgba(2, 132, 199, 0.2)',
-                  color: '#003366',
-                  fontSize: '0.875rem',
-                  fontWeight: '600'
+                  color: 'white',
+                  fontSize: '1rem',
+                  fontWeight: '700',
+                  marginTop: '0.5rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem'
                 }}>
-                  Clique para conversar
+                  <ChatBotIcon size={16} variant="unb" />
+                  Conversar com Dr. Gasnelio
                 </div>
               </button>
 
@@ -503,7 +715,7 @@ export default function HomePage() {
                 }}>
                   <Image 
                     src={getPersonaAvatar('ga')} 
-                    alt="Gá"
+                    alt="Avatar da Gá - Assistente acolhedora focada em comunicação empática"
                     width={120}
                     height={120}
                     priority
@@ -515,14 +727,14 @@ export default function HomePage() {
                     }}
                   />
                 </div>
-                <h3 style={{ 
+                <h2 style={{ 
                   fontSize: '1.5rem', 
                   fontWeight: '700', 
                   color: '#16a34a',
                   marginBottom: '1rem'
                 }}>
                   Gá
-                </h3>
+                </h2>
                 <p style={{ 
                   fontSize: '1rem', 
                   color: '#16a34a', 
@@ -548,15 +760,20 @@ export default function HomePage() {
                 </ul>
                 
                 <div style={{
-                  padding: '0.75rem 1.5rem',
-                  background: 'rgba(34, 197, 94, 0.1)',
+                  padding: '1rem 1.5rem',
+                  background: '#059669',
                   borderRadius: '8px',
-                  border: '1px solid rgba(34, 197, 94, 0.2)',
-                  color: '#16a34a',
-                  fontSize: '0.875rem',
-                  fontWeight: '600'
+                  color: 'white',
+                  fontSize: '1rem',
+                  fontWeight: '700',
+                  marginTop: '0.5rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem'
                 }}>
-                  Clique para conversar
+                  <ChatBotIcon size={16} variant="unb" />
+                  Conversar com Gá
                 </div>
               </button>
             </div>
@@ -755,11 +972,11 @@ export default function HomePage() {
                   margin: '0 0 0.5rem 0',
                   fontWeight: '600'
                 }}>
-                  ✨ Clique no assistente de sua preferência acima para iniciar a conversa
+                  ✨ <a href="#assistentes" style={{ color: '#003366', textDecoration: 'underline' }}>Clique no assistente de sua preferência acima</a> para iniciar a conversa
                 </p>
                 <p style={{
                   fontSize: '0.85rem',
-                  color: '#64748b',
+                  color: '#4a5568',
                   margin: 0
                 }}>
                   Ambos foram treinados com o conteúdo completo da pesquisa de doutorado
@@ -810,9 +1027,18 @@ export default function HomePage() {
                   fontWeight: '700',
                   color: '#92400e',
                   fontSize: '1.1rem',
-                  marginBottom: '0.5rem'
+                  marginBottom: '0.5rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '0.5rem 0'
                 }}>
                   Como escolher entre Dr. Gasnelio e Gá?
+                  <span style={{
+                    fontSize: '1.5rem',
+                    transition: 'transform 0.3s ease',
+                    transform: 'rotate(0deg)'
+                  }}>+</span>
                 </summary>
                 <p style={{ marginTop: '1rem', color: '#78716c', lineHeight: '1.6' }}>
                   Dr. Gasnelio é ideal para <strong>profissionais de saúde e estudantes</strong> que precisam de linguagem técnica, protocolos detalhados e referências científicas. Gá é perfeita para <strong>pacientes, familiares e comunidade</strong> que buscam explicações simples, acolhedoras e apoio emocional.
@@ -831,9 +1057,18 @@ export default function HomePage() {
                   fontWeight: '700',
                   color: '#92400e',
                   fontSize: '1.1rem',
-                  marginBottom: '0.5rem'
+                  marginBottom: '0.5rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '0.5rem 0'
                 }}>
                   O tratamento PQT-U é gratuito no SUS?
+                  <span style={{
+                    fontSize: '1.5rem',
+                    transition: 'transform 0.3s ease',
+                    transform: 'rotate(0deg)'
+                  }}>+</span>
                 </summary>
                 <p style={{ marginTop: '1rem', color: '#78716c', lineHeight: '1.6' }}>
                   <strong>Sim!</strong> O tratamento PQT-U (Poliquimioterapia Única) é 100% gratuito em todas as unidades de saúde do SUS. Inclui medicamentos, consultas, exames e acompanhamento completo durante os 6 meses de tratamento.
@@ -961,10 +1196,34 @@ export default function HomePage() {
                   border: '1px solid #fcd34d'
                 }}>
                   <strong style={{ color: '#92400e', fontSize: '1rem' }}>🚨 Emergência Médica</strong>
-                  <p style={{ margin: '0.5rem 0 0', color: '#78716c' }}>
-                    <strong>SAMU: 192</strong><br />
+                  <div style={{ margin: '0.5rem 0 0', color: '#78716c' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                      <strong>SAMU: 192</strong>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText('192');
+                          addToast({
+                            type: 'success',
+                            message: 'Número 192 copiado!',
+                            duration: 2000
+                          });
+                        }}
+                        style={{
+                          padding: '0.25rem 0.5rem',
+                          backgroundColor: '#dc2626',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '4px',
+                          fontSize: '0.75rem',
+                          cursor: 'pointer'
+                        }}
+                        aria-label="Copiar número do SAMU"
+                      >
+                        Copiar
+                      </button>
+                    </div>
                     <strong>Disque Saúde: 136</strong>
-                  </p>
+                  </div>
                 </div>
                 
                 <div style={{
@@ -1122,7 +1381,7 @@ export default function HomePage() {
                 </h3>
                 <p style={{
                   fontSize: '0.875rem',
-                  color: '#64748b',
+                  color: '#4a5568',
                   lineHeight: '1.6',
                   flex: '1'
                 }}>
@@ -1167,7 +1426,7 @@ export default function HomePage() {
                 <div style={{ height: '0.75rem' }}></div>
                 <p style={{
                   fontSize: '0.875rem',
-                  color: '#64748b',
+                  color: '#4a5568',
                   lineHeight: '1.6',
                   flex: '1'
                 }}>
@@ -1212,7 +1471,7 @@ export default function HomePage() {
                 </h3>
                 <p style={{
                   fontSize: '0.875rem',
-                  color: '#64748b',
+                  color: '#4a5568',
                   lineHeight: '1.6',
                   flex: '1'
                 }}>
@@ -1277,6 +1536,49 @@ export default function HomePage() {
       </div>
       
       {/* UX Analytics Components - Apenas em desenvolvimento */}
+      {/* FAB (Floating Action Button) para Assistentes */}
+      <div style={{
+        position: 'fixed',
+        bottom: '24px',
+        right: '24px',
+        zIndex: 1000
+      }}>
+        <button
+          onClick={() => document.getElementById('assistentes')?.scrollIntoView({ behavior: 'smooth' })}
+          style={{
+            width: '56px',
+            height: '56px',
+            backgroundColor: '#003366',
+            color: 'white',
+            border: 'none',
+            borderRadius: '50%',
+            cursor: 'pointer',
+            boxShadow: '0 4px 12px rgba(0, 51, 102, 0.3)',
+            transition: 'all 0.3s ease',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'scale(1.1)';
+            e.currentTarget.style.boxShadow = '0 6px 20px rgba(0, 51, 102, 0.4)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'scale(1)';
+            e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 51, 102, 0.3)';
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') {
+              e.currentTarget.blur();
+            }
+          }}
+          aria-label="Escolher assistente virtual"
+          tabIndex={0}
+        >
+          <ChatBotIcon size={24} variant="unb" />
+        </button>
+      </div>
+
       {process.env.NODE_ENV === 'development' && (
         <>
           <CognitiveLoadAuditor />

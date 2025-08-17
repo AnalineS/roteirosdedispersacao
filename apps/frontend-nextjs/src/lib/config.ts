@@ -35,8 +35,8 @@ export const SITE_CONFIG = {
     
     return {
       metadataBase: new URL(baseUrl),
-      title: 'Roteiros de Dispensação – Assistentes Educacionais',
-      description: 'Plataforma educacional com assistentes virtuais Dr. Gasnelio e Gá para orientação sobre poliquimioterapia de hanseníase (PQT-U)',
+      title: 'Roteiros de Dispensação Hanseníase – Assistentes educacionais com IA',
+      description: 'Plataforma gratuita validada pela UnB para orientar pacientes e profissionais na dispensação da PQT-U para hanseníase.',
       keywords: 'hanseníase, PQT-U, educação médica, assistente educacional, Dr. Gasnelio, Gá, poliquimioterapia, aprendizagem adaptativa, SUS, farmácia clínica',
       authors: [{ name: 'Roteiro de Dispensação - Assistentes Educacionais' }],
       creator: 'Universidade de Brasília - Programa de Pós-Graduação em Ciências Farmacêuticas',

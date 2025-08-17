@@ -90,7 +90,7 @@ export default function EducationalFooter({
         { label: 'Checklist Dispensação', href: '/resources/checklist', description: 'Lista de verificação para procedimentos' },
         { label: 'Glossário Médico', href: '/glossario', description: 'Termos técnicos da hanseníase explicados' },
         { label: 'Materiais para Download', href: '/downloads', description: 'Documentação e recursos complementares' },
-        { label: 'Vida com Hanseníase', href: '/vida-com-hanseniase', description: 'Informações sobre qualidade de vida (acesso público)' }
+        { label: 'Vida com Hanseníase', href: '/vida-com-hanseniase', description: '🌟 Recurso público: qualidade de vida e direitos (acesso livre)' }
       ]
     }
   };

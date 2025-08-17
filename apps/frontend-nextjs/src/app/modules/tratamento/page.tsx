@@ -2,6 +2,7 @@
 
 import EducationalLayout from '@/components/layout/EducationalLayout';
 import Link from 'next/link';
+import { HanseníaseModuleStructuredData } from '@/components/seo/MedicalStructuredData';
 
 export default function TratamentoModulePage() {
   const moduleContent = {
@@ -589,8 +590,17 @@ export default function TratamentoModulePage() {
   };
 
   return (
-    <EducationalLayout>
-      <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+    <>
+      <HanseníaseModuleStructuredData
+        moduleTitle={moduleContent.title}
+        moduleDescription={moduleContent.description}
+        moduleType="treatment"
+        duration={moduleContent.duration}
+        level={moduleContent.level}
+        category={moduleContent.category}
+      />
+      <EducationalLayout>
+        <div style={{ maxWidth: '900px', margin: '0 auto' }}>
         {/* Module Header */}
         <div style={{
           background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
@@ -896,7 +906,8 @@ export default function TratamentoModulePage() {
             Próximo: Roteiro de Dispensação →
           </Link>
         </div>
-      </div>
-    </EducationalLayout>
+        </div>
+      </EducationalLayout>
+    </>
   );
 }

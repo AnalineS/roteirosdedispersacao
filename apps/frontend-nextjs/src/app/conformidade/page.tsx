@@ -33,6 +33,31 @@ interface ComplianceFramework {
 
 const complianceFrameworks: ComplianceFramework[] = [
   {
+    id: 'schema-org',
+    name: 'Schema.org',
+    fullName: 'Schema.org MedicalWebPage',
+    description: 'Microdados estruturados para páginas médicas seguindo padrões internacionais de SEO médico',
+    status: 'compliant',
+    measures: [
+      'Implementação completa do schema MedicalWebPage',
+      'Propriedades médicas específicas (medicalAudience, specialty, about)',
+      'Códigos médicos padronizados (ICD-10: A30 para Hanseníase)',
+      'Breadcrumbs estruturados para navegação',
+      'Informações de revisão médica (lastReviewed, reviewedBy)',
+      'Dados de medicamentos da PQT-U (activeIngredient)',
+      'Audiências diferenciadas (pacientes e profissionais)',
+      'Validação por ferramenta Google Rich Results Test'
+    ],
+    references: [
+      'Schema.org Medical Web Page specification',
+      'Google Medical Content Guidelines',
+      'WHO Health Information Standards',
+      'Brasil - PCDT Hanseníase 2022'
+    ],
+    icon: BookOpenIcon,
+    color: '#7C3AED'
+  },
+  {
     id: 'lgpd',
     name: 'LGPD',
     fullName: 'Lei Geral de Proteção de Dados',
@@ -444,7 +469,7 @@ export default function ConformidadePage() {
           }}
         >
           <div style={{ fontSize: '24px', fontWeight: '800', color: '#10B981', marginBottom: modernChatTheme.spacing.xs }}>
-            {compliantCount}/7
+            {compliantCount}/8
           </div>
           <div style={{ fontSize: '14px', color: modernChatTheme.colors.neutral.textMuted }}>
             Conformidade Total
@@ -461,7 +486,7 @@ export default function ConformidadePage() {
           }}
         >
           <div style={{ fontSize: '24px', fontWeight: '800', color: '#F59E0B', marginBottom: modernChatTheme.spacing.xs }}>
-            {partialCount}/7
+            {partialCount}/8
           </div>
           <div style={{ fontSize: '14px', color: modernChatTheme.colors.neutral.textMuted }}>
             Em Implementação
@@ -482,6 +507,71 @@ export default function ConformidadePage() {
           </div>
           <div style={{ fontSize: '14px', color: modernChatTheme.colors.neutral.textMuted }}>
             Cobertura Normativa
+          </div>
+        </div>
+      </div>
+
+      {/* SEO Médico e Acessibilidade */}
+      <div
+        style={{
+          background: 'linear-gradient(135deg, #7C3AED 0%, #A855F7 100%)',
+          borderRadius: modernChatTheme.borderRadius.lg,
+          padding: modernChatTheme.spacing.xl,
+          marginBottom: modernChatTheme.spacing.xl,
+          color: 'white'
+        }}
+      >
+        <h3 style={{ 
+          fontSize: '20px', 
+          fontWeight: '700', 
+          marginBottom: modernChatTheme.spacing.md,
+          color: 'white'
+        }}>
+          🎯 SEO Médico e Microdados Estruturados
+        </h3>
+        
+        <p style={{ 
+          fontSize: '16px', 
+          lineHeight: '1.6',
+          marginBottom: modernChatTheme.spacing.lg,
+          opacity: 0.9
+        }}>
+          Implementação completa de microdados Schema.org MedicalWebPage para otimização de busca e 
+          melhor descoberta de conteúdo médico por pacientes e profissionais de saúde.
+        </p>
+        
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', 
+          gap: modernChatTheme.spacing.md 
+        }}>
+          <div style={{ background: 'rgba(255,255,255,0.1)', padding: modernChatTheme.spacing.md, borderRadius: '8px' }}>
+            <strong>✅ Páginas Implementadas</strong>
+            <ul style={{ margin: '8px 0 0 0', paddingLeft: '16px', fontSize: '14px' }}>
+              <li>Página Principal</li>
+              <li>Módulo Hanseníase</li>
+              <li>Módulo Tratamento</li>
+            </ul>
+          </div>
+          
+          <div style={{ background: 'rgba(255,255,255,0.1)', padding: modernChatTheme.spacing.md, borderRadius: '8px' }}>
+            <strong>🎯 Propriedades Schema</strong>
+            <ul style={{ margin: '8px 0 0 0', paddingLeft: '16px', fontSize: '14px' }}>
+              <li>MedicalAudience</li>
+              <li>MedicalSpecialty</li>
+              <li>MedicalCondition</li>
+              <li>MedicalTherapy</li>
+            </ul>
+          </div>
+          
+          <div style={{ background: 'rgba(255,255,255,0.1)', padding: modernChatTheme.spacing.md, borderRadius: '8px' }}>
+            <strong>📊 Benefícios SEO</strong>
+            <ul style={{ margin: '8px 0 0 0', paddingLeft: '16px', fontSize: '14px' }}>
+              <li>Rich Snippets</li>
+              <li>Autoridade Médica</li>
+              <li>Navegação Estruturada</li>
+              <li>Múltiplas Audiências</li>
+            </ul>
           </div>
         </div>
       </div>
