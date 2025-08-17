@@ -383,10 +383,7 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
                   Roteiros de Dispensação
                 </div>
                 <div className="nav-title-sub">
-                  Sistema de Aprendizagem
-                </div>
-                <div className="nav-title-desc">
-                  Sistema Inteligente de Orientação
+                  Sistema de Aprendizagem Inteligente
                 </div>
               </div>
             )}
