@@ -1,0 +1,142 @@
+{
+  "model_config": {
+    "base_model": "microsoft/BiomedNLP-PubMedBERT-base-uncased-abstract-fulltext",
+    "alternative_models": [
+      "microsoft/DialoGPT-medium",
+      "neuralmind/bert-base-portuguese-cased",
+      "google/flan-t5-base"
+    ],
+    "model_type": "causal_lm",
+    "task_type": "instruction_following"
+  },
+  
+  "lora_config": {
+    "r": 16,
+    "lora_alpha": 32,
+    "target_modules": [
+      "q_proj", "k_proj", "v_proj", "o_proj",
+      "gate_proj", "up_proj", "down_proj", "lm_head"
+    ],
+    "bias": "none",
+    "lora_dropout": 0.1,
+    "task_type": "CAUSAL_LM"
+  },
+  
+  "training_args": {
+    "num_train_epochs": 3,
+    "per_device_train_batch_size": 2,
+    "per_device_eval_batch_size": 2,
+    "gradient_accumulation_steps": 4,
+    "learning_rate": 2e-4,
+    "weight_decay": 0.001,
+    "lr_scheduler_type": "cosine",
+    "warmup_ratio": 0.1,
+    "logging_steps": 10,
+    "eval_steps": 50,
+    "save_steps": 100,
+    "evaluation_strategy": "steps",
+    "save_strategy": "steps",
+    "fp16": false,
+    "bf16": true,
+    "gradient_checkpointing": true,
+    "load_best_model_at_end": true,
+    "metric_for_best_model": "eval_loss",
+    "greater_is_better": false,
+    "seed": 42
+  },
+  
+  "data_config": {
+    "max_length": 512,
+    "truncation": true,
+    "padding": "max_length",
+    "train_split": 0.8,
+    "validation_split": 0.1,
+    "test_split": 0.1,
+    "shuffle": true,
+    "seed": 42
+  },
+  
+  "generation_config": {
+    "max_new_tokens": 150,
+    "temperature": 0.7,
+    "do_sample": true,
+    "top_p": 0.9,
+    "top_k": 50,
+    "repetition_penalty": 1.1
+  },
+  
+  "personas": {
+    "dr_gasnelio": {
+      "name": "Dr. Gasnelio",
+      "description": "Farmacêutico técnico especialista em hanseníase",
+      "style": "Técnico, científico, com citações e termos médicos",
+      "instruction_template": "Como Dr. Gasnelio, responda tecnicamente:",
+      "characteristics": [
+        "Usa terminologia médica precisa",
+        "Cita mecanismos de ação",
+        "Menciona contraindicações",
+        "Fornece dosagens exatas",
+        "Explica farmacocinética"
+      ]
+    },
+    "ga_empathetic": {
+      "name": "Gá",
+      "description": "Assistente empático especializado em comunicação simples",
+      "style": "Simples, empático, traduz termos técnicos",
+      "instruction_template": "Como Gá, responda de forma simples e empática:",
+      "characteristics": [
+        "Linguagem acessível",
+        "Tom acolhedor e tranquilizador",
+        "Explica termos complexos",
+        "Usa analogias simples",
+        "Demonstra compreensão emocional"
+      ]
+    }
+  },
+  
+  "evaluation_metrics": {
+    "primary": ["perplexity", "eval_loss"],
+    "secondary": ["bleu", "rouge", "bertscore"],
+    "custom": {
+      "persona_consistency": "Verifica se a resposta mantém o estilo da persona",
+      "medical_accuracy": "Valida informações médicas contra guidelines",
+      "empathy_score": "Avalia nível de empatia nas respostas do Gá"
+    }
+  },
+  
+  "deployment": {
+    "quantization": {
+      "enabled": true,
+      "type": "int8",
+      "dynamic": true
+    },
+    "optimization": {
+      "onnx_export": false,
+      "tensorrt": false,
+      "torch_compile": true
+    },
+    "inference": {
+      "batch_size": 1,
+      "max_concurrent_requests": 10,
+      "cache_size": 100,
+      "timeout_seconds": 30
+    }
+  },
+  
+  "quality_assurance": {
+    "minimum_accuracy": 0.85,
+    "maximum_perplexity": 3.0,
+    "required_test_examples": 50,
+    "validation_frequency": "every_epoch",
+    "early_stopping_patience": 3
+  },
+  
+  "metadata": {
+    "version": "Q2-2025-ML-MODERNIZATION",
+    "created": "2025-08-17",
+    "purpose": "Fine-tuning especializado para dispensação de hanseníase",
+    "target_accuracy": ">90%",
+    "expected_training_time": "2-4 horas",
+    "gpu_requirements": "T4 ou superior (Google Colab Free tier compatível)"
+  }
+}

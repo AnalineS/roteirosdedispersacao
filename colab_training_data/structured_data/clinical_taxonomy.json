@@ -1,0 +1,365 @@
+{
+  "clinical_taxonomy": {
+    "metadata": {
+      "version": "1.0",
+      "created": "2025-01-27",
+      "scope": "Roteiro de Dispensação - Hanseníase PQT-U",
+      "classification_system": "Hierárquica baseada em contexto clínico",
+      "purpose": "Otimizar recuperação de informações para RAG"
+    },
+
+    "level_1_domains": {
+      "clinical_protocols": {
+        "code": "CP",
+        "title": "Protocolos Clínicos",
+        "description": "Esquemas terapêuticos, dosagens e administração",
+        "priority": "high",
+        "subcategories": [
+          "dosing_regimens",
+          "administration_guidelines", 
+          "monitoring_protocols",
+          "special_populations"
+        ]
+      },
+      "pharmacology": {
+        "code": "PH",
+        "title": "Farmacologia",
+        "description": "Mecanismos de ação, farmacocinética e farmacodinâmica",
+        "priority": "high",
+        "subcategories": [
+          "mechanisms_of_action",
+          "pharmacokinetics",
+          "drug_interactions",
+          "contraindications"
+        ]
+      },
+      "dispensing_workflow": {
+        "code": "DW",
+        "title": "Fluxo de Dispensação",
+        "description": "Processos e procedimentos de dispensação farmacêutica",
+        "priority": "high",
+        "subcategories": [
+          "initial_assessment",
+          "patient_counseling",
+          "post_dispensing_care",
+          "documentation"
+        ]
+      },
+      "safety_monitoring": {
+        "code": "SM",
+        "title": "Segurança e Monitoramento",
+        "description": "Eventos adversos, farmacovigilância e manejo de riscos",
+        "priority": "high",
+        "subcategories": [
+          "adverse_events",
+          "pharmacovigilance",
+          "risk_mitigation",
+          "emergency_protocols"
+        ]
+      },
+      "patient_education": {
+        "code": "PE",
+        "title": "Educação do Paciente",
+        "description": "Orientações, autocuidado e adesão ao tratamento",
+        "priority": "medium",
+        "subcategories": [
+          "medication_education",
+          "adherence_strategies",
+          "lifestyle_modifications",
+          "self_care_practices"
+        ]
+      },
+      "regulatory_framework": {
+        "code": "RF",
+        "title": "Marco Regulatório",
+        "description": "Diretrizes, protocolos nacionais e legislação",
+        "priority": "medium",
+        "subcategories": [
+          "national_guidelines",
+          "regulatory_requirements",
+          "quality_standards",
+          "reporting_obligations"
+        ]
+      }
+    },
+
+    "level_2_categories": {
+      "dosing_regimens": {
+        "parent": "clinical_protocols",
+        "entities": {
+          "pqt_u_adult": {
+            "keywords": ["adulto", "maior 50kg", "poliquimioterapia única"],
+            "weight": 1.0,
+            "complexity": "standard"
+          },
+          "pqt_u_pediatric_30_50kg": {
+            "keywords": ["criança", "30-50kg", "adolescente"],
+            "weight": 1.0,
+            "complexity": "standard"
+          },
+          "pqt_u_pediatric_under_30kg": {
+            "keywords": ["criança", "menor 30kg", "pediátrico", "peso"],
+            "weight": 1.0,
+            "complexity": "complex"
+          },
+          "supervised_monthly": {
+            "keywords": ["supervisionada", "mensal", "unidade saúde"],
+            "weight": 0.9,
+            "complexity": "standard"
+          },
+          "self_administered_daily": {
+            "keywords": ["autoadministrada", "diária", "casa", "domicílio"],
+            "weight": 0.9,
+            "complexity": "standard"
+          }
+        }
+      },
+
+      "mechanisms_of_action": {
+        "parent": "pharmacology",
+        "entities": {
+          "rifampicina_mechanism": {
+            "keywords": ["rifampicina", "RNA polimerase", "síntese RNA"],
+            "weight": 1.0,
+            "complexity": "complex"
+          },
+          "clofazimina_mechanism": {
+            "keywords": ["clofazimina", "DNA bacteriano", "crescimento"],
+            "weight": 1.0,
+            "complexity": "complex"
+          },
+          "dapsona_mechanism": {
+            "keywords": ["dapsona", "PABA", "ácido fólico", "síntese"],
+            "weight": 1.0,
+            "complexity": "complex"
+          },
+          "combination_rationale": {
+            "keywords": ["associação", "combinação", "resistência", "sinergismo"],
+            "weight": 0.8,
+            "complexity": "complex"
+          }
+        }
+      },
+
+      "adverse_events": {
+        "parent": "safety_monitoring",
+        "entities": {
+          "common_adverse_events": {
+            "keywords": ["efeitos colaterais", "reações adversas", "comuns"],
+            "weight": 1.0,
+            "complexity": "standard"
+          },
+          "serious_adverse_events": {
+            "keywords": ["graves", "hospitalização", "risco vida"],
+            "weight": 1.0,
+            "complexity": "complex"
+          },
+          "drug_specific_events": {
+            "keywords": ["rifampicina", "clofazimina", "dapsona", "específico"],
+            "weight": 0.9,
+            "complexity": "standard"
+          },
+          "management_protocols": {
+            "keywords": ["manejo", "tratamento", "conduta", "intervenção"],
+            "weight": 0.8,
+            "complexity": "complex"
+          }
+        }
+      },
+
+      "initial_assessment": {
+        "parent": "dispensing_workflow",
+        "entities": {
+          "prescription_verification": {
+            "keywords": ["prescrição", "verificação", "duas vias"],
+            "weight": 1.0,
+            "complexity": "standard"
+          },
+          "patient_eligibility": {
+            "keywords": ["elegibilidade", "critérios", "contraindicação"],
+            "weight": 1.0,
+            "complexity": "standard"
+          },
+          "medication_availability": {
+            "keywords": ["estoque", "disponibilidade", "validade"],
+            "weight": 0.8,
+            "complexity": "simple"
+          },
+          "special_requirements": {
+            "keywords": ["pediatria", "gravidez", "amamentação", "especial"],
+            "weight": 0.9,
+            "complexity": "complex"
+          }
+        }
+      }
+    },
+
+    "level_3_entities": {
+      "medication_specific": {
+        "rifampicina": {
+          "aliases": ["rifampin", "RIF"],
+          "dosages": ["300mg", "600mg", "10mg/kg"],
+          "routes": ["oral"],
+          "contexts": ["tuberculose", "hanseníase", "meningite"],
+          "semantic_tags": ["antibiótico", "antituberculoso", "bactericida"]
+        },
+        "clofazimina": {
+          "aliases": ["clofazimine", "CLO"],
+          "dosages": ["50mg", "100mg", "150mg", "300mg", "6mg/kg", "1mg/kg"],
+          "routes": ["oral"],
+          "contexts": ["hanseníase", "tuberculose resistente", "micobactérias"],
+          "semantic_tags": ["antimicobacteriano", "pigmentação", "DNA"]
+        },
+        "dapsona": {
+          "aliases": ["dapsone", "DAP"],
+          "dosages": ["50mg", "100mg", "2mg/kg"],
+          "routes": ["oral"],
+          "contexts": ["hanseníase", "pneumocistose", "dermatite"],
+          "semantic_tags": ["sulfona", "antifolato", "hemólise"]
+        }
+      },
+
+      "population_specific": {
+        "adult_over_50kg": {
+          "weight_range": ">50kg",
+          "age_range": "adulto",
+          "prescribers": ["médico", "enfermeiro"],
+          "complexity": "standard"
+        },
+        "weight_30_50kg": {
+          "weight_range": "30-50kg",
+          "age_range": "criança/adulto",
+          "prescribers": ["médico", "enfermeiro"],
+          "complexity": "standard"
+        },
+        "pediatric_under_30kg": {
+          "weight_range": "<30kg",
+          "age_range": "criança",
+          "prescribers": ["médico"],
+          "complexity": "complex",
+          "special_considerations": ["dose dividida", "cálculo peso"]
+        }
+      },
+
+      "clinical_conditions": {
+        "hanseniase_paucibacilar": {
+          "duration": "6 meses",
+          "load": "baixa carga bacilar",
+          "complexity": "standard"
+        },
+        "hanseniase_multibacilar": {
+          "duration": "12 meses", 
+          "load": "alta carga bacilar",
+          "complexity": "standard"
+        },
+        "pregnancy": {
+          "considerations": ["vitamina K", "prematuridade", "pigmentação RN"],
+          "complexity": "complex"
+        },
+        "breastfeeding": {
+          "considerations": ["pigmentação temporária", "monitoramento"],
+          "complexity": "complex"
+        }
+      }
+    },
+
+    "semantic_relationships": {
+      "hierarchical": {
+        "is_a": [
+          "rifampicina is_a antibiótico",
+          "clofazimina is_a antimicobacteriano",
+          "dapsona is_a sulfona",
+          "PQT-U is_a poliquimioterapia"
+        ],
+        "part_of": [
+          "dose supervisionada part_of esquema mensal",
+          "dose autoadministrada part_of cuidado domiciliar",
+          "etapa 1 part_of roteiro dispensação"
+        ]
+      },
+      "associative": {
+        "treats": [
+          "PQT-U treats hanseníase",
+          "rifampicina treats tuberculose",
+          "dapsona treats pneumocistose"
+        ],
+        "causes": [
+          "rifampicina causes coloração urina",
+          "clofazimina causes pigmentação pele",
+          "dapsona causes anemia hemolítica"
+        ],
+        "interacts_with": [
+          "rifampicina interacts_with anticoncepcional",
+          "clofazimina interacts_with suco laranja",
+          "dapsona interacts_with antimalárico"
+        ]
+      },
+      "temporal": {
+        "before": [
+          "avaliação inicial before dispensação",
+          "orientação before autoadministração"
+        ],
+        "during": [
+          "monitoramento during tratamento",
+          "acompanhamento during terapia"
+        ],
+        "after": [
+          "follow-up after dispensação",
+          "avaliação after dose supervisionada"
+        ]
+      }
+    },
+
+    "context_weighting": {
+      "high_priority_contexts": {
+        "dosing_questions": 1.0,
+        "safety_concerns": 1.0,
+        "adverse_events": 1.0,
+        "contraindications": 1.0
+      },
+      "medium_priority_contexts": {
+        "administration_guidance": 0.8,
+        "patient_education": 0.8,
+        "monitoring_protocols": 0.8
+      },
+      "low_priority_contexts": {
+        "background_information": 0.6,
+        "historical_context": 0.5,
+        "general_pharmacology": 0.6
+      }
+    },
+
+    "query_patterns": {
+      "dosing_queries": {
+        "patterns": [
+          "qual dose de [medicamento]",
+          "como administrar [medicamento]",
+          "quanto de [medicamento] para [população]",
+          "esquema de [medicamento]"
+        ],
+        "intent": "dosing_information",
+        "priority": "high"
+      },
+      "safety_queries": {
+        "patterns": [
+          "efeitos colaterais de [medicamento]",
+          "contraindicação para [medicamento]",
+          "posso usar [medicamento] com [condição]",
+          "interação entre [medicamento1] e [medicamento2]"
+        ],
+        "intent": "safety_information",
+        "priority": "high"
+      },
+      "procedure_queries": {
+        "patterns": [
+          "como dispensar [medicamento]",
+          "etapas de dispensação",
+          "orientação para paciente",
+          "documentação necessária"
+        ],
+        "intent": "procedural_guidance",
+        "priority": "medium"
+      }
+    }
+  }
+}

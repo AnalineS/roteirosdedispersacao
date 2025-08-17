@@ -1,0 +1,71 @@
+[
+  {
+    "instruction": "Descreva 'regulatory_framework' relacionado a level_1_domains:",
+    "input": "",
+    "output": "Diretrizes, protocolos nacionais e legislação",
+    "source": "clinical_taxonomy.json",
+    "category": "taxonomy",
+    "persona_target": "both",
+    "augmented": true
+  },
+  {
+    "instruction": "Descreva o protocolo de dosagem supervisionada de rifampicina para Adultos > 50kg:",
+    "input": "",
+    "output": "Dose: 600mg. Administração: Via oral, dose única mensal",
+    "source": "dosing_protocols.json",
+    "category": "protocols",
+    "persona_target": "dr_gasnelio",
+    "augmented": true
+  },
+  {
+    "instruction": "Descreva o protocolo de dosagem supervisionada de dapsona para Adultos > 50kg:",
+    "input": "",
+    "output": "Dose: 100mg. Administração: Via oral, dose única mensal",
+    "source": "dosing_protocols.json",
+    "category": "protocols",
+    "persona_target": "dr_gasnelio",
+    "augmented": true
+  },
+  {
+    "instruction": "Explique o protocolo de dosagem supervisionada de rifampicina para Crianças < 30kg:",
+    "input": "",
+    "output": "Dose: 10mg/kg/dose. Administração: Via oral, dose mensal dividida",
+    "source": "dosing_protocols.json",
+    "category": "protocols",
+    "persona_target": "dr_gasnelio"
+  },
+  {
+    "instruction": "Descreva o protocolo de dosagem supervisionada de clofazimina para Crianças < 30kg:",
+    "input": "",
+    "output": "Dose: 6mg/kg/dose. Administração: Via oral, dose mensal dividida",
+    "source": "dosing_protocols.json",
+    "category": "protocols",
+    "persona_target": "dr_gasnelio",
+    "augmented": true
+  },
+  {
+    "instruction": "Como orientar a dosagem diária de dapsona para Crianças < 30kg?",
+    "input": "",
+    "output": "Dose diária: 2mg/kg/dia. Horário: . Via oral, diariamente",
+    "source": "dosing_protocols.json",
+    "category": "protocols",
+    "persona_target": "both"
+  },
+  {
+    "instruction": "Descreva 'pharmacology' relacionado a level_1_domains:",
+    "input": "",
+    "output": "Mecanismos de ação, farmacocinética e farmacodinâmica",
+    "source": "clinical_taxonomy.json",
+    "category": "taxonomy",
+    "persona_target": "both",
+    "augmented": true
+  },
+  {
+    "instruction": "Explique o protocolo de dosagem supervisionada de clofazimina para Adultos > 50kg:",
+    "input": "",
+    "output": "Dose: 300mg. Administração: Via oral, dose única mensal",
+    "source": "dosing_protocols.json",
+    "category": "protocols",
+    "persona_target": "dr_gasnelio"
+  }
+]
