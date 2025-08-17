@@ -106,9 +106,8 @@ export default function EducationalFooter({
           icon: <HospitalIcon size={16} />,
           links: [
             { label: 'Sobre o Sistema', href: '/sobre', description: 'Informações sobre a plataforma educacional' },
-            { label: 'Sobre a Tese', href: '/modules/sobre-a-tese', description: 'Pesquisa de doutorado em Ciências Farmacêuticas' },
-            { label: 'Metodologia', href: '/metodologia', description: 'Métodos científicos e fundamentação teórica' },
-            { label: 'Sobre a Pesquisa', href: '/sobre-a-tese', description: 'Informações sobre a tese e equipe de pesquisa' }
+            { label: 'Sobre a Tese', href: '/sobre-a-tese', description: 'Pesquisa de doutorado em Ciências Farmacêuticas' },
+            { label: 'Metodologia', href: '/metodologia', description: 'Métodos científicos e fundamentação teórica' }
           ]
         }
       }

@@ -240,7 +240,7 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
         {
           id: 'sobre-a-tese',
           label: 'Sobre a Tese',
-          href: '/modules/sobre-a-tese',
+          href: '/sobre-a-tese',
           icon: '📚',
           description: 'Metodologia, objetivos e contribuições da pesquisa',
           category: 'institutional',

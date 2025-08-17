@@ -1097,7 +1097,7 @@ export default function HomePage() {
                 </a>
                 
                 <a
-                  href="/equipe"
+                  href="/sobre"
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',

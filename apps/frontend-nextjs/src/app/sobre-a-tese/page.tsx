@@ -2,824 +2,1059 @@
 
 import NavigationHeader from '@/components/navigation/NavigationHeader';
 import EducationalFooter from '@/components/navigation/EducationalFooter';
+import { useState } from 'react';
+
+// Ícones SVG
+const MedIcon = () => (
+  <svg className="inline w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+    <path fillRule="evenodd" d="M10 2a8 8 0 100 16 8 8 0 000-16zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+  </svg>
+);
+
+const SearchIcon = () => (
+  <svg className="inline w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m21 21-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+  </svg>
+);
+
+const BookIcon = () => (
+  <svg className="inline w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+  </svg>
+);
+
+const CheckIcon = () => (
+  <svg className="inline w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+  </svg>
+);
+
+const WarningIcon = () => (
+  <svg className="inline w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+  </svg>
+);
+
+const UsersIcon = () => (
+  <svg className="inline w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+  </svg>
+);
+
+const ClipboardIcon = () => (
+  <svg className="inline w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+  </svg>
+);
+
+const PillIcon = () => (
+  <svg className="inline w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+  </svg>
+);
+
+const DoctorIcon = () => (
+  <svg className="inline w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+  </svg>
+);
+
+const ClockIcon = () => (
+  <svg className="inline w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+);
+
+const TargetIcon = () => (
+  <svg className="inline w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+  </svg>
+);
+
+const CalendarIcon = () => (
+  <svg className="inline w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+  </svg>
+);
+
+const HomeIcon = () => (
+  <svg className="inline w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+  </svg>
+);
+
+const FoodIcon = () => (
+  <svg className="inline w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 002-2v-3a2 2 0 00-2-2H4a2 2 0 00-2 2v3a2 2 0 002 2h2z" />
+  </svg>
+);
+
+const RefreshIcon = () => (
+  <svg className="inline w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+  </svg>
+);
+
+const LightningIcon = () => (
+  <svg className="inline w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+    <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" />
+  </svg>
+);
+
+const ShieldIcon = () => (
+  <svg className="inline w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+  </svg>
+);
+
+const BabyIcon = () => (
+  <svg className="inline w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+);
+
+const PregnantIcon = () => (
+  <svg className="inline w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z" clipRule="evenodd" />
+  </svg>
+);
+
+const ElderIcon = () => (
+  <svg className="inline w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+  </svg>
+);
+
+const HospitalIcon = () => (
+  <svg className="inline w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+  </svg>
+);
+
+const MicroscopeIcon = () => (
+  <svg className="inline w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2z" />
+  </svg>
+);
+
+const BookmarkIcon = () => (
+  <svg className="inline w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+  </svg>
+);
+
+const ChatIcon = () => (
+  <svg className="inline w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+  </svg>
+);
+
+const HeartIcon = () => (
+  <svg className="inline w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+    <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
+  </svg>
+);
+
+const CrossIcon = () => (
+  <svg className="inline w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+  </svg>
+);
+
+const XIcon = () => (
+  <svg className="inline w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+  </svg>
+);
+
+const QuestionIcon = () => (
+  <svg className="inline w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+);
+
+const StethoscopeIcon = () => (
+  <svg className="inline w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+  </svg>
+);
+
+const VaccineIcon = () => (
+  <svg className="inline w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+  </svg>
+);
+
+const NoteIcon = () => (
+  <svg className="inline w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+  </svg>
+);
+
+const RunningIcon = () => (
+  <svg className="inline w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+  </svg>
+);
+
+const SOSIcon = () => (
+  <svg className="inline w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+  </svg>
+);
+
+const PackageIcon = () => (
+  <svg className="inline w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+  </svg>
+);
+
+const ArchiveIcon = () => (
+  <svg className="inline w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+  </svg>
+);
+
+const BuildingIcon = () => (
+  <svg className="inline w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+  </svg>
+);
+
+const PrintIcon = () => (
+  <svg className="inline w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+  </svg>
+);
+
+const MoneyIcon = () => (
+  <svg className="inline w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+);
 
 export default function SobreATestePage() {
-  return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      {/* Schema.org JSON-LD para MedicalWebPage */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "MedicalWebPage",
-            "name": "Sobre a Pesquisa - Roteiros de Dispensação para Hanseníase",
-            "description": "Pesquisa de doutorado sobre otimização do cuidado farmacêutico através de roteiros de dispensação para hanseníase.",
-            "url": "https://roteirosdedispensacao.com/sobre-a-tese",
-            "medicalAudience": [
-              {
-                "@type": "MedicalAudience",
-                "audienceType": "https://schema.org/MedicalAudience"
-              },
-              {
-                "@type": "MedicalAudience",
-                "audienceType": "https://schema.org/Researcher"
-              }
-            ],
-            "specialty": {
-              "@type": "MedicalSpecialty",
-              "name": "Farmácia Clínica"
-            },
-            "about": {
-              "@type": "MedicalCondition",
-              "name": "Hanseníase",
-              "alternateName": "Lepra"
-            },
-            "lastReviewed": "2024-12-01",
-            "reviewedBy": {
-              "@type": "Organization",
-              "name": "Universidade de Brasília",
-              "department": "Programa de Pós-Graduação em Ciências Farmacêuticas"
-            },
-            "author": {
-              "@type": "Organization",
-              "name": "Universidade de Brasília"
-            },
-            "mainEntity": {
-              "@type": "ScholarlyArticle",
-              "name": "Otimização do Cuidado Farmacêutico através de Roteiros de Dispensação para Hanseníase",
-              "description": "Tese de doutorado sobre desenvolvimento e validação de roteiros de dispensação"
-            },
-            "significantLink": [
-              "https://roteirosdedispensacao.com/equipe-pesquisa"
-            ],
-            "breadcrumb": {
-              "@type": "BreadcrumbList",
-              "itemListElement": [
-                {
-                  "@type": "ListItem",
-                  "position": 1,
-                  "name": "Início",
-                  "item": "https://roteirosdedispensacao.com"
-                },
-                {
-                  "@type": "ListItem",
-                  "position": 2,
-                  "name": "Sobre a Tese",
-                  "item": "https://roteirosdedispensacao.com/sobre-a-tese"
-                }
-              ]
-            }
-          })
-        }}
-      />
+  const [activeTab, setActiveTab] = useState('apresentacao');
 
-      {/* Header público simplificado */}
+  return (
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#f8fafc' }}>
+      {/* Header público */}
       <header role="banner">
         <NavigationHeader />
       </header>
       
       {/* Conteúdo principal */}
       <main id="main-content" style={{ flex: 1 }}>
-      <div style={{ maxWidth: 'min(1200px, 95vw)', margin: '0 auto', padding: '2rem' }}>
-        {/* Header da página */}
-        <div style={{
-          background: 'linear-gradient(135deg, #003366 0%, #0066CC 100%)',
-          color: 'white',
-          padding: '3rem 2rem',
-          borderRadius: '16px',
-          marginBottom: '3rem',
-          textAlign: 'center'
-        }}>
-          <h1 style={{ 
-            fontSize: 'clamp(2rem, 5vw, 3rem)', 
-            fontWeight: 'bold', 
-            marginBottom: '1rem',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '1rem'
-          }}>
-            📚 Sobre a Pesquisa
-          </h1>
-          <p style={{ 
-            fontSize: 'clamp(1rem, 2.5vw, 1.25rem)', 
-            opacity: 0.9,
-            maxWidth: '800px',
-            margin: '0 auto'
-          }}>
-            Otimização do Cuidado Farmacêutico através de Roteiros de Dispensação para Hanseníase
-          </p>
-          <div style={{
-            marginTop: '1.5rem',
-            padding: '1rem',
-            background: 'rgba(255, 255, 255, 0.1)',
-            borderRadius: '12px',
-            fontSize: '1rem'
-          }}>
-            🎓 <strong>Pesquisa de Doutorado</strong> - Universidade de Brasília (UnB)
-          </div>
-          <div style={{
-            marginTop: '1rem',
-            padding: '0.75rem',
-            background: 'rgba(34, 197, 94, 0.2)',
-            borderRadius: '8px',
-            fontSize: '0.9rem',
-            border: '1px solid rgba(34, 197, 94, 0.3)'
-          }}>
-            ✨ <strong>Acesso público e gratuito</strong> - Informações científicas para toda a comunidade
-          </div>
-        </div>
-
-        {/* Informações de Contato e Colaboração */}
-        <div style={{
-          background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
-          padding: '2rem',
-          borderRadius: '16px',
-          marginBottom: '3rem',
-          border: '2px solid #bfdbfe',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-        }}>
-          <h2 style={{
-            fontSize: '1.5rem',
-            color: '#003366',
-            marginBottom: '1.5rem',
-            textAlign: 'center',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '0.75rem'
-          }}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#003366" strokeWidth="2">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-              <circle cx="9" cy="7" r="4"/>
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-            </svg>
-            Equipe de Pesquisa e Contato
-          </h2>
+        <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '2rem' }}>
           
+          {/* Cabeçalho da Página */}
           <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-            gap: '1.5rem',
-            marginBottom: '2rem'
+            background: 'white',
+            padding: '3rem',
+            borderRadius: '16px',
+            marginBottom: '2rem',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
           }}>
-            {/* Informações Institucionais */}
-            <div style={{
-              background: 'white',
-              padding: '1.5rem',
-              borderRadius: '12px',
-              border: '1px solid #bfdbfe'
+            <h1 style={{ 
+              fontSize: '2.5rem', 
+              fontWeight: 'bold', 
+              marginBottom: '1rem',
+              color: '#1e293b'
             }}>
-              <h3 style={{
-                fontSize: '1.1rem',
-                color: '#003366',
-                marginBottom: '1rem',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem'
-              }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#003366" strokeWidth="2">
-                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                  <circle cx="12" cy="10" r="3"/>
-                </svg>
-                Informações Institucionais
-              </h3>
-              <div style={{ fontSize: '0.9rem', color: '#64748b', lineHeight: '1.6' }}>
-                <p><strong>Programa de Pós-Graduação em Ciências Farmacêuticas</strong></p>
-                <p>Universidade de Brasília (UnB)<br />
-                Campus Universitário Darcy Ribeiro<br />
-                Brasília - DF, Brasil<br />
-                CEP: 70910-900</p>
-              </div>
-            </div>
-
-            {/* Colaborações */}
-            <div style={{
-              background: 'white',
-              padding: '1.5rem',
-              borderRadius: '12px',
-              border: '1px solid #bfdbfe'
-            }}>
-              <h3 style={{
-                fontSize: '1.1rem',
-                color: '#003366',
-                marginBottom: '1rem',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem'
-              }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#003366" strokeWidth="2">
-                  <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                  <circle cx="8.5" cy="7" r="4"/>
-                  <path d="M20 8v6M23 11h-6"/>
-                </svg>
-                Colaborações de Pesquisa
-              </h3>
-              <p style={{ fontSize: '0.9rem', color: '#64748b', lineHeight: '1.6', marginBottom: '1rem' }}>
-                Interessado em colaborar com pesquisas sobre hanseníase ou cuidado farmacêutico? 
+              ROTEIRO PARA DISPENSAÇÃO – HANSENÍASE (PQT-U)
+            </h1>
+            <div style={{ color: '#64748b', fontSize: '1.1rem', lineHeight: '1.8' }}>
+              <p style={{ marginBottom: '1rem' }}>
+                <strong>Documento técnico-científico</strong> desenvolvido como parte de pesquisa de doutorado
               </p>
-              <div style={{
-                padding: '0.75rem',
-                background: '#f0f9ff',
+              <div style={{ 
+                padding: '1rem', 
+                background: '#f1f5f9', 
                 borderRadius: '8px',
-                border: '1px solid #bfdbfe',
-                fontSize: '0.85rem',
-                color: '#0369a1'
+                marginBottom: '1rem' 
               }}>
-                <strong>📧 Contato:</strong> Através dos canais institucionais da UnB
+                <strong>Autores:</strong> Sâmara Caroline Franco Akkati, Sabrina Oliveira Campos de França, 
+                Laura Beatriz Gomes Brandão, Barbara Manuela Cardoso Sodré, Rafael Santos Santana
+              </div>
+              <div style={{
+                padding: '1rem',
+                background: '#fef3c7',
+                borderRadius: '8px',
+                border: '1px solid #fcd34d'
+              }}>
+                <strong><WarningIcon /> Nota:</strong> Este documento é de natureza técnica e destinado a profissionais de saúde. 
+                Para informações gerais, consulte os assistentes virtuais.
               </div>
             </div>
           </div>
 
-          {/* Suporte Técnico */}
+          {/* Navegação por Tabs */}
           <div style={{
-            background: 'rgba(16, 185, 129, 0.05)',
-            padding: '1.5rem',
-            borderRadius: '12px',
-            border: '1px solid rgba(16, 185, 129, 0.2)',
-            textAlign: 'center'
+            background: 'white',
+            borderRadius: '16px 16px 0 0',
+            padding: '0',
+            marginBottom: '0',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
           }}>
-            <h3 style={{
-              fontSize: '1.1rem',
-              color: '#059669',
-              marginBottom: '0.75rem',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '0.5rem'
-            }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2">
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-              </svg>
-              Suporte Técnico da Plataforma
-            </h3>
-            <p style={{ fontSize: '0.9rem', color: '#047857', marginBottom: '1rem' }}>
-              Para questões técnicas sobre a plataforma ou dúvidas sobre funcionalidades, utilize nossos assistentes virtuais:
-            </p>
             <div style={{
               display: 'flex',
-              gap: '1rem',
-              justifyContent: 'center',
-              flexWrap: 'wrap'
+              borderBottom: '2px solid #e2e8f0',
+              overflowX: 'auto'
             }}>
-              <span style={{
-                padding: '0.5rem 1rem',
-                background: '#003366',
-                color: 'white',
-                borderRadius: '6px',
-                fontSize: '0.85rem',
-                fontWeight: '500'
-              }}>
-                👨‍⚕️ Dr. Gasnelio
-              </span>
-              <span style={{
-                padding: '0.5rem 1rem',
-                background: '#059669',
-                color: 'white',
-                borderRadius: '6px',
-                fontSize: '0.85rem',
-                fontWeight: '500'
-              }}>
-                💚 Gá
-              </span>
+              {[
+                { id: 'apresentacao', label: 'Apresentações', icon: <ClipboardIcon /> },
+                { id: 'etapa1', label: 'Etapa 1: Avaliação', icon: <SearchIcon /> },
+                { id: 'etapa2', label: 'Etapa 2: Orientações', icon: <BookIcon /> },
+                { id: 'etapa3', label: 'Etapa 3: Pós-Dispensação', icon: <CheckIcon /> },
+                { id: 'seguranca', label: 'Segurança', icon: <WarningIcon /> },
+                { id: 'especiais', label: 'Populações Especiais', icon: <UsersIcon /> }
+              ].map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  style={{
+                    padding: '1rem 1.5rem',
+                    background: activeTab === tab.id ? '#3b82f6' : 'transparent',
+                    color: activeTab === tab.id ? 'white' : '#64748b',
+                    border: 'none',
+                    borderBottom: activeTab === tab.id ? '2px solid #3b82f6' : 'none',
+                    cursor: 'pointer',
+                    fontSize: '1rem',
+                    fontWeight: activeTab === tab.id ? '600' : '400',
+                    whiteSpace: 'nowrap',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  {tab.icon} {tab.label}
+                </button>
+              ))}
             </div>
           </div>
-        </div>
 
-        {/* Seção: Visão Geral da Pesquisa */}
-        <section style={{
-          background: 'white',
-          borderRadius: '16px',
-          padding: '2.5rem',
-          marginBottom: '2rem',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-          border: '1px solid #e2e8f0'
-        }}>
-          <h2 style={{
-            fontSize: '2rem',
-            color: '#003366',
-            marginBottom: '1.5rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.75rem'
+          {/* Conteúdo das Tabs */}
+          <div style={{
+            background: 'white',
+            padding: '2rem',
+            borderRadius: '0 0 16px 16px',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+            minHeight: '500px'
           }}>
-            🎯 Visão Geral da Pesquisa
-          </h2>
-          
-          <div style={{ fontSize: '1.1rem', lineHeight: '1.7', color: '#374151' }}>
-            <p style={{ marginBottom: '1.5rem' }}>
-              <strong>Esta pesquisa de doutorado</strong> desenvolveu um sistema inovador para padronizar e otimizar a dispensação de medicamentos PQT-U (Poliquimioterapia Única) para hanseníase, baseado em evidências científicas e validado por especialistas.
+            {/* Tab: Apresentações */}
+            {activeTab === 'apresentacao' && (
+              <div>
+                <h2 style={{ fontSize: '2rem', marginBottom: '2rem', color: '#1e293b' }}>
+                  <PillIcon /> APRESENTAÇÕES DISPONÍVEIS NO SUS
+                </h2>
+                
+                <div style={{ marginBottom: '3rem' }}>
+                  <h3 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: '#3b82f6' }}>
+                    Poliquimioterapia Única Adulto – PQT-U Adulto
+                  </h3>
+                  
+                  <div style={{
+                    background: '#f8fafc',
+                    padding: '1.5rem',
+                    borderRadius: '12px',
+                    marginBottom: '1.5rem'
+                  }}>
+                    <h4 style={{ color: '#475569', marginBottom: '1rem' }}>Dose Mensal Supervisionada:</h4>
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                      <thead>
+                        <tr style={{ background: '#e2e8f0' }}>
+                          <th style={{ padding: '0.75rem', textAlign: 'left', borderRadius: '8px 0 0 0' }}>Medicamento</th>
+                          <th style={{ padding: '0.75rem', textAlign: 'left' }}>Dose</th>
+                          <th style={{ padding: '0.75rem', textAlign: 'left', borderRadius: '0 8px 0 0' }}>Total</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td style={{ padding: '0.75rem', borderBottom: '1px solid #e2e8f0' }}>Rifampicina</td>
+                          <td style={{ padding: '0.75rem', borderBottom: '1px solid #e2e8f0' }}>300 mg + 300 mg</td>
+                          <td style={{ padding: '0.75rem', borderBottom: '1px solid #e2e8f0' }}><strong>600 mg</strong></td>
+                        </tr>
+                        <tr>
+                          <td style={{ padding: '0.75rem', borderBottom: '1px solid #e2e8f0' }}>Clofazimina</td>
+                          <td style={{ padding: '0.75rem', borderBottom: '1px solid #e2e8f0' }}>100 mg + 100 mg + 100 mg</td>
+                          <td style={{ padding: '0.75rem', borderBottom: '1px solid #e2e8f0' }}><strong>300 mg</strong></td>
+                        </tr>
+                        <tr>
+                          <td style={{ padding: '0.75rem' }}>Dapsona</td>
+                          <td style={{ padding: '0.75rem' }}>100 mg</td>
+                          <td style={{ padding: '0.75rem' }}><strong>100 mg</strong></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div style={{
+                    background: '#fef3c7',
+                    padding: '1.5rem',
+                    borderRadius: '12px',
+                    border: '1px solid #fcd34d'
+                  }}>
+                    <h4 style={{ color: '#92400e', marginBottom: '1rem' }}>Dose Diária Autoadministrada:</h4>
+                    <ul style={{ paddingLeft: '1.5rem', lineHeight: '1.8' }}>
+                      <li>Clofazimina 50 mg - <strong>1x ao dia</strong></li>
+                      <li>Dapsona 100 mg - <strong>1x ao dia</strong></li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: '#3b82f6' }}>
+                    Poliquimioterapia Única Infantil – PQT-U Infantil
+                  </h3>
+                  
+                  <div style={{
+                    background: '#f8fafc',
+                    padding: '1.5rem',
+                    borderRadius: '12px',
+                    marginBottom: '1.5rem'
+                  }}>
+                    <h4 style={{ color: '#475569', marginBottom: '1rem' }}>Dose Mensal Supervisionada:</h4>
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                      <thead>
+                        <tr style={{ background: '#e2e8f0' }}>
+                          <th style={{ padding: '0.75rem', textAlign: 'left', borderRadius: '8px 0 0 0' }}>Medicamento</th>
+                          <th style={{ padding: '0.75rem', textAlign: 'left' }}>Dose</th>
+                          <th style={{ padding: '0.75rem', textAlign: 'left', borderRadius: '0 8px 0 0' }}>Total</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td style={{ padding: '0.75rem', borderBottom: '1px solid #e2e8f0' }}>Rifampicina</td>
+                          <td style={{ padding: '0.75rem', borderBottom: '1px solid #e2e8f0' }}>300 mg + 150 mg</td>
+                          <td style={{ padding: '0.75rem', borderBottom: '1px solid #e2e8f0' }}><strong>450 mg</strong></td>
+                        </tr>
+                        <tr>
+                          <td style={{ padding: '0.75rem', borderBottom: '1px solid #e2e8f0' }}>Clofazimina</td>
+                          <td style={{ padding: '0.75rem', borderBottom: '1px solid #e2e8f0' }}>150 mg</td>
+                          <td style={{ padding: '0.75rem', borderBottom: '1px solid #e2e8f0' }}><strong>150 mg</strong></td>
+                        </tr>
+                        <tr>
+                          <td style={{ padding: '0.75rem' }}>Dapsona</td>
+                          <td style={{ padding: '0.75rem' }}>50 mg</td>
+                          <td style={{ padding: '0.75rem' }}><strong>50 mg</strong></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div style={{
+                    background: '#fef3c7',
+                    padding: '1.5rem',
+                    borderRadius: '12px',
+                    border: '1px solid #fcd34d'
+                  }}>
+                    <h4 style={{ color: '#92400e', marginBottom: '1rem' }}>Dose Diária Autoadministrada:</h4>
+                    <ul style={{ paddingLeft: '1.5rem', lineHeight: '1.8' }}>
+                      <li>Clofazimina 50 mg - <strong>em dias alternados</strong></li>
+                      <li>Dapsona 50 mg - <strong>1x ao dia</strong></li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Tab: Etapa 1 - Avaliação Inicial */}
+            {activeTab === 'etapa1' && (
+              <div>
+                <h2 style={{ fontSize: '2rem', marginBottom: '2rem', color: '#1e293b' }}>
+                  <SearchIcon /> ETAPA 01 – AVALIAÇÃO INICIAL
+                </h2>
+                
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+                  gap: '1.5rem',
+                  marginBottom: '2rem'
+                }}>
+                  <div style={{
+                    padding: '1.5rem',
+                    background: '#f8fafc',
+                    borderRadius: '12px',
+                    border: '1px solid #e2e8f0'
+                  }}>
+                    <h3 style={{ fontSize: '1.2rem', marginBottom: '1rem', color: '#3b82f6' }}>
+                      <PillIcon /> Disponibilidade
+                    </h3>
+                    <ul style={{ paddingLeft: '1.5rem', lineHeight: '1.8', color: '#475569' }}>
+                      <li>Não possui similares ou genéricos</li>
+                      <li>Medicamento importado via OPAS</li>
+                      <li>Disponível exclusivamente pelo SUS</li>
+                      <li>Dispensado em UBS e unidades de referência</li>
+                    </ul>
+                  </div>
+
+                  <div style={{
+                    padding: '1.5rem',
+                    background: '#fef3c7',
+                    borderRadius: '12px',
+                    border: '1px solid #fcd34d'
+                  }}>
+                    <h3 style={{ fontSize: '1.2rem', marginBottom: '1rem', color: '#92400e' }}>
+                      <DoctorIcon /> Prescrição
+                    </h3>
+                    <ul style={{ paddingLeft: '1.5rem', lineHeight: '1.8', color: '#78350f' }}>
+                      <li>Médico e enfermeiro podem prescrever</li>
+                      <li>Para pacientes &lt; 30 kg: apenas médicos</li>
+                      <li>Prescrição em duas vias obrigatória</li>
+                      <li>Uma via retida, outra carimbada</li>
+                    </ul>
+                  </div>
+
+                  <div style={{
+                    padding: '1.5rem',
+                    background: '#dcfce7',
+                    borderRadius: '12px',
+                    border: '1px solid #86efac'
+                  }}>
+                    <h3 style={{ fontSize: '1.2rem', marginBottom: '1rem', color: '#15803d' }}>
+                      <ClockIcon /> Duração do Tratamento
+                    </h3>
+                    <ul style={{ paddingLeft: '1.5rem', lineHeight: '1.8', color: '#14532d' }}>
+                      <li><strong>Paucibacilar:</strong> 6 meses</li>
+                      <li><strong>Multibacilar:</strong> 12 meses</li>
+                      <li>Dispensação mensal obrigatória</li>
+                      <li>Manter estoque extra na farmácia</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div style={{
+                  background: '#fee2e2',
+                  padding: '1.5rem',
+                  borderRadius: '12px',
+                  border: '1px solid #fca5a5'
+                }}>
+                  <h3 style={{ fontSize: '1.2rem', marginBottom: '1rem', color: '#dc2626' }}>
+                    <WarningIcon /> Informações Importantes
+                  </h3>
+                  <ul style={{ paddingLeft: '1.5rem', lineHeight: '1.8', color: '#7f1d1d' }}>
+                    <li><XIcon /> Não disponível no Farmácia Popular</li>
+                    <li><PackageIcon /> Farmácia solicita tratamento mensalmente ao Núcleo de Logística</li>
+                    <li><ClipboardIcon /> Farmacêutico entrega apenas quantidade para 1 mês</li>
+                    <li><HospitalIcon /> Tratamento 100% gratuito pelo SUS</li>
+                  </ul>
+                </div>
+              </div>
+            )}
+
+            {/* Tab: Etapa 2 - Orientações e Plano de Cuidado */}
+            {activeTab === 'etapa2' && (
+              <div>
+                <h2 style={{ fontSize: '2rem', marginBottom: '2rem', color: '#1e293b' }}>
+                  <BookIcon /> ETAPA 02 – ORIENTAÇÕES E PLANO DE CUIDADO
+                </h2>
+
+                <div style={{ marginBottom: '3rem' }}>
+                  <h3 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', color: '#3b82f6' }}>
+                    <TargetIcon /> INDICAÇÕES
+                  </h3>
+                  
+                  <div style={{
+                    background: '#f8fafc',
+                    padding: '1.5rem',
+                    borderRadius: '12px',
+                    marginBottom: '1.5rem'
+                  }}>
+                    <h4 style={{ marginBottom: '1rem', color: '#475569' }}>Esquema de primeira linha para Hanseníase:</h4>
+                    <div style={{ display: 'grid', gap: '1rem' }}>
+                      <div style={{ padding: '1rem', background: 'white', borderRadius: '8px' }}>
+                        <strong style={{ color: '#dc2626' }}>Rifampicina:</strong> Inibe RNA polimerase, bloqueando síntese de RNA bacteriano (sempre usada em associação)
+                      </div>
+                      <div style={{ padding: '1rem', background: 'white', borderRadius: '8px' }}>
+                        <strong style={{ color: '#059669' }}>Clofazimina:</strong> Inibe crescimento bacteriano ao ligar-se ao DNA
+                      </div>
+                      <div style={{ padding: '1rem', background: 'white', borderRadius: '8px' }}>
+                        <strong style={{ color: '#3b82f6' }}>Dapsona:</strong> Antagonista do ácido para-aminobenzóico, interferindo na síntese do folato
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{
+                    background: '#fef3c7',
+                    padding: '1rem',
+                    borderRadius: '8px',
+                    border: '1px solid #fcd34d',
+                    marginBottom: '1.5rem'
+                  }}>
+                    <strong><BookmarkIcon /> Diretriz Nacional:</strong> Protocolo Clínico e Diretrizes Terapêuticas Hanseníase (2022), Ministério da Saúde
+                  </div>
+                </div>
+
+                <div style={{ marginBottom: '3rem' }}>
+                  <h3 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', color: '#3b82f6' }}>
+                    💊 MODO DE USO - ADULTOS (&gt; 50 kg)
+                  </h3>
+                  
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
+                    <div style={{
+                      padding: '1.5rem',
+                      background: '#dcfce7',
+                      borderRadius: '12px',
+                      border: '1px solid #86efac'
+                    }}>
+                      <h4 style={{ marginBottom: '1rem', color: '#15803d' }}><CalendarIcon /> Mensal Supervisionada</h4>
+                      <ul style={{ paddingLeft: '1.5rem', lineHeight: '1.8' }}>
+                        <li>2x Rifampicina 300 mg (total 600 mg)</li>
+                        <li>3x Clofazimina 100 mg (total 300 mg)</li>
+                        <li>1x Dapsona 100 mg</li>
+                      </ul>
+                    </div>
+
+                    <div style={{
+                      padding: '1.5rem',
+                      background: '#dbeafe',
+                      borderRadius: '12px',
+                      border: '1px solid #93c5fd'
+                    }}>
+                      <h4 style={{ marginBottom: '1rem', color: '#1e40af' }}><HomeIcon /> Diária Autoadministrada</h4>
+                      <ul style={{ paddingLeft: '1.5rem', lineHeight: '1.8' }}>
+                        <li>1x Clofazimina 50 mg</li>
+                        <li>1x Dapsona 100 mg</li>
+                        <li>Tomar após o jantar/deitar</li>
+                      </ul>
+                    </div>
+                  </div>
+
+                  <div style={{
+                    marginTop: '1.5rem',
+                    padding: '1rem',
+                    background: '#fee2e2',
+                    borderRadius: '8px',
+                    border: '1px solid #fca5a5'
+                  }}>
+                    <strong><WarningIcon /> Doses Máximas:</strong> Rifampicina 600 mg/dia | Clofazimina 300 mg/dia | Dapsona 100 mg/dia
+                  </div>
+                </div>
+
+                <div style={{ marginBottom: '3rem' }}>
+                  <h3 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', color: '#3b82f6' }}>
+                    <FoodIcon /> ORIENTAÇÕES GERAIS
+                  </h3>
+                  
+                  <div style={{
+                    background: '#f8fafc',
+                    padding: '1.5rem',
+                    borderRadius: '12px'
+                  }}>
+                    <ul style={{ paddingLeft: '1.5rem', lineHeight: '2', fontSize: '1.1rem' }}>
+                      <li><CheckIcon /> Clofazimina e dapsona devem ser tomadas junto das refeições</li>
+                      <li><XIcon /> NÃO ingerir com suco de laranja (diminui absorção)</li>
+                      <li><CrossIcon /> Evitar bebidas alcoólicas durante o tratamento</li>
+                      <li><ClockIcon /> Em caso de esquecimento: tome ao lembrar (se não estiver próximo da próxima dose)</li>
+                      <li><VaccineIcon /> Checar status vacinal/BCG</li>
+                      <li><CalendarIcon /> Não tomar dose autoadministrada no dia da supervisionada</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Tab: Etapa 3 - Pós-Dispensação */}
+            {activeTab === 'etapa3' && (
+              <div>
+                <h2 style={{ fontSize: '2rem', marginBottom: '2rem', color: '#1e293b' }}>
+                  <CheckIcon /> ETAPA 03 – PÓS-DISPENSAÇÃO E AVALIAÇÃO
+                </h2>
+
+                <div style={{ marginBottom: '3rem' }}>
+                  <h3 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', color: '#3b82f6' }}>
+                    <ClipboardIcon /> ORIENTAÇÕES/INTERVENÇÕES ESSENCIAIS
+                  </h3>
+                  
+                  <div style={{
+                    background: '#f8fafc',
+                    padding: '1.5rem',
+                    borderRadius: '12px'
+                  }}>
+                    <ul style={{ paddingLeft: '1.5rem', lineHeight: '2', fontSize: '1.05rem' }}>
+                      <li><CheckIcon /> Confirmar nome dos medicamentos, indicações e esquema</li>
+                      <li><ArchiveIcon /> Ensinar armazenamento (15-30°C, local seco, protegido da luz)</li>
+                      <li><WarningIcon /> Alertar sobre interações (anticoncepcional + rifampicina)</li>
+                      <li><HospitalIcon /> Estimular comparecimento para avaliação dermato-neurológica regular</li>
+                      <li><BabyIcon /> Orientar métodos contraceptivos de barreira para mulheres</li>
+                      <li><CalendarIcon /> Agendar consulta a cada 28 dias para nova dose supervisionada</li>
+                      <li><NoteIcon /> Checar uso da Caderneta do Paciente com Hanseníase</li>
+                      <li><RunningIcon /> Estimular prática regular de atividade física</li>
+                      <li><SOSIcon /> Orientar relato imediato de reações adversas</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div style={{ marginBottom: '3rem' }}>
+                  <h3 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', color: '#dc2626' }}>
+                    <WarningIcon /> EVENTOS ADVERSOS MAIS COMUNS (ANVISA)
+                  </h3>
+                  
+                  <div style={{
+                    background: '#fee2e2',
+                    padding: '1.5rem',
+                    borderRadius: '12px',
+                    border: '1px solid #fca5a5'
+                  }}>
+                    <p style={{ marginBottom: '1rem', color: '#7f1d1d' }}>
+                      <strong>Relatos no Vigimed (até abril/2023, n = 98):</strong>
+                    </p>
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                      <thead>
+                        <tr style={{ background: '#fca5a5' }}>
+                          <th style={{ padding: '0.75rem', textAlign: 'left', color: 'white' }}>Evento Adverso</th>
+                          <th style={{ padding: '0.75rem', textAlign: 'right', color: 'white' }}>Frequência</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td style={{ padding: '0.75rem', borderBottom: '1px solid #fca5a5' }}>Erupção cutânea</td>
+                          <td style={{ padding: '0.75rem', borderBottom: '1px solid #fca5a5', textAlign: 'right', fontWeight: 'bold' }}>14,29%</td>
+                        </tr>
+                        <tr>
+                          <td style={{ padding: '0.75rem', borderBottom: '1px solid #fca5a5' }}>Prurido</td>
+                          <td style={{ padding: '0.75rem', borderBottom: '1px solid #fca5a5', textAlign: 'right', fontWeight: 'bold' }}>11,22%</td>
+                        </tr>
+                        <tr>
+                          <td style={{ padding: '0.75rem', borderBottom: '1px solid #fca5a5' }}>Náusea</td>
+                          <td style={{ padding: '0.75rem', borderBottom: '1px solid #fca5a5', textAlign: 'right', fontWeight: 'bold' }}>7,14%</td>
+                        </tr>
+                        <tr>
+                          <td style={{ padding: '0.75rem', borderBottom: '1px solid #fca5a5' }}>Vômito</td>
+                          <td style={{ padding: '0.75rem', borderBottom: '1px solid #fca5a5', textAlign: 'right', fontWeight: 'bold' }}>6,12%</td>
+                        </tr>
+                        <tr>
+                          <td style={{ padding: '0.75rem' }}>Hepatotoxicidade + Hiperpigmentação</td>
+                          <td style={{ padding: '0.75rem', textAlign: 'right', fontWeight: 'bold' }}>5,10%</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', color: '#059669' }}>
+                    <RefreshIcon /> EM CADA DISPENSAÇÃO
+                  </h3>
+                  
+                  <div style={{
+                    background: '#dcfce7',
+                    padding: '1.5rem',
+                    borderRadius: '12px',
+                    border: '1px solid #86efac'
+                  }}>
+                    <ul style={{ paddingLeft: '1.5rem', lineHeight: '2', fontSize: '1.05rem' }}>
+                      <li><QuestionIcon /> Perguntar sobre a última dose autoadministrada</li>
+                      <li><PregnantIcon /> Para gestantes: orientar uso de vitamina K no final da gravidez</li>
+                      <li><BabyIcon /> Lactantes: alertar sobre hiperpigmentação transitória no bebê</li>
+                      <li><StethoscopeIcon /> Reforçar a presença nas consultas/exames</li>
+                      <li><LightningIcon /> Reforçar importância da adesão total ao tratamento</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Tab: Segurança */}
+            {activeTab === 'seguranca' && (
+              <div>
+                <h2 style={{ fontSize: '2rem', marginBottom: '2rem', color: '#1e293b' }}>
+                  <ShieldIcon /> SEGURANÇA
+                </h2>
+
+                <div style={{ marginBottom: '3rem' }}>
+                  <h3 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', color: '#dc2626' }}>
+                    <CrossIcon /> CONTRAINDICAÇÕES
+                  </h3>
+                  
+                  <div style={{
+                    background: '#fee2e2',
+                    padding: '1.5rem',
+                    borderRadius: '12px',
+                    border: '1px solid #fca5a5'
+                  }}>
+                    <ul style={{ paddingLeft: '1.5rem', lineHeight: '2', fontSize: '1.05rem', color: '#7f1d1d' }}>
+                      <li><XIcon /> Reações alérgicas a rifampicina, sulfa, dapsona ou clofazimina</li>
+                      <li><XIcon /> Pacientes &lt; 30kg (avaliação médica obrigatória)</li>
+                      <li><WarningIcon /> Suspeita de gravidez (informar o médico)</li>
+                      <li><WarningIcon /> Planejamento de gravidez: aguardar término do tratamento</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div style={{ marginBottom: '3rem' }}>
+                  <h3 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', color: '#ea580c' }}>
+                    <PillIcon /> REAÇÕES ADVERSAS POR MEDICAMENTO
+                  </h3>
+                  
+                  <div style={{ display: 'grid', gap: '1.5rem' }}>
+                    <div style={{
+                      padding: '1.5rem',
+                      background: '#fff7ed',
+                      borderRadius: '12px',
+                      border: '1px solid #fed7aa'
+                    }}>
+                      <h4 style={{ marginBottom: '1rem', color: '#dc2626' }}>Rifampicina</h4>
+                      <ul style={{ paddingLeft: '1.5rem', lineHeight: '1.8' }}>
+                        <li>Dor abdominal, náusea, vômito, diarreia</li>
+                        <li>Icterícia, disfunção hepática</li>
+                        <li>Trombocitopenia</li>
+                        <li>Síndrome de Stevens-Johnson</li>
+                      </ul>
+                    </div>
+
+                    <div style={{
+                      padding: '1.5rem',
+                      background: '#eff6ff',
+                      borderRadius: '12px',
+                      border: '1px solid #bfdbfe'
+                    }}>
+                      <h4 style={{ marginBottom: '1rem', color: '#3b82f6' }}>Dapsona</h4>
+                      <ul style={{ paddingLeft: '1.5rem', lineHeight: '1.8' }}>
+                        <li>Dermatose bolhosa</li>
+                        <li>Eritema multiforme/nodoso</li>
+                        <li>Hepatite tóxica, icterícia colestática</li>
+                        <li>Anemia hemolítica</li>
+                      </ul>
+                    </div>
+
+                    <div style={{
+                      padding: '1.5rem',
+                      background: '#f0fdf4',
+                      borderRadius: '12px',
+                      border: '1px solid #bbf7d0'
+                    }}>
+                      <h4 style={{ marginBottom: '1rem', color: '#059669' }}>Clofazimina</h4>
+                      <ul style={{ paddingLeft: '1.5rem', lineHeight: '1.8' }}>
+                        <li>Descoloração da pele (vermelho a castanho escuro)</li>
+                        <li>Ictiose</li>
+                        <li>Urina/expectoração/suor rosados</li>
+                        <li>Diarreia, cólicas leves</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', color: '#7c3aed' }}>
+                    <LightningIcon /> INTERAÇÕES MEDICAMENTOSAS
+                  </h3>
+                  
+                  <div style={{
+                    background: '#faf5ff',
+                    padding: '1.5rem',
+                    borderRadius: '12px',
+                    border: '1px solid #d8b4fe'
+                  }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                      <thead>
+                        <tr style={{ background: '#e9d5ff' }}>
+                          <th style={{ padding: '0.75rem', textAlign: 'left' }}>Interação</th>
+                          <th style={{ padding: '0.75rem', textAlign: 'left' }}>Efeito</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td style={{ padding: '0.75rem', borderBottom: '1px solid #e9d5ff' }}>
+                            Suco de laranja/antiácidos + Clofazimina
+                          </td>
+                          <td style={{ padding: '0.75rem', borderBottom: '1px solid #e9d5ff' }}>
+                            ↓ Absorção da clofazimina
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style={{ padding: '0.75rem', borderBottom: '1px solid #e9d5ff' }}>
+                            Anticoncepcionais orais + Rifampicina
+                          </td>
+                          <td style={{ padding: '0.75rem', borderBottom: '1px solid #e9d5ff' }}>
+                            ↓ Eficácia contraceptiva
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style={{ padding: '0.75rem', borderBottom: '1px solid #e9d5ff' }}>
+                            Antimaláricos + Dapsona
+                          </td>
+                          <td style={{ padding: '0.75rem', borderBottom: '1px solid #e9d5ff' }}>
+                            ↑ Risco de hemólise
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style={{ padding: '0.75rem' }}>
+                            Cefazolina + Rifampicina
+                          </td>
+                          <td style={{ padding: '0.75rem' }}>
+                            Distúrbio grave de coagulação
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Tab: Populações Especiais */}
+            {activeTab === 'especiais' && (
+              <div>
+                <h2 style={{ fontSize: '2rem', marginBottom: '2rem', color: '#1e293b' }}>
+                  <UsersIcon /> POPULAÇÕES ESPECIAIS
+                </h2>
+
+                <div style={{ display: 'grid', gap: '2rem' }}>
+                  <div style={{
+                    padding: '1.5rem',
+                    background: '#fef3c7',
+                    borderRadius: '12px',
+                    border: '1px solid #fcd34d'
+                  }}>
+                    <h3 style={{ fontSize: '1.3rem', marginBottom: '1rem', color: '#92400e' }}>
+                      <BabyIcon /> Crianças
+                    </h3>
+                    <ul style={{ paddingLeft: '1.5rem', lineHeight: '1.8' }}>
+                      <li>Esquema conforme peso corporal</li>
+                      <li>&lt;30kg: dividir dose mensal em 2-3 tomadas</li>
+                      <li>Avaliação médica obrigatória para &lt;30kg</li>
+                      <li>Monitoramento rigoroso de adesão</li>
+                    </ul>
+                  </div>
+
+                  <div style={{
+                    padding: '1.5rem',
+                    background: '#fce7f3',
+                    borderRadius: '12px',
+                    border: '1px solid #fbcfe8'
+                  }}>
+                    <h3 style={{ fontSize: '1.3rem', marginBottom: '1rem', color: '#be185d' }}>
+                      <PregnantIcon /> Gestação/Lactação
+                    </h3>
+                    <ul style={{ paddingLeft: '1.5rem', lineHeight: '1.8' }}>
+                      <li>Tratamento padrão não contraindicado</li>
+                      <li><WarningIcon /> Maior risco de prematuridade e baixo peso</li>
+                      <li>Pele do RN pode pigmentar (clofazimina) - reversível</li>
+                      <li>Vitamina K no final da gestação (rifampicina)</li>
+                    </ul>
+                  </div>
+
+                  <div style={{
+                    padding: '1.5rem',
+                    background: '#f3f4f6',
+                    borderRadius: '12px',
+                    border: '1px solid #d1d5db'
+                  }}>
+                    <h3 style={{ fontSize: '1.3rem', marginBottom: '1rem', color: '#4b5563' }}>
+                      <ElderIcon /> Idosos
+                    </h3>
+                    <ul style={{ paddingLeft: '1.5rem', lineHeight: '1.8' }}>
+                      <li>Cautela por risco de efeitos graves</li>
+                      <li>Rifampicina: hepatotoxicidade, agranulocitose</li>
+                      <li>Dapsona: anemia hemolítica</li>
+                      <li>Clofazimina: obstrução intestinal, QT longo</li>
+                    </ul>
+                  </div>
+
+                  <div style={{
+                    padding: '1.5rem',
+                    background: '#fee2e2',
+                    borderRadius: '12px',
+                    border: '1px solid #fca5a5'
+                  }}>
+                    <h3 style={{ fontSize: '1.3rem', marginBottom: '1rem', color: '#dc2626' }}>
+                      <HospitalIcon /> Nefropatias
+                    </h3>
+                    <ul style={{ paddingLeft: '1.5rem', lineHeight: '1.8' }}>
+                      <li>Clofazimina: sem ajuste leve/moderado; grave: cautela</li>
+                      <li>Rifampicina: sem ajuste necessário</li>
+                      <li>Dapsona: usar com cautela (possível toxicidade)</li>
+                    </ul>
+                  </div>
+
+                  <div style={{
+                    padding: '1.5rem',
+                    background: '#fff7ed',
+                    borderRadius: '12px',
+                    border: '1px solid #fed7aa'
+                  }}>
+                    <h3 style={{ fontSize: '1.3rem', marginBottom: '1rem', color: '#ea580c' }}>
+                      <MicroscopeIcon /> Hepatopatias
+                    </h3>
+                    <ul style={{ paddingLeft: '1.5rem', lineHeight: '1.8' }}>
+                      <li>Rifampicina: interromper em hepatotoxicidade</li>
+                      <li>Clofazimina: evitar, salvo benefício relevante</li>
+                      <li>Dapsona: sem ajuste necessário</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Referências */}
+          <div style={{
+            background: 'white',
+            padding: '2rem',
+            borderRadius: '16px',
+            marginTop: '2rem',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+          }}>
+            <h3 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: '#1e293b' }}>
+              <BookIcon /> Referências
+            </h3>
+            <div style={{ fontSize: '0.9rem', color: '#64748b', lineHeight: '1.8' }}>
+              <p>1. Ministério da Saúde. Protocolo Clínico e Diretrizes Terapêuticas Hanseníase. 2022.</p>
+              <p>2. WHO. Guidelines for the diagnosis, treatment and prevention of leprosy. 2018.</p>
+              <p>3. ANVISA. Vigimed - Sistema de Notificação em Vigilância Sanitária. 2023.</p>
+              <p>4. Conselho Federal de Farmácia. Resolução CFF nº 586/2013.</p>
+              <p>Documento completo disponível para download em formato PDF mediante solicitação.</p>
+            </div>
+          </div>
+
+          {/* Call to Action */}
+          <div style={{
+            background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+            padding: '2rem',
+            borderRadius: '16px',
+            marginTop: '2rem',
+            textAlign: 'center',
+            color: 'white'
+          }}>
+            <h3 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>
+              <ChatIcon /> Precisa de Orientação Personalizada?
+            </h3>
+            <p style={{ marginBottom: '1.5rem', opacity: 0.9 }}>
+              Nossos assistentes virtuais estão disponíveis para esclarecer dúvidas específicas
             </p>
-            
-            <h3 style={{ color: '#003366', fontSize: '1.5rem', marginBottom: '1rem' }}>
-              🔬 Problema Identificado:
-            </h3>
-            <ul style={{ marginBottom: '2rem', paddingLeft: '1.5rem' }}>
-              <li><strong>Falta de padronização:</strong> Processos de dispensação variáveis entre profissionais</li>
-              <li><strong>Comunicação inadequada:</strong> Orientações inconsistentes aos pacientes</li>
-              <li><strong>Baixa adesão terapêutica:</strong> 30% dos pacientes abandonam o tratamento</li>
-              <li><strong>Carência de protocolos:</strong> Ausência de roteiros específicos para PQT-U</li>
-            </ul>
-
-            <h3 style={{ color: '#003366', fontSize: '1.5rem', marginBottom: '1rem' }}>
-              💡 Solução Desenvolvida:
-            </h3>
-            <ul style={{ marginBottom: '2rem', paddingLeft: '1.5rem' }}>
-              <li><strong>Roteiro Estruturado:</strong> Guia passo-a-passo baseado em evidências</li>
-              <li><strong>Validação Científica:</strong> Aprovado por painel de especialistas</li>
-              <li><strong>Assistentes Virtuais:</strong> Dr. Gasnelio e Gá para democratizar o conhecimento</li>
-              <li><strong>Aplicabilidade Prática:</strong> Implementação direta no SUS</li>
-            </ul>
-
-            <div style={{
-              background: '#f0f9ff',
-              padding: '1.5rem',
-              borderRadius: '12px',
-              border: '2px solid #e0f2fe',
-              marginTop: '1.5rem'
-            }}>
-              <h4 style={{ color: '#0369a1', marginBottom: '0.75rem' }}>
-                🌟 Impacto da Pesquisa:
-              </h4>
-              <p style={{ fontStyle: 'italic', color: '#0c4a6e' }}>
-                "Esta pesquisa representa um marco na farmácia clínica brasileira, sendo a primeira a desenvolver um roteiro validado especificamente para hanseníase/PQT-U. Os resultados demonstram melhoria significativa na qualidade da dispensação e adesão terapêutica."
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* Seção: Metodologia Científica */}
-        <section style={{
-          background: 'white',
-          borderRadius: '16px',
-          padding: '2.5rem',
-          marginBottom: '2rem',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-          border: '1px solid #e2e8f0'
-        }}>
-          <h2 style={{
-            fontSize: '2rem',
-            color: '#059669',
-            marginBottom: '1.5rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.75rem'
-          }}>
-            🔬 Metodologia Científica
-          </h2>
-          
-          <div style={{ fontSize: '1.1rem', lineHeight: '1.7', color: '#374151' }}>
-            <h3 style={{ color: '#059669', fontSize: '1.5rem', marginBottom: '1rem' }}>
-              📋 Objetivos da Pesquisa:
-            </h3>
-            <div style={{ marginBottom: '2rem' }}>
-              <p style={{ marginBottom: '1rem' }}><strong>Objetivo Geral:</strong></p>
-              <p style={{ marginBottom: '1.5rem', paddingLeft: '1rem', borderLeft: '3px solid #10b981' }}>
-                Elaborar e validar um roteiro de dispensação de medicamentos específico para pacientes em tratamento de hanseníase com PQT-U, visando à otimização do cuidado farmacêutico.
-              </p>
-              
-              <p style={{ marginBottom: '1rem' }}><strong>Objetivos Específicos:</strong></p>
-              <ul style={{ paddingLeft: '1.5rem' }}>
-                <li>Desenvolver instrumento estruturado para dispensação de PQT-U</li>
-                <li>Validar o conteúdo com especialistas em farmácia clínica</li>
-                <li>Avaliar a aplicabilidade prática em cenários reais</li>
-                <li>Mensurar impacto na qualidade do cuidado farmacêutico</li>
-                <li>Propor modelo replicável para outras condições terapêuticas</li>
-              </ul>
-            </div>
-
-            <h3 style={{ color: '#059669', fontSize: '1.5rem', marginBottom: '1rem' }}>
-              📚 Fundamentação Teórica:
-            </h3>
-            <ul style={{ marginBottom: '2rem', paddingLeft: '1.5rem' }}>
-              <li><strong>Diretrizes do Ministério da Saúde:</strong> PCDT Hanseníase 2022</li>
-              <li><strong>Organização Mundial da Saúde:</strong> Guidelines internacionais</li>
-              <li><strong>Cuidado Farmacêutico:</strong> Princípios centrados no paciente</li>
-              <li><strong>Comunicação em Saúde:</strong> Teorias de educação terapêutica</li>
-            </ul>
-
-            <h3 style={{ color: '#059669', fontSize: '1.5rem', marginBottom: '1rem' }}>
-              🔍 Método de Validação:
-            </h3>
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-              gap: '1.5rem',
-              marginTop: '1.5rem'
-            }}>
-              <div style={{
-                background: '#f0fdf4',
-                padding: '1.5rem',
-                borderRadius: '12px',
-                border: '1px solid #bbf7d0'
-              }}>
-                <h4 style={{ color: '#16a34a', marginBottom: '0.75rem' }}>
-                  📖 Revisão Sistemática
-                </h4>
-                <p style={{ fontSize: '1rem', color: '#14532d' }}>
-                  Análise criteriosa da literatura científica sobre dispensação farmacêutica e hanseníase
-                </p>
-              </div>
-
-              <div style={{
-                background: '#f0fdf4',
-                padding: '1.5rem',
-                borderRadius: '12px',
-                border: '1px solid #bbf7d0'
-              }}>
-                <h4 style={{ color: '#16a34a', marginBottom: '0.75rem' }}>
-                  👨‍⚕️ Técnica Delphi
-                </h4>
-                <p style={{ fontSize: '1rem', color: '#14532d' }}>
-                  Consenso entre especialistas em farmácia clínica e hanseníase de todo o Brasil
-                </p>
-              </div>
-
-              <div style={{
-                background: '#f0fdf4',
-                padding: '1.5rem',
-                borderRadius: '12px',
-                border: '1px solid #bbf7d0'
-              }}>
-                <h4 style={{ color: '#16a34a', marginBottom: '0.75rem' }}>
-                  🏥 Teste Piloto
-                </h4>
-                <p style={{ fontSize: '1rem', color: '#14532d' }}>
-                  Aplicação prática em unidades de saúde do SUS com avaliação de resultados
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Seção: Resultados e Impacto */}
-        <section style={{
-          background: 'white',
-          borderRadius: '16px',
-          padding: '2.5rem',
-          marginBottom: '2rem',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-          border: '1px solid #e2e8f0'
-        }}>
-          <h2 style={{
-            fontSize: '2rem',
-            color: '#ea580c',
-            marginBottom: '1.5rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.75rem'
-          }}>
-            📊 Resultados e Impacto
-          </h2>
-          
-          <div style={{ fontSize: '1.1rem', lineHeight: '1.7', color: '#374151' }}>
-            <h3 style={{ color: '#ea580c', fontSize: '1.5rem', marginBottom: '1rem' }}>
-              🎯 Principais Achados:
-            </h3>
-            
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-              gap: '1.5rem',
-              marginBottom: '2rem'
-            }}>
-              <div style={{
-                background: '#fff7ed',
-                padding: '1.5rem',
-                borderRadius: '12px',
-                border: '1px solid #fed7aa'
-              }}>
-                <h4 style={{ color: '#ea580c', fontSize: '1.25rem', marginBottom: '1rem' }}>
-                  ✅ Alto Grau de Concordância
-                </h4>
-                <ul style={{ fontSize: '1rem', paddingLeft: '1rem', color: '#9a3412' }}>
-                  <li>95% dos especialistas aprovaram o conteúdo</li>
-                  <li>Relevância clínica confirmada</li>
-                  <li>Aplicabilidade prática atestada</li>
-                </ul>
-              </div>
-
-              <div style={{
-                background: '#fff7ed',
-                padding: '1.5rem',
-                borderRadius: '12px',
-                border: '1px solid #fed7aa'
-              }}>
-                <h4 style={{ color: '#ea580c', fontSize: '1.25rem', marginBottom: '1rem' }}>
-                  📈 Melhoria Mensurável
-                </h4>
-                <ul style={{ fontSize: '1rem', paddingLeft: '1rem', color: '#9a3412' }}>
-                  <li>40% aumento na adesão terapêutica</li>
-                  <li>60% redução em dúvidas dos pacientes</li>
-                  <li>Padronização de 100% dos atendimentos</li>
-                </ul>
-              </div>
-
-              <div style={{
-                background: '#fff7ed',
-                padding: '1.5rem',
-                borderRadius: '12px',
-                border: '1px solid #fed7aa'
-              }}>
-                <h4 style={{ color: '#ea580c', fontSize: '1.25rem', marginBottom: '1rem' }}>
-                  🌟 Inovação Científica
-                </h4>
-                <ul style={{ fontSize: '1rem', paddingLeft: '1rem', color: '#9a3412' }}>
-                  <li>Primeiro roteiro validado para PQT-U</li>
-                  <li>Metodologia replicável</li>
-                  <li>Base para políticas públicas</li>
-                </ul>
-              </div>
-            </div>
-
-            <h3 style={{ color: '#ea580c', fontSize: '1.5rem', marginBottom: '1rem' }}>
-              🚀 Contribuições para a Ciência:
-            </h3>
-            <ul style={{ marginBottom: '2rem', paddingLeft: '1.5rem' }}>
-              <li><strong>Avanço Científico:</strong> Primeira validação específica para dispensação de PQT-U no Brasil</li>
-              <li><strong>Aplicação Prática:</strong> Ferramenta pronta para implementação no SUS</li>
-              <li><strong>Formação Profissional:</strong> Base para capacitação de farmacêuticos</li>
-              <li><strong>Política Pública:</strong> Evidências para diretrizes nacionais</li>
-            </ul>
-
-            <div style={{
-              background: '#fff7ed',
-              padding: '1.5rem',
-              borderRadius: '12px',
-              border: '2px solid #fed7aa',
-              marginTop: '1.5rem'
-            }}>
-              <h4 style={{ color: '#ea580c', marginBottom: '0.75rem' }}>
-                🏆 Reconhecimento Acadêmico:
-              </h4>
-              <p style={{ fontStyle: 'italic', color: '#9a3412' }}>
-                "Esta pesquisa estabelece um novo paradigma no cuidado farmacêutico para hanseníase, sendo reconhecida como referência nacional pela qualidade metodológica e aplicabilidade prática dos resultados obtidos."
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* Seção: Plataforma Digital */}
-        <section style={{
-          background: 'white',
-          borderRadius: '16px',
-          padding: '2.5rem',
-          marginBottom: '2rem',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-          border: '1px solid #e2e8f0'
-        }}>
-          <h2 style={{
-            fontSize: '2rem',
-            color: '#7c3aed',
-            marginBottom: '1.5rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.75rem'
-          }}>
-            💻 Evolução Digital da Pesquisa
-          </h2>
-          
-          <div style={{ fontSize: '1.1rem', lineHeight: '1.7', color: '#374151' }}>
-            <p style={{ marginBottom: '1.5rem' }}>
-              <strong>Esta plataforma representa a evolução digital da tese</strong>, democratizando o acesso ao conhecimento científico através de inteligência artificial e design centrado no usuário.
-            </p>
-            
-            <h3 style={{ color: '#7c3aed', fontSize: '1.5rem', marginBottom: '1rem' }}>
-              🤖 Assistentes Virtuais Especializados:
-            </h3>
-            
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-              gap: '1.5rem',
-              marginBottom: '2rem'
-            }}>
-              <div style={{
-                background: '#f0f9ff',
-                padding: '1.5rem',
-                borderRadius: '12px',
-                border: '1px solid #bfdbfe'
-              }}>
-                <h4 style={{ color: '#2563eb', fontSize: '1.25rem', marginBottom: '1rem' }}>
-                  👨‍⚕️ Dr. Gasnelio
-                </h4>
-                <p style={{ fontSize: '1rem', color: '#1e40af', marginBottom: '1rem' }}>
-                  Assistente técnico-científico especializado em farmácia clínica
-                </p>
-                <ul style={{ fontSize: '0.95rem', paddingLeft: '1rem', color: '#1e3a8a' }}>
-                  <li>Linguagem técnica rigorosa</li>
-                  <li>Protocolos detalhados</li>
-                  <li>Referências científicas</li>
-                  <li>Cálculos de dosagem</li>
-                </ul>
-              </div>
-
-              <div style={{
-                background: '#f0fdf4',
-                padding: '1.5rem',
-                borderRadius: '12px',
-                border: '1px solid #bbf7d0'
-              }}>
-                <h4 style={{ color: '#16a34a', fontSize: '1.25rem', marginBottom: '1rem' }}>
-                  🤗 Gá
-                </h4>
-                <p style={{ fontSize: '1rem', color: '#15803d', marginBottom: '1rem' }}>
-                  Assistente empático focado em comunicação acessível
-                </p>
-                <ul style={{ fontSize: '0.95rem', paddingLeft: '1rem', color: '#14532d' }}>
-                  <li>Linguagem simples e clara</li>
-                  <li>Explicações didáticas</li>
-                  <li>Suporte emocional</li>
-                  <li>Orientações práticas</li>
-                </ul>
-              </div>
-            </div>
-
-            <h3 style={{ color: '#7c3aed', fontSize: '1.5rem', marginBottom: '1rem' }}>
-              📱 Funcionalidades da Plataforma:
-            </h3>
-            <ul style={{ marginBottom: '2rem', paddingLeft: '1.5rem' }}>
-              <li><strong>Chat Inteligente:</strong> Acesso 24/7 ao conhecimento especializado</li>
-              <li><strong>Módulos Educativos:</strong> Conteúdo estruturado e progressivo</li>
-              <li><strong>Recursos Práticos:</strong> Calculadoras, checklists e ferramentas</li>
-              <li><strong>Acesso Público:</strong> Informações básicas para toda a comunidade</li>
-            </ul>
-
-            <div style={{
-              background: '#faf5ff',
-              padding: '1.5rem',
-              borderRadius: '12px',
-              border: '2px solid #d8b4fe',
-              marginTop: '1.5rem'
-            }}>
-              <h4 style={{ color: '#7c3aed', marginBottom: '0.75rem' }}>
-                🌟 Impacto da Digitalização:
-              </h4>
-              <p style={{ fontStyle: 'italic', color: '#6b21a8' }}>
-                "A transformação digital desta pesquisa permite que farmacêuticos, estudantes e pacientes de todo o Brasil tenham acesso instantâneo ao conhecimento especializado, multiplicando exponencialmente o impacto científico e social da tese."
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* Bibliografia - versão resumida para página pública */}
-        <section style={{
-          background: 'white',
-          borderRadius: '16px',
-          padding: '2.5rem',
-          marginBottom: '2rem',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-          border: '1px solid #e2e8f0'
-        }}>
-          <h2 style={{
-            fontSize: '2rem',
-            color: '#7c2d12',
-            marginBottom: '1.5rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.75rem'
-          }}>
-            📚 Principais Referências
-          </h2>
-          
-          <div style={{ fontSize: '1.1rem', lineHeight: '1.7', color: '#374151' }}>
-            <p style={{ marginBottom: '1.5rem' }}>
-              Esta pesquisa foi fundamentada em <strong>diretrizes oficiais, literatura científica internacional e protocolos nacionais</strong>, garantindo rigor metodológico e aplicabilidade prática.
-            </p>
-            
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-              gap: '1.5rem'
-            }}>
-              <div style={{
-                background: '#fef3c7',
-                padding: '1.5rem',
-                borderRadius: '12px',
-                border: '1px solid #fcd34d'
-              }}>
-                <h3 style={{ color: '#92400e', fontSize: '1.25rem', marginBottom: '1rem' }}>
-                  📋 Diretrizes Oficiais
-                </h3>
-                <ul style={{ fontSize: '1rem', paddingLeft: '1rem', color: '#78716c' }}>
-                  <li>PCDT Hanseníase 2022 (Ministério da Saúde)</li>
-                  <li>WHO Guidelines for Leprosy (OMS)</li>
-                  <li>Diretrizes CFM para Telemedicina</li>
-                </ul>
-              </div>
-
-              <div style={{
-                background: '#fef3c7',
-                padding: '1.5rem',
-                borderRadius: '12px',
-                border: '1px solid #fcd34d'
-              }}>
-                <h3 style={{ color: '#92400e', fontSize: '1.25rem', marginBottom: '1rem' }}>
-                  🔬 Literatura Científica
-                </h3>
-                <ul style={{ fontSize: '1rem', paddingLeft: '1rem', color: '#78716c' }}>
-                  <li>PubMed/MEDLINE (50+ artigos)</li>
-                  <li>Cochrane Library (revisões sistemáticas)</li>
-                  <li>LILACS (literatura latino-americana)</li>
-                </ul>
-              </div>
-            </div>
-            
-            <div style={{
-              marginTop: '2rem',
-              textAlign: 'center'
-            }}>
+            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
               <a
-                href="/modules/sobre-a-tese"
+                href="/chat"
                 style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  padding: '0.75rem 1.5rem',
-                  background: '#7c2d12',
-                  color: 'white',
-                  textDecoration: 'none',
+                  padding: '0.75rem 2rem',
+                  background: 'white',
+                  color: '#3b82f6',
                   borderRadius: '8px',
-                  fontSize: '1rem',
+                  textDecoration: 'none',
                   fontWeight: '600'
                 }}
               >
-                📖 Ver Bibliografia Completa (18 referências)
+                <DoctorIcon /> Falar com Dr. Gasnelio
+              </a>
+              <a
+                href="/chat"
+                style={{
+                  padding: '0.75rem 2rem',
+                  background: 'rgba(255,255,255,0.2)',
+                  color: 'white',
+                  borderRadius: '8px',
+                  textDecoration: 'none',
+                  fontWeight: '600',
+                  border: '2px solid white'
+                }}
+              >
+                <HeartIcon /> Falar com Gá
               </a>
             </div>
           </div>
-        </section>
-
-        {/* Call to Action */}
-        <div style={{
-          background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
-          padding: '2rem',
-          borderRadius: '16px',
-          textAlign: 'center',
-          border: '2px solid #bfdbfe'
-        }}>
-          <h3 style={{
-            fontSize: '1.5rem',
-            color: '#003366',
-            marginBottom: '1rem'
-          }}>
-            💬 Explore o Conhecimento da Pesquisa
-          </h3>
-          <p style={{
-            fontSize: '1.1rem',
-            color: '#0369a1',
-            marginBottom: '1.5rem'
-          }}>
-            Acesse nossos assistentes virtuais especializados para esclarecer dúvidas sobre a pesquisa
-          </p>
-          <div style={{
-            display: 'flex',
-            gap: '1rem',
-            justifyContent: 'center',
-            flexWrap: 'wrap'
-          }}>
-            <a
-              href="/chat"
-              style={{
-                padding: '1rem 2rem',
-                background: '#003366',
-                color: 'white',
-                borderRadius: '12px',
-                textDecoration: 'none',
-                fontSize: '1rem',
-                fontWeight: '600',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.5rem'
-              }}
-            >
-              🤖 Conversar com Assistentes
-            </a>
-            <a
-              href="/vida-com-hanseniase"
-              style={{
-                padding: '1rem 2rem',
-                background: '#059669',
-                color: 'white',
-                borderRadius: '12px',
-                textDecoration: 'none',
-                fontSize: '1rem',
-                fontWeight: '600',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.5rem'
-              }}
-            >
-              ❤️ Informações para Pacientes
-            </a>
-          </div>
         </div>
-      </div>
       </main>
       
-      {/* Footer público */}
+      {/* Footer */}
       <footer role="contentinfo">
         <EducationalFooter variant="full" showNavigation={true} />
       </footer>
