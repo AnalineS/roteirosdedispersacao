@@ -6,7 +6,7 @@ import EducationalLayout from '@/components/layout/EducationalLayout';
 import { usePersonas } from '@/hooks/usePersonas';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useOnboarding } from '@/hooks/useOnboarding';
-import { getUniversityLogo, getPersonaAvatar } from '@/constants/avatars';
+import { getPersonaAvatar } from '@/constants/avatars';
 import type { UserProfile } from '@/hooks/useUserProfile';
 import { CognitiveLoadAuditor } from '@/components/analytics/CognitiveLoadAuditor';
 import { MobileUXAuditor } from '@/components/analytics/MobileUXAuditor';
@@ -16,6 +16,17 @@ import { MobileQuickActions } from '@/components/mobile/MedicalMobileComponents'
 import { useMobileDetection } from '@/components/mobile/MobileFirstFramework';
 import { InteractiveButton, useToast, ToastContainer } from '@/components/ui/MicroInteractions';
 import { ScrollAnimation, CardReveal, PageTransition, MedicalAnimation } from '@/components/ui/AnimationSystem';
+import { 
+  HomeIcon, 
+  ChatBotIcon, 
+  ModulesIcon, 
+  ResourcesIcon, 
+  StarIcon, 
+  UserCheckIcon, 
+  HelpIcon, 
+  PhoneIcon,
+  getIconByEmoji 
+} from '@/components/icons/NavigationIcons';
 import { MedicalLoadingSpinner } from '@/components/ui/LoadingStates';
 import dynamic from 'next/dynamic';
 
@@ -175,44 +186,26 @@ export default function HomePage() {
           paddingRight: 'clamp(1rem, 4vw, 2rem)'
         }}>
           {/* Header Institucional */}
-          <div className="flex items-center justify-start mb-5" style={{ 
-            maxWidth: 'min(900px, 90vw)', 
+          <div style={{ 
+            maxWidth: 'min(1200px, 92vw)', 
             margin: '0 auto 2rem',
             padding: 'clamp(1rem, 3vw, 1.5rem)',
             background: 'white',
             borderRadius: 'clamp(8px, 2vw, 12px)',
             boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
-            border: '1px solid #e2e8f0'
+            border: '1px solid #e2e8f0',
+            textAlign: 'center',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
           }}>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 'clamp(0.5rem, 2vw, 1rem)',
-              flexWrap: 'wrap'
-            }}>
-              <Image 
-                src={getUniversityLogo('unb_logo2')} 
-                alt="Universidade de Brasília"
-                width={80}
-                height={80}
-                style={{
-                  width: 'clamp(60px, 8vw, 80px)',
-                  height: 'clamp(60px, 8vw, 80px)',
-                  objectFit: 'contain',
-                  borderRadius: '50%'
-                }}
-              />
-              <div style={{ textAlign: 'left' }}>
-                <HierarchyHeading level="h1">
-                  Roteiros de Dispensação
-                </HierarchyHeading>
-                <HierarchyText size="large" style={{ 
-                  color: '#64748b',
-                  margin: '0.5rem 0 0 0'
-                }}>
-                  Sistema Inteligente de Orientação • Hanseníase
-                </HierarchyText>
-              </div>
+            <div style={{ textAlign: 'center', width: '100%' }}>
+              <HierarchyHeading level="h1" style={{ 
+                textAlign: 'center',
+                margin: 0
+              }}>
+                Roteiros de Dispensação
+              </HierarchyHeading>
             </div>
           </div>
           
@@ -234,8 +227,16 @@ export default function HomePage() {
               maxWidth: '600px', 
               margin: '2rem auto' 
             }}>
-              <HierarchyHeading level="h3" style={{ textAlign: 'center', marginBottom: '1rem' }}>
-                🚀 Acesso Rápido
+              <HierarchyHeading level="h3" style={{ 
+                textAlign: 'center', 
+                marginBottom: '1rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem'
+              }}>
+                <ResourcesIcon size={24} variant="unb" />
+                Acesso Rápido
               </HierarchyHeading>
               
               <MobileQuickActions
@@ -275,7 +276,7 @@ export default function HomePage() {
 
           {/* Seção dos Assistentes Virtuais */}
           <div style={{ 
-            maxWidth: '900px', 
+            maxWidth: 'min(1400px, 95vw)', 
             margin: '3rem auto',
             padding: '2.5rem',
             background: 'rgba(255, 255, 255, 0.95)',
@@ -284,7 +285,13 @@ export default function HomePage() {
             border: '1px solid rgba(255, 255, 255, 0.2)'
           }}>
             <div className="text-center hierarchy-component">
-              <HierarchyHeading level="h2" className="hierarchy-element">
+              <HierarchyHeading level="h2" className="hierarchy-element" style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.75rem'
+              }}>
+                <ChatBotIcon size={28} variant="unb" />
                 Conheça Seus Assistentes Virtuais
               </HierarchyHeading>
               <HierarchyText size="large" className="hierarchy-element" style={{ 
@@ -554,161 +561,8 @@ export default function HomePage() {
               </button>
             </div>
             
-            {/* Informações Detalhadas dos Assistentes */}
-            <div style={{ 
-              marginTop: '3rem',
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
-              gap: '2rem'
-            }}>
-              {/* Detalhes Dr. Gasnelio */}
-              <div style={{
-                padding: '2rem',
-                background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
-                borderRadius: '16px',
-                border: '2px solid #e0f2fe'
-              }}>
-                <h3 style={{
-                  fontSize: '1.5rem',
-                  fontWeight: '700',
-                  color: '#003366',
-                  marginBottom: '0.5rem',
-                  textAlign: 'center'
-                }}>
-                  DR. GASNELIO
-                </h3>
-                <p style={{
-                  fontSize: '1.125rem',
-                  color: '#003366',
-                  fontWeight: '600',
-                  textAlign: 'center',
-                  marginBottom: '1.5rem'
-                }}>
-                  Farmacêutico Clínico
-                </p>
-                
-                <div style={{ marginBottom: '1.5rem' }}>
-                  <h4 style={{
-                    fontSize: '1rem',
-                    fontWeight: '700',
-                    color: '#003366',
-                    marginBottom: '0.75rem'
-                  }}>
-                    CARACTERÍSTICAS:
-                  </h4>
-                  <ul style={{
-                    fontSize: '0.9rem',
-                    color: '#003366',
-                    lineHeight: '1.6',
-                    paddingLeft: '1.25rem',
-                    margin: 0
-                  }}>
-                    <li>Linguagem técnica e científica rigorosa</li>
-                    <li>Protocolos farmacêuticos detalhados</li>
-                    <li>Referências a estudos clínicos atualizados</li>
-                    <li>Foco em interações medicamentosas</li>
-                  </ul>
-                </div>
-                
-                <div>
-                  <h4 style={{
-                    fontSize: '1rem',
-                    fontWeight: '700',
-                    color: '#003366',
-                    marginBottom: '0.75rem'
-                  }}>
-                    PÚBLICO-ALVO:
-                  </h4>
-                  <ul style={{
-                    fontSize: '0.9rem',
-                    color: '#003366',
-                    lineHeight: '1.6',
-                    paddingLeft: '1.25rem',
-                    margin: 0
-                  }}>
-                    <li>Farmacêuticos e técnicos em farmácia</li>
-                    <li>Médicos e enfermeiros</li>
-                    <li>Estudantes de ciências da saúde</li>
-                    <li>Residentes e profissionais da saúde</li>
-                  </ul>
-                </div>
-              </div>
-              
-              {/* Detalhes Gá */}
-              <div style={{
-                padding: '2rem',
-                background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
-                borderRadius: '16px',
-                border: '2px solid #dcfce7'
-              }}>
-                <h3 style={{
-                  fontSize: '1.5rem',
-                  fontWeight: '700',
-                  color: '#16a34a',
-                  marginBottom: '0.5rem',
-                  textAlign: 'center'
-                }}>
-                  GÁ
-                </h3>
-                <p style={{
-                  fontSize: '1.125rem',
-                  color: '#16a34a',
-                  fontWeight: '600',
-                  textAlign: 'center',
-                  marginBottom: '1.5rem'
-                }}>
-                  Assistente Educacional Empático
-                </p>
-                
-                <div style={{ marginBottom: '1.5rem' }}>
-                  <h4 style={{
-                    fontSize: '1rem',
-                    fontWeight: '700',
-                    color: '#14532d',
-                    marginBottom: '0.75rem'
-                  }}>
-                    CARACTERÍSTICAS:
-                  </h4>
-                  <ul style={{
-                    fontSize: '0.9rem',
-                    color: '#16a34a',
-                    lineHeight: '1.6',
-                    paddingLeft: '1.25rem',
-                    margin: 0
-                  }}>
-                    <li>Linguagem simples e acolhedora</li>
-                    <li>Explicações didáticas e práticas</li>
-                    <li>Orientações para o cotidiano</li>
-                    <li>Comunicação humanizada e empática</li>
-                  </ul>
-                </div>
-                
-                <div>
-                  <h4 style={{
-                    fontSize: '1rem',
-                    fontWeight: '700',
-                    color: '#14532d',
-                    marginBottom: '0.75rem'
-                  }}>
-                    PÚBLICO-ALVO:
-                  </h4>
-                  <ul style={{
-                    fontSize: '0.9rem',
-                    color: '#16a34a',
-                    lineHeight: '1.6',
-                    paddingLeft: '1.25rem',
-                    margin: 0
-                  }}>
-                    <li>Pacientes e familiares</li>
-                    <li>Cuidadores e comunidade</li>
-                    <li>Agentes comunitários de saúde</li>
-                    <li>Público em geral interessado</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
             
-            {/* Guia de Escolha do Assistente */}
+            {/* Perfil dos Assistentes e Guia de Escolha */}
             <div style={{
               marginTop: '2rem',
               background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
@@ -721,100 +575,169 @@ export default function HomePage() {
                 fontWeight: '700',
                 color: '#003366',
                 textAlign: 'center',
-                marginBottom: '1.5rem'
+                marginBottom: '1.5rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.75rem'
               }}>
-                🤔 Qual Assistente Escolher?
+                <UserCheckIcon size={24} variant="unb" />
+                Perfil dos Assistentes - Qual Escolher?
               </h3>
               
               <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
                 gap: '1.5rem',
                 marginBottom: '1.5rem'
               }}>
-                {/* Dr. Gasnelio Guide */}
+                {/* Dr. Gasnelio Profile & Guide */}
                 <div style={{
                   background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
                   padding: '1.5rem',
                   borderRadius: '12px',
                   border: '2px solid #bfdbfe'
                 }}>
-                  <h4 style={{
-                    fontSize: '1.125rem',
-                    fontWeight: '600',
-                    color: '#0369a1',
-                    marginBottom: '0.75rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.5rem'
-                  }}>
-                    👨‍⚕️ Dr. Gasnelio é para você se:
-                  </h4>
-                  <ul style={{
-                    fontSize: '0.9rem',
-                    color: '#0c4a6e',
-                    lineHeight: '1.6',
-                    marginLeft: '1rem',
-                    marginBottom: '1rem'
-                  }}>
-                    <li>É profissional de saúde (médico, farmacêutico, enfermeiro)</li>
-                    <li>Estuda medicina, farmácia ou áreas da saúde</li>
-                    <li>Precisa de protocolos clínicos detalhados</li>
-                    <li>Quer cálculos de dosagem e interações</li>
-                    <li>Busca linguagem técnica e científica</li>
-                  </ul>
+                  <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
+                    <h4 style={{
+                      fontSize: '1.25rem',
+                      fontWeight: '700',
+                      color: '#003366',
+                      marginBottom: '0.25rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '0.5rem'
+                    }}>
+                      <ChatBotIcon size={20} variant="persona-gasnelio" />
+                      Dr. Gasnelio
+                    </h4>
+                    <p style={{
+                      fontSize: '1rem',
+                      color: '#0369a1',
+                      fontWeight: '600',
+                      marginBottom: '1rem'
+                    }}>
+                      Farmacêutico Clínico
+                    </p>
+                  </div>
+                  
+                  <div style={{ marginBottom: '1rem' }}>
+                    <strong style={{ color: '#0369a1', fontSize: '0.9rem' }}>CARACTERÍSTICAS:</strong>
+                    <ul style={{
+                      fontSize: '0.85rem',
+                      color: '#0c4a6e',
+                      lineHeight: '1.5',
+                      marginLeft: '1rem',
+                      marginTop: '0.25rem'
+                    }}>
+                      <li>Linguagem técnica e científica</li>
+                      <li>Protocolos farmacêuticos detalhados</li>
+                      <li>Referências a estudos clínicos</li>
+                    </ul>
+                  </div>
+                  
+                  <div style={{ marginBottom: '1rem' }}>
+                    <strong style={{ color: '#0369a1', fontSize: '0.9rem' }}>IDEAL PARA:</strong>
+                    <ul style={{
+                      fontSize: '0.85rem',
+                      color: '#0c4a6e',
+                      lineHeight: '1.5',
+                      marginLeft: '1rem',
+                      marginTop: '0.25rem'
+                    }}>
+                      <li>Farmacêuticos e médicos</li>
+                      <li>Estudantes de ciências da saúde</li>
+                      <li>Protocolos clínicos detalhados</li>
+                      <li>Cálculos de dosagem</li>
+                    </ul>
+                  </div>
+                  
                   <div style={{
                     background: '#e0f2fe',
                     padding: '0.75rem',
                     borderRadius: '8px',
-                    fontSize: '0.85rem',
+                    fontSize: '0.8rem',
                     color: '#0c4a6e',
-                    fontStyle: 'italic'
+                    fontStyle: 'italic',
+                    textAlign: 'center'
                   }}>
-                    💡 Ideal para consultas técnicas e tomada de decisão clínica
+                    💡 Consultas técnicas e decisão clínica
                   </div>
                 </div>
 
-                {/* Gá Guide */}
+                {/* Gá Profile & Guide */}
                 <div style={{
                   background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
                   padding: '1.5rem',
                   borderRadius: '12px',
                   border: '2px solid #bbf7d0'
                 }}>
-                  <h4 style={{
-                    fontSize: '1.125rem',
-                    fontWeight: '600',
-                    color: '#16a34a',
-                    marginBottom: '0.75rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.5rem'
-                  }}>
-                    🤗 Gá é para você se:
-                  </h4>
-                  <ul style={{
-                    fontSize: '0.9rem',
-                    color: '#14532d',
-                    lineHeight: '1.6',
-                    marginLeft: '1rem',
-                    marginBottom: '1rem'
-                  }}>
-                    <li>É paciente ou familiar de pessoa com hanseníase</li>
-                    <li>Prefere explicações em linguagem simples</li>
-                    <li>Busca orientações sobre qualidade de vida</li>
-                    <li>Precisa de suporte emocional e motivacional</li>
-                    <li>Quer informações acessíveis sobre o tratamento</li>
-                  </ul>
+                  <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
+                    <h4 style={{
+                      fontSize: '1.25rem',
+                      fontWeight: '700',
+                      color: '#16a34a',
+                      marginBottom: '0.25rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '0.5rem'
+                    }}>
+                      <ChatBotIcon size={20} variant="persona-ga" />
+                      Gá
+                    </h4>
+                    <p style={{
+                      fontSize: '1rem',
+                      color: '#16a34a',
+                      fontWeight: '600',
+                      marginBottom: '1rem'
+                    }}>
+                      Assistente Educacional Empático
+                    </p>
+                  </div>
+                  
+                  <div style={{ marginBottom: '1rem' }}>
+                    <strong style={{ color: '#16a34a', fontSize: '0.9rem' }}>CARACTERÍSTICAS:</strong>
+                    <ul style={{
+                      fontSize: '0.85rem',
+                      color: '#14532d',
+                      lineHeight: '1.5',
+                      marginLeft: '1rem',
+                      marginTop: '0.25rem'
+                    }}>
+                      <li>Linguagem simples e acolhedora</li>
+                      <li>Explicações didáticas e práticas</li>
+                      <li>Comunicação humanizada</li>
+                    </ul>
+                  </div>
+                  
+                  <div style={{ marginBottom: '1rem' }}>
+                    <strong style={{ color: '#16a34a', fontSize: '0.9rem' }}>IDEAL PARA:</strong>
+                    <ul style={{
+                      fontSize: '0.85rem',
+                      color: '#14532d',
+                      lineHeight: '1.5',
+                      marginLeft: '1rem',
+                      marginTop: '0.25rem'
+                    }}>
+                      <li>Pacientes e familiares</li>
+                      <li>Cuidadores e comunidade</li>
+                      <li>Orientações sobre qualidade de vida</li>
+                      <li>Suporte emocional</li>
+                    </ul>
+                  </div>
+                  
                   <div style={{
                     background: '#dcfce7',
                     padding: '0.75rem',
                     borderRadius: '8px',
-                    fontSize: '0.85rem',
+                    fontSize: '0.8rem',
                     color: '#14532d',
-                    fontStyle: 'italic'
+                    fontStyle: 'italic',
+                    textAlign: 'center'
                   }}>
-                    💡 Ideal para esclarecimentos e apoio durante o tratamento
+                    💡 Esclarecimentos e apoio durante tratamento
                   </div>
                 </div>
               </div>
@@ -845,245 +768,259 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* FAQ e Suporte - Primeira Dobra */}
+          {/* Seção FAQ Exclusiva */}
           <div style={{
-            maxWidth: '1000px',
+            maxWidth: 'min(1400px, 95vw)',
             margin: '3rem auto',
             background: 'linear-gradient(135deg, #fefce8 0%, #fef3c7 100%)',
             borderRadius: '16px',
-            padding: '2rem',
+            padding: '2.5rem',
             border: '2px solid #fbbf24'
           }}>
             <h2 style={{
-              fontSize: '1.75rem',
+              fontSize: '2rem',
               fontWeight: '700',
               color: '#92400e',
               textAlign: 'center',
-              marginBottom: '1.5rem',
+              marginBottom: '2rem',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '0.5rem'
+              gap: '0.75rem'
             }}>
-              🆘 Precisa de Ajuda?
+              <HelpIcon size={32} color="#92400e" />
+              Perguntas Frequentes
             </h2>
 
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-              gap: '1.5rem',
+              gridTemplateColumns: '1fr',
+              gap: '1rem',
+              marginBottom: '2rem'
+            }}>
+              <details style={{
+                background: 'white',
+                padding: '1.5rem',
+                borderRadius: '12px',
+                border: '1px solid #fbbf24',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+              }}>
+                <summary style={{
+                  cursor: 'pointer',
+                  fontWeight: '700',
+                  color: '#92400e',
+                  fontSize: '1.1rem',
+                  marginBottom: '0.5rem'
+                }}>
+                  Como escolher entre Dr. Gasnelio e Gá?
+                </summary>
+                <p style={{ marginTop: '1rem', color: '#78716c', lineHeight: '1.6' }}>
+                  Dr. Gasnelio é ideal para <strong>profissionais de saúde e estudantes</strong> que precisam de linguagem técnica, protocolos detalhados e referências científicas. Gá é perfeita para <strong>pacientes, familiares e comunidade</strong> que buscam explicações simples, acolhedoras e apoio emocional.
+                </p>
+              </details>
+
+              <details style={{
+                background: 'white',
+                padding: '1.5rem',
+                borderRadius: '12px',
+                border: '1px solid #fbbf24',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+              }}>
+                <summary style={{
+                  cursor: 'pointer',
+                  fontWeight: '700',
+                  color: '#92400e',
+                  fontSize: '1.1rem',
+                  marginBottom: '0.5rem'
+                }}>
+                  O tratamento PQT-U é gratuito no SUS?
+                </summary>
+                <p style={{ marginTop: '1rem', color: '#78716c', lineHeight: '1.6' }}>
+                  <strong>Sim!</strong> O tratamento PQT-U (Poliquimioterapia Única) é 100% gratuito em todas as unidades de saúde do SUS. Inclui medicamentos, consultas, exames e acompanhamento completo durante os 6 meses de tratamento.
+                </p>
+              </details>
+
+              <details style={{
+                background: 'white',
+                padding: '1.5rem',
+                borderRadius: '12px',
+                border: '1px solid #fbbf24',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+              }}>
+                <summary style={{
+                  cursor: 'pointer',
+                  fontWeight: '700',
+                  color: '#92400e',
+                  fontSize: '1.1rem',
+                  marginBottom: '0.5rem'
+                }}>
+                  Posso parar o tratamento se me sentir melhor?
+                </summary>
+                <p style={{ marginTop: '1rem', color: '#78716c', lineHeight: '1.6' }}>
+                  <strong>NUNCA pare o tratamento sem orientação médica!</strong> Mesmo que os sintomas melhorem, é essencial completar os 6 meses completos de PQT-U para garantir a cura e evitar resistência medicamentosa. A hanseníase tem cura, mas apenas com tratamento completo.
+                </p>
+              </details>
+
+              <details style={{
+                background: 'white',
+                padding: '1.5rem',
+                borderRadius: '12px',
+                border: '1px solid #fbbf24',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+              }}>
+                <summary style={{
+                  cursor: 'pointer',
+                  fontWeight: '700',
+                  color: '#92400e',
+                  fontSize: '1.1rem',
+                  marginBottom: '0.5rem'
+                }}>
+                  A hanseníase é contagiosa?
+                </summary>
+                <p style={{ marginTop: '1rem', color: '#78716c', lineHeight: '1.6' }}>
+                  A hanseníase tem <strong>baixa transmissibilidade</strong> e ocorre apenas através de contato íntimo e prolongado com pessoa não tratada. <strong>Após iniciar o tratamento, a pessoa deixa de transmitir em poucos dias.</strong> Não se transmite por abraços, apertos de mão, objetos ou roupas.
+                </p>
+              </details>
+
+              <details style={{
+                background: 'white',
+                padding: '1.5rem',
+                borderRadius: '12px',
+                border: '1px solid #fbbf24',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+              }}>
+                <summary style={{
+                  cursor: 'pointer',
+                  fontWeight: '700',
+                  color: '#92400e',
+                  fontSize: '1.1rem',
+                  marginBottom: '0.5rem'
+                }}>
+                  Quais são os efeitos colaterais do PQT-U?
+                </summary>
+                <p style={{ marginTop: '1rem', color: '#78716c', lineHeight: '1.6' }}>
+                  Os efeitos mais comuns incluem: escurecimento da pele (rifampicina), náuseas leves e raramente reações alérgicas. <strong>Todos os efeitos são monitorados pela equipe médica.</strong> Comunique sempre qualquer sintoma novo ao seu médico ou farmacêutico.
+                </p>
+              </details>
+
+              <details style={{
+                background: 'white',
+                padding: '1.5rem',
+                borderRadius: '12px',
+                border: '1px solid #fbbf24',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+              }}>
+                <summary style={{
+                  cursor: 'pointer',
+                  fontWeight: '700',
+                  color: '#92400e',
+                  fontSize: '1.1rem',
+                  marginBottom: '0.5rem'
+                }}>
+                  Como os familiares devem se cuidar?
+                </summary>
+                <p style={{ marginTop: '1rem', color: '#78716c', lineHeight: '1.6' }}>
+                  Familiares devem fazer <strong>exame dermatoneurológico anual por 5 anos</strong> e podem receber a vacina BCG como prevenção. O convívio normal é seguro - abraços, beijos e vida em família não oferecem risco após o início do tratamento.
+                </p>
+              </details>
+            </div>
+
+            {/* Canais de Suporte */}
+            <div style={{
+              background: 'white',
+              padding: '2rem',
+              borderRadius: '12px',
+              border: '1px solid #fbbf24',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
               marginBottom: '1.5rem'
             }}>
-              {/* FAQ Rápido */}
-              <div style={{
-                background: 'white',
-                padding: '1.5rem',
-                borderRadius: '12px',
-                border: '1px solid #fbbf24',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+              <h3 style={{
+                fontSize: '1.5rem',
+                fontWeight: '600',
+                color: '#92400e',
+                marginBottom: '1.5rem',
+                textAlign: 'center',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.75rem'
               }}>
-                <h3 style={{
-                  fontSize: '1.25rem',
-                  fontWeight: '600',
-                  color: '#92400e',
-                  marginBottom: '1rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem'
+                <PhoneIcon size={24} color="#92400e" />
+                Canais de Suporte
+              </h3>
+              
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+                gap: '1.5rem'
+              }}>
+                <div style={{
+                  padding: '1rem',
+                  background: '#fef3c7',
+                  borderRadius: '8px',
+                  border: '1px solid #fcd34d'
                 }}>
-                  ❓ FAQ Rápido
-                </h3>
-                <div style={{ fontSize: '0.9rem', lineHeight: '1.6' }}>
-                  <details style={{ marginBottom: '0.75rem' }}>
-                    <summary style={{ cursor: 'pointer', fontWeight: '600', color: '#92400e' }}>
-                      Como escolher entre Dr. Gasnelio e Gá?
-                    </summary>
-                    <p style={{ marginTop: '0.5rem', color: '#78716c' }}>
-                      Dr. Gasnelio para profissionais/estudantes (linguagem técnica). Gá para pacientes/familiares (linguagem simples).
-                    </p>
-                  </details>
-                  <details style={{ marginBottom: '0.75rem' }}>
-                    <summary style={{ cursor: 'pointer', fontWeight: '600', color: '#92400e' }}>
-                      O PQT-U é gratuito no SUS?
-                    </summary>
-                    <p style={{ marginTop: '0.5rem', color: '#78716c' }}>
-                      Sim! O tratamento PQT-U é 100% gratuito em todas as unidades de saúde do SUS.
-                    </p>
-                  </details>
-                  <details>
-                    <summary style={{ cursor: 'pointer', fontWeight: '600', color: '#92400e' }}>
-                      Posso parar o tratamento se melhorar?
-                    </summary>
-                    <p style={{ marginTop: '0.5rem', color: '#78716c' }}>
-                      NUNCA pare sem orientação médica. O tratamento completo é essencial para cura.
-                    </p>
-                  </details>
+                  <strong style={{ color: '#92400e', fontSize: '1rem' }}>🚨 Emergência Médica</strong>
+                  <p style={{ margin: '0.5rem 0 0', color: '#78716c' }}>
+                    <strong>SAMU: 192</strong><br />
+                    <strong>Disque Saúde: 136</strong>
+                  </p>
                 </div>
-                <button
-                  onClick={() => router.push('/faq')}
-                  style={{
-                    marginTop: '1rem',
-                    padding: '0.75rem 1.5rem',
-                    background: '#f59e0b',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    fontSize: '0.9rem',
-                    fontWeight: '600',
-                    width: '100%'
-                  }}
-                >
-                  Ver Mais Perguntas
-                </button>
+                
+                <div style={{
+                  padding: '1rem',
+                  background: '#f3f4f6',
+                  borderRadius: '8px',
+                  border: '1px solid #d1d5db'
+                }}>
+                  <strong style={{ color: '#92400e', fontSize: '1rem' }}>🏥 Unidade de Saúde</strong>
+                  <p style={{ margin: '0.5rem 0 0', color: '#78716c' }}>
+                    Procure sua UBS ou ambulatório de referência para consultas e acompanhamento
+                  </p>
+                </div>
+                
+                <div style={{
+                  padding: '1rem',
+                  background: '#e0f2fe',
+                  borderRadius: '8px',
+                  border: '1px solid #bae6fd'
+                }}>
+                  <strong style={{ color: '#92400e', fontSize: '1rem' }}>💬 Chat da Plataforma</strong>
+                  <p style={{ margin: '0.5rem 0 0', color: '#78716c' }}>
+                    Dr. Gasnelio e Gá disponíveis 24/7 para esclarecimentos
+                  </p>
+                </div>
               </div>
 
-              {/* Canais de Suporte */}
-              <div style={{
-                background: 'white',
-                padding: '1.5rem',
-                borderRadius: '12px',
-                border: '1px solid #fbbf24',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-              }}>
-                <h3 style={{
-                  fontSize: '1.25rem',
+              <button
+                onClick={() => router.push('/contato')}
+                style={{
+                  marginTop: '1.5rem',
+                  padding: '1rem 2rem',
+                  background: '#059669',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontSize: '1rem',
                   fontWeight: '600',
-                  color: '#92400e',
-                  marginBottom: '1rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem'
-                }}>
-                  📞 Canais de Suporte
-                </h3>
-                <div style={{ fontSize: '0.9rem', lineHeight: '1.6' }}>
-                  <div style={{
-                    padding: '0.75rem',
-                    background: '#fef3c7',
-                    borderRadius: '8px',
-                    marginBottom: '0.75rem',
-                    border: '1px solid #fcd34d'
-                  }}>
-                    <strong style={{ color: '#92400e' }}>🚨 Emergência Médica</strong>
-                    <p style={{ margin: '0.25rem 0 0', color: '#78716c' }}>
-                      <strong>SAMU: 192</strong> | <strong>Disque Saúde: 136</strong>
-                    </p>
-                  </div>
-                  
-                  <div style={{ marginBottom: '0.75rem' }}>
-                    <strong style={{ color: '#92400e' }}>🏥 Unidade de Saúde</strong>
-                    <p style={{ margin: '0.25rem 0 0', color: '#78716c' }}>
-                      Procure sua UBS ou ambulatório de referência
-                    </p>
-                  </div>
-                  
-                  <div style={{ marginBottom: '0.75rem' }}>
-                    <strong style={{ color: '#92400e' }}>💬 Chat da Plataforma</strong>
-                    <p style={{ margin: '0.25rem 0 0', color: '#78716c' }}>
-                      Dr. Gasnelio e Gá disponíveis 24/7
-                    </p>
-                  </div>
-                  
-                  <div>
-                    <strong style={{ color: '#92400e' }}>📧 Contato Técnico</strong>
-                    <p style={{ margin: '0.25rem 0 0', color: '#78716c' }}>
-                      Problemas com a plataforma
-                    </p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => router.push('/contato')}
-                  style={{
-                    marginTop: '1rem',
-                    padding: '0.75rem 1.5rem',
-                    background: '#059669',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    fontSize: '0.9rem',
-                    fontWeight: '600',
-                    width: '100%'
-                  }}
-                >
-                  Mais Contatos
-                </button>
-              </div>
-
-              {/* Ajuda Rápida */}
-              <div style={{
-                background: 'white',
-                padding: '1.5rem',
-                borderRadius: '12px',
-                border: '1px solid #fbbf24',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-              }}>
-                <h3 style={{
-                  fontSize: '1.25rem',
-                  fontWeight: '600',
-                  color: '#92400e',
-                  marginBottom: '1rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem'
-                }}>
-                  ⚡ Ajuda Rápida
-                </h3>
-                <div style={{ fontSize: '0.9rem', lineHeight: '1.6' }}>
-                  <div style={{ marginBottom: '1rem' }}>
-                    <strong style={{ color: '#92400e' }}>🎯 Primeiros Passos:</strong>
-                    <ol style={{ marginLeft: '1rem', marginTop: '0.5rem', color: '#78716c' }}>
-                      <li>Escolha seu assistente virtual</li>
-                      <li>Faça uma pergunta no chat</li>
-                      <li>Explore os módulos educativos</li>
-                    </ol>
-                  </div>
-                  
-                  <div style={{ marginBottom: '1rem' }}>
-                    <strong style={{ color: '#92400e' }}>📱 No seu celular:</strong>
-                    <p style={{ margin: '0.25rem 0 0', color: '#78716c' }}>
-                      Adicione à tela inicial para acesso rápido
-                    </p>
-                  </div>
-                  
-                  <div>
-                    <strong style={{ color: '#92400e' }}>🔧 Problemas técnicos:</strong>
-                    <p style={{ margin: '0.25rem 0 0', color: '#78716c' }}>
-                      Recarregue a página ou limpe o cache
-                    </p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => router.push('/guia')}
-                  style={{
-                    marginTop: '1rem',
-                    padding: '0.75rem 1.5rem',
-                    background: '#7c3aed',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    fontSize: '0.9rem',
-                    fontWeight: '600',
-                    width: '100%'
-                  }}
-                >
-                  Guia Completo
-                </button>
-              </div>
+                  width: '100%'
+                }}
+              >
+                📧 Mais Contatos e Suporte Técnico
+              </button>
             </div>
 
             {/* Destaque Especial */}
             <div style={{
               textAlign: 'center',
-              padding: '1rem',
+              padding: '1.5rem',
               background: 'rgba(220, 38, 38, 0.1)',
-              borderRadius: '8px',
+              borderRadius: '12px',
               border: '2px solid #dc2626'
             }}>
               <p style={{
-                fontSize: '1rem',
+                fontSize: '1.1rem',
                 color: '#dc2626',
                 margin: 0,
                 fontWeight: '700'
@@ -1095,7 +1032,7 @@ export default function HomePage() {
 
           {/* Sobre a Pesquisa Section */}
           <section style={{
-            maxWidth: '900px',
+            maxWidth: 'min(1200px, 92vw)',
             margin: '4rem auto',
             padding: '2.5rem',
             background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
@@ -1109,7 +1046,7 @@ export default function HomePage() {
               </HierarchyHeading>
               
               {/* Parágrafos introdutórios */}
-              <div style={{ textAlign: 'left', maxWidth: '800px', margin: '0 auto 2.5rem' }}>
+              <div style={{ textAlign: 'left', maxWidth: 'min(1000px, 90vw)', margin: '0 auto 2.5rem' }}>
                 <p style={{
                   fontSize: '1.125rem',
                   color: '#374151',
@@ -1339,9 +1276,13 @@ export default function HomePage() {
         </div>
       </div>
       
-      {/* UX Analytics Components - ETAPA 1 */}
-      <CognitiveLoadAuditor />
-      <MobileUXAuditor />
+      {/* UX Analytics Components - Apenas em desenvolvimento */}
+      {process.env.NODE_ENV === 'development' && (
+        <>
+          <CognitiveLoadAuditor />
+          <MobileUXAuditor />
+        </>
+      )}
       
       {/* Welcome Wizard - ETAPA 3 UX TRANSFORMATION */}
       {showWizard && (

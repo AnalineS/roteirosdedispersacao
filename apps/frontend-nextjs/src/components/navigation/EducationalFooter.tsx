@@ -80,18 +80,17 @@ export default function EducationalFooter({
         { label: 'Roteiro de Dispensação', href: '/modules/roteiro-dispensacao', description: 'Guia completo para profissionais farmacêuticos' },
         { label: 'Diagnóstico Hanseníase', href: '/modules/diagnostico', description: 'Sinais, sintomas e exames diagnósticos' },
         { label: 'Tratamento PQT-U', href: '/modules/tratamento', description: 'Poliquimioterapia única - protocolo oficial' },
-        { label: 'Vida com Hanseníase', href: '/modules/vida-com-doenca', description: 'Aspectos psicossociais e qualidade de vida' }
       ]
     },
     
     resources: {
       title: 'Suporte & Ferramentas',
       links: [
-        { label: 'FAQ', href: '/faq', description: 'Respostas para dúvidas frequentes' },
         { label: 'Calculadora PQT-U', href: '/resources/calculator', description: 'Cálculo automático de doses medicamentosas' },
         { label: 'Checklist Dispensação', href: '/resources/checklist', description: 'Lista de verificação para procedimentos' },
         { label: 'Glossário Médico', href: '/glossario', description: 'Termos técnicos da hanseníase explicados' },
-        { label: 'Materiais para Download', href: '/downloads', description: 'Documentação e recursos complementares' }
+        { label: 'Materiais para Download', href: '/downloads', description: 'Documentação e recursos complementares' },
+        { label: 'Vida com Hanseníase', href: '/vida-com-hanseniase', description: 'Informações sobre qualidade de vida (acesso público)' }
       ]
     }
   };
@@ -125,7 +124,7 @@ export default function EducationalFooter({
           borderBottom: '1px solid #e2e8f0'
         }}>
           <div style={{
-            maxWidth: '1400px',
+            maxWidth: 'min(1800px, 95vw)',
             margin: '0 auto',
             padding: '3rem 2rem'
           }}>
@@ -347,7 +346,7 @@ export default function EducationalFooter({
         padding: '3rem 2rem',
         textAlign: 'center'
       }}>
-        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+        <div style={{ maxWidth: 'min(1200px, 90vw)', margin: '0 auto' }}>
           {/* Logos institucionais */}
           <div style={{
             display: 'flex',

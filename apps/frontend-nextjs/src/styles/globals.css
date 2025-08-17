@@ -274,20 +274,20 @@ label {
   margin-bottom: var(--space-xs);
 }
 
-/* Container layout */
+/* Container layout - Otimizado para telas grandes */
 .container {
   width: 100%;
-  max-width: 1200px;
+  max-width: min(1600px, 95vw);
   margin: 0 auto;
   padding: 0 var(--space-lg);
 }
 
 .container-sm {
-  max-width: 768px;
+  max-width: min(768px, 90vw);
 }
 
 .container-lg {
-  max-width: 1440px;
+  max-width: min(1800px, 98vw);
 }
 
 /* Grid system */

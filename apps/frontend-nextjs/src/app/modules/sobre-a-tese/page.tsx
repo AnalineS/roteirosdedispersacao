@@ -236,13 +236,103 @@ export default function SobreATesetModulePage() {
           'Ampla rede de colaborações institucionais na área da saúde',
           'Compromisso com ciência aberta e impacto social da pesquisa'
         ]
+      },
+      {
+        id: 'bibliografia-referencias',
+        title: '📚 Bibliografia e Referências',
+        content: `
+          **Referências Bibliográficas Utilizadas na Pesquisa**
+          
+          Esta seção apresenta as principais fontes científicas, diretrizes clínicas e documentos normativos que fundamentaram o desenvolvimento do roteiro de dispensação para hanseníase/PQT-U.
+          
+          **📋 Diretrizes e Protocolos Oficiais:**
+          
+          **1.** Protocolo Clínico e Diretrizes Terapêuticas da Hanseníase. Ministério da Saúde. Disponível em: https://www.gov.br/saude/pt-br/assuntos/saude-de-a-a-z/h/hanseniase/publicacoes/protocolo-clinico-e-diretrizes-terapeuticas-da-hanseniase-2022
+          
+          **2.** Protocolo Clínico e Diretrizes Terapêuticas Hanseníase (PCDT Hanseníase 2022).
+          
+          **3.** Ministério da Saúde. Componente Estratégico da Assistência Farmacêutica.
+          
+          **⚖️ Legislação e Normas Profissionais:**
+          
+          **4.** Lei 7.498/1986 (Regulamenta o exercício da Enfermagem – competência para prescrição)
+          
+          **5.** Programa Farmácia Popular – lista atualizada 2023
+          
+          **6.** Fluxo interno do SUS para medicamentos estratégicos
+          
+          **📖 Fontes Científicas e Bases de Dados:**
+          
+          **7.** Uptodate: Hansen disease (leprosy): Treatment and prevention
+          
+          **8.** Micromedex, acesso 2023
+          
+          **9.** Guia Terapêutico da Sociedade Brasileira de Hansenologia – 2022
+          
+          **📄 Informações Técnicas de Medicamentos:**
+          
+          **10.** Bula do produto importado via OPAS/OMS
+          
+          **11.** Guia "What to do if you miss a dose" (MS/OMS)
+          
+          **12.** Referências internacionais de interação medicamento-bebida
+          
+          **13.** Bula – informações de armazenamento do fabricante
+          
+          **🛡️ Farmacovigilância e Segurança:**
+          
+          **14.** ANVISA, Vigimed. Dados de farmacovigilância de hanseníase até abril/2023
+          
+          **15.** Agência Nacional de Vigilância Sanitária (ANVISA). Consulta de medicamentos estratégicos
+          
+          **📋 Procedimentos e Manuais Técnicos:**
+          
+          **16.** Manual de procedimentos de dispensação do SUS
+          
+          **🌍 Diretrizes Internacionais:**
+          
+          **17.** World Health Organization. Guidelines for the diagnosis, treatment and prevention of leprosy (2018)
+          
+          **📖 Referências Farmacêuticas:**
+          
+          **18.** Dicionário de Especialidades Farmacêuticas
+          
+          **📊 Fundamentação Metodológica Adicional:**
+          
+          Além das referências listadas acima, esta pesquisa incorpora:
+          
+          • **Revisão sistemática** de literatura científica sobre dispensação farmacêutica
+          • **Análise de guidelines** internacionais de cuidado farmacêutico
+          • **Consulta a especialistas** em farmácia clínica e hanseníase
+          • **Validação por técnica Delphi** modificada com painel de experts
+          • **Evidências de prática clínica** coletadas em serviços de saúde
+          
+          **🔍 Critérios de Seleção das Referências:**
+          
+          • Relevância científica e atualidade das informações
+          • Conformidade com diretrizes nacionais e internacionais
+          • Aplicabilidade prática no contexto do SUS brasileiro
+          • Qualidade metodológica e nível de evidência
+          • Adequação ao escopo da pesquisa sobre dispensação farmacêutica
+          
+          **📝 Nota Metodológica:**
+          
+          Todas as referências foram criticamente avaliadas quanto à qualidade metodológica, relevância clínica e aplicabilidade prática. A seleção priorizou fontes oficiais, diretrizes baseadas em evidências e publicações peer-reviewed de alta qualidade científica.
+        `,
+        keyPoints: [
+          'Bibliografia abrangente incluindo diretrizes oficiais e literatura científica',
+          'Fontes atualizadas e relevantes para a prática farmacêutica em hanseníase',
+          'Seleção criteriosa baseada em qualidade metodológica e aplicabilidade'
+        ]
       }
     ],
     references: [
-      'Brasil. Ministério da Saúde. Diretrizes para vigilância, atenção e eliminação da hanseníase como problema de saúde pública. Brasília: MS, 2016.',
+      'Protocolo Clínico e Diretrizes Terapêuticas da Hanseníase. Ministério da Saúde, 2022.',
       'World Health Organization. Guidelines for the diagnosis, treatment and prevention of leprosy. Geneva: WHO, 2018.',
-      'Conselho Federal de Farmácia. Serviços farmacêuticos diretamente destinados ao paciente, à família e à comunidade. Brasília: CFF, 2016.',
-      'Pharmaceutical Care Network Europe. PCNE Classification for Drug Related Problems. V9.1. 2020.'
+      'ANVISA, Vigimed. Dados de farmacovigilância de hanseníase até abril/2023.',
+      'Guia Terapêutico da Sociedade Brasileira de Hansenologia – 2022.',
+      'Manual de procedimentos de dispensação do SUS.',
+      'Uptodate: Hansen disease (leprosy): Treatment and prevention.'
     ],
     nextModule: 'hanseniase-intro',
     previousModule: undefined

@@ -100,16 +100,6 @@ export const OPTIMIZED_HEADER_NAVIGATION: NavigationCategory[] = [
         estimatedTime: '25 min'
       },
       {
-        id: 'patient-life',
-        label: 'Vida com Hanseníase',
-        href: '/modules/vida-com-doenca',
-        icon: '❤️',
-        description: 'Aspectos psicossociais',
-        category: 'learning',
-        level: 'intermediate',
-        estimatedTime: '12 min'
-      },
-      {
         id: 'dashboard',
         label: 'Dashboard Educacional',
         href: '/dashboard',
@@ -169,16 +159,6 @@ export const OPTIMIZED_HEADER_NAVIGATION: NavigationCategory[] = [
         estimatedTime: '5 min'
       },
       {
-        id: 'faq',
-        label: 'Perguntas Frequentes',
-        href: '/faq',
-        icon: '❓',
-        description: 'Dúvidas mais comuns',
-        category: 'tools',
-        level: 'beginner',
-        estimatedTime: '10 min'
-      },
-      {
         id: 'glossary',
         label: 'Glossário',
         href: '/glossario',
@@ -199,15 +179,15 @@ export const OPTIMIZED_HEADER_NAVIGATION: NavigationCategory[] = [
         estimatedTime: '3 min'
       },
       {
-        id: 'user-guide',
-        label: 'Guia do Usuário',
-        href: '/guia',
-        icon: '📚',
-        description: 'Como usar o sistema',
+        id: 'vida-com-hanseniase',
+        label: 'Vida com Hanseníase',
+        href: '/vida-com-hanseniase',
+        icon: '❤️',
+        description: 'Informações públicas sobre qualidade de vida',
         category: 'tools',
         level: 'beginner',
-        estimatedTime: '8 min'
-      }
+        estimatedTime: '10 min'
+      },
     ]
   },
   
@@ -246,16 +226,6 @@ export const OPTIMIZED_HEADER_NAVIGATION: NavigationCategory[] = [
         category: 'institutional',
         level: 'beginner',
         estimatedTime: '8 min'
-      },
-      {
-        id: 'bibliography',
-        label: 'Bibliografia',
-        href: '/bibliografia',
-        icon: '📑',
-        description: 'Referências científicas',
-        category: 'institutional',
-        level: 'advanced',
-        estimatedTime: '30 min'
       },
       {
         id: 'contact',
