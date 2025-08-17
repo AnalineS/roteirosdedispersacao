@@ -78,7 +78,7 @@ export const CRITICAL_MEDICAL_SHORTCUTS: EmergencyShortcut[] = [
   {
     id: 'pharmacist_contact',
     label: 'Farmacêutico',
-    href: '/contato/farmaceutico',
+    href: '/sobre-a-tese',
     icon: '📞',
     urgency: 'important',
     category: 'contact',

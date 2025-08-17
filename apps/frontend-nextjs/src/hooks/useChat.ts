@@ -3,13 +3,14 @@
  * Usa as personas do backend com prompts de IA
  */
 
-import { useCallback, useRef, useEffect } from 'react';
+import { useCallback, useRef, useEffect, useMemo } from 'react';
 import { sendChatMessage, type ChatMessage, type ChatRequest, type ChatResponse } from '@/services/api';
 import { useSentimentAnalysis } from '@/hooks/useSentimentAnalysis';
 import { shouldSuggestPersonaSwitch, adjustResponseTone, SentimentResult } from '@/services/sentimentAnalysis';
 import { useKnowledgeBase } from '@/hooks/useKnowledgeBase';
 import { useFallback } from '@/hooks/useFallback';
 import { FallbackResult } from '@/services/fallbackSystem';
+import { useAuth } from '@/hooks/useAuth';
 
 // OTIMIZAÇÃO CRÍTICA: Hooks especializados para reduzir complexidade
 import { useChatMessages } from '@/hooks/useChatMessages';
@@ -31,6 +32,54 @@ export function useChat(options: UseChatOptions = {}) {
     enableKnowledgeEnrichment = true,
     onMessageReceived
   } = options;
+
+  // Auth state para sessionId
+  const { user, isAuthenticated } = useAuth();
+
+  // SessionID híbrido: transição suave entre anônimo e logado
+  const sessionId = useMemo(() => {
+    if (isAuthenticated && user?.uid) {
+      // Usuário logado: usar UID
+      return user.uid;
+    }
+    
+    // Usuário anônimo: gerar sessionId temporário persistente
+    let tempSessionId = localStorage.getItem('temp_session_id');
+    if (!tempSessionId) {
+      tempSessionId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      localStorage.setItem('temp_session_id', tempSessionId);
+    }
+    return tempSessionId;
+  }, [isAuthenticated, user?.uid]);
+
+  // Gerenciar transição de sessionId quando usuário faz login
+  useEffect(() => {
+    if (isAuthenticated && user?.uid) {
+      const tempSessionId = localStorage.getItem('temp_session_id');
+      if (tempSessionId && tempSessionId !== user.uid) {
+        // Usuário acabou de fazer login - migrar dados da sessão temporária
+        const migrationData = {
+          oldSessionId: tempSessionId,
+          newSessionId: user.uid,
+          timestamp: Date.now()
+        };
+        
+        // Armazenar informação de migração para potencial sincronização
+        localStorage.setItem('session_migration', JSON.stringify(migrationData));
+        
+        // Remover sessionId temporário
+        localStorage.removeItem('temp_session_id');
+        
+        console.log('🔄 Migração de sessão:', tempSessionId, '→', user.uid);
+      }
+    }
+  }, [isAuthenticated, user?.uid]);
+
+  // Persona atual baseada no último uso ou preferência
+  const currentPersona = useMemo(() => {
+    const saved = localStorage.getItem('current_persona');
+    return saved || 'dr_gasnelio';
+  }, []);
 
   // OTIMIZAÇÃO CRÍTICA: Usar hooks especializados para reduzir complexidade
   const {
@@ -288,6 +337,29 @@ export function useChat(options: UseChatOptions = {}) {
     return messagesRef.current.filter(msg => msg.persona === personaId);
   }, []);
 
+  // Função para obter informações da sessão
+  const getSessionInfo = useCallback(() => {
+    return {
+      sessionId,
+      isAuthenticated,
+      userUid: user?.uid || null,
+      sessionType: isAuthenticated ? 'authenticated' : 'anonymous',
+      migrationData: (() => {
+        try {
+          const migration = localStorage.getItem('session_migration');
+          return migration ? JSON.parse(migration) : null;
+        } catch {
+          return null;
+        }
+      })()
+    };
+  }, [sessionId, isAuthenticated, user?.uid]);
+
+  // Função para limpar dados de migração
+  const clearMigrationData = useCallback(() => {
+    localStorage.removeItem('session_migration');
+  }, []);
+
   return {
     messages,
     loading,
@@ -295,6 +367,11 @@ export function useChat(options: UseChatOptions = {}) {
     sendMessage,
     clearMessages: handleClearMessages,
     getMessagesForPersona,
+    // Sessão e persona
+    sessionId,
+    currentPersona,
+    getSessionInfo,
+    clearMigrationData,
     // Análise de sentimento
     currentSentiment,
     sentimentHistory,

@@ -418,8 +418,10 @@ export default function HomePage() {
             borderTop: 'none',
             textAlign: 'center',
             display: 'flex',
+            flexDirection: 'column',
             alignItems: 'center',
-            justifyContent: 'center'
+            justifyContent: 'center',
+            gap: '1rem'
           }}>
             <div style={{ textAlign: 'center', width: '100%' }}>
               <HierarchyHeading level="h1" style={{ 
@@ -429,18 +431,17 @@ export default function HomePage() {
                 Roteiros de Dispensação
               </HierarchyHeading>
             </div>
-          </div>
-          
-          {/* Introdução do Sistema */}
-          <div className="text-center hierarchy-component">
-            <HierarchyText size="large" className="hierarchy-element" style={{ 
-              maxWidth: '700px',
-              margin: '0 auto',
-              textAlign: 'center'
-            }}>
-              Orientação farmacêutica gratuita para quem trata hanseníase no SUS, 24 h por dia.
-              Plataforma baseada em pesquisa de doutorado que oferece orientações sobre a dispensação de medicamentos, baseada em fatos.
-            </HierarchyText>
+            
+            <div className="text-center hierarchy-component">
+              <HierarchyText size="large" className="hierarchy-element" style={{ 
+                maxWidth: '700px',
+                margin: '0 auto',
+                textAlign: 'center'
+              }}>
+                Orientação farmacêutica gratuita para quem trata hanseníase no SUS, 24 h por dia.
+                Plataforma baseada em pesquisa de doutorado que oferece orientações sobre a dispensação de medicamentos, baseada em fatos.
+              </HierarchyText>
+            </div>
           </div>
 
           {/* Mobile Quick Actions - ETAPA 4 */}
@@ -624,7 +625,7 @@ export default function HomePage() {
                   fontWeight: '600',
                   marginBottom: '1rem'
                 }}>
-                  O Farmacêutico Técnico
+                  O Farmacêutico Clínico
                 </p>
                 <ul 
                   id="gasnelio-description"
@@ -652,10 +653,8 @@ export default function HomePage() {
                   marginTop: '0.5rem',
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '0.5rem'
+                  justifyContent: 'center'
                 }}>
-                  <ChatBotIcon size={16} variant="unb" />
                   Conversar com Dr. Gasnelio
                 </div>
               </button>
@@ -716,7 +715,7 @@ export default function HomePage() {
                   }
                 }}
                 tabIndex={0}
-                aria-label="Selecionar Gá - A Assistente Acolhedora"
+                aria-label="Selecionar Gá - O Assistente Acolhedor"
                 aria-describedby="ga-description"
               >
                 <div style={{
@@ -756,7 +755,7 @@ export default function HomePage() {
                   fontWeight: '600',
                   marginBottom: '1rem'
                 }}>
-                  A Assistente Acolhedora
+                  O Assistente Acolhedor
                 </p>
                 <ul 
                   id="ga-description"
@@ -784,220 +783,95 @@ export default function HomePage() {
                   marginTop: '0.5rem',
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '0.5rem'
+                  justifyContent: 'center'
                 }}>
-                  <ChatBotIcon size={16} variant="unb" />
                   Conversar com Gá
                 </div>
               </button>
             </div>
             
-            
-            {/* Perfil dos Assistentes e Guia de Escolha */}
+            {/* Guia de Decisão Compacto */}
             <div style={{
-              marginTop: '2rem',
-              background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
-              borderRadius: '16px',
-              padding: '2rem',
-              border: '1px solid #e2e8f0'
+              marginTop: '2.5rem',
+              padding: '1.5rem 2rem',
+              background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+              borderRadius: '12px',
+              border: '1px solid #cbd5e1',
+              textAlign: 'center'
             }}>
               <h3 style={{
-                fontSize: '1.5rem',
-                fontWeight: '700',
-                color: '#003366',
-                textAlign: 'center',
-                marginBottom: '1.5rem',
+                fontSize: '1.1rem',
+                fontWeight: '600',
+                color: '#334155',
+                marginBottom: '1rem',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '0.75rem'
+                gap: '0.5rem'
               }}>
-                <UserCheckIcon size={24} variant="unb" />
-                Perfil dos Assistentes - Qual Escolher?
+                <HelpIcon size={20} color="#334155" />
+                Como escolher?
               </h3>
               
               <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-                gap: '1.5rem',
-                marginBottom: '1.5rem'
+                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                gap: '1rem',
+                fontSize: '0.875rem',
+                color: '#475569'
               }}>
-                {/* Dr. Gasnelio Profile & Guide */}
                 <div style={{
-                  background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
-                  padding: '1.5rem',
-                  borderRadius: '12px',
-                  border: '2px solid #bfdbfe'
+                  padding: '1rem',
+                  background: 'rgba(240, 249, 255, 0.8)',
+                  borderRadius: '8px',
+                  border: '1px solid #e0f2fe'
                 }}>
-                  <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
-                    <h4 style={{
-                      fontSize: '1.25rem',
-                      fontWeight: '700',
-                      color: '#003366',
-                      marginBottom: '0.25rem',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '0.5rem'
-                    }}>
-                      <ChatBotIcon size={20} variant="persona-gasnelio" />
-                      Dr. Gasnelio
-                    </h4>
-                    <p style={{
-                      fontSize: '1rem',
-                      color: '#0369a1',
-                      fontWeight: '600',
-                      marginBottom: '1rem'
-                    }}>
-                      Farmacêutico Clínico
-                    </p>
+                  <div style={{ marginBottom: '0.5rem', fontWeight: '600', color: '#003366', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <UserCheckIcon size={16} color="#003366" />
+                    Dr. Gasnelio para:
                   </div>
-                  
-                  <div style={{ marginBottom: '1rem' }}>
-                    <strong style={{ color: '#0369a1', fontSize: '0.9rem' }}>CARACTERÍSTICAS:</strong>
-                    <ul style={{
-                      fontSize: '0.85rem',
-                      color: '#0c4a6e',
-                      lineHeight: '1.5',
-                      marginLeft: '1rem',
-                      marginTop: '0.25rem'
-                    }}>
-                      <li>Linguagem técnica e científica</li>
-                      <li>Protocolos farmacêuticos detalhados</li>
-                      <li>Referências a estudos clínicos</li>
-                    </ul>
-                  </div>
-                  
-                  <div style={{ marginBottom: '1rem' }}>
-                    <strong style={{ color: '#0369a1', fontSize: '0.9rem' }}>IDEAL PARA:</strong>
-                    <ul style={{
-                      fontSize: '0.85rem',
-                      color: '#0c4a6e',
-                      lineHeight: '1.5',
-                      marginLeft: '1rem',
-                      marginTop: '0.25rem'
-                    }}>
-                      <li>Farmacêuticos e médicos</li>
-                      <li>Estudantes de ciências da saúde</li>
-                      <li>Protocolos clínicos detalhados</li>
-                      <li>Cálculos de dosagem</li>
-                    </ul>
-                  </div>
-                  
-                  <div style={{
-                    background: '#e0f2fe',
-                    padding: '0.75rem',
-                    borderRadius: '8px',
-                    fontSize: '0.8rem',
-                    color: '#0c4a6e',
-                    fontStyle: 'italic',
-                    textAlign: 'center'
-                  }}>
-                    💡 Consultas técnicas e decisão clínica
+                  <div style={{ lineHeight: '1.4' }}>
+                    Profissionais de saúde • Estudantes • Linguagem técnica • Protocolos detalhados
                   </div>
                 </div>
-
-                {/* Gá Profile & Guide */}
+                
                 <div style={{
-                  background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
-                  padding: '1.5rem',
-                  borderRadius: '12px',
-                  border: '2px solid #bbf7d0'
+                  padding: '1rem',
+                  background: 'rgba(240, 253, 244, 0.8)',
+                  borderRadius: '8px',
+                  border: '1px solid #dcfce7'
                 }}>
-                  <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
-                    <h4 style={{
-                      fontSize: '1.25rem',
-                      fontWeight: '700',
-                      color: '#16a34a',
-                      marginBottom: '0.25rem',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '0.5rem'
-                    }}>
-                      <ChatBotIcon size={20} variant="persona-ga" />
-                      Gá
-                    </h4>
-                    <p style={{
-                      fontSize: '1rem',
-                      color: '#16a34a',
-                      fontWeight: '600',
-                      marginBottom: '1rem'
-                    }}>
-                      Assistente Educacional Empático
-                    </p>
+                  <div style={{ marginBottom: '0.5rem', fontWeight: '600', color: '#16a34a', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2">
+                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                    </svg>
+                    Gá para:
                   </div>
-                  
-                  <div style={{ marginBottom: '1rem' }}>
-                    <strong style={{ color: '#16a34a', fontSize: '0.9rem' }}>CARACTERÍSTICAS:</strong>
-                    <ul style={{
-                      fontSize: '0.85rem',
-                      color: '#14532d',
-                      lineHeight: '1.5',
-                      marginLeft: '1rem',
-                      marginTop: '0.25rem'
-                    }}>
-                      <li>Linguagem simples e acolhedora</li>
-                      <li>Explicações didáticas e práticas</li>
-                      <li>Comunicação humanizada</li>
-                    </ul>
-                  </div>
-                  
-                  <div style={{ marginBottom: '1rem' }}>
-                    <strong style={{ color: '#16a34a', fontSize: '0.9rem' }}>IDEAL PARA:</strong>
-                    <ul style={{
-                      fontSize: '0.85rem',
-                      color: '#14532d',
-                      lineHeight: '1.5',
-                      marginLeft: '1rem',
-                      marginTop: '0.25rem'
-                    }}>
-                      <li>Pacientes e familiares</li>
-                      <li>Cuidadores e comunidade</li>
-                      <li>Orientações sobre qualidade de vida</li>
-                      <li>Suporte emocional</li>
-                    </ul>
-                  </div>
-                  
-                  <div style={{
-                    background: '#dcfce7',
-                    padding: '0.75rem',
-                    borderRadius: '8px',
-                    fontSize: '0.8rem',
-                    color: '#14532d',
-                    fontStyle: 'italic',
-                    textAlign: 'center'
-                  }}>
-                    💡 Esclarecimentos e apoio durante tratamento
+                  <div style={{ lineHeight: '1.4' }}>
+                    Pacientes • Familiares • Linguagem simples • Apoio emocional
                   </div>
                 </div>
               </div>
-
+              
               <div style={{
-                textAlign: 'center',
-                padding: '1rem',
-                background: 'rgba(59, 130, 246, 0.05)',
-                borderRadius: '8px',
-                border: '1px solid rgba(59, 130, 246, 0.1)'
+                marginTop: '1rem',
+                fontSize: '0.8rem',
+                color: '#64748b',
+                fontStyle: 'italic',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem'
               }}>
-                <p style={{
-                  fontSize: '0.95rem',
-                  color: '#003366',
-                  margin: '0 0 0.5rem 0',
-                  fontWeight: '600'
-                }}>
-                  ✨ <a href="#assistentes" style={{ color: '#003366', textDecoration: 'underline' }}>Clique no assistente de sua preferência acima</a> para iniciar a conversa
-                </p>
-                <p style={{
-                  fontSize: '0.85rem',
-                  color: '#4a5568',
-                  margin: 0
-                }}>
-                  Ambos foram treinados com o conteúdo completo da pesquisa de doutorado
-                </p>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <path d="M12 16v-4"/>
+                  <path d="M12 8h.01"/>
+                </svg>
+                Dica: Você pode alternar entre os assistentes a qualquer momento durante a conversa
               </div>
             </div>
+            
           </div>
 
 
@@ -1135,7 +1009,6 @@ export default function HomePage() {
                 }}>
                   Foco no Paciente
                 </h3>
-                <div style={{ height: '0.75rem' }}></div>
                 <p style={{
                   fontSize: '0.875rem',
                   color: '#4a5568',
@@ -1203,44 +1076,85 @@ export default function HomePage() {
                 fontSize: '1rem',
                 color: '#003366',
                 lineHeight: '1.6',
-                margin: '0 0 1rem 0',
+                margin: '0 0 1.5rem 0',
                 fontWeight: '500'
               }}>
-                <strong>Acesse o conteúdo completo da pesquisa</strong>
+                <strong>Conheça mais sobre a pesquisa e equipe</strong>
               </p>
-              <a
-                href="/resources"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  padding: '0.75rem 1.5rem',
-                  background: '#003366',
-                  color: 'white',
-                  borderRadius: '8px',
-                  textDecoration: 'none',
-                  fontSize: '0.875rem',
-                  fontWeight: '500',
-                  gap: '0.5rem',
-                  transition: 'all 0.2s ease'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = '#002244';
-                  e.currentTarget.style.transform = 'translateY(-1px)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = '#003366';
-                  e.currentTarget.style.transform = 'translateY(0)';
-                }}
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                  <polyline points="14,2 14,8 20,8"/>
-                  <line x1="16" y1="13" x2="8" y2="13"/>
-                  <line x1="16" y1="17" x2="8" y2="17"/>
-                  <polyline points="10,9 9,9 8,9"/>
-                </svg>
-                Ver Roteiro Completo
-              </a>
+              
+              <div style={{
+                display: 'flex',
+                gap: '1rem',
+                justifyContent: 'center',
+                flexWrap: 'wrap'
+              }}>
+                <a
+                  href="/resources"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    padding: '0.75rem 1.5rem',
+                    background: '#003366',
+                    color: 'white',
+                    borderRadius: '8px',
+                    textDecoration: 'none',
+                    fontSize: '0.875rem',
+                    fontWeight: '500',
+                    gap: '0.5rem',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#002244';
+                    e.currentTarget.style.transform = 'translateY(-1px)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = '#003366';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                  }}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14,2 14,8 20,8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                    <polyline points="10,9 9,9 8,9"/>
+                  </svg>
+                  Ver Roteiro Completo
+                </a>
+                
+                <a
+                  href="/equipe"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    padding: '0.75rem 1.5rem',
+                    background: '#059669',
+                    color: 'white',
+                    borderRadius: '8px',
+                    textDecoration: 'none',
+                    fontSize: '0.875rem',
+                    fontWeight: '500',
+                    gap: '0.5rem',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#047857';
+                    e.currentTarget.style.transform = 'translateY(-1px)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = '#059669';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                  }}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                  </svg>
+                  Conhecer os Pesquisadores
+                </a>
+              </div>
             </div>
           </section>
 
@@ -1571,7 +1485,7 @@ export default function HomePage() {
               </div>
 
               <button
-                onClick={() => router.push('/contato')}
+                onClick={() => router.push('/sobre-a-tese')}
                 style={{
                   marginTop: '1.5rem',
                   padding: '1rem 2rem',
@@ -1585,7 +1499,7 @@ export default function HomePage() {
                   width: '100%'
                 }}
               >
-                📧 Mais Contatos e Suporte Técnico
+                📧 Informações da Pesquisa e Contato
               </button>
             </div>
 

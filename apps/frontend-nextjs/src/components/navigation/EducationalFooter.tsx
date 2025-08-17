@@ -108,7 +108,7 @@ export default function EducationalFooter({
             { label: 'Sobre o Sistema', href: '/sobre', description: 'Informações sobre a plataforma educacional' },
             { label: 'Sobre a Tese', href: '/modules/sobre-a-tese', description: 'Pesquisa de doutorado em Ciências Farmacêuticas' },
             { label: 'Metodologia', href: '/metodologia', description: 'Métodos científicos e fundamentação teórica' },
-            { label: 'Contato', href: '/contato', description: 'Entre em contato com a equipe de pesquisa' }
+            { label: 'Sobre a Pesquisa', href: '/sobre-a-tese', description: 'Informações sobre a tese e equipe de pesquisa' }
           ]
         }
       }
@@ -635,7 +635,7 @@ export default function EducationalFooter({
             alignItems: 'center',
             justifyContent: 'center',
             gap: '1.5rem',
-            marginBottom: '1.5rem',
+            marginBottom: '2rem',
             flexWrap: 'wrap'
           }}>
             <img 
@@ -663,23 +663,119 @@ export default function EducationalFooter({
             />
           </div>
           
-          {/* Informações institucionais */}
-          <p style={{
-            fontSize: '1rem',
-            color: '#64748b',
-            fontWeight: '600',
-            marginBottom: '0.5rem'
+          {/* Informações institucionais e contato expandidas */}
+          <div style={{
+            marginBottom: '2rem',
+            padding: '1.5rem',
+            background: 'rgba(59, 130, 246, 0.05)',
+            borderRadius: '12px',
+            border: '1px solid rgba(59, 130, 246, 0.1)'
           }}>
-            Tese de Doutorado - Programa de Pós-Graduação em Ciências Farmacêuticas
-          </p>
-          
-          <p style={{
-            fontSize: '0.875rem',
-            color: '#94a3b8',
-            marginBottom: '1.5rem'
+            <h3 style={{
+              fontSize: '1.1rem',
+              color: '#003366',
+              fontWeight: '700',
+              marginBottom: '1rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.5rem'
+            }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#003366" strokeWidth="2">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                <circle cx="12" cy="10" r="3"/>
+              </svg>
+              Informações Institucionais
+            </h3>
+            
+            <p style={{
+              fontSize: '1rem',
+              color: '#64748b',
+              fontWeight: '600',
+              marginBottom: '0.5rem'
+            }}>
+              Programa de Pós-Graduação em Ciências Farmacêuticas
+            </p>
+            
+            <p style={{
+              fontSize: '0.9rem',
+              color: '#64748b',
+              marginBottom: '1rem',
+              lineHeight: '1.5'
+            }}>
+              Universidade de Brasília (UnB)<br />
+              Campus Universitário Darcy Ribeiro<br />
+              Brasília - DF, Brasil - CEP: 70910-900
+            </p>
+            
+            <div style={{
+              padding: '1rem',
+              background: 'rgba(16, 185, 129, 0.05)',
+              borderRadius: '8px',
+              border: '1px solid rgba(16, 185, 129, 0.1)'
+            }}>
+              <p style={{
+                fontSize: '0.85rem',
+                color: '#059669',
+                margin: 0,
+                fontWeight: '500',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem'
+              }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                  <polyline points="22,6 12,13 2,6"/>
+                </svg>
+                Para colaborações de pesquisa, contate através dos canais institucionais da UnB
+              </p>
+            </div>
+            
+            <p style={{
+              fontSize: '0.8rem',
+              color: '#94a3b8',
+              marginTop: '0.75rem',
+              marginBottom: '0'
+            }}>
+              Tese de Doutorado • {currentYear}
+            </p>
+          </div>
+
+          {/* Compliance LGPD */}
+          <div style={{
+            marginBottom: '1.5rem',
+            padding: '1rem',
+            background: 'rgba(107, 114, 128, 0.05)',
+            borderRadius: '8px',
+            border: '1px solid rgba(107, 114, 128, 0.1)',
+            fontSize: '0.8rem',
+            color: '#6b7280'
           }}>
-            Universidade de Brasília (UnB) • {currentYear}
-          </p>
+            <h4 style={{
+              fontSize: '0.85rem',
+              color: '#374151',
+              fontWeight: '600',
+              marginBottom: '0.5rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.5rem'
+            }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <circle cx="12" cy="16" r="1"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+              Proteção de Dados (LGPD)
+            </h4>
+            <p style={{ margin: '0 0 0.5rem', textAlign: 'center' }}>
+              Esta plataforma educacional coleta apenas dados técnicos necessários para funcionamento.
+            </p>
+            <p style={{ margin: 0, textAlign: 'center' }}>
+              Não são coletados dados pessoais dos usuários. Cookies utilizados apenas para preferências de navegação.
+            </p>
+          </div>
           
           {/* Contador de assistentes */}
           <div style={{

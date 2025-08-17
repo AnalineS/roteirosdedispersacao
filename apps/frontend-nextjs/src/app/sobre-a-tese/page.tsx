@@ -131,62 +131,161 @@ export default function SobreATestePage() {
           </div>
         </div>
 
-        {/* Link destacado para equipe */}
+        {/* Informações de Contato e Colaboração */}
         <div style={{
           background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
           padding: '2rem',
           borderRadius: '16px',
           marginBottom: '3rem',
-          textAlign: 'center',
           border: '2px solid #bfdbfe',
           boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
         }}>
           <h2 style={{
             fontSize: '1.5rem',
             color: '#003366',
-            marginBottom: '1rem',
+            marginBottom: '1.5rem',
+            textAlign: 'center',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             gap: '0.75rem'
           }}>
-            👨‍🔬 Conheça Nossa Equipe de Pesquisa
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#003366" strokeWidth="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+            Equipe de Pesquisa e Contato
           </h2>
-          <p style={{
-            fontSize: '1.1rem',
-            color: '#0369a1',
-            marginBottom: '1.5rem',
-            lineHeight: '1.6'
+          
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+            gap: '1.5rem',
+            marginBottom: '2rem'
           }}>
-            Descubra mais sobre os pesquisadores, orientadores e colaboradores que tornaram este projeto possível
-          </p>
-          <a
-            href="/equipe-pesquisa"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.75rem',
-              padding: '1rem 2rem',
-              background: '#003366',
-              color: 'white',
-              textDecoration: 'none',
+            {/* Informações Institucionais */}
+            <div style={{
+              background: 'white',
+              padding: '1.5rem',
               borderRadius: '12px',
+              border: '1px solid #bfdbfe'
+            }}>
+              <h3 style={{
+                fontSize: '1.1rem',
+                color: '#003366',
+                marginBottom: '1rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#003366" strokeWidth="2">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                  <circle cx="12" cy="10" r="3"/>
+                </svg>
+                Informações Institucionais
+              </h3>
+              <div style={{ fontSize: '0.9rem', color: '#64748b', lineHeight: '1.6' }}>
+                <p><strong>Programa de Pós-Graduação em Ciências Farmacêuticas</strong></p>
+                <p>Universidade de Brasília (UnB)<br />
+                Campus Universitário Darcy Ribeiro<br />
+                Brasília - DF, Brasil<br />
+                CEP: 70910-900</p>
+              </div>
+            </div>
+
+            {/* Colaborações */}
+            <div style={{
+              background: 'white',
+              padding: '1.5rem',
+              borderRadius: '12px',
+              border: '1px solid #bfdbfe'
+            }}>
+              <h3 style={{
+                fontSize: '1.1rem',
+                color: '#003366',
+                marginBottom: '1rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#003366" strokeWidth="2">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                  <circle cx="8.5" cy="7" r="4"/>
+                  <path d="M20 8v6M23 11h-6"/>
+                </svg>
+                Colaborações de Pesquisa
+              </h3>
+              <p style={{ fontSize: '0.9rem', color: '#64748b', lineHeight: '1.6', marginBottom: '1rem' }}>
+                Interessado em colaborar com pesquisas sobre hanseníase ou cuidado farmacêutico? 
+              </p>
+              <div style={{
+                padding: '0.75rem',
+                background: '#f0f9ff',
+                borderRadius: '8px',
+                border: '1px solid #bfdbfe',
+                fontSize: '0.85rem',
+                color: '#0369a1'
+              }}>
+                <strong>📧 Contato:</strong> Através dos canais institucionais da UnB
+              </div>
+            </div>
+          </div>
+
+          {/* Suporte Técnico */}
+          <div style={{
+            background: 'rgba(16, 185, 129, 0.05)',
+            padding: '1.5rem',
+            borderRadius: '12px',
+            border: '1px solid rgba(16, 185, 129, 0.2)',
+            textAlign: 'center'
+          }}>
+            <h3 style={{
               fontSize: '1.1rem',
-              fontWeight: '600',
-              boxShadow: '0 4px 12px rgba(0,51,102,0.3)',
-              transition: 'all 0.3s ease'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,51,102,0.4)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,51,102,0.3)';
-            }}
-          >
-            🎓 Conhecer a Equipe
-          </a>
+              color: '#059669',
+              marginBottom: '0.75rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.5rem'
+            }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+              Suporte Técnico da Plataforma
+            </h3>
+            <p style={{ fontSize: '0.9rem', color: '#047857', marginBottom: '1rem' }}>
+              Para questões técnicas sobre a plataforma ou dúvidas sobre funcionalidades, utilize nossos assistentes virtuais:
+            </p>
+            <div style={{
+              display: 'flex',
+              gap: '1rem',
+              justifyContent: 'center',
+              flexWrap: 'wrap'
+            }}>
+              <span style={{
+                padding: '0.5rem 1rem',
+                background: '#003366',
+                color: 'white',
+                borderRadius: '6px',
+                fontSize: '0.85rem',
+                fontWeight: '500'
+              }}>
+                👨‍⚕️ Dr. Gasnelio
+              </span>
+              <span style={{
+                padding: '0.5rem 1rem',
+                background: '#059669',
+                color: 'white',
+                borderRadius: '6px',
+                fontSize: '0.85rem',
+                fontWeight: '500'
+              }}>
+                💚 Gá
+              </span>
+            </div>
+          </div>
         </div>
 
         {/* Seção: Visão Geral da Pesquisa */}

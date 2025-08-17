@@ -219,13 +219,13 @@ export const OPTIMIZED_HEADER_NAVIGATION: NavigationCategory[] = [
       },
       {
         id: 'contact',
-        label: 'Contato',
-        href: '/contato',
+        label: 'Sobre a Pesquisa',
+        href: '/sobre-a-tese',
         icon: '📧',
-        description: 'Entre em contato conosco',
+        description: 'Informações sobre a pesquisa e contato',
         category: 'institutional',
         level: 'beginner',
-        estimatedTime: '3 min'
+        estimatedTime: '5 min'
       },
       
       // Submenu: Políticas e Conformidade
