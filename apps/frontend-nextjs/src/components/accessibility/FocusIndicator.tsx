@@ -155,6 +155,57 @@ export default function FocusIndicator({
         transform: scale(1.05);
       }
 
+      /* Container para skip links abaixo da navegação */
+      .skip-links-container-below-nav {
+        position: relative;
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        border-bottom: 1px solid #cbd5e1;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 0;
+        overflow: hidden;
+        transition: min-height 0.3s ease;
+      }
+
+      .skip-links-container-below-nav:focus-within {
+        min-height: 60px;
+        padding: 8px 16px;
+      }
+
+      .skip-links-container-below-nav .skip-link {
+        position: relative;
+        top: -80px;
+        background: ${color};
+        color: white;
+        padding: 8px 16px;
+        margin: 0 4px;
+        font-size: 14px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        opacity: 0;
+        transform: translateY(-20px);
+        min-width: 140px;
+        text-align: center;
+        line-height: 1.2;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .skip-links-container-below-nav .skip-link:focus,
+      .skip-links-container-below-nav .skip-link:focus-visible {
+        top: 0;
+        opacity: 1;
+        transform: translateY(0);
+        outline: 2px solid white !important;
+        outline-offset: 2px !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        z-index: 10001;
+      }
+
       /* Estilos específicos para diferentes skip links */
       .skip-link[href="#main-content"] {
         background: ${modernChatTheme.colors.unb.primary};

@@ -184,8 +184,6 @@ export default function MobileFirstFramework({
     // Otimizações para touch
     WebkitTapHighlightColor: 'transparent',
     WebkitTouchCallout: 'none' as const,
-    WebkitUserSelect: 'none' as const,
-    userSelect: 'none' as const,
     touchAction: 'manipulation' as const
   };
 
@@ -219,8 +217,6 @@ export default function MobileFirstFramework({
           /* Touch optimizations */
           -webkit-tap-highlight-color: rgba(59, 130, 246, 0.1);
           touch-action: manipulation;
-          user-select: none;
-          -webkit-user-select: none;
         }
         
         /* Text inputs específicos */
@@ -477,12 +473,22 @@ export default function MobileFirstFramework({
         /* Prevent text selection on gestures */
         .mobile-gesture-area {
           -webkit-touch-callout: none;
+          touch-action: pan-y pinch-zoom;
+        }
+        
+        /* Enable text selection for content by default */
+        body, p, span, div, h1, h2, h3, h4, h5, h6, article, section, main, li, td, th, label, blockquote, pre, code {
+          user-select: text !important;
+          -webkit-user-select: text !important;
+        }
+        
+        /* Disable text selection only for interactive elements */
+        button, [role="button"], .no-select {
           -webkit-user-select: none;
           -khtml-user-select: none;
           -moz-user-select: none;
           -ms-user-select: none;
           user-select: none;
-          touch-action: pan-y pinch-zoom;
         }
         
         /* Safe area for devices with notches */

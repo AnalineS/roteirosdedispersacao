@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import EducationalLayout from '@/components/layout/EducationalLayout';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 interface Module {
   id: string;
@@ -21,6 +22,8 @@ interface Module {
 export default function ModulesPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>('all');
+  const [showGettingStarted, setShowGettingStarted] = useState(true);
+  const router = useRouter();
 
   const modules: Module[] = [
     {
@@ -206,7 +209,7 @@ export default function ModulesPage() {
           <h1 style={{ 
             fontSize: '2.5rem', 
             fontWeight: 'bold', 
-            color: '#1976d2',
+            color: '#003366',
             marginBottom: '10px' 
           }}>
             Módulos Educacionais
@@ -219,6 +222,148 @@ export default function ModulesPage() {
             Conteúdo estruturado sobre hanseníase e PQT-U
           </p>
         </div>
+
+        {/* Seção Como Começar */}
+        {showGettingStarted && (
+          <div style={{
+            background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
+            borderRadius: '16px',
+            padding: '2rem',
+            marginBottom: '2rem',
+            border: '1px solid #e0f2fe',
+            position: 'relative'
+          }}>
+            <button
+              onClick={() => setShowGettingStarted(false)}
+              style={{
+                position: 'absolute',
+                top: '1rem',
+                right: '1rem',
+                background: 'none',
+                border: 'none',
+                fontSize: '1.5rem',
+                cursor: 'pointer',
+                color: '#666',
+                padding: '0.25rem'
+              }}
+              aria-label="Fechar seção Como Começar"
+            >
+              ×
+            </button>
+
+            <h2 style={{
+              fontSize: '1.75rem',
+              fontWeight: '700',
+              color: '#003366',
+              marginBottom: '1rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem'
+            }}>
+              🚀 Como Começar
+            </h2>
+
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
+              gap: '1.5rem',
+              marginBottom: '1.5rem'
+            }}>
+
+              {/* Protocolo PQT-U */}
+              <div style={{
+                background: 'white',
+                padding: '1.5rem',
+                borderRadius: '12px',
+                border: '1px solid #e0f2fe'
+              }}>
+                <h3 style={{
+                  fontSize: '1.25rem',
+                  fontWeight: '600',
+                  color: '#003366',
+                  marginBottom: '1rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
+                }}>
+                  ⚕️ Protocolo PQT-U
+                </h3>
+
+                <div style={{
+                  background: '#dbeafe',
+                  padding: '1rem',
+                  borderRadius: '8px',
+                  marginBottom: '1rem',
+                  border: '1px solid #3b82f6'
+                }}>
+                  <strong style={{ color: '#1d4ed8' }}>Poliquimioterapia Única</strong>
+                  <p style={{ margin: '0.5rem 0 0', fontSize: '0.9rem', color: '#1e40af' }}>
+                    Protocolo padrão do Ministério da Saúde
+                  </p>
+                </div>
+
+                <div style={{ fontSize: '0.9rem', color: '#475569', lineHeight: '1.5' }}>
+                  <p><strong>Duração:</strong></p>
+                  <ul style={{ marginLeft: '1rem', marginBottom: '1rem' }}>
+                    <li>Paucibacilar: 6 meses</li>
+                    <li>Multibacilar: 12 meses</li>
+                  </ul>
+                  
+                  <p><strong>Medicamentos:</strong></p>
+                  <ul style={{ marginLeft: '1rem' }}>
+                    <li>Rifampicina (supervisionada)</li>
+                    <li>Clofazimina (multibacilar)</li>
+                    <li>Dapsona (autoadministração)</li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* Recursos da Plataforma */}
+              <div style={{
+                background: 'white',
+                padding: '1.5rem',
+                borderRadius: '12px',
+                border: '1px solid #e0f2fe',
+                gridColumn: 'span 1'
+              }}>
+                <h3 style={{
+                  fontSize: '1.25rem',
+                  fontWeight: '600',
+                  color: '#003366',
+                  marginBottom: '1rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
+                }}>
+                  🛠️ Recursos Disponíveis
+                </h3>
+
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(2, 1fr)',
+                  gap: '0.75rem'
+                }}>
+                  <div style={{ padding: '0.75rem', background: '#f0f9ff', borderRadius: '6px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '1.25rem', marginBottom: '0.25rem' }}>💬</div>
+                    <div style={{ fontSize: '0.8rem', color: '#003366', fontWeight: '600' }}>Chat IA</div>
+                  </div>
+                  <div style={{ padding: '0.75rem', background: '#f0fdf4', borderRadius: '6px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '1.25rem', marginBottom: '0.25rem' }}>📚</div>
+                    <div style={{ fontSize: '0.8rem', color: '#16a34a', fontWeight: '600' }}>Módulos</div>
+                  </div>
+                  <div style={{ padding: '0.75rem', background: '#fef3c7', borderRadius: '6px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '1.25rem', marginBottom: '0.25rem' }}>🧮</div>
+                    <div style={{ fontSize: '0.8rem', color: '#d97706', fontWeight: '600' }}>Calculadoras</div>
+                  </div>
+                  <div style={{ padding: '0.75rem', background: '#f3e8ff', borderRadius: '6px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '1.25rem', marginBottom: '0.25rem' }}>📊</div>
+                    <div style={{ fontSize: '0.8rem', color: '#7c3aed', fontWeight: '600' }}>Progresso</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Filters */}
         <div style={{

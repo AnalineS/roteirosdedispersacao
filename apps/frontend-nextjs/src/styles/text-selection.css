@@ -1,0 +1,211 @@
+/* Text Selection Rules */
+
+/* === ENABLE TEXT SELECTION BY DEFAULT === */
+/* Allow text selection for all content */
+body,
+main,
+article,
+section,
+div,
+p,
+span,
+h1, h2, h3, h4, h5, h6,
+li,
+td, th,
+blockquote,
+pre,
+code,
+label,
+.content,
+.text-content,
+.description,
+.message,
+.chat-message,
+.info-text {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+}
+
+/* === DISABLE TEXT SELECTION FOR SPECIFIC ELEMENTS === */
+
+/* Interactive elements - prevent selection */
+button,
+[role="button"],
+.btn,
+.button,
+.icon,
+.toggle,
+.switch,
+.tab,
+.nav-link,
+.menu-item {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* === QUIZ AND ASSESSMENT PROTECTION === */
+/* Prevent text selection in quiz/test areas to avoid cheating */
+.quiz-container,
+.quiz-question,
+.quiz-option,
+.quiz-answer,
+.assessment,
+.test-area,
+.exam-content,
+.question-card,
+.mcq-option,
+.true-false-question,
+.fill-blank-question,
+.evaluation-content,
+.protected-content,
+[data-no-select="true"],
+[data-protected="true"] {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  -webkit-touch-callout: none !important;
+  
+  /* Prevent right-click context menu */
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Disable text selection for quiz-related elements */
+.quiz-container *,
+.assessment *,
+.test-area *,
+.exam-content *,
+.question-card *,
+.evaluation-content * {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+}
+
+/* === SPECIAL CASES === */
+
+/* Code blocks - allow selection for copying */
+pre code,
+.code-block,
+.syntax-highlight {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+}
+
+/* Form inputs - always allow text selection */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="search"],
+input[type="tel"],
+input[type="url"],
+textarea,
+[contenteditable="true"] {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+}
+
+/* Tables - allow selection for data copying */
+table,
+tbody,
+thead,
+tfoot,
+tr,
+td,
+th {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+}
+
+/* === MOBILE SPECIFIC === */
+@media (max-width: 768px) {
+  /* Touch areas that shouldn't select text */
+  .swipe-area,
+  .gesture-zone,
+  .mobile-nav,
+  .mobile-menu {
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+  }
+}
+
+/* === ACCESSIBILITY CONSIDERATIONS === */
+/* Screen reader content should remain selectable */
+.sr-only,
+.visually-hidden,
+[aria-label],
+[aria-describedby] {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+}
+
+/* === COPY PROTECTION FOR SENSITIVE CONTENT === */
+/* Additional protection for quiz/assessment areas */
+.quiz-container,
+.assessment,
+.protected-content {
+  /* Disable print */
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+  
+  /* Prevent screenshot in some browsers */
+  -webkit-touch-callout: none;
+  
+  /* Disable highlighting */
+  -webkit-user-drag: none;
+  -khtml-user-drag: none;
+  -moz-user-drag: none;
+  -o-user-drag: none;
+  user-drag: none;
+}
+
+/* Prevent copy keyboard shortcuts in protected areas */
+.quiz-container,
+.assessment {
+  -webkit-user-modify: read-only;
+  -moz-user-modify: read-only;
+  user-modify: read-only;
+}
+
+/* Optional: Add visual indicator for non-selectable content */
+.protected-content::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* === DEVELOPER CLASSES === */
+/* Utility classes for developers to control selection */
+.select-all {
+  user-select: all !important;
+  -webkit-user-select: all !important;
+}
+
+.select-none {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+}
+
+.select-text {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+}
+
+.select-auto {
+  user-select: auto !important;
+  -webkit-user-select: auto !important;
+}

@@ -304,8 +304,9 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: '0 2%',
-        minHeight: '80px'
+        padding: '0 clamp(1rem, 3vw, 2rem)',
+        minHeight: '80px',
+        boxSizing: 'border-box'
       }}
     >
       {/* Logo e Título - Esquerda */}
@@ -313,8 +314,9 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
         display: 'flex',
         alignItems: 'center',
         gap: '16px',
-        flex: '1',
-        maxWidth: '600px'
+        flex: '0 1 auto',
+        minWidth: isMobile ? '250px' : '350px',
+        maxWidth: isMobile ? '300px' : '500px'
       }}>
         <Tooltip content="Roteiros de Dispensação - Sistema Inteligente de Orientação" position="bottom">
           <Link
@@ -380,38 +382,18 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
         </Tooltip>
       </div>
 
-      {/* Skip to content link for keyboard users */}
-      <a
-        href="#main-content"
-        style={{
-          position: 'absolute',
-          top: '-40px',
-          left: '8px',
-          background: unbColors.primary,
-          color: unbColors.white,
-          padding: '8px 16px',
-          textDecoration: 'none',
-          borderRadius: '4px',
-          fontSize: '14px',
-          fontWeight: '600',
-          zIndex: 10000,
-          transition: 'top 200ms ease'
-        }}
-        onFocus={(e) => { e.currentTarget.style.top = '8px'; }}
-        onBlur={(e) => { e.currentTarget.style.top = '-40px'; }}
-      >
-        Pular para o conteúdo principal
-      </a>
 
       {/* Navegação Principal - Centro (Desktop/Tablet) */}
       {!isMobile && (
         <nav 
           style={{
-            flex: 1,
+            flex: '1 1 auto',
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
-            gap: isTablet ? '16px' : '32px'
+            gap: isTablet ? '12px' : '24px',
+            minWidth: 0,
+            overflow: 'visible'
           }}
           role="navigation"
           aria-label="Navegação principal do sistema educacional"
@@ -451,18 +433,21 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
                     style={{
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '8px',
+                      gap: '6px',
                       background: 'none',
                       border: `2px solid ${dropdownsOpen[category.id] ? unbColors.white : 'transparent'}`,
                       color: unbColors.white,
-                      padding: '8px 12px',
+                      padding: isTablet ? '6px 8px' : '8px 12px',
                       borderRadius: '8px',
                       cursor: 'pointer',
-                      fontSize: isTablet ? '0.9rem' : '1rem',
+                      fontSize: isTablet ? '0.85rem' : '0.95rem',
                       fontWeight: '500',
                       transition: 'all 200ms ease',
                       opacity: dropdownsOpen[category.id] ? 1 : 0.9,
-                      outline: 'none'
+                      outline: 'none',
+                      whiteSpace: 'nowrap',
+                      minWidth: 'fit-content',
+                      flexShrink: 0
                     }}
                     onMouseEnter={(e) => { e.currentTarget.style.background = unbColors.alpha.secondary; }}
                     onMouseLeave={(e) => { e.currentTarget.style.background = 'none'; }}
@@ -472,8 +457,10 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
                     aria-label={`Abrir menu ${category.label}: ${category.description}`}
                     aria-describedby={`category-${category.id}-desc`}
                   >
-                    <IconComponent size={isTablet ? 18 : 20} variant="unb" color={unbColors.white} />
-                    {!isTablet && <span>{category.label}</span>}
+                    <IconComponent size={isTablet ? 16 : 18} variant="unb" color={unbColors.white} />
+                    <span style={{ display: isTablet && category.label.length > 12 ? 'none' : 'inline' }}>
+                      {category.label}
+                    </span>
                     <ChevronDownIcon 
                       size={14} 
                       color={unbColors.white}
@@ -489,21 +476,26 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
                     style={{
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '8px',
+                      gap: '6px',
                       color: unbColors.white,
                       textDecoration: 'none',
-                      padding: '8px 12px',
+                      padding: isTablet ? '6px 8px' : '8px 12px',
                       borderRadius: '8px',
-                      fontSize: isTablet ? '0.9rem' : '1rem',
+                      fontSize: isTablet ? '0.85rem' : '0.95rem',
                       fontWeight: '500',
                       transition: 'all 200ms ease',
-                      opacity: isActive(category.items[0].href) ? 1 : 0.9
+                      opacity: isActive(category.items[0].href) ? 1 : 0.9,
+                      whiteSpace: 'nowrap',
+                      minWidth: 'fit-content',
+                      flexShrink: 0
                     }}
                     onMouseEnter={(e) => { e.currentTarget.style.background = unbColors.alpha.secondary; }}
                     onMouseLeave={(e) => { e.currentTarget.style.background = 'none'; }}
                   >
-                    <IconComponent size={isTablet ? 18 : 20} variant="unb" color={unbColors.white} />
-                    {!isTablet && <span>{category.label}</span>}
+                    <IconComponent size={isTablet ? 16 : 18} variant="unb" color={unbColors.white} />
+                    <span style={{ display: isTablet && category.label.length > 12 ? 'none' : 'inline' }}>
+                      {category.label}
+                    </span>
                   </Link>
                 )}
 
@@ -667,8 +659,9 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
       <div style={{
         display: 'flex',
         alignItems: 'center',
-        gap: '16px',
-        minWidth: isMobile ? 'auto' : '200px',
+        gap: '12px',
+        flex: '0 0 auto',
+        minWidth: isMobile ? 'auto' : '180px',
         justifyContent: 'flex-end'
       }}>
         {/* Theme Toggle (Desktop/Tablet) */}

@@ -258,16 +258,6 @@ export const OPTIMIZED_HEADER_NAVIGATION: NavigationCategory[] = [
         estimatedTime: '30 min'
       },
       {
-        id: 'publications',
-        label: 'Publicações',
-        href: '/publicacoes',
-        icon: '📄',
-        description: 'Artigos e publicações',
-        category: 'institutional',
-        level: 'advanced',
-        estimatedTime: '20 min'
-      },
-      {
         id: 'contact',
         label: 'Contato',
         href: '/contato',
