@@ -15,7 +15,6 @@ interface GlobalPersonaFABProps {
 export default function GlobalPersonaFAB({ className, style }: GlobalPersonaFABProps) {
   const [isVisible, setIsVisible] = useState(true);
   const [showTooltip, setShowTooltip] = useState(false);
-  const [showCloseButton, setShowCloseButton] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [miniChatInput, setMiniChatInput] = useState('');
   const router = useRouter();
@@ -164,8 +163,6 @@ export default function GlobalPersonaFAB({ className, style }: GlobalPersonaFABP
         zIndex: 1000,
         ...style
       }}
-      onMouseEnter={() => setShowCloseButton(true)}
-      onMouseLeave={() => setShowCloseButton(false)}
     >
       {/* Main FAB Container with close button overlay */}
       <div style={{ position: 'relative' }}>
@@ -212,44 +209,47 @@ export default function GlobalPersonaFAB({ className, style }: GlobalPersonaFABP
           />
         </button>
 
-        {/* Close button - aparece no hover, posicionado próximo ao FAB */}
-        {showCloseButton && (
-          <button
-            onClick={handleClose}
-            style={{
-              position: 'absolute',
-              top: '-8px',
-              right: '-8px',
-              width: '24px',
-              height: '24px',
-              backgroundColor: 'rgba(255, 255, 255, 0.9)',
-              color: '#333',
-              border: 'none',
-              borderRadius: '50%',
-              cursor: 'pointer',
-              fontSize: '14px',
-              fontWeight: 'bold',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'all 0.2s ease',
-              boxShadow: '0 2px 6px rgba(0, 0, 0, 0.2)',
-              zIndex: 1001
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 1)';
-              e.currentTarget.style.transform = 'scale(1.1)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
-              e.currentTarget.style.transform = 'scale(1)';
-            }}
-            aria-label="Fechar assistente"
-            title="Fechar assistente"
-          >
-            ×
-          </button>
-        )}
+        {/* Close button - sempre visível, menor e posicionado para não interferir */}
+        <button
+          onClick={handleClose}
+          style={{
+            position: 'absolute',
+            top: '-6px',
+            right: '-6px',
+            width: '18px',
+            height: '18px',
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            color: '#666',
+            border: 'none',
+            borderRadius: '50%',
+            cursor: 'pointer',
+            fontSize: '11px',
+            fontWeight: 'bold',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'all 0.2s ease',
+            boxShadow: '0 1px 4px rgba(0, 0, 0, 0.15)',
+            zIndex: 1001,
+            opacity: 0.8
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 1)';
+            e.currentTarget.style.transform = 'scale(1.1)';
+            e.currentTarget.style.opacity = '1';
+            e.currentTarget.style.color = '#333';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.95)';
+            e.currentTarget.style.transform = 'scale(1)';
+            e.currentTarget.style.opacity = '0.8';
+            e.currentTarget.style.color = '#666';
+          }}
+          aria-label="Fechar assistente"
+          title="Fechar assistente"
+        >
+          ×
+        </button>
 
         {/* Mini Chat Interface */}
         {isExpanded && (
