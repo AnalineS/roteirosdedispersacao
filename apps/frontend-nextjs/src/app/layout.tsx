@@ -11,6 +11,7 @@ import '@/styles/globals.css'
 import '@/styles/accessibility.css'
 import '@/styles/themes.css'
 import '@/styles/text-selection.css'
+import '@/styles/navigation-fixes.css'
 
 export const metadata: Metadata = SITE_CONFIG.getMetadata()
 

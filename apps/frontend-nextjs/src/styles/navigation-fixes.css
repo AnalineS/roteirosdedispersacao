@@ -1,0 +1,227 @@
+/* ============================================================================ */
+/* NAVIGATION FIXES - Correção de Sobreposição e Responsividade */
+/* ============================================================================ */
+
+/* Prevenir sobreposição de elementos da navegação */
+.navigation-header {
+  container-type: inline-size;
+  container-name: nav-header;
+}
+
+/* Botões de navegação com tamanho flexível */
+.navigation-header .nav-category-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px clamp(8px, 1vw, 16px);
+  font-size: clamp(0.875rem, 1vw, 1rem);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 150px;
+  transition: all 0.2s ease;
+}
+
+/* Dropdowns com posicionamento inteligente */
+.navigation-header .nav-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 8px;
+  max-height: 70vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Prevenir overflow em viewport estreita */
+@container nav-header (max-width: 1200px) {
+  .navigation-header .nav-category-button {
+    padding: 6px 10px;
+    font-size: 0.875rem;
+    max-width: 120px;
+  }
+  
+  .navigation-header .nav-category-button span:not(.icon) {
+    display: none; /* Esconder texto, manter apenas ícones */
+  }
+  
+  .navigation-header .nav-main-section {
+    gap: 8px;
+  }
+}
+
+/* Mobile menu hamburger */
+.navigation-header .mobile-menu-button {
+  display: none;
+  width: 40px;
+  height: 40px;
+  padding: 8px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  z-index: 1002;
+}
+
+@media (max-width: 768px) {
+  .navigation-header .mobile-menu-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .navigation-header .nav-main-section {
+    position: fixed;
+    top: 64px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: white;
+    flex-direction: column;
+    padding: 20px;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    z-index: 999;
+    overflow-y: auto;
+    display: flex !important;
+  }
+  
+  .navigation-header .nav-main-section.mobile-menu-open {
+    transform: translateX(0);
+  }
+  
+  .navigation-header .nav-category-button {
+    width: 100%;
+    max-width: none;
+    padding: 12px 16px;
+    font-size: 1rem;
+    justify-content: flex-start;
+  }
+  
+  .navigation-header .nav-category-button span:not(.icon) {
+    display: inline; /* Mostrar texto no mobile menu */
+  }
+}
+
+/* Ajustes para telas ultra-wide */
+@media (min-width: 2560px) {
+  .navigation-header .nav-main-section {
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  
+  .navigation-header .nav-category-button {
+    max-width: 200px;
+    padding: 10px 20px;
+    font-size: 1.125rem;
+  }
+}
+
+/* Z-index hierarchy para evitar conflitos */
+.navigation-header {
+  z-index: 1000 !important;
+}
+
+.navigation-header .nav-dropdown {
+  z-index: 1001 !important;
+}
+
+.navigation-header .mobile-menu-button {
+  z-index: 1002 !important;
+}
+
+.navigation-header .nav-main-section.mobile-menu-open {
+  z-index: 999 !important;
+}
+
+/* Smooth scrolling quando navegação fixa */
+html {
+  scroll-padding-top: 80px; /* Altura do header */
+}
+
+@media (min-width: 1440px) {
+  html {
+    scroll-padding-top: 90px;
+  }
+}
+
+@media (min-width: 1920px) {
+  html {
+    scroll-padding-top: 100px;
+  }
+}
+
+/* Theme Toggle específico para navegação */
+.navigation-header .theme-toggle-container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  margin-left: 8px;
+}
+
+.navigation-header .theme-toggle-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 180px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 8px;
+  z-index: 1003;
+}
+
+/* Prevenir layout shift ao abrir dropdowns */
+.navigation-header .nav-category-wrapper {
+  position: relative;
+}
+
+/* Touch-friendly para dispositivos móveis */
+@media (hover: none) and (pointer: coarse) {
+  .navigation-header .nav-category-button {
+    min-height: 44px; /* iOS touch target */
+    padding: 10px 12px;
+  }
+  
+  .navigation-header .nav-dropdown {
+    padding: 16px;
+  }
+  
+  .navigation-header .nav-dropdown-item {
+    min-height: 44px;
+    padding: 12px;
+  }
+}
+
+/* Animações suaves */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.navigation-header .nav-dropdown {
+  animation: slideDown 0.2s ease-out;
+}
+
+/* Acessibilidade - Focus visible */
+.navigation-header .nav-category-button:focus-visible,
+.navigation-header .nav-dropdown-item:focus-visible {
+  outline: 2px solid #4A90E2;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Print styles */
+@media print {
+  .navigation-header {
+    display: none !important;
+  }
+}

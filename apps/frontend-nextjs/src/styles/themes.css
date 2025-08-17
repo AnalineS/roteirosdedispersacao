@@ -633,10 +633,12 @@ a:hover {
 .navigation-header .nav-logo-section {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: clamp(8px, 1.5vw, 16px);
   flex: 0 0 auto;
-  min-width: 200px;
+  min-width: 150px;
   max-width: 320px;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 /* Navigation main section */
@@ -645,19 +647,21 @@ a:hover {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 28px;
+  gap: clamp(8px, 2vw, 28px);
   min-width: 0;
-  overflow: visible;
+  overflow: hidden;
+  padding: 0 8px;
 }
 
 /* Navigation actions section */
 .navigation-header .nav-actions-section {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: clamp(8px, 1.5vw, 16px);
   flex: 0 0 auto;
-  min-width: 200px;
+  min-width: 150px;
   justify-content: flex-end;
+  overflow: hidden;
 }
 
 /* Navigation logo styles */
@@ -728,6 +732,80 @@ a:hover {
 /* RESPONSIVE BREAKPOINTS FOR NAVIGATION */
 /* ============================================================================ */
 
+/* Mobile devices (≤768px) */
+@media (max-width: 768px) {
+  .navigation-header {
+    height: 64px !important;
+    min-height: 64px !important;
+    padding: 0 12px !important;
+  }
+  
+  .navigation-header .nav-logo-section {
+    min-width: auto;
+    max-width: 200px;
+    gap: 8px;
+  }
+  
+  .navigation-header .nav-main-section {
+    display: none !important; /* Hide main nav on mobile */
+  }
+  
+  .navigation-header .nav-actions-section {
+    min-width: auto;
+    gap: 8px;
+  }
+  
+  .navigation-header .nav-title-main {
+    font-size: 1rem;
+  }
+  
+  .navigation-header .nav-logo {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+/* Tablet (769px - 1023px) */
+@media (min-width: 769px) and (max-width: 1023px) {
+  .navigation-header {
+    padding: 0 16px !important;
+  }
+  
+  .navigation-header .nav-logo-section {
+    min-width: 180px;
+    max-width: 250px;
+  }
+  
+  .navigation-header .nav-main-section {
+    gap: 12px;
+    font-size: 0.9rem;
+  }
+  
+  .navigation-header .nav-actions-section {
+    min-width: 150px;
+  }
+}
+
+/* Desktop (1024px - 1439px) */
+@media (min-width: 1024px) and (max-width: 1439px) {
+  .navigation-header {
+    padding: 0 20px !important;
+  }
+  
+  .navigation-header .nav-logo-section {
+    min-width: 200px;
+    max-width: 300px;
+  }
+  
+  .navigation-header .nav-main-section {
+    gap: 16px;
+  }
+  
+  .navigation-header .nav-actions-section {
+    min-width: 180px;
+  }
+}
+
 /* Large Desktop (1440px+) */
 @media (min-width: 1440px) {
   .navigation-header {
@@ -743,7 +821,7 @@ a:hover {
   }
   
   .navigation-header .nav-main-section {
-    gap: 32px;
+    gap: 24px;
   }
   
   .navigation-header .nav-actions-section {
