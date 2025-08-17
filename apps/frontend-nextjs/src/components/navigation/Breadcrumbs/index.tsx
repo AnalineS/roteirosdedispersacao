@@ -140,7 +140,7 @@ export default function EducationalBreadcrumbs() {
     return breadcrumbs;
   };
 
-  const breadcrumbs = getEducationalBreadcrumbs(pathname);
+  const breadcrumbs = getEducationalBreadcrumbs(pathname || '/');
 
   const getCategoryColor = (category?: string) => {
     switch (category) {
@@ -256,7 +256,7 @@ export default function EducationalBreadcrumbs() {
 
       {/* Contextual Educational Information */}
       <ContextualBreadcrumbs 
-        currentPath={pathname}
+        currentPath={pathname || '/'}
         breadcrumbs={breadcrumbs}
       />
     </nav>

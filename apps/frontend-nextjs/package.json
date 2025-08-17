@@ -5,10 +5,13 @@
   "description": "Sistema QA abrangente para recursos educativos de hanseníase",
   "scripts": {
     "dev": "next dev",
+    "dev:clean": "npm run cleanup && npm run dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
+    "cleanup": "node scripts/cleanup-dev.js",
+    "cleanup:force": "node scripts/cleanup-dev.js --force",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",

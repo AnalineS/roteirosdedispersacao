@@ -36,6 +36,17 @@ const WelcomeWizard = dynamic(() => import('@/components/onboarding/WelcomeWizar
   loading: () => null
 });
 
+// Lazy load personalization components
+const PersonalizationProvider = dynamic(() => import('@/components/personalization/PersonalizationProvider'), {
+  ssr: false,
+  loading: () => null
+});
+
+const PersonalizedDashboard = dynamic(() => import('@/components/personalization/PersonalizedDashboard'), {
+  ssr: false,
+  loading: () => null
+});
+
 
 export default function HomePage() {
   const { personas, loading, error, getValidPersonasCount } = usePersonas();
@@ -127,7 +138,10 @@ export default function HomePage() {
   };
 
   return (
-    <>
+    <PersonalizationProvider>
+      {/* Dashboard Personalizado */}
+      <PersonalizedDashboard className="mb-8" />
+      
       {/* CSS para responsividade */}
       <style jsx>{`
         .assistants-container {
@@ -1614,6 +1628,6 @@ export default function HomePage() {
       {/* Toast Container */}
       <ToastContainer toasts={toasts} />
     </EducationalLayout>
-    </>
+    </PersonalizationProvider>
   );
 }

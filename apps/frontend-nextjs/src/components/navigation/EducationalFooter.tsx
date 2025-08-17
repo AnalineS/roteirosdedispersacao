@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { getUnbColors } from '@/config/modernTheme';
 import { getUniversityLogo } from '@/constants/avatars';
 import { usePersonas } from '@/hooks/usePersonas';
+import { useRemoteConfig } from '@/hooks/useRemoteConfig';
 import {
   SystemLogoIcon,
   HomeIcon,
@@ -16,6 +17,16 @@ import {
   InstitutionalIcon,
   ChevronDownIcon
 } from '@/components/icons/NavigationIcons';
+import { 
+  BookMedicalIcon, 
+  HospitalIcon, 
+  ShieldIcon, 
+  SettingsIcon, 
+  BookOpenIcon,
+  MessageCircleIcon,
+  emojiToIcon,
+  useMedicalIcons 
+} from '@/components/icons/MedicalIcons';
 
 interface FooterSection {
   title: string;
@@ -40,58 +51,144 @@ export default function EducationalFooter({
   const { getValidPersonasCount } = usePersonas();
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
   
-  // Navegação integrada e organizada para UX otimizada
-  const integratedFooterSections: Record<string, FooterSection> = {
-    navigation: {
-      title: 'Navegação Principal',
-      links: [
-        { label: 'Início', href: '/', description: 'Página inicial e seleção de assistentes' },
-        { label: 'Chat com IA', href: '/chat', description: 'Dr. Gasnelio e Gá - Assistentes especializados' },
-        { label: 'Módulos de Aprendizagem', href: '/modules', description: 'Conteúdo educacional estruturado sobre hanseníase' },
-        { label: 'Dashboard Pessoal', href: '/dashboard', description: 'Visão geral do seu progresso educacional' },
-        { label: 'Ferramentas Práticas', href: '/resources', description: 'Calculadoras e recursos para profissionais' }
-      ]
+  // Sistema de tabs para footer reorganizado em 3 seções principais
+  const { flags } = useRemoteConfig();
+  const [activeTab, setActiveTab] = useState<'platform' | 'education' | 'legal'>('platform');
+  
+  // 3 seções principais otimizadas para UX médico
+  const footerTabs = {
+    platform: {
+      id: 'platform',
+      title: 'Plataforma',
+      icon: <HospitalIcon size={20} />,
+      description: 'Navegação e funcionalidades principais',
+      sections: {
+        navigation: {
+          title: 'Navegação Principal',
+          icon: <MessageCircleIcon size={16} />,
+          links: [
+            { label: 'Início', href: '/', description: 'Página inicial e seleção de assistentes' },
+            { label: 'Chat com IA', href: '/chat', description: 'Dr. Gasnelio e Gá - Assistentes especializados' },
+            { label: 'Módulos de Aprendizagem', href: '/modules', description: 'Conteúdo educacional estruturado sobre hanseníase' },
+            { label: 'Dashboard Pessoal', href: '/dashboard', description: 'Visão geral do seu progresso educacional' }
+          ]
+        },
+        tools: {
+          title: 'Ferramentas & Recursos',
+          icon: <SettingsIcon size={16} />,
+          links: [
+            { label: 'Calculadora PQT-U', href: '/resources/calculator', description: 'Cálculo automático de doses medicamentosas' },
+            { label: 'Checklist Dispensação', href: '/resources/checklist', description: 'Lista de verificação para procedimentos' },
+            { label: 'Glossário Médico', href: '/glossario', description: 'Termos técnicos da hanseníase explicados' },
+            { label: 'Materiais para Download', href: '/downloads', description: 'Documentação e recursos complementares' }
+          ]
+        }
+      }
     },
-
-    
-    institutional: {
-      title: 'Institucional',
-      links: [
-        { label: 'Sobre o Sistema', href: '/sobre', description: 'Informações sobre a plataforma educacional' },
-        { label: 'Sobre a Tese', href: '/modules/sobre-a-tese', description: 'Pesquisa de doutorado em Ciências Farmacêuticas' },
-        { label: 'Metodologia', href: '/metodologia', description: 'Métodos científicos e fundamentação teórica' },
-        { label: 'Contato', href: '/contato', description: 'Entre em contato com a equipe de pesquisa' }
-      ]
+    education: {
+      id: 'education',
+      title: 'Educacional',
+      icon: <BookMedicalIcon size={20} />,
+      description: 'Conteúdo científico e recursos de aprendizagem',
+      sections: {
+        content: {
+          title: 'Conteúdo Educacional',
+          icon: <BookOpenIcon size={16} />,
+          links: [
+            { label: 'Roteiro de Dispensação', href: '/modules/roteiro-dispensacao', description: 'Guia completo para profissionais farmacêuticos' },
+            { label: 'Diagnóstico Hanseníase', href: '/modules/diagnostico', description: 'Sinais, sintomas e exames diagnósticos' },
+            { label: 'Tratamento PQT-U', href: '/modules/tratamento', description: 'Poliquimioterapia única - protocolo oficial' },
+            { label: 'Vida com Hanseníase', href: '/vida-com-hanseniase', description: 'Recurso público: qualidade de vida e direitos (acesso livre)' }
+          ]
+        },
+        institutional: {
+          title: 'Institucional',
+          icon: <HospitalIcon size={16} />,
+          links: [
+            { label: 'Sobre o Sistema', href: '/sobre', description: 'Informações sobre a plataforma educacional' },
+            { label: 'Sobre a Tese', href: '/modules/sobre-a-tese', description: 'Pesquisa de doutorado em Ciências Farmacêuticas' },
+            { label: 'Metodologia', href: '/metodologia', description: 'Métodos científicos e fundamentação teórica' },
+            { label: 'Contato', href: '/contato', description: 'Entre em contato com a equipe de pesquisa' }
+          ]
+        }
+      }
     },
-    
-    compliance: {
-      title: 'Privacidade & Conformidade',
-      links: [
-        { label: 'Política de Privacidade', href: '/privacidade', description: 'Como protegemos seus dados pessoais' },
-        { label: 'Termos de Uso', href: '/termos', description: 'Condições para uso da plataforma' },
-        { label: 'Conformidade LGPD', href: '/conformidade', description: 'Adequação à Lei Geral de Proteção de Dados' },
-        { label: 'Código de Ética', href: '/etica', description: 'Princípios éticos em pesquisa médica' }
-      ]
+    legal: {
+      id: 'legal',
+      title: 'Legal & Privacidade',
+      icon: <ShieldIcon size={20} />,
+      description: 'Conformidade, ética e proteção de dados',
+      sections: {
+        privacy: {
+          title: 'Proteção de Dados',
+          icon: <ShieldIcon size={16} />,
+          links: [
+            { label: 'Política de Privacidade', href: '/privacidade', description: 'Como protegemos seus dados pessoais' },
+            { label: 'Conformidade LGPD', href: '/conformidade', description: 'Adequação à Lei Geral de Proteção de Dados' },
+            { label: 'Termos de Uso', href: '/termos', description: 'Condições para uso da plataforma' }
+          ]
+        },
+        ethics: {
+          title: 'Ética & Responsabilidade',
+          icon: <ShieldIcon size={16} />,
+          links: [
+            { label: 'Código de Ética', href: '/etica', description: 'Princípios éticos em pesquisa médica' },
+            { label: 'Responsabilidade Médica', href: '/responsabilidade', description: 'Limitações e orientações de uso clínico' },
+            { label: 'Transparência', href: '/transparencia', description: 'Metodologia aberta e reprodutibilidade científica' }
+          ]
+        }
+      }
     },
-    
-    academic: {
-      title: 'Recursos Educacionais',
-      links: [
-        { label: 'Roteiro de Dispensação', href: '/modules/roteiro-dispensacao', description: 'Guia completo para profissionais farmacêuticos' },
-        { label: 'Diagnóstico Hanseníase', href: '/modules/diagnostico', description: 'Sinais, sintomas e exames diagnósticos' },
-        { label: 'Tratamento PQT-U', href: '/modules/tratamento', description: 'Poliquimioterapia única - protocolo oficial' },
-      ]
-    },
-    
-    resources: {
-      title: 'Suporte & Ferramentas',
-      links: [
-        { label: 'Calculadora PQT-U', href: '/resources/calculator', description: 'Cálculo automático de doses medicamentosas' },
-        { label: 'Checklist Dispensação', href: '/resources/checklist', description: 'Lista de verificação para procedimentos' },
-        { label: 'Glossário Médico', href: '/glossario', description: 'Termos técnicos da hanseníase explicados' },
-        { label: 'Materiais para Download', href: '/downloads', description: 'Documentação e recursos complementares' },
-        { label: 'Vida com Hanseníase', href: '/vida-com-hanseniase', description: '🌟 Recurso público: qualidade de vida e direitos (acesso livre)' }
-      ]
+    sitemap: {
+      id: 'sitemap',
+      title: 'Mapa do Site',
+      icon: <HomeIcon size={20} />,
+      description: 'Navegação completa e estrutura do site',
+      sections: {
+        main_areas: {
+          title: 'Áreas Principais',
+          icon: <HomeIcon size={16} />,
+          links: [
+            { label: 'Página Inicial', href: '/', description: 'Portal de entrada e seleção de assistentes' },
+            { label: 'Chat com IA', href: '/chat', description: 'Interação com Dr. Gasnelio e Gá' },
+            { label: 'Módulos Educacionais', href: '/modules', description: 'Conteúdo estruturado de aprendizagem' },
+            { label: 'Dashboard Pessoal', href: '/dashboard', description: 'Acompanhamento do progresso' },
+            { label: 'Recursos e Ferramentas', href: '/resources', description: 'Calculadoras e materiais práticos' }
+          ]
+        },
+        content_areas: {
+          title: 'Conteúdo Específico',
+          icon: <BookOpenIcon size={16} />,
+          links: [
+            { label: 'Roteiro de Dispensação', href: '/modules/roteiro-dispensacao', description: 'Protocolo completo PQT-U' },
+            { label: 'Diagnóstico Hanseníase', href: '/modules/diagnostico', description: 'Sinais clínicos e classificação' },
+            { label: 'Tratamento PQT-U', href: '/modules/tratamento', description: 'Esquemas terapêuticos padronizados' },
+            { label: 'Vida com Hanseníase', href: '/vida-com-hanseniase', description: 'Qualidade de vida e direitos (público)' },
+            { label: 'Sobre a Tese', href: '/sobre-a-tese', description: 'Pesquisa de doutorado' }
+          ]
+        },
+        tools_resources: {
+          title: 'Ferramentas e Recursos',
+          icon: <SettingsIcon size={16} />,
+          links: [
+            { label: 'Calculadora PQT-U', href: '/resources/calculator', description: 'Cálculo de doses medicamentosas' },
+            { label: 'Verificador de Interações', href: '/resources/interactions', description: 'Análise de incompatibilidades' },
+            { label: 'Checklist de Dispensação', href: '/resources/checklist', description: 'Lista de verificação procedural' },
+            { label: 'Glossário Médico', href: '/glossario', description: 'Terminologia técnica explicada' },
+            { label: 'Downloads', href: '/downloads', description: 'Materiais complementares' }
+          ]
+        },
+        admin_areas: {
+          title: 'Áreas Administrativas',
+          icon: <SettingsIcon size={16} />,
+          links: [
+            { label: 'Painel Admin', href: '/admin/features', description: 'Gerenciamento de feature flags' },
+            { label: 'Configurações', href: '/settings', description: 'Preferências e personalização' },
+            { label: 'Feedback', href: '/feedback', description: 'Envio de sugestões e relatórios' },
+            { label: 'Monitoramento', href: '/admin/monitoring', description: 'Métricas e analytics' }
+          ]
+        }
+      }
     }
   };
 
@@ -117,46 +214,184 @@ export default function EducationalFooter({
       background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
       borderTop: '2px solid #e2e8f0'
     }}>
-      {/* Navegação expandida (Desktop) / Accordion (Mobile) */}
-      {showNavigation && variant === 'full' && (
+      {/* Sistema de Tabs para Footer - Novo design com 3 seções */}
+      {showNavigation && variant === 'full' && flags?.new_footer && (
         <div style={{
           background: 'white',
           borderBottom: '1px solid #e2e8f0'
         }}>
           <div style={{
-            maxWidth: 'min(1800px, 95vw)',
+            maxWidth: 'min(1400px, 95vw)',
             margin: '0 auto',
-            padding: '3rem 2rem'
+            padding: '2rem'
           }}>
-            {/* Desktop Navigation - Layout otimizado em 5 colunas */}
-            <div className="desktop-navigation" style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(5, 1fr)',
-              gap: 'clamp(1.5rem, 3vw, 2.5rem)',
+            {/* Tab Navigation com overflow handling */}
+            <div className="tab-navigation" style={{
+              position: 'relative',
               marginBottom: '2rem',
-              alignItems: 'start'
+              borderBottom: '2px solid #f1f5f9',
+              background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
+              borderRadius: '12px 12px 0 0',
+              padding: '1rem',
+              overflow: 'hidden'
             }}>
-              {/* Renderizar todas as seções integradas */}
-              {Object.entries(integratedFooterSections).map(([sectionId, section]) => {
-                const getSectionIcon = (id: string) => {
-                  switch(id) {
-                    case 'navigation': return '🧭';
-                    case 'institutional': return '🏛️';
-                    case 'compliance': return '🔒';
-                    case 'academic': return '📚';
-                    case 'resources': return '🛠️';
-                    default: return '📋';
-                  }
-                };
+              <div className="tab-scroll-container" style={{
+                display: 'flex',
+                justifyContent: 'center',
+                overflowX: 'auto',
+                scrollbarWidth: 'thin',
+                scrollBehavior: 'smooth',
+                WebkitOverflowScrolling: 'touch',
+                gap: '0.5rem',
+                paddingBottom: '0.5rem'
+              }}>
+              {Object.entries(footerTabs).map(([tabId, tab]) => (
+                <button
+                  key={tabId}
+                  onClick={() => setActiveTab(tabId as typeof activeTab)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.75rem',
+                    padding: '1rem 1.5rem',
+                    border: 'none',
+                    background: activeTab === tabId 
+                      ? 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)'
+                      : 'transparent',
+                    color: activeTab === tabId ? 'white' : unbColors.neutral,
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontSize: '0.95rem',
+                    fontWeight: activeTab === tabId ? 'bold' : '500',
+                    transition: 'all 0.3s ease',
+                    minWidth: 'max-content',
+                    margin: '0 0.25rem',
+                    boxShadow: activeTab === tabId 
+                      ? '0 4px 12px rgba(59, 130, 246, 0.3)'
+                      : '0 2px 4px rgba(0, 0, 0, 0.05)',
+                    transform: activeTab === tabId ? 'translateY(-2px)' : 'translateY(0)'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (activeTab !== tabId) {
+                      e.currentTarget.style.background = unbColors.alpha.primary;
+                      e.currentTarget.style.color = unbColors.primary;
+                      e.currentTarget.style.transform = 'translateY(-1px)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (activeTab !== tabId) {
+                      e.currentTarget.style.background = 'transparent';
+                      e.currentTarget.style.color = unbColors.neutral;
+                      e.currentTarget.style.transform = 'translateY(0)';
+                    }
+                  }}
+                >
+                  <span style={{ fontSize: '1.1rem', display: 'flex', alignItems: 'center' }}>{tab.icon}</span>
+                  <div style={{ textAlign: 'left' }}>
+                    <div>{tab.title}</div>
+                    <div style={{
+                      fontSize: '0.75rem',
+                      opacity: 0.8,
+                      marginTop: '2px',
+                      display: activeTab === tabId ? 'block' : 'none'
+                    }}>
+                      {tab.description}
+                    </div>
+                  </div>
+                </button>
+              ))}
+              </div>
+              
+              {/* Overflow scroll indicators (Mobile) */}
+              <div className="scroll-indicators" style={{
+                position: 'absolute',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                left: '8px',
+                right: '8px',
+                pointerEvents: 'none',
+                display: 'none' // Shown via CSS media queries
+              }}>
+                <button 
+                  className="scroll-left"
+                  style={{
+                    position: 'absolute',
+                    left: 0,
+                    background: 'rgba(255, 255, 255, 0.9)',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '50%',
+                    width: '32px',
+                    height: '32px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    pointerEvents: 'auto',
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                    fontSize: '0.8rem',
+                    color: unbColors.primary
+                  }}
+                  onClick={() => {
+                    const container = document.querySelector('.tab-scroll-container') as HTMLElement;
+                    if (container) {
+                      container.scrollBy({ left: -200, behavior: 'smooth' });
+                    }
+                  }}
+                >
+                  ‹
+                </button>
+                <button 
+                  className="scroll-right"
+                  style={{
+                    position: 'absolute',
+                    right: 0,
+                    background: 'rgba(255, 255, 255, 0.9)',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '50%',
+                    width: '32px',
+                    height: '32px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    pointerEvents: 'auto',
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                    fontSize: '0.8rem',
+                    color: unbColors.primary
+                  }}
+                  onClick={() => {
+                    const container = document.querySelector('.tab-scroll-container') as HTMLElement;
+                    if (container) {
+                      container.scrollBy({ left: 200, behavior: 'smooth' });
+                    }
+                  }}
+                >
+                  ›
+                </button>
+              </div>
+            </div>
 
-                return (
+            {/* Tab Content */}
+            <div className="tab-content" style={{
+              minHeight: '300px',
+              animation: 'fadeIn 0.3s ease'
+            }}>
+              {/* Desktop Grid Layout */}
+              <div className="desktop-tab-content" style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                gap: '1.5rem',
+                alignItems: 'start'
+              }}>
+                {Object.entries(footerTabs[activeTab].sections).map(([sectionId, section]) => (
                   <div key={sectionId} style={{
                     background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
                     borderRadius: '12px',
                     padding: '1.5rem',
                     border: '1px solid #e2e8f0',
                     boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
-                    transition: 'all 0.3s ease'
+                    transition: 'all 0.3s ease',
+                    height: 'fit-content'
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.transform = 'translateY(-2px)';
@@ -177,7 +412,7 @@ export default function EducationalFooter({
                       borderBottom: `2px solid ${unbColors.alpha.primary}`,
                       paddingBottom: '0.75rem'
                     }}>
-                      <span style={{ fontSize: '1.2rem' }}>{getSectionIcon(sectionId)}</span>
+                      <span style={{ fontSize: '1.2rem', display: 'flex', alignItems: 'center' }}>{section.icon}</span>
                       {section.title}
                     </h3>
                     <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
@@ -222,26 +457,12 @@ export default function EducationalFooter({
                       ))}
                     </ul>
                   </div>
-                );
-              })}
-            </div>
+                ))}
+              </div>
 
-            {/* Mobile Accordion - Versão mobile otimizada */}
-            <div className="mobile-navigation" style={{ display: 'none' }}>
-              {/* Seções colapsáveis integradas */}
-              {Object.entries(integratedFooterSections).map(([sectionId, section]) => {
-                const getSectionIcon = (id: string) => {
-                  switch(id) {
-                    case 'navigation': return '🧭';
-                    case 'institutional': return '🏛️';
-                    case 'compliance': return '🔒';
-                    case 'academic': return '📚';
-                    case 'resources': return '🛠️';
-                    default: return '📋';
-                  }
-                };
-
-                return (
+              {/* Mobile Accordion for Tab Content */}
+              <div className="mobile-tab-content" style={{ display: 'none' }}>
+                {Object.entries(footerTabs[activeTab].sections).map(([sectionId, section]) => (
                   <div key={sectionId} style={{ marginBottom: '1rem' }}>
                     <button
                       onClick={() => toggleSection(sectionId)}
@@ -261,17 +482,9 @@ export default function EducationalFooter({
                         boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)',
                         transition: 'all 0.2s'
                       }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.transform = 'translateY(-1px)';
-                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = 'translateY(0)';
-                        e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.06)';
-                      }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                        <span style={{ fontSize: '1.3rem' }}>{getSectionIcon(sectionId)}</span>
+                        <span style={{ fontSize: '1.3rem', display: 'flex', alignItems: 'center' }}>{section.icon}</span>
                         {section.title}
                       </div>
                       <ChevronDownIcon 
@@ -334,8 +547,77 @@ export default function EducationalFooter({
                       </div>
                     )}
                   </div>
-                );
-              })}
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Fallback: Layout original quando new_footer está desabilitado */}
+      {showNavigation && variant === 'full' && !flags?.new_footer && (
+        <div style={{
+          background: 'white',
+          borderBottom: '1px solid #e2e8f0'
+        }}>
+          <div style={{
+            maxWidth: 'min(1800px, 95vw)',
+            margin: '0 auto',
+            padding: '2rem'
+          }}>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+              gap: '1.5rem',
+              alignItems: 'start'
+            }}>
+              {/* Layout simplificado com as seções principais */}
+              {Object.entries(footerTabs).map(([tabId, tab]) => (
+                <div key={tabId} style={{
+                  background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+                  borderRadius: '12px',
+                  padding: '1.5rem',
+                  border: '1px solid #e2e8f0',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)'
+                }}>
+                  <h3 style={{
+                    margin: '0 0 1rem',
+                    color: unbColors.primary,
+                    fontSize: '1.1rem',
+                    fontWeight: 'bold',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem'
+                  }}>
+                    <span style={{ fontSize: '1.2rem', display: 'flex', alignItems: 'center' }}>{tab.icon}</span>
+                    {tab.title}
+                  </h3>
+                  {/* Mostrar apenas os primeiros links de cada seção */}
+                  {Object.values(tab.sections)[0]?.links.slice(0, 4).map((link) => (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      style={{
+                        display: 'block',
+                        color: unbColors.neutral,
+                        textDecoration: 'none',
+                        fontSize: '0.9rem',
+                        padding: '0.5rem 0',
+                        borderBottom: '1px solid #f1f5f9',
+                        transition: 'color 0.2s'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.color = unbColors.primary;
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.color = unbColors.neutral;
+                      }}
+                    >
+                      <strong>{link.label}</strong>
+                    </Link>
+                  ))}
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -438,27 +720,93 @@ export default function EducationalFooter({
 
       {/* CSS Responsivo Otimizado */}
       <style jsx>{`
-        /* Layout responsivo para diferentes tamanhos de tela */
-        @media (max-width: 1200px) {
-          .desktop-navigation {
-            grid-template-columns: repeat(3, 1fr) !important;
-            gap: 1.5rem !important;
-          }
+        /* Animações para transições suaves */
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
         }
         
-        @media (max-width: 900px) {
-          .desktop-navigation {
+        /* Layout responsivo para sistema de tabs */
+        @media (max-width: 1200px) {
+          .desktop-tab-content {
             grid-template-columns: repeat(2, 1fr) !important;
             gap: 1.25rem !important;
           }
         }
         
+        @media (max-width: 900px) {
+          .desktop-tab-content {
+            grid-template-columns: 1fr !important;
+            gap: 1rem !important;
+          }
+          
+          .tab-navigation {
+            flex-direction: column !important;
+            gap: 0.5rem !important;
+            padding: 0.75rem !important;
+          }
+          
+          .tab-navigation button {
+            padding: 0.75rem 1rem !important;
+            font-size: 0.9rem !important;
+            margin: 0 !important;
+          }
+        }
+        
         @media (max-width: 768px) {
-          .desktop-navigation {
+          .desktop-tab-content {
             display: none !important;
           }
-          .mobile-navigation {
+          .mobile-tab-content {
             display: block !important;
+          }
+          
+          .tab-navigation {
+            padding: 0.5rem !important;
+            border-radius: 8px !important;
+          }
+          
+          .tab-scroll-container {
+            justify-content: flex-start !important;
+            padding-left: 40px !important;
+            padding-right: 40px !important;
+          }
+          
+          .tab-navigation button {
+            padding: 0.5rem 0.75rem !important;
+            font-size: 0.85rem !important;
+            min-width: max-content !important;
+            flex-shrink: 0 !important;
+          }
+          
+          .scroll-indicators {
+            display: block !important;
+          }
+        }
+        
+        /* Smooth scrollbar styling */
+        .tab-scroll-container::-webkit-scrollbar {
+          height: 4px;
+        }
+        
+        .tab-scroll-container::-webkit-scrollbar-track {
+          background: rgba(241, 245, 249, 0.5);
+          border-radius: 2px;
+        }
+        
+        .tab-scroll-container::-webkit-scrollbar-thumb {
+          background: rgba(59, 130, 246, 0.3);
+          border-radius: 2px;
+        }
+        
+        .tab-scroll-container::-webkit-scrollbar-thumb:hover {
+          background: rgba(59, 130, 246, 0.5);
+        }
+        
+        /* Auto-hide scroll indicators quando não há overflow */
+        @media (min-width: 769px) {
+          .scroll-indicators {
+            display: none !important;
           }
         }
         

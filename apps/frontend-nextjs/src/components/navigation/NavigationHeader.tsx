@@ -64,6 +64,7 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
   const [dropdownsOpen, setDropdownsOpen] = useState<DropdownState>({});
   const [isMobile, setIsMobile] = useState(false);
   const [isTablet, setIsTablet] = useState(false);
+  const [isWideScreen, setIsWideScreen] = useState(false);
 
   // Detectar tipo de dispositivo
   useEffect(() => {
@@ -71,6 +72,7 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
       const width = window.innerWidth;
       setIsMobile(width < 768);
       setIsTablet(width >= 768 && width < 1280);
+      setIsWideScreen(width >= 1600);
     };
     
     checkDeviceType();
@@ -252,7 +254,7 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
   // Utilitários
   const isActive = (href: string) => {
     if (href === '/') return pathname === '/';
-    return pathname.startsWith(href);
+    return pathname?.startsWith(href) || false;
   };
 
   const toggleDropdown = (categoryId: string) => {
@@ -304,7 +306,7 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: '0 clamp(1rem, 3vw, 2rem)',
+        padding: isWideScreen ? '0 clamp(1rem, 2vw, 3rem)' : '0 clamp(0.5rem, 1.5vw, 1rem)',
         minHeight: '80px',
         boxSizing: 'border-box'
       }}
@@ -314,9 +316,9 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
         display: 'flex',
         alignItems: 'center',
         gap: '16px',
-        flex: '0 1 auto',
-        minWidth: isMobile ? '250px' : '350px',
-        maxWidth: isMobile ? '300px' : '500px'
+        flex: '0 0 auto',
+        minWidth: isMobile ? '200px' : '280px',
+        maxWidth: isMobile ? '250px' : '320px'
       }}>
         <Tooltip content="Roteiros de Dispensação - Sistema Inteligente de Orientação" position="bottom">
           <Link
@@ -391,7 +393,7 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
-            gap: isTablet ? '12px' : '24px',
+            gap: isWideScreen ? '32px' : isTablet ? '16px' : '28px',
             minWidth: 0,
             overflow: 'visible'
           }}
@@ -437,7 +439,7 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
                       background: 'none',
                       border: `2px solid ${dropdownsOpen[category.id] ? unbColors.white : 'transparent'}`,
                       color: unbColors.white,
-                      padding: isTablet ? '6px 8px' : '8px 12px',
+                      padding: isTablet ? '6px 10px' : '8px 14px',
                       borderRadius: '8px',
                       cursor: 'pointer',
                       fontSize: isTablet ? '0.85rem' : '0.95rem',
@@ -458,7 +460,13 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
                     aria-describedby={`category-${category.id}-desc`}
                   >
                     <IconComponent size={isTablet ? 16 : 18} variant="unb" color={unbColors.white} />
-                    <span style={{ display: isTablet && category.label.length > 12 ? 'none' : 'inline' }}>
+                    <span style={{ 
+                      display: isTablet && category.label.length > 12 ? 'none' : 'inline',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      maxWidth: isTablet ? '80px' : 'none'
+                    }}>
                       {category.label}
                     </span>
                     <ChevronDownIcon 
@@ -479,7 +487,7 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
                       gap: '6px',
                       color: unbColors.white,
                       textDecoration: 'none',
-                      padding: isTablet ? '6px 8px' : '8px 12px',
+                      padding: isTablet ? '6px 10px' : '8px 14px',
                       borderRadius: '8px',
                       fontSize: isTablet ? '0.85rem' : '0.95rem',
                       fontWeight: '500',
@@ -493,7 +501,13 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
                     onMouseLeave={(e) => { e.currentTarget.style.background = 'none'; }}
                   >
                     <IconComponent size={isTablet ? 16 : 18} variant="unb" color={unbColors.white} />
-                    <span style={{ display: isTablet && category.label.length > 12 ? 'none' : 'inline' }}>
+                    <span style={{ 
+                      display: isTablet && category.label.length > 12 ? 'none' : 'inline',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      maxWidth: isTablet ? '80px' : 'none'
+                    }}>
                       {category.label}
                     </span>
                   </Link>
@@ -659,14 +673,14 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
       <div style={{
         display: 'flex',
         alignItems: 'center',
-        gap: '12px',
+        gap: isTablet ? '8px' : '12px',
         flex: '0 0 auto',
-        minWidth: isMobile ? 'auto' : '180px',
+        minWidth: isMobile ? 'auto' : '220px',
         justifyContent: 'flex-end'
       }}>
         {/* Theme Toggle (Desktop/Tablet) */}
         {!isMobile && (
-          <div style={{ marginRight: '0.5rem' }}>
+          <div style={{ marginRight: isTablet ? '0.25rem' : '0.5rem' }}>
             <ThemeToggle />
           </div>
         )}

@@ -12,6 +12,8 @@ import { getUnbColors } from '@/config/modernTheme';
 import { useProgressData } from './Progress';
 import { NavigationCategory } from './NavigationHeader';
 import { useMobileDetection, useSwipeGestures } from '@/components/mobile/MobileFirstFramework';
+import FastAccessBar from '@/components/navigation/FastAccessBar';
+import { useRemoteConfig } from '@/hooks/useRemoteConfig';
 
 interface MobileNavigationProps {
   isOpen: boolean;
@@ -33,6 +35,7 @@ export default function MobileNavigation({
   const unbColors = getUnbColors();
   const progressData = useProgressData();
   const { isMobile, touchSupport } = useMobileDetection();
+  const { shouldShowFastAccessBar } = useRemoteConfig();
 
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set(['learning', 'interaction']));
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
@@ -238,6 +241,25 @@ export default function MobileNavigation({
             <CloseIcon size={20} color={unbColors.white} />
           </button>
         </div>
+
+        {/* Fast Access Bar para Emergências Médicas */}
+        {shouldShowFastAccessBar() && (
+          <div style={{
+            borderBottom: '1px solid rgba(255,255,255,0.1)',
+            background: 'rgba(255,255,255,0.02)'
+          }}>
+            <FastAccessBar
+              behavior="fixed"
+              position="top"
+              maxShortcuts={5}
+              onShortcutClick={(shortcut) => {
+                // Fechar menu mobile após clique
+                onClose();
+              }}
+              className="mobile-fast-access"
+            />
+          </div>
+        )}
 
         {/* Persona Atual */}
         {currentPersona && (

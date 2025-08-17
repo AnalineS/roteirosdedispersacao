@@ -20,7 +20,9 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     // Track page views on route change
-    Analytics.pageView(pathname);
+    if (pathname) {
+      Analytics.pageView(pathname);
+    }
   }, [pathname]);
 
   // Track errors globally
