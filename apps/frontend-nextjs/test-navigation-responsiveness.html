@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Responsividade - Navegação</title>
+    <style>
+        /* Base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --bg-tertiary: #f1f5f9;
+            --text-primary: #0f172a;
+            --text-secondary: #374151;
+            --text-muted: #6b7280;
+            --border-default: #e5e7eb;
+            --border-light: #f3f4f6;
+            --accent-primary: #003366;
+            --shadow-xl: 0 8px 32px rgba(0, 0, 0, 0.12);
+        }
+
+        .dark {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #171717;
+            --bg-tertiary: #262626;
+            --text-primary: #fafafa;
+            --text-secondary: #e5e5e5;
+            --text-muted: #a3a3a3;
+            --border-default: #404040;
+            --border-light: #262626;
+            --accent-primary: #60a5fa;
+            --shadow-xl: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .test-container {
+            padding: 20px;
+        }
+
+        .resolution-info {
+            background: var(--bg-tertiary);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: var(--text-muted);
+            position: sticky;
+            top: 0;
+            z-index: 2000;
+        }
+
+        /* Navigation Header Styles - Importados do themes.css */
+        .navigation-header {
+            position: sticky !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            width: 100% !important;
+            height: 80px !important;
+            min-height: 80px !important;
+            z-index: 1000 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            padding: 0 clamp(0.5rem, 1.5vw, 1rem) !important;
+            box-sizing: border-box !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            background: linear-gradient(135deg, #003366 0%, #004080 100%);
+            color: white;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+        }
+
+        .navigation-header .nav-logo-section {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex: 0 0 auto;
+            min-width: 200px;
+            max-width: 320px;
+        }
+
+        .navigation-header .nav-main-section {
+            flex: 1 1 auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 28px;
+            min-width: 0;
+            overflow: visible;
+        }
+
+        .navigation-header .nav-actions-section {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex: 0 0 auto;
+            min-width: 200px;
+            justify-content: flex-end;
+        }
+
+        .navigation-header .nav-logo {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: contain;
+            background: white;
+            padding: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .navigation-header .nav-title-main {
+            font-size: 1.4rem;
+            font-weight: bold;
+            line-height: 1.3;
+            letter-spacing: -0.02em;
+            transition: font-size 0.3s ease;
+        }
+
+        .navigation-header .nav-title-sub {
+            font-size: 0.85rem;
+            opacity: 0.9;
+            line-height: 1.2;
+            font-weight: 500;
+            transition: font-size 0.3s ease;
+        }
+
+        .navigation-header .nav-title-desc {
+            font-size: 0.75rem;
+            opacity: 0.8;
+            line-height: 1.1;
+            font-style: italic;
+            transition: font-size 0.3s ease;
+        }
+
+        .nav-item {
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-item:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-1px);
+        }
+
+        .theme-toggle-demo {
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .theme-toggle-demo:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* Responsive breakpoints */
+        @media (min-width: 1440px) {
+            .navigation-header {
+                height: 90px !important;
+                min-height: 90px !important;
+                padding: 0 clamp(1rem, 2vw, 2rem) !important;
+            }
+            
+            .navigation-header .nav-logo-section {
+                gap: 20px;
+                min-width: 240px;
+                max-width: 360px;
+            }
+            
+            .navigation-header .nav-main-section {
+                gap: 32px;
+            }
+            
+            .navigation-header .nav-actions-section {
+                gap: 20px;
+                min-width: 240px;
+            }
+            
+            .navigation-header .nav-logo {
+                width: 52px;
+                height: 52px;
+                padding: 5px;
+            }
+            
+            .navigation-header .nav-title-main {
+                font-size: 1.5rem;
+            }
+            
+            .navigation-header .nav-title-sub {
+                font-size: 0.9rem;
+            }
+            
+            .navigation-header .nav-title-desc {
+                font-size: 0.8rem;
+            }
+        }
+
+        @media (min-width: 1920px) {
+            .navigation-header {
+                height: 100px !important;
+                min-height: 100px !important;
+                padding: 0 clamp(1.5rem, 2.5vw, 3rem) !important;
+            }
+            
+            .navigation-header .nav-logo-section {
+                gap: 24px;
+                min-width: 280px;
+                max-width: 400px;
+            }
+            
+            .navigation-header .nav-main-section {
+                gap: 40px;
+            }
+            
+            .navigation-header .nav-actions-section {
+                gap: 24px;
+                min-width: 280px;
+            }
+            
+            .navigation-header .nav-logo {
+                width: 56px;
+                height: 56px;
+                padding: 6px;
+            }
+            
+            .navigation-header .nav-title-main {
+                font-size: 1.625rem;
+            }
+            
+            .navigation-header .nav-title-sub {
+                font-size: 0.95rem;
+            }
+            
+            .navigation-header .nav-title-desc {
+                font-size: 0.85rem;
+            }
+        }
+
+        @media (min-width: 2560px) {
+            .navigation-header {
+                height: 120px !important;
+                min-height: 120px !important;
+                padding: 0 clamp(2rem, 3vw, 4rem) !important;
+            }
+            
+            .navigation-header .nav-logo-section {
+                gap: 32px;
+                min-width: 320px;
+                max-width: 480px;
+            }
+            
+            .navigation-header .nav-main-section {
+                gap: 48px;
+            }
+            
+            .navigation-header .nav-actions-section {
+                gap: 32px;
+                min-width: 320px;
+            }
+            
+            .navigation-header .nav-logo {
+                width: 64px;
+                height: 64px;
+                padding: 8px;
+            }
+            
+            .navigation-header .nav-title-main {
+                font-size: 1.875rem;
+            }
+            
+            .navigation-header .nav-title-sub {
+                font-size: 1.125rem;
+            }
+            
+            .navigation-header .nav-title-desc {
+                font-size: 1rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .navigation-header {
+                height: 70px !important;
+                min-height: 70px !important;
+                padding: 0 1rem !important;
+            }
+            
+            .navigation-header .nav-logo-section {
+                min-width: 180px;
+                max-width: 220px;
+                gap: 12px;
+            }
+            
+            .navigation-header .nav-actions-section {
+                min-width: 120px;
+                gap: 12px;
+            }
+            
+            .navigation-header .nav-logo {
+                width: 40px;
+                height: 40px;
+                padding: 3px;
+            }
+            
+            .navigation-header .nav-title-main {
+                font-size: 1.1rem;
+            }
+
+            .navigation-header .nav-main-section {
+                display: none;
+            }
+        }
+
+        .content-area {
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .test-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-default);
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .theme-controls {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-default);
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: var(--shadow-xl);
+            z-index: 2000;
+        }
+
+        .theme-controls button {
+            margin: 5px;
+            padding: 8px 12px;
+            border: 1px solid var(--border-default);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .theme-controls button:hover {
+            background: var(--bg-tertiary);
+        }
+    </style>
+</head>
+<body>
+    <div class="resolution-info" id="resolutionInfo">
+        <strong>Teste de Navegação Responsiva</strong> | 
+        Resolução: <span id="currentResolution"></span> | 
+        DPI: <span id="currentDPI"></span> | 
+        Breakpoint: <span id="currentBreakpoint"></span>
+    </div>
+
+    <!-- Navigation Header Test -->
+    <header class="navigation-header">
+        <div class="nav-logo-section">
+            <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHZpZXdCb3g9IjAgMCA0OCA0OCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjQiIGN5PSIyNCIgcj0iMjQiIGZpbGw9IiMwMDMzNjYiLz4KPHN2ZyB4PSI4IiB5PSI4IiB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSI+Cjx0ZXh0IHg9IjE2IiB5PSIyMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0id2hpdGUiIGZvbnQtc2l6ZT0iMTIiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXdlaWdodD0iYm9sZCI+VU5CPC90ZXh0Pgo8L3N2Zz4KPC9zdmc+" 
+                 alt="Universidade de Brasília" 
+                 class="nav-logo" />
+            <div style="display: flex; flex-direction: column; gap: 2px;">
+                <div class="nav-title-main">Roteiros de Dispensação</div>
+                <div class="nav-title-sub">Sistema de Aprendizagem</div>
+                <div class="nav-title-desc">Sistema Inteligente de Orientação</div>
+            </div>
+        </div>
+
+        <nav class="nav-main-section">
+            <a href="#" class="nav-item">🤖 Assistentes</a>
+            <a href="#" class="nav-item">📚 Conhecimento</a>
+            <a href="#" class="nav-item">🛠️ Ferramentas</a>
+            <a href="#" class="nav-item">📈 Progresso</a>
+        </nav>
+
+        <div class="nav-actions-section">
+            <div class="theme-toggle-demo">💻 Sistema</div>
+            <div class="nav-item">👤 Usuário</div>
+            <button class="nav-item" style="background: none; border: none; color: inherit;">☰</button>
+        </div>
+    </header>
+
+    <div class="content-area">
+        <h1>Teste de Responsividade da Navegação</h1>
+        
+        <div class="test-grid">
+            <div class="test-card">
+                <h3>📱 Mobile (&lt;768px)</h3>
+                <ul>
+                    <li>Header: 70px altura</li>
+                    <li>Logo: 40x40px</li>
+                    <li>Título: 1.1rem</li>
+                    <li>Menu principal: Oculto</li>
+                    <li>Hamburger: Visível</li>
+                </ul>
+            </div>
+
+            <div class="test-card">
+                <h3>💻 Desktop (768px-1440px)</h3>
+                <ul>
+                    <li>Header: 80px altura</li>
+                    <li>Logo: 48x48px</li>
+                    <li>Título: 1.4rem</li>
+                    <li>Gap navegação: 28px</li>
+                    <li>Padding: clamp(0.5rem, 1.5vw, 1rem)</li>
+                </ul>
+            </div>
+
+            <div class="test-card">
+                <h3>🖥️ Large Desktop (1440px+)</h3>
+                <ul>
+                    <li>Header: 90px altura</li>
+                    <li>Logo: 52x52px</li>
+                    <li>Título: 1.5rem</li>
+                    <li>Gap navegação: 32px</li>
+                    <li>Padding: clamp(1rem, 2vw, 2rem)</li>
+                </ul>
+            </div>
+
+            <div class="test-card">
+                <h3>🖼️ Ultra-wide (1920px+)</h3>
+                <ul>
+                    <li>Header: 100px altura</li>
+                    <li>Logo: 56x56px</li>
+                    <li>Título: 1.625rem</li>
+                    <li>Gap navegação: 40px</li>
+                    <li>Padding: clamp(1.5rem, 2.5vw, 3rem)</li>
+                </ul>
+            </div>
+
+            <div class="test-card">
+                <h3>📺 4K (2560px+)</h3>
+                <ul>
+                    <li>Header: 120px altura</li>
+                    <li>Logo: 64x64px</li>
+                    <li>Título: 1.875rem</li>
+                    <li>Gap navegação: 48px</li>
+                    <li>Padding: clamp(2rem, 3vw, 4rem)</li>
+                </ul>
+            </div>
+
+            <div class="test-card">
+                <h3>📋 Instruções de Teste</h3>
+                <ol>
+                    <li>Redimensione a janela</li>
+                    <li>Observe os tamanhos escalarem</li>
+                    <li>Teste em diferentes DPIs</li>
+                    <li>Alterne entre temas</li>
+                    <li>Verifique o mobile menu</li>
+                </ol>
+            </div>
+        </div>
+
+        <div style="margin-top: 40px; padding: 20px; background: var(--bg-secondary); border-radius: 8px;">
+            <h3>✅ Checklist de Responsividade</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 10px; margin-top: 15px;">
+                <label><input type="checkbox" id="mobile"> Mobile (≤768px)</label>
+                <label><input type="checkbox" id="tablet"> Tablet (768px-1024px)</label>
+                <label><input type="checkbox" id="desktop"> Desktop (1024px-1440px)</label>
+                <label><input type="checkbox" id="large"> Large Desktop (1440px-1920px)</label>
+                <label><input type="checkbox" id="ultrawide"> Ultra-wide (1920px-2560px)</label>
+                <label><input type="checkbox" id="fourk"> 4K (≥2560px)</label>
+                <label><input type="checkbox" id="retina"> Retina/HiDPI</label>
+                <label><input type="checkbox" id="darkmode"> Dark Mode</label>
+            </div>
+        </div>
+    </div>
+
+    <div class="theme-controls">
+        <button onclick="setTheme('light')">🌞 Claro</button>
+        <button onclick="setTheme('dark')">🌙 Escuro</button>
+        <button onclick="toggleTheme()">🔄 Alternar</button>
+    </div>
+
+    <script>
+        function updateResolutionInfo() {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            const dpr = window.devicePixelRatio || 1;
+            
+            let breakpoint = 'Mobile';
+            if (width >= 2560) breakpoint = '4K';
+            else if (width >= 1920) breakpoint = 'Ultra-wide';
+            else if (width >= 1440) breakpoint = 'Large Desktop';
+            else if (width >= 1024) breakpoint = 'Desktop';
+            else if (width >= 768) breakpoint = 'Tablet';
+            
+            document.getElementById('currentResolution').textContent = `${width}×${height}`;
+            document.getElementById('currentDPI').textContent = `${dpr}x`;
+            document.getElementById('currentBreakpoint').textContent = breakpoint;
+
+            // Auto-check appropriate checkboxes
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach(cb => cb.checked = false);
+
+            if (width <= 768) document.getElementById('mobile').checked = true;
+            else if (width <= 1024) document.getElementById('tablet').checked = true;
+            else if (width <= 1440) document.getElementById('desktop').checked = true;
+            else if (width <= 1920) document.getElementById('large').checked = true;
+            else if (width <= 2560) document.getElementById('ultrawide').checked = true;
+            else document.getElementById('fourk').checked = true;
+
+            if (dpr >= 2) document.getElementById('retina').checked = true;
+            if (document.documentElement.classList.contains('dark')) {
+                document.getElementById('darkmode').checked = true;
+            }
+        }
+
+        function setTheme(theme) {
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+            updateResolutionInfo();
+        }
+
+        function toggleTheme() {
+            document.documentElement.classList.toggle('dark');
+            updateResolutionInfo();
+        }
+
+        // Update info on load and resize
+        updateResolutionInfo();
+        window.addEventListener('resize', updateResolutionInfo);
+
+        // Simulate system theme detection
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            setTheme('dark');
+        }
+    </script>
+</body>
+</html>

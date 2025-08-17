@@ -1,11 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTheme } from '@/contexts/ThemeContext';
 
 export function ThemeToggle() {
   const { themeMode, setThemeMode } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   const options = [
     { value: 'light' as const, label: 'Claro', icon: '☀️' },
@@ -15,48 +17,81 @@ export function ThemeToggle() {
 
   const currentOption = options.find(opt => opt.value === themeMode) || options[2];
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [isOpen]);
+
+  // Intelligent positioning to avoid viewport overflow
+  useEffect(() => {
+    if (isOpen && dropdownRef.current && buttonRef.current) {
+      const dropdown = dropdownRef.current;
+      const button = buttonRef.current;
+      const buttonRect = button.getBoundingClientRect();
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      
+      // Reset positioning
+      dropdown.style.top = '';
+      dropdown.style.bottom = '';
+      dropdown.style.left = '';
+      dropdown.style.right = '';
+      
+      // Check if dropdown would overflow horizontally
+      const dropdownWidth = dropdown.offsetWidth;
+      const spaceOnRight = viewportWidth - buttonRect.right;
+      const spaceOnLeft = buttonRect.left;
+      
+      if (spaceOnRight < dropdownWidth && spaceOnLeft > dropdownWidth) {
+        // Position on the left
+        dropdown.style.right = '0';
+      } else {
+        // Default position on the right
+        dropdown.style.left = '0';
+      }
+      
+      // Check if dropdown would overflow vertically
+      const dropdownHeight = dropdown.offsetHeight;
+      const spaceBelow = viewportHeight - buttonRect.bottom - 8;
+      const spaceAbove = buttonRect.top - 8;
+      
+      if (spaceBelow < dropdownHeight && spaceAbove > dropdownHeight) {
+        // Position above the button
+        dropdown.style.bottom = 'calc(100% + 0.5rem)';
+      } else {
+        // Default position below the button
+        dropdown.style.top = 'calc(100% + 0.5rem)';
+      }
+    }
+  }, [isOpen]);
+
   return (
-    <div style={{ position: 'relative' }}>
+    <div className="theme-toggle-container" ref={dropdownRef}>
       <button
+        ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.5rem',
-          padding: '0.5rem 1rem',
-          borderRadius: '8px',
-          border: '1px solid #e2e8f0',
-          background: 'white',
-          cursor: 'pointer',
-          fontSize: '0.875rem',
-          fontWeight: '500',
-          transition: 'all 0.2s ease',
-          minWidth: '120px'
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.borderColor = '#003366';
-          e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.borderColor = '#e2e8f0';
-          e.currentTarget.style.boxShadow = 'none';
-        }}
+        className="theme-toggle-button"
         aria-label="Alternar tema"
         aria-expanded={isOpen}
         aria-haspopup="true"
       >
-        <span>{currentOption.icon}</span>
-        <span>{currentOption.label}</span>
+        <span className="theme-toggle-icon">{currentOption.icon}</span>
+        <span className="theme-toggle-label">{currentOption.label}</span>
         <svg
+          className={`theme-toggle-arrow ${isOpen ? 'rotated' : ''}`}
           width="12"
           height="12"
           viewBox="0 0 12 12"
           fill="none"
-          style={{
-            marginLeft: 'auto',
-            transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-            transition: 'transform 0.2s ease'
-          }}
         >
           <path
             d="M3 4.5L6 7.5L9 4.5"
@@ -69,122 +104,46 @@ export function ThemeToggle() {
       </button>
 
       {isOpen && (
-        <>
-          {/* Backdrop para fechar ao clicar fora */}
-          <div
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              zIndex: 999
-            }}
-            onClick={() => setIsOpen(false)}
-          />
-          
-          {/* Menu dropdown */}
-          <div
-            style={{
-              position: 'absolute',
-              top: 'calc(100% + 0.5rem)',
-              right: 0,
-              background: 'white',
-              borderRadius: '8px',
-              boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
-              border: '1px solid #e2e8f0',
-              padding: '0.5rem',
-              zIndex: 1000,
-              minWidth: '150px'
-            }}
-            role="menu"
-          >
-            {options.map((option) => (
-              <button
-                key={option.value}
-                onClick={() => {
-                  setThemeMode(option.value);
-                  setIsOpen(false);
-                }}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.75rem',
-                  width: '100%',
-                  padding: '0.5rem 0.75rem',
-                  borderRadius: '6px',
-                  border: 'none',
-                  background: themeMode === option.value ? '#f0f9ff' : 'transparent',
-                  color: themeMode === option.value ? '#003366' : '#374151',
-                  fontSize: '0.875rem',
-                  fontWeight: themeMode === option.value ? '600' : '400',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                  textAlign: 'left'
-                }}
-                onMouseEnter={(e) => {
-                  if (themeMode !== option.value) {
-                    e.currentTarget.style.background = '#f8fafc';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (themeMode !== option.value) {
-                    e.currentTarget.style.background = 'transparent';
-                  }
-                }}
-                role="menuitem"
-                aria-current={themeMode === option.value ? 'true' : 'false'}
-              >
-                <span style={{ fontSize: '1.125rem' }}>{option.icon}</span>
-                <span>{option.label}</span>
-                {themeMode === option.value && (
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 16 16"
-                    fill="none"
-                    style={{ marginLeft: 'auto' }}
-                  >
-                    <path
-                      d="M13.5 4.5L6 12L2.5 8.5"
-                      stroke="#003366"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                )}
-              </button>
-            ))}
-            
-            <div
-              style={{
-                marginTop: '0.5rem',
-                paddingTop: '0.5rem',
-                borderTop: '1px solid #e2e8f0',
-                fontSize: '0.75rem',
-                color: '#64748b',
-                padding: '0.5rem 0.75rem'
+        <div className="theme-toggle-dropdown" role="menu">
+          {options.map((option) => (
+            <button
+              key={option.value}
+              onClick={() => {
+                setThemeMode(option.value);
+                setIsOpen(false);
               }}
+              className={`theme-toggle-option ${themeMode === option.value ? 'active' : ''}`}
+              role="menuitem"
+              aria-current={themeMode === option.value ? 'true' : 'false'}
             >
-              {themeMode === 'system' && (
-                <div>
-                  Seguindo o tema do sistema
-                </div>
+              <span className="theme-toggle-option-icon">{option.icon}</span>
+              <span className="theme-toggle-option-label">{option.label}</span>
+              {themeMode === option.value && (
+                <svg
+                  className="theme-toggle-check"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                >
+                  <path
+                    d="M13.5 4.5L6 12L2.5 8.5"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
               )}
-              {themeMode === 'light' && (
-                <div>
-                  Tema claro ativado
-                </div>
-              )}
-              {themeMode === 'dark' && (
-                <div>
-                  Tema escuro ativado
-                </div>
-              )}
-            </div>
+            </button>
+          ))}
+          
+          <div className="theme-toggle-status">
+            {themeMode === 'system' && 'Seguindo o tema do sistema'}
+            {themeMode === 'light' && 'Tema claro ativado'}
+            {themeMode === 'dark' && 'Tema escuro ativado'}
           </div>
-        </>
+        </div>
       )}
     </div>
   );

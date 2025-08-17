@@ -312,14 +312,7 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
       }}
     >
       {/* Logo e Título - Esquerda */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '16px',
-        flex: '0 0 auto',
-        minWidth: isMobile ? '200px' : '280px',
-        maxWidth: isMobile ? '250px' : '320px'
-      }}>
+      <div className="nav-logo-section">
         <Tooltip content="Roteiros de Dispensação - Sistema Inteligente de Orientação" position="bottom">
           <Link
             href="/"
@@ -334,49 +327,23 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
             <img 
               src={getUniversityLogo('unb_logo2')} 
               alt="Universidade de Brasília" 
-              style={{
-                width: '48px',
-                height: '48px',
-                borderRadius: '50%',
-                objectFit: 'contain',
-                background: 'white',
-                padding: '4px'
-              }}
+              className="nav-logo"
             />
             {!isMobile && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                <div style={{ 
-                  fontSize: '1.4rem', 
-                  fontWeight: 'bold',
-                  lineHeight: '1.3',
-                  letterSpacing: '-0.02em'
-                }}>
+                <div className="nav-title-main">
                   Roteiros de Dispensação
                 </div>
-                <div style={{ 
-                  fontSize: '0.85rem', 
-                  opacity: 0.9,
-                  lineHeight: '1.2',
-                  fontWeight: '500'
-                }}>
+                <div className="nav-title-sub">
                   Sistema de Aprendizagem
                 </div>
-                <div style={{ 
-                  fontSize: '0.75rem', 
-                  opacity: 0.8,
-                  lineHeight: '1.1',
-                  fontStyle: 'italic'
-                }}>
+                <div className="nav-title-desc">
                   Sistema Inteligente de Orientação
                 </div>
               </div>
             )}
             {isMobile && (
-              <div style={{
-                fontSize: '1.1rem',
-                fontWeight: 'bold',
-                lineHeight: '1.2'
-              }}>
+              <div className="nav-title-main">
                 Roteiros de Dispensação
               </div>
             )}
@@ -388,15 +355,7 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
       {/* Navegação Principal - Centro (Desktop/Tablet) */}
       {!isMobile && (
         <nav 
-          style={{
-            flex: '1 1 auto',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            gap: isWideScreen ? '32px' : isTablet ? '16px' : '28px',
-            minWidth: 0,
-            overflow: 'visible'
-          }}
+          className="nav-main-section"
           role="navigation"
           aria-label="Navegação principal do sistema educacional"
         >
@@ -670,14 +629,7 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
       )}
 
       {/* Área de Personas e Usuário - Direita */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: isTablet ? '8px' : '12px',
-        flex: '0 0 auto',
-        minWidth: isMobile ? 'auto' : '220px',
-        justifyContent: 'flex-end'
-      }}>
+      <div className="nav-actions-section">
         {/* Theme Toggle (Desktop/Tablet) */}
         {!isMobile && (
           <div style={{ marginRight: isTablet ? '0.25rem' : '0.5rem' }}>
