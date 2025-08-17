@@ -1,0 +1,57 @@
+{
+  "timestamp": "2025-08-17T15:28:45.868788",
+  "summary": {
+    "total_tests": 17,
+    "passed_tests": 16,
+    "failed_tests": 1,
+    "success_rate": 94.11764705882352,
+    "status": "[GOOD]"
+  },
+  "details": {
+    "TestSystemAudit": {
+      "tests": 2,
+      "passed": 2,
+      "success_rate": 100.0,
+      "execution_time": 0.0023040771484375
+    },
+    "TestRAGSystem": {
+      "tests": 3,
+      "passed": 3,
+      "success_rate": 100.0,
+      "execution_time": 1.4923198223114014
+    },
+    "TestPredictiveSystem": {
+      "tests": 3,
+      "passed": 3,
+      "success_rate": 100.0,
+      "execution_time": 0.3083038330078125
+    },
+    "TestMultimodalSystem": {
+      "tests": 3,
+      "passed": 3,
+      "success_rate": 100.0,
+      "execution_time": 0.009793519973754883
+    },
+    "TestAPIEndpoints": {
+      "tests": 2,
+      "passed": 2,
+      "success_rate": 100.0,
+      "execution_time": 0.17663264274597168
+    },
+    "TestPerformanceAndScalability": {
+      "tests": 2,
+      "passed": 2,
+      "success_rate": 100.0,
+      "execution_time": 0.030606746673583984
+    },
+    "TestSystemIntegration": {
+      "tests": 2,
+      "passed": 1,
+      "success_rate": 50.0,
+      "execution_time": 0.015875816345214844
+    }
+  },
+  "failed_tests": [
+    "TestSystemIntegration.test_cross_system_compatibility (__main__.TestSystemIntegration.test_cross_system_compatibility)"
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "timestamp": "2025-08-17T15:12:10.970962",
+  "security_score": 83,
+  "status": "[MODERATE]",
+  "vulnerabilities": [
+    "SECRET_KEY padrao ou nao definida",
+    "Modulo de seguranca nao encontrado"
+  ],
+  "warnings": [
+    "Blueprints nao encontrados"
+  ],
+  "checks_passed": [
+    "Pacote de seguranca encontrado: bleach",
+    "Pacote de seguranca encontrado: flask-limiter",
+    "Pacote de seguranca encontrado: werkzeug",
+    "Multiplos pacotes de seguranca instalados",
+    "Maioria das dependencias com versao fixada",
+    "SESSION_COOKIE_HTTPONLY habilitado",
+    "Validacao de tamanho funcionando",
+    "Formato malicioso bloqueado",
+    "Auto-exclusao configurada: 7 dias"
+  ]
+}

@@ -1,0 +1,313 @@
+{
+  "timestamp": "2025-08-17T14:10:28.752451",
+  "vector_store": {
+    "exists": true,
+    "embeddings_file_size": 0,
+    "metadata_documents": 0,
+    "estimated_vectors": 0
+  },
+  "structured_files": {
+    "clinical_taxonomy.json": {
+      "size_kb": 11.6669921875,
+      "structure": {
+        "type": "dict",
+        "size": 1,
+        "depth": 7,
+        "keys": 216,
+        "text_content": 3571,
+        "arrays": 55,
+        "objects": 62
+      },
+      "potential_documents": 2,
+      "document_samples": [
+        {
+          "type": "dosing",
+          "content": "Duração: 6 meses",
+          "category": "clinical_taxonomy.level_3_entities.clinical_conditions.hanseniase_paucibacilar",
+          "priority": 1.0
+        },
+        {
+          "type": "dosing",
+          "content": "Duração: 12 meses",
+          "category": "clinical_taxonomy.level_3_entities.clinical_conditions.hanseniase_multibacilar",
+          "priority": 1.0
+        }
+      ]
+    },
+    "dispensing_workflow.json": {
+      "size_kb": 11.3115234375,
+      "structure": {
+        "type": "dict",
+        "size": 4,
+        "depth": 7,
+        "keys": 119,
+        "text_content": 5011,
+        "arrays": 31,
+        "objects": 38
+      },
+      "potential_documents": 6,
+      "document_samples": [
+        {
+          "type": "dosing",
+          "content": "Duração: 5-10 minutos",
+          "category": "dispensing_workflow.etapa_01_avaliacao_inicial",
+          "priority": 1.0
+        },
+        {
+          "type": "dosing",
+          "content": "Duração: 15-20 minutos",
+          "category": "dispensing_workflow.etapa_02_orientacoes_cuidado",
+          "priority": 1.0
+        },
+        {
+          "type": "mechanism",
+          "medication": "content",
+          "content": "Mecanismo: ['Como os medicamentos funcionam', 'Por que são usados em combinação', 'Importância de completar o tratamento']",
+          "category": "pharmacology",
+          "priority": 0.8
+        }
+      ]
+    },
+    "dosing_protocols.json": {
+      "size_kb": 7.265625,
+      "structure": {
+        "type": "dict",
+        "size": 5,
+        "depth": 7,
+        "keys": 142,
+        "text_content": 2334,
+        "arrays": 5,
+        "objects": 50
+      },
+      "potential_documents": 22,
+      "document_samples": [
+        {
+          "type": "dosing",
+          "content": "Frequência: 1 vez por mês sob supervisão",
+          "category": "dosing_protocols.pqt_u_adulto.dosing_schedule.monthly_supervised",
+          "priority": 1.0
+        },
+        {
+          "type": "dosing",
+          "content": "Dose: 600mg",
+          "category": "dosing_protocols.pqt_u_adulto.dosing_schedule.monthly_supervised.medications.rifampicina",
+          "priority": 1.0
+        },
+        {
+          "type": "dosing",
+          "content": "Dose: 300mg",
+          "category": "dosing_protocols.pqt_u_adulto.dosing_schedule.monthly_supervised.medications.clofazimina",
+          "priority": 1.0
+        }
+      ]
+    },
+    "frequently_asked_questions.json": {
+      "size_kb": 14.107421875,
+      "structure": {
+        "type": "dict",
+        "size": 1,
+        "depth": 5,
+        "keys": 139,
+        "text_content": 9545,
+        "arrays": 24,
+        "objects": 32
+      },
+      "potential_documents": 40,
+      "document_samples": [
+        {
+          "type": "qa",
+          "question": "O que é PQT-U?",
+          "answer": "PQT-U (Poliquimioterapia Única) é o esquema terapêutico padrão para hanseníase, composto por rifampicina 600mg, clofazimina 300mg/50mg e dapsona 100mg, administrado por 12 meses independentemente da classificação operacional.",
+          "persona": "gasnelio",
+          "category": "qa",
+          "priority": 0.9
+        },
+        {
+          "type": "qa",
+          "question": "O que é PQT-U?",
+          "answer": "PQT-U é o remédio usado para tratar hanseníase. São 3 medicamentos juntos que você toma por 1 ano. Eles trabalham em equipe para curar completamente a hanseníase.",
+          "persona": "ga",
+          "category": "qa",
+          "priority": 0.9
+        },
+        {
+          "type": "qa",
+          "question": "Por que são usados 3 medicamentos juntos?",
+          "answer": "A terapia tripla previne resistência bacteriana através de mecanismos de ação distintos: rifampicina (inibição RNA polimerase), clofazimina (ligação ao DNA) e dapsona (antagonismo PABA). Esta combinação garante eficácia bactericida e bacteriostática.",
+          "persona": "gasnelio",
+          "category": "qa",
+          "priority": 0.9
+        }
+      ]
+    },
+    "hanseniase_catalog.json": {
+      "size_kb": 7.91015625,
+      "structure": {
+        "type": "dict",
+        "size": 6,
+        "depth": 5,
+        "keys": 123,
+        "text_content": 3663,
+        "arrays": 14,
+        "objects": 35
+      },
+      "potential_documents": 6,
+      "document_samples": [
+        {
+          "type": "dosing",
+          "content": "Duração: {'paucibacilar': '6 meses', 'multibacilar': '12 meses'}",
+          "category": "clinical_presentations.pqt_u_adulto",
+          "priority": 1.0
+        },
+        {
+          "type": "dosing",
+          "content": "Duração: {'paucibacilar': '6 meses', 'multibacilar': '12 meses'}",
+          "category": "clinical_presentations.pqt_u_infantil",
+          "priority": 1.0
+        },
+        {
+          "type": "mechanism",
+          "medication": "rifampicina",
+          "content": "Mecanismo: Inibe RNA polimerase, bloqueando síntese de RNA bacteriano",
+          "category": "pharmacology",
+          "priority": 0.8
+        }
+      ]
+    },
+    "knowledge_scope_limitations.json": {
+      "size_kb": 10.12109375,
+      "structure": {
+        "type": "dict",
+        "size": 1,
+        "depth": 7,
+        "keys": 74,
+        "text_content": 5157,
+        "arrays": 25,
+        "objects": 27
+      },
+      "potential_documents": 0,
+      "document_samples": []
+    },
+    "medications_mechanisms.json": {
+      "size_kb": 10.11328125,
+      "structure": {
+        "type": "dict",
+        "size": 3,
+        "depth": 6,
+        "keys": 144,
+        "text_content": 4291,
+        "arrays": 25,
+        "objects": 37
+      },
+      "potential_documents": 7,
+      "document_samples": [
+        {
+          "type": "mechanism",
+          "medication": "major[0]",
+          "content": "Mecanismo: Indução enzimática",
+          "category": "pharmacology",
+          "priority": 0.8
+        },
+        {
+          "type": "mechanism",
+          "medication": "major[1]",
+          "content": "Mecanismo: Interferência na síntese de vitamina K",
+          "category": "pharmacology",
+          "priority": 0.8
+        },
+        {
+          "type": "mechanism",
+          "medication": "major[2]",
+          "content": "Mecanismo: Indução enzimática",
+          "category": "pharmacology",
+          "priority": 0.8
+        }
+      ]
+    },
+    "pharmacovigilance_guidelines.json": {
+      "size_kb": 11.0888671875,
+      "structure": {
+        "type": "dict",
+        "size": 1,
+        "depth": 7,
+        "keys": 166,
+        "text_content": 4314,
+        "arrays": 21,
+        "objects": 52
+      },
+      "potential_documents": 17,
+      "document_samples": [
+        {
+          "type": "dosing",
+          "content": "Frequência: Muito comum (>90%)",
+          "category": "pharmacovigilance_guidelines.adverse_events_classification.by_medication.rifampicina.common[0]",
+          "priority": 1.0
+        },
+        {
+          "type": "dosing",
+          "content": "Frequência: Comum (10-30%)",
+          "category": "pharmacovigilance_guidelines.adverse_events_classification.by_medication.rifampicina.common[1]",
+          "priority": 1.0
+        },
+        {
+          "type": "dosing",
+          "content": "Frequência: Comum (10-20%)",
+          "category": "pharmacovigilance_guidelines.adverse_events_classification.by_medication.rifampicina.common[2]",
+          "priority": 1.0
+        }
+      ]
+    },
+    "quick_reference_protocols.json": {
+      "size_kb": 10.9287109375,
+      "structure": {
+        "type": "dict",
+        "size": 1,
+        "depth": 6,
+        "keys": 192,
+        "text_content": 4181,
+        "arrays": 28,
+        "objects": 53
+      },
+      "potential_documents": 10,
+      "document_samples": [
+        {
+          "type": "dosing",
+          "content": "Duração: 12 meses",
+          "category": "quick_reference_protocols.dosing_protocols.adulto_maior_50kg",
+          "priority": 1.0
+        },
+        {
+          "type": "dosing",
+          "content": "Duração: 12 meses",
+          "category": "quick_reference_protocols.dosing_protocols.adulto_30_50kg",
+          "priority": 1.0
+        },
+        {
+          "type": "dosing",
+          "content": "Duração: 12 meses",
+          "category": "quick_reference_protocols.dosing_protocols.pediatrico_menor_30kg",
+          "priority": 1.0
+        }
+      ]
+    }
+  },
+  "total_potential_documents": 110,
+  "document_types": {
+    "dosing": 59,
+    "mechanism": 11,
+    "qa": 40
+  },
+  "recommendations": [
+    "Corrigir arquivo clinical_taxonomy.json: 'str' object has no attribute 'get'",
+    "Corrigir arquivo dispensing_workflow.json: 'str' object has no attribute 'get'",
+    "Corrigir arquivo dosing_protocols.json: 'str' object has no attribute 'get'",
+    "Corrigir arquivo frequently_asked_questions.json: 'str' object has no attribute 'get'",
+    "Corrigir arquivo hanseniase_catalog.json: 'str' object has no attribute 'get'",
+    "Corrigir arquivo medications_mechanisms.json: 'str' object has no attribute 'get'",
+    "Corrigir arquivo pharmacovigilance_guidelines.json: 'str' object has no attribute 'get'",
+    "Corrigir arquivo quick_reference_protocols.json: 'str' object has no attribute 'get'",
+    "Dados estruturados prontos para migração",
+    "Vector store local vazio ou inexistente",
+    "Usar migração em batches (100 docs por vez)"
+  ]
+}
