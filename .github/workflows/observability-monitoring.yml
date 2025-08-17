@@ -20,26 +20,130 @@ jobs:
       - name: 📥 Checkout código
         uses: actions/checkout@v3
       
-      - name: 🔍 Check API Health
+      - name: 🔍 Check API Health (with retry logic)
         id: api-health
         continue-on-error: true
         run: |
-          # Backend API
-          BACKEND_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://roteiro-dispensacao-api-992807978726.us-central1.run.app/api/health)
-          echo "backend_status=$BACKEND_STATUS" >> $GITHUB_OUTPUT
+          # Função para verificar backend com retry e múltiplos endpoints
+          check_backend_health() {
+            local base_url="https://roteiro-dispensacao-api-992807978726.us-central1.run.app"
+            local endpoints=("/api/health" "/api/v1/health")
+            local best_status="000"
+            local best_endpoint=""
+            
+            echo "🔍 Verificando saúde do backend..."
+            
+            for endpoint in "${endpoints[@]}"; do
+              echo "  Testando: $base_url$endpoint"
+              
+              # Tentar 3x com intervalo de 10s
+              for attempt in 1 2 3; do
+                echo "    Tentativa $attempt/3..."
+                
+                # Timeout de 15s por tentativa
+                status=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 15 --max-time 15 "$base_url$endpoint")
+                
+                echo "    Status: $status"
+                
+                if [ "$status" = "200" ]; then
+                  echo "  ✅ Sucesso em $endpoint"
+                  echo "$status"
+                  echo "backend_endpoint=$endpoint" >> $GITHUB_OUTPUT
+                  return 0
+                fi
+                
+                # Guardar melhor status para debugging
+                if [ "$status" != "000" ] && [ "$status" != "timeout" ]; then
+                  if [ "$best_status" = "000" ] || [ "$status" -lt "$best_status" ]; then
+                    best_status="$status"
+                    best_endpoint="$endpoint"
+                  fi
+                fi
+                
+                # Aguardar antes da próxima tentativa (exceto na última)
+                if [ $attempt -lt 3 ]; then
+                  echo "    Aguardando 10s..."
+                  sleep 10
+                fi
+              done
+              
+              echo "  ❌ Falhou em $endpoint após 3 tentativas"
+            done
+            
+            echo "backend_endpoint=$best_endpoint" >> $GITHUB_OUTPUT
+            echo "  📊 Melhor status obtido: $best_status em $best_endpoint"
+            echo "$best_status"
+            return 1
+          }
           
-          # Frontend
-          FRONTEND_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://roteiros-de-dispensacao.web.app)
+          # Função para verificar frontend com retry
+          check_frontend_health() {
+            local url="https://roteiros-de-dispensacao.web.app"
+            
+            echo "🔍 Verificando saúde do frontend..."
+            
+            # Tentar 3x com intervalo de 5s
+            for attempt in 1 2 3; do
+              echo "  Tentativa $attempt/3..."
+              
+              status=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 10 --max-time 10 "$url")
+              
+              echo "  Status: $status"
+              
+              if [ "$status" = "200" ]; then
+                echo "✅ Frontend online"
+                echo "$status"
+                return 0
+              fi
+              
+              # Aguardar antes da próxima tentativa (exceto na última)
+              if [ $attempt -lt 3 ]; then
+                echo "  Aguardando 5s..."
+                sleep 5
+              fi
+            done
+            
+            echo "❌ Frontend offline após 3 tentativas"
+            echo "$status"
+            return 1
+          }
+          
+          # Executar verificações
+          echo "🚀 Iniciando verificação de saúde do sistema..."
+          echo "Timestamp: $(date -u)"
+          
+          BACKEND_STATUS=$(check_backend_health)
+          BACKEND_SUCCESS=$?
+          
+          FRONTEND_STATUS=$(check_frontend_health)
+          FRONTEND_SUCCESS=$?
+          
+          # Salvar status nos outputs
+          echo "backend_status=$BACKEND_STATUS" >> $GITHUB_OUTPUT
           echo "frontend_status=$FRONTEND_STATUS" >> $GITHUB_OUTPUT
           
-          # Verificar se está saudável
-          if [ "$BACKEND_STATUS" != "200" ] || [ "$FRONTEND_STATUS" != "200" ]; then
-            echo "❌ Sistema com problemas!"
-            echo "alert_needed=true" >> $GITHUB_OUTPUT
-          else
-            echo "✅ Sistema saudável"
+          # Determinar se precisa de alerta (só após confirmação dupla)
+          if [ $BACKEND_SUCCESS -eq 0 ] && [ $FRONTEND_SUCCESS -eq 0 ]; then
+            echo "✅ Sistema completamente saudável"
             echo "alert_needed=false" >> $GITHUB_OUTPUT
+            echo "alert_type=none" >> $GITHUB_OUTPUT
+          elif [ $BACKEND_SUCCESS -ne 0 ] && [ $FRONTEND_SUCCESS -ne 0 ]; then
+            echo "🚨 Sistema completamente offline"
+            echo "alert_needed=true" >> $GITHUB_OUTPUT
+            echo "alert_type=system_down" >> $GITHUB_OUTPUT
+          elif [ $BACKEND_SUCCESS -ne 0 ]; then
+            echo "⚠️ Backend com problemas"
+            echo "alert_needed=true" >> $GITHUB_OUTPUT
+            echo "alert_type=backend_down" >> $GITHUB_OUTPUT
+          elif [ $FRONTEND_SUCCESS -ne 0 ]; then
+            echo "⚠️ Frontend com problemas"
+            echo "alert_needed=true" >> $GITHUB_OUTPUT
+            echo "alert_type=frontend_down" >> $GITHUB_OUTPUT
           fi
+          
+          echo "📊 Resumo final:"
+          echo "  Backend: $BACKEND_STATUS (endpoint: $(cat $GITHUB_OUTPUT | grep backend_endpoint | cut -d'=' -f2))"
+          echo "  Frontend: $FRONTEND_STATUS"
       
       - name: 📊 Check Metrics Usage (Mock)
         id: metrics-usage
@@ -61,123 +165,238 @@ jobs:
             echo "quota_alert=false" >> $GITHUB_OUTPUT
           fi
       
-      - name: 🚨 Create Issue if Alert Needed
+      - name: 🚨 Create Issue if Alert Needed (with cooldown)
         id: create-issue
         if: steps.api-health.outputs.alert_needed == 'true' || steps.metrics-usage.outputs.quota_alert == 'true'
         uses: actions/github-script@v6
         with:
           script: |
-            const now = new Date().toISOString();
+            const now = new Date();
+            const nowISO = now.toISOString();
             const backend = '${{ steps.api-health.outputs.backend_status }}';
             const frontend = '${{ steps.api-health.outputs.frontend_status }}';
             const usage = '${{ steps.metrics-usage.outputs.usage_mb }}';
             const percentage = '${{ steps.metrics-usage.outputs.usage_percentage }}';
+            const alertType = '${{ steps.api-health.outputs.alert_type }}';
+            const backendEndpoint = '${{ steps.api-health.outputs.backend_endpoint }}';
             
-            let title = '🚨 Alerta de Monitoramento';
-            let labels = ['observability', 'automated'];
-            let body = `## Alerta Automático - ${now}\n\n`;
+            // Configurar cooldown period (2 horas = 7200000 ms)
+            const COOLDOWN_HOURS = 2;
+            const COOLDOWN_MS = COOLDOWN_HOURS * 60 * 60 * 1000;
             
-            // Verificar tipo de alerta
-            if (backend !== '200' || frontend !== '200') {
-              title += ' - Sistema Offline';
-              labels.push('critical', 'outage');
-              body += `### ❌ Problema de Disponibilidade\n\n`;
-              body += `- **Backend API**: ${backend === '200' ? '✅ Online' : '❌ Offline (' + backend + ')'}\n`;
-              body += `- **Frontend**: ${frontend === '200' ? '✅ Online' : '❌ Offline (' + frontend + ')'}\n\n`;
-            }
+            console.log(`🔍 Verificando necessidade de alerta...`);
+            console.log(`Alert type: ${alertType}`);
+            console.log(`Backend: ${backend} (endpoint: ${backendEndpoint})`);
+            console.log(`Frontend: ${frontend}`);
             
-            if (percentage > 90) {
-              title += ' - Quota de Métricas';
-              labels.push('warning', 'quota');
-              body += `### ⚠️ Uso de Métricas Alto\n\n`;
-              body += `- **Uso atual**: ${usage} MB de 140 MB (${percentage}%)\n`;
-              body += `- **Ação recomendada**: Reduzir frequência de coleta ou desabilitar métricas não-críticas\n\n`;
-            }
-            
-            body += `### 📊 Métricas do Sistema\n\n`;
-            body += `| Métrica | Valor | Status |\n`;
-            body += `|---------|-------|--------|\n`;
-            body += `| Backend API | ${backend} | ${backend === '200' ? '✅' : '❌'} |\n`;
-            body += `| Frontend | ${frontend} | ${frontend === '200' ? '✅' : '❌'} |\n`;
-            body += `| Uso de Métricas | ${usage} MB | ${percentage > 90 ? '⚠️' : '✅'} |\n`;
-            body += `| Percentual | ${percentage}% | ${percentage > 90 ? '⚠️' : '✅'} |\n\n`;
-            
-            body += `---\n`;
-            body += `*Alerta gerado automaticamente pelo GitHub Actions*\n`;
-            body += `*Workflow: observability-monitoring.yml*`;
-            
-            // Verificar se já existe issue aberta
-            const issues = await github.rest.issues.listForRepo({
+            // Verificar issues existentes abertas
+            const openIssues = await github.rest.issues.listForRepo({
               owner: context.repo.owner,
               repo: context.repo.repo,
               state: 'open',
               labels: 'observability,automated'
             });
             
-            // Se não houver issue aberta, criar uma nova
-            if (issues.data.length === 0) {
+            let shouldCreateNewIssue = openIssues.data.length === 0;
+            let existingIssue = null;
+            let needsCooldownCheck = false;
+            
+            if (openIssues.data.length > 0) {
+              existingIssue = openIssues.data[0];
+              
+              // Verificar última atualização para cooldown
+              const lastUpdate = new Date(existingIssue.updated_at);
+              const timeSinceUpdate = now.getTime() - lastUpdate.getTime();
+              
+              console.log(`⏰ Última atualização: ${lastUpdate.toISOString()}`);
+              console.log(`⏱️ Tempo desde última atualização: ${Math.round(timeSinceUpdate / (1000 * 60))} minutos`);
+              
+              needsCooldownCheck = timeSinceUpdate < COOLDOWN_MS;
+              
+              if (needsCooldownCheck) {
+                const remainingMinutes = Math.round((COOLDOWN_MS - timeSinceUpdate) / (1000 * 60));
+                console.log(`❄️ Em cooldown - restam ${remainingMinutes} minutos`);
+                
+                // Durante cooldown, só comentar se for mudança crítica
+                if (alertType === 'system_down' && !existingIssue.title.includes('Sistema Completamente Offline')) {
+                  console.log('🚨 Escalando para sistema completamente offline');
+                  needsCooldownCheck = false; // Permitir comentário crítico
+                }
+              }
+            }
+            
+            // Determinar título e conteúdo baseado no tipo de alerta
+            let title = '🚨 Alerta de Monitoramento';
+            let labels = ['observability', 'automated'];
+            let severity = 'medium';
+            
+            let body = `## Alerta Automático - ${nowISO}\n\n`;
+            
+            // Configurar alerta baseado no tipo
+            switch (alertType) {
+              case 'system_down':
+                title += ' - Sistema Completamente Offline';
+                labels.push('critical', 'outage', 'system-down');
+                severity = 'critical';
+                body += `### 🚨 SISTEMA COMPLETAMENTE OFFLINE\n\n`;
+                body += `- **Backend API**: ❌ Offline (${backend}) via ${backendEndpoint}\n`;
+                body += `- **Frontend**: ❌ Offline (${frontend})\n`;
+                body += `- **Impacto**: Serviço totalmente indisponível\n\n`;
+                break;
+                
+              case 'backend_down':
+                title += ' - Backend Offline';
+                labels.push('high', 'backend-down');
+                severity = 'high';
+                body += `### ⚠️ BACKEND OFFLINE\n\n`;
+                body += `- **Backend API**: ❌ Offline (${backend}) via ${backendEndpoint}\n`;
+                body += `- **Frontend**: ✅ Online (${frontend})\n`;
+                body += `- **Impacto**: Funcionalidades de IA indisponíveis\n\n`;
+                break;
+                
+              case 'frontend_down':
+                title += ' - Frontend Offline';
+                labels.push('medium', 'frontend-down');
+                severity = 'medium';
+                body += `### ⚠️ FRONTEND OFFLINE\n\n`;
+                body += `- **Backend API**: ✅ Online (${backend}) via ${backendEndpoint}\n`;
+                body += `- **Frontend**: ❌ Offline (${frontend})\n`;
+                body += `- **Impacto**: Interface indisponível\n\n`;
+                break;
+            }
+            
+            if (percentage > 90) {
+              if (alertType !== 'none') title += ' + Quota Alta';
+              else title += ' - Quota de Métricas Alta';
+              labels.push('warning', 'quota');
+              body += `### ⚠️ USO DE MÉTRICAS ALTO\n\n`;
+              body += `- **Uso atual**: ${usage} MB de 140 MB (${percentage}%)\n`;
+              body += `- **Ação recomendada**: Otimizar coleta de métricas\n\n`;
+            }
+            
+            // Adicionar seção de detalhes técnicos
+            body += `### 📊 Status Técnico Detalhado\n\n`;
+            body += `| Componente | Status | Detalhes | Endpoint Testado |\n`;
+            body += `|------------|--------|----------|------------------|\n`;
+            body += `| Backend API | ${backend === '200' ? '✅ Online' : '❌ Offline'} | HTTP ${backend} | ${backendEndpoint || 'N/A'} |\n`;
+            body += `| Frontend | ${frontend === '200' ? '✅ Online' : '❌ Offline'} | HTTP ${frontend} | / |\n`;
+            body += `| Métricas | ${percentage > 90 ? '⚠️ Alto' : '✅ Normal'} | ${usage}MB (${percentage}%) | Sistema |\n\n`;
+            
+            // Seção de ações recomendadas baseada na severidade
+            body += `### 🛠️ Ações Recomendadas (Severidade: ${severity.toUpperCase()})\n\n`;
+            
+            if (severity === 'critical') {
+              body += `**AÇÃO IMEDIATA NECESSÁRIA:**\n`;
+              body += `1. 🚨 Verificar logs do Cloud Run\n`;
+              body += `2. 🔄 Reiniciar serviços se necessário\n`;
+              body += `3. 📞 Notificar equipe técnica\n`;
+              body += `4. 📊 Monitorar recuperação\n\n`;
+            } else if (severity === 'high') {
+              body += `**INVESTIGAÇÃO PRIORITÁRIA:**\n`;
+              body += `1. 🔍 Verificar backend API especificamente\n`;
+              body += `2. 📋 Analisar logs de erro\n`;
+              body += `3. 🧪 Testar endpoints manualmente\n`;
+              body += `4. 🔄 Considerar restart se necessário\n\n`;
+            } else {
+              body += `**INVESTIGAÇÃO PADRÃO:**\n`;
+              body += `1. 📊 Monitorar tendência\n`;
+              body += `2. 🔍 Verificar logs\n`;
+              body += `3. 📈 Aguardar próxima verificação\n\n`;
+            }
+            
+            // Links de ação rápida
+            const monitoringUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/workflows/observability-monitoring.yml`;
+            const backendTestUrl = `https://roteiro-dispensacao-api-992807978726.us-central1.run.app${backendEndpoint || '/api/health'}`;
+            
+            body += `### 🔗 Links de Ação Rápida\n\n`;
+            body += `- 📊 [Executar Monitoring Manual](${monitoringUrl})\n`;
+            body += `- 🌐 [Testar Backend](${backendTestUrl})\n`;
+            body += `- 🖥️ [Testar Frontend](https://roteiros-de-dispensacao.web.app)\n`;
+            body += `- ☁️ [Cloud Run Console](https://console.cloud.google.com/run)\n\n`;
+            
+            body += `---\n`;
+            body += `**Sistema de Monitoramento Inteligente**\n`;
+            body += `- ✅ Retry logic com 3 tentativas\n`;
+            body += `- ✅ Múltiplos endpoints testados\n`;
+            body += `- ✅ Cooldown de ${COOLDOWN_HOURS}h entre notificações\n`;
+            body += `- ✅ Auto-resolução quando sistema recupera\n\n`;
+            body += `*Gerado automaticamente por observability-monitoring.yml*`;
+            
+            let issueUrl, issueNumber;
+            
+            // Decidir se criar nova issue ou atualizar existente
+            if (shouldCreateNewIssue) {
+              console.log('📝 Criando nova issue...');
+              
               const issueResult = await github.rest.issues.create({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 title: title,
                 body: body,
                 labels: labels,
-                assignees: ['AnalineS'], // Atribuir automaticamente para garantir notificação
-                milestone: null
+                assignees: ['AnalineS']
               });
               
-              // Salvar URL da issue para usar no Telegram
-              const issueUrl = issueResult.data.html_url;
-              const monitoringUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/workflows/observability-monitoring.yml`;
+              issueUrl = issueResult.data.html_url;
+              issueNumber = issueResult.data.number;
               
-              // Adicionar comentário @mencionando para forçar notificação
+              // Comentário inicial com @mention
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                issue_number: issueResult.data.number,
-                body: `🚨 **ALERTA CRÍTICO** @AnalineS\n\n` +
-                      `Sistema requer atenção imediata.\n\n` +
-                      `**🔗 Ações Rápidas:**\n` +
-                      `- 📊 [Ver Monitoring](${monitoringUrl}) - Executar verificações\n` +
-                      `- 🔍 [Esta Issue](${issueUrl}) - Acompanhar resolução\n` +
-                      `- 🌐 [Backend Status](https://roteiro-dispensacao-api-992807978726.us-central1.run.app/api/health)\n` +
-                      `- 🖥️ [Frontend Status](https://roteiros-de-dispensacao.web.app)\n\n` +
-                      `**Próximas ações:**\n` +
-                      `- [ ] Verificar status dos serviços\n` +
-                      `- [ ] Analisar logs de erro\n` +
-                      `- [ ] Confirmar recuperação\n\n` +
-                      `*Issue criada automaticamente pelo sistema de monitoramento*`
+                issue_number: issueNumber,
+                body: `🚨 **NOVO ALERTA** @AnalineS\n\n` +
+                      `Severidade: **${severity.toUpperCase()}**\n` +
+                      `Tipo: **${alertType.replace('_', ' ').toUpperCase()}**\n\n` +
+                      `**Status dos Sistemas:**\n` +
+                      `- Backend: ${backend} ${backendEndpoint ? '(' + backendEndpoint + ')' : ''}\n` +
+                      `- Frontend: ${frontend}\n\n` +
+                      `Este alerta foi gerado após verificação com retry logic.\n` +
+                      `Cooldown de ${COOLDOWN_HOURS}h ativo para evitar spam.`
               });
               
-              // Passar URLs para usar no Telegram
-              core.setOutput('issue_url', issueUrl);
-              core.setOutput('monitoring_url', monitoringUrl);
-              core.setOutput('issue_number', issueResult.data.number);
+              console.log('✅ Nova issue criada com notificações');
               
-              console.log('✅ Issue de alerta criada com notificações');
+            } else if (!needsCooldownCheck) {
+              console.log('🔄 Atualizando issue existente...');
+              
+              issueUrl = existingIssue.html_url;
+              issueNumber = existingIssue.number;
+              
+              // Atualizar título se mudou a severidade
+              if (existingIssue.title !== title) {
+                await github.rest.issues.update({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issueNumber,
+                  title: title
+                });
+              }
+              
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issueNumber,
+                body: `🔄 **ATUALIZAÇÃO DO ALERTA** @AnalineS\n\n` +
+                      `${body}\n\n` +
+                      `---\n` +
+                      `*Atualização: ${nowISO}*`
+              });
+              
+              console.log('✅ Issue existente atualizada');
+              
             } else {
-              // Adicionar comentário na issue existente com @mention
-              const existingIssueUrl = issues.data[0].html_url;
-              const monitoringUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/workflows/observability-monitoring.yml`;
-              
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: issues.data[0].number,
-                body: `🔄 **Atualização do Alerta** @AnalineS\n\n${body}\n\n` +
-                      `**🔗 Ações Rápidas:**\n` +
-                      `- 📊 [Ver Monitoring](${monitoringUrl})\n` +
-                      `- 🔍 [Esta Issue](${existingIssueUrl})\n\n` +
-                      `*Última verificação: ${new Date().toISOString()}*`
-              });
-              
-              // Passar URLs para usar no Telegram
-              core.setOutput('issue_url', existingIssueUrl);
-              core.setOutput('monitoring_url', monitoringUrl);
-              core.setOutput('issue_number', issues.data[0].number);
-              
-              console.log('✅ Comentário adicionado na issue existente');
+              console.log('❄️ Em cooldown - nenhuma ação tomada');
+              issueUrl = existingIssue.html_url;
+              issueNumber = existingIssue.number;
             }
+            
+            // Definir outputs
+            core.setOutput('issue_url', issueUrl);
+            core.setOutput('monitoring_url', monitoringUrl);
+            core.setOutput('issue_number', issueNumber);
+            core.setOutput('alert_severity', severity);
+            core.setOutput('cooldown_active', needsCooldownCheck.toString());
 
       - name: 📱 Send Telegram Alert
         if: steps.api-health.outputs.alert_needed == 'true' || steps.metrics-usage.outputs.quota_alert == 'true'
@@ -222,39 +441,192 @@ jobs:
             echo "⚠️ Credenciais do Telegram não configuradas - usando apenas GitHub Issues"
           fi
 
-      - name: 🔄 Auto-close resolved issues
+      - name: 🔄 Smart Auto-close resolved issues
         if: steps.api-health.outputs.alert_needed == 'false' && steps.metrics-usage.outputs.quota_alert == 'false'
         uses: actions/github-script@v6
         with:
           script: |
-            // Fechar automaticamente issues de alerta quando sistema está saudável
+            const now = new Date();
+            const nowISO = now.toISOString();
+            const backend = '${{ steps.api-health.outputs.backend_status }}';
+            const frontend = '${{ steps.api-health.outputs.frontend_status }}';
+            const backendEndpoint = '${{ steps.api-health.outputs.backend_endpoint }}';
+            
+            console.log('🔍 Verificando issues para auto-resolução...');
+            console.log(`Sistema: Backend ${backend}, Frontend ${frontend}`);
+            
+            // Buscar issues abertas de monitoramento
             const issues = await github.rest.issues.listForRepo({
               owner: context.repo.owner,
               repo: context.repo.repo,
               state: 'open',
-              labels: 'observability,automated,critical'
+              labels: 'observability,automated'
             });
             
+            console.log(`📋 Encontradas ${issues.data.length} issues abertas de monitoramento`);
+            
+            let closedCount = 0;
+            
             for (const issue of issues.data) {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: issue.number,
-                body: '✅ **Sistema Recuperado**\n\n' +
-                      'O monitoramento automático detectou que o sistema voltou ao normal.\n' +
-                      'Fechando esta issue automaticamente.\n\n' +
-                      `*Verificação: ${new Date().toISOString()}*`
-              });
+              const issueNumber = issue.number;
+              const issueTitle = issue.title;
+              const lastUpdate = new Date(issue.updated_at);
+              const timeSinceUpdate = now.getTime() - lastUpdate.getTime();
+              const hoursSinceUpdate = Math.round(timeSinceUpdate / (1000 * 60 * 60));
               
-              await github.rest.issues.update({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: issue.number,
-                state: 'closed'
-              });
+              console.log(`📝 Analisando issue #${issueNumber}: ${issueTitle}`);
+              console.log(`⏰ Última atualização: ${hoursSinceUpdate}h atrás`);
+              
+              // Verificar se deve fechar baseado no tipo de issue
+              let shouldClose = false;
+              let resolutionMessage = '';
+              let resolutionType = '';
+              
+              // Sistema completamente offline -> agora online
+              if (issueTitle.includes('Sistema Completamente Offline') || 
+                  issueTitle.includes('Sistema Offline')) {
+                if (backend === '200' && frontend === '200') {
+                  shouldClose = true;
+                  resolutionType = 'full_recovery';
+                  resolutionMessage = 'Sistema completamente recuperado';
+                }
+              }
+              
+              // Backend offline -> agora online
+              else if (issueTitle.includes('Backend Offline')) {
+                if (backend === '200') {
+                  shouldClose = true;
+                  resolutionType = 'backend_recovery';
+                  resolutionMessage = 'Backend API recuperado';
+                }
+              }
+              
+              // Frontend offline -> agora online
+              else if (issueTitle.includes('Frontend Offline')) {
+                if (frontend === '200') {
+                  shouldClose = true;
+                  resolutionType = 'frontend_recovery';
+                  resolutionMessage = 'Frontend recuperado';
+                }
+              }
+              
+              // Quota alta -> agora normal
+              else if (issueTitle.includes('Quota')) {
+                // Quota sempre resolver automaticamente se não há quota_alert
+                shouldClose = true;
+                resolutionType = 'quota_normalized';
+                resolutionMessage = 'Uso de métricas normalizado';
+              }
+              
+              // Issues genéricas de alerta
+              else if (issueTitle.includes('Alerta de Monitoramento')) {
+                if (backend === '200' && frontend === '200') {
+                  shouldClose = true;
+                  resolutionType = 'general_recovery';
+                  resolutionMessage = 'Sistema totalmente operacional';
+                }
+              }
+              
+              if (shouldClose) {
+                console.log(`✅ Fechando issue #${issueNumber} - ${resolutionMessage}`);
+                
+                // Comentário de resolução inteligente
+                let resolutionComment = `✅ **SISTEMA RECUPERADO - ${resolutionMessage.toUpperCase()}**\n\n`;
+                
+                resolutionComment += `### 📊 Status Atual Confirmado\n\n`;
+                resolutionComment += `| Componente | Status Anterior | Status Atual | Resultado |\n`;
+                resolutionComment += `|------------|-----------------|--------------|----------|\n`;
+                resolutionComment += `| Backend API | ❌ Problema | ✅ HTTP ${backend} | ${backend === '200' ? '🟢 Recuperado' : '🔴 Ainda com problema'} |\n`;
+                resolutionComment += `| Frontend | ❌ Problema | ✅ HTTP ${frontend} | ${frontend === '200' ? '🟢 Recuperado' : '🔴 Ainda com problema'} |\n`;
+                
+                if (backendEndpoint) {
+                  resolutionComment += `| Endpoint Testado | - | ${backendEndpoint} | ✅ Funcionando |\n`;
+                }
+                
+                resolutionComment += `\n### ⏰ Detalhes da Recuperação\n\n`;
+                resolutionComment += `- **Tempo de inatividade**: ~${hoursSinceUpdate} horas\n`;
+                resolutionComment += `- **Verificação**: ${nowISO}\n`;
+                resolutionComment += `- **Método**: Retry com 3 tentativas + múltiplos endpoints\n`;
+                resolutionComment += `- **Tipo de resolução**: ${resolutionType}\n\n`;
+                
+                resolutionComment += `### 🛠️ Ações Tomadas pelo Sistema\n\n`;
+                resolutionComment += `- ✅ Verificação múltipla com retry logic\n`;
+                resolutionComment += `- ✅ Confirmação de endpoints funcionais\n`;
+                resolutionComment += `- ✅ Auto-resolução inteligente ativada\n`;
+                resolutionComment += `- ✅ Monitoramento contínuo mantido\n\n`;
+                
+                resolutionComment += `### 📈 Próximos Passos\n\n`;
+                resolutionComment += `- 🔍 **Investigação opcional**: Analisar logs do período de inatividade\n`;
+                resolutionComment += `- 📊 **Monitoramento**: Sistema continua sendo monitorado a cada hora\n`;
+                resolutionComment += `- ⚡ **Prevenção**: Considerar alertas proativos se padrão se repetir\n\n`;
+                
+                resolutionComment += `---\n`;
+                resolutionComment += `**✅ Issue fechada automaticamente pelo sistema de monitoramento inteligente**\n`;
+                resolutionComment += `*Se o problema retornar, uma nova issue será criada automaticamente*`;
+                
+                // Adicionar comentário de resolução
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issueNumber,
+                  body: resolutionComment
+                });
+                
+                // Fechar a issue
+                await github.rest.issues.update({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issueNumber,
+                  state: 'closed',
+                  state_reason: 'completed'
+                });
+                
+                // Adicionar label de resolução
+                await github.rest.issues.addLabels({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issueNumber,
+                  labels: ['auto-resolved', resolutionType]
+                });
+                
+                closedCount++;
+                
+              } else {
+                console.log(`⏸️ Issue #${issueNumber} mantida aberta - critérios de resolução não atendidos`);
+                
+                // Se issue muito antiga (>24h) sem resolução, adicionar comentário de status
+                if (hoursSinceUpdate >= 24) {
+                  console.log(`⚠️ Issue #${issueNumber} aberta há ${hoursSinceUpdate}h - adicionando status update`);
+                  
+                  await github.rest.issues.createComment({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: issueNumber,
+                    body: `⏰ **Status Update - ${hoursSinceUpdate}h em investigação**\n\n` +
+                          `Esta issue está aberta há mais de 24 horas.\n\n` +
+                          `**Status atual dos sistemas:**\n` +
+                          `- Backend: ${backend === '200' ? '✅' : '❌'} HTTP ${backend}\n` +
+                          `- Frontend: ${frontend === '200' ? '✅' : '❌'} HTTP ${frontend}\n\n` +
+                          `**Recomendações:**\n` +
+                          `- 🔍 Verificar se requer investigação manual\n` +
+                          `- 📞 Considerar escalação se necessário\n` +
+                          `- 🔄 Fechar manualmente se problema já foi resolvido\n\n` +
+                          `*Comentário automático de acompanhamento*`
+                  });
+                }
+              }
             }
             
-            console.log(`✅ ${issues.data.length} issues de alerta fechadas automaticamente`);
+            console.log(`🎯 Resultado: ${closedCount} issues fechadas automaticamente de ${issues.data.length} analisadas`);
+            
+            // Se fechou alguma issue, enviar notificação de recuperação
+            if (closedCount > 0) {
+              core.setOutput('recovery_count', closedCount.toString());
+              core.setOutput('system_recovered', 'true');
+            } else {
+              core.setOutput('recovery_count', '0');
+              core.setOutput('system_recovered', 'false');
+            }
 
       - name: 📧 GitHub Email Notifications Check
         if: always()
