@@ -104,11 +104,15 @@ class AppConfig:
         'general': float(os.getenv('WEIGHT_GENERAL', 0.2))
     }
     
-    # Database Config (AstraDB)
-    ASTRA_DB_ENABLED: bool = os.getenv('ASTRA_DB_ENABLED', '').lower() == 'true'
-    ASTRA_DB_URL: Optional[str] = os.getenv('ASTRA_DB_URL')
-    ASTRA_DB_TOKEN: Optional[str] = os.getenv('ASTRA_DB_TOKEN')
-    ASTRA_DB_KEYSPACE: Optional[str] = os.getenv('ASTRA_DB_KEYSPACE')
+    # Database Config (AstraDB) - Mapeamento para GitHub Secrets
+    ASTRA_DB_ENABLED: bool = os.getenv('ASTRA_BD_ENABLED', os.getenv('ASTRA_DB_ENABLED', '')).lower() == 'true'
+    ASTRA_DB_URL: Optional[str] = os.getenv('ASTRA_BD_URL', os.getenv('ASTRA_DB_URL'))
+    ASTRA_DB_TOKEN: Optional[str] = os.getenv('ASTRA_BD_TOKEN', os.getenv('ASTRA_DB_TOKEN'))
+    ASTRA_DB_KEYSPACE: Optional[str] = os.getenv('ASTRA_BD_KEYSPACE', os.getenv('ASTRA_DB_KEYSPACE'))
+    ASTRA_DB_API_KEY: Optional[str] = os.getenv('ASTRA_BD_API_KEY')
+    ASTRA_DB_APPLICATION_TOKEN: Optional[str] = os.getenv('ASTRA_BD_APLICATION_TOKEN')
+    ASTRA_DB_CLIENT_ID: Optional[str] = os.getenv('ASTRA_BD_CLIENTID')
+    ASTRA_DB_SECRET: Optional[str] = os.getenv('ASTRA_BD_SECRET')
     
     # Redis Config (Redis Cloud)
     REDIS_ENABLED: bool = os.getenv('REDIS_ENABLED', '').lower() == 'true'

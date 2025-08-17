@@ -20,7 +20,7 @@ class GoogleAnalyticsUX {
   private gaId: string | null = null;
 
   constructor() {
-    this.gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || null;
+    this.gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || process.env.GA_MEASUREMENT_ID || null;
     this.setupUXTracking();
   }
 

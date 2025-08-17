@@ -255,7 +255,7 @@ let instance: FreeGCPObservability | null = null;
 export function getObservability(): FreeGCPObservability {
   if (!instance) {
     instance = new FreeGCPObservability(
-      process.env.NEXT_PUBLIC_GCP_PROJECT_ID || ''
+      process.env.NEXT_PUBLIC_GCP_PROJECT_ID || process.env.GCP_PROJECT_ID || ''
     );
   }
   return instance;

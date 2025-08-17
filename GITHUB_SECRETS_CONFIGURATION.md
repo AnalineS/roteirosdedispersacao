@@ -1,95 +1,87 @@
 # 🔐 Configuração de GitHub Secrets
 
-## 📋 Secrets Necessários para Deploy
+## 📋 Secrets Configurados no GitHub (MAPEAMENTO REAL)
 
-### 🔧 **Frontend (Next.js)**
+### ✅ **Secrets Atualmente Disponíveis:**
 
-#### **Backend API Configuration**
+#### **🔑 Astra Database (Cassandra/DataStax)**
 ```
-NEXT_PUBLIC_API_URL
+✅ ASTRA_BD_API_KEY
+✅ ASTRA_BD_APLICATION_TOKEN  
+✅ ASTRA_BD_CLIENTID
+✅ ASTRA_BD_SECRET
+✅ ASTRA_BD_TOKEN
 ```
-- **Valor:** URL do backend em produção (ex: `https://backend-api-url.com`)
-- **Descrição:** URL base para todas as chamadas da API do frontend
+- **Status:** Configurados no GitHub (BD ao invés de DB)
+- **Mapeamento:** Código agora suporta ambos `ASTRA_BD_*` e `ASTRA_DB_*`
 
-#### **Environment Configuration**
+#### **🔥 Firebase Configuration**
 ```
-NEXT_PUBLIC_ENVIRONMENT
+✅ FIREBASE_API_KEY
+✅ FIREBASE_APP_ID  
+✅ FIREBASE_AUTH_DOMAIN
+✅ FIREBASE_MESSAGING_SENDER_ID
+✅ FIREBASE_PROJECT_ID
+✅ FIREBASE_STORAGE_BUCKET
+✅ FIREBASE_TOKEN
 ```
-- **Valor:** `production`
-- **Descrição:** Define o ambiente de execução
+- **Status:** Configurados no GitHub
+- **Mapeamento:** Código suporta `FIREBASE_*` e `NEXT_PUBLIC_FIREBASE_*`
 
-#### **Feature Toggles**
+#### **📊 Google Analytics & GCP**
 ```
-NEXT_PUBLIC_AUTH_ENABLED
-NEXT_PUBLIC_FIRESTORE_ENABLED
-NEXT_PUBLIC_OFFLINE_MODE
-NEXT_PUBLIC_ANALYTICS_ENABLED
-NEXT_PUBLIC_COOKIES_ENABLED
+✅ GA_MEASUREMENT_ID
+✅ GCP_PROJECT_ID
+✅ GCP_REGION
+✅ GCP_SERVICE_ACCOUNT_KEY
 ```
-- **Valores:** `true` ou `false`
-- **Descrição:** Controla quais funcionalidades estão ativas em produção
+- **Status:** Configurados no GitHub
+- **Mapeamento:** Código suporta `GA_*` e `NEXT_PUBLIC_GA_*`
 
-#### **Firebase Configuration**
+#### **🤖 AI APIs**
 ```
-NEXT_PUBLIC_FIREBASE_API_KEY
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
-NEXT_PUBLIC_FIREBASE_PROJECT_ID
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
-NEXT_PUBLIC_FIREBASE_APP_ID
+✅ OPENROUTER_API_KEY
+✅ HUGGINGFACE_API_KEY
 ```
-- **Valores:** Configurações específicas do projeto Firebase
-- **Descrição:** Autenticação e banco de dados Firestore
+- **Status:** Configurados no GitHub
+- **Uso:** Modelos Llama 3.2 e Kimie K2
 
-#### **Google Analytics**
+#### **🔐 Security & Application**
 ```
-NEXT_PUBLIC_GA_MEASUREMENT_ID
+✅ SECRET_KEY
 ```
-- **Valor:** ID do Google Analytics (ex: `G-XXXXXXXXXX`)
-- **Descrição:** Tracking de UX e analytics
+- **Status:** Configurado no GitHub
+- **Uso:** Criptografia Flask
 
----
+#### **💬 Telegram Bot (Notificações)**
+```
+✅ TELEGRAM_BOT_TOKEN
+✅ TELEGRAM_CHAT_ID
+```
+- **Status:** Configurados no GitHub
+- **Uso:** Sistema de notificações
 
-### 🐍 **Backend (Flask)**
+### ❌ **Secrets Faltantes:**
 
-#### **Database Configuration**
+#### **🚨 CRÍTICO: Backend API URL**
 ```
-ASTRA_DB_URL
-ASTRA_DB_TOKEN
-ASTRA_DB_KEYSPACE
+❌ NEXT_PUBLIC_API_URL
 ```
-- **Valores:** Configurações do Astra DB (Cassandra)
-- **Descrição:** Banco vetorial para sistema RAG
+- **Status:** **NECESSÁRIO PARA RESOLVER "Modo offline ativo"**
+- **Urgência:** 🔴 **ALTA** - Sistema em modo offline sem este secret
+- **Valor sugerido:** URL do backend em produção
+- **Exemplo:** `https://backend-dot-hansenase-webapp.rj.r.appspot.com`
 
-#### **Application Security**
+#### **🔄 Environment Toggles (Opcionais)**
 ```
-SECRET_KEY
+⚠️ NEXT_PUBLIC_ENVIRONMENT (padrão: production detectado automaticamente)
+⚠️ NEXT_PUBLIC_AUTH_ENABLED (padrão: true) 
+⚠️ NEXT_PUBLIC_FIRESTORE_ENABLED (padrão: true)
+⚠️ NEXT_PUBLIC_OFFLINE_MODE (padrão: false)
+⚠️ NEXT_PUBLIC_ANALYTICS_ENABLED (padrão: true)
 ```
-- **Valor:** Chave secreta forte de 32+ caracteres
-- **Descrição:** Criptografia de sessões Flask
-
-#### **AI API Keys**
-```
-OPENROUTER_API_KEY
-HUGGINGFACE_API_KEY
-```
-- **Valores:** Chaves de API dos provedores de IA
-- **Descrição:** Acesso aos modelos Llama 3.2 e Kimie K2
-
-#### **CORS Configuration**
-```
-CORS_ORIGINS
-```
-- **Valor:** URLs autorizadas (ex: `https://roteirosdispensacao.com,https://roteiros-de-dispensacao.web.app`)
-- **Descrição:** Segurança cross-origin
-
-#### **Environment**
-```
-ENVIRONMENT
-FLASK_ENV
-```
-- **Valores:** `production`, `production`
-- **Descrição:** Configuração do ambiente Flask
+- **Status:** Opcionais - código usa defaults inteligentes
+- **Prioridade:** 🟡 **BAIXA** - Sistema funciona sem eles
 
 ---
 
