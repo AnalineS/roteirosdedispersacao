@@ -61,7 +61,6 @@ export default function EducationalFooter({
         { label: 'Sobre o Sistema', href: '/sobre', description: 'Informações sobre a plataforma' },
         { label: 'Sobre a Tese', href: '/modules/sobre-a-tese', description: 'Pesquisa de doutorado' },
         { label: 'Metodologia', href: '/metodologia', description: 'Metodologia científica aplicada' },
-        { label: 'Equipe', href: '/equipe', description: 'Desenvolvedores e colaboradores' }
       ]
     },
     

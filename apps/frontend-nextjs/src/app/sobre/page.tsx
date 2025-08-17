@@ -2,97 +2,227 @@
 
 import React from 'react';
 import { modernChatTheme } from '@/config/modernTheme';
+import EducationalLayout from '@/components/layout/EducationalLayout';
+import {
+  ChecklistIcon,
+  GraduationIcon,
+  TrophyIcon,
+  SearchIcon,
+  BookIcon,
+  MailIcon,
+  MicroscopeIcon,
+  TargetIcon,
+  PillIcon,
+  HomeIcon,
+  LightbulbIcon,
+  FileDownloadIcon,
+  LinkIcon,
+  HospitalIcon,
+  BloodIcon,
+  UserIcon,
+  CollaborationIcon
+} from '@/components/icons/EducationalIcons';
 
 /**
- * Página Sobre o Pesquisador
- * Currículo e contribuições acadêmicas do Dr. Nélio Gomes de Moura Júnior
+ * Página dos Pesquisadores Envolvidos
+ * Apresentação da equipe multidisciplinar do projeto Hanseníase PQT-U
  */
 
 export default function SobrePage() {
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: `linear-gradient(135deg, ${modernChatTheme.colors.background.primary}, ${modernChatTheme.colors.background.secondary})`,
-      padding: modernChatTheme.spacing.xl
-    }}>
+    <EducationalLayout>
       <div style={{
-        maxWidth: '1000px',
-        margin: '0 auto'
+        minHeight: '100vh',
+        background: `linear-gradient(135deg, ${modernChatTheme.colors.background.primary}, ${modernChatTheme.colors.background.secondary})`,
+        padding: modernChatTheme.spacing.xl
       }}>
-        {/* Header */}
+        <div style={{
+          maxWidth: '1000px',
+          margin: '0 auto'
+        }}>
+        {/* Header da Equipe */}
         <div style={{
           textAlign: 'center',
           marginBottom: modernChatTheme.spacing.xxl,
           padding: modernChatTheme.spacing.xl,
-          background: 'white',
+          background: `linear-gradient(135deg, ${modernChatTheme.colors.personas.gasnelio.primary}15, ${modernChatTheme.colors.personas.ga.primary}15)`,
           borderRadius: modernChatTheme.borderRadius.lg,
-          boxShadow: modernChatTheme.shadows.emphasis
+          boxShadow: modernChatTheme.shadows.emphasis,
+          border: `2px solid ${modernChatTheme.colors.personas.gasnelio.primary}30`
         }}>
           <div style={{
-            width: '150px',
-            height: '150px',
-            borderRadius: '50%',
-            background: modernChatTheme.colors.personas.gasnelio.primary,
-            margin: '0 auto 24px auto',
             display: 'flex',
-            alignItems: 'center',
             justifyContent: 'center',
-            fontSize: '48px',
-            color: 'white'
+            alignItems: 'center',
+            marginBottom: modernChatTheme.spacing.lg,
+            gap: modernChatTheme.spacing.md
           }}>
-            👨‍⚕️
+            <CollaborationIcon size={48} color={modernChatTheme.colors.personas.gasnelio.primary} />
+            <h1 style={{
+              fontSize: '36px',
+              fontWeight: '700',
+              color: modernChatTheme.colors.neutral.text,
+              margin: 0
+            }}>
+              Pesquisadores Envolvidos
+            </h1>
           </div>
           
-          <h1 style={{
-            fontSize: '32px',
-            fontWeight: '700',
-            color: modernChatTheme.colors.neutral.text,
-            marginBottom: modernChatTheme.spacing.sm
+          <h2 style={{
+            fontSize: '24px',
+            color: modernChatTheme.colors.personas.gasnelio.primary,
+            fontWeight: '600',
+            marginBottom: modernChatTheme.spacing.md,
+            margin: '0 0 16px 0'
           }}>
-            Nélio Gomes de Moura Júnior
-          </h1>
+            Roteiro para Dispensação – Hanseníase (PQT-U)
+          </h2>
           
           <p style={{
             fontSize: '18px',
-            color: modernChatTheme.colors.personas.gasnelio.primary,
-            fontWeight: '600',
-            marginBottom: modernChatTheme.spacing.md
-          }}>
-            Doutorando em Ciências Farmacêuticas
-          </p>
-          
-          <p style={{
-            fontSize: modernChatTheme.typography.persona.fontSize,
-            color: modernChatTheme.colors.neutral.textMuted,
-            maxWidth: '600px',
+            color: modernChatTheme.colors.neutral.text,
+            maxWidth: '800px',
             margin: '0 auto',
-            lineHeight: '1.6'
+            lineHeight: '1.6',
+            marginBottom: modernChatTheme.spacing.lg
           }}>
-            Pesquisador especializado em cuidado farmacêutico baseado em evidências, 
-            com sólida experiência no Sistema Único de Saúde e desenvolvimento de 
-            protocolos para doenças negligenciadas, especialmente hanseníase.
+            Equipe multidisciplinar de pesquisadores especializada em farmácia clínica, 
+            saúde pública e desenvolvimento de protocolos terapêuticos baseados em evidências 
+            para o Sistema Único de Saúde.
           </p>
+
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+            gap: modernChatTheme.spacing.lg,
+            marginTop: modernChatTheme.spacing.lg
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: modernChatTheme.spacing.xs,
+              padding: `${modernChatTheme.spacing.sm} ${modernChatTheme.spacing.md}`,
+              background: 'white',
+              borderRadius: modernChatTheme.borderRadius.md,
+              boxShadow: modernChatTheme.shadows.subtle
+            }}>
+              <UserIcon size={20} color={modernChatTheme.colors.personas.gasnelio.primary} />
+              <span style={{ fontWeight: '600', color: modernChatTheme.colors.neutral.text }}>
+                6 Pesquisadores
+              </span>
+            </div>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: modernChatTheme.spacing.xs,
+              padding: `${modernChatTheme.spacing.sm} ${modernChatTheme.spacing.md}`,
+              background: 'white',
+              borderRadius: modernChatTheme.borderRadius.md,
+              boxShadow: modernChatTheme.shadows.subtle
+            }}>
+              <GraduationIcon size={20} color={modernChatTheme.colors.personas.gasnelio.primary} />
+              <span style={{ fontWeight: '600', color: modernChatTheme.colors.neutral.text }}>
+                Universidade de Brasília
+              </span>
+            </div>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: modernChatTheme.spacing.xs,
+              padding: `${modernChatTheme.spacing.sm} ${modernChatTheme.spacing.md}`,
+              background: 'white',
+              borderRadius: modernChatTheme.borderRadius.md,
+              boxShadow: modernChatTheme.shadows.subtle
+            }}>
+              <MicroscopeIcon size={20} color={modernChatTheme.colors.personas.gasnelio.primary} />
+              <span style={{ fontWeight: '600', color: modernChatTheme.colors.neutral.text }}>
+                Ciências Farmacêuticas
+              </span>
+            </div>
+          </div>
         </div>
 
-        {/* 1. Biografia/Resumo */}
+        {/* 1. Idealizador do Projeto */}
         <div style={{
           background: 'white',
           borderRadius: modernChatTheme.borderRadius.lg,
           boxShadow: modernChatTheme.shadows.subtle,
           padding: modernChatTheme.spacing.xl,
-          marginBottom: modernChatTheme.spacing.xl
+          marginBottom: modernChatTheme.spacing.xl,
+          border: `3px solid ${modernChatTheme.colors.personas.gasnelio.primary}40`
         }}>
-          <h2 style={{
-            fontSize: '24px',
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: modernChatTheme.spacing.lg,
+            gap: modernChatTheme.spacing.md
+          }}>
+            <div style={{
+              width: '120px',
+              height: '120px',
+              borderRadius: '50%',
+              overflow: 'hidden',
+              border: `4px solid ${modernChatTheme.colors.personas.gasnelio.primary}`
+            }}>
+              <img 
+                src="/images/author-photo.jpeg" 
+                alt="Prof. Me. Nélio Gomes de Moura Júnior" 
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover'
+                }}
+              />
+            </div>
+            <div style={{ textAlign: 'left' }}>
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: modernChatTheme.spacing.xs,
+                padding: `${modernChatTheme.spacing.xs} ${modernChatTheme.spacing.sm}`,
+                background: modernChatTheme.colors.personas.gasnelio.primary,
+                color: 'white',
+                borderRadius: modernChatTheme.borderRadius.sm,
+                fontSize: '12px',
+                fontWeight: '600',
+                marginBottom: modernChatTheme.spacing.sm
+              }}>
+                <StarIcon size={14} color="white" />
+                IDEALIZADOR DO PROJETO
+              </div>
+              <h2 style={{
+                fontSize: '28px',
+                fontWeight: '700',
+                color: modernChatTheme.colors.neutral.text,
+                margin: '0 0 8px 0'
+              }}>
+                Nélio Gomes de Moura Júnior
+              </h2>
+              <p style={{
+                fontSize: '18px',
+                color: modernChatTheme.colors.personas.gasnelio.primary,
+                fontWeight: '600',
+                margin: 0
+              }}>
+                Prof. Me. em Ciências Farmacêuticas
+              </p>
+            </div>
+          </div>
+
+          <h3 style={{
+            fontSize: '20px',
             fontWeight: '700',
             color: modernChatTheme.colors.neutral.text,
-            marginBottom: modernChatTheme.spacing.lg,
+            marginBottom: modernChatTheme.spacing.md,
             display: 'flex',
             alignItems: 'center',
             gap: modernChatTheme.spacing.sm
           }}>
-            📋 Biografia e Resumo
-          </h2>
+            <ChecklistIcon size={18} />
+            Biografia e Resumo
+          </h3>
 
           <p style={{
             fontSize: modernChatTheme.typography.persona.fontSize,
@@ -100,7 +230,7 @@ export default function SobrePage() {
             lineHeight: '1.6',
             marginBottom: modernChatTheme.spacing.md
           }}>
-            Nélio Gomes de Moura Júnior é doutorando em Ciências Farmacêuticas pela Universidade de Brasília (UnB), 
+            Nélio Gomes de Moura Júnior é Prof. Me. em Ciências Farmacêuticas pela Universidade de Brasília (UnB), 
             com sólida formação acadêmica e experiência prática na área farmacêutica, especialmente voltada para a 
             saúde pública e atenção primária. Sua trajetória profissional combina atuação clínica no Sistema Único 
             de Saúde (SUS), pesquisa científica e atividades de ensino, consolidando-se como especialista em cuidado 
@@ -117,51 +247,6 @@ export default function SobrePage() {
             para hanseníase, contribuindo para o aprimoramento das práticas profissionais no contexto brasileiro.
           </p>
 
-          <div style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: modernChatTheme.spacing.sm,
-            marginTop: modernChatTheme.spacing.md
-          }}>
-            <a 
-              href="http://lattes.cnpq.br/0153399544950744" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              style={{
-                padding: `${modernChatTheme.spacing.sm} ${modernChatTheme.spacing.md}`,
-                background: modernChatTheme.colors.personas.gasnelio.primary,
-                color: 'white',
-                textDecoration: 'none',
-                borderRadius: modernChatTheme.borderRadius.md,
-                fontSize: '14px',
-                fontWeight: '600',
-                display: 'flex',
-                alignItems: 'center',
-                gap: modernChatTheme.spacing.xs
-              }}
-            >
-              📄 Currículo Lattes
-            </a>
-            <a 
-              href="https://orcid.org/0000-0003-4695-0207" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              style={{
-                padding: `${modernChatTheme.spacing.sm} ${modernChatTheme.spacing.md}`,
-                background: modernChatTheme.colors.personas.gasnelio.alpha,
-                color: 'white',
-                textDecoration: 'none',
-                borderRadius: modernChatTheme.borderRadius.md,
-                fontSize: '14px',
-                fontWeight: '600',
-                display: 'flex',
-                alignItems: 'center',
-                gap: modernChatTheme.spacing.xs
-              }}
-            >
-              🔗 ORCID
-            </a>
-          </div>
         </div>
 
         {/* 2. Formação Acadêmica */}
@@ -181,7 +266,8 @@ export default function SobrePage() {
             alignItems: 'center',
             gap: modernChatTheme.spacing.sm
           }}>
-            🎓 Formação Acadêmica
+            <GraduationIcon size={20} className="inline mr-2" />
+            Formação Acadêmica
           </h2>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: modernChatTheme.spacing.lg }}>
@@ -310,7 +396,8 @@ export default function SobrePage() {
             alignItems: 'center',
             gap: modernChatTheme.spacing.sm
           }}>
-            💼 Atuação Profissional e Projetos
+            <TrophyIcon size={20} className="inline mr-2" />
+            Atuação Profissional e Projetos
           </h2>
 
           <div style={{ display: 'grid', gap: modernChatTheme.spacing.lg }}>
@@ -322,7 +409,8 @@ export default function SobrePage() {
                 color: modernChatTheme.colors.personas.gasnelio.primary,
                 marginBottom: modernChatTheme.spacing.md
               }}>
-                🏥 Atuação no Sistema Único de Saúde
+                <HomeIcon size={18} className="inline mr-2" />
+                Atuação no Sistema Único de Saúde
               </h3>
               <ul style={{
                 margin: 0,
@@ -351,7 +439,8 @@ export default function SobrePage() {
                 color: modernChatTheme.colors.personas.gasnelio.primary,
                 marginBottom: modernChatTheme.spacing.md
               }}>
-                🎓 Atividades de Ensino
+                <GraduationIcon size={18} className="inline mr-2" />
+                Atividades de Ensino
               </h3>
               <ul style={{
                 margin: 0,
@@ -377,7 +466,8 @@ export default function SobrePage() {
                 color: modernChatTheme.colors.personas.gasnelio.primary,
                 marginBottom: modernChatTheme.spacing.md
               }}>
-                🔬 Projetos de Extensão e Pesquisa
+                <MicroscopeIcon size={18} className="inline mr-2" />
+                Projetos de Extensão e Pesquisa
               </h3>
               <div style={{
                 padding: modernChatTheme.spacing.md,
@@ -408,10 +498,14 @@ export default function SobrePage() {
                   style={{
                     fontSize: '12px',
                     color: modernChatTheme.colors.personas.gasnelio.primary,
-                    textDecoration: 'none'
+                    textDecoration: 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px'
                   }}
                 >
-                  🔗 Visualizar Ação de Extensão
+                  <LinkIcon size={12} color={modernChatTheme.colors.personas.gasnelio.primary} />
+                  Visualizar Ação de Extensão
                 </a>
               </div>
 
@@ -443,10 +537,14 @@ export default function SobrePage() {
                   style={{
                     fontSize: '12px',
                     color: modernChatTheme.colors.personas.gasnelio.primary,
-                    textDecoration: 'none'
+                    textDecoration: 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px'
                   }}
                 >
-                  🔗 Ver perfil no LEFAR
+                  <LinkIcon size={12} color={modernChatTheme.colors.personas.gasnelio.primary} />
+                  Ver perfil no LEFAR
                 </a>
               </div>
             </div>
@@ -470,7 +568,8 @@ export default function SobrePage() {
             alignItems: 'center',
             gap: modernChatTheme.spacing.sm
           }}>
-            🔍 Temas de Pesquisa
+            <SearchIcon size={20} className="inline mr-2" />
+            Temas de Pesquisa
           </h2>
 
           <p style={{
@@ -499,7 +598,8 @@ export default function SobrePage() {
                 color: modernChatTheme.colors.personas.gasnelio.primary,
                 marginBottom: modernChatTheme.spacing.sm
               }}>
-                🎯 Cuidado Farmacêutico Baseado em Evidências
+                <TargetIcon size={16} className="inline mr-2" />
+                Cuidado Farmacêutico Baseado em Evidências
               </h4>
               <p style={{
                 fontSize: '14px',
@@ -523,7 +623,8 @@ export default function SobrePage() {
                 color: '#F59E0B',
                 marginBottom: modernChatTheme.spacing.sm
               }}>
-                💊 Dispensação em Doenças Negligenciadas
+                <PillIcon size={16} className="inline mr-2" />
+                Dispensação em Doenças Negligenciadas
               </h4>
               <p style={{
                 fontSize: '14px',
@@ -545,9 +646,13 @@ export default function SobrePage() {
                 fontSize: '16px',
                 fontWeight: '600',
                 color: '#10B981',
-                marginBottom: modernChatTheme.spacing.sm
+                marginBottom: modernChatTheme.spacing.sm,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
               }}>
-                🏥 Atenção Primária à Saúde
+                <HospitalIcon size={16} color="#10B981" />
+                Atenção Primária à Saúde
               </h4>
               <p style={{
                 fontSize: '14px',
@@ -569,9 +674,13 @@ export default function SobrePage() {
                 fontSize: '16px',
                 fontWeight: '600',
                 color: '#3B82F6',
-                marginBottom: modernChatTheme.spacing.sm
+                marginBottom: modernChatTheme.spacing.sm,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
               }}>
-                🩸 Hematologia Clínica
+                <BloodIcon size={16} color="#3B82F6" />
+                Hematologia Clínica
               </h4>
               <p style={{
                 fontSize: '14px',
@@ -602,7 +711,8 @@ export default function SobrePage() {
             alignItems: 'center',
             gap: modernChatTheme.spacing.sm
           }}>
-            📚 Produções Científicas
+            <BookIcon size={20} className="inline mr-2" />
+            Produções Científicas
           </h2>
 
           <div style={{ display: 'grid', gap: modernChatTheme.spacing.lg }}>
@@ -612,9 +722,13 @@ export default function SobrePage() {
                 fontSize: '18px',
                 fontWeight: '600',
                 color: modernChatTheme.colors.personas.gasnelio.primary,
-                marginBottom: modernChatTheme.spacing.md
+                marginBottom: modernChatTheme.spacing.md,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
               }}>
-                📄 Artigos Publicados
+                <FileDownloadIcon size={18} color={modernChatTheme.colors.personas.gasnelio.primary} />
+                Artigos Publicados
               </h3>
 
               <div style={{
@@ -655,7 +769,8 @@ export default function SobrePage() {
                     gap: modernChatTheme.spacing.xs
                   }}
                 >
-                  🔗 Acesse o artigo completo
+                  <LinkIcon size={12} color="white" />
+                  Acesse o artigo completo
                 </a>
               </div>
 
@@ -696,7 +811,8 @@ export default function SobrePage() {
                     gap: modernChatTheme.spacing.xs
                   }}
                 >
-                  🔗 Leia o artigo
+                  <LinkIcon size={12} color="white" />
+                  Leia o artigo
                 </a>
               </div>
             </div>
@@ -707,9 +823,13 @@ export default function SobrePage() {
                 fontSize: '18px',
                 fontWeight: '600',
                 color: modernChatTheme.colors.personas.gasnelio.primary,
-                marginBottom: modernChatTheme.spacing.md
+                marginBottom: modernChatTheme.spacing.md,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
               }}>
-                🎓 Trabalhos Acadêmicos
+                <GraduationIcon size={18} color={modernChatTheme.colors.personas.gasnelio.primary} />
+                Trabalhos Acadêmicos
               </h3>
 
               <div style={{
@@ -749,7 +869,8 @@ export default function SobrePage() {
                     gap: modernChatTheme.spacing.xs
                   }}
                 >
-                  🔗 Acesse o TCC
+                  <LinkIcon size={12} color="white" />
+                  Acesse o TCC
                 </a>
               </div>
             </div>
@@ -760,9 +881,13 @@ export default function SobrePage() {
                 fontSize: '18px',
                 fontWeight: '600',
                 color: modernChatTheme.colors.personas.gasnelio.primary,
-                marginBottom: modernChatTheme.spacing.md
+                marginBottom: modernChatTheme.spacing.md,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
               }}>
-                🤝 Projetos de Extensão
+                <CollaborationIcon size={18} color={modernChatTheme.colors.personas.gasnelio.primary} />
+                Projetos de Extensão
               </h3>
 
               <div style={{
@@ -802,7 +927,8 @@ export default function SobrePage() {
                     gap: modernChatTheme.spacing.xs
                   }}
                 >
-                  🔗 Visualizar Ação de Extensão
+                  <LinkIcon size={12} color="white" />
+                  Visualizar Ação de Extensão
                 </a>
               </div>
             </div>
@@ -826,7 +952,8 @@ export default function SobrePage() {
             alignItems: 'center',
             gap: modernChatTheme.spacing.sm
           }}>
-            📧 Informações de Contato
+            <MailIcon size={20} className="inline mr-2" />
+            Informações de Contato
           </h2>
 
           <div style={{
@@ -850,7 +977,7 @@ export default function SobrePage() {
                 justifyContent: 'center',
                 fontSize: '18px'
               }}>
-                📧
+                <MailIcon size={18} color="white" />
               </div>
               <div>
                 <div style={{ fontSize: '12px', opacity: 0.9, marginBottom: '2px' }}>
@@ -877,7 +1004,7 @@ export default function SobrePage() {
                 justifyContent: 'center',
                 fontSize: '18px'
               }}>
-                🎓
+                <GraduationIcon size={18} color="white" />
               </div>
               <div>
                 <div style={{ fontSize: '12px', opacity: 0.9, marginBottom: '2px' }}>
@@ -914,7 +1041,8 @@ export default function SobrePage() {
                 backdropFilter: 'blur(10px)'
               }}
             >
-              📄 Currículo Lattes CNPq
+              <FileDownloadIcon size={14} color="white" />
+              Currículo Lattes CNPq
             </a>
             <a 
               href="https://orcid.org/0000-0003-4695-0207" 
@@ -934,7 +1062,8 @@ export default function SobrePage() {
                 backdropFilter: 'blur(10px)'
               }}
             >
-              🔗 ORCID
+              <LinkIcon size={14} color="white" />
+              ORCID
             </a>
             <a 
               href="https://www.lefarunb.com.br/membros" 
@@ -954,7 +1083,8 @@ export default function SobrePage() {
                 backdropFilter: 'blur(10px)'
               }}
             >
-              🔬 Perfil LEFAR-UnB
+              <MicroscopeIcon size={14} color="white" />
+              Perfil LEFAR-UnB
             </a>
           </div>
 
@@ -977,7 +1107,334 @@ export default function SobrePage() {
             </p>
           </div>
         </div>
+
+        {/* Equipe de Autores */}
+        <div style={{
+          background: 'white',
+          borderRadius: modernChatTheme.borderRadius.lg,
+          boxShadow: modernChatTheme.shadows.subtle,
+          padding: modernChatTheme.spacing.xl,
+          marginBottom: modernChatTheme.spacing.xl
+        }}>
+          <h2 style={{
+            fontSize: '28px',
+            fontWeight: '700',
+            color: modernChatTheme.colors.neutral.text,
+            marginBottom: modernChatTheme.spacing.md,
+            textAlign: 'center',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: modernChatTheme.spacing.sm
+          }}>
+            <CollaborationIcon size={24} color={modernChatTheme.colors.personas.ga.primary} />
+            Equipe de Autores
+          </h2>
+
+          <p style={{
+            fontSize: '16px',
+            color: modernChatTheme.colors.neutral.textMuted,
+            textAlign: 'center',
+            maxWidth: '600px',
+            margin: `0 auto ${modernChatTheme.spacing.xl}`,
+            lineHeight: '1.6'
+          }}>
+            Coautores especializados que contribuíram com expertise técnica e científica 
+            para o desenvolvimento do roteiro de dispensação PQT-U
+          </p>
+
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gap: modernChatTheme.spacing.lg,
+            marginTop: modernChatTheme.spacing.xl
+          }}>
+            {/* Sâmara Caroline Franco Akkati */}
+            <div style={{
+              background: `${modernChatTheme.colors.personas.ga.primary}08`,
+              borderRadius: modernChatTheme.borderRadius.md,
+              padding: modernChatTheme.spacing.lg,
+              border: `2px solid ${modernChatTheme.colors.personas.ga.primary}20`,
+              transition: 'all 0.3s ease'
+            }}>
+              <div style={{
+                width: '80px',
+                height: '80px',
+                borderRadius: '50%',
+                background: `linear-gradient(135deg, ${modernChatTheme.colors.personas.ga.primary}, ${modernChatTheme.colors.personas.ga.alpha})`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 16px auto',
+                fontSize: '24px',
+                fontWeight: '700',
+                color: 'white'
+              }}>
+                SA
+              </div>
+              <h3 style={{
+                fontSize: '18px',
+                fontWeight: '700',
+                color: modernChatTheme.colors.neutral.text,
+                textAlign: 'center',
+                margin: '0 0 8px 0'
+              }}>
+                Sâmara Caroline Franco Akkati
+              </h3>
+              <p style={{
+                fontSize: '14px',
+                color: modernChatTheme.colors.personas.ga.primary,
+                fontWeight: '600',
+                textAlign: 'center',
+                margin: '0 0 12px 0'
+              }}>
+                Farmacêutica Especialista
+              </p>
+              <p style={{
+                fontSize: '13px',
+                color: modernChatTheme.colors.neutral.textMuted,
+                textAlign: 'center',
+                lineHeight: '1.4',
+                margin: 0
+              }}>
+                Especialização em farmácia clínica e atenção farmacêutica com foco em protocolos terapêuticos
+              </p>
+            </div>
+
+            {/* Sabrina Oliveira Campos de França */}
+            <div style={{
+              background: `${modernChatTheme.colors.personas.gasnelio.primary}08`,
+              borderRadius: modernChatTheme.borderRadius.md,
+              padding: modernChatTheme.spacing.lg,
+              border: `2px solid ${modernChatTheme.colors.personas.gasnelio.primary}20`,
+              transition: 'all 0.3s ease'
+            }}>
+              <div style={{
+                width: '80px',
+                height: '80px',
+                borderRadius: '50%',
+                background: `linear-gradient(135deg, ${modernChatTheme.colors.personas.gasnelio.primary}, ${modernChatTheme.colors.personas.gasnelio.alpha})`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 16px auto',
+                fontSize: '24px',
+                fontWeight: '700',
+                color: 'white'
+              }}>
+                SF
+              </div>
+              <h3 style={{
+                fontSize: '18px',
+                fontWeight: '700',
+                color: modernChatTheme.colors.neutral.text,
+                textAlign: 'center',
+                margin: '0 0 8px 0'
+              }}>
+                Sabrina Oliveira Campos de França
+              </h3>
+              <p style={{
+                fontSize: '14px',
+                color: modernChatTheme.colors.personas.gasnelio.primary,
+                fontWeight: '600',
+                textAlign: 'center',
+                margin: '0 0 12px 0'
+              }}>
+                Pesquisadora em Ciências da Saúde
+              </p>
+              <p style={{
+                fontSize: '13px',
+                color: modernChatTheme.colors.neutral.textMuted,
+                textAlign: 'center',
+                lineHeight: '1.4',
+                margin: 0
+              }}>
+                Expertise em metodologia científica e desenvolvimento de protocolos baseados em evidências
+              </p>
+            </div>
+
+            {/* Laura Beatriz Gomes Brandão */}
+            <div style={{
+              background: `${modernChatTheme.colors.personas.ga.primary}08`,
+              borderRadius: modernChatTheme.borderRadius.md,
+              padding: modernChatTheme.spacing.lg,
+              border: `2px solid ${modernChatTheme.colors.personas.ga.primary}20`,
+              transition: 'all 0.3s ease'
+            }}>
+              <div style={{
+                width: '80px',
+                height: '80px',
+                borderRadius: '50%',
+                background: `linear-gradient(135deg, ${modernChatTheme.colors.personas.ga.primary}, ${modernChatTheme.colors.personas.ga.alpha})`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 16px auto',
+                fontSize: '24px',
+                fontWeight: '700',
+                color: 'white'
+              }}>
+                LB
+              </div>
+              <h3 style={{
+                fontSize: '18px',
+                fontWeight: '700',
+                color: modernChatTheme.colors.neutral.text,
+                textAlign: 'center',
+                margin: '0 0 8px 0'
+              }}>
+                Laura Beatriz Gomes Brandão
+              </h3>
+              <p style={{
+                fontSize: '14px',
+                color: modernChatTheme.colors.personas.ga.primary,
+                fontWeight: '600',
+                textAlign: 'center',
+                margin: '0 0 12px 0'
+              }}>
+                Farmacêutica Clínica
+              </p>
+              <p style={{
+                fontSize: '13px',
+                color: modernChatTheme.colors.neutral.textMuted,
+                textAlign: 'center',
+                lineHeight: '1.4',
+                margin: 0
+              }}>
+                Especialista em cuidado farmacêutico e seguimento farmacoterapêutico
+              </p>
+            </div>
+
+            {/* Barbara Manuela Cardoso Sodré */}
+            <div style={{
+              background: `${modernChatTheme.colors.personas.gasnelio.primary}08`,
+              borderRadius: modernChatTheme.borderRadius.md,
+              padding: modernChatTheme.spacing.lg,
+              border: `2px solid ${modernChatTheme.colors.personas.gasnelio.primary}20`,
+              transition: 'all 0.3s ease'
+            }}>
+              <div style={{
+                width: '80px',
+                height: '80px',
+                borderRadius: '50%',
+                background: `linear-gradient(135deg, ${modernChatTheme.colors.personas.gasnelio.primary}, ${modernChatTheme.colors.personas.gasnelio.alpha})`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 16px auto',
+                fontSize: '24px',
+                fontWeight: '700',
+                color: 'white'
+              }}>
+                BM
+              </div>
+              <h3 style={{
+                fontSize: '18px',
+                fontWeight: '700',
+                color: modernChatTheme.colors.neutral.text,
+                textAlign: 'center',
+                margin: '0 0 8px 0'
+              }}>
+                Barbara Manuela Cardoso Sodré
+              </h3>
+              <p style={{
+                fontSize: '14px',
+                color: modernChatTheme.colors.personas.gasnelio.primary,
+                fontWeight: '600',
+                textAlign: 'center',
+                margin: '0 0 12px 0'
+              }}>
+                Especialista em Saúde Pública
+              </p>
+              <p style={{
+                fontSize: '13px',
+                color: modernChatTheme.colors.neutral.textMuted,
+                textAlign: 'center',
+                lineHeight: '1.4',
+                margin: 0
+              }}>
+                Foco em epidemiologia e controle de doenças negligenciadas no SUS
+              </p>
+            </div>
+
+            {/* Rafael Santos Santana */}
+            <div style={{
+              background: `${modernChatTheme.colors.personas.ga.primary}08`,
+              borderRadius: modernChatTheme.borderRadius.md,
+              padding: modernChatTheme.spacing.lg,
+              border: `2px solid ${modernChatTheme.colors.personas.ga.primary}20`,
+              transition: 'all 0.3s ease',
+              gridColumn: 'span 1'
+            }}>
+              <div style={{
+                width: '80px',
+                height: '80px',
+                borderRadius: '50%',
+                background: `linear-gradient(135deg, ${modernChatTheme.colors.personas.ga.primary}, ${modernChatTheme.colors.personas.ga.alpha})`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 16px auto',
+                fontSize: '24px',
+                fontWeight: '700',
+                color: 'white'
+              }}>
+                RS
+              </div>
+              <h3 style={{
+                fontSize: '18px',
+                fontWeight: '700',
+                color: modernChatTheme.colors.neutral.text,
+                textAlign: 'center',
+                margin: '0 0 8px 0'
+              }}>
+                Rafael Santos Santana
+              </h3>
+              <p style={{
+                fontSize: '14px',
+                color: modernChatTheme.colors.personas.ga.primary,
+                fontWeight: '600',
+                textAlign: 'center',
+                margin: '0 0 12px 0'
+              }}>
+                Farmacêutico Pesquisador
+              </p>
+              <p style={{
+                fontSize: '13px',
+                color: modernChatTheme.colors.neutral.textMuted,
+                textAlign: 'center',
+                lineHeight: '1.4',
+                margin: 0
+              }}>
+                Especialização em farmacologia clínica e desenvolvimento de diretrizes terapêuticas
+              </p>
+            </div>
+          </div>
+
+          {/* Nota sobre colaboração */}
+          <div style={{
+            marginTop: modernChatTheme.spacing.xl,
+            padding: modernChatTheme.spacing.lg,
+            background: `${modernChatTheme.colors.personas.gasnelio.primary}08`,
+            borderRadius: modernChatTheme.borderRadius.md,
+            border: `1px solid ${modernChatTheme.colors.personas.gasnelio.primary}20`,
+            textAlign: 'center'
+          }}>
+            <CollaborationIcon size={32} color={modernChatTheme.colors.personas.gasnelio.primary} style={{ marginBottom: '12px' }} />
+            <p style={{
+              fontSize: '14px',
+              color: modernChatTheme.colors.neutral.text,
+              margin: 0,
+              lineHeight: '1.5'
+            }}>
+              <strong>Trabalho Colaborativo:</strong> Esta equipe multidisciplinar combina expertise em farmácia clínica, 
+              saúde pública e metodologia científica para desenvolver protocolos seguros e baseados em evidências 
+              para o Sistema Único de Saúde.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
+    </EducationalLayout>
   );
 }

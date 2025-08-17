@@ -178,6 +178,7 @@ export class AuthService {
       'neeliogomes@hotmail.com',
       'sousa.analine@gmail.com',
       'roteirosdedispensacao@gmail.com',
+      'neliogmoura@gmail.com',
       // Adicionar mais emails de admin conforme necessário
     ];
 

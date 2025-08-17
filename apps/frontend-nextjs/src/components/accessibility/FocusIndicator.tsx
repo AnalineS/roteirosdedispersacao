@@ -97,26 +97,134 @@ export default function FocusIndicator({
         }
       }
 
-      /* Classe para skip links */
+      /* Classe para skip links - Posicionamento melhorado */
       .skip-link {
-        position: absolute;
-        top: -40px;
-        left: 0;
+        position: fixed;
+        top: -100px;
+        left: 50%;
+        transform: translateX(-50%);
         background: ${color};
         color: white;
-        padding: 8px 16px;
+        padding: 12px 24px;
         text-decoration: none;
-        border-radius: 0 0 4px 0;
+        border-radius: 8px;
         z-index: 10000;
         font-weight: 600;
-        font-size: 14px;
-        transition: top 0.2s ease;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        border: 2px solid transparent;
+        min-width: 200px;
+        text-align: center;
+        line-height: 1.2;
       }
 
-      .skip-link:focus {
-        top: 0;
+      .skip-link:focus,
+      .skip-link:focus-visible {
+        top: 20px;
         outline: 3px solid white !important;
-        outline-offset: -6px !important;
+        outline-offset: 2px !important;
+        border-color: white;
+        transform: translateX(-50%) scale(1.05);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+      }
+
+      /* Container para organizar múltiplos skip links */
+      .skip-links-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 10000;
+        pointer-events: none;
+      }
+
+      .skip-links-container .skip-link {
+        pointer-events: auto;
+        position: relative;
+        top: -100px;
+        left: auto;
+        transform: none;
+        display: inline-block;
+        margin: 0 8px;
+      }
+
+      .skip-links-container .skip-link:focus,
+      .skip-links-container .skip-link:focus-visible {
+        top: 20px;
+        transform: scale(1.05);
+      }
+
+      /* Estilos específicos para diferentes skip links */
+      .skip-link[href="#main-content"] {
+        background: ${modernChatTheme.colors.unb.primary};
+      }
+
+      .skip-link[href="#navigation"] {
+        background: ${modernChatTheme.colors.personas.gasnelio.primary};
+        left: calc(50% - 120px);
+      }
+
+      .skip-link[href="#footer"] {
+        background: ${modernChatTheme.colors.personas.ga.primary};
+        left: calc(50% + 120px);
+      }
+
+      /* Melhorias para responsividade */
+      @media (max-width: 768px) {
+        .skip-link {
+          font-size: 14px;
+          padding: 10px 20px;
+          min-width: 160px;
+        }
+
+        .skip-link[href="#navigation"] {
+          left: calc(50% - 100px);
+        }
+
+        .skip-link[href="#footer"] {
+          left: calc(50% + 100px);
+        }
+      }
+
+      @media (max-width: 480px) {
+        .skip-link {
+          position: fixed;
+          left: 10px;
+          right: 10px;
+          transform: none;
+          min-width: auto;
+          margin-bottom: 8px;
+        }
+
+        .skip-link[href="#navigation"] {
+          top: -160px;
+          left: 10px;
+          right: 10px;
+        }
+
+        .skip-link[href="#footer"] {
+          top: -220px;
+          left: 10px;
+          right: 10px;
+        }
+
+        .skip-link:focus,
+        .skip-link:focus-visible {
+          transform: none;
+        }
+
+        .skip-link[href="#main-content"]:focus {
+          top: 20px;
+        }
+
+        .skip-link[href="#navigation"]:focus {
+          top: 80px;
+        }
+
+        .skip-link[href="#footer"]:focus {
+          top: 140px;
+        }
       }
 
       /* Indicadores de foco para navegação por teclado */
@@ -218,9 +326,54 @@ export function useFocusIndicator() {
 }
 
 // Componente Skip Link para navegação rápida
-export function SkipLink({ href = '#main-content', children = 'Pular para o conteúdo principal' }) {
+export function SkipLink({ 
+  href = '#main-content', 
+  children = 'Pular para o conteúdo principal' 
+}: {
+  href?: string;
+  children?: React.ReactNode;
+}) {
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    
+    // Encontrar o elemento alvo
+    const targetElement = document.querySelector(href);
+    
+    if (targetElement) {
+      // Scroll suave para o elemento
+      targetElement.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'start' 
+      });
+      
+      // Focar no elemento se for focável
+      if (targetElement instanceof HTMLElement) {
+        // Adicionar tabindex temporariamente se necessário
+        const originalTabindex = targetElement.getAttribute('tabindex');
+        if (!targetElement.hasAttribute('tabindex')) {
+          targetElement.setAttribute('tabindex', '-1');
+        }
+        
+        targetElement.focus();
+        
+        // Remover tabindex temporário após 1 segundo
+        if (!originalTabindex) {
+          setTimeout(() => {
+            targetElement.removeAttribute('tabindex');
+          }, 1000);
+        }
+      }
+    }
+  };
+
   return (
-    <a href={href} className="skip-link">
+    <a 
+      href={href} 
+      className="skip-link"
+      onClick={handleClick}
+      role="button"
+      aria-label={`${children} - Pressione Enter para navegar`}
+    >
       {children}
     </a>
   );

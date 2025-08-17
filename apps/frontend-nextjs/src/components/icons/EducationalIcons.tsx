@@ -687,6 +687,121 @@ export const AlertTriangleIcon: React.FC<IconProps> = ({
   </svg>
 );
 
+// Ícone de Hospital/Saúde (substitui 🏥)
+export const HospitalIcon: React.FC<IconProps> = ({ 
+  size = 24, 
+  color = 'currentColor', 
+  className 
+}) => (
+  <svg 
+    width={size} 
+    height={size} 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke={color} 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M12 6V2H8v4H2v16h20V6h-10z" />
+    <path d="M10 9h4" />
+    <path d="M12 7v4" />
+    <path d="M6 13h4" />
+    <path d="M14 13h4" />
+    <path d="M6 17h4" />
+    <path d="M14 17h4" />
+  </svg>
+);
+
+// Ícone de Sangue/Gota (substitui 🩸)
+export const BloodIcon: React.FC<IconProps> = ({ 
+  size = 24, 
+  color = 'currentColor', 
+  className 
+}) => (
+  <svg 
+    width={size} 
+    height={size} 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke={color} 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z" />
+  </svg>
+);
+
+// Ícone de Usuário (substitui 👤)
+export const UserIcon: React.FC<IconProps> = ({ 
+  size = 24, 
+  color = 'currentColor', 
+  className 
+}) => (
+  <svg 
+    width={size} 
+    height={size} 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke={color} 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+    <circle cx="12" cy="7" r="4" />
+  </svg>
+);
+
+// Ícone de Colaboração/Handshake (substitui 🤝)
+export const CollaborationIcon: React.FC<IconProps> = ({ 
+  size = 24, 
+  color = 'currentColor', 
+  className 
+}) => (
+  <svg 
+    width={size} 
+    height={size} 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke={color} 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M11 12h2l3.5-3.5a2.828 2.828 0 114 4L17 16" />
+    <path d="M13 12h-2l-3.5 3.5a2.828 2.828 0 11-4-4L7 8" />
+    <circle cx="12" cy="12" r="2" />
+  </svg>
+);
+
+// Ícone de Link/Conexão (substitui 🔗)
+export const LinkIcon: React.FC<IconProps> = ({ 
+  size = 24, 
+  color = 'currentColor', 
+  className 
+}) => (
+  <svg 
+    width={size} 
+    height={size} 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke={color} 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
+    <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
+  </svg>
+);
+
 // MAPEAMENTO PARA FACILITAR SUBSTITUIÇÃO
 export const EMOJI_TO_ICON_MAP = {
   '🎓': GraduationIcon,
@@ -718,10 +833,13 @@ export const EMOJI_TO_ICON_MAP = {
   '🔽': ChevronDownIcon,
   '💡': LightbulbIcon,
   '⚡': ZapIcon,
-  '🔗': FileDownloadIcon, // Usar ícone de exportar existente
+  '🔗': LinkIcon,
+  '🏥': HospitalIcon,
+  '🩸': BloodIcon,
+  '👤': UserIcon,
+  '🤝': CollaborationIcon,
   '💬': MailIcon, // Usar ícone de chat existente
   '📱': BookIcon, // QR Code simplificado
-  '👤': ChildIcon, // Usar ícone existente
   '✕': RefreshIcon // Usar ícone existente
 } as const;
 

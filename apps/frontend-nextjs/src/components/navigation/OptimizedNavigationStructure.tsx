@@ -238,16 +238,6 @@ export const OPTIMIZED_HEADER_NAVIGATION: NavigationCategory[] = [
         estimatedTime: '20 min'
       },
       {
-        id: 'team',
-        label: 'Equipe',
-        href: '/equipe',
-        icon: '👥',
-        description: 'Pesquisadores envolvidos',
-        category: 'institutional',
-        level: 'beginner',
-        estimatedTime: '5 min'
-      },
-      {
         id: 'about',
         label: 'Sobre o Projeto',
         href: '/sobre',

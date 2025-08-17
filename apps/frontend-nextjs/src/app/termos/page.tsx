@@ -2,6 +2,7 @@
 
 import EducationalLayout from '@/components/layout/EducationalLayout';
 import { getUnbColors } from '@/config/modernTheme';
+import { ChecklistIcon } from '@/components/icons/EducationalIcons';
 
 export default function TermosPage() {
   const unbColors = getUnbColors();
@@ -17,8 +18,9 @@ export default function TermosPage() {
           borderRadius: '16px',
           color: 'white'
         }}>
-          <h1 style={{ margin: 0, fontSize: '2.5rem', fontWeight: 'bold' }}>
-            📋 Termos de Uso
+          <h1 style={{ margin: 0, fontSize: '2.5rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem' }}>
+            <ChecklistIcon size={40} color="white" />
+            Termos de Uso
           </h1>
           <p style={{ margin: '1rem 0 0', fontSize: '1.2rem', opacity: 0.9 }}>
             Condições de utilização da plataforma educacional

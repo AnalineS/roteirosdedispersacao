@@ -36,20 +36,24 @@ export default function EducationalLayout({
           animation={true}
         />
       
-      {/* Skip links para navegação rápida */}
-      <SkipLink href="#main-content">
-        Pular para o conteúdo principal
-      </SkipLink>
-      <SkipLink href="#navigation">
-        Pular para navegação
-      </SkipLink>
-      <SkipLink href="#footer">
-        Pular para rodapé
-      </SkipLink>
+      {/* Skip links para navegação rápida - Container organizado */}
+      <div className="skip-links-container" role="navigation" aria-label="Links de navegação rápida">
+        <SkipLink href="#main-content">
+          Pular para o conteúdo principal
+        </SkipLink>
+        <SkipLink href="#navigation">
+          Pular para navegação
+        </SkipLink>
+        <SkipLink href="#footer">
+          Pular para rodapé
+        </SkipLink>
+      </div>
       
       {/* Navigation Header */}
       {showHeader && (
-        <NavigationHeader currentPersona={currentPersona} />
+        <nav id="navigation" role="banner" aria-label="Navegação principal">
+          <NavigationHeader currentPersona={currentPersona} />
+        </nav>
       )}
       
       {/* Main Content Area */}
@@ -69,10 +73,12 @@ export default function EducationalLayout({
 
       {/* Educational Footer */}
       {showFooter && (
-        <EducationalFooter 
-          variant={footerVariant}
-          showNavigation={footerVariant === 'full'} 
-        />
+        <footer id="footer" role="contentinfo" aria-label="Rodapé da página">
+          <EducationalFooter 
+            variant={footerVariant}
+            showNavigation={footerVariant === 'full'} 
+          />
+        </footer>
       )}
         </div>
       </MobileFirstFramework>

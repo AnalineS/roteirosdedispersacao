@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { modernChatTheme } from '@/config/modernTheme';
+import EducationalLayout from '@/components/layout/EducationalLayout';
 import { 
   LockIcon, 
   CheckCircleIcon, 
@@ -15,7 +16,7 @@ import {
 /**
  * Página de Conformidade do Sistema
  * Documenta aderência às normas regulatórias brasileiras e internacionais
- * Baseada nas especificações do doutorando Nélio Gomes de Moura Júnior
+ * Baseada nas especificações do Prof. Me. Nélio Gomes de Moura Júnior
  */
 
 interface ComplianceFramework {
@@ -384,7 +385,8 @@ export default function ConformidadePage() {
   const partialCount = complianceFrameworks.filter(f => f.status === 'partial').length;
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: modernChatTheme.spacing.xl }}>
+    <EducationalLayout>
+      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: modernChatTheme.spacing.xl }}>
       {/* Header */}
       <div style={{ textAlign: 'center', marginBottom: modernChatTheme.spacing.xxl }}>
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: modernChatTheme.spacing.lg }}>
@@ -518,7 +520,7 @@ export default function ConformidadePage() {
           marginBottom: modernChatTheme.spacing.lg
         }}>
           Este sistema educacional foi desenvolvido sob responsabilidade técnica e científica do 
-          doutorando Nélio Gomes de Moura Júnior, seguindo rigorosamente as diretrizes acadêmicas 
+          Prof. Me. Nélio Gomes de Moura Júnior, seguindo rigorosamente as diretrizes acadêmicas 
           e regulatórias estabelecidas pelos órgãos competentes.
         </p>
         
@@ -564,5 +566,6 @@ export default function ConformidadePage() {
         </div>
       </div>
     </div>
+    </EducationalLayout>
   );
 }

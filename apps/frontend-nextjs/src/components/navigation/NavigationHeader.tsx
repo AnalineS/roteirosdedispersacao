@@ -18,6 +18,7 @@ import {
   getIconByEmoji
 } from '@/components/icons/NavigationIcons';
 import { getUnbColors } from '@/config/modernTheme';
+import { getUniversityLogo } from '@/constants/avatars';
 import Tooltip from '@/components/common/Tooltip';
 import MobileNavigation from './MobileNavigation';
 // Interfaces de navegação (movidas do Sidebar removido)
@@ -293,51 +294,85 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
         top: 0,
         left: 0,
         right: 0,
-        height: '72px',
+        width: '100%',
+        height: '80px',
         background: unbColors.gradients.header,
         borderBottom: `1px solid ${unbColors.alpha.primary}`,
-        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+        boxShadow: '0 2px 12px rgba(0,0,0,0.15)',
         zIndex: 1000,
         display: 'flex',
         alignItems: 'center',
-        padding: '0 24px'
+        justifyContent: 'space-between',
+        padding: '0 2%',
+        minHeight: '80px'
       }}
     >
       {/* Logo e Título - Esquerda */}
       <div style={{
         display: 'flex',
         alignItems: 'center',
-        gap: '12px',
-        minWidth: '200px'
+        gap: '16px',
+        flex: '1',
+        maxWidth: '600px'
       }}>
-        <Tooltip content="Sistema Educacional para Hanseníase PQT-U" position="bottom">
+        <Tooltip content="Roteiros de Dispensação - Sistema Inteligente de Orientação" position="bottom">
           <Link
             href="/"
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '8px',
+              gap: '12px',
               textDecoration: 'none',
               color: unbColors.white
             }}
           >
-            <SystemLogoIcon size={32} color={unbColors.white} />
+            <img 
+              src={getUniversityLogo('unb_logo2')} 
+              alt="Universidade de Brasília" 
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '50%',
+                objectFit: 'contain',
+                background: 'white',
+                padding: '4px'
+              }}
+            />
             {!isMobile && (
-              <div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                 <div style={{ 
-                  fontSize: '1.2rem', 
+                  fontSize: '1.4rem', 
                   fontWeight: 'bold',
-                  lineHeight: '1.2'
+                  lineHeight: '1.3',
+                  letterSpacing: '-0.02em'
                 }}>
-                  PQT-U Educacional
+                  Roteiros de Dispensação
+                </div>
+                <div style={{ 
+                  fontSize: '0.85rem', 
+                  opacity: 0.9,
+                  lineHeight: '1.2',
+                  fontWeight: '500'
+                }}>
+                  Sistema de Aprendizagem
                 </div>
                 <div style={{ 
                   fontSize: '0.75rem', 
                   opacity: 0.8,
-                  lineHeight: '1.2'
+                  lineHeight: '1.1',
+                  fontStyle: 'italic'
                 }}>
-                  Sistema de Aprendizagem
+                  Sistema Inteligente de Orientação
                 </div>
+              </div>
+            )}
+            {isMobile && (
+              <div style={{
+                fontSize: '1.1rem',
+                fontWeight: 'bold',
+                lineHeight: '1.2'
+              }}>
+                Roteiros de Dispensação
               </div>
             )}
           </Link>

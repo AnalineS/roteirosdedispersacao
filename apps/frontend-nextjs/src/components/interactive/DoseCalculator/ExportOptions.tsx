@@ -361,7 +361,7 @@ export default function ExportOptions({ result, isAvailable }: ExportOptionsProp
           textAlign: 'center'
         }}>
           ⚖️ <strong>Aviso Legal:</strong> Este material é baseado na tese &quot;Roteiro de Dispensação para Hanseníase PQT-U&quot; 
-          do doutorando Nélio Gomes de Moura Júnior. É uma ferramenta educacional e não substitui consulta médica profissional.
+          do Prof. Me. Nélio Gomes de Moura Júnior. É uma ferramenta educacional e não substitui consulta médica profissional.
         </p>
       </div>
     </div>
@@ -379,7 +379,7 @@ Cálculo de Doses - Ferramenta Educacional
 
 Data: ${new Date().toLocaleString('pt-BR')}
 Baseado na tese: "Roteiro de Dispensação para Hanseníase PQT-U"
-Doutorando: Nélio Gomes de Moura Júnior
+Autor: Prof. Me. Nélio Gomes de Moura Júnior
 
 ==========================================
 
