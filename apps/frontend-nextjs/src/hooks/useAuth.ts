@@ -78,6 +78,26 @@ export function useAuth() {
     }
   }, []);
 
+  const registerWithEmail = useCallback(async (data: RegistrationData) => {
+    return register(data);
+  }, [register]);
+
+  const registerWithGoogle = useCallback(async (options?: LoginOptions) => {
+    setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
+    
+    try {
+      const user = await authService.loginWithGoogle(options);
+      return user;
+    } catch (error) {
+      setAuthState(prev => ({
+        ...prev,
+        isLoading: false,
+        error: error instanceof Error ? error.message : 'Erro no registro',
+      }));
+      throw error;
+    }
+  }, []);
+
   const logout = useCallback(async () => {
     setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
     
@@ -225,6 +245,8 @@ export function useAuth() {
     loginWithGoogle,
     loginWithEmail,
     register,
+    registerWithEmail,
+    registerWithGoogle,
     logout,
     updateProfile,
     upgradeRole,
