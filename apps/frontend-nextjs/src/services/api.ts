@@ -22,9 +22,23 @@ const getApiUrl = () => {
       return 'http://localhost:8080';
     }
     
-    // Produção - DESATIVADO: usar modo offline para evitar erros
-    console.log('[API] Produção detectada, usando modo offline por estabilidade');
-    return null; // Força modo offline
+    // Produção - tentar determinar URL baseada no hostname
+    if (hostname.includes('roteirosdispensacao.com') || hostname.includes('roteiros-de-dispensacao.web.app')) {
+      console.log('[API] Produção detectada, verificando backend disponível');
+      // Lista de URLs possíveis para o backend (ordem de prioridade)
+      const possibleBackendUrls = [
+        'https://backend-dot-hansenase-webapp.rj.r.appspot.com',
+        'https://api.roteirosdedispensacao.com',
+        'https://backend.roteirosdedispensacao.com'
+      ];
+      
+      // Por enquanto retorna a primeira URL - health check determinará disponibilidade
+      return possibleBackendUrls[0];
+    }
+    
+    console.log('[API] Hostname não reconhecido, tentando fallback');
+    // Tentar backend padrão mesmo em hostname desconhecido
+    return 'https://backend-dot-hansenase-webapp.rj.r.appspot.com';
   }
   
   // PRIORIDADE 3: Fallback para desenvolvimento  
@@ -255,35 +269,49 @@ export async function checkAPIHealth(): Promise<{
     };
   }
   
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
-    
-    const response = await fetch(`${apiUrl}/api/v1/health`, {
-      method: 'GET',
-      headers: { 'Accept': 'application/json' },
-      signal: controller.signal
-    });
-    
-    clearTimeout(timeoutId);
-    
-    return {
-      available: response.ok,
-      url: apiUrl,
-      error: !response.ok ? `HTTP ${response.status}` : undefined,
-      fallbackActive: false
-    };
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-    console.error('[API Health] Erro:', errorMessage);
-    
-    return {
-      available: false,
-      url: apiUrl,
-      error: errorMessage,
-      fallbackActive: true
-    };
+  // Lista de endpoints para testar (ordem de prioridade)
+  const healthEndpoints = [
+    '/api/v1/health',
+    '/api/health',
+    '/health',
+    '/'
+  ];
+  
+  for (const endpoint of healthEndpoints) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      
+      const response = await fetch(`${apiUrl}${endpoint}`, {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' },
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+      
+      if (response.ok) {
+        console.log(`[API Health] Conectado via ${endpoint}`);
+        return {
+          available: true,
+          url: apiUrl,
+          fallbackActive: false
+        };
+      }
+    } catch (error) {
+      console.log(`[API Health] Falhou em ${endpoint}:`, error instanceof Error ? error.message : 'Erro desconhecido');
+      continue;
+    }
   }
+  
+  // Se chegou aqui, nenhum endpoint funcionou
+  console.error('[API Health] Todos os endpoints falharam, usando modo offline');
+  return {
+    available: false,
+    url: apiUrl,
+    error: 'Backend indisponível - usando funcionalidades básicas',
+    fallbackActive: true
+  };
 }
 
 /**

@@ -80,9 +80,11 @@ export default function SystemStatus({ showDetails = false, className = '' }: Sy
     if (status.backendStatus === 'online') {
       return 'Sistema online';
     } else if (status.fallbackActive) {
-      return 'Modo offline ativo';
+      return 'Funcionalidades básicas';
+    } else if (status.backendStatus === 'checking') {
+      return 'Conectando...';
     } else {
-      return 'Verificando conexão...';
+      return 'Verificando backend...';
     }
   };
 
