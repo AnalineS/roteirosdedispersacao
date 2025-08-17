@@ -5,7 +5,6 @@ import Image from 'next/image';
 import EducationalLayout from '@/components/layout/EducationalLayout';
 import { usePersonas } from '@/hooks/usePersonas';
 import { useUserProfile } from '@/hooks/useUserProfile';
-import { useOnboarding } from '@/hooks/useOnboarding';
 import { getPersonaAvatar } from '@/constants/avatars';
 import type { UserProfile } from '@/hooks/useUserProfile';
 import { CognitiveLoadAuditor } from '@/components/analytics/CognitiveLoadAuditor';
@@ -30,11 +29,6 @@ import {
 import { MedicalLoadingSpinner } from '@/components/ui/LoadingStates';
 import dynamic from 'next/dynamic';
 
-// Lazy load WelcomeWizard for better performance
-const WelcomeWizard = dynamic(() => import('@/components/onboarding/WelcomeWizard'), {
-  ssr: false,
-  loading: () => null
-});
 
 // Lazy load personalization components
 const PersonalizationProvider = dynamic(() => import('@/components/personalization/PersonalizationProvider'), {
@@ -51,7 +45,6 @@ const PersonalizedDashboard = dynamic(() => import('@/components/personalization
 export default function HomePage() {
   const { personas, loading, error, getValidPersonasCount } = usePersonas();
   const { saveProfile } = useUserProfile();
-  const { showWizard, completeOnboarding, skipOnboarding } = useOnboarding();
   const { isMobile } = useMobileDetection();
   const { toasts, addToast } = useToast();
   const router = useRouter();
@@ -117,25 +110,6 @@ export default function HomePage() {
     setTimeout(() => router.push('/chat'), 800);
   };
 
-  // Handle onboarding completion and navigate to chat
-  const handleOnboardingComplete = (role: any) => {
-    completeOnboarding(role);
-    
-    const userProfile = {
-      type: role.id === 'medical' || role.id === 'student' ? 'professional' as const : 'patient' as const,
-      focus: role.id === 'medical' ? 'technical' as const : 'general' as const,
-      confidence: 0.9,
-      explanation: `Selecionado através do onboarding: ${role.title}`
-    };
-    
-    const profileWithPersona = {
-      ...userProfile,
-      selectedPersona: role.recommendedPersona
-    };
-    
-    saveProfile(profileWithPersona);
-    router.push('/chat');
-  };
 
   return (
     <PersonalizationProvider>
@@ -1534,10 +1508,6 @@ export default function HomePage() {
         </>
       )}
       
-      {/* Welcome Wizard - ETAPA 3 UX TRANSFORMATION */}
-      {showWizard && (
-        <WelcomeWizard onComplete={handleOnboardingComplete} />
-      )}
       
       {/* Toast Container */}
       <ToastContainer toasts={toasts} />

@@ -1,8 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useOnboarding } from '@/hooks/useOnboarding';
+import { useUserProfile } from '@/hooks/useUserProfile';
 import { USER_LEVEL_BENEFITS } from '@/types/auth';
+import dynamic from 'next/dynamic';
+
+// Lazy load WelcomeWizard for first-time users
+const WelcomeWizard = dynamic(() => import('@/components/onboarding/WelcomeWizard'), {
+  ssr: false,
+  loading: () => null
+});
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -18,6 +27,7 @@ export default function LoginModal({
   showBenefits = true 
 }: LoginModalProps) {
   const [mode, setMode] = useState<'login' | 'register'>('login');
+  const [showWizard, setShowWizard] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -34,16 +44,27 @@ export default function LoginModal({
     register, 
     isLoading, 
     error, 
-    clearError 
+    clearError,
+    user 
   } = useAuth();
+  
+  const { showWizard: needsOnboarding, completeOnboarding } = useOnboarding();
+  const { saveProfile } = useUserProfile();
 
-  if (!isOpen) return null;
+  // Check if user needs onboarding after successful login
+  useEffect(() => {
+    if (user && needsOnboarding && isOpen) {
+      // Show wizard for new users
+      setShowWizard(true);
+    }
+  }, [user, needsOnboarding, isOpen]);
+
+  if (!isOpen && !showWizard) return null;
 
   const handleGoogleLogin = async () => {
     try {
       await loginWithGoogle();
-      onSuccess?.();
-      onClose();
+      // Don't close immediately - let the useEffect handle wizard display
     } catch (error) {
       console.error('Google login failed:', error);
     }
@@ -62,11 +83,28 @@ export default function LoginModal({
         }
         await register(formData);
       }
-      onSuccess?.();
-      onClose();
+      // Don't close immediately - let the useEffect handle wizard display
     } catch (error) {
       console.error('Email auth failed:', error);
     }
+  };
+
+  // Handle onboarding completion
+  const handleOnboardingComplete = (role: any) => {
+    completeOnboarding(role);
+    
+    const userProfile = {
+      type: role.id === 'medical' || role.id === 'student' ? 'professional' as const : 'patient' as const,
+      focus: role.id === 'medical' ? 'technical' as const : 'general' as const,
+      confidence: 0.9,
+      explanation: `Selecionado através do onboarding: ${role.title}`,
+      selectedPersona: role.recommendedPersona
+    };
+    
+    saveProfile(userProfile);
+    setShowWizard(false);
+    onSuccess?.();
+    onClose();
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -76,6 +114,14 @@ export default function LoginModal({
       [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
     }));
   };
+
+  // Show Welcome Wizard as popup for new users
+  if (showWizard) {
+    return <WelcomeWizard onComplete={handleOnboardingComplete} />;
+  }
+
+  // Only show login modal if isOpen is true
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
