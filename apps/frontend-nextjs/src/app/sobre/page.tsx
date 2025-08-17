@@ -20,7 +20,8 @@ import {
   HospitalIcon,
   BloodIcon,
   UserIcon,
-  CollaborationIcon
+  CollaborationIcon,
+  StarIcon
 } from '@/components/icons/EducationalIcons';
 
 /**
@@ -230,11 +231,10 @@ export default function SobrePage() {
             lineHeight: '1.6',
             marginBottom: modernChatTheme.spacing.md
           }}>
-            Nélio Gomes de Moura Júnior é Prof. Me. em Ciências Farmacêuticas pela Universidade de Brasília (UnB), 
-            com sólida formação acadêmica e experiência prática na área farmacêutica, especialmente voltada para a 
-            saúde pública e atenção primária. Sua trajetória profissional combina atuação clínica no Sistema Único 
-            de Saúde (SUS), pesquisa científica e atividades de ensino, consolidando-se como especialista em cuidado 
-            farmacêutico baseado em evidências.
+            Prof. Me. Nélio Gomes de Moura Júnior é farmacêutico com mestrado em Ciências Médicas pela UnB 
+            e doutorando em Ciências Farmacêuticas. Especialista em cuidado farmacêutico no SUS, combina 
+            experiência clínica na atenção primária com pesquisa científica focada em protocolos de dispensação 
+            para doenças negligenciadas.
           </p>
 
           <p style={{
@@ -243,8 +243,8 @@ export default function SobrePage() {
             lineHeight: '1.6',
             marginBottom: modernChatTheme.spacing.md
           }}>
-            Atualmente desenvolve pesquisa de doutorado focada na otimização de protocolos de dispensação farmacêutica 
-            para hanseníase, contribuindo para o aprimoramento das práticas profissionais no contexto brasileiro.
+            Desenvolve sua tese de doutorado no projeto PROFARMA, avaliando serviços farmacêuticos na 
+            Atenção Secundária, sob orientação dos professores Rafael Santos Santana e Debora Santos Lula Barros.
           </p>
 
         </div>
@@ -275,7 +275,8 @@ export default function SobrePage() {
               padding: modernChatTheme.spacing.lg,
               border: `1px solid ${modernChatTheme.colors.neutral.border}`,
               borderRadius: modernChatTheme.borderRadius.md,
-              borderLeft: `4px solid ${modernChatTheme.colors.personas.gasnelio.primary}`
+              borderLeft: `4px solid ${modernChatTheme.colors.personas.gasnelio.primary}`,
+              background: `${modernChatTheme.colors.personas.gasnelio.primary}08`
             }}>
               <h3 style={{
                 fontSize: '18px',
@@ -288,24 +289,33 @@ export default function SobrePage() {
               <p style={{
                 fontSize: modernChatTheme.typography.persona.fontSize,
                 color: modernChatTheme.colors.neutral.textMuted,
-                marginBottom: modernChatTheme.spacing.xs
+                marginBottom: modernChatTheme.spacing.sm
               }}>
-                <strong>Universidade de Brasília (UnB)</strong> • Em andamento
+                <strong>Universidade de Brasília (UnB)</strong> • 2023 - Em andamento
               </p>
               <p style={{
                 fontSize: '14px',
                 color: modernChatTheme.colors.neutral.text,
-                fontStyle: 'italic'
+                marginBottom: modernChatTheme.spacing.sm,
+                lineHeight: '1.5'
               }}>
-                Linha de pesquisa: Dispensação farmacêutica em hanseníase e desenvolvimento de protocolos baseados em evidências
+                <strong>Projeto PROFARMA:</strong> Avaliação dos serviços farmacêuticos na Atenção Secundária
               </p>
+              <div style={{
+                fontSize: '13px',
+                color: modernChatTheme.colors.neutral.textMuted,
+                lineHeight: '1.4'
+              }}>
+                <strong>Orientador:</strong> Rafael Santos Santana<br/>
+                <strong>Coorientadora:</strong> Debora Santos Lula Barros
+              </div>
             </div>
 
             <div style={{
               padding: modernChatTheme.spacing.lg,
               border: `1px solid ${modernChatTheme.colors.neutral.border}`,
               borderRadius: modernChatTheme.borderRadius.md,
-              borderLeft: `4px solid ${modernChatTheme.colors.personas.gasnelio.primary}`
+              borderLeft: `4px solid ${modernChatTheme.colors.personas.ga.primary}`
             }}>
               <h3 style={{
                 fontSize: '18px',
@@ -317,9 +327,39 @@ export default function SobrePage() {
               </h3>
               <p style={{
                 fontSize: modernChatTheme.typography.persona.fontSize,
+                color: modernChatTheme.colors.neutral.textMuted,
+                marginBottom: modernChatTheme.spacing.sm
+              }}>
+                <strong>Universidade de Brasília (UnB)</strong> • 2019 - 2022
+              </p>
+              <p style={{
+                fontSize: '13px',
+                color: modernChatTheme.colors.neutral.text,
+                lineHeight: '1.4'
+              }}>
+                Foco em microbiota e parasitos intestinais
+              </p>
+            </div>
+
+            <div style={{
+              padding: modernChatTheme.spacing.lg,
+              border: `1px solid ${modernChatTheme.colors.neutral.border}`,
+              borderRadius: modernChatTheme.borderRadius.md,
+              borderLeft: `4px solid ${modernChatTheme.colors.unb.secondary}`
+            }}>
+              <h3 style={{
+                fontSize: '18px',
+                fontWeight: '600',
+                color: modernChatTheme.colors.neutral.text,
+                marginBottom: modernChatTheme.spacing.sm
+              }}>
+                Especialização em Estética Avançada
+              </h3>
+              <p style={{
+                fontSize: modernChatTheme.typography.persona.fontSize,
                 color: modernChatTheme.colors.neutral.textMuted
               }}>
-                <strong>Universidade de Brasília (UnB)</strong> • Concluído
+                <strong>Nepuga Pós Graduação</strong> • 2023 - 2024
               </p>
             </div>
 
@@ -1108,6 +1148,100 @@ export default function SobrePage() {
           </div>
         </div>
 
+        {/* Como Citar */}
+        <div style={{
+          background: 'white',
+          borderRadius: modernChatTheme.borderRadius.lg,
+          boxShadow: modernChatTheme.shadows.subtle,
+          padding: modernChatTheme.spacing.xl,
+          marginBottom: modernChatTheme.spacing.xl
+        }}>
+          <h2 style={{
+            fontSize: '24px',
+            fontWeight: '700',
+            color: modernChatTheme.colors.neutral.text,
+            marginBottom: modernChatTheme.spacing.lg,
+            display: 'flex',
+            alignItems: 'center',
+            gap: modernChatTheme.spacing.sm
+          }}>
+            <BookIcon size={20} />
+            Como Citar
+          </h2>
+
+          <div style={{
+            marginBottom: modernChatTheme.spacing.lg
+          }}>
+            <h3 style={{
+              fontSize: '18px',
+              fontWeight: '600',
+              color: modernChatTheme.colors.personas.gasnelio.primary,
+              marginBottom: modernChatTheme.spacing.md
+            }}>
+              Citação Individual (ABNT)
+            </h3>
+            
+            <div style={{
+              background: '#f8fafc',
+              padding: modernChatTheme.spacing.lg,
+              borderRadius: modernChatTheme.borderRadius.md,
+              border: '1px solid #e2e8f0',
+              fontFamily: 'monospace',
+              fontSize: '14px',
+              marginBottom: modernChatTheme.spacing.md
+            }}>
+              MOURA JÚNIOR, Nélio Gomes de. <strong>Sistema Educacional PQT-U: Roteiros de Dispensação para Hanseníase</strong>. 
+              2024. Tese (Doutorado em Ciências Farmacêuticas) - Universidade de Brasília, Brasília, 2024. 
+              Disponível em: https://roteirosdedispensacao.com. Acesso em: [data].
+            </div>
+          </div>
+
+          <div style={{
+            marginBottom: modernChatTheme.spacing.lg
+          }}>
+            <h3 style={{
+              fontSize: '18px',
+              fontWeight: '600',
+              color: modernChatTheme.colors.personas.ga.primary,
+              marginBottom: modernChatTheme.spacing.md
+            }}>
+              Citação da Plataforma (ABNT)
+            </h3>
+            
+            <div style={{
+              background: '#f8fafc',
+              padding: modernChatTheme.spacing.lg,
+              borderRadius: modernChatTheme.borderRadius.md,
+              border: '1px solid #e2e8f0',
+              fontFamily: 'monospace',
+              fontSize: '14px',
+              marginBottom: modernChatTheme.spacing.md
+            }}>
+              MOURA JÚNIOR, N. G.; AKKATI, S. C. F.; FRANÇA, S. O. C.; BRANDÃO, L. B. G.; SODRÉ, B. M. C.; SANTANA, R. S. 
+              <strong>Roteiros de Dispensação: Sistema Inteligente de Orientação para Hanseníase</strong>. Brasília: UnB, 2024. 
+              Disponível em: https://roteirosdedispensacao.com. Acesso em: [data].
+            </div>
+          </div>
+
+          <div style={{
+            padding: modernChatTheme.spacing.md,
+            background: `${modernChatTheme.colors.personas.gasnelio.primary}10`,
+            borderRadius: modernChatTheme.borderRadius.md,
+            border: `1px solid ${modernChatTheme.colors.personas.gasnelio.primary}20`
+          }}>
+            <p style={{
+              fontSize: '14px',
+              color: modernChatTheme.colors.neutral.text,
+              margin: 0,
+              lineHeight: '1.5'
+            }}>
+              <strong>Recomendação:</strong> Para citações específicas de conteúdo ou funcionalidades da plataforma, 
+              inclua a seção específica utilizada e a data de acesso. Esta plataforma é resultado de pesquisa 
+              de doutorado em desenvolvimento no Programa de Pós-graduação em Ciências Farmacêuticas da UnB.
+            </p>
+          </div>
+        </div>
+
         {/* Equipe de Autores */}
         <div style={{
           background: 'white',
@@ -1420,7 +1554,9 @@ export default function SobrePage() {
             border: `1px solid ${modernChatTheme.colors.personas.gasnelio.primary}20`,
             textAlign: 'center'
           }}>
-            <CollaborationIcon size={32} color={modernChatTheme.colors.personas.gasnelio.primary} style={{ marginBottom: '12px' }} />
+            <div style={{ marginBottom: '12px' }}>
+              <CollaborationIcon size={32} color={modernChatTheme.colors.personas.gasnelio.primary} />
+            </div>
             <p style={{
               fontSize: '14px',
               color: modernChatTheme.colors.neutral.text,

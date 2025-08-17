@@ -5,9 +5,11 @@ import GoogleAnalytics from '@/components/GoogleAnalytics'
 import { AnalyticsProvider } from '@/components/analytics/AnalyticsProvider'
 import PWAManager from '@/components/pwa/PWAManager'
 import AuthProviderWrapper from '@/components/auth/AuthProviderWrapper'
+import { ThemeProvider } from '@/contexts/ThemeContext'
 import SITE_CONFIG from '@/lib/config'
 import '@/styles/globals.css'
 import '@/styles/accessibility.css'
+import '@/styles/themes.css'
 
 export const metadata: Metadata = SITE_CONFIG.getMetadata()
 
@@ -94,13 +96,15 @@ export default function RootLayout({
         <OfflineIndicator />
         
         <main id="main-content">
-          <AuthProviderWrapper>
-            <AnalyticsProvider>
-              <ErrorBoundary>
-                {children}
-              </ErrorBoundary>
-            </AnalyticsProvider>
-          </AuthProviderWrapper>
+          <ThemeProvider>
+            <AuthProviderWrapper>
+              <AnalyticsProvider>
+                <ErrorBoundary>
+                  {children}
+                </ErrorBoundary>
+              </AnalyticsProvider>
+            </AuthProviderWrapper>
+          </ThemeProvider>
         </main>
         
         {/* PWA Manager - Service Worker desabilitado conforme solicitado */}

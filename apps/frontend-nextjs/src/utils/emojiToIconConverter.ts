@@ -34,7 +34,7 @@ import {
   RocketIcon
 } from '@/components/icons/EducationalIcons';
 
-// Extended emoji to icon mapping
+// Extended emoji to icon mapping (cleaned up and without duplicates)
 export const COMPREHENSIVE_EMOJI_TO_ICON_MAP = {
   // Educational & Academic
   '🎓': GraduationIcon,
@@ -132,7 +132,6 @@ export const COMPREHENSIVE_EMOJI_TO_ICON_MAP = {
   '🥉': TrophyIcon,
   '🎖️': TrophyIcon,
   '🏅': TrophyIcon,
-  '🎪': TrophyIcon,
   
   // Utilities & Tools
   '🧮': CalculatorIcon,
@@ -147,7 +146,6 @@ export const COMPREHENSIVE_EMOJI_TO_ICON_MAP = {
   '🎮': StarIcon,
   '🎲': CalculatorIcon,
   '🃏': BookIcon,
-  '🎯': TargetIcon,
   '🎪': TrophyIcon,
   
   // Energy & Power
@@ -163,11 +161,8 @@ export const COMPREHENSIVE_EMOJI_TO_ICON_MAP = {
   '📦': BookIcon,
   '📤': FileDownloadIcon,
   '📥': FileDownloadIcon,
-  '⬇️': FileDownloadIcon,
-  '⬆️': FileDownloadIcon,
   
   // Research & Science
-  '🔬': MicroscopeIcon,
   '🧪': MicroscopeIcon,
   '⚗️': MicroscopeIcon,
   '🦠': MicroscopeIcon,
@@ -205,7 +200,7 @@ export const replaceEmojiWithIcon = (text: string): { text: string; hasEmoji: bo
   
   const replacedText = text.replace(emojiRegex, (match) => {
     const icon = getIconForEmoji(match);
-    if (icon) {
+    if (icon !== null) {
       hasEmoji = true;
       return `<Icon:${match}>`;
     }
@@ -258,7 +253,7 @@ export const batchProcessEmojis = (texts: string[]): {
   }));
 };
 
-export default {
+const emojiToIconConverter = {
   getIconForEmoji,
   replaceEmojiWithIcon,
   extractEmojis,
@@ -267,3 +262,5 @@ export default {
   batchProcessEmojis,
   COMPREHENSIVE_EMOJI_TO_ICON_MAP
 };
+
+export default emojiToIconConverter;

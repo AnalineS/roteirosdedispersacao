@@ -267,75 +267,6 @@ export default function HomePage() {
             </section>
           )}
 
-          {/* Features Grid */}
-          <div className="grid grid-cols-3 gap-lg mb-5" style={{ maxWidth: '800px', margin: '3rem auto' }}>
-            <div className="text-center">
-              <div style={{
-                width: '48px',
-                height: '48px',
-                backgroundColor: '#f0f9ff',
-                borderRadius: '12px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                margin: '0 auto 1rem',
-                border: '1px solid #e0f2fe'
-              }}>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0284c7" strokeWidth="2">
-                  <path d="M9 11H3v9h6v-9zm5-7h-4v16h4V4zm5 3h-4v13h4V7z"/>
-                </svg>
-              </div>
-              <h3 style={{ fontSize: '0.875rem', fontWeight: '600', color: '#1e293b' }}>Baseado em Evidências</h3>
-              <p style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.5rem' }}>
-                Diretrizes do Ministério da Saúde
-              </p>
-            </div>
-            
-            <div className="text-center">
-              <div style={{
-                width: '48px',
-                height: '48px',
-                backgroundColor: '#f0fdf4',
-                borderRadius: '12px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                margin: '0 auto 1rem',
-                border: '1px solid #dcfce7'
-              }}>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2">
-                  <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"/>
-                </svg>
-              </div>
-              <h3 style={{ fontSize: '0.875rem', fontWeight: '600', color: '#1e293b' }}>Seguro e Confiável</h3>
-              <p style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.5rem' }}>
-                Validado por especialistas
-              </p>
-            </div>
-            
-            <div className="text-center">
-              <div style={{
-                width: '48px',
-                height: '48px',
-                backgroundColor: '#f0f9ff',
-                borderRadius: '12px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                margin: '0 auto 1rem',
-                border: '1px solid #e0f2fe'
-              }}>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0284c7" strokeWidth="2">
-                  <circle cx="12" cy="12" r="10"/>
-                  <path d="M12 6v6l4 2"/>
-                </svg>
-              </div>
-              <h3 style={{ fontSize: '0.875rem', fontWeight: '600', color: '#1e293b' }}>Disponível 24/7</h3>
-              <p style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.5rem' }}>
-                Acesso sempre que precisar
-              </p>
-            </div>
-          </div>
 
           {/* Seção dos Assistentes Virtuais */}
           <div style={{ 
@@ -356,7 +287,7 @@ export default function HomePage() {
                 margin: '0 auto',
                 textAlign: 'center'
               }}>
-                Dois especialistas em IA, cada um desenvolvido para atender suas necessidades específicas no cuidado farmacêutico
+                Dois assistentes virtuais, cada um desenvolvido para atender suas necessidades específicas no cuidado farmacêutico
               </HierarchyText>
             </div>
             
@@ -388,7 +319,7 @@ export default function HomePage() {
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = 'translateY(-4px)';
                   e.currentTarget.style.boxShadow = '0 12px 40px rgba(2, 132, 199, 0.2)';
-                  e.currentTarget.style.borderColor = '#0284c7';
+                  e.currentTarget.style.borderColor = '#003366';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.transform = 'translateY(0)';
@@ -398,8 +329,8 @@ export default function HomePage() {
                 onFocus={(e) => {
                   e.currentTarget.style.transform = 'translateY(-4px)';
                   e.currentTarget.style.boxShadow = '0 12px 40px rgba(2, 132, 199, 0.2)';
-                  e.currentTarget.style.borderColor = '#0284c7';
-                  e.currentTarget.style.outline = '3px solid #0284c7';
+                  e.currentTarget.style.borderColor = '#003366';
+                  e.currentTarget.style.outline = '3px solid #003366';
                   e.currentTarget.style.outlineOffset = '2px';
                 }}
                 onBlur={(e) => {
@@ -419,47 +350,53 @@ export default function HomePage() {
                   }
                 }}
                 tabIndex={0}
-                aria-label="Selecionar Dr. Gasnelio - O Especialista Técnico"
+                aria-label="Selecionar Dr. Gasnelio - O Farmacêutico Técnico"
                 aria-describedby="gasnelio-description"
               >
                 <div style={{
-                  width: '80px',
-                  height: '80px',
-                  borderRadius: '20px',
+                  width: '120px',
+                  height: '120px',
+                  borderRadius: '24px',
                   overflow: 'hidden',
                   margin: '0 auto 1.5rem',
-                  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
+                  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+                  position: 'relative'
                 }}>
                   <Image 
                     src={getPersonaAvatar('dr_gasnelio')} 
                     alt="Dr. Gasnelio"
-                    fill
+                    width={120}
+                    height={120}
+                    priority
+                    quality={95}
                     style={{
-                      objectFit: 'cover'
+                      objectFit: 'cover',
+                      width: '100%',
+                      height: '100%'
                     }}
                   />
                 </div>
                 <h3 style={{ 
                   fontSize: '1.5rem', 
                   fontWeight: '700', 
-                  color: '#0369a1',
+                  color: '#003366',
                   marginBottom: '1rem'
                 }}>
                   Dr. Gasnelio
                 </h3>
                 <p style={{ 
                   fontSize: '1rem', 
-                  color: '#0369a1', 
+                  color: '#003366', 
                   fontWeight: '600',
                   marginBottom: '1rem'
                 }}>
-                  O Especialista Técnico
+                  O Farmacêutico Técnico
                 </p>
                 <ul 
                   id="gasnelio-description"
                   style={{ 
                     fontSize: '0.9rem', 
-                    color: '#0369a1', 
+                    color: '#003366', 
                     textAlign: 'left',
                     paddingLeft: '1.5rem',
                     lineHeight: '1.6',
@@ -476,7 +413,7 @@ export default function HomePage() {
                   background: 'rgba(2, 132, 199, 0.1)',
                   borderRadius: '8px',
                   border: '1px solid rgba(2, 132, 199, 0.2)',
-                  color: '#0369a1',
+                  color: '#003366',
                   fontSize: '0.875rem',
                   fontWeight: '600'
                 }}>
@@ -544,19 +481,25 @@ export default function HomePage() {
                 aria-describedby="ga-description"
               >
                 <div style={{
-                  width: '80px',
-                  height: '80px',
-                  borderRadius: '20px',
+                  width: '120px',
+                  height: '120px',
+                  borderRadius: '24px',
                   overflow: 'hidden',
                   margin: '0 auto 1.5rem',
-                  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
+                  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+                  position: 'relative'
                 }}>
                   <Image 
                     src={getPersonaAvatar('ga')} 
                     alt="Gá"
-                    fill
+                    width={120}
+                    height={120}
+                    priority
+                    quality={95}
                     style={{
-                      objectFit: 'cover'
+                      objectFit: 'cover',
+                      width: '100%',
+                      height: '100%'
                     }}
                   />
                 </div>
@@ -604,6 +547,160 @@ export default function HomePage() {
                   Clique para conversar
                 </div>
               </button>
+            </div>
+            
+            {/* Informações Detalhadas dos Assistentes */}
+            <div style={{ 
+              marginTop: '3rem',
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
+              gap: '2rem'
+            }}>
+              {/* Detalhes Dr. Gasnelio */}
+              <div style={{
+                padding: '2rem',
+                background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
+                borderRadius: '16px',
+                border: '2px solid #e0f2fe'
+              }}>
+                <h3 style={{
+                  fontSize: '1.5rem',
+                  fontWeight: '700',
+                  color: '#003366',
+                  marginBottom: '0.5rem',
+                  textAlign: 'center'
+                }}>
+                  DR. GASNELIO
+                </h3>
+                <p style={{
+                  fontSize: '1.125rem',
+                  color: '#003366',
+                  fontWeight: '600',
+                  textAlign: 'center',
+                  marginBottom: '1.5rem'
+                }}>
+                  Farmacêutico Clínico
+                </p>
+                
+                <div style={{ marginBottom: '1.5rem' }}>
+                  <h4 style={{
+                    fontSize: '1rem',
+                    fontWeight: '700',
+                    color: '#003366',
+                    marginBottom: '0.75rem'
+                  }}>
+                    CARACTERÍSTICAS:
+                  </h4>
+                  <ul style={{
+                    fontSize: '0.9rem',
+                    color: '#003366',
+                    lineHeight: '1.6',
+                    paddingLeft: '1.25rem',
+                    margin: 0
+                  }}>
+                    <li>Linguagem técnica e científica rigorosa</li>
+                    <li>Protocolos farmacêuticos detalhados</li>
+                    <li>Referências a estudos clínicos atualizados</li>
+                    <li>Foco em interações medicamentosas</li>
+                  </ul>
+                </div>
+                
+                <div>
+                  <h4 style={{
+                    fontSize: '1rem',
+                    fontWeight: '700',
+                    color: '#003366',
+                    marginBottom: '0.75rem'
+                  }}>
+                    PÚBLICO-ALVO:
+                  </h4>
+                  <ul style={{
+                    fontSize: '0.9rem',
+                    color: '#003366',
+                    lineHeight: '1.6',
+                    paddingLeft: '1.25rem',
+                    margin: 0
+                  }}>
+                    <li>Farmacêuticos e técnicos em farmácia</li>
+                    <li>Médicos e enfermeiros</li>
+                    <li>Estudantes de ciências da saúde</li>
+                    <li>Residentes e profissionais da saúde</li>
+                  </ul>
+                </div>
+              </div>
+              
+              {/* Detalhes Gá */}
+              <div style={{
+                padding: '2rem',
+                background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
+                borderRadius: '16px',
+                border: '2px solid #dcfce7'
+              }}>
+                <h3 style={{
+                  fontSize: '1.5rem',
+                  fontWeight: '700',
+                  color: '#16a34a',
+                  marginBottom: '0.5rem',
+                  textAlign: 'center'
+                }}>
+                  GÁ
+                </h3>
+                <p style={{
+                  fontSize: '1.125rem',
+                  color: '#16a34a',
+                  fontWeight: '600',
+                  textAlign: 'center',
+                  marginBottom: '1.5rem'
+                }}>
+                  Assistente Educacional Empático
+                </p>
+                
+                <div style={{ marginBottom: '1.5rem' }}>
+                  <h4 style={{
+                    fontSize: '1rem',
+                    fontWeight: '700',
+                    color: '#14532d',
+                    marginBottom: '0.75rem'
+                  }}>
+                    CARACTERÍSTICAS:
+                  </h4>
+                  <ul style={{
+                    fontSize: '0.9rem',
+                    color: '#16a34a',
+                    lineHeight: '1.6',
+                    paddingLeft: '1.25rem',
+                    margin: 0
+                  }}>
+                    <li>Linguagem simples e acolhedora</li>
+                    <li>Explicações didáticas e práticas</li>
+                    <li>Orientações para o cotidiano</li>
+                    <li>Comunicação humanizada e empática</li>
+                  </ul>
+                </div>
+                
+                <div>
+                  <h4 style={{
+                    fontSize: '1rem',
+                    fontWeight: '700',
+                    color: '#14532d',
+                    marginBottom: '0.75rem'
+                  }}>
+                    PÚBLICO-ALVO:
+                  </h4>
+                  <ul style={{
+                    fontSize: '0.9rem',
+                    color: '#16a34a',
+                    lineHeight: '1.6',
+                    paddingLeft: '1.25rem',
+                    margin: 0
+                  }}>
+                    <li>Pacientes e familiares</li>
+                    <li>Cuidadores e comunidade</li>
+                    <li>Agentes comunitários de saúde</li>
+                    <li>Público em geral interessado</li>
+                  </ul>
+                </div>
+              </div>
             </div>
             
             {/* Informação sobre os assistentes */}
@@ -704,7 +801,7 @@ export default function HomePage() {
                   justifyContent: 'center',
                   margin: '0 auto 1rem'
                 }}>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0284c7" strokeWidth="2">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#003366" strokeWidth="2">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                     <polyline points="14,2 14,8 20,8"/>
                     <line x1="16" y1="13" x2="8" y2="13"/>
@@ -725,7 +822,7 @@ export default function HomePage() {
                   lineHeight: '1.6',
                   flex: '1'
                 }}>
-                  Baseado em diretrizes do Ministério da Saúde, da OMS e em evidências científicas, o roteiro estrutura o ato da dispensação de forma lógica e completa.
+                  Baseado em diretrizes do Ministério da Saúde, da OMS e em evidências científicas robustas. Sistema disponível 24/7, garantindo segurança e confiabilidade no ato da dispensação.
                 </p>
               </div>
 
@@ -770,7 +867,7 @@ export default function HomePage() {
                   lineHeight: '1.6',
                   flex: '1'
                 }}>
-                  O roteiro prioriza a orientação sobre medicamentos, o manejo de reações adversas e a promoção da autonomia do paciente no tratamento.
+                  Abordagem centrada no paciente, priorizando orientações claras sobre medicamentos, manejo de reações adversas e promoção da autonomia no tratamento com acesso contínuo ao suporte.
                 </p>
               </div>
 
@@ -807,7 +904,7 @@ export default function HomePage() {
                   color: '#1e293b',
                   marginBottom: '0.75rem'
                 }}>
-                  Validação por Especialistas
+                  Validação Clínica
                 </h3>
                 <p style={{
                   fontSize: '0.875rem',
@@ -815,7 +912,7 @@ export default function HomePage() {
                   lineHeight: '1.6',
                   flex: '1'
                 }}>
-                  Submetido a um rigoroso processo de validação, garantindo sua relevância e aplicabilidade clínica.
+                  Rigoroso processo de validação multidisciplinar, assegurando relevância clínica, aplicabilidade prática e atualização constante com diretrizes oficiais.
                 </p>
               </div>
             </div>
@@ -829,7 +926,7 @@ export default function HomePage() {
             }}>
               <p style={{
                 fontSize: '1rem',
-                color: '#1d4ed8',
+                color: '#003366',
                 lineHeight: '1.6',
                 margin: '0 0 1rem 0',
                 fontWeight: '500'
@@ -842,7 +939,7 @@ export default function HomePage() {
                   display: 'inline-flex',
                   alignItems: 'center',
                   padding: '0.75rem 1.5rem',
-                  background: '#3b82f6',
+                  background: '#003366',
                   color: 'white',
                   borderRadius: '8px',
                   textDecoration: 'none',
@@ -852,11 +949,11 @@ export default function HomePage() {
                   transition: 'all 0.2s ease'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = '#2563eb';
+                  e.currentTarget.style.background = '#002244';
                   e.currentTarget.style.transform = 'translateY(-1px)';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = '#3b82f6';
+                  e.currentTarget.style.background = '#003366';
                   e.currentTarget.style.transform = 'translateY(0)';
                 }}
               >
@@ -953,10 +1050,10 @@ export default function HomePage() {
                         </HierarchyText>
                         
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', marginTop: '1rem' }}>
-                          <div style={{ padding: '1rem', background: '#f0f9ff', borderRadius: '8px', border: '1px solid #0ea5e9' }}>
+                          <div style={{ padding: '1rem', background: '#f0f9ff', borderRadius: '8px', border: '1px solid #003366' }}>
                             <strong>💬 Chat Inteligente</strong>
                             <p style={{ fontSize: '0.9rem', margin: '0.5rem 0 0 0' }}>
-                              Converse com especialistas virtuais treinados especificamente para hanseníase
+                              Converse com assistentes virtuais treinados especificamente para hanseníase
                             </p>
                           </div>
                           

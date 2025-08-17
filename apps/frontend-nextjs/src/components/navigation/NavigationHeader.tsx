@@ -21,6 +21,7 @@ import { getUnbColors } from '@/config/modernTheme';
 import { getUniversityLogo } from '@/constants/avatars';
 import Tooltip from '@/components/common/Tooltip';
 import MobileNavigation from './MobileNavigation';
+import { ThemeToggle } from '@/components/theme/ThemeToggle';
 // Interfaces de navegação (movidas do Sidebar removido)
 export interface NavigationItem {
   id: string;
@@ -670,6 +671,13 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
         minWidth: isMobile ? 'auto' : '200px',
         justifyContent: 'flex-end'
       }}>
+        {/* Theme Toggle (Desktop/Tablet) */}
+        {!isMobile && (
+          <div style={{ marginRight: '0.5rem' }}>
+            <ThemeToggle />
+          </div>
+        )}
+
         {/* Persona Atual (Desktop/Tablet) */}
         {!isMobile && currentPersonaData && (
           <div style={{

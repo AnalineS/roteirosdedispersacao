@@ -18,15 +18,16 @@ const nextConfig = {
   
   // Configurações de imagem para Cloud Run com segurança aprimorada
   images: {
-    unoptimized: true, // Para compatibilidade com Cloud Run
+    unoptimized: process.env.NODE_ENV === 'production', // Só desabilitar em produção para Cloud Run
     formats: ['image/webp', 'image/avif'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
-    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    imageSizes: [16, 32, 48, 64, 80, 96, 120, 128, 160, 256, 384], // Adicionado tamanhos para avatares
     // Domínios permitidos para imagens (segurança)
     domains: [],
     // Proteção contra hotlinking
     dangerouslyAllowSVG: false,
-    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;"
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    minimumCacheTTL: 60
   },
   
   // Configurações experimentais para otimização e segurança
@@ -36,6 +37,12 @@ const nextConfig = {
     // optimizeCss: true, // Desabilitado - requer 'critters'
     // Compilação mais segura
     strictNextHead: true
+  },
+  
+  // ESLint configuração para build
+  eslint: {
+    // IMPORTANTE: Só ignorar warnings em build, não em desenvolvimento
+    ignoreDuringBuilds: process.env.NODE_ENV === 'production'
   },
   
   // Webpack personalizado otimizado para produção

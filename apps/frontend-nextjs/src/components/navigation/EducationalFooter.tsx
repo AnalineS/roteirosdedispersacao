@@ -81,8 +81,7 @@ export default function EducationalFooter({
         { label: 'Vida com Hanseníase', href: '/modules/vida-com-doenca', description: 'Qualidade de vida e suporte ao paciente' },
         { label: 'Glossário', href: '/glossario', description: 'Termos técnicos da hanseníase' },
         { label: 'Bibliografia', href: '/bibliografia', description: 'Referências científicas' },
-        { label: 'Publicações', href: '/publicacoes', description: 'Artigos e trabalhos relacionados' },
-        { label: 'Como Citar', href: '/como-citar', description: 'Instruções para citação acadêmica' }
+        { label: 'Publicações', href: '/publicacoes', description: 'Artigos e trabalhos relacionados' }
       ]
     },
     

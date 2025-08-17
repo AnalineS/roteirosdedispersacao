@@ -1,0 +1,212 @@
+/* Theme Variables */
+:root {
+  /* Light theme (default) */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #f1f5f9;
+  
+  --text-primary: #0f172a;
+  --text-secondary: #374151;
+  --text-muted: #6b7280;
+  --text-light: #9ca3af;
+  
+  --border-default: #e5e7eb;
+  --border-light: #f3f4f6;
+  --border-focus: #3b82f6;
+  
+  --accent-primary: #003366;
+  --accent-secondary: #0066cc;
+  --accent-success: #10b981;
+  --accent-warning: #f59e0b;
+  --accent-error: #ef4444;
+  
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.12);
+  --shadow-xl: 0 8px 32px rgba(0, 0, 0, 0.12);
+  
+  --overlay-bg: rgba(0, 0, 0, 0.5);
+  --code-bg: #f6f8fa;
+  --code-text: #0969da;
+}
+
+/* Dark theme */
+.dark {
+  --bg-primary: #0a0a0a;
+  --bg-secondary: #171717;
+  --bg-tertiary: #262626;
+  
+  --text-primary: #fafafa;
+  --text-secondary: #e5e5e5;
+  --text-muted: #a3a3a3;
+  --text-light: #737373;
+  
+  --border-default: #404040;
+  --border-light: #262626;
+  --border-focus: #60a5fa;
+  
+  --accent-primary: #60a5fa;
+  --accent-secondary: #93c5fd;
+  --accent-success: #34d399;
+  --accent-warning: #fbbf24;
+  --accent-error: #f87171;
+  
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.4);
+  --shadow-xl: 0 8px 32px rgba(0, 0, 0, 0.5);
+  
+  --overlay-bg: rgba(0, 0, 0, 0.7);
+  --code-bg: #1c1c1c;
+  --code-text: #79c0ff;
+}
+
+/* Apply theme variables to body */
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Common theme-aware classes */
+.bg-primary { background-color: var(--bg-primary); }
+.bg-secondary { background-color: var(--bg-secondary); }
+.bg-tertiary { background-color: var(--bg-tertiary); }
+
+.text-primary { color: var(--text-primary); }
+.text-secondary { color: var(--text-secondary); }
+.text-muted { color: var(--text-muted); }
+.text-light { color: var(--text-light); }
+
+.border-default { border-color: var(--border-default); }
+.border-light { border-color: var(--border-light); }
+.border-focus { border-color: var(--border-focus); }
+
+.shadow-sm { box-shadow: var(--shadow-sm); }
+.shadow-md { box-shadow: var(--shadow-md); }
+.shadow-lg { box-shadow: var(--shadow-lg); }
+.shadow-xl { box-shadow: var(--shadow-xl); }
+
+/* Theme-aware components */
+.card {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  box-shadow: var(--shadow-md);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-lg);
+}
+
+.button-primary {
+  background-color: var(--accent-primary);
+  color: white;
+  border: 2px solid var(--accent-primary);
+}
+
+.button-primary:hover {
+  background-color: var(--accent-secondary);
+  border-color: var(--accent-secondary);
+}
+
+.button-secondary {
+  background-color: transparent;
+  color: var(--accent-primary);
+  border: 2px solid var(--border-default);
+}
+
+.button-secondary:hover {
+  background-color: var(--bg-tertiary);
+  border-color: var(--accent-primary);
+}
+
+/* Input fields */
+input, textarea, select {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-default);
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: var(--border-focus);
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+
+/* Code blocks */
+pre, code {
+  background-color: var(--code-bg);
+  color: var(--code-text);
+}
+
+/* Links */
+a {
+  color: var(--accent-primary);
+}
+
+a:hover {
+  color: var(--accent-secondary);
+}
+
+/* Modals and overlays */
+.modal-backdrop {
+  background-color: var(--overlay-bg);
+}
+
+.modal-content {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-default);
+  box-shadow: var(--shadow-xl);
+}
+
+/* Scrollbar styling for dark mode */
+.dark ::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: var(--border-default);
+  border-radius: 6px;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* Smooth transitions for theme changes */
+* {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-duration: 0.2s;
+  transition-timing-function: ease;
+}
+
+/* Prevent transition on page load */
+.no-transition * {
+  transition: none !important;
+}
+
+/* Theme-specific adjustments */
+.dark img {
+  opacity: 0.9;
+}
+
+.dark .logo-dark {
+  display: block;
+}
+
+.dark .logo-light {
+  display: none;
+}
+
+.logo-dark {
+  display: none;
+}
+
+.logo-light {
+  display: block;
+}

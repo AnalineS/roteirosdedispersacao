@@ -356,6 +356,12 @@ export function CognitiveLoadAuditor() {
     return issues;
   };
 
+  // Não renderizar popup em produção - apenas fazer tracking silencioso
+  if (process.env.NODE_ENV === 'production') {
+    return null;
+  }
+
+  // Popup visível apenas em desenvolvimento
   return (
     <div style={{
       position: 'fixed',

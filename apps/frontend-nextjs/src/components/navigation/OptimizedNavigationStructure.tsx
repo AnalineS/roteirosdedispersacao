@@ -268,16 +268,6 @@ export const OPTIMIZED_HEADER_NAVIGATION: NavigationCategory[] = [
         estimatedTime: '20 min'
       },
       {
-        id: 'how-to-cite',
-        label: 'Como Citar',
-        href: '/como-citar',
-        icon: '📝',
-        description: 'Instruções para citação',
-        category: 'institutional',
-        level: 'intermediate',
-        estimatedTime: '5 min'
-      },
-      {
         id: 'contact',
         label: 'Contato',
         href: '/contato',
