@@ -247,7 +247,7 @@ const QuickDemoStep = ({ selectedRole }: { selectedRole: UserRole }) => {
         <div className="space-y-4">
           <div className="bg-white rounded-lg p-4 shadow-sm">
             <p className="text-gray-700 font-medium">
-              "{examples[currentExample].question}"
+              &quot;{examples[currentExample].question}&quot;
             </p>
           </div>
           

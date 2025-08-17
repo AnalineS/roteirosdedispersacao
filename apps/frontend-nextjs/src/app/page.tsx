@@ -10,6 +10,13 @@ import { getUniversityLogo, getPersonaAvatar } from '@/constants/avatars';
 import type { UserProfile } from '@/hooks/useUserProfile';
 import { CognitiveLoadAuditor } from '@/components/analytics/CognitiveLoadAuditor';
 import { MobileUXAuditor } from '@/components/analytics/MobileUXAuditor';
+import { HierarchyHeading, HierarchyText } from '@/components/layout/VisualHierarchyOptimizer';
+import ContentChunking, { createEducationalContentChunk, createMedicalContentChunk } from '@/components/content/ContentChunkingStrategy';
+import { MobileQuickActions } from '@/components/mobile/MedicalMobileComponents';
+import { useMobileDetection } from '@/components/mobile/MobileFirstFramework';
+import { InteractiveButton, useToast, ToastContainer } from '@/components/ui/MicroInteractions';
+import { ScrollAnimation, CardReveal, PageTransition, MedicalAnimation } from '@/components/ui/AnimationSystem';
+import { MedicalLoadingSpinner } from '@/components/ui/LoadingStates';
 import dynamic from 'next/dynamic';
 
 // Lazy load WelcomeWizard for better performance
@@ -22,6 +29,8 @@ export default function HomePage() {
   const { personas, loading, error, getValidPersonasCount } = usePersonas();
   const { saveProfile } = useUserProfile();
   const { showWizard, completeOnboarding, skipOnboarding } = useOnboarding();
+  const { isMobile } = useMobileDetection();
+  const { toasts, addToast } = useToast();
   const router = useRouter();
 
   if (loading) {
@@ -31,16 +40,11 @@ export default function HomePage() {
         backgroundColor: '#f8fafc'
       }}>
         <div className="text-center">
-          <div className="animate-pulse mb-4">
-            <div style={{
-              width: '60px',
-              height: '60px',
-              borderRadius: '12px',
-              backgroundColor: '#e2e8f0',
-              margin: '0 auto'
-            }}></div>
-          </div>
-          <p style={{ color: '#64748b', fontSize: '0.875rem' }}>Carregando assistentes...</p>
+          <MedicalLoadingSpinner 
+            size="large" 
+            variant="medical" 
+          />
+          <MedicalAnimation type="pulse" intensity="subtle" size={16} />
         </div>
       </div>
     );
@@ -55,12 +59,20 @@ export default function HomePage() {
         <div className="card text-center" style={{ maxWidth: '400px' }}>
           <h3 style={{ color: '#ef4444', marginBottom: '1rem' }}>Erro ao carregar</h3>
           <p className="text-muted mb-4">{error}</p>
-          <button 
-            onClick={() => window.location.reload()}
-            className="btn btn-primary"
+          <InteractiveButton 
+            onClick={() => {
+              addToast({
+                type: 'loading',
+                message: 'Recarregando página...',
+                duration: 2000
+              });
+              setTimeout(() => window.location.reload(), 500);
+            }}
+            variant="primary"
+            size="medium"
           >
             Tentar Novamente
-          </button>
+          </InteractiveButton>
         </div>
       </div>
     );
@@ -72,8 +84,14 @@ export default function HomePage() {
       selectedPersona: personaId
     };
     
+    addToast({
+      type: 'success',
+      message: `Assistente ${personaId === 'dr_gasnelio' ? 'Dr. Gasnelio' : 'Gá'} selecionado com sucesso!`,
+      duration: 2000
+    });
+    
     saveProfile(profileWithPersona);
-    router.push('/chat');
+    setTimeout(() => router.push('/chat'), 800);
   };
 
   // Handle onboarding completion and navigate to chat
@@ -180,39 +198,74 @@ export default function HomePage() {
                 }}
               />
               <div style={{ textAlign: 'left' }}>
-                <h1 style={{ 
-                  fontSize: '2.5rem',
-                  fontWeight: '700',
-                  color: '#1e293b',
-                  margin: '0',
-                  letterSpacing: '-0.02em'
-                }}>
+                <HierarchyHeading level="h1">
                   Roteiros de Dispensação
-                </h1>
-                <p style={{ 
-                  fontSize: '1rem',
+                </HierarchyHeading>
+                <HierarchyText size="large" style={{ 
                   color: '#64748b',
                   margin: '0.5rem 0 0 0'
                 }}>
                   Sistema Inteligente de Orientação • Hanseníase
-                </p>
+                </HierarchyText>
               </div>
             </div>
           </div>
           
           {/* Introdução do Sistema */}
-          <div className="text-center mb-5">
-            <p style={{ 
-              fontSize: '1.125rem',
-              color: '#64748b',
+          <div className="text-center hierarchy-component">
+            <HierarchyText size="large" className="hierarchy-element" style={{ 
               maxWidth: '700px',
               margin: '0 auto',
-              lineHeight: '1.75'
+              textAlign: 'center'
             }}>
               Plataforma baseada em pesquisa de doutorado que oferece orientação especializada 
               para dispensação de medicamentos do programa PQT-U para hanseníase
-            </p>
+            </HierarchyText>
           </div>
+
+          {/* Mobile Quick Actions - ETAPA 4 */}
+          {isMobile && (
+            <section className="hierarchy-component" style={{ 
+              maxWidth: '600px', 
+              margin: '2rem auto' 
+            }}>
+              <HierarchyHeading level="h3" style={{ textAlign: 'center', marginBottom: '1rem' }}>
+                🚀 Acesso Rápido
+              </HierarchyHeading>
+              
+              <MobileQuickActions
+                actions={[
+                  {
+                    id: 'chat',
+                    label: 'Conversar com IA',
+                    icon: '💬',
+                    action: () => router.push('/chat')
+                  },
+                  {
+                    id: 'calculator',
+                    label: 'Calculadora PQT-U',
+                    icon: '🧮',
+                    action: () => router.push('/resources/calculator')
+                  },
+                  {
+                    id: 'modules',
+                    label: 'Módulos Educativos',
+                    icon: '📚',
+                    action: () => router.push('/modules')
+                  },
+                  {
+                    id: 'emergency',
+                    label: 'Emergência Médica',
+                    icon: '🚨',
+                    variant: 'emergency',
+                    action: () => {
+                      window.location.href = 'tel:192';
+                    }
+                  }
+                ]}
+              />
+            </section>
+          )}
 
           {/* Features Grid */}
           <div className="grid grid-cols-3 gap-lg mb-5" style={{ maxWidth: '800px', margin: '3rem auto' }}>
@@ -294,24 +347,17 @@ export default function HomePage() {
             boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
             border: '1px solid rgba(255, 255, 255, 0.2)'
           }}>
-            <div className="text-center" style={{ marginBottom: '2.5rem' }}>
-              <h2 style={{
-                fontSize: '2.25rem',
-                fontWeight: '700',
-                color: '#1e293b',
-                marginBottom: '1rem'
-              }}>
+            <div className="text-center hierarchy-component">
+              <HierarchyHeading level="h2" className="hierarchy-element">
                 Conheça Seus Assistentes Virtuais
-              </h2>
-              <p style={{ 
-                fontSize: '1.125rem',
-                color: '#64748b',
-                lineHeight: '1.75',
+              </HierarchyHeading>
+              <HierarchyText size="large" className="hierarchy-element" style={{ 
                 maxWidth: '600px',
-                margin: '0 auto'
+                margin: '0 auto',
+                textAlign: 'center'
               }}>
                 Dois especialistas em IA, cada um desenvolvido para atender suas necessidades específicas no cuidado farmacêutico
-              </p>
+              </HierarchyText>
             </div>
             
             {/* Cards dos Assistentes - Layout Flex Horizontal */}
@@ -593,15 +639,10 @@ export default function HomePage() {
             boxShadow: '0 8px 32px rgba(0, 0, 0, 0.06)',
             border: '1px solid #e2e8f0'
           }}>
-            <div className="text-center" style={{ marginBottom: '2.5rem' }}>
-              <h2 style={{
-                fontSize: '2.25rem',
-                fontWeight: '700',
-                color: '#1e293b',
-                marginBottom: '2rem'
-              }}>
+            <div className="text-center hierarchy-component">
+              <HierarchyHeading level="h2" className="hierarchy-element">
                 Sobre a Pesquisa
-              </h2>
+              </HierarchyHeading>
               
               {/* Parágrafos introdutórios */}
               <div style={{ textAlign: 'left', maxWidth: '800px', margin: '0 auto 2.5rem' }}>
@@ -830,6 +871,126 @@ export default function HomePage() {
               </a>
             </div>
           </section>
+
+          {/* Content Chunking Demo - ETAPA 2 */}
+          <section className="hierarchy-section" style={{ 
+            maxWidth: '1000px', 
+            margin: '4rem auto' 
+          }}>
+            <ContentChunking
+              groups={[
+                {
+                  id: 'getting-started',
+                  title: 'Como Começar',
+                  description: 'Informações essenciais organizadas para facilitar sua jornada de aprendizagem',
+                  defaultExpanded: false,
+                  layout: 'accordion',
+                  chunks: [
+                    createEducationalContentChunk(
+                      'choose-assistant',
+                      'Escolhendo seu Assistente Virtual',
+                      'Entenda as diferenças entre Dr. Gasnelio e Gá para fazer a melhor escolha',
+                      <div>
+                        <HierarchyText size="normal">
+                          <strong>Dr. Gasnelio</strong> é ideal para:
+                        </HierarchyText>
+                        <ul style={{ marginLeft: '1.5rem', lineHeight: '1.6' }}>
+                          <li>Profissionais de saúde que precisam de informações técnicas detalhadas</li>
+                          <li>Estudantes de farmácia ou medicina</li>
+                          <li>Consultas sobre protocolos clínicos e diretrizes oficiais</li>
+                          <li>Cálculos de dosagem e interações medicamentosas</li>
+                        </ul>
+                        
+                        <HierarchyText size="normal" style={{ marginTop: '1rem' }}>
+                          <strong>Gá</strong> é ideal para:
+                        </HierarchyText>
+                        <ul style={{ marginLeft: '1.5rem', lineHeight: '1.6' }}>
+                          <li>Pacientes e familiares buscando informações acessíveis</li>
+                          <li>Esclarecimento de dúvidas em linguagem simples</li>
+                          <li>Orientações sobre qualidade de vida</li>
+                          <li>Suporte emocional e motivacional durante o tratamento</li>
+                        </ul>
+                      </div>,
+                      { priority: 'high', complexity: 'beginner', estimatedReadTime: '3 min' }
+                    ),
+                    
+                    createMedicalContentChunk(
+                      'pqt-overview',
+                      'Protocolo PQT-U: Visão Geral',
+                      'Informações essenciais sobre o tratamento poliquimioterápico para hanseníase',
+                      <div>
+                        <div className="medical-alert-info">
+                          <strong>⚕️ Informação Médica:</strong> O PQT-U (Poliquimioterapia Única) é o protocolo padrão do Ministério da Saúde para tratamento da hanseníase.
+                        </div>
+                        
+                        <HierarchyText size="normal" style={{ marginTop: '1rem' }}>
+                          <strong>Duração do Tratamento:</strong>
+                        </HierarchyText>
+                        <ul style={{ marginLeft: '1.5rem', lineHeight: '1.6' }}>
+                          <li><strong>Paucibacilar:</strong> 6 meses de tratamento</li>
+                          <li><strong>Multibacilar:</strong> 12 meses de tratamento</li>
+                        </ul>
+                        
+                        <HierarchyText size="normal" style={{ marginTop: '1rem' }}>
+                          <strong>Medicamentos Utilizados:</strong>
+                        </HierarchyText>
+                        <ul style={{ marginLeft: '1.5rem', lineHeight: '1.6' }}>
+                          <li><strong>Rifampicina:</strong> Antibiótico principal (dose supervisionada)</li>
+                          <li><strong>Dapsona:</strong> Anti-inflamatório (autoadministração)</li>
+                          <li><strong>Clofazimina:</strong> Antimicobacteriano (casos multibacilares)</li>
+                        </ul>
+                      </div>,
+                      { priority: 'critical', complexity: 'intermediate', estimatedReadTime: '5 min' }
+                    ),
+                    
+                    createEducationalContentChunk(
+                      'platform-features',
+                      'Recursos da Plataforma',
+                      'Descubra todas as funcionalidades disponíveis para otimizar seu aprendizado',
+                      <div>
+                        <HierarchyText size="normal">
+                          Nossa plataforma oferece diversos recursos para facilitar seu aprendizado:
+                        </HierarchyText>
+                        
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', marginTop: '1rem' }}>
+                          <div style={{ padding: '1rem', background: '#f0f9ff', borderRadius: '8px', border: '1px solid #0ea5e9' }}>
+                            <strong>💬 Chat Inteligente</strong>
+                            <p style={{ fontSize: '0.9rem', margin: '0.5rem 0 0 0' }}>
+                              Converse com especialistas virtuais treinados especificamente para hanseníase
+                            </p>
+                          </div>
+                          
+                          <div style={{ padding: '1rem', background: '#f0fdf4', borderRadius: '8px', border: '1px solid #22c55e' }}>
+                            <strong>📚 Módulos Educativos</strong>
+                            <p style={{ fontSize: '0.9rem', margin: '0.5rem 0 0 0' }}>
+                              Conteúdo estruturado desde conceitos básicos até tópicos avançados
+                            </p>
+                          </div>
+                          
+                          <div style={{ padding: '1rem', background: '#fef3c7', borderRadius: '8px', border: '1px solid #f59e0b' }}>
+                            <strong>🧮 Calculadoras</strong>
+                            <p style={{ fontSize: '0.9rem', margin: '0.5rem 0 0 0' }}>
+                              Ferramentas para cálculo de doses e verificação de protocolos
+                            </p>
+                          </div>
+                          
+                          <div style={{ padding: '1rem', background: '#f3e8ff', borderRadius: '8px', border: '1px solid #8b5cf6' }}>
+                            <strong>📊 Acompanhamento</strong>
+                            <p style={{ fontSize: '0.9rem', margin: '0.5rem 0 0 0' }}>
+                              Monitore seu progresso e identifique áreas para aprofundamento
+                            </p>
+                          </div>
+                        </div>
+                      </div>,
+                      { priority: 'medium', complexity: 'beginner', estimatedReadTime: '4 min' }
+                    )
+                  ]
+                }
+              ]}
+              enableProgressiveMode={true}
+              maxConcurrentChunks={2}
+            />
+          </section>
         </div>
       </div>
       
@@ -841,6 +1002,9 @@ export default function HomePage() {
       {showWizard && (
         <WelcomeWizard onComplete={handleOnboardingComplete} />
       )}
+      
+      {/* Toast Container */}
+      <ToastContainer toasts={toasts} />
     </EducationalLayout>
     </>
   );

@@ -11,6 +11,7 @@ import {
 import { getUnbColors } from '@/config/modernTheme';
 import { useProgressData } from './Progress';
 import { NavigationCategory } from './NavigationHeader';
+import { useMobileDetection, useSwipeGestures } from '@/components/mobile/MobileFirstFramework';
 
 interface MobileNavigationProps {
   isOpen: boolean;
@@ -31,9 +32,21 @@ export default function MobileNavigation({
   const menuRef = useRef<HTMLDivElement>(null);
   const unbColors = getUnbColors();
   const progressData = useProgressData();
+  const { isMobile, touchSupport } = useMobileDetection();
 
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set(['learning', 'interaction']));
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
+
+  // Swipe gestures para fechar menu
+  const swipeHandlers = useSwipeGestures({
+    direction: 'left',
+    threshold: 50,
+    onSwipe: (direction) => {
+      if (direction === 'left' && isOpen) {
+        onClose();
+      }
+    }
+  });
 
   // Fechar menu ao navegar
   useEffect(() => {
