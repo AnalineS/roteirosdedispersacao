@@ -6,6 +6,11 @@ on:
     - cron: '0 * * * *'
   workflow_dispatch: # Permitir execução manual
 
+# Adicionar permissões necessárias para criar issues e comentários
+permissions:
+  issues: write
+  contents: read
+
 jobs:
   check-metrics:
     name: Check System Health & Metrics
@@ -130,6 +135,91 @@ jobs:
               
               console.log('✅ Comentário adicionado na issue existente');
             }
+
+      - name: 📧 Send Email Alert (Free - IFTTT)
+        if: steps.api-health.outputs.alert_needed == 'true' || steps.metrics-usage.outputs.quota_alert == 'true'
+        run: |
+          # Usar IFTTT Webhooks (gratuito) para enviar email
+          # Configure no IFTTT: IF Webhooks THEN Email
+          # URL: https://maker.ifttt.com/trigger/github_alert/with/key/YOUR_IFTTT_KEY
+          
+          BACKEND_STATUS="${{ steps.api-health.outputs.backend_status }}"
+          FRONTEND_STATUS="${{ steps.api-health.outputs.frontend_status }}"
+          USAGE_PERCENTAGE="${{ steps.metrics-usage.outputs.usage_percentage }}"
+          TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          
+          # Preparar dados para IFTTT
+          if [ "$BACKEND_STATUS" != "200" ] || [ "$FRONTEND_STATUS" != "200" ]; then
+            ALERT_TYPE="🚨 SISTEMA OFFLINE"
+            MESSAGE="Backend: $BACKEND_STATUS | Frontend: $FRONTEND_STATUS"
+          elif [ "$USAGE_PERCENTAGE" -gt 90 ]; then
+            ALERT_TYPE="⚠️ QUOTA ALTA"
+            MESSAGE="Uso de métricas: ${USAGE_PERCENTAGE}%"
+          else
+            ALERT_TYPE="ℹ️ INFORMATIVO"
+            MESSAGE="Verificação de rotina"
+          fi
+          
+          # Método 1: IFTTT Webhooks (recomendado)
+          if [ -n "${{ secrets.IFTTT_WEBHOOK_KEY }}" ]; then
+            curl -X POST "https://maker.ifttt.com/trigger/github_alert/with/key/${{ secrets.IFTTT_WEBHOOK_KEY }}" \
+              -H "Content-Type: application/json" \
+              -d "{
+                \"value1\": \"$ALERT_TYPE\",
+                \"value2\": \"$MESSAGE\",
+                \"value3\": \"$TIMESTAMP\"
+              }"
+            echo "✅ Email enviado via IFTTT"
+          else
+            echo "⚠️ IFTTT_WEBHOOK_KEY não configurado"
+          fi
+          
+          # Método 2: Telegram (alternativa gratuita)
+          if [ -n "${{ secrets.TELEGRAM_BOT_TOKEN }}" ] && [ -n "${{ secrets.TELEGRAM_CHAT_ID }}" ]; then
+            TELEGRAM_MESSAGE="🤖 *Alerta Roteiros de Dispensação*%0A%0A*Tipo:* $ALERT_TYPE%0A*Detalhes:* $MESSAGE%0A*Horário:* $TIMESTAMP%0A%0A_Monitoramento automático GitHub Actions_"
+            
+            curl -s "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+              -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}" \
+              -d "text=$TELEGRAM_MESSAGE" \
+              -d "parse_mode=Markdown"
+            echo "✅ Notificação enviada via Telegram"
+          else
+            echo "⚠️ Credenciais do Telegram não configuradas"
+          fi
+
+      - name: 🔄 Auto-close resolved issues
+        if: steps.api-health.outputs.alert_needed == 'false' && steps.metrics-usage.outputs.quota_alert == 'false'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            // Fechar automaticamente issues de alerta quando sistema está saudável
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'observability,automated,critical'
+            });
+            
+            for (const issue of issues.data) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                body: '✅ **Sistema Recuperado**\n\n' +
+                      'O monitoramento automático detectou que o sistema voltou ao normal.\n' +
+                      'Fechando esta issue automaticamente.\n\n' +
+                      `*Verificação: ${new Date().toISOString()}*`
+              });
+              
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                state: 'closed'
+              });
+            }
+            
+            console.log(`✅ ${issues.data.length} issues de alerta fechadas automaticamente`);
       
       - name: 📈 Send Metrics to Google Analytics (UX)
         if: always()
