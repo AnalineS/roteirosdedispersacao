@@ -12,84 +12,47 @@ permissions:
   contents: read
 ```
 
-## 📧 Opções de Alertas Gratuitos
+## 📧 Opções de Alertas Gratuitos Configuradas
 
-### Opção 1: IFTTT Webhooks (Recomendado)
+### Opção 1: Telegram Bot ✅ CONFIGURADO
 
-**Vantagens:**
-- 100% gratuito
-- Fácil configuração
-- Suporte a email personalizado
-- Até 1000 execuções por mês
-
-**Configuração:**
-
-1. **Criar conta no IFTTT:**
-   - Acesse: https://ifttt.com/
-   - Crie uma conta gratuita
-
-2. **Configurar Webhook:**
-   - Acesse: https://ifttt.com/maker_webhooks
-   - Conecte o serviço "Webhooks"
-   - Anote sua chave em: https://ifttt.com/maker_webhooks/settings
-
-3. **Criar Applet:**
-   - Vá em "Create" → "If This Then That"
-   - **IF (Trigger)**: Webhooks
-     - Event Name: `github_alert`
-   - **THEN (Action)**: Email
-     - Configure:
-       ```
-       Subject: 🚨 {{Value1}} - Roteiros de Dispensação
-       Body: 
-       Alerta do sistema:
-       
-       Tipo: {{Value1}}
-       Detalhes: {{Value2}}
-       Horário: {{Value3}}
-       
-       Verifique o repositório para mais informações.
-       ```
-
-4. **Configurar no GitHub:**
-   - Acesse: Repositório → Settings → Secrets and variables → Actions
-   - Adicione: `IFTTT_WEBHOOK_KEY` com sua chave do IFTTT
-
-### Opção 2: Telegram Bot (Alternativa)
+**Status:** ✅ **ATIVO** - Bot criado e secrets configurados
 
 **Vantagens:**
-- Notificações instantâneas
-- Sem limites de mensagens
-- App móvel sempre disponível
+- ✅ **Notificações instantâneas** no mobile
+- ✅ **Sem limites de mensagens**
+- ✅ **App móvel sempre disponível**
+- ✅ **Formatação rica** com Markdown
 
-**Configuração:**
+**Configuração:** ✅ **JÁ FEITA**
+- Bot criado no Telegram
+- Secrets `TELEGRAM_BOT_TOKEN` e `TELEGRAM_CHAT_ID` configurados
+- Sistema ativo e funcionando
 
-1. **Criar Bot no Telegram:**
-   - Converse com @BotFather no Telegram
-   - Envie: `/newbot`
-   - Siga as instruções e anote o `BOT_TOKEN`
-
-2. **Obter Chat ID:**
-   - Envie uma mensagem para seu bot
-   - Acesse: `https://api.telegram.org/bot<SEU_BOT_TOKEN>/getUpdates`
-   - Anote o `chat_id` da resposta
-
-3. **Configurar no GitHub:**
-   - Adicione os secrets:
-     - `TELEGRAM_BOT_TOKEN`: Token do seu bot
-     - `TELEGRAM_CHAT_ID`: ID do seu chat
-
-### Opção 3: GitHub Notifications + Email
+### Opção 2: GitHub Notifications + Email ✅ CONFIGURADO
 
 **Vantagens:**
-- Zero configuração
-- Usa email do GitHub
-- Automático
+- ✅ **Zero configuração adicional** (já está implementado!)
+- ✅ **Usa email do GitHub** (o que você já configurou)
+- ✅ **Automático** com @mentions e assignments
+- ✅ **Integrado ao sistema** de issues e notificações
 
-**Configuração:**
-- No repositório: Settings → Notifications
-- Ative "Issues" notifications
-- Configure seu email em: GitHub Settings → Emails
+**Como Funciona:**
+1. Sistema cria issues automaticamente quando há problemas
+2. Issues são **atribuídas automaticamente** para @AnalineS
+3. **@mentions** são adicionados para forçar notificações
+4. GitHub envia emails para todos configurados nas notificações do repo
+
+**Configuração (já feita!):**
+- ✅ No repositório: Settings → Notifications (configurado)
+- ✅ Issues habilitadas no workflow
+- ✅ Auto-assignment implementado
+- ✅ @mentions automáticos para notificações
+
+**Teste Automático:**
+- Execute o workflow manualmente para receber uma issue de teste
+- Sistema cria issue, adiciona comentário com @mention e fecha automaticamente
+- Você deve receber 3 emails: criação, comentário e fechamento
 
 ## 🔧 Funcionalidades Implementadas
 

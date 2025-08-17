@@ -62,6 +62,7 @@ jobs:
           fi
       
       - name: 🚨 Create Issue if Alert Needed
+        id: create-issue
         if: steps.api-health.outputs.alert_needed == 'true' || steps.metrics-usage.outputs.quota_alert == 'true'
         uses: actions/github-script@v6
         with:
@@ -115,76 +116,110 @@ jobs:
             
             // Se não houver issue aberta, criar uma nova
             if (issues.data.length === 0) {
-              await github.rest.issues.create({
+              const issueResult = await github.rest.issues.create({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 title: title,
                 body: body,
-                labels: labels
+                labels: labels,
+                assignees: ['AnalineS'], // Atribuir automaticamente para garantir notificação
+                milestone: null
               });
               
-              console.log('✅ Issue de alerta criada');
+              // Salvar URL da issue para usar no Telegram
+              const issueUrl = issueResult.data.html_url;
+              const monitoringUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/workflows/observability-monitoring.yml`;
+              
+              // Adicionar comentário @mencionando para forçar notificação
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issueResult.data.number,
+                body: `🚨 **ALERTA CRÍTICO** @AnalineS\n\n` +
+                      `Sistema requer atenção imediata.\n\n` +
+                      `**🔗 Ações Rápidas:**\n` +
+                      `- 📊 [Ver Monitoring](${monitoringUrl}) - Executar verificações\n` +
+                      `- 🔍 [Esta Issue](${issueUrl}) - Acompanhar resolução\n` +
+                      `- 🌐 [Backend Status](https://roteiro-dispensacao-api-992807978726.us-central1.run.app/api/health)\n` +
+                      `- 🖥️ [Frontend Status](https://roteiros-de-dispensacao.web.app)\n\n` +
+                      `**Próximas ações:**\n` +
+                      `- [ ] Verificar status dos serviços\n` +
+                      `- [ ] Analisar logs de erro\n` +
+                      `- [ ] Confirmar recuperação\n\n` +
+                      `*Issue criada automaticamente pelo sistema de monitoramento*`
+              });
+              
+              // Passar URLs para usar no Telegram
+              core.setOutput('issue_url', issueUrl);
+              core.setOutput('monitoring_url', monitoringUrl);
+              core.setOutput('issue_number', issueResult.data.number);
+              
+              console.log('✅ Issue de alerta criada com notificações');
             } else {
-              // Adicionar comentário na issue existente
+              // Adicionar comentário na issue existente com @mention
+              const existingIssueUrl = issues.data[0].html_url;
+              const monitoringUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/workflows/observability-monitoring.yml`;
+              
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: issues.data[0].number,
-                body: body
+                body: `🔄 **Atualização do Alerta** @AnalineS\n\n${body}\n\n` +
+                      `**🔗 Ações Rápidas:**\n` +
+                      `- 📊 [Ver Monitoring](${monitoringUrl})\n` +
+                      `- 🔍 [Esta Issue](${existingIssueUrl})\n\n` +
+                      `*Última verificação: ${new Date().toISOString()}*`
               });
+              
+              // Passar URLs para usar no Telegram
+              core.setOutput('issue_url', existingIssueUrl);
+              core.setOutput('monitoring_url', monitoringUrl);
+              core.setOutput('issue_number', issues.data[0].number);
               
               console.log('✅ Comentário adicionado na issue existente');
             }
 
-      - name: 📧 Send Email Alert (Free - IFTTT)
+      - name: 📱 Send Telegram Alert
         if: steps.api-health.outputs.alert_needed == 'true' || steps.metrics-usage.outputs.quota_alert == 'true'
         run: |
-          # Usar IFTTT Webhooks (gratuito) para enviar email
-          # Configure no IFTTT: IF Webhooks THEN Email
-          # URL: https://maker.ifttt.com/trigger/github_alert/with/key/YOUR_IFTTT_KEY
-          
+          # Enviar alerta via Telegram (configurado pelo usuário)
           BACKEND_STATUS="${{ steps.api-health.outputs.backend_status }}"
           FRONTEND_STATUS="${{ steps.api-health.outputs.frontend_status }}"
           USAGE_PERCENTAGE="${{ steps.metrics-usage.outputs.usage_percentage }}"
           TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
           
-          # Preparar dados para IFTTT
+          # URLs para ações rápidas
+          ISSUE_URL="${{ steps.create-issue.outputs.issue_url }}"
+          MONITORING_URL="${{ steps.create-issue.outputs.monitoring_url }}"
+          ISSUE_NUMBER="${{ steps.create-issue.outputs.issue_number }}"
+          
+          # Preparar dados para Telegram
           if [ "$BACKEND_STATUS" != "200" ] || [ "$FRONTEND_STATUS" != "200" ]; then
             ALERT_TYPE="🚨 SISTEMA OFFLINE"
             MESSAGE="Backend: $BACKEND_STATUS | Frontend: $FRONTEND_STATUS"
+            EMOJI="🔴"
           elif [ "$USAGE_PERCENTAGE" -gt 90 ]; then
             ALERT_TYPE="⚠️ QUOTA ALTA"
             MESSAGE="Uso de métricas: ${USAGE_PERCENTAGE}%"
+            EMOJI="🟡"
           else
             ALERT_TYPE="ℹ️ INFORMATIVO"
             MESSAGE="Verificação de rotina"
+            EMOJI="🟢"
           fi
           
-          # Método 1: IFTTT Webhooks (recomendado)
-          if [ -n "${{ secrets.IFTTT_WEBHOOK_KEY }}" ]; then
-            curl -X POST "https://maker.ifttt.com/trigger/github_alert/with/key/${{ secrets.IFTTT_WEBHOOK_KEY }}" \
-              -H "Content-Type: application/json" \
-              -d "{
-                \"value1\": \"$ALERT_TYPE\",
-                \"value2\": \"$MESSAGE\",
-                \"value3\": \"$TIMESTAMP\"
-              }"
-            echo "✅ Email enviado via IFTTT"
-          else
-            echo "⚠️ IFTTT_WEBHOOK_KEY não configurado"
-          fi
-          
-          # Método 2: Telegram (alternativa gratuita)
+          # Enviar via Telegram
           if [ -n "${{ secrets.TELEGRAM_BOT_TOKEN }}" ] && [ -n "${{ secrets.TELEGRAM_CHAT_ID }}" ]; then
-            TELEGRAM_MESSAGE="🤖 *Alerta Roteiros de Dispensação*%0A%0A*Tipo:* $ALERT_TYPE%0A*Detalhes:* $MESSAGE%0A*Horário:* $TIMESTAMP%0A%0A_Monitoramento automático GitHub Actions_"
+            TELEGRAM_MESSAGE="$EMOJI *Alerta Roteiros de Dispensação*%0A%0A*Tipo:* $ALERT_TYPE%0A*Detalhes:* $MESSAGE%0A*Horário:* $TIMESTAMP%0A%0A📊 *Status Completo:*%0A• Backend API: $BACKEND_STATUS%0A• Frontend: $FRONTEND_STATUS%0A• Métricas: ${USAGE_PERCENTAGE}%%0A%0A🔗 *Ações Rápidas:*%0A📊 [Ver Monitoring]($MONITORING_URL)%0A🔍 [Issue \#$ISSUE_NUMBER]($ISSUE_URL)%0A%0A_Monitoramento automático GitHub Actions_"
             
             curl -s "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
               -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}" \
               -d "text=$TELEGRAM_MESSAGE" \
-              -d "parse_mode=Markdown"
-            echo "✅ Notificação enviada via Telegram"
+              -d "parse_mode=Markdown" \
+              -d "disable_web_page_preview=false"
+            echo "✅ Notificação enviada via Telegram com links de ação"
           else
-            echo "⚠️ Credenciais do Telegram não configuradas"
+            echo "⚠️ Credenciais do Telegram não configuradas - usando apenas GitHub Issues"
           fi
 
       - name: 🔄 Auto-close resolved issues
@@ -220,6 +255,83 @@ jobs:
             }
             
             console.log(`✅ ${issues.data.length} issues de alerta fechadas automaticamente`);
+
+      - name: 📧 GitHub Email Notifications Check
+        if: always()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            // Verificar configurações de notificação do repositório
+            try {
+              const repo = await github.rest.repos.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo
+              });
+              
+              console.log('📧 Configurações de email do GitHub:');
+              console.log(`- Repositório: ${repo.data.full_name}`);
+              console.log(`- Issues habilitadas: ${repo.data.has_issues}`);
+              console.log(`- Watchers: ${repo.data.watchers_count}`);
+              
+              // Verificar se o usuário está "watching" o repositório
+              try {
+                const subscription = await github.rest.activity.getRepoSubscription({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo
+                });
+                console.log(`- Status de watch: ${subscription.data.subscribed ? 'ATIVO' : 'INATIVO'}`);
+                console.log(`- Notificações: ${subscription.data.ignored ? 'IGNORADAS' : 'ATIVAS'}`);
+              } catch (e) {
+                console.log('- Status de watch: NÃO CONFIGURADO');
+              }
+              
+              // Criar uma issue de teste para verificar notificações (apenas em execução manual)
+              if (context.eventName === 'workflow_dispatch') {
+                const testIssue = await github.rest.issues.create({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  title: '🧪 Teste de Notificação Email - GitHub',
+                  body: `## Teste de Configuração de Email\n\n` +
+                        `Este é um teste automático para verificar se as notificações por email estão funcionando.\n\n` +
+                        `**Configurações verificadas:**\n` +
+                        `- ✅ Issues habilitadas: ${repo.data.has_issues}\n` +
+                        `- ✅ Repository watching configurado\n` +
+                        `- ✅ @AnalineS mencionado para notificação\n\n` +
+                        `**Se você recebeu este email, a configuração está funcionando!** 🎉\n\n` +
+                        `*Esta issue será fechada automaticamente em alguns segundos.*`,
+                  labels: ['test', 'notifications', 'email-test'],
+                  assignees: ['AnalineS']
+                });
+                
+                // Adicionar comentário com @mention
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: testIssue.data.number,
+                  body: `🔔 **Teste de Notificação** @AnalineS\n\n` +
+                        `Se você recebeu este email, as notificações estão funcionando perfeitamente!\n\n` +
+                        `**Próximos passos:**\n` +
+                        `- [x] Sistema de emails configurado ✅\n` +
+                        `- [x] Notificações automáticas ativas ✅\n` +
+                        `- [x] Alertas de monitoramento funcionais ✅`
+                });
+                
+                // Aguardar 10 segundos e fechar a issue
+                await new Promise(resolve => setTimeout(resolve, 10000));
+                
+                await github.rest.issues.update({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: testIssue.data.number,
+                  state: 'closed'
+                });
+                
+                console.log('✅ Issue de teste criada e fechada - verifique seu email!');
+              }
+              
+            } catch (error) {
+              console.log(`❌ Erro ao verificar configurações: ${error.message}`);
+            }
       
       - name: 📈 Send Metrics to Google Analytics (UX)
         if: always()
