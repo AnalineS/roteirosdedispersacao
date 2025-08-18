@@ -36,7 +36,8 @@ certifi==2024.8.30
 typing-extensions==4.12.2
 
 # === PRODUÇÃO ===
-gunicorn==21.2.0
+# Updated gunicorn to fix CVE-2024-6827 (HTTP request smuggling vulnerability)
+gunicorn==23.0.0
 
 # === CACHE & PERFORMANCE ===
 redis==5.0.1
