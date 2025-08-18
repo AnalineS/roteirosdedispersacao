@@ -212,23 +212,6 @@ export default function EducationalFooterSimple({
               </div>
             </div>
 
-            {/* Copyright compacto */}
-            <div style={{
-              padding: '0.75rem',
-              background: 'rgba(107, 114, 128, 0.05)',
-              borderRadius: '8px',
-              border: '1px solid rgba(107, 114, 128, 0.1)',
-              textAlign: 'center'
-            }}>
-              <p style={{
-                fontSize: '0.8rem',
-                color: '#374151',
-                margin: 0,
-                fontWeight: '500'
-              }}>
-                © {currentYear} Sistema Educacional Roteiros de Dispensação
-              </p>
-            </div>
           </div>
 
           {/* Informações finais compactas */}
@@ -255,7 +238,7 @@ export default function EducationalFooterSimple({
               fontSize: '0.75rem',
               color: '#94a3b8'
             }}>
-              Pesquisa de doutorado • {currentYear}
+              Pesquisa de doutorado • {currentYear} © {currentYear} Sistema Educacional Roteiros de Dispensação
             </div>
           </div>
         </div>

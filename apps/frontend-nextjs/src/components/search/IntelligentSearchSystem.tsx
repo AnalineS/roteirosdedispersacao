@@ -331,10 +331,10 @@ export default function IntelligentSearchSystem({
           }}
           aria-label="Selecionar tipo de público"
         >
-          <option value="general">👥 Geral</option>
-          <option value="patient">🏥 Paciente</option>
-          <option value="professional">👨‍⚕️ Profissional</option>
-          <option value="student">🎓 Estudante</option>
+          <option value="general">Geral</option>
+          <option value="patient">Paciente</option>
+          <option value="professional">Profissional</option>
+          <option value="student">Estudante</option>
         </select>
 
         {/* Search Input */}
@@ -400,7 +400,7 @@ export default function IntelligentSearchSystem({
             fontSize: '0.85rem',
             color: unbColors.neutral
           }}>
-            🎯 Buscando para: <strong>{getAudienceLabel(selectedAudience)}</strong>
+            Buscando para: <strong>{getAudienceLabel(selectedAudience)}</strong>
             {query && ` • "${query}"`}
           </div>
 
@@ -494,7 +494,12 @@ export default function IntelligentSearchSystem({
               textAlign: 'center',
               color: '#6b7280'
             }}>
-              <div style={{ fontSize: '2rem', marginBottom: '8px' }}>🔍</div>
+              <div style={{ fontSize: '2rem', marginBottom: '8px' }}>
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="#6b7280" stroke="currentColor" strokeWidth="2">
+                  <circle cx="11" cy="11" r="8"/>
+                  <path d="m21 21-4.35-4.35"/>
+                </svg>
+              </div>
               <p style={{ margin: 0, fontSize: '0.9rem' }}>
                 Nenhum resultado encontrado para "{query}"
               </p>

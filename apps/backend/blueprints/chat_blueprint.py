@@ -11,6 +11,20 @@ import html
 import bleach
 from typing import Dict, Any, Optional
 
+# Importar patches de segurança
+try:
+    from core.security.security_patches import sanitize_inputs, rate_limit, EnhancedInputSanitizer
+    SECURITY_PATCHES_AVAILABLE = True
+except ImportError:
+    SECURITY_PATCHES_AVAILABLE = False
+    # Fallback para sanitização básica
+    def sanitize_inputs(f):
+        return f
+    def rate_limit(max_attempts=10, window=60):
+        def decorator(f):
+            return f
+        return decorator
+
 # Importar dependências
 from core.dependencies import get_cache, get_rag, get_qa, get_config
 
@@ -280,6 +294,8 @@ Para informações mais detalhadas, recomendo consultar um profissional de saúd
 
 @chat_bp.route('/chat', methods=['POST'])
 @check_rate_limit('chat')
+@sanitize_inputs
+@rate_limit(max_attempts=30, window=60)  # 30 mensagens por minuto
 async def chat_api():
     """Endpoint principal para interação com chatbot"""
     start_time = datetime.now()

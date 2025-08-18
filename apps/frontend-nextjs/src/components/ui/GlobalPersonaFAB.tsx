@@ -223,36 +223,40 @@ export default function GlobalPersonaFAB({ className, style }: GlobalPersonaFABP
           onClick={handleClose}
           style={{
             position: 'absolute',
-            top: '-6px',
-            right: '-6px',
-            width: '18px',
-            height: '18px',
+            top: '-4px',
+            right: '-4px',
+            width: '20px',
+            height: '20px',
             backgroundColor: 'rgba(255, 255, 255, 0.95)',
             color: '#666',
-            border: 'none',
+            border: '1px solid rgba(0, 0, 0, 0.1)',
             borderRadius: '50%',
             cursor: 'pointer',
-            fontSize: '11px',
+            fontSize: '12px',
             fontWeight: 'bold',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             transition: 'all 0.2s ease',
-            boxShadow: '0 1px 4px rgba(0, 0, 0, 0.15)',
+            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.12)',
             zIndex: 1001,
-            opacity: 0.8
+            opacity: 0.9,
+            padding: 0,
+            lineHeight: 1
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 1)';
-            e.currentTarget.style.transform = 'scale(1.1)';
+            e.currentTarget.style.transform = 'scale(1.05)';
             e.currentTarget.style.opacity = '1';
             e.currentTarget.style.color = '#333';
+            e.currentTarget.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.15)';
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.95)';
             e.currentTarget.style.transform = 'scale(1)';
-            e.currentTarget.style.opacity = '0.8';
+            e.currentTarget.style.opacity = '0.9';
             e.currentTarget.style.color = '#666';
+            e.currentTarget.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.12)';
           }}
           aria-label="Fechar assistente"
           title="Fechar assistente"
@@ -302,7 +306,11 @@ export default function GlobalPersonaFAB({ className, style }: GlobalPersonaFABP
                   <span style={{ fontSize: '12px', opacity: 0.8, marginLeft: '4px' }}>
                     • {sessionInfo.sessionType === 'authenticated' ? 'Logado' : 'Visitante'}
                     {sessionInfo.migrationData && (
-                      <span title="Sessão migrada"> 🔄</span>
+                      <span title="Sessão migrada" style={{ fontSize: '10px' }}>
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" style={{ marginLeft: '2px' }}>
+                          <path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/>
+                        </svg>
+                      </span>
                     )}
                   </span>
                 </span>
@@ -373,10 +381,17 @@ export default function GlobalPersonaFAB({ className, style }: GlobalPersonaFABP
                         padding: '8px',
                         fontSize: '12px',
                         cursor: 'pointer',
-                        color: '#003366'
+                        color: '#003366',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px'
                       }}
                     >
-                      💊 Dosagem
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 8h-2v3h-3v2h3v3h2v-3h3v-2h-3V8zM4 10V8a4 4 0 0 1 4-4h1V2h2v2h1a4 4 0 0 1 4 4v2h-2V8a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v2H4z"/>
+                        <rect x="2" y="10" width="12" height="12" rx="2" fill="currentColor"/>
+                      </svg>
+                      Dosagem
                     </button>
                     <button
                       onClick={() => handleQuickAction('interaction_check')}
@@ -387,10 +402,16 @@ export default function GlobalPersonaFAB({ className, style }: GlobalPersonaFABP
                         padding: '8px',
                         fontSize: '12px',
                         cursor: 'pointer',
-                        color: '#003366'
+                        color: '#003366',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px'
                       }}
                     >
-                      ⚠️ Interações
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2L1 21h22L12 2zm0 3.5L19.5 19h-15L12 5.5zM11 10v4h2v-4h-2zm0 6v2h2v-2h-2z"/>
+                      </svg>
+                      Interações
                     </button>
                     <button
                       onClick={() => handleQuickAction('side_effects')}
@@ -401,10 +422,16 @@ export default function GlobalPersonaFAB({ className, style }: GlobalPersonaFABP
                         padding: '8px',
                         fontSize: '12px',
                         cursor: 'pointer',
-                        color: '#003366'
+                        color: '#003366',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px'
                       }}
                     >
-                      ⚡ Efeitos
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/>
+                      </svg>
+                      Efeitos
                     </button>
                     <button
                       onClick={() => handleQuickAction('patient_guidance')}
@@ -415,10 +442,16 @@ export default function GlobalPersonaFAB({ className, style }: GlobalPersonaFABP
                         padding: '8px',
                         fontSize: '12px',
                         cursor: 'pointer',
-                        color: '#003366'
+                        color: '#003366',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px'
                       }}
                     >
-                      👨‍⚕️ Orientação
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/>
+                      </svg>
+                      Orientação
                     </button>
                   </div>
                 </div>

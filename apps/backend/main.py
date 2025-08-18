@@ -285,30 +285,51 @@ def setup_cors(app):
     logger.info(f"🔗 CORS configurado para: {allowed_origins}")
 
 def setup_security_headers(app):
-    """Configurar headers de segurança"""
+    """Configurar headers de segurança aprimorados"""
+    try:
+        # Tentar importar patches de segurança
+        from core.security.security_patches import apply_security_patches
+        app = apply_security_patches(app)
+        logger.info("Patches de segurança avançados aplicados")
+    except ImportError:
+        logger.info("Usando configuração de segurança básica")
+    
     @app.after_request
     def add_security_headers(response):
         # Prevenir XSS
         response.headers['X-Content-Type-Options'] = 'nosniff'
         response.headers['X-Frame-Options'] = 'DENY'
         response.headers['X-XSS-Protection'] = '1; mode=block'
+        response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
         
         # HSTS para HTTPS
         if request.is_secure:
-            response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+            response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains; preload'
         
-        # CSP básico
+        # CSP mais restritivo
         csp_policy = (
             "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline'; "
+            "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com; "
             "style-src 'self' 'unsafe-inline'; "
             "img-src 'self' data: https:; "
-            "connect-src 'self' https://api-inference.huggingface.co https://openrouter.ai"
+            "font-src 'self' data:; "
+            "connect-src 'self' https://api-inference.huggingface.co https://openrouter.ai; "
+            "frame-ancestors 'none'; "
+            "base-uri 'self'; "
+            "form-action 'self'"
         )
         response.headers['Content-Security-Policy'] = csp_policy
         
+        # Permissions Policy
+        response.headers['Permissions-Policy'] = (
+            "geolocation=(), microphone=(), camera=(), "
+            "payment=(), usb=(), magnetometer=(), "
+            "accelerometer=(), gyroscope=()"
+        )
+        
         # Remover headers que revelam informações
         response.headers.pop('Server', None)
+        response.headers.pop('X-Powered-By', None)
         
         return response
 
