@@ -2,12 +2,14 @@
 # Dependências para sistema completo com RAG e IA
 
 # === CORE FLASK ===
-Flask==3.0.0
-Flask-CORS==4.0.0
-Werkzeug==3.0.1
+# Updated Flask to latest security-patched version
+Flask==3.1.0
+Flask-CORS==5.0.0
+Werkzeug==3.1.3
 
 # === AI & ML ===
-openai==1.54.0
+# Updated to latest secure version
+openai==1.55.3
 # EMBEDDINGS (SPRINT 1.2) - Versões compatíveis Python 3.13
 sentence-transformers==2.7.0
 chromadb==0.5.0
@@ -16,14 +18,19 @@ scikit-learn==1.5.0
 
 # === UTILIDADES ===
 python-dotenv==1.0.1
-requests==2.31.0
-pydantic==2.5.0
+# Updated requests to latest patched version beyond CVE-2023-32681
+requests==2.32.3
+pydantic==2.10.3
 
 # === PROCESSAMENTO TEXTO ===
 nltk==3.9.1
 
 # === SEGURANÇA ===
-bleach==6.1.0
+# Updated security packages
+bleach==6.2.0
+# Additional security packages
+defusedxml==0.7.1
+certifi==2024.8.30
 
 # === COMPATIBILIDADE ===
 typing-extensions==4.12.2
@@ -66,6 +73,7 @@ pytest-cov==4.1.0
 pytest-mock==3.12.0
 
 # === ENHANCED SECURITY ===
-cryptography==41.0.7
-PyJWT==2.8.0
-markupsafe==2.1.3
+# Updated to latest secure versions - cryptography 42.0.4+ fixes CVE-2024-26130
+cryptography==43.0.3
+PyJWT==2.10.1
+markupsafe==3.0.2
