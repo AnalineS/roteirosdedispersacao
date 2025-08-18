@@ -269,7 +269,7 @@ export default function HomePage() {
       <EducationalLayout showBreadcrumbs={false}>
       <div style={{
         minHeight: '100vh',
-        backgroundColor: '#ffffff',
+        backgroundColor: 'var(--bg-primary)',
         position: 'relative',
         overflow: 'hidden'
       }}>
@@ -280,7 +280,7 @@ export default function HomePage() {
           left: 0,
           right: 0,
           height: 'clamp(40vh, 50%, 60vh)',
-          background: 'linear-gradient(180deg, #f0f9ff 0%, #ffffff 100%)',
+          background: 'linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%)',
           zIndex: 0
         }}></div>
 
@@ -288,9 +288,9 @@ export default function HomePage() {
         <nav style={{
           position: 'sticky',
           top: '0',
-          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+          backgroundColor: 'rgba(var(--bg-primary), 0.95)',
           backdropFilter: 'blur(10px)',
-          borderBottom: '1px solid #e2e8f0',
+          borderBottom: '1px solid var(--border-default)',
           padding: '1rem 0',
           zIndex: 100
         }}>

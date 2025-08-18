@@ -366,7 +366,8 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: isWideScreen ? '0 clamp(1rem, 2vw, 3rem)' : '0 clamp(0.5rem, 1.5vw, 1rem)',
+        padding: isWideScreen ? '0 clamp(1rem, 2vw, 2rem)' : '0 clamp(0.5rem, 1.5vw, 1rem)',
+        gap: '1rem',
         minHeight: '80px',
         boxSizing: 'border-box'
       }}
@@ -413,8 +414,8 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
       {!isMobile && (
         <div className="nav-search-section" style={{
           flex: 1,
-          maxWidth: '600px',
-          margin: '0 2rem',
+          maxWidth: isTablet ? '500px' : '800px',
+          margin: isTablet ? '0 1rem' : '0 1.5rem',
           display: 'flex',
           justifyContent: 'center'
         }}>
@@ -428,11 +429,18 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
       )}
 
       {/* Navegação Principal - Centro (Desktop/Tablet) */}
-      {!isMobile && false && (
+      {!isMobile && (
         <nav 
           className="nav-main-section"
           role="navigation"
           aria-label="Navegação principal do sistema educacional"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: isTablet ? '0.5rem' : '1rem',
+            flexWrap: 'nowrap',
+            overflow: 'hidden'
+          }}
         >
           {visibleCategories.map((category) => {
             const IconComponent = getCategoryIcon(category.id);
