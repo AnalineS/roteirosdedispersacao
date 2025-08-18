@@ -56,7 +56,10 @@ if (hasValidConfig()) {
   auth = getAuth(app);
   db = getFirestore(app);
 } else {
-  console.warn('⚠️ Firebase não inicializado - configuração inválida ou incompleta');
+  // Só mostrar warning em desenvolvimento
+  if (process.env.NODE_ENV === 'development') {
+    console.warn('[Firebase] Não inicializado - configuração incompleta');
+  }
 }
 
 export { auth, db };
@@ -131,7 +134,10 @@ export function validateFirebaseConfig(): boolean {
   const missing = requiredEnvVars.filter(key => !process.env[key]);
   
   if (missing.length > 0) {
-    console.warn('⚠️ Firebase configuração incompleta:', missing);
+    // Só mostrar warning em desenvolvimento
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('[Firebase] Configuração incompleta:', missing);
+    }
     return false;
   }
 
@@ -144,9 +150,13 @@ export const networkControl = {
     if (FEATURES.FIRESTORE_ENABLED && FEATURES.OFFLINE_MODE && db) {
       try {
         await disableNetwork(db);
-        console.log('📴 Firestore: Modo offline ativado');
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[Firestore] Modo offline ativado');
+        }
       } catch (error) {
-        console.error('Erro ao ativar modo offline:', error);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Erro ao ativar modo offline:', error);
+        }
       }
     }
   },
@@ -155,9 +165,13 @@ export const networkControl = {
     if (FEATURES.FIRESTORE_ENABLED && db) {
       try {
         await enableNetwork(db);
-        console.log('🌐 Firestore: Modo online ativado');
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[Firestore] Modo online ativado');
+        }
       } catch (error) {
-        console.error('Erro ao ativar modo online:', error);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Erro ao ativar modo online:', error);
+        }
       }
     }
   }
@@ -166,8 +180,9 @@ export const networkControl = {
 // Verificar configuração na inicialização
 if (FEATURES.AUTH_ENABLED || FEATURES.FIRESTORE_ENABLED) {
   const isValid = validateFirebaseConfig();
-  if (!isValid && process.env.NODE_ENV === 'production') {
-    console.error('❌ Firebase mal configurado em produção');
+  // Remover log de erro em produção
+  if (!isValid && process.env.NODE_ENV === 'development') {
+    console.error('[Firebase] Configuração inválida');
   }
 }
 

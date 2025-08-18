@@ -3,8 +3,12 @@
 import EducationalLayout from '@/components/layout/EducationalLayout';
 import Link from 'next/link';
 import { HanseníaseModuleStructuredData } from '@/components/seo/MedicalStructuredData';
+import { ContentSegment, AudienceSelector, useAudiencePreference } from '@/components/content/ContentSegmentation';
+import { GlossaryWrapper } from '@/components/glossary/AutoGlossary';
+import LastUpdated from '@/components/content/LastUpdated';
 
 export default function TratamentoModulePage() {
+  const { selectedAudience, updateAudience } = useAudiencePreference();
   const moduleContent = {
     title: 'Tratamento da Hanseníase',
     subtitle: 'Poliquimioterapia Única (PQT-U) - Protocolo PCDT Hanseníase 2022',
@@ -653,35 +657,70 @@ export default function TratamentoModulePage() {
           </p>
         </div>
 
+        {/* Medical Content Validation */}
+        <LastUpdated 
+          date="2024-12-01"
+          content="Módulo de Tratamento PQT-U"
+          version="1.2"
+          reviewer="Dr. Ana Paula - Farmacêutica Clínica"
+          source="PCDT Hanseníase 2022 - Ministério da Saúde"
+          variant="medical"
+        />
+
+        {/* Audience Selector */}
+        <AudienceSelector 
+          selectedAudience={selectedAudience}
+          onAudienceChange={updateAudience}
+        />
+
         {/* Module Content */}
-        {moduleContent.sections.map((section, index) => (
-          <div key={section.id} style={{
-            background: 'white',
-            borderRadius: '12px',
-            padding: '25px',
-            marginBottom: '20px',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-          }}>
-            <h2 style={{
-              fontSize: '1.5rem',
-              color: '#059669',
-              marginBottom: '15px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px'
-            }}>
-              {section.title}
-            </h2>
-            
-            <div style={{
-              fontSize: '1rem',
-              lineHeight: '1.6',
-              color: '#444',
-              marginBottom: '20px',
-              whiteSpace: 'pre-line'
-            }}>
-              {section.content}
-            </div>
+        {moduleContent.sections.map((section, index) => {
+          // Define audience and complexity based on section content
+          let audience: ('professional' | 'patient' | 'student' | 'general')[] = ['professional'];
+          let complexity: 'basic' | 'intermediate' | 'advanced' | 'technical' = 'technical';
+          
+          // Adjust based on section content
+          if (section.id === 'fundamentos-pqt') {
+            audience = ['professional', 'student'];
+            complexity = 'intermediate';
+          } else if (section.id === 'composicao-posologia') {
+            audience = ['professional'];
+            complexity = 'technical';
+          } else if (section.id === 'administracao-dispensacao') {
+            audience = ['professional'];
+            complexity = 'advanced';
+          } else if (section.id === 'reacoes-adversas') {
+            audience = ['professional', 'student'];
+            complexity = 'advanced';
+          } else if (section.id === 'seguimento-alta') {
+            audience = ['professional'];
+            complexity = 'advanced';
+          } else if (section.id === 'tese-pqt-content') {
+            audience = ['professional', 'student'];
+            complexity = 'technical';
+          }
+
+          return (
+            <ContentSegment
+              key={section.id}
+              audience={audience}
+              complexity={complexity}
+              title={section.title}
+              showAudienceTag={true}
+              allowToggle={true}
+              defaultVisible={true}
+            >
+              <GlossaryWrapper enabled={true}>
+                <div style={{
+                  fontSize: '1rem',
+                  lineHeight: '1.6',
+                  color: '#444',
+                  marginBottom: '20px',
+                  whiteSpace: 'pre-line'
+                }}>
+                  {section.content}
+                </div>
+              </GlossaryWrapper>
             
             {/* Clinical Cases */}
             {section.clinicalCases && (
@@ -789,8 +828,9 @@ export default function TratamentoModulePage() {
                 ))}
               </ul>
             </div>
-          </div>
-        ))}
+          </ContentSegment>
+        );
+        })}
 
         {/* Quiz Section */}
         <div style={{

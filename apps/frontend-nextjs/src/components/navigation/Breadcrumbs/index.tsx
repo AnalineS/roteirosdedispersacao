@@ -33,8 +33,37 @@ export default function EducationalBreadcrumbs() {
       return breadcrumbs;
     }
 
+    // Authentication pages
+    if (path.startsWith('/login')) {
+      breadcrumbs.push({
+        label: 'Login',
+        href: '/login',
+        icon: '🔐',
+        category: 'tools',
+        isCurrentPage: true
+      });
+    }
+    else if (path.startsWith('/cadastro')) {
+      breadcrumbs.push({
+        label: 'Cadastro',
+        href: '/cadastro',
+        icon: '📝',
+        category: 'tools',
+        isCurrentPage: true
+      });
+    }
+    else if (path.startsWith('/esqueci-senha')) {
+      breadcrumbs.push({
+        label: 'Recuperar Senha',
+        href: '/esqueci-senha',
+        icon: '🔑',
+        category: 'tools',
+        isCurrentPage: true
+      });
+    }
+
     // Dashboard
-    if (path.startsWith('/dashboard')) {
+    else if (path.startsWith('/dashboard')) {
       breadcrumbs.push({
         label: 'Dashboard',
         href: '/dashboard',
@@ -93,6 +122,24 @@ export default function EducationalBreadcrumbs() {
           estimatedTime: '20 min',
           isCurrentPage: true
         });
+      } else if (path === '/modules/roteiro-dispensacao') {
+        breadcrumbs.push({
+          label: 'Roteiro de Dispensação',
+          href: '/modules/roteiro-dispensacao',
+          icon: '📋',
+          category: 'learning',
+          estimatedTime: '25 min',
+          isCurrentPage: true
+        });
+      } else if (path === '/modules/vida-com-doenca') {
+        breadcrumbs.push({
+          label: 'Vida com Hanseníase',
+          href: '/modules/vida-com-doenca',
+          icon: '💚',
+          category: 'learning',
+          estimatedTime: '15 min',
+          isCurrentPage: true
+        });
       }
     }
     
@@ -122,7 +169,35 @@ export default function EducationalBreadcrumbs() {
           category: 'tools',
           isCurrentPage: true
         });
+      } else if (path === '/resources/interactions') {
+        breadcrumbs.push({
+          label: 'Verificador de Interações',
+          href: '/resources/interactions',
+          icon: '⚠️',
+          category: 'tools',
+          isCurrentPage: true
+        });
       }
+    }
+    
+    // Individual tools
+    else if (path === '/glossario') {
+      breadcrumbs.push({
+        label: 'Glossário Médico',
+        href: '/glossario',
+        icon: '📖',
+        category: 'tools',
+        isCurrentPage: true
+      });
+    }
+    else if (path === '/downloads') {
+      breadcrumbs.push({
+        label: 'Downloads',
+        href: '/downloads',
+        icon: '📄',
+        category: 'tools',
+        isCurrentPage: true
+      });
     }
     
     // Progress
@@ -135,6 +210,115 @@ export default function EducationalBreadcrumbs() {
         completionRate: 65,
         isCurrentPage: path === '/progress'
       });
+    }
+
+    // Institutional pages
+    else if (path === '/sobre') {
+      breadcrumbs.push({
+        label: 'Sobre o Sistema',
+        href: '/sobre',
+        icon: '💻',
+        category: 'learning',
+        isCurrentPage: true
+      });
+    }
+    else if (path === '/sobre-a-tese') {
+      breadcrumbs.push({
+        label: 'Sobre a Tese',
+        href: '/sobre-a-tese',
+        icon: '🎓',
+        category: 'learning',
+        isCurrentPage: true
+      });
+    }
+    else if (path === '/metodologia') {
+      breadcrumbs.push({
+        label: 'Metodologia',
+        href: '/metodologia',
+        icon: '🔬',
+        category: 'learning',
+        isCurrentPage: true
+      });
+    }
+
+    // Public awareness page
+    else if (path === '/vida-com-hanseniase') {
+      breadcrumbs.push({
+        label: 'Vida com Hanseníase',
+        href: '/vida-com-hanseniase',
+        icon: '💚',
+        category: 'learning',
+        isCurrentPage: true
+      });
+    }
+
+    // Privacy and legal
+    else if (path === '/privacidade') {
+      breadcrumbs.push({
+        label: 'Política de Privacidade',
+        href: '/privacidade',
+        icon: '🛡️',
+        category: 'tools',
+        isCurrentPage: true
+      });
+    }
+    else if (path === '/termos') {
+      breadcrumbs.push({
+        label: 'Termos de Uso',
+        href: '/termos',
+        icon: '📜',
+        category: 'tools',
+        isCurrentPage: true
+      });
+    }
+    else if (path === '/conformidade') {
+      breadcrumbs.push({
+        label: 'Conformidade LGPD',
+        href: '/conformidade',
+        icon: '⚖️',
+        category: 'tools',
+        isCurrentPage: true
+      });
+    }
+
+    // Sitemap
+    else if (path === '/sitemap') {
+      breadcrumbs.push({
+        label: 'Mapa do Site',
+        href: '/sitemap',
+        icon: '🗺️',
+        category: 'tools',
+        isCurrentPage: true
+      });
+    }
+
+    // Admin pages
+    else if (path.startsWith('/admin')) {
+      breadcrumbs.push({
+        label: 'Administração',
+        href: '/admin',
+        icon: '⚙️',
+        category: 'tools',
+        isCurrentPage: path === '/admin'
+      });
+
+      if (path === '/admin/features') {
+        breadcrumbs.push({
+          label: 'Feature Flags',
+          href: '/admin/features',
+          icon: '🚩',
+          category: 'tools',
+          isCurrentPage: true
+        });
+      } else if (path === '/admin/analytics') {
+        breadcrumbs.push({
+          label: 'Analytics',
+          href: '/admin/analytics',
+          icon: '📊',
+          category: 'tools',
+          isCurrentPage: true
+        });
+      }
     }
 
     return breadcrumbs;

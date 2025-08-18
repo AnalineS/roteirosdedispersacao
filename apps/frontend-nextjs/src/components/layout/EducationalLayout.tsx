@@ -9,6 +9,11 @@ import FocusIndicator, { SkipLink } from '@/components/accessibility/FocusIndica
 import VisualHierarchyOptimizer from '@/components/layout/VisualHierarchyOptimizer';
 import MobileFirstFramework from '@/components/mobile/MobileFirstFramework';
 import GlobalPersonaFAB from '@/components/ui/GlobalPersonaFAB';
+import QuickNavigationMenu from '@/components/navigation/QuickNavigationMenu';
+import { GlobalNavigationProvider } from '@/components/navigation/GlobalNavigationProvider';
+import { FloatingElementsCoordinator } from '@/components/navigation/FloatingElementsCoordinator';
+import { SmartNavigationProvider } from '@/components/navigation/SmartNavigationSystem';
+import ProgressiveDisclosure from '@/components/navigation/ProgressiveDisclosure';
 
 interface EducationalLayoutProps {
   children: ReactNode;
@@ -28,9 +33,12 @@ export default function EducationalLayout({
   footerVariant = 'full'
 }: EducationalLayoutProps) {
   return (
-    <VisualHierarchyOptimizer applyToRoot={true}>
-      <MobileFirstFramework enableSwipeGestures={true} touchTargetSize="medium">
-        <div className="educational-layout hierarchy-content-container mobile-safe-area" role="document">
+    <GlobalNavigationProvider>
+      <SmartNavigationProvider>
+        <FloatingElementsCoordinator>
+          <VisualHierarchyOptimizer applyToRoot={true}>
+            <MobileFirstFramework enableSwipeGestures={true} touchTargetSize="medium">
+              <div className="educational-layout hierarchy-content-container mobile-safe-area" role="document">
         {/* Indicador de foco global */}
         <FocusIndicator 
           enabled={true}
@@ -84,8 +92,17 @@ export default function EducationalLayout({
 
       {/* Global Persona FAB - Disponível em todas as páginas */}
       <GlobalPersonaFAB />
+
+      {/* Quick Navigation Menu - Disponível em todas as páginas */}
+      <QuickNavigationMenu position="bottom-left" showOnMobile={true} />
+
+      {/* Progressive Disclosure - Tour guiado para novos usuários */}
+      <ProgressiveDisclosure enabled={true} autoStart={true} />
         </div>
       </MobileFirstFramework>
     </VisualHierarchyOptimizer>
+        </FloatingElementsCoordinator>
+      </SmartNavigationProvider>
+    </GlobalNavigationProvider>
   );
 }

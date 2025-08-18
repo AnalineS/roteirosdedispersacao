@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { usePersonas } from '@/hooks/usePersonas';
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation';
+import { useNavigationVisibility, useContextualNavigation } from './SmartNavigationSystem';
 import { 
   SystemLogoIcon,
   LearningIcon, 
@@ -22,6 +23,7 @@ import { getUniversityLogo } from '@/constants/avatars';
 import Tooltip from '@/components/common/Tooltip';
 import MobileNavigation from './MobileNavigation';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
+import IntelligentSearchSystem from '@/components/search/IntelligentSearchSystem';
 // Interfaces de navegação (movidas do Sidebar removido)
 export interface NavigationItem {
   id: string;
@@ -58,6 +60,8 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
   const { personas } = usePersonas();
   const headerRef = useRef<HTMLElement>(null);
   const unbColors = getUnbColors();
+  const shouldShowHeader = useNavigationVisibility('main-header');
+  const { primaryNavigation, maxVisibleItems, deviceType } = useContextualNavigation();
 
   // Estados
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -334,6 +338,14 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
   // Obter persona atual
   const currentPersonaData = currentPersona && personas[currentPersona] ? personas[currentPersona] : null;
 
+  // Não renderizar se sistema inteligente decidir que não deve
+  if (!shouldShowHeader && primaryNavigation !== 'header') {
+    return null;
+  }
+
+  // Filtrar categorias baseado no limite do sistema inteligente
+  const visibleCategories = navigationCategories.slice(0, Math.min(maxVisibleItems || 8, navigationCategories.length));
+
   return (
     <header
       ref={headerRef}
@@ -397,14 +409,32 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
       </div>
 
 
-      {/* Navegação Principal - Centro (Desktop/Tablet) */}
+      {/* Barra de Busca Inteligente - Centro */}
       {!isMobile && (
+        <div className="nav-search-section" style={{
+          flex: 1,
+          maxWidth: '600px',
+          margin: '0 2rem',
+          display: 'flex',
+          justifyContent: 'center'
+        }}>
+          <IntelligentSearchSystem 
+            placeholder="Buscar conteúdo sobre hanseníase..."
+            showFilters={false}
+            defaultAudience="general"
+            className="header-search"
+          />
+        </div>
+      )}
+
+      {/* Navegação Principal - Centro (Desktop/Tablet) */}
+      {!isMobile && false && (
         <nav 
           className="nav-main-section"
           role="navigation"
           aria-label="Navegação principal do sistema educacional"
         >
-          {navigationCategories.map((category) => {
+          {visibleCategories.map((category) => {
             const IconComponent = getCategoryIcon(category.id);
             const hasDropdown = category.items.length > 1 || category.items.some(item => item.subItems?.length);
             
@@ -711,6 +741,40 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
               </div>
             </div>
           </div>
+        )}
+
+        {/* Mobile Search Button */}
+        {isMobile && (
+          <button
+            onClick={() => {
+              // TODO: Implement mobile search modal
+              console.log('Mobile search modal not implemented yet');
+            }}
+            style={{
+              background: 'none',
+              border: `2px solid transparent`,
+              color: unbColors.white,
+              padding: '8px',
+              cursor: 'pointer',
+              borderRadius: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              minWidth: '44px',
+              minHeight: '44px',
+              outline: 'none',
+              marginRight: '8px'
+            }}
+            onFocus={(e) => { e.currentTarget.style.border = `2px solid ${unbColors.white}`; }}
+            onBlur={(e) => { e.currentTarget.style.border = '2px solid transparent'; }}
+            aria-label="Buscar conteúdo"
+            title="Buscar conteúdo"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="11" cy="11" r="8"/>
+              <path d="m21 21-4.35-4.35"/>
+            </svg>
+          </button>
         )}
 
         {/* Menu Mobile Toggle */}

@@ -15,6 +15,7 @@ import { MobileQuickActions } from '@/components/mobile/MedicalMobileComponents'
 import { useMobileDetection } from '@/components/mobile/MobileFirstFramework';
 import { InteractiveButton, useToast, ToastContainer } from '@/components/ui/MicroInteractions';
 import { ScrollAnimation, CardReveal, PageTransition, MedicalAnimation } from '@/components/ui/AnimationSystem';
+import ExecutiveSummary from '@/components/summary/ExecutiveSummary';
 import { 
   HomeIcon, 
   ChatBotIcon, 
@@ -848,6 +849,13 @@ export default function HomePage() {
             
           </div>
 
+          {/* Executive Summary Section */}
+          <div style={{
+            maxWidth: 'min(1200px, 92vw)',
+            margin: '3rem auto',
+          }}>
+            <ExecutiveSummary userProfile={'general'} />
+          </div>
 
           {/* Sobre a Pesquisa Section */}
           <section style={{

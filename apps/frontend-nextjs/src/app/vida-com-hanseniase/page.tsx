@@ -2,8 +2,11 @@
 
 import NavigationHeader from '@/components/navigation/NavigationHeader';
 import EducationalFooter from '@/components/navigation/EducationalFooter';
+import { ContentSegment, AudienceSelector, useAudiencePreference } from '@/components/content/ContentSegmentation';
 
 export default function VidaComHansenitePage() {
+  const { selectedAudience, updateAudience } = useAudiencePreference();
+  
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       {/* Schema.org JSON-LD para MedicalWebPage */}
@@ -117,26 +120,21 @@ export default function VidaComHansenitePage() {
           </div>
         </div>
 
+        {/* Audience Selector */}
+        <AudienceSelector 
+          selectedAudience={selectedAudience}
+          onAudienceChange={updateAudience}
+        />
+
         {/* Seção: Qualidade de Vida */}
-        <section style={{
-          background: 'white',
-          borderRadius: '16px',
-          padding: '2.5rem',
-          marginBottom: '2rem',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-          border: '1px solid #e2e8f0'
-        }}>
-          <h2 style={{
-            fontSize: '2rem',
-            color: '#7c3aed',
-            marginBottom: '1.5rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.75rem'
-          }}>
-            🌟 Qualidade de Vida e Bem-Estar
-          </h2>
-          
+        <ContentSegment
+          audience={['patient', 'general']}
+          complexity="basic"
+          title="🌟 Qualidade de Vida e Bem-Estar"
+          showAudienceTag={true}
+          allowToggle={true}
+          defaultVisible={true}
+        >
           <div style={{ fontSize: '1.1rem', lineHeight: '1.7', color: '#374151' }}>
             <p style={{ marginBottom: '1.5rem' }}>
               <strong>A hanseníase, quando diagnosticada precocemente e tratada adequadamente, não impede uma vida plena, produtiva e feliz.</strong> Milhões de pessoas ao redor do mundo vivem normalmente após o tratamento completo.
@@ -173,32 +171,21 @@ export default function VidaComHansenitePage() {
                 💝 História Inspiradora:
               </h4>
               <p style={{ fontStyle: 'italic', color: '#0c4a6e' }}>
-                "Maria, 45 anos, completou tratamento há 2 anos. Inicialmente deprimida pela hiperpigmentação, hoje é líder de grupo de apoio e trabalha como consultora em empresa multinacional. 'A hanseníase me ensinou que sou mais forte do que imaginava.'"
+                &ldquo;Maria, 45 anos, completou tratamento há 2 anos. Inicialmente deprimida pela hiperpigmentação, hoje é líder de grupo de apoio e trabalha como consultora em empresa multinacional. &lsquo;A hanseníase me ensinou que sou mais forte do que imaginava.&rsquo;&rdquo;
               </p>
             </div>
           </div>
-        </section>
+        </ContentSegment>
 
         {/* Seção: Direitos e Benefícios */}
-        <section style={{
-          background: 'white',
-          borderRadius: '16px',
-          padding: '2.5rem',
-          marginBottom: '2rem',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-          border: '1px solid #e2e8f0'
-        }}>
-          <h2 style={{
-            fontSize: '2rem',
-            color: '#059669',
-            marginBottom: '1.5rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.75rem'
-          }}>
-            ⚖️ Direitos e Proteção Legal
-          </h2>
-          
+        <ContentSegment
+          audience={['patient', 'general', 'student']}
+          complexity="intermediate"
+          title="⚖️ Direitos e Proteção Legal"
+          showAudienceTag={true}
+          allowToggle={true}
+          defaultVisible={true}
+        >
           <div style={{ fontSize: '1.1rem', lineHeight: '1.7', color: '#374151' }}>
             <p style={{ marginBottom: '1.5rem' }}>
               <strong>As pessoas afetadas pela hanseníase têm direitos constitucionais e legais específicos</strong> que garantem dignidade, tratamento adequado e proteção contra discriminação.
@@ -245,32 +232,21 @@ export default function VidaComHansenitePage() {
                 ⚖️ Caso de Sucesso:
               </h4>
               <p style={{ fontStyle: 'italic', color: '#14532d' }}>
-                "Pedro foi demitido após empregador descobrir diagnóstico. Processo trabalhista por discriminação resultou em reintegração + indenização por danos morais. Empresa foi obrigada a promover campanha educativa."
+                &ldquo;Pedro foi demitido após empregador descobrir diagnóstico. Processo trabalhista por discriminação resultou em reintegração + indenização por danos morais. Empresa foi obrigada a promover campanha educativa.&rdquo;
               </p>
             </div>
           </div>
-        </section>
+        </ContentSegment>
 
         {/* Seção: Cuidados Familiares */}
-        <section style={{
-          background: 'white',
-          borderRadius: '16px',
-          padding: '2.5rem',
-          marginBottom: '2rem',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-          border: '1px solid #e2e8f0'
-        }}>
-          <h2 style={{
-            fontSize: '2rem',
-            color: '#ea580c',
-            marginBottom: '1.5rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.75rem'
-          }}>
-            👨‍👩‍👧‍👦 Cuidados Familiares e Prevenção
-          </h2>
-          
+        <ContentSegment
+          audience={['patient', 'general']}
+          complexity="basic"
+          title="👨‍👩‍👧‍👦 Cuidados Familiares e Prevenção"
+          showAudienceTag={true}
+          allowToggle={true}
+          defaultVisible={true}
+        >
           <div style={{ fontSize: '1.1rem', lineHeight: '1.7', color: '#374151' }}>
             <p style={{ marginBottom: '1.5rem' }}>
               <strong>A família desempenha papel fundamental</strong> no sucesso do tratamento, na prevenção da transmissão e na reintegração social.
@@ -307,11 +283,11 @@ export default function VidaComHansenitePage() {
                 👨‍👩‍👧‍👦 História Familiar:
               </h4>
               <p style={{ fontStyle: 'italic', color: '#9a3412' }}>
-                "Família Silva: quando Carlos foi diagnosticado, toda família passou por exames. Filha de 12 anos apresentou mancha suspeita, diagnosticada precocemente. Dois casos tratados com sucesso, família fortalecida pelo enfrentamento conjunto."
+                &ldquo;Família Silva: quando Carlos foi diagnosticado, toda família passou por exames. Filha de 12 anos apresentou mancha suspeita, diagnosticada precocemente. Dois casos tratados com sucesso, família fortalecida pelo enfrentamento conjunto.&rdquo;
               </p>
             </div>
           </div>
-        </section>
+        </ContentSegment>
 
         {/* Seção: Recursos de Apoio */}
         <section style={{

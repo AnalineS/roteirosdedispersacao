@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { getPersonaAvatar } from '@/constants/avatars';
 import { useChat } from '@/hooks/useChat';
 import { useAuth } from '@/hooks/useAuth';
+import { useFloatingElement } from '@/components/navigation/FloatingElementsCoordinator';
 
 interface GlobalPersonaFABProps {
   className?: string;
@@ -20,6 +21,14 @@ export default function GlobalPersonaFAB({ className, style }: GlobalPersonaFABP
   const router = useRouter();
   const pathname = usePathname();
   const miniChatRef = useRef<HTMLDivElement>(null);
+  
+  // Usar coordenador de elementos flutuantes
+  const { optimalPosition, updateVisibility } = useFloatingElement(
+    'persona-fab',
+    'bottom-right',
+    1, // Highest priority
+    'large'
+  );
   
   // Hooks para chat e autenticação
   const { messages, sendMessage, loading, sessionId, getSessionInfo } = useChat();

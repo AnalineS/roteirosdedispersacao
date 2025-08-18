@@ -68,19 +68,40 @@ export default function SystemStatus({ showDetails = false, className = '' }: Sy
   };
 
   const getStatusIcon = () => {
+    const size = 12;
     switch (status.backendStatus) {
-      case 'online': return '🟢';
-      case 'offline': return '🟡';
-      case 'checking': return '🔵';
-      default: return '⚫';
+      case 'online': 
+        return (
+          <svg width={size} height={size} viewBox="0 0 24 24" fill="#22c55e">
+            <circle cx="12" cy="12" r="10" />
+          </svg>
+        );
+      case 'offline': 
+        return (
+          <svg width={size} height={size} viewBox="0 0 24 24" fill="#f59e0b">
+            <circle cx="12" cy="12" r="10" />
+          </svg>
+        );
+      case 'checking': 
+        return (
+          <svg width={size} height={size} viewBox="0 0 24 24" fill="#3b82f6">
+            <circle cx="12" cy="12" r="10" />
+          </svg>
+        );
+      default: 
+        return (
+          <svg width={size} height={size} viewBox="0 0 24 24" fill="#6b7280">
+            <circle cx="12" cy="12" r="10" />
+          </svg>
+        );
     }
   };
 
   const getStatusMessage = () => {
     if (status.backendStatus === 'online') {
-      return 'Sistema online';
+      return 'Sistema completo';
     } else if (status.fallbackActive) {
-      return 'Funcionalidades básicas';
+      return 'Modo offline';
     } else if (status.backendStatus === 'checking') {
       return 'Conectando...';
     } else {
@@ -91,7 +112,7 @@ export default function SystemStatus({ showDetails = false, className = '' }: Sy
   if (!showDetails) {
     return (
       <div className={`flex items-center space-x-2 ${className}`}>
-        <span className="text-sm">{getStatusIcon()}</span>
+        {getStatusIcon()}
         <span className={`text-xs ${getStatusColor()}`}>
           {getStatusMessage()}
         </span>
@@ -116,7 +137,7 @@ export default function SystemStatus({ showDetails = false, className = '' }: Sy
         <div className="flex items-center justify-between">
           <span className="text-sm text-gray-600">Backend API</span>
           <div className="flex items-center space-x-2">
-            <span className="text-sm">{getStatusIcon()}</span>
+            {getStatusIcon()}
             <span className={`text-sm font-medium ${getStatusColor()}`}>
               {status.backendStatus === 'checking' ? 'Verificando...' : 
                status.backendStatus === 'online' ? 'Online' : 
@@ -149,10 +170,15 @@ export default function SystemStatus({ showDetails = false, className = '' }: Sy
 
         {status.fallbackActive && (
           <div className="mt-2 p-2 bg-blue-50 rounded border-l-4 border-blue-400">
-            <p className="text-xs text-blue-700">
-              ℹ️ Sistema funcionando em modo offline. Suas interações são salvas localmente 
-              e serão sincronizadas quando o backend estiver disponível.
-            </p>
+            <div className="flex items-start gap-2">
+              <svg className="w-4 h-4 text-blue-700 mt-0.5 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h2v-6h-2v6zm0-8h2V7h-2v2z"/>
+              </svg>
+              <p className="text-xs text-blue-700">
+                Sistema funcionando em modo offline. Suas interações são salvas localmente 
+                e serão sincronizadas quando o backend estiver disponível.
+              </p>
+            </div>
           </div>
         )}
       </div>

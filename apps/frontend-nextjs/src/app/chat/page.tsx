@@ -1,11 +1,16 @@
 'use client';
 
-import { useState, useEffect, useCallback, Suspense, lazy } from 'react';
+import { useState, useEffect, useCallback, Suspense, lazy, useRef } from 'react';
 import Link from 'next/link';
 import EducationalLayout from '@/components/layout/EducationalLayout';
 import ModernChatContainer from '@/components/chat/modern/ModernChatContainer';
 import SystemStatus from '@/components/system/SystemStatus';
 import { LoadingIcon, AlertIcon } from '@/components/icons';
+import { useGlobalNavigation } from '@/components/navigation/GlobalNavigationProvider';
+import LGPDCompliance, { useLGPDConsent } from '@/components/privacy/LGPDCompliance';
+import ChatNavigation, { useChatNavigation } from '@/components/navigation/ChatNavigation';
+import ConversationProgress from '@/components/progress/ConversationProgress';
+import ChatFeedback, { useChatFeedback } from '@/components/ui/ChatFeedback';
 
 // Lazy load dos componentes complementares
 const ConversationHistory = lazy(() => import('@/components/chat/ConversationHistory'));
@@ -19,7 +24,16 @@ import { SidebarLoader } from '@/components/LoadingSpinner';
 import { type ChatMessage } from '@/services/api';
 
 export default function ChatPage() {
+  const { setPersonaSelectionViewed } = useGlobalNavigation();
   const { personas, loading: personasLoading, error: personasError } = usePersonas();
+  
+  // Chat feedback hook
+  const { triggerSendFeedback, triggerReceiveFeedback, triggerErrorFeedback } = useChatFeedback();
+  
+  // Marcar que o usuário visitou o chat (permite navegação livre)
+  useEffect(() => {
+    setPersonaSelectionViewed();
+  }, [setPersonaSelectionViewed]);
   const {
     createConversation,
     switchToConversation,
@@ -50,7 +64,9 @@ export default function ChatPage() {
     onMessageReceived: useCallback((message: ChatMessage) => {
       // Adicionar resposta da IA ao histórico de conversas
       addMessageToConversation(message);
-    }, [addMessageToConversation])
+      // Trigger feedback visual/sonoro
+      triggerReceiveFeedback();
+    }, [addMessageToConversation, triggerReceiveFeedback])
   });
   
   const [inputValue, setInputValue] = useState('');
@@ -58,6 +74,9 @@ export default function ChatPage() {
   const [showHistory, setShowHistory] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [pendingQuestion, setPendingQuestion] = useState<string>('');
+  
+  // LGPD Compliance para coleta de dados sensíveis de saúde
+  const { hasConsent, isLoading: lgpdLoading } = useLGPDConsent('chat');
   
   // Função helper para obter todas as conversas com validações
   const getAllConversations = useCallback(() => {
@@ -89,6 +108,9 @@ export default function ChatPage() {
   
   // Usar mensagens da conversa atual em vez do hook useChat
   const currentMessages = getCurrentMessages();
+  
+  // Chat Navigation state
+  const { navigationState } = useChatNavigation(currentMessages);
   
   // Hook de roteamento inteligente
   const {
@@ -184,6 +206,9 @@ export default function ChatPage() {
       persona: personaId
     };
     
+    // Trigger feedback de envio imediatamente
+    triggerSendFeedback();
+    
     // Adicionar mensagem do usuário ao histórico imediatamente
     addMessageToConversation(userMessage);
     
@@ -192,13 +217,14 @@ export default function ChatPage() {
       await sendMessage(messageText, personaId);
       
       // A resposta será automaticamente adicionada pelo useChat hooks
-      // Precisamos interceptar isso - vou fazer isso no próximo passo
+      // O feedback de recebimento será disparado no onMessageReceived
       
     } catch (error) {
       console.error('Erro ao enviar mensagem:', error);
-      // Adicionar mensagem de erro ao histórico se necessário
+      // Trigger feedback de erro
+      triggerErrorFeedback('Erro ao enviar mensagem. Tente novamente.');
     }
-  }, [sendMessage, addMessageToConversation]);
+  }, [sendMessage, addMessageToConversation, triggerSendFeedback, triggerErrorFeedback]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -312,6 +338,27 @@ export default function ChatPage() {
       showBreadcrumbs={false}
       footerVariant="simple"
     >
+      {/* LGPD Compliance Modal */}
+      {!lgpdLoading && !hasConsent && (
+        <LGPDCompliance 
+          context="chat"
+          onAccept={() => {
+            // Consentimento aceito, usuário pode continuar
+          }}
+          onDecline={() => {
+            // Redirecionar para página inicial ou mostrar alternativas
+            window.location.href = '/';
+          }}
+        />
+      )}
+      
+      {/* Chat Navigation */}
+      <ChatNavigation 
+        currentPersona={currentPersona?.name}
+        conversationLength={currentMessages.length}
+        showProgress={true}
+      />
+      
       {/* Conversation History Sidebar */}
       <Suspense fallback={<SidebarLoader />}>
         <ConversationHistory
@@ -339,6 +386,21 @@ export default function ChatPage() {
           <SystemStatus showDetails={false} />
         </div>
         
+        {/* Conversation Progress Indicator */}
+        {hasConsent && currentMessages.length > 0 && (
+          <div style={{
+            maxWidth: '800px',
+            margin: '0 auto 1rem',
+            padding: '0 1rem'
+          }}>
+            <ConversationProgress 
+              messages={currentMessages}
+              currentPersona={currentPersona?.name}
+              variant="detailed"
+            />
+          </div>
+        )}
+        
         <ModernChatContainer
           personas={personas}
           selectedPersona={selectedPersona}
@@ -355,6 +417,12 @@ export default function ChatPage() {
           fallbackState={fallbackState}
           onHistoryToggle={() => setShowHistory(!showHistory)}
           showHistory={showHistory}
+        />
+        
+        {/* Chat Feedback Overlay */}
+        <ChatFeedback 
+          enableSound={true}
+          enableVisualFeedback={true}
         />
       </div>
     </EducationalLayout>

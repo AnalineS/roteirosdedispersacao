@@ -22,23 +22,17 @@ const getApiUrl = () => {
       return 'http://localhost:8080';
     }
     
-    // Produção - tentar determinar URL baseada no hostname
-    if (hostname.includes('roteirosdispensacao.com') || hostname.includes('roteiros-de-dispensacao.web.app')) {
-      console.log('[API] Produção detectada, verificando backend disponível');
-      // Lista de URLs possíveis para o backend (ordem de prioridade)
-      const possibleBackendUrls = [
-        'https://backend-dot-hansenase-webapp.rj.r.appspot.com',
-        'https://api.roteirosdedispensacao.com',
-        'https://backend.roteirosdedispensacao.com'
-      ];
-      
-      // Por enquanto retorna a primeira URL - health check determinará disponibilidade
-      return possibleBackendUrls[0];
+    // Produção - usar Cloud Run URL
+    if (hostname.includes('roteirosdispensacao.com') || hostname.includes('roteiros-de-dispensacao.web.app') || hostname.includes('firebaseapp.com')) {
+      console.log('[API] Produção detectada, usando Cloud Run');
+      // URL do Cloud Run - esta deve vir dos secrets do GitHub em produção
+      // Como fallback, tentamos a URL conhecida do Cloud Run
+      return 'https://roteiro-dispensacao-api-108038718873.us-central1.run.app';
     }
     
-    console.log('[API] Hostname não reconhecido, tentando fallback');
-    // Tentar backend padrão mesmo em hostname desconhecido
-    return 'https://backend-dot-hansenase-webapp.rj.r.appspot.com';
+    console.log('[API] Hostname não reconhecido, tentando Cloud Run como fallback');
+    // Tentar Cloud Run como padrão mesmo em hostname desconhecido
+    return 'https://roteiro-dispensacao-api-108038718873.us-central1.run.app';
   }
   
   // PRIORIDADE 3: Fallback para desenvolvimento  
