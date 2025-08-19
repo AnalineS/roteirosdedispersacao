@@ -46,8 +46,10 @@ class FirebaseJWTValidator:
             if 'max-age=' in cache_control:
                 try:
                     max_age = int(cache_control.split('max-age=')[1].split(',')[0])
-                except:
-                    pass
+                except (ValueError, IndexError, AttributeError):
+                    # Falha ao parsear max-age do cache-control header
+                    # Usar valor padrão de max_age já definido (3600 segundos)
+                    logger.debug("Não foi possível extrair max-age do cache-control, usando padrão")
             
             self.keys_expiry = datetime.now() + timedelta(seconds=max_age)
             return response.json()

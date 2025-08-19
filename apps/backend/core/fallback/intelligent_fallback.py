@@ -45,7 +45,8 @@ class IntelligentFallbackSystem:
             cache = get_cache()
             services['cache'] = cache is not None
         except ImportError:
-            pass
+            # Serviço não disponível - continuar sem ele
+            services['cache'] = False
         
         # Testar RAG
         try:
@@ -53,14 +54,16 @@ class IntelligentFallbackSystem:
             rag = get_rag()
             services['rag'] = rag is not None
         except ImportError:
-            pass
+            # Serviço não disponível - continuar sem ele
+            services['rag'] = False
         
         # Testar AI Provider
         try:
             from services.ai_provider_manager import get_ai_health_status
             services['ai_provider'] = True
         except ImportError:
-            pass
+            # Serviço não disponível - continuar sem ele
+            services['ai_provider'] = False
         
         # Testar QA Framework
         try:
@@ -68,21 +71,24 @@ class IntelligentFallbackSystem:
             qa = get_qa()
             services['qa_framework'] = qa is not None
         except ImportError:
-            pass
+            # Serviço não disponível - continuar sem ele
+            services['qa_framework'] = False
         
         # Testar Security Middleware
         try:
             from core.security.middleware import SecurityMiddleware
             services['security_middleware'] = True
         except ImportError:
-            pass
+            # Serviço não disponível - continuar sem ele
+            services['security_middleware'] = False
         
         # Testar Metrics
         try:
             from core.metrics.performance_monitor import performance_monitor
             services['metrics'] = True
         except ImportError:
-            pass
+            # Serviço não disponível - continuar sem ele
+            services['metrics'] = False
         
         # Testar Embeddings
         services['embeddings'] = os.getenv('EMBEDDINGS_ENABLED', 'false').lower() == 'true'

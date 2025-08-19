@@ -289,7 +289,9 @@ Para informações mais detalhadas, recomendo consultar um profissional de saúd
                 'metadata': metadata
             }, ttl=3600)  # 1 hora
         except TypeError:
-            pass
+            # Cache pode não suportar parâmetro ttl ou formato de dados
+            # Continuar sem cache - a resposta ainda será retornada
+            logger.debug(f"[{request_id}] Falha ao armazenar em cache - formato incompatível")
     
     return answer, metadata
 

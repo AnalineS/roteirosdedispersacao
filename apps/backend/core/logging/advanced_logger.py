@@ -219,7 +219,9 @@ class HybridRotatingFileHandler(logging.handlers.RotatingFileHandler):
                 # Rollover se arquivo tem mais de 24h
                 time_rollover = file_age > 86400  # 24 horas
             except OSError:
-                pass
+                # Se não conseguir acessar stats do arquivo (arquivo deletado, sem permissão, etc),
+                # continuar sem rollover por tempo - o rollover por tamanho ainda funcionará
+                time_rollover = False
         
         return size_rollover or time_rollover
     
@@ -273,7 +275,9 @@ class HybridRotatingFileHandler(logging.handlers.RotatingFileHandler):
                         if os.path.getmtime(file_path) < cutoff_time:
                             os.remove(file_path)
                     except OSError:
-                        pass
+                        # Arquivo pode estar em uso ou sem permissão para deletar
+                        # Continuar com próximo arquivo sem interromper a limpeza
+                        continue
                         
         except Exception as e:
             print(f"Erro na limpeza de logs antigos: {e}")
@@ -431,7 +435,9 @@ class AdvancedLoggingSystem:
                     total_size += log_file.stat().st_size
                 self.metrics.total_log_size_mb = total_size / (1024 * 1024)
             except Exception:
-                pass
+                # Falha ao calcular tamanho dos logs não é crítica
+                # Manter o valor anterior de total_log_size_mb
+                self.metrics.total_log_size_mb = 0
     
     def get_metrics(self) -> Dict[str, Any]:
         """Retorna métricas atuais do sistema de logging"""
