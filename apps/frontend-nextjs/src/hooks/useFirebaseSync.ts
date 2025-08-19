@@ -9,6 +9,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { FEATURES, FIRESTORE_CONFIG } from '@/lib/firebase/config';
+import { generateSecureId } from '@/utils/cryptoUtils';
 import { 
   UserProfileRepository, 
   ConversationRepository, 
@@ -498,7 +499,7 @@ function transformLocalConversationToFirestore(localConv: any, userId: string): 
     personaId: localConv.personaId || 'ga',
     title: localConv.title || 'Conversa migrada',
     messages: (localConv.messages || []).map((msg: any) => ({
-      id: msg.id || `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      id: msg.id || generateSecureId('msg_', 12),
       content: msg.content,
       role: msg.role,
       timestamp: msg.timestamp ? new Date(msg.timestamp) : new Date(),

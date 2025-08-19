@@ -7,6 +7,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import ABTestingFramework, { useABTest as useABTestCore } from '@/utils/abTesting';
+import { generateSecureId } from '@/utils/cryptoUtils';
 
 // ===== HOOK PRINCIPAL =====
 
@@ -122,8 +123,8 @@ function generateClientUserId(): string {
   const existingId = localStorage.getItem('user_id');
   if (existingId) return existingId;
   
-  // Gerar novo ID e salvar
-  const newId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  // Gerar novo ID com randomness criptograficamente segura
+  const newId = generateSecureId('user_', 16);
   localStorage.setItem('user_id', newId);
   return newId;
 }
@@ -133,7 +134,8 @@ function generateClientSessionId(): string {
   const existingId = sessionStorage.getItem('session_id');
   if (existingId) return existingId;
   
-  const newId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  // Gerar novo ID com randomness criptograficamente segura
+  const newId = generateSecureId('session_', 16);
   sessionStorage.setItem('session_id', newId);
   return newId;
 }

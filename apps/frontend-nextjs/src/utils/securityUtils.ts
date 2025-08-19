@@ -245,7 +245,9 @@ export const feedbackRateLimiter = new ClientRateLimiter();
  * Gera identificador único para sessão (sem dados pessoais)
  */
 export function generateSessionId(): string {
-  return `session_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
+  // Usar randomness criptograficamente segura para session IDs
+  const { generateSecureSessionToken } = require('@/utils/cryptoUtils');
+  return generateSecureSessionToken();
 }
 
 /**

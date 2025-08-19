@@ -524,9 +524,21 @@ export function generateSecureVerificationCode(): string {
   // Generate timestamp-based prefix for uniqueness
   const timestamp = Date.now().toString(36).toUpperCase();
   
-  // Generate random suffix
-  for (let i = 0; i < 8; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  // Generate cryptographically secure random suffix
+  if (typeof window !== 'undefined' && window.crypto && window.crypto.getRandomValues) {
+    const array = new Uint8Array(8);
+    window.crypto.getRandomValues(array);
+    for (let i = 0; i < 8; i++) {
+      result += chars.charAt(array[i] % chars.length);
+    }
+  } else {
+    // Fallback for environments without crypto API
+    const counter = (generateSecureVerificationCode as any).counter = ((generateSecureVerificationCode as any).counter || 0) + 1;
+    const seed = timestamp + counter.toString();
+    for (let i = 0; i < 8; i++) {
+      const charIndex = (seed.charCodeAt(i % seed.length) + i) % chars.length;
+      result += chars.charAt(charIndex);
+    }
   }
   
   return `${timestamp}-${result}`;

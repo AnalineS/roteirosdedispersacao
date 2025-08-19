@@ -11,6 +11,7 @@ import { useKnowledgeBase } from '@/hooks/useKnowledgeBase';
 import { useFallback } from '@/hooks/useFallback';
 import { FallbackResult } from '@/services/fallbackSystem';
 import { useAuth } from '@/hooks/useAuth';
+import { generateTempUserId } from '@/utils/cryptoUtils';
 
 // OTIMIZAÇÃO CRÍTICA: Hooks especializados para reduzir complexidade
 import { useChatMessages } from '@/hooks/useChatMessages';
@@ -43,10 +44,11 @@ export function useChat(options: UseChatOptions = {}) {
       return user.uid;
     }
     
-    // Usuário anônimo: gerar sessionId temporário persistente
+    // Usuário anônimo: gerar sessionId temporário persistente com randomness segura
     let tempSessionId = localStorage.getItem('temp_session_id');
     if (!tempSessionId) {
-      tempSessionId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      // Usar randomness criptograficamente segura em vez de Math.random()
+      tempSessionId = generateTempUserId();
       localStorage.setItem('temp_session_id', tempSessionId);
     }
     return tempSessionId;

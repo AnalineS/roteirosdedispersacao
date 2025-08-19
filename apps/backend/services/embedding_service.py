@@ -96,7 +96,8 @@ class EmbeddingCache:
     def _get_hash(self, text: str, model_name: str) -> str:
         """Gera hash único para texto + modelo"""
         content = f"{model_name}:{text}"
-        return hashlib.md5(content.encode()).hexdigest()
+        # SHA-256 for cache keys (not sensitive data)
+        return hashlib.sha256(content.encode()).hexdigest()
     
     def _load_cache(self):
         """Carrega cache do disco"""

@@ -13,6 +13,7 @@
 
 import { Certificate, CertificateTemplate } from '@/types/certification';
 import { EducationalSecurity } from './educationalSecurity';
+import { generateSecureId } from './cryptoUtils';
 
 // ================== TIPOS DE SEGURANÇA DE CERTIFICAÇÃO ==================
 
@@ -179,9 +180,25 @@ class SecureCodeGenerator {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     let code = '';
     
-    // Generate main code
-    for (let i = 0; i < config.length - 2; i++) {
-      code += chars.charAt(Math.floor(Math.random() * chars.length));
+    // Generate main code using cryptographically secure randomness
+    if (typeof window !== 'undefined' && window.crypto && window.crypto.getRandomValues) {
+      const array = new Uint8Array(config.length - 2);
+      window.crypto.getRandomValues(array);
+      for (let i = 0; i < array.length; i++) {
+        code += chars.charAt(array[i] % chars.length);
+      }
+    } else {
+      // Fallback: use secure ID generation utility
+      const secureCode = generateSecureId('', config.length - 2);
+      // Extract alphanumeric characters from secure ID
+      code = secureCode.replace(/[^A-Z0-9]/g, '').substring(0, config.length - 2);
+      
+      // Pad with additional characters if needed
+      while (code.length < config.length - 2) {
+        const timestamp = Date.now().toString(36).toUpperCase();
+        code += timestamp.replace(/[^A-Z0-9]/g, '');
+      }
+      code = code.substring(0, config.length - 2);
     }
     
     // Add checksum

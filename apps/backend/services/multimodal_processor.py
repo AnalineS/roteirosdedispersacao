@@ -186,7 +186,8 @@ class MultimodalProcessor:
         
         # Gerar ID único
         file_id = str(uuid.uuid4())
-        content_hash = hashlib.md5(file_data).hexdigest()
+        # SHA-256 for file content verification (deduplication)
+        content_hash = hashlib.sha256(file_data).hexdigest()
         
         # Verificar duplicatas
         if self._check_duplicate(content_hash):

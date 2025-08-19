@@ -365,17 +365,50 @@ export const checkCertificationEligibility = (
 };
 
 export const generateCertificateId = (): string => {
+  // Use cryptographically secure random generation for certificate IDs
+  if (typeof window !== 'undefined' && window.crypto && window.crypto.getRandomValues) {
+    const array = new Uint8Array(9);
+    window.crypto.getRandomValues(array);
+    const randomPart = Array.from(array, (byte) => {
+      return (byte % 36).toString(36);
+    }).join('');
+    
+    const timestamp = Date.now().toString(36);
+    return `CERT-${timestamp}-${randomPart}`.toUpperCase();
+  }
+  
+  // Fallback for Node.js or environments without crypto
   const timestamp = Date.now().toString(36);
-  const randomPart = Math.random().toString(36).substr(2, 9);
+  const counter = (generateCertificateId as any).counter = ((generateCertificateId as any).counter || 0) + 1;
+  const randomPart = counter.toString(36).padStart(9, '0');
   return `CERT-${timestamp}-${randomPart}`.toUpperCase();
 };
 
 export const generateVerificationCode = (): string => {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   let result = '';
-  for (let i = 0; i < 12; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
-    if (i === 3 || i === 7) result += '-';
+  
+  // Use cryptographically secure random generation for verification codes
+  if (typeof window !== 'undefined' && window.crypto && window.crypto.getRandomValues) {
+    const array = new Uint8Array(12);
+    window.crypto.getRandomValues(array);
+    
+    for (let i = 0; i < 12; i++) {
+      result += chars.charAt(array[i] % chars.length);
+      if (i === 3 || i === 7) result += '-';
+    }
+  } else {
+    // Fallback for environments without crypto
+    const timestamp = Date.now().toString();
+    const counter = (generateVerificationCode as any).counter = ((generateVerificationCode as any).counter || 0) + 1;
+    const seed = timestamp + counter.toString();
+    
+    for (let i = 0; i < 12; i++) {
+      const charIndex = (seed.charCodeAt(i % seed.length) + i) % chars.length;
+      result += chars.charAt(charIndex);
+      if (i === 3 || i === 7) result += '-';
+    }
   }
+  
   return result;
 };

@@ -126,7 +126,8 @@ class SemanticSearchEngine:
     def _generate_chunk_id(self, text: str, source: str) -> str:
         """Gera ID único para chunk"""
         content = f"{source}:{text[:100]}"
-        return hashlib.md5(content.encode()).hexdigest()
+        # SHA-256 for chunk IDs (not sensitive data)
+        return hashlib.sha256(content.encode()).hexdigest()
     
     def index_medical_chunk(
         self, 

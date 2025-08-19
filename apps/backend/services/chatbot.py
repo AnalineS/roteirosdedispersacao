@@ -91,7 +91,8 @@ class ChatbotService:
             from functools import lru_cache
             
             query_normalized = query.lower().strip()
-            query_hash = hashlib.md5(query_normalized.encode()).hexdigest()
+            # SHA-256 for cache keys (not sensitive data, but using secure hash for consistency)
+            query_hash = hashlib.sha256(query_normalized.encode()).hexdigest()
             
             # Cache em memória para queries similares
             if not hasattr(self, '_query_cache'):

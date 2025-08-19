@@ -481,7 +481,10 @@ if __name__ == "__main__":
             gasnelio_response = scope_detector.get_limitation_response("dr_gasnelio", analysis['category'], analysis['redirect_suggestion'])
             ga_response = scope_detector.get_limitation_response("ga", analysis['category'], analysis['redirect_suggestion'])
             
-            print(f"\nResposta Dr. Gasnelio: Gerada com sucesso")
-            print(f"Resposta Ga: Gerada com sucesso")
+            # Usar as respostas para verificar que foram geradas corretamente
+            if gasnelio_response:
+                print(f"\nResposta Dr. Gasnelio: Gerada com sucesso ({len(gasnelio_response)} caracteres)")
+            if ga_response:
+                print(f"Resposta Ga: Gerada com sucesso ({len(ga_response)} caracteres)")
         
         print("-" * 50)

@@ -563,8 +563,9 @@ class CrossPersonaValidator:
     def _generate_cache_key(self, question: str, dr_response: str, ga_response: str) -> str:
         """Gera chave de cache para validação"""
         import hashlib
+        # SHA-256 truncado para chave de cache (não é dado sensível, apenas texto de resposta)
         content = f"{question[:100]}{dr_response[:200]}{ga_response[:200]}"
-        return hashlib.md5(content.encode()).hexdigest()[:16]
+        return hashlib.sha256(content.encode()).hexdigest()[:16]
     
     def _normalize_dosages(self, dosages: List[str]) -> List[float]:
         """Normaliza dosagens para comparação numérica"""

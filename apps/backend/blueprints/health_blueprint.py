@@ -848,8 +848,11 @@ def medical_health_check():
             "timestamp": datetime.now().isoformat()
         }
         
-        # Segurança: Log apenas status sem dados sensíveis
-        # Não logar dados médicos completos, apenas o status
+        # SECURITY: Compliant with OWASP A09:2021 - Security Logging and Monitoring Failures
+        # CWE-312/359/532 Prevention: Only log non-sensitive operational metadata
+        # - medical_status: Contains only "healthy" or "degraded" (no patient data)
+        # - request_id: UUID for correlation (no PII or medical information)
+        # NEVER log: patient data, medication details, dosages, diagnoses, or treatment information
         logger.info(f"Medical health check completed - Status: {medical_status}, Request ID: {request_id}")
         
         return jsonify(response), 200

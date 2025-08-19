@@ -278,7 +278,8 @@ class EnhancedRAGSystem:
     
     def _generate_chunk_id(self, chunk: str) -> str:
         """Gera ID único para o chunk"""
-        return hashlib.md5(chunk.encode()).hexdigest()[:12]
+        # SHA-256 truncated for chunk IDs (not sensitive data)
+        return hashlib.sha256(chunk.encode()).hexdigest()[:12]
     
     def _build_chunk_index(self):
         """Constrói índice para busca rápida"""
@@ -344,7 +345,8 @@ class EnhancedRAGSystem:
     
     def get_cached_response(self, query: str) -> Optional[str]:
         """Verifica se existe resposta em cache para query similar"""
-        query_hash = hashlib.md5(query.lower().encode()).hexdigest()
+        # SHA-256 for cache keys (not sensitive data)
+        query_hash = hashlib.sha256(query.lower().encode()).hexdigest()
         
         # Busca por hash exato
         if query_hash in self.response_cache:
@@ -361,7 +363,8 @@ class EnhancedRAGSystem:
         if len(self.response_cache) >= self.cache_config['max_cache_size']:
             self._cleanup_cache()
         
-        query_hash = hashlib.md5(query.lower().encode()).hexdigest()
+        # SHA-256 for cache keys (not sensitive data)
+        query_hash = hashlib.sha256(query.lower().encode()).hexdigest()
         self.response_cache[query_hash] = {
             'query': query,
             'response': response,

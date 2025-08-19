@@ -1106,7 +1106,9 @@ class ABTestFramework:
             return experiment['user_assignments'][user_id]
         
         # Atribuição determinística baseada em hash do user_id
-        user_hash = int(hashlib.md5(user_id.encode()).hexdigest(), 16)
+        # SHA-256 é usado aqui para distribuição consistente de A/B test (não é dado sensível)
+        # O user_id é apenas um identificador de sessão, não contém PII
+        user_hash = int(hashlib.sha256(user_id.encode()).hexdigest(), 16)
         variant_index = user_hash % len(experiment['variants'])
         variant_id = list(experiment['variants'].keys())[variant_index]
         

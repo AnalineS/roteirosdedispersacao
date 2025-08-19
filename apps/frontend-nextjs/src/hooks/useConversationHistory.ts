@@ -10,6 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { ConversationRepository } from '@/lib/firebase/firestore';
 import { FirestoreConversation, FirestoreMessage } from '@/lib/firebase/types';
 import { FEATURES } from '@/lib/firebase/config';
+import { generateSecureId } from '@/utils/cryptoUtils';
 
 // Constantes
 const MAX_CONVERSATIONS = 50;
@@ -187,7 +188,7 @@ export function useConversationHistory() {
         personaId: conversation.personaId,
         title: conversation.title,
         messages: conversation.messages.map((msg, index) => ({
-          id: `msg_${Date.now()}_${index}_${Math.random().toString(36).substr(2, 9)}`,
+          id: generateSecureId(`msg_${index}_`, 12),
           content: msg.content,
           role: msg.role,
           timestamp: new Date(msg.timestamp) as any, // Will be converted to Timestamp
@@ -315,7 +316,7 @@ export function useConversationHistory() {
         throw new Error('personaId é obrigatório');
       }
       
-      const conversationId = `conv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const conversationId = generateSecureId('conv_', 16);
       const now = Date.now();
       
       const newConversation: Conversation = {

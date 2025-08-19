@@ -83,6 +83,7 @@ class MedicalRAGSystem:
             self._update_stats()
             
             self.knowledge_base_loaded = True
+            # SECURITY: Only log metadata counts, never actual medical content (CWE-312/359/532)
             logger.info(f"✅ Base de conhecimento carregada: {len(self.medical_chunks)} chunks médicos")
             
         except Exception as e:
