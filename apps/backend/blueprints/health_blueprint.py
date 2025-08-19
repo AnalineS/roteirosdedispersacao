@@ -363,9 +363,7 @@ def test_medical_rag():
         # Testar RAG médico diretamente
         try:
             logger.info(f"Chamando get_relevant_context para: {question}")
-            # Temporariamente comentado para debug
             context = medical_rag_system.get_relevant_context(question, max_chunks=3)
-            # context = "TESTE: RAG médico funcionando"
             logger.info(f"Context obtido: {type(context)}, length: {len(context) if isinstance(context, str) else 'N/A'}")
         except Exception as context_error:
             logger.error(f"Erro ao obter contexto: {context_error}")
@@ -374,7 +372,6 @@ def test_medical_rag():
         # Testar stats separadamente para isolar erro
         try:
             stats = medical_rag_system.get_stats()
-            # stats = {"test": "stats funcionando"}
         except Exception as stats_error:
             stats = {"error": f"Stats failed: {stats_error}"}
         

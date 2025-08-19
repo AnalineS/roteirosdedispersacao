@@ -21,6 +21,7 @@ from services.multimodal_processor import (
     ProcessingStatus
 )
 from services.security import security
+from core.auth.jwt_validator import require_admin
 
 # Configuração do blueprint
 multimodal_bp = Blueprint('multimodal', __name__, url_prefix='/api/multimodal')
@@ -286,12 +287,9 @@ def get_analysis_result(file_id: str):
 
 @multimodal_bp.route('/cleanup', methods=['POST'])
 @security.require_rate_limit("multimodal_cleanup", "1/hour")
+@require_admin()
 def manual_cleanup():
-    """Limpeza manual de arquivos expirados (admin)"""
-    
-    # Verificar permissões (implementar conforme necessário)
-    # if not is_admin_user():
-    #     return jsonify({'error': 'Acesso negado'}), 403
+    """Limpeza manual de arquivos expirados (requer privilégios de admin)"""
     
     try:
         processor = get_multimodal_processor()
