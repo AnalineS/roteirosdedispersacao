@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import { modernChatTheme } from '@/config/modernTheme';
 import EducationalLayout from '@/components/layout/EducationalLayout';
 import {
@@ -167,9 +168,11 @@ export default function SobrePage() {
               overflow: 'hidden',
               border: `4px solid ${modernChatTheme.colors.personas.gasnelio.primary}`
             }}>
-              <img 
+              <Image 
                 src="/images/author-photo.jpeg" 
-                alt="Prof. Me. Nélio Gomes de Moura Júnior" 
+                alt="Prof. Me. Nélio Gomes de Moura Júnior"
+                width={200}
+                height={200} 
                 style={{
                   width: '100%',
                   height: '100%',

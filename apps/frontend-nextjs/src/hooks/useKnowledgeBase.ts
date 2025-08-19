@@ -49,7 +49,7 @@ export function useKnowledgeBase(options: UseKnowledgeBaseOptions = {}): UseKnow
     
     // Buscar estatísticas iniciais
     refreshStats();
-  }, [prefetchCommon]);
+  }, [prefetchCommon]); // removendo refreshStats para evitar dependência circular
   
   /**
    * Busca conhecimento relevante
@@ -174,7 +174,7 @@ export function useKnowledgeBase(options: UseKnowledgeBaseOptions = {}): UseKnow
       console.error('Erro ao enviar avaliação:', err);
       setError('Erro ao enviar avaliação');
     }
-  }, []);
+  }, []); // removendo refreshStats para evitar dependência circular
   
   /**
    * Atualiza estatísticas

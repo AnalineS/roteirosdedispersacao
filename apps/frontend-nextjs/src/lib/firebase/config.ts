@@ -5,11 +5,11 @@
  */
 
 import { initializeApp, getApps } from 'firebase/app';
-import { getAuth, connectAuthEmulator } from 'firebase/auth';
+import { getAuth, connectAuthEmulator, GoogleAuthProvider } from 'firebase/auth';
 import { getFirestore, connectFirestoreEmulator, enableNetwork, disableNetwork } from 'firebase/firestore';
 import { getAnalytics, isSupported } from 'firebase/analytics';
 
-// Configuração do Firebase - Mapeamento para GitHub Secrets
+// Configuração do Firebase - Usando secrets com fallback para NEXT_PUBLIC_
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || process.env.FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || process.env.FIREBASE_AUTH_DOMAIN,
@@ -18,15 +18,6 @@ const firebaseConfig = {
   messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || process.env.FIREBASE_MESSAGING_SENDER_ID,
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || process.env.FIREBASE_APP_ID,
 };
-
-// Feature flags
-export const FEATURES = {
-  AUTH_ENABLED: process.env.NEXT_PUBLIC_AUTH_ENABLED === 'true',
-  FIRESTORE_ENABLED: process.env.NEXT_PUBLIC_FIRESTORE_ENABLED === 'true',
-  OFFLINE_MODE: process.env.NEXT_PUBLIC_OFFLINE_MODE === 'true',
-  ANALYTICS_ENABLED: process.env.NEXT_PUBLIC_ANALYTICS_ENABLED === 'true',
-  IS_DEVELOPMENT: process.env.NODE_ENV === 'development',
-} as const;
 
 // Verificar se as configurações do Firebase estão válidas
 function hasValidConfig(): boolean {
@@ -39,6 +30,16 @@ function hasValidConfig(): boolean {
     firebaseConfig.projectId !== ''
   );
 }
+
+// Feature flags
+export const FEATURES = {
+  AUTH_ENABLED: process.env.NEXT_PUBLIC_AUTH_ENABLED === 'true',
+  FIRESTORE_ENABLED: process.env.NEXT_PUBLIC_FIRESTORE_ENABLED === 'true',
+  OFFLINE_MODE: process.env.NEXT_PUBLIC_OFFLINE_MODE === 'true' || false,
+  ANALYTICS_ENABLED: true, // GA sempre ativo 
+  IS_DEVELOPMENT: process.env.NODE_ENV === 'development',
+  CONFIG_VALID: hasValidConfig(),
+} as const;
 
 // Inicializar Firebase apenas se configuração estiver válida
 let app: ReturnType<typeof initializeApp> | null = null;
@@ -126,9 +127,12 @@ export const FIRESTORE_CONFIG = {
 // Verificação de configuração
 export function validateFirebaseConfig(): boolean {
   const requiredEnvVars = [
-    'NEXT_PUBLIC_FIREBASE_API_KEY',
-    'NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN',
-    'NEXT_PUBLIC_FIREBASE_PROJECT_ID',
+    'FIREBASE_API_KEY',
+    'FIREBASE_AUTH_DOMAIN',
+    'FIREBASE_PROJECT_ID',
+    'FIREBASE_STORAGE_BUCKET',
+    'FIREBASE_MESSAGING_SENDER_ID',
+    'FIREBASE_APP_ID',
   ];
 
   const missing = requiredEnvVars.filter(key => !process.env[key]);
@@ -185,5 +189,41 @@ if (FEATURES.AUTH_ENABLED || FEATURES.FIRESTORE_ENABLED) {
     console.error('[Firebase] Configuração inválida');
   }
 }
+
+// ============================================
+// SOCIAL AUTH PROVIDERS
+// ============================================
+
+// Google Provider
+export const googleProvider = new GoogleAuthProvider();
+googleProvider.addScope('email');
+googleProvider.addScope('profile');
+googleProvider.setCustomParameters({
+  prompt: 'select_account'
+});
+
+// Facebook Provider (REMOVIDO - não será usado)
+// Apple Provider (REMOVIDO - não será usado)
+
+// Helper para obter provider por ID
+export function getAuthProvider(providerId: string) {
+  switch (providerId) {
+    case 'google.com':
+      return googleProvider;
+    default:
+      throw new Error(`Provider não suportado: ${providerId}`);
+  }
+}
+
+// Lista de provedores disponíveis (apenas Google)
+export const AVAILABLE_PROVIDERS = [
+  {
+    id: 'google.com',
+    name: 'Google',
+    icon: '🔍',
+    color: '#4285f4',
+    enabled: true
+  }
+] as const;
 
 export default app;

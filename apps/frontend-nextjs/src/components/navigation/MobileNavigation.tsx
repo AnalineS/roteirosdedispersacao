@@ -14,6 +14,7 @@ import { NavigationCategory } from './NavigationHeader';
 import { useMobileDetection, useSwipeGestures } from '@/components/mobile/MobileFirstFramework';
 import FastAccessBar from '@/components/navigation/FastAccessBar';
 import { useRemoteConfig } from '@/hooks/useRemoteConfig';
+import { AuthButton } from '@/components/auth';
 
 interface MobileNavigationProps {
   isOpen: boolean;
@@ -292,6 +293,15 @@ export default function MobileNavigation({
             </div>
           </div>
         )}
+
+        {/* Authentication Section */}
+        <div style={{
+          padding: '16px 20px',
+          borderBottom: '1px solid rgba(255,255,255,0.1)',
+          background: 'rgba(255,255,255,0.03)'
+        }}>
+          <AuthButton variant="mobile" />
+        </div>
 
         {/* Navegação */}
         <nav 

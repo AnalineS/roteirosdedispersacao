@@ -170,7 +170,7 @@ class PredictiveCache:
         }
         
         key_str = json.dumps(key_data, sort_keys=True)
-        return hashlib.md5(key_str.encode()).hexdigest()[:16]
+        return hashlib.sha256(key_str.encode()).hexdigest()[:16]
     
     def get(self, cache_key: str) -> Optional[Suggestion]:
         """Recuperar sugestão do cache"""

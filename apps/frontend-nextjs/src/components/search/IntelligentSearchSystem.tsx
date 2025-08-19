@@ -137,7 +137,7 @@ const searchDatabase: SearchResult[] = [
 ];
 
 export default function IntelligentSearchSystem({
-  placeholder = "Buscar informações sobre hanseníase...",
+  placeholder = "Ex: Como tomar PQT-U? Efeitos colaterais? Posso parar o tratamento?",
   showFilters = true,
   defaultAudience = 'general',
   onResultSelect,
@@ -308,11 +308,11 @@ export default function IntelligentSearchSystem({
       <div style={{
         display: 'flex',
         alignItems: 'center',
-        background: 'white',
-        border: `2px solid ${isOpen ? unbColors.primary : '#e5e7eb'}`,
+        background: 'var(--bg-primary)',
+        border: `2px solid ${isOpen ? 'var(--accent-primary)' : 'var(--border-default)'}`,
         borderRadius: '12px',
         overflow: 'hidden',
-        boxShadow: isOpen ? '0 4px 12px rgba(0, 0, 0, 0.1)' : '0 2px 4px rgba(0, 0, 0, 0.05)',
+        boxShadow: isOpen ? 'var(--shadow-lg)' : 'var(--shadow-sm)',
         transition: 'all 0.3s ease'
       }}>
         {/* Audience Selector */}

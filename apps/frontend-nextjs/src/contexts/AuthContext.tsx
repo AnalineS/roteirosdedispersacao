@@ -7,8 +7,11 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { 
+import type { 
   User,
+  AuthProvider
+} from 'firebase/auth';
+import { 
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
@@ -18,14 +21,18 @@ import {
   signInAnonymously,
   linkWithCredential,
   EmailAuthProvider,
-  deleteUser
+  deleteUser,
+  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult
 } from 'firebase/auth';
 
-import { auth, FEATURES } from '@/lib/firebase/config';
+import { auth, FEATURES, getAuthProvider, googleProvider } from '@/lib/firebase/config';
 import { 
   AuthState, 
   LoginCredentials, 
   RegisterData,
+  SocialAuthCredentials,
   FirestoreUserProfile,
   AuthUser 
 } from '@/lib/firebase/types';
@@ -42,14 +49,18 @@ interface AuthContextType extends AuthState {
   logout: () => Promise<{ success: boolean; error?: string }>;
   resetPassword: (email: string) => Promise<{ success: boolean; error?: string }>;
   
-  // Anonymous/Guest methods
-  continueAsGuest: () => Promise<{ success: boolean; error?: string }>;
-  upgradeAnonymousAccount: (credentials: LoginCredentials) => Promise<{ success: boolean; error?: string }>;
+  // Social authentication
+  loginWithSocial: (credentials: SocialAuthCredentials) => Promise<{ success: boolean; error?: string }>;
+  linkSocialAccount: (providerId: string) => Promise<{ success: boolean; error?: string }>;
   
   // Profile management
   profile: FirestoreUserProfile | null;
   updateUserProfile: (updates: Partial<FirestoreUserProfile>) => Promise<{ success: boolean; error?: string }>;
   deleteAccount: () => Promise<{ success: boolean; error?: string }>;
+  
+  // Anonymous/Guest methods
+  continueAsGuest: () => Promise<{ success: boolean; error?: string }>;
+  upgradeAnonymousAccount: (credentials: LoginCredentials) => Promise<{ success: boolean; error?: string }>;
   
   // Utility methods
   isFeatureAvailable: (feature: 'profiles' | 'conversations' | 'analytics' | 'advanced') => boolean;
@@ -212,6 +223,106 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const errorMessage = getFirebaseErrorMessage(error.code);
       setError(errorMessage);
       return { success: false, error: errorMessage };
+    }
+  };
+
+  // ============================================
+  // SOCIAL AUTHENTICATION METHODS
+  // ============================================
+
+  const loginWithSocial = async (credentials: SocialAuthCredentials): Promise<{ success: boolean; error?: string }> => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      if (!FEATURES.AUTH_ENABLED) {
+        return { success: false, error: 'Autenticação não está habilitada' };
+      }
+
+      if (!auth) {
+        throw new Error('Firebase auth não está disponível');
+      }
+
+      const provider = getAuthProvider(credentials.providerId);
+      
+      // Tentar login com popup primeiro, fallback para redirect em mobile
+      let userCredential;
+      try {
+        userCredential = await signInWithPopup(auth, provider);
+      } catch (popupError: any) {
+        // Se popup falhar (bloqueador de popup ou mobile), usar redirect
+        if (popupError.code === 'auth/popup-blocked' || popupError.code === 'auth/popup-closed-by-user') {
+          await signInWithRedirect(auth, provider);
+          return { success: true }; // O redirect será tratado no onAuthStateChanged
+        }
+        throw popupError;
+      }
+
+      // Atualizar display name se fornecido e diferente
+      if (credentials.preferredDisplayName && 
+          userCredential.user.displayName !== credentials.preferredDisplayName) {
+        await updateProfile(userCredential.user, {
+          displayName: credentials.preferredDisplayName
+        });
+      }
+
+      // Criar perfil inicial se for novo usuário
+      if (userCredential.user) {
+        await createSocialUserProfile(userCredential.user, credentials);
+      } else if (userCredential.user) {
+        // Carregar perfil existente
+        await loadUserProfile(userCredential.user.uid);
+      }
+
+      return { success: true };
+    } catch (error: any) {
+      const errorMessage = getSocialAuthErrorMessage(error.code);
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const linkSocialAccount = async (providerId: string): Promise<{ success: boolean; error?: string }> => {
+    try {
+      if (!user) {
+        return { success: false, error: 'Usuário não autenticado' };
+      }
+
+      setLoading(true);
+      setError(null);
+
+      if (!auth) {
+        throw new Error('Firebase auth não está disponível');
+      }
+
+      const provider = getAuthProvider(providerId);
+      
+      // Tentar link com popup primeiro
+      let result;
+      try {
+        const socialResult = await signInWithPopup(auth, provider);
+        result = socialResult;
+      } catch (popupError: any) {
+        if (popupError.code === 'auth/popup-blocked') {
+          return { success: false, error: 'Popup foi bloqueado. Habilite popups e tente novamente.' };
+        }
+        throw popupError;
+      }
+
+      // Atualizar perfil com informações adicionais se disponíveis
+      if (result.user) {
+        await loadUserProfile(result.user.uid);
+      }
+
+      return { success: true };
+    } catch (error: any) {
+      const errorMessage = getSocialAuthErrorMessage(error.code);
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -407,6 +518,152 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   // ============================================
+  // PROFILE MANAGEMENT METHODS (SECOND IMPLEMENTATION - REMOVE)
+  // ============================================
+
+  const updateUserProfileSecond = async (updates: Partial<FirestoreUserProfile>): Promise<{ success: boolean; error?: string }> => {
+    try {
+      if (!user) {
+        return { success: false, error: 'Usuário não autenticado' };
+      }
+
+      setLoading(true);
+      setError(null);
+
+      // Atualizar nome no Firebase Auth se fornecido
+      if (updates.displayName && updates.displayName !== user.displayName) {
+        await updateProfile(user as User, {
+          displayName: updates.displayName
+        });
+      }
+
+      // Atualizar perfil no Firestore se habilitado
+      if (FEATURES.FIRESTORE_ENABLED && profile) {
+        const updatedProfile = {
+          ...profile,
+          ...updates,
+          updatedAt: new Date() as any
+        };
+
+        const result = await UserProfileRepository.updateProfile(user.uid, updatedProfile);
+        if (result.success) {
+          setProfile(updatedProfile);
+        } else {
+          return { success: false, error: result.error };
+        }
+      } else {
+        // Atualizar apenas localmente se Firestore não disponível
+        setProfile(prev => prev ? { ...prev, ...updates, updatedAt: new Date() as any } : null);
+      }
+
+      return { success: true };
+    } catch (error: any) {
+      const errorMessage = getFirebaseErrorMessage(error.code);
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteAccountSecond = async (): Promise<{ success: boolean; error?: string }> => {
+    try {
+      if (!user) {
+        return { success: false, error: 'Usuário não autenticado' };
+      }
+
+      setLoading(true);
+      setError(null);
+
+      // Deletar perfil do Firestore primeiro
+      if (FEATURES.FIRESTORE_ENABLED && profile) {
+        await UserProfileRepository.deleteProfile(user.uid);
+      }
+
+      // Deletar usuário do Firebase Auth
+      await deleteUser(user as User);
+
+      // Limpar estado local
+      setUser(null);
+      setProfile(null);
+      setIsAuth(false);
+      setIsAnon(false);
+
+      return { success: true };
+    } catch (error: any) {
+      const errorMessage = getFirebaseErrorMessage(error.code);
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const createSocialUserProfile = async (user: User, credentials: SocialAuthCredentials): Promise<void> => {
+    try {
+      if (!FEATURES.FIRESTORE_ENABLED) {
+        return;
+      }
+
+      // Extrair informações do provedor social
+      const providerData = user.providerData[0];
+      const displayName = credentials.preferredDisplayName || 
+                         user.displayName || 
+                         providerData?.displayName || 
+                         user.email?.split('@')[0] || 
+                         'Usuário';
+
+      const initialProfile: FirestoreUserProfile = {
+        uid: user.uid,
+        email: user.email || providerData?.email || undefined,
+        displayName: displayName,
+        type: credentials.preferredProfileType || 'patient',
+        focus: 'general',
+        confidence: 0.5,
+        explanation: `Perfil criado via login social (${credentials.providerId})`,
+        preferences: {
+          language: 'simple',
+          notifications: true,
+          theme: 'auto',
+          emailUpdates: true,
+          dataCollection: true,
+          lgpdConsent: true
+        },
+        history: {
+          lastPersona: 'ga',
+          conversationCount: 0,
+          lastAccess: new Date().toISOString(),
+          preferredTopics: [],
+          totalSessions: 1,
+          totalTimeSpent: 0,
+          completedModules: [],
+          achievements: []
+        },
+        stats: {
+          joinedAt: new Date() as any,
+          lastActiveAt: new Date() as any,
+          sessionCount: 1,
+          messageCount: 0,
+          averageSessionDuration: 0,
+          favoritePersona: 'ga',
+          completionRate: 0
+        },
+        createdAt: new Date() as any,
+        updatedAt: new Date() as any,
+        version: '2.0',
+        isAnonymous: false
+      };
+
+      const result = await UserProfileRepository.createProfile(initialProfile);
+      if (result.success) {
+        setProfile(initialProfile);
+      }
+    } catch (error) {
+      console.error('Erro ao criar perfil social:', error);
+    }
+  };
+
+  // ============================================
   // UTILITY METHODS
   // ============================================
 
@@ -525,13 +782,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
     logout,
     resetPassword,
     
-    // Guest methods
-    continueAsGuest,
-    upgradeAnonymousAccount,
+    // Social auth methods
+    loginWithSocial,
+    linkSocialAccount,
     
     // Profile management
     updateUserProfile,
     deleteAccount,
+    
+    // Guest methods
+    continueAsGuest,
+    upgradeAnonymousAccount,
     
     // Utility methods
     isFeatureAvailable,
@@ -574,5 +835,38 @@ function getFirebaseErrorMessage(errorCode: string): string {
       return 'Erro de conexão. Verifique sua internet';
     default:
       return 'Erro de autenticação';
+  }
+}
+
+function getSocialAuthErrorMessage(errorCode: string): string {
+  switch (errorCode) {
+    case 'auth/account-exists-with-different-credential':
+      return 'Uma conta já existe com o mesmo e-mail mas provedor diferente';
+    case 'auth/auth-domain-config-required':
+      return 'Configuração de domínio de autenticação necessária';
+    case 'auth/cancelled-popup-request':
+      return 'Solicitação de popup cancelada';
+    case 'auth/operation-not-allowed':
+      return 'Operação não permitida';
+    case 'auth/popup-blocked':
+      return 'Popup foi bloqueado pelo navegador';
+    case 'auth/popup-closed-by-user':
+      return 'Popup foi fechado pelo usuário';
+    case 'auth/unauthorized-domain':
+      return 'Domínio não autorizado';
+    case 'auth/user-disabled':
+      return 'Conta de usuário foi desabilitada';
+    case 'auth/credential-already-in-use':
+      return 'Esta conta social já está vinculada a outro usuário';
+    case 'auth/provider-already-linked':
+      return 'Esta conta social já está vinculada ao seu perfil';
+    case 'auth/invalid-credential':
+      return 'Credenciais inválidas para este provedor';
+    case 'auth/web-storage-unsupported':
+      return 'Armazenamento web não suportado';
+    case 'auth/network-request-failed':
+      return 'Erro de conexão. Verifique sua internet';
+    default:
+      return getFirebaseErrorMessage(errorCode); // Fallback para erros comuns
   }
 }

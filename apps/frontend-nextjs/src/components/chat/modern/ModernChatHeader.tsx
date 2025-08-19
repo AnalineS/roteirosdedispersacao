@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { Persona } from '@/services/api';
 import { modernChatTheme, getPersonaColors } from '@/config/modernTheme';
 import PersonaSwitch from './PersonaSwitch';
@@ -191,9 +192,11 @@ const PersonaIndicator = ({
         border: '1px solid rgba(255, 255, 255, 0.1)'
       }}
     >
-      <img 
+      <Image 
         src={avatarSrc}
         alt={persona.name}
+        width={20}
+        height={20}
         style={{
           width: '20px',
           height: '20px',

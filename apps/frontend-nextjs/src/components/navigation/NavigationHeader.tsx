@@ -24,6 +24,7 @@ import Tooltip from '@/components/common/Tooltip';
 import MobileNavigation from './MobileNavigation';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import IntelligentSearchSystem from '@/components/search/IntelligentSearchSystem';
+import { AuthButton } from '@/components/auth';
 // Interfaces de navegação (movidas do Sidebar removido)
 export interface NavigationItem {
   id: string;
@@ -750,6 +751,14 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
             </div>
           </div>
         )}
+
+        {/* Authentication Section */}
+        <div style={{
+          marginLeft: 'auto',
+          marginRight: isMobile ? '8px' : '16px'
+        }}>
+          <AuthButton variant={isMobile ? 'mobile' : 'header'} />
+        </div>
 
         {/* Mobile Search Button */}
         {isMobile && (

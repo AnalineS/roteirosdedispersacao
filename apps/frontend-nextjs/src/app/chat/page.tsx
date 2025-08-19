@@ -295,7 +295,7 @@ export default function ChatPage() {
   const handleAcceptRouting = useCallback((personaId: string) => {
     acceptRecommendation();
     handlePersonaChange(personaId);
-  }, [acceptRecommendation]);
+  }, [acceptRecommendation, handlePersonaChange]);
   
   const handleRejectRouting = useCallback(() => {
     rejectRecommendation(selectedPersona || '');

@@ -3,6 +3,11 @@
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import EducationalLayout from '@/components/layout/EducationalLayout';
+import HeroSection from '@/components/home/HeroSection';
+import FeaturesSection from '@/components/home/FeaturesSection';
+import TrustBadges from '@/components/home/TrustBadges';
+import OnboardingTour from '@/components/onboarding/OnboardingTour';
+import PageTransition, { AnimatedSection } from '@/components/animations/PageTransition';
 import { usePersonas } from '@/hooks/usePersonas';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { getPersonaAvatar } from '@/constants/avatars';
@@ -14,7 +19,7 @@ import ContentChunking, { createEducationalContentChunk, createMedicalContentChu
 import { MobileQuickActions } from '@/components/mobile/MedicalMobileComponents';
 import { useMobileDetection } from '@/components/mobile/MobileFirstFramework';
 import { InteractiveButton, useToast, ToastContainer } from '@/components/ui/MicroInteractions';
-import { ScrollAnimation, CardReveal, PageTransition, MedicalAnimation } from '@/components/ui/AnimationSystem';
+import { ScrollAnimation, CardReveal, MedicalAnimation } from '@/components/ui/AnimationSystem';
 import ExecutiveSummary from '@/components/summary/ExecutiveSummary';
 import { 
   HomeIcon, 
@@ -113,9 +118,34 @@ export default function HomePage() {
 
 
   return (
-    <PersonalizationProvider>
-      {/* Dashboard Personalizado */}
-      <PersonalizedDashboard className="mb-8" />
+    <PageTransition>
+      <PersonalizationProvider>
+        {/* Onboarding Tour */}
+        <OnboardingTour onComplete={() => {
+          addToast({
+            type: 'success',
+            message: 'Tour concluído! Explore a plataforma.',
+            duration: 3000
+          });
+        }} />
+
+        {/* Hero Section */}
+        <AnimatedSection animation="fadeInUp" delay={200}>
+          <HeroSection />
+        </AnimatedSection>
+
+        {/* Features Section */}
+        <AnimatedSection animation="fadeInUp" delay={400}>
+          <FeaturesSection />
+        </AnimatedSection>
+
+        {/* Trust Badges */}
+        <AnimatedSection animation="fadeInUp" delay={600}>
+          <TrustBadges />
+        </AnimatedSection>
+
+        {/* Dashboard Personalizado */}
+        <PersonalizedDashboard className="mb-8" />
       
       {/* CSS para responsividade */}
       <style jsx>{`
@@ -299,74 +329,103 @@ export default function HomePage() {
             margin: '0 auto',
             display: 'flex',
             justifyContent: 'center',
-            gap: '2rem',
+            gap: '1rem',
             flexWrap: 'wrap'
           }}>
             <a
               href="#assistentes"
               style={{
-                color: '#003366',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                color: 'var(--accent-primary)',
                 textDecoration: 'none',
                 fontWeight: '600',
-                fontSize: '0.9rem',
-                padding: '0.5rem 1rem',
+                fontSize: '0.95rem',
+                padding: '0.75rem 1.25rem',
                 borderRadius: '8px',
-                transition: 'all 0.2s ease'
+                border: '2px solid var(--accent-primary)',
+                backgroundColor: 'var(--bg-primary)',
+                transition: 'all 0.2s ease',
+                minWidth: '140px',
+                justifyContent: 'center'
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#f0f9ff';
-                e.currentTarget.style.transform = 'translateY(-1px)';
+                e.currentTarget.style.backgroundColor = 'var(--accent-primary)';
+                e.currentTarget.style.color = 'white';
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,51,102,0.3)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.backgroundColor = 'var(--bg-primary)';
+                e.currentTarget.style.color = 'var(--accent-primary)';
                 e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = 'none';
               }}
             >
-              Assistentes
+              🤖 Assistentes IA
             </a>
             <a
               href="#faq"
               style={{
-                color: '#003366',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                color: 'var(--text-primary)',
                 textDecoration: 'none',
-                fontWeight: '600',
-                fontSize: '0.9rem',
-                padding: '0.5rem 1rem',
+                fontWeight: '500',
+                fontSize: '0.95rem',
+                padding: '0.75rem 1.25rem',
                 borderRadius: '8px',
-                transition: 'all 0.2s ease'
+                border: '2px solid var(--border-default)',
+                backgroundColor: 'transparent',
+                transition: 'all 0.2s ease',
+                minWidth: '140px',
+                justifyContent: 'center'
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#f0f9ff';
+                e.currentTarget.style.backgroundColor = 'var(--bg-secondary)';
+                e.currentTarget.style.borderColor = 'var(--accent-secondary)';
                 e.currentTarget.style.transform = 'translateY(-1px)';
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.borderColor = 'var(--border-default)';
                 e.currentTarget.style.transform = 'translateY(0)';
               }}
             >
-              Dúvidas
+              ❓ Dúvidas Frequentes
             </a>
             <a
               href="#suporte"
               style={{
-                color: '#003366',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                color: 'var(--text-primary)',
                 textDecoration: 'none',
-                fontWeight: '600',
-                fontSize: '0.9rem',
-                padding: '0.5rem 1rem',
+                fontWeight: '500',
+                fontSize: '0.95rem',
+                padding: '0.75rem 1.25rem',
                 borderRadius: '8px',
-                transition: 'all 0.2s ease'
+                border: '2px solid var(--border-default)',
+                backgroundColor: 'transparent',
+                transition: 'all 0.2s ease',
+                minWidth: '140px',
+                justifyContent: 'center'
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#f0f9ff';
+                e.currentTarget.style.backgroundColor = 'var(--bg-secondary)';
+                e.currentTarget.style.borderColor = 'var(--accent-secondary)';
                 e.currentTarget.style.transform = 'translateY(-1px)';
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.borderColor = 'var(--border-default)';
                 e.currentTarget.style.transform = 'translateY(0)';
               }}
             >
-              Suporte
+              🆘 Canais de Suporte
             </a>
           </div>
         </nav>
@@ -401,10 +460,25 @@ export default function HomePage() {
             <div style={{ textAlign: 'center', width: '100%' }}>
               <HierarchyHeading level="h1" style={{ 
                 textAlign: 'center',
-                margin: 0
+                margin: 0,
+                fontSize: 'clamp(1.8rem, 4vw, 2.5rem)',
+                fontWeight: '800',
+                color: 'var(--accent-primary)',
+                textShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                letterSpacing: '-0.02em',
+                lineHeight: '1.2'
               }}>
                 Roteiros de Dispensação
               </HierarchyHeading>
+              <div style={{
+                fontSize: 'clamp(1rem, 2.2vw, 1.3rem)',
+                fontWeight: '600',
+                color: 'var(--text-secondary)',
+                marginTop: '0.5rem',
+                opacity: 0.9
+              }}>
+                Hanseníase • PQT-U • SUS
+              </div>
             </div>
             
             <div className="text-center hierarchy-component">
@@ -413,11 +487,123 @@ export default function HomePage() {
                 margin: '0 auto',
                 textAlign: 'center'
               }}>
-                Orientação farmacêutica gratuita para quem trata hanseníase no SUS, 24 h por dia.
-                Plataforma baseada em pesquisa de doutorado que oferece orientações sobre a dispensação de medicamentos, baseada em fatos.
+                <strong>Assistentes virtuais especializados em hanseníase</strong> disponíveis 24h para esclarecer dúvidas sobre medicamentos, efeitos colaterais e cuidados durante o tratamento PQT-U no SUS.
               </HierarchyText>
+              <div style={{
+                marginTop: '1rem',
+                padding: '1rem',
+                backgroundColor: 'var(--bg-secondary)',
+                borderRadius: '8px',
+                border: '1px solid var(--border-default)',
+                fontSize: '0.9rem',
+                color: 'var(--text-secondary)'
+              }}>
+                ✅ <strong>Baseado em pesquisa científica UnB</strong> • ✅ <strong>Gratuito e seguro</strong> • ✅ <strong>Linguagem clara e acessível</strong>
+              </div>
+              
+              <div style={{
+                marginTop: '1rem',
+                padding: '0.75rem 1rem',
+                backgroundColor: '#f0f9ff',
+                borderRadius: '8px',
+                border: '2px solid #0066cc',
+                fontSize: '0.85rem',
+                color: '#003366',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem',
+                flexWrap: 'wrap'
+              }}>
+                <span style={{ fontWeight: '600' }}>🏛️ Ministério da Saúde</span>
+                <span>•</span>
+                <span style={{ fontWeight: '600' }}>🏥 Sistema Único de Saúde (SUS)</span>
+                <span>•</span>
+                <span style={{ fontWeight: '600' }}>🎓 Universidade de Brasília (UnB)</span>
+              </div>
             </div>
           </div>
+
+          {/* Como Funciona - Onboarding */}
+          <section style={{
+            maxWidth: 'min(1000px, 92vw)',
+            margin: '3rem auto',
+            padding: '2rem',
+            background: 'linear-gradient(135deg, #fff7ed 0%, #fed7aa 20%, #fb923c 100%)',
+            borderRadius: '16px',
+            border: '2px solid #f97316',
+            textAlign: 'center'
+          }}>
+            <HierarchyHeading level="h2" style={{
+              fontSize: '1.5rem',
+              fontWeight: '700',
+              color: '#ea580c',
+              marginBottom: '1.5rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.75rem'
+            }}>
+              🎯 Como Funciona em 3 Passos Simples
+            </HierarchyHeading>
+            
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+              gap: '1.5rem',
+              marginBottom: '1.5rem'
+            }}>
+              <div style={{
+                padding: '1.5rem',
+                background: 'rgba(255, 255, 255, 0.9)',
+                borderRadius: '12px',
+                border: '1px solid #fed7aa'
+              }}>
+                <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>1️⃣</div>
+                <h3 style={{ color: '#ea580c', marginBottom: '0.5rem', fontSize: '1.1rem' }}>Escolha Seu Assistente</h3>
+                <p style={{ color: '#9a3412', fontSize: '0.9rem', margin: 0 }}>
+                  <strong>Dr. Gasnelio</strong> para informações técnicas ou <strong>Gá</strong> para conversas acolhedoras
+                </p>
+              </div>
+              
+              <div style={{
+                padding: '1.5rem',
+                background: 'rgba(255, 255, 255, 0.9)',
+                borderRadius: '12px',
+                border: '1px solid #fed7aa'
+              }}>
+                <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>2️⃣</div>
+                <h3 style={{ color: '#ea580c', marginBottom: '0.5rem', fontSize: '1.1rem' }}>Faça Sua Pergunta</h3>
+                <p style={{ color: '#9a3412', fontSize: '0.9rem', margin: 0 }}>
+                  Digite suas dúvidas sobre <strong>medicamentos, efeitos colaterais ou cuidados</strong> durante o tratamento
+                </p>
+              </div>
+              
+              <div style={{
+                padding: '1.5rem',
+                background: 'rgba(255, 255, 255, 0.9)',
+                borderRadius: '12px',
+                border: '1px solid #fed7aa'
+              }}>
+                <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>3️⃣</div>
+                <h3 style={{ color: '#ea580c', marginBottom: '0.5rem', fontSize: '1.1rem' }}>Receba Orientação</h3>
+                <p style={{ color: '#9a3412', fontSize: '0.9rem', margin: 0 }}>
+                  Obtenha respostas <strong>baseadas em diretrizes oficiais</strong> do Ministério da Saúde
+                </p>
+              </div>
+            </div>
+            
+            <div style={{
+              padding: '1rem',
+              background: 'rgba(234, 88, 12, 0.1)',
+              borderRadius: '8px',
+              border: '1px solid #fb923c',
+              fontSize: '0.9rem',
+              color: '#9a3412'
+            }}>
+              💡 <strong>Dica:</strong> Para emergências médicas, ligue <strong>192 (SAMU)</strong> ou procure atendimento presencial imediatamente
+            </div>
+          </section>
 
           {/* Mobile Quick Actions - ETAPA 4 */}
           {isMobile && (
@@ -600,7 +786,7 @@ export default function HomePage() {
                   fontWeight: '600',
                   marginBottom: '1rem'
                 }}>
-                  O Farmacêutico Clínico
+                  O Especialista em Medicamentos
                 </p>
                 <ul 
                   id="gasnelio-description"
@@ -612,10 +798,10 @@ export default function HomePage() {
                     lineHeight: '1.6',
                     marginBottom: '1.5rem'
                   }}>
-                  <li>Respostas detalhadas e científicas</li>
-                  <li>Referências às diretrizes oficiais</li>
-                  <li>Ideal para profissionais e estudantes</li>
-                  <li>Foco em precisão clínica</li>
+                  <li>💊 Explica como tomar os remédios corretamente</li>
+                  <li>📋 Usa informações oficiais do Ministério da Saúde</li>
+                  <li>👨‍⚕️ Ideal para profissionais de saúde</li>
+                  <li>🎯 Respostas precisas e baseadas em ciência</li>
                 </ul>
                 
                 <div style={{
@@ -730,7 +916,7 @@ export default function HomePage() {
                   fontWeight: '600',
                   marginBottom: '1rem'
                 }}>
-                  O Assistente Acolhedor
+                  O Companheiro de Cuidado
                 </p>
                 <ul 
                   id="ga-description"
@@ -742,10 +928,10 @@ export default function HomePage() {
                     lineHeight: '1.6',
                     marginBottom: '1.5rem'
                   }}>
-                  <li>Explicações claras e acessíveis</li>
-                  <li>Linguagem humanizada e empática</li>
-                  <li>Ideal para pacientes e familiares</li>
-                  <li>Foco no cuidado integral</li>
+                  <li>💬 Conversa de forma simples e carinhosa</li>
+                  <li>❤️ Oferece apoio emocional durante o tratamento</li>
+                  <li>👨‍👩‍👧‍👦 Ideal para pacientes e familiares</li>
+                  <li>🤗 Foca no bem-estar e na confiança</li>
                 </ul>
                 
                 <div style={{
@@ -1521,5 +1707,6 @@ export default function HomePage() {
       <ToastContainer toasts={toasts} />
     </EducationalLayout>
     </PersonalizationProvider>
+    </PageTransition>
   );
 }

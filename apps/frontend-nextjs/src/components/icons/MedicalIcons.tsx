@@ -511,7 +511,7 @@ export const useMedicalIcons = () => {
   return { getIcon, emojiToIcon };
 };
 
-export default {
+const MedicalIcons = {
   PillIcon,
   StethoscopeIcon,
   HeartIcon,
@@ -536,3 +536,5 @@ export default {
   emojiToIcon,
   useMedicalIcons
 };
+
+export default MedicalIcons;

@@ -34,6 +34,12 @@ export interface RegisterData {
   profileType?: UserProfileType;
 }
 
+export interface SocialAuthCredentials {
+  providerId: 'google.com' | 'facebook.com' | 'apple.com';
+  preferredDisplayName?: string;
+  preferredProfileType?: UserProfileType;
+}
+
 // ============================================
 // USER PROFILE TYPES
 // ============================================
