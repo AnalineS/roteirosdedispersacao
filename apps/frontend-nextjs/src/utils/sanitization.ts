@@ -1,221 +1,201 @@
 /**
- * Utilitários de Sanitização de Segurança
- * Previne XSS e outras vulnerabilidades
+ * Utility functions for sanitizing input
+ * Funções utilitárias para sanitização de entrada
+ * 
+ * SEGURANÇA: Usa DOMPurify para sanitização robusta e segura de HTML
+ * em vez de regex que podem ser contornadas
  */
 
+import DOMPurify from 'dompurify';
+
 /**
- * Sanitiza HTML para prevenir XSS
- * Permite apenas tags seguras para formatação básica
+ * Sanitiza HTML removendo tags e atributos perigosos
+ * Usa DOMPurify - biblioteca robusta e bem testada para evitar XSS
  */
 export function sanitizeHTML(html: string): string {
-  // Remover todas as tags perigosas
-  const dangerousTags = /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi;
-  const iframeTags = /<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi;
-  const objectTags = /<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi;
-  const embedTags = /<embed\b[^<]*(?:(?!<\/embed>)<[^<]*)*<\/embed>/gi;
+  // Verificar se estamos no navegador
+  if (typeof window === 'undefined') {
+    // No servidor, remover todas as tags HTML como fallback seguro
+    return html.replace(/<[^>]*>/g, '');
+  }
+
+  // Configurar DOMPurify com configurações seguras
+  const config = {
+    // Tags permitidas - apenas formatação básica
+    ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'mark', 'span', 'br', 'p', 'div'],
+    
+    // Atributos permitidos - apenas classes para estilização
+    ALLOWED_ATTR: ['class'],
+    
+    // Remover tags perigosas completamente
+    FORBID_TAGS: ['script', 'iframe', 'object', 'embed', 'style', 'link', 'meta'],
+    
+    // Remover atributos perigosos
+    FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover', 'onfocus', 'onblur'],
+    
+    // Não permitir URLs data: ou javascript:
+    ALLOW_DATA_ATTR: false,
+    ALLOW_UNKNOWN_PROTOCOLS: false,
+    
+    // Remover conteúdo de tags perigosas, não apenas as tags
+    KEEP_CONTENT: false,
+    
+    // Sanitizar também SVG e MathML
+    USE_PROFILES: { html: true, svg: false, mathMl: false }
+  };
+
+  // Sanitizar com DOMPurify
+  const clean = DOMPurify.sanitize(html, config);
   
-  let safe = html
-    .replace(dangerousTags, '')
-    .replace(iframeTags, '')
-    .replace(objectTags, '')
-    .replace(embedTags, '');
+  // Verificação adicional para URLs perigosas
+  const finalClean = clean
+    .replace(/javascript:/gi, '')
+    .replace(/data:text\/html/gi, '');
   
-  // Remover atributos perigosos
-  const dangerousAttrs = /\s*on\w+\s*=\s*["'][^"']*["']/gi;
-  const javascriptLinks = /javascript:/gi;
-  const dataLinks = /data:text\/html/gi;
-  
-  safe = safe
-    .replace(dangerousAttrs, '')
-    .replace(javascriptLinks, '')
-    .replace(dataLinks, '');
-  
-  // Escapar caracteres especiais que não estão em tags permitidas
-  const allowedTags = ['b', 'i', 'em', 'strong', 'mark', 'span', 'br'];
-  const tagPattern = new RegExp(`<(?!\/?(?:${allowedTags.join('|')})\\b)[^>]+>`, 'gi');
-  safe = safe.replace(tagPattern, '');
-  
-  return safe;
+  return finalClean;
 }
 
 /**
- * Sanitiza texto para ser usado em SQL queries
- * Previne SQL Injection
+ * Sanitiza input de texto removendo caracteres especiais
+ * Previne injeções e problemas de parsing
  */
-export function sanitizeForSQL(input: string): string {
-  if (!input) return '';
-  
-  // Remover caracteres perigosos para SQL
-  return input
-    .replace(/['";\\]/g, '') // Remove quotes e escape chars
-    .replace(/--/g, '') // Remove comentários SQL
-    .replace(/\/\*/g, '') // Remove início de comentário multi-linha
-    .replace(/\*\//g, '') // Remove fim de comentário multi-linha
-    .replace(/\bOR\b/gi, '') // Remove OR operator
-    .replace(/\bAND\b/gi, '') // Remove AND operator
-    .replace(/\bUNION\b/gi, '') // Remove UNION
-    .replace(/\bSELECT\b/gi, '') // Remove SELECT
-    .replace(/\bINSERT\b/gi, '') // Remove INSERT
-    .replace(/\bUPDATE\b/gi, '') // Remove UPDATE
-    .replace(/\bDELETE\b/gi, '') // Remove DELETE
-    .replace(/\bDROP\b/gi, '') // Remove DROP
-    .slice(0, 255); // Limitar tamanho
-}
-
-/**
- * Sanitiza input para ser usado em URLs
- * Previne Open Redirect e outras vulnerabilidades
- */
-export function sanitizeURL(url: string): string {
-  if (!url) return '';
-  
-  // Remover javascript: e data: protocols
-  if (url.toLowerCase().startsWith('javascript:') || 
-      url.toLowerCase().startsWith('data:')) {
+export function sanitizeInput(input: string): string {
+  if (!input || typeof input !== 'string') {
     return '';
   }
+
+  // Remover caracteres de controle e não-imprimíveis
+  let sanitized = input.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
   
-  // Validar que é uma URL válida
-  try {
-    const parsed = new URL(url);
-    
-    // Permitir apenas protocolos seguros
-    if (!['http:', 'https:', 'mailto:'].includes(parsed.protocol)) {
-      return '';
-    }
-    
-    // Verificar se não é uma URL maliciosa conhecida
-    const blacklistedDomains = [
-      'evil.com',
-      'malware.com',
-      // Adicionar mais domínios conforme necessário
-    ];
-    
-    if (blacklistedDomains.some(domain => parsed.hostname.includes(domain))) {
-      return '';
-    }
-    
-    return url;
-  } catch {
-    // Se não é uma URL válida, retornar vazio
-    return '';
+  // Limitar comprimento para prevenir ataques de DoS
+  const MAX_LENGTH = 10000;
+  if (sanitized.length > MAX_LENGTH) {
+    sanitized = sanitized.substring(0, MAX_LENGTH);
   }
+  
+  // Trim espaços em branco
+  return sanitized.trim();
 }
 
 /**
- * Sanitiza nome de arquivo para upload
- * Previne Path Traversal e outras vulnerabilidades
+ * Sanitiza nome de arquivo removendo caracteres perigosos
+ * Previne path traversal e outros ataques
  */
 export function sanitizeFilename(filename: string): string {
-  if (!filename) return '';
-  
-  // Remover path traversal
-  let safe = filename
-    .replace(/\.\./g, '')
-    .replace(/[\/\\]/g, '');
-  
-  // Remover caracteres especiais, manter apenas alfanuméricos, -, _ e .
-  safe = safe.replace(/[^a-zA-Z0-9\-_.]/g, '');
-  
-  // Limitar tamanho
-  if (safe.length > 255) {
-    const ext = safe.split('.').pop() || '';
-    const name = safe.substring(0, 250 - ext.length);
-    safe = `${name}.${ext}`;
+  if (!filename || typeof filename !== 'string') {
+    return 'file';
   }
-  
-  // Verificar extensões perigosas
-  const dangerousExtensions = [
-    'exe', 'bat', 'cmd', 'com', 'pif', 'scr', 'vbs', 'js', 'jar',
-    'zip', 'rar', '7z', 'tar', 'gz', 'bz2',
-    'sh', 'bash', 'ps1', 'psm1'
-  ];
-  
-  const ext = safe.split('.').pop()?.toLowerCase();
-  if (ext && dangerousExtensions.includes(ext)) {
-    return safe.replace(new RegExp(`\\.${ext}$`, 'i'), '.txt');
-  }
-  
-  return safe;
+
+  // Remover path traversal e caracteres perigosos
+  const sanitized = filename
+    .replace(/\.\./g, '') // Remover ..
+    .replace(/[\/\\]/g, '') // Remover / e \
+    .replace(/^\.+/, '') // Remover . no início
+    .replace(/[\x00-\x1F\x7F<>:"|?*]/g, '') // Remover caracteres inválidos
+    .replace(/\s+/g, '_') // Substituir espaços por _
+    .substring(0, 255); // Limitar tamanho
+
+  // Se ficou vazio, usar nome padrão
+  return sanitized || 'file';
 }
 
 /**
- * Valida e sanitiza email
+ * Escapa HTML para exibição segura
+ * Converte caracteres especiais em entidades HTML
  */
-export function sanitizeEmail(email: string): string {
-  if (!email) return '';
-  
-  // Regex básico para email
-  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-  
-  const trimmed = email.trim().toLowerCase();
-  
-  if (!emailRegex.test(trimmed)) {
+export function escapeHTML(text: string): string {
+  if (!text || typeof text !== 'string') {
     return '';
   }
-  
-  // Limitar tamanho
-  return trimmed.slice(0, 254);
-}
 
-/**
- * Sanitiza número de telefone
- */
-export function sanitizePhone(phone: string): string {
-  if (!phone) return '';
-  
-  // Remover tudo exceto números, +, -, (, ), e espaços
-  return phone
-    .replace(/[^0-9+\-() ]/g, '')
-    .slice(0, 20);
-}
-
-/**
- * Escapa HTML entities
- */
-export function escapeHtml(text: string): string {
   const map: Record<string, string> = {
     '&': '&amp;',
     '<': '&lt;',
     '>': '&gt;',
     '"': '&quot;',
-    "'": '&#039;'
+    "'": '&#x27;',
+    '/': '&#x2F;',
   };
-  
-  return text.replace(/[&<>"']/g, (m) => map[m]);
+
+  return text.replace(/[&<>"'/]/g, (char) => map[char] || char);
 }
 
 /**
- * Remove todos os caracteres não-ASCII
+ * Valida e sanitiza URL
+ * Previne URLs maliciosas e ataques de redirecionamento
  */
-export function removeNonASCII(text: string): string {
-  return text.replace(/[^\x00-\x7F]/g, '');
-}
-
-/**
- * Valida e sanitiza JSON
- */
-export function sanitizeJSON(jsonString: string): object | null {
-  try {
-    const parsed = JSON.parse(jsonString);
-    // Re-stringify para remover qualquer código malicioso
-    return JSON.parse(JSON.stringify(parsed));
-  } catch {
-    return null;
+export function sanitizeURL(url: string): string {
+  if (!url || typeof url !== 'string') {
+    return '';
   }
+
+  // Remover espaços em branco
+  const trimmed = url.trim();
+  
+  // Bloquear protocolos perigosos
+  const dangerousProtocols = /^(javascript|data|vbscript|file):/i;
+  if (dangerousProtocols.test(trimmed)) {
+    return '';
+  }
+  
+  // Permitir apenas URLs relativas ou com protocolos seguros
+  const safeProtocols = /^(https?:\/\/|\/|#)/i;
+  if (!safeProtocols.test(trimmed)) {
+    // Se não tem protocolo, assumir que é relativa
+    return '/' + trimmed;
+  }
+  
+  return trimmed;
 }
 
 /**
- * Sanitiza entrada de busca
+ * Sanitiza objeto JSON removendo propriedades perigosas
+ * Previne prototype pollution e outros ataques
  */
-export function sanitizeSearchQuery(query: string): string {
-  if (!query) return '';
+export function sanitizeJSON(obj: any): any {
+  if (!obj || typeof obj !== 'object') {
+    return obj;
+  }
+
+  // Propriedades perigosas que devem ser removidas
+  const dangerousKeys = ['__proto__', 'constructor', 'prototype'];
   
-  // Remover caracteres especiais que podem causar problemas em buscas
-  return query
-    .replace(/[<>'"]/g, '') // Remove potencial XSS
-    .replace(/[*?]/g, '') // Remove wildcards perigosos
-    .replace(/\\/g, '') // Remove escape chars
-    .trim()
-    .slice(0, 100); // Limitar tamanho
+  // Função recursiva para limpar objeto
+  function clean(item: any): any {
+    if (Array.isArray(item)) {
+      return item.map(clean);
+    }
+    
+    if (item && typeof item === 'object') {
+      const cleaned: any = {};
+      
+      for (const key in item) {
+        // Pular propriedades perigosas
+        if (dangerousKeys.includes(key)) {
+          continue;
+        }
+        
+        // Verificar se é propriedade própria (não herdada)
+        if (Object.prototype.hasOwnProperty.call(item, key)) {
+          cleaned[key] = clean(item[key]);
+        }
+      }
+      
+      return cleaned;
+    }
+    
+    return item;
+  }
+  
+  return clean(obj);
 }
+
+// Exportar todas as funções como default também
+export default {
+  sanitizeHTML,
+  sanitizeInput,
+  sanitizeFilename,
+  escapeHTML,
+  sanitizeURL,
+  sanitizeJSON
+};

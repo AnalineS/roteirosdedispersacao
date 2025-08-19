@@ -44,6 +44,8 @@
   },
   "dependencies": {
     "@next/third-parties": "^15.4.6",
+    "@types/dompurify": "^3.0.5",
+    "dompurify": "^3.2.6",
     "firebase": "^11.10.0",
     "framer-motion": "^12.23.12",
     "jspdf": "^3.0.1",
