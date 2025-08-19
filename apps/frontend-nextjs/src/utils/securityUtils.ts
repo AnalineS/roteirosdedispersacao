@@ -81,6 +81,7 @@ export function sanitizeMedicalInput(input: string): {
   sanitized = sanitized
     .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '[SCRIPT_REMOVIDO]')
     .replace(/javascript:/gi, '[JS_REMOVIDO]')
+    .replace(/vbscript:/gi, '[VBS_REMOVIDO]')
     .replace(/on\w+\s*=/gi, '[EVENT_REMOVIDO]')
     .replace(/data:text\/html/gi, '[DATA_URL_REMOVIDO]')
     // Manter quebras de linha mas remover HTML perigoso
