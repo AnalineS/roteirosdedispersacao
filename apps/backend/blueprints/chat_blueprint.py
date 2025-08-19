@@ -135,11 +135,12 @@ def check_rate_limit(endpoint_type: str = 'default'):
         return wrapper
     return decorator
 
-def log_security_event(event_type: str, client_ip: str, details: Dict[str, Any]):
+def log_security_event(event_type: str, client_ip: str, details: Dict[str, Any]) -> None:
     """
     Log de eventos de segurança
     """
     logger.warning(f"SECURITY_EVENT: {event_type} from {client_ip} - {details}")
+    return None
 
 async def process_question_with_rag(question: str, personality_id: str, request_id: str) -> tuple[str, Dict]:
     """
@@ -572,6 +573,13 @@ def medical_disclaimers_endpoint():
                     "error": "Falha ao registrar acknowledgment",
                     "error_code": "ACKNOWLEDGMENT_FAILED"
                 }), 400
+        
+        # Método HTTP não suportado (não deveria chegar aqui devido ao decorator, mas por segurança)
+        else:
+            return jsonify({
+                "error": "Método não permitido",
+                "error_code": "METHOD_NOT_ALLOWED"
+            }), 405
                 
     except Exception as e:
         logger.error(f"Erro no endpoint de disclaimers: {e}")
