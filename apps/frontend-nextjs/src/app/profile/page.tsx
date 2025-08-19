@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { SocialAuthButtons } from '@/components/auth';
+import type { UserFocus } from '@/lib/firebase/types';
 
 interface ProfileFormData {
   displayName: string;
@@ -95,7 +96,9 @@ export default function ProfilePage() {
       const result = await updateUserProfile({
         displayName: formData.displayName,
         type: formData.profileType,
-        focus: formData.focus === 'advanced' ? 'technical' : formData.focus,
+        focus: formData.focus === 'advanced' ? 'technical' : 
+               formData.focus === 'research' ? 'general' : 
+               (formData.focus as UserFocus),
         preferences: formData.preferences
       });
 
