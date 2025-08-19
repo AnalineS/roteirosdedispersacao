@@ -44,7 +44,7 @@ export interface SocialAuthCredentials {
 // USER PROFILE TYPES
 // ============================================
 
-export type UserProfileType = 'professional' | 'student' | 'patient' | 'caregiver';
+export type UserProfileType = 'admin' | 'professional' | 'student' | 'patient' | 'caregiver';
 export type UserFocus = 'technical' | 'practical' | 'effects' | 'general';
 export type LanguagePreference = 'simple' | 'technical';
 export type ThemePreference = 'light' | 'dark' | 'auto';
@@ -91,6 +91,10 @@ export interface FirestoreUserProfile {
   confidence: number;
   explanation: string;
   selectedPersona?: string;
+  
+  // Admin-specific
+  isAdmin?: boolean;
+  adminLevel?: 'super' | 'moderator' | 'viewer';
   
   // Configurações
   preferences: UserPreferences;

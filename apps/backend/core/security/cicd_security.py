@@ -264,7 +264,7 @@ class SecretsScanner:
                         severity = self._calculate_severity(secret_type, potential_secret)
                         
                         finding = SecurityFinding(
-                            id=f"secret_{hashlib.md5(f'{file_path}:{line_number}:{pattern}'.encode()).hexdigest()[:8]}",
+                            id=f"secret_{hashlib.sha256(f'{file_path}:{line_number}:{pattern}'.encode()).hexdigest()[:8]}",
                             scan_type=ScanType.SECRETS,
                             severity=severity,
                             title=f"Potential {secret_type.replace('_', ' ').title()} Found",

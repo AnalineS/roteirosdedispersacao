@@ -36,9 +36,10 @@ class PerformanceCache:
         self.cleanup_thread.start()
     
     def _generate_key(self, question: str, persona: str) -> str:
-        """Gera chave única para cache"""
+        """Gera chave única para cache usando SHA-256"""
         content = f"{question.lower().strip()}:{persona}"
-        return hashlib.md5(content.encode()).hexdigest()
+        # Usar SHA-256 para melhor segurança e consistência
+        return hashlib.sha256(content.encode()).hexdigest()
     
     def get(self, question: str, persona: str) -> dict:
         """Busca resposta no cache"""

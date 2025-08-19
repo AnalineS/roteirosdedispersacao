@@ -25,6 +25,7 @@ import MobileNavigation from './MobileNavigation';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import IntelligentSearchSystem from '@/components/search/IntelligentSearchSystem';
 import { AuthButton } from '@/components/auth';
+import { useAuth } from '@/contexts/AuthContext';
 // Interfaces de navegação (movidas do Sidebar removido)
 export interface NavigationItem {
   id: string;
@@ -59,6 +60,7 @@ interface DropdownState {
 export default function NavigationHeader({ currentPersona, className = '' }: NavigationHeaderProps) {
   const pathname = usePathname();
   const { personas } = usePersonas();
+  const { isAdmin } = useAuth();
   const headerRef = useRef<HTMLElement>(null);
   const unbColors = getUnbColors();
   const shouldShowHeader = useNavigationVisibility('main-header');
@@ -752,11 +754,50 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
           </div>
         )}
 
-        {/* Authentication Section */}
+        {/* Admin Link + Authentication Section */}
         <div style={{
           marginLeft: 'auto',
-          marginRight: isMobile ? '8px' : '16px'
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px'
         }}>
+          {isAdmin() && !isMobile && (
+            <Link 
+              href="/admin"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                padding: '8px 12px',
+                borderRadius: '8px',
+                backgroundColor: pathname === '/admin' ? unbColors.primary + '20' : 'transparent',
+                color: pathname === '/admin' ? unbColors.primary : unbColors.text.primary,
+                textDecoration: 'none',
+                transition: 'all 0.2s ease',
+                fontSize: '0.9rem',
+                fontWeight: '500',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = unbColors.primary + '10';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = pathname === '/admin' ? unbColors.primary + '20' : 'transparent';
+              }}
+            >
+              <svg 
+                width="16" 
+                height="16" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2"
+                style={{ marginRight: '6px' }}
+              >
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+              </svg>
+              Admin
+            </Link>
+          )}
+          
           <AuthButton variant={isMobile ? 'mobile' : 'header'} />
         </div>
 

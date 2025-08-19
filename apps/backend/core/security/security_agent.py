@@ -548,9 +548,10 @@ class SecurityAgent:
         return recommendations
     
     def _generate_threat_id(self, file_path: str, line_num: int, threat_type: str) -> str:
-        """Gera ID único para uma ameaça."""
+        """Gera ID único para uma ameaça usando SHA-256 seguro."""
         content = f"{file_path}:{line_num}:{threat_type}"
-        return hashlib.md5(content.encode()).hexdigest()[:8]
+        # Segurança: Usar SHA-256 em vez de MD5 (algoritmo fraco)
+        return hashlib.sha256(content.encode()).hexdigest()[:8]
     
     def _get_fix_recommendation(self, threat_type: str) -> str:
         """Retorna recomendação de correção para um tipo de ameaça."""

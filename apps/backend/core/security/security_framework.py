@@ -140,7 +140,8 @@ class SecurityFramework:
                     encrypt=True,
                     is_critical=secret_info['critical']
                 )
-                security_logger.info(f"Secret padrão configurado: {secret_name}")
+                # Segurança: Não logar nome de secrets sensíveis
+                security_logger.info("Secret padrão configurado com sucesso")
     
     def _configure_logging(self):
         """Configura logging de segurança"""

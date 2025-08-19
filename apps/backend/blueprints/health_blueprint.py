@@ -848,7 +848,9 @@ def medical_health_check():
             "timestamp": datetime.now().isoformat()
         }
         
-        logger.info(f"Medical health check - Status: {medical_status}")
+        # Segurança: Log apenas status sem dados sensíveis
+        # Não logar dados médicos completos, apenas o status
+        logger.info(f"Medical health check completed - Status: {medical_status}, Request ID: {request_id}")
         
         return jsonify(response), 200
         

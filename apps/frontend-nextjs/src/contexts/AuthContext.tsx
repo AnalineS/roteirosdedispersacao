@@ -63,8 +63,9 @@ interface AuthContextType extends AuthState {
   upgradeAnonymousAccount: (credentials: LoginCredentials) => Promise<{ success: boolean; error?: string }>;
   
   // Utility methods
-  isFeatureAvailable: (feature: 'profiles' | 'conversations' | 'analytics' | 'advanced') => boolean;
-  getAccessLevel: () => 'anonymous' | 'authenticated' | 'premium';
+  isFeatureAvailable: (feature: 'profiles' | 'conversations' | 'analytics' | 'advanced' | 'admin') => boolean;
+  getAccessLevel: () => 'anonymous' | 'authenticated' | 'premium' | 'admin';
+  isAdmin: () => boolean;
   refreshAuth: () => Promise<void>;
   clearError: () => void;
   
@@ -667,7 +668,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // UTILITY METHODS
   // ============================================
 
-  const isFeatureAvailable = (feature: 'profiles' | 'conversations' | 'analytics' | 'advanced'): boolean => {
+  const isFeatureAvailable = (feature: 'profiles' | 'conversations' | 'analytics' | 'advanced' | 'admin'): boolean => {
     if (!FEATURES.AUTH_ENABLED) {
       return feature === 'profiles'; // Apenas perfis locais disponíveis
     }
@@ -681,12 +682,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
         return isAuthenticated; // Apenas para usuários autenticados
       case 'advanced':
         return isAuthenticated && !!profile; // Apenas para usuários com perfil completo
+      case 'admin':
+        return isAdmin(); // Apenas administradores
       default:
         return false;
     }
   };
 
-  const getAccessLevel = (): 'anonymous' | 'authenticated' | 'premium' => {
+  const getAccessLevel = (): 'anonymous' | 'authenticated' | 'premium' | 'admin' => {
+    if (isAdmin()) return 'admin';
     if (!user) return 'anonymous';
     if (user.isAnonymous) return 'anonymous';
     if (isAuthenticated && profile) return 'premium';
@@ -702,6 +706,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } catch (error) {
       console.error('Erro ao atualizar autenticação:', error);
     }
+  };
+
+  // Admin check
+  const ADMIN_EMAILS = [
+    'neeliogomes@hotmail.com',
+    'sousa.analine@gmail.com',
+    'roteirosdedispensacao@gmail.com',
+    'neliogmoura@gmail.com',
+  ];
+
+  const isAdmin = (): boolean => {
+    if (!user?.email) return false;
+    return ADMIN_EMAILS.includes(user.email.toLowerCase());
   };
 
   const clearError = (): void => {
@@ -797,6 +814,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // Utility methods
     isFeatureAvailable,
     getAccessLevel,
+    isAdmin,
     refreshAuth,
     clearError,
     

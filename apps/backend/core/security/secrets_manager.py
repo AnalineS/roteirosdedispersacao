@@ -429,9 +429,11 @@ class SecretsManager:
                 if 'token' in secret_name.lower() or 'key' in secret_name.lower():
                     new_value = self._generate_secure_token()
                     if self.rotate_secret(secret_name, new_value):
-                        security_logger.info(f"Secret '{secret_name}' rotacionado automaticamente")
+                        # Segurança: Não logar nomes de secrets
+                        security_logger.info("Secret rotacionado automaticamente")
                 else:
-                    security_logger.warning(f"Secret '{secret_name}' precisa de rotação manual")
+                    # Segurança: Não logar nomes de secrets
+                    security_logger.warning("Secret precisa de rotação manual - verificar configurações")
     
     def _generate_secure_token(self, length: int = 32) -> str:
         """Gera token seguro"""
