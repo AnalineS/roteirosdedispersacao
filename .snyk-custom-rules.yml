@@ -1,0 +1,302 @@
+# Custom Snyk Rules for Medical Education Platform
+# ==============================================
+
+version: "1.0"
+metadata:
+  name: "Roteiro de Dispensação - Custom Security Rules"
+  description: "Custom security rules for hanseníase education platform"
+  author: "Development Team"
+  created: "2024-01-01"
+  
+# Custom rules for medical education platform
+rules:
+  # =====================================
+  # Frontend Security Rules (Next.js)
+  # =====================================
+  frontend:
+    javascript:
+      # Medical data handling
+      - id: "CUSTOM-001"
+        title: "Medical data exposure in logs"
+        description: "Detect potential medical data exposure in console.log statements"
+        severity: "high"
+        pattern: "console\\.log\\(.*(?:paciente|patient|cpf|rg|nome|telefone|endereco).*\\)"
+        message: "Avoid logging sensitive medical data"
+        fix: "Use structured logging without personal information"
+        
+      - id: "CUSTOM-002"
+        title: "Hardcoded medical dosages"
+        description: "Detect hardcoded medication dosages that should come from knowledge base"
+        severity: "medium"
+        pattern: "\\b\\d+\\s*(mg|ml|g|mcg)\\b.*\\b(rifampicina|dapsona|clofazimina|ofloxacina|minociclina)\\b"
+        message: "Medication dosages should come from validated knowledge base"
+        fix: "Use dosageCalculation service instead of hardcoded values"
+        
+      - id: "CUSTOM-003"
+        title: "Unsafe HTML rendering"
+        description: "Detect unsafe HTML rendering that could lead to XSS"
+        severity: "high"
+        pattern: "dangerouslySetInnerHTML.*\\{\\s*__html\\s*:"
+        message: "Unsafe HTML rendering detected"
+        fix: "Use DOMPurify to sanitize HTML content"
+        
+      - id: "CUSTOM-004"
+        title: "API key exposure"
+        description: "Detect potential API key exposure in frontend code"
+        severity: "critical"
+        pattern: "(openrouter|huggingface|openai).*['\"]\\w{32,}['\"]"
+        message: "API key potentially exposed in frontend code"
+        fix: "Move API keys to server-side environment variables"
+
+  # =====================================
+  # Backend Security Rules (Python/Flask)
+  # =====================================
+  backend:
+    python:
+      # Medical data security
+      - id: "CUSTOM-101"
+        title: "Unencrypted medical data storage"
+        description: "Detect storage of medical data without encryption"
+        severity: "high"
+        pattern: "firestore\\.collection\\(.*\\)\\.add\\(.*(?:cpf|rg|telefone|endereco).*\\)"
+        message: "Medical data should be encrypted before storage"
+        fix: "Use encryption utilities before storing sensitive data"
+        
+      - id: "CUSTOM-102"
+        title: "SQL injection in medical queries"
+        description: "Detect potential SQL injection in medical data queries"
+        severity: "critical"
+        pattern: "SELECT.*FROM.*WHERE.*\\+.*%s"
+        message: "Potential SQL injection vulnerability"
+        fix: "Use parameterized queries"
+        
+      - id: "CUSTOM-103"
+        title: "Unsafe deserialization"
+        description: "Detect unsafe deserialization that could lead to RCE"
+        severity: "critical"
+        pattern: "pickle\\.loads?\\(|yaml\\.load\\("
+        message: "Unsafe deserialization detected"
+        fix: "Use safe serialization methods like json.loads()"
+        
+      - id: "CUSTOM-104"
+        title: "Hardcoded medical protocols"
+        description: "Detect hardcoded medical protocols that should be configurable"
+        severity: "medium"
+        pattern: "protocol\\s*=\\s*['\"](?:PB|MB|PQT).*['\"]"
+        message: "Medical protocols should be externally configurable"
+        fix: "Load protocols from validated configuration files"
+
+  # =====================================
+  # Infrastructure Security Rules
+  # =====================================
+  infrastructure:
+    docker:
+      - id: "CUSTOM-201"
+        title: "Running as root in container"
+        description: "Container running as root user"
+        severity: "medium"
+        pattern: "USER\\s+root|USER\\s+0"
+        message: "Avoid running containers as root user"
+        fix: "Create and use a non-root user in Docker container"
+        
+      - id: "CUSTOM-202"
+        title: "Exposed sensitive ports"
+        description: "Sensitive ports exposed in Docker configuration"
+        severity: "high"
+        pattern: "EXPOSE\\s+(22|3306|5432|6379|27017)"
+        message: "Sensitive service ports should not be exposed"
+        fix: "Use internal networking and reverse proxies"
+
+    kubernetes:
+      - id: "CUSTOM-301"
+        title: "Missing resource limits"
+        description: "Kubernetes deployment without resource limits"
+        severity: "medium"
+        pattern: "kind:\\s*Deployment"
+        message: "Kubernetes deployments should have resource limits"
+        fix: "Add resource requests and limits to container spec"
+
+  # =====================================
+  # Medical-Specific Business Logic Rules
+  # =====================================
+  medical:
+    dosage:
+      - id: "CUSTOM-401"
+        title: "Invalid dosage calculation"
+        description: "Detect potentially dangerous dosage calculations"
+        severity: "critical"
+        pattern: "dose\\s*\\*\\s*weight|weight\\s*\\*\\s*dose"
+        message: "Dosage calculations require medical validation"
+        fix: "Use validated medical calculation libraries"
+        
+      - id: "CUSTOM-402"
+        title: "Missing drug interaction check"
+        description: "Drug prescription without interaction checking"
+        severity: "high"
+        pattern: "prescribe.*(?:rifampicina|dapsona|clofazimina).*without.*interaction"
+        message: "Drug interactions must be checked before prescription"
+        fix: "Implement drug interaction validation"
+
+    validation:
+      - id: "CUSTOM-501"
+        title: "Missing medical license validation"
+        description: "Medical advice without proper license validation"
+        severity: "high"
+        pattern: "medical_advice.*without.*license_check"
+        message: "Medical advice requires proper professional validation"
+        fix: "Implement professional license verification"
+
+# =====================================
+# Severity Levels and Actions
+# =====================================
+severity_actions:
+  critical:
+    action: "block"
+    notification: "immediate"
+    escalation: "security_team"
+    
+  high:
+    action: "block"
+    notification: "immediate"
+    escalation: "lead_developer"
+    
+  medium:
+    action: "warn"
+    notification: "daily_digest"
+    escalation: "team_lead"
+    
+  low:
+    action: "log"
+    notification: "weekly_report"
+    escalation: "none"
+
+# =====================================
+# Exception Handling
+# =====================================
+exceptions:
+  # Test files are exempt from some rules
+  test_files:
+    paths:
+      - "**/*.test.js"
+      - "**/*.test.ts"
+      - "**/*.spec.js"
+      - "**/*.spec.ts"
+      - "cypress/**"
+      - "tests/**"
+    exempt_rules:
+      - "CUSTOM-001"  # Allow console.log in tests
+      - "CUSTOM-002"  # Allow hardcoded values in tests
+      
+  # Development environment exceptions
+  development:
+    environment: "development"
+    exempt_rules:
+      - "CUSTOM-201"  # Allow root user in dev containers
+      - "CUSTOM-202"  # Allow exposed ports in dev
+
+# =====================================
+# Integration Settings
+# =====================================
+integrations:
+  github:
+    # Fail PR on critical and high severity
+    fail_pr_on:
+      - "critical"
+      - "high"
+    
+    # Comment on PR for medium severity
+    comment_on:
+      - "medium"
+    
+    # Create issues for tracking
+    create_issues_for:
+      - "critical"
+      - "high"
+
+  slack:
+    # Immediate notifications
+    immediate_notification:
+      - "critical"
+      - "high"
+    
+    # Daily digest
+    daily_digest:
+      - "medium"
+      - "low"
+
+  jira:
+    # Create tickets for security issues
+    create_tickets_for:
+      - "critical"
+      - "high"
+    
+    # Ticket template
+    ticket_template:
+      priority_mapping:
+        critical: "P1"
+        high: "P2"
+        medium: "P3"
+        low: "P4"
+
+# =====================================
+# Reporting Configuration
+# =====================================
+reporting:
+  formats:
+    - "json"
+    - "sarif"
+    - "html"
+    - "csv"
+  
+  schedule:
+    daily: ["critical", "high"]
+    weekly: ["medium"]
+    monthly: ["low", "summary"]
+  
+  recipients:
+    security_team: ["security@empresa.com"]
+    development_team: ["dev@empresa.com"]
+    management: ["managers@empresa.com"]
+
+# =====================================
+# Training and Documentation
+# =====================================
+training:
+  # Links to training materials for each rule
+  materials:
+    "CUSTOM-001": "https://docs.empresa.com/security/logging-best-practices"
+    "CUSTOM-002": "https://docs.empresa.com/medical/dosage-validation"
+    "CUSTOM-003": "https://docs.empresa.com/security/xss-prevention"
+    "CUSTOM-101": "https://docs.empresa.com/medical/data-encryption"
+  
+  # Mandatory training for critical rules
+  mandatory_training:
+    - "CUSTOM-001"
+    - "CUSTOM-003"
+    - "CUSTOM-101"
+    - "CUSTOM-102"
+
+# =====================================
+# Compliance Mapping
+# =====================================
+compliance:
+  # Map rules to compliance frameworks
+  frameworks:
+    lgpd:
+      - "CUSTOM-001"
+      - "CUSTOM-101"
+    
+    anvisa:
+      - "CUSTOM-401"
+      - "CUSTOM-402"
+      - "CUSTOM-501"
+    
+    iso27001:
+      - "CUSTOM-003"
+      - "CUSTOM-102"
+      - "CUSTOM-103"
+    
+    hipaa_equivalent:
+      - "CUSTOM-001"
+      - "CUSTOM-101"
+      - "CUSTOM-401"

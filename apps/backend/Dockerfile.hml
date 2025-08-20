@@ -1,0 +1,54 @@
+# Dockerfile para Ambiente de Homologação (HML)
+# Otimizado para testes e deploy rápido
+
+FROM python:3.11-slim
+
+# Metadados
+LABEL maintainer="Roteiro de Dispensação - HML Environment"
+LABEL version="hml-1.0.0"
+LABEL environment="homologacao"
+
+# Configurar variáveis de ambiente para HML
+ENV ENVIRONMENT=homologacao
+ENV FLASK_ENV=production
+ENV PYTHONPATH=/app
+ENV PYTHONUNBUFFERED=1
+
+# Criar usuário não-root para segurança
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
+# Configurar diretório de trabalho
+WORKDIR /app
+
+# Instalar dependências do sistema
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copiar requirements primeiro (para cache de Docker)
+COPY requirements.txt requirements_production.txt ./
+
+# Instalar dependências Python
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements_production.txt
+
+# Copiar código da aplicação
+COPY . .
+
+# Criar diretórios necessários
+RUN mkdir -p logs cache embeddings && \
+    chown -R appuser:appuser /app
+
+# Mudar para usuário não-root
+USER appuser
+
+# Health check otimizado para HML
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:$PORT/health || exit 1
+
+# Expor porta
+EXPOSE 8080
+
+# Comando de inicialização otimizado para HML
+CMD ["gunicorn", "--bind", "0.0.0.0:8080", "--workers", "2", "--threads", "4", "--timeout", "120", "--keep-alive", "2", "--max-requests", "1000", "--max-requests-jitter", "100", "--access-logfile", "-", "--error-logfile", "-", "--log-level", "info", "main:app"]

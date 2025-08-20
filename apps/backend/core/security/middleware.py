@@ -27,7 +27,43 @@ from dataclasses import dataclass, asdict
 from flask import Flask, request, jsonify, g
 from functools import wraps
 import ipaddress
-import user_agents
+# Import user_agents com fallback
+try:
+    import user_agents
+    USER_AGENTS_AVAILABLE = True
+except ImportError:
+    USER_AGENTS_AVAILABLE = False
+    # Fallback simples para user_agents
+    class SimpleUserAgent:
+        def __init__(self, user_agent_string):
+            self.user_agent_string = user_agent_string
+            self.browser = type('Browser', (), {'family': 'Unknown', 'version_string': 'Unknown'})()
+            self.os = type('OS', (), {'family': 'Unknown', 'version_string': 'Unknown'})()
+            self.device = type('Device', (), {'family': 'Unknown'})()
+        
+        @property
+        def is_mobile(self):
+            mobile_indicators = ['mobile', 'android', 'iphone', 'ipad']
+            return any(indicator in self.user_agent_string.lower() for indicator in mobile_indicators)
+        
+        @property
+        def is_tablet(self):
+            return 'tablet' in self.user_agent_string.lower() or 'ipad' in self.user_agent_string.lower()
+        
+        @property
+        def is_pc(self):
+            return not (self.is_mobile or self.is_tablet)
+        
+        @property
+        def is_bot(self):
+            bot_indicators = ['bot', 'crawler', 'spider', 'scraper']
+            return any(indicator in self.user_agent_string.lower() for indicator in bot_indicators)
+    
+    # Criar função parse como fallback
+    def parse(user_agent_string):
+        return SimpleUserAgent(user_agent_string)
+    
+    user_agents = type('user_agents', (), {'parse': parse})()
 from urllib.parse import urlparse, parse_qs
 
 # Import do Redis Rate Limiter

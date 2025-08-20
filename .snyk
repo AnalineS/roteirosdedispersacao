@@ -1,0 +1,231 @@
+# Snyk Configuration for HML Environment
+# =====================================
+
+# Language settings
+language-settings:
+  javascript:
+    includeDevDependencies: true
+    packageManager: npm
+  python:
+    includeDevDependencies: true
+
+# Exclude specific paths from scans
+exclude:
+  global:
+    - node_modules/**
+    - .git/**
+    - out/**
+    - dist/**
+    - build/**
+    - coverage/**
+    - .next/**
+    - __pycache__/**
+    - "*.pyc"
+    - "*.pyo"
+    - .pytest_cache/**
+    - .tox/**
+    - .coverage
+    - htmlcov/**
+    - docs/**
+    - tests/**/__snapshots__/**
+    - cypress/**
+    - "*.test.js"
+    - "*.test.ts"
+    - "*.spec.js"
+    - "*.spec.ts"
+    - jest.config.js
+    - cypress.config.js
+
+# Patches for known vulnerabilities
+patches: {}
+
+# Vulnerability settings
+version: v1.0.0
+
+# Monitor settings
+monitor: true
+
+# Fail build on specific severity levels
+failOnIssues:
+  highSeverity: true
+  mediumSeverity: true
+  lowSeverity: false
+
+# Organization settings
+org: roteiros-de-dispensacao-hml
+
+# Project settings for different components
+projects:
+  frontend:
+    path: apps/frontend-nextjs
+    packageManager: npm
+    monitor: true
+    test: true
+    prMonitor: true
+    
+  backend:
+    path: apps/backend
+    packageManager: pip
+    monitor: true
+    test: true
+    prMonitor: true
+
+# Security policy overrides for HML environment
+rules:
+  # Allow some vulnerabilities in test dependencies
+  - rule: SNYK-JS-LODASH-567746
+    reason: "Development dependency only, not used in production"
+    expires: "2024-12-31"
+    
+  # Override for known false positives
+  - rule: SNYK-PYTHON-REQUESTS-1025846
+    reason: "False positive in our use case - request validation implemented"
+    expires: "2024-12-31"
+
+# IDE integration settings
+ideIntegration:
+  vscode:
+    enabled: true
+    autoScan: true
+    showVulnerabilities: true
+    showLicenseIssues: false
+
+# Reporting configuration
+reporting:
+  format: json
+  outputFile: snyk-report.json
+  sarif: true
+  sarifOutputFile: snyk-results.sarif
+
+# License compliance
+license:
+  # Allow common open source licenses
+  allow:
+    - MIT
+    - Apache-2.0
+    - BSD-2-Clause
+    - BSD-3-Clause
+    - ISC
+    - GPL-3.0
+    - LGPL-3.0
+    - MPL-2.0
+  
+  # Disallow problematic licenses
+  disallow:
+    - GPL-2.0
+    - AGPL-3.0
+    - CPAL-1.0
+    - OSL-3.0
+
+# Container scanning (for Docker images)
+container:
+  exclude:
+    # Exclude base image vulnerabilities we can't fix
+    - CVE-2021-33910  # systemd vulnerability in base image
+    - CVE-2021-3712   # OpenSSL vulnerability in base image
+
+# Infrastructure as Code scanning
+iac:
+  rules:
+    # Custom rules for our infrastructure
+    - SNYK-CC-K8S-41  # Allow privileged containers in development
+    - SNYK-CC-TF-124  # Allow HTTP in development environment
+
+# Code quality thresholds for HML
+quality:
+  code:
+    # Stricter thresholds for production readiness
+    criticalSeverity: 0     # No critical issues allowed
+    highSeverity: 5         # Max 5 high severity issues
+    mediumSeverity: 15      # Max 15 medium severity issues
+    lowSeverity: 50         # Max 50 low severity issues
+  
+  dependencies:
+    criticalSeverity: 0     # No critical vulnerabilities
+    highSeverity: 3         # Max 3 high severity vulnerabilities
+    mediumSeverity: 10      # Max 10 medium severity vulnerabilities
+    lowSeverity: 25         # Max 25 low severity vulnerabilities
+
+# Integration with CI/CD
+cicd:
+  # Break build on critical and high severity issues
+  breakBuild:
+    critical: true
+    high: true
+    medium: false
+    low: false
+  
+  # Generate reports for all severity levels
+  generateReports: true
+  
+  # Upload results to Snyk platform
+  monitor: true
+  
+  # Set custom project tags
+  projectTags:
+    - environment:hml
+    - team:development
+    - project:roteiro-dispensacao
+    - criticality:medium
+
+# Custom severity overrides for our specific use case
+severityOverrides:
+  # Medical education platform specific overrides
+  - vulnerability: SNYK-JS-MINIMIST-559764
+    newSeverity: medium
+    reason: "Low impact in our educational context"
+  
+  - vulnerability: SNYK-PYTHON-JINJA2-1012994
+    newSeverity: high
+    reason: "Critical for our template rendering security"
+
+# Notification settings
+notifications:
+  # Send alerts to development team
+  newVulnerabilities: true
+  remediationUpdates: true
+  weeklyReport: true
+  
+  # Integration with external systems
+  webhook:
+    enabled: true
+    url: "${SNYK_WEBHOOK_URL}"
+    events:
+      - new-vulnerability
+      - resolved-vulnerability
+      - new-license-issue
+
+# Advanced scanning options
+advanced:
+  # Deep dependency analysis
+  deepAnalysis: true
+  
+  # License compliance scanning
+  licenseCompliance: true
+  
+  # Code quality analysis
+  codeQuality: true
+  
+  # Container image scanning
+  containerScanning: true
+  
+  # Infrastructure as Code scanning
+  iacScanning: true
+  
+  # Custom rules file
+  customRulesFile: .snyk-custom-rules.yml
+
+# Environment-specific settings
+environments:
+  hml:
+    # More permissive for testing
+    allowHighRisk: true
+    breakBuildOnCritical: true
+    generateDetailedReports: true
+    
+  production:
+    # Strict settings for production
+    allowHighRisk: false
+    breakBuildOnCritical: true
+    breakBuildOnHigh: true
+    monitorContinuously: true

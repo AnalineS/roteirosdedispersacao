@@ -35,7 +35,11 @@ except ImportError:
     CONFIG_AVAILABLE = False
     # Fallback config simples
     class SimpleConfig:
-        SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-secret-key')
+        SECRET_KEY = os.environ.get('SECRET_KEY')
+        if not SECRET_KEY:
+            import secrets
+            SECRET_KEY = secrets.token_hex(32)
+            logger.warning("SECRET_KEY não definida! Usando chave temporária - NÃO USAR EM PRODUÇÃO!")
         DEBUG = os.environ.get('FLASK_ENV') == 'development'
         TESTING = False
         MAX_CONTENT_LENGTH = 16 * 1024 * 1024
@@ -75,6 +79,14 @@ logging.basicConfig(
     level=getattr(logging, config.LOG_LEVEL if CONFIG_AVAILABLE else 'INFO'),
     format=config.LOG_FORMAT if CONFIG_AVAILABLE else '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
+
+# Aplicar patch para Windows logging (resolve problemas com emojis)
+try:
+    from core.logging.windows_safe_logger import patch_logger_methods
+    patch_logger_methods()
+except ImportError:
+    pass  # Patch não disponível, continuar sem ele
+
 logger = logging.getLogger(__name__)
 
 # Import blueprints (com fallback inteligente)
@@ -179,12 +191,15 @@ def create_app():
     version_manager = APIVersionManager(app)
     app.version_manager = version_manager
     
-    # Inicializar Security Middleware
+    # Inicializar Security Middleware de forma assíncrona para Cloud Run
     if SECURITY_MIDDLEWARE_AVAILABLE and SecurityMiddleware:
-        security_middleware = SecurityMiddleware(app)
-        logger.info("✅ Security Middleware avançado inicializado")
+        try:
+            security_middleware = SecurityMiddleware(app)
+            logger.info("✅ Security Middleware avançado inicializado")
+        except Exception as e:
+            logger.warning(f"⚠️ Erro ao inicializar Security Middleware: {e}")
     
-    # Inicializar JWT Authentication
+    # Inicializar JWT Authentication de forma não-bloqueante
     if JWT_AUTH_AVAILABLE:
         try:
             configure_jwt_from_env()
@@ -196,14 +211,17 @@ def create_app():
     else:
         logger.info("ℹ️ JWT Authentication não disponível - sistema funciona sem autenticação")
     
-    # Inicializar otimizações de performance e segurança
-    if OPTIMIZATIONS_AVAILABLE:
+    # Pular otimizações pesadas no startup para Cloud Run
+    cloud_run_env = os.environ.get('K_SERVICE') or os.environ.get('CLOUD_RUN_ENV')
+    if OPTIMIZATIONS_AVAILABLE and not cloud_run_env:
         try:
             init_performance_optimizations(app)
             init_security_optimizations(app)
             logger.info("🚀 Otimizações de performance e segurança ativadas")
         except Exception as e:
             logger.warning(f"⚠️ Erro ao inicializar otimizações: {e}")
+    elif cloud_run_env:
+        logger.info("☁️ Cloud Run detectado - otimizações carregadas sob demanda")
     
     # Registrar blueprints
     register_blueprints(app)
@@ -243,6 +261,23 @@ def setup_cors(app):
             "http://127.0.0.1:8080"
         ])
         logger.info("CORS configurado para desenvolvimento")
+    elif environment == 'homologacao':
+        # Origens específicas para homologação
+        allowed_origins = [
+            "https://hml-roteiros-de-dispensacao.web.app",
+            "https://hml-roteiros-de-dispensacao.firebaseapp.com",
+            "http://localhost:3000",  # Para testes locais
+            "http://127.0.0.1:3000"
+        ]
+        
+        # Adicionar URL do Cloud Run HML se disponível
+        if os.environ.get('K_SERVICE'):
+            cloud_run_url = os.environ.get('CLOUD_RUN_SERVICE_URL')
+            if cloud_run_url:
+                allowed_origins.append(cloud_run_url)
+                logger.info(f"Cloud Run HML URL adicionada ao CORS: {cloud_run_url}")
+        
+        logger.info("CORS configurado para homologação")
     elif environment == 'production':
         # Origens de produção
         allowed_origins = [
@@ -468,6 +503,19 @@ def setup_root_routes(app):
             },
             "timestamp": datetime.now().isoformat()
         }), 200
+    
+    # Health check otimizado para Cloud Run
+    @app.route('/health')
+    @app.route('/ready')
+    @app.route('/_ah/health')  # Google App Engine health check
+    def cloud_run_health():
+        """Health check ultrarrápido para Cloud Run"""
+        return jsonify({
+            "status": "healthy",
+            "timestamp": datetime.now().isoformat(),
+            "service": "roteiro-dispensacao-api",
+            "version": "v1.0.0"
+        }), 200
 
 # Rate limiting placeholder (será implementado com Redis)
 def check_rate_limit(endpoint_type: str = 'default'):
@@ -489,15 +537,24 @@ if __name__ == '__main__':
         port = int(os.environ.get('PORT', config.PORT))
         host = config.HOST
         
+        # Configurações otimizadas para Cloud Run
+        cloud_run_env = os.environ.get('K_SERVICE') or os.environ.get('CLOUD_RUN_ENV')
+        if cloud_run_env:
+            logger.info(f"☁️ Cloud Run detectado - configurações otimizadas")
+            # Reduzir timeout de request para startup mais rápido
+            import signal
+            signal.alarm(0)  # Desabilitar alarmes que podem atrasar startup
+        
         logger.info(f"🚀 Iniciando servidor em {host}:{port}")
         
         # Executar aplicação
         app.run(
             host=host,
             port=port,
-            debug=config.DEBUG,
+            debug=False if cloud_run_env else config.DEBUG,  # Sempre False no Cloud Run
             threaded=True,
-            use_reloader=False  # Evitar dupla inicialização em desenvolvimento
+            use_reloader=False,  # Evitar dupla inicialização
+            request_handler=None  # Usar handler padrão otimizado
         )
         
     except KeyboardInterrupt:

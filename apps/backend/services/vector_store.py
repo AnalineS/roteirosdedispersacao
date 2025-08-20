@@ -6,7 +6,6 @@ Suporta busca semântica eficiente para RAG médico
 
 import os
 import json
-import pickle
 import logging
 import hashlib
 from typing import List, Dict, Optional, Tuple, Any
@@ -85,8 +84,8 @@ class LocalVectorStore:
                         )
                         
             if self.index_file.exists():
-                with open(self.index_file, 'rb') as f:
-                    self.doc_ids = pickle.load(f)
+                with open(self.index_file, 'r', encoding='utf-8') as f:
+                    self.doc_ids = json.load(f)
                     
             logger.info(f"LocalVectorStore carregado: {len(self.documents)} documentos")
             
@@ -111,9 +110,9 @@ class LocalVectorStore:
             with open(self.metadata_file, 'w', encoding='utf-8') as f:
                 json.dump(metadata, f, ensure_ascii=False, indent=2, default=str)
             
-            # Salvar índice
-            with open(self.index_file, 'wb') as f:
-                pickle.dump(self.doc_ids, f)
+            # Salvar índice de forma segura
+            with open(self.index_file, 'w', encoding='utf-8') as f:
+                json.dump(self.doc_ids, f, ensure_ascii=False, indent=2)
                 
         except Exception as e:
             logger.error(f"Erro ao salvar LocalVectorStore: {e}")

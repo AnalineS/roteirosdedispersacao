@@ -6,7 +6,7 @@ Implementa lazy loading para evitar timeout em Cloud Run
 """
 
 import os
-import pickle
+import json
 import logging
 import hashlib
 from typing import List, Dict, Optional, Tuple, Any, Union
@@ -100,15 +100,20 @@ class EmbeddingCache:
         return hashlib.sha256(content.encode()).hexdigest()
     
     def _load_cache(self):
-        """Carrega cache do disco"""
+        """Carrega cache do disco de forma segura usando JSON"""
         try:
             if self.cache_file.exists():
-                with open(self.cache_file, 'rb') as f:
-                    self._cache = pickle.load(f)
+                with open(self.cache_file, 'r', encoding='utf-8') as f:
+                    cache_data = json.load(f)
+                    # Converter listas de volta para numpy arrays se disponível
+                    if NUMPY_AVAILABLE:
+                        self._cache = {k: np.array(v) for k, v in cache_data.items()}
+                    else:
+                        self._cache = cache_data
                     
             if self.metadata_file.exists():
-                with open(self.metadata_file, 'rb') as f:
-                    self._metadata = pickle.load(f)
+                with open(self.metadata_file, 'r', encoding='utf-8') as f:
+                    self._metadata = json.load(f)
                     
             logger.info(f"Cache carregado: {len(self._cache)} embeddings")
         except Exception as e:
@@ -117,13 +122,21 @@ class EmbeddingCache:
             self._metadata = {}
     
     def _save_cache(self):
-        """Salva cache no disco"""
+        """Salva cache no disco de forma segura usando JSON"""
         try:
-            with open(self.cache_file, 'wb') as f:
-                pickle.dump(self._cache, f)
+            # Converter numpy arrays para listas para serialização JSON
+            cache_for_json = {}
+            for k, v in self._cache.items():
+                if NUMPY_AVAILABLE and isinstance(v, np.ndarray):
+                    cache_for_json[k] = v.tolist()
+                else:
+                    cache_for_json[k] = v
+                    
+            with open(self.cache_file, 'w', encoding='utf-8') as f:
+                json.dump(cache_for_json, f, ensure_ascii=False, indent=2)
                 
-            with open(self.metadata_file, 'wb') as f:
-                pickle.dump(self._metadata, f)
+            with open(self.metadata_file, 'w', encoding='utf-8') as f:
+                json.dump(self._metadata, f, ensure_ascii=False, indent=2)
                 
         except Exception as e:
             logger.error(f"Erro ao salvar cache de embeddings: {e}")
@@ -183,7 +196,7 @@ class EmbeddingCache:
         """Estatísticas do cache"""
         return {
             'total_embeddings': len(self._cache),
-            'cache_size_mb': len(pickle.dumps(self._cache)) / (1024 * 1024),
+            'cache_size_mb': len(json.dumps(self._cache, default=str)) / (1024 * 1024),
             'oldest_entry': min(
                 (meta['created_at'] for meta in self._metadata.values()),
                 default=None
