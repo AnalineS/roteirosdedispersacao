@@ -17,20 +17,40 @@
                 const response = await fetch('http://127.0.0.1:5000/api/personas');
                 const data = await response.json();
                 
-                results.innerHTML = '<h3>Raw Response:</h3>';
-                results.innerHTML += '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                // Safely create elements to prevent XSS
+                results.innerHTML = '';
+                
+                const h3Raw = document.createElement('h3');
+                h3Raw.textContent = 'Raw Response:';
+                results.appendChild(h3Raw);
+                
+                const pre = document.createElement('pre');
+                pre.textContent = JSON.stringify(data, null, 2);
+                results.appendChild(pre);
                 
                 if (data.personas) {
-                    results.innerHTML += '<h3>Personas found:</h3>';
+                    const h3Personas = document.createElement('h3');
+                    h3Personas.textContent = 'Personas found:';
+                    results.appendChild(h3Personas);
+                    
                     Object.keys(data.personas).forEach(id => {
-                        results.innerHTML += `<p>✓ ${id}: ${data.personas[id].name}</p>`;
+                        const p = document.createElement('p');
+                        p.textContent = `✓ ${id}: ${data.personas[id].name}`;
+                        results.appendChild(p);
                     });
                 } else {
-                    results.innerHTML += '<p style="color: red;">No personas field in response!</p>';
+                    const p = document.createElement('p');
+                    p.style.color = 'red';
+                    p.textContent = 'No personas field in response!';
+                    results.appendChild(p);
                 }
                 
             } catch (error) {
-                results.innerHTML = '<p style="color: red;">Error: ' + error.message + '</p>';
+                results.innerHTML = '';
+                const p = document.createElement('p');
+                p.style.color = 'red';
+                p.textContent = 'Error: ' + error.message;
+                results.appendChild(p);
             }
         }
         

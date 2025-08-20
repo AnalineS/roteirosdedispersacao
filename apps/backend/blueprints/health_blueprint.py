@@ -367,13 +367,14 @@ def test_medical_rag():
             logger.info(f"Context obtido: {type(context)}, length: {len(context) if isinstance(context, str) else 'N/A'}")
         except Exception as context_error:
             logger.error(f"Erro ao obter contexto: {context_error}")
-            return jsonify({"error": f"Context failed: {context_error}"}), 500
+            return jsonify({"error": "Context retrieval failed"}), 500
         
         # Testar stats separadamente para isolar erro
         try:
             stats = medical_rag_system.get_stats()
         except Exception as stats_error:
-            stats = {"error": f"Stats failed: {stats_error}"}
+            logger.error(f"Erro ao obter stats: {stats_error}")
+            stats = {"error": "Stats retrieval failed"}
         
         # Construir resposta de forma segura
         response_data = {

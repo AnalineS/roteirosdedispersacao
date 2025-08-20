@@ -395,6 +395,16 @@ export default function SmartSearch({
     }
   };
 
+  // Sanitize URL to prevent XSS attacks
+  const sanitizeUrl = (url: string): string => {
+    // Only allow relative paths and known safe protocols
+    if (url.startsWith('/') || url.startsWith('#')) {
+      return url.replace(/[<>'"]/g, '');
+    }
+    // Block any external URLs or javascript: protocols
+    return '/';
+  };
+
   const handleResultSelect = (result: SearchResult) => {
     saveRecentSearch(query);
     setQuery('');
@@ -518,7 +528,7 @@ export default function SmartSearch({
                       </div>
                     )}
                     {results.map((result, index) => (
-                      <Link key={result.id} href={result.path}>
+                      <Link key={result.id} href={sanitizeUrl(result.path)}>
                         <div
                           className={`p-3 cursor-pointer transition-colors ${
                             index === selectedIndex ? 'bg-blue-50' : 'hover:bg-gray-50'
@@ -624,7 +634,7 @@ export default function SmartSearch({
                   {results.length} resultado{results.length !== 1 ? 's' : ''} encontrado{results.length !== 1 ? 's' : ''}
                 </div>
                 {results.map((result, index) => (
-                  <Link key={result.id} href={result.path}>
+                  <Link key={result.id} href={sanitizeUrl(result.path)}>
                     <div
                       className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
                         index === selectedIndex 

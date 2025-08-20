@@ -192,7 +192,12 @@ export function HanseníaseModuleStructuredData({
   level?: string;
   category?: string;
 }) {
-  const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
+  // Sanitize pathname to prevent XSS
+  const sanitizePathname = (path: string): string => {
+    return path.replace(/[<>'"&]/g, '').replace(/[^\w\-\.\/]/g, '');
+  };
+  
+  const pathname = typeof window !== 'undefined' ? sanitizePathname(window.location.pathname) : '';
   
   return (
     <MedicalStructuredData

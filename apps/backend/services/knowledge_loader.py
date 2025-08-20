@@ -74,7 +74,16 @@ class StructuredKnowledgeBase:
             
             loaded_count = 0
             for filename, key in file_mappings.items():
-                file_path = os.path.join(self.data_path, filename)
+                # Sanitize filename to prevent path traversal
+                safe_filename = os.path.basename(filename)
+                file_path = os.path.join(self.data_path, safe_filename)
+                
+                # Validate that file path is within expected directory
+                real_path = os.path.realpath(file_path)
+                real_data_path = os.path.realpath(self.data_path)
+                if not real_path.startswith(real_data_path):
+                    logger.warning(f"❌ Path traversal tentativa bloqueada: {filename}")
+                    continue
                 
                 try:
                     with open(file_path, 'r', encoding='utf-8') as f:

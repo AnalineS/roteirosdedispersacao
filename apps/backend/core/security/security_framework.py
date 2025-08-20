@@ -352,9 +352,14 @@ class SecurityFramework:
         # Determinar classes CSS baseadas no status
         framework_status = "Active" if framework.get('initialized') and framework.get('monitoring_active') else "Inactive"
         
-        secrets_class = "status-good" if secrets.get('status') == 'healthy' else "status-error"
-        middleware_class = "status-good" if middleware else "status-warning"
-        monitoring_class = "status-good" if monitoring else "status-warning"
+# CSS class constants for security status
+        CSS_STATUS_GOOD = "status-good"
+        CSS_STATUS_ERROR = "status-error"
+        CSS_STATUS_WARNING = "status-warning"
+        
+        secrets_class = CSS_STATUS_GOOD if secrets.get('status') == 'healthy' else CSS_STATUS_ERROR
+        middleware_class = CSS_STATUS_GOOD if middleware else CSS_STATUS_WARNING
+        monitoring_class = CSS_STATUS_GOOD if monitoring else CSS_STATUS_WARNING
         
         # Gerar conteúdo das seções
         secrets_content = ""

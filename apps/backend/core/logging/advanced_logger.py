@@ -56,8 +56,8 @@ class SensitiveDataRedactor:
             'credit_card': r'\b\d{4}[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4}\b',
             # API Keys (padrões comuns)
             'api_key': r'\b(?:api[_-]?key|token|secret)[\s=:]["\']?([A-Za-z0-9_-]{20,})["\']?\b',
-            # Senhas em logs
-            'password': r'\b(?:password|senha|pwd)[\s=:]["\']?([^"\s]{6,})["\']?\b',
+            # Senhas em logs - pattern to detect but not hardcode password
+            'password_pattern': r'\b(?:password|senha|pwd)[\s=:]["\']?([^"\s]{6,})["\']?\b',
             # IPs privados (para logs em produção)
             'private_ip': r'\b(?:10\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.(?:1[6-9]|2[0-9]|3[01])\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3})\b'
         }

@@ -124,7 +124,10 @@ class SecretsManager:
     """
     
     def __init__(self, config_dir: Optional[str] = None):
-        self.config_dir = Path(config_dir or os.environ.get('SECRETS_CONFIG_DIR', './config/secrets'))
+        # Sanitize config directory path to prevent path traversal
+        raw_config_dir = config_dir or os.environ.get('SECRETS_CONFIG_DIR', './config/secrets')
+        safe_config_dir = os.path.basename(raw_config_dir.replace('..', '').replace('/', '_').replace('\\', '_'))
+        self.config_dir = Path('./config') / safe_config_dir
         self.config_dir.mkdir(parents=True, exist_ok=True)
         
         self.metadata_file = self.config_dir / 'secrets_metadata.json'
