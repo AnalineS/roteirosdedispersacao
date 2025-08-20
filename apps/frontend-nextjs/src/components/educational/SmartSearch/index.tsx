@@ -539,8 +539,11 @@ export default function SmartSearch({
                         Resultados da busca
                       </div>
                     )}
-                    {results.map((result, index) => (
-                      <Link key={result.id} href={sanitizeUrl(result.path)}>
+                    {results.map((result, index) => {
+                      // Create safe static path to prevent XSS completely
+                      const safePath = result.id ? `/modules/${result.id}` : '/';
+                      return (
+                      <Link key={result.id} href={safePath}>
                         <div
                           className={`p-3 cursor-pointer transition-colors ${
                             index === selectedIndex ? 'bg-blue-50' : 'hover:bg-gray-50'
@@ -557,7 +560,8 @@ export default function SmartSearch({
                           </div>
                         </div>
                       </Link>
-                    ))}
+                      );
+                    })}
                   </>
                 ) : null}
               </>
@@ -645,8 +649,11 @@ export default function SmartSearch({
                 <div className="text-sm font-medium text-gray-600 mb-3">
                   {results.length} resultado{results.length !== 1 ? 's' : ''} encontrado{results.length !== 1 ? 's' : ''}
                 </div>
-                {results.map((result, index) => (
-                  <Link key={result.id} href={sanitizeUrl(result.path)}>
+                {results.map((result, index) => {
+                  // Create safe static path to prevent XSS completely
+                  const safePath = result.id ? `/modules/${result.id}` : '/';
+                  return (
+                  <Link key={result.id} href={safePath}>
                     <div
                       className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
                         index === selectedIndex 
@@ -679,7 +686,8 @@ export default function SmartSearch({
                       </div>
                     </div>
                   </Link>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

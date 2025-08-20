@@ -85,10 +85,22 @@ class StructuredKnowledgeBase:
                     logger.warning(f"❌ Path traversal tentativa bloqueada: {filename}")
                     continue
                 
-                # Use the validated real_path to ensure security
-                validated_path = real_path
+                # Use hardcoded safe file paths to eliminate path traversal completely
+                allowed_files = {
+                    'clinical_taxonomy.json': 'data/structured/clinical_taxonomy.json',
+                    'dispensing_workflow.json': 'data/structured/dispensing_workflow.json',
+                    'dosing_protocols.json': 'data/structured/dosing_protocols.json',
+                    'pharmacovigilance_guidelines.json': 'data/structured/pharmacovigilance_guidelines.json',
+                    'quick_reference_protocols.json': 'data/structured/quick_reference_protocols.json'
+                }
+                
+                if safe_filename not in allowed_files:
+                    logger.warning(f"❌ Arquivo não permitido: {safe_filename}")
+                    continue
+                    
+                static_file_path = allowed_files[safe_filename]
                 try:
-                    with open(validated_path, 'r', encoding='utf-8') as f:
+                    with open(static_file_path, 'r', encoding='utf-8') as f:
                         data = json.load(f)
                         self.knowledge_base[key] = data
                         loaded_count += 1

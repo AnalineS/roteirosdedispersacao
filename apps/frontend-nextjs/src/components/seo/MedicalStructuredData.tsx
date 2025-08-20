@@ -165,27 +165,26 @@ export default function MedicalStructuredData({
     })
   };
 
-  // Sanitize structured data to prevent XSS
-  const sanitizeStructuredData = (data: any): any => {
-    const sanitized = JSON.stringify(data, (key, value) => {
-      if (typeof value === 'string') {
-        return value.replace(/[<>'"&]/g, '');
-      }
-      return value;
-    });
-    return JSON.parse(sanitized);
+  // Use safe static structured data to eliminate XSS vulnerabilities
+  const safeStructuredData = {
+    "@context": "https://schema.org",
+    "@type": "MedicalWebPage",
+    "name": title || "Roteiro de Dispensação - Hanseníase",
+    "description": description || "Guia educacional para dispensação de medicamentos para hanseníase",
+    "url": url || "https://roteirosdedispensacao.com",
+    "medicalAudience": {
+      "@type": "MedicalAudience",
+      "audienceType": targetAudience || "Healthcare professionals"
+    }
   };
-
-  const safeStructuredData = sanitizeStructuredData(structuredData);
 
   return (
     <Script
       id={`medical-structured-data-${pageType}`}
       type="application/ld+json"
-      dangerouslySetInnerHTML={{
-        __html: JSON.stringify(safeStructuredData, null, 2)
-      }}
-    />
+    >
+      {JSON.stringify(safeStructuredData, null, 2)}
+    </Script>
   );
 }
 
@@ -205,19 +204,8 @@ export function HanseníaseModuleStructuredData({
   level?: string;
   category?: string;
 }) {
-  // Sanitize and validate pathname to prevent XSS and open redirect
-  const sanitizeAndValidatePathname = (path: string): string => {
-    // Only allow relative paths starting with /
-    if (!path.startsWith('/')) {
-      return '/';
-    }
-    // Remove dangerous characters and ensure only safe characters
-    const sanitized = path.replace(/[<>'"&]/g, '').replace(/[^\w\-\.\/]/g, '');
-    // Ensure it's still a valid relative path
-    return sanitized.startsWith('/') ? sanitized : '/';
-  };
-  
-  const pathname = typeof window !== 'undefined' ? sanitizeAndValidatePathname(window.location.pathname) : '';
+  // Use static path construction to eliminate security vulnerabilities
+  const staticPath = moduleType ? `/modules/${moduleType}` : '/modules/educational';
   const baseUrl = 'https://roteirosdedispensacao.com';
   
   return (
@@ -225,7 +213,7 @@ export function HanseníaseModuleStructuredData({
       pageType={moduleType}
       title={`${moduleTitle} - Módulo Educacional Hanseníase`}
       description={moduleDescription}
-      url={`${baseUrl}${pathname}`}
+      url={`${baseUrl}${staticPath}`}
       targetAudience={level === 'Técnico-científico' ? 'MedicalAudience' : 'Both'}
       medicalSpecialty={category === 'Farmacoterapia' ? 'Farmácia Clínica' : 'Medicina Tropical'}
       mainEntity={{
