@@ -349,13 +349,15 @@ class SecurityFramework:
         middleware = status.get('middleware', {})
         monitoring = status.get('monitoring', {})
         
-        # Determinar classes CSS baseadas no status
-        framework_status = "Active" if framework.get('initialized') and framework.get('monitoring_active') else "Inactive"
-        
-# CSS class constants for security status
+# CSS class constants for security status  
         CSS_STATUS_GOOD = "status-good"
         CSS_STATUS_ERROR = "status-error"
         CSS_STATUS_WARNING = "status-warning"
+        CSS_FRAMEWORK_ACTIVE = "Active"
+        CSS_FRAMEWORK_INACTIVE = "Inactive"
+        
+        # Determinar classes CSS baseadas no status
+        framework_status = CSS_FRAMEWORK_ACTIVE if framework.get('initialized') and framework.get('monitoring_active') else CSS_FRAMEWORK_INACTIVE
         
         secrets_class = CSS_STATUS_GOOD if secrets.get('status') == 'healthy' else CSS_STATUS_ERROR
         middleware_class = CSS_STATUS_GOOD if middleware else CSS_STATUS_WARNING

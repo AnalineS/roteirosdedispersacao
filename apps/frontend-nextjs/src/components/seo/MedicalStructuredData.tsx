@@ -165,12 +165,25 @@ export default function MedicalStructuredData({
     })
   };
 
+  // Sanitize structured data to prevent XSS
+  const sanitizeStructuredData = (data: any): any => {
+    const sanitized = JSON.stringify(data, (key, value) => {
+      if (typeof value === 'string') {
+        return value.replace(/[<>'"&]/g, '');
+      }
+      return value;
+    });
+    return JSON.parse(sanitized);
+  };
+
+  const safeStructuredData = sanitizeStructuredData(structuredData);
+
   return (
     <Script
       id={`medical-structured-data-${pageType}`}
       type="application/ld+json"
       dangerouslySetInnerHTML={{
-        __html: JSON.stringify(structuredData, null, 2)
+        __html: JSON.stringify(safeStructuredData, null, 2)
       }}
     />
   );
@@ -192,19 +205,27 @@ export function HanseníaseModuleStructuredData({
   level?: string;
   category?: string;
 }) {
-  // Sanitize pathname to prevent XSS
-  const sanitizePathname = (path: string): string => {
-    return path.replace(/[<>'"&]/g, '').replace(/[^\w\-\.\/]/g, '');
+  // Sanitize and validate pathname to prevent XSS and open redirect
+  const sanitizeAndValidatePathname = (path: string): string => {
+    // Only allow relative paths starting with /
+    if (!path.startsWith('/')) {
+      return '/';
+    }
+    // Remove dangerous characters and ensure only safe characters
+    const sanitized = path.replace(/[<>'"&]/g, '').replace(/[^\w\-\.\/]/g, '');
+    // Ensure it's still a valid relative path
+    return sanitized.startsWith('/') ? sanitized : '/';
   };
   
-  const pathname = typeof window !== 'undefined' ? sanitizePathname(window.location.pathname) : '';
+  const pathname = typeof window !== 'undefined' ? sanitizeAndValidatePathname(window.location.pathname) : '';
+  const baseUrl = 'https://roteirosdedispensacao.com';
   
   return (
     <MedicalStructuredData
       pageType={moduleType}
       title={`${moduleTitle} - Módulo Educacional Hanseníase`}
       description={moduleDescription}
-      url={`https://roteirosdedispensacao.com${pathname}`}
+      url={`${baseUrl}${pathname}`}
       targetAudience={level === 'Técnico-científico' ? 'MedicalAudience' : 'Both'}
       medicalSpecialty={category === 'Farmacoterapia' ? 'Farmácia Clínica' : 'Medicina Tropical'}
       mainEntity={{

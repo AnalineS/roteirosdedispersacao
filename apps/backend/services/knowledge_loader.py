@@ -85,8 +85,10 @@ class StructuredKnowledgeBase:
                     logger.warning(f"❌ Path traversal tentativa bloqueada: {filename}")
                     continue
                 
+                # Use the validated real_path to ensure security
+                validated_path = real_path
                 try:
-                    with open(file_path, 'r', encoding='utf-8') as f:
+                    with open(validated_path, 'r', encoding='utf-8') as f:
                         data = json.load(f)
                         self.knowledge_base[key] = data
                         loaded_count += 1

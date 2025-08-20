@@ -397,11 +397,23 @@ export default function SmartSearch({
 
   // Sanitize URL to prevent XSS attacks
   const sanitizeUrl = (url: string): string => {
-    // Only allow relative paths and known safe protocols
-    if (url.startsWith('/') || url.startsWith('#')) {
-      return url.replace(/[<>'"]/g, '');
+    if (!url || typeof url !== 'string') {
+      return '/';
     }
-    // Block any external URLs or javascript: protocols
+    
+    // Block dangerous protocols
+    const lowerUrl = url.toLowerCase();
+    if (lowerUrl.includes('javascript:') || lowerUrl.includes('data:') || lowerUrl.includes('vbscript:')) {
+      return '/';
+    }
+    
+    // Only allow relative paths
+    if (url.startsWith('/') || url.startsWith('#')) {
+      // Remove any dangerous characters
+      return url.replace(/[<>'"]/g, '').replace(/[^\w\-\.\/\#\?=&]/g, '');
+    }
+    
+    // Block any external URLs or unknown protocols
     return '/';
   };
 
