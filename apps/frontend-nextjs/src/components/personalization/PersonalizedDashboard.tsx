@@ -29,13 +29,14 @@ export default function PersonalizedDashboard({ className }: PersonalizedDashboa
   const { flags } = useRemoteConfig();
   const unbColors = getUnbColors();
 
+  // ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL RETURNS
+  const personalizedNavigation = useMemo(() => getPersonalizedNavigation(), [getPersonalizedNavigation]);
+
   // Renderizar apenas se a personalização estiver habilitada
   const isPersonalized = personalization.medicalRole !== 'unknown';
   if (!flags?.personalization_system || !isPersonalized) {
     return null;
   }
-
-  const personalizedNavigation = useMemo(() => getPersonalizedNavigation(), [getPersonalizedNavigation]);
 
   const getRoleIcon = (role: string) => {
     const icons = {

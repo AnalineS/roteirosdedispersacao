@@ -501,7 +501,7 @@ export default function IntelligentSearchSystem({
                 </svg>
               </div>
               <p style={{ margin: 0, fontSize: '0.9rem' }}>
-                Nenhum resultado encontrado para "{query}"
+                Nenhum resultado encontrado para &quot;{query}&quot;
               </p>
               <p style={{ margin: '8px 0 0', fontSize: '0.8rem' }}>
                 Tente termos como: dosagem, sintomas, direitos, tratamento

@@ -526,6 +526,17 @@ export function WelcomeWizard({ onComplete }: {
     }, 300);
   }, [currentStep, onComplete, trackUserInteraction]);
 
+  // Handler para completar o questionário informativo (usuários logados)
+  const handleSurveyComplete = useCallback((surveyData: any) => {
+    trackUserInteraction('user_survey_completed', '', 'informative_survey', surveyData);
+    setIsVisible(false);
+    
+    setTimeout(() => {
+      // Para usuários logados, não passa papel específico
+      onComplete({ id: 'survey_completed', title: 'Questionário Completado' } as any);
+    }, 300);
+  }, [onComplete, trackUserInteraction]);
+
   // Verificar cache por 5 dias
   useEffect(() => {
     const cacheKey = 'welcome_wizard_seen';
@@ -569,17 +580,6 @@ export function WelcomeWizard({ onComplete }: {
   if (!isVisible) {
     return null;
   }
-
-  // Handler para completar o questionário informativo (usuários logados)
-  const handleSurveyComplete = useCallback((surveyData: any) => {
-    trackUserInteraction('user_survey_completed', '', 'informative_survey', surveyData);
-    setIsVisible(false);
-    
-    setTimeout(() => {
-      // Para usuários logados, não passa papel específico
-      onComplete({ id: 'survey_completed', title: 'Questionário Completado' } as any);
-    }, 300);
-  }, [onComplete, trackUserInteraction]);
 
   // Se usuário logado, mostrar questionário informativo
   if (isLoggedIn) {

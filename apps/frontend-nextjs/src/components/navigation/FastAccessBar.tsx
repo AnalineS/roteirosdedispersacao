@@ -53,10 +53,36 @@ export default function FastAccessBar({
   const [lastScrollY, setLastScrollY] = useState(0);
   const [shortcuts, setShortcuts] = useState<EmergencyShortcut[]>([]);
 
-  // Não mostrar na página de chat ou se feature flag desabilitada
-  if (pathname === '/chat' || !shouldShowFastAccessBar()) {
-    return null;
-  }
+  // Smart hide behavior - esconder ao rolar para baixo
+  const handleScroll = useCallback(() => {
+    if (behavior !== 'smart-hide') return;
+
+    const currentScrollY = window.scrollY;
+    const scrollingDown = currentScrollY > lastScrollY && currentScrollY > 100;
+    
+    setIsScrollingDown(scrollingDown);
+    setIsVisible(!scrollingDown);
+    setLastScrollY(currentScrollY);
+  }, [lastScrollY, behavior]);
+
+  // Lidar com clique em atalho
+  const handleShortcutClick = useCallback((shortcut: EmergencyShortcut) => {
+    // Analytics tracking
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', shortcut.analytics?.event || 'fast_access_click', {
+        event_category: shortcut.analytics?.category || 'fast_access_bar',
+        event_label: shortcut.analytics?.label || shortcut.id,
+        custom_dimensions: {
+          urgency: shortcut.urgency,
+          category: shortcut.category,
+          user_role: userProfile?.role || 'unknown',
+          access_method: 'click'
+        }
+      });
+    }
+
+    onShortcutClick?.(shortcut);
+  }, [userProfile?.role, onShortcutClick]);
 
   // Configurar atalhos baseado no perfil do usuário
   useEffect(() => {
@@ -83,18 +109,6 @@ export default function FastAccessBar({
     setShortcuts(selectedShortcuts.slice(0, maxShortcuts));
   }, [userProfile, maxShortcuts]);
 
-  // Smart hide behavior - esconder ao rolar para baixo
-  const handleScroll = useCallback(() => {
-    if (behavior !== 'smart-hide') return;
-
-    const currentScrollY = window.scrollY;
-    const scrollingDown = currentScrollY > lastScrollY && currentScrollY > 100;
-    
-    setIsScrollingDown(scrollingDown);
-    setIsVisible(!scrollingDown);
-    setLastScrollY(currentScrollY);
-  }, [lastScrollY, behavior]);
-
   useEffect(() => {
     if (behavior === 'smart-hide') {
       const throttledScroll = throttle(handleScroll, 100);
@@ -102,6 +116,42 @@ export default function FastAccessBar({
       return () => window.removeEventListener('scroll', throttledScroll);
     }
   }, [handleScroll, behavior]);
+
+  // Lidar com teclas de acesso rápido
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Alt + tecla de acesso
+      if (event.altKey && !event.ctrlKey && !event.shiftKey) {
+        const pressedKey = event.key.toLowerCase();
+        const shortcut = shortcuts.find(s => 
+          ACCESS_KEYS[s.id as keyof typeof ACCESS_KEYS] === pressedKey
+        );
+        
+        if (shortcut) {
+          event.preventDefault();
+          
+          // Analytics para acesso por teclado
+          if (typeof window !== 'undefined' && window.gtag) {
+            window.gtag('event', 'keyboard_shortcut_used', {
+              shortcut_id: shortcut.id,
+              shortcut_key: pressedKey,
+              page_path: pathname
+            });
+          }
+          
+          handleShortcutClick(shortcut);
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [shortcuts, pathname, handleShortcutClick]);
+
+  // Não mostrar na página de chat ou se feature flag desabilitada
+  if (pathname === '/chat' || !shouldShowFastAccessBar()) {
+    return null;
+  }
 
   // Função para throttle do scroll
   function throttle<T extends (...args: any[]) => any>(func: T, delay: number): T {
@@ -124,59 +174,6 @@ export default function FastAccessBar({
     }) as T;
   }
 
-  // Lidar com clique em atalho
-  const handleShortcutClick = (shortcut: EmergencyShortcut) => {
-    // Analytics tracking
-    if (typeof window !== 'undefined' && window.gtag) {
-      window.gtag('event', shortcut.analytics?.event || 'fast_access_click', {
-        event_category: shortcut.analytics?.category || 'fast_access_bar',
-        event_label: shortcut.analytics?.label || shortcut.id,
-        custom_dimensions: {
-          urgency: shortcut.urgency,
-          category: shortcut.category,
-          user_role: userProfile?.role || 'unknown',
-          access_method: 'click'
-        }
-      });
-    }
-
-    onShortcutClick?.(shortcut);
-  };
-
-  // Lidar com teclas de acesso rápido
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      // Alt + tecla de acesso
-      if (event.altKey && !event.ctrlKey && !event.shiftKey) {
-        const pressedKey = event.key.toLowerCase();
-        const shortcut = shortcuts.find(s => 
-          ACCESS_KEYS[s.id as keyof typeof ACCESS_KEYS] === pressedKey
-        );
-        
-        if (shortcut) {
-          event.preventDefault();
-          
-          // Analytics para acesso por teclado
-          if (typeof window !== 'undefined' && window.gtag) {
-            window.gtag('event', 'fast_access_keyboard', {
-              event_category: 'accessibility',
-              event_label: shortcut.id,
-              custom_dimensions: {
-                access_method: 'keyboard',
-                key_combination: `Alt+${pressedKey}`
-              }
-            });
-          }
-          
-          // Navegar para o link
-          window.location.href = shortcut.href;
-        }
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [shortcuts]);
 
   // Obter cor baseada na urgência
   const getUrgencyColor = (urgency: UrgencyLevel) => {

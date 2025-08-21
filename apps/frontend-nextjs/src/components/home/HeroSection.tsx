@@ -90,7 +90,7 @@ export default function HeroSection() {
               </div>
             </div>
             <div className="visual-message">
-              "Posso ajudar com dosagens e protocolos técnicos"
+              &quot;Posso ajudar com dosagens e protocolos técnicos&quot;
             </div>
           </div>
           <div className="visual-card visual-card-secondary">
@@ -102,7 +102,7 @@ export default function HeroSection() {
               </div>
             </div>
             <div className="visual-message">
-              "Explico de forma simples e acolhedora"
+              &quot;Explico de forma simples e acolhedora&quot;
             </div>
           </div>
         </div>
