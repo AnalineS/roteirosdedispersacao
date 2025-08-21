@@ -4,14 +4,14 @@
 # === CORE FLASK ===
 # Updated Flask to latest security-patched version
 Flask==3.1.0
-Flask-CORS==5.0.0
+Flask-CORS==6.0.0
 Werkzeug==3.1.3
 
 # === AI & ML ===
 # Updated to latest secure version
 openai==1.55.3
 # EMBEDDINGS (SPRINT 1.2) - Versões compatíveis Python 3.13
-sentence-transformers==2.7.0
+sentence-transformers==3.1.0
 chromadb==0.5.0
 numpy==1.26.4
 scikit-learn==1.5.0
@@ -19,7 +19,7 @@ scikit-learn==1.5.0
 # === UTILIDADES ===
 python-dotenv==1.0.1
 # Updated requests to latest patched version beyond CVE-2023-32681
-requests==2.32.3
+requests==2.32.4
 pydantic==2.10.3
 
 # === PROCESSAMENTO TEXTO ===
@@ -34,6 +34,7 @@ certifi==2024.8.30
 
 # === COMPATIBILIDADE ===
 typing-extensions==4.12.2
+setuptools==78.1.1
 
 # === PRODUÇÃO ===
 # Updated gunicorn to fix CVE-2024-6827 (HTTP request smuggling vulnerability)
@@ -53,7 +54,7 @@ google-cloud-logging==3.10.0
 opencv-python==4.10.0.84
 Pillow==10.4.0
 pytesseract==0.3.10
-easyocr==1.7.1
+easyocr==1.7.1  # NOTE: Contains torch@2.8.0 with known vulnerabilities pending upstream fix
 
 # Image processing utilities
 scipy==1.14.0  # Scientific computing for image analysis
@@ -75,6 +76,6 @@ pytest-mock==3.12.0
 
 # === ENHANCED SECURITY ===
 # Updated to latest secure versions - cryptography 42.0.4+ fixes CVE-2024-26130
-cryptography==43.0.3
+cryptography==44.0.1
 PyJWT==2.10.1
 markupsafe==3.0.2

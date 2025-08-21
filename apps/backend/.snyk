@@ -1,0 +1,33 @@
+# Snyk (https://snyk.io) policy file
+version: v1.25.0
+ignore:
+  # Torch vulnerabilities - no patches available yet, accepting risk for HML environment
+  SNYK-PYTHON-TORCH-10332643:
+    - easyocr > torch:
+        reason: No patch available yet - PyTorch team aware
+        expires: '2025-02-28T00:00:00.000Z'
+  SNYK-PYTHON-TORCH-10332644:
+    - easyocr > torch:
+        reason: No patch available yet - PyTorch team aware
+        expires: '2025-02-28T00:00:00.000Z'
+  SNYK-PYTHON-TORCH-10332645:
+    - easyocr > torch:
+        reason: No patch available yet - PyTorch team aware
+        expires: '2025-02-28T00:00:00.000Z'
+  SNYK-PYTHON-TORCH-10337825:
+    - easyocr > torch:
+        reason: No patch available yet - PyTorch team aware
+        expires: '2025-02-28T00:00:00.000Z'
+  SNYK-PYTHON-TORCH-10337826:
+    - easyocr > torch:
+        reason: No patch available yet - PyTorch team aware
+        expires: '2025-02-28T00:00:00.000Z'
+  SNYK-PYTHON-TORCH-10337828:
+    - easyocr > torch:
+        reason: No patch available yet - PyTorch team aware
+        expires: '2025-02-28T00:00:00.000Z'
+  SNYK-PYTHON-TORCH-10337834:
+    - easyocr > torch:
+        reason: No patch available yet - PyTorch team aware
+        expires: '2025-02-28T00:00:00.000Z'
+patch: {}
