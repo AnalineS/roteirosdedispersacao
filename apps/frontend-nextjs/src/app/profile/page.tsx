@@ -22,7 +22,7 @@ import type { UserFocus } from '@/lib/firebase/types';
 interface ProfileFormData {
   displayName: string;
   email: string;
-  profileType: 'professional' | 'student' | 'patient' | 'caregiver';
+  profileType: 'admin' | 'professional' | 'student' | 'patient' | 'caregiver';
   focus: 'general' | 'advanced' | 'research';
   preferences: {
     language: 'simple' | 'technical';

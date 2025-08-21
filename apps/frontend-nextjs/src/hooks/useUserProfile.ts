@@ -7,7 +7,7 @@ import { FirestoreUserProfile } from '@/lib/firebase/types';
 import { FEATURES } from '@/lib/firebase/config';
 
 export interface UserProfile {
-  type: 'professional' | 'student' | 'patient' | 'caregiver';
+  type: 'admin' | 'professional' | 'student' | 'patient' | 'caregiver';
   focus: 'technical' | 'practical' | 'effects' | 'general';
   confidence: number;
   explanation: string;
@@ -424,6 +424,7 @@ export function useProfileDetection() {
 export const profileUtils = {
   getProfileTypeLabel: (type: UserProfile['type']): string => {
     const labels = {
+      admin: 'Administrador',
       professional: 'Profissional de Saúde',
       student: 'Estudante',
       patient: 'Paciente/Familiar',

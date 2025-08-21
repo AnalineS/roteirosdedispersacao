@@ -40,12 +40,20 @@ export function generateSecureId(prefix: string = '', length: number = 16): stri
   // Fallback seguro: usar timestamp + contador para determinismo
   // Não é criptograficamente seguro, mas é melhor que Math.random()
   const timestamp = Date.now().toString(36);
-  const counter = (generateSecureId.counter = (generateSecureId.counter || 0) + 1);
-  return `${prefix}${timestamp}_${counter.toString(36).padStart(4, '0')}`;
+  
+  // Use module-level counter to avoid TypeScript issues
+  if (!globalThis.__secureIdCounter) {
+    globalThis.__secureIdCounter = 0;
+  }
+  globalThis.__secureIdCounter += 1;
+  
+  return `${prefix}${timestamp}_${globalThis.__secureIdCounter.toString(36).padStart(4, '0')}`;
 }
 
-// Counter para fallback
-(generateSecureId as any).counter = 0;
+// Declare global type for counter
+declare global {
+  var __secureIdCounter: number | undefined;
+}
 
 /**
  * Gera token de sessão seguro

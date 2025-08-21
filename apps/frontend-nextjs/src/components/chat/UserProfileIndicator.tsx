@@ -55,6 +55,7 @@ export default function UserProfileIndicator({
   }
 
   const typeIcon = {
+    admin: '🛡️',
     professional: '👨‍⚕️',
     student: '📚',
     patient: '🤗',

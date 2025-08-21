@@ -235,7 +235,7 @@ export function HanseníaseModuleStructuredData({
         {
           position: 3,
           name: moduleTitle,
-          item: `https://roteirosdedispensacao.com${pathname}`
+          item: `${baseUrl}${staticPath}`
         }
       ]}
     />

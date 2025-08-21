@@ -770,7 +770,7 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
                 padding: '8px 12px',
                 borderRadius: '8px',
                 backgroundColor: pathname === '/admin' ? unbColors.primary + '20' : 'transparent',
-                color: pathname === '/admin' ? unbColors.primary : unbColors.text.primary,
+                color: pathname === '/admin' ? unbColors.primary : unbColors.neutral,
                 textDecoration: 'none',
                 transition: 'all 0.2s ease',
                 fontSize: '0.9rem',

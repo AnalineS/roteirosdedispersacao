@@ -270,9 +270,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // Criar perfil inicial se for novo usuário
       if (userCredential.user) {
         await createSocialUserProfile(userCredential.user, credentials);
-      } else if (userCredential.user) {
-        // Carregar perfil existente
-        await loadUserProfile(userCredential.user.uid);
       }
 
       return { success: true };
@@ -546,7 +543,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           updatedAt: new Date() as any
         };
 
-        const result = await UserProfileRepository.updateProfile(user.uid, updatedProfile);
+        const result = await UserProfileRepository.updateProfileFields(user.uid, updatedProfile);
         if (result.success) {
           setProfile(updatedProfile);
         } else {
@@ -587,8 +584,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // Limpar estado local
       setUser(null);
       setProfile(null);
-      setIsAuth(false);
-      setIsAnon(false);
+      // isAuthenticated and isAnonymous are derived from user state, no need to set them
 
       return { success: true };
     } catch (error: any) {
