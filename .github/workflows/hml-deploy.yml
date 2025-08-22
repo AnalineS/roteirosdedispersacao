@@ -187,7 +187,7 @@ jobs:
             --max-instances=10 \
             --min-instances=0 \
             --timeout=300 \
-            --set-env-vars="ENVIRONMENT=homologacao,FLASK_ENV=production,DEBUG=false,PORT=8080" \
+            --set-env-vars="ENVIRONMENT=homologacao,FLASK_ENV=production,DEBUG=false" \
             --tag=hml-$(echo $GITHUB_SHA | cut -c1-7) \
             --quiet
           
