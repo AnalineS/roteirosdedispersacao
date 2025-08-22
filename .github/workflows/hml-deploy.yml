@@ -174,16 +174,7 @@ jobs:
       - name: 🚀 Deploy to Cloud Run
         id: deploy
         run: |
-          # Carregar variáveis de ambiente
-          ENV_VARS=""
-          while IFS='=' read -r key value || [ -n "$key" ]; do
-            if [[ ! $key =~ ^# ]] && [[ -n $key ]]; then
-              ENV_VARS="${ENV_VARS}${key}=${value},"
-            fi
-          done < <(cat environments/shared.env environments/hml.env)
-          ENV_VARS=${ENV_VARS%,}  # Remove trailing comma
-          
-          # Deploy no Cloud Run
+          # Deploy no Cloud Run com variáveis essenciais
           gcloud run deploy $SERVICE_NAME \
             --image=gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA \
             --platform=managed \
@@ -196,7 +187,7 @@ jobs:
             --max-instances=10 \
             --min-instances=0 \
             --timeout=300 \
-            --set-env-vars="$ENV_VARS" \
+            --set-env-vars="ENVIRONMENT=homologacao,FLASK_ENV=production,DEBUG=false,PORT=8080" \
             --tag=hml-$(echo $GITHUB_SHA | cut -c1-7) \
             --quiet
           
