@@ -6,6 +6,10 @@
 .env
 .env.*
 !.env.example
+!.env.hml
+!.env.template
+!apps/frontend-nextjs/.env.hml
+!environments/*.env
 .env.local
 .env.development
 .env.test
