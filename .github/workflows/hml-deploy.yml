@@ -168,8 +168,6 @@ jobs:
 
       - name: 📤 Push Docker Image
         run: |
-          # Enable Container Registry API first
-          gcloud services enable containerregistry.googleapis.com
           docker push gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA
           docker push gcr.io/$PROJECT_ID/$SERVICE_NAME:latest
 
