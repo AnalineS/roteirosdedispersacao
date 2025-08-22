@@ -147,6 +147,9 @@ jobs:
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
+          # Fallback para Workload Identity se chave JSON falhar
+          # workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          # service_account: github-actions-hml@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com
 
       - name: 🛠️ Setup Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
