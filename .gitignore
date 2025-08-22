@@ -18,6 +18,10 @@
 *.pem
 *.p12
 *.pfx
+key.json
+gcp-key*.json
+gcp-key*.txt
+*-oneline.txt
 *.crt
 *.cer
 *.der

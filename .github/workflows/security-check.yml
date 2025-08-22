@@ -1,0 +1,311 @@
+name: 🔒 Security Vulnerability Check
+
+on:
+  schedule:
+    # Runs every Monday at 9:00 AM UTC (6:00 AM Brasília)
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+    inputs:
+      check_patches:
+        description: 'Check for new patches'
+        required: false
+        default: 'true'
+      notify:
+        description: 'Send notifications'
+        required: false
+        default: 'true'
+
+env:
+  PYTHON_VERSION: '3.11'
+  NODE_VERSION: '18'
+
+jobs:
+  # =====================================
+  # Check for Security Updates
+  # =====================================
+  check-patches:
+    name: 🔍 Check for Security Patches
+    runs-on: ubuntu-latest
+    outputs:
+      has_updates: ${{ steps.check.outputs.has_updates }}
+      torch_patch_available: ${{ steps.torch.outputs.patch_available }}
+      
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: 🔍 Check PyTorch Updates
+        id: torch
+        run: |
+          # Check if PyTorch has released patches for known vulnerabilities
+          pip install --upgrade pip
+          
+          # Get latest torch version
+          LATEST_TORCH=$(pip index versions torch | grep -oP '(?<=Available versions: )[0-9.]+' | head -1)
+          CURRENT_TORCH="2.8.0"
+          
+          echo "Latest PyTorch version: $LATEST_TORCH"
+          echo "Current version in use: $CURRENT_TORCH"
+          
+          if [ "$LATEST_TORCH" != "$CURRENT_TORCH" ]; then
+            echo "patch_available=true" >> $GITHUB_OUTPUT
+            echo "latest_version=$LATEST_TORCH" >> $GITHUB_OUTPUT
+            echo "⚠️ New PyTorch version available: $LATEST_TORCH"
+          else
+            echo "patch_available=false" >> $GITHUB_OUTPUT
+            echo "✅ PyTorch is up to date"
+          fi
+
+      - name: 🛡️ Run Snyk Test
+        id: snyk
+        continue-on-error: true
+        run: |
+          # Install Snyk
+          npm install -g snyk
+          
+          # Test backend
+          cd apps/backend
+          snyk test --severity-threshold=medium --json > ../../snyk-backend-report.json || true
+          
+          # Test frontend
+          cd ../frontend-nextjs
+          snyk test --severity-threshold=medium --json > ../../snyk-frontend-report.json || true
+          
+          cd ../..
+          
+          # Check for new vulnerabilities
+          if [ -f snyk-backend-report.json ]; then
+            NEW_VULNS=$(jq '.vulnerabilities | length' snyk-backend-report.json)
+            echo "Found $NEW_VULNS vulnerabilities in backend"
+          fi
+          
+          if [ -f snyk-frontend-report.json ]; then
+            NEW_VULNS_FRONT=$(jq '.vulnerabilities | length' snyk-frontend-report.json)
+            echo "Found $NEW_VULNS_FRONT vulnerabilities in frontend"
+          fi
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+      - name: 📊 Generate Security Report
+        id: report
+        run: |
+          cat > security-report.md << 'EOF'
+          # 🔒 Weekly Security Check Report
+          
+          **Date**: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          **Branch**: ${{ github.ref_name }}
+          
+          ## PyTorch Status
+          EOF
+          
+          if [ "${{ steps.torch.outputs.patch_available }}" == "true" ]; then
+            echo "⚠️ **UPDATE AVAILABLE**: PyTorch ${{ steps.torch.outputs.latest_version }}" >> security-report.md
+            echo "Action Required: Review and test PyTorch update" >> security-report.md
+          else
+            echo "✅ No PyTorch updates available" >> security-report.md
+          fi
+          
+          echo "" >> security-report.md
+          echo "## Vulnerability Summary" >> security-report.md
+          
+          # Parse Snyk results
+          if [ -f snyk-backend-report.json ]; then
+            echo "### Backend" >> security-report.md
+            jq -r '.vulnerabilities[] | "- \(.severity): \(.title) in \(.packageName)@\(.version)"' snyk-backend-report.json >> security-report.md || echo "No new vulnerabilities" >> security-report.md
+          fi
+          
+          if [ -f snyk-frontend-report.json ]; then
+            echo "### Frontend" >> security-report.md
+            jq -r '.vulnerabilities[] | "- \(.severity): \(.title) in \(.packageName)@\(.version)"' snyk-frontend-report.json >> security-report.md || echo "No new vulnerabilities" >> security-report.md
+          fi
+          
+          # Check if updates are needed
+          if [ "${{ steps.torch.outputs.patch_available }}" == "true" ] || [ "$NEW_VULNS" -gt "7" ] || [ "$NEW_VULNS_FRONT" -gt "0" ]; then
+            echo "has_updates=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_updates=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: 📤 Upload Security Reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: security-reports
+          path: |
+            security-report.md
+            snyk-backend-report.json
+            snyk-frontend-report.json
+
+  # =====================================
+  # Update Documentation
+  # =====================================
+  update-docs:
+    name: 📝 Update Security Documentation
+    runs-on: ubuntu-latest
+    needs: check-patches
+    if: needs.check-patches.outputs.has_updates == 'true'
+    
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 📅 Update SECURITY_VULNERABILITIES.md
+        run: |
+          # Update last check date
+          sed -i "s/\*\*Última Atualização\*\*: .*/\*\*Última Atualização\*\*: $(date +%Y-%m-%d)/" SECURITY_VULNERABILITIES.md
+          
+          # Add torch update note if available
+          if [ "${{ needs.check-patches.outputs.torch_patch_available }}" == "true" ]; then
+            echo "" >> SECURITY_VULNERABILITIES.md
+            echo "## 🚨 ALERTA: Atualização Disponível" >> SECURITY_VULNERABILITIES.md
+            echo "" >> SECURITY_VULNERABILITIES.md
+            echo "- PyTorch tem nova versão disponível com possíveis correções de segurança" >> SECURITY_VULNERABILITIES.md
+            echo "- Verificar changelog e testar atualização" >> SECURITY_VULNERABILITIES.md
+            echo "- Data do alerta: $(date +%Y-%m-%d)" >> SECURITY_VULNERABILITIES.md
+          fi
+
+      - name: 🔄 Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore: atualização semanal de segurança"
+          title: "🔒 [Security] Atualização Semanal de Vulnerabilidades"
+          body: |
+            ## 🔒 Verificação Semanal de Segurança
+            
+            Este PR foi criado automaticamente pelo workflow de segurança.
+            
+            ### Mudanças:
+            - Atualização da data de última verificação
+            - Novos patches disponíveis identificados
+            - Relatório de vulnerabilidades atualizado
+            
+            ### Ações Requeridas:
+            1. Revisar mudanças no SECURITY_VULNERABILITIES.md
+            2. Testar atualizações disponíveis
+            3. Aprovar e fazer merge se apropriado
+            
+            ---
+            *Gerado automaticamente em $(date -u)*
+          branch: security-updates-${{ github.run_number }}
+          labels: security, automated, dependencies
+
+  # =====================================
+  # Send Notifications
+  # =====================================
+  notify:
+    name: 📢 Send Notifications
+    runs-on: ubuntu-latest
+    needs: [check-patches, update-docs]
+    if: needs.check-patches.outputs.has_updates == 'true' || github.event.inputs.notify == 'true'
+    
+    steps:
+      - name: 📥 Download Reports
+        uses: actions/download-artifact@v3
+        with:
+          name: security-reports
+
+      - name: 📧 Send Email Notification
+        if: needs.check-patches.outputs.has_updates == 'true'
+        run: |
+          echo "📧 Email notification would be sent here"
+          echo "Subject: [SECURITY] Atualizações de Segurança Disponíveis"
+          echo "To: security@roteirosdedispensacao.com"
+          
+          # In production, integrate with email service like SendGrid
+          # curl -X POST https://api.sendgrid.com/v3/mail/send ...
+
+      - name: 📱 Send Telegram Notification
+        if: needs.check-patches.outputs.has_updates == 'true'
+        run: |
+          if [ "${{ needs.check-patches.outputs.torch_patch_available }}" == "true" ]; then
+            MESSAGE="🔒 *Alerta de Segurança*
+            
+⚠️ *PyTorch Update Disponível*
+Nova versão pode conter correções de segurança.
+
+📅 Data: $(date +%Y-%m-%d)
+🔗 PR Criado: Verificar GitHub
+
+*Ação Requerida:* Revisar e testar atualização"
+          else
+            MESSAGE="🔒 *Verificação Semanal de Segurança*
+            
+✅ Verificação completa
+📊 Novos problemas detectados
+
+📅 Data: $(date +%Y-%m-%d)
+🔗 Detalhes: Verificar GitHub
+
+*Ação:* Revisar relatório de segurança"
+          fi
+          
+          # Send to Telegram (if token is configured)
+          if [ -n "${{ secrets.TELEGRAM_BOT_TOKEN }}" ]; then
+            curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+              -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+              -d text="$MESSAGE" \
+              -d parse_mode="Markdown"
+          else
+            echo "Telegram notification skipped (no token configured)"
+          fi
+
+      - name: 💬 Comment on Open PRs
+        run: |
+          # Add comment to any open security-related PRs
+          echo "Would add comments to open security PRs about new findings"
+
+  # =====================================
+  # Summary
+  # =====================================
+  summary:
+    name: 📊 Generate Summary
+    runs-on: ubuntu-latest
+    needs: [check-patches, update-docs, notify]
+    if: always()
+    
+    steps:
+      - name: 📝 Create Summary
+        run: |
+          echo "# 🔒 Security Check Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Run Date**: $(date -u)" >> $GITHUB_STEP_SUMMARY
+          echo "**Run Number**: ${{ github.run_number }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ needs.check-patches.outputs.has_updates }}" == "true" ]; then
+            echo "## ⚠️ Updates Available" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Security updates have been detected. Please review:" >> $GITHUB_STEP_SUMMARY
+            echo "- Check the created Pull Request" >> $GITHUB_STEP_SUMMARY
+            echo "- Review security reports in artifacts" >> $GITHUB_STEP_SUMMARY
+            echo "- Test and deploy updates as appropriate" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "## ✅ No Updates Required" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "All known vulnerabilities are already addressed or accepted." >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Next Steps" >> $GITHUB_STEP_SUMMARY
+          echo "1. Review SECURITY_VULNERABILITIES.md" >> $GITHUB_STEP_SUMMARY
+          echo "2. Check Snyk dashboard for details" >> $GITHUB_STEP_SUMMARY
+          echo "3. Schedule patch testing if needed" >> $GITHUB_STEP_SUMMARY
+
+# =====================================
+# Workflow Configuration
+# =====================================
+concurrency:
+  group: security-check-${{ github.ref }}
+  cancel-in-progress: false
