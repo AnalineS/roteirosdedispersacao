@@ -159,25 +159,19 @@ jobs:
           gcloud auth configure-docker --quiet
           gcloud auth configure-docker us-central1-docker.pkg.dev --quiet
 
-      - name: 📦 Create Artifact Registry Repository
-        run: |
-          # Create repository if it doesn't exist
-          gcloud artifacts repositories create docker-repo \
-            --repository-format=docker \
-            --location=us-central1 \
-            --description="Docker repository for HML deployments" || echo "Repository already exists"
-
       - name: 🏗️ Build Docker Image
         run: |
           cd apps/backend
-          # Use Artifact Registry instead of GCR
-          docker build -f Dockerfile.hml -t us-central1-docker.pkg.dev/$PROJECT_ID/docker-repo/$SERVICE_NAME:$GITHUB_SHA .
-          docker tag us-central1-docker.pkg.dev/$PROJECT_ID/docker-repo/$SERVICE_NAME:$GITHUB_SHA us-central1-docker.pkg.dev/$PROJECT_ID/docker-repo/$SERVICE_NAME:latest
+          # Use simpler GCR approach with proper permissions
+          docker build -f Dockerfile.hml -t gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA .
+          docker tag gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA gcr.io/$PROJECT_ID/$SERVICE_NAME:latest
 
       - name: 📤 Push Docker Image
         run: |
-          docker push us-central1-docker.pkg.dev/$PROJECT_ID/docker-repo/$SERVICE_NAME:$GITHUB_SHA
-          docker push us-central1-docker.pkg.dev/$PROJECT_ID/docker-repo/$SERVICE_NAME:latest
+          # Enable Container Registry API first
+          gcloud services enable containerregistry.googleapis.com
+          docker push gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA
+          docker push gcr.io/$PROJECT_ID/$SERVICE_NAME:latest
 
       - name: 🚀 Deploy to Cloud Run
         id: deploy
@@ -193,7 +187,7 @@ jobs:
           
           # Deploy no Cloud Run
           gcloud run deploy $SERVICE_NAME \
-            --image=us-central1-docker.pkg.dev/$PROJECT_ID/docker-repo/$SERVICE_NAME:$GITHUB_SHA \
+            --image=gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA \
             --platform=managed \
             --region=$REGION \
             --allow-unauthenticated \
