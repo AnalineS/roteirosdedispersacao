@@ -3,7 +3,6 @@
     {
       "target": "hml",
       "public": "out",
-      "site": "hml-roteiros-de-dispensacao",
       "ignore": [
         "firebase.json",
         "**/.*",
