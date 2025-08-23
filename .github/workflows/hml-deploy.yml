@@ -256,8 +256,23 @@ jobs:
         run: |
           cd apps/frontend-nextjs
           
-          # Configurar target e fazer deploy em sequência
-          firebase target:apply hosting hml $FRONTEND_SITE --project $PROJECT_ID --token "$FIREBASE_TOKEN" && \
+          # Criar arquivo de configuração Firebase
+          cat > .firebaserc << EOF
+          {
+            "projects": {
+              "default": "$PROJECT_ID"
+            },
+            "targets": {
+              "$PROJECT_ID": {
+                "hosting": {
+                  "hml": ["$FRONTEND_SITE"]
+                }
+              }
+            }
+          }
+          EOF
+          
+          # Deploy usando configuração local
           firebase deploy \
             --only hosting:hml \
             --config firebase.hml.json \
