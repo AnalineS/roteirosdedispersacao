@@ -256,10 +256,8 @@ jobs:
         run: |
           cd apps/frontend-nextjs
           
-          # Configurar target
-          firebase target:apply hosting hml $FRONTEND_SITE --project $PROJECT_ID --token "$FIREBASE_TOKEN"
-          
-          # Deploy usando configuração HML com projeto especificado
+          # Configurar target e fazer deploy em sequência
+          firebase target:apply hosting hml $FRONTEND_SITE --project $PROJECT_ID --token "$FIREBASE_TOKEN" && \
           firebase deploy \
             --only hosting:hml \
             --config firebase.hml.json \
