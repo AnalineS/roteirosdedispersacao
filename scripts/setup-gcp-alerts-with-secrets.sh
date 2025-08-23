@@ -38,13 +38,17 @@ gcloud config set project $PROJECT_ID
 echo ""
 echo "1/6 - Criando canal de notificação por email..."
 
+# Instalar componente alpha se necessário (modo quiet)
+gcloud components install alpha --quiet || echo "Alpha component already installed"
+
 # Canal de Email (padrão)
 EMAIL_CHANNEL_NAME="Email-Roteiro-Dispensacao-$(date +%s)"
 gcloud alpha monitoring channels create \
     --display-name="$EMAIL_CHANNEL_NAME" \
     --type=email \
     --channel-labels=email_address=admin@roteirosdedispensacao.com \
-    --description="Canal principal para alertas críticos do sistema"
+    --description="Canal principal para alertas críticos do sistema" \
+    --quiet
 
 EMAIL_CHANNEL_ID=$(gcloud alpha monitoring channels list --filter="displayName:$EMAIL_CHANNEL_NAME" --format="value(name)" | head -1)
 echo "✅ Canal de email criado: $EMAIL_CHANNEL_ID"
@@ -68,7 +72,8 @@ gcloud alpha monitoring channels create \
     --display-name="$WEBHOOK_CHANNEL_NAME" \
     --type=webhook_tokenauth \
     --channel-labels=url="$TELEGRAM_WEBHOOK_URL" \
-    --description="Canal Telegram para alertas do sistema via webhook"
+    --description="Canal Telegram para alertas do sistema via webhook" \
+    --quiet
 
 TELEGRAM_CHANNEL_ID=$(gcloud alpha monitoring channels list --filter="displayName:$WEBHOOK_CHANNEL_NAME" --format="value(name)" | head -1)
 echo "✅ Canal Telegram criado: $TELEGRAM_CHANNEL_ID"
@@ -106,7 +111,7 @@ alertStrategy:
   autoClose: 86400s
 EOF
 
-gcloud alpha monitoring policies create --policy-from-file=/tmp/alert-high-latency.yaml
+gcloud alpha monitoring policies create --policy-from-file=/tmp/alert-high-latency.yaml --quiet
 
 echo ""
 echo "4/6 - Criando alerta de alta taxa de erro..."
@@ -136,7 +141,7 @@ alertStrategy:
   autoClose: 7200s
 EOF
 
-gcloud alpha monitoring policies create --policy-from-file=/tmp/alert-error-rate.yaml
+gcloud alpha monitoring policies create --policy-from-file=/tmp/alert-error-rate.yaml --quiet
 
 echo ""
 echo "5/6 - Criando alerta de indisponibilidade..."
@@ -164,7 +169,7 @@ alertStrategy:
   autoClose: 3600s
 EOF
 
-gcloud alpha monitoring policies create --policy-from-file=/tmp/alert-service-down.yaml
+gcloud alpha monitoring policies create --policy-from-file=/tmp/alert-service-down.yaml --quiet
 
 echo ""
 echo "6/6 - Criando alerta de uso de recursos..."
@@ -194,7 +199,7 @@ alertStrategy:
   autoClose: 7200s
 EOF
 
-gcloud alpha monitoring policies create --policy-from-file=/tmp/alert-memory-usage.yaml
+gcloud alpha monitoring policies create --policy-from-file=/tmp/alert-memory-usage.yaml --quiet
 
 # Limpar arquivos temporários
 rm -f /tmp/alert-*.yaml
