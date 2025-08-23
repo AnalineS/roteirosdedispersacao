@@ -256,15 +256,12 @@ jobs:
         run: |
           cd apps/frontend-nextjs
           
-          # Autenticar Firebase
-          echo "${{ secrets.FIREBASE_TOKEN }}" | firebase login:ci
-          
-          # Configurar projeto e target
-          firebase use $PROJECT_ID
-          firebase target:apply hosting hml $FRONTEND_SITE
+          # Configurar projeto e target (token passado via env var)
+          firebase use $PROJECT_ID --token "$FIREBASE_TOKEN"
+          firebase target:apply hosting hml $FRONTEND_SITE --token "$FIREBASE_TOKEN"
           
           # Deploy usando configuração HML
-          firebase deploy --only hosting:hml --config firebase.hml.json --force
+          firebase deploy --only hosting:hml --config firebase.hml.json --token "$FIREBASE_TOKEN" --non-interactive
           
           # Obter URL
           FRONTEND_URL="https://${FRONTEND_SITE}.web.app"
