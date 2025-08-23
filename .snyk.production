@@ -1,0 +1,270 @@
+# Snyk Configuration for Production Environment
+# ============================================
+
+# Language settings
+language-settings:
+  javascript:
+    includeDevDependencies: false  # Strict for production
+    packageManager: npm
+  python:
+    includeDevDependencies: false  # Strict for production
+
+# Exclude specific paths from scans
+exclude:
+  global:
+    - node_modules/**
+    - .git/**
+    - out/**
+    - dist/**
+    - build/**
+    - coverage/**
+    - .next/**
+    - __pycache__/**
+    - "*.pyc"
+    - "*.pyo"
+    - .pytest_cache/**
+    - .tox/**
+    - .coverage
+    - htmlcov/**
+    - docs/**
+    - tests/**/__snapshots__/**
+    - cypress/**
+    - "*.test.js"
+    - "*.test.ts"
+    - "*.spec.js"
+    - "*.spec.ts"
+    - jest.config.js
+    - cypress.config.js
+
+# Patches for known vulnerabilities
+patches: {}
+
+# Vulnerability settings
+version: v1.0.0
+
+# Monitor settings
+monitor: true
+
+# Fail build on specific severity levels (STRICT for Production)
+failOnIssues:
+  highSeverity: true
+  mediumSeverity: true
+  lowSeverity: false
+
+# Organization settings
+org: roteiros-de-dispensacao-prod
+
+# Project settings for different components
+projects:
+  frontend:
+    path: apps/frontend-nextjs
+    packageManager: npm
+    monitor: true
+    test: true
+    prMonitor: true
+    
+  backend:
+    path: apps/backend
+    packageManager: pip
+    monitor: true
+    test: true
+    prMonitor: true
+
+# PRODUCTION SECURITY RULES - ZERO TOLERANCE
+rules: []  # No exceptions in production
+
+# IDE integration settings
+ideIntegration:
+  vscode:
+    enabled: true
+    autoScan: true
+    showVulnerabilities: true
+    showLicenseIssues: true
+
+# Reporting configuration
+reporting:
+  format: sarif
+  outputFile: snyk-production-report.json
+  sarif: true
+  sarifOutputFile: snyk-production-results.sarif
+
+# License compliance (STRICT)
+license:
+  # Allow only well-vetted licenses
+  allow:
+    - MIT
+    - Apache-2.0
+    - BSD-2-Clause
+    - BSD-3-Clause
+    - ISC
+  
+  # Disallow ALL GPL and copyleft licenses in production
+  disallow:
+    - GPL-2.0
+    - GPL-3.0
+    - LGPL-3.0
+    - AGPL-3.0
+    - CPAL-1.0
+    - OSL-3.0
+    - MPL-2.0
+
+# Container scanning (for Docker images)
+container:
+  exclude: []  # No exceptions for containers in production
+
+# Infrastructure as Code scanning
+iac:
+  rules: []  # No exceptions for IaC in production
+
+# Code quality thresholds for PRODUCTION (STRICT)
+quality:
+  code:
+    criticalSeverity: 0     # ZERO critical issues allowed
+    highSeverity: 0         # ZERO high severity issues allowed
+    mediumSeverity: 5       # Max 5 medium severity issues
+    lowSeverity: 15         # Max 15 low severity issues
+  
+  dependencies:
+    criticalSeverity: 0     # ZERO critical vulnerabilities
+    highSeverity: 0         # ZERO high severity vulnerabilities
+    mediumSeverity: 3       # Max 3 medium severity vulnerabilities
+    lowSeverity: 10         # Max 10 low severity vulnerabilities
+
+# Integration with CI/CD (STRICT)
+cicd:
+  # Break build on any critical, high, or medium severity issues
+  breakBuild:
+    critical: true
+    high: true
+    medium: true
+    low: false
+  
+  # Generate comprehensive reports
+  generateReports: true
+  
+  # Upload results to Snyk platform
+  monitor: true
+  
+  # Set custom project tags
+  projectTags:
+    - environment:production
+    - team:devops
+    - project:roteiro-dispensacao
+    - criticality:high
+    - compliance:required
+
+# NO custom severity overrides in production
+severityOverrides: []
+
+# Notification settings (STRICT)
+notifications:
+  # Send alerts for ANY new vulnerabilities
+  newVulnerabilities: true
+  remediationUpdates: true
+  weeklyReport: true
+  dailyReport: true
+  
+  # Integration with external systems
+  webhook:
+    enabled: true
+    url: "${SNYK_WEBHOOK_URL}"
+    events:
+      - new-vulnerability
+      - resolved-vulnerability
+      - new-license-issue
+      - policy-violation
+
+# Advanced scanning options (COMPREHENSIVE)
+advanced:
+  # Deep dependency analysis
+  deepAnalysis: true
+  
+  # License compliance scanning
+  licenseCompliance: true
+  
+  # Code quality analysis
+  codeQuality: true
+  
+  # Container image scanning
+  containerScanning: true
+  
+  # Infrastructure as Code scanning
+  iacScanning: true
+  
+  # Custom rules file
+  customRulesFile: .snyk-production-rules.yml
+
+# Environment-specific settings
+environments:
+  production:
+    # ZERO TOLERANCE for production
+    allowHighRisk: false
+    breakBuildOnCritical: true
+    breakBuildOnHigh: true
+    breakBuildOnMedium: true
+    monitorContinuously: true
+    generateDetailedReports: true
+    alertOnNewVulnerabilities: true
+    
+    # Compliance requirements
+    requireCompliance: true
+    generateComplianceReport: true
+    
+    # Performance monitoring
+    performanceMonitoring: true
+    
+    # Automated remediation
+    autoRemediation: false  # Manual approval required for production
+
+# Production monitoring settings
+monitoring:
+  # Continuous monitoring
+  interval: "24h"
+  
+  # Alert thresholds
+  alertThresholds:
+    critical: 0
+    high: 0
+    medium: 3
+    low: 10
+    
+  # Performance impact monitoring
+  performanceImpact: true
+  
+  # Dependency update monitoring
+  dependencyUpdates: true
+  
+  # License compliance monitoring
+  licenseCompliance: true
+
+# Compliance and governance
+compliance:
+  # Regulatory compliance
+  frameworks:
+    - OWASP-ASVS
+    - NIST-CSF
+    - ISO-27001
+    
+  # Audit trail
+  auditTrail: true
+  
+  # Approval workflows
+  approvalRequired: true
+  
+  # Documentation requirements
+  documentationRequired: true
+
+# Production deployment gates
+deploymentGates:
+  # Pre-deployment checks
+  preDeployment:
+    - securityScan
+    - dependencyScan
+    - licenseScan
+    - complianceScan
+    
+  # Post-deployment monitoring
+  postDeployment:
+    - continuousMonitoring
+    - performanceMonitoring
+    - securityMonitoring

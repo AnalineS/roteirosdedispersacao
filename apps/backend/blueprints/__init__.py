@@ -14,6 +14,7 @@ from .docs_blueprint import docs_bp
 from .analytics_blueprint import analytics_bp
 from .predictions_blueprint import predictions_bp
 from .multimodal_blueprint import multimodal_bp
+from .observability import observability_bp
 
 # Import user blueprint (com fallback)
 try:
@@ -42,7 +43,8 @@ ALL_BLUEPRINTS = [
     docs_bp,
     analytics_bp,
     predictions_bp,
-    multimodal_bp
+    multimodal_bp,
+    observability_bp
 ]
 
 # Adicionar user blueprint se disponível
@@ -64,6 +66,7 @@ __all__ = [
     'analytics_bp',
     'predictions_bp',
     'multimodal_bp',
+    'observability_bp',
     'user_bp',
     'swagger_ui_blueprint',
     'ALL_BLUEPRINTS'

@@ -1,11 +1,32 @@
-name: 🔒 Security Vulnerability Check
+name: 🔒 Security Monitoring & Continuous Scanning
 
 on:
   schedule:
     # Runs every Monday at 9:00 AM UTC (6:00 AM Brasília)
     - cron: '0 9 * * 1'
+    # Daily security scans at 2:00 AM UTC
+    - cron: '0 2 * * *'
   workflow_dispatch:
     inputs:
+      environment:
+        description: 'Environment to scan (hml/production/both)'
+        required: false
+        default: 'both'
+        type: choice
+        options:
+          - both
+          - hml
+          - production
+      severity_threshold:
+        description: 'Minimum severity to report'
+        required: false
+        default: 'medium'
+        type: choice
+        options:
+          - low
+          - medium
+          - high
+          - critical
       check_patches:
         description: 'Check for new patches'
         required: false
