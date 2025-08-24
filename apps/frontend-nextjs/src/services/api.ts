@@ -22,17 +22,22 @@ const getApiUrl = () => {
       return 'http://localhost:8080';
     }
     
-    // Produção - usar Cloud Run URL
-    if (hostname.includes('roteirosdispensacao.com') || hostname.includes('roteiros-de-dispensacao.web.app') || hostname.includes('firebaseapp.com')) {
-      console.log('[API] Produção detectada, usando Cloud Run');
-      // URL do Cloud Run - esta deve vir dos secrets do GitHub em produção
-      // Como fallback, tentamos a URL conhecida do Cloud Run
-      return 'https://roteiro-dispensacao-api-108038718873.us-central1.run.app';
+    // Homologação
+    if (hostname.includes('hml-roteiros-de-dispensacao.web.app')) {
+      console.log('[API] Ambiente de homologação detectado');
+      return 'https://hml-roteiro-dispensacao-api-4f2gjf6cua-uc.a.run.app';
     }
     
-    console.log('[API] Hostname não reconhecido, tentando Cloud Run como fallback');
-    // Tentar Cloud Run como padrão mesmo em hostname desconhecido
-    return 'https://roteiro-dispensacao-api-108038718873.us-central1.run.app';
+    // Produção
+    if (hostname.includes('roteirosdispensacao.com') || hostname.includes('roteiros-de-dispensacao.web.app')) {
+      console.log('[API] Produção detectada, usando Cloud Run');
+      // Primeiro, tentar reativar o serviço de produção
+      return 'https://roteiro-dispensacao-api-4f2gjf6cua-uc.a.run.app';
+    }
+    
+    console.log('[API] Hostname não reconhecido, usando homologação como fallback');
+    // Fallback para homologação se hostname não for reconhecido
+    return 'https://hml-roteiro-dispensacao-api-4f2gjf6cua-uc.a.run.app';
   }
   
   // PRIORIDADE 3: Fallback para desenvolvimento  
