@@ -33,6 +33,25 @@ import {
   getIconByEmoji 
 } from '@/components/icons/NavigationIcons';
 import ExperienceBanner from '@/components/onboarding/ExperienceBanner';
+import { 
+  CheckIcon, 
+  ChatIcon, 
+  BookIcon, 
+  SupportIcon, 
+  TargetIcon, 
+  DoctorIcon, 
+  QuestionIcon,
+  GovernmentIcon,
+  HospitalIcon,
+  UniversityIcon,
+  AlertIcon,
+  BulbIcon,
+  HeartIcon,
+  FamilyIcon,
+  EmailIcon,
+  ClipboardIcon,
+  PillIcon
+} from '@/components/icons/FlatOutlineIcons';
 import { MedicalLoadingSpinner } from '@/components/ui/LoadingStates';
 import dynamic from 'next/dynamic';
 
@@ -481,7 +500,19 @@ export default function HomePage() {
                 fontSize: '0.9rem',
                 color: 'var(--text-secondary)'
               }}>
-                ✅ <strong>Baseado em pesquisa científica UnB</strong> • ✅ <strong>Gratuito e seguro</strong> • ✅ <strong>Linguagem clara e acessível</strong>
+                <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <CheckIcon size={16} color="#059669" /> <strong>Baseado em pesquisa científica UnB</strong>
+                  </span>
+                  <span>•</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <CheckIcon size={16} color="#059669" /> <strong>Gratuito e seguro</strong>
+                  </span>
+                  <span>•</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <CheckIcon size={16} color="#059669" /> <strong>Linguagem clara e acessível</strong>
+                  </span>
+                </span>
               </div>
               
               <div style={{
@@ -498,11 +529,17 @@ export default function HomePage() {
                 gap: '0.5rem',
                 flexWrap: 'wrap'
               }}>
-                <span style={{ fontWeight: '600' }}>🏛️ Ministério da Saúde</span>
+                <span style={{ fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <GovernmentIcon size={16} color="#003366" /> Ministério da Saúde
+                </span>
                 <span>•</span>
-                <span style={{ fontWeight: '600' }}>🏥 Sistema Único de Saúde (SUS)</span>
+                <span style={{ fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <HospitalIcon size={16} color="#003366" /> Sistema Único de Saúde (SUS)
+                </span>
                 <span>•</span>
-                <span style={{ fontWeight: '600' }}>🎓 Universidade de Brasília (UnB)</span>
+                <span style={{ fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <UniversityIcon size={16} color="#003366" /> Universidade de Brasília (UnB)
+                </span>
               </div>
             </div>
           </div>
@@ -527,7 +564,10 @@ export default function HomePage() {
               justifyContent: 'center',
               gap: '0.75rem'
             }}>
-              🎯 Como Funciona em 3 Passos Simples
+              <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <TargetIcon size={24} color="#003366" />
+                Como Funciona em 3 Passos Simples
+              </span>
             </HierarchyHeading>
             
             <div style={{

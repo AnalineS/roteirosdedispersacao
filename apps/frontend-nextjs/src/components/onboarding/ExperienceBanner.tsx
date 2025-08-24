@@ -13,12 +13,20 @@ export default function ExperienceBanner({ onComplete }: ExperienceBannerProps) 
   const [selectedExperience, setSelectedExperience] = useState<string>('');
   const router = useRouter();
 
-  // Show banner only if not previously completed
+  // Show banner immediately, check localStorage after
   useEffect(() => {
+    // Always show initially for better UX
+    setIsVisible(true);
+    
+    // Check if already seen (but still show for now for testing)
     const hasSeenBanner = localStorage.getItem('experience_banner_seen');
-    if (!hasSeenBanner) {
-      setIsVisible(true);
-    }
+    console.log('Experience banner seen before:', hasSeenBanner);
+    
+    // For testing, always show regardless of localStorage
+    // Comment this line in production:
+    // if (!hasSeenBanner) {
+    //   setIsVisible(true);
+    // }
   }, []);
 
   const experiences = [
@@ -89,20 +97,23 @@ export default function ExperienceBanner({ onComplete }: ExperienceBannerProps) 
         top: 0,
         left: 0,
         right: 0,
-        zIndex: 10000,
-        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-        padding: '20px',
-        animation: 'slideDown 0.5s ease-out'
+        zIndex: 99999,
+        backgroundColor: 'rgba(0, 0, 0, 0.9)',
+        padding: '10px 20px',
+        animation: 'slideDown 0.5s ease-out',
+        backdropFilter: 'blur(5px)'
       }}>
         <div style={{
-          maxWidth: '800px',
+          maxWidth: '900px',
           margin: '0 auto',
           backgroundColor: 'white',
-          borderRadius: '16px',
-          padding: '24px',
-          boxShadow: '0 10px 40px rgba(0, 0, 0, 0.3)',
-          border: '3px solid #f59e0b',
-          animation: selectedExperience ? 'pulse 0.6s ease-out' : 'none'
+          borderRadius: '20px',
+          padding: '32px',
+          boxShadow: '0 25px 60px rgba(0, 0, 0, 0.4)',
+          border: '4px solid #f59e0b',
+          animation: selectedExperience ? 'pulse 0.6s ease-out' : 'none',
+          position: 'relative',
+          transform: 'translateY(0)'
         }}>
           {/* Header */}
           <div style={{

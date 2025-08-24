@@ -278,6 +278,209 @@ export const CheckIcon = ({ size = 20, color = 'currentColor', className = '' }:
   </svg>
 );
 
+// Instituições
+export const GovernmentIcon = ({ size = 20, color = 'currentColor', className = '' }: IconProps) => (
+  <svg 
+    width={size} 
+    height={size} 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke={color} 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M3 21h18"/>
+    <path d="M5 21V7l8-4v18"/>
+    <path d="M19 21V11l-6-4"/>
+    <path d="M9 9v12"/>
+    <path d="M15 9v12"/>
+  </svg>
+);
+
+export const HospitalIcon = ({ size = 20, color = 'currentColor', className = '' }: IconProps) => (
+  <svg 
+    width={size} 
+    height={size} 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke={color} 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M12 6v6"/>
+    <path d="M15 9h-6"/>
+    <rect x="3" y="3" width="18" height="18" rx="2"/>
+  </svg>
+);
+
+export const UniversityIcon = ({ size = 20, color = 'currentColor', className = '' }: IconProps) => (
+  <svg 
+    width={size} 
+    height={size} 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke={color} 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+    <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+  </svg>
+);
+
+export const AlertIcon = ({ size = 20, color = 'currentColor', className = '' }: IconProps) => (
+  <svg 
+    width={size} 
+    height={size} 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke={color} 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+    <line x1="12" y1="9" x2="12" y2="13"/>
+    <line x1="12" y1="17" x2="12.01" y2="17"/>
+  </svg>
+);
+
+export const BulbIcon = ({ size = 20, color = 'currentColor', className = '' }: IconProps) => (
+  <svg 
+    width={size} 
+    height={size} 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke={color} 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M9 21h6"/>
+    <path d="M12 17v4"/>
+    <circle cx="12" cy="9" r="7"/>
+  </svg>
+);
+
+export const HeartIcon = ({ size = 20, color = 'currentColor', className = '' }: IconProps) => (
+  <svg 
+    width={size} 
+    height={size} 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke={color} 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+  </svg>
+);
+
+export const FamilyIcon = ({ size = 20, color = 'currentColor', className = '' }: IconProps) => (
+  <svg 
+    width={size} 
+    height={size} 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke={color} 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+    <circle cx="8.5" cy="7" r="4"/>
+    <path d="M20 8v6"/>
+    <path d="M23 11h-6"/>
+  </svg>
+);
+
+export const EmailIcon = ({ size = 20, color = 'currentColor', className = '' }: IconProps) => (
+  <svg 
+    width={size} 
+    height={size} 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke={color} 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+    <polyline points="22,6 12,13 2,6"/>
+  </svg>
+);
+
+export const ClipboardIcon = ({ size = 20, color = 'currentColor', className = '' }: IconProps) => (
+  <svg 
+    width={size} 
+    height={size} 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke={color} 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+    <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+  </svg>
+);
+
+export const PillIcon = ({ size = 20, color = 'currentColor', className = '' }: IconProps) => (
+  <svg 
+    width={size} 
+    height={size} 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke={color} 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M8 21h8"/>
+    <path d="M12 17v4"/>
+    <path d="M3 17h6l4-4V9c0-1.1.9-2 2-2h2c1.1 0 2 .9 2 2v4l-4 4h6"/>
+  </svg>
+);
+
+export const CalculatorIcon = ({ size = 20, color = 'currentColor', className = '' }: IconProps) => (
+  <svg 
+    width={size} 
+    height={size} 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke={color} 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round"
+    className={className}
+  >
+    <rect x="4" y="2" width="16" height="20" rx="2"/>
+    <line x1="8" y1="6" x2="16" y2="6"/>
+    <line x1="8" y1="10" x2="8" y2="10"/>
+    <line x1="12" y1="10" x2="12" y2="10"/>
+    <line x1="16" y1="10" x2="16" y2="10"/>
+    <line x1="8" y1="14" x2="8" y2="14"/>
+    <line x1="12" y1="14" x2="12" y2="14"/>
+    <line x1="16" y1="14" x2="16" y2="14"/>
+    <line x1="8" y1="18" x2="16" y2="18"/>
+  </svg>
+);
+
 // Função para mapear emojis para ícones
 export const getIconForEmoji = (emoji: string, props?: IconProps) => {
   const iconMap: { [key: string]: React.ComponentType<IconProps> } = {
