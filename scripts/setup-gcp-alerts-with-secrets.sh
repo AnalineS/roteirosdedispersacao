@@ -50,8 +50,14 @@ gcloud alpha monitoring channels create \
     --description="Canal principal para alertas críticos do sistema" \
     --quiet
 
-EMAIL_CHANNEL_ID=$(gcloud alpha monitoring channels list --filter="displayName:$EMAIL_CHANNEL_NAME" --format="value(name)" | head -1)
+EMAIL_CHANNEL_ID=$(gcloud alpha monitoring channels list --filter="displayName=\"$EMAIL_CHANNEL_NAME\"" --format="value(name)" | head -1)
 echo "✅ Canal de email criado: $EMAIL_CHANNEL_ID"
+
+# Se não encontrar pelo nome, pegar o último criado
+if [ -z "$EMAIL_CHANNEL_ID" ]; then
+    EMAIL_CHANNEL_ID=$(gcloud alpha monitoring channels list --filter="type=email" --format="value(name)" --sort-by="~createTime" --limit=1)
+    echo "📧 Usando canal de email mais recente: $EMAIL_CHANNEL_ID"
+fi
 
 echo ""
 echo "2/6 - Criando canal de notificação Telegram via webhook..."
@@ -75,11 +81,26 @@ gcloud alpha monitoring channels create \
     --description="Canal Telegram para alertas do sistema via webhook" \
     --quiet
 
-TELEGRAM_CHANNEL_ID=$(gcloud alpha monitoring channels list --filter="displayName:$WEBHOOK_CHANNEL_NAME" --format="value(name)" | head -1)
+TELEGRAM_CHANNEL_ID=$(gcloud alpha monitoring channels list --filter="displayName=\"$WEBHOOK_CHANNEL_NAME\"" --format="value(name)" | head -1)
 echo "✅ Canal Telegram criado: $TELEGRAM_CHANNEL_ID"
+
+# Se não encontrar pelo nome, pegar o último webhook criado
+if [ -z "$TELEGRAM_CHANNEL_ID" ]; then
+    TELEGRAM_CHANNEL_ID=$(gcloud alpha monitoring channels list --filter="type=webhook_tokenauth" --format="value(name)" --sort-by="~createTime" --limit=1)
+    echo "📱 Usando canal Telegram mais recente: $TELEGRAM_CHANNEL_ID"
+fi
+
+# Verificar se temos canais válidos
+if [ -z "$EMAIL_CHANNEL_ID" ] || [ -z "$TELEGRAM_CHANNEL_ID" ]; then
+    echo "❌ Erro: Não foi possível obter IDs dos canais de notificação"
+    echo "Email Channel: $EMAIL_CHANNEL_ID"
+    echo "Telegram Channel: $TELEGRAM_CHANNEL_ID"
+    exit 1
+fi
 
 # Lista de canais para notificação
 NOTIFICATION_CHANNELS="$EMAIL_CHANNEL_ID,$TELEGRAM_CHANNEL_ID"
+echo "📋 Canais configurados: $NOTIFICATION_CHANNELS"
 
 echo ""
 echo "3/6 - Criando alerta de alta latência..."
@@ -106,7 +127,8 @@ conditions:
       trigger:
         count: 1
 notificationChannels:
-$(echo "$NOTIFICATION_CHANNELS" | sed 's/,/\n/g' | sed 's/^/  - /')
+  - $EMAIL_CHANNEL_ID
+  - $TELEGRAM_CHANNEL_ID
 alertStrategy:
   autoClose: 86400s
 EOF
@@ -136,7 +158,8 @@ conditions:
       trigger:
         count: 1
 notificationChannels:
-$(echo "$NOTIFICATION_CHANNELS" | sed 's/,/\n/g' | sed 's/^/  - /')
+  - $EMAIL_CHANNEL_ID
+  - $TELEGRAM_CHANNEL_ID
 alertStrategy:
   autoClose: 7200s
 EOF
@@ -164,7 +187,8 @@ conditions:
       trigger:
         count: 1
 notificationChannels:
-$(echo "$NOTIFICATION_CHANNELS" | sed 's/,/\n/g' | sed 's/^/  - /')
+  - $EMAIL_CHANNEL_ID
+  - $TELEGRAM_CHANNEL_ID
 alertStrategy:
   autoClose: 3600s
 EOF
@@ -194,7 +218,8 @@ conditions:
       trigger:
         count: 1
 notificationChannels:
-$(echo "$NOTIFICATION_CHANNELS" | sed 's/,/\n/g' | sed 's/^/  - /')
+  - $EMAIL_CHANNEL_ID
+  - $TELEGRAM_CHANNEL_ID
 alertStrategy:
   autoClose: 7200s
 EOF
