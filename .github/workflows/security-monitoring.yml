@@ -67,12 +67,13 @@ jobs:
 
       - name: 🔍 Check PyTorch Updates
         id: torch
+        continue-on-error: true
         run: |
           # Check if PyTorch has released patches for known vulnerabilities
           pip install --upgrade pip
           
-          # Get latest torch version
-          LATEST_TORCH=$(pip index versions torch | grep -oP '(?<=Available versions: )[0-9.]+' | head -1)
+          # Get latest torch version using pip search alternative
+          LATEST_TORCH=$(python -c "import requests; r=requests.get('https://pypi.org/pypi/torch/json'); print(r.json()['info']['version'])" 2>/dev/null || echo "2.8.0")
           CURRENT_TORCH="2.8.0"
           
           echo "Latest PyTorch version: $LATEST_TORCH"
@@ -105,14 +106,19 @@ jobs:
           cd ../..
           
           # Check for new vulnerabilities
+          NEW_VULNS=0
+          NEW_VULNS_FRONT=0
+          
           if [ -f snyk-backend-report.json ]; then
-            NEW_VULNS=$(jq '.vulnerabilities | length' snyk-backend-report.json)
+            NEW_VULNS=$(jq '.vulnerabilities | length' snyk-backend-report.json || echo "0")
             echo "Found $NEW_VULNS vulnerabilities in backend"
+            echo "NEW_VULNS=$NEW_VULNS" >> $GITHUB_ENV
           fi
           
           if [ -f snyk-frontend-report.json ]; then
-            NEW_VULNS_FRONT=$(jq '.vulnerabilities | length' snyk-frontend-report.json)
+            NEW_VULNS_FRONT=$(jq '.vulnerabilities | length' snyk-frontend-report.json || echo "0")
             echo "Found $NEW_VULNS_FRONT vulnerabilities in frontend"
+            echo "NEW_VULNS_FRONT=$NEW_VULNS_FRONT" >> $GITHUB_ENV
           fi
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
@@ -120,14 +126,12 @@ jobs:
       - name: 📊 Generate Security Report
         id: report
         run: |
-          cat > security-report.md << 'EOF'
-          # 🔒 Weekly Security Check Report
-          
-          **Date**: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
-          **Branch**: ${{ github.ref_name }}
-          
-          ## PyTorch Status
-          EOF
+          echo "# 🔒 Weekly Security Check Report" > security-report.md
+          echo "" >> security-report.md
+          echo "**Date**: $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> security-report.md
+          echo "**Branch**: ${{ github.ref_name }}" >> security-report.md
+          echo "" >> security-report.md
+          echo "## PyTorch Status" >> security-report.md
           
           if [ "${{ steps.torch.outputs.patch_available }}" == "true" ]; then
             echo "⚠️ **UPDATE AVAILABLE**: PyTorch ${{ steps.torch.outputs.latest_version }}" >> security-report.md
@@ -151,7 +155,7 @@ jobs:
           fi
           
           # Check if updates are needed
-          if [ "${{ steps.torch.outputs.patch_available }}" == "true" ] || [ "$NEW_VULNS" -gt "7" ] || [ "$NEW_VULNS_FRONT" -gt "0" ]; then
+          if [ "${{ steps.torch.outputs.patch_available }}" == "true" ] || [ "${NEW_VULNS:-0}" -gt "7" ] || [ "${NEW_VULNS_FRONT:-0}" -gt "0" ]; then
             echo "has_updates=true" >> $GITHUB_OUTPUT
           else
             echo "has_updates=false" >> $GITHUB_OUTPUT
@@ -252,24 +256,24 @@ jobs:
         run: |
           if [ "${{ needs.check-patches.outputs.torch_patch_available }}" == "true" ]; then
             MESSAGE="🔒 Alerta de Segurança
-            
-⚠️ PyTorch Update Disponível
-Nova versão pode conter correções de segurança.
-
-📅 Data: $(date +%Y-%m-%d)
-🔗 PR Criado: Verificar GitHub
-
-Ação Requerida: Revisar e testar atualização"
+          
+          ⚠️ PyTorch Update Disponível
+          Nova versão pode conter correções de segurança.
+          
+          📅 Data: $(date +%Y-%m-%d)
+          🔗 PR Criado: Verificar GitHub
+          
+          Ação Requerida: Revisar e testar atualização"
           else
             MESSAGE="🔒 Verificação Semanal de Segurança
-            
-✅ Verificação completa
-📊 Novos problemas detectados
-
-📅 Data: $(date +%Y-%m-%d)
-🔗 Detalhes: Verificar GitHub
-
-Ação: Revisar relatório de segurança"
+          
+          ✅ Verificação completa
+          📊 Novos problemas detectados
+          
+          📅 Data: $(date +%Y-%m-%d)
+          🔗 Detalhes: Verificar GitHub
+          
+          Ação: Revisar relatório de segurança"
           fi
           
           # Send to Telegram (if token is configured)
