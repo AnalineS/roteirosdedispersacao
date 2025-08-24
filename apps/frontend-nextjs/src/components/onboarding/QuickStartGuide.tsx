@@ -19,8 +19,11 @@ const quickStartSteps: QuickStartStep[] = [
   {
     id: 'explore-personas',
     title: 'Conheça os Assistentes',
-    description: 'Dr. Gasnelio para questões técnicas e Gá para suporte empático',
-    icon: <MessageCircle size={24} />,
+    description: 'Dr. Gasnelio para questões técnicas e Assistente Educadora para suporte empático',
+    icon: <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+      <img src="/images/avatars/dr-gasnelio.png" alt="Dr. Gasnelio" style={{ width: '20px', height: '20px', borderRadius: '50%' }} />
+      <img src="/images/avatars/ga.png" alt="Assistente Educadora" style={{ width: '20px', height: '20px', borderRadius: '50%' }} />
+    </div>,
     action: {
       label: 'Abrir Chat',
       href: '/chat'
@@ -258,7 +261,7 @@ export default function QuickStartGuide({
           background: var(--color-primary-500);
           color: white;
           border: none;
-          border-radius: var(--radius-full);
+          border-radius: var(--radius-md);
           font-size: var(--font-size-sm);
           font-weight: var(--font-weight-medium);
           cursor: pointer;
@@ -291,11 +294,11 @@ export default function QuickStartGuide({
           max-height: 80vh;
           background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
           border-radius: 20px;
-          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5);
+          box-shadow: 0 20px 60px rgba(0, 51, 102, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5);
           z-index: var(--z-modal);
           animation: slideUp 300ms ease-out;
           overflow-y: auto;
-          border: 2px solid rgba(59, 130, 246, 0.1);
+          border: 2px solid rgba(0, 51, 102, 0.1);
         }
 
         @keyframes fadeIn {
@@ -320,7 +323,7 @@ export default function QuickStartGuide({
           justify-content: space-between;
           padding: 2rem 2rem 1.5rem;
           border-bottom: 1px solid rgba(229, 231, 235, 0.6);
-          background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(139, 92, 246, 0.03) 100%);
+          background: linear-gradient(135deg, rgba(0, 51, 102, 0.06) 0%, rgba(0, 102, 204, 0.04) 100%);
           border-radius: 20px 20px 0 0;
         }
 
@@ -329,7 +332,7 @@ export default function QuickStartGuide({
           font-weight: 700;
           color: #1e293b;
           margin: 0 0 0.5rem;
-          background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+          background: linear-gradient(135deg, #003366 0%, #0066cc 100%);
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
           background-clip: text;
@@ -375,10 +378,10 @@ export default function QuickStartGuide({
 
         .quick-start-progress-fill {
           height: 100%;
-          background: linear-gradient(90deg, #3b82f6, #8b5cf6, #06b6d4);
+          background: linear-gradient(90deg, #003366, #0066cc, #00aa44);
           border-radius: 20px;
           transition: width 0.6s ease;
-          box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+          box-shadow: 0 2px 8px rgba(0, 51, 102, 0.3);
         }
 
         .quick-start-progress-text {
@@ -406,15 +409,15 @@ export default function QuickStartGuide({
 
         .quick-start-step:hover {
           background: rgba(248, 250, 252, 0.8);
-          border-color: rgba(59, 130, 246, 0.3);
+          border-color: rgba(0, 51, 102, 0.3);
           transform: translateY(-2px);
           box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
         }
 
         .quick-start-step.completed {
-          background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(6, 182, 212, 0.05) 100%);
-          border-color: rgba(16, 185, 129, 0.3);
-          box-shadow: 0 4px 15px rgba(16, 185, 129, 0.1);
+          background: linear-gradient(135deg, rgba(0, 170, 68, 0.08) 0%, rgba(0, 102, 204, 0.05) 100%);
+          border-color: rgba(0, 170, 68, 0.3);
+          box-shadow: 0 4px 15px rgba(0, 170, 68, 0.1);
         }
 
         .quick-start-step-icon {
@@ -425,15 +428,15 @@ export default function QuickStartGuide({
           align-items: center;
           justify-content: center;
           border-radius: 12px;
-          background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+          background: linear-gradient(135deg, #003366 0%, #0066cc 100%);
           color: white;
           transition: all 0.3s ease;
-          box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+          box-shadow: 0 4px 15px rgba(0, 51, 102, 0.3);
         }
 
         .quick-start-step.completed .quick-start-step-icon {
-          background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
-          box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+          background: linear-gradient(135deg, #00aa44 0%, #0066cc 100%);
+          box-shadow: 0 4px 15px rgba(0, 170, 68, 0.3);
         }
 
         .quick-start-step-content {
@@ -460,24 +463,24 @@ export default function QuickStartGuide({
           align-items: center;
           gap: 0.5rem;
           padding: 0.75rem 1.25rem;
-          background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+          background: linear-gradient(135deg, #003366 0%, #0066cc 100%);
           color: white;
           text-decoration: none;
           border-radius: 25px;
           font-size: 0.875rem;
           font-weight: 500;
           transition: all 0.3s ease;
-          box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+          box-shadow: 0 4px 15px rgba(0, 51, 102, 0.3);
         }
 
         .quick-start-step-action:hover {
-          background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+          background: linear-gradient(135deg, #002244 0%, #004499 100%);
           transform: translateY(-2px);
-          box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+          box-shadow: 0 6px 20px rgba(0, 51, 102, 0.4);
         }
 
         .quick-start-step-completed {
-          color: #10b981;
+          color: #00aa44;
           font-size: 0.875rem;
           font-weight: 600;
           display: flex;
@@ -520,34 +523,19 @@ export default function QuickStartGuide({
         }
 
         .quick-start-btn-primary {
-          background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
+          background: linear-gradient(135deg, #003366 0%, #0066cc 100%);
           color: white;
           border-color: transparent;
-          box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+          box-shadow: 0 4px 15px rgba(0, 51, 102, 0.3);
         }
 
         .quick-start-btn-primary:hover {
-          background: linear-gradient(135deg, #059669 0%, #0891b2 100%);
+          background: linear-gradient(135deg, #002244 0%, #004499 100%);
           transform: translateY(-2px);
-          box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+          box-shadow: 0 6px 20px rgba(0, 51, 102, 0.4);
         }
 
-        /* Dark theme support */
-        [data-theme="dark"] .quick-start-modal {
-          background: var(--color-gray-100);
-        }
-
-        [data-theme="dark"] .quick-start-header {
-          border-color: var(--color-gray-300);
-        }
-
-        [data-theme="dark"] .quick-start-step:hover {
-          background: var(--color-gray-200);
-        }
-
-        [data-theme="dark"] .quick-start-footer {
-          border-color: var(--color-gray-300);
-        }
+        /* Light theme only - dark theme styles removed */
 
         /* Mobile responsive */
         @media (max-width: 640px) {

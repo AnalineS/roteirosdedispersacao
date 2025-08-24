@@ -175,10 +175,11 @@ export const useResponsiveScreen = () => {
   };
 };
 
-// Hook específico para o FAB com detecção de página
+// Hook específico para o FAB com detecção de página e scroll inteligente
 export const useFABVisibility = () => {
   const { fabConfig, screenSize, isClient } = useResponsiveScreen();
-  const [isVisible, setIsVisible] = useState(true);
+  const [isVisible, setIsVisible] = useState(false);
+  const [isPageExcluded, setIsPageExcluded] = useState(false);
 
   useEffect(() => {
     if (!isClient) return;
@@ -190,25 +191,53 @@ export const useFABVisibility = () => {
     const excludedPaths = ['/chat', '/chat/'];
     const shouldHide = excludedPaths.some(path => pathname.startsWith(path));
     
-    setIsVisible(!shouldHide);
+    setIsPageExcluded(shouldHide);
   }, [isClient]);
 
   useEffect(() => {
-    if (!isClient) return;
+    if (!isClient || isPageExcluded) return;
 
     // Verificar se foi fechado na sessão atual
     const fabClosed = sessionStorage.getItem('fab_closed');
+    let isClosed = false;
     if (fabClosed) {
       try {
         const data = JSON.parse(fabClosed);
-        if (data.closed) {
-          setIsVisible(false);
-        }
+        isClosed = data.closed;
       } catch (error) {
         sessionStorage.removeItem('fab_closed');
       }
     }
-  }, [isClient]);
+
+    if (isClosed) {
+      setIsVisible(false);
+      return;
+    }
+
+    // Posicionamento inteligente baseado no scroll
+    const handleScroll = () => {
+      const scrollY = window.scrollY;
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight;
+      
+      // Mostrar FAB apenas quando o usuário rolar para baixo pelo menos 30% da página
+      // ou estiver próximo ao final (últimos 20% da página)
+      const thirtyPercent = documentHeight * 0.3;
+      const nearEnd = scrollY + windowHeight >= documentHeight * 0.8;
+      
+      setIsVisible(scrollY > thirtyPercent || nearEnd);
+    };
+
+    // Verificação inicial
+    handleScroll();
+    
+    // Adicionar listener de scroll
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [isClient, isPageExcluded]);
 
   const closeFAB = () => {
     setIsVisible(false);
