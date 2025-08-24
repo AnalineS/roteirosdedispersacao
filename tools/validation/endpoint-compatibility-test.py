@@ -19,7 +19,7 @@ import argparse
 
 def sanitize_output_path(output_path: str) -> str:
     """
-    Sanitizar caminho de arquivo de saída para prevenir Path Traversal
+    Sanitizar caminho de arquivo de saída para prevenir Path Traversal (CWE-23)
     
     Args:
         output_path: Caminho fornecido pelo usuário
@@ -33,9 +33,35 @@ def sanitize_output_path(output_path: str) -> str:
     if not output_path:
         raise ValueError("Caminho de saída não pode ser vazio")
     
-    # Resolver caminho absoluto e normalizar
+    # SECURITY FIX: Comprehensive path traversal prevention (CWE-23)
+    # Remove path traversal sequences e caracteres especiais perigosos
+    dangerous_patterns = [
+        '..', '~', '\x00', '\n', '\r', '\t', '|', '>', '<', '&', ';', 
+        '*', '?', '[', ']', '`', '$', '!', '^', '(', ')', '{', '}',
+        'CON', 'PRN', 'AUX', 'NUL',  # Windows reserved names
+        'COM1', 'COM2', 'COM3', 'COM4', 'COM5', 'COM6', 'COM7', 'COM8', 'COM9',
+        'LPT1', 'LPT2', 'LPT3', 'LPT4', 'LPT5', 'LPT6', 'LPT7', 'LPT8', 'LPT9'
+    ]
+    clean_path = output_path.strip()
+    
+    # Check for dangerous patterns
+    for pattern in dangerous_patterns:
+        if pattern.lower() in clean_path.lower():
+            raise ValueError(f"Caminho contém sequência perigosa: {pattern}")
+    
+    # Additional checks for specific attacks
+    if len(clean_path) > 255:  # Max path length protection
+        raise ValueError("Caminho muito longo (máximo 255 caracteres)")
+    
+    if clean_path.startswith(('/dev/', '/proc/', '/sys/', 'C:\\Windows\\', 'C:\\System32\\')):
+        raise ValueError("Acesso negado a diretórios do sistema")
+    
+    # Normalizar separadores de caminho
+    clean_path = clean_path.replace('\\', '/').replace('//', '/')
+    
+    # Resolver caminho absoluto e normalizar (após sanitização)
     try:
-        resolved_path = Path(output_path).resolve()
+        resolved_path = Path(clean_path).resolve(strict=False)
     except (OSError, ValueError) as e:
         raise ValueError(f"Caminho inválido: {e}")
     
@@ -228,10 +254,71 @@ class EndpointCompatibilityTester:
         
         return missing_fields
     
+    def _validate_url_safety(self, url: str) -> bool:
+        """
+        Valida se a URL é segura contra ataques SSRF
+        
+        Args:
+            url: URL para validar
+            
+        Returns:
+            bool: True se a URL é segura, False caso contrário
+        """
+        from urllib.parse import urlparse
+        import ipaddress
+        
+        try:
+            parsed = urlparse(url)
+            
+            # Lista branca de schemes permitidos
+            allowed_schemes = {'http', 'https'}
+            if parsed.scheme not in allowed_schemes:
+                return False
+            
+            # Lista branca de hosts permitidos (apenas localhost para testes)
+            allowed_hosts = {
+                'localhost', 
+                '127.0.0.1',
+                'roteiro-dispensacao-api-108038718873.us-central1.run.app'
+            }
+            
+            # Verificar se o host está na lista branca
+            if parsed.hostname not in allowed_hosts:
+                return False
+            
+            # Verificar se não é um IP privado/interno (proteção adicional)
+            if parsed.hostname and parsed.hostname not in ['localhost']:
+                try:
+                    ip = ipaddress.ip_address(parsed.hostname)
+                    if ip.is_private or ip.is_loopback or ip.is_link_local:
+                        # Permitir apenas localhost para testes
+                        return parsed.hostname == '127.0.0.1'
+                except ValueError:
+                    # Não é um IP, continua validação
+                    pass
+            
+            return True
+            
+        except Exception:
+            return False
+
     def test_endpoint(self, test: EndpointTest) -> TestResult:
         """Executa teste de um endpoint específico"""
         start_time = time.time()
         url = f"{self.base_url}{test.path}"
+        
+        # SECURITY: Validar URL contra SSRF
+        if not self._validate_url_safety(url):
+            return TestResult(
+                endpoint=test.path,
+                method=test.method,
+                success=False,
+                status_code=0,
+                response_time_ms=0,
+                error_message=f"URL não permitida por questões de segurança: {url}",
+                missing_fields=[],
+                response_data={}
+            )
         
         try:
             # Configurar request
@@ -522,8 +609,12 @@ def main():
     # Salvar relatório se solicitado
     if args.output:
         try:
-            # Sanitizar caminho para prevenir Path Traversal
+            # SECURITY: Sanitizar caminho para prevenir Path Traversal (CWE-23)
             safe_output_path = sanitize_output_path(args.output)
+            
+            # Double-check: Verificar novamente antes de criar arquivo
+            if not Path(safe_output_path).resolve().is_relative_to(Path.cwd().resolve()):
+                raise ValueError("Caminho final não está no diretório seguro")
             
             with open(safe_output_path, 'w', encoding='utf-8') as f:
                 json.dump(report, f, indent=2, ensure_ascii=False)

@@ -168,7 +168,8 @@ class DataQualityAnalyzer:
                                 complete_items += 1
                             
                             # Verificar duplicatas (baseado no conteúdo)
-                            item_hash = hashlib.md5(json.dumps(item, sort_keys=True).encode()).hexdigest()
+                            # SECURITY FIX: Usar SHA256 em vez de MD5 (CWE-916)
+                            item_hash = hashlib.sha256(json.dumps(item, sort_keys=True).encode()).hexdigest()
                             if item_hash in seen_items:
                                 duplicate_items += 1
                             seen_items.add(item_hash)
