@@ -156,7 +156,7 @@ jobs:
           # service_account: github-actions-hml@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com
 
       - name: 🛠️ Setup Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
+        uses: google-github-actions/setup-gcloud@v0
 
       - name: 🔧 Configure Docker Auth
         run: |
@@ -310,7 +310,7 @@ jobs:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
       - name: 🛠️ Setup Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
+        uses: google-github-actions/setup-gcloud@v0
 
       - name: 🚨 Configure GCP Alerts with Telegram
         run: |
