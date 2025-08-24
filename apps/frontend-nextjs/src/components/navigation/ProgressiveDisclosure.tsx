@@ -161,7 +161,7 @@ export default function ProgressiveDisclosure({
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+          backgroundColor: 'rgba(30, 41, 59, 0.4)',
           zIndex: 10000,
           display: 'flex',
           alignItems: 'center',
@@ -317,7 +317,7 @@ export default function ProgressiveDisclosure({
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+            backgroundColor: 'rgba(30, 41, 59, 0.4)',
             zIndex: 9999,
             pointerEvents: 'auto'
           }}

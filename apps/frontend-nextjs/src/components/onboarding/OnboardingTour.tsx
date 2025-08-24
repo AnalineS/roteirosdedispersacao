@@ -250,7 +250,7 @@ export default function OnboardingTour({ onComplete }: OnboardingTourProps) {
         .tour-overlay {
           position: fixed;
           inset: 0;
-          background: rgba(0, 0, 0, 0.7);
+          background: rgba(30, 41, 59, 0.4);
           z-index: var(--z-modal-backdrop);
           animation: fadeIn var(--transition-base);
         }

@@ -183,11 +183,13 @@ export default function HeroSection() {
           font-weight: var(--font-weight-bold);
           line-height: 1.2;
           color: var(--color-gray-900);
+          color: #0f172a; /* Fallback: preto/cinza escuro */
           margin-bottom: var(--spacing-lg);
         }
 
         .hero-title-highlight {
           color: var(--color-primary-600);
+          color: #43a047; /* Fallback: verde primário */
           display: block;
         }
 
@@ -195,6 +197,7 @@ export default function HeroSection() {
           font-size: var(--font-size-lg);
           line-height: var(--line-height-relaxed);
           color: var(--color-gray-600);
+          color: #374151; /* Fallback: cinza escuro */
           margin-bottom: var(--spacing-xl);
         }
 
@@ -313,11 +316,13 @@ export default function HeroSection() {
           font-size: var(--font-size-2xl);
           font-weight: var(--font-weight-bold);
           color: var(--color-primary-600);
+          color: #43a047; /* Fallback: verde primário */
         }
 
         .stat-label {
           font-size: var(--font-size-sm);
           color: var(--color-gray-600);
+          color: #374151; /* Fallback: cinza escuro */
         }
 
         .stat-divider {

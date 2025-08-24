@@ -478,7 +478,7 @@ export default function PersonalizationOnboarding({
         left: 0,
         right: 0,
         bottom: 0,
-        background: 'rgba(0, 0, 0, 0.7)',
+        background: 'rgba(30, 41, 59, 0.4)',
         display: 'flex',
         alignItems: 'flex-start',
         justifyContent: 'center',

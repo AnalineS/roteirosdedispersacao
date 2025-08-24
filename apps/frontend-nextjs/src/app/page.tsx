@@ -32,7 +32,6 @@ import {
   PhoneIcon,
   getIconByEmoji 
 } from '@/components/icons/NavigationIcons';
-import ExperienceBanner from '@/components/onboarding/ExperienceBanner';
 import { 
   CheckIcon, 
   ChatIcon, 
@@ -150,7 +149,6 @@ export default function HomePage() {
   return (
     <PageTransition>
       <PersonalizationProvider>
-        <ExperienceBanner />
         {/* Onboarding Tour */}
         <OnboardingTour onComplete={() => {
           addToast({
