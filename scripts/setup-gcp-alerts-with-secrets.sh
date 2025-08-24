@@ -214,8 +214,8 @@ conditions:
       filter: 'resource.type="cloud_run_revision" metric.type="run.googleapis.com/container/memory/utilizations"'
       aggregations:
         - alignmentPeriod: 300s
-          perSeriesAligner: ALIGN_INTERPOLATE
-          crossSeriesReducer: REDUCE_MEAN
+          perSeriesAligner: ALIGN_DELTA
+          crossSeriesReducer: REDUCE_PERCENTILE_95
       comparison: COMPARISON_GT
       thresholdValue: 0.8
       duration: 600s
