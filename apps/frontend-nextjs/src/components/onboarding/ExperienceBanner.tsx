@@ -2,65 +2,112 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { BeginnerIcon, IntermediateIcon, AdvancedIcon, ExpertIcon, TargetIcon } from '@/components/icons/FlatOutlineIcons';
+import { BeginnerIcon, IntermediateIcon, AdvancedIcon, ExpertIcon, TargetIcon, DoctorIcon, PillIcon, HeartIcon } from '@/components/icons/FlatOutlineIcons';
+import { usePersonalization } from '@/hooks/usePersonalization';
+import { MedicalRole, ExperienceLevel, SpecializationArea } from '@/types/personalization';
 
 interface ExperienceBannerProps {
   onComplete?: () => void;
 }
 
+interface OnboardingStep {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+}
+
 export default function ExperienceBanner({ onComplete }: ExperienceBannerProps) {
   const [isVisible, setIsVisible] = useState(false);
-  const [selectedExperience, setSelectedExperience] = useState<string>('');
+  const [currentStep, setCurrentStep] = useState(0);
+  const [formData, setFormData] = useState({
+    medicalRole: 'unknown' as MedicalRole,
+    experienceLevel: 'beginner' as ExperienceLevel,
+    specializationArea: 'general' as SpecializationArea
+  });
   const router = useRouter();
+  const { updatePersonalization } = usePersonalization();
 
   // Show banner immediately, check localStorage after
   useEffect(() => {
-    // Always show initially for better UX
-    setIsVisible(true);
+    const hasCompletedOnboarding = localStorage.getItem('personalization_onboarding_completed');
     
-    // Check if already seen (but still show for now for testing)
-    const hasSeenBanner = localStorage.getItem('experience_banner_seen');
-    console.log('Experience banner seen before:', hasSeenBanner);
-    
-    // For testing, always show regardless of localStorage
-    // Comment this line in production:
-    // if (!hasSeenBanner) {
-    //   setIsVisible(true);
-    // }
+    // Show if user hasn't completed full onboarding
+    if (!hasCompletedOnboarding) {
+      setIsVisible(true);
+    }
   }, []);
 
-  const experiences = [
+  const onboardingSteps: OnboardingStep[] = [
     {
-      id: 'beginner',
-      title: 'Iniciante',
-      description: 'Pouca experiência com hanseníase',
-      icon: BeginnerIcon
+      id: 'role',
+      title: 'Qual é o seu papel profissional?',
+      description: 'Isso nos ajuda a personalizar o conteúdo para você',
+      icon: '👨‍⚕️'
     },
     {
-      id: 'intermediate', 
-      title: 'Intermediário',
-      description: 'Conhecimento básico sobre hanseníase',
-      icon: IntermediateIcon
+      id: 'experience',
+      title: 'Qual é o seu nível de experiência?',
+      description: 'Adaptaremos a complexidade do conteúdo',
+      icon: '📈'
     },
     {
-      id: 'advanced',
-      title: 'Avançado',
-      description: 'Experiência significativa na área',
-      icon: AdvancedIcon
-    },
-    {
-      id: 'expert',
-      title: 'Especialista',
-      description: 'Ampla experiência e especialização',
-      icon: ExpertIcon
+      id: 'area',
+      title: 'Qual é a sua área de atuação?',
+      description: 'Para mostrar conteúdo mais relevante',
+      icon: '🏥'
     }
   ];
 
-  const handleExperienceSelect = (experienceId: string) => {
-    setSelectedExperience(experienceId);
+  const roleOptions = [
+    { id: 'pharmacy', title: 'Farmácia', description: 'Farmacêutico(a)', icon: PillIcon },
+    { id: 'medicine', title: 'Medicina', description: 'Médico(a)', icon: DoctorIcon },
+    { id: 'nursing', title: 'Enfermagem', description: 'Enfermeiro(a)', icon: HeartIcon },
+    { id: 'student', title: 'Estudante', description: 'Graduação/Pós', icon: BeginnerIcon }
+  ];
+
+  const experienceOptions = [
+    { id: 'beginner', title: 'Iniciante', description: 'Pouca experiência', icon: BeginnerIcon },
+    { id: 'intermediate', title: 'Intermediário', description: 'Conhecimento básico', icon: IntermediateIcon },
+    { id: 'advanced', title: 'Avançado', description: 'Experiência significativa', icon: AdvancedIcon },
+    { id: 'expert', title: 'Especialista', description: 'Ampla experiência', icon: ExpertIcon }
+  ];
+
+  const areaOptions = [
+    { id: 'clinical', title: 'Clínica', description: 'Atendimento clínico' },
+    { id: 'hospital', title: 'Hospital', description: 'Ambiente hospitalar' },
+    { id: 'community', title: 'Comunidade', description: 'Saúde pública' },
+    { id: 'academic', title: 'Acadêmica', description: 'Ensino e pesquisa' }
+  ];
+
+  const handleNext = () => {
+    if (currentStep < onboardingSteps.length - 1) {
+      setCurrentStep(currentStep + 1);
+    } else {
+      handleComplete();
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const handleComplete = () => {
+    // Save personalization data
+    updatePersonalization({
+      medicalRole: formData.medicalRole,
+      experienceLevel: formData.experienceLevel,
+      specializationArea: formData.specializationArea,
+      preferredComplexity: formData.experienceLevel === 'expert' ? 'advanced' : 
+                         formData.experienceLevel === 'advanced' ? 'intermediate' : 'basic',
+      showTechnicalTerms: formData.experienceLevel === 'expert' || formData.experienceLevel === 'advanced',
+      enableDetailedExplanations: true
+    });
     
-    // Save to localStorage
-    localStorage.setItem('user_experience_level', experienceId);
+    // Mark as completed
+    localStorage.setItem('personalization_onboarding_completed', 'true');
     localStorage.setItem('experience_banner_seen', 'true');
     
     // Hide banner with animation
@@ -74,6 +121,15 @@ export default function ExperienceBanner({ onComplete }: ExperienceBannerProps) 
     localStorage.setItem('experience_banner_seen', 'true');
     setIsVisible(false);
     if (onComplete) onComplete();
+  };
+
+  const isStepValid = () => {
+    switch (currentStep) {
+      case 0: return formData.medicalRole !== 'unknown';
+      case 1: return true; // experience always has default
+      case 2: return true; // area always has default
+      default: return true;
+    }
   };
 
   if (!isVisible) return null;
@@ -111,147 +167,229 @@ export default function ExperienceBanner({ onComplete }: ExperienceBannerProps) 
           padding: '32px',
           boxShadow: '0 25px 60px rgba(0, 0, 0, 0.4)',
           border: '4px solid #f59e0b',
-          animation: selectedExperience ? 'pulse 0.6s ease-out' : 'none',
           position: 'relative',
           transform: 'translateY(0)'
         }}>
+          {/* Progress Bar */}
+          <div style={{
+            width: '100%',
+            height: '4px',
+            backgroundColor: '#e5e7eb',
+            borderRadius: '2px',
+            marginBottom: '24px'
+          }}>
+            <div style={{
+              width: `${((currentStep + 1) / onboardingSteps.length) * 100}%`,
+              height: '100%',
+              backgroundColor: '#f59e0b',
+              borderRadius: '2px',
+              transition: 'width 0.3s ease'
+            }} />
+          </div>
+
           {/* Header */}
           <div style={{
             textAlign: 'center',
-            marginBottom: '20px'
+            marginBottom: '24px'
           }}>
+            <div style={{
+              fontSize: '0.875rem',
+              color: '#6b7280',
+              marginBottom: '8px'
+            }}>
+              Passo {currentStep + 1} de {onboardingSteps.length}
+            </div>
             <h2 style={{
               fontSize: '1.5rem',
               fontWeight: 'bold',
               color: '#003366',
-              margin: '0 0 8px 0',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px'
+              margin: '0 0 8px 0'
             }}>
-              <TargetIcon size={28} color="#003366" />
-              Qual é o seu nível de experiência?
+              {onboardingSteps[currentStep].title}
             </h2>
             <p style={{
               color: '#6b7280',
               margin: 0,
               fontSize: '1rem'
             }}>
-              Isso nos ajuda a personalizar o conteúdo para você
+              {onboardingSteps[currentStep].description}
             </p>
           </div>
 
-          {/* Experience Options */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
-            gap: '12px',
-            marginBottom: '20px'
-          }}>
-            {experiences.map((exp) => {
-              const IconComponent = exp.icon;
-              return (
-                <button
-                  key={exp.id}
-                  onClick={() => handleExperienceSelect(exp.id)}
-                  style={{
-                    padding: '16px',
-                    border: selectedExperience === exp.id ? '3px solid #f59e0b' : '2px solid #e5e7eb',
-                    borderRadius: '12px',
-                    backgroundColor: selectedExperience === exp.id ? '#fef3c7' : 'white',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    textAlign: 'center',
-                    minHeight: '120px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px'
-                  }}
-                  onMouseEnter={(e) => {
-                    if (selectedExperience !== exp.id) {
-                      e.currentTarget.style.borderColor = '#d1d5db';
-                      e.currentTarget.style.backgroundColor = '#f9fafb';
-                      e.currentTarget.style.transform = 'translateY(-2px)';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (selectedExperience !== exp.id) {
-                      e.currentTarget.style.borderColor = '#e5e7eb';
-                      e.currentTarget.style.backgroundColor = 'white';
-                      e.currentTarget.style.transform = 'translateY(0)';
-                    }
-                  }}
-                >
-                  <div style={{ marginBottom: '8px' }}>
-                    <IconComponent size={32} color={selectedExperience === exp.id ? '#f59e0b' : '#003366'} />
-                  </div>
-                <div style={{
-                  fontSize: '1rem',
-                  fontWeight: 'bold',
-                  color: '#003366',
-                  marginBottom: '4px'
-                }}>
-                  {exp.title}
-                </div>
-                <div style={{
-                  fontSize: '0.8rem',
-                  color: '#6b7280',
-                  lineHeight: '1.3'
-                }}>
-                  {exp.description}
-                </div>
-                </button>
-              );
-            })}
+          {/* Step Content */}
+          <div style={{ marginBottom: '24px' }}>
+            {currentStep === 0 && (
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+                gap: '12px'
+              }}>
+                {roleOptions.map((role) => {
+                  const IconComponent = role.icon;
+                  return (
+                    <button
+                      key={role.id}
+                      onClick={() => setFormData(prev => ({ ...prev, medicalRole: role.id as MedicalRole }))}
+                      style={{
+                        padding: '20px 16px',
+                        border: formData.medicalRole === role.id ? '3px solid #f59e0b' : '2px solid #e5e7eb',
+                        borderRadius: '12px',
+                        backgroundColor: formData.medicalRole === role.id ? '#fef3c7' : 'white',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        textAlign: 'center',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: '12px'
+                      }}
+                    >
+                      <IconComponent size={32} color={formData.medicalRole === role.id ? '#f59e0b' : '#6b7280'} />
+                      <div>
+                        <div style={{ fontWeight: 'bold', color: '#374151', marginBottom: '4px' }}>
+                          {role.title}
+                        </div>
+                        <div style={{ color: '#6b7280', fontSize: '0.875rem' }}>
+                          {role.description}
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            {currentStep === 1 && (
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+                gap: '12px'
+              }}>
+                {experienceOptions.map((exp) => {
+                  const IconComponent = exp.icon;
+                  return (
+                    <button
+                      key={exp.id}
+                      onClick={() => setFormData(prev => ({ ...prev, experienceLevel: exp.id as ExperienceLevel }))}
+                      style={{
+                        padding: '16px',
+                        border: formData.experienceLevel === exp.id ? '3px solid #f59e0b' : '2px solid #e5e7eb',
+                        borderRadius: '12px',
+                        backgroundColor: formData.experienceLevel === exp.id ? '#fef3c7' : 'white',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        textAlign: 'center',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: '8px'
+                      }}
+                    >
+                      <IconComponent size={28} color={formData.experienceLevel === exp.id ? '#f59e0b' : '#6b7280'} />
+                      <div>
+                        <div style={{ fontWeight: 'bold', color: '#374151', fontSize: '0.9rem', marginBottom: '2px' }}>
+                          {exp.title}
+                        </div>
+                        <div style={{ color: '#6b7280', fontSize: '0.8rem' }}>
+                          {exp.description}
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            {currentStep === 2 && (
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                gap: '12px'
+              }}>
+                {areaOptions.map((area) => (
+                  <button
+                    key={area.id}
+                    onClick={() => setFormData(prev => ({ ...prev, specializationArea: area.id as SpecializationArea }))}
+                    style={{
+                      padding: '20px',
+                      border: formData.specializationArea === area.id ? '3px solid #f59e0b' : '2px solid #e5e7eb',
+                      borderRadius: '12px',
+                      backgroundColor: formData.specializationArea === area.id ? '#fef3c7' : 'white',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      textAlign: 'center'
+                    }}
+                  >
+                    <div style={{ fontWeight: 'bold', color: '#374151', marginBottom: '8px' }}>
+                      {area.title}
+                    </div>
+                    <div style={{ color: '#6b7280', fontSize: '0.875rem' }}>
+                      {area.description}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* Actions */}
+          {/* Navigation Buttons */}
           <div style={{
             display: 'flex',
             justifyContent: 'space-between',
-            alignItems: 'center',
-            marginTop: '16px'
+            alignItems: 'center'
           }}>
             <button
               onClick={handleSkip}
               style={{
-                padding: '8px 16px',
-                backgroundColor: 'transparent',
+                background: 'none',
                 border: 'none',
                 color: '#6b7280',
+                textDecoration: 'underline',
                 cursor: 'pointer',
-                fontSize: '0.9rem',
-                borderRadius: '6px',
-                transition: 'all 0.2s ease'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#f3f4f6';
-                e.currentTarget.style.color = '#374151';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
-                e.currentTarget.style.color = '#6b7280';
+                fontSize: '0.875rem',
+                padding: '8px 16px'
               }}
             >
-              Pular por enquanto
+              Pular personalização
             </button>
-
-            {selectedExperience && (
-              <div style={{
-                fontSize: '0.9rem',
-                color: '#059669',
-                fontWeight: '500',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}>
-                <span>✓</span>
-                Selecionado! Redirecionando...
-              </div>
-            )}
+            
+            <div style={{ display: 'flex', gap: '12px' }}>
+              {currentStep > 0 && (
+                <button
+                  onClick={handlePrevious}
+                  style={{
+                    padding: '12px 24px',
+                    border: '2px solid #e5e7eb',
+                    borderRadius: '8px',
+                    backgroundColor: 'white',
+                    color: '#374151',
+                    cursor: 'pointer',
+                    fontSize: '0.9rem',
+                    fontWeight: '500'
+                  }}
+                >
+                  Anterior
+                </button>
+              )}
+              
+              <button
+                onClick={handleNext}
+                disabled={!isStepValid()}
+                style={{
+                  padding: '12px 24px',
+                  border: 'none',
+                  borderRadius: '8px',
+                  backgroundColor: isStepValid() ? '#f59e0b' : '#e5e7eb',
+                  color: isStepValid() ? 'white' : '#9ca3af',
+                  cursor: isStepValid() ? 'pointer' : 'not-allowed',
+                  fontSize: '0.9rem',
+                  fontWeight: '600',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                {currentStep === onboardingSteps.length - 1 ? 'Concluir' : 'Próximo'}
+              </button>
+            </div>
           </div>
         </div>
       </div>

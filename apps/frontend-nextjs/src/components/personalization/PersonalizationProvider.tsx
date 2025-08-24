@@ -8,7 +8,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { usePersonalization } from '@/hooks/usePersonalization';
 import { useRemoteConfig } from '@/hooks/useRemoteConfig';
-// import PersonalizationOnboarding from './PersonalizationOnboarding'; // Disabled old popup
 import { UserPersonalization } from '@/types/personalization';
 
 interface PersonalizationContextType {
@@ -67,13 +66,6 @@ export function PersonalizationProvider({ children }: PersonalizationProviderPro
     <PersonalizationContext.Provider value={contextValue}>
       {children}
       
-      {/* Modal de onboarding - DISABLED
-      <PersonalizationOnboarding
-        isOpen={showOnboardingModal}
-        onComplete={handleOnboardingComplete}
-        onSkip={handleOnboardingSkip}
-      />
-      */}
     </PersonalizationContext.Provider>
   );
 }
