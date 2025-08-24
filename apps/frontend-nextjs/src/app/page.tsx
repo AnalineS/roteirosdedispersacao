@@ -350,19 +350,18 @@ export default function HomePage() {
         }}
       />
 
-      {/* UX Analytics Components - Apenas em desenvolvimento */}
-      {process.env.NODE_ENV === 'development' && (
-        <>
-          <CognitiveLoadAuditor />
-          <MobileUXAuditor />
-        </>
-      )}
-      
-      
-      {/* Toast Container */}
-      <ToastContainer toasts={toasts} />
+          {/* UX Analytics Components - Apenas em desenvolvimento */}
+          {process.env.NODE_ENV === 'development' && (
+            <>
+              <CognitiveLoadAuditor />
+              <MobileUXAuditor />
+            </>
+          )}
+          
+          {/* Toast Container */}
+          <ToastContainer toasts={toasts} />
+        </PersonalizationProvider>
+      </PageTransition>
     </EducationalLayout>
-    </PersonalizationProvider>
-    </PageTransition>
   );
 }
