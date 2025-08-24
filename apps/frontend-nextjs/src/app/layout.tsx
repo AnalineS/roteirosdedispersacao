@@ -21,7 +21,7 @@ export const viewport: Viewport = {
   maximumScale: 5,
   userScalable: true,
   themeColor: '#003366', // UnB institucional azul
-  colorScheme: 'light only' // Forçar apenas light mode
+  colorScheme: 'light' // Forçar apenas light mode
 }
 
 export default function RootLayout({
