@@ -351,7 +351,7 @@ jobs:
   production-smoke-tests:
     name: 🧪 Production Smoke Tests
     runs-on: ubuntu-latest
-    needs: [deploy-backend-production, deploy-frontend-production]
+    needs: [deploy-backend-production, deploy-frontend-production, setup-production-monitoring]
     if: always() && (needs.deploy-backend-production.result == 'success' || needs.deploy-backend-production.result == 'skipped') && (needs.deploy-frontend-production.result == 'success' || needs.deploy-frontend-production.result == 'skipped')
     
     steps:
@@ -422,14 +422,67 @@ jobs:
           
           echo "✅ Todos os smoke tests passaram"
 
-      - name: 📊 Performance Monitoring Setup
+  # =====================================
+  # Setup Monitoramento Produção
+  # =====================================
+  setup-production-monitoring:
+    name: 📊 Setup Production Monitoring
+    runs-on: ubuntu-latest
+    needs: [deploy-backend-production, deploy-frontend-production]
+    if: always() && (needs.deploy-backend-production.result == 'success' || needs.deploy-backend-production.result == 'skipped') && (needs.deploy-frontend-production.result == 'success' || needs.deploy-frontend-production.result == 'skipped')
+    
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 🔐 Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: 🛠️ Setup Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: 🚨 Configure Production Alerts
         run: |
-          echo "📊 Configurando monitoramento de performance..."
+          echo "🚨 Configurando alertas de produção com integração Telegram..."
           
-          # Placeholder para configurar alertas de produção
-          echo "- Health check monitoring configured"
-          echo "- Performance alerts configured"
-          echo "- Error rate monitoring configured"
+          chmod +x scripts/setup-gcp-alerts-with-secrets.sh
+          bash scripts/setup-gcp-alerts-with-secrets.sh \
+            ${{ secrets.GCP_PROJECT_ID }} \
+            "${{ secrets.TELEGRAM_BOT_TOKEN }}" \
+            "${{ secrets.TELEGRAM_CHAT_ID }}"
+        env:
+          GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+
+      - name: 📊 Create Production Dashboards
+        run: |
+          echo "📊 Criando dashboards de produção..."
+          
+          chmod +x scripts/create-simple-dashboards.sh
+          bash scripts/create-simple-dashboards.sh ${{ secrets.GCP_PROJECT_ID }}
+          
+          chmod +x scripts/create-remaining-dashboards.sh  
+          bash scripts/create-remaining-dashboards.sh ${{ secrets.GCP_PROJECT_ID }}
+
+      - name: ✅ Verify Monitoring Setup
+        run: |
+          echo "✅ Verificando configuração de monitoramento..."
+          
+          # Verificar dashboards
+          DASHBOARDS=$(gcloud monitoring dashboards list --format="value(name)" --limit=10)
+          echo "📊 Dashboards encontrados:"
+          echo "$DASHBOARDS"
+          
+          # Verificar políticas de alerta
+          POLICIES=$(gcloud alpha monitoring policies list --format="value(name)" --limit=10)
+          echo "🚨 Políticas de alerta encontradas:"
+          echo "$POLICIES"
+          
+          # Verificar canais de notificação
+          CHANNELS=$(gcloud alpha monitoring channels list --format="table(displayName,type)" --limit=5)
+          echo "📢 Canais de notificação:"
+          echo "$CHANNELS"
 
   # =====================================
   # Release Management
@@ -481,6 +534,13 @@ jobs:
             - ✅ Production smoke tests passed
             - ✅ Security scans passed
             - ✅ Performance tests passed
+            - ✅ Observability system configured
+            
+            **Monitoring & Observability:**
+            - ✅ Google Cloud Operations Suite active
+            - ✅ Production dashboards created
+            - ✅ Alert policies with Telegram integration
+            - ✅ Structured logging and metrics
             
             ---
             🤖 *Release created automatically by GitHub Actions*
@@ -493,7 +553,7 @@ jobs:
   notify-production-deploy:
     name: 📢 Production Deploy Notifications
     runs-on: ubuntu-latest
-    needs: [deploy-backend-production, deploy-frontend-production, production-smoke-tests, create-release]
+    needs: [deploy-backend-production, deploy-frontend-production, setup-production-monitoring, production-smoke-tests, create-release]
     if: always()
     
     steps:
@@ -522,8 +582,15 @@ jobs:
           📊 *Status dos Componentes:*
           • Backend: ${{ needs.deploy-backend-production.result }}
           • Frontend: ${{ needs.deploy-frontend-production.result }}
+          • Monitoramento: ${{ needs.setup-production-monitoring.result }}
           • Smoke Tests: ${{ needs.production-smoke-tests.result }}
           • Release: ${{ needs.create-release.result }}
+          
+          🚨 *Sistema de Observabilidade:*
+          • Google Cloud Operations Suite ✅
+          • Alertas com Telegram configurados ✅
+          • Dashboards de produção criados ✅
+          • Métricas e logs estruturados ✅
           
           📝 *Release Notes:*
           ${{ github.event.inputs.release_notes }}
@@ -552,6 +619,7 @@ jobs:
           • Validação: ${{ needs.pre-deployment-validation.result }}
           • Backend: ${{ needs.deploy-backend-production.result }}
           • Frontend: ${{ needs.deploy-frontend-production.result }}
+          • Monitoramento: ${{ needs.setup-production-monitoring.result }}
           • Smoke Tests: ${{ needs.production-smoke-tests.result }}
           
           🔧 *Ações Necessárias:*

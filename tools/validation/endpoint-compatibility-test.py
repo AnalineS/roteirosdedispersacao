@@ -10,10 +10,64 @@ import json
 import time
 import asyncio
 import requests
+import os
+from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Any, Optional, Tuple
 from dataclasses import dataclass
 import argparse
+
+def sanitize_output_path(output_path: str) -> str:
+    """
+    Sanitizar caminho de arquivo de saída para prevenir Path Traversal
+    
+    Args:
+        output_path: Caminho fornecido pelo usuário
+        
+    Returns:
+        str: Caminho sanitizado e seguro
+        
+    Raises:
+        ValueError: Se o caminho for inseguro
+    """
+    if not output_path:
+        raise ValueError("Caminho de saída não pode ser vazio")
+    
+    # Resolver caminho absoluto e normalizar
+    try:
+        resolved_path = Path(output_path).resolve()
+    except (OSError, ValueError) as e:
+        raise ValueError(f"Caminho inválido: {e}")
+    
+    # Obter diretório atual como base segura
+    current_dir = Path.cwd().resolve()
+    
+    # Verificar se o caminho está dentro do diretório atual ou subdiretórios
+    try:
+        resolved_path.relative_to(current_dir)
+    except ValueError:
+        raise ValueError(
+            f"Caminho inseguro: arquivo deve estar no diretório atual ou subdiretórios. "
+            f"Caminho fornecido: {output_path}"
+        )
+    
+    # Verificar extensões permitidas
+    allowed_extensions = {'.json', '.txt', '.md', '.log'}
+    if resolved_path.suffix.lower() not in allowed_extensions:
+        raise ValueError(
+            f"Extensão não permitida: {resolved_path.suffix}. "
+            f"Extensões permitidas: {', '.join(allowed_extensions)}"
+        )
+    
+    # Verificar se o diretório pai existe ou pode ser criado
+    parent_dir = resolved_path.parent
+    if not parent_dir.exists():
+        try:
+            parent_dir.mkdir(parents=True, exist_ok=True)
+        except (OSError, PermissionError) as e:
+            raise ValueError(f"Não foi possível criar diretório: {e}")
+    
+    return str(resolved_path)
 
 @dataclass
 class EndpointTest:
@@ -467,9 +521,21 @@ def main():
     
     # Salvar relatório se solicitado
     if args.output:
-        with open(args.output, 'w', encoding='utf-8') as f:
-            json.dump(report, f, indent=2, ensure_ascii=False)
-        print(f"\n📄 Relatório salvo em: {args.output}")
+        try:
+            # Sanitizar caminho para prevenir Path Traversal
+            safe_output_path = sanitize_output_path(args.output)
+            
+            with open(safe_output_path, 'w', encoding='utf-8') as f:
+                json.dump(report, f, indent=2, ensure_ascii=False)
+            print(f"\n📄 Relatório salvo em: {safe_output_path}")
+            
+        except ValueError as e:
+            print(f"\n❌ Erro de segurança: {e}")
+            print("💡 Use um caminho seguro dentro do diretório atual")
+            sys.exit(1)
+        except (OSError, PermissionError) as e:
+            print(f"\n❌ Erro ao salvar arquivo: {e}")
+            sys.exit(1)
     
     # Exit code baseado no resultado
     if report['frontend_compatibility']['overall_compatible']:
