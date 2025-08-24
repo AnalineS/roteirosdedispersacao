@@ -8,7 +8,7 @@
   --text-primary: #0f172a;
   --text-secondary: #374151;
   --text-muted: #4b5563;
-  --text-light: #6b7280;
+  --text-light: #64748b;
   
   --border-default: #e5e7eb;
   --border-light: #f3f4f6;
@@ -32,9 +32,9 @@
 
 /* Dark theme */
 .dark {
-  --bg-primary: #0a0a0a;
-  --bg-secondary: #171717;
-  --bg-tertiary: #262626;
+  --bg-primary: #1e293b;
+  --bg-secondary: #334155;
+  --bg-tertiary: #475569;
   
   --text-primary: #fafafa;
   --text-secondary: #e5e5e5;
@@ -56,8 +56,8 @@
   --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.4);
   --shadow-xl: 0 8px 32px rgba(0, 0, 0, 0.5);
   
-  --overlay-bg: rgba(0, 0, 0, 0.7);
-  --code-bg: #1c1c1c;
+  --overlay-bg: rgba(30, 41, 59, 0.7);
+  --code-bg: #2d3748;
   --code-text: #79c0ff;
 }
 
@@ -157,6 +157,65 @@ a:hover {
   background-color: var(--bg-primary);
   border: 1px solid var(--border-default);
   box-shadow: var(--shadow-xl);
+}
+
+/* ============================================================================
+   ACCESSIBILITY & CONTRAST FIXES
+   Prevent white text on white/light backgrounds
+   ============================================================================ */
+
+/* Ensure proper contrast for text elements */
+.text-light-bg {
+  color: var(--text-primary) !important;
+  background-color: var(--bg-primary);
+}
+
+.text-dark-bg {
+  color: white !important;
+  background-color: var(--accent-primary);
+}
+
+/* Fix any potential white text on light backgrounds */
+[style*="color: white"][style*="background: white"],
+[style*="color: white"][style*="background-color: white"],
+[style*="color: white"][style*="background: #fff"],
+[style*="color: white"][style*="background-color: #fff"],
+[style*="color: white"][style*="background: var(--bg-primary)"],
+[style*="color: white"][style*="background-color: var(--bg-primary)"] {
+  color: var(--text-primary) !important;
+}
+
+/* Ensure white text only appears on dark backgrounds */
+[style*="color: white"] {
+  background-color: var(--accent-primary);
+}
+
+/* Override for proper dark backgrounds that should have white text */
+[style*="background: #003366"],
+[style*="background-color: #003366"],
+[style*="background: #002244"],
+[style*="background-color: #002244"],
+[style*="background: var(--accent-primary)"],
+[style*="background-color: var(--accent-primary)"],
+[style*="background: var(--accent-secondary)"],
+[style*="background-color: var(--accent-secondary)"] {
+  color: white !important;
+}
+
+/* Ensure sufficient contrast for secondary text */
+.text-secondary-enhanced {
+  color: #1e293b !important; /* Darker than --text-secondary for better contrast */
+}
+
+/* High contrast mode for accessibility */
+@media (prefers-contrast: high) {
+  :root {
+    --text-primary: #000000;
+    --text-secondary: #1a1a1a;
+    --text-muted: #333333;
+    --text-light: #4a4a4a;
+    --border-default: #666666;
+  }
 }
 
 /* Scrollbar styling for dark mode */

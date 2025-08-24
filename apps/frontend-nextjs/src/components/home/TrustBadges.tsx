@@ -127,8 +127,8 @@ export default function TrustBadges() {
         .trust-section {
           padding: var(--spacing-4xl) 0;
           background: linear-gradient(180deg, 
-            white 0%, 
-            var(--color-gray-50) 100%);
+            #ffffff 0%, 
+            #f9fafb 100%);
         }
 
         .trust-header {
@@ -222,7 +222,8 @@ export default function TrustBadges() {
         }
 
         .academic-footer {
-          background: white;
+          background: #ffffff;
+          border: 1px solid #e5e7eb;
           border-radius: var(--radius-xl);
           padding: var(--spacing-xl);
           box-shadow: var(--shadow-sm);
@@ -364,7 +365,8 @@ function BadgeCard({ badge, index }: BadgeCardProps) {
 
       <style jsx>{`
         .badge-card {
-          background: white;
+          background: #ffffff;
+          border: 1px solid #e5e7eb;
           border-radius: var(--radius-xl);
           padding: var(--spacing-xl);
           text-align: center;
@@ -423,7 +425,7 @@ function BadgeCard({ badge, index }: BadgeCardProps) {
           justify-content: center;
           margin: 0 auto var(--spacing-lg);
           background: var(--accent-color);
-          color: white;
+          color: #ffffff;
         }
 
         .badge-title {
@@ -445,8 +447,8 @@ function BadgeCard({ badge, index }: BadgeCardProps) {
           align-items: center;
           gap: var(--spacing-xs);
           padding: var(--spacing-xs) var(--spacing-sm);
-          background: var(--color-success);
-          color: white;
+          background: #10b981;
+          color: #ffffff;
           border-radius: var(--radius-full);
           font-size: var(--font-size-sm);
           font-weight: var(--font-weight-medium);

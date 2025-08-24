@@ -98,7 +98,7 @@ export default function ExperienceBanner({ onComplete }: ExperienceBannerProps) 
         left: 0,
         right: 0,
         zIndex: 99999,
-        backgroundColor: 'rgba(0, 0, 0, 0.9)',
+        backgroundColor: 'rgba(30, 41, 59, 0.85)',
         padding: '10px 20px',
         animation: 'slideDown 0.5s ease-out',
         backdropFilter: 'blur(5px)'

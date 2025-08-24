@@ -481,7 +481,7 @@ export default function HomePage() {
               <div style={{
                 fontSize: 'clamp(1rem, 2.2vw, 1.3rem)',
                 fontWeight: '600',
-                color: 'var(--text-secondary)',
+                color: '#1e293b',
                 marginTop: '0.5rem',
                 opacity: 0.9
               }}>
@@ -504,7 +504,7 @@ export default function HomePage() {
                 borderRadius: '8px',
                 border: '1px solid var(--border-default)',
                 fontSize: '0.9rem',
-                color: 'var(--text-secondary)'
+                color: '#374151'
               }}>
                 <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', flexWrap: 'wrap' }}>
                   <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
