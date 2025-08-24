@@ -2,19 +2,19 @@
 
 ## 📋 Status Atual
 
-**Última Atualização**: 2024-12-21  
-**Próxima Revisão**: 2025-01-21  
+**Última Atualização**: 2024-08-24  
+**Próxima Revisão**: 2024-09-24  
 **Responsável**: Equipe de Segurança
 
-## ✅ Vulnerabilidades Corrigidas (Dezembro 2024)
+## ✅ Vulnerabilidades Corrigidas (Agosto 2024)
 
 | Pacote | Versão Anterior | Versão Atual | CVE/ID | Severidade | Data Correção |
 |--------|----------------|--------------|---------|------------|---------------|
-| Flask-CORS | 5.0.0 | 6.0.0 | SNYK-PYTHON-FLASKCORS-9668952/3/4 | High/Medium | 2024-12-21 |
-| cryptography | 43.0.3 | 44.0.1 | SNYK-PYTHON-CRYPTOGRAPHY-8715586 | Medium | 2024-12-21 |
-| requests | 2.32.3 | 2.32.4 | SNYK-PYTHON-REQUESTS-10305723 | Medium | 2024-12-21 |
-| sentence-transformers | 2.7.0 | 3.1.0 | SNYK-PYTHON-SENTENCETRANSFORMERS-8161344 | High | 2024-12-21 |
-| setuptools | unpinned | 78.1.1 | SNYK-PYTHON-SETUPTOOLS-7448482 | High | 2024-12-21 |
+| Flask-CORS | 4.0.0 | 6.0.0 | CVE-2024-6221, CVE-2024-6839, CVE-2024-6844, CVE-2024-6866 | High/Medium | 2024-08-24 |
+| cryptography | 43.0.3 | 44.0.1 | CVE-2024-26130 | Medium | 2024-08-24 |
+| requests | 2.31.0 | 2.32.4 | CVE-2023-32681 | Medium | 2024-08-24 |
+| gunicorn | 21.2.0 | 23.0.0 | CVE-2024-6827 | Medium | 2024-08-24 |
+| sentence-transformers | 2.7.0 | 3.1.0 | Multiple CVEs | High | 2024-08-24 |
 
 ## ⚠️ Vulnerabilidades Aceitas (Risco Gerenciado)
 
@@ -77,8 +77,9 @@ Alta Severidade Pendentes: 2 (com mitigação)
 
 | Data | Decisão | Responsável | Motivo |
 |------|---------|-------------|--------|
-| 2024-12-21 | Aceitar torch vulnerabilities | Ana | Sem patch, risco baixo em HML |
-| 2024-12-21 | Atualizar todas dependências com patch | Ana | Patches disponíveis aplicados |
+| 2024-08-24 | Flask-CORS security upgrade | Ana | 4 CVEs críticos corrigidos |
+| 2024-08-24 | Requirements consolidation | Ana | Eliminar conflitos de versão |
+| 2024-08-24 | Aceitar torch vulnerabilities | Ana | Sem patch, risco baixo em HML |
 
 ## 🚨 Ações Requeridas
 
