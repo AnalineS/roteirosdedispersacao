@@ -36,15 +36,69 @@ ENV VIRTUAL_ENV=/opt/venv
 RUN python -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
-# Copiar requirements e instalar dependências
-COPY requirements.txt .
+# Copiar requirements production otimizado
+COPY archived_requirements/requirements_production.txt ./requirements.txt
 
-# Instalar dependências com otimizações
-RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
-    pip install --no-cache-dir -r requirements.txt && \
-    # Limpar cache desnecessário
-    find $VIRTUAL_ENV -name "*.pyc" -delete && \
-    find $VIRTUAL_ENV -name "__pycache__" -type d -exec rm -rf {} + || true
+# Instalar dependências em lotes otimizados para economia de espaço
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel
+
+# Lote 1: Core Flask essencial
+RUN pip install --no-cache-dir \
+    Flask==3.0.0 \
+    Flask-CORS==4.0.0 \
+    Werkzeug==3.0.1 \
+    gunicorn==21.2.0 \
+    PyJWT==2.8.0 && \
+    pip cache purge
+
+# Lote 2: AI Core (sem ML pesado)
+RUN pip install --no-cache-dir \
+    openai==1.54.0 \
+    requests==2.31.0 \
+    pydantic==2.5.0 && \
+    pip cache purge
+
+# Lote 3: Security & Validation
+RUN pip install --no-cache-dir \
+    bleach==6.1.0 \
+    user-agents==2.2.0 \
+    flask-limiter==3.5.0 \
+    validators==0.22.0 \
+    email-validator==2.0.0 \
+    jsonschema==4.23.0 && \
+    pip cache purge
+
+# Lote 4: Monitoring & Utils
+RUN pip install --no-cache-dir \
+    psutil==5.9.6 \
+    cachetools==5.3.2 \
+    typing-extensions==4.12.2 \
+    python-dateutil==2.8.2 && \
+    pip cache purge
+
+# Lote 5: Cloud & Security (opcional)
+RUN pip install --no-cache-dir \
+    google-cloud-logging==3.8.0 \
+    google-cloud-firestore==2.11.1 \
+    cryptography \
+    python-json-logger && \
+    pip cache purge
+
+# Lote 6: ML Libraries (lazy loading)
+RUN pip install --no-cache-dir \
+    sentence-transformers==2.2.2 \
+    numpy==1.24.3 \
+    scikit-learn==1.3.2 \
+    faiss-cpu==1.7.4 && \
+    pip cache purge
+
+# Limpeza agressiva do ambiente virtual
+RUN find $VIRTUAL_ENV -name "*.pyc" -delete && \
+    find $VIRTUAL_ENV -name "__pycache__" -type d -exec rm -rf {} + || true && \
+    find $VIRTUAL_ENV -name "*.pyo" -delete && \
+    find $VIRTUAL_ENV -name "*.egg-info" -type d -exec rm -rf {} + || true && \
+    find $VIRTUAL_ENV -name "test*" -type d -exec rm -rf {} + || true && \
+    find $VIRTUAL_ENV -name "docs" -type d -exec rm -rf {} + || true
 
 # === STAGE 2: RUNTIME ===
 FROM python:3.11-slim as runtime
@@ -82,11 +136,13 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 # Copiar código da aplicação
 COPY --chown=appuser:appuser . .
 
-# Limpar arquivos desnecessários
+# Limpeza agressiva de arquivos desnecessários  
 RUN rm -rf __pycache__ .pytest_cache logs temp \
     && rm -f requirements*.txt \
     && find . -name "*.pyc" -delete \
     && find . -name "__pycache__" -type d -exec rm -rf {} + || true \
+    && find . -name "*.pyo" -delete \
+    && find . -name ".git*" -exec rm -rf {} + || true \
     # Criar diretórios necessários
     && mkdir -p cache/embeddings logs \
     && chown -R appuser:appuser cache logs

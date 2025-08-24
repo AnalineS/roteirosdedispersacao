@@ -1,0 +1,82 @@
+# Dockerignore otimizado para Cloud Run
+# Cache Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Arquivos de desenvolvimento
+.git/
+.gitignore
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs locais
+logs/
+*.log
+temp/
+
+# Requirements obsoletos (manter apenas os que são usados pelos Dockerfiles)
+requirements_optimized.txt
+requirements_dev.txt
+requirements_local.txt
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# OS generated
+.DS_Store
+Thumbs.db
+
+# Documentação desnecessária no container
+README.md
+*.md
+docs/
+
+# Scripts de desenvolvimento
+scripts/
+
+# Arquivos de teste
+test_*
+*_test.py
+tests/
+
+# Configurações locais
+.env
+.env.local
+local_config.py
+
+# Node modules (se houver)
+node_modules/
+
+# Backup files
+*.bak
+*.backup
+
+# Cache e arquivos temporários grandes
+cache/embeddings/
+cache/models/
+*.pkl
+*.joblib
+
+# QA reports (não necessários em runtime)
+qa-reports/
+validation_reports/
+
+# Arquivos de segurança (nunca incluir)
+*.pem
+*.key
+*.crt
+*.p12
+
+# Docker files de outros ambientes
+Dockerfile.dev
+docker-compose*.yml
