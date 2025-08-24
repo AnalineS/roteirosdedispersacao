@@ -360,23 +360,26 @@ export default function HomePage() {
             <a
               href="/sobre"
               style={{
-                color: 'var(--text-primary)',
+                color: '#1e293b',
                 textDecoration: 'none',
                 fontWeight: '500',
                 fontSize: '0.9rem',
                 padding: '0.5rem 1rem',
                 borderRadius: '6px',
-                backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                border: '1px solid var(--border-default)',
-                transition: 'all 0.2s ease'
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                border: '1px solid #e2e8f0',
+                transition: 'all 0.2s ease',
+                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--bg-secondary)';
+                e.currentTarget.style.backgroundColor = '#f8fafc';
                 e.currentTarget.style.transform = 'translateY(-1px)';
+                e.currentTarget.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.15)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
+                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.95)';
                 e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.1)';
               }}
             >
               Sobre
@@ -384,23 +387,26 @@ export default function HomePage() {
             <a
               href="/dashboard"
               style={{
-                color: 'var(--text-primary)',
+                color: '#1e293b',
                 textDecoration: 'none',
                 fontWeight: '500',
                 fontSize: '0.9rem',
                 padding: '0.5rem 1rem',
                 borderRadius: '6px',
-                backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                border: '1px solid var(--border-default)',
-                transition: 'all 0.2s ease'
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                border: '1px solid #e2e8f0',
+                transition: 'all 0.2s ease',
+                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--bg-secondary)';
+                e.currentTarget.style.backgroundColor = '#f8fafc';
                 e.currentTarget.style.transform = 'translateY(-1px)';
+                e.currentTarget.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.15)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
+                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.95)';
                 e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.1)';
               }}
             >
               Criar conta
