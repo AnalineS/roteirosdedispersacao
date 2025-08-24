@@ -108,6 +108,7 @@ echo "3/6 - Criando alerta de alta latência..."
 # Alerta 1: Alta Latência (P95 > 5 segundos)
 cat > /tmp/alert-high-latency.yaml << EOF
 displayName: "🐌 Alta Latência - P95 > 5s"
+combiner: OR
 documentation:
   content: "A latência P95 das requisições está acima de 5 segundos. Isso indica problemas de performance que afetam a experiência do usuário."
   mimeType: "text/markdown"
@@ -141,6 +142,7 @@ echo "4/6 - Criando alerta de alta taxa de erro..."
 # Alerta 2: Taxa de Erro Alta (> 10 erros/min por 5min)
 cat > /tmp/alert-error-rate.yaml << EOF
 displayName: "🚨 Taxa de Erro Alta - >10 erros/min"
+combiner: OR
 documentation:
   content: "A taxa de erro (status 4xx e 5xx) está acima de 10 por minuto por mais de 5 minutos. Indica problemas críticos no sistema."
   mimeType: "text/markdown"
@@ -172,6 +174,7 @@ echo "5/6 - Criando alerta de indisponibilidade..."
 # Alerta 3: Serviço Indisponível (sem requisições por 10min)
 cat > /tmp/alert-service-down.yaml << EOF
 displayName: "💀 Serviço Indisponível - Sem Requisições"
+combiner: OR
 documentation:
   content: "O serviço não está recebendo requisições há mais de 10 minutos. Sistema pode estar completamente indisponível."
   mimeType: "text/markdown"
@@ -201,6 +204,7 @@ echo "6/6 - Criando alerta de uso de recursos..."
 # Alerta 4: Alto Uso de Memória (> 80%)
 cat > /tmp/alert-memory-usage.yaml << EOF
 displayName: "💾 Alto Uso de Memória - >80%"
+combiner: OR
 documentation:
   content: "O uso de memória do container está acima de 80%. Sistema pode começar a apresentar instabilidade."
   mimeType: "text/markdown"
