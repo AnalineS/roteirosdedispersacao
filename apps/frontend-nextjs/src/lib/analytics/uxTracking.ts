@@ -46,11 +46,15 @@ class UXAnalytics {
   private sessionId: string;
   private userId: string | null = null;
   private startTime: number;
+  private isClient: boolean;
 
   constructor() {
+    this.isClient = typeof window !== 'undefined';
     this.sessionId = this.generateSessionId();
     this.startTime = Date.now();
-    this.initializeTracking();
+    if (this.isClient) {
+      this.initializeTracking();
+    }
   }
 
   private generateSessionId(): string {
@@ -134,7 +138,7 @@ class UXAnalytics {
   // COGNITIVE LOAD TRACKING
   // =====================================
 
-  private trackCognitiveLoad() {
+  public trackCognitiveLoad() {
     const observer = new MutationObserver(() => {
       this.measureCognitiveLoad();
     });
@@ -199,6 +203,7 @@ class UXAnalytics {
   }
 
   private calculateInformationDensity(): number {
+    if (!this.isClient) return 0;
     const textContent = document.body.innerText.length;
     const viewport = window.innerWidth * window.innerHeight;
     return textContent / viewport * 1000; // Characters per 1000px²
@@ -212,6 +217,7 @@ class UXAnalytics {
   }
 
   private getScrollDepth(): number {
+    if (!this.isClient) return 0;
     const scrollTop = window.pageYOffset;
     const docHeight = document.documentElement.scrollHeight - window.innerHeight;
     return docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
@@ -274,10 +280,12 @@ class UXAnalytics {
   }
 
   private isMobileDevice(): boolean {
+    if (!this.isClient) return false;
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
   }
 
   private getDeviceType(): string {
+    if (!this.isClient) return 'server';
     const width = window.innerWidth;
     if (width < 768) return 'mobile';
     if (width < 1024) return 'tablet';
@@ -299,6 +307,7 @@ class UXAnalytics {
   }
 
   private detectHorizontalScroll(): boolean {
+    if (!this.isClient) return false;
     return document.documentElement.scrollWidth > window.innerWidth;
   }
 
@@ -560,8 +569,48 @@ class UXAnalytics {
   }
 }
 
-// Export singleton instance
-export const uxAnalytics = new UXAnalytics();
+// Export singleton instance with client-side check
+let uxAnalyticsInstance: UXAnalytics | null = null;
+
+export const uxAnalytics = {
+  getInstance(): UXAnalytics | null {
+    if (typeof window === 'undefined') return null;
+    if (!uxAnalyticsInstance) {
+      uxAnalyticsInstance = new UXAnalytics();
+    }
+    return uxAnalyticsInstance;
+  },
+  
+  trackCognitiveLoad() {
+    const instance = this.getInstance();
+    if (instance) instance.trackCognitiveLoad();
+  },
+  
+  trackEvent(event: UXEvent) {
+    const instance = this.getInstance();
+    if (instance) instance.trackEvent(event);
+  },
+  
+  trackOnboardingStart() {
+    const instance = this.getInstance();
+    if (instance && instance.trackOnboardingStep) instance.trackOnboardingStep(1);
+  },
+  
+  trackOnboardingCompleted() {
+    const instance = this.getInstance();
+    if (instance && instance.trackOnboardingCompletion) instance.trackOnboardingCompletion();
+  },
+  
+  trackOnboardingAbandoned(reason: string) {
+    const instance = this.getInstance();
+    if (instance && instance.trackOnboardingAbandonment) instance.trackOnboardingAbandonment(reason);
+  },
+  
+  trackOnboardingStep(step: number) {
+    const instance = this.getInstance();
+    if (instance) instance.trackOnboardingStep?.(step);
+  }
+};
 
 // Export utility functions
 export const trackCognitiveOverload = (score: number, context: string) => {

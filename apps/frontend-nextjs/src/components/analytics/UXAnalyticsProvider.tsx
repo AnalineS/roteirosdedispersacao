@@ -103,7 +103,7 @@ export function UXAnalyticsProvider({
   };
 
   const trackOnboardingAbandonment = (reason: string) => {
-    uxAnalytics.trackOnboardingAbandonment(reason);
+    uxAnalytics.trackOnboardingAbandoned(reason);
   };
 
   const contextValue: UXAnalyticsContextType = {

@@ -101,6 +101,7 @@ export class MedicalAnalytics {
    * Inicializar sessão de analytics
    */
   private initializeSession(): void {
+    if (typeof window === 'undefined') return;
     // Detectar tipo de dispositivo
     const deviceType = this.getDeviceType();
     const viewportSize = `${window.innerWidth}x${window.innerHeight}`;
@@ -336,6 +337,7 @@ export class MedicalAnalytics {
    * Tracking de métricas de performance
    */
   private trackPerformanceMetrics(): void {
+    if (typeof window === 'undefined' || !('performance' in window) || !('getEntriesByType' in performance)) return;
     if ('performance' in window && 'getEntriesByType' in performance) {
       window.addEventListener('load', () => {
         setTimeout(() => {
@@ -359,6 +361,7 @@ export class MedicalAnalytics {
    * Configurar tracking de erros
    */
   private setupErrorTracking(): void {
+    if (typeof window === 'undefined') return;
     window.addEventListener('error', (event) => {
       this.trackMedicalError({
         type: 'system_error',
@@ -398,6 +401,7 @@ export class MedicalAnalytics {
    * Utilitários
    */
   private getDeviceType(): 'mobile' | 'tablet' | 'desktop' {
+    if (typeof window === 'undefined') return 'desktop';
     const width = window.innerWidth;
     if (width < 768) return 'mobile';
     if (width < 1024) return 'tablet';
@@ -430,7 +434,38 @@ export class MedicalAnalytics {
 }
 
 // Instância singleton
-export const medicalAnalytics = MedicalAnalytics.getInstance();
+// Export lazy initialization to prevent SSR issues
+export const medicalAnalytics = {
+  getInstance: () => typeof window !== 'undefined' ? MedicalAnalytics.getInstance() : null,
+  trackEvent: (event: MedicalAnalyticsEvent) => {
+    const instance = typeof window !== 'undefined' ? MedicalAnalytics.getInstance() : null;
+    if (instance) instance.trackEvent(event);
+  },
+  trackMedicalError: (error: any) => {
+    const instance = typeof window !== 'undefined' ? MedicalAnalytics.getInstance() : null;
+    if (instance) instance.trackMedicalError(error);
+  },
+  trackClinicalTask: (task: ClinicalTaskMetrics) => {
+    const instance = typeof window !== 'undefined' ? MedicalAnalytics.getInstance() : null;
+    if (instance) instance.startClinicalTask(task.taskId, task.taskType);
+  },
+  trackCriticalMedicalAction: (action: any) => {
+    const instance = typeof window !== 'undefined' ? MedicalAnalytics.getInstance() : null;
+    if (instance) instance.trackCriticalMedicalAction(action);
+  },
+  trackFastAccessUsage: (shortcutId: string, context: any) => {
+    const instance = typeof window !== 'undefined' ? MedicalAnalytics.getInstance() : null;
+    if (instance) instance.trackFastAccessUsage(shortcutId, context);
+  },
+  trackFeatureFlagUsage: (flagKey: string, flagValue: boolean, source: string) => {
+    const instance = typeof window !== 'undefined' ? MedicalAnalytics.getInstance() : null;
+    if (instance) instance.trackFeatureFlagUsage(flagKey, flagValue, source);
+  },
+  setUserRole: (role: any) => {
+    const instance = typeof window !== 'undefined' ? MedicalAnalytics.getInstance() : null;
+    if (instance) instance.setUserRole(role);
+  }
+};
 
 // Funções utilitárias para uso direto
 export const trackCriticalAction = (action: Parameters<MedicalAnalytics['trackCriticalMedicalAction']>[0]) => {
