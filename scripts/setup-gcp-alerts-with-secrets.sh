@@ -46,7 +46,7 @@ EMAIL_CHANNEL_NAME="Email-Roteiro-Dispensacao-$(date +%s)"
 gcloud alpha monitoring channels create \
     --display-name="$EMAIL_CHANNEL_NAME" \
     --type=email \
-    --channel-labels=email_address=admin@roteirosdedispensacao.com \
+    --channel-labels=email_address=roteirosdedispensacaounb@gmail.com \
     --description="Canal principal para alertas críticos do sistema" \
     --quiet
 
@@ -243,7 +243,7 @@ echo "  • 💀 Serviço Indisponível (sem requests 10min)"
 echo "  • 💾 Alto Uso de Memória (>80%)"
 echo ""
 echo "📧 Canais de notificação:"
-echo "  • Email: admin@roteirosdedispensacao.com"
+echo "  • Email: roteirosdedispensacaounb@gmail.com"
 echo "  • Telegram: Chat ID $TELEGRAM_CHAT_ID"
 echo ""
 echo "🔗 Gerenciar alertas:"

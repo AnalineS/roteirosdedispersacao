@@ -42,7 +42,7 @@ echo "1/6 - Criando canal de notificação por email..."
 gcloud alpha monitoring channels create \
     --display-name="Email Principal - Roteiro Dispensação" \
     --type=email \
-    --channel-labels=email_address=admin@roteirosdedispensacao.com \
+    --channel-labels=email_address=roteirosdedispensacaounb@gmail.com \
     --description="Canal principal para alertas críticos do sistema"
 
 EMAIL_CHANNEL_ID=$(gcloud alpha monitoring channels list --filter="displayName:'Email Principal - Roteiro Dispensação'" --format="value(name)" | head -1)
@@ -233,7 +233,7 @@ echo "  • 💾 Alto Uso de Memória (>80%)"
 echo "  • 🤖 Falhas nas Personas (Taxa Alta)"
 echo ""
 echo "📧 Canais de notificação:"
-echo "  • Email: admin@roteirosdedispensacao.com"
+echo "  • Email: roteirosdedispensacaounb@gmail.com"
 if [ "$TELEGRAM_ENABLED" = true ]; then
 echo "  • Telegram: Configurado"
 else
