@@ -847,11 +847,20 @@ def medical_health_check():
         }
         
         # SECURITY: Compliant with OWASP A09:2021 - Security Logging and Monitoring Failures
-        # CWE-312/359/532 Prevention: Only log non-sensitive operational metadata
-        # - medical_status: Contains only "healthy" or "degraded" (no patient data)
-        # - request_id: UUID for correlation (no PII or medical information)
+        # CWE-312/359/532 Prevention: Log only operational metadata without variable interpolation
         # NEVER log: patient data, medication details, dosages, diagnoses, or treatment information
-        logger.info(f"Medical health check completed - Status: {medical_status}, Request ID: {request_id}")
+        
+        # Use structured logging with explicit parameters to prevent injection
+        logger.info(
+            "Medical health check completed",
+            extra={
+                "event": "medical_health_check_completed",
+                "status": "completed",
+                "has_issues": len(medical_issues) > 0,
+                "request_id": request_id[:8] + "..." if request_id else None,  # Truncated for privacy
+                "timestamp": datetime.now().isoformat()
+            }
+        )
         
         return jsonify(response), 200
         

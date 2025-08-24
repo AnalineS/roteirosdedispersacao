@@ -9,14 +9,76 @@
 import DOMPurify from 'dompurify';
 
 /**
+ * Sanitização robusta server-side para HTML
+ * Implementa estratégia multi-passo para evitar bypass de regex simples
+ * Referência: OWASP Cheat Sheet - Input Validation
+ */
+function sanitizeHTMLServerSide(html: string): string {
+  if (!html || typeof html !== 'string') {
+    return '';
+  }
+
+  let sanitized = html;
+  
+  // Passo 1: Remover caracteres de controle e não-imprimíveis
+  sanitized = sanitized.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
+  
+  // Passo 2: Aplicar múltiplas passadas de remoção de tags para evitar bypass
+  // Como recomendado pelo CodeQL, aplicar até não haver mais mudanças
+  let previous = '';
+  let iterations = 0;
+  const maxIterations = 10; // Prevenir loop infinito
+  
+  do {
+    previous = sanitized;
+    
+    // Remover tags HTML básicas (incluindo tags malformadas)
+    sanitized = sanitized.replace(/<[^>]*>/g, '');
+    
+    // Remover tentativas de bypass como <<script>alert()>/script>
+    sanitized = sanitized.replace(/<+|>+/g, '');
+    
+    // Remover protocolos perigosos
+    sanitized = sanitized.replace(/javascript:/gi, '');
+    sanitized = sanitized.replace(/data:text\/html/gi, '');
+    sanitized = sanitized.replace(/vbscript:/gi, '');
+    
+    // Remover event handlers
+    sanitized = sanitized.replace(/on\w+\s*=/gi, '');
+    
+    iterations++;
+  } while (sanitized !== previous && iterations < maxIterations);
+  
+  // Passo 3: Escape final de caracteres perigosos remanescentes
+  const escapeMap: Record<string, string> = {
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#x27;',
+    '&': '&amp;',
+    '/': '&#x2F;'
+  };
+  
+  sanitized = sanitized.replace(/[<>"'&\/]/g, (char) => escapeMap[char] || char);
+  
+  // Passo 4: Limitar tamanho para prevenir DoS
+  const maxLength = 50000;
+  if (sanitized.length > maxLength) {
+    sanitized = sanitized.substring(0, maxLength);
+  }
+  
+  return sanitized.trim();
+}
+
+/**
  * Sanitiza HTML removendo tags e atributos perigosos
  * Usa DOMPurify - biblioteca robusta e bem testada para evitar XSS
  */
 export function sanitizeHTML(html: string): string {
   // Verificar se estamos no navegador
   if (typeof window === 'undefined') {
-    // No servidor, remover todas as tags HTML como fallback seguro
-    return html.replace(/<[^>]*>/g, '');
+    // No servidor, usar sanitização robusta multi-passo para evitar bypass
+    return sanitizeHTMLServerSide(html);
   }
 
   // Configurar DOMPurify com configurações seguras
@@ -79,24 +141,46 @@ export function sanitizeInput(input: string): string {
 
 /**
  * Sanitiza nome de arquivo removendo caracteres perigosos
- * Previne path traversal e outros ataques
+ * Previne path traversal e outros ataques usando estratégia multi-passo
+ * Referência: OWASP Path Traversal Prevention
  */
 export function sanitizeFilename(filename: string): string {
   if (!filename || typeof filename !== 'string') {
     return 'file';
   }
 
-  // Remover path traversal e caracteres perigosos
-  const sanitized = filename
-    .replace(/\.\./g, '') // Remover ..
-    .replace(/[\/\\]/g, '') // Remover / e \
-    .replace(/^\.+/, '') // Remover . no início
+  let sanitized = filename;
+  let previous = '';
+  let iterations = 0;
+  const maxIterations = 10;
+
+  // Aplicar sanitização repetidamente para evitar bypass
+  do {
+    previous = sanitized;
+    
+    // Remover path traversal patterns (aplicar múltiplas vezes)
+    sanitized = sanitized.replace(/\.\./g, ''); // Remover ..
+    sanitized = sanitized.replace(/\.\/|\\\.\\|\.\\|\\\./g, ''); // Variações de path traversal
+    
+    // Remover barras e caracteres de path
+    sanitized = sanitized.replace(/[\/\\]/g, ''); // Remover / e \
+    
+    // Remover pontos no início
+    sanitized = sanitized.replace(/^\.+/, '');
+    
+    iterations++;
+  } while (sanitized !== previous && iterations < maxIterations);
+
+  // Limpar caracteres perigosos restantes
+  sanitized = sanitized
     .replace(/[\x00-\x1F\x7F<>:"|?*]/g, '') // Remover caracteres inválidos
     .replace(/\s+/g, '_') // Substituir espaços por _
+    .replace(/[^\w\-_.]/g, '') // Manter apenas alfanuméricos, hífen, underscore e ponto
     .substring(0, 255); // Limitar tamanho
 
-  // Se ficou vazio, usar nome padrão
-  return sanitized || 'file';
+  // Se ficou vazio ou apenas pontos/underscores, usar nome padrão
+  const cleanName = sanitized.replace(/^[._]+|[._]+$/g, '');
+  return cleanName || 'file';
 }
 
 /**
