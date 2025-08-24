@@ -87,7 +87,10 @@ export default function HomePage() {
   const { toasts, addToast } = useToast();
   const router = useRouter();
 
-  if (loading) {
+  // Temporariamente ignorar loading para mostrar conteúdo
+  const shouldShowContent = true;
+
+  if (loading && !shouldShowContent) {
     return (
       <div className="flex items-center justify-center" style={{
         minHeight: '30vh',
@@ -114,7 +117,7 @@ export default function HomePage() {
     );
   }
 
-  if (error) {
+  if (error && !shouldShowContent) {
     return (
       <div className="flex items-center justify-center" style={{
         minHeight: '100vh',
