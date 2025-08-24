@@ -7,6 +7,7 @@ import { getPersonaAvatar } from '@/constants/avatars';
 import { useChat } from '@/hooks/useChat';
 import { useAuth } from '@/hooks/useAuth';
 import { useFloatingElement } from '@/components/navigation/FloatingElementsCoordinator';
+import { useFABVisibility } from '@/hooks/useResponsiveScreen';
 
 interface GlobalPersonaFABProps {
   className?: string;
@@ -14,7 +15,6 @@ interface GlobalPersonaFABProps {
 }
 
 export default function GlobalPersonaFAB({ className, style }: GlobalPersonaFABProps) {
-  const [isVisible, setIsVisible] = useState(true);
   const [showTooltip, setShowTooltip] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [miniChatInput, setMiniChatInput] = useState('');
@@ -22,7 +22,16 @@ export default function GlobalPersonaFAB({ className, style }: GlobalPersonaFABP
   const pathname = usePathname();
   const miniChatRef = useRef<HTMLDivElement>(null);
   
-  // Usar coordenador de elementos flutuantes
+  // Usar sistema responsivo para FAB
+  const { 
+    isVisible, 
+    closeFAB, 
+    fabConfig, 
+    screenSize, 
+    isClient 
+  } = useFABVisibility();
+  
+  // Usar coordenador de elementos flutuantes (mantido para compatibilidade)
   const { optimalPosition, updateVisibility } = useFloatingElement(
     'persona-fab',
     'bottom-right',
@@ -117,13 +126,7 @@ export default function GlobalPersonaFAB({ className, style }: GlobalPersonaFABP
   };
 
   const handleClose = () => {
-    setIsVisible(false);
-    // Save closed state to sessionStorage (só para a sessão atual)
-    const closeData = {
-      timestamp: Date.now(),
-      closed: true
-    };
-    sessionStorage.setItem('fab_closed', JSON.stringify(closeData));
+    closeFAB();
   };
 
   // Click outside to close mini chat
@@ -138,38 +141,21 @@ export default function GlobalPersonaFAB({ className, style }: GlobalPersonaFABP
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isExpanded]);
 
-  // Check if FAB was closed in this session and if we're on chat page
-  useEffect(() => {
-    // Não mostrar FAB na página do chat
-    if (pathname === '/chat') {
-      setIsVisible(false);
-      return;
-    }
+  // Sistema responsivo já gerencia visibilidade baseada na página
+  // Mantido apenas para compatibilidade com outros sistemas
 
-    // Verificar se foi fechado nesta sessão
-    const fabClosed = sessionStorage.getItem('fab_closed');
-    if (fabClosed) {
-      try {
-        const data = JSON.parse(fabClosed);
-        if (data.closed) {
-          setIsVisible(false);
-        }
-      } catch (error) {
-        sessionStorage.removeItem('fab_closed');
-      }
-    }
-  }, [pathname]);
-
-  if (!isVisible) return null;
+  // Não renderizar no servidor ou se não visível
+  if (!isClient || !isVisible) return null;
 
   return (
     <div 
       className={className}
       style={{
         position: 'fixed',
-        bottom: '24px',
-        right: '24px',
-        zIndex: 1000,
+        bottom: `${fabConfig.bottomOffset}px`,
+        right: `${fabConfig.rightOffset}px`,
+        zIndex: fabConfig.zIndex,
+        transition: 'all 0.3s ease',
         ...style
       }}
     >
@@ -181,8 +167,8 @@ export default function GlobalPersonaFAB({ className, style }: GlobalPersonaFABP
           onMouseEnter={() => setShowTooltip(true)}
           onMouseLeave={() => setShowTooltip(false)}
           style={{
-            width: '64px',
-            height: '64px',
+            width: `${fabConfig.size}px`,
+            height: `${fabConfig.size}px`,
             backgroundColor: '#003366',
             border: 'none',
             borderRadius: '50%',
@@ -209,8 +195,8 @@ export default function GlobalPersonaFAB({ className, style }: GlobalPersonaFABP
           <Image
             src={personaAvatar}
             alt={`Avatar de ${personaName}`}
-            width={48}
-            height={48}
+            width={Math.round(fabConfig.size * 0.75)}
+            height={Math.round(fabConfig.size * 0.75)}
             style={{
               borderRadius: '50%',
               objectFit: 'cover'
@@ -218,28 +204,28 @@ export default function GlobalPersonaFAB({ className, style }: GlobalPersonaFABP
           />
         </button>
 
-        {/* Close button - sempre visível, menor e posicionado para não interferir */}
+        {/* Close button - responsivo e sempre visível */}
         <button
           onClick={handleClose}
           style={{
             position: 'absolute',
-            top: '-4px',
-            right: '-4px',
-            width: '20px',
-            height: '20px',
+            top: '-2px',
+            right: '-2px',
+            width: screenSize.isMobile ? '18px' : '16px',
+            height: screenSize.isMobile ? '18px' : '16px',
             backgroundColor: 'rgba(255, 255, 255, 0.95)',
             color: '#666',
             border: '1px solid rgba(0, 0, 0, 0.1)',
             borderRadius: '50%',
             cursor: 'pointer',
-            fontSize: '12px',
+            fontSize: screenSize.isMobile ? '11px' : '10px',
             fontWeight: 'bold',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             transition: 'all 0.2s ease',
             boxShadow: '0 1px 3px rgba(0, 0, 0, 0.12)',
-            zIndex: 1001,
+            zIndex: fabConfig.zIndex + 10,
             opacity: 0.9,
             padding: 0,
             lineHeight: 1
@@ -270,10 +256,10 @@ export default function GlobalPersonaFAB({ className, style }: GlobalPersonaFABP
             ref={miniChatRef}
             style={{
               position: 'absolute',
-              bottom: '80px',
-              right: '0px',
-              width: '320px',
-              height: '400px',
+              bottom: `${fabConfig.size + 16}px`,
+              right: screenSize.isMobile ? `${fabConfig.rightOffset - fabConfig.miniChatWidth + fabConfig.size}px` : '0px',
+              width: `${fabConfig.miniChatWidth}px`,
+              height: `${fabConfig.miniChatHeight}px`,
               backgroundColor: 'white',
               borderRadius: '16px',
               boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
@@ -281,7 +267,15 @@ export default function GlobalPersonaFAB({ className, style }: GlobalPersonaFABP
               display: 'flex',
               flexDirection: 'column',
               overflow: 'hidden',
-              zIndex: 1000
+              zIndex: fabConfig.zIndex + 1,
+              // Responsivo para mobile
+              ...(screenSize.isMobile && {
+                position: 'fixed',
+                bottom: `${fabConfig.bottomOffset + fabConfig.size + 16}px`,
+                right: `${fabConfig.rightOffset}px`,
+                left: `${fabConfig.rightOffset}px`,
+                width: 'auto'
+              })
             }}
           >
             {/* Mini Chat Header */}
@@ -533,23 +527,23 @@ export default function GlobalPersonaFAB({ className, style }: GlobalPersonaFABP
           </div>
         )}
 
-        {/* Persona name tooltip */}
-        {showTooltip && (
+        {/* Persona name tooltip - responsivo */}
+        {showTooltip && !screenSize.isMobile && (
           <div style={{
             position: 'absolute',
-            bottom: '20px',
-            right: '80px',
+            bottom: `${Math.round(fabConfig.size * 0.3)}px`,
+            right: `${fabConfig.size + 16}px`,
             backgroundColor: 'rgba(0, 0, 0, 0.8)',
             color: 'white',
             padding: '6px 10px',
             borderRadius: '6px',
-            fontSize: '12px',
+            fontSize: screenSize.isLargeDesktop ? '13px' : '12px',
             whiteSpace: 'nowrap',
             opacity: 1,
             transition: 'opacity 0.2s ease',
             pointerEvents: 'none',
             boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
-            zIndex: 999
+            zIndex: fabConfig.zIndex - 1
           }}>
             {personaName}
             {/* Small arrow */}

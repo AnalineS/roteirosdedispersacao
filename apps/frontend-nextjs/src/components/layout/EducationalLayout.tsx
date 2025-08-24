@@ -13,6 +13,7 @@ import QuickNavigationMenu from '@/components/navigation/QuickNavigationMenu';
 import { GlobalNavigationProvider } from '@/components/navigation/GlobalNavigationProvider';
 import { FloatingElementsCoordinator } from '@/components/navigation/FloatingElementsCoordinator';
 import { SmartNavigationProvider } from '@/components/navigation/SmartNavigationSystem';
+import FABCollisionDetector from '@/components/layout/FABCollisionDetector';
 
 interface EducationalLayoutProps {
   children: ReactNode;
@@ -73,9 +74,11 @@ export default function EducationalLayout({
           </header>
         )}
         
-        {/* Page Content */}
+        {/* Page Content com detecção de colisão do FAB */}
         <main className="content-main hierarchy-section" id="main-content" tabIndex={-1}>
-          {children}
+          <FABCollisionDetector>
+            {children}
+          </FABCollisionDetector>
         </main>
       </div>
 
