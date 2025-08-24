@@ -181,7 +181,7 @@ documentation:
 conditions:
   - displayName: "No Requests for 10min"
     conditionAbsent:
-      filter: 'resource.type="cloud_run_revision" metric.type="run.googleapis.com/request_count" resource.label.service_name=~".*roteiro.*"'
+      filter: 'resource.type="cloud_run_revision" metric.type="run.googleapis.com/request_count" resource.label.service_name:"roteiro"'
       aggregations:
         - alignmentPeriod: 60s
           perSeriesAligner: ALIGN_RATE
