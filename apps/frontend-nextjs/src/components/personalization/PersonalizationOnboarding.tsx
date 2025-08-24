@@ -457,30 +457,47 @@ export default function PersonalizationOnboarding({
   if (!isOpen || !flags?.personalization_system) return null;
 
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      background: 'rgba(0, 0, 0, 0.5)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 1000,
-      padding: '1rem'
-    }}>
+    <>
+      {/* Popup CSS Animations */}
+      <style jsx global>{`
+        @keyframes popupBounce {
+          0% { opacity: 0; transform: scale(0.7) translateY(-50px); }
+          50% { opacity: 1; transform: scale(1.05) translateY(0px); }
+          100% { opacity: 1; transform: scale(1) translateY(0px); }
+        }
+        
+        @keyframes pulseGlow {
+          0%, 100% { box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25), 0 0 0 0 rgba(245, 158, 11, 0.4); }
+          50% { box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25), 0 0 0 10px rgba(245, 158, 11, 0.1); }
+        }
+      `}</style>
+      
       <div style={{
-        background: 'white',
-        borderRadius: '16px',
-        width: '100%',
-        maxWidth: '800px',
-        maxHeight: '90vh',
-        overflow: 'auto',
-        boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1)',
-        transform: isAnimating ? 'scale(0.98)' : 'scale(1)',
-        transition: 'transform 0.15s ease'
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: 'rgba(0, 0, 0, 0.7)',
+        display: 'flex',
+        alignItems: 'flex-start',
+        justifyContent: 'center',
+        zIndex: 9999,
+        padding: '20px',
+        paddingTop: '40px'
       }}>
+        <div style={{
+          background: 'white',
+          borderRadius: '16px',
+          width: '100%',
+          maxWidth: '600px',
+          maxHeight: '85vh',
+          overflow: 'auto',
+          transform: isAnimating ? 'scale(0.98)' : 'scale(1)',
+          transition: 'transform 0.15s ease',
+          border: '3px solid #f59e0b',
+          animation: 'popupBounce 0.5s ease-out, pulseGlow 2s ease-in-out infinite'
+        }}>
         {/* Header */}
         <div style={{
           padding: '1.5rem 2rem',
@@ -621,5 +638,6 @@ export default function PersonalizationOnboarding({
         </div>
       </div>
     </div>
+    </>
   );
 }

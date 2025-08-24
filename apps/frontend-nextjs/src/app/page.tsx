@@ -32,6 +32,7 @@ import {
   PhoneIcon,
   getIconByEmoji 
 } from '@/components/icons/NavigationIcons';
+import ExperienceBanner from '@/components/onboarding/ExperienceBanner';
 import { MedicalLoadingSpinner } from '@/components/ui/LoadingStates';
 import dynamic from 'next/dynamic';
 
@@ -58,15 +59,25 @@ export default function HomePage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center" style={{
-        minHeight: '100vh',
-        backgroundColor: '#f8fafc'
+        minHeight: '30vh',
+        backgroundColor: 'transparent'
       }}>
         <div className="text-center">
-          <MedicalLoadingSpinner 
-            size="large" 
-            variant="medical" 
-          />
-          <MedicalAnimation type="pulse" intensity="subtle" size={16} />
+          <div style={{
+            width: '40px',
+            height: '40px',
+            border: '3px solid #f3f3f3',
+            borderTop: '3px solid #003366',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+            margin: '0 auto'
+          }}></div>
+          <style jsx>{`
+            @keyframes spin {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(360deg); }
+            }
+          `}</style>
         </div>
       </div>
     );
@@ -120,6 +131,7 @@ export default function HomePage() {
   return (
     <PageTransition>
       <PersonalizationProvider>
+        <ExperienceBanner />
         {/* Onboarding Tour */}
         <OnboardingTour onComplete={() => {
           addToast({
@@ -314,118 +326,89 @@ export default function HomePage() {
           zIndex: 0
         }}></div>
 
-        {/* Barra de Navegação Ligeira */}
+        {/* Barra de Navegação Simplificada */}
         <nav style={{
-          position: 'sticky',
-          top: '0',
-          backgroundColor: 'rgba(var(--bg-primary), 0.95)',
-          backdropFilter: 'blur(10px)',
-          borderBottom: '1px solid var(--border-default)',
-          padding: '1rem 0',
+          position: 'absolute',
+          top: '20px',
+          right: '20px',
           zIndex: 100
         }}>
           <div style={{
-            maxWidth: 'min(1200px, 95vw)',
-            margin: '0 auto',
             display: 'flex',
-            justifyContent: 'center',
             gap: '1rem',
-            flexWrap: 'wrap'
+            alignItems: 'center'
           }}>
             <a
-              href="#assistentes"
+              href="/sobre"
               style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                color: 'var(--accent-primary)',
+                color: 'var(--text-primary)',
+                textDecoration: 'none',
+                fontWeight: '500',
+                fontSize: '0.9rem',
+                padding: '0.5rem 1rem',
+                borderRadius: '6px',
+                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                border: '1px solid var(--border-default)',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'var(--bg-secondary)';
+                e.currentTarget.style.transform = 'translateY(-1px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }}
+            >
+              Sobre
+            </a>
+            <a
+              href="/dashboard"
+              style={{
+                color: 'var(--text-primary)',
+                textDecoration: 'none',
+                fontWeight: '500',
+                fontSize: '0.9rem',
+                padding: '0.5rem 1rem',
+                borderRadius: '6px',
+                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                border: '1px solid var(--border-default)',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'var(--bg-secondary)';
+                e.currentTarget.style.transform = 'translateY(-1px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }}
+            >
+              Criar conta
+            </a>
+            <a
+              href="/chat"
+              style={{
+                color: 'white',
                 textDecoration: 'none',
                 fontWeight: '600',
-                fontSize: '0.95rem',
-                padding: '0.75rem 1.25rem',
-                borderRadius: '8px',
-                border: '2px solid var(--accent-primary)',
-                backgroundColor: 'var(--bg-primary)',
-                transition: 'all 0.2s ease',
-                minWidth: '140px',
-                justifyContent: 'center'
+                fontSize: '0.9rem',
+                padding: '0.6rem 1.2rem',
+                borderRadius: '6px',
+                backgroundColor: 'var(--accent-primary)',
+                border: 'none',
+                transition: 'all 0.2s ease'
               }}
               onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'var(--accent-secondary)';
+                e.currentTarget.style.transform = 'translateY(-1px)';
+              }}
+              onMouseLeave={(e) => {
                 e.currentTarget.style.backgroundColor = 'var(--accent-primary)';
-                e.currentTarget.style.color = 'white';
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,51,102,0.3)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--bg-primary)';
-                e.currentTarget.style.color = 'var(--accent-primary)';
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = 'none';
-              }}
-            >
-              🤖 Assistentes IA
-            </a>
-            <a
-              href="#faq"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                color: 'var(--text-primary)',
-                textDecoration: 'none',
-                fontWeight: '500',
-                fontSize: '0.95rem',
-                padding: '0.75rem 1.25rem',
-                borderRadius: '8px',
-                border: '2px solid var(--border-default)',
-                backgroundColor: 'transparent',
-                transition: 'all 0.2s ease',
-                minWidth: '140px',
-                justifyContent: 'center'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--bg-secondary)';
-                e.currentTarget.style.borderColor = 'var(--accent-secondary)';
-                e.currentTarget.style.transform = 'translateY(-1px)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
-                e.currentTarget.style.borderColor = 'var(--border-default)';
                 e.currentTarget.style.transform = 'translateY(0)';
               }}
             >
-              ❓ Dúvidas Frequentes
-            </a>
-            <a
-              href="#suporte"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                color: 'var(--text-primary)',
-                textDecoration: 'none',
-                fontWeight: '500',
-                fontSize: '0.95rem',
-                padding: '0.75rem 1.25rem',
-                borderRadius: '8px',
-                border: '2px solid var(--border-default)',
-                backgroundColor: 'transparent',
-                transition: 'all 0.2s ease',
-                minWidth: '140px',
-                justifyContent: 'center'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--bg-secondary)';
-                e.currentTarget.style.borderColor = 'var(--accent-secondary)';
-                e.currentTarget.style.transform = 'translateY(-1px)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
-                e.currentTarget.style.borderColor = 'var(--border-default)';
-                e.currentTarget.style.transform = 'translateY(0)';
-              }}
-            >
-              🆘 Canais de Suporte
+              Entrar
             </a>
           </div>
         </nav>

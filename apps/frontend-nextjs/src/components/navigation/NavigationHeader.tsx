@@ -413,23 +413,6 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
       </div>
 
 
-      {/* Barra de Busca Inteligente - Centro */}
-      {!isMobile && (
-        <div className="nav-search-section" style={{
-          flex: 1,
-          maxWidth: isTablet ? '500px' : '800px',
-          margin: isTablet ? '0 1rem' : '0 1.5rem',
-          display: 'flex',
-          justifyContent: 'center'
-        }}>
-          <IntelligentSearchSystem 
-            placeholder="Buscar conteúdo sobre hanseníase..."
-            showFilters={false}
-            defaultAudience="general"
-            className="header-search"
-          />
-        </div>
-      )}
 
       {/* Navegação Principal - Centro (Desktop/Tablet) */}
       {!isMobile && (
@@ -716,12 +699,6 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
 
       {/* Área de Personas e Usuário - Direita */}
       <div className="nav-actions-section">
-        {/* Theme Toggle (Desktop/Tablet) */}
-        {!isMobile && (
-          <div style={{ marginRight: isTablet ? '0.25rem' : '0.5rem' }}>
-            <ThemeToggle />
-          </div>
-        )}
 
         {/* Persona Atual (Desktop/Tablet) */}
         {!isMobile && currentPersonaData && (
@@ -754,51 +731,129 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
           </div>
         )}
 
-        {/* Admin Link + Authentication Section */}
+        {/* Simplified Navigation Links */}
         <div style={{
           marginLeft: 'auto',
           display: 'flex',
           alignItems: 'center',
-          gap: '8px'
+          gap: isMobile ? '4px' : '12px'
         }}>
+          {!isMobile && (
+            <>
+              <Link 
+                href="/sobre"
+                style={{
+                  color: unbColors.white,
+                  textDecoration: 'none',
+                  fontSize: '0.9rem',
+                  fontWeight: '500',
+                  padding: '6px 12px',
+                  borderRadius: '6px',
+                  transition: 'all 0.2s ease',
+                  opacity: 0.9
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = unbColors.alpha.secondary;
+                  e.currentTarget.style.opacity = '1';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.opacity = '0.9';
+                }}
+              >
+                Mapa do Site
+              </Link>
+              
+              <Link 
+                href="/dashboard"
+                style={{
+                  color: unbColors.white,
+                  textDecoration: 'none',
+                  fontSize: '0.9rem',
+                  fontWeight: '500',
+                  padding: '6px 12px',
+                  borderRadius: '6px',
+                  transition: 'all 0.2s ease',
+                  opacity: 0.9
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = unbColors.alpha.secondary;
+                  e.currentTarget.style.opacity = '1';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.opacity = '0.9';
+                }}
+              >
+                Criar conta
+              </Link>
+              
+              <Link 
+                href="/chat"
+                style={{
+                  color: unbColors.white,
+                  textDecoration: 'none',
+                  fontSize: '0.9rem',
+                  fontWeight: '600',
+                  padding: '8px 16px',
+                  borderRadius: '6px',
+                  backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                  border: `1px solid ${unbColors.white}40`,
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = unbColors.white;
+                  e.currentTarget.style.color = unbColors.primary;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
+                  e.currentTarget.style.color = unbColors.white;
+                }}
+              >
+                Login
+              </Link>
+            </>
+          )}
+          
           {isAdmin() && !isMobile && (
             <Link 
               href="/admin"
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                padding: '8px 12px',
-                borderRadius: '8px',
-                backgroundColor: pathname === '/admin' ? unbColors.primary + '20' : 'transparent',
-                color: pathname === '/admin' ? unbColors.primary : unbColors.neutral,
+                padding: '6px 10px',
+                borderRadius: '6px',
+                backgroundColor: pathname === '/admin' ? 'rgba(255, 255, 255, 0.2)' : 'transparent',
+                color: unbColors.white,
                 textDecoration: 'none',
                 transition: 'all 0.2s ease',
-                fontSize: '0.9rem',
+                fontSize: '0.8rem',
                 fontWeight: '500',
+                opacity: 0.8
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = unbColors.primary + '10';
+                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
+                e.currentTarget.style.opacity = '1';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = pathname === '/admin' ? unbColors.primary + '20' : 'transparent';
+                e.currentTarget.style.backgroundColor = pathname === '/admin' ? 'rgba(255, 255, 255, 0.2)' : 'transparent';
+                e.currentTarget.style.opacity = '0.8';
               }}
             >
               <svg 
-                width="16" 
-                height="16" 
+                width="14" 
+                height="14" 
                 viewBox="0 0 24 24" 
                 fill="none" 
                 stroke="currentColor" 
                 strokeWidth="2"
-                style={{ marginRight: '6px' }}
+                style={{ marginRight: '4px' }}
               >
                 <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
               </svg>
               Admin
             </Link>
           )}
-          
-          <AuthButton variant={isMobile ? 'mobile' : 'header'} />
         </div>
 
         {/* Mobile Search Button */}
