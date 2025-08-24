@@ -5,22 +5,35 @@ import Image from 'next/image';
 import EducationalLayout from '@/components/layout/EducationalLayout';
 import HeroSection from '@/components/home/HeroSection';
 import FeaturesSection from '@/components/home/FeaturesSection';
-import TrustBadges from '@/components/home/TrustBadges';
-import OnboardingTour from '@/components/onboarding/OnboardingTour';
-import PageTransition, { AnimatedSection } from '@/components/animations/PageTransition';
 import { usePersonas } from '@/hooks/usePersonas';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { getPersonaAvatar } from '@/constants/avatars';
 import type { UserProfile } from '@/hooks/useUserProfile';
-import { CognitiveLoadAuditor } from '@/components/analytics/CognitiveLoadAuditor';
-import { MobileUXAuditor } from '@/components/analytics/MobileUXAuditor';
+import React, { Suspense } from 'react';
+import { LazyOnScroll } from '@/components/optimization/LazyComponent';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
+
+// Core components that need to load immediately
+import PageTransition, { AnimatedSection } from '@/components/animations/PageTransition';
 import { HierarchyHeading, HierarchyText } from '@/components/layout/VisualHierarchyOptimizer';
-import ContentChunking, { createEducationalContentChunk, createMedicalContentChunk } from '@/components/content/ContentChunkingStrategy';
-import { MobileQuickActions } from '@/components/mobile/MedicalMobileComponents';
 import { useMobileDetection } from '@/components/mobile/MobileFirstFramework';
 import { InteractiveButton, useToast, ToastContainer } from '@/components/ui/MicroInteractions';
-import { ScrollAnimation, CardReveal, MedicalAnimation } from '@/components/ui/AnimationSystem';
-import ExecutiveSummary from '@/components/summary/ExecutiveSummary';
+
+// Heavy components loaded lazily using React.lazy
+const TrustBadges = React.lazy(() => import('@/components/home/TrustBadges'));
+const QuickStartGuide = React.lazy(() => import('@/components/onboarding/QuickStartGuide'));
+const ExecutiveSummary = React.lazy(() => import('@/components/summary/ExecutiveSummary'));
+const CognitiveLoadAuditor = React.lazy(() => import('@/components/analytics/CognitiveLoadAuditor').then(mod => ({ default: mod.CognitiveLoadAuditor })));
+const MobileUXAuditor = React.lazy(() => import('@/components/analytics/MobileUXAuditor').then(mod => ({ default: mod.MobileUXAuditor })));
+
+// Content and animation components for lower sections
+const ContentChunking = React.lazy(() => import('@/components/content/ContentChunkingStrategy'));
+const MobileQuickActions = React.lazy(() => import('@/components/mobile/MedicalMobileComponents').then(mod => ({ default: mod.MobileQuickActions })));
+const ScrollAnimation = React.lazy(() => import('@/components/ui/AnimationSystem').then(mod => ({ default: mod.ScrollAnimation })));
+const CardReveal = React.lazy(() => import('@/components/ui/AnimationSystem').then(mod => ({ default: mod.CardReveal })));
+const MedicalAnimation = React.lazy(() => import('@/components/ui/AnimationSystem').then(mod => ({ default: mod.MedicalAnimation })));
+// Import helper functions (these are lightweight)
+import { createEducationalContentChunk, createMedicalContentChunk } from '@/components/content/ContentChunkingStrategy';
 import { 
   HomeIcon, 
   ChatBotIcon, 
@@ -32,7 +45,6 @@ import {
   PhoneIcon,
   getIconByEmoji 
 } from '@/components/icons/NavigationIcons';
-import ExperienceBanner from '@/components/onboarding/ExperienceBanner';
 import { 
   CheckIcon, 
   ChatIcon, 
@@ -150,15 +162,16 @@ export default function HomePage() {
   return (
     <PageTransition>
       <PersonalizationProvider>
-        <ExperienceBanner />
-        {/* Onboarding Tour */}
-        <OnboardingTour onComplete={() => {
-          addToast({
-            type: 'success',
-            message: 'Tour concluído! Explore a plataforma.',
-            duration: 3000
-          });
-        }} />
+        {/* Quick Start Guide - Only load when needed */}
+        <Suspense fallback={<div />}>
+          <QuickStartGuide onComplete={() => {
+            addToast({
+              type: 'success',
+              message: 'Guia concluído! Agora você está pronto para usar a plataforma.',
+              duration: 3000
+            });
+          }} />
+        </Suspense>
 
         {/* Hero Section */}
         <AnimatedSection animation="fadeInUp" delay={200}>
@@ -170,10 +183,19 @@ export default function HomePage() {
           <FeaturesSection />
         </AnimatedSection>
 
-        {/* Trust Badges */}
-        <AnimatedSection animation="fadeInUp" delay={600}>
-          <TrustBadges />
-        </AnimatedSection>
+        {/* Trust Badges - Lazy loaded */}
+        <LazyOnScroll 
+          fallback={<div style={{ minHeight: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <LoadingSpinner size="lg" message="Carregando seção de credibilidade..." />
+          </div>}
+          rootMargin="100px"
+        >
+          <AnimatedSection animation="fadeInUp" delay={600}>
+            <Suspense fallback={<LoadingSpinner size="lg" message="Carregando badges..." />}>
+              <TrustBadges />
+            </Suspense>
+          </AnimatedSection>
+        </LazyOnScroll>
 
         {/* Dashboard Personalizado */}
         <PersonalizedDashboard className="mb-8" />
@@ -972,12 +994,21 @@ export default function HomePage() {
           </div>
 
           {/* Executive Summary Section */}
-          <div style={{
-            maxWidth: 'min(1200px, 92vw)',
-            margin: '3rem auto',
-          }}>
-            <ExecutiveSummary userProfile={'general'} />
-          </div>
+          <LazyOnScroll 
+            fallback={<div style={{ minHeight: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <LoadingSpinner size="lg" message="Carregando resumo executivo..." />
+            </div>}
+            rootMargin="150px"
+          >
+            <div style={{
+              maxWidth: 'min(1200px, 92vw)',
+              margin: '3rem auto',
+            }}>
+              <Suspense fallback={<LoadingSpinner size="lg" message="Carregando resumo..." />}>
+                <ExecutiveSummary userProfile={'general'} />
+              </Suspense>
+            </div>
+          </LazyOnScroll>
 
           {/* Sobre a Pesquisa Section */}
           <section style={{

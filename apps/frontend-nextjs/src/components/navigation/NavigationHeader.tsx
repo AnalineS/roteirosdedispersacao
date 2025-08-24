@@ -913,8 +913,16 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
               minHeight: '44px',
               outline: 'none'
             }}
-            onFocus={(e) => { e.currentTarget.style.border = `2px solid ${unbColors.white}`; }}
-            onBlur={(e) => { e.currentTarget.style.border = '2px solid transparent'; }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'none'; }}
+            onFocus={(e) => { 
+              e.currentTarget.style.border = `2px solid ${unbColors.white}`; 
+              e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+            }}
+            onBlur={(e) => { 
+              e.currentTarget.style.border = '2px solid transparent';
+              e.currentTarget.style.background = 'none';
+            }}
             aria-label={isMobileMenuOpen ? 'Fechar menu de navegação' : 'Abrir menu de navegação'}
             aria-expanded={isMobileMenuOpen}
             aria-controls="mobile-navigation-menu"

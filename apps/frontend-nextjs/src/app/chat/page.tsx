@@ -194,7 +194,7 @@ export default function ChatPage() {
         }
       }
     }
-  }, [personas]); // Removendo dependências desnecessárias para evitar loops
+  }, [personas, selectedPersona, profile, getRecommendedPersona, updateProfile, currentConversationId, createConversation]);
 
 
   // Função wrapper para enviar mensagens e adicionar ao histórico
@@ -251,7 +251,7 @@ export default function ChatPage() {
     }
   };
 
-  const handlePersonaChange = (personaId: string) => {
+  const handlePersonaChange = useCallback((personaId: string) => {
     setSelectedPersona(personaId);
     if (typeof window !== 'undefined') {
       localStorage.setItem('selectedPersona', personaId);
@@ -267,7 +267,7 @@ export default function ChatPage() {
       setInputValue(pendingQuestion);
       setPendingQuestion('');
     }
-  };
+  }, [createConversation, clearAnalysis, pendingQuestion]);
   
   const handleNewConversation = (personaId: string) => {
     const conversationId = createConversation(personaId);

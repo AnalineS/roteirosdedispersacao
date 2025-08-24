@@ -275,7 +275,7 @@ export function sanitizeJSON(obj: any): any {
 }
 
 // Exportar todas as funções como default também
-export default {
+const SanitizationUtils = {
   sanitizeHTML,
   sanitizeInput,
   sanitizeFilename,
@@ -283,3 +283,5 @@ export default {
   sanitizeURL,
   sanitizeJSON
 };
+
+export default SanitizationUtils;

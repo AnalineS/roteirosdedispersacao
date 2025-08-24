@@ -13,7 +13,6 @@ import QuickNavigationMenu from '@/components/navigation/QuickNavigationMenu';
 import { GlobalNavigationProvider } from '@/components/navigation/GlobalNavigationProvider';
 import { FloatingElementsCoordinator } from '@/components/navigation/FloatingElementsCoordinator';
 import { SmartNavigationProvider } from '@/components/navigation/SmartNavigationSystem';
-import ProgressiveDisclosure from '@/components/navigation/ProgressiveDisclosure';
 
 interface EducationalLayoutProps {
   children: ReactNode;
@@ -96,8 +95,6 @@ export default function EducationalLayout({
       {/* Quick Navigation Menu - Disponível em todas as páginas */}
       <QuickNavigationMenu position="bottom-left" showOnMobile={true} />
 
-      {/* Progressive Disclosure - Tour guiado para novos usuários */}
-      <ProgressiveDisclosure enabled={true} autoStart={true} />
         </div>
       </MobileFirstFramework>
     </VisualHierarchyOptimizer>

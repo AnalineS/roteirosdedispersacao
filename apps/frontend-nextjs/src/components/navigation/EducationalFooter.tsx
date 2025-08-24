@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { getUnbColors } from '@/config/modernTheme';
 import { getUniversityLogo } from '@/constants/avatars';
 import { usePersonas } from '@/hooks/usePersonas';
@@ -637,9 +638,11 @@ export default function EducationalFooter({
             marginBottom: '2rem',
             flexWrap: 'wrap'
           }}>
-            <img 
+            <Image 
               src={getUniversityLogo('unb_symbol')} 
               alt="UnB"
+              width={50}
+              height={50}
               style={{
                 width: '50px',
                 height: '50px',
@@ -651,9 +654,11 @@ export default function EducationalFooter({
               height: '40px',
               backgroundColor: '#cbd5e1'
             }}></div>
-            <img 
+            <Image 
               src={getUniversityLogo('ppgcf_logo')} 
               alt="PPGCF"
+              width={60}
+              height={50}
               style={{
                 width: '60px',
                 height: '50px',

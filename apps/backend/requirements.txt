@@ -87,6 +87,7 @@ python-magic==0.4.27
 # === DATABASE & VECTOR STORE ===
 # AstraDB integration
 astrapy==2.0.1
+cassandra-driver>=3.29.1
 
 # Optional SQL support
 sqlalchemy>=2.0.0

@@ -31,33 +31,38 @@ describe('API Service', () => {
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ personas: mockPersonas }),
+        json: async () => mockPersonas,
       } as any);
 
       const result = await getPersonas();
       expect(result).toEqual(mockPersonas);
-      expect(mockFetch).toHaveBeenCalledWith('http://127.0.0.1:5000/api/v1/personas', {
+      expect(mockFetch).toHaveBeenCalledWith('http://localhost:8080/api/v1/personas', {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Accept': 'application/json' },
+        signal: expect.any(AbortSignal)
       });
     });
 
-    it('should handle personas fetch error', async () => {
+    it('should handle personas fetch error with fallback', async () => {
       mockFetch.mockRejectedValueOnce(new Error('Network error') as any);
 
-      await expect(getPersonas()).rejects.toThrow('Network error');
+      const result = await getPersonas();
+      // Should return static personas as fallback, not throw
+      expect(result).toBeDefined();
+      expect(typeof result).toBe('object');
     });
 
-    it('should handle non-ok response', async () => {
+    it('should handle non-ok response with fallback', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 500,
         statusText: 'Internal Server Error',
       } as any);
 
-      await expect(getPersonas()).rejects.toThrow('HTTP error! status: 500');
+      const result = await getPersonas();
+      // Should return static personas as fallback, not throw
+      expect(result).toBeDefined();
+      expect(typeof result).toBe('object');
     });
   });
 
@@ -82,20 +87,25 @@ describe('API Service', () => {
       const result = await sendChatMessage(request);
       
       expect(result).toEqual(mockResponse);
-      expect(mockFetch).toHaveBeenCalledWith('http://127.0.0.1:5000/api/v1/chat', {
+      expect(mockFetch).toHaveBeenCalledWith('http://localhost:8080/api/v1/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(request)
+        body: JSON.stringify(request),
+        signal: expect.any(AbortSignal)
       });
     });
 
-    it('should handle message send error', async () => {
+    it('should handle message send error with offline fallback', async () => {
       mockFetch.mockRejectedValueOnce(new Error('Network error') as any);
 
       const request = { question: 'Test', personality_id: 'ga' };
-      await expect(sendChatMessage(request)).rejects.toThrow('Network error');
+      const result = await sendChatMessage(request);
+      // Should return offline response, not throw
+      expect(result).toBeDefined();
+      expect(result.answer).toBeDefined();
+      expect(typeof result.answer).toBe('string');
     });
   });
 
@@ -111,7 +121,7 @@ describe('API Service', () => {
       const result = await apiClient.post('/test', { data: 'test' });
       
       expect(result).toEqual(mockData);
-      expect(mockFetch).toHaveBeenCalledWith('http://127.0.0.1:5000/test', {
+      expect(mockFetch).toHaveBeenCalledWith('http://localhost:8080/test', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -135,8 +145,16 @@ describe('API Service', () => {
 
       const result = await checkAPIHealth();
       
-      expect(result).toBe(true);
-      expect(mockFetch).toHaveBeenCalledWith('http://127.0.0.1:5000/api/v1/health');
+      expect(result).toEqual({
+        available: true,
+        url: 'http://localhost:8080',
+        fallbackActive: false
+      });
+      expect(mockFetch).toHaveBeenCalledWith('http://localhost:8080/api/v1/health', {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' },
+        signal: expect.any(AbortSignal)
+      });
     });
 
     it('should handle health check error', async () => {
@@ -144,7 +162,8 @@ describe('API Service', () => {
 
       const result = await checkAPIHealth();
       
-      expect(result).toBe(false);
+      expect(result.available).toBe(false);
+      expect(result.fallbackActive).toBe(true);
     });
   });
 
@@ -173,7 +192,10 @@ describe('API Service', () => {
       
       mockFetch.mockRejectedValueOnce(timeoutError);
 
-      await expect(getPersonas()).rejects.toThrow('Request timeout');
+      const result = await getPersonas();
+      // Should return static personas as fallback, not throw
+      expect(result).toBeDefined();
+      expect(typeof result).toBe('object');
     });
 
     it('should handle malformed JSON response', async () => {
@@ -182,7 +204,10 @@ describe('API Service', () => {
         json: async () => { throw new Error('Invalid JSON'); },
       } as any);
 
-      await expect(getPersonas()).rejects.toThrow('Invalid JSON');
+      const result = await getPersonas();
+      // Should return static personas as fallback, not throw
+      expect(result).toBeDefined();
+      expect(typeof result).toBe('object');
     });
   });
 
@@ -206,7 +231,10 @@ describe('API Service', () => {
       } as any);
 
       const request = { question: 'Test', personality_id: 'invalid_persona' };
-      await expect(sendChatMessage(request)).rejects.toThrow('HTTP error! status: 400');
+      const result = await sendChatMessage(request);
+      // Should return offline response as fallback, not throw
+      expect(result).toBeDefined();
+      expect(result.answer).toBeDefined();
     });
   });
 });

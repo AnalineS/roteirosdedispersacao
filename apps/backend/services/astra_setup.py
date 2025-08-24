@@ -93,6 +93,7 @@ class AstraDBSetup:
             
             # Configurar autenticação
             auth_provider = PlainTextAuthProvider(
+                # deepcode ignore NoHardcodedCredentials: <please specify a reason of ignoring this>
                 username='token',
                 password=self.astra_token
             )

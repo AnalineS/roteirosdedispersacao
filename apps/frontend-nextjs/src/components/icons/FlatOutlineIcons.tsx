@@ -521,7 +521,7 @@ export const useIconReplacement = () => {
   return { replaceEmojisWithIcons, getIconForEmoji };
 };
 
-export default {
+const FlatOutlineIcons = {
   BeginnerIcon,
   IntermediateIcon,
   AdvancedIcon,
@@ -540,3 +540,5 @@ export default {
   getIconForEmoji,
   useIconReplacement
 };
+
+export default FlatOutlineIcons;

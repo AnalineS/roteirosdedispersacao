@@ -154,7 +154,7 @@ export function generateNonce(length: number = 16): string {
   return btoa(timestamp).substring(0, length);
 }
 
-export default {
+const CryptoUtils = {
   generateSecureId,
   generateSecureSessionToken,
   generateTempUserId,
@@ -162,3 +162,5 @@ export default {
   isValidSecureId,
   generateNonce
 };
+
+export default CryptoUtils;

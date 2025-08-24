@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { Persona } from '@/services/api';
 import { getPersonaAvatar } from '@/constants/avatars';
 import { theme } from '@/config/theme';
@@ -255,9 +256,11 @@ export default function PersonaSelector({ personas, onPersonaSelect }: PersonaSe
               margin: '0 auto 1rem',
               boxShadow: '0 4px 12px rgba(2, 132, 199, 0.3)'
             }}>
-              <img 
+              <Image 
                 src={getPersonaAvatar('dr_gasnelio')} 
                 alt="Dr. Gasnelio"
+                width={120}
+                height={120}
                 style={{
                   width: '100%',
                   height: '100%',
@@ -303,9 +306,11 @@ export default function PersonaSelector({ personas, onPersonaSelect }: PersonaSe
               margin: '0 auto 1rem',
               boxShadow: '0 4px 12px rgba(34, 197, 94, 0.3)'
             }}>
-              <img 
+              <Image 
                 src={getPersonaAvatar('ga')} 
                 alt="Gá"
+                width={120}
+                height={120}
                 style={{
                   width: '100%',
                   height: '100%',
@@ -420,9 +425,11 @@ export default function PersonaSelector({ personas, onPersonaSelect }: PersonaSe
               flexShrink: 0,
               boxShadow: '0 6px 20px rgba(0, 0, 0, 0.15)'
             }}>
-              <img 
+              <Image 
                 src={getPersonaAvatar(recommendation.personaId)} 
                 alt={recommendedPersona.name}
+                width={80}
+                height={80}
                 style={{
                   width: '100%',
                   height: '100%',
@@ -486,9 +493,11 @@ export default function PersonaSelector({ personas, onPersonaSelect }: PersonaSe
               flexShrink: 0,
               boxShadow: '0 3px 10px rgba(0, 0, 0, 0.1)'
             }}>
-              <img 
+              <Image 
                 src={getPersonaAvatar(alternativePersonaId)} 
                 alt={alternativePersona.name}
+                width={60}
+                height={60}
                 style={{
                   width: '100%',
                   height: '100%',

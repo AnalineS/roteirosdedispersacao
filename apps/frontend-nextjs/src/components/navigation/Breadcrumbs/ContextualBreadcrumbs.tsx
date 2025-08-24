@@ -83,49 +83,89 @@ export default function ContextualBreadcrumbs({ currentPath, breadcrumbs }: Cont
 
   return (
     <div style={{
-      marginTop: '12px',
-      padding: '12px 16px',
-      background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
-      borderRadius: '8px',
-      border: '1px solid #cbd5e1'
+      marginTop: 'var(--spacing-md)',
+      padding: 'var(--spacing-md) var(--spacing-lg)',
+      background: 'linear-gradient(135deg, var(--bg-secondary) 0%, var(--color-neutral-50) 100%)',
+      borderRadius: 'var(--radius-lg)',
+      border: '1px solid var(--border-color)',
+      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)'
     }}>
+      {/* Hierarchical position indicator */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 'var(--spacing-sm)',
+        marginBottom: 'var(--spacing-sm)',
+        padding: 'var(--spacing-xs) 0',
+        borderBottom: '1px solid var(--border-color)'
+      }}>
+        <span style={{
+          fontSize: '0.75rem',
+          color: 'var(--text-muted)',
+          textTransform: 'uppercase',
+          letterSpacing: '0.5px',
+          fontWeight: '600'
+        }}>
+          📍 Você está em:
+        </span>
+        <span style={{
+          fontSize: '0.85rem',
+          fontWeight: '600',
+          color: 'var(--text-primary)'
+        }}>
+          Nível {currentItem?.level || 1} → {currentItem?.category === 'learning' ? 'Aprendizagem' : 
+                                           currentItem?.category === 'interaction' ? 'Interação' :
+                                           currentItem?.category === 'progress' ? 'Progresso' : 'Ferramentas'}
+        </span>
+      </div>
+
       {/* Description */}
       <p style={{
-        margin: '0 0 8px',
+        margin: '0 0 var(--spacing-md)',
         fontSize: '0.9rem',
-        color: '#475569',
-        fontStyle: 'italic'
+        color: 'var(--text-secondary)',
+        fontStyle: 'italic',
+        lineHeight: 1.5
       }}>
         {context.description}
       </p>
 
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-        gap: '12px',
-        marginTop: '8px'
+        gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+        gap: 'var(--spacing-md)',
+        marginTop: 'var(--spacing-md)'
       }}>
         {/* Learning Objectives */}
         {context.objectives && (
-          <div>
+          <div style={{
+            background: 'var(--bg-primary)',
+            padding: 'var(--spacing-md)',
+            borderRadius: 'var(--radius-md)',
+            border: '1px solid var(--color-primary-100)'
+          }}>
             <h4 style={{
-              margin: '0 0 4px',
+              margin: '0 0 var(--spacing-sm)',
               fontSize: '0.8rem',
               fontWeight: 'bold',
-              color: '#1e293b',
+              color: 'var(--color-primary-700)',
               textTransform: 'uppercase',
-              letterSpacing: '0.5px'
+              letterSpacing: '0.5px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 'var(--spacing-xs)'
             }}>
-              🎯 Objetivos
+              <span>🎯</span> Objetivos de Aprendizagem
             </h4>
             <ul style={{
               margin: 0,
-              paddingLeft: '16px',
+              paddingLeft: 'var(--spacing-lg)',
               fontSize: '0.8rem',
-              color: '#64748b'
+              color: 'var(--text-secondary)',
+              lineHeight: 1.4
             }}>
               {context.objectives.map((objective, index) => (
-                <li key={index} style={{ marginBottom: '2px' }}>
+                <li key={index} style={{ marginBottom: 'var(--spacing-xs)' }}>
                   {objective}
                 </li>
               ))}
@@ -135,21 +175,30 @@ export default function ContextualBreadcrumbs({ currentPath, breadcrumbs }: Cont
 
         {/* Prerequisites */}
         {context.prerequisite && (
-          <div>
+          <div style={{
+            background: 'var(--color-warning-50)',
+            padding: 'var(--spacing-md)',
+            borderRadius: 'var(--radius-md)',
+            border: '1px solid var(--color-warning-200)'
+          }}>
             <h4 style={{
-              margin: '0 0 4px',
+              margin: '0 0 var(--spacing-sm)',
               fontSize: '0.8rem',
               fontWeight: 'bold',
-              color: '#1e293b',
+              color: 'var(--color-warning-700)',
               textTransform: 'uppercase',
-              letterSpacing: '0.5px'
+              letterSpacing: '0.5px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 'var(--spacing-xs)'
             }}>
-              📋 Pré-requisito
+              <span>📋</span> Pré-requisitos
             </h4>
             <p style={{
               margin: 0,
               fontSize: '0.8rem',
-              color: '#64748b'
+              color: 'var(--color-warning-700)',
+              lineHeight: 1.4
             }}>
               {context.prerequisite}
             </p>
@@ -158,25 +207,34 @@ export default function ContextualBreadcrumbs({ currentPath, breadcrumbs }: Cont
 
         {/* Tips */}
         {context.tips && (
-          <div>
+          <div style={{
+            background: 'var(--color-success-50)',
+            padding: 'var(--spacing-md)',
+            borderRadius: 'var(--radius-md)',
+            border: '1px solid var(--color-success-200)'
+          }}>
             <h4 style={{
-              margin: '0 0 4px',
+              margin: '0 0 var(--spacing-sm)',
               fontSize: '0.8rem',
               fontWeight: 'bold',  
-              color: '#1e293b',
+              color: 'var(--color-success-700)',
               textTransform: 'uppercase',
-              letterSpacing: '0.5px'
+              letterSpacing: '0.5px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 'var(--spacing-xs)'
             }}>
-              💡 Dicas
+              <span>💡</span> Dicas Práticas
             </h4>
             <ul style={{
               margin: 0,
-              paddingLeft: '16px',
+              paddingLeft: 'var(--spacing-lg)',
               fontSize: '0.8rem',
-              color: '#64748b'
+              color: 'var(--color-success-700)',
+              lineHeight: 1.4
             }}>
               {context.tips.map((tip, index) => (
-                <li key={index} style={{ marginBottom: '2px' }}>
+                <li key={index} style={{ marginBottom: 'var(--spacing-xs)' }}>
                   {tip}
                 </li>
               ))}
@@ -186,40 +244,58 @@ export default function ContextualBreadcrumbs({ currentPath, breadcrumbs }: Cont
 
         {/* Next Step */}
         {context.nextStep && (
-          <div>
+          <div style={{
+            background: 'var(--color-purple-50)',
+            padding: 'var(--spacing-md)',
+            borderRadius: 'var(--radius-md)',
+            border: '1px solid var(--color-purple-200)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'flex-start'
+          }}>
             <h4 style={{
-              margin: '0 0 4px',
+              margin: '0 0 var(--spacing-sm)',
               fontSize: '0.8rem',
               fontWeight: 'bold',
-              color: '#1e293b',
+              color: 'var(--color-purple-700)',
               textTransform: 'uppercase',
-              letterSpacing: '0.5px'
+              letterSpacing: '0.5px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 'var(--spacing-xs)'
             }}>
-              ➡️ Próximo Passo
+              <span>➡️</span> Próxima Etapa
             </h4>
             <a
               href={context.nextStep.href}
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '4px',
-                padding: '4px 8px',
-                background: '#1976d2',
+                gap: 'var(--spacing-xs)',
+                padding: 'var(--spacing-sm) var(--spacing-md)',
+                background: 'var(--color-primary-600)',
                 color: 'white',
                 textDecoration: 'none',
-                borderRadius: '4px',
+                borderRadius: 'var(--radius-md)',
                 fontSize: '0.8rem',
-                fontWeight: 'bold',
-                transition: 'background 0.2s ease'
+                fontWeight: '600',
+                transition: 'all 0.2s ease',
+                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = '#1565c0';
+                e.currentTarget.style.background = 'var(--color-primary-700)';
+                e.currentTarget.style.transform = 'translateY(-1px)';
+                e.currentTarget.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.15)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = '#1976d2';
+                e.currentTarget.style.background = 'var(--color-primary-600)';
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.1)';
               }}
+              aria-label={`Continuar para ${context.nextStep.label}`}
             >
-              {context.nextStep.label} →
+              <span>{context.nextStep.label}</span>
+              <span>→</span>
             </a>
           </div>
         )}

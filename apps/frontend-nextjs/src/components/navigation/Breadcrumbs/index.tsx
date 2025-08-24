@@ -2,6 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
+import { useMemo, useState, useEffect } from 'react';
 import ContextualBreadcrumbs from './ContextualBreadcrumbs';
 
 export interface BreadcrumbItem {
@@ -12,431 +13,471 @@ export interface BreadcrumbItem {
   category?: 'learning' | 'interaction' | 'progress' | 'tools';
   estimatedTime?: string;
   completionRate?: number;
+  level?: number; // Hierarquia de profundidade
+  parentPath?: string; // Caminho do pai para navegação hierárquica
 }
+
+// Interface para páginas na hierarquia
+interface HierarchyPage {
+  level: number;
+  label: string;
+  icon: string;
+  category: 'learning' | 'interaction' | 'progress' | 'tools';
+  parent?: string;
+  estimatedTime?: string;
+  completionRate?: number;
+}
+
+// Definir estrutura hierárquica clara do site
+const SITE_HIERARCHY: Record<string, HierarchyPage> = {
+  '/': { level: 0, label: 'Sistema Educacional', icon: '🏠', category: 'learning' },
+  
+  // Área de Aprendizagem
+  '/modules': { level: 1, parent: '/', label: 'Módulos Educacionais', icon: '📚', category: 'learning' },
+  '/modules/hanseniase': { level: 2, parent: '/modules', label: 'Sobre a Hanseníase', icon: '🔬', category: 'learning', estimatedTime: '10 min' },
+  '/modules/diagnostico': { level: 2, parent: '/modules', label: 'Diagnóstico', icon: '🩺', category: 'learning', estimatedTime: '15 min' },
+  '/modules/tratamento': { level: 2, parent: '/modules', label: 'Tratamento PQT-U', icon: '💊', category: 'learning', estimatedTime: '20 min' },
+  '/modules/roteiro-dispensacao': { level: 2, parent: '/modules', label: 'Roteiro de Dispensação', icon: '📋', category: 'learning', estimatedTime: '25 min' },
+  '/modules/vida-com-doenca': { level: 2, parent: '/modules', label: 'Vida com Hanseníase', icon: '💚', category: 'learning', estimatedTime: '15 min' },
+  
+  // Ferramentas Práticas
+  '/resources': { level: 1, parent: '/', label: 'Recursos Práticos', icon: '🛠️', category: 'tools' },
+  '/resources/calculator': { level: 2, parent: '/resources', label: 'Calculadora de Doses', icon: '🧮', category: 'tools' },
+  '/resources/checklist': { level: 2, parent: '/resources', label: 'Checklist Dispensação', icon: '✅', category: 'tools' },
+  '/resources/interactions': { level: 2, parent: '/resources', label: 'Verificador de Interações', icon: '⚠️', category: 'tools' },
+  
+  // Interação
+  '/chat': { level: 1, parent: '/', label: 'Assistentes Virtuais', icon: '💬', category: 'interaction' },
+  '/dashboard': { level: 1, parent: '/', label: 'Dashboard', icon: '📊', category: 'progress' },
+  '/progress': { level: 1, parent: '/', label: 'Meu Progresso', icon: '📈', category: 'progress', completionRate: 65 },
+  
+  // Área Administrativa
+  '/admin': { level: 1, parent: '/', label: 'Administração', icon: '⚙️', category: 'tools' },
+  '/admin/features': { level: 2, parent: '/admin', label: 'Feature Flags', icon: '🚩', category: 'tools' },
+  '/admin/analytics': { level: 2, parent: '/admin', label: 'Analytics', icon: '📊', category: 'tools' },
+  
+  // Autenticação
+  '/login': { level: 1, parent: '/', label: 'Login', icon: '🔐', category: 'tools' },
+  '/cadastro': { level: 1, parent: '/', label: 'Cadastro', icon: '📝', category: 'tools' },
+  '/esqueci-senha': { level: 1, parent: '/', label: 'Recuperar Senha', icon: '🔑', category: 'tools' },
+  
+  // Páginas Institucionais
+  '/sobre': { level: 1, parent: '/', label: 'Sobre o Sistema', icon: '💻', category: 'learning' },
+  '/sobre-a-tese': { level: 1, parent: '/', label: 'Sobre a Tese', icon: '🎓', category: 'learning' },
+  '/metodologia': { level: 1, parent: '/', label: 'Metodologia', icon: '🔬', category: 'learning' },
+  '/vida-com-hanseniase': { level: 1, parent: '/', label: 'Vida com Hanseníase', icon: '💚', category: 'learning' },
+  
+  // Ferramentas Individuais
+  '/glossario': { level: 1, parent: '/', label: 'Glossário Médico', icon: '📖', category: 'tools' },
+  '/downloads': { level: 1, parent: '/', label: 'Downloads', icon: '📄', category: 'tools' },
+  '/sitemap': { level: 1, parent: '/', label: 'Mapa do Site', icon: '🗺️', category: 'tools' },
+  
+  // Legais
+  '/privacidade': { level: 1, parent: '/', label: 'Política de Privacidade', icon: '🛡️', category: 'tools' },
+  '/termos': { level: 1, parent: '/', label: 'Termos de Uso', icon: '📜', category: 'tools' },
+  '/conformidade': { level: 1, parent: '/', label: 'Conformidade LGPD', icon: '⚖️', category: 'tools' }
+};
 
 export default function EducationalBreadcrumbs() {
   const pathname = usePathname();
 
-  // Definir mapping de rotas para breadcrumbs educacionais
-  const getEducationalBreadcrumbs = (path: string): BreadcrumbItem[] => {
-    const breadcrumbs: BreadcrumbItem[] = [
-      {
-        label: 'Sistema Educacional',
-        href: '/',
-        icon: '🏠',
-        category: 'learning'
-      }
-    ];
-
-    if (path === '/') {
-      breadcrumbs[0].isCurrentPage = true;
-      return breadcrumbs;
-    }
-
-    // Authentication pages
-    if (path.startsWith('/login')) {
-      breadcrumbs.push({
-        label: 'Login',
-        href: '/login',
-        icon: '🔐',
-        category: 'tools',
-        isCurrentPage: true
-      });
-    }
-    else if (path.startsWith('/cadastro')) {
-      breadcrumbs.push({
-        label: 'Cadastro',
-        href: '/cadastro',
-        icon: '📝',
-        category: 'tools',
-        isCurrentPage: true
-      });
-    }
-    else if (path.startsWith('/esqueci-senha')) {
-      breadcrumbs.push({
-        label: 'Recuperar Senha',
-        href: '/esqueci-senha',
-        icon: '🔑',
-        category: 'tools',
-        isCurrentPage: true
-      });
-    }
-
-    // Dashboard
-    else if (path.startsWith('/dashboard')) {
-      breadcrumbs.push({
-        label: 'Dashboard',
-        href: '/dashboard',
-        icon: '📊', 
-        category: 'progress',
-        isCurrentPage: path === '/dashboard'
-      });
-    }
+  // Gerar breadcrumbs hierárquicos baseados na estrutura do site
+  const breadcrumbs = useMemo(() => {
+    const currentPath = pathname || '/';
+    const breadcrumbChain: BreadcrumbItem[] = [];
     
-    // Chat
-    else if (path.startsWith('/chat')) {
-      breadcrumbs.push({
-        label: 'Assistentes Virtuais',
-        href: '/chat',
-        icon: '💬',
-        category: 'interaction',
-        isCurrentPage: path === '/chat'
-      });
-    }
-    
-    // Modules
-    else if (path.startsWith('/modules')) {
-      breadcrumbs.push({
-        label: 'Módulos Educacionais',
-        href: '/modules',
-        icon: '📚',
-        category: 'learning',
-        isCurrentPage: path === '/modules'
-      });
-
-      // Sub-módulos específicos
-      if (path === '/modules/hanseniase') {
-        breadcrumbs.push({
-          label: 'Sobre a Hanseníase',
-          href: '/modules/hanseniase',
-          icon: '🔬',
-          category: 'learning',
-          estimatedTime: '10 min',
-          isCurrentPage: true
+    // Função recursiva para construir a cadeia de breadcrumbs
+    const buildBreadcrumbChain = (path: string): void => {
+      const pageInfo = SITE_HIERARCHY[path];
+      
+      if (pageInfo) {
+        // Adicionar o pai primeiro (se existir)
+        if (pageInfo.parent && pageInfo.parent !== path) {
+          buildBreadcrumbChain(pageInfo.parent);
+        }
+        
+        // Adicionar a página atual
+        breadcrumbChain.push({
+          label: pageInfo.label,
+          href: path,
+          icon: pageInfo.icon,
+          category: pageInfo.category,
+          level: pageInfo.level,
+          parentPath: pageInfo.parent,
+          estimatedTime: pageInfo.estimatedTime,
+          completionRate: pageInfo.completionRate,
+          isCurrentPage: path === currentPath
         });
-      } else if (path === '/modules/diagnostico') {
-        breadcrumbs.push({
-          label: 'Diagnóstico',
-          href: '/modules/diagnostico',
-          icon: '🩺',
-          category: 'learning',
-          estimatedTime: '15 min',
-          isCurrentPage: true
-        });
-      } else if (path === '/modules/tratamento') {
-        breadcrumbs.push({
-          label: 'Tratamento PQT-U',
-          href: '/modules/tratamento',
-          icon: '💊',
-          category: 'learning',
-          estimatedTime: '20 min',
-          isCurrentPage: true
-        });
-      } else if (path === '/modules/roteiro-dispensacao') {
-        breadcrumbs.push({
-          label: 'Roteiro de Dispensação',
-          href: '/modules/roteiro-dispensacao',
-          icon: '📋',
-          category: 'learning',
-          estimatedTime: '25 min',
-          isCurrentPage: true
-        });
-      } else if (path === '/modules/vida-com-doenca') {
-        breadcrumbs.push({
-          label: 'Vida com Hanseníase',
-          href: '/modules/vida-com-doenca',
-          icon: '💚',
-          category: 'learning',
-          estimatedTime: '15 min',
-          isCurrentPage: true
+      } else {
+        // Para paths não mapeados, tentar inferir a hierarquia
+        const pathSegments = path.split('/').filter(Boolean);
+        
+        // Sempre começar com home
+        if (breadcrumbChain.length === 0) {
+          breadcrumbChain.push({
+            label: 'Sistema Educacional',
+            href: '/',
+            icon: '🏠',
+            category: 'learning',
+            level: 0,
+            isCurrentPage: currentPath === '/'
+          });
+        }
+        
+        // Tentar construir hierarquia baseada nos segmentos do path
+        let currentBuildPath = '';
+        pathSegments.forEach((segment, index) => {
+          currentBuildPath += '/' + segment;
+          const segmentInfo = SITE_HIERARCHY[currentBuildPath];
+          
+          if (segmentInfo) {
+            // Verificar se não já está na cadeia
+            const alreadyExists = breadcrumbChain.some(item => item.href === currentBuildPath);
+            if (!alreadyExists) {
+              breadcrumbChain.push({
+                label: segmentInfo.label,
+                href: currentBuildPath,
+                icon: segmentInfo.icon,
+                category: segmentInfo.category,
+                level: segmentInfo.level,
+                parentPath: segmentInfo.parent,
+                estimatedTime: segmentInfo.estimatedTime,
+                completionRate: segmentInfo.completionRate,
+                isCurrentPage: currentBuildPath === currentPath
+              });
+            }
+          } else if (currentBuildPath === currentPath) {
+            // Página não mapeada, adicionar com informações básicas
+            breadcrumbChain.push({
+              label: segment.charAt(0).toUpperCase() + segment.slice(1).replace('-', ' '),
+              href: currentBuildPath,
+              category: 'tools',
+              level: index + 1,
+              isCurrentPage: true
+            });
+          }
         });
       }
-    }
+    };
     
-    // Resources/Tools
-    else if (path.startsWith('/resources')) {
-      breadcrumbs.push({
-        label: 'Recursos Práticos',
-        href: '/resources',
-        icon: '🛠️',
-        category: 'tools',
-        isCurrentPage: path === '/resources'
-      });
-
-      if (path === '/resources/calculator') {
-        breadcrumbs.push({
-          label: 'Calculadora de Doses',
-          href: '/resources/calculator',
-          icon: '🧮',
-          category: 'tools',
-          isCurrentPage: true
-        });
-      } else if (path === '/resources/checklist') {
-        breadcrumbs.push({
-          label: 'Checklist Dispensação',
-          href: '/resources/checklist',
-          icon: '✅',
-          category: 'tools',
-          isCurrentPage: true
-        });
-      } else if (path === '/resources/interactions') {
-        breadcrumbs.push({
-          label: 'Verificador de Interações',
-          href: '/resources/interactions',
-          icon: '⚠️',
-          category: 'tools',
-          isCurrentPage: true
-        });
-      }
-    }
+    buildBreadcrumbChain(currentPath);
     
-    // Individual tools
-    else if (path === '/glossario') {
-      breadcrumbs.push({
-        label: 'Glossário Médico',
-        href: '/glossario',
-        icon: '📖',
-        category: 'tools',
-        isCurrentPage: true
-      });
-    }
-    else if (path === '/downloads') {
-      breadcrumbs.push({
-        label: 'Downloads',
-        href: '/downloads',
-        icon: '📄',
-        category: 'tools',
-        isCurrentPage: true
-      });
-    }
-    
-    // Progress
-    else if (path.startsWith('/progress')) {
-      breadcrumbs.push({
-        label: 'Meu Progresso',
-        href: '/progress',
-        icon: '📈',
-        category: 'progress',
-        completionRate: 65,
-        isCurrentPage: path === '/progress'
-      });
-    }
-
-    // Institutional pages
-    else if (path === '/sobre') {
-      breadcrumbs.push({
-        label: 'Sobre o Sistema',
-        href: '/sobre',
-        icon: '💻',
-        category: 'learning',
-        isCurrentPage: true
-      });
-    }
-    else if (path === '/sobre-a-tese') {
-      breadcrumbs.push({
-        label: 'Sobre a Tese',
-        href: '/sobre-a-tese',
-        icon: '🎓',
-        category: 'learning',
-        isCurrentPage: true
-      });
-    }
-    else if (path === '/metodologia') {
-      breadcrumbs.push({
-        label: 'Metodologia',
-        href: '/metodologia',
-        icon: '🔬',
-        category: 'learning',
-        isCurrentPage: true
-      });
-    }
-
-    // Public awareness page
-    else if (path === '/vida-com-hanseniase') {
-      breadcrumbs.push({
-        label: 'Vida com Hanseníase',
-        href: '/vida-com-hanseniase',
-        icon: '💚',
-        category: 'learning',
-        isCurrentPage: true
-      });
-    }
-
-    // Privacy and legal
-    else if (path === '/privacidade') {
-      breadcrumbs.push({
-        label: 'Política de Privacidade',
-        href: '/privacidade',
-        icon: '🛡️',
-        category: 'tools',
-        isCurrentPage: true
-      });
-    }
-    else if (path === '/termos') {
-      breadcrumbs.push({
-        label: 'Termos de Uso',
-        href: '/termos',
-        icon: '📜',
-        category: 'tools',
-        isCurrentPage: true
-      });
-    }
-    else if (path === '/conformidade') {
-      breadcrumbs.push({
-        label: 'Conformidade LGPD',
-        href: '/conformidade',
-        icon: '⚖️',
-        category: 'tools',
-        isCurrentPage: true
-      });
-    }
-
-    // Sitemap
-    else if (path === '/sitemap') {
-      breadcrumbs.push({
-        label: 'Mapa do Site',
-        href: '/sitemap',
-        icon: '🗺️',
-        category: 'tools',
-        isCurrentPage: true
-      });
-    }
-
-    // Admin pages
-    else if (path.startsWith('/admin')) {
-      breadcrumbs.push({
-        label: 'Administração',
-        href: '/admin',
-        icon: '⚙️',
-        category: 'tools',
-        isCurrentPage: path === '/admin'
-      });
-
-      if (path === '/admin/features') {
-        breadcrumbs.push({
-          label: 'Feature Flags',
-          href: '/admin/features',
-          icon: '🚩',
-          category: 'tools',
-          isCurrentPage: true
-        });
-      } else if (path === '/admin/analytics') {
-        breadcrumbs.push({
-          label: 'Analytics',
-          href: '/admin/analytics',
-          icon: '📊',
-          category: 'tools',
-          isCurrentPage: true
-        });
-      }
-    }
-
-    return breadcrumbs;
-  };
-
-  const breadcrumbs = getEducationalBreadcrumbs(pathname || '/');
+    return breadcrumbChain;
+  }, [pathname]);
 
   const getCategoryColor = (category?: string) => {
     switch (category) {
-      case 'learning': return '#1976d2';
-      case 'interaction': return '#4caf50';
-      case 'progress': return '#ff9800';
-      case 'tools': return '#9c27b0';
-      default: return '#666';
+      case 'learning': return 'var(--color-primary-600)';
+      case 'interaction': return 'var(--color-success-600)';
+      case 'progress': return 'var(--color-warning-600)';
+      case 'tools': return 'var(--color-purple-600)';
+      default: return 'var(--color-neutral-600)';
     }
   };
 
+  const getCategoryBackground = (category?: string) => {
+    switch (category) {
+      case 'learning': return 'var(--color-primary-50)';
+      case 'interaction': return 'var(--color-success-50)';
+      case 'progress': return 'var(--color-warning-50)';
+      case 'tools': return 'var(--color-purple-50)';
+      default: return 'var(--color-neutral-50)';
+    }
+  };
+
+  // Para mobile, mostrar apenas os últimos 2 níveis para economia de espaço
+  const [isMobile, setIsMobile] = useState(false);
+  
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+  
+  const displayBreadcrumbs = useMemo(() => {
+    if (!isMobile || breadcrumbs.length <= 2) {
+      return breadcrumbs;
+    }
+    
+    // Em mobile, mostrar apenas home + atual se há muitos níveis
+    if (breadcrumbs.length > 3) {
+      const ellipsisItem: BreadcrumbItem & { isEllipsis: boolean } = {
+        label: '...',
+        href: '#',
+        category: 'tools',
+        level: -1,
+        isEllipsis: true
+      };
+      
+      return [
+        breadcrumbs[0], // Home sempre
+        ellipsisItem,
+        ...breadcrumbs.slice(-1) // Página atual
+      ];
+    }
+    
+    return breadcrumbs;
+  }, [breadcrumbs, isMobile]);
+
   return (
-    <nav aria-label="Educational breadcrumb navigation" role="navigation">
-      <ol style={{
+    <nav 
+      aria-label="Navegação hierárquica do site" 
+      role="navigation"
+      style={{
+        background: 'var(--bg-secondary)',
+        borderBottom: '1px solid var(--border-color)',
+        padding: isMobile ? 'var(--spacing-sm) var(--spacing-md)' : 'var(--spacing-md) var(--spacing-xl)'
+      }}
+    >
+      {/* Breadcrumb trail */}
+      <div style={{
         display: 'flex',
         alignItems: 'center',
-        gap: '8px',
-        flexWrap: 'wrap',
-        listStyle: 'none',
-        margin: 0,
-        padding: 0
+        justifyContent: 'space-between',
+        marginBottom: 'var(--spacing-sm)'
       }}>
-        {breadcrumbs.map((item, index) => (
-          <li key={item.href} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            {/* Breadcrumb Item */}
-            {item.isCurrentPage ? (
-              <span
-                aria-current="page"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '6px 12px',
-                  background: getCategoryColor(item.category),
-                  color: 'white',
-                  borderRadius: '6px',
-                  fontSize: '0.9rem',
-                  fontWeight: 'bold'
+        <ol style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: isMobile ? 'var(--spacing-xs)' : 'var(--spacing-sm)',
+          flexWrap: 'wrap',
+          listStyle: 'none',
+          margin: 0,
+          padding: 0,
+          flex: 1
+        }}>
+          {displayBreadcrumbs.map((item, index) => {
+            const isEllipsis = 'isEllipsis' in item && item.isEllipsis;
+            
+            return (
+              <li key={`${item.href}-${index}`} style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: isMobile ? 'var(--spacing-xs)' : 'var(--spacing-sm)'
+              }}>
+                {/* Breadcrumb Item */}
+                {isEllipsis ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      // Expandir breadcrumbs completos em mobile
+                      setIsMobile(false);
+                    }}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--color-neutral-500)',
+                      cursor: 'pointer',
+                      padding: 'var(--spacing-xs) var(--spacing-sm)',
+                      borderRadius: 'var(--radius-md)',
+                      fontSize: '0.9rem',
+                      transition: 'all 0.2s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = 'var(--color-neutral-100)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'transparent';
+                    }}
+                    aria-label="Mostrar caminho completo"
+                    title="Clique para ver o caminho completo"
+                  >
+                    {item.label}
+                  </button>
+                ) : item.isCurrentPage ? (
+                  <span
+                    aria-current="page"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 'var(--spacing-xs)',
+                      padding: isMobile ? 'var(--spacing-xs) var(--spacing-sm)' : 'var(--spacing-sm) var(--spacing-md)',
+                      background: getCategoryColor(item.category),
+                      color: 'white',
+                      borderRadius: 'var(--radius-md)',
+                      fontSize: isMobile ? '0.8rem' : '0.9rem',
+                      fontWeight: '600',
+                      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+                    }}
+                  >
+                    {item.icon && <span role="img" aria-hidden="true">{item.icon}</span>}
+                    <span>{item.label}</span>
+                    
+                    {/* Meta information for current page */}
+                    {!isMobile && item.estimatedTime && (
+                      <span style={{
+                        fontSize: '0.7rem',
+                        opacity: 0.9,
+                        marginLeft: 'var(--spacing-xs)',
+                        background: 'rgba(255, 255, 255, 0.2)',
+                        padding: '2px 6px',
+                        borderRadius: 'var(--radius-sm)'
+                      }}>
+                        ⏱️ {item.estimatedTime}
+                      </span>
+                    )}
+                    {!isMobile && item.completionRate !== undefined && (
+                      <span style={{
+                        fontSize: '0.7rem',
+                        opacity: 0.9,
+                        marginLeft: 'var(--spacing-xs)',
+                        background: 'rgba(255, 255, 255, 0.2)',
+                        padding: '2px 6px',
+                        borderRadius: 'var(--radius-sm)'
+                      }}>
+                        📊 {item.completionRate}%
+                      </span>
+                    )}
+                  </span>
+                ) : (
+                  <Link
+                    href={item.href}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 'var(--spacing-xs)',
+                      padding: isMobile ? 'var(--spacing-xs) var(--spacing-sm)' : 'var(--spacing-sm) var(--spacing-md)',
+                      color: getCategoryColor(item.category),
+                      textDecoration: 'none',
+                      borderRadius: 'var(--radius-md)',
+                      fontSize: isMobile ? '0.8rem' : '0.9rem',
+                      fontWeight: '500',
+                      transition: 'all 0.2s ease',
+                      border: `1px solid transparent`,
+                      background: getCategoryBackground(item.category)
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = getCategoryColor(item.category);
+                      e.currentTarget.style.color = 'white';
+                      e.currentTarget.style.transform = 'translateY(-1px)';
+                      e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = getCategoryBackground(item.category);
+                      e.currentTarget.style.color = getCategoryColor(item.category);
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = 'none';
+                    }}
+                    onFocus={(e) => {
+                      e.currentTarget.style.outline = `2px solid ${getCategoryColor(item.category)}`;
+                      e.currentTarget.style.outlineOffset = '2px';
+                    }}
+                    onBlur={(e) => {
+                      e.currentTarget.style.outline = 'none';
+                    }}
+                    aria-label={`Navegar para ${item.label}`}
+                  >
+                    {item.icon && <span role="img" aria-hidden="true">{item.icon}</span>}
+                    <span>{item.label}</span>
+                  </Link>
+                )}
+
+                {/* Hierarchical Separator */}
+                {index < displayBreadcrumbs.length - 1 && (
+                  <span 
+                    style={{
+                      color: 'var(--color-neutral-400)',
+                      fontSize: isMobile ? '0.7rem' : '0.8rem',
+                      margin: '0',
+                      display: 'flex',
+                      alignItems: 'center'
+                    }}
+                    aria-hidden="true"
+                  >
+                    {item.level !== undefined && displayBreadcrumbs[index + 1]?.level !== undefined && 
+                     displayBreadcrumbs[index + 1].level! > item.level ? '⤷' : '→'}
+                  </span>
+                )}
+              </li>
+            );
+          })}
+        </ol>
+        
+        {/* Contextual Actions */}
+        {!isMobile && breadcrumbs.length > 1 && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 'var(--spacing-sm)'
+          }}>
+            {/* Back Button */}
+            {breadcrumbs.length > 1 && (
+              <button
+                type="button"
+                onClick={() => {
+                  const parentItem = breadcrumbs[breadcrumbs.length - 2];
+                  if (parentItem && parentItem.href !== '#') {
+                    window.location.href = parentItem.href;
+                  }
                 }}
-              >
-                {item.icon && <span>{item.icon}</span>}
-                <span>{item.label}</span>
-                
-                {/* Meta information for current page */}
-                {item.estimatedTime && (
-                  <span style={{
-                    fontSize: '0.7rem',
-                    opacity: 0.8,
-                    marginLeft: '4px'
-                  }}>
-                    ⏱️ {item.estimatedTime}
-                  </span>
-                )}
-                {item.completionRate !== undefined && (
-                  <span style={{
-                    fontSize: '0.7rem',
-                    opacity: 0.8,
-                    marginLeft: '4px'
-                  }}>
-                    📊 {item.completionRate}%
-                  </span>
-                )}
-              </span>
-            ) : (
-              <Link
-                href={item.href}
-                tabIndex={0}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '6px',
-                  padding: '6px 10px',
-                  color: getCategoryColor(item.category),
-                  textDecoration: 'none',
-                  borderRadius: '4px',
-                  fontSize: '0.9rem',
-                  transition: 'all 0.2s ease',
-                  border: `1px solid ${getCategoryColor(item.category)}20`
+                  gap: 'var(--spacing-xs)',
+                  padding: 'var(--spacing-xs) var(--spacing-sm)',
+                  background: 'var(--bg-primary)',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: 'var(--radius-md)',
+                  color: 'var(--text-secondary)',
+                  fontSize: '0.8rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = `${getCategoryColor(item.category)}10`;
+                  e.currentTarget.style.background = 'var(--color-neutral-100)';
+                  e.currentTarget.style.color = 'var(--text-primary)';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'transparent';
+                  e.currentTarget.style.background = 'var(--bg-primary)';
+                  e.currentTarget.style.color = 'var(--text-secondary)';
                 }}
-                onFocus={(e) => {
-                  e.currentTarget.style.background = `${getCategoryColor(item.category)}10`;
-                  e.currentTarget.style.outline = `2px solid ${getCategoryColor(item.category)}`;
-                }}
-                onBlur={(e) => {
-                  e.currentTarget.style.background = 'transparent';
-                  e.currentTarget.style.outline = 'none';
-                }}
+                aria-label="Voltar para página anterior"
+                title={`Voltar para ${breadcrumbs[breadcrumbs.length - 2]?.label || 'página anterior'}`}
               >
-                {item.icon && <span>{item.icon}</span>}
-                <span>{item.label}</span>
+                <span>←</span>
+                <span>Voltar</span>
+              </button>
+            )}
+            
+            {/* Home shortcut */}
+            {breadcrumbs.length > 2 && (
+              <Link
+                href="/"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  padding: 'var(--spacing-xs) var(--spacing-sm)',
+                  background: 'var(--bg-primary)',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: 'var(--radius-md)',
+                  color: 'var(--text-secondary)',
+                  fontSize: '0.8rem',
+                  textDecoration: 'none',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'var(--color-primary-50)';
+                  e.currentTarget.style.color = 'var(--color-primary-600)';
+                  e.currentTarget.style.borderColor = 'var(--color-primary-200)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'var(--bg-primary)';
+                  e.currentTarget.style.color = 'var(--text-secondary)';
+                  e.currentTarget.style.borderColor = 'var(--border-color)';
+                }}
+                aria-label="Ir para página inicial"
+                title="Voltar ao início"
+              >
+                🏠
               </Link>
             )}
-
-            {/* Separator */}
-            {index < breadcrumbs.length - 1 && (
-              <span style={{
-                color: '#94a3b8',
-                fontSize: '0.8rem',
-                margin: '0 2px'
-              }}>
-                →
-              </span>
-            )}
-          </li>
-        ))}
-      </ol>
+          </div>
+        )}
+      </div>
 
       {/* Contextual Educational Information */}
       <ContextualBreadcrumbs 

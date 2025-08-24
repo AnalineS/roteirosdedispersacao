@@ -52,11 +52,12 @@ export default function MobileNavigation({
     }
   });
 
-  // Fechar menu ao navegar
+  // Fechar menu ao navegar para uma nova página
   useEffect(() => {
     if (isOpen) {
       onClose();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
 
   // Controle de scroll do body

@@ -368,7 +368,7 @@ function BadgeCard({ badge, index }: BadgeCardProps) {
           background: #ffffff;
           border: 1px solid #e5e7eb;
           border-radius: var(--radius-xl);
-          padding: var(--spacing-xl);
+          padding: var(--spacing-2xl);
           text-align: center;
           box-shadow: var(--shadow-sm);
           transition: all var(--transition-base);
@@ -423,7 +423,7 @@ function BadgeCard({ badge, index }: BadgeCardProps) {
           display: flex;
           align-items: center;
           justify-content: center;
-          margin: 0 auto var(--spacing-lg);
+          margin: 0 auto var(--spacing-xl);
           background: var(--accent-color);
           color: #ffffff;
         }
@@ -432,14 +432,16 @@ function BadgeCard({ badge, index }: BadgeCardProps) {
           font-size: var(--font-size-lg);
           font-weight: var(--font-weight-semibold);
           color: var(--color-gray-900);
-          margin-bottom: var(--spacing-sm);
+          margin-bottom: var(--spacing-md);
+          padding: 0 var(--spacing-sm);
         }
 
         .badge-description {
           font-size: var(--font-size-base);
           color: var(--color-gray-600);
           line-height: var(--line-height-relaxed);
-          margin-bottom: var(--spacing-lg);
+          margin-bottom: var(--spacing-xl);
+          padding: 0 var(--spacing-md);
         }
 
         .badge-verified {
