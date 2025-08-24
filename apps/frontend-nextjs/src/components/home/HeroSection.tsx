@@ -1,11 +1,29 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { Search, MessageCircle, BookOpen, Award } from 'lucide-react';
 
 export default function HeroSection() {
+  const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      // Redirecionar para a página de chat com a query de busca
+      router.push(`/chat?query=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  };
+
+  const handleSearchInputKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSearch(e);
+    }
+  };
+
   return (
     <section className="hero-section">
       <div className="hero-background">
@@ -40,25 +58,33 @@ export default function HeroSection() {
               Iniciar Consulta
               <span className="btn-badge">Grátis</span>
             </Link>
-            <Link href="/educational" className="hero-btn hero-btn-secondary">
+            <Link href="/modules" className="hero-btn hero-btn-secondary">
               <BookOpen className="btn-icon" />
               Material Educativo
             </Link>
           </div>
 
           {/* Barra de Busca Rápida */}
-          <div className="hero-search">
+          <form className="hero-search" onSubmit={handleSearch}>
             <Search className="search-icon" />
             <input
               type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyPress={handleSearchInputKeyPress}
               placeholder="Busque por medicamento, dosagem ou protocolo..."
               className="search-input"
               aria-label="Buscar informações"
             />
-            <button className="search-btn" aria-label="Realizar busca">
+            <button 
+              type="submit" 
+              className="search-btn" 
+              aria-label="Realizar busca"
+              disabled={!searchQuery.trim()}
+            >
               Buscar
             </button>
-          </div>
+          </form>
 
           {/* Estatísticas de Confiança */}
           <div className="hero-stats">
