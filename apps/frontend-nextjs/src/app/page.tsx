@@ -32,6 +32,7 @@ import {
   PhoneIcon,
   getIconByEmoji 
 } from '@/components/icons/NavigationIcons';
+import ExperienceBanner from '@/components/onboarding/ExperienceBanner';
 import { 
   CheckIcon, 
   ChatIcon, 
@@ -149,6 +150,7 @@ export default function HomePage() {
   return (
     <PageTransition>
       <PersonalizationProvider>
+        <ExperienceBanner />
         {/* Onboarding Tour */}
         <OnboardingTour onComplete={() => {
           addToast({
@@ -343,98 +345,6 @@ export default function HomePage() {
           zIndex: 0
         }}></div>
 
-        {/* Barra de Navegação Simplificada */}
-        <nav style={{
-          position: 'absolute',
-          top: '20px',
-          right: '20px',
-          zIndex: 100
-        }}>
-          <div style={{
-            display: 'flex',
-            gap: '1rem',
-            alignItems: 'center'
-          }}>
-            <a
-              href="/sobre"
-              style={{
-                color: '#1e293b',
-                textDecoration: 'none',
-                fontWeight: '500',
-                fontSize: '0.9rem',
-                padding: '0.5rem 1rem',
-                borderRadius: '6px',
-                backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                border: '1px solid #e2e8f0',
-                transition: 'all 0.2s ease',
-                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#f8fafc';
-                e.currentTarget.style.transform = 'translateY(-1px)';
-                e.currentTarget.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.15)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.95)';
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.1)';
-              }}
-            >
-              Sobre
-            </a>
-            <a
-              href="/dashboard"
-              style={{
-                color: '#1e293b',
-                textDecoration: 'none',
-                fontWeight: '500',
-                fontSize: '0.9rem',
-                padding: '0.5rem 1rem',
-                borderRadius: '6px',
-                backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                border: '1px solid #e2e8f0',
-                transition: 'all 0.2s ease',
-                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#f8fafc';
-                e.currentTarget.style.transform = 'translateY(-1px)';
-                e.currentTarget.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.15)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.95)';
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.1)';
-              }}
-            >
-              Criar conta
-            </a>
-            <a
-              href="/chat"
-              style={{
-                color: 'white',
-                textDecoration: 'none',
-                fontWeight: '600',
-                fontSize: '0.9rem',
-                padding: '0.6rem 1.2rem',
-                borderRadius: '6px',
-                backgroundColor: 'var(--accent-primary)',
-                border: 'none',
-                transition: 'all 0.2s ease'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--accent-secondary)';
-                e.currentTarget.style.transform = 'translateY(-1px)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--accent-primary)';
-                e.currentTarget.style.transform = 'translateY(0)';
-              }}
-            >
-              Entrar
-            </a>
-          </div>
-        </nav>
 
         {/* Content */}
         <div className="container" style={{
@@ -445,17 +355,16 @@ export default function HomePage() {
           paddingLeft: 'clamp(1rem, 4vw, 2rem)',
           paddingRight: 'clamp(1rem, 4vw, 2rem)'
         }}>
-          {/* Header Institucional - Colado na navegação */}
+          {/* Header Institucional */}
           <div style={{ 
             maxWidth: 'min(1200px, 92vw)', 
-            margin: '0 auto',
+            margin: '2rem auto',
             marginBottom: '2rem',
             padding: 'clamp(1rem, 3vw, 1.5rem)',
             background: 'white',
-            borderRadius: '0 0 clamp(8px, 2vw, 12px) clamp(8px, 2vw, 12px)',
+            borderRadius: 'clamp(8px, 2vw, 12px)',
             boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
             border: '1px solid #e2e8f0',
-            borderTop: 'none',
             textAlign: 'center',
             display: 'flex',
             flexDirection: 'column',
