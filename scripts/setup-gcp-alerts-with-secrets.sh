@@ -121,7 +121,7 @@ conditions:
           crossSeriesReducer: REDUCE_PERCENTILE_95
           groupByFields:
             - "resource.label.service_name"
-      comparison: COMPARISON_GREATER_THAN
+      comparison: COMPARISON_GT
       thresholdValue: 5000
       duration: 600s
       trigger:
@@ -152,7 +152,7 @@ conditions:
         - alignmentPeriod: 60s
           perSeriesAligner: ALIGN_RATE
           crossSeriesReducer: REDUCE_SUM
-      comparison: COMPARISON_GREATER_THAN
+      comparison: COMPARISON_GT
       thresholdValue: 10
       duration: 300s
       trigger:
@@ -212,7 +212,7 @@ conditions:
         - alignmentPeriod: 300s
           perSeriesAligner: ALIGN_MEAN
           crossSeriesReducer: REDUCE_MEAN
-      comparison: COMPARISON_GREATER_THAN
+      comparison: COMPARISON_GT
       thresholdValue: 0.8
       duration: 600s
       trigger:
