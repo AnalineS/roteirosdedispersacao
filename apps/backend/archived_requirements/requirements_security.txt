@@ -72,7 +72,7 @@ pytest-mock>=3.11.0
 websockets>=11.0.0
 
 # CORS
-flask-cors>=4.0.0
+flask-cors>=6.0.0  # SECURITY UPDATE: CVE fixes aplicados
 
 # Rate Limiting Distribuído
 limits>=3.6.0

@@ -48,11 +48,21 @@ Alta Severidade Pendentes: 2 (com mitigação)
 
 ## 🔄 Processo de Revisão
 
+### Histórico de Decisões
+
+| Data | Decisão | Responsável | Motivo |
+|------|---------|-------------|--------|
+| 2024-08-24 | Flask-CORS security upgrade | Ana | 4 CVEs críticos corrigidos |
+| 2024-08-24 | Requirements consolidation | Ana | Eliminar conflitos de versão |
+| 2024-08-24 | Aceitar torch vulnerabilities | Ana | Sem patch, risco baixo em HML |
+| **2025-08-24** | **Fechar Snyk PR #5** | **Ana** | **Atualização já implementada manualmente** |
+
 ### Revisão Mensal (Dia 21)
 1. Verificar atualizações do PyTorch
 2. Executar Snyk scan completo
 3. Revisar novas vulnerabilidades
 4. Atualizar este documento
+5. **Validar consistência de dependências**
 
 ### Critérios para Aceitação de Risco
 - [ ] Sem patch disponível do upstream
