@@ -171,106 +171,6 @@
   --code-text: #0969da;
 }
 
-/* Dark theme */
-[data-theme="dark"], .dark {
-  /* Dark Background Colors */
-  --color-bg-primary: #1e293b;
-  --color-bg-secondary: #334155;
-  --color-bg-tertiary: #475569;
-  --bg-primary: var(--color-bg-primary);
-  --bg-secondary: var(--color-bg-secondary);
-  --bg-tertiary: var(--color-bg-tertiary);
-  
-  /* Dark Text Colors with WCAG Compliance */
-  --color-text-primary: #fafafa;    /* High contrast on dark backgrounds */
-  --color-text-secondary: #e5e5e5;  /* Good contrast on dark backgrounds */
-  --color-text-muted: #d1d5db;      /* Adequate contrast on dark backgrounds */
-  --color-text-light: #9ca3af;      /* Light text for dark theme */
-  --text-primary: var(--color-text-primary);
-  --text-secondary: var(--color-text-secondary);
-  --text-muted: var(--color-text-muted);
-  --text-light: var(--color-text-light);
-  
-  /* Dark Border Colors */
-  --color-border-default: #404040;
-  --color-border-light: #262626;
-  --color-border-focus: #60a5fa;
-  --border-default: var(--color-border-default);
-  --border-light: var(--color-border-light);
-  --border-focus: var(--color-border-focus);
-  
-  /* Dark UnB Colors - Lighter variants for dark theme */
-  --color-primary-500: #60a5fa;     /* Lighter blue for dark theme */
-  --color-primary-600: #93c5fd;     /* Even lighter blue */
-  --color-primary-400: #4ade80;     /* Lighter green for dark theme */
-  --unb-primary: var(--color-primary-500);
-  --unb-secondary: var(--color-primary-600);
-  --unb-accent: var(--color-primary-400);
-  
-  /* Dark Persona Colors */
-  --gasnelio-primary: #60a5fa;      /* Lighter blue for dark theme */
-  --gasnelio-secondary: #93c5fd;    
-  --gasnelio-bubble: #1e3a8a;       /* Darker bubble for dark theme */
-  --gasnelio-background: #1e293b;   
-  --gasnelio-alpha: rgba(96, 165, 250, 0.1);
-  --gasnelio-text: #93c5fd;
-  
-  --ga-primary: #4ade80;             /* Lighter green for dark theme */
-  --ga-secondary: #6ee7b7;          
-  --ga-bubble: #166534;              /* Darker bubble for dark theme */
-  --ga-background: #1e293b;         
-  --ga-alpha: rgba(74, 222, 128, 0.1);
-  --ga-text: #6ee7b7;
-  
-  /* Dark Status Colors */
-  --color-success-500: #34d399;
-  --color-success-primary: #4ade80;     /* Lighter for dark theme */
-  --color-success-background: #064e3b;   /* Dark background */
-  --color-success-border: #047857;
-  --color-warning-500: #fbbf24;
-  --color-warning-primary: #fcd34d;     /* Lighter for dark theme */
-  --color-warning-background: #451a03;   /* Dark background */
-  --color-warning-border: #92400e;
-  --color-error-500: #f87171;
-  --color-error-primary: #fca5a5;       /* Lighter for dark theme */
-  --color-error-background: #450a0a;     /* Dark background */
-  --color-error-border: #b91c1c;
-  --color-info-500: #60a5fa;
-  --color-info-primary: #93c5fd;        /* Lighter for dark theme */
-  --color-info-background: #1e3a8a;     /* Dark background */
-  --color-info-border: #3b82f6;
-  
-  /* Legacy Support for Dark Theme */
-  --accent-primary: var(--color-primary-500);
-  --accent-secondary: var(--color-primary-600);
-  --accent-success: var(--color-success-500);
-  --accent-warning: var(--color-warning-500);
-  --accent-error: var(--color-error-500);
-  
-  /* Dark Gray Scale */
-  --color-gray-50: #1f2937;
-  --color-gray-100: #374151;
-  --color-gray-200: #4b5563;
-  --color-gray-300: #6b7280;
-  --color-gray-400: #9ca3af;
-  --color-gray-500: #d1d5db;
-  --color-gray-600: #e5e7eb;
-  --color-gray-700: #f3f4f6;
-  --color-gray-800: #f9fafb;
-  --color-gray-900: #ffffff;
-  
-  /* Dark Shadows - More pronounced for dark theme */
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.2);
-  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.4);
-  --shadow-xl: 0 8px 32px rgba(0, 0, 0, 0.5);
-  --shadow-2xl: 0 16px 64px rgba(0, 0, 0, 0.6);
-  
-  /* Dark Overlay */
-  --overlay-bg: rgba(30, 41, 59, 0.7);
-  --code-bg: #2d3748;
-  --code-text: #79c0ff;
-}
 
 /* Apply theme variables to body */
 body {
@@ -429,22 +329,22 @@ a:hover {
   }
 }
 
-/* Scrollbar styling for dark mode */
-.dark ::-webkit-scrollbar {
+/* Scrollbar styling */
+::-webkit-scrollbar {
   width: 12px;
   height: 12px;
 }
 
-.dark ::-webkit-scrollbar-track {
+::-webkit-scrollbar-track {
   background: var(--bg-secondary);
 }
 
-.dark ::-webkit-scrollbar-thumb {
+::-webkit-scrollbar-thumb {
   background: var(--border-default);
   border-radius: 6px;
 }
 
-.dark ::-webkit-scrollbar-thumb:hover {
+::-webkit-scrollbar-thumb:hover {
   background: var(--text-muted);
 }
 
@@ -460,25 +360,13 @@ a:hover {
   transition: none !important;
 }
 
-/* Theme-specific adjustments */
-.dark img {
-  opacity: 0.9;
-}
-
-.dark .logo-dark {
+/* Light theme logo display */
+.logo-light {
   display: block;
-}
-
-.dark .logo-light {
-  display: none;
 }
 
 .logo-dark {
   display: none;
-}
-
-.logo-light {
-  display: block;
 }
 
 /* ============================================================================ */
@@ -772,21 +660,6 @@ a:hover {
   }
 }
 
-/* Dark mode specific adjustments for high DPI */
-@media (resolution >= 2dppx) {
-  .dark .theme-toggle-button {
-    border-color: var(--border-default);
-  }
-  
-  .dark .theme-toggle-button:hover {
-    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.4);
-    border-color: var(--accent-primary);
-  }
-  
-  .dark .theme-toggle-dropdown {
-    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6);
-  }
-}
 
 /* ============================================================================ */
 /* TABLET AND MOBILE RESPONSIVE ADJUSTMENTS */
@@ -1243,12 +1116,6 @@ a:hover {
   }
 }
 
-/* Dark mode adjustments for navigation */
-.dark .navigation-header .nav-dropdown {
-  background: var(--bg-primary);
-  border-color: var(--border-default);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
-}
 
 /* ============================================================================ */
 /* MOBILE NAVIGATION RESPONSIVE ADJUSTMENTS */

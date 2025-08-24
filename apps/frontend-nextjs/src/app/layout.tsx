@@ -20,8 +20,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 5,
   userScalable: true,
-  themeColor: '#2563eb',
-  colorScheme: 'light'
+  themeColor: '#003366', // UnB institucional azul
+  colorScheme: 'light only' // Forçar apenas light mode
 }
 
 export default function RootLayout({
@@ -36,7 +36,8 @@ export default function RootLayout({
         <link rel="icon" type="image/x-icon" href="/favicon.ico" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#2563eb" />
+        <meta name="theme-color" content="#003366" />
+        <meta name="color-scheme" content="light only" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="PQT-U Educacional" />

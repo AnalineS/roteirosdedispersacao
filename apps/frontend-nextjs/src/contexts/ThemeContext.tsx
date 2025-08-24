@@ -14,58 +14,55 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [themeMode, setThemeMode] = useState<ThemeMode>('system');
+  const [themeMode, setThemeMode] = useState<ThemeMode>('light');
   const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>('light');
 
-  // Carregar preferência salva
+  // Carregar preferência salva - forçar sempre light
   useEffect(() => {
-    const saved = localStorage.getItem('theme-mode') as ThemeMode;
-    if (saved && ['light', 'dark', 'system'].includes(saved)) {
-      setThemeMode(saved);
-    }
+    // Sempre usar tema light (UnB cores claras)
+    setThemeMode('light');
+    localStorage.setItem('theme-mode', 'light');
   }, []);
 
-  // Resolver tema baseado no modo
+  // Resolver tema baseado no modo - sempre light
   useEffect(() => {
-    const resolveTheme = () => {
-      if (themeMode === 'system') {
-        const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-        setResolvedTheme(systemTheme);
-      } else {
-        setResolvedTheme(themeMode as ResolvedTheme);
-      }
-    };
-
-    resolveTheme();
-
-    // Listener para mudanças no tema do sistema
-    if (themeMode === 'system') {
-      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-      const handler = (e: MediaQueryListEvent) => {
-        setResolvedTheme(e.matches ? 'dark' : 'light');
-      };
-      
-      mediaQuery.addEventListener('change', handler);
-      return () => mediaQuery.removeEventListener('change', handler);
-    }
+    // Forçar sempre tema light (UnB padrão)
+    setResolvedTheme('light');
   }, [themeMode]);
 
-  // Aplicar classe no documento
+  // Aplicar classe no documento - sempre light
   useEffect(() => {
     const root = document.documentElement;
-    root.classList.remove('light', 'dark');
-    root.classList.add(resolvedTheme);
+    root.classList.remove('light', 'dark', 'theme-dark', 'dark-mode');
+    root.classList.add('light', 'theme-light', 'light-mode');
+    root.setAttribute('data-theme', 'light');
     
-    // Atualizar meta theme-color
+    // Forçar fundo branco
+    document.body.style.backgroundColor = '#ffffff';
+    document.body.style.color = '#1e293b';
+    
+    // Atualizar meta theme-color sempre para light
     const metaThemeColor = document.querySelector('meta[name="theme-color"]');
     if (metaThemeColor) {
-      metaThemeColor.setAttribute('content', resolvedTheme === 'dark' ? '#1a1a1a' : '#ffffff');
+      metaThemeColor.setAttribute('content', '#003366'); // UnB azul institucional
+    }
+    
+    // Garantir que colorScheme seja light
+    const metaColorScheme = document.querySelector('meta[name="color-scheme"]');
+    if (metaColorScheme) {
+      metaColorScheme.setAttribute('content', 'light');
+    } else {
+      const newMeta = document.createElement('meta');
+      newMeta.name = 'color-scheme';
+      newMeta.content = 'light';
+      document.head.appendChild(newMeta);
     }
   }, [resolvedTheme]);
 
   const handleSetThemeMode = (mode: ThemeMode) => {
-    setThemeMode(mode);
-    localStorage.setItem('theme-mode', mode);
+    // Sempre forçar light mode (UnB tema oficial)
+    setThemeMode('light');
+    localStorage.setItem('theme-mode', 'light');
   };
 
   return (

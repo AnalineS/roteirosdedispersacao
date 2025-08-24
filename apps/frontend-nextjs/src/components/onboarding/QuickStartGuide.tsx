@@ -284,11 +284,11 @@ export default function QuickStartGuide({
 
         .quick-start-modal {
           position: fixed;
-          top: 20%;
+          top: 90px;
           left: 50%;
-          transform: translate(-50%, -20%);
-          width: min(500px, 90vw);
-          max-height: 75vh;
+          transform: translate(-50%, 0);
+          width: min(520px, 92vw);
+          max-height: 80vh;
           background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
           border-radius: 20px;
           box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5);
@@ -306,11 +306,11 @@ export default function QuickStartGuide({
         @keyframes slideUp {
           from {
             opacity: 0;
-            transform: translate(-50%, -10%);
+            transform: translate(-50%, -20px);
           }
           to {
             opacity: 1;
-            transform: translate(-50%, -20%);
+            transform: translate(-50%, 0);
           }
         }
 
