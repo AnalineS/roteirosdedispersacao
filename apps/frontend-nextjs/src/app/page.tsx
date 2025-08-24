@@ -354,7 +354,8 @@ export default function HomePage() {
         minHeight: '100vh',
         backgroundColor: 'var(--bg-primary)',
         position: 'relative',
-        overflow: 'hidden'
+        overflow: 'hidden',
+        paddingTop: '80px' // Account for fixed header
       }}>
         {/* Subtle responsive background pattern */}
         <div style={{

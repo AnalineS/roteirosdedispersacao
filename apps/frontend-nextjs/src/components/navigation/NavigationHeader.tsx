@@ -356,20 +356,21 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
       role="banner"
       aria-label="Main navigation header"
       style={{
-        position: 'sticky',
+        position: 'fixed',
         top: 0,
         left: 0,
         right: 0,
         width: '100%',
         height: '80px',
-        background: unbColors.gradients.header,
-        borderBottom: `1px solid ${unbColors.alpha.primary}`,
-        boxShadow: '0 2px 12px rgba(0,0,0,0.15)',
+        background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.98) 100%)',
+        backdropFilter: 'blur(10px)',
+        borderBottom: '1px solid rgba(226, 232, 240, 0.8)',
+        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
         zIndex: 1000,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: isWideScreen ? '0 clamp(1rem, 2vw, 2rem)' : '0 clamp(0.5rem, 1.5vw, 1rem)',
+        padding: isWideScreen ? '0 clamp(1rem, 2vw, 2rem)' : '0 clamp(1rem, 2vw, 1.5rem)',
         gap: '1rem',
         minHeight: '80px',
         boxSizing: 'border-box'
@@ -385,7 +386,7 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
               alignItems: 'center',
               gap: '12px',
               textDecoration: 'none',
-              color: unbColors.white
+              color: unbColors.primary
             }}
           >
             <img 
@@ -465,8 +466,8 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
                       alignItems: 'center',
                       gap: '6px',
                       background: 'none',
-                      border: `2px solid ${dropdownsOpen[category.id] ? unbColors.white : 'transparent'}`,
-                      color: unbColors.white,
+                      border: `2px solid ${dropdownsOpen[category.id] ? unbColors.primary : 'transparent'}`,
+                      color: unbColors.primary,
                       padding: isTablet ? '6px 10px' : '8px 14px',
                       borderRadius: '8px',
                       cursor: 'pointer',
@@ -479,15 +480,15 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
                       minWidth: 'fit-content',
                       flexShrink: 0
                     }}
-                    onMouseEnter={(e) => { e.currentTarget.style.background = unbColors.alpha.secondary; }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(59, 130, 246, 0.1)'; }}
                     onMouseLeave={(e) => { e.currentTarget.style.background = 'none'; }}
-                    onFocus={(e) => { e.currentTarget.style.background = unbColors.alpha.secondary; e.currentTarget.style.border = `2px solid ${unbColors.white}`; }}
+                    onFocus={(e) => { e.currentTarget.style.background = 'rgba(59, 130, 246, 0.1)'; e.currentTarget.style.border = `2px solid ${unbColors.primary}`; }}
                     aria-expanded={dropdownsOpen[category.id]}
                     aria-haspopup="menu"
                     aria-label={`Abrir menu ${category.label}: ${category.description}`}
                     aria-describedby={`category-${category.id}-desc`}
                   >
-                    <IconComponent size={isTablet ? 16 : 18} variant="unb" color={unbColors.white} />
+                    <IconComponent size={isTablet ? 16 : 18} variant="unb" color={unbColors.primary} />
                     <span style={{ 
                       display: isTablet && category.label.length > 12 ? 'none' : 'inline',
                       whiteSpace: 'nowrap',
@@ -499,7 +500,7 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
                     </span>
                     <ChevronDownIcon 
                       size={14} 
-                      color={unbColors.white}
+                      color={unbColors.primary}
                       style={{
                         transform: dropdownsOpen[category.id] ? 'rotate(180deg)' : 'rotate(0deg)',
                         transition: 'transform 200ms ease'
@@ -513,7 +514,7 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
                       display: 'flex',
                       alignItems: 'center',
                       gap: '6px',
-                      color: unbColors.white,
+                      color: unbColors.primary,
                       textDecoration: 'none',
                       padding: isTablet ? '6px 10px' : '8px 14px',
                       borderRadius: '8px',
@@ -525,10 +526,10 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
                       minWidth: 'fit-content',
                       flexShrink: 0
                     }}
-                    onMouseEnter={(e) => { e.currentTarget.style.background = unbColors.alpha.secondary; }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(59, 130, 246, 0.1)'; }}
                     onMouseLeave={(e) => { e.currentTarget.style.background = 'none'; }}
                   >
-                    <IconComponent size={isTablet ? 16 : 18} variant="unb" color={unbColors.white} />
+                    <IconComponent size={isTablet ? 16 : 18} variant="unb" color={unbColors.primary} />
                     <span style={{ 
                       display: isTablet && category.label.length > 12 ? 'none' : 'inline',
                       whiteSpace: 'nowrap',
@@ -743,7 +744,7 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
               <Link 
                 href="/sobre"
                 style={{
-                  color: unbColors.white,
+                  color: unbColors.primary,
                   textDecoration: 'none',
                   fontSize: '0.9rem',
                   fontWeight: '500',
@@ -753,7 +754,7 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
                   opacity: 0.9
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = unbColors.alpha.secondary;
+                  e.currentTarget.style.backgroundColor = 'rgba(59, 130, 246, 0.1)';
                   e.currentTarget.style.opacity = '1';
                 }}
                 onMouseLeave={(e) => {
@@ -767,7 +768,7 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
               <Link 
                 href="/dashboard"
                 style={{
-                  color: unbColors.white,
+                  color: unbColors.primary,
                   textDecoration: 'none',
                   fontSize: '0.9rem',
                   fontWeight: '500',
@@ -777,7 +778,7 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
                   opacity: 0.9
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = unbColors.alpha.secondary;
+                  e.currentTarget.style.backgroundColor = 'rgba(59, 130, 246, 0.1)';
                   e.currentTarget.style.opacity = '1';
                 }}
                 onMouseLeave={(e) => {
@@ -797,17 +798,17 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
                   fontWeight: '600',
                   padding: '8px 16px',
                   borderRadius: '6px',
-                  backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                  border: `1px solid ${unbColors.white}40`,
+                  backgroundColor: unbColors.primary,
+                  border: `1px solid ${unbColors.primary}`,
                   transition: 'all 0.2s ease'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = unbColors.white;
-                  e.currentTarget.style.color = unbColors.primary;
+                  e.currentTarget.style.backgroundColor = unbColors.secondary;
+                  e.currentTarget.style.borderColor = unbColors.secondary;
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
-                  e.currentTarget.style.color = unbColors.white;
+                  e.currentTarget.style.backgroundColor = unbColors.primary;
+                  e.currentTarget.style.borderColor = unbColors.primary;
                 }}
               >
                 Login
@@ -823,8 +824,8 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
                 alignItems: 'center',
                 padding: '6px 10px',
                 borderRadius: '6px',
-                backgroundColor: pathname === '/admin' ? 'rgba(255, 255, 255, 0.2)' : 'transparent',
-                color: unbColors.white,
+                backgroundColor: pathname === '/admin' ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
+                color: unbColors.primary,
                 textDecoration: 'none',
                 transition: 'all 0.2s ease',
                 fontSize: '0.8rem',
@@ -832,11 +833,11 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
                 opacity: 0.8
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
+                e.currentTarget.style.backgroundColor = 'rgba(59, 130, 246, 0.1)';
                 e.currentTarget.style.opacity = '1';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = pathname === '/admin' ? 'rgba(255, 255, 255, 0.2)' : 'transparent';
+                e.currentTarget.style.backgroundColor = pathname === '/admin' ? 'rgba(59, 130, 246, 0.1)' : 'transparent';
                 e.currentTarget.style.opacity = '0.8';
               }}
             >
@@ -866,7 +867,7 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
             style={{
               background: 'none',
               border: `2px solid transparent`,
-              color: unbColors.white,
+              color: unbColors.primary,
               padding: '8px',
               cursor: 'pointer',
               borderRadius: '8px',
@@ -878,7 +879,7 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
               outline: 'none',
               marginRight: '8px'
             }}
-            onFocus={(e) => { e.currentTarget.style.border = `2px solid ${unbColors.white}`; }}
+            onFocus={(e) => { e.currentTarget.style.border = `2px solid ${unbColors.primary}`; }}
             onBlur={(e) => { e.currentTarget.style.border = '2px solid transparent'; }}
             aria-label="Buscar conteúdo"
             title="Buscar conteúdo"
@@ -902,7 +903,7 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
             style={{
               background: 'none',
               border: `2px solid transparent`,
-              color: unbColors.white,
+              color: unbColors.primary,
               padding: '8px',
               cursor: 'pointer',
               borderRadius: '8px',
@@ -913,11 +914,11 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
               minHeight: '44px',
               outline: 'none'
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(59, 130, 246, 0.1)'; }}
             onMouseLeave={(e) => { e.currentTarget.style.background = 'none'; }}
             onFocus={(e) => { 
-              e.currentTarget.style.border = `2px solid ${unbColors.white}`; 
-              e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+              e.currentTarget.style.border = `2px solid ${unbColors.primary}`; 
+              e.currentTarget.style.background = 'rgba(59, 130, 246, 0.1)';
             }}
             onBlur={(e) => { 
               e.currentTarget.style.border = '2px solid transparent';
@@ -928,9 +929,9 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
             aria-controls="mobile-navigation-menu"
           >
             {isMobileMenuOpen ? (
-              <CloseIcon size={24} color={unbColors.white} />
+              <CloseIcon size={24} color={unbColors.primary} />
             ) : (
-              <MenuIcon size={24} color={unbColors.white} />
+              <MenuIcon size={24} color={unbColors.primary} />
             )}
           </button>
         )}
