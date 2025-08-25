@@ -171,6 +171,10 @@ coverage.xml
 .nuxt/
 .vuepress/dist/
 
+# TypeScript
+tsconfig.tsbuildinfo
+*.tsbuildinfo
+
 # ==========================================
 # ARQUIVOS TEMPORÁRIOS
 # ==========================================
