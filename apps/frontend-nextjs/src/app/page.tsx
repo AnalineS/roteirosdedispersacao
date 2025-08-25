@@ -18,9 +18,9 @@ import PageTransition, { AnimatedSection } from '@/components/animations/PageTra
 import { HierarchyHeading, HierarchyText } from '@/components/layout/VisualHierarchyOptimizer';
 import { useMobileDetection } from '@/components/mobile/MobileFirstFramework';
 import { InteractiveButton, useToast, ToastContainer } from '@/components/ui/MicroInteractions';
+import TrustBadges from '@/components/home/TrustBadges';
 
 // Heavy components loaded lazily using React.lazy
-const TrustBadges = React.lazy(() => import('@/components/home/TrustBadges'));
 const QuickStartGuide = React.lazy(() => import('@/components/onboarding/QuickStartGuide'));
 const ExecutiveSummary = React.lazy(() => import('@/components/summary/ExecutiveSummary'));
 const CognitiveLoadAuditor = React.lazy(() => import('@/components/analytics/CognitiveLoadAuditor').then(mod => ({ default: mod.CognitiveLoadAuditor })));
@@ -187,19 +187,10 @@ export default function HomePage() {
             <FeaturesSection />
           </AnimatedSection>
 
-          {/* Trust Badges - Lazy loaded */}
-          <LazyOnScroll 
-            fallback={<div style={{ minHeight: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <LoadingSpinner size="lg" message="Carregando seção de credibilidade..." />
-            </div>}
-            rootMargin="100px"
-          >
-            <AnimatedSection animation="fadeInUp" delay={600}>
-              <Suspense fallback={<LoadingSpinner size="lg" message="Carregando badges..." />}>
-                <TrustBadges />
-              </Suspense>
-            </AnimatedSection>
-          </LazyOnScroll>
+          {/* Trust Badges - Removido lazy loading para evitar travamento */}
+          <AnimatedSection animation="fadeInUp" delay={600}>
+            <TrustBadges />
+          </AnimatedSection>
 
           {/* Dashboard Personalizado */}
           <PersonalizedDashboard className="mb-8" />
@@ -625,6 +616,246 @@ export default function HomePage() {
                   </button>
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* Seção Para Pacientes */}
+          <div style={{
+            background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 50%, #f0fdf4 100%)',
+            padding: '3rem 0',
+            marginTop: '3rem'
+          }}>
+            <div style={{
+              maxWidth: 'min(1200px, 95vw)',
+              margin: '0 auto',
+              padding: '0 1rem'
+            }}>
+              <HierarchyHeading level="h2" style={{
+                textAlign: 'center',
+                marginBottom: '2rem',
+                color: '#00aa44',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.75rem'
+              }}>
+                <HeartIcon size={28} color="#00aa44" />
+                Área do Paciente
+              </HierarchyHeading>
+
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                gap: '1.5rem'
+              }}>
+                {/* Card: Primeiros Passos */}
+                <div style={{
+                  background: 'white',
+                  padding: '1.5rem',
+                  borderRadius: '12px',
+                  boxShadow: '0 2px 10px rgba(0, 170, 68, 0.1)',
+                  border: '2px solid #00aa4420'
+                }}>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.75rem',
+                    marginBottom: '1rem'
+                  }}>
+                    <CheckIcon size={24} color="#00aa44" />
+                    <h3 style={{ color: '#00aa44', fontSize: '1.1rem', margin: 0 }}>
+                      Primeiros Passos
+                    </h3>
+                  </div>
+                  <ul style={{
+                    fontSize: '0.9rem',
+                    color: '#4a5568',
+                    paddingLeft: '1.5rem',
+                    margin: 0,
+                    lineHeight: '1.6'
+                  }}>
+                    <li>Converse com a Assistente Educadora</li>
+                    <li>Entenda seu tratamento</li>
+                    <li>Tire suas dúvidas sem medo</li>
+                    <li>Acompanhe sua evolução</li>
+                  </ul>
+                </div>
+
+                {/* Card: Apoio Emocional */}
+                <div style={{
+                  background: 'white',
+                  padding: '1.5rem',
+                  borderRadius: '12px',
+                  boxShadow: '0 2px 10px rgba(0, 170, 68, 0.1)',
+                  border: '2px solid #00aa4420'
+                }}>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.75rem',
+                    marginBottom: '1rem'
+                  }}>
+                    <FamilyIcon size={24} color="#00aa44" />
+                    <h3 style={{ color: '#00aa44', fontSize: '1.1rem', margin: 0 }}>
+                      Apoio Emocional
+                    </h3>
+                  </div>
+                  <p style={{
+                    fontSize: '0.9rem',
+                    color: '#4a5568',
+                    margin: 0,
+                    lineHeight: '1.6'
+                  }}>
+                    Não está sozinho! Nossa assistente Gá oferece suporte emocional
+                    e ajuda você a entender cada etapa do tratamento com carinho e paciência.
+                  </p>
+                </div>
+
+                {/* Card: Vida Normal */}
+                <div style={{
+                  background: 'white',
+                  padding: '1.5rem',
+                  borderRadius: '12px',
+                  boxShadow: '0 2px 10px rgba(0, 170, 68, 0.1)',
+                  border: '2px solid #00aa4420'
+                }}>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.75rem',
+                    marginBottom: '1rem'
+                  }}>
+                    <StarIcon size={24} color="#00aa44" />
+                    <h3 style={{ color: '#00aa44', fontSize: '1.1rem', margin: 0 }}>
+                      Vida Normal
+                    </h3>
+                  </div>
+                  <p style={{
+                    fontSize: '0.9rem',
+                    color: '#4a5568',
+                    margin: 0,
+                    lineHeight: '1.6'
+                  }}>
+                    Com o tratamento correto, você pode ter uma vida completamente normal.
+                    Trabalhar, estudar e conviver com família e amigos sem restrições.
+                  </p>
+                </div>
+              </div>
+
+              {/* CTA para pacientes */}
+              <div style={{
+                textAlign: 'center',
+                marginTop: '2rem'
+              }}>
+                <Link href="/chat?persona=ga" style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.75rem',
+                  padding: '1rem 2rem',
+                  background: 'linear-gradient(135deg, #00aa44 0%, #059669 100%)',
+                  color: 'white',
+                  borderRadius: '8px',
+                  textDecoration: 'none',
+                  fontSize: '1rem',
+                  fontWeight: '600',
+                  boxShadow: '0 4px 14px rgba(0, 170, 68, 0.3)',
+                  transition: 'all 0.3s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 6px 20px rgba(0, 170, 68, 0.4)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 4px 14px rgba(0, 170, 68, 0.3)';
+                }}>
+                  <HeartIcon size={20} color="white" />
+                  Conversar com a Assistente Educadora
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          {/* Seção FAQ - Perguntas Frequentes (última seção antes do footer) */}
+          <div style={{
+            maxWidth: 'min(1200px, 95vw)',
+            margin: '3rem auto',
+            padding: '2rem',
+            background: 'white',
+            borderRadius: '16px',
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)'
+          }}>
+            <HierarchyHeading level="h2" style={{
+              textAlign: 'center',
+              marginBottom: '2rem',
+              color: '#003366',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.75rem'
+            }}>
+              <QuestionIcon size={28} color="#003366" />
+              Perguntas Frequentes
+            </HierarchyHeading>
+
+            <div style={{
+              display: 'grid',
+              gap: '1rem'
+            }}>
+              {[
+                {
+                  pergunta: "O tratamento da hanseníase tem cura?",
+                  resposta: "Sim! A hanseníase tem cura quando o tratamento PQT-U é seguido corretamente por 6 meses."
+                },
+                {
+                  pergunta: "Posso parar de tomar os remédios se me sentir melhor?",
+                  resposta: "Não! É fundamental completar todo o tratamento mesmo se os sintomas melhorarem."
+                },
+                {
+                  pergunta: "Os assistentes virtuais substituem a consulta médica?",
+                  resposta: "Não. Nossos assistentes são ferramentas educacionais que complementam, mas não substituem o acompanhamento médico."
+                },
+                {
+                  pergunta: "É seguro compartilhar minhas dúvidas com os assistentes?",
+                  resposta: "Sim! Suas conversas são privadas e protegidas. Não armazenamos dados pessoais identificáveis."
+                },
+                {
+                  pergunta: "Como posso acessar o material educativo?",
+                  resposta: "Clique em 'Material Educativo' no menu ou converse com nossos assistentes que podem direcionar você."
+                },
+                {
+                  pergunta: "Preciso pagar para usar a plataforma?",
+                  resposta: "Não! Nossa plataforma é 100% gratuita, desenvolvida como ferramenta educacional pública."
+                }
+              ].map((item, index) => (
+                <div key={index} style={{
+                  padding: '1.25rem',
+                  background: index % 2 === 0 ? '#f0f9ff' : '#f0fdf4',
+                  borderRadius: '8px',
+                  border: `1px solid ${index % 2 === 0 ? '#0066cc20' : '#00aa4420'}`
+                }}>
+                  <h3 style={{
+                    fontSize: '1rem',
+                    fontWeight: '600',
+                    color: index % 2 === 0 ? '#003366' : '#00aa44',
+                    marginBottom: '0.5rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem'
+                  }}>
+                    <QuestionIcon size={18} color={index % 2 === 0 ? '#003366' : '#00aa44'} />
+                    {item.pergunta}
+                  </h3>
+                  <p style={{
+                    fontSize: '0.9rem',
+                    color: '#4a5568',
+                    margin: 0,
+                    lineHeight: '1.5'
+                  }}>
+                    {item.resposta}
+                  </p>
+                </div>
+              ))}
             </div>
           </div>
 
