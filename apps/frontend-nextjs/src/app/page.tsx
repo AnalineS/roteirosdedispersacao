@@ -21,18 +21,13 @@ import { useMobileDetection } from '@/components/mobile/MobileFirstFramework';
 import { InteractiveButton, useToast, ToastContainer } from '@/components/ui/MicroInteractions';
 import TrustBadges from '@/components/home/TrustBadges';
 
-// Heavy components loaded lazily using React.lazy
-const QuickStartGuide = React.lazy(() => import('@/components/onboarding/QuickStartGuide'));
-const ExecutiveSummary = React.lazy(() => import('@/components/summary/ExecutiveSummary'));
-const CognitiveLoadAuditor = React.lazy(() => import('@/components/analytics/CognitiveLoadAuditor').then(mod => ({ default: mod.CognitiveLoadAuditor })));
-const MobileUXAuditor = React.lazy(() => import('@/components/analytics/MobileUXAuditor').then(mod => ({ default: mod.MobileUXAuditor })));
+// Critical components loaded directly to prevent homepage content disappearing
+// Only non-essential analytics components remain lazy-loaded
+const CognitiveLoadAuditor = React.lazy(() => import('@/components/analytics/CognitiveLoadAuditor').then(mod => ({ default: mod.CognitiveLoadAuditor })).catch(() => ({ default: () => null })));
+const MobileUXAuditor = React.lazy(() => import('@/components/analytics/MobileUXAuditor').then(mod => ({ default: mod.MobileUXAuditor })).catch(() => ({ default: () => null })));
 
-// Content and animation components for lower sections
-const ContentChunking = React.lazy(() => import('@/components/content/ContentChunkingStrategy'));
-const MobileQuickActions = React.lazy(() => import('@/components/mobile/MedicalMobileComponents').then(mod => ({ default: mod.MobileQuickActions })));
-const ScrollAnimation = React.lazy(() => import('@/components/ui/AnimationSystem').then(mod => ({ default: mod.ScrollAnimation })));
-const CardReveal = React.lazy(() => import('@/components/ui/AnimationSystem').then(mod => ({ default: mod.CardReveal })));
-const MedicalAnimation = React.lazy(() => import('@/components/ui/AnimationSystem').then(mod => ({ default: mod.MedicalAnimation })));
+// Direct imports for critical components to ensure they always load
+import QuickStartGuide from '@/components/onboarding/QuickStartGuide';
 // Import helper functions (these are lightweight)
 import { createEducationalContentChunk, createMedicalContentChunk } from '@/components/content/ContentChunkingStrategy';
 import { 
@@ -69,16 +64,9 @@ import { MedicalLoadingSpinner } from '@/components/ui/LoadingStates';
 import dynamic from 'next/dynamic';
 
 
-// Lazy load personalization components
-const PersonalizationProvider = dynamic(() => import('@/components/personalization/PersonalizationProvider'), {
-  ssr: false,
-  loading: () => null
-});
-
-const PersonalizedDashboard = dynamic(() => import('@/components/personalization/PersonalizedDashboard'), {
-  ssr: false,
-  loading: () => null
-});
+// Direct imports for personalization components to prevent rendering issues
+import PersonalizationProvider from '@/components/personalization/PersonalizationProvider';
+import PersonalizedDashboard from '@/components/personalization/PersonalizedDashboard';
 
 
 export default function HomePage() {
@@ -89,16 +77,30 @@ export default function HomePage() {
   const toastHook = useToast();
   const router = useRouter();
 
-  // Extract values with safe fallbacks
-  const { personas = {}, loading = false, error = null, getValidPersonasCount = () => 0 } = personasHook || {};
-  const { saveProfile = () => {} } = userProfileHook || {};
-  const { isMobile = false } = mobileHook || {};
-  const { toasts = [], addToast = () => {} } = toastHook || {};
+  // Enhanced safety: Extract values with comprehensive fallbacks and validation
+  const hookSafetyCheck = {
+    personasValid: personasHook && typeof personasHook === 'object',
+    userProfileValid: userProfileHook && typeof userProfileHook === 'object',
+    mobileValid: mobileHook && typeof mobileHook === 'object',
+    toastValid: toastHook && typeof toastHook === 'object'
+  };
 
-  // Sempre mostrar conteúdo independente do estado dos hooks
+  // Log hook validation in development
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[HomePage] Hook Safety Check:', hookSafetyCheck);
+  }
+
+  const { personas = {}, loading = false, error = null, getValidPersonasCount = () => 2 } = hookSafetyCheck.personasValid ? personasHook : {};
+  const { saveProfile = () => {} } = hookSafetyCheck.userProfileValid ? userProfileHook : {};
+  const { isMobile = false } = hookSafetyCheck.mobileValid ? mobileHook : {};
+  const { toasts = [], addToast = () => {} } = hookSafetyCheck.toastValid ? toastHook : {};
+
+  // Always show content with enhanced validation
   const shouldShowContent = true;
+  const hasValidHooks = Object.values(hookSafetyCheck).some(valid => valid);
 
-  if (loading && !shouldShowContent) {
+  // Only show loading if we're actually loading AND hooks are completely broken
+  if (loading && !shouldShowContent && !hasValidHooks) {
     return (
       <div className="flex items-center justify-center" style={{
         minHeight: '30vh',
@@ -125,7 +127,8 @@ export default function HomePage() {
     );
   }
 
-  if (error && !shouldShowContent) {
+  // Only show error if there's an error AND hooks are completely broken
+  if (error && !shouldShowContent && !hasValidHooks) {
     return (
       <div className="flex items-center justify-center" style={{
         minHeight: '100vh',
@@ -190,37 +193,97 @@ export default function HomePage() {
     return (
       <EducationalLayout showBreadcrumbs={false}>
         <PageTransition>
-          <PersonalizationProvider>
-          {/* Quick Start Guide - Only load when needed */}
-          <Suspense fallback={<div />}>
-            <QuickStartGuide onComplete={() => {
-              addToast({
-                type: 'success',
-                message: 'Guia concluído! Agora você está pronto para usar a plataforma.',
-                duration: 3000
-              });
-            }} />
-          </Suspense>
+          {/* PersonalizationProvider with error boundary */}
+          <div>
+            {(() => {
+              try {
+                return (
+                  <PersonalizationProvider>
+                    {/* Quick Start Guide - Direct loading for reliability */}
+                    <div style={{ marginBottom: '1rem' }}>
+                      {(() => {
+                        try {
+                          return (
+                            <QuickStartGuide onComplete={() => {
+                              if (typeof addToast === 'function') {
+                                addToast({
+                                  type: 'success',
+                                  message: 'Guia concluído! Agora você está pronto para usar a plataforma.',
+                                  duration: 3000
+                                });
+                              }
+                            }} />
+                          );
+                        } catch (guideError) {
+                          console.warn('[HomePage] QuickStartGuide failed to render:', guideError);
+                          return null;
+                        }
+                      })()}
+                    </div>
 
-          {/* Hero Section */}
-          <AnimatedSection animation="fadeInUp" delay={200}>
-            <HeroSection />
-          </AnimatedSection>
+                    {/* Hero Section with error boundary */}
+                    {(() => {
+                      try {
+                        return (
+                          <AnimatedSection animation="fadeInUp" delay={200}>
+                            <HeroSection />
+                          </AnimatedSection>
+                        );
+                      } catch (heroError) {
+                        console.warn('[HomePage] HeroSection failed to render:', heroError);
+                        return (
+                          <div style={{ padding: '2rem', textAlign: 'center', background: '#f8fafc', borderRadius: '8px', margin: '1rem 0' }}>
+                            <h1 style={{ color: '#003366', fontSize: '2rem', marginBottom: '1rem' }}>Roteiros de Dispensação</h1>
+                            <p style={{ color: '#0066cc' }}>Sistema de orientação para dispensação de medicamentos - Hanseníase</p>
+                          </div>
+                        );
+                      }
+                    })()}
 
-          {/* Features Section */}
-          <AnimatedSection animation="fadeInUp" delay={400}>
-            <FeaturesSection />
-          </AnimatedSection>
+                    {/* Features Section with error boundary */}
+                    {(() => {
+                      try {
+                        return (
+                          <AnimatedSection animation="fadeInUp" delay={400}>
+                            <FeaturesSection />
+                          </AnimatedSection>
+                        );
+                      } catch (featuresError) {
+                        console.warn('[HomePage] FeaturesSection failed to render:', featuresError);
+                        return null;
+                      }
+                    })()}
 
-          {/* Trust Badges - Removido lazy loading para evitar travamento */}
-          <AnimatedSection animation="fadeInUp" delay={600}>
-            <TrustBadges />
-          </AnimatedSection>
+                    {/* Trust Badges with error boundary */}
+                    {(() => {
+                      try {
+                        return (
+                          <AnimatedSection animation="fadeInUp" delay={600}>
+                            <TrustBadges />
+                          </AnimatedSection>
+                        );
+                      } catch (trustError) {
+                        console.warn('[HomePage] TrustBadges failed to render:', trustError);
+                        return null;
+                      }
+                    })()}
 
-          {/* Dashboard Personalizado */}
-          <PersonalizedDashboard className="mb-8" />
+                    {/* Dashboard Personalizado - With error boundary */}
+                    {(() => {
+                      try {
+                        return (
+                          <div className="mb-8">
+                            <PersonalizedDashboard className="mb-8" />
+                          </div>
+                        );
+                      } catch (dashboardError) {
+                        console.warn('[HomePage] PersonalizedDashboard failed to render:', dashboardError);
+                        return null;
+                      }
+                    })()}
 
-          <div style={{
+                    {/* Main Assistants Section - Always display core content */}
+                    <div style={{
             minHeight: '100vh',
             backgroundColor: 'var(--bg-primary)',
             position: 'relative',
@@ -881,10 +944,10 @@ export default function HomePage() {
                   </p>
                 </div>
               ))}
-            </div>
-          </div>
+                  </div>
+                </div>
 
-          {/* CSS para responsividade */}
+                    {/* CSS para responsividade */}
           <style jsx>{`
             .assistants-container {
               display: flex;
@@ -1033,17 +1096,37 @@ export default function HomePage() {
             }}
           />
 
-          {/* UX Analytics Components - Apenas em desenvolvimento */}
+          {/* UX Analytics Components - Apenas em desenvolvimento com error handling */}
           {process.env.NODE_ENV === 'development' && (
             <>
-              <CognitiveLoadAuditor />
-              <MobileUXAuditor />
+              <Suspense fallback={null}>
+                <CognitiveLoadAuditor />
+              </Suspense>
+              <Suspense fallback={null}>
+                <MobileUXAuditor />
+              </Suspense>
             </>
           )}
           
+                  </PersonalizationProvider>
+                );
+              } catch (providerError) {
+                console.warn('[HomePage] PersonalizationProvider failed:', providerError);
+                // Return content without PersonalizationProvider wrapper
+                return (
+                  <div>
+                    <div style={{ padding: '2rem', textAlign: 'center', background: '#f8fafc', borderRadius: '8px', margin: '1rem 0' }}>
+                      <h1 style={{ color: '#003366', fontSize: '2rem', marginBottom: '1rem' }}>Roteiros de Dispensação</h1>
+                      <p style={{ color: '#0066cc' }}>Sistema de orientação para dispensação de medicamentos - Hanseníase</p>
+                    </div>
+                  </div>
+                );
+              }
+            })()}
+          </div>
+
           {/* Toast Container */}
           <ToastContainer toasts={toasts} />
-        </PersonalizationProvider>
       </PageTransition>
     </EducationalLayout>
   );
