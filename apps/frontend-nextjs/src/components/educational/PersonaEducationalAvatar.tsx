@@ -7,6 +7,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import { getPersonaAvatar } from '@/constants/avatars';
 import { modernChatTheme } from '@/config/modernTheme';
 
@@ -96,12 +97,12 @@ export default function PersonaEducationalAvatar({
         }}
       >
         {avatarUrl ? (
-          <img
+          <Image
             src={avatarUrl}
             alt={`Avatar de ${persona.name}, ${persona.role}`}
+            width={size}
+            height={size}
             style={{
-              width: '100%',
-              height: '100%',
               objectFit: 'cover',
               borderRadius: '50%'
             }}

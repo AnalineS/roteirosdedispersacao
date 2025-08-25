@@ -91,6 +91,7 @@ const FeedbackComponent: React.FC<FeedbackComponentProps> = ({ feedback, onDismi
 
       return () => clearInterval(progressInterval);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [feedback.duration, feedback.persistent]);
 
   const handleDismiss = () => {

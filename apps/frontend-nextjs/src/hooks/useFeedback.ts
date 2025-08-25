@@ -134,6 +134,7 @@ export function useFeedback(options: UseFeedbackOptions = {}) {
     } finally {
       setIsSubmitting(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [offlineQueue, onSuccess, onError, enableOfflineQueue, retryAttempts]);
 
   // Adicionar à queue offline

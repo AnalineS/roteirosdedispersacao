@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { X, ArrowRight, Check, MessageCircle, BookOpen, Search, HelpCircle } from 'lucide-react';
 
 interface QuickStartStep {
@@ -21,8 +22,8 @@ const quickStartSteps: QuickStartStep[] = [
     title: 'Conheça os Assistentes',
     description: 'Dr. Gasnelio para questões técnicas e Assistente Educadora para suporte empático',
     icon: <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-      <img src="/images/avatars/dr-gasnelio.png" alt="Dr. Gasnelio" style={{ width: '20px', height: '20px', borderRadius: '50%' }} />
-      <img src="/images/avatars/ga.png" alt="Assistente Educadora" style={{ width: '20px', height: '20px', borderRadius: '50%' }} />
+      <Image src="/images/avatars/dr-gasnelio.png" alt="Dr. Gasnelio" width={20} height={20} style={{ borderRadius: '50%' }} />
+      <Image src="/images/avatars/ga.png" alt="Assistente Educadora" width={20} height={20} style={{ borderRadius: '50%' }} />
     </div>,
     action: {
       label: 'Abrir Chat',

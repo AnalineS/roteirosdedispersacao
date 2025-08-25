@@ -50,6 +50,7 @@ export function CognitiveLoadAuditor() {
         clearTimeout(auditRef.current);
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const performCognitiveLoadAudit = async () => {

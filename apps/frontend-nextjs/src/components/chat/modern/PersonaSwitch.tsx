@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { Persona } from '@/services/api';
 import { modernChatTheme, getPersonaColors } from '@/config/modernTheme';
 import { ToggleIcon } from '@/components/icons';
@@ -111,12 +112,12 @@ export default function PersonaSwitch({
             overflow: 'hidden'
           }}
         >
-          <img 
+          <Image 
             src={isDrGasnelio ? '/images/avatars/dr-gasnelio.png' : '/images/avatars/ga.png'}
             alt={isDrGasnelio ? 'Dr. Gasnelio' : 'Gá'}
+            width={22}
+            height={22}
             style={{
-              width: '22px',
-              height: '22px',
               borderRadius: '50%',
               objectFit: 'cover'
             }}
@@ -149,12 +150,12 @@ export default function PersonaSwitch({
             marginLeft: modernChatTheme.spacing.sm
           }}
         >
-          <img 
+          <Image 
             src={isDrGasnelio ? '/images/avatars/dr-gasnelio.png' : '/images/avatars/ga.png'}
             alt={isDrGasnelio ? 'Dr. Gasnelio' : 'Gá'}
+            width={22}
+            height={22}
             style={{
-              width: '22px',
-              height: '22px',
               borderRadius: '50%',
               objectFit: 'cover'
             }}

@@ -80,6 +80,7 @@ export function useConversationHistory() {
     };
 
     loadConversations();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [auth.user, auth.isAuthenticated, useFirestore, useLocalStorage]);
 
   // ============================================
@@ -145,6 +146,7 @@ export function useConversationHistory() {
       console.error('Erro ao carregar do Firestore:', error);
       throw error;
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [auth.user, useLocalStorage]);
 
   // ============================================

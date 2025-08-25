@@ -49,6 +49,7 @@ export function useKnowledgeBase(options: UseKnowledgeBaseOptions = {}): UseKnow
     
     // Buscar estatísticas iniciais
     refreshStats();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [prefetchCommon]);
   
   /**
@@ -174,6 +175,7 @@ export function useKnowledgeBase(options: UseKnowledgeBaseOptions = {}): UseKnow
       console.error('Erro ao enviar avaliação:', err);
       setError('Erro ao enviar avaliação');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   
   /**

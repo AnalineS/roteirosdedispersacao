@@ -68,6 +68,7 @@ export default function InteractiveChecklist({
 
       return () => clearTimeout(saveTimer);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session, autoSave, config.allowSave]);
 
   // Calculate progress

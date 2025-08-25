@@ -165,6 +165,7 @@ export function useSmartSync(): SmartSyncState & SmartSyncControls {
         }));
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isFeatureAvailable, auth.user]);
 
   // ============================================

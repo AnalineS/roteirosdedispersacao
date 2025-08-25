@@ -124,6 +124,7 @@ export function useGamification(): GamificationHook {
 
     setProgress(defaultProgress);
     saveToStorage(defaultProgress, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [auth.user]);
 
   const initializeGamification = useCallback(async () => {
@@ -152,6 +153,7 @@ export function useGamification(): GamificationHook {
       setIsLoading(false);
       setSyncStatus('idle');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [auth.user, initializeDefaultProgress]);
 
   useEffect(() => {

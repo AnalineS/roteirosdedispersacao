@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import { modernChatTheme } from '@/config/modernTheme';
 
 /**
@@ -93,12 +94,12 @@ export const PersonaEducationalAvatar: React.FC<PersonaEducationalAvatarProps> =
             overflow: 'hidden'
           }}
         >
-          <img
+          <Image
             src={persona.avatar}
             alt={`${persona.name} - ${persona.title}`}
+            width={size}
+            height={size}
             style={{
-              width: '100%',
-              height: '100%',
               objectFit: 'cover'
             }}
             onError={(e) => {

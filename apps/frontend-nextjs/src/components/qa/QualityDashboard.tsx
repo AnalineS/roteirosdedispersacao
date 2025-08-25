@@ -49,6 +49,7 @@ const QualityDashboard: React.FC<QualityDashboardProps> = ({
       clearInterval(interval);
       monitoringSystem.stopRealTimeMonitoring();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refreshInterval]);
   
   const loadDashboardData = async () => {

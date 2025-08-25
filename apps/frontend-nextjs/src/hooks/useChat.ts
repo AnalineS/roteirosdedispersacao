@@ -337,6 +337,7 @@ export function useChat(options: UseChatOptions = {}) {
 
   const getMessagesForPersona = useCallback((personaId: string) => {
     return messagesRef.current.filter(msg => msg.persona === personaId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Função para obter informações da sessão

@@ -85,9 +85,10 @@ const useInView = (threshold = 0.1, rootMargin = '0px') => {
       observer.observe(ref.current);
     }
 
+    const element = ref.current;
     return () => {
-      if (ref.current) {
-        observer.unobserve(ref.current);
+      if (element) {
+        observer.unobserve(element);
       }
     };
   }, [threshold, rootMargin]);

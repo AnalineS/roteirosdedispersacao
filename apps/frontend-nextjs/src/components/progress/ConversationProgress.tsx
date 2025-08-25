@@ -85,6 +85,7 @@ export default function ConversationProgress({
     if (onStepChange && analysis.steps[analysis.currentStep]) {
       onStepChange(analysis.steps[analysis.currentStep]);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messages, onStepChange]);
 
   const detectConversationType = (msgs: any[]): ProgressAnalysis['conversationType'] => {

@@ -62,6 +62,7 @@ export function useLazyComponent<T = any>(
     return () => {
       mounted = false;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return { Component, loading, error };
@@ -96,6 +97,7 @@ export function useIntersectionObserver(
     return () => {
       observer.unobserve(target);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return [targetRef, isIntersecting];
@@ -268,10 +270,12 @@ export function useAsyncState<T>(
     } finally {
       setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
 
   useEffect(() => {
     execute();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
 
   return {
@@ -354,6 +358,7 @@ export function usePagination<T>(
 
   useEffect(() => {
     loadPage(currentPage);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return {

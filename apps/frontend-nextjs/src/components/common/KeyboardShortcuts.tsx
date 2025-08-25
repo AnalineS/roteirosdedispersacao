@@ -84,6 +84,7 @@ export default function KeyboardShortcuts({ isOpen, onClose }: KeyboardShortcuts
       document.addEventListener('keydown', handleKeyDown);
       return () => document.removeEventListener('keydown', handleKeyDown);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;

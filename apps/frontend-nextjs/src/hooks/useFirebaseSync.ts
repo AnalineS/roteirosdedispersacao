@@ -255,6 +255,7 @@ export function useFirebaseSync(options: Partial<SyncOptions> = {}) {
     } catch (error: any) {
       addSyncError(`Erro ao sincronizar perfil: ${error.message}`);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [auth]);
 
   const syncConversations = useCallback(async (): Promise<void> => {
@@ -274,6 +275,7 @@ export function useFirebaseSync(options: Partial<SyncOptions> = {}) {
     } catch (error: any) {
       addSyncError(`Erro ao sincronizar conversas: ${error.message}`);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [auth]);
 
   const performFullSync = useCallback(async (): Promise<void> => {

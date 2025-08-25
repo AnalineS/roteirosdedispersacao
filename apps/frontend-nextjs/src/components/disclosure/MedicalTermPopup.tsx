@@ -7,6 +7,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import Image from 'next/image';
 import { MedicalTerm } from '@/types/disclosure';
 import { useMedicalTerminology } from '@/hooks/useProgressiveDisclosure';
 
@@ -285,11 +286,12 @@ export function MedicalTermModal({ term, isOpen, onClose }: {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {term.images.map((image, index) => (
                     <div key={index} className="relative">
-                      <img
+                      <Image
                         src={image}
                         alt={`${term.term} - Imagem ${index + 1}`}
+                        width={300}
+                        height={192}
                         className="w-full h-48 object-cover rounded-lg border border-gray-200"
-                        loading="lazy"
                       />
                     </div>
                   ))}

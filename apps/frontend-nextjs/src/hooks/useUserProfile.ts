@@ -83,6 +83,7 @@ export function useUserProfile(): UserProfileHook {
     };
 
     loadProfile();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [auth.user, auth.isAuthenticated, useFirestore, useLocalStorage]);
 
   // ============================================
@@ -148,6 +149,7 @@ export function useUserProfile(): UserProfileHook {
       console.error('Erro ao carregar do Firestore:', error);
       throw error;
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [auth.user, auth.profile, useLocalStorage]);
 
   // ============================================

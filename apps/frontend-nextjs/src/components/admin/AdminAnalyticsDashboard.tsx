@@ -12,7 +12,7 @@
 
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import EducationalMonitoringSystem, { 
   EducationalMetrics, 
   QualityAlert,
@@ -97,11 +97,11 @@ const AdminAnalyticsDashboard: React.FC<AdminDashboardProps> = ({
     const interval = setInterval(loadDashboardData, refreshInterval);
     
     return () => clearInterval(interval);
-  }, [refreshInterval, timeframe]);
+  }, [refreshInterval, timeframe, loadDashboardData]);
 
   // ===== DATA LOADING =====
 
-  const loadDashboardData = async () => {
+  const loadDashboardData = useCallback(async () => {
     try {
       setIsLoading(true);
       
@@ -127,7 +127,8 @@ const AdminAnalyticsDashboard: React.FC<AdminDashboardProps> = ({
     } finally {
       setIsLoading(false);
     }
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timeframe]);
 
   const generateAdminKPIs = async (systemMetrics: EducationalMetrics, period: string): Promise<DashboardKPIs> => {
     // Simular cálculos baseados nas métricas reais

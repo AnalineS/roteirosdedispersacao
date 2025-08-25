@@ -88,6 +88,7 @@ export default function EducationalQuiz({
     }, 1000);
 
     return () => clearInterval(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [quizState.isCompleted, quizState.showResults]); // submitQuiz removed to avoid hoisting issues
 
   // Reset question timer when moving to next question

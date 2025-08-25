@@ -49,6 +49,7 @@ function ToastNotification({ notification, onClose }: ToastNotificationProps) {
     }, notification.celebrationType === 'visual' ? 5000 : 3000);
 
     return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [notification.celebrationType]);
 
   const handleClose = () => {

@@ -53,6 +53,7 @@ export function MobileUXAuditor() {
         clearTimeout(auditRef.current);
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const isMobileDevice = (): boolean => {

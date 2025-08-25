@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import Image from 'next/image';
 
 interface OptimizedImageProps {
   src: string;
@@ -217,16 +218,14 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
 
       {/* Imagem principal */}
       {(isInView || priority) && !hasError && (
-        <img
+        <Image
           ref={imgRef}
           src={src}
           alt={alt}
-          width={width}
-          height={height}
-          srcSet={width ? generateSrcSet(src, width) : undefined}
+          width={width || 800}
+          height={height || 600}
           sizes={getDefaultSizes()}
-          loading={priority ? 'eager' : 'lazy'}
-          decoding="async"
+          priority={priority}
           style={imageStyle}
           onLoad={handleLoad}
           onError={handleError}

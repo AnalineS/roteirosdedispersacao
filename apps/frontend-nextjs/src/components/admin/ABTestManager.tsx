@@ -11,7 +11,7 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import ABTestingFramework, { ABExperiment, ABVariant } from '@/utils/abTesting';
 
 interface ABTestManagerProps {
@@ -31,9 +31,9 @@ const ABTestManager: React.FC<ABTestManagerProps> = ({
   
   useEffect(() => {
     loadExperiments();
-  }, []);
+  }, [loadExperiments]);
   
-  const loadExperiments = () => {
+  const loadExperiments = useCallback(() => {
     setIsLoading(true);
     try {
       const activeExperiments = framework.getAllActiveExperiments();
@@ -47,7 +47,8 @@ const ABTestManager: React.FC<ABTestManagerProps> = ({
     } finally {
       setIsLoading(false);
     }
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   
   const generateReport = (experimentId: string) => {
     const report = framework.generateExperimentReport(experimentId);

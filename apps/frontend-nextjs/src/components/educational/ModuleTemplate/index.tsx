@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export interface ModuleSection {
   id: string;
@@ -266,10 +267,12 @@ export default function ModuleTemplate({
             {/* Media */}
             {moduleData.sections[currentSection].media && (
               <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
-                <img 
+                <Image 
                   src={moduleData.sections[currentSection].media!.src}
                   alt={moduleData.sections[currentSection].media!.alt}
-                  style={{ maxWidth: '100%', borderRadius: '8px', boxShadow: 'var(--shadow-md)' }}
+                  width={800}
+                  height={400}
+                  style={{ maxWidth: '100%', height: 'auto', borderRadius: '8px', boxShadow: 'var(--shadow-md)' }}
                 />
                 {moduleData.sections[currentSection].media!.caption && (
                   <p style={{ 
