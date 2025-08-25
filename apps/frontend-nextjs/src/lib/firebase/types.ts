@@ -45,7 +45,7 @@ export interface SocialAuthCredentials {
 // ============================================
 
 export type UserProfileType = 'admin' | 'professional' | 'student' | 'patient' | 'caregiver';
-export type UserFocus = 'technical' | 'practical' | 'effects' | 'general';
+export type UserFocus = 'technical' | 'practical' | 'effects' | 'general' | 'empathetic';
 export type LanguagePreference = 'simple' | 'technical';
 export type ThemePreference = 'light' | 'dark' | 'auto';
 

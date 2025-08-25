@@ -66,7 +66,8 @@ export default function UserProfileIndicator({
     technical: '🧬',
     practical: '💊',
     effects: '🌡️',
-    general: '❓'
+    general: '❓',
+    empathetic: '💚'
   }[profile.focus];
 
   if (compact) {

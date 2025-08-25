@@ -8,7 +8,7 @@ import { FEATURES } from '@/lib/firebase/config';
 
 export interface UserProfile {
   type: 'admin' | 'professional' | 'student' | 'patient' | 'caregiver';
-  focus: 'technical' | 'practical' | 'effects' | 'general';
+  focus: 'technical' | 'practical' | 'effects' | 'general' | 'empathetic';
   confidence: number;
   explanation: string;
   selectedPersona?: string;
@@ -438,7 +438,8 @@ export const profileUtils = {
       technical: 'Informações Técnicas',
       practical: 'Orientações Práticas',
       effects: 'Efeitos dos Medicamentos',
-      general: 'Dúvidas Gerais'
+      general: 'Dúvidas Gerais',
+      empathetic: 'Suporte Emocional'
     };
     return labels[focus];
   },

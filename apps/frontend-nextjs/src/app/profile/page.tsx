@@ -23,7 +23,7 @@ interface ProfileFormData {
   displayName: string;
   email: string;
   profileType: 'admin' | 'professional' | 'student' | 'patient' | 'caregiver';
-  focus: 'general' | 'advanced' | 'research';
+  focus: UserFocus;
   preferences: {
     language: 'simple' | 'technical';
     notifications: boolean;
@@ -76,7 +76,7 @@ export default function ProfilePage() {
         displayName: user.displayName || profile.displayName || '',
         email: user.email || profile.email || '',
         profileType: profile.type || 'patient',
-        focus: (profile.focus === 'technical' || profile.focus === 'practical' || profile.focus === 'effects') ? 'general' : (profile.focus || 'general'),
+        focus: profile.focus || 'general',
         preferences: {
           language: profile.preferences?.language || 'simple',
           notifications: profile.preferences?.notifications ?? true,
@@ -96,9 +96,7 @@ export default function ProfilePage() {
       const result = await updateUserProfile({
         displayName: formData.displayName,
         type: formData.profileType,
-        focus: formData.focus === 'advanced' ? 'technical' : 
-               formData.focus === 'research' ? 'general' : 
-               (formData.focus as UserFocus),
+        focus: formData.focus,
         preferences: formData.preferences
       });
 
