@@ -329,6 +329,62 @@ a:hover {
   }
 }
 
+/* Manual High Contrast Mode */
+[data-contrast="high"] {
+  --color-text-primary: #000000 !important;
+  --color-text-secondary: #1a1a1a !important;
+  --color-text-muted: #333333 !important;
+  --color-text-light: #4a4a4a !important;
+  --color-bg-primary: #ffffff !important;
+  --color-bg-secondary: #f0f0f0 !important;
+  --color-bg-tertiary: #e0e0e0 !important;
+  --color-border-default: #000000 !important;
+  --color-border-light: #333333 !important;
+  --color-border-focus: #0000ff !important;
+  --color-primary-500: #000000 !important;
+  --color-primary-600: #333333 !important;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.4) !important;
+  --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.5) !important;
+}
+
+[data-contrast="high"] * {
+  border-color: #000000 !important;
+}
+
+[data-contrast="high"] a {
+  color: #0000ff !important;
+  text-decoration: underline !important;
+}
+
+[data-contrast="high"] a:visited {
+  color: #800080 !important;
+}
+
+[data-contrast="high"] button {
+  border: 2px solid #000000 !important;
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+
+[data-contrast="high"] button:hover {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+[data-contrast="high"] input,
+[data-contrast="high"] textarea,
+[data-contrast="high"] select {
+  border: 2px solid #000000 !important;
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+
+[data-contrast="high"] .card {
+  border: 2px solid #000000 !important;
+  background-color: #ffffff !important;
+}
+
 /* Scrollbar styling */
 ::-webkit-scrollbar {
   width: 12px;
@@ -1240,6 +1296,32 @@ a:hover {
     border-width: 2px;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
   }
+}
+
+/* Font size adjustments */
+[data-font-size="large"] {
+  font-size: 1.125rem !important;
+}
+
+[data-font-size="larger"] {
+  font-size: 1.25rem !important;
+}
+
+[data-font-size="large"] .nav-title-main {
+  font-size: 1.5rem !important;
+}
+
+[data-font-size="larger"] .nav-title-main {
+  font-size: 1.75rem !important;
+}
+
+/* Reduced motion */
+[data-motion="reduced"] *,
+[data-motion="reduced"] *::before,
+[data-motion="reduced"] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
 }
 
 /* Print styles for navigation */

@@ -234,8 +234,8 @@ export function useGoogleAnalyticsUX() {
 // Extend Window interface for TypeScript
 declare global {
   interface Window {
-    gtag: (...args: any[]) => void;
-    dataLayer: any[];
+    gtag?: (...args: any[]) => void;
+    dataLayer?: any[];
     trackUXEvent: (eventName: string, category: string, score?: number, parameters?: any) => void;
     trackCognitiveLoad: (score: number, context: string) => void;
     trackMobileIssue: (issueType: string, severity: number) => void;

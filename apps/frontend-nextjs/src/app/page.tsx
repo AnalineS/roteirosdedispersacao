@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import Image from 'next/image';
 import EducationalLayout from '@/components/layout/EducationalLayout';
 import HeroSection from '@/components/home/HeroSection';
@@ -761,11 +762,11 @@ export default function HomePage() {
                   boxShadow: '0 4px 14px rgba(0, 170, 68, 0.3)',
                   transition: 'all 0.3s ease'
                 }}
-                onMouseEnter={(e) => {
+                onMouseEnter={(e: React.MouseEvent<HTMLAnchorElement>) => {
                   e.currentTarget.style.transform = 'translateY(-2px)';
                   e.currentTarget.style.boxShadow = '0 6px 20px rgba(0, 170, 68, 0.4)';
                 }}
-                onMouseLeave={(e) => {
+                onMouseLeave={(e: React.MouseEvent<HTMLAnchorElement>) => {
                   e.currentTarget.style.transform = 'translateY(0)';
                   e.currentTarget.style.boxShadow = '0 4px 14px rgba(0, 170, 68, 0.3)';
                 }}>

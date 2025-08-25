@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   BookOpen, 
   Shield, 
@@ -11,6 +11,8 @@ import {
   CheckCircle,
   AlertTriangle
 } from 'lucide-react';
+import { SkeletonBadge } from '@/components/ui';
+import { LayoutStabilizer } from '@/components/performance';
 
 interface Badge {
   icon: React.ElementType;
@@ -59,6 +61,35 @@ const badges: Badge[] = [
 ];
 
 export default function TrustBadges() {
+  const [isLoading, setIsLoading] = useState(true);
+  
+  useEffect(() => {
+    // Simulate loading time for badges
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 800);
+    
+    return () => clearTimeout(timer);
+  }, []);
+  
+  if (isLoading) {
+    return (
+      <section className="trust-section">
+        <div className="container">
+          <div className="trust-header">
+            <h2 className="trust-title">Credibilidade e Transparência</h2>
+            <p className="trust-subtitle">
+              Nossa plataforma educacional é construída com base em evidências científicas
+              e transparência total
+            </p>
+          </div>
+          
+          <SkeletonBadge count={6} className="badges-grid" />
+        </div>
+      </section>
+    );
+  }
+  
   return (
     <section className="trust-section">
       <div className="container">
@@ -72,11 +103,13 @@ export default function TrustBadges() {
         </div>
 
         {/* Badges Grid */}
-        <div className="badges-grid">
-          {badges.map((badge, index) => (
-            <BadgeCard key={index} badge={badge} index={index} />
-          ))}
-        </div>
+        <LayoutStabilizer minHeight="400px" className="badges-container">
+          <div className="badges-grid">
+            {badges.map((badge, index) => (
+              <BadgeCard key={index} badge={badge} index={index} />
+            ))}
+          </div>
+        </LayoutStabilizer>
 
         {/* Disclaimer Important */}
         <div className="disclaimer-section">

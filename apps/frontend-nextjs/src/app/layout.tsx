@@ -6,6 +6,8 @@ import { AnalyticsProvider } from '@/components/analytics/AnalyticsProvider'
 import PWAManager from '@/components/pwa/PWAManager'
 import AuthProviderWrapper from '@/components/auth/AuthProviderWrapper'
 import { ThemeProvider } from '@/contexts/ThemeContext'
+import { AccessibilityProvider } from '@/contexts/AccessibilityContext'
+import { CoreWebVitals } from '@/components/performance'
 import SITE_CONFIG from '@/lib/config'
 import '@/styles/globals.css'
 import '@/styles/accessibility.css'
@@ -32,10 +34,18 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <head>
+        {/* Performance optimizations */}
+        <link rel="preload" href="/fonts/inter.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="//fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        
+        {/* Icons and PWA */}
         <link rel="icon" type="image/png" href="/favicon.png" />
         <link rel="icon" type="image/x-icon" href="/favicon.ico" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <link rel="manifest" href="/manifest.json" />
+        
+        {/* Theme and viewport */}
         <meta name="theme-color" content="#003366" />
         <meta name="color-scheme" content="light only" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -97,17 +107,20 @@ export default function RootLayout({
         </noscript>
         
         <OfflineIndicator />
+        <CoreWebVitals />
         
         <main id="main-content">
-          <ThemeProvider>
-            <AuthProviderWrapper>
-              <AnalyticsProvider>
-                <ErrorBoundary>
-                  {children}
-                </ErrorBoundary>
-              </AnalyticsProvider>
-            </AuthProviderWrapper>
-          </ThemeProvider>
+          <AccessibilityProvider>
+            <ThemeProvider>
+              <AuthProviderWrapper>
+                <AnalyticsProvider>
+                  <ErrorBoundary>
+                    {children}
+                  </ErrorBoundary>
+                </AnalyticsProvider>
+              </AuthProviderWrapper>
+            </ThemeProvider>
+          </AccessibilityProvider>
         </main>
         
         {/* PWA Manager - Service Worker desabilitado conforme solicitado */}

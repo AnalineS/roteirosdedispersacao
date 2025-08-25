@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { getUnbColors } from '@/config/modernTheme';
 import { getUniversityLogo } from '@/constants/avatars';
 import { usePersonas } from '@/hooks/usePersonas';
@@ -108,21 +109,21 @@ export default function EducationalFooterSimple({
                 alignItems: 'center',
                 gap: '1rem'
               }}>
-                <img 
+                <Image 
                   src={getUniversityLogo('unb_symbol')} 
                   alt="Universidade de Brasília"
+                  width={32}
+                  height={32}
                   style={{
-                    width: '32px',
-                    height: '32px',
                     objectFit: 'contain'
                   }}
                 />
-                <img 
+                <Image 
                   src={getUniversityLogo('ppgcf_logo')} 
                   alt="Programa de Pós-Graduação em Ciências Farmacêuticas"
+                  width={40}
+                  height={32}
                   style={{
-                    width: '40px',
-                    height: '32px',
                     objectFit: 'contain'
                   }}
                 />

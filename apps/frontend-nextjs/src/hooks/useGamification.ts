@@ -124,7 +124,7 @@ export function useGamification(): GamificationHook {
 
     setProgress(defaultProgress);
     saveToStorage(defaultProgress, []);
-  }, [auth.user]); // saveToStorage removed to avoid hoisting issues
+  }, [auth.user]);
 
   const initializeGamification = useCallback(async () => {
     try {
@@ -152,7 +152,7 @@ export function useGamification(): GamificationHook {
       setIsLoading(false);
       setSyncStatus('idle');
     }
-  }, [auth.user, initializeDefaultProgress]); // Other functions removed to avoid hoisting issues
+  }, [auth.user, initializeDefaultProgress]);
 
   useEffect(() => {
     initializeGamification();

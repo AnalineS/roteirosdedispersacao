@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { usePersonas } from '@/hooks/usePersonas';
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation';
@@ -26,6 +27,7 @@ import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import IntelligentSearchSystem from '@/components/search/IntelligentSearchSystem';
 import { AuthButton } from '@/components/auth';
 import { useAuth } from '@/contexts/AuthContext';
+import { SkipToContent, HighContrastToggle } from '@/components/accessibility';
 // Interfaces de navegação (movidas do Sidebar removido)
 export interface NavigationItem {
   id: string;
@@ -118,7 +120,7 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
         },
         {
           id: 'modules',
-          label: 'Módulos de Conteúdo',
+          label: 'Módulos',
           href: '/modules',
           icon: '📖',
           description: 'Conteúdo educacional por tópicos',
@@ -172,7 +174,7 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
     },
     {
       id: 'interaction',
-      label: 'Interação',
+      label: 'Chat',
       icon: '💬',
       description: 'Comunicação com assistentes',
       items: [
@@ -350,11 +352,13 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
   const visibleCategories = navigationCategories.slice(0, Math.min(maxVisibleItems || 8, navigationCategories.length));
 
   return (
-    <header
-      ref={headerRef}
-      className={`navigation-header ${className}`}
-      role="banner"
-      aria-label="Main navigation header"
+    <>
+      <SkipToContent mainContentId="main-content" />
+      <header
+        ref={headerRef}
+        className={`navigation-header ${className}`}
+        role="banner"
+        aria-label="Main navigation header"
       style={{
         position: 'fixed',
         top: 0,
@@ -389,10 +393,13 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
               color: unbColors.primary
             }}
           >
-            <img 
+            <Image 
               src={getUniversityLogo('unb_logo2')} 
               alt="Universidade de Brasília" 
               className="nav-logo"
+              width={48}
+              height={48}
+              priority
             />
             {!isMobile && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
@@ -421,6 +428,7 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
           className="nav-main-section"
           role="navigation"
           aria-label="Navegação principal do sistema educacional"
+          id="main-navigation"
           style={{
             display: 'flex',
             alignItems: 'center',
@@ -741,6 +749,12 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
         }}>
           {!isMobile && (
             <>
+              <HighContrastToggle 
+                variant="button" 
+                showLabel={false}
+                className="header-accessibility-toggle"
+              />
+              
               <Link 
                 href="/sobre"
                 style={{
@@ -765,54 +779,7 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
                 Mapa do Site
               </Link>
               
-              <Link 
-                href="/dashboard"
-                style={{
-                  color: unbColors.primary,
-                  textDecoration: 'none',
-                  fontSize: '0.9rem',
-                  fontWeight: '500',
-                  padding: '6px 12px',
-                  borderRadius: '6px',
-                  transition: 'all 0.2s ease',
-                  opacity: 0.9
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = 'rgba(59, 130, 246, 0.1)';
-                  e.currentTarget.style.opacity = '1';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                  e.currentTarget.style.opacity = '0.9';
-                }}
-              >
-                Criar conta
-              </Link>
-              
-              <Link 
-                href="/chat"
-                style={{
-                  color: unbColors.white,
-                  textDecoration: 'none',
-                  fontSize: '0.9rem',
-                  fontWeight: '600',
-                  padding: '8px 16px',
-                  borderRadius: '6px',
-                  backgroundColor: unbColors.primary,
-                  border: `1px solid ${unbColors.primary}`,
-                  transition: 'all 0.2s ease'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = unbColors.secondary;
-                  e.currentTarget.style.borderColor = unbColors.secondary;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = unbColors.primary;
-                  e.currentTarget.style.borderColor = unbColors.primary;
-                }}
-              >
-                Login
-              </Link>
+              <AuthButton variant="header" className="header-auth-buttons" />
             </>
           )}
           
@@ -927,6 +894,9 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
             aria-label={isMobileMenuOpen ? 'Fechar menu de navegação' : 'Abrir menu de navegação'}
             aria-expanded={isMobileMenuOpen}
             aria-controls="mobile-navigation-menu"
+            aria-haspopup="menu"
+            type="button"
+            role="button"
           >
             {isMobileMenuOpen ? (
               <CloseIcon size={24} color={unbColors.primary} />
@@ -969,5 +939,6 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
         }
       `}</style>
     </header>
+    </>
   );
 }

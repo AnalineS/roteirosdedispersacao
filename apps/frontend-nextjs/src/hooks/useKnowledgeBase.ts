@@ -49,7 +49,7 @@ export function useKnowledgeBase(options: UseKnowledgeBaseOptions = {}): UseKnow
     
     // Buscar estatísticas iniciais
     refreshStats();
-  }, [prefetchCommon]); // removendo refreshStats para evitar dependência circular
+  }, [prefetchCommon]);
   
   /**
    * Busca conhecimento relevante
@@ -174,7 +174,7 @@ export function useKnowledgeBase(options: UseKnowledgeBaseOptions = {}): UseKnow
       console.error('Erro ao enviar avaliação:', err);
       setError('Erro ao enviar avaliação');
     }
-  }, []); // removendo refreshStats para evitar dependência circular
+  }, []);
   
   /**
    * Atualiza estatísticas
@@ -199,9 +199,10 @@ export function useKnowledgeBase(options: UseKnowledgeBaseOptions = {}): UseKnow
   
   // Limpar timeout ao desmontar
   useEffect(() => {
+    const timeoutRef = searchTimeoutRef.current;
     return () => {
-      if (searchTimeoutRef.current) {
-        clearTimeout(searchTimeoutRef.current);
+      if (timeoutRef) {
+        clearTimeout(timeoutRef);
       }
     };
   }, []);

@@ -333,7 +333,6 @@ const SelectInput: React.FC<FormFieldProps> = ({
           aria-haspopup="listbox"
           aria-expanded={isOpen}
           aria-describedby={error ? `${field.name}-error` : field.description ? `${field.name}-desc` : undefined}
-          aria-invalid={error && touched ? 'true' : 'false'}
         >
           <span className="select-value">
             {selectedOption ? selectedOption.label : field.placeholder || 'Selecione...'}

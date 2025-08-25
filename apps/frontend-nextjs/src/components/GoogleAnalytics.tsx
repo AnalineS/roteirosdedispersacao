@@ -5,8 +5,8 @@ import { useEffect } from 'react';
 
 declare global {
   interface Window {
-    gtag: (...args: any[]) => void;
-    dataLayer: any[];
+    gtag?: (...args: any[]) => void;
+    dataLayer?: any[];
   }
 }
 
@@ -27,12 +27,12 @@ export default function GoogleAnalytics({
     // Função gtag helper
     if (typeof window !== 'undefined' && !window.gtag) {
       window.gtag = function gtag() {
-        window.dataLayer.push(arguments);
+        window.dataLayer?.push(arguments);
       };
     }
 
     // Configuração inicial quando o script carregar
-    if (typeof window !== 'undefined' && GA_MEASUREMENT_ID && GA_MEASUREMENT_ID !== 'G-XXXXXXXXXX') {
+    if (typeof window !== 'undefined' && GA_MEASUREMENT_ID && GA_MEASUREMENT_ID !== 'G-XXXXXXXXXX' && window.gtag) {
       window.gtag('js', new Date());
       window.gtag('config', GA_MEASUREMENT_ID, {
         page_title: document.title,

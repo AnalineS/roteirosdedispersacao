@@ -16,11 +16,11 @@ export default function AuthButton({ variant = 'header', className = '' }: AuthB
   const router = useRouter();
 
   const handleLogin = () => {
-    router.push('/auth/login');
+    router.push('/login');
   };
 
   const handleRegister = () => {
-    router.push('/auth/register');
+    router.push('/cadastro');
   };
 
   const handleLogout = async () => {

@@ -34,7 +34,7 @@ export function useKeyboardNavigation(options: KeyboardNavigationOptions = {}) {
   const getFocusableElements = useCallback(() => {
     const container = containerRef?.current || document;
     return Array.from(container.querySelectorAll(FOCUSABLE_SELECTORS)) as HTMLElement[];
-  }, [containerRef]);
+  }, [containerRef, FOCUSABLE_SELECTORS]);
 
   const getNextFocusableElement = useCallback((currentElement: HTMLElement, direction: 'next' | 'prev') => {
     const elements = getFocusableElements();
