@@ -78,167 +78,110 @@ export default function EducationalFooterSimple({
         </div>
       )}
 
-      {/* Seção institucional simplificada - APENAS informações obrigatórias */}
+      {/* Seção institucional compacta */}
       <div style={{
-        padding: '1.5rem 1rem',
+        padding: '1rem',
         textAlign: 'center'
       }}>
         <div style={{ maxWidth: 'min(900px, 95vw)', margin: '0 auto' }}>
-          {/* Logos institucionais */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '1.5rem',
-            marginBottom: '1.5rem',
-            flexWrap: 'wrap'
-          }}>
-            <img 
-              src={getUniversityLogo('unb_symbol')} 
-              alt="Universidade de Brasília"
-              style={{
-                width: '40px',
-                height: '40px',
-                objectFit: 'contain'
-              }}
-            />
-            <div style={{
-              width: '1px',
-              height: '30px',
-              backgroundColor: '#cbd5e1'
-            }}></div>
-            <img 
-              src={getUniversityLogo('ppgcf_logo')} 
-              alt="Programa de Pós-Graduação em Ciências Farmacêuticas"
-              style={{
-                width: '50px',
-                height: '40px',
-                objectFit: 'contain'
-              }}
-            />
-          </div>
           
-          {/* Informações obrigatórias conforme solicitação */}
+          {/* Container principal compacto */}
           <div style={{
-            marginBottom: '1rem',
-            padding: '1.5rem',
+            padding: '1rem',
             background: 'rgba(255, 255, 255, 0.8)',
-            borderRadius: '12px',
-            border: '1px solid rgba(59, 130, 246, 0.1)',
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)'
-          }}>
-            {/* Informações compactas em grid */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-              gap: '1rem',
-              marginBottom: '1rem'
-            }}>
-              {/* Endereço UnB */}
-              <div style={{
-                padding: '1rem',
-                background: 'rgba(59, 130, 246, 0.05)',
-                borderRadius: '8px',
-                border: '1px solid rgba(59, 130, 246, 0.1)'
-              }}>
-                <h3 style={{
-                  fontSize: '0.9rem',
-                  color: '#003366',
-                  fontWeight: '600',
-                  marginBottom: '0.5rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '0.5rem'
-                }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#003366" strokeWidth="2">
-                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                    <circle cx="12" cy="10" r="3"/>
-                  </svg>
-                  UnB
-                </h3>
-                
-                <p style={{
-                  fontSize: '0.8rem',
-                  color: '#64748b',
-                  margin: 0,
-                  lineHeight: '1.4'
-                }}>
-                  Campus Darcy Ribeiro<br />
-                  Brasília - DF<br />
-                  CEP: 70910-900
-                </p>
-              </div>
-
-              {/* Email de contato */}
-              <div style={{
-                padding: '1rem',
-                background: 'rgba(16, 185, 129, 0.05)',
-                borderRadius: '8px',
-                border: '1px solid rgba(16, 185, 129, 0.1)'
-              }}>
-                <h3 style={{
-                  fontSize: '0.9rem',
-                  color: '#059669',
-                  fontWeight: '600',
-                  marginBottom: '0.5rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '0.5rem'
-                }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2">
-                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                    <polyline points="22,6 12,13 2,6"/>
-                  </svg>
-                  Contato
-                </h3>
-                <p style={{
-                  fontSize: '0.8rem',
-                  margin: 0,
-                  textAlign: 'center'
-                }}>
-                  <a 
-                    href="mailto:roteirosdedispensacaounb@gmail.com"
-                    style={{
-                      color: '#059669',
-                      textDecoration: 'none',
-                      fontWeight: '500'
-                    }}
-                  >
-                    roteirosdedispensacaounb@gmail.com
-                  </a>
-                </p>
-              </div>
-            </div>
-
-          </div>
-
-          {/* Informações finais compactas */}
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            gap: '1rem',
-            padding: '0.75rem',
-            background: 'rgba(59, 130, 246, 0.05)',
             borderRadius: '8px',
-            border: '1px solid rgba(59, 130, 246, 0.1)'
+            border: '1px solid rgba(59, 130, 246, 0.1)',
+            boxShadow: '0 1px 4px rgba(0, 0, 0, 0.04)'
           }}>
+            {/* Primeira linha: Logos + Endereço + Contato */}
             <div style={{
-              fontSize: '0.8rem',
-              color: '#3b82f6',
-              fontWeight: '500'
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: '1rem',
+              marginBottom: '0.75rem'
             }}>
-              {assistentsCount} assistentes especializados
+              {/* Logos */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '1rem'
+              }}>
+                <img 
+                  src={getUniversityLogo('unb_symbol')} 
+                  alt="Universidade de Brasília"
+                  style={{
+                    width: '32px',
+                    height: '32px',
+                    objectFit: 'contain'
+                  }}
+                />
+                <img 
+                  src={getUniversityLogo('ppgcf_logo')} 
+                  alt="Programa de Pós-Graduação em Ciências Farmacêuticas"
+                  style={{
+                    width: '40px',
+                    height: '32px',
+                    objectFit: 'contain'
+                  }}
+                />
+              </div>
+
+              {/* Endereço compacto */}
+              <div style={{
+                fontSize: '0.75rem',
+                color: '#64748b',
+                textAlign: 'center',
+                lineHeight: '1.3'
+              }}>
+                <div style={{ color: '#003366', fontWeight: '600', fontSize: '0.8rem' }}>UnB</div>
+                <div>Campus Darcy Ribeiro • Brasília - DF • CEP: 70910-900</div>
+              </div>
+
+              {/* Contato compacto */}
+              <div style={{
+                fontSize: '0.75rem',
+                textAlign: 'center'
+              }}>
+                <div style={{ color: '#059669', fontWeight: '600', fontSize: '0.8rem', marginBottom: '0.25rem' }}>Contato</div>
+                <a 
+                  href="mailto:roteirosdedispensacaounb@gmail.com"
+                  style={{
+                    color: '#059669',
+                    textDecoration: 'none',
+                    fontWeight: '500'
+                  }}
+                >
+                  roteirosdedispensacaounb@gmail.com
+                </a>
+              </div>
             </div>
-            
+
+            {/* Segunda linha: Informações finais */}
             <div style={{
-              fontSize: '0.75rem',
-              color: '#94a3b8'
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: '1rem',
+              paddingTop: '0.75rem',
+              borderTop: '1px solid rgba(59, 130, 246, 0.1)'
             }}>
-              Pesquisa de doutorado • {currentYear} © {currentYear} Sistema Educacional Roteiros de Dispensação
+              <div style={{
+                fontSize: '0.75rem',
+                color: '#3b82f6',
+                fontWeight: '500'
+              }}>
+                {assistentsCount} assistentes especializados
+              </div>
+              
+              <div style={{
+                fontSize: '0.7rem',
+                color: '#94a3b8'
+              }}>
+                Pesquisa de doutorado • {currentYear} © {currentYear} Sistema Educacional Roteiros de Dispensação
+              </div>
             </div>
           </div>
         </div>
