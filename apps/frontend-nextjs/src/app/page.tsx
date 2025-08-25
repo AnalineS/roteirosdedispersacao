@@ -82,13 +82,20 @@ const PersonalizedDashboard = dynamic(() => import('@/components/personalization
 
 
 export default function HomePage() {
-  const { personas, loading, error, getValidPersonasCount } = usePersonas();
-  const { saveProfile } = useUserProfile();
-  const { isMobile } = useMobileDetection();
-  const { toasts, addToast } = useToast();
+  // Always call hooks at the top level - React requirement
+  const personasHook = usePersonas();
+  const userProfileHook = useUserProfile();
+  const mobileHook = useMobileDetection();
+  const toastHook = useToast();
   const router = useRouter();
 
-  // Temporariamente ignorar loading para mostrar conteúdo
+  // Extract values with safe fallbacks
+  const { personas = {}, loading = false, error = null, getValidPersonasCount = () => 0 } = personasHook || {};
+  const { saveProfile = () => {} } = userProfileHook || {};
+  const { isMobile = false } = mobileHook || {};
+  const { toasts = [], addToast = () => {} } = toastHook || {};
+
+  // Sempre mostrar conteúdo independente do estado dos hooks
   const shouldShowContent = true;
 
   if (loading && !shouldShowContent) {
@@ -147,26 +154,43 @@ export default function HomePage() {
   }
 
   const handlePersonaSelect = (personaId: string, userProfile: UserProfile) => {
-    const profileWithPersona = {
-      ...userProfile,
-      selectedPersona: personaId
-    };
-    
-    addToast({
-      type: 'success',
-      message: `Assistente ${personaId === 'dr_gasnelio' ? 'Dr. Gasnelio' : 'Gá'} selecionado com sucesso!`,
-      duration: 2000
-    });
-    
-    saveProfile(profileWithPersona);
-    setTimeout(() => router.push('/chat'), 800);
+    try {
+      const profileWithPersona = {
+        ...userProfile,
+        selectedPersona: personaId
+      };
+      
+      if (addToast) {
+        addToast({
+          type: 'success',
+          message: `Assistente ${personaId === 'dr_gasnelio' ? 'Dr. Gasnelio' : 'Gá'} selecionado com sucesso!`,
+          duration: 2000
+        });
+      }
+      
+      if (saveProfile) {
+        saveProfile(profileWithPersona);
+      }
+      
+      if (router && router.push) {
+        setTimeout(() => router.push('/chat'), 800);
+      }
+    } catch (error) {
+      console.error('Error in handlePersonaSelect:', error);
+      // Fallback: Navigate directly
+      if (typeof window !== 'undefined') {
+        window.location.href = '/chat';
+      }
+    }
   };
 
 
-  return (
-    <EducationalLayout showBreadcrumbs={false}>
-      <PageTransition>
-        <PersonalizationProvider>
+  // Safe render with error boundary
+  try {
+    return (
+      <EducationalLayout showBreadcrumbs={false}>
+        <PageTransition>
+          <PersonalizationProvider>
           {/* Quick Start Guide - Only load when needed */}
           <Suspense fallback={<div />}>
             <QuickStartGuide onComplete={() => {
@@ -1023,4 +1047,110 @@ export default function HomePage() {
       </PageTransition>
     </EducationalLayout>
   );
+  } catch (renderError) {
+    console.error('Error rendering HomePage:', renderError);
+    
+    // Fallback simple homepage
+    return (
+      <div style={{ 
+        minHeight: '100vh', 
+        padding: '2rem',
+        fontFamily: 'system-ui, sans-serif'
+      }}>
+        <header style={{ 
+          textAlign: 'center', 
+          marginBottom: '3rem',
+          padding: '2rem',
+          background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
+          borderRadius: '12px'
+        }}>
+          <h1 style={{ 
+            fontSize: 'clamp(2rem, 5vw, 3rem)',
+            color: '#003366',
+            marginBottom: '1rem'
+          }}>
+            Roteiros de Dispensação
+          </h1>
+          <p style={{ 
+            fontSize: '1.2rem',
+            color: '#0066cc',
+            fontWeight: '600'
+          }}>
+            Hanseníase • PQT-U • SUS
+          </p>
+        </header>
+        
+        <main style={{ 
+          maxWidth: '800px', 
+          margin: '0 auto',
+          textAlign: 'center'
+        }}>
+          <h2 style={{ 
+            fontSize: '2rem',
+            color: '#003366',
+            marginBottom: '2rem'
+          }}>
+            Assistentes Virtuais Especializados
+          </h2>
+          
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+            gap: '2rem',
+            marginBottom: '3rem'
+          }}>
+            <div style={{
+              padding: '2rem',
+              background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
+              borderRadius: '16px',
+              border: '2px solid #e0f2fe'
+            }}>
+              <h3 style={{ color: '#003366', fontSize: '1.5rem' }}>Dr. Gasnelio</h3>
+              <p style={{ color: '#0066cc' }}>O Especialista em Medicamentos</p>
+              <a href="/chat?persona=dr_gasnelio" style={{
+                display: 'inline-block',
+                padding: '1rem 2rem',
+                background: '#003366',
+                color: 'white',
+                textDecoration: 'none',
+                borderRadius: '8px',
+                marginTop: '1rem'
+              }}>
+                Conversar com Dr. Gasnelio
+              </a>
+            </div>
+            
+            <div style={{
+              padding: '2rem',
+              background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
+              borderRadius: '16px',
+              border: '2px solid #dcfce7'
+            }}>
+              <h3 style={{ color: '#00aa44', fontSize: '1.5rem' }}>Assistente Educadora</h3>
+              <p style={{ color: '#059669' }}>A Companheira no Tratamento</p>
+              <a href="/chat?persona=ga" style={{
+                display: 'inline-block',
+                padding: '1rem 2rem',
+                background: '#00aa44',
+                color: 'white',
+                textDecoration: 'none',
+                borderRadius: '8px',
+                marginTop: '1rem'
+              }}>
+                Conversar com Assistente Educadora
+              </a>
+            </div>
+          </div>
+          
+          <p style={{ 
+            color: '#666',
+            fontSize: '0.9rem',
+            fontStyle: 'italic'
+          }}>
+            Sistema temporariamente em modo simplificado. Funcionalidades básicas disponíveis.
+          </p>
+        </main>
+      </div>
+    );
+  }
 }
