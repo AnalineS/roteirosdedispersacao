@@ -92,13 +92,6 @@ const AdminAnalyticsDashboard: React.FC<AdminDashboardProps> = ({
 
   // ===== EFFECTS =====
   
-  useEffect(() => {
-    loadDashboardData();
-    const interval = setInterval(loadDashboardData, refreshInterval);
-    
-    return () => clearInterval(interval);
-  }, [refreshInterval, timeframe, loadDashboardData]);
-
   // ===== DATA LOADING =====
 
   const loadDashboardData = useCallback(async () => {
@@ -129,6 +122,13 @@ const AdminAnalyticsDashboard: React.FC<AdminDashboardProps> = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timeframe]);
+
+  useEffect(() => {
+    loadDashboardData();
+    const interval = setInterval(loadDashboardData, refreshInterval);
+    
+    return () => clearInterval(interval);
+  }, [refreshInterval, timeframe, loadDashboardData]);
 
   const generateAdminKPIs = async (systemMetrics: EducationalMetrics, period: string): Promise<DashboardKPIs> => {
     // Simular cálculos baseados nas métricas reais

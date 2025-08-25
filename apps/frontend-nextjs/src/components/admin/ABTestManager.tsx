@@ -29,10 +29,6 @@ const ABTestManager: React.FC<ABTestManagerProps> = ({
   
   const framework = ABTestingFramework.getInstance();
   
-  useEffect(() => {
-    loadExperiments();
-  }, [loadExperiments]);
-  
   const loadExperiments = useCallback(() => {
     setIsLoading(true);
     try {
@@ -49,6 +45,10 @@ const ABTestManager: React.FC<ABTestManagerProps> = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  
+  useEffect(() => {
+    loadExperiments();
+  }, [loadExperiments]);
   
   const generateReport = (experimentId: string) => {
     const report = framework.generateExperimentReport(experimentId);

@@ -67,8 +67,16 @@ export default function PersonaEducationalAvatar({
     large: { width: '64px', height: '64px', fontSize: '18px' },
     xlarge: { width: '80px', height: '80px', fontSize: '20px' }
   };
+
+  const sizePx = {
+    small: 32,
+    medium: 48,
+    large: 64,
+    xlarge: 80
+  };
   
   const currentSize = sizeStyles[size];
+  const imageSize = sizePx[size];
   
   return (
     <div 
@@ -100,8 +108,8 @@ export default function PersonaEducationalAvatar({
           <Image
             src={avatarUrl}
             alt={`Avatar de ${persona.name}, ${persona.role}`}
-            width={size}
-            height={size}
+            width={imageSize}
+            height={imageSize}
             style={{
               objectFit: 'cover',
               borderRadius: '50%'

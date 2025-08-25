@@ -97,8 +97,8 @@ export const PersonaEducationalAvatar: React.FC<PersonaEducationalAvatarProps> =
           <Image
             src={persona.avatar}
             alt={`${persona.name} - ${persona.title}`}
-            width={size}
-            height={size}
+            width={avatarSize}
+            height={avatarSize}
             style={{
               objectFit: 'cover'
             }}

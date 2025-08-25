@@ -252,7 +252,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
 export const useImagePreload = (sources: string[]) => {
   useEffect(() => {
     sources.forEach(src => {
-      const img = new Image();
+      const img = new (window as any).Image();
       img.src = src;
     });
   }, [sources]);
