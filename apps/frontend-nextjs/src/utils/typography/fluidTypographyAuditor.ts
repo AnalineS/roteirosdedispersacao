@@ -10,7 +10,7 @@
  * - Generates typography scale analysis
  */
 
-interface FluidTypographyViolation {
+export interface FluidTypographyViolation {
   type: 'missing-fluid' | 'invalid-clamp' | 'accessibility' | 'performance' | 'consistency';
   severity: 'error' | 'warning' | 'info';
   element: string;
@@ -20,7 +20,7 @@ interface FluidTypographyViolation {
   suggestedValue?: string;
 }
 
-interface TypographyScale {
+export interface TypographyScale {
   name: string;
   minSize: number;
   maxSize: number;
@@ -30,7 +30,7 @@ interface TypographyScale {
   isAccessible: boolean;
 }
 
-interface FluidTypographyReport {
+export interface FluidTypographyReport {
   totalElements: number;
   fluidElements: number;
   violations: FluidTypographyViolation[];

@@ -160,7 +160,7 @@ export default function TypographyAuditPanel({ isOpen, onClose }: TypographyAudi
                     </div>
                   ) : (
                     <div className="violations-list">
-                      {auditResult.violations.map((violation, index) => (
+                      {auditResult.violations.map((violation: FluidTypographyViolation, index: number) => (
                         <div 
                           key={index}
                           className={`violation-card ${violation.severity}`}
@@ -227,7 +227,7 @@ export default function TypographyAuditPanel({ isOpen, onClose }: TypographyAudi
                     </div>
                   ) : (
                     <div className="scale-list">
-                      {auditResult.typographyScale.map((scale, index) => (
+                      {auditResult.typographyScale.map((scale: TypographyScale, index: number) => (
                         <div key={index} className={`scale-card ${scale.isAccessible ? 'accessible' : 'not-accessible'}`}>
                           <div className="scale-header">
                             <div className="scale-name">{scale.name}</div>
@@ -262,7 +262,7 @@ export default function TypographyAuditPanel({ isOpen, onClose }: TypographyAudi
                 <div className="recommendations-section">
                   <h3>💡 Recomendações</h3>
                   <div className="recommendations-list">
-                    {auditResult.recommendations.map((rec, index) => (
+                    {auditResult.recommendations.map((rec: string, index: number) => (
                       <div key={index} className="recommendation-item">
                         <span className="rec-icon">✅</span>
                         <span className="rec-text">{rec}</span>
