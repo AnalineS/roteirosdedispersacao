@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { validatePWA, type PWAValidationReport } from '@/utils/pwa/pwaValidator';
 
 interface PWAValidationPanelProps {
@@ -13,7 +13,7 @@ export default function PWAValidationPanel({ isOpen, onClose }: PWAValidationPan
   const [isLoading, setIsLoading] = useState(false);
   const [selectedTab, setSelectedTab] = useState<'summary' | 'manifest' | 'service-worker' | 'performance'>('summary');
 
-  const runValidation = async () => {
+  const runValidation = useCallback(async () => {
     setIsLoading(true);
     try {
       await new Promise(resolve => setTimeout(resolve, 800)); // Show loading
@@ -24,13 +24,13 @@ export default function PWAValidationPanel({ isOpen, onClose }: PWAValidationPan
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     if (isOpen && !validationResult) {
       runValidation();
     }
-  }, [isOpen]);
+  }, [isOpen, validationResult, runValidation]);
 
   const getScoreColor = (score: number) => {
     if (score >= 90) return '#059669';
@@ -379,7 +379,7 @@ export default function PWAValidationPanel({ isOpen, onClose }: PWAValidationPan
           ) : (
             <div className="empty-state">
               <div className="empty-icon">📱</div>
-              <p>Clique em "Nova Validação" para analisar a configuração PWA.</p>
+              <p>Clique em &quot;Nova Validação&quot; para analisar a configuração PWA.</p>
             </div>
           )}
         </div>

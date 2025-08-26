@@ -365,7 +365,7 @@ export default function AccessibilityAuditPanel({
 
                             {violation.text && (
                               <div className="violation-text">
-                                <strong>Text:</strong> "{violation.text}"
+                                <strong>Text:</strong> &quot;{violation.text}&quot;
                               </div>
                             )}
 
@@ -536,7 +536,7 @@ export default function AccessibilityAuditPanel({
             <div className="initial-state">
               <div className="initial-icon">🔍</div>
               <h3>Ready to Audit</h3>
-              <p>Click "Run Audit" to analyze the heading hierarchy of this page.</p>
+              <p>Click &quot;Run Audit&quot; to analyze the heading hierarchy of this page.</p>
               <button onClick={runAudit} className="start-audit-button">
                 🚀 Start Accessibility Audit
               </button>

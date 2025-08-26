@@ -145,10 +145,10 @@ export default function SearchPage() {
                 <div className="tip-card">
                   <h3 className="tip-title">🎯 Seja Específico</h3>
                   <p className="tip-description">
-                    Use termos específicos como "dosagem rifampicina" ao invés de apenas "medicamento"
+                    Use termos específicos como &quot;dosagem rifampicina&quot; ao invés de apenas &quot;medicamento&quot;
                   </p>
                   <div className="tip-example">
-                    <strong>Exemplo:</strong> "Como tomar PQT-U pela manhã"
+                    <strong>Exemplo:</strong> &quot;Como tomar PQT-U pela manhã&quot;
                   </div>
                 </div>
 
@@ -168,7 +168,7 @@ export default function SearchPage() {
                     Ative a busca por voz clicando no ícone do microfone para fazer perguntas falando
                   </p>
                   <div className="tip-example">
-                    <strong>Experimente:</strong> "Posso parar o tratamento se me sentir bem?"
+                    <strong>Experimente:</strong> &quot;Posso parar o tratamento se me sentir bem?&quot;
                   </div>
                 </div>
 

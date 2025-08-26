@@ -745,7 +745,7 @@ function ContrastResultCard({ result, priority }: { result: ContrastResult; prio
           {result.isTextLarge && <span className="text-size-badge">Large Text</span>}
         </div>
         <div className="context-text">
-          <strong>Content:</strong> "{result.combination.context}"
+          <strong>Content:</strong> &quot;{result.combination.context}&quot;
         </div>
         {result.combination.location && (
           <div className="context-location">

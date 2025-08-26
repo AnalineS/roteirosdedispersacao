@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useEffect, useState, useCallback } from 'react';
+import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react';
 import { Persona } from '@/services/api';
 import { modernChatTheme, getPersonaColors } from '@/config/modernTheme';
 import { useChatAccessibility, useAccessibleFocus } from './ChatAccessibilityProvider';
@@ -51,7 +51,10 @@ const AccessibleChatInput: React.FC<AccessibleChatInputProps> = ({
   useAccessibleFocus(textareaRef, 'input');
 
   const colors = getPersonaColors(personaId);
-  const filteredSuggestions = showSuggestions ? suggestions.filter(s => s) : [];
+  const filteredSuggestions = useMemo(() => 
+    showSuggestions ? suggestions.filter(s => s) : [], 
+    [showSuggestions, suggestions]
+  );
 
   // Character count management
   useEffect(() => {

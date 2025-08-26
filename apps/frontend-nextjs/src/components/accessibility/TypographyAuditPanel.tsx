@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { FluidTypographyAuditor, auditFluidTypography, type FluidTypographyReport, type FluidTypographyViolation, type TypographyScale } from '@/utils/typography/fluidTypographyAuditor';
 
 interface TypographyAuditPanelProps {
@@ -14,7 +14,7 @@ export default function TypographyAuditPanel({ isOpen, onClose }: TypographyAudi
   const [selectedViolation, setSelectedViolation] = useState<number | null>(null);
   const [showScale, setShowScale] = useState(false);
 
-  const runAudit = async () => {
+  const runAudit = useCallback(async () => {
     setIsLoading(true);
     try {
       // Small delay to show loading state
@@ -26,13 +26,13 @@ export default function TypographyAuditPanel({ isOpen, onClose }: TypographyAudi
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     if (isOpen && !auditResult) {
       runAudit();
     }
-  }, [isOpen]);
+  }, [isOpen, auditResult, runAudit]);
 
   const getSeverityIcon = (severity: FluidTypographyViolation['severity']) => {
     switch (severity) {
@@ -275,7 +275,7 @@ export default function TypographyAuditPanel({ isOpen, onClose }: TypographyAudi
           ) : (
             <div className="empty-state">
               <div className="empty-icon">📝</div>
-              <p>Clique em "Executar Nova Auditoria" para analisar a tipografia.</p>
+              <p>Clique em &quot;Executar Nova Auditoria&quot; para analisar a tipografia.</p>
             </div>
           )}
         </div>

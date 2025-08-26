@@ -458,7 +458,7 @@ export default function AccessibleSearchWithSuggestions({
         }
         break;
     }
-  }, [showSuggestions, suggestions, results, selectedIndex, query, announceMessage]);
+  }, [showSuggestions, suggestions, results, selectedIndex, query, announceMessage, handleResultClick, handleSearch, handleSuggestionClick, isOpen]);
 
   // Handle suggestion selection
   const handleSuggestionClick = useCallback((suggestion: SearchSuggestion) => {
@@ -607,6 +607,7 @@ export default function AccessibleSearchWithSuggestions({
           <input
             ref={inputRef}
             type="text"
+            role="combobox"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
@@ -618,6 +619,7 @@ export default function AccessibleSearchWithSuggestions({
             className="search-input"
             aria-describedby="search-instructions"
             aria-expanded={isOpen}
+            aria-controls="search-results"
             aria-haspopup="listbox"
             aria-owns={isOpen ? "search-results" : undefined}
             aria-activedescendant={selectedIndex >= 0 ? `search-item-${selectedIndex}` : undefined}
@@ -756,7 +758,7 @@ export default function AccessibleSearchWithSuggestions({
               <div className="no-results">
                 <div className="no-results-icon">🔍</div>
                 <p className="no-results-text">
-                  Nenhum resultado encontrado para "{query}"
+                  Nenhum resultado encontrado para &quot;{query}&quot;
                 </p>
                 <p className="no-results-suggestions">
                   Tente: dosagem, sintomas, direitos, tratamento, efeitos colaterais

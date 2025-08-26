@@ -27,11 +27,10 @@ export default function WebVitalsDashboard({
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
 
   // Only show in development or when explicitly enabled
-  if (process.env.NODE_ENV === 'production' && !showInDevelopment) {
-    return null;
-  }
-
   useEffect(() => {
+    if (process.env.NODE_ENV === 'production' && !showInDevelopment) {
+      return;
+    }
     const updateMetrics = () => {
       try {
         const performanceData = getCurrentPerformanceData();
@@ -90,7 +89,12 @@ export default function WebVitalsDashboard({
     const interval = setInterval(updateMetrics, 5000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [showInDevelopment]);
+
+  // Early return for production unless explicitly shown
+  if (process.env.NODE_ENV === 'production' && !showInDevelopment) {
+    return null;
+  }
 
   // Get metric color based on rating
   const getMetricColor = (rating: string) => {
