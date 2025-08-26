@@ -198,6 +198,7 @@ const AccessibleMessageBubble: React.FC<AccessibleMessageBubbleProps> = ({
           <div className="avatar-container">
             <PersonaAvatar
               persona={persona}
+              personaId={personaId}
               size={isMobile ? 'small' : 'medium'}
               showStatus={false}
               aria-hidden="true"
@@ -302,11 +303,13 @@ const AccessibleMessageBubble: React.FC<AccessibleMessageBubbleProps> = ({
         <div className="feedback-container" role="complementary" aria-label="Feedback da mensagem">
           <FeedbackWidget
             messageId={message.id || ''}
-            onFeedbackSubmitted={() => {
+            personaId={personaId || 'unknown'}
+            question={previousMessage?.content || ''}
+            response={message.content}
+            onFeedbackSubmit={() => {
               setShowFeedback(false);
               announceMessage('Feedback enviado com sucesso');
             }}
-            compact={isMobile}
           />
         </div>
       )}

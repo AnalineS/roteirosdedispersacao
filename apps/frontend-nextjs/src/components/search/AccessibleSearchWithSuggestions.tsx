@@ -397,6 +397,45 @@ export default function AccessibleSearchWithSuggestions({
     }
   }, [query, selectedAudience, performSearch, generateSuggestions]);
 
+  // Handle suggestion selection
+  const handleSuggestionClick = useCallback((suggestion: SearchSuggestion) => {
+    setQuery(suggestion.text);
+    setSelectedIndex(-1);
+    setShowSuggestions(false);
+    performSearch(suggestion.text, selectedAudience);
+    saveRecentSearch(suggestion.text);
+    announceMessage(`Pesquisando por: ${suggestion.text}`);
+    
+    if (onSuggestionSelect) {
+      onSuggestionSelect(suggestion.text);
+    }
+  }, [selectedAudience, performSearch, saveRecentSearch, announceMessage, onSuggestionSelect]);
+
+  // Handle result selection
+  const handleResultClick = useCallback((result: SearchResult) => {
+    setIsOpen(false);
+    setQuery('');
+    setSelectedIndex(-1);
+    saveRecentSearch(result.title);
+    announceMessage(`Navegando para: ${result.title}`);
+    
+    if (onResultSelect) {
+      onResultSelect(result);
+    } else {
+      router.push(result.url);
+    }
+  }, [saveRecentSearch, announceMessage, onResultSelect, router]);
+
+  // Handle search execution
+  const handleSearch = useCallback(() => {
+    if (!query.trim()) return;
+    
+    setShowSuggestions(false);
+    performSearch(query, selectedAudience);
+    saveRecentSearch(query);
+    setIsOpen(true);
+  }, [query, selectedAudience, performSearch, saveRecentSearch]);
+
   // Keyboard navigation
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     const totalItems = showSuggestions ? suggestions.length : results.length;
@@ -458,46 +497,7 @@ export default function AccessibleSearchWithSuggestions({
         }
         break;
     }
-  }, [showSuggestions, suggestions, results, selectedIndex, query, announceMessage, handleResultClick, handleSearch, handleSuggestionClick, isOpen]);
-
-  // Handle suggestion selection
-  const handleSuggestionClick = useCallback((suggestion: SearchSuggestion) => {
-    setQuery(suggestion.text);
-    setSelectedIndex(-1);
-    setShowSuggestions(false);
-    performSearch(suggestion.text, selectedAudience);
-    saveRecentSearch(suggestion.text);
-    announceMessage(`Pesquisando por: ${suggestion.text}`);
-    
-    if (onSuggestionSelect) {
-      onSuggestionSelect(suggestion.text);
-    }
-  }, [selectedAudience, performSearch, saveRecentSearch, announceMessage, onSuggestionSelect]);
-
-  // Handle result selection
-  const handleResultClick = useCallback((result: SearchResult) => {
-    setIsOpen(false);
-    setQuery('');
-    setSelectedIndex(-1);
-    saveRecentSearch(result.title);
-    announceMessage(`Navegando para: ${result.title}`);
-    
-    if (onResultSelect) {
-      onResultSelect(result);
-    } else {
-      router.push(result.url);
-    }
-  }, [saveRecentSearch, announceMessage, onResultSelect, router]);
-
-  // Handle search execution
-  const handleSearch = useCallback(() => {
-    if (!query.trim()) return;
-    
-    setShowSuggestions(false);
-    performSearch(query, selectedAudience);
-    saveRecentSearch(query);
-    setIsOpen(true);
-  }, [query, selectedAudience, performSearch, saveRecentSearch]);
+  }, [showSuggestions, suggestions, results, selectedIndex, query, announceMessage, isOpen, handleSuggestionClick, handleResultClick, handleSearch]);
 
   // Voice search functionality (Web Speech API)
   const handleVoiceSearch = useCallback(() => {
