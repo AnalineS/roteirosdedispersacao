@@ -7,12 +7,23 @@ on:
       - 'apps/backend/**'
       - 'apps/frontend-nextjs/**'
       - '.github/workflows/hml-deploy.yml'
+      - '!**/*.md'
+      - '!**/README*'
+      - '!docs/**'
   workflow_dispatch:
     inputs:
       force_deploy:
         description: 'Force deploy (skip some checks)'
         required: false
         default: 'false'
+      deploy_backend:
+        description: 'Deploy backend (auto-detected if not specified)'
+        required: false
+        type: boolean
+      deploy_frontend:
+        description: 'Deploy frontend (auto-detected if not specified)'
+        required: false
+        type: boolean
 
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
@@ -22,12 +33,75 @@ env:
 
 jobs:
   # =====================================
-  # Quality Gates com Snyk
+  # Path Detection for Conditional Deploy
+  # =====================================
+  detect-changes:
+    name: 🔍 Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      backend-changed: ${{ steps.changes.outputs.backend }}
+      frontend-changed: ${{ steps.changes.outputs.frontend }}
+      deploy-backend: ${{ steps.decide.outputs.deploy-backend }}
+      deploy-frontend: ${{ steps.decide.outputs.deploy-frontend }}
+    
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2  # Need 2 commits to compare
+      
+      - name: 🔍 Detect Changed Paths
+        id: changes
+        run: |
+          # Compare with previous commit to detect changes
+          if git diff --name-only HEAD~1 HEAD | grep -q '^apps/backend/';
+          then
+            echo "backend=true" >> $GITHUB_OUTPUT
+            echo "📦 Backend changes detected"
+          else
+            echo "backend=false" >> $GITHUB_OUTPUT
+            echo "📦 No backend changes"
+          fi
+          
+          if git diff --name-only HEAD~1 HEAD | grep -q '^apps/frontend-nextjs/';
+          then
+            echo "frontend=true" >> $GITHUB_OUTPUT
+            echo "🎨 Frontend changes detected"
+          else
+            echo "frontend=false" >> $GITHUB_OUTPUT
+            echo "🎨 No frontend changes"
+          fi
+      
+      - name: 🎯 Decide Deployment Strategy
+        id: decide
+        run: |
+          # Use manual input if provided, otherwise use auto-detection
+          DEPLOY_BACKEND="${{ github.event.inputs.deploy_backend }}"
+          DEPLOY_FRONTEND="${{ github.event.inputs.deploy_frontend }}"
+          
+          if [ "$DEPLOY_BACKEND" = "" ]; then
+            DEPLOY_BACKEND="${{ steps.changes.outputs.backend }}"
+          fi
+          
+          if [ "$DEPLOY_FRONTEND" = "" ]; then
+            DEPLOY_FRONTEND="${{ steps.changes.outputs.frontend }}"
+          fi
+          
+          echo "deploy-backend=$DEPLOY_BACKEND" >> $GITHUB_OUTPUT
+          echo "deploy-frontend=$DEPLOY_FRONTEND" >> $GITHUB_OUTPUT
+          
+          echo "📋 Deployment plan:"
+          echo "  Backend: $DEPLOY_BACKEND"
+          echo "  Frontend: $DEPLOY_FRONTEND"
+
+  # =====================================
+  # Quality Gates com Snyk - Conditional
   # =====================================
   quality-gates:
     name: 🔍 Quality Gates & Security
     runs-on: ubuntu-latest
-    if: github.event.inputs.force_deploy != 'true'
+    needs: detect-changes
+    if: github.event.inputs.force_deploy != 'true' && (needs.detect-changes.outputs.deploy-backend == 'true' || needs.detect-changes.outputs.deploy-frontend == 'true')
     
     steps:
       - name: 📥 Checkout Code
@@ -50,10 +124,28 @@ jobs:
           cache-dependency-path: apps/backend/requirements.txt
 
       # Frontend Quality Gates - Install first
+      # Enhanced cache for Node.js dependencies
+      - name: 💾 Cache Node.js Dependencies
+        uses: actions/cache@v4
+        id: node-cache
+        if: needs.detect-changes.outputs.deploy-frontend == 'true'
+        with:
+          path: |
+            apps/frontend-nextjs/node_modules
+            ~/.npm
+          key: node-deps-${{ runner.os }}-${{ hashFiles('apps/frontend-nextjs/package-lock.json') }}
+          restore-keys: |
+            node-deps-${{ runner.os }}-
+      
       - name: 📱 Install Frontend Dependencies
+        if: needs.detect-changes.outputs.deploy-frontend == 'true' && steps.node-cache.outputs.cache-hit != 'true'
         run: |
           cd apps/frontend-nextjs
           npm ci
+      
+      - name: ⚡ Skip Frontend Dependencies (Cache Hit)
+        if: needs.detect-changes.outputs.deploy-frontend == 'true' && steps.node-cache.outputs.cache-hit == 'true'
+        run: echo "📦 Using cached Node.js dependencies"
 
       # Snyk Security Scanning
       - name: 🔒 Run Snyk Security Scan
@@ -76,12 +168,14 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
       - name: 🔍 Frontend Lint & TypeScript
+        if: needs.detect-changes.outputs.deploy-frontend == 'true'
         run: |
           cd apps/frontend-nextjs
           npm run lint
           npm run type-check
 
       - name: 🧪 Frontend Tests & Coverage
+        if: needs.detect-changes.outputs.deploy-frontend == 'true'
         run: |
           cd apps/frontend-nextjs
           # Skip coverage for now to avoid blocking deploy
@@ -99,8 +193,20 @@ jobs:
       #     fi
       #     echo "✅ Coverage $COVERAGE% meets 95% threshold"
 
+      # Enhanced cache for Python dependencies
+      - name: 💾 Cache Python Dependencies
+        uses: actions/cache@v4
+        id: python-cache
+        if: needs.detect-changes.outputs.deploy-backend == 'true'
+        with:
+          path: ~/.cache/pip
+          key: python-deps-${{ runner.os }}-${{ hashFiles('apps/backend/requirements.txt') }}
+          restore-keys: |
+            python-deps-${{ runner.os }}-
+      
       # Backend Quality Gates
       - name: 🐍 Install Backend Dependencies
+        if: needs.detect-changes.outputs.deploy-backend == 'true'
         run: |
           cd apps/backend
           pip install -r requirements.txt
@@ -114,12 +220,14 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
       - name: 🧪 Backend Tests & Coverage
+        if: needs.detect-changes.outputs.deploy-backend == 'true'
         run: |
           cd apps/backend
           # Skip coverage for initial deploy
           python -m pytest --tb=short || echo "Tests completed with warnings"
 
       - name: 🔍 Backend Code Quality
+        if: needs.detect-changes.outputs.deploy-backend == 'true'
         run: |
           cd apps/backend
           flake8 . --count --max-complexity=10 --max-line-length=127 --statistics || echo "Linting completed with warnings"
@@ -127,18 +235,19 @@ jobs:
 
       # Build Test
       - name: 🏗️ Test Docker Build
+        if: needs.detect-changes.outputs.deploy-backend == 'true'
         run: |
           cd apps/backend
           docker build -f Dockerfile.hml -t test-hml-build .
 
   # =====================================
-  # Deploy Backend (Cloud Run)
+  # Deploy Backend (Cloud Run) - Conditional
   # =====================================
   deploy-backend:
     name: 🚀 Deploy Backend HML
     runs-on: ubuntu-latest
-    needs: quality-gates
-    if: always() && (needs.quality-gates.result == 'success' || github.event.inputs.force_deploy == 'true')
+    needs: [detect-changes, quality-gates]
+    if: always() && (needs.quality-gates.result == 'success' || github.event.inputs.force_deploy == 'true') && needs.detect-changes.outputs.deploy-backend == 'true'
     
     outputs:
       service-url: ${{ steps.deploy.outputs.url }}
@@ -163,12 +272,20 @@ jobs:
           gcloud auth configure-docker --quiet
           gcloud auth configure-docker us-central1-docker.pkg.dev --quiet
 
-      - name: 🏗️ Build Docker Image
+      # Docker layer caching for faster builds
+      - name: 🏗️ Build Docker Image with Cache
         run: |
           cd apps/backend
-          # Use simpler GCR approach with proper permissions
-          docker build -f Dockerfile.hml -t gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA .
-          docker tag gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA gcr.io/$PROJECT_ID/$SERVICE_NAME:latest
+          # Pull previous image for cache if available
+          docker pull gcr.io/$PROJECT_ID/$SERVICE_NAME:latest || echo "No previous image to cache"
+          
+          # Build with cache from previous image
+          docker build \
+            --cache-from gcr.io/$PROJECT_ID/$SERVICE_NAME:latest \
+            -f Dockerfile.hml \
+            -t gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA \
+            -t gcr.io/$PROJECT_ID/$SERVICE_NAME:latest \
+            .
 
       - name: 📤 Push Docker Image
         run: |
@@ -215,13 +332,13 @@ jobs:
           done
 
   # =====================================
-  # Deploy Frontend (Firebase)
+  # Deploy Frontend (Firebase) - Conditional & Parallel
   # =====================================
   deploy-frontend:
     name: 🎨 Deploy Frontend HML
     runs-on: ubuntu-latest
-    needs: deploy-backend
-    if: always() && needs.deploy-backend.result == 'success'
+    needs: [detect-changes, quality-gates]
+    if: always() && (needs.quality-gates.result == 'success' || github.event.inputs.force_deploy == 'true') && needs.detect-changes.outputs.deploy-frontend == 'true'
     
     outputs:
       frontend-url: ${{ steps.deploy.outputs.url }}
@@ -237,16 +354,40 @@ jobs:
           cache: 'npm'
           cache-dependency-path: apps/frontend-nextjs/package-lock.json
 
+      # Reuse cached dependencies
+      - name: 💾 Restore Node.js Cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            apps/frontend-nextjs/node_modules
+            ~/.npm
+          key: node-deps-${{ runner.os }}-${{ hashFiles('apps/frontend-nextjs/package-lock.json') }}
+          restore-keys: |
+            node-deps-${{ runner.os }}-
+      
       - name: 📦 Install Dependencies
         run: |
           cd apps/frontend-nextjs
           npm ci
 
+      # Cache Next.js build for faster rebuilds
+      - name: 💾 Cache Next.js Build
+        uses: actions/cache@v4
+        with:
+          path: |
+            apps/frontend-nextjs/.next/cache
+          key: nextjs-build-${{ runner.os }}-${{ hashFiles('apps/frontend-nextjs/package-lock.json') }}-${{ hashFiles('apps/frontend-nextjs/**/*.js', 'apps/frontend-nextjs/**/*.ts', 'apps/frontend-nextjs/**/*.jsx', 'apps/frontend-nextjs/**/*.tsx') }}
+          restore-keys: |
+            nextjs-build-${{ runner.os }}-${{ hashFiles('apps/frontend-nextjs/package-lock.json') }}-
+            nextjs-build-${{ runner.os }}-
+
       - name: 🔧 Configure Environment
         run: |
           cd apps/frontend-nextjs
           cp .env.hml .env.production.local
-          echo "NEXT_PUBLIC_API_URL=${{ needs.deploy-backend.outputs.service-url }}" >> .env.production.local
+          # Get backend URL from deploy step or use default
+          BACKEND_URL="${{ needs.deploy-backend.outputs.service-url || 'https://hml-roteiro-dispensacao-api-4f2gjf6cua-uc.a.run.app' }}"
+          echo "NEXT_PUBLIC_API_URL=$BACKEND_URL" >> .env.production.local
 
       - name: 🏗️ Build Frontend
         run: |
@@ -297,8 +438,8 @@ jobs:
   setup-monitoring:
     name: 📊 Setup GCP Monitoring & Alerts
     runs-on: ubuntu-latest
-    needs: [deploy-backend, deploy-frontend]
-    if: always() && needs.deploy-backend.result == 'success' && needs.deploy-frontend.result == 'success'
+    needs: [detect-changes, deploy-backend, deploy-frontend]
+    if: always() && (needs.deploy-backend.result == 'success' || needs.deploy-backend.result == 'skipped') && (needs.deploy-frontend.result == 'success' || needs.deploy-frontend.result == 'skipped')
     
     steps:
       - name: 📥 Checkout Code
@@ -332,8 +473,8 @@ jobs:
   post-deploy:
     name: 🧪 Post-Deploy & Tests
     runs-on: ubuntu-latest
-    needs: [deploy-backend, deploy-frontend, setup-monitoring]
-    if: always() && needs.deploy-backend.result == 'success' && needs.deploy-frontend.result == 'success'
+    needs: [detect-changes, deploy-backend, deploy-frontend, setup-monitoring]
+    if: always() && (needs.deploy-backend.result == 'success' || needs.deploy-backend.result == 'skipped') && (needs.deploy-frontend.result == 'success' || needs.deploy-frontend.result == 'skipped')
     
     steps:
       - name: 📥 Checkout Code
@@ -441,7 +582,7 @@ jobs:
   notify:
     name: 📢 Send Notifications
     runs-on: ubuntu-latest
-    needs: [quality-gates, deploy-backend, deploy-frontend, setup-monitoring, post-deploy]
+    needs: [detect-changes, quality-gates, deploy-backend, deploy-frontend, setup-monitoring, post-deploy]
     if: always()
     
     steps:
@@ -461,28 +602,38 @@ jobs:
           COMMIT_SHA=$(echo $GITHUB_SHA | cut -c1-7)
           COMMIT_MSG=$(git log -1 --pretty=%B | head -1)
           
-          # Mensagem
-          MESSAGE="$EMOJI *Deploy HML $STATUS*
+          # Mensagem com informações sobre deploy incremental
+          MESSAGE="$EMOJI *Deploy HML $STATUS* 🚀
           
           📦 *Commit:* \`$COMMIT_SHA\`
           📝 *Mensagem:* $COMMIT_MSG
           🌿 *Branch:* \`$GITHUB_REF_NAME\`
           ⏰ *Timestamp:* \`$(date -u)\`
           
-          🔗 *URLs:*
-          • Backend: ${{ needs.deploy-backend.outputs.service-url }}
-          • Frontend: ${{ needs.deploy-frontend.outputs.frontend-url }}
+          🎯 *Deploy Incremental:*
+          • Backend: ${{ needs.detect-changes.outputs.deploy-backend == 'true' && '✅ Deployado' || '⏭️ Pulado (sem mudanças)' }}
+          • Frontend: ${{ needs.detect-changes.outputs.deploy-frontend == 'true' && '✅ Deployado' || '⏭️ Pulado (sem mudanças)' }}
           
-          📊 *Status:*
+          🔗 *URLs:*
+          • Backend: ${{ needs.deploy-backend.outputs.service-url || 'Não deployado' }}
+          • Frontend: ${{ needs.deploy-frontend.outputs.frontend-url || 'Não deployado' }}
+          
+          📊 *Status dos Jobs:*
+          • Changes Detection: ${{ needs.detect-changes.result }}
           • Quality Gates: ${{ needs.quality-gates.result }}
-          • Backend: ${{ needs.deploy-backend.result }}
-          • Frontend: ${{ needs.deploy-frontend.result }}
-          • Monitoring: ${{ needs.setup-monitoring.result }}
-          • Tests: ${{ needs.post-deploy.result }}
+          • Backend Deploy: ${{ needs.deploy-backend.result }}
+          • Frontend Deploy: ${{ needs.deploy-frontend.result }}
+          • Monitoring Setup: ${{ needs.setup-monitoring.result }}
+          • Post-Deploy Tests: ${{ needs.post-deploy.result }}
+          
+          ⚡ *Otimizações:*
+          • Cache inteligente de dependências
+          • Deploy condicional baseado em mudanças
+          • Builds paralelos quando possível
           
           👥 *Próximos Passos:*
           1. Revisar ambiente HML
-          2. Executar testes manuais
+          2. Executar testes manuais  
           3. Aprovar para produção se OK"
           
           # Enviar para Telegram

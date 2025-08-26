@@ -67,11 +67,27 @@ jobs:
           cache: 'pip'
           cache-dependency-path: apps/backend/requirements.txt
 
-      # Frontend Quality Gates - Install first
+      # Enhanced cache for Node.js dependencies (Production)
+      - name: 💾 Cache Node.js Dependencies
+        uses: actions/cache@v4
+        id: node-cache
+        with:
+          path: |
+            apps/frontend-nextjs/node_modules
+            ~/.npm
+          key: prod-node-deps-${{ runner.os }}-${{ hashFiles('apps/frontend-nextjs/package-lock.json') }}
+          restore-keys: |
+            prod-node-deps-${{ runner.os }}-
+      
       - name: 📱 Install Frontend Dependencies
+        if: steps.node-cache.outputs.cache-hit != 'true'
         run: |
           cd apps/frontend-nextjs
           npm ci
+      
+      - name: ⚡ Skip Frontend Dependencies (Cache Hit)
+        if: steps.node-cache.outputs.cache-hit == 'true'
+        run: echo "🎉 Using cached Node.js dependencies for faster production deploy"
 
       # Snyk Security Scanning (Production - Strict)
       - name: 🔒 Run Snyk Security Scan
@@ -203,7 +219,7 @@ jobs:
           gcloud auth configure-docker --quiet
           gcloud auth configure-docker us-central1-docker.pkg.dev --quiet
 
-      - name: 🏗️ Build Docker Image
+      - name: 🏗️ Build Docker Image with Cache
         run: |
           cd apps/backend
           # Use Dockerfile.prod ou Dockerfile padrão
@@ -211,8 +227,17 @@ jobs:
           if [ -f "Dockerfile.prod" ]; then
             DOCKERFILE="Dockerfile.prod"
           fi
-          docker build -f $DOCKERFILE -t gcr.io/$PROJECT_ID/$BACKEND_SERVICE_NAME:${{ github.event.inputs.version_tag }} .
-          docker tag gcr.io/$PROJECT_ID/$BACKEND_SERVICE_NAME:${{ github.event.inputs.version_tag }} gcr.io/$PROJECT_ID/$BACKEND_SERVICE_NAME:latest
+          
+          # Pull previous production image for cache if available
+          docker pull gcr.io/$PROJECT_ID/$BACKEND_SERVICE_NAME:latest || echo "No previous production image to cache"
+          
+          # Build with cache from previous image for faster production builds
+          docker build \
+            --cache-from gcr.io/$PROJECT_ID/$BACKEND_SERVICE_NAME:latest \
+            -f $DOCKERFILE \
+            -t gcr.io/$PROJECT_ID/$BACKEND_SERVICE_NAME:${{ github.event.inputs.version_tag }} \
+            -t gcr.io/$PROJECT_ID/$BACKEND_SERVICE_NAME:latest \
+            .
 
       - name: 📤 Push Docker Image
         run: |

@@ -7,6 +7,19 @@ const nextConfig = {
   // Configuração condicional: export para build estático, server para desenvolvimento
   output: process.env.BUILD_STANDALONE ? undefined : 'export',
   
+  // INCREMENTAL BUILD OPTIMIZATIONS
+  
+  // Enable SWC minification for faster builds (já ativo mais abaixo)
+  swcMinify: true,
+  
+  // Enable compiler optimizations
+  compiler: {
+    // Remove console.log in production builds
+    removeConsole: process.env.NODE_ENV === 'production' ? {
+      exclude: ['error', 'warn']
+    } : false,
+  },
+  
   // Mapeamento de variáveis de ambiente Firebase
   env: {
     // Mapear secrets do GitHub para variáveis NEXT_PUBLIC_
@@ -43,11 +56,17 @@ const nextConfig = {
   
   // Configurações experimentais para otimização e segurança
   experimental: {
-    optimizePackageImports: ['react-icons', 'jspdf'],
+    optimizePackageImports: ['react-icons', 'jspdf', 'lucide-react'],
     // Melhor tree-shaking para ícones SVG
     // optimizeCss: true, // Desabilitado - requer 'critters'
     // Compilação mais segura
-    strictNextHead: true
+    strictNextHead: true,
+    // Incremental build cache optimization
+    turbotrace: {
+      logLevel: 'error'
+    },
+    // ISR optimization for future use
+    isrMemoryCacheSize: 0  // Disable memory cache for static export
   },
   
   // ESLint configuração para build
@@ -56,8 +75,22 @@ const nextConfig = {
     ignoreDuringBuilds: process.env.NODE_ENV === 'production'
   },
   
-  // Webpack personalizado otimizado para produção
-  webpack: (config, { dev, isServer }) => {
+  // BUILD CACHE OPTIMIZATION
+  
+  // Enable build caching for faster incremental builds
+  // Automatically handled by Next.js 14+
+  
+  // Webpack personalizado otimizado para produção e builds incrementais
+  webpack: (config, { dev, isServer, buildId }) => {
+    // Build cache optimization
+    if (!dev) {
+      // Enable persistent cache for faster rebuilds
+      config.cache = {
+        type: 'filesystem',
+        cacheDirectory: './.next/cache/webpack'
+      };
+    }
+    
     // Configurações de otimização para produção
     if (!dev && !isServer) {
       // Otimização de bundle com cache groups específicos
@@ -85,17 +118,36 @@ const nextConfig = {
             test: /[\\/]components[\\/](educational|interactive)[\\/]/,
             chunks: 'all',
             priority: 20,
+          },
+          // Chunk para data/static content
+          data: {
+            name: 'data',
+            test: /[\\/]data[\\/]/,
+            chunks: 'all',
+            priority: 15,
           }
         }
       };
       
-      // Remover console.log em produção usando replace simples
-      const originalEntry = config.entry;
-      config.entry = async () => {
-        const entries = await originalEntry();
-        // Remove console.logs via regex em build
-        return entries;
-      };
+      // Enable module concatenation for better tree shaking
+      config.optimization.concatenateModules = true;
+      
+      // Build performance optimizations
+      config.optimization.runtimeChunk = 'single';
+      
+      // Improve build performance with parallel processing
+      const TerserPlugin = require('terser-webpack-plugin');
+      config.optimization.minimizer.push(
+        new TerserPlugin({
+          parallel: true,
+          terserOptions: {
+            compress: {
+              drop_console: true,
+              drop_debugger: true,
+            },
+          },
+        })
+      );
     }
 
     return config;
