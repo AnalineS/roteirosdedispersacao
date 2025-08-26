@@ -13,7 +13,7 @@ export default function SearchPage() {
     <ChatAccessibilityProvider>
       <EducationalLayout 
         showBreadcrumbs={true}
-        footerVariant="compact"
+        footerVariant="simple"
       >
         <div className="search-page-container">
           {/* Page Header */}

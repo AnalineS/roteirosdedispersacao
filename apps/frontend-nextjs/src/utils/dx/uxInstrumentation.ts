@@ -527,7 +527,7 @@ class UXInstrumentationManager {
   private isInteractiveElement(element: Element): boolean {
     const interactiveTags = ['button', 'a', 'input', 'select', 'textarea'];
     const isInteractiveTag = interactiveTags.includes(element.tagName.toLowerCase());
-    const hasClickHandler = element.getAttribute('onclick') || element.getAttribute('role') === 'button';
+    const hasClickHandler = !!element.getAttribute('onclick') || element.getAttribute('role') === 'button';
     
     return isInteractiveTag || hasClickHandler;
   }

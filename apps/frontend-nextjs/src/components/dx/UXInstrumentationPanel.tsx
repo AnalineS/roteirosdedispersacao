@@ -227,7 +227,7 @@ export default function UXInstrumentationPanel({ isOpen, onClose }: UXInstrument
                           <div className="alert-content">
                             <div className="alert-title">Tasks Lentas Detectadas</div>
                             <div className="alert-description">
-                              {instrumentationData.summary.performanceIssues} tasks > 50ms detectadas
+                              {instrumentationData.summary.performanceIssues} tasks &gt; 50ms detectadas
                             </div>
                           </div>
                         </div>
