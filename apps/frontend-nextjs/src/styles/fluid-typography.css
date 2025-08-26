@@ -1,0 +1,352 @@
+/**
+ * Fluid Typography System
+ * Implements responsive typography using CSS clamp() for optimal reading experience
+ * Based on modern web standards and accessibility best practices
+ */
+
+:root {
+  /* Base font size and viewport ranges */
+  --font-base: 16px;
+  --viewport-min: 320px;
+  --viewport-max: 1200px;
+  
+  /* Modular scale ratios */
+  --scale-ratio: 1.25; /* Perfect Fourth */
+  --scale-ratio-mobile: 1.2; /* Slightly tighter on mobile */
+  
+  /* Fluid typography scale using clamp() */
+  --font-size-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);      /* 12px → 14px */
+  --font-size-sm: clamp(0.875rem, 0.8rem + 0.375vw, 1rem);        /* 14px → 16px */
+  --font-size-base: clamp(1rem, 0.9rem + 0.5vw, 1.125rem);        /* 16px → 18px */
+  --font-size-lg: clamp(1.125rem, 1rem + 0.625vw, 1.25rem);       /* 18px → 20px */
+  --font-size-xl: clamp(1.25rem, 1.1rem + 0.75vw, 1.5rem);        /* 20px → 24px */
+  --font-size-2xl: clamp(1.5rem, 1.3rem + 1vw, 1.875rem);         /* 24px → 30px */
+  --font-size-3xl: clamp(1.875rem, 1.6rem + 1.375vw, 2.25rem);    /* 30px → 36px */
+  --font-size-4xl: clamp(2.25rem, 1.9rem + 1.75vw, 3rem);         /* 36px → 48px */
+  --font-size-5xl: clamp(3rem, 2.5rem + 2.5vw, 4rem);             /* 48px → 64px */
+  --font-size-6xl: clamp(4rem, 3rem + 5vw, 6rem);                 /* 64px → 96px */
+  
+  /* Fluid line heights for optimal readability */
+  --line-height-tight: clamp(1.1, 1.05 + 0.25vw, 1.2);
+  --line-height-normal: clamp(1.4, 1.3 + 0.5vw, 1.6);
+  --line-height-relaxed: clamp(1.6, 1.5 + 0.5vw, 1.8);
+  
+  /* Fluid letter spacing */
+  --letter-spacing-tight: clamp(-0.025em, -0.02em + -0.25vw, -0.01em);
+  --letter-spacing-normal: 0;
+  --letter-spacing-wide: clamp(0.025em, 0.02em + 0.25vw, 0.05em);
+  
+  /* Medical/Health content specific sizes */
+  --font-size-medical-dosage: clamp(1.125rem, 1rem + 0.625vw, 1.375rem);   /* Medication doses */
+  --font-size-medical-warning: clamp(1rem, 0.9rem + 0.5vw, 1.125rem);      /* Warning text */
+  --font-size-medical-instruction: clamp(0.875rem, 0.8rem + 0.375vw, 1rem); /* Instructions */
+  --font-size-medical-technical: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem); /* Technical details */
+}
+
+/* Apply fluid typography to base elements */
+html {
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-normal);
+}
+
+/* Heading hierarchy with proper semantic scaling */
+h1, .h1 {
+  font-size: var(--font-size-4xl);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight);
+  font-weight: 700;
+  margin-bottom: clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem);
+}
+
+h2, .h2 {
+  font-size: var(--font-size-3xl);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight);
+  font-weight: 600;
+  margin-bottom: clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem);
+}
+
+h3, .h3 {
+  font-size: var(--font-size-2xl);
+  line-height: clamp(1.2, 1.15 + 0.25vw, 1.3);
+  font-weight: 600;
+  margin-bottom: clamp(0.375rem, 0.3rem + 0.375vw, 0.5rem);
+}
+
+h4, .h4 {
+  font-size: var(--font-size-xl);
+  line-height: clamp(1.3, 1.25 + 0.25vw, 1.4);
+  font-weight: 600;
+  margin-bottom: clamp(0.375rem, 0.3rem + 0.375vw, 0.5rem);
+}
+
+h5, .h5 {
+  font-size: var(--font-size-lg);
+  line-height: var(--line-height-normal);
+  font-weight: 500;
+  margin-bottom: clamp(0.25rem, 0.2rem + 0.25vw, 0.375rem);
+}
+
+h6, .h6 {
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-normal);
+  font-weight: 500;
+  margin-bottom: clamp(0.25rem, 0.2rem + 0.25vw, 0.375rem);
+}
+
+/* Body text with optimal reading comfort */
+p, .text-base {
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-normal);
+  margin-bottom: clamp(1rem, 0.8rem + 1vw, 1.5rem);
+}
+
+/* Utility classes for different text sizes */
+.text-xs {
+  font-size: var(--font-size-xs);
+  line-height: var(--line-height-normal);
+}
+
+.text-sm {
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-normal);
+}
+
+.text-lg {
+  font-size: var(--font-size-lg);
+  line-height: var(--line-height-normal);
+}
+
+.text-xl {
+  font-size: var(--font-size-xl);
+  line-height: var(--line-height-tight);
+}
+
+.text-2xl {
+  font-size: var(--font-size-2xl);
+  line-height: var(--line-height-tight);
+}
+
+.text-3xl {
+  font-size: var(--font-size-3xl);
+  line-height: var(--line-height-tight);
+}
+
+.text-4xl {
+  font-size: var(--font-size-4xl);
+  line-height: var(--line-height-tight);
+}
+
+.text-5xl {
+  font-size: var(--font-size-5xl);
+  line-height: var(--line-height-tight);
+}
+
+.text-6xl {
+  font-size: var(--font-size-6xl);
+  line-height: var(--line-height-tight);
+}
+
+/* Medical/Health content specific classes */
+.text-medical-dosage {
+  font-size: var(--font-size-medical-dosage);
+  line-height: var(--line-height-normal);
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.text-medical-warning {
+  font-size: var(--font-size-medical-warning);
+  line-height: var(--line-height-normal);
+  font-weight: 500;
+  color: #dc2626;
+}
+
+.text-medical-instruction {
+  font-size: var(--font-size-medical-instruction);
+  line-height: var(--line-height-relaxed);
+  font-weight: 400;
+}
+
+.text-medical-technical {
+  font-size: var(--font-size-medical-technical);
+  line-height: var(--line-height-relaxed);
+  font-weight: 400;
+  color: var(--color-text-secondary);
+}
+
+/* Lead text for introductions */
+.lead {
+  font-size: clamp(1.125rem, 1rem + 0.625vw, 1.375rem);
+  line-height: var(--line-height-relaxed);
+  font-weight: 400;
+  color: var(--color-text-secondary);
+  margin-bottom: clamp(1.5rem, 1.2rem + 1.5vw, 2rem);
+}
+
+/* Display text for hero sections */
+.display-1 {
+  font-size: clamp(3rem, 2rem + 5vw, 6rem);
+  line-height: clamp(1.05, 1 + 0.25vw, 1.1);
+  font-weight: 800;
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.display-2 {
+  font-size: clamp(2.5rem, 1.75rem + 3.75vw, 4.5rem);
+  line-height: clamp(1.1, 1.05 + 0.25vw, 1.2);
+  font-weight: 700;
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+/* Small text with accessibility considerations */
+.text-small {
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-normal);
+}
+
+/* Ensure minimum readable size for small text */
+.text-caption {
+  font-size: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-muted);
+}
+
+/* Accessible focus indicators with fluid scaling */
+*:focus-visible {
+  outline: clamp(2px, 0.125rem, 3px) solid var(--color-primary);
+  outline-offset: clamp(2px, 0.125rem, 3px);
+}
+
+/* Form elements with fluid typography */
+input, textarea, select, button {
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-normal);
+}
+
+/* Button text scaling */
+.btn {
+  font-size: var(--font-size-base);
+  line-height: 1.2;
+}
+
+.btn-sm {
+  font-size: var(--font-size-sm);
+  line-height: 1.2;
+}
+
+.btn-lg {
+  font-size: var(--font-size-lg);
+  line-height: 1.2;
+}
+
+/* Navigation and menu text */
+nav a, .nav-link {
+  font-size: var(--font-size-base);
+  line-height: 1.2;
+}
+
+/* Breadcrumb navigation */
+.breadcrumb {
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-normal);
+}
+
+/* Table typography */
+table {
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-normal);
+}
+
+th {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+/* Card and component text */
+.card-title {
+  font-size: var(--font-size-lg);
+  line-height: var(--line-height-tight);
+  font-weight: 600;
+}
+
+.card-text {
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-normal);
+}
+
+/* Code and preformatted text */
+code, pre {
+  font-size: clamp(0.875rem, 0.8rem + 0.375vw, 1rem);
+  line-height: var(--line-height-normal);
+}
+
+/* Responsive adjustments for very small screens */
+@media (max-width: 320px) {
+  :root {
+    /* Ensure minimum readable sizes on very small screens */
+    --font-size-xs: 0.75rem;    /* 12px minimum */
+    --font-size-sm: 0.875rem;   /* 14px minimum */
+    --font-size-base: 1rem;     /* 16px minimum */
+  }
+}
+
+/* High contrast mode adjustments */
+@media (prefers-contrast: high) {
+  :root {
+    /* Slightly larger sizes for better readability */
+    --font-size-base: clamp(1.125rem, 1rem + 0.625vw, 1.25rem);
+  }
+  
+  /* Ensure proper contrast for text */
+  .text-medical-technical {
+    color: var(--color-text-primary);
+  }
+}
+
+/* Print styles for fluid typography */
+@media print {
+  :root {
+    /* Use absolute sizes for print */
+    --font-size-xs: 10pt;
+    --font-size-sm: 11pt;
+    --font-size-base: 12pt;
+    --font-size-lg: 13pt;
+    --font-size-xl: 14pt;
+    --font-size-2xl: 16pt;
+    --font-size-3xl: 18pt;
+    --font-size-4xl: 22pt;
+    
+    --line-height-tight: 1.2;
+    --line-height-normal: 1.4;
+    --line-height-relaxed: 1.6;
+  }
+  
+  h1, .h1 { font-size: 22pt; }
+  h2, .h2 { font-size: 18pt; }
+  h3, .h3 { font-size: 16pt; }
+  h4, .h4 { font-size: 14pt; }
+  h5, .h5 { font-size: 13pt; }
+  h6, .h6 { font-size: 12pt; }
+  
+  p, .text-base { font-size: 12pt; }
+}
+
+/* Accessibility enhancements */
+@media (prefers-reduced-motion: reduce) {
+  /* Remove any animations from typography */
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* Support for user font size preferences */
+@media (min-resolution: 2dppx) {
+  /* Slightly adjust for high-DPI displays */
+  :root {
+    --line-height-tight: clamp(1.15, 1.1 + 0.25vw, 1.25);
+    --line-height-normal: clamp(1.5, 1.4 + 0.5vw, 1.7);
+  }
+}
