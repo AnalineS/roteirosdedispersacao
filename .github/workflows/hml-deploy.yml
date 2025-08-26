@@ -151,14 +151,19 @@ jobs:
       - name: 🔒 Run Snyk Security Scan
         uses: snyk/actions/setup@master
       
-      - name: 🔍 Snyk Code Analysis
-        uses: snyk/actions/node@master
-        continue-on-error: false
+      - name: 🔍 Snyk Code Analysis - Full Project
+        run: |
+          # Install Python dependencies first if backend changed
+          if [ "${{ needs.detect-changes.outputs.deploy-backend }}" == "true" ]; then
+            cd apps/backend
+            pip install -r requirements.txt
+            cd ../..
+          fi
+          
+          # Run Snyk code analysis on entire project
+          npx snyk code test --severity-threshold=medium --fail-on=all
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          args: --severity-threshold=medium --fail-on=all
-          command: code test
 
       - name: 📦 Snyk Frontend Dependencies Scan
         run: |
@@ -213,6 +218,7 @@ jobs:
           pip install pytest pytest-cov flake8 mypy
 
       - name: 📦 Snyk Backend Dependencies Scan
+        if: needs.detect-changes.outputs.deploy-backend == 'true'
         run: |
           cd apps/backend
           npx snyk test --severity-threshold=medium --fail-on=all --file=requirements.txt
