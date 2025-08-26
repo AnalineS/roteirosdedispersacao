@@ -37,12 +37,18 @@ export default function WebVitalsDashboard({
         const performanceData = getCurrentPerformanceData();
         if (performanceData.length === 0) return;
 
-        const metricsMap: PerformanceMetrics = {};
+        const metricsMap: PerformanceMetrics = Object.create(null);
         
         performanceData.forEach(entry => {
           entry.metrics.forEach(metric => {
-            if (!metricsMap[metric.name]) {
-              metricsMap[metric.name] = {
+            // Validate metric name to prevent prototype pollution
+            const metricName = String(metric.name);
+            if (!metricName || typeof metricName !== 'string' || metricName.includes('__proto__') || metricName.includes('constructor') || metricName.includes('prototype')) {
+              return; // Skip invalid or dangerous property names
+            }
+            
+            if (!Object.prototype.hasOwnProperty.call(metricsMap, metricName)) {
+              metricsMap[metricName] = {
                 current: metric.value,
                 average: 0,
                 trend: 'stable',
@@ -51,7 +57,7 @@ export default function WebVitalsDashboard({
               };
             }
             
-            const existing = metricsMap[metric.name];
+            const existing = metricsMap[metricName];
             existing.samples += 1;
             existing.average = (existing.average * (existing.samples - 1) + metric.value) / existing.samples;
             existing.current = metric.value;
@@ -60,9 +66,9 @@ export default function WebVitalsDashboard({
             // Determine trend (simplified)
             if (existing.samples > 1) {
               if (metric.value > existing.average * 1.1) {
-                existing.trend = metric.name === 'CLS' ? 'up' : 'down'; // Higher is worse for most metrics
+                existing.trend = metricName === 'CLS' ? 'up' : 'down'; // Higher is worse for most metrics
               } else if (metric.value < existing.average * 0.9) {
-                existing.trend = metric.name === 'CLS' ? 'down' : 'up'; // Lower is better for most metrics
+                existing.trend = metricName === 'CLS' ? 'down' : 'up'; // Lower is better for most metrics
               } else {
                 existing.trend = 'stable';
               }
@@ -124,7 +130,7 @@ export default function WebVitalsDashboard({
 
   // Get metric description
   const getMetricDescription = (name: string) => {
-    const descriptions = {
+    const descriptions: { [key: string]: string } = {
       'CLS': 'Cumulative Layout Shift - Estabilidade visual',
       'LCP': 'Largest Contentful Paint - Velocidade de carregamento',
       'FCP': 'First Contentful Paint - Primeira renderização',
@@ -524,7 +530,10 @@ export function toggleWebVitalsDashboard(show?: boolean) {
   const dashboards = document.querySelectorAll('.web-vitals-dashboard');
   dashboards.forEach(dashboard => {
     const button = dashboard.querySelector('.toggle-button') as HTMLButtonElement;
-    if (button && (show === undefined || show !== dashboard.querySelector('.dashboard-content'))) {
+    const content = dashboard.querySelector('.dashboard-content') as HTMLElement;
+    const isVisible = content && content.style.display !== 'none';
+    
+    if (button && (show === undefined || show !== isVisible)) {
       button.click();
     }
   });

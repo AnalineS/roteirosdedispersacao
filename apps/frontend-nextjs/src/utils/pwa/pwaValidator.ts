@@ -21,7 +21,7 @@ interface ServiceWorkerValidation {
   cachingStrategy?: string;
 }
 
-interface PWAValidationReport {
+export interface PWAValidationReport {
   manifest: PWAManifestValidation;
   serviceWorker: ServiceWorkerValidation;
   installability: {
@@ -169,7 +169,7 @@ export class PWAValidator {
       }
 
     } catch (error) {
-      errors.push(`Error validating manifest: ${error.message}`);
+      errors.push(`Error validating manifest: ${error instanceof Error ? error.message : String(error)}`);
       score = 0;
     }
 
@@ -255,7 +255,7 @@ export class PWAValidator {
       };
 
     } catch (error) {
-      errors.push(`Error validating Service Worker: ${error.message}`);
+      errors.push(`Error validating Service Worker: ${error instanceof Error ? error.message : String(error)}`);
       return {
         isRegistered: false,
         isActive: false,
