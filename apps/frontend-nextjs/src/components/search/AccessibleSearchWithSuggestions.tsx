@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { getUnbColors } from '@/config/modernTheme';
 import { useChatAccessibility } from '@/components/chat/accessibility/ChatAccessibilityProvider';
+import DOMPurify from 'dompurify';
 
 // Re-export types from existing search system
 export type AudienceType = 'professional' | 'patient' | 'student' | 'general';
@@ -408,7 +409,7 @@ export default function AccessibleSearchWithSuggestions({
           const item = showSuggestions ? suggestions[newIndex] : results[newIndex];
           if (item) {
             const description = showSuggestions 
-              ? `Sugestão ${newIndex + 1}: ${item.text || (item as SearchResult).title}`
+              ? `Sugestão ${newIndex + 1}: ${(item as SearchSuggestion).text || (item as SearchResult).title}`
               : `Resultado ${newIndex + 1}: ${(item as SearchResult).title}`;
             announceMessage(description);
           }
@@ -423,7 +424,7 @@ export default function AccessibleSearchWithSuggestions({
           const item = showSuggestions ? suggestions[newIndex] : results[newIndex];
           if (item) {
             const description = showSuggestions 
-              ? `Sugestão ${newIndex + 1}: ${item.text || (item as SearchResult).title}`
+              ? `Sugestão ${newIndex + 1}: ${(item as SearchSuggestion).text || (item as SearchResult).title}`
               : `Resultado ${newIndex + 1}: ${(item as SearchResult).title}`;
             announceMessage(description);
           }
@@ -718,7 +719,7 @@ export default function AccessibleSearchWithSuggestions({
                           <h4 
                             className="result-title"
                             dangerouslySetInnerHTML={{ 
-                              __html: (item as SearchResult).highlightedText?.split(' | ')[0] || (item as SearchResult).title 
+                              __html: DOMPurify.sanitize((item as SearchResult).highlightedText?.split(' | ')[0] || (item as SearchResult).title) 
                             }} 
                           />
                           <span 
@@ -732,7 +733,7 @@ export default function AccessibleSearchWithSuggestions({
                         <p 
                           className="result-snippet"
                           dangerouslySetInnerHTML={{ 
-                            __html: (item as SearchResult).highlightedText?.split(' | ')[1] || (item as SearchResult).snippet 
+                            __html: DOMPurify.sanitize((item as SearchResult).highlightedText?.split(' | ')[1] || (item as SearchResult).snippet) 
                           }} 
                         />
                         
