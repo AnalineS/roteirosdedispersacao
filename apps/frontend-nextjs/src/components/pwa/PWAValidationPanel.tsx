@@ -174,7 +174,7 @@ export default function PWAValidationPanel({ isOpen, onClose }: PWAValidationPan
                       <div className="recommendations-section">
                         <h3>💡 Recomendações</h3>
                         <div className="recommendations-list">
-                          {validationResult.recommendations.map((rec, index) => (
+                          {validationResult.recommendations.map((rec: string, index: number) => (
                             <div key={index} className="recommendation-item">
                               <span className="rec-icon">✅</span>
                               <span className="rec-text">{rec}</span>
@@ -200,7 +200,7 @@ export default function PWAValidationPanel({ isOpen, onClose }: PWAValidationPan
                         <div className="issues-section errors">
                           <h4>🔴 Erros ({validationResult.manifest.errors.length})</h4>
                           <ul>
-                            {validationResult.manifest.errors.map((error, index) => (
+                            {validationResult.manifest.errors.map((error: string, index: number) => (
                               <li key={index}>{error}</li>
                             ))}
                           </ul>
@@ -211,7 +211,7 @@ export default function PWAValidationPanel({ isOpen, onClose }: PWAValidationPan
                         <div className="issues-section warnings">
                           <h4>🟡 Avisos ({validationResult.manifest.warnings.length})</h4>
                           <ul>
-                            {validationResult.manifest.warnings.map((warning, index) => (
+                            {validationResult.manifest.warnings.map((warning: string, index: number) => (
                               <li key={index}>{warning}</li>
                             ))}
                           </ul>
@@ -291,7 +291,7 @@ export default function PWAValidationPanel({ isOpen, onClose }: PWAValidationPan
                         <div className="issues-section errors">
                           <h4>🔴 Erros ({validationResult.serviceWorker.errors.length})</h4>
                           <ul>
-                            {validationResult.serviceWorker.errors.map((error, index) => (
+                            {validationResult.serviceWorker.errors.map((error: string, index: number) => (
                               <li key={index}>{error}</li>
                             ))}
                           </ul>
@@ -302,7 +302,7 @@ export default function PWAValidationPanel({ isOpen, onClose }: PWAValidationPan
                         <div className="issues-section warnings">
                           <h4>🟡 Avisos ({validationResult.serviceWorker.warnings.length})</h4>
                           <ul>
-                            {validationResult.serviceWorker.warnings.map((warning, index) => (
+                            {validationResult.serviceWorker.warnings.map((warning: string, index: number) => (
                               <li key={index}>{warning}</li>
                             ))}
                           </ul>

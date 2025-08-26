@@ -363,7 +363,7 @@ function getRatingEmoji(rating: string): string {
 }
 
 function calculatePerformanceScore(metricName: string, rating: string): number {
-  const scores = {
+  const scores: { [key: string]: number } = {
     good: 100,
     'needs-improvement': 50,
     poor: 0
