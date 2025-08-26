@@ -324,7 +324,7 @@ const AccessibleChatInput: React.FC<AccessibleChatInputProps> = ({
           position: relative;
           background: white;
           border-radius: ${modernChatTheme.borderRadius.lg};
-          box-shadow: ${modernChatTheme.shadows.medium};
+          box-shadow: ${modernChatTheme.shadows.moderate};
           border: 2px solid ${colors.secondary}20;
           transition: all 0.2s ease;
         }
@@ -352,7 +352,7 @@ const AccessibleChatInput: React.FC<AccessibleChatInputProps> = ({
           align-items: center;
           padding: ${modernChatTheme.spacing.xs} ${modernChatTheme.spacing.md};
           border-bottom: 1px solid ${modernChatTheme.colors.neutral.border};
-          background: ${modernChatTheme.colors.neutral.background};
+          background: ${modernChatTheme.colors.background.secondary};
           border-radius: ${modernChatTheme.borderRadius.lg} ${modernChatTheme.borderRadius.lg} 0 0;
         }
 
@@ -450,7 +450,7 @@ const AccessibleChatInput: React.FC<AccessibleChatInputProps> = ({
           line-height: 1.5;
           resize: none;
           background: white;
-          color: ${modernChatTheme.colors.neutral.textPrimary};
+          color: ${modernChatTheme.colors.neutral.text};
           transition: all 0.2s ease;
           font-family: inherit;
         }
@@ -462,7 +462,7 @@ const AccessibleChatInput: React.FC<AccessibleChatInputProps> = ({
         }
 
         .message-input:disabled {
-          background: ${modernChatTheme.colors.neutral.background};
+          background: ${modernChatTheme.colors.background.secondary};
           color: ${modernChatTheme.colors.neutral.textMuted};
           cursor: not-allowed;
         }
@@ -488,8 +488,8 @@ const AccessibleChatInput: React.FC<AccessibleChatInputProps> = ({
         }
 
         .send-button:hover:not(:disabled) {
-          background: ${colors.accent};
-          border-color: ${colors.accent};
+          background: ${colors.secondary};
+          border-color: ${colors.secondary};
           transform: translateY(-1px);
         }
 

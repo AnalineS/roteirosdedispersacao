@@ -82,8 +82,8 @@ const AccessibleMessageBubble: React.FC<AccessibleMessageBubbleProps> = ({
       parts.push(`com ${Math.round(message.metadata.confidence * 100)}% de confiança`);
     }
     
-    if (message.metadata?.source) {
-      parts.push(`baseada em ${message.metadata.source}`);
+    if (message.metadata?.fallbackSource) {
+      parts.push(`baseada em ${message.metadata.fallbackSource}`);
     }
     
     return parts.join(', ');
@@ -167,7 +167,7 @@ const AccessibleMessageBubble: React.FC<AccessibleMessageBubbleProps> = ({
         : (isHighContrast ? '#ffffff' : 'white'),
       color: isUser 
         ? (isHighContrast ? '#ffffff' : 'white')
-        : (isHighContrast ? '#000000' : modernChatTheme.colors.neutral.textPrimary),
+        : (isHighContrast ? '#000000' : modernChatTheme.colors.neutral.text),
       border: isHighContrast 
         ? `3px solid ${isUser ? '#ffffff' : '#000000'}`
         : `1px solid ${isUser ? colors.primary : modernChatTheme.colors.neutral.border}`,
@@ -198,7 +198,7 @@ const AccessibleMessageBubble: React.FC<AccessibleMessageBubbleProps> = ({
           <div className="avatar-container">
             <PersonaAvatar
               persona={persona}
-              size={isMobile ? 'sm' : 'md'}
+              size={isMobile ? 'small' : 'medium'}
               showStatus={false}
               aria-hidden="true"
             />
@@ -267,9 +267,9 @@ const AccessibleMessageBubble: React.FC<AccessibleMessageBubbleProps> = ({
               </span>
             )}
             
-            {message.metadata?.source && (
-              <span className="source-indicator" aria-label={`Fonte da informação: ${message.metadata.source}`}>
-                📚 {message.metadata.source}
+            {message.metadata?.fallbackSource && (
+              <span className="source-indicator" aria-label={`Fonte da informação: ${message.metadata.fallbackSource}`}>
+                📚 {message.metadata.fallbackSource}
               </span>
             )}
 
@@ -301,9 +301,7 @@ const AccessibleMessageBubble: React.FC<AccessibleMessageBubbleProps> = ({
       {!isUser && enableFeedback && showFeedback && (
         <div className="feedback-container" role="complementary" aria-label="Feedback da mensagem">
           <FeedbackWidget
-            message={message}
-            previousMessage={previousMessage}
-            persona={persona}
+            messageId={message.id || ''}
             onFeedbackSubmitted={() => {
               setShowFeedback(false);
               announceMessage('Feedback enviado com sucesso');
@@ -346,7 +344,7 @@ const AccessibleMessageBubble: React.FC<AccessibleMessageBubbleProps> = ({
 
         .message-bubble:hover {
           transform: translateY(-1px);
-          box-shadow: ${isHighContrast ? 'none' : modernChatTheme.shadows.medium};
+          box-shadow: ${isHighContrast ? 'none' : modernChatTheme.shadows.moderate};
         }
 
         .message-bubble:focus {
