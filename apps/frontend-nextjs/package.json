@@ -2,7 +2,7 @@
   "name": "roteiros-dispensacao-nextjs",
   "version": "1.0.0",
   "private": true,
-  "description": "Sistema QA abrangente para recursos educativos de hanseníase",
+  "description": "Sistema QA abrangente para recursos educativos de hanseníase - v1.0.0",
   "scripts": {
     "dev": "next dev",
     "dev:clean": "npm run cleanup && npm run dev",
