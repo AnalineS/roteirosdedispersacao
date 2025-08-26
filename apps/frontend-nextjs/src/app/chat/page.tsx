@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, Suspense, lazy, useRef } from 'react'
 import Link from 'next/link';
 import EducationalLayout from '@/components/layout/EducationalLayout';
 import ModernChatContainer from '@/components/chat/modern/ModernChatContainer';
+import { ChatAccessibilityProvider } from '@/components/chat/accessibility/ChatAccessibilityProvider';
 import SystemStatus from '@/components/system/SystemStatus';
 import { LoadingIcon, AlertIcon } from '@/components/icons';
 import { useGlobalNavigation } from '@/components/navigation/GlobalNavigationProvider';
@@ -333,11 +334,12 @@ export default function ChatPage() {
   const currentPersona = selectedPersona ? personas[selectedPersona] : null;
 
   return (
-    <EducationalLayout 
-      currentPersona={currentPersona?.name}
-      showBreadcrumbs={false}
-      footerVariant="simple"
-    >
+    <ChatAccessibilityProvider>
+      <EducationalLayout 
+        currentPersona={currentPersona?.name}
+        showBreadcrumbs={false}
+        footerVariant="simple"
+      >
       {/* LGPD Compliance Modal */}
       {!lgpdLoading && !hasConsent && (
         <LGPDCompliance 
@@ -425,6 +427,7 @@ export default function ChatPage() {
           enableVisualFeedback={true}
         />
       </div>
-    </EducationalLayout>
+      </EducationalLayout>
+    </ChatAccessibilityProvider>
   );
 }

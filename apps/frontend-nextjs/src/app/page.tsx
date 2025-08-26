@@ -17,6 +17,7 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 // Core components that need to load immediately
 import PageTransition, { AnimatedSection } from '@/components/animations/PageTransition';
 import { HierarchyHeading, HierarchyText } from '@/components/layout/VisualHierarchyOptimizer';
+import AccessibilityAuditPanel from '@/components/accessibility/AccessibilityAuditPanel';
 import { useMobileDetection } from '@/components/mobile/MobileFirstFramework';
 import { InteractiveButton, useToast, ToastContainer } from '@/components/ui/MicroInteractions';
 import TrustBadges from '@/components/home/TrustBadges';
@@ -233,7 +234,7 @@ export default function HomePage() {
                         console.warn('[HomePage] HeroSection failed to render:', heroError);
                         return (
                           <div style={{ padding: '2rem', textAlign: 'center', background: '#f8fafc', borderRadius: '8px', margin: '1rem 0' }}>
-                            <h1 style={{ color: '#003366', fontSize: '2rem', marginBottom: '1rem' }}>Roteiros de Dispensação</h1>
+                            <h2 style={{ color: '#003366', fontSize: '2rem', marginBottom: '1rem' }}>Roteiros de Dispensação</h2>
                             <p style={{ color: '#0066cc' }}>Sistema de orientação para dispensação de medicamentos - Hanseníase</p>
                           </div>
                         );
@@ -1116,7 +1117,7 @@ export default function HomePage() {
                 return (
                   <div>
                     <div style={{ padding: '2rem', textAlign: 'center', background: '#f8fafc', borderRadius: '8px', margin: '1rem 0' }}>
-                      <h1 style={{ color: '#003366', fontSize: '2rem', marginBottom: '1rem' }}>Roteiros de Dispensação</h1>
+                      <h2 style={{ color: '#003366', fontSize: '2rem', marginBottom: '1rem' }}>Roteiros de Dispensação</h2>
                       <p style={{ color: '#0066cc' }}>Sistema de orientação para dispensação de medicamentos - Hanseníase</p>
                     </div>
                   </div>
@@ -1127,6 +1128,14 @@ export default function HomePage() {
 
           {/* Toast Container */}
           <ToastContainer toasts={toasts} />
+
+          {/* Accessibility Audit Panel - Development/QA Tool */}
+          {process.env.NODE_ENV === 'development' && (
+            <AccessibilityAuditPanel 
+              autoRun={false}
+              showPanel={false}
+            />
+          )}
       </PageTransition>
     </EducationalLayout>
   );
@@ -1147,13 +1156,13 @@ export default function HomePage() {
           background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
           borderRadius: '12px'
         }}>
-          <h1 style={{ 
+          <h2 style={{ 
             fontSize: 'clamp(2rem, 5vw, 3rem)',
             color: '#003366',
             marginBottom: '1rem'
           }}>
             Roteiros de Dispensação
-          </h1>
+          </h2>
           <p style={{ 
             fontSize: '1.2rem',
             color: '#0066cc',

@@ -7,9 +7,10 @@ import PWAManager from '@/components/pwa/PWAManager'
 import AuthProviderWrapper from '@/components/auth/AuthProviderWrapper'
 import { ThemeProvider } from '@/contexts/ThemeContext'
 import { AccessibilityProvider } from '@/contexts/AccessibilityContext'
-import { CoreWebVitals } from '@/components/performance'
+import EnhancedCoreWebVitals from '@/components/analytics/EnhancedCoreWebVitals'
 import SITE_CONFIG from '@/lib/config'
 import '@/styles/globals.css'
+import '@/styles/fluid-typography.css'
 import '@/styles/accessibility.css'
 import '@/styles/themes.css'
 import '@/styles/text-selection.css'
@@ -107,7 +108,7 @@ export default function RootLayout({
         </noscript>
         
         <OfflineIndicator />
-        <CoreWebVitals />
+        <EnhancedCoreWebVitals />
         
         <main id="main-content">
           <AccessibilityProvider>

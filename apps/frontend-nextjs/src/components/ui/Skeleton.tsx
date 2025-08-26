@@ -7,9 +7,10 @@ interface SkeletonProps {
   height?: string | number;
   borderRadius?: string | number;
   className?: string;
-  variant?: 'rectangular' | 'rounded' | 'circular' | 'text';
+  variant?: 'rectangular' | 'rounded' | 'circular' | 'text' | 'card' | 'list' | 'avatar' | 'button';
   animation?: 'pulse' | 'wave' | 'none';
   lines?: number; // For text variant
+  'aria-label'?: string; // Enhanced accessibility
 }
 
 export default function Skeleton({
@@ -19,7 +20,8 @@ export default function Skeleton({
   className = '',
   variant = 'rectangular',
   animation = 'pulse',
-  lines = 1
+  lines = 1,
+  ...props
 }: SkeletonProps) {
   
   const getVariantStyles = () => {
@@ -40,6 +42,28 @@ export default function Skeleton({
         return {
           borderRadius: 'var(--radius-sm)',
           height: '1em'
+        };
+      case 'card':
+        return {
+          borderRadius: 'var(--radius-lg)',
+          minHeight: '120px'
+        };
+      case 'list':
+        return {
+          borderRadius: 'var(--radius-md)',
+          height: '48px'
+        };
+      case 'avatar':
+        return {
+          borderRadius: '50%',
+          width: width || '40px',
+          height: height || '40px'
+        };
+      case 'button':
+        return {
+          borderRadius: 'var(--radius-md)',
+          height: '40px',
+          minWidth: '80px'
         };
       default:
         return {
@@ -146,7 +170,8 @@ export default function Skeleton({
           ...getAnimationStyles()
         }}
         aria-hidden="true"
-        role="presentation"
+        role="status"
+        aria-label={props['aria-label'] || 'Carregando...'}
       />
       
       <style jsx>{`

@@ -12,6 +12,9 @@ import ModernChatInput from './ModernChatInput';
 import ExportChatModal from './ExportChatModal';
 import MessageBubble from './MessageBubble';
 import SmartIndicators from './SmartIndicators';
+import AccessibleChatInput from '../accessibility/AccessibleChatInput';
+import AccessibleMessageBubble from '../accessibility/AccessibleMessageBubble';
+import { useChatAccessibility } from '../accessibility/ChatAccessibilityProvider';
 
 interface ModernChatContainerProps {
   // Personas e seleção
@@ -77,6 +80,9 @@ const ModernChatContainer = memo(function ModernChatContainer({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [showExportModal, setShowExportModal] = useState(false);
   
+  // Chat accessibility context
+  const { announceNewMessage, announceSystemStatus, focusLastMessage } = useChatAccessibility();
+  
   // Obter persona atual
   const currentPersona = selectedPersona ? personas[selectedPersona] : null;
 
@@ -122,7 +128,7 @@ const ModernChatContainer = memo(function ModernChatContainer({
           : undefined;
 
         return (
-          <MessageBubble
+          <AccessibleMessageBubble
             key={`${message.role}-${message.timestamp}-${index}`}
             message={message}
             persona={message.role === 'assistant' ? (currentPersona || undefined) : undefined}
@@ -132,6 +138,8 @@ const ModernChatContainer = memo(function ModernChatContainer({
             isLast={index === messages.length - 1}
             previousMessage={previousMessage}
             enableFeedback={true}
+            messageIndex={index}
+            totalMessages={messages.length}
           />
         );
       })}
@@ -227,7 +235,7 @@ const ModernChatContainer = memo(function ModernChatContainer({
           isMobile={isMobile}
         />
         
-        <ModernChatInput
+        <AccessibleChatInput
           value={inputValue}
           onChange={onInputChange}
           onSubmit={onSendMessage}
@@ -238,8 +246,7 @@ const ModernChatContainer = memo(function ModernChatContainer({
           suggestions={suggestions}
           showSuggestions={showSuggestions}
           onSuggestionClick={onSuggestionClick}
-          onHistoryToggle={onHistoryToggle}
-          showHistory={showHistory}
+          placeholder={currentPersona ? `Digite sua mensagem para ${currentPersona.name}...` : 'Digite sua mensagem...'}
         />
       </div>
 

@@ -65,8 +65,8 @@ const nextConfig = {
     turbotrace: {
       logLevel: 'error'
     },
-    // ISR optimization for future use
-    isrMemoryCacheSize: 0  // Disable memory cache for static export
+    // ISR optimization for future use - removed invalid option
+    // isrMemoryCacheSize: 0  // Disable memory cache for static export
   },
   
   // ESLint configuração para build
@@ -84,10 +84,11 @@ const nextConfig = {
   webpack: (config, { dev, isServer, buildId }) => {
     // Build cache optimization
     if (!dev) {
-      // Enable persistent cache for faster rebuilds
+      // Enable persistent cache for faster rebuilds - fixed absolute path
+      const path = require('path');
       config.cache = {
         type: 'filesystem',
-        cacheDirectory: './.next/cache/webpack'
+        cacheDirectory: path.resolve(__dirname, './.next/cache/webpack')
       };
     }
     
