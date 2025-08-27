@@ -6,7 +6,7 @@ import EducationalLayout from '@/components/layout/EducationalLayout';
 import ModernChatContainer from '@/components/chat/modern/ModernChatContainer';
 import { ChatAccessibilityProvider } from '@/components/chat/accessibility/ChatAccessibilityProvider';
 import SystemStatus from '@/components/system/SystemStatus';
-import { LoadingIcon, AlertIcon } from '@/components/icons';
+import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { useGlobalNavigation } from '@/components/navigation/GlobalNavigationProvider';
 import LGPDCompliance, { useLGPDConsent } from '@/components/privacy/LGPDCompliance';
 import ChatNavigation, { useChatNavigation } from '@/components/navigation/ChatNavigation';
@@ -310,8 +310,7 @@ export default function ChatPage() {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
         <div style={{ textAlign: 'center' }}>
-          <LoadingIcon size={48} spinning={true} />
-          <p>Carregando chat...</p>
+          <LoadingSpinner size="large" message="Carregando chat..." />
         </div>
       </div>
     );
@@ -321,7 +320,7 @@ export default function ChatPage() {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
         <div style={{ textAlign: 'center' }}>
-          <AlertIcon size={48} color={theme.colors.primary[500]} />
+          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⚠️</div>
           <p>Erro ao carregar chat: {personasError}</p>
           <Link href="/" style={{ color: theme.colors.primary[500], textDecoration: 'underline' }}>
             Voltar ao início
