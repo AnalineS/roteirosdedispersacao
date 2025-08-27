@@ -1,6 +1,15 @@
 name: 🚀 Deploy Production (Manual Approval)
 
 on:
+  push:
+    branches: [ main ]  # Aciona quando há push para main (merge de hml)
+    paths:
+      - 'apps/backend/**'
+      - 'apps/frontend-nextjs/**'
+      - '.github/workflows/production-deploy.yml'
+      - '!**/*.md'
+      - '!**/README*'
+      - '!docs/**'
   workflow_dispatch:
     inputs:
       hml_validation:

@@ -2,7 +2,7 @@ name: 🏗️ Deploy HML (Homologação)
 
 on:
   push:
-    branches: [ main, hml ]  # Aciona também em push para main
+    branches: [ hml ]  # Aciona APENAS em push para branch hml
     paths:
       - 'apps/backend/**'
       - 'apps/frontend-nextjs/**'
