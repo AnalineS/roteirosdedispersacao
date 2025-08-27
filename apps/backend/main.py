@@ -96,7 +96,8 @@ try:
     logger.info("✓ Blueprints completos importados com sucesso")
 except ImportError as e:
     BLUEPRINTS_AVAILABLE = False
-    logger.warning(f"⚠️  Blueprints principais não disponíveis: {e}")
+    # SECURITY FIX: Log import error without exposing module details
+    logger.warning("⚠️  Blueprints principais não disponíveis: ImportError")
     logger.info("🧠 Ativando Sistema de Fallback Inteligente...")
     
     # Usar sistema de fallback inteligente
@@ -106,7 +107,8 @@ except ImportError as e:
         logger.info("✅ Sistema de Fallback Inteligente ativado com sucesso!")
         logger.info(f"📋 {len(ALL_BLUEPRINTS)} blueprints inteligentes criados")
     except ImportError as fallback_error:
-        logger.error(f"❌ Erro ao carregar Fallback Inteligente: {fallback_error}")
+        # SECURITY FIX: Log error without exposing internal details
+        logger.error("❌ Erro ao carregar Fallback Inteligente: ImportError")
         logger.info("🔄 Usando fallback básico de emergência...")
         
         # Fallback de emergência ultra-básico
@@ -197,7 +199,9 @@ def create_app():
             security_middleware = SecurityMiddleware(app)
             logger.info("✅ Security Middleware avançado inicializado")
         except Exception as e:
-            logger.warning(f"⚠️ Erro ao inicializar Security Middleware: {e}")
+            # SECURITY FIX: Log middleware error without exposing details
+            error_type = type(e).__name__
+            logger.warning(f"⚠️ Erro ao inicializar Security Middleware [{error_type}]: Configuração indisponível")
     
     # Inicializar JWT Authentication de forma não-bloqueante
     if JWT_AUTH_AVAILABLE:
@@ -207,7 +211,9 @@ def create_app():
             app.before_request(auth_middleware)
             logger.info("🔐 JWT Authentication configurado (Firebase)")
         except Exception as e:
-            logger.warning(f"⚠️ Erro ao configurar JWT: {e}")
+            # SECURITY FIX: Log JWT error without exposing configuration details
+            error_type = type(e).__name__
+            logger.warning(f"⚠️ Erro ao configurar JWT [{error_type}]: Configuração de autenticação indisponível")
     else:
         logger.info("ℹ️ JWT Authentication não disponível - sistema funciona sem autenticação")
     
@@ -219,7 +225,9 @@ def create_app():
             init_security_optimizations(app)
             logger.info("🚀 Otimizações de performance e segurança ativadas")
         except Exception as e:
-            logger.warning(f"⚠️ Erro ao inicializar otimizações: {e}")
+            # SECURITY FIX: Log optimization error without exposing details
+            error_type = type(e).__name__
+            logger.warning(f"⚠️ Erro ao inicializar otimizações [{error_type}]: Recursos avançados indisponíveis")
     elif cloud_run_env:
         logger.info("☁️ Cloud Run detectado - otimizações carregadas sob demanda")
     
@@ -415,7 +423,11 @@ def setup_error_handlers(app):
     
     @app.errorhandler(500)
     def internal_error(error):
-        logger.error(f"Erro interno: {error}")
+        # SECURITY FIX: Log error without exposing stack trace details
+        # Only log error type and a sanitized message for security
+        error_type = type(error).__name__
+        logger.error(f"Erro interno [{error_type}]: Erro processamento request")
+        
         return jsonify({
             "error": "Erro interno do servidor",
             "error_code": "INTERNAL_ERROR",
@@ -560,5 +572,7 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
         logger.info("⏹️  Servidor interrompido pelo usuário")
     except Exception as e:
-        logger.error(f"❌ Erro ao iniciar servidor: {e}")
+        # SECURITY FIX: Log startup error without exposing stack trace
+        error_type = type(e).__name__
+        logger.error(f"❌ Erro ao iniciar servidor [{error_type}]: Falha na inicialização")
         sys.exit(1)
