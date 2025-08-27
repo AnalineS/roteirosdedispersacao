@@ -974,3 +974,11 @@ def run_security_scan(directory: str, stage: DeploymentStage = DeploymentStage.B
 def setup_security_hooks(directory: str) -> bool:
     """Configura hooks de segurança"""
     return global_cicd_orchestrator.setup_pre_commit_hooks(directory)
+
+
+# Alias para compatibilidade
+SecurityScanner = CICDSecurityOrchestrator
+
+
+# Log de inicialização
+cicd_logger.info("Sistema CI/CD seguro carregado com todas as funcionalidades")

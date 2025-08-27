@@ -729,3 +729,448 @@ def require_admin_api():
 
 def require_metrics_access():
     return require_access(ResourceType.METRICS)
+
+
+class ThreatDetector:
+    """
+    Sistema de Detecção de Ameaças para Arquitetura Zero-Trust
+    
+    Analisa comportamentos suspeitos e padrões de ameaças em tempo real:
+    - Detecção de anomalias comportamentais
+    - Análise de padrões de acesso
+    - Identificação de tentativas de ataque
+    - Scoring de risco dinâmico
+    """
+    
+    def __init__(self):
+        """Inicializa o detector de ameaças"""
+        self.threat_patterns = self._initialize_threat_patterns()
+        self.behavior_baseline = {}
+        self.anomaly_threshold = 0.8
+        self.logger = logging.getLogger('security.threat_detector')
+        
+        # Contadores de ameaças por sessão
+        self.session_threat_scores = defaultdict(float)
+        self.session_activities = defaultdict(list)
+        
+        # Cache de IPs maliciosos conhecidos
+        self.malicious_ips = set()
+        self.suspicious_patterns = self._load_suspicious_patterns()
+    
+    def _initialize_threat_patterns(self) -> Dict[str, Dict]:
+        """Inicializa padrões de ameaças conhecidos"""
+        return {
+            'sql_injection': {
+                'patterns': [r"'.*OR.*'", r"UNION.*SELECT", r"DROP.*TABLE", r"INSERT.*INTO"],
+                'severity': 'critical',
+                'score_impact': 50.0
+            },
+            'xss_attempt': {
+                'patterns': [r"<script.*>", r"javascript:", r"onload=", r"onerror="],
+                'severity': 'high', 
+                'score_impact': 30.0
+            },
+            'path_traversal': {
+                'patterns': [r"\.\./", r"\.\.\\", r"%2e%2e", r"..%2f"],
+                'severity': 'high',
+                'score_impact': 35.0
+            },
+            'command_injection': {
+                'patterns': [r";\s*(cat|ls|pwd|whoami)", r"\|\s*(nc|netcat)", r"&&\s*(rm|del)"],
+                'severity': 'critical',
+                'score_impact': 45.0
+            },
+            'brute_force': {
+                'indicators': ['rapid_requests', 'failed_auth_attempts'],
+                'severity': 'medium',
+                'score_impact': 25.0
+            }
+        }
+    
+    def _load_suspicious_patterns(self) -> List[str]:
+        """Carrega padrões suspeitos específicos para aplicação médica"""
+        return [
+            # Tentativas de acesso a dados médicos não autorizados
+            r"patient.*data", r"medical.*record", r"prescription.*info",
+            r"hanseniase.*data", r"dispensing.*log", r"medication.*list",
+            
+            # Padrões de exploit comuns
+            r"eval\(", r"exec\(", r"system\(", r"shell_exec",
+            r"passthru", r"base64_decode", r"file_get_contents",
+            
+            # Headers maliciosos
+            r"x-forwarded-for.*[,;]", r"x-real-ip.*[,;]"
+        ]
+    
+    def analyze_request_threat_level(self, request_data: Dict[str, Any]) -> Tuple[float, List[str]]:
+        """
+        Analisa o nível de ameaça de uma requisição
+        
+        Returns:
+            Tuple[float, List[str]]: (threat_score, detected_threats)
+        """
+        threat_score = 0.0
+        detected_threats = []
+        
+        try:
+            # Análise de payload/parâmetros
+            payload_threats = self._analyze_payload(request_data.get('payload', ''))
+            threat_score += payload_threats['score']
+            detected_threats.extend(payload_threats['threats'])
+            
+            # Análise de headers
+            header_threats = self._analyze_headers(request_data.get('headers', {}))
+            threat_score += header_threats['score']
+            detected_threats.extend(header_threats['threats'])
+            
+            # Análise de padrão comportamental
+            behavior_score = self._analyze_behavioral_pattern(request_data)
+            threat_score += behavior_score
+            
+            # Análise de origem (IP, User-Agent)
+            origin_threats = self._analyze_request_origin(request_data)
+            threat_score += origin_threats['score']
+            detected_threats.extend(origin_threats['threats'])
+            
+            # Normalizar score (0-100)
+            normalized_score = min(100.0, threat_score)
+            
+            if normalized_score > 50:
+                self.logger.warning(f"High threat level detected: {normalized_score:.2f}, Threats: {detected_threats}")
+            
+            return normalized_score, detected_threats
+            
+        except Exception as e:
+            self.logger.error(f"Error analyzing threat level: {e}")
+            return 0.0, []
+    
+    def _analyze_payload(self, payload: str) -> Dict[str, Any]:
+        """Analisa payload por padrões maliciosos"""
+        score = 0.0
+        threats = []
+        
+        if not payload:
+            return {'score': 0.0, 'threats': []}
+        
+        # Verificar padrões de ameaças conhecidos
+        for threat_name, threat_data in self.threat_patterns.items():
+            if 'patterns' in threat_data:
+                import re
+                for pattern in threat_data['patterns']:
+                    if re.search(pattern, payload, re.IGNORECASE):
+                        threats.append(f"{threat_name}:{pattern}")
+                        score += threat_data['score_impact']
+        
+        # Verificar padrões suspeitos específicos
+        import re
+        for pattern in self.suspicious_patterns:
+            if re.search(pattern, payload, re.IGNORECASE):
+                threats.append(f"suspicious_pattern:{pattern}")
+                score += 15.0
+        
+        return {'score': score, 'threats': threats}
+    
+    def _analyze_headers(self, headers: Dict[str, str]) -> Dict[str, Any]:
+        """Analisa headers HTTP por indicadores maliciosos"""
+        score = 0.0
+        threats = []
+        
+        # Headers suspeitos ou faltantes
+        suspicious_headers = ['x-forwarded-for', 'x-real-ip', 'x-originating-ip']
+        for header in suspicious_headers:
+            if header in headers:
+                value = headers[header]
+                # Verificar múltiplos IPs (possível proxy chain malicioso)
+                if ',' in value or ';' in value:
+                    threats.append(f"suspicious_header:{header}")
+                    score += 10.0
+        
+        # User-Agent analysis
+        user_agent = headers.get('user-agent', '').lower()
+        if not user_agent:
+            threats.append("missing_user_agent")
+            score += 5.0
+        elif any(bot in user_agent for bot in ['bot', 'crawler', 'scanner', 'curl', 'wget']):
+            threats.append("automated_client")
+            score += 8.0
+        
+        return {'score': score, 'threats': threats}
+    
+    def _analyze_behavioral_pattern(self, request_data: Dict[str, Any]) -> float:
+        """Analisa padrões comportamentais anômalos"""
+        session_id = request_data.get('session_id')
+        if not session_id:
+            return 5.0  # Sem sessão é suspeito
+        
+        # Registrar atividade
+        timestamp = datetime.now()
+        self.session_activities[session_id].append({
+            'timestamp': timestamp,
+            'endpoint': request_data.get('endpoint', ''),
+            'method': request_data.get('method', ''),
+            'ip': request_data.get('client_ip', '')
+        })
+        
+        # Analisar frequência de requests
+        recent_activities = [
+            act for act in self.session_activities[session_id]
+            if (timestamp - act['timestamp']).seconds < 60  # Último minuto
+        ]
+        
+        if len(recent_activities) > 20:  # Mais de 20 requests por minuto
+            return 25.0
+        elif len(recent_activities) > 10:
+            return 15.0
+        
+        return 0.0
+    
+    def _analyze_request_origin(self, request_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Analisa origem da requisição"""
+        score = 0.0
+        threats = []
+        
+        client_ip = request_data.get('client_ip', '')
+        if client_ip in self.malicious_ips:
+            threats.append(f"malicious_ip:{client_ip}")
+            score += 40.0
+        
+        # Verificar IPs privados sendo mascarados
+        if client_ip.startswith(('10.', '172.', '192.168.')):
+            if 'x-forwarded-for' in request_data.get('headers', {}):
+                threats.append("private_ip_with_forwarding")
+                score += 15.0
+        
+        return {'score': score, 'threats': threats}
+    
+    def update_session_threat_score(self, session_id: str, threat_score: float, threats: List[str]):
+        """Atualiza score de ameaça da sessão"""
+        # Usar média ponderada para suavizar flutuações
+        current_score = self.session_threat_scores[session_id]
+        self.session_threat_scores[session_id] = (current_score * 0.7) + (threat_score * 0.3)
+        
+        # Log de ameaças significativas
+        if threat_score > 30:
+            self.logger.warning(f"Session {session_id} threat score: {threat_score:.2f}, Threats: {threats}")
+    
+    def get_session_threat_score(self, session_id: str) -> float:
+        """Retorna score atual de ameaça da sessão"""
+        return self.session_threat_scores.get(session_id, 0.0)
+    
+    def is_session_compromised(self, session_id: str) -> bool:
+        """Verifica se sessão está comprometida"""
+        return self.session_threat_scores.get(session_id, 0.0) > 70.0
+    
+    def add_malicious_ip(self, ip: str):
+        """Adiciona IP à lista de IPs maliciosos"""
+        self.malicious_ips.add(ip)
+        self.logger.warning(f"IP {ip} added to malicious IPs list")
+    
+    def cleanup_old_activities(self):
+        """Remove atividades antigas para economizar memória"""
+        cutoff_time = datetime.now() - timedelta(hours=24)
+        
+        for session_id in list(self.session_activities.keys()):
+            activities = self.session_activities[session_id]
+            recent_activities = [
+                act for act in activities 
+                if act['timestamp'] > cutoff_time
+            ]
+            
+            if recent_activities:
+                self.session_activities[session_id] = recent_activities
+            else:
+                del self.session_activities[session_id]
+                
+                # Remove também o threat score se não há atividade recente
+                if session_id in self.session_threat_scores:
+                    del self.session_threat_scores[session_id]
+    
+    def get_threat_statistics(self) -> Dict[str, Any]:
+        """Retorna estatísticas de ameaças detectadas"""
+        total_sessions = len(self.session_threat_scores)
+        high_risk_sessions = sum(1 for score in self.session_threat_scores.values() if score > 50)
+        
+        threat_scores = list(self.session_threat_scores.values()) if self.session_threat_scores else [0]
+        avg_threat_score = sum(threat_scores) / len(threat_scores)
+        
+        return {
+            'total_monitored_sessions': total_sessions,
+            'high_risk_sessions': high_risk_sessions,
+            'average_threat_score': avg_threat_score,
+            'malicious_ips_count': len(self.malicious_ips),
+            'total_activities_tracked': sum(len(acts) for acts in self.session_activities.values()),
+            'compromise_rate': (high_risk_sessions / total_sessions * 100) if total_sessions > 0 else 0
+        }
+
+
+class ZeroTrustManager:
+    """
+    Manager principal do sistema Zero-Trust
+    
+    Coordena todos os componentes de segurança zero-trust:
+    - AccessController para controle de acesso
+    - ContinuousVerification para verificação contínua
+    - Políticas de segurança dinâmicas
+    - Monitoramento de ameaças
+    """
+    
+    def __init__(self, access_controller=None):
+        """Inicializa o ZeroTrustManager"""
+        self.access_controller = access_controller or global_access_controller
+        self.continuous_verification = ContinuousVerification()
+        self.threat_detector = ThreatDetector()
+        self.logger = logging.getLogger(__name__)
+        
+        # Políticas padrão para sistema médico
+        self._initialize_medical_policies()
+    
+    def _initialize_medical_policies(self):
+        """Inicializa políticas específicas para sistema médico"""
+        # Política para chat médico (crítico)
+        self.access_controller.policies[ResourceType.CHAT_API] = AccessPolicy(
+            resource_type=ResourceType.CHAT_API,
+            minimum_access_level=AccessLevel.API_BASIC,
+            minimum_trust_score=60.0,
+            maximum_threat_level=ThreatLevel.MEDIUM,
+            required_attributes={},
+            time_restrictions={},
+            rate_limits={'requests_per_minute': 30},
+            continuous_verification_interval=300  # 5 minutos
+        )
+        
+        # Política para APIs administrativas
+        self.access_controller.policies[ResourceType.ADMIN_API] = AccessPolicy(
+            resource_type=ResourceType.ADMIN_API,
+            minimum_access_level=AccessLevel.ADMIN_READ,
+            minimum_trust_score=85.0,
+            maximum_threat_level=ThreatLevel.LOW,
+            required_attributes={'verified': True},
+            time_restrictions={},
+            rate_limits={'requests_per_minute': 10},
+            continuous_verification_interval=120  # 2 minutos
+        )
+        
+        # Política para métricas e monitoramento
+        self.access_controller.policies[ResourceType.METRICS] = AccessPolicy(
+            resource_type=ResourceType.METRICS,
+            minimum_access_level=AccessLevel.READ_EXTENDED,
+            minimum_trust_score=75.0,
+            maximum_threat_level=ThreatLevel.MEDIUM,
+            required_attributes={},
+            time_restrictions={},
+            rate_limits={'requests_per_minute': 60},
+            continuous_verification_interval=600  # 10 minutos
+        )
+    
+    def verify_request(self, request, resource_type: ResourceType) -> Tuple[bool, SecurityContext, Dict[str, Any]]:
+        """
+        Verifica se uma requisição deve ser permitida
+        
+        Returns:
+            Tuple[bool, SecurityContext, Dict]: (permitido, contexto, detalhes)
+        """
+        try:
+            # Construir contexto de segurança
+            context = self._build_security_context(request)
+            
+            # Verificar políticas de acesso
+            access_granted, access_details = self.access_controller.check_access(context, resource_type)
+            
+            # Verificação contínua se acesso foi concedido
+            if access_granted:
+                behavioral_ok, new_trust_score, behavioral_details = self.continuous_verification.verify_behavioral_patterns(context)
+                context.trust_score = new_trust_score
+                
+                if not behavioral_ok:
+                    access_granted = False
+                    access_details.update(behavioral_details)
+                    self.logger.warning(f"Access denied due to behavioral anomalies: {behavioral_details}")
+            
+            return access_granted, context, access_details
+            
+        except Exception as e:
+            self.logger.error(f"Error in zero-trust verification: {e}")
+            # Fail secure - negar acesso em caso de erro
+            return False, None, {'error': 'verification_failed', 'details': str(e)}
+    
+    def _build_security_context(self, request) -> SecurityContext:
+        """Constrói contexto de segurança a partir da requisição"""
+        from flask import session
+        import uuid
+        
+        # Gerar ou obter session ID
+        session_id = session.get('security_session_id')
+        if not session_id:
+            session_id = str(uuid.uuid4())
+            session['security_session_id'] = session_id
+        
+        # Construir contexto
+        context = SecurityContext(
+            session_id=session_id,
+            client_ip=request.remote_addr or 'unknown',
+            user_agent=request.headers.get('User-Agent', 'unknown'),
+            timestamp=datetime.now(),
+            trust_score=70.0,  # Score inicial moderado
+            threat_level=ThreatLevel.LOW,
+            access_level=AccessLevel.USER,  # Nível inicial
+            permitted_resources=set(),
+            session_duration=timedelta(hours=1),
+            last_verification=datetime.now(),
+            attributes={}
+        )
+        
+        return context
+    
+    def create_access_decorator(self, resource_type: ResourceType):
+        """Cria decorator para controle de acesso"""
+        def decorator(f):
+            @wraps(f)
+            def wrapper(*args, **kwargs):
+                from flask import request, jsonify, g
+                
+                # Verificar acesso
+                access_granted, context, details = self.verify_request(request, resource_type)
+                
+                if not access_granted:
+                    self.logger.warning(f"Zero-Trust access denied: {details}")
+                    return jsonify({
+                        'error': 'Access denied',
+                        'error_code': 'ZERO_TRUST_DENIED',
+                        'details': details.get('reason', 'insufficient_trust')
+                    }), 403
+                
+                # Adicionar contexto ao request
+                g.security_context = context
+                g.zero_trust_verified = True
+                
+                return f(*args, **kwargs)
+            
+            wrapper.__name__ = f.__name__
+            return wrapper
+        return decorator
+    
+    def get_trust_score(self, session_id: str) -> float:
+        """Obtém score de confiança atual da sessão"""
+        # Implementação simplificada - em produção seria mais complexa
+        return 70.0
+    
+    def update_threat_level(self, session_id: str, new_level: ThreatLevel):
+        """Atualiza nível de ameaça da sessão"""
+        self.logger.info(f"Threat level updated for session {session_id}: {new_level}")
+
+
+# Instância global do ZeroTrustManager
+global_zero_trust_manager = ZeroTrustManager()
+
+
+def require_authenticated_access(resource_type: ResourceType = ResourceType.PUBLIC_API):
+    """
+    Decorator para exigir acesso autenticado com Zero-Trust
+    
+    Args:
+        resource_type: Tipo do recurso sendo protegido
+    
+    Returns:
+        Decorator function
+    """
+    return global_zero_trust_manager.create_access_decorator(resource_type)
