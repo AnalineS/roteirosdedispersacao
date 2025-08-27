@@ -35,6 +35,9 @@ const nextConfig = {
   compress: true,
   poweredByHeader: false, // Remove header X-Powered-By para segurança
   
+  // Disable file tracing to prevent build hangs
+  outputFileTracing: false,
+  
   // SECURITY ENHANCEMENTS - Medical Application Grade (Score: 9.7/10)
   
   // Headers de segurança - desabilitado para export estático (configura no firebase.json)
@@ -61,10 +64,9 @@ const nextConfig = {
     // optimizeCss: true, // Desabilitado - requer 'critters'
     // Compilação mais segura
     strictNextHead: true,
-    // Incremental build cache optimization
-    turbotrace: {
-      logLevel: 'error'
-    },
+    // Disable turbotrace to prevent build hanging on "Collecting build traces"
+    // Trade-off: Slightly larger bundles but reliable builds
+    outputFileTracingRoot: undefined,
     // ISR optimization for future use - removed invalid option
     // isrMemoryCacheSize: 0  // Disable memory cache for static export
   },
@@ -84,11 +86,18 @@ const nextConfig = {
   webpack: (config, { dev, isServer, buildId }) => {
     // Build cache optimization
     if (!dev) {
-      // Enable persistent cache for faster rebuilds - fixed absolute path
+      // Enable persistent cache for faster rebuilds with timeout protection
       const path = require('path');
       config.cache = {
         type: 'filesystem',
-        cacheDirectory: path.resolve(__dirname, './.next/cache/webpack')
+        cacheDirectory: path.resolve(__dirname, './.next/cache/webpack'),
+        buildDependencies: {
+          config: [__filename]
+        },
+        maxMemoryGenerations: 1, // Prevent memory issues
+        memoryCacheUnaffected: true,
+        idleTimeout: 60000, // 1 minute idle timeout
+        idleTimeoutForInitialStore: 0
       };
     }
     
