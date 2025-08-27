@@ -471,7 +471,7 @@ jobs:
       - name: 🚨 Configure GCP Alerts with Telegram
         run: |
           echo "📊 Configurando alertas GCP com integração Telegram..."
-          bash scripts/setup-gcp-alerts-with-secrets.sh red-truck-468923-s4 "${{ secrets.TELEGRAM_BOT_TOKEN }}" "${{ secrets.TELEGRAM_CHAT_ID }}"
+          bash scripts/setup/setup-gcp-alerts-with-secrets.sh red-truck-468923-s4 "${{ secrets.TELEGRAM_BOT_TOKEN }}" "${{ secrets.TELEGRAM_CHAT_ID }}"
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
@@ -498,7 +498,7 @@ jobs:
       - name: 🔄 Reset HML Data
         run: |
           echo "🌱 Resetando dados HML..."
-          bash scripts/seed-hml-data.sh
+          bash scripts/deployment/seed-hml-data.sh
         env:
           SERVICE_URL: ${{ needs.deploy-backend.outputs.service-url }}
           SEED_TOKEN: ${{ secrets.SECRET_KEY }}

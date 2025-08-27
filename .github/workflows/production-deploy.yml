@@ -482,7 +482,7 @@ jobs:
           echo "🚨 Configurando alertas de produção com integração Telegram..."
           
           chmod +x scripts/setup-gcp-alerts-with-secrets.sh
-          bash scripts/setup-gcp-alerts-with-secrets.sh \
+          bash scripts/setup/setup-gcp-alerts-with-secrets.sh \
             ${{ secrets.GCP_PROJECT_ID }} \
             "${{ secrets.TELEGRAM_BOT_TOKEN }}" \
             "${{ secrets.TELEGRAM_CHAT_ID }}"
@@ -494,10 +494,10 @@ jobs:
           echo "📊 Criando dashboards de produção..."
           
           chmod +x scripts/create-simple-dashboards.sh
-          bash scripts/create-simple-dashboards.sh ${{ secrets.GCP_PROJECT_ID }}
+          bash scripts/maintenance/create-simple-dashboards.sh ${{ secrets.GCP_PROJECT_ID }}
           
           chmod +x scripts/create-remaining-dashboards.sh  
-          bash scripts/create-remaining-dashboards.sh ${{ secrets.GCP_PROJECT_ID }}
+          bash scripts/maintenance/create-remaining-dashboards.sh ${{ secrets.GCP_PROJECT_ID }}
 
       - name: ✅ Verify Monitoring Setup
         run: |
