@@ -1,0 +1,59 @@
+# GitHub Dependabot Configuration
+# Automatically scans and updates dependencies
+version: 2
+updates:
+  # Frontend Next.js dependencies
+  - package-ecosystem: "npm"
+    directory: "/apps/frontend-nextjs"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "America/Sao_Paulo"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "AnalineS"
+    assignees:
+      - "AnalineS"
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "security"
+
+  # Backend Python dependencies
+  - package-ecosystem: "pip"
+    directory: "/apps/backend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "America/Sao_Paulo"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "AnalineS"
+    assignees:
+      - "AnalineS"
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "security"
+      
+  # GitHub Actions dependencies
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 3
+    reviewers:
+      - "AnalineS"
+    assignees:
+      - "AnalineS"
+    commit-message:
+      prefix: "chore(ci)"
+    labels:
+      - "ci/cd"
+      - "security"

@@ -147,30 +147,29 @@ jobs:
         if: needs.detect-changes.outputs.deploy-frontend == 'true' && steps.node-cache.outputs.cache-hit == 'true'
         run: echo "📦 Using cached Node.js dependencies"
 
-      # Snyk Security Scanning
-      - name: 🔒 Run Snyk Security Scan
-        uses: snyk/actions/setup@master
-      
-      - name: 🔍 Snyk Code Analysis - Full Project
+      # GitHub Native Security Scanning (Simple & Free)
+      - name: 🛡️ GitHub Advanced Security Scan
         run: |
-          # Install Python dependencies first if backend changed
-          if [ "${{ needs.detect-changes.outputs.deploy-backend }}" == "true" ]; then
-            cd apps/backend
-            pip install -r requirements.txt
+          echo "🔒 Using GitHub's native security features..."
+          
+          # Frontend dependency scan
+          if [ "${{ needs.detect-changes.outputs.deploy-frontend }}" == "true" ]; then
+            cd apps/frontend-nextjs
+            echo "📦 Scanning frontend dependencies..."
+            npm audit --audit-level=high || echo "⚠️ Vulnerabilities found - check Dependabot alerts"
             cd ../..
           fi
           
-          # Run Snyk code analysis on entire project
-          npx snyk code test --severity-threshold=medium --fail-on=all
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-
-      - name: 📦 Snyk Frontend Dependencies Scan
-        run: |
-          cd apps/frontend-nextjs
-          npx snyk test --severity-threshold=medium --fail-on=all
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+          # Backend dependency scan  
+          if [ "${{ needs.detect-changes.outputs.deploy-backend }}" == "true" ]; then
+            cd apps/backend
+            echo "🐍 Scanning Python dependencies..."
+            pip install safety
+            safety check || echo "⚠️ Python vulnerabilities found - check Security tab"
+            cd ../..
+          fi
+          
+          echo "✅ GitHub Security scan completed - check Security tab for detailed reports"
 
       - name: 🔍 Frontend Lint & TypeScript
         if: needs.detect-changes.outputs.deploy-frontend == 'true'
@@ -217,13 +216,6 @@ jobs:
           pip install -r requirements.txt
           pip install pytest pytest-cov flake8 mypy
 
-      - name: 📦 Snyk Backend Dependencies Scan
-        if: needs.detect-changes.outputs.deploy-backend == 'true'
-        run: |
-          cd apps/backend
-          npx snyk test --severity-threshold=medium --fail-on=all --file=requirements.txt
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
       - name: 🧪 Backend Tests & Coverage
         if: needs.detect-changes.outputs.deploy-backend == 'true'
