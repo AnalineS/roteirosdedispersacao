@@ -12,14 +12,63 @@ def detect_question_scope(question: str) -> Dict:
     """
     question_lower = question.lower()
     
-    # Palavras-chave que indicam escopo válido
+    # Palavras-chave que indicam escopo válido (EXPANDIDO com base na tese)
     in_scope_keywords = {
-        'medication': ['rifampicina', 'clofazimina', 'dapsona', 'pqt', 'poliquimioterapia'],
-        'hanseniase': ['hanseniase', 'hansen', 'lepra', 'mycobacterium'],
-        'dispensing': ['dispensacao', 'farmacia', 'medicamento', 'dose', 'como tomar'],
-        'effects': ['efeito', 'colateral', 'adverso', 'reacao', 'laranja', 'escuro'],
-        'treatment': ['tratamento', 'cura', 'tempo', 'meses', 'tomar'],
-        'safety': ['seguro', 'crianca', 'gravidez', 'gestante', 'amamentacao']
+        'medication': [
+            # Medicamentos principais PQT-U
+            'rifampicina', 'clofazimina', 'dapsona', 'pqt', 'poliquimioterapia',
+            'pqt-u', 'esquema único', 'esquema terapêutico',
+            # Nomes técnicos e variações
+            'rifampin', 'clofazimine', 'diaminodifenilsulfona', 'dds',
+            # Dosagens e formas farmacêuticas
+            'comprimido', 'cápsula', 'dosagem', 'miligramas', 'mg'
+        ],
+        'hanseniase': [
+            # Termos da hanseníase
+            'hanseniase', 'hansen', 'lepra', 'mal de hansen', 'doença de hansen',
+            'mycobacterium leprae', 'bacilo de hansen', 'baar',
+            # Formas clínicas
+            'paucibacilar', 'multibacilar', 'indeterminada', 'tuberculoide',
+            'dimorfa', 'virchowiana', 'mb', 'pb'
+        ],
+        'dispensing': [
+            # Dispensação farmacêutica
+            'dispensacao', 'dispensação', 'farmacia', 'farmácia', 'farmacêutico',
+            'medicamento', 'dose', 'como tomar', 'posologia', 'administração',
+            'roteiro de dispensação', 'orientação farmacêutica', 'adesão',
+            'aderência', 'seguimento farmacoterapêutico', 'cuidado farmacêutico'
+        ],
+        'effects': [
+            # Efeitos adversos específicos
+            'efeito', 'colateral', 'adverso', 'reacao', 'reação adversa',
+            'laranja', 'escuro', 'escurecimento', 'pigmentação',
+            'ictiose', 'ressecamento', 'xerose', 'descamação',
+            'hepatotoxicidade', 'neuropatia', 'anemia', 'metahemoglobinemia'
+        ],
+        'treatment': [
+            # Tratamento e duração
+            'tratamento', 'cura', 'tempo', 'meses', 'tomar', 'duração',
+            'esquema terapêutico', 'terapia', 'protocolo', 'pcdt',
+            'ministério da saúde', 'sus', 'programa de controle'
+        ],
+        'safety': [
+            # Segurança e populações especiais
+            'seguro', 'crianca', 'criança', 'gravidez', 'gestante', 'gestação',
+            'amamentacao', 'amamentação', 'lactante', 'idoso', 'hepatopatia',
+            'insuficiência renal', 'contraindicação', 'precaução', 'cuidado'
+        ],
+        'monitoring': [
+            # Monitoramento e acompanhamento
+            'monitoramento', 'acompanhamento', 'exame', 'laboratorial',
+            'hemograma', 'transaminases', 'função hepática', 'glicose-6-fosfato',
+            'g6pd', 'deficiência enzimática', 'supervisão'
+        ],
+        'interactions': [
+            # Interações medicamentosas
+            'interação', 'interacao', 'medicamentosa', 'droga', 'fármaco',
+            'anticoncepcional', 'contraceptivo', 'anticoagulante', 'warfarina',
+            'antirretroviral', 'hiv', 'tuberculose', 'isoniazida'
+        ]
     }
     
     # Palavras-chave que indicam fora do escopo

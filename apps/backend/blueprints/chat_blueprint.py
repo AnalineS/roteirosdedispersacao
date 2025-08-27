@@ -9,6 +9,7 @@ from datetime import datetime
 import logging
 import html
 import bleach
+import hashlib
 from typing import Dict, Any, Optional
 
 # Importar patches de segurança
@@ -50,9 +51,25 @@ try:
     from services.scope_detection_system import detect_question_scope, get_limitation_response
     from services.enhanced_rag_system import get_enhanced_context, cache_rag_response, add_rag_feedback, get_rag_stats
     from services.personas import get_personas, get_persona_prompt
+    from services.predictive_system import PredictiveAnalytics, UserContext
+    from services.multimodal_processor import MultimodalProcessor
     ENHANCED_SERVICES = True
 except ImportError:
     ENHANCED_SERVICES = False
+
+# Import sistema de training/fine-tuning
+try:
+    from colab_training_data.validate_data import TrainingDataCollector, validate_training_format
+    TRAINING_SYSTEM_AVAILABLE = True
+except ImportError:
+    TRAINING_SYSTEM_AVAILABLE = False
+
+# Import Celery tasks para endpoints assíncronos
+try:
+    from tasks.chat_tasks import process_question_async, chat_health_check
+    CELERY_AVAILABLE = True
+except ImportError:
+    CELERY_AVAILABLE = False
 
 # Import Medical Disclaimers
 try:
@@ -63,6 +80,21 @@ try:
     MEDICAL_DISCLAIMERS_AVAILABLE = True
 except ImportError:
     MEDICAL_DISCLAIMERS_AVAILABLE = False
+
+# Import Zero-Trust Security System
+try:
+    from core.security.zero_trust import (
+        require_chat_api, global_zero_trust_manager, ResourceType,
+        ThreatDetector, global_access_controller
+    )
+    ZERO_TRUST_AVAILABLE = True
+except ImportError:
+    ZERO_TRUST_AVAILABLE = False
+    # Fallback decorator
+    def require_chat_api():
+        def decorator(f):
+            return f
+        return decorator
 
 try:
     from services.simple_rag import generate_context_from_rag
@@ -80,15 +112,26 @@ def validate_and_sanitize_input(text: str) -> str:
     """
     Validação robusta e sanitização de input do usuário
     Implementa as melhores práticas de segurança para aplicação médica
+    ENHANCED: Integração com EnhancedInputSanitizer para segurança avançada
     """
     if not text or not isinstance(text, str):
         raise ValueError("Input deve ser uma string não vazia")
     
-    # Limite de tamanho robusto
-    if len(text) > 1000:
-        raise ValueError(f"Input muito longo: {len(text)} caracteres (máximo: 1000)")
+    # Limite de tamanho robusto (aumentado para chat médico)
+    if len(text) > 2000:
+        raise ValueError(f"Input muito longo: {len(text)} caracteres (máximo: 2000)")
     
-    # Padrões maliciosos para contexto médico
+    # SECURITY ENHANCEMENT: Usar EnhancedInputSanitizer se disponível
+    if SECURITY_PATCHES_AVAILABLE:
+        try:
+            # Primeira camada: EnhancedInputSanitizer (detecta padrões perigosos avançados)
+            enhanced_sanitized = EnhancedInputSanitizer.sanitize_text(text, allow_html=False)
+            logger.debug(f"Enhanced sanitization applied - Original: {len(text)} chars, Sanitized: {len(enhanced_sanitized)} chars")
+            text = enhanced_sanitized
+        except Exception as e:
+            logger.warning(f"Enhanced sanitizer falhou, usando fallback básico: {e}")
+    
+    # Segunda camada: Padrões específicos para contexto médico (complementar ao Enhanced)
     malicious_patterns = [
         r'<script[^>]*>.*?</script>',
         r'javascript:',
@@ -106,66 +149,140 @@ def validate_and_sanitize_input(text: str) -> str:
         r'url\s*\(',
         r'@import',
         r'<.*?(onerror|onload|onclick|onmouseover).*?>',
+        # Padrões médicos específicos suspeitos
+        r'DROP\s+TABLE',
+        r'DELETE\s+FROM',
+        r'UNION\s+SELECT',
     ]
     
     import re
     for pattern in malicious_patterns:
         if re.search(pattern, text, re.IGNORECASE | re.DOTALL):
-            raise ValueError(f"Padrão malicioso detectado")
+            raise ValueError(f"Padrão malicioso detectado em contexto médico")
     
-    # Sanitização com bleach
+    # Terceira camada: Sanitização com bleach (camada final de proteção)
     allowed_tags = []  # Sem tags HTML permitidas para chat médico
     sanitized = bleach.clean(text, tags=allowed_tags, strip=True)
     
-    # HTML escape adicional
+    # HTML escape adicional para máxima segurança
     sanitized = html.escape(sanitized)
     
     return sanitized.strip()
 
 def check_rate_limit(endpoint_type: str = 'default'):
     """
-    Decorator para rate limiting - versão simplificada para blueprint
+    Decorator para rate limiting integrado com Zero-Trust
     """
     def decorator(f):
         def wrapper(*args, **kwargs):
-            # Por enquanto, sem rate limiting no blueprint
-            # TODO: Implementar rate limiting distribuído com Redis
+            if ZERO_TRUST_AVAILABLE:
+                # Usar sistema zero-trust para análise de ameaças
+                client_ip = request.remote_addr or 'unknown'
+                user_agent = request.headers.get('User-Agent', '')
+                
+                # Criar contexto de segurança para análise
+                context = global_access_controller.create_security_context(client_ip, user_agent)
+                
+                # Analisar nível de ameaça da requisição
+                threat_detector = ThreatDetector()
+                request_data = {
+                    'client_ip': client_ip,
+                    'user_agent': user_agent,
+                    'session_id': context.session_id,
+                    'endpoint': request.endpoint,
+                    'method': request.method,
+                    'headers': dict(request.headers),
+                    'payload': request.get_data(as_text=True) if request.data else ''
+                }
+                
+                threat_score, detected_threats = threat_detector.analyze_request_threat_level(request_data)
+                
+                # Aplicar rate limiting baseado no threat score
+                if threat_score > 70:
+                    logger.warning(f"High threat score {threat_score:.2f}, denying request from {client_ip}")
+                    return jsonify({
+                        'error': 'Request blocked by security system',
+                        'error_code': 'THREAT_DETECTED',
+                        'timestamp': datetime.now().isoformat()
+                    }), 429
+                elif threat_score > 30:
+                    # Rate limiting mais rigoroso para IPs suspeitos
+                    logger.info(f"Medium threat score {threat_score:.2f}, applying strict rate limiting")
+                    # TODO: Implementar contadores por IP/sessão com Redis
+                
+                # Atualizar score de ameaça da sessão
+                threat_detector.update_session_threat_score(context.session_id, threat_score, detected_threats)
+            
             return f(*args, **kwargs)
         wrapper.__name__ = f.__name__
         return wrapper
     return decorator
 
-def log_security_event(event_type: str, client_ip: str, details: Dict[str, Any]) -> None:
+def log_security_event(event_type: str, client_ip: Optional[str], details: Dict[str, Any]) -> None:
     """
     Log de eventos de segurança
+    ENHANCED: Type safety melhorada com Optional
     """
-    logger.warning(f"SECURITY_EVENT: {event_type} from {client_ip} - {details}")
+    safe_ip = client_ip or 'unknown'
+    logger.warning(f"SECURITY_EVENT: {event_type} from {safe_ip} - {details}")
     return None
 
-async def process_question_with_rag(question: str, personality_id: str, request_id: str) -> tuple[str, Dict]:
+def process_question_with_rag(question: str, personality_id: str, request_id: str) -> tuple[str, Dict[str, Any]]:
     """
     Processa pergunta usando RAG, personas e AI Provider Manager
+    NOVA FUNCIONALIDADE: Sistema RAG avançado com feedback e cache inteligente
     Retorna (answer, metadata)
     """
     config = get_config()
     rag_service = get_rag()
     cache = get_cache()
     
-    # Cache key
-    cache_key = f"chat:{personality_id}:{hash(question)}"
+    # SISTEMA DE CACHE OTIMIZADO: Redis (rápido) + AstraDB (persistente)
+    cache_key = f"chat:{personality_id}:{hashlib.sha256(question.encode()).hexdigest()[:12]}"
     
-    # Tentar cache primeiro
+    # Tentativa 1: Cache Redis (ultra-rápido para respostas recentes)
     if cache and hasattr(cache, 'get') and hasattr(cache, 'set'):
         try:
-            cached_response = cache.get(cache_key)
-            if cached_response:
-                logger.info(f"[{request_id}] Cache hit para pergunta")
-                return cached_response['answer'], {
-                    **cached_response.get('metadata', {}),
-                    'cache_hit': True
+            redis_cached = cache.get(cache_key)
+            if redis_cached:
+                logger.info(f"[{request_id}] ⚡ Redis cache hit - sub-50ms response")
+                return redis_cached['answer'], {
+                    **redis_cached.get('metadata', {}),
+                    'cache_hit': True,
+                    'cache_type': 'redis',
+                    'cache_performance': 'ultra_fast'
                 }
-        except TypeError:
-            logger.debug(f"[{request_id}] Cache não compatível - gerando resposta nova")
+        except Exception as e:
+            logger.debug(f"[{request_id}] Redis cache miss ou erro: {e}")
+    
+    # Tentativa 2: Enhanced RAG System com AstraDB (respostas otimizadas)
+    if ENHANCED_SERVICES:
+        try:
+            enhanced_cached = get_enhanced_context(question, personality_id)
+            if enhanced_cached and enhanced_cached.get('confidence', 0) > 0.8:
+                logger.info(f"[{request_id}] 🚀 AstraDB Enhanced RAG hit - high confidence")
+                
+                # Cache também no Redis para próximas consultas
+                if cache:
+                    try:
+                        cache.set(cache_key, {
+                            'answer': enhanced_cached['response'],
+                            'metadata': enhanced_cached.get('metadata', {}),
+                            'cached_from': 'astra_to_redis'
+                        }, ttl=1800)  # 30 min no Redis
+                    except:
+                        pass  # Não falhar se Redis der problema
+                
+                return enhanced_cached['response'], {
+                    **enhanced_cached.get('metadata', {}),
+                    'cache_hit': True,
+                    'cache_type': 'astradb_enhanced',
+                    'confidence': enhanced_cached.get('confidence')
+                }
+        except Exception as e:
+            logger.debug(f"[{request_id}] Enhanced RAG/AstraDB miss: {e}")
+    
+    logger.info(f"[{request_id}] 🔄 Cache miss - gerando nova resposta")
     
     # RAG context
     context = ""
@@ -176,12 +293,39 @@ async def process_question_with_rag(question: str, personality_id: str, request_
         except Exception as e:
             logger.error(f"[{request_id}] Erro no RAG: {e}")
     
-    # Construir prompt baseado na persona
-    if personality_id == 'dr_gasnelio':
-        if ENHANCED_SERVICES:
-            system_prompt = get_enhanced_dr_gasnelio_prompt(context)
-        else:
-            system_prompt = f"""Você é Dr. Gasnelio, farmacêutico clínico especialista em hanseníase.
+    # NOVA FUNCIONALIDADE: Sistema de prompts dinâmico baseado em personas
+    system_prompt = ""
+    if ENHANCED_SERVICES:
+        # Usar sistema de personas avançado
+        try:
+            if personality_id == 'dr_gasnelio':
+                system_prompt = get_enhanced_dr_gasnelio_prompt(context)
+            else:
+                system_prompt = get_enhanced_ga_prompt(context)
+            logger.info(f"[{request_id}] Usando prompt avançado para {personality_id}")
+        except Exception as e:
+            logger.warning(f"[{request_id}] Erro no prompt avançado, usando sistema dinâmico: {e}")
+    
+    # Fallback para sistema de personas dinâmico
+    if not system_prompt:
+        try:
+            # Usar get_persona_prompt do sistema de personas
+            base_prompt = get_persona_prompt(personality_id)
+            if base_prompt:
+                system_prompt = f"""{base_prompt}
+
+Contexto da base de conhecimento sobre hanseníase e PQT-U:
+{context}
+
+Baseie suas respostas nas informações do contexto acima, sempre que relevante."""
+                logger.info(f"[{request_id}] Usando sistema dinâmico de personas")
+            else:
+                raise Exception("Prompt não encontrado no sistema de personas")
+        except Exception as e:
+            logger.warning(f"[{request_id}] Fallback para prompts hardcoded: {e}")
+            # Último fallback - prompts hardcoded (como estava antes)
+            if personality_id == 'dr_gasnelio':
+                system_prompt = f"""Você é Dr. Gasnelio, farmacêutico clínico especialista em hanseníase.
 
 Características:
 - Linguagem técnica e científica
@@ -193,11 +337,8 @@ Contexto da base de conhecimento:
 {context}
 
 Responda de forma técnica e precisa."""
-    else:  # ga
-        if ENHANCED_SERVICES:
-            system_prompt = get_enhanced_ga_prompt(context)
-        else:
-            system_prompt = f"""Você é Gá, assistente empática especialista em hanseníase.
+            else:  # ga
+                system_prompt = f"""Você é Gá, assistente empática especialista em hanseníase.
 
 Características:
 - Linguagem simples e acessível
@@ -231,7 +372,7 @@ Responda de forma empática e didática."""
             
             logger.info(f"[{request_id}] Chamando AI Provider Manager com modelo {model_preference}")
             
-            answer, ai_metadata = await generate_ai_response(
+            answer, ai_metadata = generate_ai_response(
                 messages=messages,
                 model_preference=model_preference,
                 temperature=0.7 if personality_id == 'dr_gasnelio' else 0.8,
@@ -281,25 +422,69 @@ Para informações mais detalhadas, recomendo consultar um profissional de saúd
         
         logger.info(f"[{request_id}] 🔄 Usando resposta fallback para {personality_id}")
     
-    # Cache da resposta
-    if cache and hasattr(cache, 'get') and hasattr(cache, 'set'):
-        try:
-            cache.set(cache_key, {
-                'answer': answer,
-                'metadata': metadata
-            }, ttl=3600)  # 1 hora
-        except TypeError:
-            # Cache pode não suportar parâmetro ttl ou formato de dados
-            # Continuar sem cache - a resposta ainda será retornada
-            logger.debug(f"[{request_id}] Falha ao armazenar em cache - formato incompatível")
+    # SISTEMA DE CACHE INTELIGENTE MULTICAMADA
+    if answer:
+        # Calcular confidence score dinâmico
+        confidence_score = 0.7  # Base para informações médicas
+        
+        # Fatores que aumentam confidence
+        if metadata.get('model_used') and metadata.get('model_used') != 'fallback':
+            confidence_score += 0.1  # IA real foi usada
+        if metadata.get('qa_score', 0) > 0.8:
+            confidence_score += 0.15  # QA muito alto
+        elif metadata.get('qa_score', 0) > 0.6:
+            confidence_score += 0.1   # QA bom
+        if len(context) > 200:
+            confidence_score += 0.05  # Contexto RAG rico
+        if metadata.get('scope_in_scope', True):
+            confidence_score += 0.1   # Pergunta dentro do escopo
+        
+        # Fatores que diminuem confidence
+        if metadata.get('fallback_reason'):
+            confidence_score -= 0.2   # Foi fallback
+        if len(answer) < 100:
+            confidence_score -= 0.1   # Resposta muito curta
+        
+        confidence_final = max(0.1, min(1.0, confidence_score))
+        
+        # Cache Strategy baseado em confidence e tipo de informação
+        ttl_redis = 1800      # 30 min padrão
+        ttl_enhanced = 7200   # 2 horas para Enhanced RAG
+        
+        # Informações críticas de saúde: TTL menor
+        if any(term in question.lower() for term in ['dosagem', 'dose', 'efeito colateral', 'gravidez', 'criança']):
+            ttl_redis = 900    # 15 min
+            ttl_enhanced = 1800  # 30 min
+        
+        # 1. Cache Redis (rápido, TTL curto)
+        if cache and confidence_final > 0.5:
+            try:
+                cache_data = {
+                    'answer': answer,
+                    'metadata': {**metadata, 'confidence': confidence_final, 'cached_at': datetime.now().isoformat()},
+                    'cache_version': 'v2_optimized'
+                }
+                cache.set(cache_key, cache_data, ttl=ttl_redis)
+                logger.info(f"[{request_id}] ⚡ Cached to Redis - TTL:{ttl_redis}s, Confidence:{confidence_final:.2f}")
+            except Exception as e:
+                logger.debug(f"[{request_id}] Redis cache write error: {e}")
+        
+        # 2. Enhanced RAG / AstraDB (persistente, confidence alto)
+        if ENHANCED_SERVICES and confidence_final >= 0.8:
+            try:
+                cache_rag_response(question, answer, confidence_final)
+                logger.info(f"[{request_id}] 🚀 Cached to AstraDB Enhanced RAG - High confidence: {confidence_final:.2f}")
+            except Exception as e:
+                logger.debug(f"[{request_id}] Enhanced RAG cache error: {e}")
     
     return answer, metadata
 
 @chat_bp.route('/chat', methods=['POST'])
+@require_chat_api()  # Zero-Trust protection
 @check_rate_limit('chat')
 @sanitize_inputs
 @rate_limit(max_attempts=30, window=60)  # 30 mensagens por minuto
-async def chat_api():
+def chat_api():
     """Endpoint principal para interação com chatbot"""
     start_time = datetime.now()
     request_id = f"req_{int(start_time.timestamp() * 1000)}"
@@ -354,6 +539,32 @@ async def chat_api():
                 "request_id": request_id
             }), 400
 
+        # NOVA FUNCIONALIDADE: Detecção de escopo da pergunta
+        if ENHANCED_SERVICES:
+            try:
+                scope_result = detect_question_scope(question)
+                logger.info(f"[{request_id}] Scope detection: {scope_result.get('in_scope', 'unknown')}")
+                
+                # Se pergunta está fora do escopo, retornar resposta de limitação
+                if not scope_result.get('in_scope', True):
+                    limitation_response = get_limitation_response(scope_result)
+                    return jsonify({
+                        "answer": limitation_response,
+                        "persona": personality_id,
+                        "request_id": request_id,
+                        "timestamp": start_time.isoformat(),
+                        "processing_time_ms": int((datetime.now() - start_time).total_seconds() * 1000),
+                        "metadata": {
+                            "scope_detection": scope_result,
+                            "response_type": "out_of_scope_limitation",
+                            "version": "blueprint_v1.0"
+                        }
+                    }), 200
+                    
+            except Exception as e:
+                logger.warning(f"[{request_id}] Erro na detecção de escopo: {e}")
+                # Continuar normalmente se detecção falhar
+
         # Validação da persona
         personality_id = data.get('personality_id', '').strip().lower()
         valid_personas = ['dr_gasnelio', 'ga']
@@ -384,7 +595,54 @@ async def chat_api():
         logger.info(f"[{request_id}] Processando - Persona: {personality_id}, Pergunta: {len(question)} chars")
         
         # Processar com RAG e IA
-        answer, metadata = await process_question_with_rag(question, personality_id, request_id)
+        answer, metadata = process_question_with_rag(question, personality_id, request_id)
+        
+        # ENHANCED VALIDATION: Validação específica das personas (se disponível)
+        if ENHANCED_SERVICES:
+            try:
+                validation_passed = False
+                validation_details = {}
+                
+                if personality_id == 'dr_gasnelio':
+                    # Validar resposta do Dr. Gasnelio
+                    validation_result = validate_dr_gasnelio_response(answer, question)
+                    validation_passed = validation_result.get('valid', True)
+                    validation_details = validation_result.get('details', {})
+                    logger.info(f"[{request_id}] Dr. Gasnelio validation: {validation_passed}")
+                    
+                elif personality_id == 'ga':
+                    # Validar resposta do Gá
+                    validation_result = validate_ga_response(answer, question)
+                    validation_passed = validation_result.get('valid', True)
+                    validation_details = validation_result.get('details', {})
+                    logger.info(f"[{request_id}] Gá validation: {validation_passed}")
+                
+                # Se validação falhar, tentar regenerar uma vez
+                if not validation_passed and validation_details.get('severity', 'low') == 'high':
+                    logger.warning(f"[{request_id}] Validação de persona falhou (alta severidade), regenerando resposta")
+                    answer, metadata = process_question_with_rag(question, personality_id, request_id)
+                    
+                    # Segunda validação
+                    if personality_id == 'dr_gasnelio':
+                        validation_result = validate_dr_gasnelio_response(answer, question)
+                    else:
+                        validation_result = validate_ga_response(answer, question)
+                    validation_passed = validation_result.get('valid', True)
+                
+                # Adicionar informações de validação aos metadados
+                metadata['persona_validation'] = {
+                    'passed': validation_passed,
+                    'details': validation_details,
+                    'validator': f'{personality_id}_validator'
+                }
+                
+            except Exception as e:
+                logger.error(f"[{request_id}] Erro na validação de persona: {e}")
+                metadata['persona_validation'] = {
+                    'passed': True,  # Fallback para não quebrar o fluxo
+                    'error': str(e),
+                    'validator': f'{personality_id}_validator'
+                }
         
         # QA Validation (se habilitado)
         qa_framework = get_qa()
@@ -405,7 +663,7 @@ async def chat_api():
                     if config.QA_MAX_RETRIES > 0:
                         # Tentar novamente (como solicitado)
                         logger.info(f"[{request_id}] Tentando novamente devido a QA baixo")
-                        answer, metadata = await process_question_with_rag(question, personality_id, request_id)
+                        answer, metadata = process_question_with_rag(question, personality_id, request_id)
                 
                 metadata['qa_score'] = qa_score
                 metadata['qa_result'] = qa_result.test_name if hasattr(qa_result, 'test_name') else 'validated'
@@ -414,6 +672,28 @@ async def chat_api():
                 # Não falhar por causa do QA - usar score neutro
                 metadata['qa_score'] = 0.7
                 metadata['qa_error'] = str(e)
+        
+        # NOVA FUNCIONALIDADE: Sistema de Sugestões Preditivas
+        suggestions = []
+        if ENHANCED_SERVICES:
+            try:
+                # Criar contexto do usuário para análise preditiva
+                user_context = UserContext(
+                    session_id=request_id,  # Por enquanto usando request_id
+                    persona_preference=personality_id,
+                    query_history=[question],  # Em produção, manter histórico real
+                    interaction_patterns={},
+                    medical_interests=[]
+                )
+                
+                # Gerar sugestões baseadas na pergunta atual
+                predictive = PredictiveAnalytics()
+                suggestions = predictive.generate_contextual_suggestions(question, user_context)
+                
+                logger.info(f"[{request_id}] Sugestões geradas: {len(suggestions)}")
+                
+            except Exception as e:
+                logger.warning(f"[{request_id}] Erro na geração de sugestões: {e}")
         
         # Resposta final
         processing_time = int((datetime.now() - start_time).total_seconds() * 1000)
@@ -424,6 +704,7 @@ async def chat_api():
             "request_id": request_id,
             "timestamp": start_time.isoformat(),
             "processing_time_ms": processing_time,
+            "suggestions": suggestions,  # NOVA FUNCIONALIDADE
             "metadata": {
                 **metadata,
                 "version": "blueprint_v1.0"
@@ -431,6 +712,33 @@ async def chat_api():
         }
         
         logger.info(f"[{request_id}] Resposta gerada com sucesso em {processing_time}ms")
+        
+        # COLETA DE DADOS PARA TRAINING/FINE-TUNING
+        if TRAINING_SYSTEM_AVAILABLE and metadata.get('qa_score', 0) > 0.7:
+            try:
+                # Coletar dados de alta qualidade para training
+                training_collector = TrainingDataCollector()
+                
+                # Adicionar exemplo ao dataset de training
+                training_example = {
+                    'input': question,
+                    'output': answer,
+                    'persona': personality_id,
+                    'context': metadata.get('context_length', 0),
+                    'qa_score': metadata.get('qa_score', 0),
+                    'confidence': metadata.get('confidence', 0),
+                    'timestamp': datetime.now().isoformat(),
+                    'scope_validated': metadata.get('scope_in_scope', True),
+                    'ai_model': metadata.get('model_used', 'unknown')
+                }
+                
+                # Só coletar se passar na validação de formato
+                if validate_training_format(training_example):
+                    training_collector.add_example(training_example)
+                    logger.info(f"[{request_id}] 🎯 Exemplo coletado para training - QA: {metadata.get('qa_score', 0):.2f}")
+                
+            except Exception as e:
+                logger.debug(f"[{request_id}] Erro na coleta de training data: {e}")
         
         # Registrar métricas de performance e IA
         if METRICS_AVAILABLE:
@@ -606,7 +914,12 @@ def chat_health():
             "rag": "available" if rag_service else "unavailable",
             "ai_provider": "available" if AI_PROVIDER_AVAILABLE else "unavailable",
             "enhanced_services": ENHANCED_SERVICES,
-            "basic_rag": BASIC_RAG
+            "basic_rag": BASIC_RAG,
+            "zero_trust": ZERO_TRUST_AVAILABLE,
+            "medical_disclaimers": MEDICAL_DISCLAIMERS_AVAILABLE,
+            "training_system": TRAINING_SYSTEM_AVAILABLE,
+            "multimodal": ENHANCED_SERVICES,  # Multimodal está ligado ao enhanced services
+            "celery_async": CELERY_AVAILABLE
         }
     }
     
@@ -618,11 +931,30 @@ def chat_health():
         except Exception as e:
             status["components"]["ai_provider"] = f"error: {str(e)}"
     
+    # Adicionar estatísticas de segurança zero-trust
+    if ZERO_TRUST_AVAILABLE:
+        try:
+            security_stats = global_access_controller.get_security_stats()
+            status["zero_trust_stats"] = security_stats
+        except Exception as e:
+            status["components"]["zero_trust"] = f"error: {str(e)}"
+    
+    # Adicionar status detalhado do Celery
+    if CELERY_AVAILABLE:
+        try:
+            # Test Celery health
+            health_task = chat_health_check.delay()
+            celery_health = health_task.get(timeout=5)  # 5s timeout
+            status["celery_health"] = celery_health
+        except Exception as e:
+            status["components"]["celery_async"] = f"error: {str(e)}"
+            status["celery_error"] = "Celery workers may not be running"
+    
     return jsonify(status), 200
 
 # Endpoint para teste de provedores de IA
 @chat_bp.route('/chat/test-ai', methods=['POST'])
-async def test_ai_providers():
+def test_ai_providers():
     """Testa conectividade com provedores de IA"""
     
     if not AI_PROVIDER_AVAILABLE:
@@ -633,7 +965,7 @@ async def test_ai_providers():
     
     try:
         from services.ai_provider_manager import test_ai_providers
-        test_results = await test_ai_providers()
+        test_results = test_ai_providers()
         return jsonify(test_results), 200
         
     except Exception as e:
@@ -641,5 +973,1022 @@ async def test_ai_providers():
         return jsonify({
             "error": "Erro interno ao testar provedores",
             "error_message": str(e),
+            "timestamp": datetime.now().isoformat()
+        }), 500
+
+# Endpoint para monitoramento de segurança Zero-Trust
+@chat_bp.route('/chat/security-stats', methods=['GET'])
+def security_statistics():
+    """Retorna estatísticas detalhadas de segurança zero-trust"""
+    
+    if not ZERO_TRUST_AVAILABLE:
+        return jsonify({
+            "error": "Sistema Zero-Trust não disponível",
+            "timestamp": datetime.now().isoformat()
+        }), 503
+    
+    try:
+        # Obter estatísticas do controlador de acesso
+        access_stats = global_access_controller.get_security_stats()
+        
+        # Obter estatísticas do detector de ameaças
+        threat_detector = ThreatDetector()
+        threat_stats = threat_detector.get_threat_statistics()
+        
+        # Combinar estatísticas
+        combined_stats = {
+            "timestamp": datetime.now().isoformat(),
+            "service": "chat_security",
+            "access_control": access_stats,
+            "threat_detection": threat_stats,
+            "system_health": {
+                "zero_trust_active": True,
+                "continuous_verification": True,
+                "behavioral_analysis": True,
+                "threat_monitoring": True
+            }
+        }
+        
+        return jsonify(combined_stats), 200
+        
+    except Exception as e:
+        logger.error(f"Erro ao obter estatísticas de segurança: {e}")
+        return jsonify({
+            "error": "Erro interno ao obter estatísticas",
+            "error_message": str(e),
+            "timestamp": datetime.now().isoformat()
+        }), 500
+
+# NOVAS FUNCIONALIDADES: Endpoints para recursos avançados
+
+@chat_bp.route('/chat/personas', methods=['GET'])
+def get_available_personas():
+    """Retorna todas as personas disponíveis com suas configurações"""
+    
+    if not ENHANCED_SERVICES:
+        return jsonify({
+            "error": "Sistema de personas não disponível",
+            "timestamp": datetime.now().isoformat()
+        }), 503
+    
+    try:
+        personas = get_personas()
+        return jsonify({
+            "personas": personas,
+            "total_personas": len(personas),
+            "timestamp": datetime.now().isoformat()
+        }), 200
+        
+    except Exception as e:
+        logger.error(f"Erro ao obter personas: {e}")
+        return jsonify({
+            "error": "Erro interno ao obter personas",
+            "error_message": str(e),
+            "timestamp": datetime.now().isoformat()
+        }), 500
+
+@chat_bp.route('/chat/feedback', methods=['POST'])
+def add_feedback():
+    """Adiciona feedback sobre qualidade das respostas (Enhanced RAG)"""
+    
+    if not ENHANCED_SERVICES:
+        return jsonify({
+            "error": "Sistema de feedback não disponível",
+            "timestamp": datetime.now().isoformat()
+        }), 503
+    
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({
+                "error": "Payload JSON requerido",
+                "error_code": "MISSING_PAYLOAD"
+            }), 400
+        
+        required_fields = ['question', 'answer', 'rating']
+        missing_fields = [field for field in required_fields if not data.get(field)]
+        
+        if missing_fields:
+            return jsonify({
+                "error": f"Campos obrigatórios: {', '.join(missing_fields)}",
+                "error_code": "MISSING_FIELDS"
+            }), 400
+        
+        rating = data.get('rating')
+        if not isinstance(rating, int) or rating < 1 or rating > 5:
+            return jsonify({
+                "error": "Rating deve ser um inteiro entre 1 e 5",
+                "error_code": "INVALID_RATING"
+            }), 400
+        
+        # Adicionar feedback ao Enhanced RAG
+        success = add_rag_feedback(
+            question=data['question'],
+            answer=data['answer'], 
+            rating=rating,
+            comments=data.get('comments', '')
+        )
+        
+        if success:
+            return jsonify({
+                "success": True,
+                "message": "Feedback registrado com sucesso",
+                "timestamp": datetime.now().isoformat()
+            }), 200
+        else:
+            return jsonify({
+                "error": "Falha ao registrar feedback",
+                "error_code": "FEEDBACK_FAILED"
+            }), 400
+            
+    except Exception as e:
+        logger.error(f"Erro ao adicionar feedback: {e}")
+        return jsonify({
+            "error": "Erro interno no sistema de feedback",
+            "error_message": str(e),
+            "timestamp": datetime.now().isoformat()
+        }), 500
+
+@chat_bp.route('/chat/rag-stats', methods=['GET'])
+def get_rag_statistics():
+    """Retorna estatísticas do sistema RAG avançado"""
+    
+    if not ENHANCED_SERVICES:
+        return jsonify({
+            "error": "Sistema RAG avançado não disponível",
+            "timestamp": datetime.now().isoformat()
+        }), 503
+    
+    try:
+        stats = get_rag_stats()
+        return jsonify({
+            "rag_statistics": stats,
+            "timestamp": datetime.now().isoformat()
+        }), 200
+        
+    except Exception as e:
+        logger.error(f"Erro ao obter estatísticas RAG: {e}")
+        return jsonify({
+            "error": "Erro interno ao obter estatísticas",
+            "error_message": str(e),
+            "timestamp": datetime.now().isoformat()
+        }), 500
+
+@chat_bp.route('/chat/scope-check', methods=['POST'])
+def check_question_scope():
+    """Verifica se uma pergunta está dentro do escopo da aplicação"""
+    
+    if not ENHANCED_SERVICES:
+        return jsonify({
+            "error": "Sistema de detecção de escopo não disponível",
+            "timestamp": datetime.now().isoformat()
+        }), 503
+    
+    try:
+        data = request.get_json()
+        if not data or not data.get('question'):
+            return jsonify({
+                "error": "Campo 'question' é obrigatório",
+                "error_code": "MISSING_QUESTION"
+            }), 400
+        
+        question = data['question'].strip()
+        if len(question) > 1000:
+            return jsonify({
+                "error": "Pergunta muito longa (máximo 1000 caracteres)",
+                "error_code": "QUESTION_TOO_LONG"
+            }), 400
+        
+        scope_result = detect_question_scope(question)
+        
+        response_data = {
+            "question": question,
+            "scope_result": scope_result,
+            "timestamp": datetime.now().isoformat()
+        }
+        
+        # Adicionar resposta de limitação se necessário
+        if not scope_result.get('in_scope', True):
+            response_data['limitation_response'] = get_limitation_response(scope_result)
+        
+        return jsonify(response_data), 200
+        
+    except Exception as e:
+        logger.error(f"Erro na detecção de escopo: {e}")
+        return jsonify({
+            "error": "Erro interno na detecção de escopo",
+            "error_message": str(e),
+            "timestamp": datetime.now().isoformat()
+        }), 500
+
+# SISTEMA DE FEEDBACK AUTOMÁTICO
+@chat_bp.route('/chat/analytics', methods=['POST'])
+def record_analytics():
+    """
+    Registra analytics automáticos de comportamento do usuário
+    Feedback implícito: tempo de leitura, scroll, cliques, etc.
+    """
+    if not ENHANCED_SERVICES:
+        return jsonify({
+            "error": "Sistema de analytics não disponível",
+            "timestamp": datetime.now().isoformat()
+        }), 503
+    
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({
+                "error": "Payload JSON requerido",
+                "error_code": "MISSING_PAYLOAD"
+            }), 400
+        
+        # Validar campos obrigatórios para analytics
+        required_fields = ['request_id', 'event_type']
+        missing_fields = [field for field in required_fields if not data.get(field)]
+        
+        if missing_fields:
+            return jsonify({
+                "error": f"Campos obrigatórios: {', '.join(missing_fields)}",
+                "error_code": "MISSING_FIELDS"
+            }), 400
+        
+        # Processar diferentes tipos de eventos
+        event_type = data.get('event_type')
+        request_id = data.get('request_id')
+        
+        # Calcular score de satisfação implícita baseado no comportamento
+        satisfaction_score = calculate_implicit_satisfaction(data)
+        
+        # Se score for suficiente, registrar como feedback positivo automático
+        if satisfaction_score >= 0.7:
+            success = add_rag_feedback(
+                question=data.get('question', ''),
+                answer=data.get('answer', ''),
+                rating=int(satisfaction_score * 5),  # Converter para escala 1-5
+                comments=f"Feedback automático - {event_type}"
+            )
+            
+            logger.info(f"[{request_id}] Feedback automático registrado: score {satisfaction_score:.2f}")
+        
+        return jsonify({
+            "success": True,
+            "message": "Analytics registrado",
+            "satisfaction_score": satisfaction_score,
+            "timestamp": datetime.now().isoformat()
+        }), 200
+        
+    except Exception as e:
+        logger.error(f"Erro ao registrar analytics: {e}")
+        return jsonify({
+            "error": "Erro interno no sistema de analytics",
+            "error_message": str(e),
+            "timestamp": datetime.now().isoformat()
+        }), 500
+
+def calculate_implicit_satisfaction(analytics_data: Dict[str, Any]) -> float:
+    """
+    Calcula satisfação implícita baseada no comportamento do usuário
+    """
+    score = 0.5  # Base neutra
+    event_type = analytics_data.get('event_type', '')
+    
+    # Tempo de leitura (indica interesse)
+    read_time = analytics_data.get('read_time_seconds', 0)
+    if read_time > 30:  # Leu por mais de 30s
+        score += 0.2
+    elif read_time > 10:  # Leu por mais de 10s
+        score += 0.1
+    
+    # Scroll na resposta (indica engajamento)
+    scroll_percentage = analytics_data.get('scroll_percentage', 0)
+    if scroll_percentage > 80:  # Leu a resposta completa
+        score += 0.2
+    elif scroll_percentage > 50:  # Leu mais da metade
+        score += 0.1
+    
+    # Cópia de texto (indica utilidade)
+    if analytics_data.get('text_copied', False):
+        score += 0.2
+    
+    # Nova pergunta relacionada (indica que a resposta foi útil)
+    if event_type == 'follow_up_question':
+        score += 0.1
+    
+    # Saída rápida (indica insatisfação)
+    if event_type == 'quick_exit' or read_time < 5:
+        score -= 0.3
+    
+    # Ações negativas
+    if analytics_data.get('clicked_away', False):
+        score -= 0.2
+    
+    return max(0.0, min(1.0, score))  # Limitar entre 0 e 1
+
+# ENDPOINT DE SUGESTÕES INDEPENDENTE
+@chat_bp.route('/chat/suggestions', methods=['GET'])
+def get_suggestions():
+    """
+    Retorna sugestões contextuais baseadas no histórico ou tópicos populares
+    """
+    if not ENHANCED_SERVICES:
+        return jsonify({
+            "error": "Sistema de sugestões não disponível",
+            "timestamp": datetime.now().isoformat()
+        }), 503
+    
+    try:
+        # Parâmetros opcionais
+        session_id = request.args.get('session_id', '')
+        persona = request.args.get('persona', 'dr_gasnelio')
+        last_question = request.args.get('last_question', '')
+        
+        # Criar contexto para sugestões
+        user_context = UserContext(
+            session_id=session_id or f"temp_{int(datetime.now().timestamp())}",
+            persona_preference=persona,
+            query_history=[last_question] if last_question else [],
+            interaction_patterns={},
+            medical_interests=[]
+        )
+        
+        # Gerar sugestões
+        predictive = PredictiveAnalytics()
+        if last_question:
+            suggestions = predictive.generate_contextual_suggestions(last_question, user_context)
+        else:
+            # Sugestões gerais baseadas na persona
+            suggestions = predictive.get_popular_questions_by_persona(persona)
+        
+        return jsonify({
+            "suggestions": suggestions,
+            "persona": persona,
+            "context": "contextual" if last_question else "general",
+            "timestamp": datetime.now().isoformat()
+        }), 200
+        
+    except Exception as e:
+        logger.error(f"Erro ao gerar sugestões: {e}")
+        return jsonify({
+            "error": "Erro interno no sistema de sugestões",
+            "error_message": str(e),
+            "timestamp": datetime.now().isoformat()
+        }), 500
+
+# CHAT MULTIMODAL - Upload de imagens (receitas, bulas, etc.)
+@chat_bp.route('/chat/image', methods=['POST'])
+@require_chat_api()
+@check_rate_limit('multimodal')
+def chat_image_analysis():
+    """
+    Processa imagem (OCR + análise) e responde contexto médico hanseníase
+    Suporta: fotos de receitas, bulas, exames
+    """
+    start_time = datetime.now()
+    request_id = f"img_req_{int(start_time.timestamp() * 1000)}"
+    
+    if not ENHANCED_SERVICES:
+        return jsonify({
+            "error": "Sistema multimodal não disponível",
+            "error_code": "MULTIMODAL_UNAVAILABLE",
+            "request_id": request_id
+        }), 503
+    
+    try:
+        logger.info(f"[{request_id}] Nova requisição multimodal de {request.remote_addr}")
+        
+        # Validar se tem arquivo de imagem
+        if 'image' not in request.files:
+            return jsonify({
+                "error": "Arquivo de imagem é obrigatório",
+                "error_code": "NO_IMAGE_FILE",
+                "request_id": request_id
+            }), 400
+        
+        image_file = request.files['image']
+        if image_file.filename == '':
+            return jsonify({
+                "error": "Nenhum arquivo selecionado",
+                "error_code": "EMPTY_FILE",
+                "request_id": request_id
+            }), 400
+        
+        # Validar tipo de arquivo
+        allowed_extensions = {'png', 'jpg', 'jpeg', 'gif', 'bmp', 'tiff'}
+        if not ('.' in image_file.filename and 
+                image_file.filename.rsplit('.', 1)[1].lower() in allowed_extensions):
+            return jsonify({
+                "error": "Tipo de arquivo não suportado. Use: PNG, JPG, JPEG, GIF, BMP, TIFF",
+                "error_code": "INVALID_FILE_TYPE",
+                "request_id": request_id
+            }), 400
+        
+        # Parâmetros opcionais
+        persona_id = request.form.get('personality_id', 'dr_gasnelio').strip().lower()
+        user_question = request.form.get('question', '').strip()
+        analysis_type = request.form.get('analysis_type', 'auto')  # auto, prescription, leaflet, exam
+        
+        # Validar persona
+        valid_personas = ['dr_gasnelio', 'ga']
+        if persona_id not in valid_personas:
+            persona_id = 'dr_gasnelio'  # Default para análises médicas
+        
+        logger.info(f"[{request_id}] Processando imagem - Persona: {persona_id}, Tipo: {analysis_type}")
+        
+        # Processar imagem com sistema multimodal
+        multimodal_processor = MultimodalProcessor()
+        
+        # OCR + Análise
+        analysis_result = multimodal_processor.analyze_medical_image(
+            image_file=image_file,
+            analysis_type=analysis_type,
+            context="hanseníase PQT-U dispensação farmacêutica"
+        )
+        
+        if not analysis_result.get('success', False):
+            return jsonify({
+                "error": "Falha no processamento da imagem",
+                "error_code": "IMAGE_PROCESSING_FAILED",
+                "request_id": request_id,
+                "details": analysis_result.get('error', 'Erro desconhecido')
+            }), 422
+        
+        # Extrair texto reconhecido
+        extracted_text = analysis_result.get('extracted_text', '')
+        image_type = analysis_result.get('detected_type', analysis_type)
+        confidence = analysis_result.get('confidence', 0.0)
+        
+        # Construir pergunta contextualizada
+        if user_question:
+            contextualized_question = f"{user_question}\n\nTexto extraído da imagem ({image_type}): {extracted_text}"
+        else:
+            contextualized_question = f"Analisar informações sobre hanseníase/PQT-U da imagem ({image_type}): {extracted_text}"
+        
+        # Processar como pergunta normal do chat
+        answer, metadata = process_question_with_rag(
+            contextualized_question, persona_id, request_id
+        )
+        
+        # Resposta multimodal
+        processing_time = int((datetime.now() - start_time).total_seconds() * 1000)
+        
+        response = {
+            "answer": answer,
+            "persona": persona_id,
+            "request_id": request_id,
+            "timestamp": start_time.isoformat(),
+            "processing_time_ms": processing_time,
+            "image_analysis": {
+                "extracted_text": extracted_text,
+                "detected_type": image_type,
+                "ocr_confidence": confidence,
+                "file_info": {
+                    "filename": image_file.filename,
+                    "size_bytes": len(image_file.read()),
+                    "content_type": image_file.content_type
+                }
+            },
+            "metadata": {
+                **metadata,
+                "input_type": "multimodal_image",
+                "analysis_type": analysis_type,
+                "version": "multimodal_v1.0"
+            }
+        }
+        
+        # Reset file pointer after reading size
+        image_file.seek(0)
+        
+        logger.info(f"[{request_id}] Análise multimodal concluída - OCR confidence: {confidence:.2f}")
+        
+        return jsonify(response), 200
+        
+    except Exception as e:
+        processing_time = int((datetime.now() - start_time).total_seconds() * 1000)
+        logger.error(f"[{request_id}] Erro na análise multimodal: {e}")
+        
+        return jsonify({
+            "error": "Erro interno no processamento multimodal",
+            "error_code": "MULTIMODAL_ERROR", 
+            "request_id": request_id,
+            "processing_time_ms": processing_time,
+            "message": "Tente novamente ou use o chat de texto"
+        }), 500
+
+# ENDPOINTS PARA SISTEMA DE TRAINING/FINE-TUNING
+@chat_bp.route('/chat/training-stats', methods=['GET'])
+def get_training_statistics():
+    """Retorna estatísticas do dataset de training coletado"""
+    
+    if not TRAINING_SYSTEM_AVAILABLE:
+        return jsonify({
+            "error": "Sistema de training não disponível",
+            "timestamp": datetime.now().isoformat()
+        }), 503
+    
+    try:
+        training_collector = TrainingDataCollector()
+        stats = training_collector.get_dataset_stats()
+        
+        return jsonify({
+            "training_statistics": stats,
+            "system_status": "active",
+            "timestamp": datetime.now().isoformat()
+        }), 200
+        
+    except Exception as e:
+        logger.error(f"Erro ao obter estatísticas de training: {e}")
+        return jsonify({
+            "error": "Erro interno no sistema de training",
+            "error_message": str(e),
+            "timestamp": datetime.now().isoformat()
+        }), 500
+
+@chat_bp.route('/chat/export-training-data', methods=['POST'])
+def export_training_data():
+    """Exporta dados coletados para Google Colab (formato fine-tuning)"""
+    
+    if not TRAINING_SYSTEM_AVAILABLE:
+        return jsonify({
+            "error": "Sistema de training não disponível",
+            "timestamp": datetime.now().isoformat()
+        }), 503
+    
+    try:
+        data = request.get_json() or {}
+        min_qa_score = data.get('min_qa_score', 0.8)
+        max_examples = data.get('max_examples', 100)
+        include_personas = data.get('personas', ['dr_gasnelio', 'ga'])
+        
+        training_collector = TrainingDataCollector()
+        
+        # Exportar dados com filtros
+        exported_data = training_collector.export_for_colab(
+            min_qa_score=min_qa_score,
+            max_examples=max_examples,
+            personas=include_personas
+        )
+        
+        if not exported_data:
+            return jsonify({
+                "message": "Nenhum dado disponível para export com os critérios especificados",
+                "criteria": {
+                    "min_qa_score": min_qa_score,
+                    "max_examples": max_examples,
+                    "personas": include_personas
+                },
+                "timestamp": datetime.now().isoformat()
+            }), 200
+        
+        return jsonify({
+            "success": True,
+            "message": "Dados exportados com sucesso",
+            "exported_count": len(exported_data.get('examples', [])),
+            "format": "colab_ready",
+            "download_ready": True,
+            "data": exported_data,
+            "timestamp": datetime.now().isoformat()
+        }), 200
+        
+    except Exception as e:
+        logger.error(f"Erro no export de training data: {e}")
+        return jsonify({
+            "error": "Erro interno no export de training",
+            "error_message": str(e),
+            "timestamp": datetime.now().isoformat()
+        }), 500
+
+# OTIMIZAÇÕES PARA MOBILE/RESPONSIVO
+@chat_bp.route('/chat/mobile-config', methods=['GET'])
+def get_mobile_configuration():
+    """
+    Retorna configurações otimizadas para dispositivos móveis
+    Headers, timeouts, limites ajustados para conexões móveis
+    """
+    user_agent = request.headers.get('User-Agent', '').lower()
+    
+    # Detectar se é mobile
+    is_mobile = any(mobile_indicator in user_agent for mobile_indicator in [
+        'mobile', 'android', 'iphone', 'ipad', 'tablet', 'phone'
+    ])
+    
+    # Detectar conexão lenta (baseado em headers)
+    connection_type = request.headers.get('Connection-Type', '')
+    is_slow_connection = any(slow_indicator in connection_type.lower() for slow_indicator in [
+        '2g', '3g', 'slow'
+    ])
+    
+    # Configurações otimizadas
+    mobile_config = {
+        "device_type": "mobile" if is_mobile else "desktop",
+        "connection_optimized": is_slow_connection,
+        "chat_settings": {
+            # Limites ajustados para mobile
+            "max_question_length": 800 if is_mobile else 1000,
+            "max_response_length": 1200 if is_mobile else 2000,
+            "typing_timeout_ms": 5000 if is_mobile else 3000,
+            
+            # Cache mais agressivo em mobile
+            "cache_priority": "high" if is_mobile else "normal",
+            "preload_suggestions": not is_slow_connection,
+            
+            # Chunk responses para conexões lentas
+            "chunk_responses": is_slow_connection,
+            "chunk_size": 200 if is_slow_connection else 500
+        },
+        "ui_optimizations": {
+            # Simplificar interface em mobile
+            "show_advanced_options": not is_mobile,
+            "compact_personas": is_mobile,
+            "auto_scroll": is_mobile,
+            "touch_optimized": is_mobile,
+            
+            # Reduzir animações em conexões lentas
+            "reduced_animations": is_slow_connection,
+            "lazy_load_images": is_mobile or is_slow_connection
+        },
+        "performance": {
+            "request_timeout_ms": 15000 if is_slow_connection else 10000,
+            "retry_attempts": 2 if is_slow_connection else 1,
+            "compression": "gzip",
+            "minify_responses": is_mobile
+        },
+        "features": {
+            # Funcionalidades baseadas na capacidade do device
+            "multimodal_upload": ENHANCED_SERVICES and not is_slow_connection,
+            "voice_input": is_mobile and ('speech' in user_agent or 'webkit' in user_agent),
+            "offline_mode": False,  # Para futuro PWA
+            "push_notifications": False  # Para futuro
+        },
+        "timestamp": datetime.now().isoformat()
+    }
+    
+    return jsonify(mobile_config), 200
+
+@chat_bp.route('/chat/compress', methods=['POST'])
+def chat_compressed():
+    """
+    Endpoint de chat com resposta comprimida para dispositivos móveis
+    Mesma funcionalidade do /chat mas com resposta otimizada
+    """
+    # Verificar se realmente é mobile
+    user_agent = request.headers.get('User-Agent', '').lower()
+    is_mobile = any(indicator in user_agent for indicator in ['mobile', 'android', 'iphone'])
+    
+    if not is_mobile:
+        # Redirecionar para endpoint normal se não for mobile
+        return jsonify({
+            "error": "Este endpoint é otimizado para dispositivos móveis",
+            "redirect": "/api/v1/chat",
+            "error_code": "DESKTOP_REDIRECT"
+        }), 302
+    
+    # Usar mesma lógica do chat normal mas com otimizações
+    # (Para economizar código, vamos reaproveitar a função existente)
+    return chat_api()
+
+@chat_bp.route('/chat/lite', methods=['POST'])
+def chat_lite():
+    """
+    Versão lite do chat para conexões lentas
+    - Sem sugestões
+    - Sem analytics automático  
+    - Resposta mais direta
+    - Cache agressivo
+    """
+    start_time = datetime.now()
+    request_id = f"lite_req_{int(start_time.timestamp() * 1000)}"
+    
+    try:
+        # Validações básicas (mesmo que chat normal)
+        if not request.is_json:
+            return jsonify({"error": "Content-Type deve ser application/json"}), 400
+        
+        data = request.get_json(force=True)
+        if not data:
+            return jsonify({"error": "Payload JSON requerido"}), 400
+        
+        question = data.get('question', '').strip()
+        personality_id = data.get('personality_id', 'dr_gasnelio').strip().lower()
+        
+        if not question or len(question) > 500:  # Limite menor para lite
+            return jsonify({"error": "Pergunta inválida (max 500 chars)"}), 400
+        
+        if personality_id not in ['dr_gasnelio', 'ga']:
+            personality_id = 'dr_gasnelio'
+        
+        # Sanitização básica
+        question = validate_and_sanitize_input(question)
+        
+        # Processar com RAG (sem sugestões)
+        answer, metadata = process_question_with_rag(question, personality_id, request_id)
+        
+        # Resposta lite (sem campos extras)
+        processing_time = int((datetime.now() - start_time).total_seconds() * 1000)
+        
+        lite_response = {
+            "answer": answer,
+            "persona": personality_id,
+            "request_id": request_id,
+            "processing_time_ms": processing_time,
+            # Sem suggestions, sem metadata detalhado
+            "cache_hit": metadata.get('cache_hit', False)
+        }
+        
+        logger.info(f"[{request_id}] 📱 Chat Lite response - {processing_time}ms")
+        return jsonify(lite_response), 200
+        
+    except Exception as e:
+        processing_time = int((datetime.now() - start_time).total_seconds() * 1000)
+        logger.error(f"[{request_id}] Erro no chat lite: {e}")
+        
+        return jsonify({
+            "error": "Erro interno",
+            "request_id": request_id,
+            "processing_time_ms": processing_time
+        }), 500
+
+# ==========================================
+# ENDPOINTS ASSÍNCRONOS COM CELERY
+# ==========================================
+
+@chat_bp.route('/chat/async', methods=['POST'])
+@require_chat_api()
+@check_rate_limit('chat')
+@sanitize_inputs
+def chat_async():
+    """
+    Endpoint assíncrono para chat - inicia processamento em background
+    Retorna task_id para polling de status
+    """
+    start_time = datetime.now()
+    request_id = f"async_req_{int(start_time.timestamp() * 1000)}"
+    
+    if not CELERY_AVAILABLE:
+        return jsonify({
+            "error": "Sistema assíncrono não disponível",
+            "error_code": "CELERY_UNAVAILABLE",
+            "request_id": request_id,
+            "fallback": "/api/v1/chat"
+        }), 503
+    
+    try:
+        logger.info(f"[{request_id}] Nova requisição assíncrona de {request.remote_addr}")
+        
+        # Validações básicas (mesmo do síncrono)
+        if not request.is_json:
+            return jsonify({
+                "error": "Content-Type deve ser application/json",
+                "error_code": "INVALID_CONTENT_TYPE",
+                "request_id": request_id
+            }), 400
+
+        data = request.get_json(force=True)
+        if not data:
+            return jsonify({
+                "error": "Payload JSON requerido",
+                "error_code": "EMPTY_PAYLOAD",
+                "request_id": request_id
+            }), 400
+
+        # Validação da pergunta
+        question = data.get('question', '').strip()
+        if not question:
+            return jsonify({
+                "error": "Campo 'question' é obrigatório",
+                "error_code": "MISSING_QUESTION",
+                "request_id": request_id
+            }), 400
+        
+        if len(question) > 1000:
+            return jsonify({
+                "error": "Pergunta muito longa (máximo 1000 caracteres)",
+                "error_code": "QUESTION_TOO_LONG",
+                "request_id": request_id
+            }), 400
+
+        # Validação da persona
+        personality_id = data.get('personality_id', '').strip().lower()
+        valid_personas = ['dr_gasnelio', 'ga']
+        if not personality_id or personality_id not in valid_personas:
+            return jsonify({
+                "error": "Campo 'personality_id' deve ser válido",
+                "error_code": "INVALID_PERSONA",
+                "request_id": request_id,
+                "valid_personas": valid_personas
+            }), 400
+
+        # Sanitização de input
+        try:
+            question = validate_and_sanitize_input(question)
+        except ValueError as e:
+            log_security_event('MALICIOUS_INPUT_ATTEMPT', request.remote_addr, {
+                'error': str(e),
+                'request_id': request_id
+            })
+            return jsonify({
+                "error": f"Input inválido: {str(e)}",
+                "error_code": "INVALID_INPUT",
+                "request_id": request_id
+            }), 400
+        
+        # Detecção de escopo (síncrona, rápida)
+        if ENHANCED_SERVICES:
+            try:
+                scope_result = detect_question_scope(question)
+                if not scope_result.get('in_scope', True):
+                    limitation_response = get_limitation_response(scope_result)
+                    return jsonify({
+                        "answer": limitation_response,
+                        "persona": personality_id,
+                        "request_id": request_id,
+                        "timestamp": start_time.isoformat(),
+                        "processing_time_ms": int((datetime.now() - start_time).total_seconds() * 1000),
+                        "metadata": {
+                            "scope_detection": scope_result,
+                            "response_type": "out_of_scope_limitation",
+                            "processing_mode": "synchronous_limitation"
+                        }
+                    }), 200
+            except Exception as e:
+                logger.warning(f"[{request_id}] Erro na detecção de escopo: {e}")
+        
+        logger.info(f"[{request_id}] Iniciando processamento assíncrono - Persona: {personality_id}")
+        
+        # Envia task para Celery
+        task = process_question_async.delay(question, personality_id, request_id)
+        
+        processing_time = int((datetime.now() - start_time).total_seconds() * 1000)
+        
+        response = {
+            "task_id": task.id,
+            "status": "processing",
+            "request_id": request_id,
+            "persona": personality_id,
+            "timestamp": start_time.isoformat(),
+            "processing_time_ms": processing_time,
+            "estimated_completion": "2-10 seconds",
+            "polling_url": f"/api/v1/chat/status/{task.id}",
+            "metadata": {
+                "processing_mode": "asynchronous",
+                "version": "celery_v1.0"
+            }
+        }
+        
+        logger.info(f"[{request_id}] Task assíncrona iniciada: {task.id}")
+        return jsonify(response), 202  # Accepted
+        
+    except Exception as e:
+        processing_time = int((datetime.now() - start_time).total_seconds() * 1000)
+        logger.error(f"[{request_id}] Erro ao iniciar processamento assíncrono: {e}")
+        
+        return jsonify({
+            "error": "Erro interno ao iniciar processamento assíncrono",
+            "error_code": "ASYNC_START_ERROR",
+            "request_id": request_id,
+            "processing_time_ms": processing_time,
+            "fallback": "Use /api/v1/chat para processamento síncrono"
+        }), 500
+
+@chat_bp.route('/chat/status/<task_id>', methods=['GET'])
+def chat_status(task_id: str):
+    """
+    Verifica status de task assíncrona
+    Suporta polling para obter resultado
+    """
+    if not CELERY_AVAILABLE:
+        return jsonify({
+            "error": "Sistema assíncrono não disponível",
+            "error_code": "CELERY_UNAVAILABLE"
+        }), 503
+    
+    try:
+        # Obter task result
+        task = process_question_async.AsyncResult(task_id)
+        
+        if task.state == 'PENDING':
+            # Task ainda não foi processada
+            return jsonify({
+                "task_id": task_id,
+                "status": "waiting",
+                "progress": 0,
+                "message": "Task na fila de processamento...",
+                "timestamp": datetime.now().isoformat()
+            }), 200
+            
+        elif task.state == 'PROGRESS':
+            # Task em andamento
+            progress_info = task.info or {}
+            return jsonify({
+                "task_id": task_id,
+                "status": "processing",
+                "stage": progress_info.get('stage', 'unknown'),
+                "progress": progress_info.get('progress', 0),
+                "message": progress_info.get('message', 'Processando...'),
+                "request_id": progress_info.get('request_id', ''),
+                "timestamp": datetime.now().isoformat()
+            }), 200
+            
+        elif task.state == 'SUCCESS':
+            # Task completa
+            result = task.result
+            if result and result.get('success'):
+                return jsonify({
+                    "task_id": task_id,
+                    "status": "completed",
+                    "result": {
+                        "answer": result['answer'],
+                        "metadata": result.get('metadata', {}),
+                        "request_id": result.get('request_id', '')
+                    },
+                    "timestamp": datetime.now().isoformat()
+                }), 200
+            else:
+                return jsonify({
+                    "task_id": task_id,
+                    "status": "completed_with_error", 
+                    "error": result.get('error', 'Erro desconhecido'),
+                    "metadata": result.get('metadata', {}),
+                    "timestamp": datetime.now().isoformat()
+                }), 200
+            
+        elif task.state == 'FAILURE':
+            # Task falhou
+            error_info = task.info or {}
+            return jsonify({
+                "task_id": task_id,
+                "status": "failed",
+                "error": error_info.get('error', str(task.info)),
+                "stage": error_info.get('stage', 'unknown'),
+                "message": error_info.get('message', 'Erro no processamento'),
+                "request_id": error_info.get('request_id', ''),
+                "timestamp": datetime.now().isoformat()
+            }), 200
+        
+        else:
+            # Estado desconhecido
+            return jsonify({
+                "task_id": task_id,
+                "status": "unknown",
+                "state": task.state,
+                "info": str(task.info),
+                "timestamp": datetime.now().isoformat()
+            }), 200
+            
+    except Exception as e:
+        logger.error(f"Erro ao verificar status da task {task_id}: {e}")
+        return jsonify({
+            "error": "Erro interno ao verificar status",
+            "error_code": "STATUS_CHECK_ERROR",
+            "task_id": task_id,
+            "timestamp": datetime.now().isoformat()
+        }), 500
+
+@chat_bp.route('/chat/cancel/<task_id>', methods=['POST'])
+def chat_cancel(task_id: str):
+    """
+    Cancela task assíncrona se ainda não foi completada
+    """
+    if not CELERY_AVAILABLE:
+        return jsonify({
+            "error": "Sistema assíncrono não disponível",
+            "error_code": "CELERY_UNAVAILABLE"
+        }), 503
+    
+    try:
+        task = process_question_async.AsyncResult(task_id)
+        
+        if task.state in ['PENDING', 'PROGRESS']:
+            # Cancelar task
+            task.revoke(terminate=True)
+            
+            return jsonify({
+                "task_id": task_id,
+                "status": "cancelled",
+                "message": "Task cancelada com sucesso",
+                "timestamp": datetime.now().isoformat()
+            }), 200
+            
+        elif task.state == 'SUCCESS':
+            return jsonify({
+                "task_id": task_id,
+                "status": "already_completed",
+                "message": "Task já foi completada, não pode ser cancelada",
+                "timestamp": datetime.now().isoformat()
+            }), 200
+            
+        else:
+            return jsonify({
+                "task_id": task_id,
+                "status": task.state.lower(),
+                "message": f"Task no estado {task.state}, não pode ser cancelada",
+                "timestamp": datetime.now().isoformat()
+            }), 200
+            
+    except Exception as e:
+        logger.error(f"Erro ao cancelar task {task_id}: {e}")
+        return jsonify({
+            "error": "Erro interno ao cancelar task",
+            "error_code": "CANCEL_ERROR",
+            "task_id": task_id,
             "timestamp": datetime.now().isoformat()
         }), 500
