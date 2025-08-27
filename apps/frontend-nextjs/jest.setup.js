@@ -5,6 +5,40 @@
 
 require('@testing-library/jest-dom');
 
+// Mock Next.js router
+jest.mock('next/router', () => ({
+  useRouter() {
+    return {
+      route: '/',
+      pathname: '/',
+      query: {},
+      asPath: '/',
+      push: jest.fn(),
+      replace: jest.fn(),
+      prefetch: jest.fn(),
+    }
+  },
+}));
+
+// Mock Next.js navigation (App Router)
+jest.mock('next/navigation', () => ({
+  useRouter() {
+    return {
+      push: jest.fn(),
+      replace: jest.fn(),
+      back: jest.fn(),
+      forward: jest.fn(),
+      refresh: jest.fn(),
+    }
+  },
+  useSearchParams() {
+    return new URLSearchParams()
+  },
+  usePathname() {
+    return '/'
+  },
+}));
+
 // Mock do localStorage
 const localStorageMock = {
   getItem: jest.fn(),

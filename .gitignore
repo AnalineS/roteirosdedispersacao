@@ -246,8 +246,40 @@ INTERNAL_*
 backend_config.json
 frontend_config.json
 
-# Arquivos de desenvolvimento e testes locais
-/tests/
-/scripts/start_dev_environment.py
-requirements.txt
-REORGANIZATION_PLAN.md
+# ==========================================
+# ESTRUTURA ORGANIZADA DO PROJETO
+# ==========================================
+
+# Arquivos de desenvolvimento local (mas manter estrutura organizada)
+tools/dev-environment/start_dev_environment.py
+
+# Outputs temporários de scripts
+scripts/*/output/
+scripts/*/logs/
+*_output.txt
+*_evidence.txt
+
+# Arquivos temporários de evidências e relatórios
+temp_*.md
+*_temp.json
+
+# GitHub CLI binários (manter apenas o executável)
+bin/LICENSE
+gh.zip
+
+# ==========================================
+# ARQUIVOS DE CONFIGURAÇÃO ORGANIZADOS  
+# ==========================================
+
+# Manter estrutura de testes mas ignorar outputs
+tests/*/output/
+tests/*/reports/
+!tests/*/README.md
+
+# Manter estrutura de docs mas ignorar temporários
+docs/temp/
+docs/**/temp_*.md
+
+# Manter scripts mas ignorar logs
+scripts/**/logs/
+scripts/**/*.log
