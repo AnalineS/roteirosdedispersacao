@@ -283,7 +283,19 @@ def setup_cors(app):
             cloud_run_url = os.environ.get('CLOUD_RUN_SERVICE_URL')
             if cloud_run_url:
                 allowed_origins.append(cloud_run_url)
-                logger.info(f"Cloud Run HML URL adicionada ao CORS: {cloud_run_url}")
+                # SECURITY FIX: Comprehensive URL sanitization to prevent log injection
+                import urllib.parse
+                import re
+                if cloud_run_url:
+                    # Decode URL encoding first, then sanitize
+                    decoded_url = urllib.parse.unquote(cloud_run_url)
+                    # Remove all control characters and newlines (safe approach)
+                    sanitized_url = ''.join(c for c in decoded_url if c.isprintable() and c not in '\n\r\t')
+                    # Truncate if too long
+                    final_url = sanitized_url[:100] + '...' if len(sanitized_url) > 100 else sanitized_url
+                else:
+                    final_url = 'None'
+                logger.info(f"Cloud Run HML URL adicionada ao CORS: {final_url}")
         
         logger.info("CORS configurado para homologação")
     elif environment == 'production':
@@ -303,7 +315,19 @@ def setup_cors(app):
             cloud_run_url = os.environ.get('CLOUD_RUN_SERVICE_URL')
             if cloud_run_url:
                 allowed_origins.append(cloud_run_url)
-                logger.info(f"Cloud Run URL adicionada ao CORS: {cloud_run_url}")
+                # SECURITY FIX: Comprehensive URL sanitization to prevent log injection
+                import urllib.parse
+                import re
+                if cloud_run_url:
+                    # Decode URL encoding first, then sanitize
+                    decoded_url = urllib.parse.unquote(cloud_run_url)
+                    # Remove all control characters and newlines (safe approach)
+                    sanitized_url = ''.join(c for c in decoded_url if c.isprintable() and c not in '\n\r\t')
+                    # Truncate if too long
+                    final_url = sanitized_url[:100] + '...' if len(sanitized_url) > 100 else sanitized_url
+                else:
+                    final_url = 'None'
+                logger.info(f"Cloud Run URL adicionada ao CORS: {final_url}")
         
         logger.info("CORS configurado para produção")
     
@@ -325,7 +349,18 @@ def setup_cors(app):
          supports_credentials=False,
          max_age=86400)  # Cache preflight por 24h
     
-    logger.info(f"🔗 CORS configurado para: {allowed_origins}")
+    # SECURITY FIX: Comprehensive origins sanitization to prevent log injection
+    import urllib.parse
+    import re
+    sanitized_origins = []
+    for origin in allowed_origins:
+        # Decode URL encoding, then remove control characters
+        decoded_origin = urllib.parse.unquote(str(origin))
+        clean_origin = re.sub(r'[\n\r\t\x00-\x1f\x7f-\x9f]', '', decoded_origin)
+        # Truncate if too long
+        truncated_origin = clean_origin[:50] + '...' if len(clean_origin) > 50 else clean_origin
+        sanitized_origins.append(truncated_origin)
+    logger.info(f"🔗 CORS configurado para: {sanitized_origins}")
 
 def setup_security_headers(app):
     """Configurar headers de segurança aprimorados"""
@@ -557,7 +592,21 @@ if __name__ == '__main__':
             import signal
             signal.alarm(0)  # Desabilitar alarmes que podem atrasar startup
         
-        logger.info(f"🚀 Iniciando servidor em {host}:{port}")
+        # SECURITY FIX: Comprehensive host/port sanitization to prevent log injection
+        import re
+        if host:
+            clean_host = re.sub(r'[\n\r\t\x00-\x1f\x7f-\x9f]', '', str(host))
+            sanitized_host = clean_host[:50]
+        else:
+            sanitized_host = 'localhost'
+            
+        if port:
+            clean_port = re.sub(r'[\n\r\t\x00-\x1f\x7f-\x9f]', '', str(port))
+            sanitized_port = clean_port[:10]
+        else:
+            sanitized_port = '5000'
+            
+        logger.info(f"🚀 Iniciando servidor em {sanitized_host}:{sanitized_port}")
         
         # Executar aplicação
         app.run(
