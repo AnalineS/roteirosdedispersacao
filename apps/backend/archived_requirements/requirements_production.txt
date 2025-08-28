@@ -29,7 +29,7 @@ faiss-cpu==1.7.4  # Substitui ChromaDB - mais leve
 
 # === VALIDATION & SECURITY ===
 pydantic==2.5.0
-bleach==6.1.0
+bleach==6.2.0
 jsonschema==4.23.0
 
 # === SECURITY MIDDLEWARE (CRÍTICO - FALTANDO) ===
