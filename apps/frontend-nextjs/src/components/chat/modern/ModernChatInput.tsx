@@ -18,6 +18,9 @@ interface ModernChatInputProps {
   showSuggestions?: boolean;
   onHistoryToggle?: () => void;
   showHistory?: boolean;
+  onFileUpload?: (files: FileList) => void;
+  acceptedFileTypes?: string;
+  maxFileSize?: number;
 }
 
 const SendIcon = () => (
@@ -45,6 +48,23 @@ const HistoryIcon = () => (
   >
     <path d="M3 3v5h5"/>
     <path d="M3.05 13A9 9 0 1 0 6 5.3l-3 3.7"/>
+  </svg>
+);
+
+const UploadIcon = () => (
+  <svg 
+    width="20" 
+    height="20" 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2"
+  >
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+    <polyline points="14,2 14,8 20,8"/>
+    <line x1="16" y1="13" x2="8" y2="13"/>
+    <line x1="16" y1="17" x2="8" y2="17"/>
+    <polyline points="10,9 9,9 8,9"/>
   </svg>
 );
 
@@ -153,9 +173,13 @@ export default function ModernChatInput({
   onSuggestionClick,
   showSuggestions = false,
   onHistoryToggle,
-  showHistory = false
+  showHistory = false,
+  onFileUpload,
+  acceptedFileTypes = ".jpg,.jpeg,.png,.pdf,.txt,.doc,.docx",
+  maxFileSize = 10 * 1024 * 1024 // 10MB
 }: ModernChatInputProps) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [isFocused, setIsFocused] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
 
@@ -175,6 +199,27 @@ export default function ModernChatInput({
     setTimeout(() => setIsAnimating(false), 300);
     
     onSubmit(e);
+  };
+
+  const handleFileUpload = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || !onFileUpload) return;
+
+    // Validar tamanho dos arquivos
+    for (const file of Array.from(files)) {
+      if (file.size > maxFileSize) {
+        alert(`Arquivo "${file.name}" é muito grande. Limite: ${maxFileSize / (1024 * 1024)}MB`);
+        return;
+      }
+    }
+
+    onFileUpload(files);
+    // Limpar o input para permitir upload do mesmo arquivo novamente
+    e.target.value = '';
   };
 
   const handleFocus = () => {
@@ -279,6 +324,59 @@ export default function ModernChatInput({
             >
               <HistoryIcon />
             </button>
+          )}
+
+          {/* Botão de Upload de Arquivo */}
+          {onFileUpload && (
+            <>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept={acceptedFileTypes}
+                onChange={handleFileChange}
+                multiple
+                style={{ display: 'none' }}
+                aria-label="Upload de arquivos"
+              />
+              <button
+                type="button"
+                onClick={handleFileUpload}
+                aria-label="Anexar arquivo"
+                title="Anexar arquivo (PDF, imagens, documentos)"
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '50%',
+                  border: 'none',
+                  background: modernChatTheme.colors.neutral.border,
+                  color: modernChatTheme.colors.neutral.textMuted,
+                  margin: '4px',
+                  cursor: 'pointer',
+                  transition: `all ${modernChatTheme.transitions.normal}`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                  touchAction: 'manipulation'
+                }}
+                onMouseEnter={(e) => {
+                  if (!isMobile) {
+                    e.currentTarget.style.transform = 'scale(1.05)';
+                    e.currentTarget.style.background = colors?.alpha || 'rgba(0,0,0,0.1)';
+                    e.currentTarget.style.color = colors?.primary || modernChatTheme.colors.neutral.text;
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isMobile) {
+                    e.currentTarget.style.transform = 'scale(1)';
+                    e.currentTarget.style.background = modernChatTheme.colors.neutral.border;
+                    e.currentTarget.style.color = modernChatTheme.colors.neutral.textMuted;
+                  }
+                }}
+              >
+                <UploadIcon />
+              </button>
+            </>
           )}
           
           <input

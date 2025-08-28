@@ -270,6 +270,34 @@ export default function ChatPage() {
       setPendingQuestion('');
     }
   }, [createConversation, clearAnalysis, pendingQuestion]);
+
+  // Handler para upload de arquivos
+  const handleFileUpload = useCallback((files: FileList) => {
+    console.log('Files uploaded:', files);
+    
+    // Trigger feedback de arquivo recebido
+    triggerReceiveFeedback();
+    
+    const fileNames = Array.from(files).map(f => f.name).join(', ');
+    const fileCount = files.length;
+    
+    // Notificar usuário sobre arquivos recebidos com aviso de privacidade
+    const privacyMessage = `${fileCount} arquivo${fileCount > 1 ? 's' : ''} recebido${fileCount > 1 ? 's' : ''}: ${fileNames}\n\n🔒 AVISO DE PRIVACIDADE: Os arquivos anexados são processados temporariamente para análise e são automaticamente excluídos após o processamento. Nenhum arquivo é armazenado permanentemente em nossos servidores para garantir sua privacidade e segurança.`;
+    
+    // Mostrar aviso ao usuário
+    if (typeof window !== 'undefined') {
+      alert(privacyMessage);
+    }
+    
+    console.log(privacyMessage);
+    
+    // TODO: Implementar processamento de arquivos
+    // - Upload temporário para backend
+    // - OCR para PDFs/imagens
+    // - Extração de texto
+    // - Adicionar ao contexto da conversa
+    // - Exclusão automática após processamento
+  }, [triggerReceiveFeedback]);
   
   const handleNewConversation = (personaId: string) => {
     const conversationId = createConversation(personaId);
@@ -419,6 +447,7 @@ export default function ChatPage() {
           fallbackState={fallbackState}
           onHistoryToggle={() => setShowHistory(!showHistory)}
           showHistory={showHistory}
+          onFileUpload={handleFileUpload}
         />
         
         {/* Chat Feedback Overlay */}

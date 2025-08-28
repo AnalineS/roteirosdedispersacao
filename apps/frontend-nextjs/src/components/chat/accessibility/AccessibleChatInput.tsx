@@ -5,6 +5,24 @@ import { Persona } from '@/services/api';
 import { modernChatTheme, getPersonaColors } from '@/config/modernTheme';
 import { useChatAccessibility, useAccessibleFocus } from './ChatAccessibilityProvider';
 
+const UploadIcon = () => (
+  <svg 
+    width="20" 
+    height="20" 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2"
+    aria-hidden="true"
+  >
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+    <polyline points="14,2 14,8 20,8"/>
+    <line x1="16" y1="13" x2="8" y2="13"/>
+    <line x1="16" y1="17" x2="8" y2="17"/>
+    <polyline points="10,9 9,9 8,9"/>
+  </svg>
+);
+
 interface AccessibleChatInputProps {
   value: string;
   onChange: (value: string) => void;
@@ -19,6 +37,9 @@ interface AccessibleChatInputProps {
   showSuggestions?: boolean;
   disabled?: boolean;
   maxLength?: number;
+  onFileUpload?: (files: FileList) => void;
+  acceptedFileTypes?: string;
+  maxFileSize?: number;
 }
 
 const AccessibleChatInput: React.FC<AccessibleChatInputProps> = ({
@@ -34,11 +55,15 @@ const AccessibleChatInput: React.FC<AccessibleChatInputProps> = ({
   onSuggestionClick,
   showSuggestions = false,
   disabled = false,
-  maxLength = 2000
+  maxLength = 2000,
+  onFileUpload,
+  acceptedFileTypes = ".jpg,.jpeg,.png,.pdf,.txt,.doc,.docx",
+  maxFileSize = 10 * 1024 * 1024 // 10MB
 }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [isFocused, setIsFocused] = useState(false);
   const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
@@ -199,6 +224,36 @@ const AccessibleChatInput: React.FC<AccessibleChatInputProps> = ({
     }, 200);
   }, []);
 
+  // Handle file upload
+  const handleFileUpload = useCallback(() => {
+    if (onFileUpload) {
+      fileInputRef.current?.click();
+      announceMessage('Seletor de arquivo aberto');
+    }
+  }, [onFileUpload, announceMessage]);
+
+  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || !onFileUpload) return;
+
+    // Validar tamanho dos arquivos
+    for (const file of Array.from(files)) {
+      if (file.size > maxFileSize) {
+        const sizeMB = (maxFileSize / (1024 * 1024)).toFixed(1);
+        announceSystemStatus(`Arquivo "${file.name}" é muito grande. Limite: ${sizeMB}MB`, 'error');
+        return;
+      }
+    }
+
+    const fileCount = files.length;
+    const fileNames = Array.from(files).map(f => f.name).join(', ');
+    announceMessage(`${fileCount} arquivo${fileCount > 1 ? 's' : ''} selecionado${fileCount > 1 ? 's' : ''}: ${fileNames}`);
+    
+    onFileUpload(files);
+    // Limpar o input para permitir upload do mesmo arquivo novamente
+    e.target.value = '';
+  }, [onFileUpload, maxFileSize, announceMessage, announceSystemStatus]);
+
   // Generate accessible placeholder
   const accessiblePlaceholder = placeholder || 
     (persona ? `Digite sua mensagem para ${persona.name}...` : 'Digite sua mensagem...');
@@ -208,6 +263,7 @@ const AccessibleChatInput: React.FC<AccessibleChatInputProps> = ({
     persona ? `Conversando com ${persona.name}` : 'Chat com assistente',
     filteredSuggestions.length > 0 ? `${filteredSuggestions.length} sugestões disponíveis` : '',
     `Limite: ${maxLength} caracteres`,
+    onFileUpload ? 'Botão de anexar arquivos disponível' : '',
     'Enter para enviar, Shift+Enter para nova linha'
   ].filter(Boolean).join('. ');
 
@@ -273,6 +329,33 @@ const AccessibleChatInput: React.FC<AccessibleChatInputProps> = ({
         aria-label="Enviar mensagem para assistente"
       >
         <div className={`input-wrapper ${isFocused ? 'focused' : ''} ${hasExceededLimit ? 'error' : ''}`}>
+          {/* Hidden file input */}
+          {onFileUpload && (
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept={acceptedFileTypes}
+              onChange={handleFileChange}
+              multiple
+              style={{ display: 'none' }}
+              aria-label="Upload de arquivos"
+            />
+          )}
+          
+          {/* File upload button */}
+          {onFileUpload && (
+            <button
+              type="button"
+              onClick={handleFileUpload}
+              disabled={disabled || isLoading}
+              className="file-upload-button"
+              aria-label="Anexar arquivo"
+              title="Anexar arquivo (PDF, imagens, documentos) - Arquivos são processados temporariamente e excluídos automaticamente"
+            >
+              <UploadIcon />
+            </button>
+          )}
+          
           <textarea
             ref={textareaRef}
             value={value}
@@ -321,6 +404,13 @@ const AccessibleChatInput: React.FC<AccessibleChatInputProps> = ({
           </button>
         </div>
       </form>
+
+      {/* Privacy notice for file uploads */}
+      {onFileUpload && isFocused && (
+        <div className="privacy-notice">
+          🔒 Arquivos anexados são processados temporariamente e excluídos automaticamente após análise
+        </div>
+      )}
 
       <style jsx>{`
         .accessible-chat-input-container {
@@ -508,6 +598,58 @@ const AccessibleChatInput: React.FC<AccessibleChatInputProps> = ({
           transform: none;
         }
 
+        .file-upload-button {
+          padding: ${modernChatTheme.spacing.sm};
+          background: ${modernChatTheme.colors.neutral.border};
+          border: 2px solid ${modernChatTheme.colors.neutral.border};
+          border-radius: ${modernChatTheme.borderRadius.md};
+          color: ${modernChatTheme.colors.neutral.textMuted};
+          cursor: pointer;
+          transition: all 0.2s ease;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          min-width: 44px;
+          min-height: 44px;
+          margin-right: ${modernChatTheme.spacing.xs};
+        }
+
+        .file-upload-button:hover:not(:disabled) {
+          background: ${colors.primary}15;
+          border-color: ${colors.primary};
+          color: ${colors.primary};
+          transform: translateY(-1px);
+        }
+
+        .file-upload-button:focus {
+          outline: 2px solid ${colors.primary};
+          outline-offset: 2px;
+        }
+
+        .file-upload-button:disabled {
+          background: ${modernChatTheme.colors.background.secondary};
+          border-color: ${modernChatTheme.colors.neutral.border};
+          color: ${modernChatTheme.colors.neutral.textMuted};
+          cursor: not-allowed;
+          transform: none;
+        }
+
+        .privacy-notice {
+          position: absolute;
+          bottom: -32px;
+          left: 0;
+          right: 0;
+          font-size: ${modernChatTheme.typography.meta.fontSize};
+          color: ${modernChatTheme.colors.neutral.textMuted};
+          background: ${modernChatTheme.colors.background.secondary};
+          padding: ${modernChatTheme.spacing.xs} ${modernChatTheme.spacing.md};
+          border-radius: ${modernChatTheme.borderRadius.md};
+          border: 1px solid ${modernChatTheme.colors.neutral.border};
+          box-shadow: ${modernChatTheme.shadows.subtle};
+          animation: slideUpFade 0.2s ease-out;
+          z-index: ${modernChatTheme.zIndex.tooltip};
+        }
+
         .spinner {
           width: 16px;
           height: 16px;
@@ -522,10 +664,22 @@ const AccessibleChatInput: React.FC<AccessibleChatInputProps> = ({
           100% { transform: rotate(360deg); }
         }
 
+        @keyframes slideUpFade {
+          from {
+            opacity: 0;
+            transform: translateY(8px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
         /* High contrast mode support */
         @media (prefers-contrast: high) {
           .message-input,
           .send-button,
+          .file-upload-button,
           .suggestion-item {
             border-width: 3px !important;
           }
@@ -540,15 +694,19 @@ const AccessibleChatInput: React.FC<AccessibleChatInputProps> = ({
           .accessible-chat-input-container,
           .message-input,
           .send-button,
-          .suggestion-item {
+          .file-upload-button,
+          .suggestion-item,
+          .privacy-notice {
             transition: none !important;
+            animation: none !important;
           }
           
           .spinner {
             animation: none !important;
           }
           
-          .send-button:hover:not(:disabled) {
+          .send-button:hover:not(:disabled),
+          .file-upload-button:hover:not(:disabled) {
             transform: none !important;
           }
         }
@@ -565,6 +723,12 @@ const AccessibleChatInput: React.FC<AccessibleChatInputProps> = ({
           
           .message-input {
             font-size: 16px; /* Prevent zoom on iOS */
+          }
+          
+          .privacy-notice {
+            bottom: -28px;
+            font-size: 11px;
+            padding: ${modernChatTheme.spacing.xs};
           }
         }
       `}</style>

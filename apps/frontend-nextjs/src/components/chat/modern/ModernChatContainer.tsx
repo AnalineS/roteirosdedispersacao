@@ -53,6 +53,9 @@ interface ModernChatContainerProps {
   suggestions?: string[];
   showSuggestions?: boolean;
   onSuggestionClick?: (suggestion: string) => void;
+
+  // Upload de arquivos
+  onFileUpload?: (files: FileList) => void;
 }
 
 // OTIMIZAÇÃO CRÍTICA: Componente principal simplificado usando subcomponentes especializados
@@ -74,7 +77,8 @@ const ModernChatContainer = memo(function ModernChatContainer({
   showHistory,
   suggestions,
   showSuggestions,
-  onSuggestionClick
+  onSuggestionClick,
+  onFileUpload
 }: ModernChatContainerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
