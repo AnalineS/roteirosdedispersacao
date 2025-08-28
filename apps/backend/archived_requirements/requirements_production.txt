@@ -6,7 +6,7 @@
 
 # === CORE FLASK ===
 Flask==3.0.0
-Flask-CORS==6.0.0  # SECURITY UPDATE: CVE fixes aplicados
+Flask-CORS==6.0.1  # SECURITY UPDATE: CVE fixes aplicados
 Werkzeug==3.0.1
 gunicorn==21.2.0
 
