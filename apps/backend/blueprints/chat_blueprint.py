@@ -29,13 +29,23 @@ except ImportError:
 # Importar dependências
 from core.dependencies import get_cache, get_rag, get_qa, get_config
 
-# Import sistema de métricas
+# Import sistema de métricas e logging seguro
 try:
     from core.metrics.performance_monitor import performance_monitor, record_ai_metric
     from core.logging.advanced_logger import log_performance, log_security_event
+    from core.security.secure_logging import get_secure_logger, log_safely, sanitize_for_logging
     METRICS_AVAILABLE = True
+    SECURE_LOGGING_AVAILABLE = True
 except ImportError:
     METRICS_AVAILABLE = False
+    SECURE_LOGGING_AVAILABLE = False
+    # Fallback para logging básico
+    def sanitize_for_logging(text, max_length=200):
+        if not isinstance(text, str):
+            text = str(text)
+        # Sanitização básica para prevenir log injection
+        sanitized = text.replace('\n', ' ').replace('\r', ' ').replace('\t', ' ')
+        return sanitized[:max_length] if len(sanitized) > max_length else sanitized
 
 # Import AI Provider Manager
 try:
@@ -103,7 +113,11 @@ except ImportError:
     BASIC_RAG = False
 
 # Configurar logger
-logger = logging.getLogger(__name__)
+# Initialize secure logger if available, otherwise use standard logger
+if SECURE_LOGGING_AVAILABLE:
+    logger = get_secure_logger(__name__)
+else:
+    logger = logging.getLogger(__name__)
 
 # Criar blueprint
 chat_bp = Blueprint('chat', __name__, url_prefix='/api/v1')
@@ -224,7 +238,17 @@ def log_security_event(event_type: str, client_ip: Optional[str], details: Dict[
     ENHANCED: Type safety melhorada com Optional
     """
     safe_ip = client_ip or 'unknown'
-    logger.warning(f"SECURITY_EVENT: {event_type} from {safe_ip} - {details}")
+    
+    # Use secure logging to prevent log injection
+    sanitized_event_type = sanitize_for_logging(str(event_type), max_length=50)
+    sanitized_details = sanitize_for_logging(str(details), max_length=200)
+    
+    if SECURE_LOGGING_AVAILABLE:
+        log_safely(logger.logger, 'warning', 
+                  f"SECURITY_EVENT: {sanitized_event_type} from {safe_ip} - {sanitized_details}")
+    else:
+        logger.warning(f"SECURITY_EVENT: {sanitized_event_type} from {safe_ip} - {sanitized_details}")
+    
     return None
 
 def process_question_with_rag(question: str, personality_id: str, request_id: str) -> tuple[str, Dict[str, Any]]:
@@ -491,11 +515,13 @@ def chat_api():
     config = get_config()
     
     try:
-        logger.info(f"[{request_id}] Nova requisição de chat de {request.remote_addr}")
+        safe_remote_addr = sanitize_for_logging(str(request.remote_addr or 'unknown'), max_length=50)
+        logger.info(f"[{request_id}] Nova requisição de chat de {safe_remote_addr}")
         
         # Validação de Content-Type
         if not request.is_json:
-            logger.warning(f"[{request_id}] Content-Type inválido: {request.content_type}")
+            safe_content_type = sanitize_for_logging(str(request.content_type or 'unknown'), max_length=100)
+            logger.warning(f"[{request_id}] Content-Type inválido: {safe_content_type}")
             return jsonify({
                 "error": "Content-Type deve ser application/json",
                 "error_code": "INVALID_CONTENT_TYPE",
@@ -1354,7 +1380,8 @@ def chat_image_analysis():
         }), 503
     
     try:
-        logger.info(f"[{request_id}] Nova requisição multimodal de {request.remote_addr}")
+        safe_remote_addr = sanitize_for_logging(str(request.remote_addr or 'unknown'), max_length=50)
+        logger.info(f"[{request_id}] Nova requisição multimodal de {safe_remote_addr}")
         
         # Validar se tem arquivo de imagem
         if 'image' not in request.files:
@@ -1732,7 +1759,8 @@ def chat_async():
         }), 503
     
     try:
-        logger.info(f"[{request_id}] Nova requisição assíncrona de {request.remote_addr}")
+        safe_remote_addr = sanitize_for_logging(str(request.remote_addr or 'unknown'), max_length=50)
+        logger.info(f"[{request_id}] Nova requisição assíncrona de {safe_remote_addr}")
         
         # Validações básicas (mesmo do síncrono)
         if not request.is_json:
