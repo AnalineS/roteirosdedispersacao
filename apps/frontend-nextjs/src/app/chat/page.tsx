@@ -23,6 +23,7 @@ import { useUserProfile } from '@/hooks/useUserProfile';
 import { theme } from '@/config/theme';
 import { SidebarLoader } from '@/components/LoadingSpinner';
 import { type ChatMessage } from '@/services/api';
+import { redisCache } from '@/services/redisCache';
 
 export default function ChatPage() {
   const { setPersonaSelectionViewed } = useGlobalNavigation();
@@ -31,9 +32,27 @@ export default function ChatPage() {
   // Chat feedback hook
   const { triggerSendFeedback, triggerReceiveFeedback, triggerErrorFeedback } = useChatFeedback();
   
-  // Marcar que o usuário visitou o chat (permite navegação livre)
+  // Marcar que o usuário visitou o chat e fazer warmup do cache
   useEffect(() => {
     setPersonaSelectionViewed();
+    
+    // Pré-carregar tópicos comuns no Redis para melhor performance
+    const warmupTopics = [
+      'dose rifampicina',
+      'efeitos clofazimina',
+      'duração tratamento',
+      'tratamento PQT-U',
+      'efeitos colaterais',
+      'dose dapsona',
+      'hiperpigmentação pele',
+      'tratamento hanseníase',
+      'medicação supervisionada',
+      'reações adversas'
+    ];
+    
+    redisCache.warmupCache(warmupTopics)
+      .then(() => console.log('🔥 Cache pré-aquecido com sucesso'))
+      .catch(err => console.warn('Erro no warmup do cache:', err));
   }, [setPersonaSelectionViewed]);
   
   const {

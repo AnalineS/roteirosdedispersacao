@@ -12,6 +12,7 @@ import { useFallback } from '@/hooks/useFallback';
 import { FallbackResult } from '@/services/fallbackSystem';
 import { useAuth } from '@/hooks/useAuth';
 import { generateTempUserId } from '@/utils/cryptoUtils';
+import { redisCache } from '@/services/redisCache';
 
 // OTIMIZAÇÃO CRÍTICA: Hooks especializados para reduzir complexidade
 import { useChatMessages } from '@/hooks/useChatMessages';
@@ -182,6 +183,33 @@ export function useChat(options: UseChatOptions = {}) {
     const maxRetries = 3;
     const retryDelay = Math.pow(2, retryCount) * 1000; // Exponential backoff
     
+    // Verificar cache Redis primeiro
+    if (retryCount === 0) {
+      const cachedResponse = await redisCache.getPersonaResponse(personaId, message);
+      if (cachedResponse && cachedResponse.confidence > 0.7) {
+        console.log('🎯 Redis cache hit para:', message.substring(0, 30) + '...');
+        
+        const assistantMessage: ChatMessage = {
+          role: 'assistant',
+          content: cachedResponse.response.content || cachedResponse.response,
+          timestamp: Date.now(),
+          persona: personaId,
+          metadata: {
+            fromCache: true,
+            confidence: cachedResponse.confidence
+          }
+        };
+        
+        addMessage(assistantMessage);
+        
+        if (onMessageReceived) {
+          onMessageReceived(assistantMessage);
+        }
+        
+        return;
+      }
+    }
+    
     // Analisar sentimento antes de enviar
     let sentiment: SentimentResult | null = null;
     if (enableSentimentAnalysis && retryCount === 0) {
@@ -294,6 +322,16 @@ export function useChat(options: UseChatOptions = {}) {
         timestamp: response.timestamp ? new Date(response.timestamp).getTime() : Date.now(),
         persona: response.persona
       };
+
+      // Salvar no Redis cache de forma assíncrona
+      if (response.confidence || 0.8 > 0.7) {
+        redisCache.cachePersonaResponse(
+          personaId,
+          message,
+          response.answer,
+          response.confidence || 0.85
+        ).catch(err => console.warn('Failed to cache response:', err));
+      }
 
       addMessage(assistantMessage);
       

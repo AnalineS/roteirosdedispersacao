@@ -5,6 +5,7 @@
 
 import { SentimentResult, SentimentCategory } from './sentimentAnalysis';
 import { AstraResponse } from './astraClient';
+import { redisCache } from './redisCache';
 
 export interface FallbackOptions {
   useLocalKnowledge?: boolean;
@@ -89,7 +90,24 @@ export class FallbackSystem {
     sentiment?: SentimentResult,
     options: FallbackOptions = {}
   ): Promise<FallbackResult> {
-    // Prioridade 1: Cache local
+    // Prioridade 1: Tentar Redis cache primeiro
+    try {
+      const redisCached = await redisCache.get<any>(`fallback:${query}`, { namespace: 'fallback' });
+      if (redisCached) {
+        console.log('🎯 Redis fallback hit');
+        return {
+          success: true,
+          response: this.adaptResponseToSentiment(redisCached.response || redisCached, sentiment),
+          source: 'cache',
+          confidence: 0.9,
+          suggestion: 'Resposta recuperada do cache Redis.'
+        };
+      }
+    } catch (error) {
+      console.warn('Redis fallback miss, trying local cache');
+    }
+    
+    // Prioridade 2: Cache local
     const cachedResponse = this.searchLocalCache(query);
     if (cachedResponse) {
       return {
@@ -114,7 +132,15 @@ export class FallbackSystem {
     }
     
     // Prioridade 3: Resposta de emergência
-    return this.getEmergencyResponse(query, 'network', sentiment);
+    const emergencyResponse = await this.getEmergencyResponse(query, 'network', sentiment);
+    
+    // Salvar no Redis para futuras consultas
+    redisCache.set(`fallback:${query}`, emergencyResponse.response, {
+      ttl: 300, // 5 minutos para fallbacks
+      namespace: 'fallback'
+    }).catch(err => console.warn('Failed to cache fallback:', err));
+    
+    return emergencyResponse;
   }
   
   /**
@@ -178,7 +204,7 @@ export class FallbackSystem {
    * Busca no cache local
    */
   private searchLocalCache(query: string): string | null {
-    // Simular busca em cache local
+    // Cache local como backup quando Redis não está disponível
     const normalizedQuery = query.toLowerCase().trim();
     
     const cacheData = [
@@ -256,11 +282,11 @@ export class FallbackSystem {
   /**
    * Resposta de emergência
    */
-  private getEmergencyResponse(
+  private async getEmergencyResponse(
     query: string,
     failureType: string,
     sentiment?: SentimentResult
-  ): FallbackResult {
+  ): Promise<FallbackResult> {
     let baseResponse = '';
     let emergencyContact = '';
     
