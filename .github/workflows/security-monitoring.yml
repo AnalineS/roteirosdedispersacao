@@ -237,7 +237,7 @@ jobs:
     
     steps:
       - name: 📥 Download Reports
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v5
         with:
           name: security-reports
 
