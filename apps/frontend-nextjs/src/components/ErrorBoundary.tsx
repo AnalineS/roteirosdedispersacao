@@ -91,7 +91,7 @@ class ErrorBoundary extends Component<Props, State> {
               e está trabalhando para resolver o problema.
             </p>
 
-            {process.env.NODE_ENV === 'development' && this.state.error && (
+            {this.state.error && (
               <details style={{
                 marginBottom: '30px',
                 padding: '15px',

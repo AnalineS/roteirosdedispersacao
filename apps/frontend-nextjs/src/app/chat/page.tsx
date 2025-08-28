@@ -25,16 +25,25 @@ import { SidebarLoader } from '@/components/LoadingSpinner';
 import { type ChatMessage } from '@/services/api';
 
 export default function ChatPage() {
+  console.log('[ChatPage] Component initializing...');
+  
   const { setPersonaSelectionViewed } = useGlobalNavigation();
+  console.log('[ChatPage] GlobalNavigation hook loaded');
+  
   const { personas, loading: personasLoading, error: personasError } = usePersonas();
+  console.log('[ChatPage] Personas hook loaded:', { personasLoading, personasError, personasCount: personas ? Object.keys(personas).length : 0 });
   
   // Chat feedback hook
+  console.log('[ChatPage] Loading ChatFeedback hook...');
   const { triggerSendFeedback, triggerReceiveFeedback, triggerErrorFeedback } = useChatFeedback();
+  console.log('[ChatPage] ChatFeedback hook loaded');
   
   // Marcar que o usuário visitou o chat (permite navegação livre)
   useEffect(() => {
     setPersonaSelectionViewed();
   }, [setPersonaSelectionViewed]);
+  
+  console.log('[ChatPage] Loading ConversationHistory hook...');
   const {
     createConversation,
     switchToConversation,
@@ -45,7 +54,13 @@ export default function ChatPage() {
     getConversationsForPersona,
     currentConversationId
   } = useConversationHistory();
+  console.log('[ChatPage] ConversationHistory hook loaded');
+  
+  console.log('[ChatPage] Loading UserProfile hook...');
   const { profile, updateProfile, getRecommendedPersona } = useUserProfile();
+  console.log('[ChatPage] UserProfile hook loaded');
+  
+  console.log('[ChatPage] Loading useChat hook...');
   const { 
     loading: chatLoading, 
     error: chatError, 
@@ -69,6 +84,7 @@ export default function ChatPage() {
       triggerReceiveFeedback();
     }, [addMessageToConversation, triggerReceiveFeedback])
   });
+  console.log('[ChatPage] useChat hook loaded');
   
   const [inputValue, setInputValue] = useState('');
   const [selectedPersona, setSelectedPersona] = useState<string | null>(null); // Será definido baseado na URL ou preferência
