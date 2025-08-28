@@ -202,7 +202,7 @@ function generateOfflineResponse(request: ChatRequest): ChatResponse {
   
   // Resposta básica informando sobre indisponibilidade
   const offlineMessage = isGa 
-    ? `${emoji} Oi! Sou a Gá e estou aqui para te ajudar com informações sobre hanseníase. 
+    ? `${emoji} Oi! Sou o Gá e estou aqui para te ajudar com informações sobre hanseníase. 
 
 No momento, estou funcionando em modo offline, então minhas respostas podem ser mais limitadas. 
 

@@ -34,21 +34,21 @@ const ChatEmptyState = memo(function ChatEmptyState({
         </div>
         
         <h2 className="welcome-title">
-          Bem-vindo ao Sistema de Consulta
+          Bem-vindo(a) ao Sistema de consulta especializada sobre hanseníase
         </h2>
         
         <p className="welcome-description">
-          Escolha uma persona especializada para começar sua consulta sobre hanseníase.
+          Escolha um assistente especializado para conversar.
         </p>
 
         {/* Seleção de Persona */}
         <div className="persona-selection">
-          <h3>Escolha sua assistente:</h3>
+          <h3>Escolha seu assistente:</h3>
           <div className="persona-grid">
             {Object.entries(personas).map(([id, persona]) => (
               <button
                 key={id}
-                className={`persona-card ${selectedPersona === id ? 'selected' : ''}`}
+                className={`persona-card ${selectedPersona === id ? 'selected' : ''} persona-${id}`}
                 onClick={() => onPersonaChange(id)}
                 aria-label={`Selecionar ${persona.name}`}
               >
@@ -185,6 +185,46 @@ const ChatEmptyState = memo(function ChatEmptyState({
         .persona-card.selected {
           border-color: #3b82f6;
           background: #eff6ff;
+        }
+
+        /* Dr. Gasnelio - Azul */
+        .persona-dr_gasnelio {
+          border-color: #3b82f6;
+        }
+        
+        .persona-dr_gasnelio:hover {
+          border-color: #2563eb;
+          background: #eff6ff;
+          box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+        }
+        
+        .persona-dr_gasnelio.selected {
+          border-color: #2563eb;
+          background: #dbeafe;
+        }
+        
+        .persona-dr_gasnelio .persona-style {
+          color: #2563eb;
+        }
+
+        /* Gá - Verde */
+        .persona-ga {
+          border-color: #10b981;
+        }
+        
+        .persona-ga:hover {
+          border-color: #059669;
+          background: #ecfdf5;
+          box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+        }
+        
+        .persona-ga.selected {
+          border-color: #059669;
+          background: #d1fae5;
+        }
+        
+        .persona-ga .persona-style {
+          color: #059669;
         }
 
         .persona-avatar {
