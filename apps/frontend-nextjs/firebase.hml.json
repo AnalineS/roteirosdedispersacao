@@ -54,7 +54,7 @@
             },
             {
               "key": "Content-Security-Policy",
-              "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://hml-roteiro-dispensacao-api-*.run.app https://api-inference.huggingface.co https://openrouter.ai; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+              "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://hml-roteiro-dispensacao-api-4f2gjf6cua-uc.a.run.app https://api-inference.huggingface.co https://openrouter.ai; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
             },
             {
               "key": "Permissions-Policy",
