@@ -7,6 +7,7 @@ import PWAManager from '@/components/pwa/PWAManager'
 import AuthProviderWrapper from '@/components/auth/AuthProviderWrapper'
 import { ThemeProvider } from '@/contexts/ThemeContext'
 import { AccessibilityProvider } from '@/contexts/AccessibilityContext'
+import { GlobalNavigationProvider } from '@/components/navigation/GlobalNavigationProvider'
 import EnhancedCoreWebVitals from '@/components/analytics/EnhancedCoreWebVitals'
 import SITE_CONFIG from '@/lib/config'
 import '@/styles/globals.css'
@@ -113,13 +114,15 @@ export default function RootLayout({
         <main id="main-content">
           <AccessibilityProvider>
             <ThemeProvider>
-              <AuthProviderWrapper>
-                <AnalyticsProvider>
-                  <ErrorBoundary>
-                    {children}
-                  </ErrorBoundary>
-                </AnalyticsProvider>
-              </AuthProviderWrapper>
+              <GlobalNavigationProvider>
+                <AuthProviderWrapper>
+                  <AnalyticsProvider>
+                    <ErrorBoundary>
+                      {children}
+                    </ErrorBoundary>
+                  </AnalyticsProvider>
+                </AuthProviderWrapper>
+              </GlobalNavigationProvider>
             </ThemeProvider>
           </AccessibilityProvider>
         </main>
