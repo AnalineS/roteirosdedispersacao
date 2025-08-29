@@ -30,7 +30,7 @@ class RedisCache {
 
   constructor() {
     // O backend já está configurado com REDIS_URL do GitHub Secrets
-    this.apiEndpoint = process.env.NEXT_PUBLIC_API_URL || 'https://backend-hanseniase-latest-oyapfspdqa-uc.a.run.app';
+    this.apiEndpoint = process.env.NEXT_PUBLIC_API_URL || 'https://hml-roteiro-dispensacao-api-4f2gjf6cua-uc.a.run.app';
     this.defaultTTL = 3600; // 1 hora padrão
     this.namespace = 'chat';
   }
