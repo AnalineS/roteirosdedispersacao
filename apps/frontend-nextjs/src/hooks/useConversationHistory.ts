@@ -90,16 +90,20 @@ export function useConversationHistory() {
 
   const loadFromLocalStorage = useCallback(async () => {
     try {
-      // Tentar Redis primeiro
-      const userId = auth.user?.uid || 'anonymous';
-      const redisCached = await redisCache.get<Conversation[]>(`conversations:${userId}`, { 
-        namespace: 'conversations' 
-      });
-      
-      if (redisCached && Array.isArray(redisCached)) {
-        console.log('🎯 Loaded conversations from Redis cache');
-        setConversations(redisCached.slice(0, MAX_CONVERSATIONS));
-        return;
+      // Tentar Redis primeiro (com fallback seguro)
+      try {
+        const userId = auth.user?.uid || 'anonymous';
+        const redisCached = await redisCache.get<Conversation[]>(`conversations:${userId}`, { 
+          namespace: 'conversations' 
+        });
+        
+        if (redisCached && Array.isArray(redisCached)) {
+          console.log('🎯 Loaded conversations from Redis cache');
+          setConversations(redisCached.slice(0, MAX_CONVERSATIONS));
+          return;
+        }
+      } catch (redisError) {
+        console.warn('Redis load error (falling back to localStorage):', redisError);
       }
       
       // Fallback para localStorage
@@ -112,12 +116,16 @@ export function useConversationHistory() {
             .slice(0, MAX_CONVERSATIONS);
           setConversations(validConversations);
           
-          // Salvar no Redis para próxima vez
+          // Salvar no Redis para próxima vez (com tratamento de erro)
           if (validConversations.length > 0) {
-            redisCache.set(`conversations:${userId}`, validConversations, {
-              ttl: 1800, // 30 minutos
-              namespace: 'conversations'
-            }).catch(err => console.warn('Failed to cache conversations:', err));
+            try {
+              redisCache.set(`conversations:${userId}`, validConversations, {
+                ttl: 1800, // 30 minutos
+                namespace: 'conversations'
+              }).catch(err => console.warn('Redis cache save failed:', err));
+            } catch (err) {
+              console.warn('Redis operation error:', err);
+            }
           }
         }
       }
@@ -188,12 +196,16 @@ export function useConversationHistory() {
         
       const dataString = JSON.stringify(limitedConversations);
       
-      // Salvar no Redis também
-      const userId = auth.user?.uid || 'anonymous';
-      redisCache.set(`conversations:${userId}`, limitedConversations, {
-        ttl: 1800, // 30 minutos
-        namespace: 'conversations'
-      }).catch(err => console.warn('Failed to update Redis cache:', err));
+      // Salvar no Redis também (com tratamento de erro)
+      try {
+        const userId = auth.user?.uid || 'anonymous';
+        redisCache.set(`conversations:${userId}`, limitedConversations, {
+          ttl: 1800, // 30 minutos
+          namespace: 'conversations'
+        }).catch(err => console.warn('Redis update failed:', err));
+      } catch (err) {
+        console.warn('Redis operation error:', err);
+      }
       
       if (dataString.length > 4.5 * 1024 * 1024) {
         const reducedConversations = limitedConversations.slice(0, Math.floor(MAX_CONVERSATIONS / 2));
@@ -250,14 +262,18 @@ export function useConversationHistory() {
   const saveToStorage = useCallback((newConversations: Conversation[]) => {
     if (typeof window === 'undefined') return;
     
-    // Salvar no Redis imediatamente (não bloquear)
-    const userId = auth.user?.uid || 'anonymous';
-    redisCache.set(`conversations:${userId}`, newConversations, {
-      ttl: 1800,
-      namespace: 'conversations'
-    }).then(() => {
-      console.log('💾 Conversations cached in Redis');
-    }).catch(err => console.warn('Redis cache error:', err));
+    // Salvar no Redis imediatamente (com tratamento de erro robusto)
+    try {
+      const userId = auth.user?.uid || 'anonymous';
+      redisCache.set(`conversations:${userId}`, newConversations, {
+        ttl: 1800,
+        namespace: 'conversations'
+      }).then(() => {
+        console.log('💾 Conversations cached in Redis');
+      }).catch(err => console.warn('Redis cache error (non-blocking):', err));
+    } catch (err) {
+      console.warn('Redis operation setup error:', err);
+    }
     
     // Limpar timeout anterior
     if (saveTimeoutRef.current) {

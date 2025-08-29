@@ -250,6 +250,7 @@ const ModernChatContainer = memo(function ModernChatContainer({
           suggestions={suggestions}
           showSuggestions={showSuggestions}
           onSuggestionClick={onSuggestionClick}
+          onFileUpload={onFileUpload}
           placeholder={currentPersona ? `Digite sua mensagem para ${currentPersona.name}...` : 'Digite sua mensagem...'}
         />
       </div>

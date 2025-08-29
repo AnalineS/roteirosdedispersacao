@@ -50,9 +50,14 @@ export default function ChatPage() {
       'reações adversas'
     ];
     
-    redisCache.warmupCache(warmupTopics)
+    // Redis warmup com fallback robusto
+    Promise.resolve()
+      .then(() => redisCache.warmupCache(warmupTopics))
       .then(() => console.log('🔥 Cache pré-aquecido com sucesso'))
-      .catch(err => console.warn('Erro no warmup do cache:', err));
+      .catch(err => {
+        console.warn('Erro no warmup do cache (continuando sem cache):', err);
+        // Não bloquear a aplicação se Redis falhar
+      });
   }, [setPersonaSelectionViewed]);
   
   const {

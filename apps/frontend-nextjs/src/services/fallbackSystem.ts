@@ -90,7 +90,7 @@ export class FallbackSystem {
     sentiment?: SentimentResult,
     options: FallbackOptions = {}
   ): Promise<FallbackResult> {
-    // Prioridade 1: Tentar Redis cache primeiro
+    // Prioridade 1: Tentar Redis cache primeiro (com fallback seguro)
     try {
       const redisCached = await redisCache.get<any>(`fallback:${query}`, { namespace: 'fallback' });
       if (redisCached) {
@@ -104,7 +104,7 @@ export class FallbackSystem {
         };
       }
     } catch (error) {
-      console.warn('Redis fallback miss, trying local cache');
+      console.warn('Redis fallback error (continuing with local cache):', error);
     }
     
     // Prioridade 2: Cache local
@@ -134,11 +134,15 @@ export class FallbackSystem {
     // Prioridade 3: Resposta de emergência
     const emergencyResponse = await this.getEmergencyResponse(query, 'network', sentiment);
     
-    // Salvar no Redis para futuras consultas
-    redisCache.set(`fallback:${query}`, emergencyResponse.response, {
-      ttl: 300, // 5 minutos para fallbacks
-      namespace: 'fallback'
-    }).catch(err => console.warn('Failed to cache fallback:', err));
+    // Salvar no Redis para futuras consultas (com tratamento de erro)
+    try {
+      redisCache.set(`fallback:${query}`, emergencyResponse.response, {
+        ttl: 300, // 5 minutos para fallbacks
+        namespace: 'fallback'
+      }).catch(err => console.warn('Redis fallback cache failed:', err));
+    } catch (err) {
+      console.warn('Redis fallback operation error:', err);
+    }
     
     return emergencyResponse;
   }
