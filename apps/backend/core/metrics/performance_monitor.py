@@ -144,7 +144,7 @@ class PerformanceMonitor:
         
         monitor_thread = threading.Thread(target=monitor_system, daemon=True)
         monitor_thread.start()
-        logger.info("✅ Sistema de monitoramento de performance iniciado")
+        logger.info("[OK] Sistema de monitoramento de performance iniciado")
     
     def _collect_system_metrics(self):
         """Coleta métricas do sistema"""
@@ -401,7 +401,7 @@ class PerformanceMonitor:
         with open(filepath, 'w', encoding='utf-8') as f:
             json.dump(metrics_data, f, ensure_ascii=False, indent=2, default=str)
         
-        logger.info(f"📊 Métricas exportadas para: {filepath}")
+        logger.info(f"[REPORT] Métricas exportadas para: {filepath}")
 
 # Instância global
 performance_monitor = PerformanceMonitor()

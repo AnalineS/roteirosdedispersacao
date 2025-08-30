@@ -379,7 +379,7 @@ if METRICS_AVAILABLE:
     def medical_alert_callback(alert_type: str, details: Dict[str, Any]):
         """Callback especializado para alertas médicos"""
         # Log específico para alertas do sistema médico
-        logger.warning(f"🚨 ALERTA MÉDICO [{alert_type}]: {details}")
+        logger.warning(f"[ALERT] ALERTA MÉDICO [{alert_type}]: {details}")
         
         # Log de segurança para alertas críticos
         if alert_type in ['high_error_rate', 'slow_endpoint', 'high_cpu_usage']:

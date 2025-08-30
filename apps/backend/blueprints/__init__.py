@@ -16,6 +16,14 @@ from .predictions_blueprint import predictions_bp
 from .multimodal_blueprint import multimodal_bp
 from .observability import observability_bp
 
+# Import cache blueprint
+try:
+    from .cache_blueprint import cache_blueprint
+    CACHE_BP_AVAILABLE = True
+except ImportError:
+    CACHE_BP_AVAILABLE = False
+    cache_blueprint = None
+
 # Import user blueprint (com fallback)
 try:
     from .user_blueprint import user_bp
@@ -47,6 +55,10 @@ ALL_BLUEPRINTS = [
     observability_bp
 ]
 
+# Adicionar cache blueprint se disponível
+if CACHE_BP_AVAILABLE and cache_blueprint:
+    ALL_BLUEPRINTS.append(cache_blueprint)
+
 # Adicionar user blueprint se disponível
 if USER_BP_AVAILABLE and user_bp:
     ALL_BLUEPRINTS.append(user_bp)
@@ -67,6 +79,7 @@ __all__ = [
     'predictions_bp',
     'multimodal_bp',
     'observability_bp',
+    'cache_blueprint',
     'user_bp',
     'swagger_ui_blueprint',
     'ALL_BLUEPRINTS'

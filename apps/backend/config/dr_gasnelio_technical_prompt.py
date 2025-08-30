@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Sistema de Prompts Técnicos para Dr. Gasnelio
 Farmacêutico Clínico Especialista em Hanseníase PQT-U

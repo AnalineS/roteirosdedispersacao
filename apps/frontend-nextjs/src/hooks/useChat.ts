@@ -12,6 +12,7 @@ import { useFallback } from '@/hooks/useFallback';
 import { FallbackResult } from '@/services/fallbackSystem';
 import { useAuth } from '@/hooks/useAuth';
 import { generateTempUserId } from '@/utils/cryptoUtils';
+import { redisCache } from '@/services/redisCache';
 
 // OTIMIZAÇÃO CRÍTICA: Hooks especializados para reduzir complexidade
 import { useChatMessages } from '@/hooks/useChatMessages';
@@ -182,6 +183,39 @@ export function useChat(options: UseChatOptions = {}) {
     const maxRetries = 3;
     const retryDelay = Math.pow(2, retryCount) * 1000; // Exponential backoff
     
+    // Verificar cache Redis primeiro (com fallback seguro)
+    if (retryCount === 0) {
+      try {
+        const cachedResponse = await redisCache.getPersonaResponse(personaId, message);
+        if (cachedResponse && cachedResponse.confidence > 0.7) {
+          console.log('🎯 Redis cache hit para:', message.substring(0, 30) + '...');
+          
+          const assistantMessage: ChatMessage = {
+            role: 'assistant',
+            content: cachedResponse.response.content || cachedResponse.response,
+            timestamp: Date.now(),
+            persona: personaId,
+            metadata: {
+              isFallback: true,
+              fallbackSource: 'cache',
+              confidence: cachedResponse.confidence
+            }
+          };
+          
+          addMessage(assistantMessage);
+          
+          if (onMessageReceived) {
+            onMessageReceived(assistantMessage);
+          }
+          
+          return;
+        }
+      } catch (redisError) {
+        console.warn('Redis cache error (continuando normalmente):', redisError);
+        // Continuar com a execução normal mesmo se Redis falhar
+      }
+    }
+    
     // Analisar sentimento antes de enviar
     let sentiment: SentimentResult | null = null;
     if (enableSentimentAnalysis && retryCount === 0) {
@@ -294,6 +328,20 @@ export function useChat(options: UseChatOptions = {}) {
         timestamp: response.timestamp ? new Date(response.timestamp).getTime() : Date.now(),
         persona: response.persona
       };
+
+      // Salvar no Redis cache de forma assíncrona (com tratamento de erro)
+      if ((response.confidence || 0.8) > 0.7) {
+        try {
+          redisCache.cachePersonaResponse(
+            personaId,
+            message,
+            response.answer,
+            response.confidence || 0.85
+          ).catch(err => console.warn('Redis cache save failed (not blocking):', err));
+        } catch (err) {
+          console.warn('Redis cache operation error:', err);
+        }
+      }
 
       addMessage(assistantMessage);
       

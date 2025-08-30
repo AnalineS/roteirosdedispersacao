@@ -71,7 +71,7 @@ Este é um sistema completo de segurança desenvolvido especificamente para o pr
 - Relatórios HTML/JSON detalhados
 - Pre-commit hooks automáticos
 
-## 🚀 Instalação e Configuração
+## [START] Instalação e Configuração
 
 ### 1. Instalar Dependências
 
@@ -114,7 +114,7 @@ app = Flask(__name__)
 security_framework = init_security_framework(app)
 ```
 
-## 📝 Exemplos de Uso
+## [NOTE] Exemplos de Uso
 
 ### Protegendo Endpoints
 
@@ -195,7 +195,7 @@ if not results['passed']:
         print(f"- {rec}")
 ```
 
-## 🔧 Configuração Avançada
+## [FIX] Configuração Avançada
 
 ### Configuração Completa
 
@@ -244,7 +244,7 @@ security_config = {
 app = create_secure_app(__name__, security_config)
 ```
 
-## 📊 Dashboard e Monitoramento
+## [REPORT] Dashboard e Monitoramento
 
 ### Endpoints de Segurança
 
@@ -265,7 +265,7 @@ app = create_secure_app(__name__, security_config)
 - **BLOCKED_REQUESTS**: Requisições bloqueadas
 - **ACTIVE_SESSIONS**: Sessões ativas
 
-## 🛡️ Níveis de Segurança
+## [SECURITY] Níveis de Segurança
 
 ### Deployment Stages
 
@@ -287,7 +287,7 @@ app = create_secure_app(__name__, security_config)
 8. **SYSTEM_ADMIN** - Administração sistema
 9. **ROOT** - Acesso total
 
-## 🚨 Tipos de Ameaças Detectadas
+## [ALERT] Tipos de Ameaças Detectadas
 
 ### Ataques Automaticamente Detectados
 
@@ -331,7 +331,7 @@ success = secrets_manager.rotate_secret('api_key', 'novo-valor')
 secrets_to_rotate = secrets_manager.get_secrets_requiring_rotation()
 ```
 
-## 📋 Compliance e Auditoria
+## [LIST] Compliance e Auditoria
 
 ### Verificações de Compliance
 
@@ -357,7 +357,7 @@ Todos os eventos são logados em formato estruturado:
 }
 ```
 
-## 🎯 Reutilização em Novos Projetos
+## [TARGET] Reutilização em Novos Projetos
 
 ### Template de Projeto Seguro
 

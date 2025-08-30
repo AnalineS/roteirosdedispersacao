@@ -11,6 +11,7 @@ import { ConversationRepository } from '@/lib/firebase/firestore';
 import { FirestoreConversation, FirestoreMessage } from '@/lib/firebase/types';
 import { FEATURES } from '@/lib/firebase/config';
 import { generateSecureId } from '@/utils/cryptoUtils';
+import { redisCache } from '@/services/redisCache';
 
 // Constantes
 const MAX_CONVERSATIONS = 50;
@@ -87,8 +88,25 @@ export function useConversationHistory() {
   // FUNÇÕES DE CARREGAMENTO
   // ============================================
 
-  const loadFromLocalStorage = useCallback(() => {
+  const loadFromLocalStorage = useCallback(async () => {
     try {
+      // Tentar Redis primeiro (com fallback seguro)
+      try {
+        const userId = auth.user?.uid || 'anonymous';
+        const redisCached = await redisCache.get<Conversation[]>(`conversations:${userId}`, { 
+          namespace: 'conversations' 
+        });
+        
+        if (redisCached && Array.isArray(redisCached)) {
+          console.log('🎯 Loaded conversations from Redis cache');
+          setConversations(redisCached.slice(0, MAX_CONVERSATIONS));
+          return;
+        }
+      } catch (redisError) {
+        console.warn('Redis load error (falling back to localStorage):', redisError);
+      }
+      
+      // Fallback para localStorage
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
         const parsedConversations = JSON.parse(stored);
@@ -97,6 +115,19 @@ export function useConversationHistory() {
             .filter(conv => conv && typeof conv === 'object' && conv.id && conv.personaId)
             .slice(0, MAX_CONVERSATIONS);
           setConversations(validConversations);
+          
+          // Salvar no Redis para próxima vez (com tratamento de erro)
+          if (validConversations.length > 0) {
+            try {
+              const userId = auth.user?.uid || 'anonymous';
+              redisCache.set(`conversations:${userId}`, validConversations, {
+                ttl: 1800, // 30 minutos
+                namespace: 'conversations'
+              }).catch(err => console.warn('Redis cache save failed:', err));
+            } catch (err) {
+              console.warn('Redis operation error:', err);
+            }
+          }
         }
       }
     } catch (error) {
@@ -153,7 +184,7 @@ export function useConversationHistory() {
   // FUNÇÕES DE SALVAMENTO
   // ============================================
 
-  const saveToLocalStorageOnly = useCallback((newConversations: Conversation[]) => {
+  const saveToLocalStorageOnly = useCallback(async (newConversations: Conversation[]) => {
     if (typeof window === 'undefined') return;
     
     try {
@@ -166,6 +197,17 @@ export function useConversationHistory() {
         
       const dataString = JSON.stringify(limitedConversations);
       
+      // Salvar no Redis também (com tratamento de erro)
+      try {
+        const userId = auth.user?.uid || 'anonymous';
+        redisCache.set(`conversations:${userId}`, limitedConversations, {
+          ttl: 1800, // 30 minutos
+          namespace: 'conversations'
+        }).catch(err => console.warn('Redis update failed:', err));
+      } catch (err) {
+        console.warn('Redis operation error:', err);
+      }
+      
       if (dataString.length > 4.5 * 1024 * 1024) {
         const reducedConversations = limitedConversations.slice(0, Math.floor(MAX_CONVERSATIONS / 2));
         localStorage.setItem(STORAGE_KEY, JSON.stringify(reducedConversations));
@@ -175,7 +217,7 @@ export function useConversationHistory() {
     } catch (error) {
       console.error('Erro ao salvar no localStorage:', error);
     }
-  }, []);
+  }, [auth.user?.uid]);
 
   const saveToFirestore = useCallback(async (conversation: Conversation) => {
     if (!auth.user || !useFirestore) return;
@@ -217,9 +259,22 @@ export function useConversationHistory() {
     }
   }, [auth.user, useFirestore]);
 
-  // Salvar conversas (localStorage + Firestore se disponível)
+  // Salvar conversas (Redis + localStorage + Firestore se disponível)
   const saveToStorage = useCallback((newConversations: Conversation[]) => {
     if (typeof window === 'undefined') return;
+    
+    // Salvar no Redis imediatamente (com tratamento de erro robusto)
+    try {
+      const userId = auth.user?.uid || 'anonymous';
+      redisCache.set(`conversations:${userId}`, newConversations, {
+        ttl: 1800,
+        namespace: 'conversations'
+      }).then(() => {
+        console.log('💾 Conversations cached in Redis');
+      }).catch(err => console.warn('Redis cache error (non-blocking):', err));
+    } catch (err) {
+      console.warn('Redis operation setup error:', err);
+    }
     
     // Limpar timeout anterior
     if (saveTimeoutRef.current) {

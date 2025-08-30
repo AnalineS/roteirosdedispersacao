@@ -381,9 +381,9 @@ class EndpointCompatibilityTester:
     
     def run_all_tests(self) -> Dict[str, Any]:
         """Executa todos os testes e retorna relatório completo"""
-        print(f"🔍 Iniciando testes de compatibilidade de endpoints...")
+        print(f"[SEARCH] Iniciando testes de compatibilidade de endpoints...")
         print(f"🌐 Base URL: {self.base_url}")
-        print(f"📋 Total de testes: {len(self.tests)}")
+        print(f"[LIST] Total de testes: {len(self.tests)}")
         print("=" * 80)
         
         start_time = time.time()
@@ -397,9 +397,9 @@ class EndpointCompatibilityTester:
             
             # Status visual
             if result.success:
-                print(f"   ✅ SUCESSO ({result.response_time_ms}ms)")
+                print(f"   [OK] SUCESSO ({result.response_time_ms}ms)")
             else:
-                print(f"   ❌ FALHOU ({result.response_time_ms}ms)")
+                print(f"   [ERROR] FALHOU ({result.response_time_ms}ms)")
                 if result.error_message:
                     print(f"      Erro: {result.error_message}")
                 if result.missing_fields:
@@ -492,7 +492,7 @@ class EndpointCompatibilityTester:
         failed_health = [r for r in health_results if not r.success]
         
         if failed_health:
-            recommendations.append("🚨 CRÍTICO: Health checks falhando - isso causará problemas no Cloud Run")
+            recommendations.append("[ALERT] CRÍTICO: Health checks falhando - isso causará problemas no Cloud Run")
         
         # Verificar endpoints core
         personas_failed = not any(r.endpoint == '/api/v1/personas' and r.success for r in self.results)
@@ -500,43 +500,43 @@ class EndpointCompatibilityTester:
         scope_failed = not any(r.endpoint == '/api/v1/scope' and r.success for r in self.results)
         
         if personas_failed:
-            recommendations.append("❌ Endpoint /api/v1/personas falhou - frontend não conseguirá carregar personas")
+            recommendations.append("[ERROR] Endpoint /api/v1/personas falhou - frontend não conseguirá carregar personas")
         
         if chat_failed:
-            recommendations.append("❌ Endpoint /api/v1/chat falhou - funcionalidade principal do sistema não funcionará")
+            recommendations.append("[ERROR] Endpoint /api/v1/chat falhou - funcionalidade principal do sistema não funcionará")
         
         if scope_failed:
-            recommendations.append("⚠️ Endpoint /api/v1/scope falhou - detecção de escopo pode não funcionar")
+            recommendations.append("[WARNING] Endpoint /api/v1/scope falhou - detecção de escopo pode não funcionar")
         
         # Verificar campos faltando
         missing_fields_results = [r for r in self.results if r.missing_fields]
         if missing_fields_results:
-            recommendations.append("📋 Alguns endpoints têm campos faltando - verifique estrutura de resposta")
+            recommendations.append("[LIST] Alguns endpoints têm campos faltando - verifique estrutura de resposta")
         
         # Score geral
         passed = sum(1 for r in self.results if r.success)
         score = (passed / len(self.results)) * 100 if self.results else 0
         
         if score >= 90:
-            recommendations.append("✅ Excelente compatibilidade! Sistema pronto para produção")
+            recommendations.append("[OK] Excelente compatibilidade! Sistema pronto para produção")
         elif score >= 75:
-            recommendations.append("✅ Boa compatibilidade - alguns ajustes menores podem ser necessários")
+            recommendations.append("[OK] Boa compatibilidade - alguns ajustes menores podem ser necessários")
         elif score >= 50:
-            recommendations.append("⚠️ Compatibilidade moderada - vários problemas precisam ser corrigidos")
+            recommendations.append("[WARNING] Compatibilidade moderada - vários problemas precisam ser corrigidos")
         else:
-            recommendations.append("🚨 Baixa compatibilidade - revisão completa necessária")
+            recommendations.append("[ALERT] Baixa compatibilidade - revisão completa necessária")
         
         return recommendations
     
     def print_report(self, report: Dict[str, Any]):
         """Imprime relatório formatado"""
         print("\n" + "="*80)
-        print("📊 RELATÓRIO DE COMPATIBILIDADE DE ENDPOINTS")
+        print("[REPORT] RELATÓRIO DE COMPATIBILIDADE DE ENDPOINTS")
         print("="*80)
         
         # Summary
         summary = report['summary']
-        print(f"\n🎯 RESUMO GERAL:")
+        print(f"\n[TARGET] RESUMO GERAL:")
         print(f"   Total de testes: {summary['total_tests']}")
         print(f"   Sucessos: {summary['passed']}")
         print(f"   Falhas: {summary['failed']}")
@@ -545,18 +545,18 @@ class EndpointCompatibilityTester:
         print(f"   Tempo total: {summary['total_time_seconds']}s")
         
         # Categorias
-        print(f"\n📋 POR CATEGORIA:")
+        print(f"\n[LIST] POR CATEGORIA:")
         for cat_key, cat_data in report['categories'].items():
             print(f"   {cat_data['name']}: {cat_data['passed']}/{cat_data['total']} ({cat_data['success_rate']})")
         
         # Frontend compatibility
         compat = report['frontend_compatibility']
         print(f"\n🌐 COMPATIBILIDADE COM FRONTEND:")
-        print(f"   Personas: {'✅' if compat['personas_endpoint'] else '❌'}")
-        print(f"   Chat: {'✅' if compat['chat_endpoint'] else '❌'}")
-        print(f"   Health: {'✅' if compat['health_endpoint'] else '❌'}")
-        print(f"   Scope: {'✅' if compat['scope_endpoint'] else '❌'}")
-        print(f"   Geral: {'✅ COMPATÍVEL' if compat['overall_compatible'] else '❌ INCOMPATÍVEL'}")
+        print(f"   Personas: {'[OK]' if compat['personas_endpoint'] else '[ERROR]'}")
+        print(f"   Chat: {'[OK]' if compat['chat_endpoint'] else '[ERROR]'}")
+        print(f"   Health: {'[OK]' if compat['health_endpoint'] else '[ERROR]'}")
+        print(f"   Scope: {'[OK]' if compat['scope_endpoint'] else '[ERROR]'}")
+        print(f"   Geral: {'[OK] COMPATÍVEL' if compat['overall_compatible'] else '[ERROR] INCOMPATÍVEL'}")
         
         # Recomendações
         print(f"\n💡 RECOMENDAÇÕES:")
@@ -566,7 +566,7 @@ class EndpointCompatibilityTester:
         # Falhas detalhadas
         failed_results = [r for r in self.results if not r.success]
         if failed_results:
-            print(f"\n❌ FALHAS DETALHADAS:")
+            print(f"\n[ERROR] FALHAS DETALHADAS:")
             for result in failed_results:
                 print(f"   {result.method} {result.endpoint}")
                 if result.error_message:
@@ -621,11 +621,11 @@ def main():
             print(f"\n📄 Relatório salvo em: {safe_output_path}")
             
         except ValueError as e:
-            print(f"\n❌ Erro de segurança: {e}")
+            print(f"\n[ERROR] Erro de segurança: {e}")
             print("💡 Use um caminho seguro dentro do diretório atual")
             sys.exit(1)
         except (OSError, PermissionError) as e:
-            print(f"\n❌ Erro ao salvar arquivo: {e}")
+            print(f"\n[ERROR] Erro ao salvar arquivo: {e}")
             sys.exit(1)
     
     # Exit code baseado no resultado

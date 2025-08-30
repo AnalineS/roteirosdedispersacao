@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Exemplo de Integração do Sistema de Segurança
 =============================================

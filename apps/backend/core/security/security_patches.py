@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Security Patches - Correções de vulnerabilidades
 Implementa correções para vulnerabilidades de alta severidade
@@ -178,6 +179,10 @@ def secure_cors_headers(response):
     Returns:
         Response com headers seguros
     """
+    # Verificar se response tem headers (não é uma tupla de erro)
+    if not hasattr(response, 'headers'):
+        return response
+        
     # Definir origens permitidas (em produção, ser mais restritivo)
     allowed_origins = [
         'https://roteirosdedispensacao.com',

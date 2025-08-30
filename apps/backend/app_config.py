@@ -36,6 +36,12 @@ class AppConfig:
     OPENROUTER_API_KEY: Optional[str] = os.getenv('OPENROUTER_API_KEY')
     HUGGINGFACE_API_KEY: Optional[str] = os.getenv('HUGGINGFACE_API_KEY')
     
+    # Supabase Config - FASE 3 RAG Integration
+    SUPABASE_URL: Optional[str] = os.getenv('SUPABASE_PROJECT_URL')
+    SUPABASE_KEY: Optional[str] = os.getenv('SUPABASE_PUBLISHABLE_KEY')
+    SUPABASE_SERVICE_KEY: Optional[str] = os.getenv('SUPABASE_SERVICE_ROLE_KEY')
+    SUPABASE_JWT_SECRET: Optional[str] = os.getenv('SUPABASE_JWT_SIGNING_KEY')
+    
     # Feature Flags - Padrão conservador para evitar timeout Cloud Run
     EMBEDDINGS_ENABLED: bool = os.getenv('EMBEDDINGS_ENABLED', 'false').lower() == 'true'
     ADVANCED_FEATURES: bool = os.getenv('ADVANCED_FEATURES', 'false').lower() == 'true'
@@ -50,18 +56,34 @@ class AppConfig:
     EMBEDDING_BATCH_SIZE: int = int(os.getenv('EMBEDDING_BATCH_SIZE', 32))
     EMBEDDING_CACHE_SIZE: int = int(os.getenv('EMBEDDING_CACHE_SIZE', 1000))
     
-    # Vector DB Config
-    VECTOR_DB_PATH: str = os.getenv('VECTOR_DB_PATH', './cache/embeddings')
+    # Vector DB Config - Supabase pgvector
+    VECTOR_DB_TYPE: str = os.getenv('VECTOR_DB_TYPE', 'supabase')  # 'supabase' or 'local'
+    VECTOR_DB_PATH: str = os.getenv('VECTOR_DB_PATH', './cache/embeddings')  # Fallback local
     SEMANTIC_SIMILARITY_THRESHOLD: float = float(os.getenv('SEMANTIC_SIMILARITY_THRESHOLD', '0.7'))
+    PGVECTOR_DIMENSIONS: int = int(os.getenv('PGVECTOR_DIMENSIONS', '384'))  # MiniLM dimensions
+    
+    # Cloud Storage Config - FASE 3 Cache Cloud-Native
+    EMBEDDINGS_CLOUD_CACHE: bool = os.getenv('EMBEDDINGS_CLOUD_CACHE', 'false').lower() == 'true'
+    CLOUD_STORAGE_BUCKET: Optional[str] = os.getenv('CLOUD_STORAGE_BUCKET')
+    EMBEDDINGS_LAZY_LOAD: bool = os.getenv('EMBEDDINGS_LAZY_LOAD', 'true').lower() == 'true'
+    MIN_INSTANCES: int = int(os.getenv('MIN_INSTANCES', '0'))  # Cloud Run min instances
     
     # Cache Config
     CACHE_MAX_SIZE: int = int(os.getenv('CACHE_MAX_SIZE', 1000))
     CACHE_TTL_MINUTES: int = int(os.getenv('CACHE_TTL_MINUTES', 60))
     
-    # Rate Limiting
+    # Security Middleware - FASE 4 HABILITADO
+    SECURITY_MIDDLEWARE_ENABLED: bool = os.getenv('SECURITY_MIDDLEWARE_ENABLED', 'false').lower() == 'true'
+    
+    # Rate Limiting - Configurações moderadas
     RATE_LIMIT_ENABLED: bool = os.getenv('RATE_LIMIT_ENABLED', '').lower() != 'false'
     RATE_LIMIT_DEFAULT: str = os.getenv('RATE_LIMIT_DEFAULT', '200/hour')
     RATE_LIMIT_CHAT: str = os.getenv('RATE_LIMIT_CHAT', '50/hour')
+    
+    # Security Settings - Bloqueio automático após ataques
+    SECURITY_AUTO_BLOCK_ENABLED: bool = os.getenv('SECURITY_AUTO_BLOCK_ENABLED', 'true').lower() == 'true'
+    SECURITY_BLOCK_DURATION_MINUTES: int = int(os.getenv('SECURITY_BLOCK_DURATION_MINUTES', '15'))
+    SECURITY_MAX_VIOLATIONS: int = int(os.getenv('SECURITY_MAX_VIOLATIONS', '5'))
     
     # Logging Config
     LOG_LEVEL: str = os.getenv('LOG_LEVEL', 'INFO')
@@ -114,14 +136,18 @@ class AppConfig:
     ASTRA_DB_CLIENT_ID: Optional[str] = os.getenv('ASTRA_BD_CLIENTID')
     ASTRA_DB_SECRET: Optional[str] = os.getenv('ASTRA_BD_SECRET')
     
-    # Redis Config (Redis Cloud)
-    REDIS_ENABLED: bool = os.getenv('REDIS_ENABLED', '').lower() == 'true'
-    REDIS_URL: Optional[str] = os.getenv('REDIS_URL')
-    REDIS_PASSWORD: Optional[str] = os.getenv('REDIS_PASSWORD')
-    REDIS_USERNAME: str = os.getenv('REDIS_USERNAME', 'default')
-    REDIS_MAX_CONNECTIONS: int = int(os.getenv('REDIS_MAX_CONNECTIONS', 20))
-    REDIS_SOCKET_TIMEOUT: int = int(os.getenv('REDIS_SOCKET_TIMEOUT', 3))
-    REDIS_HEALTH_CHECK_INTERVAL: int = int(os.getenv('REDIS_HEALTH_CHECK_INTERVAL', 30))
+    # Redis Config - REMOVED (Replaced by Firestore hybrid cache in Phases 2-4)
+    # REDIS_ENABLED: bool = os.getenv('REDIS_ENABLED', '').lower() == 'true'  # REMOVED
+    # REDIS_URL: Optional[str] = os.getenv('REDIS_URL')  # REMOVED
+    # REDIS_PASSWORD: Optional[str] = os.getenv('REDIS_PASSWORD')  # REMOVED
+    # REDIS_USERNAME: str = os.getenv('REDIS_USERNAME', 'default')  # REMOVED
+    # REDIS_MAX_CONNECTIONS: int = int(os.getenv('REDIS_MAX_CONNECTIONS', 20))  # REMOVED
+    # REDIS_SOCKET_TIMEOUT: int = int(os.getenv('REDIS_SOCKET_TIMEOUT', 3))  # REMOVED
+    # REDIS_HEALTH_CHECK_INTERVAL: int = int(os.getenv('REDIS_HEALTH_CHECK_INTERVAL', 30))  # REMOVED
+    
+    # Cache Config - Now using Firestore hybrid system
+    FIRESTORE_CACHE_ENABLED: bool = os.getenv('FIRESTORE_CACHE_ENABLED', 'true').lower() == 'true'
+    HYBRID_CACHE_STRATEGY: str = os.getenv('HYBRID_CACHE_STRATEGY', 'memory_first')
     
     # Email Config (para alertas)
     EMAIL_ENABLED: bool = os.getenv('EMAIL_ENABLED', '').lower() == 'true'
@@ -179,8 +205,7 @@ class AppConfig:
         if self.ASTRA_DB_ENABLED:
             required.extend(['ASTRA_DB_URL', 'ASTRA_DB_TOKEN', 'ASTRA_DB_KEYSPACE'])
         
-        if self.REDIS_ENABLED:
-            required.extend(['REDIS_URL', 'REDIS_PASSWORD'])
+        # Redis removido - usando apenas Firestore cache
         
         if self.EMAIL_ENABLED:
             required.extend(['EMAIL_FROM', 'EMAIL_PASSWORD'])

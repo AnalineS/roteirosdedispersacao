@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Data Quality Analysis - Preparação para Fine-tuning
 Análise detalhada da qualidade dos dados e criação de dataset unificado

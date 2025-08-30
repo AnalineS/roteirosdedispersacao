@@ -1,17 +1,17 @@
-1# 🚀 GUIA COMPLETO DE DEPLOY - Firebase Hosting
+1# [START] GUIA COMPLETO DE DEPLOY - Firebase Hosting
 ## roteirosdedispensacao.com
 
 ---
 
-## ✅ **STATUS ATUAL**
+## [OK] **STATUS ATUAL**
 
-### **✅ CONCLUÍDO:**
-- ✅ Frontend React com esquema médico profissional
-- ✅ Backend Google Apps Script funcionando
-- ✅ Build de produção otimizado (523.57 KiB)
-- ✅ PWA configurado com Service Worker
-- ✅ Firebase CLI instalado e configurado
-- ✅ Commits e push para Git realizados
+### **[OK] CONCLUÍDO:**
+- [OK] Frontend React com esquema médico profissional
+- [OK] Backend Google Apps Script funcionando
+- [OK] Build de produção otimizado (523.57 KiB)
+- [OK] PWA configurado com Service Worker
+- [OK] Firebase CLI instalado e configurado
+- [OK] Commits e push para Git realizados
 
 ### **📍 PRÓXIMO PASSO: Deploy Firebase**
 
@@ -21,25 +21,25 @@
 
 ```
 roteirosdedispensacao.com
-         ↓
+         v
    Firebase Hosting (CDN)
-         ↓
-    Frontend React ←→ Google Apps Script
-         ↓
+         v
+    Frontend React <--> Google Apps Script
+         v
    Service Worker (PWA)
 ```
 
 **Benefícios:**
-- ✅ **Gratuito**: 10GB storage + 10GB transfer/mês
-- ✅ **CDN Global**: 200+ pontos de presença mundial
-- ✅ **SSL Automático**: HTTPS sem configuração
-- ✅ **Deploy Instantâneo**: 30 segundos para produção
-- ✅ **Domínio Personalizado**: Fácil configuração
-- ✅ **Rollback**: Voltar versões anteriores com 1 clique
+- [OK] **Gratuito**: 10GB storage + 10GB transfer/mês
+- [OK] **CDN Global**: 200+ pontos de presença mundial
+- [OK] **SSL Automático**: HTTPS sem configuração
+- [OK] **Deploy Instantâneo**: 30 segundos para produção
+- [OK] **Domínio Personalizado**: Fácil configuração
+- [OK] **Rollback**: Voltar versões anteriores com 1 clique
 
 ---
 
-## 🚀 **DEPLOY PASSO A PASSO**
+## [START] **DEPLOY PASSO A PASSO**
 
 ### **PASSO 1: Autenticação Firebase (2 min)**
 
@@ -138,7 +138,7 @@ curl -I https://roteirosdedispensacao.com
 
 ---
 
-## 🔧 **COMANDOS ÚTEIS**
+## [FIX] **COMANDOS ÚTEIS**
 
 ### Deploy e Desenvolvimento
 ```bash
@@ -181,7 +181,7 @@ firebase hosting:sites:get roteirosdedispensacao.com
 
 ---
 
-## 📊 **MONITORAMENTO E ANALYTICS**
+## [REPORT] **MONITORAMENTO E ANALYTICS**
 
 ### Google Analytics 4
 Adicionar no `index.html` (já configurado):
@@ -226,7 +226,7 @@ const perf = getPerformance(app);
 
 ---
 
-## 🔐 **SEGURANÇA E CONFIGURAÇÕES**
+## [AUTH] **SEGURANÇA E CONFIGURAÇÕES**
 
 ### Headers de Segurança (já configurados)
 ```json
@@ -301,7 +301,7 @@ curl -I https://roteirosdedispensacao.com
 
 ---
 
-## 🎯 **PIPELINE DE DEPLOY AUTOMATIZADO**
+## [TARGET] **PIPELINE DE DEPLOY AUTOMATIZADO**
 
 ### GitHub Actions (Opcional)
 ```yaml
@@ -330,7 +330,7 @@ jobs:
 
 ---
 
-## ✅ **CHECKLIST FINAL**
+## [OK] **CHECKLIST FINAL**
 
 ### Antes do Deploy
 - [ ] Build local funciona (`npm run build`)
@@ -359,14 +359,14 @@ jobs:
 
 Após completar todos os passos:
 
-✅ **Site funcionando**: https://roteirosdedispensacao.com  
-✅ **SSL ativo**: Certificado automático do Firebase  
-✅ **CDN global**: Performance otimizada mundialmente  
-✅ **Backend integrado**: Google Apps Script funcionando  
-✅ **PWA**: Funciona offline  
-✅ **SEO otimizado**: Meta tags e sitemap  
-✅ **Custo**: R$ 0/mês (plano gratuito)  
-✅ **Deploy**: 30 segundos para atualizações  
+[OK] **Site funcionando**: https://roteirosdedispensacao.com  
+[OK] **SSL ativo**: Certificado automático do Firebase  
+[OK] **CDN global**: Performance otimizada mundialmente  
+[OK] **Backend integrado**: Google Apps Script funcionando  
+[OK] **PWA**: Funciona offline  
+[OK] **SEO otimizado**: Meta tags e sitemap  
+[OK] **Custo**: R$ 0/mês (plano gratuito)  
+[OK] **Deploy**: 30 segundos para atualizações  
 
 **Sistema completo de dispensação farmacêutica em produção!**
 

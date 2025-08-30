@@ -90,7 +90,7 @@ def process_question_async(self, question: str, personality_id: str, request_id:
             try:
                 enhanced_cached = get_enhanced_context(question, personality_id)
                 if enhanced_cached and enhanced_cached.get('confidence', 0) > 0.8:
-                    logger.info(f"[{request_id}] 🚀 AstraDB Enhanced RAG hit em async")
+                    logger.info(f"[{request_id}] [START] AstraDB Enhanced RAG hit em async")
                     
                     # Cache no Redis para próximas consultas
                     if cache:
@@ -236,12 +236,12 @@ Responda de forma empática e didática."""
             metadata.update(ai_metadata)
             
             if answer:
-                logger.info(f"[{request_id}] ✅ Resposta obtida via {ai_metadata.get('model_used', 'unknown')} em async")
+                logger.info(f"[{request_id}] [OK] Resposta obtida via {ai_metadata.get('model_used', 'unknown')} em async")
             else:
-                logger.warning(f"[{request_id}] ⚠️ AI Provider retornou resposta vazia em async")
+                logger.warning(f"[{request_id}] [WARNING] AI Provider retornou resposta vazia em async")
                 
         except Exception as e:
-            logger.error(f"[{request_id}] ❌ Erro no AI Provider Manager em async: {e}")
+            logger.error(f"[{request_id}] [ERROR] Erro no AI Provider Manager em async: {e}")
         
         # Atualizar progresso - Fallback se necessário
         if not answer:
@@ -330,7 +330,7 @@ Para informações mais detalhadas, recomendo consultar um profissional de saúd
             if confidence_final >= 0.8:
                 try:
                     cache_rag_response(question, answer, confidence_final)
-                    logger.info(f"[{request_id}] 🚀 Cached to AstraDB Enhanced RAG em async - High confidence: {confidence_final:.2f}")
+                    logger.info(f"[{request_id}] [START] Cached to AstraDB Enhanced RAG em async - High confidence: {confidence_final:.2f}")
                 except Exception as e:
                     logger.debug(f"[{request_id}] Enhanced RAG cache error em async: {e}")
         

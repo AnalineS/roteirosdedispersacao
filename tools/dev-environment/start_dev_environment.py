@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Script de Inicialização do Ambiente de Desenvolvimento Integrado
 Engenheiro de Integração Full-Stack Sênior especializado em Sistemas Médicos
@@ -40,14 +41,14 @@ class DevEnvironment:
     
     def check_prerequisites(self) -> bool:
         """Verifica se os pré-requisitos estão instalados"""
-        self.log("🔍 Verificando pré-requisitos...")
+        self.log("[SEARCH] Verificando pré-requisitos...")
         
         # Verificar Python
         try:
             python_version = sys.version.split()[0]
-            self.log(f"✅ Python {python_version} encontrado")
+            self.log(f"[OK] Python {python_version} encontrado")
         except Exception as e:
-            self.log(f"❌ Erro ao verificar Python: {e}")
+            self.log(f"[ERROR] Erro ao verificar Python: {e}")
             return False
         
         # Verificar Node.js
@@ -56,35 +57,35 @@ class DevEnvironment:
                                   capture_output=True, text=True, timeout=10)
             if result.returncode == 0:
                 node_version = result.stdout.strip()
-                self.log(f"✅ Node.js {node_version} encontrado")
+                self.log(f"[OK] Node.js {node_version} encontrado")
             else:
-                self.log("❌ Node.js não encontrado")
+                self.log("[ERROR] Node.js não encontrado")
                 return False
         except Exception as e:
-            self.log(f"❌ Erro ao verificar Node.js: {e}")
+            self.log(f"[ERROR] Erro ao verificar Node.js: {e}")
             return False
         
         # Verificar diretórios
         if not self.backend_path.exists():
-            self.log(f"❌ Diretório backend não encontrado: {self.backend_path}")
+            self.log(f"[ERROR] Diretório backend não encontrado: {self.backend_path}")
             return False
         
         if not self.frontend_path.exists():
-            self.log(f"❌ Diretório frontend não encontrado: {self.frontend_path}")
+            self.log(f"[ERROR] Diretório frontend não encontrado: {self.frontend_path}")
             return False
         
         # Verificar arquivos principais
         backend_main = self.backend_path / "main.py"
         if not backend_main.exists():
-            self.log(f"❌ Arquivo principal do backend não encontrado: {backend_main}")
+            self.log(f"[ERROR] Arquivo principal do backend não encontrado: {backend_main}")
             return False
         
         frontend_package = self.frontend_path / "package.json"
         if not frontend_package.exists():
-            self.log(f"❌ package.json do frontend não encontrado: {frontend_package}")
+            self.log(f"[ERROR] package.json do frontend não encontrado: {frontend_package}")
             return False
         
-        self.log("✅ Todos os pré-requisitos verificados")
+        self.log("[OK] Todos os pré-requisitos verificados")
         return True
     
     def install_backend_dependencies(self) -> bool:
@@ -95,7 +96,7 @@ class DevEnvironment:
             # Verificar se requirements.txt existe
             requirements_file = self.root_dir / "requirements.txt"
             if not requirements_file.exists():
-                self.log("⚠️  requirements.txt não encontrado, pulando instalação")
+                self.log("[WARNING]  requirements.txt não encontrado, pulando instalação")
                 return True
             
             # Instalar dependências
@@ -104,14 +105,14 @@ class DevEnvironment:
             ], cwd=self.root_dir, capture_output=True, text=True, timeout=300)
             
             if result.returncode == 0:
-                self.log("✅ Dependências do backend instaladas")
+                self.log("[OK] Dependências do backend instaladas")
                 return True
             else:
-                self.log(f"❌ Erro ao instalar dependências do backend: {result.stderr}")
+                self.log(f"[ERROR] Erro ao instalar dependências do backend: {result.stderr}")
                 return False
                 
         except Exception as e:
-            self.log(f"❌ Erro ao instalar dependências do backend: {e}")
+            self.log(f"[ERROR] Erro ao instalar dependências do backend: {e}")
             return False
     
     def install_frontend_dependencies(self) -> bool:
@@ -122,7 +123,7 @@ class DevEnvironment:
             # Verificar se node_modules existe
             node_modules = self.frontend_path / "node_modules"
             if node_modules.exists():
-                self.log("✅ node_modules já existe, pulando instalação")
+                self.log("[OK] node_modules já existe, pulando instalação")
                 return True
             
             # Instalar dependências
@@ -131,19 +132,19 @@ class DevEnvironment:
                                   capture_output=True, text=True, timeout=300)
             
             if result.returncode == 0:
-                self.log("✅ Dependências do frontend instaladas")
+                self.log("[OK] Dependências do frontend instaladas")
                 return True
             else:
-                self.log(f"❌ Erro ao instalar dependências do frontend: {result.stderr}")
+                self.log(f"[ERROR] Erro ao instalar dependências do frontend: {result.stderr}")
                 return False
                 
         except Exception as e:
-            self.log(f"❌ Erro ao instalar dependências do frontend: {e}")
+            self.log(f"[ERROR] Erro ao instalar dependências do frontend: {e}")
             return False
     
     def start_backend(self) -> bool:
         """Inicia o servidor backend"""
-        self.log("🚀 Iniciando servidor backend...")
+        self.log("[START] Iniciando servidor backend...")
         
         try:
             # Configurar variáveis de ambiente
@@ -175,23 +176,23 @@ class DevEnvironment:
                 try:
                     response = requests.get(f"http://localhost:{BACKEND_PORT}/api/health", timeout=5)
                     if response.status_code == 200:
-                        self.log("✅ Backend está respondendo")
+                        self.log("[OK] Backend está respondendo")
                         return True
                 except:
                     pass
                 
                 time.sleep(1)
             
-            self.log("❌ Timeout aguardando backend")
+            self.log("[ERROR] Timeout aguardando backend")
             return False
             
         except Exception as e:
-            self.log(f"❌ Erro ao iniciar backend: {e}")
+            self.log(f"[ERROR] Erro ao iniciar backend: {e}")
             return False
     
     def start_frontend(self) -> bool:
         """Inicia o servidor frontend"""
-        self.log("🚀 Iniciando servidor frontend...")
+        self.log("[START] Iniciando servidor frontend...")
         
         try:
             # Configurar variáveis de ambiente
@@ -233,29 +234,29 @@ class DevEnvironment:
                 try:
                     response = requests.get(f"http://localhost:{FRONTEND_PORT}", timeout=5)
                     if response.status_code == 200:
-                        self.log("✅ Frontend está respondendo")
+                        self.log("[OK] Frontend está respondendo")
                         return True
                 except:
                     pass
                 
                 time.sleep(1)
             
-            self.log("❌ Timeout aguardando frontend")
+            self.log("[ERROR] Timeout aguardando frontend")
             return False
             
         except Exception as e:
-            self.log(f"❌ Erro ao iniciar frontend: {e}")
+            self.log(f"[ERROR] Erro ao iniciar frontend: {e}")
             return False
     
     def run_integration_tests(self) -> bool:
         """Executa testes de integração"""
-        self.log("🧪 Executando testes de integração...")
+        self.log("[TEST] Executando testes de integração...")
         
         try:
             test_script = self.root_dir / "tests" / "integration" / "test_backend_frontend.py"
             
             if not test_script.exists():
-                self.log("⚠️  Script de testes não encontrado, pulando testes")
+                self.log("[WARNING]  Script de testes não encontrado, pulando testes")
                 return True
             
             result = subprocess.run([
@@ -269,14 +270,14 @@ class DevEnvironment:
                         self.log(line, "TESTS")
             
             if result.returncode == 0:
-                self.log("✅ Todos os testes de integração passaram")
+                self.log("[OK] Todos os testes de integração passaram")
                 return True
             else:
-                self.log(f"❌ Alguns testes falharam (exit code: {result.returncode})")
+                self.log(f"[ERROR] Alguns testes falharam (exit code: {result.returncode})")
                 return False
                 
         except Exception as e:
-            self.log(f"❌ Erro ao executar testes: {e}")
+            self.log(f"[ERROR] Erro ao executar testes: {e}")
             return False
     
     def cleanup(self):
@@ -287,29 +288,29 @@ class DevEnvironment:
             try:
                 self.backend_process.terminate()
                 self.backend_process.wait(timeout=10)
-                self.log("✅ Processo backend terminado")
+                self.log("[OK] Processo backend terminado")
             except:
                 try:
                     self.backend_process.kill()
-                    self.log("⚠️  Processo backend forçadamente terminado")
+                    self.log("[WARNING]  Processo backend forçadamente terminado")
                 except:
-                    self.log("❌ Erro ao terminar processo backend")
+                    self.log("[ERROR] Erro ao terminar processo backend")
         
         if self.frontend_process:
             try:
                 self.frontend_process.terminate()
                 self.frontend_process.wait(timeout=10)
-                self.log("✅ Processo frontend terminado")
+                self.log("[OK] Processo frontend terminado")
             except:
                 try:
                     self.frontend_process.kill()
-                    self.log("⚠️  Processo frontend forçadamente terminado")
+                    self.log("[WARNING]  Processo frontend forçadamente terminado")
                 except:
-                    self.log("❌ Erro ao terminar processo frontend")
+                    self.log("[ERROR] Erro ao terminar processo frontend")
     
     def start_development_environment(self) -> bool:
         """Inicia ambiente completo de desenvolvimento"""
-        self.log("🚀 Iniciando Ambiente de Desenvolvimento Integrado")
+        self.log("[START] Iniciando Ambiente de Desenvolvimento Integrado")
         self.log("=" * 60)
         
         # Verificar pré-requisitos
@@ -339,8 +340,8 @@ class DevEnvironment:
         self.log("=" * 60)
         self.log(f"🌐 Backend: http://localhost:{BACKEND_PORT}")
         self.log(f"🌐 Frontend: http://localhost:{FRONTEND_PORT}")
-        self.log(f"📊 API Health: http://localhost:{BACKEND_PORT}/api/health")
-        self.log(f"🧪 Testes integração: {'✅ PASSOU' if tests_passed else '❌ FALHOU'}")
+        self.log(f"[REPORT] API Health: http://localhost:{BACKEND_PORT}/api/health")
+        self.log(f"[TEST] Testes integração: {'[OK] PASSOU' if tests_passed else '[ERROR] FALHOU'}")
         self.log("=" * 60)
         self.log("💡 Para parar os serviços, pressione Ctrl+C")
         
@@ -362,18 +363,18 @@ class DevEnvironment:
                 while True:
                     time.sleep(1)
             else:
-                self.log("❌ Falha ao iniciar ambiente de desenvolvimento")
+                self.log("[ERROR] Falha ao iniciar ambiente de desenvolvimento")
                 self.cleanup()
                 sys.exit(1)
                 
         except Exception as e:
-            self.log(f"❌ Erro crítico: {e}")
+            self.log(f"[ERROR] Erro crítico: {e}")
             self.cleanup()
             sys.exit(1)
 
 def main():
     """Função principal"""
-    print("🔧 Sistema de Desenvolvimento Integrado")
+    print("[FIX] Sistema de Desenvolvimento Integrado")
     print("Engenheiro de Integração Full-Stack Sênior - Sistemas Médicos")
     print("Backend Flask + Frontend React + Testes de Integração")
     print("=" * 70)

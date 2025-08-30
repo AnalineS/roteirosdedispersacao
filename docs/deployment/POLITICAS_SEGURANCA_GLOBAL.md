@@ -1,9 +1,9 @@
-# 🛡️ POLÍTICAS GLOBAIS DE SEGURANÇA
+# [SECURITY] POLÍTICAS GLOBAIS DE SEGURANÇA
 ## **PILAR ESTRATÉGICO - SEGURANÇA EM TODOS OS PROJETOS**
 
 ---
 
-## 🎯 **MISSÃO DE SEGURANÇA**
+## [TARGET] **MISSÃO DE SEGURANÇA**
 
 > **"NENHUM PROJETO ENTRA EM PRODUÇÃO COM RISCOS DE SEGURANÇA"**
 
@@ -18,7 +18,7 @@ Esta é a **premissa global** que rege todos os projetos desta conta. A seguran�
 - Análise de riscos em todas as decisões arquiteturais
 - Validação contínua em cada etapa de desenvolvimento
 
-### 2. **🔍 ZERO-TRUST ARCHITECTURE**
+### 2. **[SEARCH] ZERO-TRUST ARCHITECTURE**
 - Nunca confiar, sempre verificar
 - Autenticação e autorização em todas as camadas
 - Criptografia de dados em trânsito e em repouso
@@ -28,16 +28,16 @@ Esta é a **premissa global** que rege todos os projetos desta conta. A seguran�
 - Correção imediata de exposições críticas
 - Monitoramento 24/7 em tempo real
 
-### 4. **📊 TRANSPARÊNCIA TOTAL**
+### 4. **[REPORT] TRANSPARÊNCIA TOTAL**
 - Logs detalhados de todos os eventos de segurança
 - Relatórios executivos automatizados
 - Auditoria completa de todas as ações
 
 ---
 
-## 🚨 **REGRAS INVIOLÁVEIS**
+## [ALERT] **REGRAS INVIOLÁVEIS**
 
-### ❌ **PROIBIÇÕES ABSOLUTAS**
+### [ERROR] **PROIBIÇÕES ABSOLUTAS**
 
 1. **NUNCA commitar secrets** (APIs, senhas, tokens)
 2. **NUNCA desabilitar** validações de segurança
@@ -45,7 +45,7 @@ Esta é a **premissa global** que rege todos os projetos desta conta. A seguran�
 4. **NUNCA ignorar** alertas de segurança críticos
 5. **NUNCA deployar** sem aprovação de segurança
 
-### ✅ **OBRIGAÇÕES MANDATÓRIAS**
+### [OK] **OBRIGAÇÕES MANDATÓRIAS**
 
 1. **SEMPRE usar** variáveis de ambiente para dados sensíveis
 2. **SEMPRE implementar** rate limiting em APIs
@@ -55,17 +55,17 @@ Esta é a **premissa global** que rege todos os projetos desta conta. A seguran�
 
 ---
 
-## 🔧 **FERRAMENTAS OBRIGATÓRIAS**
+## [FIX] **FERRAMENTAS OBRIGATÓRIAS**
 
 ### **Em TODOS os projetos:**
 
-#### 1. **🔐 Gestão de Secrets**
+#### 1. **[AUTH] Gestão de Secrets**
 ```bash
 # Obrigatório em todos os projetos
 src/backend/core/security/secrets_manager.py
 ```
 
-#### 2. **🛡️ Middleware de Segurança**
+#### 2. **[SECURITY] Middleware de Segurança**
 ```bash
 # Headers, rate limiting, validação
 src/backend/core/security/middleware.py
@@ -77,7 +77,7 @@ src/backend/core/security/middleware.py
 src/backend/core/security/monitoring.py
 ```
 
-#### 4. **🔍 Scanner de Vulnerabilidades**
+#### 4. **[SEARCH] Scanner de Vulnerabilidades**
 ```bash
 # CI/CD integrado
 src/backend/core/security/cicd_security.py
@@ -85,16 +85,16 @@ src/backend/core/security/cicd_security.py
 
 ---
 
-## 📋 **CHECKLIST PRÉ-PRODUÇÃO**
+## [LIST] **CHECKLIST PRÉ-PRODUÇÃO**
 
 ### **Aprovação de Segurança (Obrigatória)**
 
 - [ ] **Score de Segurança ≥ 85/100**
 - [ ] **Zero vulnerabilidades CRÍTICAS**
 - [ ] **Zero vulnerabilidades ALTAS**
-- [ ] **Compliance OWASP ✅**
-- [ ] **Compliance CIS ✅**
-- [ ] **Compliance NIST ✅**
+- [ ] **Compliance OWASP [OK]**
+- [ ] **Compliance CIS [OK]**
+- [ ] **Compliance NIST [OK]**
 - [ ] **Logs de auditoria configurados**
 - [ ] **Monitoramento ativo**
 - [ ] **Backups automatizados**
@@ -106,7 +106,7 @@ src/backend/core/security/cicd_security.py
 
 ### **Responsabilidades Automatizadas:**
 
-#### 🔍 **Análise Contínua**
+#### [SEARCH] **Análise Contínua**
 - Scan automático de todos os commits
 - Detecção de secrets em tempo real
 - Análise de dependências vulneráveis
@@ -118,7 +118,7 @@ src/backend/core/security/cicd_security.py
 - Alertas imediatos para equipe
 - Relatórios executivos automáticos
 
-#### 📊 **Monitoramento 24/7**
+#### [REPORT] **Monitoramento 24/7**
 - Dashboard de segurança em tempo real
 - Métricas de compliance contínuas
 - Análise de tendências de segurança
@@ -128,19 +128,19 @@ src/backend/core/security/cicd_security.py
 
 ## 🚦 **NÍVEIS DE SEGURANÇA**
 
-### **🟢 NÍVEL VERDE - Produção Aprovada**
+### **[GREEN] NÍVEL VERDE - Produção Aprovada**
 - Score ≥ 85/100
 - Zero vulnerabilidades críticas/altas
 - Compliance total
 - Monitoramento ativo
 
-### **🟡 NÍVEL AMARELO - Revisão Necessária**
+### **[YELLOW] NÍVEL AMARELO - Revisão Necessária**
 - Score 70-84/100
 - Vulnerabilidades médias presentes
 - Compliance parcial
 - Ação corretiva em 48h
 
-### **🔴 NÍVEL VERMELHO - Deploy Bloqueado**
+### **[RED] NÍVEL VERMELHO - Deploy Bloqueado**
 - Score < 70/100
 - Vulnerabilidades críticas/altas
 - Não compliance
@@ -150,7 +150,7 @@ src/backend/core/security/cicd_security.py
 
 ## 📞 **PROTOCOLOS DE INCIDENTES**
 
-### **🚨 Detecção de Vulnerabilidade CRÍTICA**
+### **[ALERT] Detecção de Vulnerabilidade CRÍTICA**
 
 #### **Ação Imediata (< 5 minutos):**
 1. **Alerta automático** para toda equipe
@@ -233,7 +233,7 @@ src/backend/core/security/cicd_security.py
 
 ---
 
-## 📝 **APROVAÇÃO E RESPONSABILIDADES**
+## [NOTE] **APROVAÇÃO E RESPONSABILIDADES**
 
 ### **Aprovado por:**
 - **CTO/Tech Lead**: Políticas técnicas
@@ -253,11 +253,11 @@ src/backend/core/security/cicd_security.py
 Todo projeto que atender a estas políticas receberá:
 
 ```
-🛡️ CERTIFICADO DE SEGURANÇA
+[SECURITY] CERTIFICADO DE SEGURANÇA
 =====================================
 Projeto: [NOME]
 Score: [SCORE]/100
-Compliance: ✅ OWASP | ✅ CIS | ✅ NIST
+Compliance: [OK] OWASP | [OK] CIS | [OK] NIST
 Data: [DATA]
 Válido até: [DATA + 90 dias]
 =====================================
@@ -266,16 +266,16 @@ Aprovado pelo Subagente de Segurança
 
 ---
 
-## 🌟 **COMPROMISSO ESTRATÉGICO**
+## [STAR] **COMPROMISSO ESTRATÉGICO**
 
 > **"Investimos em segurança porque proteger nossos usuários, dados e sistemas não é apenas uma obrigação técnica - é um compromisso ético e estratégico que define quem somos como organização."**
 
 ### **Benefícios Esperados:**
-- ✅ **Confiança** dos usuários
-- ✅ **Compliance** regulatória
-- ✅ **Redução** de riscos
-- ✅ **Eficiência** operacional
-- ✅ **Competitividade** no mercado
+- [OK] **Confiança** dos usuários
+- [OK] **Compliance** regulatória
+- [OK] **Redução** de riscos
+- [OK] **Eficiência** operacional
+- [OK] **Competitividade** no mercado
 
 ---
 

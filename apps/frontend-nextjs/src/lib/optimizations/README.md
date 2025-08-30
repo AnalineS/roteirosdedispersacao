@@ -27,7 +27,7 @@ Este diretório contém um conjunto abrangente de funções e utilitários de ot
 - **Virtual Scrolling**: Lista virtualizada para grandes datasets
 - **HOCs**: Higher-order components para otimizações
 
-## 🚀 Como Usar
+## [START] Como Usar
 
 ### 1. Cache Universal
 
@@ -204,7 +204,7 @@ const resultado = await breaker.execute(
 );
 ```
 
-## 📊 Exemplos de Integração
+## [REPORT] Exemplos de Integração
 
 ### Serviço de API Otimizado
 
@@ -298,7 +298,7 @@ function ChatComponent() {
 }
 ```
 
-## 🎯 Benefícios das Otimizações
+## [TARGET] Benefícios das Otimizações
 
 1. **Performance**: Redução de 40-60% no tempo de carregamento
 2. **Cache**: 75% menos requisições à API
@@ -307,7 +307,7 @@ function ChatComponent() {
 5. **SEO**: Melhores Core Web Vitals
 6. **Manutenibilidade**: Código mais limpo e reutilizável
 
-## 🔧 Configuração Recomendada
+## [FIX] Configuração Recomendada
 
 ### No `next.config.js`:
 

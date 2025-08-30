@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Safe Security Issues Automation Script
 Creates consolidated issues without overwhelming GitHub API
@@ -203,7 +204,7 @@ class SafeGitHubSecurityManager:
         
         epic_body = f"""# {category_title} - Consolidated Security Issue
 
-## 📊 **Overview**
+## [REPORT] **Overview**
 - **Total Occurrences:** {len(alerts)}
 - **Severity Distribution:** {', '.join(f'{sev}: {count}' for sev, count in severity_counts.items())}
 - **Files Affected:** {len(files_affected)} files
@@ -217,10 +218,10 @@ class SafeGitHubSecurityManager:
             epic_body += f"- **CWE:** {', '.join(sample_alert.cwe_refs)}\n"
         
         epic_body += f"""
-## 📝 **Description**
+## [NOTE] **Description**
 {sample_alert.description}
 
-## 🛡️ **Mitigation Strategy**
+## [SECURITY] **Mitigation Strategy**
 1. **Identify all instances** of this security pattern
 2. **Prioritize by severity** - address Critical/High first  
 3. **Apply consistent fixes** across all occurrences
@@ -244,7 +245,7 @@ class SafeGitHubSecurityManager:
             epic_body += f"- **{file_path}** ({len(file_alerts)} occurrences) - Lines: {', '.join(lines)}\n"
         
         epic_body += f"""
-## ✅ **Action Plan Checklist**
+## [OK] **Action Plan Checklist**
 
 ### Phase 1: Analysis & Planning
 - [ ] **Triage all {len(alerts)} occurrences**
@@ -275,9 +276,9 @@ class SafeGitHubSecurityManager:
         
         epic_body += f"""
 ---
-**⚠️ Security Impact:** This issue affects {len(files_affected)} files with {len(alerts)} total occurrences.  
+**[WARNING] Security Impact:** This issue affects {len(files_affected)} files with {len(alerts)} total occurrences.  
 **📅 Created:** {time.strftime('%Y-%m-%d')}  
-**🎯 Goal:** Eliminate all instances of this security vulnerability pattern.
+**[TARGET] Goal:** Eliminate all instances of this security vulnerability pattern.
 """
         
         # Determine epic severity label based on highest severity
@@ -310,19 +311,19 @@ class SafeGitHubSecurityManager:
             issue_number = response.json()['number']
             issue_url = response.json()['html_url']
             
-            logger.info(f"✅ Created consolidated epic #{issue_number}: {epic_title}")
-            logger.info(f"📊 Epic covers {len(alerts)} alerts in {len(files_affected)} files")
+            logger.info(f"[OK] Created consolidated epic #{issue_number}: {epic_title}")
+            logger.info(f"[REPORT] Epic covers {len(alerts)} alerts in {len(files_affected)} files")
             logger.info(f"🔗 URL: {issue_url}")
             
             return issue_number
             
         except Exception as e:
-            logger.error(f"❌ Error creating epic for {category_title}: {e}")
+            logger.error(f"[ERROR] Error creating epic for {category_title}: {e}")
             return None
     
     def process_top_categories(self, limit: int = 5) -> Dict:
         """Process only the top N categories by occurrence count"""
-        logger.info("🔍 Fetching security alerts summary...")
+        logger.info("[SEARCH] Fetching security alerts summary...")
         
         categories = self.fetch_alerts_summary()
         if not categories:
@@ -338,7 +339,7 @@ class SafeGitHubSecurityManager:
         
         sorted_categories = sorted(categories.items(), key=category_priority, reverse=True)
         
-        logger.info(f"📊 Top categories by priority:")
+        logger.info(f"[REPORT] Top categories by priority:")
         for i, (category_key, alerts) in enumerate(sorted_categories[:limit]):
             high_count = sum(1 for alert in alerts if alert.severity in ['critical', 'high'])
             logger.info(f"  {i+1}. {alerts[0].category_title}: {len(alerts)} total ({high_count} high/critical)")
@@ -387,7 +388,7 @@ class SafeGitHubSecurityManager:
                 
             except Exception as e:
                 error_msg = f"Error processing {category_key}: {e}"
-                logger.error(f"❌ {error_msg}")
+                logger.error(f"[ERROR] {error_msg}")
                 results['errors'].append(error_msg)
         
         results['summary']['skipped_categories'] = len(categories) - results['summary']['processed_categories']
@@ -400,8 +401,8 @@ def main():
         # Safe limits
         MAX_EPICS_PER_RUN = 5  # Only process top 5 categories
         
-        logger.info("🚀 Starting SAFE Security Issues Automation")
-        logger.info(f"⚠️ Processing only top {MAX_EPICS_PER_RUN} categories to avoid API limits")
+        logger.info("[START] Starting SAFE Security Issues Automation")
+        logger.info(f"[WARNING] Processing only top {MAX_EPICS_PER_RUN} categories to avoid API limits")
         
         manager = SafeGitHubSecurityManager(
             "AnalineS", 
@@ -413,24 +414,24 @@ def main():
         
         # Print comprehensive report
         print("\n" + "="*70)
-        print("🛡️ SAFE SECURITY AUTOMATION REPORT")
+        print("[SECURITY] SAFE SECURITY AUTOMATION REPORT")
         print("="*70)
         
         summary = results['summary']
-        print(f"\n📊 **Summary:**")
+        print(f"\n[REPORT] **Summary:**")
         print(f"  Total Categories Found: {summary['total_categories']}")
         print(f"  Total Alerts Found: {summary['total_alerts']}")  
         print(f"  Categories Processed: {summary['processed_categories']}")
         print(f"  Categories Remaining: {summary['skipped_categories']}")
         
         if results['epics']:
-            print(f"\n🎯 **Consolidated Epics Created:**")
+            print(f"\n[TARGET] **Consolidated Epics Created:**")
             total_alerts_processed = 0
             total_files_affected = 0
             
             for epic in results['epics']:
                 print(f"\n  #{epic['number']}: {epic['category']}")
-                print(f"    📊 {epic['alert_count']} alerts in {epic['files_affected']} files")
+                print(f"    [REPORT] {epic['alert_count']} alerts in {epic['files_affected']} files")
                 print(f"    🔗 {epic['url']}")
                 
                 total_alerts_processed += epic['alert_count']
@@ -441,7 +442,7 @@ def main():
             print(f"  Files Requiring Attention: {total_files_affected}")
         
         if results['errors']:
-            print(f"\n❌ **Errors ({len(results['errors'])}):**")
+            print(f"\n[ERROR] **Errors ({len(results['errors'])}):**")
             for error in results['errors']:
                 print(f"  - {error}")
         
@@ -452,16 +453,16 @@ def main():
             print(f"  {remaining} alerts still need consolidation")
             print(f"  Recommendation: Process in batches to avoid API limits")
         
-        print(f"\n✅ **Process completed safely!**")
+        print(f"\n[OK] **Process completed safely!**")
         print(f"💡 **Approach:** Consolidated multiple alerts into single trackable epics")
-        print(f"🛡️ **API Safety:** Used conservative rate limiting to avoid account restrictions")
+        print(f"[SECURITY] **API Safety:** Used conservative rate limiting to avoid account restrictions")
         print("="*70)
         
         return 0
         
     except Exception as e:
         logger.error(f"💥 Fatal error: {e}")
-        print(f"\n❌ Script execution failed: {e}")
+        print(f"\n[ERROR] Script execution failed: {e}")
         return 1
 
 if __name__ == "__main__":

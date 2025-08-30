@@ -1,12 +1,12 @@
-# 🛡️ Registro de Vulnerabilidades de Segurança
+# [SECURITY] Registro de Vulnerabilidades de Segurança
 
-## 📋 Status Atual
+## [LIST] Status Atual
 
 **Última Atualização**: 2024-08-24  
 **Próxima Revisão**: 2024-09-24  
 **Responsável**: Equipe de Segurança
 
-## ✅ Vulnerabilidades Corrigidas (Agosto 2024)
+## [OK] Vulnerabilidades Corrigidas (Agosto 2024)
 
 | Pacote | Versão Anterior | Versão Atual | CVE/ID | Severidade | Data Correção |
 |--------|----------------|--------------|---------|------------|---------------|
@@ -16,7 +16,7 @@
 | gunicorn | 21.2.0 | 23.0.0 | CVE-2024-6827 | Medium | 2024-08-24 |
 | sentence-transformers | 2.7.0 | 3.1.0 | Multiple CVEs | High | 2024-08-24 |
 
-## ⚠️ Vulnerabilidades Aceitas (Risco Gerenciado)
+## [WARNING] Vulnerabilidades Aceitas (Risco Gerenciado)
 
 ### PyTorch (via easyocr)
 
@@ -36,7 +36,7 @@
 - **Ambiente Controlado**: HML com acesso restrito, sem dados sensíveis de produção
 - **Mitigações Implementadas**: Validação de entrada, limites de arquivo, monitoramento
 
-## 📊 Métricas de Segurança
+## [REPORT] Métricas de Segurança
 
 ```yaml
 Total de Vulnerabilidades Identificadas: 16
@@ -83,7 +83,7 @@ Alta Severidade Pendentes: 2 (com mitigação)
 - **Alertas**: Email para equipe quando patches disponíveis
 - **Auto-PR**: Habilitado para patches de segurança
 
-## 📝 Histórico de Decisões
+## [NOTE] Histórico de Decisões
 
 | Data | Decisão | Responsável | Motivo |
 |------|---------|-------------|--------|
@@ -91,7 +91,7 @@ Alta Severidade Pendentes: 2 (com mitigação)
 | 2024-08-24 | Requirements consolidation | Ana | Eliminar conflitos de versão |
 | 2024-08-24 | Aceitar torch vulnerabilities | Ana | Sem patch, risco baixo em HML |
 
-## 🚨 Ações Requeridas
+## [ALERT] Ações Requeridas
 
 ### Imediatas (Próximos 7 dias)
 - [x] Configurar workflow de verificação semanal

@@ -23,7 +23,7 @@ class GaEnhanced:
     def __init__(self):
         self.persona_id = "ga"
         
-        # Dicionário de traduções técnico → cotidiano
+        # Dicionário de traduções técnico -> cotidiano
         self.technical_translations = {
             # Medicamentos e compostos
             "poliquimioterapia": "combinação de remédios",
@@ -97,7 +97,7 @@ class GaEnhanced:
         self.emotional_support = {
             "encouragement": [
                 "Você está no caminho certo! 💪",
-                "Cada dia de tratamento é um passo para a cura! 🌟",
+                "Cada dia de tratamento é um passo para a cura! [STAR]",
                 "Sei que às vezes é difícil, mas você consegue! 🤗",
                 "Estou aqui para te ajudar sempre que precisar! 😊",
                 "Você não está sozinho nessa jornada! 💙"
@@ -114,7 +114,7 @@ class GaEnhanced:
                 "Imagino como deve estar se sentindo... 💭",
                 "É natural ficar ansioso com essas mudanças 🌱",
                 "Sei que lidar com remédios pode ser confuso 🤔",
-                "É importante você se sentir seguro sobre o tratamento 🛡️"
+                "É importante você se sentir seguro sobre o tratamento [SECURITY]"
             ]
         }
         
@@ -170,13 +170,13 @@ Dicas práticas e orientações claras para o dia a dia
 Palavras de apoio e disponibilidade para mais dúvidas
 
 TRADUÇÕES OBRIGATÓRIAS:
-- poliquimioterapia → "combinação de remédios"
-- PQT-U → "kit de remédios especial para hanseníase"
-- rifampicina → "remédio vermelho"
-- clofazimina → "remédio que pode escurecer a pele"
-- dapsona → "remédio branco"
-- dose supervisionada → "dose que você toma na farmácia com acompanhamento"
-- efeitos adversos → "efeitos colaterais"
+- poliquimioterapia -> "combinação de remédios"
+- PQT-U -> "kit de remédios especial para hanseníase"
+- rifampicina -> "remédio vermelho"
+- clofazimina -> "remédio que pode escurecer a pele"
+- dapsona -> "remédio branco"
+- dose supervisionada -> "dose que você toma na farmácia com acompanhamento"
+- efeitos adversos -> "efeitos colaterais"
 
 ANALOGIAS FAVORITAS:
 - Poliquimioterapia = "força-tarefa de remédios"

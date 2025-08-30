@@ -1,15 +1,15 @@
-# 📊 Google Data Studio - Configuração para Analytics
+# [REPORT] Google Data Studio - Configuração para Analytics
 
 Este documento detalha como configurar o Google Data Studio para visualizar as métricas do sistema educacional de hanseníase.
 
-## 🎯 **Pré-requisitos**
+## [TARGET] **Pré-requisitos**
 
 1. Conta Google configurada
 2. Google Analytics 4 ativo no projeto
 3. Dados coletados por pelo menos 24h
 4. Acesso à conta Google Analytics
 
-## 🔧 **Configuração Inicial**
+## [FIX] **Configuração Inicial**
 
 ### 1. Acessar Google Data Studio
 ```
@@ -18,7 +18,7 @@ Login: Use a mesma conta do Google Analytics
 ```
 
 ### 2. Criar Novo Relatório
-1. Clique em "Criar" → "Relatório"
+1. Clique em "Criar" -> "Relatório"
 2. Selecione "Google Analytics" como fonte
 3. Escolha a propriedade GA4 do projeto
 4. Autorize a conexão
@@ -146,7 +146,7 @@ const DATA_STUDIO_EMBED_URL = 'https://datastudio.google.com/embed/reporting/[ID
 />
 ```
 
-## 📊 **Métricas Customizadas**
+## [REPORT] **Métricas Customizadas**
 
 ### 1. Configurar Eventos Customizados
 ```json
@@ -233,7 +233,7 @@ Mensal:
 }
 ```
 
-## 🎯 **KPIs Principais para Acompanhar**
+## [TARGET] **KPIs Principais para Acompanhar**
 
 ### Métricas de Sucesso
 1. **Taxa de Resolução**: >85%
@@ -248,7 +248,7 @@ Mensal:
 3. **Uso de Fallback**: <15%
 4. **Tempo de Carregamento**: <2 segundos
 
-## 📋 **Checklist de Implementação**
+## [LIST] **Checklist de Implementação**
 
 - [ ] Conta Google Data Studio criada
 - [ ] Conexão com GA4 estabelecida

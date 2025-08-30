@@ -58,15 +58,15 @@ class SecurityChecker:
         
     def print_success(self, message: str):
         """Print success message"""
-        print(f"{Colors.GREEN}✅ {message}{Colors.END}")
+        print(f"{Colors.GREEN}[OK] {message}{Colors.END}")
         
     def print_error(self, message: str):
         """Print error message"""
-        print(f"{Colors.RED}❌ {message}{Colors.END}")
+        print(f"{Colors.RED}[ERROR] {message}{Colors.END}")
         
     def print_warning(self, message: str):
         """Print warning message"""
-        print(f"{Colors.YELLOW}⚠️  {message}{Colors.END}")
+        print(f"{Colors.YELLOW}[WARNING]  {message}{Colors.END}")
         
     def print_info(self, message: str):
         """Print info message"""
@@ -276,7 +276,7 @@ class SecurityChecker:
         passed_checks = sum(1 for r in self.results.values() if r.get('status') == 'pass')
         failed_checks = total_checks - passed_checks
         
-        print(f"\n{Colors.BOLD}📊 Summary:{Colors.END}")
+        print(f"\n{Colors.BOLD}[REPORT] Summary:{Colors.END}")
         print(f"   Total checks: {total_checks}")
         print(f"   Passed: {Colors.GREEN}{passed_checks}{Colors.END}")
         print(f"   Failed/Issues: {Colors.RED}{failed_checks}{Colors.END}")
@@ -285,13 +285,13 @@ class SecurityChecker:
         print(f"\n{Colors.BOLD}⚕️  Medical Platform Recommendations:{Colors.END}")
         
         if any('error' in r.get('status', '') for r in self.results.values()):
-            print(f"   {Colors.RED}❌ CRITICAL: Fix all errors before deployment{Colors.END}")
+            print(f"   {Colors.RED}[ERROR] CRITICAL: Fix all errors before deployment{Colors.END}")
             
         if any(r.get('issues', 0) > 0 for r in self.results.values()):
-            print(f"   {Colors.YELLOW}⚠️  REVIEW: Security issues found - review for medical data impact{Colors.END}")
+            print(f"   {Colors.YELLOW}[WARNING]  REVIEW: Security issues found - review for medical data impact{Colors.END}")
             
         if all(r.get('status') == 'pass' for r in self.results.values()):
-            print(f"   {Colors.GREEN}✅ READY: All security checks passed{Colors.END}")
+            print(f"   {Colors.GREEN}[OK] READY: All security checks passed{Colors.END}")
             
         # Save detailed report
         report_file = self.repo_root / "security-report.json"
@@ -337,7 +337,7 @@ class SecurityChecker:
             self.print_success("🎉 All security checks passed! Ready for medical platform deployment.")
             return True
         else:
-            self.print_error("❌ Security issues found. Review and fix before deployment to production.")
+            self.print_error("[ERROR] Security issues found. Review and fix before deployment to production.")
             return False
 
 def main():
@@ -358,7 +358,7 @@ def main():
             break
             
     if not repo_root:
-        print(f"{Colors.RED}❌ Could not find repository root{Colors.END}")
+        print(f"{Colors.RED}[ERROR] Could not find repository root{Colors.END}")
         sys.exit(1)
         
     # Run checks

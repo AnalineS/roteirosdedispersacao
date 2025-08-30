@@ -1,0 +1,74 @@
+{
+  "timestamp": "2025-08-30T13:51:40.824153",
+  "total_checks": 15,
+  "passed_checks": 13,
+  "success_rate": 86.7,
+  "total_errors": 3,
+  "status": "[ERROR] CORREÇÕES NECESSÁRIAS",
+  "color": "[RED]",
+  "errors": [
+    "Erro inesperado: 'charmap' codec can't encode characters in position 2-3: character maps to <undefined>",
+    "Erro ao testar SecurityMiddleware: Working outside of request context.\n\nThis typically means that you attempted to use functionality that needed\nan active HTTP request. Consult the documentation on testing for\ninformation about how to avoid this problem.",
+    "Documentação de segurança não encontrada"
+  ],
+  "detailed_results": {
+    "app_config": {
+      "config_found": true,
+      "security_middleware_enabled": true,
+      "rate_limiting_configured": true,
+      "security_settings_configured": true,
+      "required_variables": [
+        "SECURITY_MIDDLEWARE_ENABLED",
+        "RATE_LIMIT_ENABLED",
+        "RATE_LIMIT_DEFAULT",
+        "RATE_LIMIT_CHAT",
+        "SECURITY_AUTO_BLOCK_ENABLED",
+        "SECURITY_BLOCK_DURATION_MINUTES",
+        "SECURITY_MAX_VIOLATIONS"
+      ],
+      "missing_variables": [
+        "SECURITY_MIDDLEWARE_ENABLED",
+        "RATE_LIMIT_ENABLED",
+        "RATE_LIMIT_DEFAULT",
+        "RATE_LIMIT_CHAT",
+        "SECURITY_AUTO_BLOCK_ENABLED",
+        "SECURITY_BLOCK_DURATION_MINUTES",
+        "SECURITY_MAX_VIOLATIONS"
+      ],
+      "errors": [
+        "Erro inesperado: 'charmap' codec can't encode characters in position 2-3: character maps to <undefined>"
+      ]
+    },
+    "security_middleware": {
+      "middleware_found": true,
+      "attack_detector_found": true,
+      "rate_limiter_found": true,
+      "https_enforcement": true,
+      "security_headers": true,
+      "csp_configured": false,
+      "errors": [
+        "Erro ao testar SecurityMiddleware: Working outside of request context.\n\nThis typically means that you attempted to use functionality that needed\nan active HTTP request. Consult the documentation on testing for\ninformation about how to avoid this problem."
+      ]
+    },
+    "main_integration": {
+      "integration_found": true,
+      "import_available": true,
+      "initialization_code": true,
+      "errors": []
+    },
+    "test_framework": {
+      "test_suite_exists": true,
+      "documentation_exists": false,
+      "test_types_implemented": [
+        "SQL Injection",
+        "XSS Protection",
+        "Rate Limiting",
+        "Security Headers",
+        "User Agent Detection"
+      ],
+      "errors": [
+        "Documentação de segurança não encontrada"
+      ]
+    }
+  }
+}

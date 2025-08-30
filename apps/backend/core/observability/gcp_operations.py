@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Google Cloud Operations Suite Integration
 Centraliza logging, monitoring e error reporting

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 🔒 SUBAGENTE DE SEGURANÇA UNIVERSAL
 ===================================
@@ -5,16 +6,16 @@
 Subagente especializado em segurança que atua em TODOS os projetos da conta.
 Implementa análise proativa, detecção de vulnerabilidades e correção automática.
 
-🎯 MISSÃO: Garantir que NENHUM projeto entre em produção com riscos de segurança.
+[TARGET] MISSÃO: Garantir que NENHUM projeto entre em produção com riscos de segurança.
 
 Características:
-- ✅ Análise automática de código em tempo real
-- ✅ Detecção de secrets expostos
-- ✅ Validação de configurações de segurança
-- ✅ Monitoramento contínuo de vulnerabilidades
-- ✅ Relatórios executivos automatizados
-- ✅ Integração com CI/CD pipelines
-- ✅ Alertas proativos por múltiplos canais
+- [OK] Análise automática de código em tempo real
+- [OK] Detecção de secrets expostos
+- [OK] Validação de configurações de segurança
+- [OK] Monitoramento contínuo de vulnerabilidades
+- [OK] Relatórios executivos automatizados
+- [OK] Integração com CI/CD pipelines
+- [OK] Alertas proativos por múltiplos canais
 
 Autor: Subagente de Segurança IA
 Versão: 2.0.0
@@ -93,7 +94,7 @@ class SecurityReport:
 
 class SecurityAgent:
     """
-    🛡️ SUBAGENTE DE SEGURANÇA UNIVERSAL
+    [SECURITY] SUBAGENTE DE SEGURANÇA UNIVERSAL
     
     Responsável por proteger TODOS os projetos da conta com:
     - Análise contínua de segurança
@@ -111,7 +112,7 @@ class SecurityAgent:
         self.scan_history = []
         self.active_monitors = {}
         
-        logger.info("🚀 Subagente de Segurança inicializado e ativo")
+        logger.info("[START] Subagente de Segurança inicializado e ativo")
     
     def _load_config(self, config_path: Optional[str]) -> Dict[str, Any]:
         """Carrega configurações do agente."""
@@ -250,7 +251,7 @@ class SecurityAgent:
     
     def scan_project(self, project_path: str) -> SecurityReport:
         """
-        🔍 ANÁLISE COMPLETA DE SEGURANÇA
+        [SEARCH] ANÁLISE COMPLETA DE SEGURANÇA
         
         Executa análise completa de segurança em um projeto.
         
@@ -260,7 +261,7 @@ class SecurityAgent:
         Returns:
             SecurityReport: Relatório completo de segurança
         """
-        logger.info(f"🔍 Iniciando análise de segurança: {project_path}")
+        logger.info(f"[SEARCH] Iniciando análise de segurança: {project_path}")
         
         start_time = datetime.now()
         project_name = os.path.basename(project_path)
@@ -332,9 +333,9 @@ class SecurityAgent:
             self._send_security_alerts(report)
         
         scan_duration = datetime.now() - start_time
-        logger.info(f"✅ Análise concluída em {scan_duration.total_seconds():.2f}s")
-        logger.info(f"📊 Score de Segurança: {security_score:.1f}/100")
-        logger.info(f"🚨 Ameaças encontradas: {len(threats_found)}")
+        logger.info(f"[OK] Análise concluída em {scan_duration.total_seconds():.2f}s")
+        logger.info(f"[REPORT] Score de Segurança: {security_score:.1f}/100")
+        logger.info(f"[ALERT] Ameaças encontradas: {len(threats_found)}")
         
         return report
     
@@ -392,7 +393,7 @@ class SecurityAgent:
                             threats.append(threat)
                 
         except Exception as e:
-            logger.warning(f"⚠️ Erro ao analisar {file_path}: {e}")
+            logger.warning(f"[WARNING] Erro ao analisar {file_path}: {e}")
         
         return threats
     
@@ -534,7 +535,7 @@ class SecurityAgent:
             recommendations.append("🔑 Implementar gestão segura de secrets com variáveis de ambiente")
         
         if any(t.severity == "CRITICAL" for t in threats):
-            recommendations.append("🚨 Corrigir todas as vulnerabilidades CRÍTICAS antes do deploy")
+            recommendations.append("[ALERT] Corrigir todas as vulnerabilidades CRÍTICAS antes do deploy")
         
         if any(t.type == "VULNERABLE_DEPENDENCY" for t in threats):
             recommendations.append("📦 Atualizar dependências com vulnerabilidades conhecidas")
@@ -543,7 +544,7 @@ class SecurityAgent:
             recommendations.append("⚙️ Revisar configurações de arquivos sensíveis")
         
         if not recommendations:
-            recommendations.append("✅ Projeto apresenta boa postura de segurança")
+            recommendations.append("[OK] Projeto apresenta boa postura de segurança")
         
         return recommendations
     
@@ -597,7 +598,7 @@ class SecurityAgent:
     
     def auto_fix_threats(self, report: SecurityReport) -> int:
         """
-        🔧 CORREÇÃO AUTOMÁTICA
+        [FIX] CORREÇÃO AUTOMÁTICA
         
         Corrige automaticamente ameaças que podem ser resolvidas sem intervenção.
         """
@@ -608,9 +609,9 @@ class SecurityAgent:
                 try:
                     if self._auto_fix_threat(threat):
                         fixed_count += 1
-                        logger.info(f"✅ Correção automática aplicada: {threat.description}")
+                        logger.info(f"[OK] Correção automática aplicada: {threat.description}")
                 except Exception as e:
-                    logger.error(f"❌ Erro na correção automática: {e}")
+                    logger.error(f"[ERROR] Erro na correção automática: {e}")
         
         return fixed_count
     
@@ -693,22 +694,22 @@ class SecurityAgent:
                     <div class="score">{report.security_score}/100</div>
                 </div>
                 
-                <h3>📊 Resumo</h3>
+                <h3>[REPORT] Resumo</h3>
                 <ul>
                     <li>Arquivos analisados: {report.total_files_scanned}</li>
                     <li>Ameaças encontradas: {len(report.threats_found)}</li>
                     <li>Críticas: {len(report.critical_threats)}</li>
                     <li>Altas: {len(report.high_threats)}</li>
-                    <li>Pronto para produção: {'✅ Sim' if report.is_production_ready else '❌ Não'}</li>
+                    <li>Pronto para produção: {'[OK] Sim' if report.is_production_ready else '[ERROR] Não'}</li>
                 </ul>
                 
-                <h3>🛡️ Status de Compliance</h3>
+                <h3>[SECURITY] Status de Compliance</h3>
                 <div class="compliance">
         """
         
         for standard, compliant in report.compliance_status.items():
             status_class = "compliant" if compliant else "non-compliant"
-            status_icon = "✅" if compliant else "❌"
+            status_icon = "[OK]" if compliant else "[ERROR]"
             html_content += f"""
                     <div class="compliance-item {status_class}">
                         <h4>{standard}</h4>
@@ -719,7 +720,7 @@ class SecurityAgent:
         html_content += """
                 </div>
                 
-                <h3>🚨 Ameaças Detectadas</h3>
+                <h3>[ALERT] Ameaças Detectadas</h3>
         """
         
         for threat in report.threats_found:
@@ -730,7 +731,7 @@ class SecurityAgent:
                     <p><strong>Arquivo:</strong> {threat.file_path}:{threat.line_number}</p>
                     <p><strong>Tipo:</strong> {threat.type}</p>
                     <p><strong>Recomendação:</strong> {threat.recommendation}</p>
-                    <p><strong>Correção Automática:</strong> {'✅ Disponível' if threat.auto_fixable else '❌ Manual'}</p>
+                    <p><strong>Correção Automática:</strong> {'[OK] Disponível' if threat.auto_fixable else '[ERROR] Manual'}</p>
                 </div>
             """
         
@@ -771,7 +772,7 @@ class SecurityAgent:
                 "threat_count": 0
             }
         
-        logger.info("✅ Monitoramento contínuo ativo")
+        logger.info("[OK] Monitoramento contínuo ativo")
     
     def get_security_dashboard_data(self) -> Dict[str, Any]:
         """Retorna dados para dashboard de segurança."""
@@ -819,7 +820,7 @@ def get_security_agent() -> SecurityAgent:
     global _security_agent
     if _security_agent is None:
         _security_agent = SecurityAgent()
-        logger.info("🛡️ Subagente de Segurança Universal ativado!")
+        logger.info("[SECURITY] Subagente de Segurança Universal ativado!")
     return _security_agent
 
 def scan_current_project() -> SecurityReport:
@@ -837,18 +838,18 @@ def is_safe_for_production() -> bool:
 if __name__ == "__main__":
     agent = get_security_agent()
     print("🔒 SUBAGENTE DE SEGURANÇA UNIVERSAL ATIVO")
-    print("📋 Digite 'scan' para analisar projeto atual")
-    print("📋 Digite 'monitor' para iniciar monitoramento contínuo")
-    print("📋 Digite 'dashboard' para ver dados do dashboard")
+    print("[LIST] Digite 'scan' para analisar projeto atual")
+    print("[LIST] Digite 'monitor' para iniciar monitoramento contínuo")
+    print("[LIST] Digite 'dashboard' para ver dados do dashboard")
     
     while True:
-        comando = input("\n🛡️ Security Agent > ").strip().lower()
+        comando = input("\n[SECURITY] Security Agent > ").strip().lower()
         
         if comando == "scan":
             report = scan_current_project()
-            print(f"\n✅ Análise completa! Score: {report.security_score}/100")
-            print(f"🚨 Ameaças: {len(report.threats_found)} encontradas")
-            print(f"🏭 Produção: {'✅ Pronto' if report.is_production_ready else '❌ Não pronto'}")
+            print(f"\n[OK] Análise completa! Score: {report.security_score}/100")
+            print(f"[ALERT] Ameaças: {len(report.threats_found)} encontradas")
+            print(f"🏭 Produção: {'[OK] Pronto' if report.is_production_ready else '[ERROR] Não pronto'}")
             
         elif comando == "monitor":
             agent.start_continuous_monitoring([os.getcwd()])
@@ -856,10 +857,10 @@ if __name__ == "__main__":
             
         elif comando == "dashboard":
             data = agent.get_security_dashboard_data()
-            print(f"\n📊 DASHBOARD DE SEGURANÇA")
+            print(f"\n[REPORT] DASHBOARD DE SEGURANÇA")
             print(f"Score Atual: {data.get('latest_scan', {}).get('score', 'N/A')}/100")
             print(f"Ameaças: {data.get('latest_scan', {}).get('threats', 'N/A')}")
-            print(f"Produção: {'✅' if data.get('latest_scan', {}).get('production_ready') else '❌'}")
+            print(f"Produção: {'[OK]' if data.get('latest_scan', {}).get('production_ready') else '[ERROR]'}")
             
         elif comando in ["exit", "quit", "sair"]:
             print("👋 Subagente de Segurança desativado")

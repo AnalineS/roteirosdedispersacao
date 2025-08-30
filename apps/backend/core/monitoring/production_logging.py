@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Sistema de Logging para Produção Enterprise
 Objetivo: Observabilidade e troubleshooting em produção
@@ -151,7 +152,7 @@ class ProductionLogger:
         }
         
         app_logger = logging.getLogger('app')
-        app_logger.info("🚀 APPLICATION STARTUP COMPLETED")
+        app_logger.info("[START] APPLICATION STARTUP COMPLETED")
         app_logger.info(f"Environment: {log_data['environment']}")
         app_logger.info(f"Debug Mode: {log_data['debug_mode']}")
         app_logger.info(f"Monitoring: {log_data['monitoring_enabled']}")

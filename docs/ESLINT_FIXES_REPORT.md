@@ -1,8 +1,8 @@
-# 🔧 ESLint Fixes Report - Tarefas Pendentes
+# [FIX] ESLint Fixes Report - Tarefas Pendentes
 **Data**: 24 de Agosto de 2024  
-**Status**: 📋 PLANO DE CORREÇÃO
+**Status**: [LIST] PLANO DE CORREÇÃO
 
-## 📊 Resumo dos Warnings
+## [REPORT] Resumo dos Warnings
 
 **Total de warnings identificados**: 42  
 **Categoria principal**: React Hooks dependency arrays + Next.js Image optimization
@@ -11,14 +11,14 @@
 
 | Categoria | Quantidade | Prioridade |
 |-----------|------------|------------|
-| useEffect dependency arrays | 18 | 🔴 Alta |
-| useCallback dependency arrays | 12 | 🟡 Média |
+| useEffect dependency arrays | 18 | [RED] Alta |
+| useCallback dependency arrays | 12 | [YELLOW] Média |
 | Next.js Image optimization | 10 | 🟠 Média |
-| ARIA accessibility | 2 | 🟡 Média |
+| ARIA accessibility | 2 | [YELLOW] Média |
 
 ---
 
-## 🔴 HIGH PRIORITY FIXES (30 warnings)
+## [RED] HIGH PRIORITY FIXES (30 warnings)
 
 ### React Hooks Dependencies
 Arquivos que precisam de correção imediata de dependency arrays:
@@ -26,12 +26,12 @@ Arquivos que precisam de correção imediata de dependency arrays:
 ```typescript
 // PADRÃO DE CORREÇÃO NECESSÁRIO:
 
-// ❌ Antes (problemático)
+// [ERROR] Antes (problemático)
 useEffect(() => {
   loadData();
 }, []);
 
-// ✅ Depois (correto)
+// [OK] Depois (correto)
 const loadData = useCallback(async () => {
   // logic here
 }, []); // deps vazias se função não depende de props/state
@@ -72,10 +72,10 @@ useEffect(() => {
 Replace `<img>` elements with `<Image>` from `next/image`:
 
 ```tsx
-// ❌ Antes (problemático)
+// [ERROR] Antes (problemático)
 <img src="/avatar.jpg" alt="Avatar" />
 
-// ✅ Depois (otimizado)
+// [OK] Depois (otimizado)
 import Image from 'next/image';
 <Image 
   src="/avatar.jpg" 
@@ -99,7 +99,7 @@ import Image from 'next/image';
 
 ---
 
-## 🟡 LOW PRIORITY FIXES (2 warnings)
+## [YELLOW] LOW PRIORITY FIXES (2 warnings)
 
 ### Accessibility Issues
 1. **`src/components/forms/OptimizedForm.tsx`** (linha 325)
@@ -109,7 +109,7 @@ import Image from 'next/image';
 
 ---
 
-## 🚀 PLANO DE IMPLEMENTAÇÃO
+## [START] PLANO DE IMPLEMENTAÇÃO
 
 ### Fase 1: Dependency Arrays (1-2 dias)
 ```bash
@@ -143,7 +143,7 @@ grep -r "<img" src/ --include="*.tsx"
 
 ---
 
-## 📋 TESTING CHECKLIST
+## [LIST] TESTING CHECKLIST
 
 ### Após cada fix, verificar:
 - [ ] **Build passa**: `npm run build`
@@ -199,7 +199,7 @@ const glob = require('glob');
 
 ---
 
-## 📊 IMPACT ASSESSMENT
+## [REPORT] IMPACT ASSESSMENT
 
 ### Performance Benefits após fixes:
 - **Bundle size**: Redução estimada de 5-10KB
@@ -208,15 +208,15 @@ const glob = require('glob');
 - **Maintainability**: Código mais robusto e confiável
 
 ### Risk Assessment:
-- **🟢 Low Risk**: Image optimizations (apenas melhoria)
-- **🟡 Medium Risk**: Dependency array fixes (podem quebrar funcionalidade)
-- **🔴 High Risk**: Nenhum (todos os fixes são safe)
+- **[GREEN] Low Risk**: Image optimizations (apenas melhoria)
+- **[YELLOW] Medium Risk**: Dependency array fixes (podem quebrar funcionalidade)
+- **[RED] High Risk**: Nenhum (todos os fixes são safe)
 
 ---
 
-## 🎯 SUCCESS CRITERIA
+## [TARGET] SUCCESS CRITERIA
 
-### ✅ FASE CONCLUÍDA QUANDO:
+### [OK] FASE CONCLUÍDA QUANDO:
 1. **ESLint warnings**: < 5 warnings total
 2. **Performance**: Lighthouse score mantido/melhorado
 3. **Functionality**: Zero regressions
@@ -239,7 +239,7 @@ Se timeline for limitado, focar apenas nos **HIGH PRIORITY** fixes (dependency a
 
 ---
 
-**READY FOR IMPLEMENTATION** ✅  
+**READY FOR IMPLEMENTATION** [OK]  
 *Este plano resolve 100% dos ESLint warnings identificados e melhora performance geral da aplicação.*
 
 ---

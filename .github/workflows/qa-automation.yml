@@ -1,0 +1,290 @@
+# -*- coding: utf-8 -*-
+name: QA Automation Suite
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to test (local, hml, development)'
+        required: true
+        default: 'local'
+        type: choice
+        options:
+          - local
+          - hml
+          - development
+      test_depth:
+        description: 'Test depth'
+        required: true
+        default: 'extensive'
+        type: choice
+        options:
+          - basic
+          - extensive
+      create_issues:
+        description: 'Create GitHub issues for failures'
+        required: true
+        default: true
+        type: boolean
+
+  schedule:
+    # Executa diariamente às 02:00 UTC (23:00 BRT)
+    - cron: '0 2 * * *'
+
+  pull_request:
+    branches: [ main, feature/* ]
+    paths:
+      - 'apps/backend/**'
+      - 'apps/frontend-nextjs/**'
+      - 'tests/**'
+
+jobs:
+  qa-automation:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+      actions: read
+    
+    env:
+      # Backend Configuration
+      SECRET_KEY: ${{ secrets.SECRET_KEY }}
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      
+      # Firebase Configuration
+      FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+      FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+      FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_AUTH_DOMAIN }}
+      FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_STORAGE_BUCKET }}
+      FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}
+      FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+      
+      # Google Cloud Configuration
+      GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+      GCP_REGION: ${{ secrets.GCP_REGION }}
+      
+      # Supabase Configuration
+      SUPABASE_PROJECT_URL: ${{ secrets.SUPABASE_PROJECT_URL }}
+      SUPABASE_API_KEY: ${{ secrets.SUPABASE_API_KEY }}
+      
+      # Environment Settings
+      ENVIRONMENT: ${{ github.event.inputs.environment || 'local' }}
+      CORS_ORIGINS: 'http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://127.0.0.1:5173'
+      FIRESTORE_CACHE_ENABLED: 'true'
+      HYBRID_CACHE_STRATEGY: 'firestore_first'
+      
+      # GitHub Configuration for Issues
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
+      GITHUB_REPOSITORY_NAME: ${{ github.event.repository.name }}
+
+    steps:
+      - name: 🔄 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: 'apps/frontend-nextjs/package-lock.json'
+
+      - name: 🔧 Install Python Dependencies
+        run: |
+          cd apps/backend
+          pip install -r requirements.txt
+
+      - name: 📱 Install Node.js Dependencies
+        run: |
+          cd apps/frontend-nextjs
+          npm ci
+
+      - name: 🧪 Prepare QA Environment
+        run: |
+          # Criar diretórios necessários
+          mkdir -p tests/qa-automation/reports
+          mkdir -p tests/qa-automation/logs
+          
+          # Configurar permissões
+          chmod +x tests/qa-automation/*.py
+
+      - name: 🚀 Start Backend Service
+        run: |
+          cd apps/backend
+          python main.py &
+          echo $! > backend.pid
+          
+          # Aguardar inicialização
+          sleep 10
+          
+          # Verificar se está rodando
+          if curl -f -H "User-Agent: QA-Automation-Health-Check/1.0" http://localhost:8080/api/v1/health; then
+            echo "✅ Backend iniciado com sucesso"
+          else
+            echo "❌ Falha ao iniciar backend"
+            exit 1
+          fi
+        timeout-minutes: 2
+
+      - name: 🔍 Execute QA Test Suite
+        id: qa_tests
+        run: |
+          cd tests/qa-automation
+          
+          # Definir parâmetros baseados nos inputs
+          TEST_ENV="${{ github.event.inputs.environment || 'local' }}"
+          TEST_DEPTH="${{ github.event.inputs.test_depth || 'extensive' }}"
+          
+          echo "🧪 Executando testes QA - Ambiente: $TEST_ENV, Profundidade: $TEST_DEPTH"
+          
+          # Executar suite principal com timeout - argumentos corrigidos
+          if [ "$TEST_DEPTH" == "extensive" ]; then
+            timeout 600 python main_test_runner.py --env="$TEST_ENV" --extensive \
+              || echo "qa_tests_failed=true" >> $GITHUB_OUTPUT
+          else
+            timeout 600 python main_test_runner.py --env="$TEST_ENV" \
+              --scenarios integration_e2e medical_accuracy \
+              || echo "qa_tests_failed=true" >> $GITHUB_OUTPUT
+          fi
+          
+        timeout-minutes: 12
+        continue-on-error: true
+
+      - name: 🧹 Stop Backend Service
+        if: always()
+        run: |
+          if [ -f apps/backend/backend.pid ]; then
+            kill $(cat apps/backend/backend.pid) || true
+            rm apps/backend/backend.pid
+          fi
+          # Cleanup adicional
+          pkill -f "python main.py" || true
+
+      - name: 📊 Process Test Results
+        if: always()
+        run: |
+          cd tests/qa-automation
+          
+          echo "📋 Processando resultados dos testes..."
+          
+          # Verificar se arquivos de resultado existem
+          if [ -f "reports/qa_results.json" ]; then
+            echo "✅ Arquivo de resultados encontrado"
+            
+            # Extrair estatísticas básicas
+            TOTAL_TESTS=$(jq -r '.summary.total_tests // 0' reports/qa_results.json)
+            PASSED_TESTS=$(jq -r '.summary.passed // 0' reports/qa_results.json)
+            FAILED_TESTS=$(jq -r '.summary.failed // 0' reports/qa_results.json)
+            WARNINGS=$(jq -r '.summary.warnings // 0' reports/qa_results.json)
+            
+            echo "📈 Estatísticas:"
+            echo "   - Total de testes: $TOTAL_TESTS"
+            echo "   - Testes aprovados: $PASSED_TESTS" 
+            echo "   - Testes falhados: $FAILED_TESTS"
+            echo "   - Warnings: $WARNINGS"
+            
+            # Salvar estatísticas para o job summary
+            {
+              echo "## 📊 Resultados QA Automation"
+              echo "| Métrica | Valor |"
+              echo "|---------|-------|"
+              echo "| Total de Testes | $TOTAL_TESTS |"
+              echo "| ✅ Aprovados | $PASSED_TESTS |" 
+              echo "| ❌ Falhados | $FAILED_TESTS |"
+              echo "| ⚠️ Warnings | $WARNINGS |"
+            } >> $GITHUB_STEP_SUMMARY
+            
+          else
+            echo "⚠️ Arquivo de resultados não encontrado"
+            echo "## ⚠️ Resultados QA Automation" >> $GITHUB_STEP_SUMMARY
+            echo "Não foi possível processar os resultados - arquivo não encontrado" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: 📄 Upload Test Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-reports-${{ github.run_number }}
+          path: |
+            tests/qa-automation/reports/
+            tests/qa-automation/logs/
+          retention-days: 30
+
+      - name: 🐛 Create Issues for Critical Failures
+        if: always() && (steps.qa_tests.outputs.qa_tests_failed == 'true' || github.event.inputs.create_issues == 'true')
+        run: |
+          cd tests/qa-automation
+          
+          echo "🐛 Verificando falhas críticas para criação de issues..."
+          
+          if [ -f "reports/qa_results.json" ]; then
+            # Executar script de criação de issues
+            python utils/github_issues.py \
+              --results-file="reports/qa_results.json" \
+              --repository="${{ github.repository }}" \
+              --token="${{ secrets.GITHUB_TOKEN }}" \
+              --run-id="${{ github.run_id }}" \
+              --environment="${{ github.event.inputs.environment || 'local' }}" \
+              --create-on-failure=true \
+              --create-on-warning=true
+          else
+            echo "⚠️ Não foi possível criar issues - arquivo de resultados não encontrado"
+          fi
+
+      - name: 💬 Comment on PR (if applicable)
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            
+            let comment = '## 🧪 QA Automation Results\n\n';
+            
+            try {
+              const results = JSON.parse(fs.readFileSync('tests/qa-automation/reports/qa_results.json', 'utf8'));
+              
+              const total = results.summary?.total_tests || 0;
+              const passed = results.summary?.passed || 0;
+              const failed = results.summary?.failed || 0;
+              const warnings = results.summary?.warnings || 0;
+              
+              comment += `📊 **Summary**: ${passed}/${total} tests passed`;
+              if (failed > 0) comment += `, ${failed} failed`;
+              if (warnings > 0) comment += `, ${warnings} warnings`;
+              
+              comment += '\n\n';
+              
+              if (failed > 0 || warnings > 0) {
+                comment += '⚠️ **Issues detected** - check the detailed report in the action artifacts.\n\n';
+              } else {
+                comment += '✅ **All tests passed successfully!**\n\n';
+              }
+              
+            } catch (error) {
+              comment += '❌ **Could not parse test results** - check action logs for details.\n\n';
+            }
+            
+            comment += `🔗 [View full report](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})`;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+      - name: 🎯 Set Job Status
+        if: always()
+        run: |
+          if [[ "${{ steps.qa_tests.outputs.qa_tests_failed }}" == "true" ]]; then
+            echo "❌ QA tests failed - setting job as failed"
+            exit 1
+          else
+            echo "✅ QA tests completed successfully"
+          fi

@@ -16,10 +16,10 @@ Pipeline principal que executa análise estática de segurança (SAST) usando m�
 - **TruffleHog** - Detecção de secrets e credenciais
 
 **Execução:**
-- ✅ Push para `main`, `develop`, `feature/*`, `security/*`
-- ✅ Pull Requests para `main`
-- ✅ Agendamento diário (2:00 AM UTC)
-- ✅ Execução manual via workflow_dispatch
+- [OK] Push para `main`, `develop`, `feature/*`, `security/*`
+- [OK] Pull Requests para `main`
+- [OK] Agendamento diário (2:00 AM UTC)
+- [OK] Execução manual via workflow_dispatch
 
 ### 2. `codeql-analysis.yml` - Análise CodeQL Detalhada
 Análise específica e aprofundada usando CodeQL com:
@@ -31,12 +31,12 @@ Análise específica e aprofundada usando CodeQL com:
 - Verificação de conformidade com LGPD
 
 **Execução:**
-- ✅ Push para `main`, `develop`
-- ✅ Pull Requests para `main`
-- ✅ Agendamento semanal (Domingos, 3:00 AM UTC)
-- ✅ Execução manual
+- [OK] Push para `main`, `develop`
+- [OK] Pull Requests para `main`
+- [OK] Agendamento semanal (Domingos, 3:00 AM UTC)
+- [OK] Execução manual
 
-## 🎯 Configurações de Segurança
+## [TARGET] Configurações de Segurança
 
 ### Backend (Python)
 - **`.bandit`** - Configuração Bandit específica para plataforma médica
@@ -51,33 +51,33 @@ Análise específica e aprofundada usando CodeQL com:
   - `medical-validation.ql` - Validação de dados médicos
   - `input-sanitization.ql` - Sanitização de entrada
 
-## 🚨 Severidade e Critérios de Falha
+## [ALERT] Severidade e Critérios de Falha
 
 ### Critérios de Falha do Pipeline
-- ❌ **CRITICAL**: Vulnerabilidades que podem afetar segurança do paciente
-- ❌ **HIGH**: Vulnerabilidades de segurança severas
-- ⚠️ **MEDIUM**: Vulnerabilidades que requerem review (não falham o build)
+- [ERROR] **CRITICAL**: Vulnerabilidades que podem afetar segurança do paciente
+- [ERROR] **HIGH**: Vulnerabilidades de segurança severas
+- [WARNING] **MEDIUM**: Vulnerabilidades que requerem review (não falham o build)
 - ℹ️ **LOW**: Informativo apenas
 
 ### Contexto Médico-Educacional
 O sistema implementa verificações específicas para:
 
-✅ **Validação de Dados Médicos:**
+[OK] **Validação de Dados Médicos:**
 - Cálculos de dosagem PQT-U
 - Validação de entrada de dados clínicos
 - Sanitização de dados de pacientes
 
-✅ **Conformidade Legal:**
+[OK] **Conformidade Legal:**
 - LGPD (Lei Geral de Proteção de Dados)
 - CFM Resolução 2.314/2022 (Telemedicina)
 - ANVISA RDC 4/2009 (Farmacovigilância)
 
-✅ **Segurança de Dados Sensíveis:**
+[OK] **Segurança de Dados Sensíveis:**
 - Detecção de hardcoded secrets
 - Validação de entrada médica
 - Proteção contra injection attacks
 
-## 📊 Relatórios de Segurança
+## [REPORT] Relatórios de Segurança
 
 ### Artifacts Gerados
 Cada execução gera relatórios específicos disponíveis por 30-90 dias:
@@ -90,12 +90,12 @@ Cada execução gera relatórios específicos disponíveis por 30-90 dias:
 
 ### Pull Request Comments
 Em PRs, o sistema automaticamente comenta com:
-- ✅ Status de cada ferramenta de SAST
-- ⚠️ Contagem de vulnerabilidades encontradas
-- 📋 Recomendações específicas para plataforma médica
+- [OK] Status de cada ferramenta de SAST
+- [WARNING] Contagem de vulnerabilidades encontradas
+- [LIST] Recomendações específicas para plataforma médica
 - 🔗 Links para relatórios detalhados
 
-## 🔧 Execução Local
+## [FIX] Execução Local
 
 ### Bandit (Python SAST)
 ```bash
@@ -125,7 +125,7 @@ codeql database create --language=python --source-root=apps/backend python-db
 codeql database analyze python-db --format=table --output=results.txt
 ```
 
-## 🚀 Customização
+## [START] Customização
 
 ### Adicionando Novas Verificações
 1. **Python**: Edite `apps/backend/.bandit` ou `.safety-policy.yml`
@@ -151,4 +151,4 @@ O sistema suporta:
 **⚕️ Nota Médica:** Este sistema de segurança foi desenvolvido especificamente para uma plataforma educacional médica, com foco em proteção de dados de saúde e conformidade com regulamentações brasileiras de telemedicina e farmacovigilância.
 
 ---
-**Status Atual:** ✅ GitHub Secrets configurados - Sistema pronto para deploy
+**Status Atual:** [OK] GitHub Secrets configurados - Sistema pronto para deploy

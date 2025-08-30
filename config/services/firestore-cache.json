@@ -1,0 +1,35 @@
+{
+  "name": "firestore-cache",
+  "version": "1.0.0",
+  "description": "Configuração do cache híbrido Firestore",
+  "configuration": {
+    "cache_layers": {
+      "memory": {
+        "max_size": 50,
+        "ttl_minutes": 5,
+        "cleanup_interval": 60000
+      },
+      "localStorage": {
+        "max_size": 100,
+        "ttl_minutes": 30,
+        "key_prefix": "rag_cache_"
+      },
+      "firestore": {
+        "collection": "cache",
+        "ttl_minutes": 60,
+        "batch_size": 10,
+        "sync_strategy": "background"
+      }
+    },
+    "fallback": {
+      "offline_mode": true,
+      "timeout_ms": 5000,
+      "retry_attempts": 2
+    },
+    "metrics": {
+      "track_hit_rate": true,
+      "track_performance": true,
+      "log_cache_events": true
+    }
+  }
+}

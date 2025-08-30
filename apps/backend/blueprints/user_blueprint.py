@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 User Blueprint - API de Usuários com Autenticação JWT
 Demonstra integração completa com Firebase Authentication
@@ -475,4 +476,4 @@ def not_found(error):
     }), 404
 
 # Log de inicialização
-logger.info(f"🔐 User Blueprint carregado {'com' if JWT_AVAILABLE else 'sem'} autenticação JWT")
+logger.info(f"[AUTH] User Blueprint carregado {'com' if JWT_AVAILABLE else 'sem'} autenticação JWT")

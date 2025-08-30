@@ -1,0 +1,435 @@
+{
+  "start_time": "2025-08-30 18:25:27.617653",
+  "environment": "local",
+  "scenarios": {
+    "integration_e2e": {
+      "start_time": "2025-08-30 18:25:27.617828",
+      "passed": 0,
+      "total": 10,
+      "details": [
+        {
+          "name": "health_check",
+          "passed": false,
+          "duration": 0.2652852535247803,
+          "error": "Status code 500",
+          "details": ""
+        },
+        {
+          "name": "api_endpoints",
+          "passed": false,
+          "duration": 0,
+          "error": "name 'p' is not defined",
+          "error_type": "CriticalError"
+        },
+        {
+          "name": "chat_integration",
+          "passed": false,
+          "duration": 0.2732264995574951,
+          "error": "Falhas: Persona dr_gasnelio: HTTP 500, Persona ga: HTTP 500",
+          "details": "Chat scenarios: 0/2 (0.0%)"
+        },
+        {
+          "name": "persona_consistency",
+          "passed": false,
+          "duration": 0.2806243896484375,
+          "error": "Personas n\u00e3o responderam adequadamente",
+          "details": "Personas funcionais: 0/2, Respostas distintas: True"
+        },
+        {
+          "name": "cache_system",
+          "passed": false,
+          "duration": 0.7760565280914307,
+          "error": "Falha em uma das requisi\u00e7\u00f5es",
+          "details": "Ambas requisi\u00e7\u00f5es OK: False, Cache consistente: False"
+        },
+        {
+          "name": "error_handling",
+          "passed": false,
+          "duration": 0.5314879417419434,
+          "error": "Muitos erros n\u00e3o tratados adequadamente",
+          "details": "Erros tratados adequadamente: 0/3 (0.0%)"
+        },
+        {
+          "name": "response_validation",
+          "passed": false,
+          "duration": 0.27271318435668945,
+          "error": "Estruturas de resposta inv\u00e1lidas",
+          "details": "Valida\u00e7\u00f5es OK: 0/2"
+        },
+        {
+          "name": "firestore_fallback",
+          "passed": false,
+          "duration": 1.8220908641815186,
+          "error": "Sistema inst\u00e1vel",
+          "details": "Requests successful: 0/5 (0.0%)"
+        },
+        {
+          "name": "medical_workflow",
+          "passed": false,
+          "duration": 1.7497780323028564,
+          "error": "Workflow m\u00e9dico incompleto",
+          "details": "Workflow steps successful: 0/4 (0.0%)"
+        },
+        {
+          "name": "cross_browser_compatibility",
+          "passed": false,
+          "duration": 0.7922618389129639,
+          "error": "Problemas de compatibilidade detectados",
+          "details": "User agents compatible: 0/3 (0.0%)"
+        }
+      ],
+      "status": "failure",
+      "success_rate": 0.0,
+      "end_time": "2025-08-30 18:25:34.383263",
+      "execution_time": 6.765435
+    },
+    "performance_load": {
+      "start_time": "2025-08-30 18:25:27.617833",
+      "passed": 2,
+      "total": 9,
+      "details": [
+        {
+          "name": "response_time_baseline",
+          "passed": false,
+          "duration": 3.7627017498016357,
+          "error": "Nenhuma resposta bem-sucedida obtida",
+          "details": "",
+          "metrics": {}
+        },
+        {
+          "name": "concurrent_load",
+          "passed": false,
+          "duration": 0.3064310550689697,
+          "error": "Performance degradada sob carga (Success: 0.0%, Avg: 0ms)",
+          "details": "Success rate: 0.0%, Avg response: 0ms",
+          "metrics": {
+            "concurrent_success_rate": 0.0,
+            "concurrent_avg_response": 0,
+            "concurrent_max_response": 0
+          }
+        },
+        {
+          "name": "sustained_load",
+          "passed": false,
+          "duration": 60.24549198150635,
+          "error": "Performance insustent\u00e1vel (Success: 0.0%, Throughput: 0.0)",
+          "details": "Requests: 0/300, Throughput: 0.0 req/s",
+          "metrics": {
+            "sustained_success_rate": 0.0,
+            "sustained_throughput": 0.0,
+            "sustained_avg_response": 0,
+            "sustained_p95_response": 0
+          }
+        },
+        {
+          "name": "memory_usage",
+          "passed": true,
+          "duration": 5.4380717277526855,
+          "error": null,
+          "details": "Memory usage: 47.1MB, System: 80.5%",
+          "metrics": {
+            "memory_usage": 47.0546875,
+            "memory_increase": 0.09999999999999432,
+            "system_memory_percent": 80.5
+          }
+        },
+        {
+          "name": "cpu_utilization",
+          "passed": false,
+          "duration": 7.1833250522613525,
+          "error": "Utiliza\u00e7\u00e3o de CPU muito alta (100.0%)",
+          "details": "Avg CPU: 37.9%, Max CPU: 100.0%",
+          "metrics": {
+            "avg_cpu_usage": 37.86,
+            "max_cpu_usage": 100.0
+          }
+        },
+        {
+          "name": "throughput_measurement",
+          "passed": false,
+          "duration": 30.25705075263977,
+          "error": "Throughput insuficiente (0.0 req/s)",
+          "details": "Throughput: 0.0 req/s, Success: 0.0%",
+          "metrics": {
+            "max_throughput": 0.0,
+            "throughput_success_rate": 0.0
+          }
+        },
+        {
+          "name": "cache_performance",
+          "passed": true,
+          "duration": 1.8497045040130615,
+          "error": null,
+          "details": "Cold: 0ms, Warm: 0ms, Efficiency: 0.0%",
+          "metrics": {
+            "cache_cold_time": 0,
+            "cache_warm_time": 0,
+            "cache_efficiency": 0
+          }
+        },
+        {
+          "name": "error_rate_under_load",
+          "passed": false,
+          "duration": 3.7997286319732666,
+          "error": "Taxa de erro muito alta sob carga (100.0%)",
+          "details": "Error rate: 100.0%, Success: 0, Errors: 50",
+          "metrics": {
+            "load_error_rate": 100.0,
+            "load_successful_requests": 0,
+            "load_failed_requests": 50
+          }
+        },
+        {
+          "name": "recovery_after_load",
+          "passed": false,
+          "duration": 6.645624876022339,
+          "error": "Sistema n\u00e3o se recuperou adequadamente (0.0%)",
+          "details": "Recovery rate: 0.0%, Recovery time: 6.6s",
+          "metrics": {
+            "recovery_rate": 0.0,
+            "recovery_time": 6.645624876022339
+          }
+        }
+      ],
+      "metrics": {
+        "concurrent_success_rate": 0.0,
+        "concurrent_avg_response": 0,
+        "concurrent_max_response": 0,
+        "sustained_success_rate": 0.0,
+        "sustained_throughput": 0.0,
+        "sustained_avg_response": 0,
+        "sustained_p95_response": 0,
+        "memory_usage": 47.0546875,
+        "memory_increase": 0.09999999999999432,
+        "system_memory_percent": 80.5,
+        "avg_cpu_usage": 37.86,
+        "max_cpu_usage": 100.0,
+        "max_throughput": 0.0,
+        "throughput_success_rate": 0.0,
+        "cache_cold_time": 0,
+        "cache_warm_time": 0,
+        "cache_efficiency": 0,
+        "load_error_rate": 100.0,
+        "load_successful_requests": 0,
+        "load_failed_requests": 50,
+        "recovery_rate": 0.0,
+        "recovery_time": 6.645624876022339
+      },
+      "status": "failure",
+      "success_rate": 22.22222222222222,
+      "end_time": "2025-08-30 18:27:33.874062",
+      "execution_time": 126.256229
+    },
+    "security_validation": {
+      "start_time": "2025-08-30 18:25:27.617837",
+      "passed": 4,
+      "total": 12,
+      "details": [
+        {
+          "name": "input_sanitization",
+          "passed": false,
+          "duration": 1.8328495025634766,
+          "error": "Sanitiza\u00e7\u00e3o inadequada: Status inesperado 500 para: <script>alert('test'..., Status inesperado 500 para: '; DROP TABLE test; ..., Status inesperado 500 para: ../../../etc/passwd...",
+          "details": "Inputs bloqueados: 0/4, Taxa: 0.0%",
+          "severity": "high"
+        },
+        {
+          "name": "sql_injection_prevention",
+          "passed": false,
+          "duration": 1.3373160362243652,
+          "error": null,
+          "details": "SQL payloads bloqueados: 0/5 (0.0%)",
+          "severity": "high"
+        },
+        {
+          "name": "xss_prevention",
+          "passed": false,
+          "duration": 0,
+          "error": "timeout parameter cannot be of <class 'aiohttp.client.ClientSession'> type, please use 'timeout=ClientTimeout(...)'",
+          "error_type": "CriticalError",
+          "severity": "high"
+        },
+        {
+          "name": "path_traversal_prevention",
+          "passed": false,
+          "duration": 1.8913426399230957,
+          "error": "Path traversal prevention inadequado",
+          "details": "Path traversal bloqueado: 0/10 (0.0%)",
+          "severity": "medium"
+        },
+        {
+          "name": "command_injection_prevention",
+          "passed": false,
+          "duration": 1.3248369693756104,
+          "error": "Command injection prevention inadequado",
+          "details": "Command injection bloqueado: 0/5 (0.0%)",
+          "severity": "high"
+        },
+        {
+          "name": "rate_limiting",
+          "passed": false,
+          "duration": 0.3353719711303711,
+          "error": "Rate limiting n\u00e3o detectado",
+          "details": "Status codes: {500: 20}, Rate limited: 0",
+          "severity": "medium"
+        },
+        {
+          "name": "user_agent_filtering",
+          "passed": true,
+          "duration": 1.3182878494262695,
+          "error": null,
+          "details": "User agents bloqueados: 0/5",
+          "severity": "low"
+        },
+        {
+          "name": "cors_configuration",
+          "passed": true,
+          "duration": 0.2637786865234375,
+          "error": null,
+          "details": "Headers CORS encontrados: 1/3",
+          "severity": "medium"
+        },
+        {
+          "name": "security_headers",
+          "passed": true,
+          "duration": 0.26191139221191406,
+          "error": null,
+          "details": "Security headers presentes: 5/5",
+          "severity": "medium"
+        },
+        {
+          "name": "log_injection_prevention",
+          "passed": false,
+          "duration": 0.5508577823638916,
+          "error": "Poss\u00edvel vulnerabilidade log injection",
+          "details": "Respostas normais: 0/4",
+          "severity": "medium"
+        },
+        {
+          "name": "error_information_leakage",
+          "passed": true,
+          "duration": 0.5399515628814697,
+          "error": null,
+          "details": "Erros seguros: 3/3",
+          "severity": "high"
+        },
+        {
+          "name": "authentication_bypass",
+          "passed": false,
+          "duration": 0.5340683460235596,
+          "error": "Poss\u00edvel vulnerabilidade de bypass",
+          "details": "Tentativas de bypass bloqueadas: 0/3",
+          "severity": "low"
+        }
+      ],
+      "status": "failure",
+      "success_rate": 33.33333333333333,
+      "critical_failures": 4,
+      "end_time": "2025-08-30 18:27:44.067223",
+      "execution_time": 136.449386
+    },
+    "medical_accuracy": {
+      "start_time": "2025-08-30 18:25:27.617842",
+      "passed": 0,
+      "total": 10,
+      "details": [
+        {
+          "name": "scientific_accuracy",
+          "passed": false,
+          "duration": 2.0522167682647705,
+          "error": "Falhas: HTTP 500 para pergunta cient\u00edfica, HTTP 500 para pergunta cient\u00edfica, HTTP 500 para pergunta cient\u00edfica",
+          "details": "Quest\u00f5es aprovadas: 0/3, Score m\u00e9dio: 0.0",
+          "scientific_score": 0.0
+        },
+        {
+          "name": "persona_consistency",
+          "passed": false,
+          "duration": 2.645892381668091,
+          "error": "Inconsist\u00eancia detectada entre personas",
+          "details": "Consist\u00eancia m\u00e9dia: 0.0%, Perguntas testadas: 0",
+          "scientific_score": 0
+        },
+        {
+          "name": "medical_terminology",
+          "passed": false,
+          "duration": 0.2857377529144287,
+          "error": "Terminologia m\u00e9dica inadequada",
+          "details": "Score terminologia m\u00e9dica: 0.0%",
+          "scientific_score": 0
+        },
+        {
+          "name": "dosage_protocols",
+          "passed": false,
+          "duration": 0.2700529098510742,
+          "error": "Imprecis\u00f5es em protocolos de dosagem",
+          "details": "Precis\u00e3o dosagem: 0.0%",
+          "scientific_score": 0
+        },
+        {
+          "name": "contraindications",
+          "passed": false,
+          "duration": 0.26117992401123047,
+          "error": "HTTP 500",
+          "details": "",
+          "scientific_score": 0
+        },
+        {
+          "name": "side_effects",
+          "passed": false,
+          "duration": 0.26781749725341797,
+          "error": "HTTP 500",
+          "details": "",
+          "scientific_score": 0
+        },
+        {
+          "name": "patient_education",
+          "passed": false,
+          "duration": 0.26089000701904297,
+          "error": "HTTP 500",
+          "details": "",
+          "scientific_score": 0
+        },
+        {
+          "name": "scope_detection",
+          "passed": false,
+          "duration": 0.8139619827270508,
+          "error": "Detec\u00e7\u00e3o de escopo imprecisa",
+          "details": "Precis\u00e3o detec\u00e7\u00e3o de escopo: 0.0%",
+          "scientific_score": 0
+        },
+        {
+          "name": "citation_accuracy",
+          "passed": false,
+          "duration": 0.26587963104248047,
+          "error": "HTTP 500",
+          "details": "",
+          "scientific_score": 0
+        },
+        {
+          "name": "empathy_validation",
+          "passed": false,
+          "duration": 0.26183056831359863,
+          "error": "HTTP 500",
+          "details": "",
+          "scientific_score": 0
+        }
+      ],
+      "status": "failure",
+      "success_rate": 0.0,
+      "end_time": "2025-08-30 18:27:51.454844",
+      "execution_time": 143.837002
+    }
+  },
+  "summary": {
+    "total_tests": 41,
+    "passed_tests": 6,
+    "failed_tests": 35,
+    "success_rate": 14.634146341463413,
+    "critical_failures": 0,
+    "warnings": 0,
+    "execution_time": 143.837307,
+    "environment": "local",
+    "overall_status": "FAILURE"
+  },
+  "issues_created": []
+}

@@ -1,26 +1,26 @@
-# 🔐 Configuração do Firebase Authentication
+# [AUTH] Configuração do Firebase Authentication
 
-## Secrets já configurados ✅
+## Secrets já configurados [OK]
 
 Você já possui TODOS os secrets necessários configurados no GitHub:
-- ✅ `FIREBASE_API_KEY`
-- ✅ `FIREBASE_AUTH_DOMAIN` 
-- ✅ `FIREBASE_PROJECT_ID`
-- ✅ `FIREBASE_STORAGE_BUCKET`
-- ✅ `FIREBASE_MESSAGING_SENDER_ID`
-- ✅ `FIREBASE_APP_ID`
-- ✅ `FIREBASE_TOKEN` (para deploy via CLI)
+- [OK] `FIREBASE_API_KEY`
+- [OK] `FIREBASE_AUTH_DOMAIN` 
+- [OK] `FIREBASE_PROJECT_ID`
+- [OK] `FIREBASE_STORAGE_BUCKET`
+- [OK] `FIREBASE_MESSAGING_SENDER_ID`
+- [OK] `FIREBASE_APP_ID`
+- [OK] `FIREBASE_TOKEN` (para deploy via CLI)
 
-## Status de Ativação ✅
+## Status de Ativação [OK]
 
 ### Recursos já ativados:
-- ✅ **NEXT_PUBLIC_AUTH_ENABLED=true** - Autenticação Firebase ativa
-- ✅ **NEXT_PUBLIC_FIRESTORE_ENABLED=true** - Banco de dados ativo
+- [OK] **NEXT_PUBLIC_AUTH_ENABLED=true** - Autenticação Firebase ativa
+- [OK] **NEXT_PUBLIC_FIRESTORE_ENABLED=true** - Banco de dados ativo
 
 ### Analytics configurado:
-- ✅ **Google Analytics (GA)** já implementado no frontend
-- ✅ Configurado via `NEXT_PUBLIC_GA_MEASUREMENT_ID`
-- ✅ Componente `GoogleAnalytics` integrado no layout
+- [OK] **Google Analytics (GA)** já implementado no frontend
+- [OK] Configurado via `NEXT_PUBLIC_GA_MEASUREMENT_ID`
+- [OK] Componente `GoogleAnalytics` integrado no layout
 
 ### Recursos opcionais:
 ```bash
@@ -32,7 +32,7 @@ NEXT_PUBLIC_OFFLINE_MODE=false  # Padrão: false
 
 ### 1. Google OAuth
 No [Google Cloud Console](https://console.cloud.google.com/):
-1. Vá para "APIs & Services" → "Credentials"
+1. Vá para "APIs & Services" -> "Credentials"
 2. Configure OAuth 2.0 Client IDs
 3. Adicione domínios autorizados:
    - `localhost:3000` (desenvolvimento)
@@ -54,13 +54,13 @@ No [Apple Developer](https://developer.apple.com/):
 No [Firebase Console](https://console.firebase.google.com/):
 
 ### Authentication
-1. Vá para Authentication → Sign-in method
+1. Vá para Authentication -> Sign-in method
 2. Habilite os provedores:
-   - ✅ Email/Password
-   - ✅ Google
-   - ✅ Facebook  
-   - ✅ Apple
-   - ✅ Anonymous (para usuários convidados)
+   - [OK] Email/Password
+   - [OK] Google
+   - [OK] Facebook  
+   - [OK] Apple
+   - [OK] Anonymous (para usuários convidados)
 
 ### Firestore Database
 1. Crie o banco Firestore
@@ -112,7 +112,7 @@ interface UserProfile {
 
 ## Funcionalidades disponíveis
 
-### ✅ **Com autenticação habilitada:**
+### [OK] **Com autenticação habilitada:**
 - Login com email/senha
 - Login social (Google, Facebook, Apple)
 - Perfis de usuário personalizados
@@ -120,7 +120,7 @@ interface UserProfile {
 - Sincronização entre dispositivos
 - Preferências salvas na nuvem
 
-### ⚠️ **Modo degradado (auth desabilitada):**
+### [WARNING] **Modo degradado (auth desabilitada):**
 - Acesso como convidado
 - Perfis apenas locais
 - Sem sincronização
@@ -152,7 +152,7 @@ console.log('Firestore enabled:', window.FEATURES?.FIRESTORE_ENABLED);
 - Rebuilde a aplicação após adicionar secrets
 
 ### Erro: "Auth domain not authorized"
-- Adicione o domínio no Firebase Console → Authentication → Settings → Authorized domains
+- Adicione o domínio no Firebase Console -> Authentication -> Settings -> Authorized domains
 
 ### Erro social login: "Popup blocked"
 - O sistema automaticamente faz fallback para redirect
@@ -165,11 +165,11 @@ console.log('Firestore enabled:', window.FEATURES?.FIRESTORE_ENABLED);
 ## Monitoramento
 
 ### Firebase Console
-- **Authentication → Users**: Usuários registrados e provedores vinculados
-- **Firestore → Data**: Dados dos perfis de usuário salvos
+- **Authentication -> Users**: Usuários registrados e provedores vinculados
+- **Firestore -> Data**: Dados dos perfis de usuário salvos
 - **Usage**: Métricas de uso do Firebase
 
-### Google Analytics (GA) ✅
+### Google Analytics (GA) [OK]
 - **Implementação**: Já integrado via `GoogleAnalytics` component
 - **Configuração**: Via `NEXT_PUBLIC_GA_MEASUREMENT_ID`
 - **Eventos rastreados**: 

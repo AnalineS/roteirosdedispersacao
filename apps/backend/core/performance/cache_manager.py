@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Cache Manager para otimização de performance
 Objetivo: Reduzir tempo de resposta para <1.5s
