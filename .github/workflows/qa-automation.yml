@@ -143,12 +143,15 @@ jobs:
           
           echo "🧪 Executando testes QA - Ambiente: $TEST_ENV, Profundidade: $TEST_DEPTH"
           
-          # Executar suite principal com timeout
-          timeout 600 python main_test_runner.py --env="$TEST_ENV" --$TEST_DEPTH \
-            --report-format=json \
-            --output-dir=reports \
-            --create-issues="${{ github.event.inputs.create_issues || 'true' }}" \
-            || echo "qa_tests_failed=true" >> $GITHUB_OUTPUT
+          # Executar suite principal com timeout - argumentos corrigidos
+          if [ "$TEST_DEPTH" == "extensive" ]; then
+            timeout 600 python main_test_runner.py --env="$TEST_ENV" --extensive \
+              || echo "qa_tests_failed=true" >> $GITHUB_OUTPUT
+          else
+            timeout 600 python main_test_runner.py --env="$TEST_ENV" \
+              --scenarios integration_e2e medical_accuracy \
+              || echo "qa_tests_failed=true" >> $GITHUB_OUTPUT
+          fi
           
         timeout-minutes: 12
         continue-on-error: true

@@ -306,7 +306,7 @@ jobs:
             --max-instances=10 \
             --min-instances=0 \
             --timeout=300 \
-            --set-env-vars="ENVIRONMENT=homologacao,FLASK_ENV=production,DEBUG=false,SECRET_KEY=${{ secrets.SECRET_KEY }},OPENROUTER_API_KEY=${{ secrets.OPENROUTER_API_KEY }},HUGGINGFACE_API_KEY=${{ secrets.HUGGINGFACE_API_KEY }}" \
+            --set-env-vars="ENVIRONMENT=homologacao,FLASK_ENV=production,DEBUG=false,SECRET_KEY=${{ secrets.SECRET_KEY }},OPENROUTER_API_KEY=${{ secrets.OPENROUTER_API_KEY }},HUGGINGFACE_API_KEY=${{ secrets.HUGGINGFACE_API_KEY }},SUPABASE_PROJECT_URL=${{ secrets.SUPABASE_PROJECT_URL }},SUPABASE_PUBLISHABLE_KEY=${{ secrets.SUPABASE_PUBLISHABLE_KEY }},SUPABASE_API_KEY=${{ secrets.SUPABASE_API_KEY }},USE_API_EMBEDDINGS=${{ secrets.USE_API_EMBEDDINGS }},CIRCUIT_BREAKER_TIMEOUT=${{ secrets.CIRCUIT_BREAKER_TIMEOUT }},FAIL_HONESTLY=${{ secrets.FAIL_HONESTLY }},HEALTH_CHECK_TIMEOUT=${{ vars.HEALTH_CHECK_TIMEOUT }},CRITICAL_SERVICES=${{ vars.CRITICAL_SERVICES }}" \
             --tag=hml-$(echo $GITHUB_SHA | cut -c1-7) \
             --quiet
           

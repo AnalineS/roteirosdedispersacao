@@ -59,10 +59,16 @@ class IntelligentFallbackSystem:
         
         # Testar AI Provider
         try:
-            from services.ai_provider_manager import get_ai_health_status
-            services['ai_provider'] = True
+            from services.ai.ai_provider_manager import get_ai_health_status
+            # Teste real de conexão
+            health_status = get_ai_health_status()
+            services['ai_provider'] = health_status.get('status') == 'healthy'
         except ImportError:
             # Serviço não disponível - continuar sem ele
+            services['ai_provider'] = False
+        except Exception as e:
+            # Falha na conexão - registrar e marcar como indisponível
+            logger.warning(f"AI Provider health check failed: {e}")
             services['ai_provider'] = False
         
         # Testar QA Framework
@@ -126,27 +132,20 @@ def create_intelligent_health_blueprint() -> Blueprint:
     health_bp = Blueprint('intelligent_health', __name__, url_prefix='/api/v1')
     
     @health_bp.route('/health', methods=['GET'])  # /api/v1/health
-    @health_bp.route('/api/health', methods=['GET'])  # Compatibilidade com QA workflow
     def health():
-        """Health check principal com informações inteligentes"""
-        system_status = fallback_system.get_system_status()
-        
-        # Calcular score de saúde baseado nos serviços disponíveis
-        total_services = len(system_status['services'])
-        available_services = sum(1 for available in system_status['services'].values() if available)
-        health_score = (available_services / total_services) * 100 if total_services > 0 else 0
-        
-        return jsonify({
-            "status": "healthy" if health_score > 30 else "degraded",
-            "health_score": round(health_score, 1),
-            "timestamp": datetime.now().isoformat(),
-            "version": "intelligent_fallback_v2.0.0",
-            "api_version": "v1",
-            "environment": os.getenv('ENVIRONMENT', 'development'),
-            "port": int(os.environ.get('PORT', 8080)),
-            "mode": "intelligent_fallback",
-            "system": system_status,
-            "endpoints": {
+        """🚨 CORREÇÃO EMERGENCIAL: Health check 'Fail Honestly' com circuit breaker"""
+        try:
+            from services.honest_health_checker import get_honest_health_status
+            status_code, response = get_honest_health_status()
+            
+            # Adicionar informações de fallback
+            system_status = fallback_system.get_system_status()
+            response["fallback_services"] = system_status["services"]
+            response["version"] = "honest_health_v1.0.0"
+            response["api_version"] = "v1"
+            response["environment"] = os.getenv('ENVIRONMENT', 'development')
+            response["port"] = int(os.environ.get('PORT', 8080))
+            response["endpoints"] = {
                 "health": "/api/v1/health",
                 "health_live": "/api/v1/health/live",
                 "health_ready": "/api/v1/health/ready",
@@ -156,7 +155,40 @@ def create_intelligent_health_blueprint() -> Blueprint:
                 "monitoring": "/api/v1/monitoring/stats",
                 "docs": "/api/v1/docs"
             }
-        })
+            
+            return jsonify(response), status_code
+            
+        except Exception as e:
+            # Fallback para sistema antigo em caso de erro
+            logger.error(f"Erro no health check honesto: {e}")
+            system_status = fallback_system.get_system_status()
+            
+            total_services = len(system_status['services'])
+            available_services = sum(1 for available in system_status['services'].values() if available)
+            health_score = (available_services / total_services) * 100 if total_services > 0 else 0
+            
+            return jsonify({
+                "status": "degraded",
+                "health_score": round(health_score, 1),
+                "timestamp": datetime.now().isoformat(),
+                "version": "fallback_mode_v2.0.0",
+                "api_version": "v1",
+                "environment": os.getenv('ENVIRONMENT', 'development'),
+                "port": int(os.environ.get('PORT', 8080)),
+                "mode": "fallback_emergency",
+                "system": system_status,
+                "error": "Health check honesto falhou - usando fallback",
+                "endpoints": {
+                    "health": "/api/v1/health",
+                    "health_live": "/api/v1/health/live",
+                    "health_ready": "/api/v1/health/ready",
+                    "personas": "/api/v1/personas",
+                    "chat": "/api/v1/chat",
+                    "feedback": "/api/v1/feedback",
+                    "monitoring": "/api/v1/monitoring/stats",
+                    "docs": "/api/v1/docs"
+                }
+            }), 503
     
     @health_bp.route('/health/live', methods=['GET'])
     def health_live():
