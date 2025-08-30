@@ -1,8 +1,8 @@
-# 📊 Google Cloud Observability - Plano Gratuito
+# [REPORT] Google Cloud Observability - Plano Gratuito
 
-## 🎯 Análise de Viabilidade para Sistema Educacional Hanseníase
+## [TARGET] Análise de Viabilidade para Sistema Educacional Hanseníase
 
-### 📌 Status: ✅ VIÁVEL COM LIMITAÇÕES
+### 📌 Status: [OK] VIÁVEL COM LIMITAÇÕES
 
 ---
 
@@ -106,7 +106,7 @@ tiles:
 
 ### 3️⃣ **Fase 3: Sistema de Alertas Alternativo (Sem Custo)**
 
-**⚠️ Nota: Alertas do GCP cobrados desde Jan/2025 - Usando alternativas gratuitas**
+**[WARNING] Nota: Alertas do GCP cobrados desde Jan/2025 - Usando alternativas gratuitas**
 
 ```javascript
 // Sistema de alertas customizado sem usar GCP Alerting
@@ -117,7 +117,7 @@ export class FreeAlertingSystem {
     
     // Alerta de quota no próprio dashboard
     if (metrics.usagePercentage > 90) {
-      this.showDashboardAlert('⚠️ Uso de métricas próximo do limite!');
+      this.showDashboardAlert('[WARNING] Uso de métricas próximo do limite!');
       this.sendWebhookAlert('quota_warning', metrics);
     }
   }
@@ -156,7 +156,7 @@ export class FreeAlertingSystem {
 
 ---
 
-## 📊 Cálculo de Uso Estimado
+## [REPORT] Cálculo de Uso Estimado
 
 ### Métricas por Componente (Revisado Ago/2025)
 
@@ -179,9 +179,9 @@ export class FreeAlertingSystem {
 | Quota Usage | custom_metrics_mb | 1/hora | ~5 MB | GCP Custom | GRÁTIS |
 | **TOTAL GCP Custom** | | | **~70 MB** | | **GRÁTIS** |
 
-✅ **Uso otimizado: 70 MB de 150 MB (47% - metade do limite!)**
+[OK] **Uso otimizado: 70 MB de 150 MB (47% - metade do limite!)**
 
-✅ **Margem de segurança: 10 MB (7%) abaixo do limite**
+[OK] **Margem de segurança: 10 MB (7%) abaixo do limite**
 
 ---
 
@@ -304,7 +304,7 @@ export default function ObservabilityDashboard() {
   
   return (
     <div className="p-6">
-      <h1>📊 Observability - Free Tier Monitor</h1>
+      <h1>[REPORT] Observability - Free Tier Monitor</h1>
       
       <div className="grid grid-cols-3 gap-4 mt-6">
         <MetricCard
@@ -333,7 +333,7 @@ export default function ObservabilityDashboard() {
       
       {usage.customMetrics > 140 && (
         <Alert className="mt-4">
-          ⚠️ Aproximando do limite gratuito! Considere:
+          [WARNING] Aproximando do limite gratuito! Considere:
           - Reduzir frequência de métricas
           - Remover labels desnecessários
           - Usar mais métricas nativas do GCP
@@ -346,26 +346,26 @@ export default function ObservabilityDashboard() {
 
 ---
 
-## 🎯 Métricas Prioritárias (Ordem de Importância)
+## [TARGET] Métricas Prioritárias (Ordem de Importância)
 
-1. **🔴 Críticas (Sempre manter)**
+1. **[RED] Críticas (Sempre manter)**
    - API Health: Uptime e latência
    - Error Rate: Taxa de erros do sistema
    - User Sessions: Sessões ativas
 
-2. **🟡 Importantes (Manter se possível)**
+2. **[YELLOW] Importantes (Manter se possível)**
    - Persona Performance: Tempo de resposta por persona
    - Educational Progress: Conclusão de módulos
    - PWA Stats: Instalações e uso offline
 
-3. **🟢 Nice-to-have (Cortar se necessário)**
+3. **[GREEN] Nice-to-have (Cortar se necessário)**
    - Detailed User Journey: Fluxo detalhado
    - A/B Test Metrics: Resultados de testes
    - Browser Performance: Core Web Vitals
 
 ---
 
-## 🚨 Estratégias de Contingência
+## [ALERT] Estratégias de Contingência
 
 ### Se Aproximar do Limite:
 
@@ -397,22 +397,22 @@ export default function ObservabilityDashboard() {
 
 ---
 
-## ✅ Conclusão
+## [OK] Conclusão
 
 ### Viabilidade: **SIM, É POSSÍVEL**
 
 O Google Cloud Observability pode ser implementado **100% gratuitamente** para o Sistema Educacional de Hanseníase seguindo estas diretrizes:
 
-1. ✅ Usar majoritariamente métricas nativas do Cloud Run (grátis)
-2. ✅ Limitar métricas customizadas a 140 MB/mês
-3. ✅ Batch de métricas para economizar API calls
-4. ✅ Focar em métricas essenciais de saúde e educação
-5. ✅ Usar Google Analytics para métricas de UX (já implementado)
-6. ✅ Implementar circuit breaker para parar coleta se aproximar do limite
+1. [OK] Usar majoritariamente métricas nativas do Cloud Run (grátis)
+2. [OK] Limitar métricas customizadas a 140 MB/mês
+3. [OK] Batch de métricas para economizar API calls
+4. [OK] Focar em métricas essenciais de saúde e educação
+5. [OK] Usar Google Analytics para métricas de UX (já implementado)
+6. [OK] Implementar circuit breaker para parar coleta se aproximar do limite
 
 ### Benefícios:
-- 📊 Visibilidade completa do sistema
-- 🚨 Alertas para problemas críticos
+- [REPORT] Visibilidade completa do sistema
+- [ALERT] Alertas para problemas críticos
 - 📈 Métricas educacionais valiosas
 - 💰 **Custo: R$ 0,00/mês**
 

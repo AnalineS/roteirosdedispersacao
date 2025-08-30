@@ -1,0 +1,15 @@
+{
+  "timestamp": "2025-08-30T13:53:22.936561",
+  "results": {
+    "app_config": true,
+    "security_middleware": true,
+    "main_integration": true,
+    "test_framework": true,
+    "documentation": false,
+    "encoding_fixed": true
+  },
+  "success_rate": 83.33333333333334,
+  "classification": "BOM - Sistema seguro com pequenos ajustes",
+  "total_tests": 6,
+  "passed_tests": 5
+}

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 JWT Validator - Validação de Tokens Firebase no Backend
 Sistema robusto de validação de tokens JWT do Firebase Authentication

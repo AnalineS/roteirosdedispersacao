@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Sistema de CI/CD Seguro
 ======================

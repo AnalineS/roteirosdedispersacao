@@ -47,10 +47,10 @@ class LazyLoader:
             logger.info("📦 Carregando sentence-transformers...")
             import sentence_transformers
             self._loaded_modules['sentence_transformers'] = sentence_transformers
-            logger.info("✅ sentence-transformers carregado com sucesso")
+            logger.info("[OK] sentence-transformers carregado com sucesso")
             return sentence_transformers
         except ImportError as e:
-            logger.warning(f"⚠️  sentence-transformers não disponível: {e}")
+            logger.warning(f"[WARNING]  sentence-transformers não disponível: {e}")
             return None
     
     @lru_cache(maxsize=32)
@@ -69,10 +69,10 @@ class LazyLoader:
             logger.info("📦 Carregando ChromaDB...")
             import chromadb
             self._loaded_modules['chromadb'] = chromadb
-            logger.info("✅ ChromaDB carregado com sucesso")
+            logger.info("[OK] ChromaDB carregado com sucesso")
             return chromadb
         except ImportError as e:
-            logger.warning(f"⚠️  ChromaDB não disponível: {e}")
+            logger.warning(f"[WARNING]  ChromaDB não disponível: {e}")
             return None
     
     @lru_cache(maxsize=32)
@@ -91,10 +91,10 @@ class LazyLoader:
             logger.info("📦 Carregando FAISS...")
             import faiss
             self._loaded_modules['faiss'] = faiss
-            logger.info("✅ FAISS carregado com sucesso")
+            logger.info("[OK] FAISS carregado com sucesso")
             return faiss
         except ImportError as e:
-            logger.warning(f"⚠️  FAISS não disponível: {e}")
+            logger.warning(f"[WARNING]  FAISS não disponível: {e}")
             return None
     
     @lru_cache(maxsize=32)
@@ -113,10 +113,10 @@ class LazyLoader:
             logger.info("📦 Carregando OpenCV...")
             import cv2
             self._loaded_modules['cv2'] = cv2
-            logger.info("✅ OpenCV carregado com sucesso")
+            logger.info("[OK] OpenCV carregado com sucesso")
             return cv2
         except ImportError as e:
-            logger.warning(f"⚠️  OpenCV não disponível: {e}")
+            logger.warning(f"[WARNING]  OpenCV não disponível: {e}")
             return None
     
     @lru_cache(maxsize=32)  
@@ -135,10 +135,10 @@ class LazyLoader:
             logger.info("📦 Carregando Redis...")
             import redis
             self._loaded_modules['redis'] = redis
-            logger.info("✅ Redis carregado com sucesso")
+            logger.info("[OK] Redis carregado com sucesso")
             return redis
         except ImportError as e:
-            logger.warning(f"⚠️  Redis não disponível: {e}")
+            logger.warning(f"[WARNING]  Redis não disponível: {e}")
             return None
     
     def get_feature_status(self) -> dict:

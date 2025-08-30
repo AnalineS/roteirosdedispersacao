@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Middleware de Segurança Avançado
 ===============================
@@ -66,12 +67,12 @@ except ImportError:
     user_agents = type('user_agents', (), {'parse': parse})()
 from urllib.parse import urlparse, parse_qs
 
-# Import do Redis Rate Limiter
+# Import do Firestore Rate Limiter (substitui Redis na Fase 5)
 try:
-    from core.performance.redis_rate_limiter import distributed_rate_limiter, get_distributed_rate_limiter_stats
-    REDIS_RATE_LIMITER_AVAILABLE = True
+    from core.performance.firestore_rate_limiter import get_firestore_rate_limiter, check_rate_limit
+    FIRESTORE_RATE_LIMITER_AVAILABLE = True
 except ImportError:
-    REDIS_RATE_LIMITER_AVAILABLE = False
+    FIRESTORE_RATE_LIMITER_AVAILABLE = False
 
 
 # Logger específico para segurança
@@ -446,20 +447,20 @@ class SecurityMiddleware:
         self.attack_detector = AttackPatternDetector()
         
         # Use Redis rate limiter se disponível, senão fallback para local
-        if REDIS_RATE_LIMITER_AVAILABLE:
-            self.rate_limiter = distributed_rate_limiter
-            self.use_redis_rate_limiter = True
-            security_logger.info("🔥 Redis Rate Limiter ativado")
+        if FIRESTORE_RATE_LIMITER_AVAILABLE:
+            self.rate_limiter = get_firestore_rate_limiter()
+            self.use_firestore_rate_limiter = True
+            security_logger.info("🔥 Firestore Rate Limiter ativado")
         else:
             self.rate_limiter = IntelligentRateLimiter()
-            self.use_redis_rate_limiter = False
-            security_logger.info("⚠️ Usando Rate Limiter local (Redis indisponível)")
+            self.use_firestore_rate_limiter = False
+            security_logger.info("[WARNING] Usando Rate Limiter local (Firestore indisponível)")
         
         self.security_events: List[SecurityEvent] = []
         self.blocked_requests_count = 0
         self.total_requests_count = 0
         
-        # Headers de segurança padrão
+        # Headers de segurança padrão - HTTPS obrigatório
         self.security_headers = {
             'X-Content-Type-Options': 'nosniff',
             'X-Frame-Options': 'DENY',
@@ -467,6 +468,7 @@ class SecurityMiddleware:
             'Referrer-Policy': 'strict-origin-when-cross-origin',
             'Permissions-Policy': 'geolocation=(), microphone=(), camera=()',
             'X-Robots-Tag': 'noindex, nofollow',
+            'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',  # HTTPS obrigatório
         }
         
         if app:
@@ -514,8 +516,9 @@ class SecurityMiddleware:
                 payload_analysis = {'is_malicious': True, 'risk_score': 50, 'detected_attacks': ['invalid_json']}
         
         # Verificar rate limiting
+        rate_limit_key = f"{client_ip}:{endpoint}:{method}"
         rate_limit_allowed, rate_limit_info = self.rate_limiter.check_rate_limit(
-            client_ip, endpoint, method, user_agent
+            rate_limit_key, 100, 3600  # 100 requests per hour
         )
         
         # Determinar se deve bloquear
@@ -580,13 +583,21 @@ class SecurityMiddleware:
     
     def after_request(self, response):
         """Processamento após cada response"""
-        # Adicionar headers de segurança
+        # Adicionar headers de segurança - HTTPS obrigatório
         for header, value in self.security_headers.items():
             response.headers[header] = value
         
-        # Header HSTS apenas para HTTPS
-        if request.is_secure:
-            response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains; preload'
+        # Forçar HTTPS em produção
+        if not request.is_secure and request.environ.get('HTTP_X_FORWARDED_PROTO') != 'https':
+            # Em produção (Cloud Run), sempre forçar HTTPS
+            if request.host not in ['localhost', '127.0.0.1'] and not request.host.startswith('192.168.'):
+                security_logger.warning(f"Tentativa de acesso HTTP bloqueada: {request.url}")
+                return jsonify({
+                    'error': 'HTTPS Required',
+                    'error_code': 'HTTPS_REQUIRED',
+                    'message': 'Este serviço requer conexão segura HTTPS.',
+                    'timestamp': datetime.now().isoformat()
+                }), 426  # 426 Upgrade Required
         
         # CSP personalizado baseado no endpoint
         csp = self._get_content_security_policy()
@@ -641,7 +652,7 @@ class SecurityMiddleware:
             return False
     
     def _get_content_security_policy(self) -> str:
-        """Gera CSP baseado no contexto"""
+        """Gera CSP baseado no contexto - Preparado para conteúdos externos"""
         if request.endpoint and 'api' in request.endpoint:
             # CSP restritivo para APIs
             return ("default-src 'none'; "
@@ -649,14 +660,18 @@ class SecurityMiddleware:
                    "frame-ancestors 'none'; "
                    "base-uri 'none'")
         else:
-            # CSP para frontend
+            # CSP para frontend - Flexível para conteúdos externos futuros
             return ("default-src 'self'; "
-                   "script-src 'self' 'unsafe-inline'; "
-                   "style-src 'self' 'unsafe-inline'; "
-                   "img-src 'self' data: https:; "
-                   "connect-src 'self' https://api-inference.huggingface.co https://openrouter.ai; "
+                   "script-src 'self' 'unsafe-inline' https://trusted-cdn.com; "
+                   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+                   "img-src 'self' data: https: blob:; "
+                   "font-src 'self' https://fonts.gstatic.com; "
+                   "connect-src 'self' https://api-inference.huggingface.co https://openrouter.ai https://api.github.com; "
+                   "media-src 'self' https:; "
+                   "frame-src 'none'; "
                    "frame-ancestors 'none'; "
-                   "base-uri 'self'")
+                   "base-uri 'self'; "
+                   "form-action 'self'")
     
     def _calculate_severity(self, url_analysis: Dict, payload_analysis: Dict, rate_limit_info: Dict) -> str:
         """Calcula severidade do evento"""
@@ -699,7 +714,7 @@ class SecurityMiddleware:
             'low': logging.INFO
         }.get(event.severity, logging.INFO)
         
-        security_logger.log(log_level, f"SECURITY_EVENT: {json.dumps(log_data)}")
+        security_logger.log(log_level, f"SECURITY_EVENT: {json.dumps(log_data, default=str)}")
     
     def handle_rate_limit_exceeded(self, error):
         """Handler para erro 429"""
@@ -737,11 +752,11 @@ class SecurityMiddleware:
             'events_last_24h': len(daily_events),
             'top_attack_types': self._get_top_attack_types(daily_events),
             'severity_distribution': self._get_severity_distribution(daily_events),
-            'rate_limiter_type': 'redis_distributed' if self.use_redis_rate_limiter else 'local'
+            'rate_limiter_type': 'firestore_distributed' if self.use_firestore_rate_limiter else 'local'
         }
         
         # Adicionar estatísticas específicas do rate limiter
-        if self.use_redis_rate_limiter and hasattr(self.rate_limiter, 'get_stats'):
+        if self.use_firestore_rate_limiter and hasattr(self.rate_limiter, 'get_stats'):
             rate_limiter_stats = self.rate_limiter.get_stats()
             base_stats['rate_limiter_stats'] = rate_limiter_stats
         else:

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Response Optimizer para melhorar tempos de resposta - SOLUÇÃO DEFINITIVA
 Objetivo: Otimizar processamento para <1.5s + compressão + cache
@@ -44,7 +45,7 @@ class ResponseOptimizer:
         app.after_request(self._add_cache_headers)
         app.after_request(self._compress_response)
         
-        logger.info("🚀 ResponseOptimizer DEFINITIVO inicializado")
+        logger.info("[START] ResponseOptimizer DEFINITIVO inicializado")
     
     def _before_request(self):
         """Processamento antes da request"""
@@ -302,7 +303,7 @@ class ResponseOptimizer:
             'ga': {
                 'hanseníase': 'Oi! A hanseníase é uma doença que afeta a pele e os nervos, mas tem tratamento certinho! Com os remédios certos, você vai ficar bem! 😊',
                 'dose': 'Oi! A dose dos remédios é calculada pelo seu peso. O médico já fez isso para você! É só seguir direitinho o que está na receita, tá? 💊',
-                'efeito': 'Alguns remédios podem causar mudanças no corpo, como deixar a pele mais escura ou o xixi laranja. Não se preocupe, é normal! Se sentir algo diferente, me avise! 🌟'
+                'efeito': 'Alguns remédios podem causar mudanças no corpo, como deixar a pele mais escura ou o xixi laranja. Não se preocupe, é normal! Se sentir algo diferente, me avise! [STAR]'
             }
         }
         
@@ -396,7 +397,7 @@ def init_performance_optimizations(app: Flask):
     """Inicializa todas as otimizações de performance"""
     global response_optimizer
     response_optimizer = ResponseOptimizer(app)
-    logger.info("🚀 Otimizações de performance inicializadas na aplicação")
+    logger.info("[START] Otimizações de performance inicializadas na aplicação")
 
 def get_performance_summary() -> Dict[str, Any]:
     """Retorna resumo completo de performance"""

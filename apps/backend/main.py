@@ -15,9 +15,11 @@ if sys.platform == "win32":
     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
 
 from flask import Flask, request, jsonify
-from flask_cors import CORS
 import logging
 from datetime import datetime
+
+# Import do middleware CORS customizado para compatibilidade total com error handling
+from core.security.custom_cors import CustomCORSMiddleware
 
 # Imports opcionais com fallback
 try:
@@ -97,18 +99,18 @@ try:
 except ImportError as e:
     BLUEPRINTS_AVAILABLE = False
     # SECURITY FIX: Log import error without exposing module details
-    logger.warning("⚠️  Blueprints principais não disponíveis: ImportError")
+    logger.warning("[WARNING]  Blueprints principais não disponíveis: ImportError")
     logger.info("🧠 Ativando Sistema de Fallback Inteligente...")
     
     # Usar sistema de fallback inteligente
     try:
         from core.fallback import create_intelligent_fallback_blueprints
         ALL_BLUEPRINTS = create_intelligent_fallback_blueprints()
-        logger.info("✅ Sistema de Fallback Inteligente ativado com sucesso!")
-        logger.info(f"📋 {len(ALL_BLUEPRINTS)} blueprints inteligentes criados")
+        logger.info("[OK] Sistema de Fallback Inteligente ativado com sucesso!")
+        logger.info(f"[LIST] {len(ALL_BLUEPRINTS)} blueprints inteligentes criados")
     except ImportError as fallback_error:
         # SECURITY FIX: Log error without exposing internal details
-        logger.error("❌ Erro ao carregar Fallback Inteligente: ImportError")
+        logger.error("[ERROR] Erro ao carregar Fallback Inteligente: ImportError")
         logger.info("🔄 Usando fallback básico de emergência...")
         
         # Fallback de emergência ultra-básico
@@ -139,7 +141,7 @@ except ImportError as e:
             return jsonify({"status": "ready", "timestamp": datetime.now().isoformat(), "mode": "emergency"})
         
         ALL_BLUEPRINTS = [emergency_bp]
-        logger.warning("⚠️  Sistema em modo de emergência - funcionalidade muito limitada")
+        logger.warning("[WARNING]  Sistema em modo de emergência - funcionalidade muito limitada")
 
 # Import Security Middleware (com fallback)
 try:
@@ -197,11 +199,11 @@ def create_app():
     if SECURITY_MIDDLEWARE_AVAILABLE and SecurityMiddleware:
         try:
             security_middleware = SecurityMiddleware(app)
-            logger.info("✅ Security Middleware avançado inicializado")
+            logger.info("[OK] Security Middleware avançado inicializado")
         except Exception as e:
             # SECURITY FIX: Log middleware error without exposing details
             error_type = type(e).__name__
-            logger.warning(f"⚠️ Erro ao inicializar Security Middleware [{error_type}]: Configuração indisponível")
+            logger.warning(f"[WARNING] Erro ao inicializar Security Middleware [{error_type}]: Configuração indisponível")
     
     # Inicializar JWT Authentication de forma não-bloqueante
     if JWT_AUTH_AVAILABLE:
@@ -209,11 +211,11 @@ def create_app():
             configure_jwt_from_env()
             auth_middleware = create_auth_middleware()
             app.before_request(auth_middleware)
-            logger.info("🔐 JWT Authentication configurado (Firebase)")
+            logger.info("[AUTH] JWT Authentication configurado (Firebase)")
         except Exception as e:
             # SECURITY FIX: Log JWT error without exposing configuration details
             error_type = type(e).__name__
-            logger.warning(f"⚠️ Erro ao configurar JWT [{error_type}]: Configuração de autenticação indisponível")
+            logger.warning(f"[WARNING] Erro ao configurar JWT [{error_type}]: Configuração de autenticação indisponível")
     else:
         logger.info("ℹ️ JWT Authentication não disponível - sistema funciona sem autenticação")
     
@@ -223,11 +225,11 @@ def create_app():
         try:
             init_performance_optimizations(app)
             init_security_optimizations(app)
-            logger.info("🚀 Otimizações de performance e segurança ativadas")
+            logger.info("[START] Otimizações de performance e segurança ativadas")
         except Exception as e:
             # SECURITY FIX: Log optimization error without exposing details
             error_type = type(e).__name__
-            logger.warning(f"⚠️ Erro ao inicializar otimizações [{error_type}]: Recursos avançados indisponíveis")
+            logger.warning(f"[WARNING] Erro ao inicializar otimizações [{error_type}]: Recursos avançados indisponíveis")
     elif cloud_run_env:
         logger.info("☁️ Cloud Run detectado - otimizações carregadas sob demanda")
     
@@ -341,13 +343,15 @@ def setup_cors(app):
                 "https://roteirosdedispensacao.com"
             ]
     
-    CORS(app, 
-         origins=allowed_origins,
-         methods=['GET', 'POST', 'OPTIONS', 'HEAD', 'PUT', 'DELETE'],
-         allow_headers=['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'Access-Control-Request-Method', 'Access-Control-Request-Headers'],
-         expose_headers=['Content-Length', 'X-Request-Id'],
-         supports_credentials=False,
-         max_age=86400)  # Cache preflight por 24h
+    # Configurar CORS customizado compatível com error handling
+    CustomCORSMiddleware(
+        app,
+        origins=allowed_origins,
+        methods=['GET', 'POST', 'OPTIONS', 'HEAD', 'PUT', 'DELETE'],
+        headers=['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'Access-Control-Request-Method', 'Access-Control-Request-Headers'],
+        expose_headers=['Content-Length', 'X-Request-Id'],
+        max_age=86400  # Cache preflight por 24h
+    )
     
     # SECURITY FIX: Comprehensive origins sanitization to prevent log injection
     import urllib.parse
@@ -372,42 +376,84 @@ def setup_security_headers(app):
     except ImportError:
         logger.info("Usando configuração de segurança básica")
     
+    # Error handlers personalizados para garantir compatibilidade com middlewares
+    @app.errorhandler(500)
+    def handle_internal_error(error):
+        """Handler personalizado para erro 500"""
+        from flask import Response, jsonify
+        response = jsonify({
+            'error': 'Erro interno do servidor',
+            'error_code': 'INTERNAL_ERROR',
+            'message': 'Tente novamente em alguns instantes',
+            'timestamp': datetime.now().isoformat()
+        })
+        response.status_code = 500
+        return response
+    
+    @app.errorhandler(404)
+    def handle_not_found(error):
+        """Handler personalizado para erro 404"""
+        from flask import Response, jsonify
+        response = jsonify({
+            'error': 'Endpoint não encontrado',
+            'error_code': 'NOT_FOUND',
+            'message': 'O endpoint solicitado não existe',
+            'timestamp': datetime.now().isoformat()
+        })
+        response.status_code = 404
+        return response
+    
+    @app.errorhandler(Exception)
+    def handle_generic_exception(error):
+        """Handler genérico para qualquer exceção"""
+        from flask import Response, jsonify
+        response = jsonify({
+            'error': 'Erro interno do servidor',
+            'error_code': 'INTERNAL_ERROR',
+            'message': 'Tente novamente em alguns instantes',
+            'timestamp': datetime.now().isoformat()
+        })
+        response.status_code = 500
+        return response
+    
     @app.after_request
     def add_security_headers(response):
-        # Prevenir XSS
-        response.headers['X-Content-Type-Options'] = 'nosniff'
-        response.headers['X-Frame-Options'] = 'DENY'
-        response.headers['X-XSS-Protection'] = '1; mode=block'
-        response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
-        
-        # HSTS para HTTPS
-        if request.is_secure:
-            response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains; preload'
-        
-        # CSP mais restritivo
-        csp_policy = (
-            "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com; "
-            "style-src 'self' 'unsafe-inline'; "
-            "img-src 'self' data: https:; "
-            "font-src 'self' data:; "
-            "connect-src 'self' https://api-inference.huggingface.co https://openrouter.ai; "
-            "frame-ancestors 'none'; "
-            "base-uri 'self'; "
-            "form-action 'self'"
-        )
-        response.headers['Content-Security-Policy'] = csp_policy
-        
-        # Permissions Policy
-        response.headers['Permissions-Policy'] = (
-            "geolocation=(), microphone=(), camera=(), "
-            "payment=(), usb=(), magnetometer=(), "
-            "accelerometer=(), gyroscope=()"
-        )
-        
-        # Remover headers que revelam informações
-        response.headers.pop('Server', None)
-        response.headers.pop('X-Powered-By', None)
+        # Verificar se response tem headers (não é uma tupla de erro)
+        if hasattr(response, 'headers'):
+            # Prevenir XSS
+            response.headers['X-Content-Type-Options'] = 'nosniff'
+            response.headers['X-Frame-Options'] = 'DENY'
+            response.headers['X-XSS-Protection'] = '1; mode=block'
+            response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+            
+            # HSTS para HTTPS
+            if request.is_secure:
+                response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains; preload'
+            
+            # CSP mais restritivo
+            csp_policy = (
+                "default-src 'self'; "
+                "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com; "
+                "style-src 'self' 'unsafe-inline'; "
+                "img-src 'self' data: https:; "
+                "font-src 'self' data:; "
+                "connect-src 'self' https://api-inference.huggingface.co https://openrouter.ai; "
+                "frame-ancestors 'none'; "
+                "base-uri 'self'; "
+                "form-action 'self'"
+            )
+            response.headers['Content-Security-Policy'] = csp_policy
+            
+            # Permissions Policy
+            response.headers['Permissions-Policy'] = (
+                "geolocation=(), microphone=(), camera=(), "
+                "payment=(), usb=(), magnetometer=(), "
+                "accelerometer=(), gyroscope=()"
+            )
+            
+            # Remover headers que revelam informações
+            response.headers.pop('Server', None)
+            response.headers.pop('X-Powered-By', None)
         
         return response
 
@@ -484,7 +530,7 @@ def log_startup_info():
     environment = EnvironmentConfig.get_current()
     
     logger.info("=" * 60)
-    logger.info("🚀 ROTEIROS DE DISPENSAÇÃO PQT-U - BACKEND REFATORADO")
+    logger.info("[START] ROTEIROS DE DISPENSAÇÃO PQT-U - BACKEND REFATORADO")
     logger.info("=" * 60)
     logger.info(f"📦 Versão: {'blueprint_v1.0' if CONFIG_AVAILABLE else 'minimal_v1.0'}")
     logger.info(f"🌍 Ambiente: {environment}")
@@ -492,15 +538,15 @@ def log_startup_info():
     logger.info(f"⚙️  Debug: {config.DEBUG}")
     
     if CONFIG_AVAILABLE:
-        logger.info(f"🔐 QA Enabled: {getattr(config, 'QA_ENABLED', False)}")
-        logger.info(f"💾 Cache: {'Advanced' if getattr(config, 'ADVANCED_CACHE', False) else 'Simple'}")
+        logger.info(f"[AUTH] QA Enabled: {getattr(config, 'QA_ENABLED', False)}")
+        logger.info(f"[SAVE] Cache: {'Advanced' if getattr(config, 'ADVANCED_CACHE', False) else 'Simple'}")
         logger.info(f"🧠 RAG: {'Available' if getattr(config, 'RAG_AVAILABLE', False) else 'Unavailable'}")
-        logger.info(f"📊 Metrics: {'Enabled' if getattr(config, 'METRICS_ENABLED', False) else 'Disabled'}")
+        logger.info(f"[REPORT] Metrics: {'Enabled' if getattr(config, 'METRICS_ENABLED', False) else 'Disabled'}")
     else:
-        logger.info("🔐 QA Enabled: Minimal Mode")
-        logger.info("💾 Cache: Simple")
+        logger.info("[AUTH] QA Enabled: Minimal Mode")
+        logger.info("[SAVE] Cache: Simple")
         logger.info("🧠 RAG: Unavailable")
-        logger.info("📊 Metrics: Disabled")
+        logger.info("[REPORT] Metrics: Disabled")
     
     # Status das dependências
     if DEPENDENCIES_AVAILABLE:
@@ -514,7 +560,7 @@ def log_startup_info():
         logger.info("✓ QA: DISABLED")
     
     # Blueprints registrados
-    logger.info(f"📋 Blueprints: {len(ALL_BLUEPRINTS)} registrados")
+    logger.info(f"[LIST] Blueprints: {len(ALL_BLUEPRINTS)} registrados")
     for bp in ALL_BLUEPRINTS:
         logger.info(f"   - {bp.name}")
     
@@ -606,7 +652,7 @@ if __name__ == '__main__':
         else:
             sanitized_port = '5000'
             
-        logger.info(f"🚀 Iniciando servidor em {sanitized_host}:{sanitized_port}")
+        logger.info(f"[START] Iniciando servidor em {sanitized_host}:{sanitized_port}")
         
         # Executar aplicação
         app.run(
@@ -623,5 +669,5 @@ if __name__ == '__main__':
     except Exception as e:
         # SECURITY FIX: Log startup error without exposing stack trace
         error_type = type(e).__name__
-        logger.error(f"❌ Erro ao iniciar servidor [{error_type}]: Falha na inicialização")
+        logger.error(f"[ERROR] Erro ao iniciar servidor [{error_type}]: Falha na inicialização")
         sys.exit(1)

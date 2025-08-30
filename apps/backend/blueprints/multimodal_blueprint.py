@@ -67,8 +67,8 @@ def upload_image():
             'error': 'Sistema multimodal indisponível - bibliotecas não instaladas',
             'recommendation': 'Instale as dependências: pip install opencv-python pillow pytesseract easyocr',
             'disclaimers': [
-                "🔧 Sistema em modo limitado",
-                "📝 Funcionalidades de OCR não disponíveis"
+                "[FIX] Sistema em modo limitado",
+                "[NOTE] Funcionalidades de OCR não disponíveis"
             ]
         }), 503
     
@@ -127,7 +127,7 @@ def upload_image():
             'success': False,
             'error': f'Erro interno: {str(e)}',
             'disclaimers': [
-                "🔧 Erro temporário do sistema",
+                "[FIX] Erro temporário do sistema",
                 "🔄 Tente novamente em alguns minutos"
             ]
         }), 500
@@ -352,7 +352,7 @@ def get_image_types():
             'retention_days': 7
         },
         'disclaimers': [
-            "📋 Escolha o tipo correto para melhor processamento",
+            "[LIST] Escolha o tipo correto para melhor processamento",
             "🔒 Todos os tipos têm a mesma política de privacidade",
             "⚕️ Fotos de sintomas são apenas para fins educativos"
         ]
@@ -392,7 +392,7 @@ def get_system_capabilities():
             'system_status': status['system_health'],
             'capabilities': capabilities,
             'limitations': [
-                "🔧 Requer bibliotecas de visão computacional",
+                "[FIX] Requer bibliotecas de visão computacional",
                 "💻 Processamento local apenas",
                 "🕐 Arquivos expiram automaticamente"
             ] if not status['capabilities']['ocr'] else [

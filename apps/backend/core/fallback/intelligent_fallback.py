@@ -96,7 +96,7 @@ class IntelligentFallbackSystem:
         # Testar Redis
         services['redis'] = os.getenv('REDIS_ENABLED', 'false').lower() == 'true'
         
-        logger.info(f"🔍 Serviços detectados: {services}")
+        logger.info(f"[SEARCH] Serviços detectados: {services}")
         return services
     
     def get_system_status(self) -> Dict[str, Any]:
@@ -373,7 +373,7 @@ def create_intelligent_chat_blueprint() -> Blueprint:
 
 Sua pergunta sobre hanseníase é importante e requer atenção farmacêutica especializada. 
 
-*⚠️ Sistema funcionando em modo inteligente com IA disponível.*
+*[WARNING] Sistema funcionando em modo inteligente com IA disponível.*
 
 **Orientações gerais:**
 - Consulte sempre um farmacêutico clínico para casos específicos
@@ -398,7 +398,7 @@ Com base no Protocolo Clínico e Diretrizes Terapêuticas (PCDT) de Hanseníase 
 - Monitorar possíveis efeitos adversos
 - Consultar farmacêutico clínico para casos específicos
 
-**⚠️ IMPORTANTE:** Esta é uma resposta básica. Para orientações específicas sobre dosagem, contraindicações ou interações medicamentosas, consulte um farmacêutico clínico ou médico especialista.
+**[WARNING] IMPORTANTE:** Esta é uma resposta básica. Para orientações específicas sobre dosagem, contraindicações ou interações medicamentosas, consulte um farmacêutico clínico ou médico especialista.
 
 *Sistema em modo básico - IA temporariamente indisponível.*"""
             else:  # ga
@@ -658,7 +658,7 @@ def create_intelligent_fallback_blueprints() -> List[Blueprint]:
     
     blueprints.append(misc_bp)
     
-    logger.info(f"✅ {len(blueprints)} blueprints de fallback inteligente criados")
+    logger.info(f"[OK] {len(blueprints)} blueprints de fallback inteligente criados")
     return blueprints
 
 # Exportar função principal

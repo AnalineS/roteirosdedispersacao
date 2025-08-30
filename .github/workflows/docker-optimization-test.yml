@@ -1,4 +1,4 @@
-name: 🔧 Docker Build Optimization Test
+name: [FIX] Docker Build Optimization Test
 
 on:
   push:
@@ -34,7 +34,7 @@ jobs:
   # Validate Docker Optimization
   # =====================================
   validate-optimization:
-    name: 🔍 Validate Docker Optimization
+    name: [SEARCH] Validate Docker Optimization
     runs-on: ubuntu-latest
     
     outputs:
@@ -46,7 +46,7 @@ jobs:
       - name: 📥 Checkout Code
         uses: actions/checkout@v4
 
-      - name: 📊 Analyze Requirements Optimization
+      - name: [REPORT] Analyze Requirements Optimization
         id: count
         run: |
           cd apps/backend
@@ -70,57 +70,57 @@ jobs:
           
           # Validate significant reduction
           if (( $(echo "$REDUCTION < 70" | bc -l) )); then
-            echo "⚠️ Warning: Dependency reduction is less than 70%"
+            echo "[WARNING] Warning: Dependency reduction is less than 70%"
           else
-            echo "✅ Good: Dependency reduction of ${REDUCTION}%"
+            echo "[OK] Good: Dependency reduction of ${REDUCTION}%"
           fi
 
-      - name: 🔍 Validate Dockerfile Structure
+      - name: [SEARCH] Validate Dockerfile Structure
         run: |
           cd apps/backend
           
-          echo "🔍 Validating Dockerfile.hml structure..."
+          echo "[SEARCH] Validating Dockerfile.hml structure..."
           
           # Check for multi-stage build
           if grep -q "FROM.*as builder" Dockerfile.hml && grep -q "FROM.*as runtime" Dockerfile.hml; then
-            echo "✅ Multi-stage build detected"
+            echo "[OK] Multi-stage build detected"
           else
-            echo "❌ Multi-stage build not found"
+            echo "[ERROR] Multi-stage build not found"
             exit 1
           fi
           
           # Check for cache purging
           if grep -q "pip cache purge" Dockerfile.hml; then
-            echo "✅ Pip cache purging implemented"
+            echo "[OK] Pip cache purging implemented"
           else
-            echo "❌ Pip cache purging not found"
+            echo "[ERROR] Pip cache purging not found"
             exit 1
           fi
           
           # Check for batch installation
           if grep -c "RUN pip install" Dockerfile.hml -ge 3; then
-            echo "✅ Batch installation implemented"
+            echo "[OK] Batch installation implemented"
           else
-            echo "❌ Batch installation not detected"
+            echo "[ERROR] Batch installation not detected"
             exit 1
           fi
           
           # Check for cleanup
           if grep -q "find.*__pycache__.*-delete" Dockerfile.hml; then
-            echo "✅ Python cache cleanup implemented"
+            echo "[OK] Python cache cleanup implemented"
           else
-            echo "❌ Python cache cleanup not found"
+            echo "[ERROR] Python cache cleanup not found"
             exit 1
           fi
           
-          echo "✅ Dockerfile.hml structure validation passed"
+          echo "[OK] Dockerfile.hml structure validation passed"
 
-      - name: 🔍 Validate .dockerignore Optimization
+      - name: [SEARCH] Validate .dockerignore Optimization
         run: |
           cd apps/backend
           
           if [ ! -f ".dockerignore" ]; then
-            echo "❌ .dockerignore not found"
+            echo "[ERROR] .dockerignore not found"
             exit 1
           fi
           
@@ -135,23 +135,23 @@ jobs:
             "*.md"
           )
           
-          echo "🔍 Checking .dockerignore exclusions..."
+          echo "[SEARCH] Checking .dockerignore exclusions..."
           for exclusion in "${REQUIRED_EXCLUSIONS[@]}"; do
             if grep -q "$exclusion" .dockerignore; then
-              echo "✅ $exclusion excluded"
+              echo "[OK] $exclusion excluded"
             else
-              echo "❌ $exclusion not excluded"
+              echo "[ERROR] $exclusion not excluded"
               exit 1
             fi
           done
           
-          echo "✅ .dockerignore optimization validated"
+          echo "[OK] .dockerignore optimization validated"
 
-      - name: 📊 Calculate Expected Space Savings
+      - name: [REPORT] Calculate Expected Space Savings
         run: |
           cd apps/backend
           
-          echo "📊 Estimated space savings:"
+          echo "[REPORT] Estimated space savings:"
           
           # Estimate based on common package sizes (in MB)
           declare -A PACKAGE_SIZES
@@ -177,7 +177,7 @@ jobs:
           done
           
           echo ""
-          echo "  💾 Total estimated savings: ~${TOTAL_SAVED}MB"
+          echo "  [SAVE] Total estimated savings: ~${TOTAL_SAVED}MB"
           echo "  📏 Original estimated size: ~3000MB"
           echo "  📦 Optimized estimated size: ~$((3000 - TOTAL_SAVED))MB"
           
@@ -188,7 +188,7 @@ jobs:
   # Test Docker Build (HML)
   # =====================================
   test-hml-build:
-    name: 🧪 Test HML Docker Build
+    name: [TEST] Test HML Docker Build
     runs-on: ubuntu-latest
     needs: validate-optimization
     if: github.event.inputs.skip_build != 'true' && (github.event.inputs.test_dockerfile == 'Dockerfile.hml' || github.event.inputs.test_dockerfile == 'both' || github.event.inputs.test_dockerfile == '')
@@ -204,7 +204,7 @@ jobs:
         run: |
           cd apps/backend
           
-          echo "🚀 Building optimized HML Docker image..."
+          echo "[START] Building optimized HML Docker image..."
           echo "📦 Dependencies: ${{ needs.validate-optimization.outputs.hml_requirements_count }} (vs ${{ needs.validate-optimization.outputs.main_requirements_count }} original)"
           echo "📉 Reduction: ${{ needs.validate-optimization.outputs.reduction_percentage }}%"
           
@@ -215,7 +215,7 @@ jobs:
             --no-cache \
             .
 
-      - name: 📊 Analyze Build Results
+      - name: [REPORT] Analyze Build Results
         run: |
           BUILD_END=$(date +%s)
           BUILD_TIME=$((BUILD_END - BUILD_START))
@@ -229,7 +229,7 @@ jobs:
           echo "📦 Image size: $IMAGE_SIZE"
           
           # Test image functionality
-          echo "🧪 Testing image functionality..."
+          echo "[TEST] Testing image functionality..."
           CONTAINER_ID=$(docker run -d -p 8080:8080 roteiro-hml-optimized:test)
           
           # Wait for container to start
@@ -239,10 +239,10 @@ jobs:
           # Test health endpoint (with retry)
           for i in {1..5}; do
             if curl -f http://localhost:8080/api/v1/health > /dev/null 2>&1; then
-              echo "✅ Health check passed"
+              echo "[OK] Health check passed"
               break
             elif [ $i -eq 5 ]; then
-              echo "❌ Health check failed after 5 attempts"
+              echo "[ERROR] Health check failed after 5 attempts"
               docker logs $CONTAINER_ID
               exit 1
             else
@@ -255,11 +255,11 @@ jobs:
           docker stop $CONTAINER_ID
           docker rm $CONTAINER_ID
           
-          echo "✅ HML build test completed successfully!"
-          echo "📊 Results:"
+          echo "[OK] HML build test completed successfully!"
+          echo "[REPORT] Results:"
           echo "  - Build time: ${BUILD_TIME_MIN}m ${BUILD_TIME_SEC}s"
           echo "  - Image size: $IMAGE_SIZE"
-          echo "  - Health check: ✅ Passed"
+          echo "  - Health check: [OK] Passed"
 
   # =====================================
   # Test Docker Build (Production)  
@@ -281,7 +281,7 @@ jobs:
         run: |
           cd apps/backend
           
-          echo "🚀 Building optimized Production Docker image..."
+          echo "[START] Building optimized Production Docker image..."
           
           # Build production image
           docker build \
@@ -290,7 +290,7 @@ jobs:
             --no-cache \
             .
 
-      - name: 📊 Analyze Production Build Results
+      - name: [REPORT] Analyze Production Build Results
         run: |
           BUILD_END=$(date +%s)
           BUILD_TIME=$((BUILD_END - BUILD_START))
@@ -304,7 +304,7 @@ jobs:
           echo "📦 Image size: $IMAGE_SIZE"
           
           # Test image functionality with feature flags
-          echo "🧪 Testing production image with features enabled..."
+          echo "[TEST] Testing production image with features enabled..."
           CONTAINER_ID=$(docker run -d -p 8081:8080 \
             -e EMBEDDINGS_ENABLED=true \
             -e ADVANCED_FEATURES=true \
@@ -318,10 +318,10 @@ jobs:
           # Test health endpoint
           for i in {1..5}; do
             if curl -f http://localhost:8081/api/v1/health > /dev/null 2>&1; then
-              echo "✅ Health check passed"
+              echo "[OK] Health check passed"
               break
             elif [ $i -eq 5 ]; then
-              echo "❌ Health check failed after 5 attempts"
+              echo "[ERROR] Health check failed after 5 attempts"
               docker logs $CONTAINER_ID
               exit 1
             else
@@ -332,35 +332,35 @@ jobs:
           
           # Test feature status endpoint
           if curl -f http://localhost:8081/api/v1/features/status > /dev/null 2>&1; then
-            echo "✅ Features endpoint accessible"
+            echo "[OK] Features endpoint accessible"
           else
-            echo "⚠️ Features endpoint not accessible (may be normal)"
+            echo "[WARNING] Features endpoint not accessible (may be normal)"
           fi
           
           # Cleanup
           docker stop $CONTAINER_ID
           docker rm $CONTAINER_ID
           
-          echo "✅ Production build test completed successfully!"
-          echo "📊 Results:"
+          echo "[OK] Production build test completed successfully!"
+          echo "[REPORT] Results:"
           echo "  - Build time: ${BUILD_TIME_MIN}m ${BUILD_TIME_SEC}s"
           echo "  - Image size: $IMAGE_SIZE" 
-          echo "  - Health check: ✅ Passed"
+          echo "  - Health check: [OK] Passed"
 
   # =====================================
   # Generate Optimization Report
   # =====================================
   generate-report:
-    name: 📋 Generate Optimization Report
+    name: [LIST] Generate Optimization Report
     runs-on: ubuntu-latest
     needs: [validate-optimization, test-hml-build, test-production-build]
     if: always()
     
     steps:
-      - name: 📊 Generate Optimization Report
+      - name: [REPORT] Generate Optimization Report
         run: |
           cat > optimization-report.md << EOF
-          # 🔧 Docker Build Optimization Report
+          # [FIX] Docker Build Optimization Report
           
           **Generated:** $(date -u)
           **Commit:** ${{ github.sha }}
@@ -379,22 +379,22 @@ jobs:
           | HML Build | ${{ needs.test-hml-build.result }} | Lightweight, essential deps only |
           | Production Build | ${{ needs.test-production-build.result }} | Full features with optimization |
           
-          ## ✅ Validation Results
+          ## [OK] Validation Results
           
-          - **Multi-stage build:** ✅ Implemented
-          - **Cache purging:** ✅ Implemented  
-          - **Batch installation:** ✅ Implemented
-          - **Python cleanup:** ✅ Implemented
-          - **Dockerignore optimization:** ✅ Implemented
+          - **Multi-stage build:** [OK] Implemented
+          - **Cache purging:** [OK] Implemented  
+          - **Batch installation:** [OK] Implemented
+          - **Python cleanup:** [OK] Implemented
+          - **Dockerignore optimization:** [OK] Implemented
           
-          ## 🎯 Expected Improvements
+          ## [TARGET] Expected Improvements
           
-          - **Build time:** 70% faster (20min → 6-8min)
-          - **Image size:** 85% smaller (3GB → 400MB for HML)
+          - **Build time:** 70% faster (20min -> 6-8min)
+          - **Image size:** 85% smaller (3GB -> 400MB for HML)
           - **Success rate:** 95%+ (vs 60% before)
           - **Cost:** \$0 additional (no Private Pool needed)
           
-          ## 🚀 Deployment Ready
+          ## [START] Deployment Ready
           
           The optimization is ready for production deployment:
           1. **HML Environment:** Use \`Dockerfile.hml\` + \`requirements.hml.txt\`
@@ -430,30 +430,30 @@ jobs:
           # Determine overall status
           if [[ "${{ needs.test-hml-build.result }}" == "success" || "${{ needs.test-hml-build.result }}" == "skipped" ]] && 
              [[ "${{ needs.test-production-build.result }}" == "success" || "${{ needs.test-production-build.result }}" == "skipped" ]]; then
-            STATUS="✅ SUCESSO"
-            EMOJI="🚀"
+            STATUS="[OK] SUCESSO"
+            EMOJI="[START]"
           else
-            STATUS="❌ FALHOU"  
-            EMOJI="🚨"
+            STATUS="[ERROR] FALHOU"  
+            EMOJI="[ALERT]"
           fi
           
           MESSAGE="$EMOJI *Docker Build Optimization Test $STATUS*
           
           📦 *Dependency Reduction:* ${{ needs.validate-optimization.outputs.reduction_percentage }}%
-          📊 *Original:* ${{ needs.validate-optimization.outputs.main_requirements_count }} deps
+          [REPORT] *Original:* ${{ needs.validate-optimization.outputs.main_requirements_count }} deps
           📉 *Optimized:* ${{ needs.validate-optimization.outputs.hml_requirements_count }} deps
           
           🏗️ *Build Tests:*
-          • HML Build: ${{ needs.test-hml-build.result }}
-          • Production Build: ${{ needs.test-production-build.result }}
+          * HML Build: ${{ needs.test-hml-build.result }}
+          * Production Build: ${{ needs.test-production-build.result }}
           
           💡 *Expected Results:*
-          • 70% faster builds
-          • 85% smaller images  
-          • 95%+ success rate
-          • \$0 additional costs
+          * 70% faster builds
+          * 85% smaller images  
+          * 95%+ success rate
+          * \$0 additional costs
           
-          🎯 *Status:* Ready for production deployment!"
+          [TARGET] *Status:* Ready for production deployment!"
           
           # Send to Telegram if token is available
           if [ -n "${{ secrets.TELEGRAM_BOT_TOKEN }}" ]; then

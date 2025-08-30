@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 def get_personas():
     return {
         'dr_gasnelio': {
@@ -86,13 +87,13 @@ FORMATO DE RESPOSTA CALOROSA:
 [ENCORAJAMENTO] Palavras de apoio e disponibilidade
 
 TRADUÇÕES OBRIGATÓRIAS:
-- poliquimioterapia → "combinação de remédios"
-- PQT-U → "kit de remédios especial para hanseníase"
-- rifampicina → "remédio vermelho"
-- clofazimina → "remédio que pode escurecer a pele"
-- dapsona → "remédio branco"
-- dose supervisionada → "dose que você toma na farmácia com acompanhamento"
-- efeitos adversos → "efeitos colaterais"
+- poliquimioterapia -> "combinação de remédios"
+- PQT-U -> "kit de remédios especial para hanseníase"
+- rifampicina -> "remédio vermelho"
+- clofazimina -> "remédio que pode escurecer a pele"
+- dapsona -> "remédio branco"
+- dose supervisionada -> "dose que você toma na farmácia com acompanhamento"
+- efeitos adversos -> "efeitos colaterais"
 
 ANALOGIAS FAVORITAS:
 - Poliquimioterapia = "força-tarefa de remédios"

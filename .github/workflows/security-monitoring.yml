@@ -45,7 +45,7 @@ jobs:
   # Check for Security Updates
   # =====================================
   check-patches:
-    name: 🔍 Check for Security Patches
+    name: [SEARCH] Check for Security Patches
     runs-on: ubuntu-latest
     outputs:
       has_updates: ${{ steps.check.outputs.has_updates }}
@@ -65,7 +65,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: 🔍 Check PyTorch Updates
+      - name: [SEARCH] Check PyTorch Updates
         id: torch
         continue-on-error: true
         run: |
@@ -82,13 +82,13 @@ jobs:
           if [ "$LATEST_TORCH" != "$CURRENT_TORCH" ]; then
             echo "patch_available=true" >> $GITHUB_OUTPUT
             echo "latest_version=$LATEST_TORCH" >> $GITHUB_OUTPUT
-            echo "⚠️ New PyTorch version available: $LATEST_TORCH"
+            echo "[WARNING] New PyTorch version available: $LATEST_TORCH"
           else
             echo "patch_available=false" >> $GITHUB_OUTPUT
-            echo "✅ PyTorch is up to date"
+            echo "[OK] PyTorch is up to date"
           fi
 
-      - name: 🛡️ Run Snyk Test
+      - name: [SECURITY] Run Snyk Test
         id: snyk
         continue-on-error: true
         run: |
@@ -123,7 +123,7 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
-      - name: 📊 Generate Security Report
+      - name: [REPORT] Generate Security Report
         id: report
         run: |
           echo "# 🔒 Weekly Security Check Report" > security-report.md
@@ -134,10 +134,10 @@ jobs:
           echo "## PyTorch Status" >> security-report.md
           
           if [ "${{ steps.torch.outputs.patch_available }}" == "true" ]; then
-            echo "⚠️ **UPDATE AVAILABLE**: PyTorch ${{ steps.torch.outputs.latest_version }}" >> security-report.md
+            echo "[WARNING] **UPDATE AVAILABLE**: PyTorch ${{ steps.torch.outputs.latest_version }}" >> security-report.md
             echo "Action Required: Review and test PyTorch update" >> security-report.md
           else
-            echo "✅ No PyTorch updates available" >> security-report.md
+            echo "[OK] No PyTorch updates available" >> security-report.md
           fi
           
           echo "" >> security-report.md
@@ -174,7 +174,7 @@ jobs:
   # Update Documentation
   # =====================================
   update-docs:
-    name: 📝 Update Security Documentation
+    name: [NOTE] Update Security Documentation
     runs-on: ubuntu-latest
     needs: check-patches
     if: needs.check-patches.outputs.has_updates == 'true'
@@ -193,7 +193,7 @@ jobs:
           # Add torch update note if available
           if [ "${{ needs.check-patches.outputs.torch_patch_available }}" == "true" ]; then
             echo "" >> SECURITY_VULNERABILITIES.md
-            echo "## 🚨 ALERTA: Atualização Disponível" >> SECURITY_VULNERABILITIES.md
+            echo "## [ALERT] ALERTA: Atualização Disponível" >> SECURITY_VULNERABILITIES.md
             echo "" >> SECURITY_VULNERABILITIES.md
             echo "- PyTorch tem nova versão disponível com possíveis correções de segurança" >> SECURITY_VULNERABILITIES.md
             echo "- Verificar changelog e testar atualização" >> SECURITY_VULNERABILITIES.md
@@ -257,7 +257,7 @@ jobs:
           if [ "${{ needs.check-patches.outputs.torch_patch_available }}" == "true" ]; then
             MESSAGE="🔒 Alerta de Segurança
           
-          ⚠️ PyTorch Update Disponível
+          [WARNING] PyTorch Update Disponível
           Nova versão pode conter correções de segurança.
           
           📅 Data: $(date +%Y-%m-%d)
@@ -267,8 +267,8 @@ jobs:
           else
             MESSAGE="🔒 Verificação Semanal de Segurança
           
-          ✅ Verificação completa
-          📊 Novos problemas detectados
+          [OK] Verificação completa
+          [REPORT] Novos problemas detectados
           
           📅 Data: $(date +%Y-%m-%d)
           🔗 Detalhes: Verificar GitHub
@@ -295,13 +295,13 @@ jobs:
   # Summary
   # =====================================
   summary:
-    name: 📊 Generate Summary
+    name: [REPORT] Generate Summary
     runs-on: ubuntu-latest
     needs: [check-patches, update-docs, notify]
     if: always()
     
     steps:
-      - name: 📝 Create Summary
+      - name: [NOTE] Create Summary
         run: |
           echo "# 🔒 Security Check Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
@@ -310,14 +310,14 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           
           if [ "${{ needs.check-patches.outputs.has_updates }}" == "true" ]; then
-            echo "## ⚠️ Updates Available" >> $GITHUB_STEP_SUMMARY
+            echo "## [WARNING] Updates Available" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "Security updates have been detected. Please review:" >> $GITHUB_STEP_SUMMARY
             echo "- Check the created Pull Request" >> $GITHUB_STEP_SUMMARY
             echo "- Review security reports in artifacts" >> $GITHUB_STEP_SUMMARY
             echo "- Test and deploy updates as appropriate" >> $GITHUB_STEP_SUMMARY
           else
-            echo "## ✅ No Updates Required" >> $GITHUB_STEP_SUMMARY
+            echo "## [OK] No Updates Required" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "All known vulnerabilities are already addressed or accepted." >> $GITHUB_STEP_SUMMARY
           fi

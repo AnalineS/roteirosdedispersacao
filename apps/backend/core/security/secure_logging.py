@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Secure Logging Module - OWASP A09:2021 Compliant
 

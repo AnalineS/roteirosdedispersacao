@@ -74,13 +74,13 @@ class RedisConnectionManager:
                 self.connected = True
                 self.connection_attempts = 0
                 
-                logger.info(f"✅ Conectado ao Redis Cloud: {self.redis_config['host']}:{self.redis_config['port']}")
+                logger.info(f"[OK] Conectado ao Redis Cloud: {self.redis_config['host']}:{self.redis_config['port']}")
                 
         except Exception as e:
             self.connected = False
             self.connection_attempts += 1
             
-            logger.warning(f"❌ Falha conexão Redis (tentativa {self.connection_attempts}): {e}")
+            logger.warning(f"[ERROR] Falha conexão Redis (tentativa {self.connection_attempts}): {e}")
             
             if self.connection_attempts < self.max_attempts:
                 # Reagendar reconexão
@@ -88,7 +88,7 @@ class RedisConnectionManager:
                 timer.daemon = True
                 timer.start()
             else:
-                logger.error("🚨 Redis indisponível - usando fallback local permanentemente")
+                logger.error("[ALERT] Redis indisponível - usando fallback local permanentemente")
     
     def execute(self, func_name: str, *args, **kwargs) -> Any:
         """Executa comando Redis com fallback"""

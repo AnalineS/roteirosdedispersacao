@@ -1,0 +1,20 @@
+@echo off
+echo Configurando variaveis de ambiente...
+
+set SUPABASE_URL=https://skmyflckurikjprdleuz.supabase.co
+set SUPABASE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNrbXlmbGNrdXJpa2pwcmRsZXV6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY1NTI3NzgsImV4cCI6MjA3MjEyODc3OH0.3zi5nkkuOl4i20H7TX-12Wqn00oGc8KzAVbLI7zUgIw
+set SUPABASE_PROJECT_URL=https://skmyflckurikjprdleuz.supabase.co  
+set SUPABASE_PUBLISHABLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNrbXlmbGNrdXJpa2pwcmRsZXV6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY1NTI3NzgsImV4cCI6MjA3MjEyODc3OH0.3zi5nkkuOl4i20H7TX-12Wqn00oGc8KzAVbLI7zUgIw
+set SECRET_KEY=migration-key
+set EMBEDDINGS_ENABLED=true
+set RAG_AVAILABLE=true
+set VECTOR_DB_TYPE=supabase
+set CORS_ORIGINS=http://localhost:3000
+set OPENROUTER_API_KEY=optional
+
+echo Executando migracao...
+python scripts/migrate_json_to_supabase.py
+
+echo.
+echo Processo concluido!
+pause

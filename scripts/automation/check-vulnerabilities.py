@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Script de Verificação de Vulnerabilidades
 Executa verificações de segurança e atualiza documentação
@@ -46,7 +47,7 @@ def check_python_updates() -> Dict[str, str]:
     """Verifica atualizações disponíveis para pacotes Python"""
     updates = {}
     
-    print("🔍 Verificando atualizações Python...")
+    print("[SEARCH] Verificando atualizações Python...")
     
     # Pacotes críticos para monitorar
     critical_packages = [
@@ -75,9 +76,9 @@ def check_python_updates() -> Dict[str, str]:
                             current = current_match.group(1)
                             if current != latest:
                                 updates[package] = f"{current} -> {latest}"
-                                print(f"  ⚠️ {package}: {current} -> {latest}")
+                                print(f"  [WARNING] {package}: {current} -> {latest}")
                             else:
-                                print(f"  ✅ {package}: {current} (atualizado)")
+                                print(f"  [OK] {package}: {current} (atualizado)")
     
     return updates
 
@@ -85,7 +86,7 @@ def check_snyk_vulnerabilities() -> Dict[str, List[str]]:
     """Executa Snyk e retorna vulnerabilidades encontradas"""
     vulnerabilities = {"backend": [], "frontend": []}
     
-    print("\n🛡️ Executando Snyk scan...")
+    print("\n[SECURITY] Executando Snyk scan...")
     
     # Backend scan
     print("  Verificando backend...")
@@ -163,7 +164,7 @@ def update_security_doc(updates: Dict, vulns: Dict, expiring: List):
     """Atualiza documento de segurança com novas informações"""
     
     if not SECURITY_DOC.exists():
-        print("⚠️ SECURITY_VULNERABILITIES.md não encontrado")
+        print("[WARNING] SECURITY_VULNERABILITIES.md não encontrado")
         return
     
     with open(SECURITY_DOC, 'r', encoding='utf-8') as f:
@@ -179,7 +180,7 @@ def update_security_doc(updates: Dict, vulns: Dict, expiring: List):
     
     # Adicionar seção de alertas se houver
     if updates or vulns["backend"] or vulns["frontend"] or expiring:
-        alert_section = "\n## 🚨 Alertas Ativos\n\n"
+        alert_section = "\n## [ALERT] Alertas Ativos\n\n"
         
         if updates:
             alert_section += "### Atualizações Disponíveis\n"
@@ -202,10 +203,10 @@ def update_security_doc(updates: Dict, vulns: Dict, expiring: List):
             alert_section += "\n"
         
         # Inserir alertas após o status atual
-        if "## 🚨 Alertas Ativos" in content:
+        if "## [ALERT] Alertas Ativos" in content:
             # Substituir seção existente
             content = re.sub(
-                r'## 🚨 Alertas Ativos.*?(?=##|\Z)',
+                r'## [ALERT] Alertas Ativos.*?(?=##|\Z)',
                 alert_section,
                 content,
                 flags=re.DOTALL
@@ -213,20 +214,20 @@ def update_security_doc(updates: Dict, vulns: Dict, expiring: List):
         else:
             # Adicionar nova seção
             content = content.replace(
-                "## ✅ Vulnerabilidades Corrigidas",
-                alert_section + "## ✅ Vulnerabilidades Corrigidas"
+                "## [OK] Vulnerabilidades Corrigidas",
+                alert_section + "## [OK] Vulnerabilidades Corrigidas"
             )
     
     with open(SECURITY_DOC, 'w', encoding='utf-8') as f:
         f.write(content)
     
-    print(f"\n✅ {SECURITY_DOC} atualizado")
+    print(f"\n[OK] {SECURITY_DOC} atualizado")
 
 def generate_report(updates: Dict, vulns: Dict, expiring: List):
     """Gera relatório resumido"""
     
     print("\n" + "="*60)
-    print("📊 RELATÓRIO DE SEGURANÇA")
+    print("[REPORT] RELATÓRIO DE SEGURANÇA")
     print("="*60)
     print(f"Data: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print()
@@ -235,9 +236,9 @@ def generate_report(updates: Dict, vulns: Dict, expiring: List):
     total_issues = len(updates) + len(vulns["backend"]) + len(vulns["frontend"]) + len(expiring)
     
     if total_issues == 0:
-        print("✅ Nenhum problema de segurança detectado!")
+        print("[OK] Nenhum problema de segurança detectado!")
     else:
-        print(f"⚠️ {total_issues} itens requerem atenção:")
+        print(f"[WARNING] {total_issues} itens requerem atenção:")
         
         if updates:
             print(f"\n📦 {len(updates)} Atualizações Disponíveis:")
@@ -245,7 +246,7 @@ def generate_report(updates: Dict, vulns: Dict, expiring: List):
                 print(f"  - {pkg}: {ver}")
         
         if vulns["backend"]:
-            print(f"\n🔴 {len(vulns['backend'])} Vulnerabilidades no Backend:")
+            print(f"\n[RED] {len(vulns['backend'])} Vulnerabilidades no Backend:")
             for v in vulns["backend"][:5]:  # Mostrar apenas top 5
                 print(f"  - {v['severity']}: {v['package']}@{v['version']}")
         
@@ -262,19 +263,19 @@ def generate_report(updates: Dict, vulns: Dict, expiring: List):
     print("\n" + "="*60)
     
     # Recomendações
-    print("\n📋 RECOMENDAÇÕES:")
+    print("\n[LIST] RECOMENDAÇÕES:")
     
     if "torch" in updates:
-        print("1. ⚠️ CRÍTICO: PyTorch tem atualização - testar urgentemente")
+        print("1. [WARNING] CRÍTICO: PyTorch tem atualização - testar urgentemente")
     
     if any(v["severity"] == "high" for v in vulns["backend"] + vulns["frontend"]):
-        print("2. 🔴 Vulnerabilidades de alta severidade detectadas - revisar imediatamente")
+        print("2. [RED] Vulnerabilidades de alta severidade detectadas - revisar imediatamente")
     
     if expiring:
         print("3. ⏰ Renovar políticas de exceção antes da expiração")
     
     if not total_issues:
-        print("1. ✅ Continuar monitoramento regular")
+        print("1. [OK] Continuar monitoramento regular")
         print("2. 📅 Próxima verificação em 7 dias")
     
     print("\n" + "="*60)

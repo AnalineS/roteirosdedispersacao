@@ -1,8 +1,8 @@
-# 🔐 Atualização de Secrets do GitHub Actions
+# [AUTH] Atualização de Secrets do GitHub Actions
 
-## ⚠️ IMPORTANTE: Atualize os seguintes secrets no GitHub
+## [WARNING] IMPORTANTE: Atualize os seguintes secrets no GitHub
 
-### 1. GCP_SA_KEY ✅
+### 1. GCP_SA_KEY [OK]
 **Status**: Nova chave gerada e pronta
 **Ação**: Copie o conteúdo JSON em uma linha (fornecido separadamente)
 
@@ -32,7 +32,7 @@ firebase login:ci
 https://api.telegram.org/bot<TOKEN>/getUpdates
 ```
 
-## 📝 Como Atualizar no GitHub
+## [NOTE] Como Atualizar no GitHub
 
 1. Acesse: https://github.com/AnalineS/roteirosdedispersacao/settings/secrets/actions
 2. Para cada secret:
@@ -40,7 +40,7 @@ https://api.telegram.org/bot<TOKEN>/getUpdates
    - Cole o valor correspondente
    - Salve
 
-## ✅ Checklist
+## [OK] Checklist
 
 - [ ] GCP_SA_KEY atualizado com novo JSON
 - [ ] GCP_PROJECT_ID confirmado como `red-truck-468923-s4`

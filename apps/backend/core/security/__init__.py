@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Sistema de Segurança Integrado - Roteiro de Dispensação
 ======================================================

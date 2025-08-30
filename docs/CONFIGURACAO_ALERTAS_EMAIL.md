@@ -2,35 +2,35 @@
 
 Documentação completa do sistema de monitoramento com alertas automáticos por Telegram e GitHub Issues.
 
-## ✅ Status Atual: CONFIGURADO E FUNCIONANDO
+## [OK] Status Atual: CONFIGURADO E FUNCIONANDO
 
 - 📱 **Telegram**: Bot configurado e ativo
 - 📧 **GitHub Issues**: Notificações por email funcionando
 - 🔗 **Links Rápidos**: Implementados em todas as mensagens
-- 🧪 **Testes**: Scripts disponíveis na pasta `/tests/integration/`
+- [TEST] **Testes**: Scripts disponíveis na pasta `/tests/integration/`
 
 ## 📧 Opções de Alertas Gratuitos Configuradas
 
-### Opção 1: Telegram Bot ✅ CONFIGURADO
+### Opção 1: Telegram Bot [OK] CONFIGURADO
 
-**Status:** ✅ **ATIVO** - Bot criado e secrets configurados
+**Status:** [OK] **ATIVO** - Bot criado e secrets configurados
 
-- ✅ Notificações instantâneas no Telegram
-- ✅ Formatação rica com links clicáveis  
-- ✅ Bot configurado e funcionando
+- [OK] Notificações instantâneas no Telegram
+- [OK] Formatação rica com links clicáveis  
+- [OK] Bot configurado e funcionando
 
-### Opção 2: GitHub Issues + Email ✅ CONFIGURADO
+### Opção 2: GitHub Issues + Email [OK] CONFIGURADO
 
-- ✅ Issues criadas automaticamente em alertas
-- ✅ @mentions automáticos para notificações
-- ✅ Links de ação rápida em todas as mensagens
-- ✅ Email notifications ativas
+- [OK] Issues criadas automaticamente em alertas
+- [OK] @mentions automáticos para notificações
+- [OK] Links de ação rápida em todas as mensagens
+- [OK] Email notifications ativas
 
-## 🧪 Como Testar o Sistema
+## [TEST] Como Testar o Sistema
 
 ### Teste Manual via GitHub Actions
 1. Acesse: https://github.com/AnalineS/roteirosdedispersacao/actions/workflows/observability-monitoring.yml
-2. Clique em "Run workflow" → "Run workflow"
+2. Clique em "Run workflow" -> "Run workflow"
 3. Aguarde 2-3 minutos
 
 ### Teste via Script Python
@@ -52,4 +52,4 @@ python test_alert_system.py --test-type all
 
 ---
 
-*Sistema configurado e funcionando em: 2025-08-17* ✅
+*Sistema configurado e funcionando em: 2025-08-17* [OK]

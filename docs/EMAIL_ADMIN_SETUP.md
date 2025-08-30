@@ -3,10 +3,10 @@
 ## Objetivo
 Criar e configurar o email `admin@roteirosdedispensacao.com` para receber alertas críticos do sistema de monitoramento Google Cloud Operations Suite.
 
-## ⚠️ Importante
+## [WARNING] Importante
 Este email já está configurado no sistema de alertas GCP e precisa ser criado para que as notificações críticas sejam recebidas corretamente.
 
-## 📋 Passos para Configuração
+## [LIST] Passos para Configuração
 
 ### 1. Verificar Propriedade do Domínio
 ```bash
@@ -23,13 +23,13 @@ dig roteirosdedispensacao.com TXT
    - Login com conta administrativa do projeto
 
 2. **Adicionar Usuário**
-   - Usuários → Adicionar novo usuário
+   - Usuários -> Adicionar novo usuário
    - Email: `admin@roteirosdedispensacao.com`
    - Nome: "Sistema Admin"
    - Senha temporária forte
 
 3. **Configurar Redirecionamento**
-   - Gmail → Configurações → Encaminhamento
+   - Gmail -> Configurações -> Encaminhamento
    - Adicionar endereços para receber cópias
 
 #### Opção B: Configuração DNS Simples
@@ -41,7 +41,7 @@ roteirosdedispensacao.com.    MX    20    mx2.improvmx.com.
 
 2. **Configurar Alias/Redirecionamento**
    - Usar serviço como ImprovMX (gratuito)
-   - admin@roteirosdedispensacao.com → email_real@gmail.com
+   - admin@roteirosdedispensacao.com -> email_real@gmail.com
 
 #### Opção C: Firebase Email Extensions
 1. **Instalar Extension**
@@ -67,7 +67,7 @@ echo "Teste de configuração do email admin" | mail -s "Teste Sistema" admin@ro
    - Projeto: red-truck-468923-s4
 
 2. **Testar Notificação**
-   - Políticas de Alerta → Testar Notificação
+   - Políticas de Alerta -> Testar Notificação
    - Verificar se email admin@ recebe a mensagem
 
 ### 4. Configurações de Segurança
@@ -80,20 +80,20 @@ echo "Teste de configuração do email admin" | mail -s "Teste Sistema" admin@ro
 
 #### Configuração de Aliases
 ```
-admin@roteirosdedispensacao.com → email_principal
-alerts@roteirosdedispensacao.com → admin@roteirosdedispensacao.com
-monitoring@roteirosdedispensacao.com → admin@roteirosdedispensacao.com
+admin@roteirosdedispensacao.com -> email_principal
+alerts@roteirosdedispensacao.com -> admin@roteirosdedispensacao.com
+monitoring@roteirosdedispensacao.com -> admin@roteirosdedispensacao.com
 ```
 
-## 📊 Alertas Configurados
+## [REPORT] Alertas Configurados
 
 O email `admin@roteirosdedispensacao.com` receberá alertas para:
 
 ### Alertas Críticos (Produção)
 1. **🐌 Alta Latência** - P95 > 5s por 10min
-2. **🚨 Taxa de Erro Alta** - >10 erros/min por 5min  
+2. **[ALERT] Taxa de Erro Alta** - >10 erros/min por 5min  
 3. **💀 Serviço Indisponível** - Sem requisições por 10min
-4. **💾 Alto Uso de Memória** - >80% por 10min
+4. **[SAVE] Alto Uso de Memória** - >80% por 10min
 
 ### Formato das Notificações
 ```
@@ -110,7 +110,7 @@ Timestamp: 2024-01-20 15:30:00 UTC
 Detalhes: A latência P95 das requisições está acima de 5 segundos...
 ```
 
-## ✅ Checklist Pós-Configuração
+## [OK] Checklist Pós-Configuração
 
 - [ ] Email admin@roteirosdedispensacao.com criado
 - [ ] DNS MX records configurados  
@@ -138,5 +138,5 @@ Em caso de problemas:
 ---
 
 **Status**: ⏳ Pendente de implementação manual
-**Prioridade**: 🔴 Alta (necessário para alertas críticos)
+**Prioridade**: [RED] Alta (necessário para alertas críticos)
 **Responsável**: Administrador do sistema

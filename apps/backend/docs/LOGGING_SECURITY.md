@@ -81,7 +81,7 @@ logger.info(f"Operation completed: {safe_data}")
 
 ### Code Examples
 
-#### ✅ GOOD - Safe Logging
+#### [OK] GOOD - Safe Logging
 ```python
 # Only log non-sensitive metadata
 logger.info(f"Medical check completed - Status: {status}, Request ID: {request_id}")
@@ -93,7 +93,7 @@ logger.info(f"Knowledge base loaded: {len(chunks)} chunks")
 logger.error(f"Authentication failed for request: {request_id}")
 ```
 
-#### ❌ BAD - Unsafe Logging
+#### [ERROR] BAD - Unsafe Logging
 ```python
 # Never log medical data
 logger.info(f"Patient {name} prescribed {medication} at {dosage}")

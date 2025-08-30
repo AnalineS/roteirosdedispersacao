@@ -1,6 +1,6 @@
-# 🚀 Otimizações de Deploy Implementadas
+# [START] Otimizações de Deploy Implementadas
 
-## 📊 **Resumo das Melhorias**
+## [REPORT] **Resumo das Melhorias**
 
 Este documento descreve as otimizações implementadas para reduzir significativamente o tempo e custo dos deploys.
 
@@ -8,15 +8,15 @@ Este documento descreve as otimizações implementadas para reduzir significativ
 
 | Métrica | Antes | Depois | Melhoria |
 |---------|-------|--------|----------|
-| **Tempo de Deploy HML** | ~15min | ~3-5min | **67-80%** ↓ |
-| **Tempo de Build Frontend** | ~3-4min | ~1-2min | **50-67%** ↓ |
-| **Tempo de Build Backend** | ~2-3min | ~1min | **50-67%** ↓ |
-| **Uso de CPU/Recursos** | 100% | ~30-40% | **60-70%** ↓ |
-| **Deploys Desnecessários** | 100% | ~20% | **80%** ↓ |
+| **Tempo de Deploy HML** | ~15min | ~3-5min | **67-80%** v |
+| **Tempo de Build Frontend** | ~3-4min | ~1-2min | **50-67%** v |
+| **Tempo de Build Backend** | ~2-3min | ~1min | **50-67%** v |
+| **Uso de CPU/Recursos** | 100% | ~30-40% | **60-70%** v |
+| **Deploys Desnecessários** | 100% | ~20% | **80%** v |
 
 ---
 
-## 🎯 **Funcionalidades Implementadas**
+## [TARGET] **Funcionalidades Implementadas**
 
 ### **1. Deploy Condicional Inteligente**
 
@@ -30,9 +30,9 @@ Este documento descreve as otimizações implementadas para reduzir significativ
 ```
 
 #### **Skip Automático**
-- ✅ **Backend não mudou** → Skip deploy backend
-- ✅ **Frontend não mudou** → Skip deploy frontend
-- ✅ **Apenas docs mudaram** → Skip tudo (apenas notificação)
+- [OK] **Backend não mudou** -> Skip deploy backend
+- [OK] **Frontend não mudou** -> Skip deploy frontend
+- [OK] **Apenas docs mudaram** -> Skip tudo (apenas notificação)
 
 ### **2. Cache Inteligente Multi-Camada**
 
@@ -68,14 +68,14 @@ docker build --cache-from gcr.io/$PROJECT_ID/$SERVICE_NAME:latest
 
 #### **Antes (Sequencial)**
 ```
-Quality Gates → Backend Deploy → Frontend Deploy
+Quality Gates -> Backend Deploy -> Frontend Deploy
 Total: ~15 minutos
 ```
 
 #### **Depois (Paralelo)**
 ```
-Quality Gates → Backend Deploy (se necessário)
-             └→ Frontend Deploy (se necessário)
+Quality Gates -> Backend Deploy (se necessário)
+             └-> Frontend Deploy (se necessário)
 Total: ~3-5 minutos
 ```
 
@@ -113,22 +113,22 @@ runtimeChunk: 'single'
 ### **Workflows Modificados**
 
 #### **`.github/workflows/hml-deploy.yml`**
-- ✅ Job `detect-changes` para análise de mudanças
-- ✅ Deploy condicional para backend e frontend
-- ✅ Cache multi-camada (Node.js, Python, Docker, Next.js)
-- ✅ Builds paralelos
-- ✅ Notificações melhoradas com info de deploy incremental
+- [OK] Job `detect-changes` para análise de mudanças
+- [OK] Deploy condicional para backend e frontend
+- [OK] Cache multi-camada (Node.js, Python, Docker, Next.js)
+- [OK] Builds paralelos
+- [OK] Notificações melhoradas com info de deploy incremental
 
 #### **`.github/workflows/production-deploy.yml`**
-- ✅ Cache de produção para Node.js dependencies
-- ✅ Docker layer cache para builds mais rápidos
-- ✅ Build otimizado mantendo qualidade e segurança
+- [OK] Cache de produção para Node.js dependencies
+- [OK] Docker layer cache para builds mais rápidos
+- [OK] Build otimizado mantendo qualidade e segurança
 
 #### **`apps/frontend-nextjs/next.config.js`**
-- ✅ Webpack filesystem cache
-- ✅ Otimizações de chunk splitting
-- ✅ Build performance improvements
-- ✅ Tree-shaking melhorado
+- [OK] Webpack filesystem cache
+- [OK] Otimizações de chunk splitting
+- [OK] Build performance improvements
+- [OK] Tree-shaking melhorado
 
 ---
 
@@ -138,14 +138,14 @@ runtimeChunk: 'single'
 As notificações agora incluem:
 
 ```
-🎯 Deploy Incremental:
-• Backend: ✅ Deployado / ⏭️ Pulado (sem mudanças)  
-• Frontend: ✅ Deployado / ⏭️ Pulado (sem mudanças)
+[TARGET] Deploy Incremental:
+* Backend: [OK] Deployado / ⏭️ Pulado (sem mudanças)  
+* Frontend: [OK] Deployado / ⏭️ Pulado (sem mudanças)
 
 ⚡ Otimizações:
-• Cache inteligente de dependências
-• Deploy condicional baseado em mudanças
-• Builds paralelos quando possível
+* Cache inteligente de dependências
+* Deploy condicional baseado em mudanças
+* Builds paralelos quando possível
 ```
 
 ### **Métricas de Cache**
@@ -159,32 +159,32 @@ As notificações agora incluem:
 
 ### **Cenário 1: Mudança apenas no Frontend**
 ```
-✅ detect-changes: frontend=true, backend=false
+[OK] detect-changes: frontend=true, backend=false
 ⏭️ Skip backend quality gates, deploy e tests
-✅ Frontend deploy com cache de node_modules
+[OK] Frontend deploy com cache de node_modules
 ⚡ Tempo total: ~2-3min (vs ~15min antes)
 ```
 
 ### **Cenário 2: Mudança apenas no Backend**
 ```
-✅ detect-changes: frontend=false, backend=true
+[OK] detect-changes: frontend=false, backend=true
 ⏭️ Skip frontend quality gates, build e deploy
-✅ Backend deploy com Docker layer cache
+[OK] Backend deploy com Docker layer cache
 ⚡ Tempo total: ~2-3min (vs ~15min antes)
 ```
 
 ### **Cenário 3: Mudança em ambos**
 ```
-✅ detect-changes: frontend=true, backend=true
-✅ Deploy paralelo de ambos com cache
+[OK] detect-changes: frontend=true, backend=true
+[OK] Deploy paralelo de ambos com cache
 ⚡ Tempo total: ~4-6min (vs ~15min antes)
 ```
 
 ### **Cenário 4: Apenas documentação**
 ```
-✅ detect-changes: frontend=false, backend=false
+[OK] detect-changes: frontend=false, backend=false
 ⏭️ Skip todos os deploys
-✅ Apenas notificação de commit
+[OK] Apenas notificação de commit
 ⚡ Tempo total: ~30s (vs ~15min antes)
 ```
 
@@ -195,20 +195,20 @@ As notificações agora incluem:
 ### **Developer Experience**
 - ⚡ **Feedback 5x mais rápido** em PRs
 - 🔄 **Menor risco** por mudanças menores
-- 🛡️ **Rollbacks mais simples** e rápidos
-- 📊 **Visibilidade** do que está sendo deployado
+- [SECURITY] **Rollbacks mais simples** e rápidos
+- [REPORT] **Visibilidade** do que está sendo deployado
 
 ### **Operacional**
 - 💰 **~70% redução** nos custos de CI/CD
 - 🌱 **~80% redução** no uso de recursos
 - ⏰ **200+ horas/ano** economizadas
-- 🔧 **Menor manutenção** da infraestrutura
+- [FIX] **Menor manutenção** da infraestrutura
 
 ### **Qualidade**
-- 🎯 **Testes mais focados** apenas no que mudou
+- [TARGET] **Testes mais focados** apenas no que mudou
 - 🔒 **Menor janela** de possíveis problemas
 - 📈 **Melhor observabilidade** dos deploys
-- ✅ **Manutenção da qualidade** com todos os quality gates
+- [OK] **Manutenção da qualidade** com todos os quality gates
 
 ---
 
@@ -223,8 +223,8 @@ As notificações agora incluem:
 ### **Micro Deployments**
 - 📦 Split do monorepo em targets independentes
 - 🏷️ Versionamento semântico automático
-- 🔍 Preview deployments para cada PR
-- 📊 Métricas avançadas de performance
+- [SEARCH] Preview deployments para cada PR
+- [REPORT] Métricas avançadas de performance
 
 ---
 

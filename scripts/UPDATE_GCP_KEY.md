@@ -1,4 +1,4 @@
-# 🔐 Atualizar Chave do Service Account GCP
+# [AUTH] Atualizar Chave do Service Account GCP
 
 ## Problema
 O erro `error:1E08010C:DECODER routines::unsupported` indica que a chave do Service Account está corrompida ou em formato incorreto.
@@ -9,10 +9,10 @@ O erro `error:1E08010C:DECODER routines::unsupported` indica que a chave do Serv
 
 **Via Google Cloud Console:**
 1. Acesse: [Console GCP](https://console.cloud.google.com/)
-2. Navegue para: IAM & Admin → Service Accounts
+2. Navegue para: IAM & Admin -> Service Accounts
 3. Encontre: `github-actions-hml@red-truck-468923-s4.iam.gserviceaccount.com`
-4. Clique em "Actions" → "Manage Keys"
-5. Clique "ADD KEY" → "Create new key"
+4. Clique em "Actions" -> "Manage Keys"
+5. Clique "ADD KEY" -> "Create new key"
 6. Selecione "JSON" e clique "CREATE"
 7. Baixe o arquivo JSON
 
@@ -74,7 +74,7 @@ O arquivo deve ter esta estrutura (veja `scripts/gcp-key-template.json`):
 }
 ```
 
-## ⚠️ Pontos Importantes
+## [WARNING] Pontos Importantes
 
 1. **Copie TODO o JSON** - Não corte nenhuma parte
 2. **Mantenha as quebras de linha** - Especialmente no `private_key`
@@ -87,7 +87,7 @@ O arquivo deve ter esta estrutura (veja `scripts/gcp-key-template.json`):
 Para maior segurança, considere migrar para Workload Identity (sem chaves JSON):
 
 ```yaml
-- name: 🔐 Authenticate to Google Cloud
+- name: [AUTH] Authenticate to Google Cloud
   uses: google-github-actions/auth@v2
   with:
     workload_identity_provider: 'projects/123456789/locations/global/workloadIdentityPools/github-pool/providers/github-provider'

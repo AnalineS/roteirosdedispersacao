@@ -9,14 +9,14 @@ roteiro-dispensacao/
 ├── 📱 apps/              # Aplicações principais
 │   ├── backend/          # API Flask + Python
 │   └── frontend/         # React + TypeScript
-├── 📊 data/              # Base de conhecimento
+├── [REPORT] data/              # Base de conhecimento
 ├── 📚 docs/              # Documentação
 ├── 🛠️  scripts/          # Scripts de deploy e setup
-├── 🔧 .github/           # CI/CD workflows
+├── [FIX] .github/           # CI/CD workflows
 └── ⚙️  firebase.json     # Configuração Firebase
 ```
 
-## 🚀 Tecnologias
+## [START] Tecnologias
 
 ### Frontend
 - **React 18** + **TypeScript**
@@ -72,7 +72,7 @@ pip install -r requirements.txt
 python main.py       # Servidor desenvolvimento
 ```
 
-## 🚀 Deploy
+## [START] Deploy
 
 ### Firebase Hosting (Frontend)
 ```bash
@@ -123,16 +123,16 @@ roteiro-dispensacao/
 └── 📁 temp/                     # Arquivos temporários
 ```
 
-## 📋 Features
+## [LIST] Features
 
-- ✅ Chat IA com personas especializadas
-- ✅ Sistema educacional interativo
-- ✅ Timeline de medicamentos
-- ✅ Componentes acessíveis
-- ✅ PWA completo
-- ✅ Sistema RAG avançado
-- ✅ Cache inteligente
-- ✅ Monitoramento de performance
+- [OK] Chat IA com personas especializadas
+- [OK] Sistema educacional interativo
+- [OK] Timeline de medicamentos
+- [OK] Componentes acessíveis
+- [OK] PWA completo
+- [OK] Sistema RAG avançado
+- [OK] Cache inteligente
+- [OK] Monitoramento de performance
 
 ## 👥 Personas Disponíveis
 
@@ -148,6 +148,6 @@ roteiro-dispensacao/
 
 Sistema desenvolvido com base em tese de doutorado sobre roteiro de dispensação farmacêutica para hanseníase, seguindo protocolos do PCDT Hanseníase 2022 do Ministério da Saúde.
 
-## 📝 Licença
+## [NOTE] Licença
 
 Projeto educacional para apoio à dispensação farmacêutica.

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 System Audit Completo - Q2 2025 IA & Machine Learning
 Análise completa do estado atual do sistema antes da modernização

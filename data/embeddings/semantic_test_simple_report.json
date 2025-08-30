@@ -1,0 +1,25 @@
+{
+  "timestamp": "2025-08-30T08:48:03.618223",
+  "tests": {
+    "embedding_service": {
+      "status": "ERROR",
+      "error": "The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()"
+    },
+    "semantic_search": {
+      "initialized": true,
+      "available": false,
+      "status": "LIMITED"
+    },
+    "vector_store": {
+      "initialized": true,
+      "documents_count": 0,
+      "status": "SUCCESS"
+    }
+  },
+  "summary": {
+    "total_tests": 3,
+    "successful_tests": 2,
+    "success_rate": 66.67,
+    "overall_status": "SUCCESS"
+  }
+}

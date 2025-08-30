@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Sistema de Auditoria Médica para Conformidade LGPD/ANVISA/CFM
 Implementa logging seguro e criptografado para interações médicas

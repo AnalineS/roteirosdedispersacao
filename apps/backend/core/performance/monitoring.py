@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Sistema de Monitoramento Contínuo de Usabilidade
 Objetivo: Monitorar métricas de usabilidade em produção

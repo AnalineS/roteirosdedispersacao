@@ -84,9 +84,9 @@ class DependencyInjector:
                     max_size=config.CACHE_MAX_SIZE,
                     ttl_minutes=config.CACHE_TTL_MINUTES
                 )
-                logger.info("✅ Cache avançado inicializado")
+                logger.info("[OK] Cache avançado inicializado")
             except Exception as e:
-                logger.error(f"❌ Erro ao inicializar cache: {e}")
+                logger.error(f"[ERROR] Erro ao inicializar cache: {e}")
                 deps.cache = self._create_fallback_cache()
         else:
             deps.cache = self._create_fallback_cache()
@@ -96,9 +96,9 @@ class DependencyInjector:
             try:
                 # Wrapper para unificar interface
                 deps.rag_service = self._create_rag_service()
-                logger.info("✅ RAG service inicializado")
+                logger.info("[OK] RAG service inicializado")
             except Exception as e:
-                logger.error(f"❌ Erro ao inicializar RAG: {e}")
+                logger.error(f"[ERROR] Erro ao inicializar RAG: {e}")
                 deps.rag_service = None
         
         # QA Framework
@@ -106,9 +106,9 @@ class DependencyInjector:
             try:
                 # Inicializar QA Framework sem parâmetros (usar configuração padrão)
                 deps.qa_framework = EducationalQAFramework()
-                logger.info("✅ QA Framework inicializado")
+                logger.info("[OK] QA Framework inicializado")
             except Exception as e:
-                logger.error(f"❌ Erro ao inicializar QA: {e}")
+                logger.error(f"[ERROR] Erro ao inicializar QA: {e}")
                 deps.qa_framework = None
         
         return deps
@@ -141,7 +141,7 @@ class DependencyInjector:
                     "total_entries": len(self.cache)
                 }
         
-        logger.warning("⚠️ Usando cache simples (fallback)")
+        logger.warning("[WARNING] Usando cache simples (fallback)")
         return SimpleCache()
     
     def _create_rag_service(self) -> Any:

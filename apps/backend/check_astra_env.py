@@ -18,7 +18,7 @@ def check_astra_environment() -> Tuple[bool, Dict[str, str]]:
         Tuple[bool, Dict]: (sucesso, dicionário com status de cada variável)
     """
     
-    print("🔍 Verificando variáveis de ambiente para Astra DB...")
+    print("[SEARCH] Verificando variáveis de ambiente para Astra DB...")
     print("=" * 60)
     
     # Variáveis obrigatórias
@@ -38,42 +38,42 @@ def check_astra_environment() -> Tuple[bool, Dict[str, str]]:
     status = {}
     all_good = True
     
-    print("📋 VARIÁVEIS OBRIGATÓRIAS:")
+    print("[LIST] VARIÁVEIS OBRIGATÓRIAS:")
     for var, description in required_vars.items():
         value = os.getenv(var)
         if value:
             # Mascarar valores sensíveis
             if 'TOKEN' in var or 'KEY' in var:
                 masked_value = f"{value[:10]}...{value[-5:]}" if len(value) > 15 else f"{value[:5]}..."
-                print(f"  ✅ {var}: {masked_value}")
+                print(f"  [OK] {var}: {masked_value}")
             else:
-                print(f"  ✅ {var}: {value[:50]}...")
+                print(f"  [OK] {var}: {value[:50]}...")
             status[var] = 'configured'
         else:
-            print(f"  ❌ {var}: NÃO CONFIGURADA - {description}")
+            print(f"  [ERROR] {var}: NÃO CONFIGURADA - {description}")
             status[var] = 'missing'
             if var != 'ASTRA_DB_KEYSPACE':  # Keyspace é opcional
                 all_good = False
     
-    print("\n📋 VARIÁVEIS OPCIONAIS:")
+    print("\n[LIST] VARIÁVEIS OPCIONAIS:")
     for var, description in optional_vars.items():
         value = os.getenv(var)
         if value:
             if 'TOKEN' in var or 'KEY' in var:
                 masked_value = f"{value[:10]}...{value[-5:]}" if len(value) > 15 else f"{value[:5]}..."
-                print(f"  ✅ {var}: {masked_value}")
+                print(f"  [OK] {var}: {masked_value}")
             else:
-                print(f"  ✅ {var}: {value}")
+                print(f"  [OK] {var}: {value}")
             status[var] = 'configured'
         else:
-            print(f"  ⚠️ {var}: Não configurada - {description}")
+            print(f"  [WARNING] {var}: Não configurada - {description}")
             status[var] = 'optional'
     
     return all_good, status
 
 def suggest_github_secrets_setup():
     """Sugerir como configurar GitHub Secrets"""
-    print("\n🔧 COMO CONFIGURAR GITHUB SECRETS:")
+    print("\n[FIX] COMO CONFIGURAR GITHUB SECRETS:")
     print("=" * 60)
     print("1. Acesse seu repositório no GitHub")
     print("2. Vá em Settings > Secrets and variables > Actions")
@@ -91,7 +91,7 @@ def suggest_github_secrets_setup():
     ]
     
     for secret_name, example_value in secrets:
-        print(f"   • {secret_name}")
+        print(f"   * {secret_name}")
         print(f"     Valor: {example_value}")
         print()
 
@@ -119,8 +119,8 @@ DEBUG=true
 """
     
     print(env_content)
-    print("⚠️ IMPORTANTE: Nunca commite o arquivo .env!")
-    print("✅ Certifique-se que .env está no .gitignore")
+    print("[WARNING] IMPORTANTE: Nunca commite o arquivo .env!")
+    print("[OK] Certifique-se que .env está no .gitignore")
 
 def create_env_template():
     """Criar template de .env"""
@@ -173,10 +173,10 @@ LOG_STRUCTURED_FORMAT=true
         with open(template_path, 'w', encoding='utf-8') as f:
             f.write(template_content)
         print(f"\n📄 Template criado em: {template_path}")
-        print("✅ Use este template para configurar suas variáveis")
+        print("[OK] Use este template para configurar suas variáveis")
         return True
     except Exception as e:
-        print(f"\n❌ Erro ao criar template: {e}")
+        print(f"\n[ERROR] Erro ao criar template: {e}")
         return False
 
 def check_astra_db_availability():
@@ -185,7 +185,7 @@ def check_astra_db_availability():
     
     astra_url = os.getenv('ASTRA_DB_URL')
     if not astra_url:
-        print("❌ ASTRA_DB_URL não configurada")
+        print("[ERROR] ASTRA_DB_URL não configurada")
         return False
     
     try:
@@ -197,23 +197,23 @@ def check_astra_db_availability():
         else:
             base_url = 'https://' + astra_url.split('/')[0]
         
-        print(f"🔍 Testando conectividade com: {base_url}")
+        print(f"[SEARCH] Testando conectividade com: {base_url}")
         
         # Timeout curto para teste rápido
         response = requests.get(base_url, timeout=5)
         
         if response.status_code < 500:
-            print("✅ Astra DB está acessível")
+            print("[OK] Astra DB está acessível")
             return True
         else:
-            print(f"⚠️ Astra DB retornou status {response.status_code}")
+            print(f"[WARNING] Astra DB retornou status {response.status_code}")
             return False
             
     except ImportError:
-        print("⚠️ requests não instalado - pulando teste de conectividade")
+        print("[WARNING] requests não instalado - pulando teste de conectividade")
         return True
     except Exception as e:
-        print(f"❌ Erro ao testar conectividade: {e}")
+        print(f"[ERROR] Erro ao testar conectividade: {e}")
         return False
 
 def main():
@@ -229,22 +229,22 @@ def main():
     connectivity_ok = check_astra_db_availability()
     
     # 3. Análise e recomendações
-    print("\n📊 RESUMO DA ANÁLISE:")
+    print("\n[REPORT] RESUMO DA ANÁLISE:")
     print("=" * 60)
     
     if env_ok and connectivity_ok:
         print("🎉 CONFIGURAÇÃO COMPLETA!")
-        print("✅ Todas as variáveis obrigatórias configuradas")
-        print("✅ Astra DB está acessível")
-        print("🚀 Pronto para executar astra_setup.py")
+        print("[OK] Todas as variáveis obrigatórias configuradas")
+        print("[OK] Astra DB está acessível")
+        print("[START] Pronto para executar astra_setup.py")
     elif env_ok:
-        print("🟡 CONFIGURAÇÃO PARCIAL")
-        print("✅ Variáveis configuradas")
-        print("⚠️ Problemas de conectividade")
-        print("🔧 Verifique URL e credenciais")
+        print("[YELLOW] CONFIGURAÇÃO PARCIAL")
+        print("[OK] Variáveis configuradas")
+        print("[WARNING] Problemas de conectividade")
+        print("[FIX] Verifique URL e credenciais")
     else:
-        print("🔴 CONFIGURAÇÃO INCOMPLETA")
-        print("❌ Variáveis de ambiente faltando")
+        print("[RED] CONFIGURAÇÃO INCOMPLETA")
+        print("[ERROR] Variáveis de ambiente faltando")
         
         # Sugestões de configuração
         suggest_github_secrets_setup()
@@ -253,7 +253,7 @@ def main():
         # Criar template
         create_env_template()
     
-    print("\n🚀 PRÓXIMOS PASSOS:")
+    print("\n[START] PRÓXIMOS PASSOS:")
     if env_ok:
         print("1. Execute: python apps/backend/services/astra_setup.py")
         print("2. Verifique o relatório de setup gerado")

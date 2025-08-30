@@ -2,7 +2,7 @@
 
 Este documento detalha como criar e configurar os ícones para Progressive Web App (PWA).
 
-## 🎯 **Ícones Necessários**
+## [TARGET] **Ícones Necessários**
 
 ### Tamanhos Obrigatórios
 ```json
@@ -80,7 +80,7 @@ sharp -i icon-512.png -o icon-96.png resize 96 96
 sharp -i icon-512.png -o icon-72.png resize 72 72
 ```
 
-## 📋 **Checklist de Implementação**
+## [LIST] **Checklist de Implementação**
 
 ### Criação dos Ícones
 - [ ] Design base 512x512 criado
@@ -136,10 +136,10 @@ convert icon-512.png -resize 72x72 icon-72.png
 convert icon-512.png -resize 32x32 favicon.png
 ```
 
-## 🧪 **Testes e Validação**
+## [TEST] **Testes e Validação**
 
 ### Chrome DevTools
-1. Abrir F12 → Application → Manifest
+1. Abrir F12 -> Application -> Manifest
 2. Verificar se todos os ícones carregam
 3. Testar "Install app" no mobile
 
@@ -212,7 +212,7 @@ const STATIC_ASSETS = [
 ];
 ```
 
-## 🎯 **Próximos Passos**
+## [TARGET] **Próximos Passos**
 
 1. **Criar design base 512x512**
 2. **Gerar todos os tamanhos automaticamente**

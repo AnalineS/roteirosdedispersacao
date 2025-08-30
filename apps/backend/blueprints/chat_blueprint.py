@@ -49,27 +49,27 @@ except ImportError:
 
 # Import AI Provider Manager
 try:
-    from services.ai_provider_manager import generate_ai_response, get_ai_health_status
+    from services.ai.ai_provider_manager import generate_ai_response, get_ai_health_status
     AI_PROVIDER_AVAILABLE = True
 except ImportError:
     AI_PROVIDER_AVAILABLE = False
 
 # Import utilities (manteremos compatibilidade)
 try:
-    from services.dr_gasnelio_enhanced import get_enhanced_dr_gasnelio_prompt, validate_dr_gasnelio_response
-    from services.ga_enhanced import get_enhanced_ga_prompt, validate_ga_response
-    from services.scope_detection_system import detect_question_scope, get_limitation_response
-    from services.enhanced_rag_system import get_enhanced_context, cache_rag_response, add_rag_feedback, get_rag_stats
-    from services.personas import get_personas, get_persona_prompt
-    from services.predictive_system import PredictiveAnalytics, UserContext
-    from services.multimodal_processor import MultimodalProcessor
+    from services.ai.dr_gasnelio_enhanced import get_enhanced_dr_gasnelio_prompt, validate_dr_gasnelio_response
+    from services.ai.ga_enhanced import get_enhanced_ga_prompt, validate_ga_response
+    from services.integrations.scope_detection_system import detect_question_scope, get_limitation_response
+    from services.rag.enhanced_rag_system import get_enhanced_context, cache_rag_response, add_rag_feedback, get_rag_stats
+    from services.ai.personas import get_personas, get_persona_prompt
+    from services.integrations.predictive_system import PredictiveAnalytics, UserContext
+    from services.integrations.multimodal_processor import MultimodalProcessor
     ENHANCED_SERVICES = True
 except ImportError:
     ENHANCED_SERVICES = False
 
 # Import sistema de training/fine-tuning
 try:
-    from colab_training_data.validate_data import TrainingDataCollector, validate_training_format
+    from data.training.validate_data import TrainingDataCollector, validate_training_format
     TRAINING_SYSTEM_AVAILABLE = True
 except ImportError:
     TRAINING_SYSTEM_AVAILABLE = False
@@ -284,7 +284,7 @@ def process_question_with_rag(question: str, personality_id: str, request_id: st
         try:
             enhanced_cached = get_enhanced_context(question, personality_id)
             if enhanced_cached and enhanced_cached.get('confidence', 0) > 0.8:
-                logger.info(f"[{request_id}] 🚀 AstraDB Enhanced RAG hit - high confidence")
+                logger.info(f"[{request_id}] [START] AstraDB Enhanced RAG hit - high confidence")
                 
                 # Cache também no Redis para próximas consultas
                 if cache:
@@ -407,12 +407,12 @@ Responda de forma empática e didática."""
             metadata.update(ai_metadata)
             
             if answer:
-                logger.info(f"[{request_id}] ✅ Resposta obtida via {ai_metadata.get('model_used', 'unknown')}")
+                logger.info(f"[{request_id}] [OK] Resposta obtida via {ai_metadata.get('model_used', 'unknown')}")
             else:
-                logger.warning(f"[{request_id}] ⚠️ AI Provider retornou resposta vazia")
+                logger.warning(f"[{request_id}] [WARNING] AI Provider retornou resposta vazia")
                 
         except Exception as e:
-            logger.error(f"[{request_id}] ❌ Erro no AI Provider Manager: {e}")
+            logger.error(f"[{request_id}] [ERROR] Erro no AI Provider Manager: {e}")
     
     # Fallback se AI não disponível ou falhou
     if not answer:
@@ -497,7 +497,7 @@ Para informações mais detalhadas, recomendo consultar um profissional de saúd
         if ENHANCED_SERVICES and confidence_final >= 0.8:
             try:
                 cache_rag_response(question, answer, confidence_final)
-                logger.info(f"[{request_id}] 🚀 Cached to AstraDB Enhanced RAG - High confidence: {confidence_final:.2f}")
+                logger.info(f"[{request_id}] [START] Cached to AstraDB Enhanced RAG - High confidence: {confidence_final:.2f}")
             except Exception as e:
                 logger.debug(f"[{request_id}] Enhanced RAG cache error: {e}")
     
@@ -761,7 +761,7 @@ def chat_api():
                 # Só coletar se passar na validação de formato
                 if validate_training_format(training_example):
                     training_collector.add_example(training_example)
-                    logger.info(f"[{request_id}] 🎯 Exemplo coletado para training - QA: {metadata.get('qa_score', 0):.2f}")
+                    logger.info(f"[{request_id}] [TARGET] Exemplo coletado para training - QA: {metadata.get('qa_score', 0):.2f}")
                 
             except Exception as e:
                 logger.debug(f"[{request_id}] Erro na coleta de training data: {e}")

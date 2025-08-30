@@ -716,7 +716,7 @@ class ComprehensibilityValidator:
         """Analisa clareza estrutural da resposta"""
         structure_indicators = {
             'has_clear_sections': len(re.findall(r'\[.*?\]', response)) > 0,
-            'has_bullet_points': '•' in response or '-' in response or '*' in response,
+            'has_bullet_points': '*' in response or '-' in response or '*' in response,
             'reasonable_paragraph_length': self._check_paragraph_lengths(response),
             'logical_flow': self._check_logical_flow(response)
         }

@@ -1,10 +1,10 @@
-# 📋 RESUMO DA REORGANIZAÇÃO DO REPOSITÓRIO
+# [LIST] RESUMO DA REORGANIZAÇÃO DO REPOSITÓRIO
 
 **Data:** 26/08/2025  
 **Commit:** 41bd4bc4  
 **Objetivo:** Melhorar a manutenibilidade e navegação do projeto
 
-## ✅ REORGANIZAÇÃO CONCLUÍDA
+## [OK] REORGANIZAÇÃO CONCLUÍDA
 
 ### 📚 **Documentação Organizada (/docs)**
 
@@ -16,17 +16,17 @@ docs/
 │   ├── PLANO_IMPLEMENTACAO.md
 │   ├── RELEASE_NOTES_V2.0.md
 │   └── STATUS_FINAL.md
-├── deployment/                  # 🚀 Guias de deployment
+├── deployment/                  # [START] Guias de deployment
 │   ├── CONFIGURACAO_FINAL.md
 │   ├── FIREBASE_AUTH_INTEGRATION.md
 │   ├── FIREBASE_SETUP.md
 │   ├── GITHUB_SECRETS_CONFIGURATION.md
 │   └── UPDATE_GITHUB_SECRETS.md
-├── qa-reports/                  # 📊 Relatórios de QA
+├── qa-reports/                  # [REPORT] Relatórios de QA
 │   ├── audit_report.md
 │   ├── data_quality_report.md
 │   └── security_automation_report.md
-├── security/                    # 🛡️ Documentação de segurança
+├── security/                    # [SECURITY] Documentação de segurança
 │   ├── SECURITY_LOGGING_FIXES.md
 │   ├── SECURITY_VULNERABILITIES.md
 │   └── SNYK_PR_CLOSURE_REPORT.md
@@ -35,7 +35,7 @@ docs/
     └── PLANO_UX_TRANSFORMATION.md
 ```
 
-### 🔧 **Scripts Organizados (/scripts)**
+### [FIX] **Scripts Organizados (/scripts)**
 
 ```
 scripts/
@@ -43,12 +43,12 @@ scripts/
 │   ├── README.md               # 🆕
 │   ├── check-vulnerabilities.py
 │   └── security_issues_safe.py
-├── deployment/                  # 🚀 Deployment
+├── deployment/                  # [START] Deployment
 │   ├── README.md               # 🆕
 │   ├── deploy-hml.sh
 │   ├── seed-hml-data.sh
 │   └── setup-firebase-hml.sh
-├── maintenance/                 # 🔧 Manutenção
+├── maintenance/                 # [FIX] Manutenção
 │   ├── create-gcp-dashboards.sh
 │   ├── create-remaining-dashboards.sh
 │   └── create-simple-dashboards.sh
@@ -60,7 +60,7 @@ scripts/
     └── validate-admin-email.sh
 ```
 
-### 🧪 **Testes Organizados (/tests)**
+### [TEST] **Testes Organizados (/tests)**
 
 ```
 tests/
@@ -93,7 +93,7 @@ tests/
 
 ## 🧹 **Arquivos Removidos (Limpeza)**
 
-### ❌ **Arquivos Temporários Eliminados:**
+### [ERROR] **Arquivos Temporários Eliminados:**
 - `temp_evidence.md`
 - `dompurify_evidence.txt`
 - `file_structure_evidence.txt`
@@ -105,37 +105,37 @@ tests/
 - `security_issues_automation.py` (versão otimizada mantida)
 - Outputs temporários: `*_output.txt`
 
-## 🎯 **Benefícios Alcançados**
+## [TARGET] **Benefícios Alcançados**
 
-### ✅ **Manutenibilidade:**
+### [OK] **Manutenibilidade:**
 - Estrutura clara e lógica
 - Separação por funcionalidade
 - Navegação intuitiva
 
-### ✅ **Profissionalização:**
+### [OK] **Profissionalização:**
 - READMEs explicativos
 - Estrutura padrão da indústria
 - Documentação organizada
 
-### ✅ **Desenvolvimento:**
+### [OK] **Desenvolvimento:**
 - Testes centralizados
 - Scripts categorizados
 - Fácil localização de recursos
 
-### ✅ **Segurança:**
+### [OK] **Segurança:**
 - `.gitignore` atualizado
 - Arquivos temporários eliminados
 - Estrutura limpa
 
-## 🔧 **Ferramentas Preservadas**
+## [FIX] **Ferramentas Preservadas**
 
-### ✅ **Mantidos e Funcionais:**
+### [OK] **Mantidos e Funcionais:**
 - `bin/gh.exe` - GitHub CLI instalado
 - `apps/frontend-nextjs/__mocks__/` - Jest mocks
 - `apps/frontend-nextjs/jest.config.js` - Configuração de testes
 - `scripts/automation/security_issues_safe.py` - Script de segurança otimizado
 
-## 📊 **Estatísticas da Reorganização**
+## [REPORT] **Estatísticas da Reorganização**
 
 - **Arquivos movidos:** 45+ arquivos
 - **Estruturas criadas:** 12 novos diretórios
@@ -143,7 +143,7 @@ tests/
 - **Arquivos eliminados:** 12 arquivos temporários
 - **Commit size:** 6,743 inserções, 42 deleções
 
-## 🚀 **Próximos Passos Recomendados**
+## [START] **Próximos Passos Recomendados**
 
 1. **Sincronizar branches:** Push para `hml` e `main` após validação
 2. **Atualizar CI/CD:** Ajustar paths nos workflows se necessário
