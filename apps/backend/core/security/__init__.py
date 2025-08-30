@@ -27,7 +27,7 @@ Licença: Proprietária - Uso Interno
 
 from .security_framework import SecurityFramework, create_secure_app
 from .secrets_manager import SecretsManager
-from .middleware import SecurityMiddleware
+# SecurityMiddleware removido - consolidado em enhanced_security.py
 from .zero_trust import ZeroTrustManager, require_authenticated_access
 from .monitoring import SecurityMonitor
 from .cicd_security import SecurityScanner
@@ -74,7 +74,7 @@ def initialize_security(app=None, config=None):
 __all__ = [
     'SecurityFramework',
     'SecretsManager', 
-    'SecurityMiddleware',
+    # 'SecurityMiddleware', # Removido - consolidado em enhanced_security.py
     'ZeroTrustManager',
     'SecurityMonitor',
     'SecurityScanner',

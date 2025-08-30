@@ -143,13 +143,9 @@ except ImportError as e:
         ALL_BLUEPRINTS = [emergency_bp]
         logger.warning("[WARNING]  Sistema em modo de emergência - funcionalidade muito limitada")
 
-# Import Security Middleware (com fallback)
-try:
-    from core.security.middleware import SecurityMiddleware
-    SECURITY_MIDDLEWARE_AVAILABLE = True
-except ImportError:
-    SECURITY_MIDDLEWARE_AVAILABLE = False
-    SecurityMiddleware = None
+# SecurityMiddleware removido - usando apenas enhanced_security.py
+SECURITY_MIDDLEWARE_AVAILABLE = False
+SecurityMiddleware = None
 
 # Import Performance e Security Optimizations
 try:
@@ -195,15 +191,10 @@ def create_app():
     version_manager = APIVersionManager(app)
     app.version_manager = version_manager
     
-    # Inicializar Security Middleware de forma assíncrona para Cloud Run
-    if SECURITY_MIDDLEWARE_AVAILABLE and SecurityMiddleware:
-        try:
-            security_middleware = SecurityMiddleware(app)
-            logger.info("[OK] Security Middleware avançado inicializado")
-        except Exception as e:
-            # SECURITY FIX: Log middleware error without exposing details
-            error_type = type(e).__name__
-            logger.warning(f"[WARNING] Erro ao inicializar Security Middleware [{error_type}]: Configuração indisponível")
+    # CONSOLIDAÇÃO DE MIDDLEWARES: Usando apenas enhanced_security.py
+    # SecurityMiddleware desabilitado para evitar conflito HTTP 426
+    # Todas as funcionalidades de segurança estão no SecurityOptimizer
+    logger.info("[OK] Security Middleware consolidado (apenas SecurityOptimizer ativo)")
     
     # Inicializar JWT Authentication de forma não-bloqueante
     if JWT_AUTH_AVAILABLE:

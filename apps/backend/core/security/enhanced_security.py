@@ -157,9 +157,24 @@ class SecurityOptimizer:
         response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
         response.headers['Permissions-Policy'] = 'geolocation=(), microphone=(), camera=()'
         
-        # HSTS para HTTPS
+        # HSTS para HTTPS (apenas quando request é seguro)
         if request.is_secure:
             response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains; preload'
+        
+        # HTTPS enforcement para produção (não bloqueia localhost para QA)
+        if not request.is_secure and request.environ.get('HTTP_X_FORWARDED_PROTO') != 'https':
+            # Permite HTTP para development e QA (localhost, 127.0.0.1)
+            local_hosts = ['localhost', '127.0.0.1', '0.0.0.0']
+            is_local = (request.host in local_hosts or 
+                       request.host.startswith('192.168.') or
+                       request.host.startswith('10.') or
+                       request.host.startswith('172.'))
+            
+            # Apenas avisar sobre HTTP em produção, não bloquear
+            if not is_local:
+                logger.warning(f"HTTP request em produção (não bloqueado): {request.url}")
+                # Adicionar header sugerindo HTTPS mas não bloqueando
+                response.headers['Upgrade'] = 'TLS/1.2, HTTP/1.1'
         
         # CSP otimizado por contexto
         csp = self._get_optimized_csp()

@@ -25,7 +25,7 @@ from datetime import datetime
 
 # Importar todos os componentes de segurança
 from .secrets_manager import SecretsManager
-from .middleware import SecurityMiddleware, create_security_middleware
+# SecurityMiddleware removido - consolidado em enhanced_security.py
 from .zero_trust import (
     AccessController, 
     ResourceType, 
@@ -63,7 +63,7 @@ class SecurityFramework:
         
         # Componentes do framework
         self.secrets_manager: Optional[SecretsManager] = None
-        self.security_middleware: Optional[SecurityMiddleware] = None
+        # self.security_middleware: Optional[SecurityMiddleware] = None  # Removido
         self.access_controller: AccessController = global_access_controller
         self.security_monitor: SecurityMonitor = global_security_monitor
         self.cicd_orchestrator: CICDSecurityOrchestrator = global_cicd_orchestrator
@@ -103,8 +103,8 @@ class SecurityFramework:
         # Configurar secrets básicos se não existirem
         self._setup_default_secrets()
         
-        # 2. Inicializar Security Middleware
-        self.security_middleware = create_security_middleware(self.app)
+        # 2. Security Middleware removido - usando enhanced_security.py
+        # self.security_middleware = create_security_middleware(self.app)
         
         # 3. Configurar Access Controller (já inicializado globalmente)
         # Adicionar configurações específicas se necessário
@@ -229,7 +229,8 @@ class SecurityFramework:
                 {'event_type': 'access_denied', 'error_code': 403}
             )
             
-            return self.security_middleware.handle_forbidden(error)
+            # return self.security_middleware.handle_forbidden(error)  # Removido
+            return {'error': 'Forbidden', 'error_code': 'SECURITY_VIOLATION'}, 403
         
         @self.app.errorhandler(429)
         def handle_rate_limit(error):
@@ -240,7 +241,8 @@ class SecurityFramework:
                 {'reason': 'rate_limit', 'error_code': 429}
             )
             
-            return self.security_middleware.handle_rate_limit_exceeded(error)
+            # return self.security_middleware.handle_rate_limit_exceeded(error)  # Removido  
+            return {'error': 'Rate Limit Exceeded', 'error_code': 'RATE_LIMIT_EXCEEDED', 'retry_after': 60}, 429
     
     def start_monitoring(self):
         """Inicia monitoramento de segurança"""
@@ -265,7 +267,7 @@ class SecurityFramework:
                 'timestamp': datetime.now().isoformat()
             },
             'secrets_manager': self.secrets_manager.health_check() if self.secrets_manager else None,
-            'middleware': self.security_middleware.get_security_stats() if self.security_middleware else None,
+            'middleware': None,  # SecurityMiddleware removido - estatísticas em enhanced_security.py
             'access_controller': self.access_controller.get_security_stats(),
             'monitoring': self.security_monitor.get_dashboard_data()
         }
