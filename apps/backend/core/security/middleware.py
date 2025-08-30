@@ -587,10 +587,17 @@ class SecurityMiddleware:
         for header, value in self.security_headers.items():
             response.headers[header] = value
         
-        # Forçar HTTPS em produção
+        # Forçar HTTPS em produção (exceto desenvolvimento local)
         if not request.is_secure and request.environ.get('HTTP_X_FORWARDED_PROTO') != 'https':
             # Em produção (Cloud Run), sempre forçar HTTPS
-            if request.host not in ['localhost', '127.0.0.1'] and not request.host.startswith('192.168.'):
+            # Permitir HTTP apenas para localhost, 127.0.0.1, e redes locais
+            local_hosts = ['localhost', '127.0.0.1', '0.0.0.0']
+            is_local = (request.host in local_hosts or 
+                       request.host.startswith('192.168.') or
+                       request.host.startswith('10.') or
+                       request.host.startswith('172.'))
+            
+            if not is_local:
                 security_logger.warning(f"Tentativa de acesso HTTP bloqueada: {request.url}")
                 return jsonify({
                     'error': 'HTTPS Required',
