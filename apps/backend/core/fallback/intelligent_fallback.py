@@ -125,7 +125,8 @@ def create_intelligent_health_blueprint() -> Blueprint:
     """Cria blueprint de health com fallback inteligente"""
     health_bp = Blueprint('intelligent_health', __name__, url_prefix='/api/v1')
     
-    @health_bp.route('/health', methods=['GET'])
+    @health_bp.route('/health', methods=['GET'])  # /api/v1/health
+    @health_bp.route('/api/health', methods=['GET'])  # Compatibilidade com QA workflow
     def health():
         """Health check principal com informações inteligentes"""
         system_status = fallback_system.get_system_status()

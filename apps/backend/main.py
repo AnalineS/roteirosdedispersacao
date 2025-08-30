@@ -118,19 +118,7 @@ except ImportError as e:
         
         emergency_bp = Blueprint('emergency', __name__)
         
-        @emergency_bp.route('/api/v1/health', methods=['GET'])
-        @emergency_bp.route('/api/health', methods=['GET'])
-        def emergency_health():
-            return jsonify({
-                "status": "emergency_mode",
-                "timestamp": datetime.now().isoformat(),
-                "version": "emergency_v1.0.0",
-                "api_version": "v1",
-                "environment": EnvironmentConfig.get_current() if CONFIG_AVAILABLE else 'development',
-                "port": int(os.environ.get('PORT', 8080)),
-                "mode": "emergency_fallback",
-                "message": "Sistema em modo de emergência - funcionalidade limitada"
-            })
+        # Health check removido do emergency - usando apenas intelligent_fallback
         
         @emergency_bp.route('/api/v1/health/live', methods=['GET'])
         def emergency_live():
@@ -588,18 +576,12 @@ def setup_root_routes(app):
             "timestamp": datetime.now().isoformat()
         }), 200
     
-    # Health check otimizado para Cloud Run
-    @app.route('/health')
-    @app.route('/ready')
+    # Health checks consolidados no intelligent_fallback blueprint
+    # Mantém apenas o _ah/health para Google App Engine
     @app.route('/_ah/health')  # Google App Engine health check
     def cloud_run_health():
-        """Health check ultrarrápido para Cloud Run"""
-        return jsonify({
-            "status": "healthy",
-            "timestamp": datetime.now().isoformat(),
-            "service": "roteiro-dispensacao-api",
-            "version": "v1.0.0"
-        }), 200
+        """Health check básico para Google App Engine"""
+        return jsonify({"status": "healthy", "timestamp": datetime.now().isoformat()}), 200
 
 # Rate limiting placeholder (será implementado com Redis)
 def check_rate_limit(endpoint_type: str = 'default'):
