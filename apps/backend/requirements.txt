@@ -44,7 +44,7 @@ user-agents>=2.2.0
 ipaddress>=1.0.23
 
 # === VALIDATION & DATA ===
-pydantic==2.10.3
+pydantic>=2.6.0,<3.0.0
 jsonschema>=4.23.0
 
 # === HTTP & NETWORKING ===
