@@ -295,13 +295,23 @@ class SecurityOptimizer:
         if not user_agent or len(user_agent) < 10:
             return True
         
+        # Exceções para QA e health checks legítimos
+        legitimate_patterns = [
+            r'QA-Automation-Health-Check',
+            r'Health-Check',
+            r'Monitoring'
+        ]
+        
+        user_agent_lower = user_agent.lower()
+        if any(re.search(pattern, user_agent_lower, re.IGNORECASE) for pattern in legitimate_patterns):
+            return False
+        
         suspicious_patterns = [
             r'scanner', r'bot', r'crawl', r'spider',
             r'python-requests', r'curl/', r'wget/',
             r'test', r'hack', r'exploit'
         ]
         
-        user_agent_lower = user_agent.lower()
         return any(re.search(pattern, user_agent_lower) for pattern in suspicious_patterns)
     
     def _get_optimized_csp(self) -> str:
