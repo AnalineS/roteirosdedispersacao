@@ -23,7 +23,11 @@ audit_logger = logging.getLogger('medical_audit')
 audit_logger.setLevel(logging.INFO)
 
 # Handler para arquivo de auditoria separado
-audit_handler = logging.FileHandler('logs/medical_audit.log')
+# Criar diretório logs se não existir
+logs_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'logs')
+os.makedirs(logs_dir, exist_ok=True)
+audit_log_path = os.path.join(logs_dir, 'medical_audit.log')
+audit_handler = logging.FileHandler(audit_log_path)
 audit_formatter = logging.Formatter(
     '%(asctime)s - %(levelname)s - [AUDIT] - %(message)s'
 )
