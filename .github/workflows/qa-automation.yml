@@ -124,7 +124,7 @@ jobs:
           sleep 10
           
           # Verificar se está rodando
-          if curl -f -H "User-Agent: QA-Automation-Health-Check/1.0" http://localhost:8080/api/health; then
+          if curl -f -H "User-Agent: QA-Automation-Health-Check/1.0" http://localhost:8080/api/v1/health; then
             echo "✅ Backend iniciado com sucesso"
           else
             echo "❌ Falha ao iniciar backend"
