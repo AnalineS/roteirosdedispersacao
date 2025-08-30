@@ -40,6 +40,11 @@ on:
 jobs:
   qa-automation:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+      actions: read
     
     env:
       # Backend Configuration
@@ -103,11 +108,11 @@ jobs:
       - name: 🧪 Prepare QA Environment
         run: |
           # Criar diretórios necessários
-          mkdir -p tests/qa_automation_suite/reports
-          mkdir -p tests/qa_automation_suite/logs
+          mkdir -p tests/qa-automation/reports
+          mkdir -p tests/qa-automation/logs
           
           # Configurar permissões
-          chmod +x tests/qa_automation_suite/*.py
+          chmod +x tests/qa-automation/*.py
 
       - name: 🚀 Start Backend Service
         run: |
@@ -130,7 +135,7 @@ jobs:
       - name: 🔍 Execute QA Test Suite
         id: qa_tests
         run: |
-          cd tests/qa_automation_suite
+          cd tests/qa-automation
           
           # Definir parâmetros baseados nos inputs
           TEST_ENV="${{ github.event.inputs.environment || 'local' }}"
@@ -161,7 +166,7 @@ jobs:
       - name: 📊 Process Test Results
         if: always()
         run: |
-          cd tests/qa_automation_suite
+          cd tests/qa-automation
           
           echo "📋 Processando resultados dos testes..."
           
@@ -204,14 +209,14 @@ jobs:
         with:
           name: qa-reports-${{ github.run_number }}
           path: |
-            tests/qa_automation_suite/reports/
-            tests/qa_automation_suite/logs/
+            tests/qa-automation/reports/
+            tests/qa-automation/logs/
           retention-days: 30
 
       - name: 🐛 Create Issues for Critical Failures
         if: always() && (steps.qa_tests.outputs.qa_tests_failed == 'true' || github.event.inputs.create_issues == 'true')
         run: |
-          cd tests/qa_automation_suite
+          cd tests/qa-automation
           
           echo "🐛 Verificando falhas críticas para criação de issues..."
           
@@ -239,7 +244,7 @@ jobs:
             let comment = '## 🧪 QA Automation Results\n\n';
             
             try {
-              const results = JSON.parse(fs.readFileSync('tests/qa_automation_suite/reports/qa_results.json', 'utf8'));
+              const results = JSON.parse(fs.readFileSync('tests/qa-automation/reports/qa_results.json', 'utf8'));
               
               const total = results.summary?.total_tests || 0;
               const passed = results.summary?.passed || 0;
