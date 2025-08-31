@@ -17,7 +17,7 @@ openai>=1.50.0
 sentence-transformers==3.1.0
 chromadb>=0.4.0
 numpy==1.26.4
-scikit-learn==1.5.0
+scikit-learn==1.6.1
 
 # === AUTHENTICATION & JWT ===
 PyJWT==2.10.1      # SECURITY: Latest secure version
