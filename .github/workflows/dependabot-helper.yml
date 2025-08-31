@@ -45,7 +45,7 @@ jobs:
           fi
           
       - name: 🏷️ Add Labels
-        uses: actions/labeler@v4
+        uses: actions/labeler@v5
         with:
           configuration-path: |
             dependencies:
