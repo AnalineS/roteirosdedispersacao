@@ -3,7 +3,7 @@
 import { useEffect, useCallback, RefObject } from 'react';
 
 interface KeyboardNavigationOptions {
-  containerRef?: RefObject<HTMLElement>;
+  containerRef?: RefObject<HTMLElement | null>;
   onEscape?: () => void;
   onEnter?: (element: HTMLElement) => void;
   trapFocus?: boolean;
@@ -165,7 +165,7 @@ export function useKeyboardNavigation(options: KeyboardNavigationOptions = {}) {
 export function useSidebarKeyboardNavigation(
   isOpen: boolean,
   onClose: () => void,
-  sidebarRef: RefObject<HTMLElement>
+  sidebarRef: RefObject<HTMLElement | null>
 ) {
   return useKeyboardNavigation({
     containerRef: sidebarRef,
@@ -177,7 +177,7 @@ export function useSidebarKeyboardNavigation(
 
 // Hook para navegação em breadcrumbs
 export function useBreadcrumbsKeyboardNavigation(
-  containerRef: RefObject<HTMLElement>
+  containerRef: RefObject<HTMLElement | null>
 ) {
   return useKeyboardNavigation({
     containerRef,
