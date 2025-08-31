@@ -233,14 +233,22 @@ jobs:
             --platform managed \
             --region us-central1 \
             --allow-unauthenticated \
+            --port=8080 \
             --memory 1Gi \
             --cpu 1 \
+            --concurrency=100 \
             --max-instances 10 \
+            --min-instances=0 \
+            --timeout=300 \
+            --set-env-vars="ENVIRONMENT=production,FLASK_ENV=production,DEBUG=false,SECRET_KEY=${{ secrets.SECRET_KEY }},OPENROUTER_API_KEY=${{ secrets.OPENROUTER_API_KEY }}" \
             --project ${{ secrets.GCP_PROJECT_ID_PROD }}
             
       - name: "[HEALTH] Backend Health Check"
         run: |
           echo "Verificando saude do backend em PRODUCAO..."
+          echo "Aguardando backend inicializar..."
+          sleep 30
+          
           BACKEND_URL=$(gcloud run services describe backend-prod --region=us-central1 --format="value(status.url)" --project ${{ secrets.GCP_PROJECT_ID_PROD }})
           
           for i in {1..30}; do

@@ -12,8 +12,13 @@ on:
       - '!docs/**'
   workflow_dispatch:
     inputs:
+      skip_tests:
+        description: 'Pular testes (apenas emergencias)'
+        required: false
+        default: false
+        type: boolean
       force_deploy:
-        description: 'Forcar deploy (pular algumas validacoes)'
+        description: 'Forcar deploy mesmo com falhas'
         required: false
         default: false
         type: boolean
@@ -27,17 +32,23 @@ on:
         type: boolean
 
 env:
+  NODE_VERSION: '18'
+  PYTHON_VERSION: '3.11'
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   BACKEND_SERVICE_NAME: hml-roteiro-dispensacao-api
   FRONTEND_SITE: hml-roteiros-de-dispensacao
   REGION: ${{ secrets.GCP_REGION }}
   ENVIRONMENT: homologacao
+  TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+  TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+  SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
 permissions:
   contents: write
-  pull-requests: write
-  issues: write
+  pull-requests: read
+  security-events: write
   actions: read
+  id-token: write
 
 jobs:
   detect-changes:
@@ -105,110 +116,133 @@ jobs:
           echo "  Frontend: $DEPLOY_FRONTEND"
           echo "  Executar deploy: $SHOULD_DEPLOY"
 
-  quality-security-gates:
-    name: "Qualidade e Seguranca"
+  security-quality-gates:
+    name: "[HML-SECURITY] Gates de Qualidade e Seguranca"
     runs-on: ubuntu-latest
     needs: detect-changes
     if: needs.detect-changes.outputs.should-deploy == 'true' && github.event.inputs.force_deploy != 'true'
     
     steps:
-      - name: "Checkout"
+      - name: "[CHECKOUT] Checkout"
         uses: actions/checkout@v4
+        
+      - name: "[SECURITY] GitHub Security Scanning"
+        uses: github/codeql-action/init@v3
         with:
-          fetch-depth: 0
+          languages: javascript,python
           
-      - name: "Setup Python"
-        uses: actions/setup-python@v5
+      - name: "[SECURITY] Snyk Security Scan"
+        uses: snyk/actions/node@master
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          python-version: '3.11'
-          cache: 'pip'
-          cache-dependency-path: apps/backend/requirements.txt
+          args: --severity-threshold=high --policy-path=.snyk
           
-      - name: "Setup Node.js"
-        uses: actions/setup-node@v4
+      - name: "[SECURITY] Upload Snyk Results"
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
         with:
-          node-version: '18'
-          cache: 'npm'
-          cache-dependency-path: apps/frontend-nextjs/package-lock.json
+          sarif_file: snyk.sarif
+          
+      - name: "[SECURITY] CodeQL Analysis"
+        uses: github/codeql-action/analyze@v3
+        
+      - name: "[NOTIFY] Security Status"
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_TOKEN/sendMessage" \
+              -d chat_id="$TELEGRAM_CHAT_ID" \
+              -d text="[HML-SECURITY] Gates de seguranca aprovados para HOMOLOGACAO"
+          else
+            curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_TOKEN/sendMessage" \
+              -d chat_id="$TELEGRAM_CHAT_ID" \
+              -d text="[HML-SECURITY] ALERTA: Falhas de seguranca detectadas em HOMOLOGACAO!"
+          fi
 
-      - name: "Cache Python Dependencies"
-        uses: actions/cache@v4
-        if: needs.detect-changes.outputs.deploy-backend == 'true'
+  test-backend:
+    name: "[HML-TEST] Backend Tests"
+    runs-on: ubuntu-latest
+    needs: [detect-changes, security-quality-gates]
+    if: needs.detect-changes.outputs.deploy-backend == 'true' && inputs.skip_tests != true
+    
+    steps:
+      - name: "[CHECKOUT] Checkout"
+        uses: actions/checkout@v4
+        
+      - name: "[SETUP] Python Environment"
+        uses: actions/setup-python@v4
         with:
-          path: ~/.cache/pip
-          key: hml-python-deps-${{ runner.os }}-${{ hashFiles('apps/backend/requirements.txt') }}
-          restore-keys: hml-python-deps-${{ runner.os }}-
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
           
-      - name: "Cache Node Dependencies"
-        uses: actions/cache@v4
-        if: needs.detect-changes.outputs.deploy-frontend == 'true'
+      - name: "[CACHE] Dependencies Cache"
+        uses: actions/cache@v3
         with:
           path: |
-            apps/frontend-nextjs/node_modules
-            ~/.npm
-          key: hml-node-deps-${{ runner.os }}-${{ hashFiles('apps/frontend-nextjs/package-lock.json') }}
-          restore-keys: hml-node-deps-${{ runner.os }}-
-
-      - name: "Instalar Dependencias Backend"
-        if: needs.detect-changes.outputs.deploy-backend == 'true'
+            ~/.cache/pip
+            apps/backend/.venv
+          key: hml-backend-deps-${{ hashFiles('apps/backend/requirements.txt') }}
+          
+      - name: "[INSTALL] Backend Dependencies"
+        working-directory: apps/backend
         run: |
-          cd apps/backend
+          python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install pytest pytest-cov flake8 mypy safety
+          pip install pytest pytest-cov
           
-      - name: "Instalar Dependencias Frontend"
-        if: needs.detect-changes.outputs.deploy-frontend == 'true'
+      - name: "[TEST] Run Backend Tests"
+        working-directory: apps/backend
         run: |
-          cd apps/frontend-nextjs
-          npm ci
+          echo "Executando testes do backend para HML..."
+          python -m pytest tests/ -v --cov=. --cov-report=xml
+          
+      - name: "[COVERAGE] Upload Coverage"
+        uses: codecov/codecov-action@v3
+        with:
+          file: apps/backend/coverage.xml
+          flags: backend-hml
 
-      - name: "Scan Seguranca Backend"
-        if: needs.detect-changes.outputs.deploy-backend == 'true'
+  test-frontend:
+    name: "[HML-TEST] Frontend Tests"
+    runs-on: ubuntu-latest
+    needs: [detect-changes, security-quality-gates]
+    if: needs.detect-changes.outputs.deploy-frontend == 'true' && inputs.skip_tests != true
+    
+    steps:
+      - name: "[CHECKOUT] Checkout"
+        uses: actions/checkout@v4
+        
+      - name: "[SETUP] Node.js Environment"
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: apps/frontend-nextjs/package-lock.json
+          
+      - name: "[INSTALL] Frontend Dependencies"
+        working-directory: apps/frontend-nextjs
         run: |
-          echo "Executando scan de seguranca no backend..."
-          cd apps/backend
+          npm ci --production=false
           
-          safety check --json || echo "Vulnerabilidades encontradas - verificar Security tab"
-          
-          if [ -f "package.json" ]; then
-            npm audit --audit-level=high || echo "Vulnerabilidades npm encontradas"
-          fi
-          
-      - name: "Scan Seguranca Frontend"
-        if: needs.detect-changes.outputs.deploy-frontend == 'true'
+      - name: "[BUILD] Frontend Build Test"
+        working-directory: apps/frontend-nextjs
         run: |
-          echo "Executando scan de seguranca no frontend..."
-          cd apps/frontend-nextjs
-          npm audit --audit-level=high || echo "Vulnerabilidades encontradas - verificar Dependabot"
-
-      - name: "Testes e Qualidade Backend"
-        if: needs.detect-changes.outputs.deploy-backend == 'true'
+          echo "Testando build do frontend para HML..."
+          npm run build
+          
+      - name: "[TEST] Frontend Tests"
+        working-directory: apps/frontend-nextjs
         run: |
-          cd apps/backend
-          echo "Analise de codigo..."
-          flake8 . --count --max-complexity=12 --max-line-length=127 --statistics || echo "Warnings de linting"
-          
-          echo "Executando testes..."
-          python -m pytest --tb=short || echo "Alguns testes falharam"
-          
-      - name: "Testes e Qualidade Frontend"
-        if: needs.detect-changes.outputs.deploy-frontend == 'true'
-        run: |
-          cd apps/frontend-nextjs
-          echo "Linting..."
-          npm run lint || echo "Warnings de linting"
-          
-          echo "TypeScript check..."
-          npm run type-check || echo "Warnings de tipos"
-          
-          echo "Testes..."
-          npm run test -- --passWithNoTests || echo "Alguns testes falharam"
+          echo "Executando testes do frontend para HML..."
+          npm test -- --coverage --watchAll=false
 
   deploy-backend-hml:
-    name: "Deploy Backend HML"
+    name: "[HML-DEPLOY] Backend to Homologacao"
     runs-on: ubuntu-latest
-    needs: [detect-changes, quality-security-gates]
-    if: always() && needs.detect-changes.outputs.deploy-backend == 'true' && (needs.quality-security-gates.result == 'success' || github.event.inputs.force_deploy == 'true')
+    needs: [detect-changes, security-quality-gates, test-backend]
+    if: always() && (needs.detect-changes.outputs.deploy-backend == 'true' && (needs.test-backend.result == 'success' || inputs.force_deploy == true))
     
     outputs:
       backend-url: ${{ steps.deploy.outputs.url }}
@@ -282,10 +316,10 @@ jobs:
           done
 
   deploy-frontend-hml:
-    name: "Deploy Frontend HML"
+    name: "[HML-DEPLOY] Frontend to Homologacao"
     runs-on: ubuntu-latest
-    needs: [detect-changes, quality-security-gates, deploy-backend-hml]
-    if: always() && needs.detect-changes.outputs.deploy-frontend == 'true' && (needs.quality-security-gates.result == 'success' || github.event.inputs.force_deploy == 'true')
+    needs: [detect-changes, security-quality-gates, test-frontend, deploy-backend-hml]
+    if: always() && (needs.detect-changes.outputs.deploy-frontend == 'true' && (needs.test-frontend.result == 'success' || inputs.force_deploy == true))
     
     outputs:
       frontend-url: ${{ steps.deploy.outputs.url }}
@@ -366,7 +400,7 @@ jobs:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
 
   post-deploy-validation:
-    name: "Validacao Pos-Deploy"
+    name: "[HML-VALIDATION] Validacao Pos-Deploy"
     runs-on: ubuntu-latest
     needs: [detect-changes, deploy-backend-hml, deploy-frontend-hml]
     if: always() && needs.detect-changes.outputs.should-deploy == 'true'
@@ -375,13 +409,15 @@ jobs:
       validation-status: ${{ steps.validation.outputs.status }}
     
     steps:
-      - name: "Checkout"
+      - name: "[CHECKOUT] Checkout"
         uses: actions/checkout@v4
         
-      - name: "Smoke Tests"
+      - name: "[VALIDATION] Smoke Tests"
         id: validation
         run: |
           echo "Executando testes de smoke em HML..."
+          echo "Aguardando serviços estabilizarem..."
+          sleep 30
           
           BACKEND_URL="${{ needs.deploy-backend-hml.outputs.backend-url }}"
           FRONTEND_URL="${{ needs.deploy-frontend-hml.outputs.frontend-url }}"
@@ -389,13 +425,13 @@ jobs:
           retry_test() {
             local url=$1
             local name=$2
-            for i in {1..3}; do
-              echo "Testando $name (tentativa $i/3)..."
-              if curl -f -s --max-time 30 "$url" > /dev/null 2>&1; then
+            for i in {1..5}; do
+              echo "Testando $name (tentativa $i/5)..."
+              if curl -f -s --max-time 60 "$url" > /dev/null 2>&1; then
                 echo "$name OK"
                 return 0
               fi
-              sleep 5
+              sleep 10
             done
             echo "$name FALHOU"
             return 1
@@ -405,70 +441,87 @@ jobs:
           
           if [ -n "$BACKEND_URL" ]; then
             retry_test "$BACKEND_URL/health" "Backend Health" || TESTS_PASSED=false
-            sleep 3
+            sleep 5
             retry_test "$BACKEND_URL/api/v1/personas" "Backend API" || TESTS_PASSED=false
           fi
           
           if [ -n "$FRONTEND_URL" ]; then
-            sleep 3
+            sleep 5
             retry_test "$FRONTEND_URL" "Frontend" || TESTS_PASSED=false
           fi
           
           if [ "$TESTS_PASSED" = "true" ]; then
             echo "status=success" >> $GITHUB_OUTPUT
             echo "Todos os testes passaram"
+            curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_TOKEN/sendMessage" \
+              -d chat_id="$TELEGRAM_CHAT_ID" \
+              -d text="[HML-VALIDATION] Validação pós-deploy APROVADA em HML"
           else
             echo "status=failed" >> $GITHUB_OUTPUT
             echo "Alguns testes falharam"
+            curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_TOKEN/sendMessage" \
+              -d chat_id="$TELEGRAM_CHAT_ID" \
+              -d text="[HML-VALIDATION] ALERTA: Validação pós-deploy FALHOU em HML!"
           fi
 
-  create-hml-release:
-    name: "Criar Release HML"
+  create-release:
+    name: "[HML-RELEASE] Criar Release de Homologacao"
     runs-on: ubuntu-latest
-    needs: [post-deploy-validation]
-    if: always() && needs.post-deploy-validation.outputs.validation-status == 'success'
-    
-    outputs:
-      release-tag: ${{ steps.release.outputs.tag }}
+    needs: [deploy-backend-hml, deploy-frontend-hml]
+    if: always() && (needs.deploy-backend-hml.result == 'success' || needs.deploy-frontend-hml.result == 'success')
     
     steps:
-      - name: "Checkout"
+      - name: "[CHECKOUT] Checkout"
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
           
-      - name: "Criar Tag HML"
-        id: release
+      - name: "[RELEASE] Generate Version"
+        id: version
         run: |
-          HML_TAG="v$(date +%Y.%m.%d)-hml.$(date +%H%M)"
-          COMMIT_SHORT=$(echo $GITHUB_SHA | cut -c1-7)
+          TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+          COMMIT_SHORT=${GITHUB_SHA:0:7}
+          VERSION="hml-v${TIMESTAMP}-${COMMIT_SHORT}"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
           
-          echo "Criando release HML: $HML_TAG"
-          
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          
-          git tag -a "$HML_TAG" -m "HML Release $HML_TAG - Commit $COMMIT_SHORT"
-          git push origin "$HML_TAG"
-          
-          gh release create "$HML_TAG" \
-            --title "HML Release $HML_TAG" \
-            --notes "Deploy de Homologacao - Data: $(date '+%d/%m/%Y %H:%M:%S') - Commit: $COMMIT_SHORT - Por: ${{ github.actor }} - Branch: hml - Validacao: Testes pos-deploy aprovados - Proximo: Validar em HML antes de promover para producao - Release criado automaticamente pelo pipeline HML" \
-            --prerelease
-            
-          echo "tag=$HML_TAG" >> $GITHUB_OUTPUT
+      - name: "[RELEASE] Create GitHub Release"
+        uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.version.outputs.version }}
+          release_name: "Homologacao ${{ steps.version.outputs.version }}"
+          body: |
+            ## Release de Homologacao ${{ steps.version.outputs.version }}
+            
+            **Commit:** ${{ github.sha }}
+            **Branch:** hml
+            **Ambiente:** Homologacao
+            **Timestamp:** $(date)
+            
+            ### Mudancas Deployadas:
+            - Backend: ${{ needs.deploy-backend-hml.result == 'success' && 'Sucesso' || 'N/A' }}
+            - Frontend: ${{ needs.deploy-frontend-hml.result == 'success' && 'Sucesso' || 'N/A' }}
+            
+            ### Links:
+            - Backend API: ${{ needs.deploy-backend-hml.outputs.backend-url }}
+            - Frontend: ${{ needs.deploy-frontend-hml.outputs.frontend-url }}
+            
+            ### Proximos Passos:
+            1. Testar funcionalidades em HML
+            2. Validar com stakeholders  
+            3. Promover para producao se aprovado
+          draft: false
+          prerelease: true
 
-  notify-hml-deploy:
-    name: "Notificacoes HML"
+  notify-completion:
+    name: "[HML-NOTIFY] Notificacao Final"
     runs-on: ubuntu-latest
-    needs: [detect-changes, deploy-backend-hml, deploy-frontend-hml, post-deploy-validation, create-hml-release]
-    if: always() && needs.detect-changes.outputs.should-deploy == 'true'
+    needs: [deploy-backend-hml, deploy-frontend-hml, create-release]
+    if: always()
     
     steps:
-      - name: "Telegram - Deploy HML"
+      - name: "[NOTIFY] Status Final"
         run: |
           if [[ "${{ needs.post-deploy-validation.outputs.validation-status }}" == "success" ]]; then
             STATUS="SUCESSO"
@@ -480,13 +533,28 @@ jobs:
           
           COMMIT_SHA=$(echo $GITHUB_SHA | cut -c1-7)
           
-          MESSAGE="$EMOJI Deploy HML $STATUS%0A%0AData: $(date '+%d/%m/%Y %H:%M:%S')%0ACommit: $COMMIT_SHA%0APor: ${{ github.actor }}%0ARelease: ${{ needs.create-hml-release.outputs.release-tag || 'N/A' }}%0A%0ADeploy Inteligente:%0A- Backend: ${{ needs.detect-changes.outputs.deploy-backend == 'true' && 'Deployado' || 'Pulado' }}%0A- Frontend: ${{ needs.detect-changes.outputs.deploy-frontend == 'true' && 'Deployado' || 'Pulado' }}%0A%0AURLs HML:%0A- Backend: ${{ needs.deploy-backend-hml.outputs.backend-url || 'Sem mudancas' }}%0A- Frontend: ${{ needs.deploy-frontend-hml.outputs.frontend-url || 'Sem mudancas' }}%0A%0AStatus:%0A- Qualidade: ${{ needs.quality-security-gates.result }}%0A- Backend: ${{ needs.deploy-backend-hml.result }}%0A- Frontend: ${{ needs.deploy-frontend-hml.result }}%0A- Testes: ${{ needs.post-deploy-validation.result }}%0A- Release: ${{ needs.create-hml-release.result }}%0A%0AProximos Passos: 1. Testar funcionalidades em HML 2. Validar com stakeholders 3. Promover para producao se aprovado"
+          if [ "$STATUS" == "SUCESSO" ]; then
+            MESSAGE="[HML-SUCCESS] Deploy de HOMOLOGACAO concluido com sucesso!"
+            MESSAGE="$MESSAGE%0A- Backend: ${{ needs.deploy-backend-hml.result }}"
+            MESSAGE="$MESSAGE%0A- Frontend: ${{ needs.deploy-frontend-hml.result }}" 
+            MESSAGE="$MESSAGE%0A- Release: ${{ needs.create-release.result }}"
+            MESSAGE="$MESSAGE%0A%0ACommit: ${{ github.sha }}"
+            MESSAGE="$MESSAGE%0A%0AURLs HML:"
+            MESSAGE="$MESSAGE%0A- Backend: ${{ needs.deploy-backend-hml.outputs.backend-url || 'N/A' }}"
+            MESSAGE="$MESSAGE%0A- Frontend: ${{ needs.deploy-frontend-hml.outputs.frontend-url || 'N/A' }}"
+            MESSAGE="$MESSAGE%0A%0AProximos Passos: Validar em HML e promover para producao"
+          else
+            MESSAGE="[HML-ERROR] FALHA no deploy de HOMOLOGACAO!"
+            MESSAGE="$MESSAGE%0A- Backend: ${{ needs.deploy-backend-hml.result }}"
+            MESSAGE="$MESSAGE%0A- Frontend: ${{ needs.deploy-frontend-hml.result }}"
+            MESSAGE="$MESSAGE%0A%0AVerificar logs imediatamente!"
+          fi
           
-          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
-            -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+          curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_TOKEN/sendMessage" \
+            -d chat_id="$TELEGRAM_CHAT_ID" \
             -d text="$MESSAGE" \
             -d parse_mode="HTML"
 
 concurrency:
-  group: hml-deploy-${{ github.ref }}
-  cancel-in-progress: true
+  group: hml-pipeline-${{ github.sha }}
+  cancel-in-progress: false
