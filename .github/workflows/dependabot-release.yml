@@ -1,0 +1,356 @@
+name: 🤖 Dependabot Release Manager
+
+on:
+  push:
+    branches: [dependabot-updates]
+  pull_request:
+    types: [opened, closed]
+    branches: [main, hml]
+    # Only run for PRs created by Dependabot
+  workflow_dispatch:
+    inputs:
+      merge_to_main:
+        description: 'Merge updates to main branch'
+        required: false
+        default: true
+        type: boolean
+      merge_to_hml:
+        description: 'Merge updates to hml branch'
+        required: false
+        default: true
+        type: boolean
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  actions: write
+
+env:
+  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  process-dependabot-updates:
+    name: 🔄 Process Dependabot Updates
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/dependabot-updates'
+    
+    outputs:
+      has-updates: ${{ steps.check.outputs.has_updates }}
+      update-type: ${{ steps.analyze.outputs.update_type }}
+      packages: ${{ steps.analyze.outputs.packages }}
+    
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🔍 Check for Updates
+        id: check
+        run: |
+          # Check if there are recent commits
+          RECENT_COMMITS=$(git log --since="1 hour ago" --oneline | wc -l)
+          
+          if [ $RECENT_COMMITS -gt 0 ]; then
+            echo "has_updates=true" >> $GITHUB_OUTPUT
+            echo "✅ Found $RECENT_COMMITS recent commits"
+          else
+            echo "has_updates=false" >> $GITHUB_OUTPUT
+            echo "ℹ️ No recent updates found"
+          fi
+
+      - name: 🔍 Analyze Updates
+        id: analyze
+        if: steps.check.outputs.has_updates == 'true'
+        run: |
+          # Get recent commits and analyze
+          COMMITS=$(git log --since="1 hour ago" --pretty=format:"%s")
+          
+          # Determine update types
+          SECURITY_UPDATES=$(echo "$COMMITS" | grep -i "security\|vulnerability\|cve" | wc -l)
+          MAJOR_UPDATES=$(echo "$COMMITS" | grep -i "major\|breaking" | wc -l)
+          MINOR_UPDATES=$(echo "$COMMITS" | grep -i "minor\|feature" | wc -l)
+          PATCH_UPDATES=$(echo "$COMMITS" | grep -i "patch\|fix\|bump" | wc -l)
+          
+          # Determine priority
+          if [ $SECURITY_UPDATES -gt 0 ]; then
+            UPDATE_TYPE="security"
+          elif [ $MAJOR_UPDATES -gt 0 ]; then
+            UPDATE_TYPE="major"
+          elif [ $MINOR_UPDATES -gt 0 ]; then
+            UPDATE_TYPE="minor"
+          else
+            UPDATE_TYPE="patch"
+          fi
+          
+          echo "update_type=$UPDATE_TYPE" >> $GITHUB_OUTPUT
+          
+          # Extract package names
+          PACKAGES=$(echo "$COMMITS" | sed -n 's/.*bump \(.*\) from.*/\1/p' | sort | uniq | tr '\n' ',' | sed 's/,$//')
+          echo "packages=$PACKAGES" >> $GITHUB_OUTPUT
+          
+          echo "📦 Update Analysis:"
+          echo "  Type: $UPDATE_TYPE"
+          echo "  Packages: $PACKAGES"
+          echo "  Security: $SECURITY_UPDATES"
+          echo "  Major: $MAJOR_UPDATES"
+          echo "  Minor: $MINOR_UPDATES"
+          echo "  Patch: $PATCH_UPDATES"
+
+      - name: 🏷️ Create Dependabot Tag
+        if: steps.check.outputs.has_updates == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          UPDATE_TYPE="${{ steps.analyze.outputs.update_type }}"
+          PACKAGES="${{ steps.analyze.outputs.packages }}"
+          
+          # Get latest dependabot tag
+          LATEST_DEP_TAG=$(git tag -l "deps-*" | sort -V | tail -n1)
+          
+          if [ -z "$LATEST_DEP_TAG" ]; then
+            DEP_VERSION="1.0.0"
+          else
+            VERSION=$(echo $LATEST_DEP_TAG | sed 's/deps-//')
+            MAJOR=$(echo $VERSION | cut -d. -f1)
+            MINOR=$(echo $VERSION | cut -d. -f2)
+            PATCH=$(echo $VERSION | cut -d. -f3)
+            
+            case $UPDATE_TYPE in
+              security)
+                # Security updates increment patch but add security suffix
+                PATCH=$((PATCH + 1))
+                SECURITY_SUFFIX="-security"
+                ;;
+              major)
+                MAJOR=$((MAJOR + 1))
+                MINOR=0
+                PATCH=0
+                ;;
+              minor)
+                MINOR=$((MINOR + 1))
+                PATCH=0
+                ;;
+              *)
+                PATCH=$((PATCH + 1))
+                ;;
+            esac
+            
+            DEP_VERSION="${MAJOR}.${MINOR}.${PATCH}${SECURITY_SUFFIX:-}"
+          fi
+          
+          NEW_TAG="deps-${DEP_VERSION}"
+          
+          # Create tag
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          
+          git tag -a "$NEW_TAG" -m "Dependabot Updates $NEW_TAG
+
+Update Type: $UPDATE_TYPE
+Packages: $PACKAGES
+
+Recent commits:
+$(git log --since="1 hour ago" --pretty=format:"- %s")
+
+Branch: dependabot-updates
+Commit: ${{ github.sha }}"
+          
+          git push origin "$NEW_TAG"
+          
+          echo "✅ Created dependabot tag: $NEW_TAG"
+
+  create-sync-prs:
+    name: 🔄 Create Sync PRs
+    runs-on: ubuntu-latest
+    needs: process-dependabot-updates
+    if: needs.process-dependabot-updates.outputs.has-updates == 'true'
+    
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: 🔄 Create PR to HML
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          UPDATE_TYPE="${{ needs.process-dependabot-updates.outputs.update-type }}"
+          PACKAGES="${{ needs.process-dependabot-updates.outputs.packages }}"
+          
+          # Create or update PR to hml
+          PR_TITLE="🤖 Sync Dependabot Updates to HML ($UPDATE_TYPE)"
+          
+          # Check if PR already exists
+          EXISTING_PR=$(gh pr list --head dependabot-updates --base hml --json number --jq '.[0].number')
+          
+          if [ "$EXISTING_PR" != "null" ] && [ -n "$EXISTING_PR" ]; then
+            echo "📝 Updating existing PR #$EXISTING_PR"
+            gh pr edit $EXISTING_PR --title "$PR_TITLE" --body "## 🤖 Dependabot Sync to HML
+
+**Update Type:** $UPDATE_TYPE
+**Packages:** $PACKAGES
+
+### 📋 Changes
+$(git log hml..dependabot-updates --pretty=format:'- %s' --no-merges | head -20)
+
+### 🚀 Auto-merge Policy
+- ✅ **Security updates**: Auto-merge enabled
+- $([ "$UPDATE_TYPE" = "patch" ] && echo "✅ **Patch updates**: Auto-merge enabled" || echo "⚠️ **Non-patch updates**: Manual review required")
+
+### 🔄 Deployment
+After merge, this will trigger:
+1. Automatic deployment to HML environment
+2. Health checks and verification
+3. Preparation for production sync
+
+---
+*Updated automatically by Dependabot Release Manager*"
+          else
+            echo "🆕 Creating new PR to hml"
+            gh pr create \
+              --head dependabot-updates \
+              --base hml \
+              --title "$PR_TITLE" \
+              --body "## 🤖 Dependabot Sync to HML
+
+**Update Type:** $UPDATE_TYPE  
+**Packages:** $PACKAGES
+
+### 📋 Changes
+$(git log hml..dependabot-updates --pretty=format:'- %s' --no-merges | head -20)
+
+### 🚀 Auto-merge Policy
+- ✅ **Security updates**: Auto-merge enabled
+- $([ "$UPDATE_TYPE" = "patch" ] && echo "✅ **Patch updates**: Auto-merge enabled" || echo "⚠️ **Non-patch updates**: Manual review required")
+
+### 🔄 Deployment
+After merge, this will trigger:
+1. Automatic deployment to HML environment
+2. Health checks and verification  
+3. Preparation for production sync
+
+---
+*Created automatically by Dependabot Release Manager*" \
+              --label "dependencies,hml-environment,automated,$UPDATE_TYPE"
+          fi
+          
+          # Auto-merge for security and patch updates
+          if [ "$UPDATE_TYPE" = "security" ] || [ "$UPDATE_TYPE" = "patch" ]; then
+            echo "🚀 Enabling auto-merge for $UPDATE_TYPE update"
+            gh pr merge --auto --squash --head dependabot-updates --base hml
+          fi
+
+      - name: 🔄 Create PR to Main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          UPDATE_TYPE="${{ needs.process-dependabot-updates.outputs.update-type }}"
+          PACKAGES="${{ needs.process-dependabot-updates.outputs.packages }}"
+          
+          # Create or update PR to main (only for tested updates)
+          PR_TITLE="🤖 Sync Dependabot Updates to Production ($UPDATE_TYPE)"
+          
+          EXISTING_PR=$(gh pr list --head dependabot-updates --base main --json number --jq '.[0].number')
+          
+          if [ "$EXISTING_PR" != "null" ] && [ -n "$EXISTING_PR" ]; then
+            echo "📝 Updating existing PR #$EXISTING_PR to main"
+            gh pr edit $EXISTING_PR --title "$PR_TITLE" --body "## 🤖 Dependabot Sync to Production
+
+**Update Type:** $UPDATE_TYPE
+**Packages:** $PACKAGES
+
+### 📋 Changes
+$(git log main..dependabot-updates --pretty=format:'- %s' --no-merges | head -20)
+
+### ⚠️ Production Release Policy
+- 🔒 **Security updates**: Fast-track after HML verification
+- 📋 **All updates**: Manual review for production deployment
+- 🧪 **Testing**: Must pass HML environment first
+
+### 🔄 Deployment Pipeline
+1. ✅ Updates tested in HML environment
+2. 🔍 Manual review and approval
+3. 🚀 Deployment to production
+4. 📊 Monitoring and verification
+
+---
+*Updated automatically by Dependabot Release Manager*"
+          else
+            echo "🆕 Creating new PR to main"
+            gh pr create \
+              --head dependabot-updates \
+              --base main \
+              --title "$PR_TITLE" \
+              --body "## 🤖 Dependabot Sync to Production
+
+**Update Type:** $UPDATE_TYPE
+**Packages:** $PACKAGES
+
+### 📋 Changes  
+$(git log main..dependabot-updates --pretty=format:'- %s' --no-merges | head -20)
+
+### ⚠️ Production Release Policy
+- 🔒 **Security updates**: Fast-track after HML verification
+- 📋 **All updates**: Manual review for production deployment
+- 🧪 **Testing**: Must pass HML environment first
+
+### 🔄 Deployment Pipeline
+1. ✅ Updates tested in HML environment
+2. 🔍 Manual review and approval
+3. 🚀 Deployment to production
+4. 📊 Monitoring and verification
+
+---
+*Created automatically by Dependabot Release Manager*" \
+              --label "dependencies,production,automated,$UPDATE_TYPE"
+          fi
+          
+          # Only auto-merge critical security updates to production
+          if [ "$UPDATE_TYPE" = "security" ]; then
+            echo "🔒 Critical security update - enabling auto-merge to production"
+            gh pr merge --auto --squash --head dependabot-updates --base main
+          else
+            echo "📋 Non-security update - manual review required for production"
+          fi
+
+  cleanup:
+    name: 🧹 Cleanup
+    runs-on: ubuntu-latest
+    needs: create-sync-prs
+    if: always()
+    
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🧹 Archive Old Dependencies PRs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Close old dependency PRs that are superseded
+          OLD_PRS=$(gh pr list --label dependencies --state open --json number,title,createdAt --jq '.[] | select(.createdAt < (now - 86400*7 | strftime("%Y-%m-%dT%H:%M:%SZ"))) | .number')
+          
+          for PR in $OLD_PRS; do
+            if [ -n "$PR" ]; then
+              echo "🗄️ Archiving old PR #$PR"
+              gh pr comment $PR --body "🗄️ **Auto-archived**
+
+This PR has been automatically archived because:
+- It's older than 7 days
+- Newer dependency updates are available
+- Superseded by current Dependabot updates
+
+Please check the latest dependency PRs for current updates."
+              
+              gh pr close $PR
+            fi
+          done
+          
+          echo "✅ Cleanup completed"
