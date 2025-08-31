@@ -1,137 +1,162 @@
-# GitHub Dependabot Configuration
-# Automatically scans and updates dependencies
-# IMPORTANT: Updates applied to both hml AND main simultaneously for environment parity
+# GitHub Dependabot Configuration - Fixed Branch Strategy
+# All updates go to 'dependabot-updates' branch first, then sync to hml/main
+# Automatic tagging and release management via workflows
 version: 2
 updates:
-  # Frontend Next.js dependencies - MAIN BRANCH
+  # Frontend Next.js Dependencies - Unified
   - package-ecosystem: "npm"
     directory: "/apps/frontend-nextjs"
-    target-branch: "main"
+    target-branch: "dependabot-updates"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
       day: "monday"
       time: "08:00"
       timezone: "America/Sao_Paulo"
-    open-pull-requests-limit: 1
+    open-pull-requests-limit: 10
+    groups:
+      react-ecosystem:
+        patterns:
+          - "react*"
+          - "next*"
+          - "@next/*"
+          - "@types/react*"
+          - "eslint*"
+          - "@typescript-eslint/*"
+        update-types:
+          - "minor"
+          - "patch"
+      ui-components:
+        patterns:
+          - "@radix-ui/*"
+          - "lucide-react"
+          - "tailwindcss"
+          - "@tailwindcss/*"
+          - "clsx"
+          - "class-variance-authority"
+      testing-tools:
+        patterns:
+          - "@testing-library/*"
+          - "jest*"
+          - "vitest*"
+          - "@jest/*"
+      build-tools:
+        patterns:
+          - "typescript"
+          - "postcss*"
+          - "autoprefixer"
+          - "@types/*"
     reviewers:
       - "AnalineS"
     assignees:
       - "AnalineS"
     commit-message:
-      prefix: "chore(deps)"
+      prefix: "chore(deps)(frontend)"
       include: "scope"
     labels:
       - "dependencies"
-      - "security"
-      - "auto-deploy:hml"
-      - "auto-deploy:production"
+      - "frontend"
+      - "automated"
 
-  # Frontend Next.js dependencies - HML BRANCH (SAME TIME)
-  - package-ecosystem: "npm"
-    directory: "/apps/frontend-nextjs"
-    target-branch: "hml"
-    schedule:
-      interval: "monthly"
-      day: "monday"
-      time: "08:05"  # 5 minutos depois para evitar conflitos
-      timezone: "America/Sao_Paulo"
-    open-pull-requests-limit: 1
-    reviewers:
-      - "AnalineS"
-    assignees:
-      - "AnalineS"
-    commit-message:
-      prefix: "chore(deps)"
-      include: "scope"
-    labels:
-      - "dependencies"
-      - "security"
-      - "hml-environment"
-
-  # Backend Python dependencies - MAIN BRANCH
+  # Backend Python Dependencies - Unified
   - package-ecosystem: "pip"
     directory: "/apps/backend"
-    target-branch: "main"
+    target-branch: "dependabot-updates"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
       day: "tuesday"
       time: "08:00"
       timezone: "America/Sao_Paulo"
-    open-pull-requests-limit: 1
+    open-pull-requests-limit: 10
+    groups:
+      flask-ecosystem:
+        patterns:
+          - "flask*"
+          - "Flask*"
+          - "werkzeug*"
+          - "jinja2*"
+          - "click*"
+          - "itsdangerous*"
+        update-types:
+          - "minor"
+          - "patch"
+      ai-ml:
+        patterns:
+          - "sentence-transformers*"
+          - "transformers*"
+          - "torch*"
+          - "numpy*"
+          - "scikit-learn*"
+          - "huggingface-hub*"
+          - "tokenizers*"
+      database:
+        patterns:
+          - "supabase*"
+          - "psycopg*"
+          - "sqlalchemy*"
+          - "alembic*"
+      security:
+        patterns:
+          - "cryptography*"
+          - "pyjwt*"
+          - "bcrypt*"
+          - "python-jose*"
+          - "passlib*"
+      google-cloud:
+        patterns:
+          - "google-*"
+          - "firebase-*"
+          - "protobuf*"
+      utilities:
+        patterns:
+          - "python-dotenv*"
+          - "requests*"
+          - "urllib3*"
+          - "certifi*"
+          - "charset-normalizer*"
+          - "idna*"
     reviewers:
       - "AnalineS"
     assignees:
       - "AnalineS"
     commit-message:
-      prefix: "chore(deps)"
+      prefix: "chore(deps)(backend)"
       include: "scope"
     labels:
       - "dependencies"
-      - "security"
-      - "auto-deploy:hml"
-      - "auto-deploy:production"
+      - "backend"
+      - "automated"
 
-  # Backend Python dependencies - HML BRANCH (SAME TIME)
-  - package-ecosystem: "pip"
-    directory: "/apps/backend"
-    target-branch: "hml"
-    schedule:
-      interval: "monthly"
-      day: "tuesday"
-      time: "08:05"
-      timezone: "America/Sao_Paulo"
-    open-pull-requests-limit: 1
-    reviewers:
-      - "AnalineS"
-    assignees:
-      - "AnalineS"
-    commit-message:
-      prefix: "chore(deps)"
-      include: "scope"
-    labels:
-      - "dependencies"
-      - "security"
-      - "hml-environment"
-      
-  # GitHub Actions dependencies - MAIN BRANCH  
+  # GitHub Actions Dependencies - Unified
   - package-ecosystem: "github-actions"
     directory: "/"
-    target-branch: "main"
+    target-branch: "dependabot-updates"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
       day: "wednesday"
       time: "08:00"
       timezone: "America/Sao_Paulo"
-    open-pull-requests-limit: 1
+    open-pull-requests-limit: 5
+    groups:
+      core-actions:
+        patterns:
+          - "actions/*"
+        update-types:
+          - "minor"
+          - "patch"
+      google-cloud:
+        patterns:
+          - "google-github-actions/*"
+      security:
+        patterns:
+          - "github/codeql-action*"
+          - "ossf/scorecard-action*"
     reviewers:
       - "AnalineS"
     assignees:
       - "AnalineS"
     commit-message:
       prefix: "chore(ci)"
+      include: "scope"
     labels:
       - "ci/cd"
-      - "security"
-      - "auto-deploy:hml"
-      - "auto-deploy:production"
-
-  # GitHub Actions dependencies - HML BRANCH (SAME TIME)
-  - package-ecosystem: "github-actions"
-    directory: "/"
-    target-branch: "hml"
-    schedule:
-      interval: "monthly"
-      day: "wednesday"
-      time: "08:05"
-      timezone: "America/Sao_Paulo"
-    open-pull-requests-limit: 1
-    reviewers:
-      - "AnalineS"
-    assignees:
-      - "AnalineS"
-    commit-message:
-      prefix: "chore(ci)"
-    labels:
-      - "ci/cd"
-      - "security"
-      - "hml-environment"
+      - "automated"
