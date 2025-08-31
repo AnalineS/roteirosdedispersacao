@@ -24,8 +24,9 @@ def swagger_auth_required(f):
         auth_header = request.headers.get('Authorization')
         api_key = request.headers.get('X-API-Key')
         
-        # Token secreto para documentação (deve ser configurado como env var)
-        doc_token = os.environ.get('DOC_API_KEY', 'hanseniase-doc-2025')
+        # Token secreto para documentação - deve ser configurado via env var
+        # Sem fallback hardcoded por segurança
+        doc_token = os.environ.get('DOC_API_KEY')
         
         # Verificar Authorization header
         if auth_header:

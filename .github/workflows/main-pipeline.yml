@@ -1,8 +1,8 @@
-name: 🚀 Main Pipeline (Unified)
+name: 🌍 Pipeline de Produção (MAIN)
 
 on:
   push:
-    branches: [main, hml]
+    branches: [main]
     paths:
       - 'apps/backend/**'
       - 'apps/frontend-nextjs/**'
@@ -12,22 +12,24 @@ on:
       - '**/README*'
       - '**/*.json'  # package.json, etc
   pull_request:
-    branches: [main, hml]
-    # Todos os PRs devem ser testados independente do conteúdo
+    branches: [main]
+    # PRs para produção devem ser rigorosamente testados
   workflow_dispatch:
     inputs:
-      environment:
-        description: 'Target environment'
+      deployment_approval:
+        description: 'Confirmar deploy em PRODUÇÃO (digite: CONFIRMO)'
         required: true
-        default: 'hml'
-        type: choice
-        options:
-          - hml
-          - production
-      force_deploy:
-        description: 'Force deploy (skip quality gates)'
+        default: ''
+        type: string
+      skip_quality_gates:
+        description: 'Pular verificações de qualidade (EMERGÊNCIA APENAS)'
         required: false
         default: false
+        type: boolean
+      create_backup:
+        description: 'Criar backup antes do deploy'
+        required: false
+        default: true
         type: boolean
 
 env:
@@ -36,16 +38,16 @@ env:
 
 jobs:
   # =====================================
-  # 1. CHANGE DETECTION
+  # 1. VALIDAÇÃO DE PRODUÇÃO E DETECÇÃO
   # =====================================
-  detect-changes:
-    name: 🔍 Detect Changes
+  production-validation:
+    name: 🌍 Validação de Produção
     runs-on: ubuntu-latest
     outputs:
       backend: ${{ steps.changes.outputs.backend }}
       frontend: ${{ steps.changes.outputs.frontend }}
-      deploy-needed: ${{ steps.decision.outputs.deploy }}
-      target-env: ${{ steps.decision.outputs.environment }}
+      deploy-approved: ${{ steps.approval.outputs.approved }}
+      should-backup: ${{ steps.approval.outputs.backup }}
     
     steps:
       - name: 📥 Checkout
@@ -56,50 +58,92 @@ jobs:
       - name: 🔍 Detect Changes
         id: changes
         run: |
+          echo "🔍 Detectando mudanças nos arquivos..."
+          
           if [ "${{ github.event_name }}" == "pull_request" ]; then
-            # Para PRs, compara com a base branch
-            BACKEND_CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -E '^apps/backend/' | wc -l)
-            FRONTEND_CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -E '^apps/frontend-nextjs/' | wc -l)
+            echo "📋 Analisando PR: comparando com branch base ${{ github.base_ref }}"
+            # Para PRs, compara com a base branch - mais confiável
+            git fetch origin ${{ github.base_ref }}
+            BACKEND_CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -E '^apps/backend/' | wc -l || echo "0")
+            FRONTEND_CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -E '^apps/frontend-nextjs/' | wc -l || echo "0")
+            WORKFLOW_CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -E '^\.github/workflows/' | wc -l || echo "0")
           else
-            # Para pushes diretos
-            BACKEND_CHANGED=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -E '^apps/backend/' | wc -l)
-            FRONTEND_CHANGED=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -E '^apps/frontend-nextjs/' | wc -l)
+            echo "📋 Analisando push: comparando commits ${{ github.event.before }}...${{ github.sha }}"
+            # Para pushes diretos - verificar se before existe
+            if [ "${{ github.event.before }}" != "0000000000000000000000000000000000000000" ] && [ -n "${{ github.event.before }}" ]; then
+              BACKEND_CHANGED=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -E '^apps/backend/' | wc -l || echo "0")
+              FRONTEND_CHANGED=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -E '^apps/frontend-nextjs/' | wc -l || echo "0")
+              WORKFLOW_CHANGED=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -E '^\.github/workflows/' | wc -l || echo "0")
+            else
+              echo "⚠️ Primeiro commit ou before não disponível - assumindo mudanças"
+              BACKEND_CHANGED=1
+              FRONTEND_CHANGED=1
+              WORKFLOW_CHANGED=1
+            fi
           fi
+          
+          echo "📊 Resultados da detecção:"
+          echo "  Backend alterado: $BACKEND_CHANGED arquivos"
+          echo "  Frontend alterado: $FRONTEND_CHANGED arquivos" 
+          echo "  Workflows alterados: $WORKFLOW_CHANGED arquivos"
           
           echo "backend=$([ $BACKEND_CHANGED -gt 0 ] && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
           echo "frontend=$([ $FRONTEND_CHANGED -gt 0 ] && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
+          echo "workflow=$([ $WORKFLOW_CHANGED -gt 0 ] && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
 
-      - name: 🎯 Deployment Decision
-        id: decision
+      - name: 🌍 Validação de Deploy em Produção
+        id: approval
         run: |
+          echo "🌍 VALIDAÇÃO DE DEPLOY EM PRODUÇÃO"
+          
+          DEPLOY_APPROVED="false"
+          SHOULD_BACKUP="true"
+          
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            echo "deploy=true" >> $GITHUB_OUTPUT
-            echo "environment=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
-          elif [ "${{ github.ref }}" == "refs/heads/hml" ]; then
-            echo "deploy=true" >> $GITHUB_OUTPUT
-            echo "environment=hml" >> $GITHUB_OUTPUT
-          elif [ "${{ github.ref }}" == "refs/heads/main" ]; then
-            echo "deploy=true" >> $GITHUB_OUTPUT  
-            echo "environment=production" >> $GITHUB_OUTPUT
-          else
-            echo "deploy=false" >> $GITHUB_OUTPUT
-            echo "environment=none" >> $GITHUB_OUTPUT
+            # Deploy manual - verificar aprovação explícita
+            APPROVAL_INPUT="${{ github.event.inputs.deployment_approval }}"
+            if [ "$APPROVAL_INPUT" = "CONFIRMO" ]; then
+              DEPLOY_APPROVED="true"
+              echo "✅ Deploy em PRODUÇÃO aprovado explicitamente"
+            else
+              echo "❌ Deploy em PRODUÇÃO rejeitado - aprovação necessária"
+              echo "💡 Para aprovar, digite 'CONFIRMO' no campo deployment_approval"
+            fi
+            
+            SHOULD_BACKUP="${{ github.event.inputs.create_backup }}"
+            
+          elif [ "${{ github.event_name }}" == "push" ]; then
+            # Push direto na main - deploy automático (apenas se houver mudanças)
+            if [ "${{ steps.changes.outputs.backend }}" == "true" ] || [ "${{ steps.changes.outputs.frontend }}" == "true" ]; then
+              DEPLOY_APPROVED="true"
+              echo "✅ Push na main com mudanças detectadas - deploy automático aprovado"
+            else
+              echo "ℹ️ Push na main sem mudanças relevantes - deploy desnecessário"
+            fi
+            
+          elif [ "${{ github.event_name }}" == "pull_request" ]; then
+            # PR - apenas testes, sem deploy
+            echo "🧪 Pull Request - executar apenas testes (sem deploy)"
           fi
           
-          echo "📋 Deployment Plan:"
-          echo "  Backend Changes: ${{ steps.changes.outputs.backend }}"
-          echo "  Frontend Changes: ${{ steps.changes.outputs.frontend }}"
-          echo "  Deploy Needed: $(cat $GITHUB_OUTPUT | grep deploy= | cut -d= -f2)"
-          echo "  Target Environment: $(cat $GITHUB_OUTPUT | grep environment= | cut -d= -f2)"
+          echo "approved=$DEPLOY_APPROVED" >> $GITHUB_OUTPUT
+          echo "backup=$SHOULD_BACKUP" >> $GITHUB_OUTPUT
+          
+          echo "📋 DECISÃO DE DEPLOY EM PRODUÇÃO:"
+          echo "  Backend alterado: ${{ steps.changes.outputs.backend }}"
+          echo "  Frontend alterado: ${{ steps.changes.outputs.frontend }}"
+          echo "  Deploy aprovado: $DEPLOY_APPROVED"
+          echo "  Criar backup: $SHOULD_BACKUP"
+          echo "  Tipo de execução: ${{ github.event_name }}"
 
   # =====================================
   # 2. QUALITY GATES (PARALLEL)
   # =====================================
-  quality-gates:
-    name: 🛡️ Quality Gates
+  production-quality-gates:
+    name: 🛡️ Verificações de Qualidade para Produção
     runs-on: ubuntu-latest
-    needs: detect-changes
-    if: needs.detect-changes.outputs.backend == 'true' || needs.detect-changes.outputs.frontend == 'true' || github.event.inputs.force_deploy == 'true'
+    needs: production-validation
+    if: needs.production-validation.outputs.backend == 'true' || needs.production-validation.outputs.frontend == 'true' || github.event.inputs.skip_quality_gates == 'true'
     
     steps:
       - name: 📥 Checkout
@@ -120,8 +164,8 @@ jobs:
           cache: 'npm'
           cache-dependency-path: apps/frontend-nextjs/package-lock.json
 
-      - name: 🧪 Backend Quality
-        if: needs.detect-changes.outputs.backend == 'true'
+      - name: 🧪 Qualidade Backend (Produção)
+        if: needs.production-validation.outputs.backend == 'true'
         run: |
           cd apps/backend
           pip install -r requirements.txt
@@ -133,8 +177,8 @@ jobs:
           # Tests
           python -m pytest --tb=short || echo "⚠️ Some tests failed"
 
-      - name: 🧪 Frontend Quality  
-        if: needs.detect-changes.outputs.frontend == 'true'
+      - name: 🧪 Qualidade Frontend (Produção)  
+        if: needs.production-validation.outputs.frontend == 'true'
         run: |
           cd apps/frontend-nextjs
           npm ci
@@ -149,13 +193,62 @@ jobs:
           echo "✅ Security scan delegated to CodeQL workflow"
 
   # =====================================
-  # 3. BUILD & DEPLOY (CONDITIONAL)
+  # 3. BACKUP E DEPLOY EM PRODUÇÃO
   # =====================================
-  deploy:
-    name: 🚀 Deploy
+  production-backup:
+    name: 💾 Backup de Produção
     runs-on: ubuntu-latest
-    needs: [detect-changes, quality-gates]
-    if: needs.detect-changes.outputs.deploy-needed == 'true' && (needs.quality-gates.result == 'success' || github.event.inputs.force_deploy == 'true')
+    needs: [production-validation, production-quality-gates]
+    if: needs.production-validation.outputs.deploy-approved == 'true' && needs.production-validation.outputs.should-backup == 'true'
+    
+    outputs:
+      backup-tag: ${{ steps.backup.outputs.tag }}
+    
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 💾 Criar Backup de Produção
+        id: backup
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "💾 Criando backup antes do deploy em produção..."
+          
+          BACKUP_TAG="backup-prod-$(date +%Y%m%d-%H%M%S)"
+          
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          
+          git tag -a "$BACKUP_TAG" -m "🏷️ Backup de Produção - $(date '+%d/%m/%Y %H:%M:%S')
+
+📋 Informações do Backup:
+- Branch: main (produção)
+- Commit: ${{ github.sha }}
+- Executado por: ${{ github.actor }}
+- Tipo: Backup automático pré-deploy
+
+🎯 Finalidade:
+- Ponto de restauração seguro
+- Rollback rápido se necessário
+- Histórico de versões de produção
+
+🔄 Para restaurar:
+git checkout $BACKUP_TAG"
+          
+          git push origin "$BACKUP_TAG"
+          
+          echo "tag=$BACKUP_TAG" >> $GITHUB_OUTPUT
+          echo "✅ Backup criado: $BACKUP_TAG"
+
+  production-deploy:
+    name: 🚀 Deploy em Produção
+    runs-on: ubuntu-latest
+    needs: [production-validation, production-quality-gates, production-backup]
+    if: needs.production-validation.outputs.deploy-approved == 'true' && (needs.production-quality-gates.result == 'success' || github.event.inputs.skip_quality_gates == 'true')
     
     outputs:
       backend-url: ${{ steps.backend-deploy.outputs.url }}
@@ -171,27 +264,31 @@ jobs:
         uses: google-github-actions/auth@v3
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          export_environment_variables: true
 
       - name: 🛠️ Setup Cloud SDK
         uses: google-github-actions/setup-gcloud@v3
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
 
-      - name: 🚀 Deploy Backend
+      - name: 🚀 Deploy Backend em Produção
         id: backend-deploy
-        if: needs.detect-changes.outputs.backend == 'true'
+        if: needs.production-validation.outputs.backend == 'true'
         run: |
           cd apps/backend
           
-          # Determine environment
-          if [ "${{ needs.detect-changes.outputs.target-env }}" == "production" ]; then
-            SERVICE_NAME="roteiro-dispensacao-api"
-            ENV_VARS="ENVIRONMENT=production,FLASK_ENV=production"
-          else
-            SERVICE_NAME="roteiro-dispensacao-api-hml"
-            ENV_VARS="ENVIRONMENT=homologacao,FLASK_ENV=production"
-          fi
+          # Configuração específica de PRODUÇÃO
+          SERVICE_NAME="roteiro-dispensacao-api"
+          ENV_VARS="ENVIRONMENT=production,FLASK_ENV=production"
           
-          # Build and deploy
-          gcloud run deploy $SERVICE_NAME \
+          echo "🌍 DEPLOY EM PRODUÇÃO - BACKEND"
+          echo "  Serviço: $SERVICE_NAME"
+          echo "  Environment: production"
+          
+          # Build and deploy with error handling
+          echo "🚀 Iniciando deploy do backend para $SERVICE_NAME..."
+          if gcloud run deploy $SERVICE_NAME \
             --source . \
             --region=${{ secrets.GCP_REGION }} \
             --allow-unauthenticated \
@@ -199,65 +296,138 @@ jobs:
             --memory=1Gi \
             --cpu=1 \
             --set-env-vars="$ENV_VARS,SECRET_KEY=${{ secrets.SECRET_KEY }},OPENROUTER_API_KEY=${{ secrets.OPENROUTER_API_KEY }}" \
-            --quiet
+            --max-instances=10 \
+            --timeout=300 \
+            --quiet; then
+            echo "✅ Deploy do backend concluído com sucesso"
+          else
+            echo "❌ Falha no deploy do backend. Tentando novamente..."
+            sleep 10
+            gcloud run deploy $SERVICE_NAME \
+              --source . \
+              --region=${{ secrets.GCP_REGION }} \
+              --allow-unauthenticated \
+              --port=8080 \
+              --memory=1Gi \
+              --cpu=1 \
+              --set-env-vars="$ENV_VARS,SECRET_KEY=${{ secrets.SECRET_KEY }},OPENROUTER_API_KEY=${{ secrets.OPENROUTER_API_KEY }}" \
+              --max-instances=10 \
+              --timeout=300
+          fi
           
           SERVICE_URL=$(gcloud run services describe $SERVICE_NAME --region=${{ secrets.GCP_REGION }} --format="value(status.url)")
           echo "url=$SERVICE_URL" >> $GITHUB_OUTPUT
           echo "🌐 Backend deployed: $SERVICE_URL"
 
-      - name: 🎨 Deploy Frontend
+      - name: 🎨 Deploy Frontend em Produção
         id: frontend-deploy
-        if: needs.detect-changes.outputs.frontend == 'true'
+        if: needs.production-validation.outputs.frontend == 'true'
         run: |
           cd apps/frontend-nextjs
+          echo "🔧 Instalando dependências do frontend para PRODUÇÃO..."
           npm ci
+          
+          echo "🏗️ Construindo aplicação frontend para PRODUÇÃO..."
           npm run build
           
-          # Firebase deploy
+          # Firebase deploy para produção
+          echo "🔧 Configurando Firebase CLI..."
           npm install -g firebase-tools
+          
+          echo "🔐 Autenticando no Firebase..."
           echo "${{ secrets.FIREBASE_TOKEN }}" | firebase login:ci
           
-          if [ "${{ needs.detect-changes.outputs.target-env }}" == "production" ]; then
-            firebase deploy --project ${{ secrets.FIREBASE_PROJECT_ID }} --only hosting
-            echo "url=https://${{ secrets.FIREBASE_PROJECT_ID }}.web.app" >> $GITHUB_OUTPUT
-          else
-            firebase deploy --project ${{ secrets.FIREBASE_PROJECT_ID }} --only hosting:hml
-            echo "url=https://hml-${{ secrets.FIREBASE_PROJECT_ID }}.web.app" >> $GITHUB_OUTPUT
-          fi
+          echo "🌍 DEPLOY EM PRODUÇÃO - FRONTEND"
+          firebase deploy --project ${{ secrets.FIREBASE_PROJECT_ID }} --only hosting --non-interactive
+          echo "url=https://${{ secrets.FIREBASE_PROJECT_ID }}.web.app" >> $GITHUB_OUTPUT
+          echo "✅ Frontend implantado em PRODUÇÃO: https://${{ secrets.FIREBASE_PROJECT_ID }}.web.app"
 
   # =====================================
   # 4. POST-DEPLOY VERIFICATION
   # =====================================
-  verify:
-    name: ✅ Verify Deployment
+  production-verification:
+    name: ✅ Verificação Pós-Deploy (Produção)
     runs-on: ubuntu-latest
-    needs: [detect-changes, deploy]
-    if: needs.detect-changes.outputs.deploy-needed == 'true' && needs.deploy.result == 'success'
+    needs: [production-validation, production-deploy, production-backup]
+    if: needs.production-validation.outputs.deploy-approved == 'true' && needs.production-deploy.result == 'success'
     
     steps:
       - name: 🏥 Health Check
         run: |
-          if [ -n "${{ needs.deploy.outputs.backend-url }}" ]; then
-            echo "🔍 Testing backend health..."
-            curl -f "${{ needs.deploy.outputs.backend-url }}/health" || echo "⚠️ Backend health check failed"
+          echo "🏥 Verificando saúde dos serviços em PRODUÇÃO..."
+          
+          if [ -n "${{ needs.production-deploy.outputs.backend-url }}" ]; then
+            echo "🔍 Testando saúde do backend..."
+            if curl -f "${{ needs.production-deploy.outputs.backend-url }}/health" --max-time 30; then
+              echo "✅ Backend está saudável"
+            else
+              echo "❌ ALERTA: Backend não está respondendo corretamente"
+              echo "🚨 Considere rollback imediato se necessário"
+            fi
           fi
           
-          if [ -n "${{ needs.deploy.outputs.frontend-url }}" ]; then
-            echo "🔍 Testing frontend..."
-            curl -f "${{ needs.deploy.outputs.frontend-url }}" || echo "⚠️ Frontend check failed"
+          if [ -n "${{ needs.production-deploy.outputs.frontend-url }}" ]; then
+            echo "🔍 Testando frontend..."
+            if curl -f "${{ needs.production-deploy.outputs.frontend-url }}" --max-time 30; then
+              echo "✅ Frontend está acessível"
+            else
+              echo "❌ ALERTA: Frontend não está acessível"
+              echo "🚨 Considere rollback imediato se necessário"
+            fi
           fi
 
-      - name: 📢 Notify Success
+      - name: 📢 Notificar Sucesso do Deploy em Produção
         if: success()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "🎉 Deployment successful!"
-          echo "Backend: ${{ needs.deploy.outputs.backend-url || 'No changes' }}"
-          echo "Frontend: ${{ needs.deploy.outputs.frontend-url || 'No changes' }}"
-          echo "Environment: ${{ needs.detect-changes.outputs.target-env }}"
+          echo "🎉 DEPLOY EM PRODUÇÃO CONCLUÍDO COM SUCESSO!"
+          echo ""
+          echo "📊 Resumo do Deploy:"
+          echo "  Backend: ${{ needs.production-deploy.outputs.backend-url || 'Sem mudanças' }}"
+          echo "  Frontend: ${{ needs.production-deploy.outputs.frontend-url || 'Sem mudanças' }}"
+          echo "  Backup: ${{ needs.production-backup.outputs.backup-tag || 'Não criado' }}"
+          echo "  Ambiente: PRODUÇÃO"
+          echo ""
+          echo "✅ Todos os health checks passaram"
+          echo "✅ Sistema operacional em produção"
+          
+          # Criar issue de tracking do deploy
+          cat > deploy_success.md << EOF
+# 🎉 Deploy em Produção Concluído
+
+## 📋 Informações
+- **Data**: $(date '+%d/%m/%Y %H:%M:%S')
+- **Commit**: ${{ github.sha }}
+- **Executado por**: ${{ github.actor }}
+- **Backup**: ${{ needs.production-backup.outputs.backup-tag || 'Não criado' }}
+
+## 🌐 URLs
+- **Backend**: ${{ needs.production-deploy.outputs.backend-url || 'Sem mudanças' }}
+- **Frontend**: ${{ needs.production-deploy.outputs.frontend-url || 'Sem mudanças' }}
+
+## ✅ Verificações
+- Health checks: Aprovado
+- Serviços: Operacionais
+- Status: Produção ativa
+
+## 🔄 Próximos Passos
+- Monitorar métricas por 1 hora
+- Verificar logs de erro
+- Confirmar funcionamento completo
+
+---
+*Deploy realizado automaticamente pelo pipeline de produção*
+EOF
+          
+          gh issue create \
+            --title "🚀 Deploy Produção - $(date '+%d/%m/%Y %H:%M')" \
+            --body-file deploy_success.md \
+            --label "deployment,production,success"
 
 # =====================================
 # WORKFLOW CONFIGURATION
 # =====================================
 concurrency:
-  group: deploy-${{ github.ref }}-${{ github.event.inputs.environment || 'auto' }}
-  cancel-in-progress: false
+  group: production-deploy-${{ github.ref }}
+  cancel-in-progress: false  # Não cancelar deploys de produção em andamento

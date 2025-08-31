@@ -98,8 +98,10 @@ def run_migration_with_github_secrets():
                 value = input("Cole sua SUPABASE_API_KEY: ").strip()
                 os.environ['SUPABASE_KEY'] = value
     
-    # Configurações adicionais
-    os.environ['SECRET_KEY'] = 'temp-secret-key-for-migration'
+    # Configurações adicionais - usar env var ou gerar aleatório
+    if not os.environ.get('SECRET_KEY'):
+        import secrets
+        os.environ['SECRET_KEY'] = secrets.token_hex(32)
     os.environ['EMBEDDINGS_ENABLED'] = 'true'
     os.environ['RAG_AVAILABLE'] = 'true'
     os.environ['VECTOR_DB_TYPE'] = 'supabase'

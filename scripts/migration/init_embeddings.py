@@ -193,7 +193,7 @@ class EmbeddingInitializer:
         text_pairs = extract_text_values(data)
         
         for path, text in text_pairs:
-            chunk_id = f"{file_path.stem}_{hashlib.md5(path.encode()).hexdigest()[:8]}"
+            chunk_id = f"{file_path.stem}_{hashlib.sha256(path.encode()).hexdigest()[:8]}"
             
             try:
                 if self.embedding_service:

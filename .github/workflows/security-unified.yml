@@ -1,0 +1,510 @@
+name: 🔒 Análise de Segurança Unificada (CodeQL + Snyk Inteligente)
+
+on:
+  push:
+    branches: [ main, hml ]
+  pull_request:
+    branches: [ main, hml ]
+  schedule:
+    # CodeQL diário às 02:30 UTC (23:30 Brasília)
+    - cron: '30 2 * * *'
+    # Snyk mensal - 1ª segunda-feira do mês às 09:00 UTC (06:00 Brasília)
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+    inputs:
+      force_snyk:
+        description: 'Forçar execução do Snyk (use com moderação - limite 200/mês)'
+        required: false
+        default: false
+        type: boolean
+      security_level:
+        description: 'Nível de análise de segurança'
+        required: false
+        default: 'standard'
+        type: choice
+        options:
+          - standard
+          - comprehensive
+          - emergency
+
+env:
+  PYTHON_VERSION: '3.11'
+  NODE_VERSION: '18'
+
+jobs:
+  # =====================================
+  # 1. DETERMINAR ESTRATÉGIA DE SEGURANÇA
+  # =====================================
+  security-strategy:
+    name: 🎯 Determinar Estratégia de Segurança
+    runs-on: ubuntu-latest
+    outputs:
+      run-codeql: ${{ steps.strategy.outputs.run_codeql }}
+      run-snyk: ${{ steps.strategy.outputs.run_snyk }}
+      strategy-reason: ${{ steps.strategy.outputs.reason }}
+      is-security-critical: ${{ steps.strategy.outputs.is_security_critical }}
+    
+    steps:
+      - name: 🔍 Analisar Contexto e Decidir Estratégia
+        id: strategy
+        run: |
+          echo "🎯 Determinando estratégia de segurança otimizada..."
+          
+          RUN_CODEQL="true"  # CodeQL sempre executa (ilimitado)
+          RUN_SNYK="false"   # Snyk apenas quando necessário (limitado)
+          IS_SECURITY_CRITICAL="false"
+          REASON=""
+          
+          # Verificar contexto de execução
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            if [ "${{ github.event.inputs.force_snyk }}" == "true" ]; then
+              RUN_SNYK="true"
+              REASON="🚨 Execução manual do Snyk solicitada pelo usuário"
+            elif [ "${{ github.event.inputs.security_level }}" == "emergency" ]; then
+              RUN_SNYK="true"
+              IS_SECURITY_CRITICAL="true"
+              REASON="🔥 EMERGÊNCIA: Análise de segurança crítica solicitada"
+            elif [ "${{ github.event.inputs.security_level }}" == "comprehensive" ]; then
+              RUN_SNYK="true"
+              REASON="🔍 Análise abrangente solicitada (Snyk + CodeQL)"
+            else
+              REASON="📊 Execução manual padrão - apenas CodeQL"
+            fi
+          elif [ "${{ github.event_name }}" == "schedule" ]; then
+            # Verificar se é a execução mensal do Snyk
+            CURRENT_DAY=$(date +%u)  # 1=segunda, 7=domingo
+            CURRENT_DATE=$(date +%d)
+            
+            if [ "$CURRENT_DAY" == "1" ] && [ "$CURRENT_DATE" -le "7" ]; then
+              RUN_SNYK="true"
+              REASON="📅 Verificação mensal programada do Snyk (1ª segunda do mês)"
+            else
+              REASON="📊 Verificação diária programada do CodeQL"
+            fi
+          else
+            # Push/PR - verificar se é relacionado a dependências de segurança
+            if [ "${{ github.event_name }}" == "push" ] || [ "${{ github.event_name }}" == "pull_request" ]; then
+              # Verificar se há mudanças em arquivos de dependências críticas
+              TITLE_LOWER=$(echo "${{ github.event.head_commit.message || github.event.pull_request.title || '' }}" | tr '[:upper:]' '[:lower:]')
+              
+              if [[ "$TITLE_LOWER" == *"security"* ]] || [[ "$TITLE_LOWER" == *"vulnerability"* ]] || [[ "$TITLE_LOWER" == *"cve-"* ]]; then
+                RUN_SNYK="true"
+                IS_SECURITY_CRITICAL="true"
+                REASON="🔒 Atualização de SEGURANÇA detectada - executando Snyk para validação"
+              elif [[ "$TITLE_LOWER" == *"dependabot"* ]] && [[ "$TITLE_LOWER" == *"security"* ]]; then
+                RUN_SNYK="true"
+                REASON="🤖 Dependabot com correção de segurança - validação Snyk necessária"
+              else
+                REASON="📝 Push/PR padrão - apenas CodeQL (economia de quota Snyk)"
+              fi
+            fi
+          fi
+          
+          echo "🎯 ESTRATÉGIA DETERMINADA:"
+          echo "  CodeQL: $RUN_CODEQL (sempre ativo)"
+          echo "  Snyk: $RUN_SNYK (uso inteligente)"
+          echo "  Crítico: $IS_SECURITY_CRITICAL"
+          echo "  Razão: $REASON"
+          
+          echo "run_codeql=$RUN_CODEQL" >> $GITHUB_OUTPUT
+          echo "run_snyk=$RUN_SNYK" >> $GITHUB_OUTPUT
+          echo "is_security_critical=$IS_SECURITY_CRITICAL" >> $GITHUB_OUTPUT
+          echo "reason=$REASON" >> $GITHUB_OUTPUT
+
+  # =====================================
+  # 2. ANÁLISE CODEQL (SEMPRE EXECUTA)
+  # =====================================
+  codeql-analysis:
+    name: 🔍 Análise CodeQL (Ilimitada)
+    runs-on: ubuntu-latest
+    needs: security-strategy
+    if: needs.security-strategy.outputs.run-codeql == 'true'
+    timeout-minutes: 60
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'javascript', 'python' ]
+
+    steps:
+    - name: 📥 Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: 🔍 Inicializar CodeQL
+      uses: github/codeql-action/init@v3
+      with:
+        languages: ${{ matrix.language }}
+        queries: security-extended,security-and-quality
+        config: |
+          name: "Configuração CodeQL Otimizada"
+          queries:
+            - uses: security-extended
+            - uses: security-and-quality
+          paths-ignore:
+            - "**/*.test.js"
+            - "**/*.spec.js"
+            - "**/__tests__/**"
+            - "**/tests/**"
+            - "**/node_modules/**"
+            - "**/dist/**"
+            - "**/build/**"
+      continue-on-error: ${{ github.actor == 'dependabot[bot]' }}
+      timeout-minutes: 10
+
+    - name: 🐍 Setup Python
+      if: matrix.language == 'python'
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: 📦 Instalar Dependências Python
+      if: matrix.language == 'python'
+      timeout-minutes: 10
+      run: |
+        echo "🐍 Instalando dependências Python para análise CodeQL..."
+        cd apps/backend
+        pip install --upgrade pip
+        pip install -r requirements.txt --timeout=300
+        echo "✅ Dependências Python instaladas"
+
+    - name: 📦 Setup Node.js
+      if: matrix.language == 'javascript'
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: apps/frontend-nextjs/package-lock.json
+
+    - name: 📦 Instalar Dependências Node.js
+      if: matrix.language == 'javascript'
+      timeout-minutes: 10
+      run: |
+        echo "📦 Instalando dependências Node.js para análise CodeQL..."
+        cd apps/frontend-nextjs
+        npm ci --cache .npm --prefer-offline
+        echo "✅ Dependências Node.js instaladas"
+
+    - name: 🔍 Executar Análise CodeQL
+      uses: github/codeql-action/analyze@v3
+      with:
+        category: "/language:${{matrix.language}}"
+        upload: true
+        wait-for-processing: true
+      continue-on-error: ${{ github.actor == 'dependabot[bot]' }}
+      timeout-minutes: 30
+
+    - name: 📊 Resumo da Análise CodeQL
+      if: always()
+      run: |
+        echo "🔍 Análise CodeQL para ${{ matrix.language }} concluída"
+        echo "📊 Status: ${{ steps.codeql-analysis.outcome || 'desconhecido' }}"
+        echo "💡 CodeQL executa ilimitadamente - sem impacto na quota Snyk"
+        if [ "${{ github.actor }}" == "dependabot[bot]" ]; then
+          echo "🤖 Análise para PR do Dependabot - erros não bloqueantes"
+        fi
+
+  # =====================================
+  # 3. ANÁLISE SNYK (EXECUÇÃO INTELIGENTE)
+  # =====================================
+  snyk-analysis:
+    name: 🔒 Análise Snyk (Quota Limitada - 200/mês)
+    runs-on: ubuntu-latest
+    needs: security-strategy
+    if: needs.security-strategy.outputs.run-snyk == 'true'
+    continue-on-error: true
+    
+    outputs:
+      backend-vulns: ${{ steps.snyk-scan.outputs.backend_vulns }}
+      frontend-vulns: ${{ steps.snyk-scan.outputs.frontend_vulns }}
+      total-vulns: ${{ steps.snyk-scan.outputs.total_vulns }}
+    
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: ⚠️ Aviso de Quota Snyk
+        run: |
+          echo "⚠️ ATENÇÃO: EXECUTANDO SNYK (QUOTA LIMITADA)"
+          echo "📊 Razão: ${{ needs.security-strategy.outputs.strategy-reason }}"
+          echo "🎯 Uso inteligente: Esta execução é necessária e otimizada"
+          echo "📈 Quota mensal: 200 execuções para org sousa.analine"
+          echo "💡 Estratégia: ~5-8 execuções/mês para economia"
+          
+          if [ "${{ needs.security-strategy.outputs.is-security-critical }}" == "true" ]; then
+            echo "🚨 CRÍTICO: Execução de emergência de segurança"
+          fi
+
+      - name: 🔒 Executar Snyk (Uso Controlado)
+        id: snyk-scan
+        run: |
+          echo "🔒 Iniciando verificação Snyk com uso otimizado..."
+          
+          # Instalar Snyk
+          npm install -g snyk@latest
+          
+          # Autenticar
+          if [ -n "${{ secrets.SNYK_TOKEN }}" ]; then
+            echo "🔐 Autenticando no Snyk..."
+            snyk auth ${{ secrets.SNYK_TOKEN }}
+          else
+            echo "⚠️ Token Snyk não configurado - usando modo público (limitado)"
+          fi
+          
+          BACKEND_VULNS=0
+          FRONTEND_VULNS=0
+          
+          echo "🐍 [SNYK] Verificando backend Python..."
+          cd apps/backend
+          if snyk test --severity-threshold=medium --json > ../../snyk-backend-report.json 2>/dev/null; then
+            echo "✅ Backend: Nenhuma vulnerabilidade crítica"
+          else
+            echo "⚠️ Backend: Vulnerabilidades encontradas"
+            snyk test --severity-threshold=medium > ../../snyk-backend-human.txt || true
+          fi
+          
+          echo "📦 [SNYK] Verificando frontend Node.js..."
+          cd ../frontend-nextjs
+          if snyk test --severity-threshold=medium --json > ../../snyk-frontend-report.json 2>/dev/null; then
+            echo "✅ Frontend: Nenhuma vulnerabilidade crítica"
+          else
+            echo "⚠️ Frontend: Vulnerabilidades encontradas"  
+            snyk test --severity-threshold=medium > ../../snyk-frontend-human.txt || true
+          fi
+          
+          cd ../..
+          
+          # Contar vulnerabilidades
+          if [ -f snyk-backend-report.json ]; then
+            if command -v jq >/dev/null 2>&1; then
+              BACKEND_VULNS=$(jq '.vulnerabilities | length' snyk-backend-report.json 2>/dev/null || echo "0")
+            else
+              BACKEND_VULNS=$(grep -o '"id":' snyk-backend-report.json | wc -l || echo "0")
+            fi
+          fi
+          
+          if [ -f snyk-frontend-report.json ]; then
+            if command -v jq >/dev/null 2>&1; then
+              FRONTEND_VULNS=$(jq '.vulnerabilities | length' snyk-frontend-report.json 2>/dev/null || echo "0")
+            else
+              FRONTEND_VULNS=$(grep -o '"id":' snyk-frontend-report.json | wc -l || echo "0")
+            fi
+          fi
+          
+          TOTAL_VULNS=$((BACKEND_VULNS + FRONTEND_VULNS))
+          
+          echo "📊 RESULTADO SNYK:"
+          echo "  Backend: $BACKEND_VULNS vulnerabilidades"
+          echo "  Frontend: $FRONTEND_VULNS vulnerabilidades"
+          echo "  Total: $TOTAL_VULNS vulnerabilidades"
+          
+          echo "backend_vulns=$BACKEND_VULNS" >> $GITHUB_OUTPUT
+          echo "frontend_vulns=$FRONTEND_VULNS" >> $GITHUB_OUTPUT
+          echo "total_vulns=$TOTAL_VULNS" >> $GITHUB_OUTPUT
+          
+          echo "✅ Verificação Snyk concluída (quota preservada)"
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+  # =====================================
+  # 4. VERIFICAÇÃO PYTORCH MENSAL
+  # =====================================
+  pytorch-check:
+    name: 🐍 Verificação PyTorch (Mensal)
+    runs-on: ubuntu-latest
+    needs: security-strategy
+    if: needs.security-strategy.outputs.run-snyk == 'true'
+    
+    outputs:
+      patch-available: ${{ steps.check.outputs.patch_available }}
+      latest-version: ${{ steps.check.outputs.latest_version }}
+    
+    steps:
+      - name: 🐍 Verificar Atualizações PyTorch
+        id: check
+        run: |
+          echo "🐍 Verificando atualizações do PyTorch..."
+          
+          pip install --upgrade pip requests
+          
+          # Verificar versão mais recente
+          LATEST_TORCH=$(python -c "
+          import requests
+          try:
+              r = requests.get('https://pypi.org/pypi/torch/json', timeout=10)
+              print(r.json()['info']['version'])
+          except:
+              print('2.8.0')
+          " 2>/dev/null || echo "2.8.0")
+          
+          CURRENT_TORCH="2.8.0"
+          
+          echo "📊 PyTorch Status:"
+          echo "  Versão atual: $CURRENT_TORCH"
+          echo "  Versão mais recente: $LATEST_TORCH"
+          
+          if [ "$LATEST_TORCH" != "$CURRENT_TORCH" ]; then
+            echo "⚠️ ATUALIZAÇÃO DISPONÍVEL: PyTorch $LATEST_TORCH"
+            echo "patch_available=true" >> $GITHUB_OUTPUT
+            echo "latest_version=$LATEST_TORCH" >> $GITHUB_OUTPUT
+          else
+            echo "✅ PyTorch está atualizado"
+            echo "patch_available=false" >> $GITHUB_OUTPUT
+            echo "latest_version=$CURRENT_TORCH" >> $GITHUB_OUTPUT
+          fi
+
+  # =====================================
+  # 5. RELATÓRIO CONSOLIDADO
+  # =====================================
+  generate-security-report:
+    name: 📋 Gerar Relatório de Segurança Consolidado
+    runs-on: ubuntu-latest
+    needs: [security-strategy, codeql-analysis, snyk-analysis, pytorch-check]
+    if: always()
+    
+    steps:
+      - name: 📋 Gerar Relatório Completo em Português
+        run: |
+          echo "📋 Gerando relatório consolidado de segurança..."
+          
+          cat > security-consolidated-report.md << 'EOF'
+# 🔒 Relatório Consolidado de Segurança
+
+## 📊 Informações da Execução
+EOF
+          
+          echo "- **Data**: $(date '+%d/%m/%Y %H:%M:%S UTC')" >> security-consolidated-report.md
+          echo "- **Estratégia**: ${{ needs.security-strategy.outputs.strategy-reason }}" >> security-consolidated-report.md
+          echo "- **Crítico**: ${{ needs.security-strategy.outputs.is-security-critical == 'true' && 'SIM - Emergência de Segurança' || 'Não - Verificação Regular' }}" >> security-consolidated-report.md
+          echo "" >> security-consolidated-report.md
+          
+          echo "## 🎯 Execuções Realizadas" >> security-consolidated-report.md
+          echo "" >> security-consolidated-report.md
+          echo "### ✅ CodeQL (Ilimitado)" >> security-consolidated-report.md
+          echo "- **Status**: ${{ needs.codeql-analysis.result == 'success' && '✅ Concluído com sucesso' || '⚠️ Falhou ou foi pulado' }}" >> security-consolidated-report.md
+          echo "- **Linguagens**: JavaScript, Python" >> security-consolidated-report.md
+          echo "- **Cobertura**: Análise completa de código-fonte" >> security-consolidated-report.md
+          echo "- **Impacto na Quota**: Nenhum (ilimitado)" >> security-consolidated-report.md
+          echo "" >> security-consolidated-report.md
+          
+          if [ "${{ needs.security-strategy.outputs.run-snyk }}" == "true" ]; then
+            echo "### 🔒 Snyk (Quota Limitada - 200/mês)" >> security-consolidated-report.md
+            echo "- **Status**: ${{ needs.snyk-analysis.result == 'success' && '✅ Concluído' || '⚠️ Falhou/Pulado' }}" >> security-consolidated-report.md
+            echo "- **Vulnerabilidades Backend**: ${{ needs.snyk-analysis.outputs.backend-vulns || 'N/A' }}" >> security-consolidated-report.md
+            echo "- **Vulnerabilidades Frontend**: ${{ needs.snyk-analysis.outputs.frontend-vulns || 'N/A' }}" >> security-consolidated-report.md
+            echo "- **Total de Vulnerabilidades**: ${{ needs.snyk-analysis.outputs.total-vulns || 'N/A' }}" >> security-consolidated-report.md
+            echo "- **Impacto na Quota**: ⚠️ 1 execução utilizada" >> security-consolidated-report.md
+          else
+            echo "### ⏭️ Snyk (Economia de Quota)" >> security-consolidated-report.md
+            echo "- **Status**: ⏭️ Pulado para economizar quota" >> security-consolidated-report.md
+            echo "- **Razão**: Execução não necessária neste contexto" >> security-consolidated-report.md
+            echo "- **Próxima Execução**: Mensal ou emergência de segurança" >> security-consolidated-report.md
+            echo "- **Impacto na Quota**: ✅ 0 execuções utilizadas" >> security-consolidated-report.md
+          fi
+          
+          echo "" >> security-consolidated-report.md
+          
+          if [ "${{ needs.security-strategy.outputs.run-snyk }}" == "true" ]; then
+            echo "### 🐍 PyTorch" >> security-consolidated-report.md
+            if [ "${{ needs.pytorch-check.outputs.patch-available }}" == "true" ]; then
+              echo "- **Status**: ⚠️ Atualização disponível" >> security-consolidated-report.md
+              echo "- **Versão Atual**: 2.8.0" >> security-consolidated-report.md
+              echo "- **Versão Mais Recente**: ${{ needs.pytorch-check.outputs.latest-version }}" >> security-consolidated-report.md
+              echo "- **Ação**: Revisar changelog e considerar atualização" >> security-consolidated-report.md
+            else
+              echo "- **Status**: ✅ Atualizado" >> security-consolidated-report.md
+              echo "- **Versão**: 2.8.0 (mais recente)" >> security-consolidated-report.md
+            fi
+          fi
+          
+          echo "" >> security-consolidated-report.md
+          echo "## 📈 Uso Inteligente de Quota Snyk" >> security-consolidated-report.md
+          echo "" >> security-consolidated-report.md
+          echo "**Estratégia de Economia:**" >> security-consolidated-report.md
+          echo "- 🎯 **Meta**: 5-8 execuções Snyk por mês (limite: 200)" >> security-consolidated-report.md
+          echo "- ⚡ **CodeQL**: Execução ilimitada diária para cobertura contínua" >> security-consolidated-report.md
+          echo "- 🔒 **Snyk**: Apenas para verificações críticas e mensais" >> security-consolidated-report.md
+          echo "" >> security-consolidated-report.md
+          echo "**Quando Snyk Executa:**" >> security-consolidated-report.md
+          echo "- 📅 1ª segunda-feira do mês (verificação programada)" >> security-consolidated-report.md
+          echo "- 🚨 Updates de segurança detectados" >> security-consolidated-report.md
+          echo "- 🔧 Execução manual para investigações específicas" >> security-consolidated-report.md
+          echo "- ⚡ Emergências de segurança" >> security-consolidated-report.md
+          
+          echo "" >> security-consolidated-report.md
+          echo "## 🎯 Recomendações" >> security-consolidated-report.md
+          echo "" >> security-consolidated-report.md
+          
+          if [ "${{ needs.snyk-analysis.outputs.total-vulns || '0' }}" -gt "0" ]; then
+            echo "### 🚨 Ação Imediata Necessária" >> security-consolidated-report.md
+            echo "- **${{ needs.snyk-analysis.outputs.total-vulns }}** vulnerabilidade(s) detectada(s) pelo Snyk" >> security-consolidated-report.md
+            echo "- Revisar relatórios detalhados nos artifacts" >> security-consolidated-report.md
+            echo "- Priorizar correções de vulnerabilidades HIGH e CRITICAL" >> security-consolidated-report.md
+          else
+            echo "### ✅ Status Seguro" >> security-consolidated-report.md
+            echo "- Nenhuma vulnerabilidade crítica detectada" >> security-consolidated-report.md
+            echo "- Continue monitoramento com CodeQL diário" >> security-consolidated-report.md
+            echo "- Próxima verificação Snyk: Mensal programada" >> security-consolidated-report.md
+          fi
+          
+          echo "" >> security-consolidated-report.md
+          echo "## 🔗 Links Úteis" >> security-consolidated-report.md
+          echo "- [CodeQL Results](https://github.com/${{ github.repository }}/security/code-scanning)" >> security-consolidated-report.md
+          echo "- [Snyk Dashboard](https://app.snyk.io/org/sousa.analine)" >> security-consolidated-report.md
+          echo "- [Workflow Execution](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> security-consolidated-report.md
+          
+          echo "" >> security-consolidated-report.md
+          echo "---" >> security-consolidated-report.md
+          echo "*Relatório gerado automaticamente pelo Sistema de Segurança Unificada*" >> security-consolidated-report.md
+          echo "*Estratégia otimizada para economia de quota Snyk (200 execuções/mês)*" >> security-consolidated-report.md
+          
+          echo "✅ Relatório consolidado gerado com estratégia de economia Snyk"
+
+      - name: 📤 Upload Relatórios de Segurança
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-unified-reports
+          path: |
+            security-consolidated-report.md
+            snyk-backend-report.json
+            snyk-frontend-report.json
+            snyk-backend-human.txt
+            snyk-frontend-human.txt
+        continue-on-error: true
+
+      - name: 📊 Resumo Final
+        run: |
+          echo "🎯 RESUMO DA EXECUÇÃO:"
+          echo "  CodeQL: ${{ needs.codeql-analysis.result == 'success' && '✅ Executado' || '❌ Falhou' }}"
+          echo "  Snyk: ${{ needs.security-strategy.outputs.run-snyk == 'true' && '✅ Executado (quota usada)' || '⏭️ Pulado (quota preservada)' }}"
+          echo "  Estratégia: ${{ needs.security-strategy.outputs.strategy-reason }}"
+          
+          if [ "${{ needs.security-strategy.outputs.run-snyk }}" == "true" ]; then
+            echo "⚠️ ATENÇÃO: 1 execução Snyk utilizada nesta run"
+            echo "💡 Restante estimado no mês: Verifique dashboard Snyk"
+          else
+            echo "✅ ECONOMIA: 0 execuções Snyk utilizadas"
+            echo "💡 Quota preservada para uso crítico"
+          fi
+
+# =====================================
+# CONFIGURAÇÃO DO WORKFLOW
+# =====================================
+concurrency:
+  group: security-unified-${{ github.ref }}
+  cancel-in-progress: true
