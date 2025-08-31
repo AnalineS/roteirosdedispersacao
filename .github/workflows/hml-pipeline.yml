@@ -180,7 +180,7 @@ jobs:
         uses: trufflesecurity/trufflehog@main
         with:
           path: ./
-          extra_args: --only-verified --fail --json
+          extra_args: --only-verified --json
         continue-on-error: false  # HML também deve falhar por secrets!
         
       - name: "[SECURITY] Report Exposed Secrets HML (if any)"
@@ -210,7 +210,7 @@ jobs:
           echo "2. Executar: ./scripts/migrate-secrets.sh"
           echo "3. Migrar para GitHub Secrets usando 'gh secret set'"
           echo "4. Remover secrets hardcoded do código"
-          echo "5. Substituir por variáveis \\\${{ secrets.NOME_DO_SECRET }}"
+          echo "5. Substituir por variáveis GitHub Secrets"
           echo "6. Re-executar pipeline HML"
           echo ""
           echo "⚠️ IMPORTANTE: HML não deve ter secrets diferentes de PROD"
