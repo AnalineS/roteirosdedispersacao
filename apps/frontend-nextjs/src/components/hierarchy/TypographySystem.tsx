@@ -10,7 +10,7 @@
 
 'use client';
 
-import React, { CSSProperties } from 'react';
+import React, { CSSProperties, type JSX } from 'react';
 
 // Tipos para o sistema de tipografia
 type TypographyLevel = 'h1' | 'h2' | 'h3' | 'h4' | 'body' | 'caption' | 'micro';
@@ -25,7 +25,7 @@ interface TypographyProps {
   children: React.ReactNode;
   className?: string;
   style?: CSSProperties;
-  as?: keyof JSX.IntrinsicElements;
+  as?: keyof React.JSX.IntrinsicElements;
   maxLines?: number;
   align?: 'left' | 'center' | 'right';
   spacing?: 'tight' | 'normal' | 'loose';
@@ -118,7 +118,7 @@ export function Typography({
   const scale = isMobile ? TYPOGRAPHY_SCALES.mobile : TYPOGRAPHY_SCALES.desktop;
   
   // Determinar tag HTML baseada no nível
-  const getDefaultTag = (): keyof JSX.IntrinsicElements => {
+  const getDefaultTag = (): keyof React.JSX.IntrinsicElements => {
     if (as) return as;
     
     switch (level) {

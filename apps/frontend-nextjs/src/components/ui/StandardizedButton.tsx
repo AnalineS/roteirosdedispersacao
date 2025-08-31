@@ -45,7 +45,7 @@ export default function StandardizedButton({
   const [ripples, setRipples] = useState<Array<{id: number; x: number; y: number}>>([]);
   const [isHovered, setIsHovered] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
-  const clickTimeoutRef = useRef<NodeJS.Timeout>();
+  const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Prevenir double-click
   const handleClick = async (e: React.MouseEvent<HTMLButtonElement>) => {

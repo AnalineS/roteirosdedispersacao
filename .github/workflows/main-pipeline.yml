@@ -7,10 +7,13 @@ on:
       - 'apps/backend/**'
       - 'apps/frontend-nextjs/**'
       - '.github/workflows/main-pipeline.yml'
-      - '!**/*.md'
-      - '!**/README*'
+      # MANTER documentação - nunca ignorar
+      - '**/*.md'
+      - '**/README*'
+      - '**/*.json'  # package.json, etc
   pull_request:
     branches: [main, hml]
+    # Todos os PRs devem ser testados independente do conteúdo
   workflow_dispatch:
     inputs:
       environment:
@@ -54,9 +57,11 @@ jobs:
         id: changes
         run: |
           if [ "${{ github.event_name }}" == "pull_request" ]; then
-            BACKEND_CHANGED=$(git diff --name-only HEAD~1 HEAD | grep -E '^apps/backend/' | wc -l)
-            FRONTEND_CHANGED=$(git diff --name-only HEAD~1 HEAD | grep -E '^apps/frontend-nextjs/' | wc -l)
+            # Para PRs, compara com a base branch
+            BACKEND_CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -E '^apps/backend/' | wc -l)
+            FRONTEND_CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -E '^apps/frontend-nextjs/' | wc -l)
           else
+            # Para pushes diretos
             BACKEND_CHANGED=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -E '^apps/backend/' | wc -l)
             FRONTEND_CHANGED=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -E '^apps/frontend-nextjs/' | wc -l)
           fi

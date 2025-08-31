@@ -73,7 +73,7 @@ const AccessibleChatInput: React.FC<AccessibleChatInputProps> = ({
   const { announceMessage, announceSystemStatus } = useChatAccessibility();
 
   // Register this input for focus management
-  useAccessibleFocus(textareaRef, 'input');
+  useAccessibleFocus(textareaRef as React.RefObject<HTMLElement>, 'input');
 
   const colors = getPersonaColors(personaId);
   const filteredSuggestions = useMemo(() => 

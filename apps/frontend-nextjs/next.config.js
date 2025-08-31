@@ -9,8 +9,7 @@ const nextConfig = {
   
   // INCREMENTAL BUILD OPTIMIZATIONS
   
-  // Enable SWC minification for faster builds (já ativo mais abaixo)
-  swcMinify: true,
+  // SWC minification is now default in Next.js 15
   
   // Enable compiler optimizations
   compiler: {
@@ -35,8 +34,7 @@ const nextConfig = {
   compress: true,
   poweredByHeader: false, // Remove header X-Powered-By para segurança
   
-  // Disable file tracing to prevent build hangs
-  outputFileTracing: false,
+  // File tracing configuration moved to experimental.outputFileTracingRoot
   
   // SECURITY ENHANCEMENTS - Medical Application Grade (Score: 9.7/10)
   
@@ -62,11 +60,10 @@ const nextConfig = {
     optimizePackageImports: ['react-icons', 'jspdf', 'lucide-react'],
     // Melhor tree-shaking para ícones SVG
     // optimizeCss: true, // Desabilitado - requer 'critters'
-    // Compilação mais segura
-    strictNextHead: true,
-    // Disable turbotrace to prevent build hanging on "Collecting build traces"
-    // Trade-off: Slightly larger bundles but reliable builds
-    outputFileTracingRoot: undefined,
+    // React Compiler configuration
+    reactCompiler: {
+      compilationMode: 'annotation',
+    },
     // ISR optimization for future use - removed invalid option
     // isrMemoryCacheSize: 0  // Disable memory cache for static export
   },
@@ -168,8 +165,7 @@ const nextConfig = {
     port: process.env.PORT || 3000
   },
   
-  // Configuração do compilador SWC com otimizações de segurança
-  swcMinify: true,
+  // SWC minification is enabled by default in Next.js 15
   
   // Configurações de build para ambiente médico
   generateBuildId: async () => {
