@@ -19,6 +19,8 @@ permissions:
   pull-requests: write
   issues: write
   actions: write
+  repository-projects: write
+  metadata: read
 
 env:
   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
