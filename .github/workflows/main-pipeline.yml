@@ -8,6 +8,7 @@ on:
       - 'apps/frontend-nextjs/**'
       - 'package.json'
       - 'package-lock.json'
+      - '.github/workflows/**'
   workflow_dispatch:
     inputs:
       skip_tests:
@@ -382,5 +383,5 @@ jobs:
           fi
 
 concurrency:
-  group: main-pipeline-${{ github.sha }}
+  group: main-pipeline-${{ github.ref }}
   cancel-in-progress: false
