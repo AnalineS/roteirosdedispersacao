@@ -43,21 +43,7 @@
 # 📏 LABELS POR TAMANHO DO PR
 # ==============================================================================
 
-"tamanho: pequeno":
-  - changed-files:
-    - count-changed-files:
-        max: 5
-
-"tamanho: médio":
-  - changed-files:
-    - count-changed-files:
-        min: 6
-        max: 20
-
-"tamanho: grande":
-  - changed-files:
-    - count-changed-files:
-        min: 21
+# Tamanho baseado em arquivos - removido pois count-changed-files não é suportado no v5
 
 # ==============================================================================
 # 🚦 LABELS POR TIPO DE MUDANÇA (baseado em arquivos)
@@ -113,44 +99,14 @@
       - "Pipfile*"
       - "yarn.lock"
 
-# ==============================================================================
-# 🌿 LABELS POR BRANCH DE ORIGEM (v5 feature)
-# ==============================================================================
-
-"tipo: feature":
-  - base-branch: ["feat/*", "feature/*"]
-
-"tipo: bugfix":  
-  - base-branch: ["fix/*", "bugfix/*"]
-
-"tipo: hotfix":
-  - base-branch: ["hotfix/*"]
-
-"tipo: manutenção":
-  - base-branch: ["chore/*", "maintenance/*", "maint/*"]
-
-"tipo: release":
-  - base-branch: ["release/*"]
-
-"tipo: refactor":
-  - base-branch: ["refactor/*", "refact/*"]
-
-# ==============================================================================
-# 🎯 LABELS POR BRANCH DE DESTINO (v5 feature)  
-# ==============================================================================
-
-"ambiente: produção":
-  - head-branch: ["main", "master"]
-
-"ambiente: homologação":
-  - head-branch: ["hml", "staging", "develop"]
+# Branch-based labeling removido - não totalmente suportado no v5
+# Usar apenas file-based labeling que é mais confiável
 
 # ==============================================================================
 # ⚡ LABELS POR PRIORIDADE AUTOMÁTICA
 # ==============================================================================
 
 "prioridade: crítica":
-  - base-branch: ["hotfix/*"]
   - changed-files:
     - any-glob-to-any-file:
       - "**/*security*"
@@ -158,20 +114,12 @@
       - "apps/backend/src/middleware/**/*"
 
 "prioridade: alta":
-  - base-branch: ["fix/*", "bugfix/*"]
   - changed-files:
     - any-glob-to-any-file:
       - "apps/backend/src/routes/**/*"
-      - ".github/workflows/main-pipeline.yml"
-
-"prioridade: média":
-  - base-branch: ["feat/*", "feature/*"]
-  - changed-files:
-    - any-glob-to-any-file:
-      - "apps/frontend-nextjs/src/**/*"
+      - ".github/workflows/**/*"
 
 "prioridade: baixa":
-  - base-branch: ["chore/*", "docs/*"]
   - changed-files:
     - any-glob-to-any-file:
       - "**/*.md"
@@ -199,15 +147,8 @@
       - "scripts/**/*"
       - "**/*automation*"
 
-"revisão-necessária":
-  - changed-files:
-    - count-changed-files:
-        min: 50
-  - base-branch: ["hotfix/*"]
-  
 "documentação-necessária":
   - changed-files:
     - any-glob-to-any-file:
       - "apps/backend/src/routes/**/*"
       - "apps/frontend-nextjs/src/pages/**/*"
-    - all-globs-to-all-files: "!**/*.md"

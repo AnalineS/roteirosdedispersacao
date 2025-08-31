@@ -1,4 +1,4 @@
-name: "[LABELS] Sistema de Labels Automáticos"
+name: "[LABELS] Sistema de Labels Automaticos"
 
 on:
   pull_request:
@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       pr_number:
-        description: 'Número do PR para re-aplicar labels'
+        description: 'Numero do PR para re-aplicar labels'
         required: true
         type: number
 
@@ -22,12 +22,17 @@ env:
 
 jobs:
   apply-labels:
-    name: "[APPLY] Aplicar Labels Automáticos" 
+    name: "[APPLY] Aplicar Labels Automaticos"
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
     
     outputs:
       labels-applied: ${{ steps.labeler.outputs.labels-applied }}
+      priority: ${{ steps.analysis.outputs.priority }}
+      type: ${{ steps.analysis.outputs.type }}
+      areas: ${{ steps.analysis.outputs.areas }}
+      environment: ${{ steps.analysis.outputs.environment }}
+      all_labels: ${{ steps.analysis.outputs.all_labels }}
       
     steps:
       - name: "[CHECKOUT] Checkout"
@@ -45,52 +50,53 @@ jobs:
         id: analysis
         env:
           PR_NUMBER: ${{ github.event.inputs.pr_number || github.event.pull_request.number }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "Analisando labels aplicados ao PR #$PR_NUMBER..."
           
           # Buscar labels do PR via API
           LABELS=$(gh pr view $PR_NUMBER --json labels --jq '.labels[].name' | tr '\n' ',' | sed 's/,$//')
           
-          # Análise de prioridade
+          # Analise de prioridade
           PRIORITY="baixa"
-          if echo "$LABELS" | grep -q "prioridade: crítica"; then
-            PRIORITY="crítica" 
+          if echo "$LABELS" | grep -q "prioridade: critica"; then
+            PRIORITY="critica" 
           elif echo "$LABELS" | grep -q "prioridade: alta"; then
             PRIORITY="alta"
-          elif echo "$LABELS" | grep -q "prioridade: média"; then
-            PRIORITY="média"
+          elif echo "$LABELS" | grep -q "prioridade: media"; then
+            PRIORITY="media"
           fi
           
-          # Análise de tipo
+          # Analise de tipo
           TYPE="geral"
           if echo "$LABELS" | grep -q "tipo: hotfix"; then
             TYPE="hotfix"
           elif echo "$LABELS" | grep -q "tipo: bugfix"; then
-            TYPE="correção"
+            TYPE="correcao"
           elif echo "$LABELS" | grep -q "tipo: feature"; then
             TYPE="funcionalidade"
           elif echo "$LABELS" | grep -q "breaking-change"; then
             TYPE="breaking-change"
           fi
           
-          # Análise de área
+          # Analise de area
           AREAS=""
-          if echo "$LABELS" | grep -q "área: backend"; then
+          if echo "$LABELS" | grep -q "area: backend"; then
             AREAS="$AREAS Backend"
           fi
-          if echo "$LABELS" | grep -q "área: frontend"; then
+          if echo "$LABELS" | grep -q "area: frontend"; then
             AREAS="$AREAS Frontend"
           fi
-          if echo "$LABELS" | grep -q "área: ci-cd"; then
+          if echo "$LABELS" | grep -q "area: ci-cd"; then
             AREAS="$AREAS CI/CD"
           fi
           
-          # Análise de ambiente
+          # Analise de ambiente
           ENVIRONMENT="indefinido"
-          if echo "$LABELS" | grep -q "ambiente: produção"; then
-            ENVIRONMENT="produção"
-          elif echo "$LABELS" | grep -q "ambiente: homologação"; then
-            ENVIRONMENT="homologação"
+          if echo "$LABELS" | grep -q "ambiente: producao"; then
+            ENVIRONMENT="producao"
+          elif echo "$LABELS" | grep -q "ambiente: homologacao"; then
+            ENVIRONMENT="homologacao"
           fi
           
           echo "priority=$PRIORITY" >> $GITHUB_OUTPUT
@@ -99,43 +105,45 @@ jobs:
           echo "environment=$ENVIRONMENT" >> $GITHUB_OUTPUT
           echo "all_labels=$LABELS" >> $GITHUB_OUTPUT
           
-          echo "Análise concluída:"
+          echo "Analise concluida:"
           echo "- Prioridade: $PRIORITY"
           echo "- Tipo: $TYPE" 
-          echo "- Áreas: $AREAS"
+          echo "- Areas: $AREAS"
           echo "- Ambiente: $ENVIRONMENT"
 
   validate-critical-prs:
-    name: "[VALIDATE] Validar PRs Críticos"
+    name: "[VALIDATE] Validar PRs Criticos"
     runs-on: ubuntu-latest
     needs: apply-labels
     if: >
-      contains(needs.apply-labels.outputs.all_labels, 'prioridade: crítica') ||
+      contains(needs.apply-labels.outputs.all_labels, 'prioridade: critica') ||
       contains(needs.apply-labels.outputs.all_labels, 'breaking-change')
     
     steps:
       - name: "[CHECKOUT] Checkout"
         uses: actions/checkout@v4
         
-      - name: "[VALIDATE] Validação Adicional para PRs Críticos"
+      - name: "[VALIDATE] Validacao Adicional para PRs Criticos"
         env:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           PRIORITY: ${{ needs.apply-labels.outputs.priority }}
           TYPE: ${{ needs.apply-labels.outputs.type }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "Executando validações adicionais para PR crítico #$PR_NUMBER..."
+          echo "Executando validacoes adicionais para PR critico #$PR_NUMBER..."
           
-          # Verificar se PR tem descrição adequada
+          # Verificar se PR tem descricao adequada
           DESCRIPTION=$(gh pr view $PR_NUMBER --json body --jq '.body')
           if [ ${#DESCRIPTION} -lt 50 ]; then
-            echo "⚠️ AVISO: PR crítico com descrição muito curta"
-            gh pr comment $PR_NUMBER --body "AVISO: **PR Critico Detectado** - Este PR foi marcado como **$PRIORITY** e tipo **$TYPE**. **Acoes Necessarias:** Descricao detalhada, evidencias de teste, revisao obrigatoria de pelo menos 2 pessoas, aprovacao do tech lead antes do merge. **Labels aplicados:** ${{ needs.apply-labels.outputs.all_labels }}"
+            echo "AVISO: PR critico com descricao muito curta"
+            
+            # Criar comentario
+            gh pr comment $PR_NUMBER --body "AVISO: PR Critico detectado com descricao insuficiente. Prioridade: $PRIORITY. Acoes necessarias: descricao detalhada, evidencias de teste, revisao obrigatoria."
           fi
           
-          # Adicionar reviewers para PRs críticos
-          if [ "$PRIORITY" = "crítica" ]; then
-            echo "Adicionando reviewers obrigatórios para PR crítico..."
+          # Adicionar reviewers para PRs criticos
+          if [ "$PRIORITY" = "critica" ]; then
+            echo "Adicionando reviewers obrigatorios..."
             gh pr edit $PR_NUMBER --add-reviewer "AnalineS"
           fi
 
@@ -157,34 +165,31 @@ jobs:
           ENVIRONMENT: ${{ needs.apply-labels.outputs.environment }}
         run: |
           # Determinar emoji baseado na prioridade
-          if [ "$PRIORITY" = "crítica" ]; then
-            EMOJI="🚨"
-            STATUS_MSG="CRÍTICO"
+          if [ "$PRIORITY" = "critica" ]; then
+            STATUS_MSG="CRITICO"
           elif [ "$PRIORITY" = "alta" ]; then
-            EMOJI="⚡"
             STATUS_MSG="ALTA PRIORIDADE" 
-          elif [ "$PRIORITY" = "média" ]; then
-            EMOJI="📋"
-            STATUS_MSG="PRIORIDADE MÉDIA"
+          elif [ "$PRIORITY" = "media" ]; then
+            STATUS_MSG="PRIORIDADE MEDIA"
           else
-            EMOJI="📝"
             STATUS_MSG="BAIXA PRIORIDADE"
           fi
           
           # Montar mensagem
-          MESSAGE="$EMOJI **PR $STATUS_MSG** - #$PR_NUMBER"
-          MESSAGE="$MESSAGE%0A%0A**Título:** $PR_TITLE"
+          MESSAGE="**PR $STATUS_MSG** - #$PR_NUMBER"
+          MESSAGE="$MESSAGE%0A%0A**Titulo:** $PR_TITLE"
           MESSAGE="$MESSAGE%0A**Autor:** $PR_AUTHOR"
           MESSAGE="$MESSAGE%0A**Tipo:** $TYPE"
-          MESSAGE="$MESSAGE%0A**Áreas:** $AREAS"
+          MESSAGE="$MESSAGE%0A**Areas:** $AREAS"
           MESSAGE="$MESSAGE%0A**Ambiente:** $ENVIRONMENT"
           MESSAGE="$MESSAGE%0A**Prioridade:** $PRIORITY"
           
-          if [ "$PRIORITY" = "crítica" ]; then
-            MESSAGE="$MESSAGE%0A%0A⚠️ **ATENÇÃO: Revisão obrigatória necessária**"
+          if [ "$PRIORITY" = "critica" ]; then
+            MESSAGE="$MESSAGE%0A%0A**ATENCAO: Revisao obrigatoria necessaria**"
           fi
           
-          MESSAGE="$MESSAGE%0A%0A[Ver PR](https://github.com/${{ github.repository }}/pull/$PR_NUMBER)"
+          REPO="${{ github.repository }}"
+          MESSAGE="$MESSAGE%0A%0A[Ver PR](https://github.com/$REPO/pull/$PR_NUMBER)"
           
           curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_TOKEN/sendMessage" \
             -d chat_id="$TELEGRAM_CHAT_ID" \
@@ -192,19 +197,19 @@ jobs:
             -d parse_mode="Markdown"
 
   update-dependabot-labels:
-    name: "[UPDATE] Labels Específicos do Dependabot"
+    name: "[UPDATE] Labels Especificos do Dependabot"
     runs-on: ubuntu-latest
     needs: apply-labels
     if: github.actor == 'dependabot[bot]'
     
     steps:
-      - name: "[DEPENDABOT] Labels Específicos"
+      - name: "[DEPENDABOT] Labels Especificos"
         env:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           PR_TITLE: ${{ github.event.pull_request.title }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "Aplicando labels específicos do Dependabot..."
+          echo "Aplicando labels especificos do Dependabot..."
           
           # Determinar ambiente baseado na branch base
           if [ "${{ github.base_ref }}" = "main" ]; then
@@ -213,11 +218,11 @@ jobs:
             AMBIENTE="hml"
           fi
           
-          # Determinar impacto baseado no título
+          # Determinar impacto baseado no titulo
           IMPACT="baixo"
           if echo "$PR_TITLE" | grep -q -i "security\|vulnerability"; then
-            IMPACT="crítico"
-            gh pr edit $PR_NUMBER --add-label "impacto: crítico"
+            IMPACT="critico"
+            gh pr edit $PR_NUMBER --add-label "impacto: critico"
             gh pr edit $PR_NUMBER --add-label "security"
           elif echo "$PR_TITLE" | grep -q -i "major"; then
             IMPACT="alto"
@@ -229,7 +234,7 @@ jobs:
           # Adicionar label de ambiente Dependabot
           gh pr edit $PR_NUMBER --add-label "dependabot: $AMBIENTE"
           
-          echo "Labels do Dependabot aplicados: impacto $IMPACT, ambiente $AMBIENTE"
+          echo "Labels aplicados: impacto $IMPACT, ambiente $AMBIENTE"
 
 concurrency:
   group: pr-labeler-${{ github.event.pull_request.number || github.event.inputs.pr_number }}
