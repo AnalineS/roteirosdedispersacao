@@ -1,0 +1,213 @@
+# 🏷️ Configuração do Sistema de Labels Automáticos v5
+# actions/labeler@v5 - Sintaxe atualizada
+
+# ==============================================================================
+# 📁 LABELS POR ÁREA/COMPONENTE
+# ==============================================================================
+
+"área: backend":
+  - changed-files:
+    - any-glob-to-any-file: "apps/backend/**/*"
+
+"área: frontend":
+  - changed-files:
+    - any-glob-to-any-file: "apps/frontend-nextjs/**/*"
+
+"área: ci-cd":
+  - changed-files:
+    - any-glob-to-any-file:
+      - ".github/workflows/**/*"
+      - ".github/dependabot.yml"
+      - "docker*"
+      - "**/Dockerfile*"
+
+"área: documentação":
+  - changed-files:
+    - any-glob-to-any-file:
+      - "**/*.md"
+      - "docs/**/*"
+      - "README*"
+      - "CHANGELOG*"
+
+"área: configuração":
+  - changed-files:
+    - any-glob-to-any-file:
+      - "*.json"
+      - "*.yml" 
+      - "*.yaml"
+      - "*.toml"
+      - "*.env*"
+      - ".gitignore"
+
+# ==============================================================================
+# 📏 LABELS POR TAMANHO DO PR
+# ==============================================================================
+
+"tamanho: pequeno":
+  - changed-files:
+    - count-changed-files:
+        max: 5
+
+"tamanho: médio":
+  - changed-files:
+    - count-changed-files:
+        min: 6
+        max: 20
+
+"tamanho: grande":
+  - changed-files:
+    - count-changed-files:
+        min: 21
+
+# ==============================================================================
+# 🚦 LABELS POR TIPO DE MUDANÇA (baseado em arquivos)
+# ==============================================================================
+
+"tipo: funcionalidade":
+  - changed-files:
+    - any-glob-to-any-file:
+      - "apps/backend/src/routes/**/*"
+      - "apps/backend/src/controllers/**/*" 
+      - "apps/frontend-nextjs/src/pages/**/*"
+      - "apps/frontend-nextjs/src/components/**/*"
+
+"tipo: correção":
+  - changed-files:
+    - any-glob-to-any-file:
+      - "**/*fix*"
+      - "**/*bug*"
+      - "apps/backend/src/middleware/**/*"
+
+"tipo: testes":
+  - changed-files:
+    - any-glob-to-any-file:
+      - "**/test*/**/*"
+      - "**/tests/**/*"
+      - "**/*.test.*"
+      - "**/*.spec.*"
+      - "**/cypress/**/*"
+      - "**/playwright/**/*"
+
+"tipo: segurança":
+  - changed-files:
+    - any-glob-to-any-file:
+      - "**/security/**/*"
+      - "**/*auth*/**/*"
+      - "**/*security*"
+      - ".github/queries/**/*"
+
+"tipo: performance":
+  - changed-files:
+    - any-glob-to-any-file:
+      - "**/cache/**/*"
+      - "**/*performance*"
+      - "**/*optimization*"
+      - "**/monitoring/**/*"
+
+"tipo: dependências":
+  - changed-files:
+    - any-glob-to-any-file:
+      - "package*.json"
+      - "requirements*.txt"
+      - "poetry.lock"
+      - "Pipfile*"
+      - "yarn.lock"
+
+# ==============================================================================
+# 🌿 LABELS POR BRANCH DE ORIGEM (v5 feature)
+# ==============================================================================
+
+"tipo: feature":
+  - base-branch: ["feat/*", "feature/*"]
+
+"tipo: bugfix":  
+  - base-branch: ["fix/*", "bugfix/*"]
+
+"tipo: hotfix":
+  - base-branch: ["hotfix/*"]
+
+"tipo: manutenção":
+  - base-branch: ["chore/*", "maintenance/*", "maint/*"]
+
+"tipo: release":
+  - base-branch: ["release/*"]
+
+"tipo: refactor":
+  - base-branch: ["refactor/*", "refact/*"]
+
+# ==============================================================================
+# 🎯 LABELS POR BRANCH DE DESTINO (v5 feature)  
+# ==============================================================================
+
+"ambiente: produção":
+  - head-branch: ["main", "master"]
+
+"ambiente: homologação":
+  - head-branch: ["hml", "staging", "develop"]
+
+# ==============================================================================
+# ⚡ LABELS POR PRIORIDADE AUTOMÁTICA
+# ==============================================================================
+
+"prioridade: crítica":
+  - base-branch: ["hotfix/*"]
+  - changed-files:
+    - any-glob-to-any-file:
+      - "**/*security*"
+      - "**/*auth*"
+      - "apps/backend/src/middleware/**/*"
+
+"prioridade: alta":
+  - base-branch: ["fix/*", "bugfix/*"]
+  - changed-files:
+    - any-glob-to-any-file:
+      - "apps/backend/src/routes/**/*"
+      - ".github/workflows/main-pipeline.yml"
+
+"prioridade: média":
+  - base-branch: ["feat/*", "feature/*"]
+  - changed-files:
+    - any-glob-to-any-file:
+      - "apps/frontend-nextjs/src/**/*"
+
+"prioridade: baixa":
+  - base-branch: ["chore/*", "docs/*"]
+  - changed-files:
+    - any-glob-to-any-file:
+      - "**/*.md"
+      - "docs/**/*"
+      - "**/test*/**/*"
+
+# ==============================================================================
+# 💥 LABELS ESPECIAIS
+# ==============================================================================
+
+"breaking-change":
+  - changed-files:
+    - any-glob-to-any-file:
+      - "apps/backend/src/models/**/*"
+      - "apps/backend/migrations/**/*"  
+      - "apps/frontend-nextjs/src/types/**/*"
+
+"dependabot":
+  - author: "dependabot[bot]"
+
+"automação":
+  - changed-files:
+    - any-glob-to-any-file:
+      - ".github/workflows/**/*"
+      - "scripts/**/*"
+      - "**/*automation*"
+
+"revisão-necessária":
+  - changed-files:
+    - count-changed-files:
+        min: 50
+  - base-branch: ["hotfix/*"]
+  
+"documentação-necessária":
+  - changed-files:
+    - any-glob-to-any-file:
+      - "apps/backend/src/routes/**/*"
+      - "apps/frontend-nextjs/src/pages/**/*"
+    - all-globs-to-all-files: "!**/*.md"
