@@ -266,7 +266,7 @@ export function useChatAccessibility() {
 }
 
 // Hook for components to register themselves for focus management
-export function useAccessibleFocus(elementRef: React.RefObject<HTMLElement>, type: 'input' | 'messages') {
+export function useAccessibleFocus(elementRef: React.RefObject<HTMLElement | null>, type: 'input' | 'messages') {
   useEffect(() => {
     if (elementRef.current) {
       if (type === 'input') {

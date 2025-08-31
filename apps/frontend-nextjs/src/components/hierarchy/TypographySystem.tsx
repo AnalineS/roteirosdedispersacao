@@ -10,7 +10,7 @@
 
 'use client';
 
-import React, { CSSProperties } from 'react';
+import React, { CSSProperties, type JSX } from 'react';
 
 // Tipos para o sistema de tipografia
 type TypographyLevel = 'h1' | 'h2' | 'h3' | 'h4' | 'body' | 'caption' | 'micro';

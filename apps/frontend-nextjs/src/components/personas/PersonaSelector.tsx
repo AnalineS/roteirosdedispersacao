@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type JSX } from 'react';
 import Image from 'next/image';
 import { Persona } from '@/services/api';
 import { getPersonaAvatar } from '@/constants/avatars';
