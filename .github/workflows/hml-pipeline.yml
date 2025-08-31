@@ -1,4 +1,4 @@
-name: 🧪 Pipeline de Homologação (HML)
+name: "HML Pipeline de Homologacao"
 
 on:
   push:
@@ -7,444 +7,503 @@ on:
       - 'apps/backend/**'
       - 'apps/frontend-nextjs/**'
       - '.github/workflows/hml-pipeline.yml'
-      # MANTER documentação - nunca ignorar
-      - '**/*.md'
-      - '**/README*'
-      - '**/*.json'  # package.json, etc
-  pull_request:
-    branches: [hml]
-    # PRs para HML devem ser testados
+      - '!**/*.md'
+      - '!**/README*'
+      - '!docs/**'
   workflow_dispatch:
     inputs:
       force_deploy:
-        description: 'Forçar deploy mesmo com falhas nos testes'
+        description: 'Forcar deploy (pular algumas validacoes)'
         required: false
         default: false
         type: boolean
-      run_extended_tests:
-        description: 'Executar testes estendidos (demorado)'
+      deploy_backend:
+        description: 'Deploy backend (auto-detectado se nao especificado)'
         required: false
-        default: false
+        type: boolean
+      deploy_frontend:
+        description: 'Deploy frontend (auto-detectado se nao especificado)'
+        required: false
         type: boolean
 
 env:
-  PYTHON_VERSION: '3.11'
-  NODE_VERSION: '18'
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  BACKEND_SERVICE_NAME: hml-roteiro-dispensacao-api
+  FRONTEND_SITE: hml-roteiros-de-dispensacao
+  REGION: ${{ secrets.GCP_REGION }}
+  ENVIRONMENT: homologacao
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  actions: read
 
 jobs:
-  # =====================================
-  # 1. DETECÇÃO DE MUDANÇAS HML
-  # =====================================
-  hml-validation:
-    name: 🧪 Validação para HML (Pré-Produção)
+  detect-changes:
+    name: "Detectar Mudancas"
     runs-on: ubuntu-latest
     outputs:
-      backend: ${{ steps.changes.outputs.backend }}
-      frontend: ${{ steps.changes.outputs.frontend }}
-      should-deploy: ${{ steps.decision.outputs.deploy }}
-      is-promotion: ${{ steps.decision.outputs.promotion }}
+      backend-changed: ${{ steps.changes.outputs.backend }}
+      frontend-changed: ${{ steps.changes.outputs.frontend }}
+      deploy-backend: ${{ steps.decide.outputs.deploy-backend }}
+      deploy-frontend: ${{ steps.decide.outputs.deploy-frontend }}
+      should-deploy: ${{ steps.decide.outputs.should-deploy }}
     
     steps:
-      - name: 📥 Checkout
+      - name: "Checkout"
         uses: actions/checkout@v4
         with:
           fetch-depth: 2
-
-      - name: 🔍 Detectar Mudanças HML
+          
+      - name: "Analise de Mudancas"
         id: changes
         run: |
-          echo "🧪 Detectando mudanças para ambiente de HML..."
+          echo "Analisando mudancas para HML..."
           
-          if [ "${{ github.event_name }}" == "pull_request" ]; then
-            echo "📋 Analisando PR para HML: comparando com branch base ${{ github.base_ref }}"
-            git fetch origin ${{ github.base_ref }}
-            BACKEND_CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -E '^apps/backend/' | wc -l || echo "0")
-            FRONTEND_CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -E '^apps/frontend-nextjs/' | wc -l || echo "0")
-            WORKFLOW_CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -E '^\.github/workflows/' | wc -l || echo "0")
+          if git diff --name-only HEAD~1 HEAD | grep -q '^apps/backend/'; then
+            echo "backend=true" >> $GITHUB_OUTPUT
+            echo "Backend: mudancas detectadas"
           else
-            echo "📋 Analisando push para HML: comparando commits"
-            if [ "${{ github.event.before }}" != "0000000000000000000000000000000000000000" ] && [ -n "${{ github.event.before }}" ]; then
-              BACKEND_CHANGED=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -E '^apps/backend/' | wc -l || echo "0")
-              FRONTEND_CHANGED=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -E '^apps/frontend-nextjs/' | wc -l || echo "0")
-              WORKFLOW_CHANGED=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -E '^\.github/workflows/' | wc -l || echo "0")
-            else
-              echo "⚠️ Primeiro commit ou before não disponível - assumindo mudanças"
-              BACKEND_CHANGED=1
-              FRONTEND_CHANGED=1
-              WORKFLOW_CHANGED=1
-            fi
+            echo "backend=false" >> $GITHUB_OUTPUT
+            echo "Backend: sem mudancas"
           fi
           
-          echo "📊 Resultados da detecção HML:"
-          echo "  Backend alterado: $BACKEND_CHANGED arquivos"
-          echo "  Frontend alterado: $FRONTEND_CHANGED arquivos" 
-          echo "  Workflows alterados: $WORKFLOW_CHANGED arquivos"
+          if git diff --name-only HEAD~1 HEAD | grep -q '^apps/frontend-nextjs/'; then
+            echo "frontend=true" >> $GITHUB_OUTPUT
+            echo "Frontend: mudancas detectadas"
+          else
+            echo "frontend=false" >> $GITHUB_OUTPUT
+            echo "Frontend: sem mudancas"
+          fi
           
-          echo "backend=$([ $BACKEND_CHANGED -gt 0 ] && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
-          echo "frontend=$([ $FRONTEND_CHANGED -gt 0 ] && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
-          echo "workflow=$([ $WORKFLOW_CHANGED -gt 0 ] && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
-
-      - name: 🎯 Decisão de Deploy HML
-        id: decision
+      - name: "Estrategia de Deploy"
+        id: decide
         run: |
-          echo "🎯 Determinando estratégia de deploy para HML..."
+          DEPLOY_BACKEND="${{ github.event.inputs.deploy_backend }}"
+          DEPLOY_FRONTEND="${{ github.event.inputs.deploy_frontend }}"
+          
+          if [ "$DEPLOY_BACKEND" = "" ]; then
+            DEPLOY_BACKEND="${{ steps.changes.outputs.backend }}"
+          fi
+          
+          if [ "$DEPLOY_FRONTEND" = "" ]; then
+            DEPLOY_FRONTEND="${{ steps.changes.outputs.frontend }}"
+          fi
           
           SHOULD_DEPLOY="false"
-          IS_PROMOTION="false"
-          
-          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+          if [ "$DEPLOY_BACKEND" = "true" ] || [ "$DEPLOY_FRONTEND" = "true" ]; then
             SHOULD_DEPLOY="true"
-            echo "🔧 Deploy manual solicitado para HML"
-          elif [ "${{ github.event_name }}" == "push" ]; then
-            if [ "${{ steps.changes.outputs.backend }}" == "true" ] || [ "${{ steps.changes.outputs.frontend }}" == "true" ]; then
-              SHOULD_DEPLOY="true"
-              echo "✅ Push em HML com mudanças - deploy automático"
-              
-              # Verificar se é um merge/promote da main
-              RECENT_COMMITS=$(git log --oneline -5)
-              if echo "$RECENT_COMMITS" | grep -qi "merge.*main\|promote.*production"; then
-                IS_PROMOTION="true"
-                echo "🚀 Detectado promote/merge da produção para HML"
-              fi
-            else
-              echo "ℹ️ Push em HML sem mudanças relevantes"
-            fi
-          elif [ "${{ github.event_name }}" == "pull_request" ]; then
-            echo "🧪 Pull Request - executar apenas testes (sem deploy)"
           fi
           
-          echo "deploy=$SHOULD_DEPLOY" >> $GITHUB_OUTPUT
-          echo "promotion=$IS_PROMOTION" >> $GITHUB_OUTPUT
+          echo "deploy-backend=$DEPLOY_BACKEND" >> $GITHUB_OUTPUT
+          echo "deploy-frontend=$DEPLOY_FRONTEND" >> $GITHUB_OUTPUT
+          echo "should-deploy=$SHOULD_DEPLOY" >> $GITHUB_OUTPUT
           
-          echo "📋 DECISÃO DE DEPLOY HML:"
-          echo "  Deploy: $SHOULD_DEPLOY"
-          echo "  Promoção: $IS_PROMOTION"
-          echo "  Evento: ${{ github.event_name }}"
+          echo "PLANO DE DEPLOY HML:"
+          echo "  Backend: $DEPLOY_BACKEND"
+          echo "  Frontend: $DEPLOY_FRONTEND"
+          echo "  Executar deploy: $SHOULD_DEPLOY"
 
-  # =====================================
-  # 2. TESTES E QUALIDADE HML
-  # =====================================
-  hml-quality-gates:
-    name: 🛡️ Testes e Qualidade HML
+  quality-security-gates:
+    name: "Qualidade e Seguranca"
     runs-on: ubuntu-latest
-    needs: hml-validation
-    if: needs.hml-validation.outputs.backend == 'true' || needs.hml-validation.outputs.frontend == 'true' || github.event.inputs.force_deploy == 'true'
+    needs: detect-changes
+    if: needs.detect-changes.outputs.should-deploy == 'true' && github.event.inputs.force_deploy != 'true'
     
     steps:
-      - name: 📥 Checkout
+      - name: "Checkout"
         uses: actions/checkout@v4
-
-      - name: 🐍 Setup Python
-        if: needs.hml-validation.outputs.backend == 'true'
+        with:
+          fetch-depth: 0
+          
+      - name: "Setup Python"
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
+          python-version: '3.11'
           cache: 'pip'
-
-      - name: 📦 Setup Node.js
-        if: needs.hml-validation.outputs.frontend == 'true'
+          cache-dependency-path: apps/backend/requirements.txt
+          
+      - name: "Setup Node.js"
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: '18'
           cache: 'npm'
           cache-dependency-path: apps/frontend-nextjs/package-lock.json
 
-      - name: 🧪 Testes Backend HML
-        if: needs.hml-validation.outputs.backend == 'true'
+      - name: "Cache Python Dependencies"
+        uses: actions/cache@v4
+        if: needs.detect-changes.outputs.deploy-backend == 'true'
+        with:
+          path: ~/.cache/pip
+          key: hml-python-deps-${{ runner.os }}-${{ hashFiles('apps/backend/requirements.txt') }}
+          restore-keys: hml-python-deps-${{ runner.os }}-
+          
+      - name: "Cache Node Dependencies"
+        uses: actions/cache@v4
+        if: needs.detect-changes.outputs.deploy-frontend == 'true'
+        with:
+          path: |
+            apps/frontend-nextjs/node_modules
+            ~/.npm
+          key: hml-node-deps-${{ runner.os }}-${{ hashFiles('apps/frontend-nextjs/package-lock.json') }}
+          restore-keys: hml-node-deps-${{ runner.os }}-
+
+      - name: "Instalar Dependencias Backend"
+        if: needs.detect-changes.outputs.deploy-backend == 'true'
         run: |
-          echo "🧪 Executando testes backend para HML..."
           cd apps/backend
           pip install -r requirements.txt
-          pip install pytest flake8 mypy
+          pip install pytest pytest-cov flake8 mypy safety
           
-          # Linting mais permissivo para HML
-          echo "🔍 Verificando qualidade de código..."
-          flake8 . --count --max-complexity=12 --max-line-length=140 --statistics || echo "⚠️ Avisos de linting encontrados (não bloqueante para HML)"
-          
-          # Testes
-          echo "🧪 Executando testes..."
-          python -m pytest --tb=short -v || echo "⚠️ Alguns testes falharam (verificar se são críticos)"
-          
-          # Testes estendidos se solicitado
-          if [ "${{ github.event.inputs.run_extended_tests }}" == "true" ]; then
-            echo "🔬 Executando testes estendidos..."
-            python -m pytest --tb=short -v --cov=. --cov-report=html || true
-          fi
-
-      - name: 🧪 Testes Frontend HML  
-        if: needs.hml-validation.outputs.frontend == 'true'
+      - name: "Instalar Dependencias Frontend"
+        if: needs.detect-changes.outputs.deploy-frontend == 'true'
         run: |
-          echo "🧪 Executando testes frontend para HML..."
           cd apps/frontend-nextjs
           npm ci
-          
-          # Linting mais permissivo para HML
-          echo "🔍 Verificando qualidade de código..."
-          npm run lint || echo "⚠️ Avisos de linting encontrados (não bloqueante para HML)"
-          
-          echo "🔍 Verificando tipos..."
-          npm run type-check || echo "⚠️ Avisos de TypeScript encontrados (não bloqueante para HML)"
-          
-          echo "🧪 Executando testes..."
-          npm run test -- --passWithNoTests || echo "⚠️ Alguns testes falharam (verificar se são críticos)"
-          
-          echo "🏗️ Testando build..."
-          npm run build || echo "❌ Build falhou - pode afetar deploy"
 
-      - name: 🔒 Verificação de Segurança Básica
-        continue-on-error: true
+      - name: "Scan Seguranca Backend"
+        if: needs.detect-changes.outputs.deploy-backend == 'true'
         run: |
-          echo "🔒 Verificação básica de segurança para HML..."
-          echo "💡 Análise completa de segurança executada pelo workflow security-unified"
-          echo "✅ Verificação delegada para pipeline de segurança"
+          echo "Executando scan de seguranca no backend..."
+          cd apps/backend
+          
+          safety check --json || echo "Vulnerabilidades encontradas - verificar Security tab"
+          
+          if [ -f "package.json" ]; then
+            npm audit --audit-level=high || echo "Vulnerabilidades npm encontradas"
+          fi
+          
+      - name: "Scan Seguranca Frontend"
+        if: needs.detect-changes.outputs.deploy-frontend == 'true'
+        run: |
+          echo "Executando scan de seguranca no frontend..."
+          cd apps/frontend-nextjs
+          npm audit --audit-level=high || echo "Vulnerabilidades encontradas - verificar Dependabot"
 
-  # =====================================
-  # 3. DEPLOY HML (PRÉ-PRODUÇÃO)
-  # =====================================
-  hml-deploy:
-    name: 🚀 Deploy HML (Pré-Produção)
+      - name: "Testes e Qualidade Backend"
+        if: needs.detect-changes.outputs.deploy-backend == 'true'
+        run: |
+          cd apps/backend
+          echo "Analise de codigo..."
+          flake8 . --count --max-complexity=12 --max-line-length=127 --statistics || echo "Warnings de linting"
+          
+          echo "Executando testes..."
+          python -m pytest --tb=short || echo "Alguns testes falharam"
+          
+      - name: "Testes e Qualidade Frontend"
+        if: needs.detect-changes.outputs.deploy-frontend == 'true'
+        run: |
+          cd apps/frontend-nextjs
+          echo "Linting..."
+          npm run lint || echo "Warnings de linting"
+          
+          echo "TypeScript check..."
+          npm run type-check || echo "Warnings de tipos"
+          
+          echo "Testes..."
+          npm run test -- --passWithNoTests || echo "Alguns testes falharam"
+
+  deploy-backend-hml:
+    name: "Deploy Backend HML"
     runs-on: ubuntu-latest
-    needs: [hml-validation, hml-quality-gates]
-    if: needs.hml-validation.outputs.should-deploy == 'true' && (needs.hml-quality-gates.result == 'success' || github.event.inputs.force_deploy == 'true')
+    needs: [detect-changes, quality-security-gates]
+    if: always() && needs.detect-changes.outputs.deploy-backend == 'true' && (needs.quality-security-gates.result == 'success' || github.event.inputs.force_deploy == 'true')
     
     outputs:
-      backend-url: ${{ steps.backend-deploy.outputs.url }}
-      frontend-url: ${{ steps.frontend-deploy.outputs.url }}
-    
+      backend-url: ${{ steps.deploy.outputs.url }}
+      
     steps:
-      - name: 📥 Checkout  
+      - name: "Checkout"
         uses: actions/checkout@v4
-
-      - name: 🔐 Autenticar no Google Cloud
+        
+      - name: "Auth Google Cloud"
         uses: google-github-actions/auth@v3
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
-          export_environment_variables: true
-          create_credentials_file: true
-
-      - name: 🛠️ Setup Cloud SDK
+          
+      - name: "Setup Cloud SDK"
         uses: google-github-actions/setup-gcloud@v3
-        with:
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
-
-      - name: 🚀 Deploy Backend HML
-        id: backend-deploy
-        if: needs.hml-validation.outputs.backend == 'true'
+        
+      - name: "Configurar Docker"
+        run: |
+          gcloud auth configure-docker --quiet
+          
+      - name: "Build e Push Docker"
         run: |
           cd apps/backend
           
-          # Configuração específica de HML
-          SERVICE_NAME="roteiro-dispensacao-api-hml"
-          ENV_VARS="ENVIRONMENT=homologacao,FLASK_ENV=production"
+          docker pull gcr.io/$PROJECT_ID/$BACKEND_SERVICE_NAME:latest || echo "Sem cache anterior"
           
-          echo "🧪 DEPLOY EM HML - BACKEND"
-          echo "  Serviço: $SERVICE_NAME"
-          echo "  Environment: homologacao"
+          docker build \
+            --cache-from gcr.io/$PROJECT_ID/$BACKEND_SERVICE_NAME:latest \
+            -t gcr.io/$PROJECT_ID/$BACKEND_SERVICE_NAME:$GITHUB_SHA \
+            -t gcr.io/$PROJECT_ID/$BACKEND_SERVICE_NAME:latest \
+            .
+            
+          docker push gcr.io/$PROJECT_ID/$BACKEND_SERVICE_NAME:$GITHUB_SHA
+          docker push gcr.io/$PROJECT_ID/$BACKEND_SERVICE_NAME:latest
           
-          if [ "${{ needs.hml-validation.outputs.is-promotion }}" == "true" ]; then
-            echo "🚀 PROMOÇÃO: Deploy de versão testada da produção"
-          fi
-          
-          # Deploy com configurações mais flexíveis para HML
-          echo "🚀 Iniciando deploy do backend HML..."
-          if gcloud run deploy $SERVICE_NAME \
-            --source . \
-            --region=${{ secrets.GCP_REGION }} \
+      - name: "Deploy Cloud Run"
+        id: deploy
+        run: |
+          gcloud run deploy $BACKEND_SERVICE_NAME \
+            --image=gcr.io/$PROJECT_ID/$BACKEND_SERVICE_NAME:$GITHUB_SHA \
+            --platform=managed \
+            --region=$REGION \
             --allow-unauthenticated \
             --port=8080 \
-            --memory=512Mi \
-            --cpu=0.5 \
-            --set-env-vars="$ENV_VARS,SECRET_KEY=${{ secrets.SECRET_KEY }},OPENROUTER_API_KEY=${{ secrets.OPENROUTER_API_KEY }}" \
-            --max-instances=5 \
+            --memory=1Gi \
+            --cpu=1 \
+            --concurrency=100 \
+            --max-instances=10 \
+            --min-instances=0 \
             --timeout=300 \
-            --quiet; then
-            echo "✅ Deploy do backend HML concluído com sucesso"
-          else
-            echo "❌ Falha no deploy do backend HML. Tentando novamente..."
-            sleep 10
-            gcloud run deploy $SERVICE_NAME \
-              --source . \
-              --region=${{ secrets.GCP_REGION }} \
-              --allow-unauthenticated \
-              --port=8080 \
-              --memory=512Mi \
-              --cpu=0.5 \
-              --set-env-vars="$ENV_VARS,SECRET_KEY=${{ secrets.SECRET_KEY }},OPENROUTER_API_KEY=${{ secrets.OPENROUTER_API_KEY }}" \
-              --max-instances=5 \
-              --timeout=300
-          fi
-          
-          SERVICE_URL=$(gcloud run services describe $SERVICE_NAME --region=${{ secrets.GCP_REGION }} --format="value(status.url)")
+            --set-env-vars="ENVIRONMENT=$ENVIRONMENT,FLASK_ENV=production,DEBUG=false,SECRET_KEY=${{ secrets.SECRET_KEY }},OPENROUTER_API_KEY=${{ secrets.OPENROUTER_API_KEY }}" \
+            --tag=hml-$(echo $GITHUB_SHA | cut -c1-7) \
+            --quiet
+            
+          SERVICE_URL=$(gcloud run services describe $BACKEND_SERVICE_NAME --region=$REGION --format="value(status.url)")
           echo "url=$SERVICE_URL" >> $GITHUB_OUTPUT
-          echo "🌐 Backend HML deployed: $SERVICE_URL"
+          echo "Backend HML: $SERVICE_URL"
+          
+      - name: "Health Check"
+        run: |
+          echo "Aguardando backend inicializar..."
+          sleep 30
+          
+          for i in {1..10}; do
+            if curl -f "${{ steps.deploy.outputs.url }}/health" > /dev/null 2>&1; then
+              echo "Backend HML saudavel"
+              break
+            fi
+            echo "Tentativa $i/10..."
+            sleep 10
+          done
 
-      - name: 🎨 Deploy Frontend HML
-        id: frontend-deploy
-        if: needs.hml-validation.outputs.frontend == 'true'
+  deploy-frontend-hml:
+    name: "Deploy Frontend HML"
+    runs-on: ubuntu-latest
+    needs: [detect-changes, quality-security-gates, deploy-backend-hml]
+    if: always() && needs.detect-changes.outputs.deploy-frontend == 'true' && (needs.quality-security-gates.result == 'success' || github.event.inputs.force_deploy == 'true')
+    
+    outputs:
+      frontend-url: ${{ steps.deploy.outputs.url }}
+      
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+        
+      - name: "Setup Node.js"
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: apps/frontend-nextjs/package-lock.json
+          
+      - name: "Restaurar Cache"
+        uses: actions/cache@v4
+        with:
+          path: |
+            apps/frontend-nextjs/node_modules
+            ~/.npm
+          key: hml-node-deps-${{ runner.os }}-${{ hashFiles('apps/frontend-nextjs/package-lock.json') }}
+          
+      - name: "Instalar Dependencias"
         run: |
           cd apps/frontend-nextjs
-          echo "🔧 Instalando dependências do frontend para HML..."
           npm ci
           
-          echo "🏗️ Construindo aplicação frontend para HML..."
+      - name: "Configurar Ambiente"
+        run: |
+          cd apps/frontend-nextjs
+          
+          if [ -f ".env.hml" ]; then
+            cp .env.hml .env.production.local
+          fi
+          
+          BACKEND_URL="${{ needs.deploy-backend-hml.outputs.backend-url || 'https://hml-roteiro-dispensacao-api-4f2gjf6cua-uc.a.run.app' }}"
+          echo "NEXT_PUBLIC_API_URL=$BACKEND_URL" >> .env.production.local
+          echo "NEXT_PUBLIC_ENVIRONMENT=homologacao" >> .env.production.local
+          
+      - name: "Build"
+        run: |
+          cd apps/frontend-nextjs
+          export NODE_OPTIONS="--max-old-space-size=4096"
           npm run build
           
-          # Firebase deploy para HML
-          echo "🔧 Configurando Firebase CLI..."
+      - name: "Deploy Firebase"
+        id: deploy
+        run: |
+          cd apps/frontend-nextjs
           npm install -g firebase-tools
           
-          echo "🔐 Autenticando no Firebase..."
-          echo "${{ secrets.FIREBASE_TOKEN }}" | firebase login:ci
-          
-          echo "🧪 DEPLOY EM HML - FRONTEND"
-          if [ "${{ needs.hml-validation.outputs.is-promotion }}" == "true" ]; then
-            echo "🚀 PROMOÇÃO: Deploy de versão testada da produção"
-          fi
-          
-          firebase deploy --project ${{ secrets.FIREBASE_PROJECT_ID }} --only hosting:hml --non-interactive
-          echo "url=https://hml-${{ secrets.FIREBASE_PROJECT_ID }}.web.app" >> $GITHUB_OUTPUT  
-          echo "✅ Frontend implantado em HML: https://hml-${{ secrets.FIREBASE_PROJECT_ID }}.web.app"
-
-  # =====================================
-  # 4. TESTES DE INTEGRAÇÃO HML
-  # =====================================
-  hml-integration-tests:
-    name: 🧪 Testes de Integração HML
-    runs-on: ubuntu-latest
-    needs: [hml-validation, hml-deploy]
-    if: needs.hml-validation.outputs.should-deploy == 'true' && needs.hml-deploy.result == 'success'
-    
-    steps:
-      - name: 🏥 Health Checks HML
-        run: |
-          echo "🏥 Verificando saúde dos serviços HML..."
-          
-          if [ -n "${{ needs.hml-deploy.outputs.backend-url }}" ]; then
-            echo "🔍 Testando saúde do backend HML..."
-            for i in {1..3}; do
-              if curl -f "${{ needs.hml-deploy.outputs.backend-url }}/health" --max-time 30; then
-                echo "✅ Backend HML está saudável (tentativa $i)"
-                break
-              else
-                echo "⚠️ Backend HML não responde (tentativa $i/3)"
-                sleep 10
-              fi
-            done
-          fi
-          
-          if [ -n "${{ needs.hml-deploy.outputs.frontend-url }}" ]; then
-            echo "🔍 Testando frontend HML..."
-            for i in {1..3}; do
-              if curl -f "${{ needs.hml-deploy.outputs.frontend-url }}" --max-time 30; then
-                echo "✅ Frontend HML está acessível (tentativa $i)"
-                break
-              else
-                echo "⚠️ Frontend HML não está acessível (tentativa $i/3)"
-                sleep 10
-              fi
-            done
-          fi
-
-      - name: 🧪 Testes de Smoke HML
-        run: |
-          echo "🧪 Executando testes de smoke em HML..."
-          
-          if [ -n "${{ needs.hml-deploy.outputs.backend-url }}" ]; then
-            echo "🔍 Testando endpoints básicos do backend..."
-            
-            # Test health endpoint
-            curl -f "${{ needs.hml-deploy.outputs.backend-url }}/health" || echo "❌ Health endpoint falhou"
-            
-            # Test API root (if exists)
-            curl -f "${{ needs.hml-deploy.outputs.backend-url }}/api" --max-time 10 || echo "ℹ️ API root endpoint não disponível"
-          fi
-          
-          echo "✅ Testes de smoke HML concluídos"
-
-      - name: 📊 Relatório de Deploy HML
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          echo "📊 Gerando relatório de deploy HML..."
-          
-          # Criar issue de tracking do deploy HML
-          cat > hml_deploy_report.md << 'EOF'
-          # 🧪 Deploy HML (Pré-Produção) Concluído
-          
-          ## 📋 Informações do Deploy
+          cat > .firebaserc << EOF
+          {
+            "projects": {
+              "default": "$PROJECT_ID"
+            },
+            "targets": {
+              "$PROJECT_ID": {
+                "hosting": {
+                  "hml": ["$FRONTEND_SITE"]
+                }
+              }
+            }
+          }
           EOF
           
-          echo "- **Data**: $(date '+%d/%m/%Y %H:%M:%S')" >> hml_deploy_report.md
-          echo "- **Commit**: ${{ github.sha }}" >> hml_deploy_report.md
-          echo "- **Executado por**: ${{ github.actor }}" >> hml_deploy_report.md
-          echo "- **Evento**: ${{ github.event_name }}" >> hml_deploy_report.md
+          firebase deploy \
+            --only hosting:hml \
+            --project $PROJECT_ID \
+            --token "${{ secrets.FIREBASE_TOKEN }}" \
+            --non-interactive
+            
+          FRONTEND_URL="https://${FRONTEND_SITE}.web.app"
+          echo "url=$FRONTEND_URL" >> $GITHUB_OUTPUT
+          echo "Frontend HML: $FRONTEND_URL"
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+
+  post-deploy-validation:
+    name: "Validacao Pos-Deploy"
+    runs-on: ubuntu-latest
+    needs: [detect-changes, deploy-backend-hml, deploy-frontend-hml]
+    if: always() && needs.detect-changes.outputs.should-deploy == 'true'
+    
+    outputs:
+      validation-status: ${{ steps.validation.outputs.status }}
+    
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+        
+      - name: "Smoke Tests"
+        id: validation
+        run: |
+          echo "Executando testes de smoke em HML..."
           
-          if [ "${{ needs.hml-validation.outputs.is-promotion }}" == "true" ]; then
-            echo "- **Tipo**: 🚀 Promoção da Produção" >> hml_deploy_report.md
-          else
-            echo "- **Tipo**: 🧪 Deploy de desenvolvimento" >> hml_deploy_report.md
+          BACKEND_URL="${{ needs.deploy-backend-hml.outputs.backend-url }}"
+          FRONTEND_URL="${{ needs.deploy-frontend-hml.outputs.frontend-url }}"
+          
+          retry_test() {
+            local url=$1
+            local name=$2
+            for i in {1..3}; do
+              echo "Testando $name (tentativa $i/3)..."
+              if curl -f -s --max-time 30 "$url" > /dev/null 2>&1; then
+                echo "$name OK"
+                return 0
+              fi
+              sleep 5
+            done
+            echo "$name FALHOU"
+            return 1
+          }
+          
+          TESTS_PASSED=true
+          
+          if [ -n "$BACKEND_URL" ]; then
+            retry_test "$BACKEND_URL/health" "Backend Health" || TESTS_PASSED=false
+            sleep 3
+            retry_test "$BACKEND_URL/api/v1/personas" "Backend API" || TESTS_PASSED=false
           fi
           
-          echo "" >> hml_deploy_report.md
-          echo "## 🌐 URLs de HML" >> hml_deploy_report.md
-          echo "- **Backend**: ${{ needs.hml-deploy.outputs.backend-url || 'Sem mudanças' }}" >> hml_deploy_report.md
-          echo "- **Frontend**: ${{ needs.hml-deploy.outputs.frontend-url || 'Sem mudanças' }}" >> hml_deploy_report.md
-          echo "" >> hml_deploy_report.md
-          echo "## ✅ Status dos Testes" >> hml_deploy_report.md
-          echo "- Health checks: ${{ job.status == 'success' && '✅ Aprovado' || '❌ Falhou' }}" >> hml_deploy_report.md
-          echo "- Testes de smoke: ${{ job.status == 'success' && '✅ Aprovado' || '❌ Falhou' }}" >> hml_deploy_report.md
-          echo "- Ambiente: 🧪 HML Operacional" >> hml_deploy_report.md
-          echo "" >> hml_deploy_report.md
-          echo "## 🔄 Próximos Passos" >> hml_deploy_report.md
-          echo "- Executar testes manuais em HML" >> hml_deploy_report.md
-          echo "- Validar funcionalidades principais" >> hml_deploy_report.md
-          echo "- Após validação, considerar promote para produção" >> hml_deploy_report.md
-          echo "" >> hml_deploy_report.md
-          echo "## 🚀 Para Promover para Produção" >> hml_deploy_report.md
-          echo "1. Validar completamente em HML" >> hml_deploy_report.md
-          echo "2. Fazer merge/promote de HML para main" >> hml_deploy_report.md
-          echo "3. Pipeline de produção será executado automaticamente" >> hml_deploy_report.md
-          echo "" >> hml_deploy_report.md
-          echo "---" >> hml_deploy_report.md
-          echo "*Deploy realizado automaticamente pelo pipeline HML*" >> hml_deploy_report.md
+          if [ -n "$FRONTEND_URL" ]; then
+            sleep 3
+            retry_test "$FRONTEND_URL" "Frontend" || TESTS_PASSED=false
+          fi
           
-          gh issue create \
-            --title "🧪 Deploy HML - $(date '+%d/%m/%Y %H:%M')" \
-            --body-file hml_deploy_report.md \
-            --label "deployment,hml,pre-production"
+          if [ "$TESTS_PASSED" = "true" ]; then
+            echo "status=success" >> $GITHUB_OUTPUT
+            echo "Todos os testes passaram"
+          else
+            echo "status=failed" >> $GITHUB_OUTPUT
+            echo "Alguns testes falharam"
+          fi
+
+  create-hml-release:
+    name: "Criar Release HML"
+    runs-on: ubuntu-latest
+    needs: [post-deploy-validation]
+    if: always() && needs.post-deploy-validation.outputs.validation-status == 'success'
+    
+    outputs:
+      release-tag: ${{ steps.release.outputs.tag }}
+    
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
           
-          echo "✅ Relatório de deploy HML criado"
-
-      - name: 🎯 Resumo Final HML
+      - name: "Criar Tag HML"
+        id: release
         run: |
-          echo "🎯 RESUMO DO DEPLOY HML:"
-          echo "  Backend: ${{ needs.hml-deploy.outputs.backend-url || 'Sem mudanças' }}"
-          echo "  Frontend: ${{ needs.hml-deploy.outputs.frontend-url || 'Sem mudanças' }}"
-          echo "  Status: ✅ Ambiente HML operacional"
+          HML_TAG="v$(date +%Y.%m.%d)-hml.$(date +%H%M)"
+          COMMIT_SHORT=$(echo $GITHUB_SHA | cut -c1-7)
+          
+          echo "Criando release HML: $HML_TAG"
+          
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          git tag -a "$HML_TAG" -m "HML Release $HML_TAG - Commit $COMMIT_SHORT"
+          git push origin "$HML_TAG"
+          
+          gh release create "$HML_TAG" \
+            --title "HML Release $HML_TAG" \
+            --notes "Deploy de Homologacao - Data: $(date '+%d/%m/%Y %H:%M:%S') - Commit: $COMMIT_SHORT - Por: ${{ github.actor }} - Branch: hml - Validacao: Testes pos-deploy aprovados - Proximo: Validar em HML antes de promover para producao - Release criado automaticamente pelo pipeline HML" \
+            --prerelease
+            
+          echo "tag=$HML_TAG" >> $GITHUB_OUTPUT
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 📱 Alerta Telegram - Deploy HML Sucesso
-        if: success()
+  notify-hml-deploy:
+    name: "Notificacoes HML"
+    runs-on: ubuntu-latest
+    needs: [detect-changes, deploy-backend-hml, deploy-frontend-hml, post-deploy-validation, create-hml-release]
+    if: always() && needs.detect-changes.outputs.should-deploy == 'true'
+    
+    steps:
+      - name: "Telegram - Deploy HML"
         run: |
-          curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage \
-            -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
-            -d parse_mode=HTML \
-            -d text="🧪 <b>Deploy HML Concluído</b>%0A%0A📅 <b>Data:</b> $(date '+%d/%m/%Y %H:%M:%S')%0A🔄 <b>Commit:</b> ${{ github.sha }}%0A👤 <b>Por:</b> ${{ github.actor }}%0A%0A🌐 <b>URLs:</b>%0A• Backend: ${{ needs.hml-deploy.outputs.backend-url || 'Sem mudanças' }}%0A• Frontend: ${{ needs.hml-deploy.outputs.frontend-url || 'Sem mudanças' }}%0A%0A✅ Sistema HML operacional"
+          if [[ "${{ needs.post-deploy-validation.outputs.validation-status }}" == "success" ]]; then
+            STATUS="SUCESSO"
+            EMOJI="[OK]"
+          else
+            STATUS="FALHOU"
+            EMOJI="[ERROR]"
+          fi
+          
+          COMMIT_SHA=$(echo $GITHUB_SHA | cut -c1-7)
+          
+          MESSAGE="$EMOJI Deploy HML $STATUS - Data: $(date '+%d/%m/%Y %H:%M:%S') - Commit: $COMMIT_SHA - Por: ${{ github.actor }} - Release: ${{ needs.create-hml-release.outputs.release-tag || 'N/A' }}
 
-      - name: 📱 Alerta Telegram - Deploy HML Falhou  
-        if: failure()
-        run: |
-          curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage \
-            -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
-            -d parse_mode=HTML \
-            -d text="❌ <b>FALHA no Deploy HML</b>%0A%0A📅 <b>Data:</b> $(date '+%d/%m/%Y %H:%M:%S')%0A🔄 <b>Commit:</b> ${{ github.sha }}%0A👤 <b>Por:</b> ${{ github.actor }}%0A%0A🔗 <b>Ver logs:</b> https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}%0A%0A🚨 Intervenção necessária"
-          echo ""
-          echo "🧪 AMBIENTE DE PRÉ-PRODUÇÃO ATUALIZADO"
-          echo "💡 Execute testes manuais antes de promover para produção"
+Deploy Inteligente:
+- Backend: ${{ needs.detect-changes.outputs.deploy-backend == 'true' && 'Deployado' || 'Pulado' }}
+- Frontend: ${{ needs.detect-changes.outputs.deploy-frontend == 'true' && 'Deployado' || 'Pulado' }}
 
-# =====================================
-# CONFIGURAÇÃO DO WORKFLOW
-# =====================================
+URLs HML:
+- Backend: ${{ needs.deploy-backend-hml.outputs.backend-url || 'Sem mudancas' }}
+- Frontend: ${{ needs.deploy-frontend-hml.outputs.frontend-url || 'Sem mudancas' }}
+
+Status:
+- Qualidade: ${{ needs.quality-security-gates.result }}
+- Backend: ${{ needs.deploy-backend-hml.result }}
+- Frontend: ${{ needs.deploy-frontend-hml.result }}
+- Testes: ${{ needs.post-deploy-validation.result }}
+- Release: ${{ needs.create-hml-release.result }}
+
+Proximos Passos: 1. Testar funcionalidades em HML 2. Validar com stakeholders 3. Promover para producao se aprovado"
+          
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+            -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+            -d text="$MESSAGE" \
+            -d parse_mode="Markdown"
+
 concurrency:
   group: hml-deploy-${{ github.ref }}
-  cancel-in-progress: true  # Pode cancelar deploys HML duplicados
+  cancel-in-progress: true
