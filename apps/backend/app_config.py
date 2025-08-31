@@ -49,12 +49,18 @@ class AppConfig:
     OPENAI_TEST_AVAILABLE: bool = os.getenv('OPENAI_TEST_AVAILABLE', 'false').lower() == 'true'
     ADVANCED_CACHE: bool = os.getenv('ADVANCED_CACHE', 'false').lower() == 'true'
     
-    # Embeddings Config - Configuração unificada para ML features
+    # Embeddings Config - Configuração unificada para ML features + sentence-transformers v5.1+
     EMBEDDING_MODEL: str = os.getenv('EMBEDDING_MODEL', 'sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2')
     EMBEDDING_DEVICE: str = os.getenv('EMBEDDING_DEVICE', 'cpu')  # cpu/cuda
     EMBEDDINGS_MAX_LENGTH: int = int(os.getenv('EMBEDDINGS_MAX_LENGTH', 512))
     EMBEDDING_BATCH_SIZE: int = int(os.getenv('EMBEDDING_BATCH_SIZE', 32))
     EMBEDDING_CACHE_SIZE: int = int(os.getenv('EMBEDDING_CACHE_SIZE', 1000))
+    
+    # Sentence-transformers v5.1+ otimizações
+    EMBEDDING_CHUNK_SIZE: int = int(os.getenv('EMBEDDING_CHUNK_SIZE', 32))  # Para textos longos
+    EMBEDDING_PARALLEL_PROCESSING: bool = os.getenv('EMBEDDING_PARALLEL_PROCESSING', 'false').lower() == 'true'
+    EMBEDDING_CONTEXT_TYPE: str = os.getenv('EMBEDDING_CONTEXT_TYPE', 'auto')  # auto/query/document
+    EMBEDDING_USE_SPECIALIZED_METHODS: bool = os.getenv('EMBEDDING_USE_SPECIALIZED_METHODS', 'true').lower() == 'true'
     
     # Vector DB Config - Supabase pgvector
     VECTOR_DB_TYPE: str = os.getenv('VECTOR_DB_TYPE', 'supabase')  # 'supabase' or 'local'

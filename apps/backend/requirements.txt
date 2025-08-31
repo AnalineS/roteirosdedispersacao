@@ -21,7 +21,7 @@ scikit-learn==1.6.1
 
 # === AUTHENTICATION & JWT ===
 PyJWT==2.10.1      # SECURITY: Latest secure version
-cryptography==44.0.1  # SECURITY: Fixes CVE-2024-26130
+cryptography==45.0.6  # SECURITY: Fixes CVE-2024-26130
 passlib>=1.7.4     # Password hashing
 
 # === SECURITY FRAMEWORK ===
@@ -61,7 +61,7 @@ cachetools>=5.3.2
 
 # === MONITORING & OBSERVABILITY ===
 # System monitoring
-psutil==5.9.6
+psutil==7.0.0
 
 # Google Cloud Operations Suite
 google-cloud-monitoring==2.27.2
