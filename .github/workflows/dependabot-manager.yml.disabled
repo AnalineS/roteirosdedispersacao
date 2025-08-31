@@ -150,20 +150,20 @@ jobs:
               cat >> comment_body.md << 'EOF'
               ### 🔒 Atualização de Segurança - ALTA PRIORIDADE
 
-**Por que esta atualização é importante:**
-- Corrige vulnerabilidades de segurança conhecidas
-- Recomendada para implantação imediata
-- Reduz riscos de ataques e exploits
-
-**Ações Automáticas:**
-- ✅ Auto-merge habilitado para deploy rápido
-- ✅ Aprovação automática aplicada
-- 🚀 Deploy automático será iniciado após merge
-
-**Impacto Esperado:**
-- ⚡ Melhoria na segurança do sistema
-- 🛡️ Proteção contra vulnerabilidades conhecidas
-- 📈 Conformidade com padrões de segurança
+              **Por que esta atualização é importante:**
+              - Corrige vulnerabilidades de segurança conhecidas
+              - Recomendada para implantação imediata
+              - Reduz riscos de ataques e exploits
+              
+              **Ações Automáticas:**
+              - ✅ Auto-merge habilitado para deploy rápido
+              - ✅ Aprovação automática aplicada
+              - 🚀 Deploy automático será iniciado após merge
+              
+              **Impacto Esperado:**
+              - ⚡ Melhoria na segurança do sistema
+              - 🛡️ Proteção contra vulnerabilidades conhecidas
+              - 📈 Conformidade com padrões de segurança
 EOF
               ;;
             major)
