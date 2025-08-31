@@ -1,0 +1,84 @@
+name: "[BOT] Sincronização de Branches HML/PROD"
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/dependabot-manager.yml'
+      - '.github/workflows/validate-unicode.yml'
+  workflow_dispatch:
+    inputs:
+      force_sync:
+        description: 'Forçar sincronização completa'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+  pull-requests: write
+
+env:
+  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  sync-to-hml:
+    name: "[SYNC] Sincronizar para HML"
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: "[CHECKOUT] Checkout"
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: "[SYNC] Configurar Git"
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+      - name: "[SYNC] Sincronizar workflows para HML"
+        run: |
+          echo "[SYNC] Sincronizando mudanças do Dependabot para HML..."
+          
+          # Checkout da branch HML
+          git fetch origin hml
+          git checkout hml
+          
+          # Merge das mudanças específicas do dependabot
+          git merge main --no-edit || {
+            echo "[CONFLICT] Resolvendo conflitos automaticamente..."
+            git checkout main -- .github/workflows/dependabot-manager.yml .github/workflows/validate-unicode.yml
+            git add .
+            git commit -m "[SYNC] Resolver conflitos - priorizar configuração main"
+          }
+          
+          echo "[SYNC] Sincronização para HML concluída"
+          
+      - name: "[DEPLOY] Push para HML"
+        run: |
+          git push origin hml
+          echo "[DEPLOY] Mudanças sincronizadas para HML"
+
+  notify-sync:
+    name: "[NOTIFY] Notificar Sincronização"
+    runs-on: ubuntu-latest
+    needs: sync-to-hml
+    if: always()
+    
+    steps:
+      - name: "[NOTIFY] Status da Sincronização"
+        run: |
+          if [ "${{ needs.sync-to-hml.result }}" == "success" ]; then
+            echo "[OK] Sincronização HML/PROD concluída com sucesso"
+            echo "✅ Dependabot agora funciona em ambos os ambientes"
+          else
+            echo "[ERROR] Falha na sincronização - intervenção manual necessária"
+            echo "❌ Verificar logs para detalhes"
+          fi
+
+concurrency:
+  group: sync-branches
+  cancel-in-progress: false

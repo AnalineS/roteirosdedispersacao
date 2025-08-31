@@ -3,8 +3,9 @@ name: "[BOT] Dependabot Manager (Unificado)"
 on:
   pull_request:
     types: [opened, reopened, synchronize, closed]
+    branches: [main, hml]
   push:
-    branches: [dependabot-updates]
+    branches: [dependabot-updates, main, hml]
   workflow_dispatch:
     inputs:
       release_type:
@@ -33,6 +34,9 @@ jobs:
     runs-on: ubuntu-latest
     if: github.actor == 'dependabot[bot]' && github.event_name == 'pull_request'
     
+    env:
+      ENVIRONMENT: ${{ github.ref == 'refs/heads/main' && 'production' || 'homologacao' }}
+    
     outputs:
       update-type: ${{ steps.analyze.outputs.update_type }}
       should-auto-merge: ${{ steps.analyze.outputs.should_auto_merge }}
@@ -44,7 +48,8 @@ jobs:
       - name: "[ANALYZE] Analisar Detalhes do PR"
         id: analyze
         run: |
-          echo "[ANALYZE] Analisando PR do Dependabot"
+          echo "[ANALYZE] Analisando PR do Dependabot no ambiente: $ENVIRONMENT"
+          echo "[ANALYZE] Branch de destino: ${{ github.base_ref }}"
           
           UPDATE_TYPE="patch"
           SHOULD_AUTO_MERGE=false
@@ -52,11 +57,11 @@ jobs:
           if [[ "${{ github.event.pull_request.title }}" == *"security"* ]]; then
             UPDATE_TYPE="security"
             SHOULD_AUTO_MERGE=true
-            echo "[LOCK] Atualizacao de SEGURANCA detectada"
+            echo "[LOCK] Atualizacao de SEGURANCA detectada para $ENVIRONMENT"
           elif [[ "${{ github.event.pull_request.title }}" == *"patch"* ]]; then
             UPDATE_TYPE="patch"
             SHOULD_AUTO_MERGE=true
-            echo "[TOOLS] Atualizacao PATCH detectada"
+            echo "[TOOLS] Atualizacao PATCH detectada para $ENVIRONMENT"
           fi
           
           echo "update_type=$UPDATE_TYPE" >> $GITHUB_OUTPUT
@@ -72,15 +77,17 @@ jobs:
       - name: "[OK] Auto-aprovar com Justificativa"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ENVIRONMENT: ${{ github.ref == 'refs/heads/main' && 'production' || 'homologacao' }}
         run: |
-          echo "[OK] Auto-aprovando PR com justificativa..."
-          gh pr review --approve "${{ github.event.pull_request.html_url }}" --body "[OK] Aprovacao automatica aplicada"
+          echo "[OK] Auto-aprovando PR com justificativa no ambiente $ENVIRONMENT..."
+          gh pr review --approve "${{ github.event.pull_request.html_url }}" --body "[OK] Aprovacao automatica aplicada para $ENVIRONMENT"
 
       - name: "[DEPLOY] Habilitar Auto-merge"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ENVIRONMENT: ${{ github.ref == 'refs/heads/main' && 'production' || 'homologacao' }}
         run: |
-          echo "[DEPLOY] Habilitando auto-merge..."
+          echo "[DEPLOY] Habilitando auto-merge para $ENVIRONMENT..."
           gh pr merge --auto --squash "${{ github.event.pull_request.html_url }}"
 
 concurrency:
