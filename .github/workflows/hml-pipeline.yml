@@ -480,29 +480,12 @@ jobs:
           
           COMMIT_SHA=$(echo $GITHUB_SHA | cut -c1-7)
           
-          MESSAGE="$EMOJI Deploy HML $STATUS - Data: $(date '+%d/%m/%Y %H:%M:%S') - Commit: $COMMIT_SHA - Por: ${{ github.actor }} - Release: ${{ needs.create-hml-release.outputs.release-tag || 'N/A' }}
-
-Deploy Inteligente:
-- Backend: ${{ needs.detect-changes.outputs.deploy-backend == 'true' && 'Deployado' || 'Pulado' }}
-- Frontend: ${{ needs.detect-changes.outputs.deploy-frontend == 'true' && 'Deployado' || 'Pulado' }}
-
-URLs HML:
-- Backend: ${{ needs.deploy-backend-hml.outputs.backend-url || 'Sem mudancas' }}
-- Frontend: ${{ needs.deploy-frontend-hml.outputs.frontend-url || 'Sem mudancas' }}
-
-Status:
-- Qualidade: ${{ needs.quality-security-gates.result }}
-- Backend: ${{ needs.deploy-backend-hml.result }}
-- Frontend: ${{ needs.deploy-frontend-hml.result }}
-- Testes: ${{ needs.post-deploy-validation.result }}
-- Release: ${{ needs.create-hml-release.result }}
-
-Proximos Passos: 1. Testar funcionalidades em HML 2. Validar com stakeholders 3. Promover para producao se aprovado"
+          MESSAGE="$EMOJI Deploy HML $STATUS%0A%0AData: $(date '+%d/%m/%Y %H:%M:%S')%0ACommit: $COMMIT_SHA%0APor: ${{ github.actor }}%0ARelease: ${{ needs.create-hml-release.outputs.release-tag || 'N/A' }}%0A%0ADeploy Inteligente:%0A- Backend: ${{ needs.detect-changes.outputs.deploy-backend == 'true' && 'Deployado' || 'Pulado' }}%0A- Frontend: ${{ needs.detect-changes.outputs.deploy-frontend == 'true' && 'Deployado' || 'Pulado' }}%0A%0AURLs HML:%0A- Backend: ${{ needs.deploy-backend-hml.outputs.backend-url || 'Sem mudancas' }}%0A- Frontend: ${{ needs.deploy-frontend-hml.outputs.frontend-url || 'Sem mudancas' }}%0A%0AStatus:%0A- Qualidade: ${{ needs.quality-security-gates.result }}%0A- Backend: ${{ needs.deploy-backend-hml.result }}%0A- Frontend: ${{ needs.deploy-frontend-hml.result }}%0A- Testes: ${{ needs.post-deploy-validation.result }}%0A- Release: ${{ needs.create-hml-release.result }}%0A%0AProximos Passos: 1. Testar funcionalidades em HML 2. Validar com stakeholders 3. Promover para producao se aprovado"
           
           curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
             -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
             -d text="$MESSAGE" \
-            -d parse_mode="Markdown"
+            -d parse_mode="HTML"
 
 concurrency:
   group: hml-deploy-${{ github.ref }}
