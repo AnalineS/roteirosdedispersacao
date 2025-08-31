@@ -1,4 +1,4 @@
-name: "HML Pipeline de Homologacao"
+name: "[HML] Pipeline de Homologacao"
 
 on:
   push:
