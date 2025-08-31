@@ -3,6 +3,7 @@
 Semantic Search - Sistema de busca semântica para RAG médico (LAZY LOADING)
 Integra embeddings, vector store e chunking médico com priorização
 Implementa lazy loading para evitar timeout em Cloud Run
+Compatível com sentence-transformers v5.1+ - métodos otimizados query/document
 """
 
 import logging
@@ -170,7 +171,12 @@ class SemanticSearchEngine:
                     return True
             
             # Gerar embedding
-            embedding = self.embedding_service.embed_text(chunk.content)
+            # Sentence-transformers v5.1+ - usar embed_document para chunks médicos
+            if hasattr(self.embedding_service, 'embed_document'):
+                embedding = self.embedding_service.embed_document(chunk.content)
+                logger.debug(f"[V5.1+] Usando embed_document() para chunk médico")
+            else:
+                embedding = self.embedding_service.embed_text(chunk.content)
             if embedding is None:
                 logger.error(f"Falha ao gerar embedding para chunk")
                 return False
@@ -311,7 +317,12 @@ class SemanticSearchEngine:
             start_time = datetime.now()
             
             # Gerar embedding da query
-            query_embedding = self.embedding_service.embed_text(query)
+            # Sentence-transformers v5.1+ - usar embed_query para consultas do usuário
+            if hasattr(self.embedding_service, 'embed_query'):
+                query_embedding = self.embedding_service.embed_query(query)
+                logger.debug(f"[V5.1+] Usando embed_query() para consulta do usuário")
+            else:
+                query_embedding = self.embedding_service.embed_text(query)
             if query_embedding is None:
                 logger.error("Falha ao gerar embedding da query")
                 return []
