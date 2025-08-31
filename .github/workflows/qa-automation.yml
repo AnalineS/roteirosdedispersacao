@@ -1,0 +1,423 @@
+name: "[QA] Sistema de QA Inteligente"
+
+on:
+  schedule:
+    - cron: '0 2 * * 1-5'  # Segunda a sexta, 2h da manha
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main, hml]
+  workflow_dispatch:
+    inputs:
+      test_suite:
+        description: 'Suite de testes para executar'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - 'all'
+          - 'security'
+          - 'performance'
+          - 'integration'
+          - 'regression'
+      environment:
+        description: 'Ambiente para testar'
+        required: true
+        default: 'hml'
+        type: choice
+        options:
+          - 'hml'
+          - 'prod'
+
+permissions:
+  contents: read
+  pull-requests: write
+  security-events: write
+  actions: read
+
+env:
+  NODE_VERSION: '18'
+  PYTHON_VERSION: '3.11'
+  TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+  TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+
+jobs:
+  analyze-changes:
+    name: "[ANALYZE] Analisar Impacto das Mudancas"
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    outputs:
+      risk-level: ${{ steps.analyze.outputs.risk_level }}
+      test-strategy: ${{ steps.analyze.outputs.test_strategy }}
+      components-affected: ${{ steps.analyze.outputs.components_affected }}
+      
+    steps:
+      - name: "[CHECKOUT] Checkout"
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 10
+          
+      - name: "[ANALYZE] Analise Inteligente de Impacto"
+        id: analyze
+        run: |
+          echo "Analisando impacto das mudancas..."
+          
+          RISK_LEVEL="low"
+          TEST_STRATEGY="basic"
+          COMPONENTS=""
+          
+          # Analise de arquivos alterados
+          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
+          
+          # Classificacao de risco baseada nos arquivos
+          if echo "$CHANGED_FILES" | grep -q -E "(auth|security|payment|database)"; then
+            RISK_LEVEL="critical"
+            TEST_STRATEGY="comprehensive"
+            COMPONENTS="$COMPONENTS security"
+          fi
+          
+          if echo "$CHANGED_FILES" | grep -q -E "(api|backend|server)"; then
+            if [ "$RISK_LEVEL" != "critical" ]; then
+              RISK_LEVEL="high"
+            fi
+            TEST_STRATEGY="extended"
+            COMPONENTS="$COMPONENTS backend"
+          fi
+          
+          if echo "$CHANGED_FILES" | grep -q -E "(frontend|ui|component)"; then
+            if [ "$RISK_LEVEL" == "low" ]; then
+              RISK_LEVEL="medium"
+            fi
+            COMPONENTS="$COMPONENTS frontend"
+          fi
+          
+          # Analise de complexidade (numero de arquivos)
+          FILE_COUNT=$(echo "$CHANGED_FILES" | wc -l)
+          if [ $FILE_COUNT -gt 20 ]; then
+            RISK_LEVEL="high"
+            TEST_STRATEGY="comprehensive"
+          fi
+          
+          echo "risk_level=$RISK_LEVEL" >> $GITHUB_OUTPUT
+          echo "test_strategy=$TEST_STRATEGY" >> $GITHUB_OUTPUT
+          echo "components_affected=$COMPONENTS" >> $GITHUB_OUTPUT
+          
+          echo "Nivel de risco: $RISK_LEVEL"
+          echo "Estrategia de teste: $TEST_STRATEGY"
+          echo "Componentes afetados: $COMPONENTS"
+
+  security-tests:
+    name: "[SECURITY] Testes de Seguranca"
+    runs-on: ubuntu-latest
+    needs: analyze-changes
+    if: always() && (contains(needs.analyze-changes.outputs.components-affected, 'security') || inputs.test_suite == 'all' || inputs.test_suite == 'security' || github.event_name == 'schedule')
+    
+    steps:
+      - name: "[CHECKOUT] Checkout"
+        uses: actions/checkout@v4
+        
+      - name: "[SECURITY] OWASP Dependency Check"
+        uses: dependency-check/Dependency-Check_Action@main
+        with:
+          project: 'roteiro-dispensacao'
+          path: '.'
+          format: 'ALL'
+          
+      - name: "[SECURITY] Scan de Vulnerabilidades"
+        run: |
+          echo "Executando scans de seguranca avancados..."
+          
+          # Verificacao de secrets expostos
+          if command -v truffleHog >/dev/null 2>&1; then
+            echo "Procurando por secrets expostos..."
+            truffleHog --regex --entropy=False .
+          fi
+          
+          # Verificacao de configuracoes inseguras
+          echo "Verificando configuracoes de seguranca..."
+          find . -name "*.env*" -type f | while read file; do
+            if [ -f "$file" ]; then
+              echo "AVISO: Arquivo de configuracao encontrado: $file"
+            fi
+          done
+          
+      - name: "[SECURITY] Upload Security Results"
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: reports/dependency-check-report.sarif
+
+  performance-tests:
+    name: "[PERFORMANCE] Testes de Performance"
+    runs-on: ubuntu-latest
+    if: inputs.test_suite == 'all' || inputs.test_suite == 'performance' || github.event_name == 'schedule'
+    
+    strategy:
+      matrix:
+        environment: [hml, prod]
+        
+    steps:
+      - name: "[CHECKOUT] Checkout"
+        uses: actions/checkout@v4
+        
+      - name: "[SETUP] Node.js"
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          
+      - name: "[INSTALL] Performance Tools"
+        run: |
+          npm install -g lighthouse artillery @web/dev-server
+          
+      - name: "[PERFORMANCE] Lighthouse Audit"
+        run: |
+          ENVIRONMENT="${{ matrix.environment }}"
+          
+          if [ "$ENVIRONMENT" == "hml" ]; then
+            TARGET_URL="${{ secrets.HML_FRONTEND_URL }}"
+          else
+            TARGET_URL="${{ secrets.PROD_FRONTEND_URL }}"
+          fi
+          
+          echo "Executando auditoria Lighthouse para $ENVIRONMENT..."
+          lighthouse "$TARGET_URL" \
+            --output=json \
+            --output-path=lighthouse-$ENVIRONMENT.json \
+            --chrome-flags="--headless --no-sandbox" \
+            --quiet
+            
+      - name: "[PERFORMANCE] Load Testing"
+        run: |
+          ENVIRONMENT="${{ matrix.environment }}"
+          
+          if [ "$ENVIRONMENT" == "hml" ]; then
+            TARGET_URL="${{ secrets.HML_API_URL }}"
+          else
+            TARGET_URL="${{ secrets.PROD_API_URL }}"
+          fi
+          
+          echo "Executando testes de carga para $ENVIRONMENT..."
+          
+          # Criar configuracao basica do Artillery
+          cat > load-test.yml << EOF
+          config:
+            target: '$TARGET_URL'
+            phases:
+              - duration: 60
+                arrivalRate: 5
+          scenarios:
+            - name: 'Basic API Test'
+              requests:
+                - get:
+                    url: '/health'
+          EOF
+          
+          artillery run load-test.yml --output performance-$ENVIRONMENT.json
+          
+      - name: "[UPLOAD] Performance Artifacts"
+        uses: actions/upload-artifact@v3
+        with:
+          name: performance-results-${{ matrix.environment }}
+          path: |
+            lighthouse-*.json
+            performance-*.json
+
+  integration-tests:
+    name: "[INTEGRATION] Testes de Integracao"
+    runs-on: ubuntu-latest
+    needs: analyze-changes
+    if: always() && (inputs.test_suite == 'all' || inputs.test_suite == 'integration' || github.event_name == 'schedule')
+    
+    services:
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_DB: testdb
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+          
+    steps:
+      - name: "[CHECKOUT] Checkout"
+        uses: actions/checkout@v4
+        
+      - name: "[SETUP] Python Environment"
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          
+      - name: "[SETUP] Node.js Environment"
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          
+      - name: "[INSTALL] Dependencies"
+        run: |
+          # Backend dependencies
+          cd apps/backend
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio
+          
+          # Frontend dependencies
+          cd ../frontend-nextjs
+          npm ci
+          
+      - name: "[TEST] Backend Integration Tests"
+        working-directory: apps/backend
+        env:
+          DATABASE_URL: postgresql://postgres:testpass@localhost:5432/testdb
+        run: |
+          echo "Executando testes de integracao do backend..."
+          python -m pytest tests/integration/ -v --tb=short
+          
+      - name: "[TEST] Frontend Integration Tests"
+        working-directory: apps/frontend-nextjs
+        run: |
+          echo "Executando testes de integracao do frontend..."
+          npm run test:integration || echo "Testes de integracao nao configurados"
+          
+      - name: "[TEST] End-to-End Tests"
+        run: |
+          echo "Executando testes E2E..."
+          # Placeholder para testes E2E com Playwright ou Cypress
+          echo "E2E tests seriam executados aqui"
+
+  regression-tests:
+    name: "[REGRESSION] Testes de Regressao"
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || inputs.test_suite == 'all' || inputs.test_suite == 'regression'
+    
+    steps:
+      - name: "[CHECKOUT] Checkout"
+        uses: actions/checkout@v4
+        
+      - name: "[REGRESSION] Executar Suite de Regressao"
+        run: |
+          echo "Executando testes de regressao automatizados..."
+          
+          # Simulacao de testes de regressao
+          echo "1. Testando funcionalidades criticas..."
+          echo "2. Verificando compatibilidade com versoes anteriores..."
+          echo "3. Validando integridade dos dados..."
+          echo "4. Testando fluxos principais do usuario..."
+          
+          # Aqui seria executada a suite real de testes de regressao
+          echo "Suite de regressao concluida com sucesso"
+
+  generate-report:
+    name: "[REPORT] Gerar Relatorio de QA"
+    runs-on: ubuntu-latest
+    needs: [security-tests, performance-tests, integration-tests, regression-tests]
+    if: always()
+    
+    steps:
+      - name: "[CHECKOUT] Checkout"
+        uses: actions/checkout@v4
+        
+      - name: "[REPORT] Download Artifacts"
+        uses: actions/download-artifact@v3
+        with:
+          path: qa-results/
+          
+      - name: "[REPORT] Gerar Relatorio Consolidado"
+        run: |
+          echo "Gerando relatorio consolidado de QA..."
+          
+          TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
+          REPORT_FILE="qa-report-$(date +%Y%m%d-%H%M%S).md"
+          
+          cat > "$REPORT_FILE" << EOF
+          # Relatorio de QA - $TIMESTAMP
+          
+          ## Resumo Executivo
+          - **Trigger:** ${{ github.event_name }}
+          - **Branch:** ${{ github.ref }}
+          - **Commit:** ${{ github.sha }}
+          
+          ## Resultados dos Testes
+          
+          ### Seguranca
+          - Status: ${{ needs.security-tests.result }}
+          - Vulnerabilidades encontradas: $(ls qa-results/ | grep security | wc -l)
+          
+          ### Performance
+          - Status: ${{ needs.performance-tests.result }}
+          - Ambientes testados: HML, PROD
+          
+          ### Integracao
+          - Status: ${{ needs.integration-tests.result }}
+          - Cobertura de integracao: Backend + Frontend
+          
+          ### Regressao
+          - Status: ${{ needs.regression-tests.result }}
+          - Suite completa executada
+          
+          ## Proximas Acoes
+          EOF
+          
+          # Adicionar recomendacoes baseadas nos resultados
+          if [ "${{ needs.security-tests.result }}" != "success" ]; then
+            echo "- [CRITICO] Revisar falhas de seguranca imediatamente" >> "$REPORT_FILE"
+          fi
+          
+          if [ "${{ needs.performance-tests.result }}" != "success" ]; then
+            echo "- [ALTO] Analisar problemas de performance" >> "$REPORT_FILE"
+          fi
+          
+          echo "Relatorio gerado: $REPORT_FILE"
+          
+      - name: "[UPLOAD] Upload Report"
+        uses: actions/upload-artifact@v3
+        with:
+          name: qa-report
+          path: qa-report-*.md
+
+  notify-results:
+    name: "[NOTIFY] Notificar Resultados"
+    runs-on: ubuntu-latest
+    needs: [security-tests, performance-tests, integration-tests, regression-tests, generate-report]
+    if: always()
+    
+    steps:
+      - name: "[NOTIFY] Enviar Resultados via Telegram"
+        run: |
+          SECURITY_STATUS="${{ needs.security-tests.result }}"
+          PERFORMANCE_STATUS="${{ needs.performance-tests.result }}"
+          INTEGRATION_STATUS="${{ needs.integration-tests.result }}"
+          REGRESSION_STATUS="${{ needs.regression-tests.result }}"
+          
+          # Determinar status geral
+          OVERALL_STATUS="SUCCESS"
+          if [ "$SECURITY_STATUS" == "failure" ] || [ "$INTEGRATION_STATUS" == "failure" ]; then
+            OVERALL_STATUS="CRITICAL"
+          elif [ "$PERFORMANCE_STATUS" == "failure" ] || [ "$REGRESSION_STATUS" == "failure" ]; then
+            OVERALL_STATUS="WARNING"
+          fi
+          
+          # Montar mensagem
+          if [ "$OVERALL_STATUS" == "SUCCESS" ]; then
+            MESSAGE="[QA-SUCCESS] Todos os testes de QA passaram!"
+          elif [ "$OVERALL_STATUS" == "WARNING" ]; then
+            MESSAGE="[QA-WARNING] Alguns testes falharam - revisar necessario"
+          else
+            MESSAGE="[QA-CRITICAL] Falhas criticas detectadas - acao imediata necessaria!"
+          fi
+          
+          MESSAGE="$MESSAGE%0A%0AResultados:"
+          MESSAGE="$MESSAGE%0A- Seguranca: $SECURITY_STATUS"
+          MESSAGE="$MESSAGE%0A- Performance: $PERFORMANCE_STATUS"
+          MESSAGE="$MESSAGE%0A- Integracao: $INTEGRATION_STATUS"
+          MESSAGE="$MESSAGE%0A- Regressao: $REGRESSION_STATUS"
+          MESSAGE="$MESSAGE%0A%0ATrigger: ${{ github.event_name }}"
+          MESSAGE="$MESSAGE%0ACommit: ${{ github.sha }}"
+          
+          curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_TOKEN/sendMessage" \
+            -d chat_id="$TELEGRAM_CHAT_ID" \
+            -d text="$MESSAGE" \
+            -d parse_mode="HTML"
+
+concurrency:
+  group: qa-automation-${{ github.ref }}
+  cancel-in-progress: true

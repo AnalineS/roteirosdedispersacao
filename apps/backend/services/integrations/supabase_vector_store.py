@@ -214,7 +214,7 @@ CREATE TABLE IF NOT EXISTS {self.metadata_table} (
         
         try:
             # Cache key para evitar queries repetidas
-            embedding_hash = hashlib.md5(query_embedding.tobytes()).hexdigest()[:16]
+            embedding_hash = hashlib.sha256(query_embedding.tobytes()).hexdigest()[:16]
             cache_key = f"{embedding_hash}_{top_k}_{min_score}"
             
             # Verificar cache primeiro

@@ -74,8 +74,10 @@ def setup_environment_from_input():
             else:
                 return False
     
-    # Configurações básicas
-    os.environ['SECRET_KEY'] = 'migration-secret-key'
+    # Configurações básicas - usar env var ou gerar aleatório
+    if not os.environ.get('SECRET_KEY'):
+        import secrets
+        os.environ['SECRET_KEY'] = secrets.token_hex(32)
     os.environ['EMBEDDINGS_ENABLED'] = 'true'
     os.environ['RAG_AVAILABLE'] = 'true'
     os.environ['VECTOR_DB_TYPE'] = 'supabase'

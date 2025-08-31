@@ -1,263 +1,386 @@
-name: 🚀 Main Pipeline (Unified)
+name: "[PROD] Pipeline de Producao Completo"
 
 on:
   push:
-    branches: [main, hml]
+    branches: [main]
     paths:
       - 'apps/backend/**'
       - 'apps/frontend-nextjs/**'
-      - '.github/workflows/main-pipeline.yml'
-      # MANTER documentação - nunca ignorar
-      - '**/*.md'
-      - '**/README*'
-      - '**/*.json'  # package.json, etc
-  pull_request:
-    branches: [main, hml]
-    # Todos os PRs devem ser testados independente do conteúdo
+      - 'package.json'
+      - 'package-lock.json'
   workflow_dispatch:
     inputs:
-      environment:
-        description: 'Target environment'
-        required: true
-        default: 'hml'
-        type: choice
-        options:
-          - hml
-          - production
+      skip_tests:
+        description: 'Pular testes (apenas emergencias)'
+        required: false
+        default: false
+        type: boolean
       force_deploy:
-        description: 'Force deploy (skip quality gates)'
+        description: 'Forcar deploy mesmo com falhas'
         required: false
         default: false
         type: boolean
 
+permissions:
+  contents: write
+  pull-requests: read
+  security-events: write
+  actions: read
+  id-token: write
+
 env:
-  PYTHON_VERSION: '3.11'
   NODE_VERSION: '18'
+  PYTHON_VERSION: '3.11'
+  TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+  TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+  SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
 jobs:
-  # =====================================
-  # 1. CHANGE DETECTION
-  # =====================================
   detect-changes:
-    name: 🔍 Detect Changes
+    name: "[DETECT] Detectar Mudancas"
     runs-on: ubuntu-latest
     outputs:
-      backend: ${{ steps.changes.outputs.backend }}
-      frontend: ${{ steps.changes.outputs.frontend }}
-      deploy-needed: ${{ steps.decision.outputs.deploy }}
-      target-env: ${{ steps.decision.outputs.environment }}
-    
+      backend-changed: ${{ steps.changes.outputs.backend }}
+      frontend-changed: ${{ steps.changes.outputs.frontend }}
+      dependencies-changed: ${{ steps.changes.outputs.dependencies }}
+      
     steps:
-      - name: 📥 Checkout
+      - name: "[CHECKOUT] Checkout"
         uses: actions/checkout@v4
         with:
           fetch-depth: 2
-
-      - name: 🔍 Detect Changes
+          
+      - name: "[DETECT] Analisar Mudancas"
         id: changes
         run: |
-          if [ "${{ github.event_name }}" == "pull_request" ]; then
-            # Para PRs, compara com a base branch
-            BACKEND_CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -E '^apps/backend/' | wc -l)
-            FRONTEND_CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -E '^apps/frontend-nextjs/' | wc -l)
-          else
-            # Para pushes diretos
-            BACKEND_CHANGED=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -E '^apps/backend/' | wc -l)
-            FRONTEND_CHANGED=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -E '^apps/frontend-nextjs/' | wc -l)
+          echo "Analisando mudancas para PRODUCAO..."
+          
+          BACKEND_CHANGED=false
+          FRONTEND_CHANGED=false
+          DEPS_CHANGED=false
+          
+          if git diff --name-only HEAD~1 HEAD | grep -q "^apps/backend/"; then
+            BACKEND_CHANGED=true
+            echo "Backend alterado detectado"
           fi
           
-          echo "backend=$([ $BACKEND_CHANGED -gt 0 ] && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
-          echo "frontend=$([ $FRONTEND_CHANGED -gt 0 ] && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
-
-      - name: 🎯 Deployment Decision
-        id: decision
-        run: |
-          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            echo "deploy=true" >> $GITHUB_OUTPUT
-            echo "environment=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
-          elif [ "${{ github.ref }}" == "refs/heads/hml" ]; then
-            echo "deploy=true" >> $GITHUB_OUTPUT
-            echo "environment=hml" >> $GITHUB_OUTPUT
-          elif [ "${{ github.ref }}" == "refs/heads/main" ]; then
-            echo "deploy=true" >> $GITHUB_OUTPUT  
-            echo "environment=production" >> $GITHUB_OUTPUT
-          else
-            echo "deploy=false" >> $GITHUB_OUTPUT
-            echo "environment=none" >> $GITHUB_OUTPUT
+          if git diff --name-only HEAD~1 HEAD | grep -q "^apps/frontend-nextjs/"; then
+            FRONTEND_CHANGED=true
+            echo "Frontend alterado detectado"
           fi
           
-          echo "📋 Deployment Plan:"
-          echo "  Backend Changes: ${{ steps.changes.outputs.backend }}"
-          echo "  Frontend Changes: ${{ steps.changes.outputs.frontend }}"
-          echo "  Deploy Needed: $(cat $GITHUB_OUTPUT | grep deploy= | cut -d= -f2)"
-          echo "  Target Environment: $(cat $GITHUB_OUTPUT | grep environment= | cut -d= -f2)"
+          if git diff --name-only HEAD~1 HEAD | grep -q -E "package\.json|package-lock\.json"; then
+            DEPS_CHANGED=true
+            echo "Dependencias alteradas detectadas"
+          fi
+          
+          echo "backend=$BACKEND_CHANGED" >> $GITHUB_OUTPUT
+          echo "frontend=$FRONTEND_CHANGED" >> $GITHUB_OUTPUT
+          echo "dependencies=$DEPS_CHANGED" >> $GITHUB_OUTPUT
 
-  # =====================================
-  # 2. QUALITY GATES (PARALLEL)
-  # =====================================
-  quality-gates:
-    name: 🛡️ Quality Gates
+  security-quality-gates:
+    name: "[SECURITY] Gates de Qualidade e Seguranca"
     runs-on: ubuntu-latest
     needs: detect-changes
-    if: needs.detect-changes.outputs.backend == 'true' || needs.detect-changes.outputs.frontend == 'true' || github.event.inputs.force_deploy == 'true'
+    if: needs.detect-changes.outputs.backend-changed == 'true' || needs.detect-changes.outputs.frontend-changed == 'true'
     
     steps:
-      - name: 📥 Checkout
+      - name: "[CHECKOUT] Checkout"
         uses: actions/checkout@v4
+        
+      - name: "[SECURITY] GitHub Security Scanning"
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript,python
+          
+      - name: "[SECURITY] Snyk Security Scan"
+        uses: snyk/actions/node@master
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high --policy-path=.snyk
+          
+      - name: "[SECURITY] Upload Snyk Results"
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: snyk.sarif
+          
+      - name: "[SECURITY] CodeQL Analysis"
+        uses: github/codeql-action/analyze@v3
+        
+      - name: "[NOTIFY] Security Status"
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_TOKEN/sendMessage" \
+              -d chat_id="$TELEGRAM_CHAT_ID" \
+              -d text="[PROD-SECURITY] Gates de seguranca aprovados para PRODUCAO"
+          else
+            curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_TOKEN/sendMessage" \
+              -d chat_id="$TELEGRAM_CHAT_ID" \
+              -d text="[PROD-SECURITY] ALERTA: Falhas de seguranca detectadas em PRODUCAO!"
+          fi
 
-      - name: 🐍 Setup Python
-        if: needs.detect-changes.outputs.backend == 'true'
-        uses: actions/setup-python@v5
+  test-backend:
+    name: "[TEST] Backend Tests"
+    runs-on: ubuntu-latest
+    needs: [detect-changes, security-quality-gates]
+    if: needs.detect-changes.outputs.backend-changed == 'true' && inputs.skip_tests != true
+    
+    steps:
+      - name: "[CHECKOUT] Checkout"
+        uses: actions/checkout@v4
+        
+      - name: "[SETUP] Python Environment"
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: 'pip'
+          
+      - name: "[CACHE] Dependencies Cache"
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/pip
+            apps/backend/.venv
+          key: backend-deps-${{ hashFiles('apps/backend/requirements.txt') }}
+          
+      - name: "[INSTALL] Backend Dependencies"
+        working-directory: apps/backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov
+          
+      - name: "[TEST] Run Backend Tests"
+        working-directory: apps/backend
+        run: |
+          echo "Executando testes do backend para PRODUCAO..."
+          python -m pytest tests/ -v --cov=. --cov-report=xml
+          
+      - name: "[COVERAGE] Upload Coverage"
+        uses: codecov/codecov-action@v3
+        with:
+          file: apps/backend/coverage.xml
+          flags: backend-prod
 
-      - name: 📦 Setup Node.js
-        if: needs.detect-changes.outputs.frontend == 'true'
+  test-frontend:
+    name: "[TEST] Frontend Tests"
+    runs-on: ubuntu-latest
+    needs: [detect-changes, security-quality-gates]
+    if: needs.detect-changes.outputs.frontend-changed == 'true' && inputs.skip_tests != true
+    
+    steps:
+      - name: "[CHECKOUT] Checkout"
+        uses: actions/checkout@v4
+        
+      - name: "[SETUP] Node.js Environment"
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
           cache-dependency-path: apps/frontend-nextjs/package-lock.json
-
-      - name: 🧪 Backend Quality
-        if: needs.detect-changes.outputs.backend == 'true'
-        run: |
-          cd apps/backend
-          pip install -r requirements.txt
-          pip install pytest flake8 mypy
           
-          # Linting
-          flake8 . --count --max-complexity=10 --max-line-length=127 --statistics || echo "⚠️ Linting warnings found"
-          
-          # Tests
-          python -m pytest --tb=short || echo "⚠️ Some tests failed"
-
-      - name: 🧪 Frontend Quality  
-        if: needs.detect-changes.outputs.frontend == 'true'
+      - name: "[INSTALL] Frontend Dependencies"
+        working-directory: apps/frontend-nextjs
         run: |
-          cd apps/frontend-nextjs
-          npm ci
-          npm run lint || echo "⚠️ Linting warnings found"
-          npm run type-check || echo "⚠️ TypeScript warnings found"
-          npm run test -- --passWithNoTests || echo "⚠️ Some tests failed"
-
-      - name: 🔒 Security Scan
-        continue-on-error: true
-        run: |
-          # CodeQL will run separately via its own workflow
-          echo "✅ Security scan delegated to CodeQL workflow"
-
-  # =====================================
-  # 3. BUILD & DEPLOY (CONDITIONAL)
-  # =====================================
-  deploy:
-    name: 🚀 Deploy
-    runs-on: ubuntu-latest
-    needs: [detect-changes, quality-gates]
-    if: needs.detect-changes.outputs.deploy-needed == 'true' && (needs.quality-gates.result == 'success' || github.event.inputs.force_deploy == 'true')
-    
-    outputs:
-      backend-url: ${{ steps.backend-deploy.outputs.url }}
-      frontend-url: ${{ steps.frontend-deploy.outputs.url }}
-    
-    steps:
-      - name: 📥 Checkout  
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.environment == 'hml' && 'hml' || 'main') || github.ref }}
-
-      - name: 🔐 Authenticate to Google Cloud
-        uses: google-github-actions/auth@v3
-        with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
-
-      - name: 🛠️ Setup Cloud SDK
-        uses: google-github-actions/setup-gcloud@v3
-
-      - name: 🚀 Deploy Backend
-        id: backend-deploy
-        if: needs.detect-changes.outputs.backend == 'true'
-        run: |
-          cd apps/backend
+          npm ci --production=false
           
-          # Determine environment
-          if [ "${{ needs.detect-changes.outputs.target-env }}" == "production" ]; then
-            SERVICE_NAME="roteiro-dispensacao-api"
-            ENV_VARS="ENVIRONMENT=production,FLASK_ENV=production"
-          else
-            SERVICE_NAME="roteiro-dispensacao-api-hml"
-            ENV_VARS="ENVIRONMENT=homologacao,FLASK_ENV=production"
-          fi
-          
-          # Build and deploy
-          gcloud run deploy $SERVICE_NAME \
-            --source . \
-            --region=${{ secrets.GCP_REGION }} \
-            --allow-unauthenticated \
-            --port=8080 \
-            --memory=1Gi \
-            --cpu=1 \
-            --set-env-vars="$ENV_VARS,SECRET_KEY=${{ secrets.SECRET_KEY }},OPENROUTER_API_KEY=${{ secrets.OPENROUTER_API_KEY }}" \
-            --quiet
-          
-          SERVICE_URL=$(gcloud run services describe $SERVICE_NAME --region=${{ secrets.GCP_REGION }} --format="value(status.url)")
-          echo "url=$SERVICE_URL" >> $GITHUB_OUTPUT
-          echo "🌐 Backend deployed: $SERVICE_URL"
-
-      - name: 🎨 Deploy Frontend
-        id: frontend-deploy
-        if: needs.detect-changes.outputs.frontend == 'true'
+      - name: "[BUILD] Frontend Build Test"
+        working-directory: apps/frontend-nextjs
         run: |
-          cd apps/frontend-nextjs
-          npm ci
+          echo "Testando build do frontend para PRODUCAO..."
           npm run build
           
-          # Firebase deploy
-          npm install -g firebase-tools
-          echo "${{ secrets.FIREBASE_TOKEN }}" | firebase login:ci
-          
-          if [ "${{ needs.detect-changes.outputs.target-env }}" == "production" ]; then
-            firebase deploy --project ${{ secrets.FIREBASE_PROJECT_ID }} --only hosting
-            echo "url=https://${{ secrets.FIREBASE_PROJECT_ID }}.web.app" >> $GITHUB_OUTPUT
-          else
-            firebase deploy --project ${{ secrets.FIREBASE_PROJECT_ID }} --only hosting:hml
-            echo "url=https://hml-${{ secrets.FIREBASE_PROJECT_ID }}.web.app" >> $GITHUB_OUTPUT
-          fi
+      - name: "[TEST] Frontend Tests"
+        working-directory: apps/frontend-nextjs
+        run: |
+          echo "Executando testes do frontend para PRODUCAO..."
+          npm test -- --coverage --watchAll=false
 
-  # =====================================
-  # 4. POST-DEPLOY VERIFICATION
-  # =====================================
-  verify:
-    name: ✅ Verify Deployment
+  deploy-backend-prod:
+    name: "[DEPLOY] Backend to Production"
     runs-on: ubuntu-latest
-    needs: [detect-changes, deploy]
-    if: needs.detect-changes.outputs.deploy-needed == 'true' && needs.deploy.result == 'success'
+    needs: [detect-changes, security-quality-gates, test-backend]
+    if: always() && (needs.detect-changes.outputs.backend-changed == 'true' && (needs.test-backend.result == 'success' || inputs.force_deploy == true))
+    environment: production
     
     steps:
-      - name: 🏥 Health Check
-        run: |
-          if [ -n "${{ needs.deploy.outputs.backend-url }}" ]; then
-            echo "🔍 Testing backend health..."
-            curl -f "${{ needs.deploy.outputs.backend-url }}/health" || echo "⚠️ Backend health check failed"
-          fi
+      - name: "[CHECKOUT] Checkout"
+        uses: actions/checkout@v4
+        
+      - name: "[AUTH] Google Cloud Auth"
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY_PROD }}
           
-          if [ -n "${{ needs.deploy.outputs.frontend-url }}" ]; then
-            echo "🔍 Testing frontend..."
-            curl -f "${{ needs.deploy.outputs.frontend-url }}" || echo "⚠️ Frontend check failed"
+      - name: "[SETUP] Cloud SDK"
+        uses: google-github-actions/setup-gcloud@v2
+        
+      - name: "[DEPLOY] Backend to Cloud Run"
+        working-directory: apps/backend
+        run: |
+          echo "Fazendo deploy do backend para PRODUCAO..."
+          
+          gcloud builds submit \
+            --tag gcr.io/${{ secrets.GCP_PROJECT_ID_PROD }}/backend-prod:${{ github.sha }} \
+            --project ${{ secrets.GCP_PROJECT_ID_PROD }}
+          
+          gcloud run deploy backend-prod \
+            --image gcr.io/${{ secrets.GCP_PROJECT_ID_PROD }}/backend-prod:${{ github.sha }} \
+            --platform managed \
+            --region us-central1 \
+            --allow-unauthenticated \
+            --port=8080 \
+            --memory 1Gi \
+            --cpu 1 \
+            --concurrency=100 \
+            --max-instances 10 \
+            --min-instances=0 \
+            --timeout=300 \
+            --set-env-vars="ENVIRONMENT=production,FLASK_ENV=production,DEBUG=false,SECRET_KEY=${{ secrets.SECRET_KEY }},OPENROUTER_API_KEY=${{ secrets.OPENROUTER_API_KEY }}" \
+            --project ${{ secrets.GCP_PROJECT_ID_PROD }}
+            
+      - name: "[HEALTH] Backend Health Check"
+        run: |
+          echo "Verificando saude do backend em PRODUCAO..."
+          echo "Aguardando backend inicializar..."
+          sleep 30
+          
+          BACKEND_URL=$(gcloud run services describe backend-prod --region=us-central1 --format="value(status.url)" --project ${{ secrets.GCP_PROJECT_ID_PROD }})
+          
+          for i in {1..30}; do
+            if curl -f "$BACKEND_URL/health" > /dev/null 2>&1; then
+              echo "Backend em PRODUCAO esta saudavel!"
+              break
+            fi
+            echo "Tentativa $i/30 - Aguardando backend..."
+            sleep 10
+          done
+
+  deploy-frontend-prod:
+    name: "[DEPLOY] Frontend to Production"
+    runs-on: ubuntu-latest
+    needs: [detect-changes, security-quality-gates, test-frontend, deploy-backend-prod]
+    if: always() && (needs.detect-changes.outputs.frontend-changed == 'true' && (needs.test-frontend.result == 'success' || inputs.force_deploy == true))
+    environment: production
+    
+    steps:
+      - name: "[CHECKOUT] Checkout"
+        uses: actions/checkout@v4
+        
+      - name: "[SETUP] Node.js"
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: apps/frontend-nextjs/package-lock.json
+          
+      - name: "[INSTALL] Dependencies"
+        working-directory: apps/frontend-nextjs
+        run: npm ci
+        
+      - name: "[BUILD] Production Build"
+        working-directory: apps/frontend-nextjs
+        env:
+          NEXT_PUBLIC_API_URL: ${{ secrets.PROD_API_URL }}
+          NEXT_PUBLIC_ENVIRONMENT: production
+        run: |
+          echo "Buildando frontend para PRODUCAO..."
+          npm run build
+          
+      - name: "[DEPLOY] Firebase Hosting"
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_PROD }}
+          projectId: ${{ secrets.FIREBASE_PROJECT_ID_PROD }}
+          channelId: live
+          entrypoint: apps/frontend-nextjs
+
+  create-release:
+    name: "[RELEASE] Criar Release de Producao"
+    runs-on: ubuntu-latest
+    needs: [deploy-backend-prod, deploy-frontend-prod]
+    if: always() && (needs.deploy-backend-prod.result == 'success' || needs.deploy-frontend-prod.result == 'success')
+    
+    steps:
+      - name: "[CHECKOUT] Checkout"
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - name: "[RELEASE] Generate Version"
+        id: version
+        run: |
+          TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+          COMMIT_SHORT=${GITHUB_SHA:0:7}
+          VERSION="prod-v${TIMESTAMP}-${COMMIT_SHORT}"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          
+      - name: "[RELEASE] Create GitHub Release"
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.version.outputs.version }}
+          release_name: "Producao ${{ steps.version.outputs.version }}"
+          body: |
+            ## Release de Producao ${{ steps.version.outputs.version }}
+            
+            **Commit:** ${{ github.sha }}
+            **Branch:** main
+            **Ambiente:** Producao
+            **Timestamp:** $(date)
+            
+            ### Mudancas Deployadas:
+            - Backend: ${{ needs.deploy-backend-prod.result == 'success' && 'Sucesso' || 'N/A' }}
+            - Frontend: ${{ needs.deploy-frontend-prod.result == 'success' && 'Sucesso' || 'N/A' }}
+            
+            ### Links:
+            - Backend API: ${{ secrets.PROD_API_URL }}
+            - Frontend: ${{ secrets.PROD_FRONTEND_URL }}
+          draft: false
+          prerelease: false
+
+  notify-completion:
+    name: "[NOTIFY] Notificacao Final"
+    runs-on: ubuntu-latest
+    needs: [deploy-backend-prod, deploy-frontend-prod, create-release]
+    if: always()
+    
+    steps:
+      - name: "[NOTIFY] Status Final"
+        run: |
+          BACKEND_STATUS="${{ needs.deploy-backend-prod.result }}"
+          FRONTEND_STATUS="${{ needs.deploy-frontend-prod.result }}"
+          RELEASE_STATUS="${{ needs.create-release.result }}"
+          
+          if [ "$BACKEND_STATUS" == "success" ] || [ "$FRONTEND_STATUS" == "success" ]; then
+            MESSAGE="[PROD-SUCCESS] Deploy de PRODUCAO concluido com sucesso!"
+            MESSAGE="$MESSAGE%0A- Backend: $BACKEND_STATUS"
+            MESSAGE="$MESSAGE%0A- Frontend: $FRONTEND_STATUS" 
+            MESSAGE="$MESSAGE%0A- Release: $RELEASE_STATUS"
+            MESSAGE="$MESSAGE%0A%0ACommit: ${{ github.sha }}"
+            
+            curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_TOKEN/sendMessage" \
+              -d chat_id="$TELEGRAM_CHAT_ID" \
+              -d text="$MESSAGE" \
+              -d parse_mode="HTML"
+          else
+            MESSAGE="[PROD-ERROR] FALHA no deploy de PRODUCAO!"
+            MESSAGE="$MESSAGE%0A- Backend: $BACKEND_STATUS"
+            MESSAGE="$MESSAGE%0A- Frontend: $FRONTEND_STATUS"
+            MESSAGE="$MESSAGE%0A%0AVerificar logs imediatamente!"
+            
+            curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_TOKEN/sendMessage" \
+              -d chat_id="$TELEGRAM_CHAT_ID" \
+              -d text="$MESSAGE" \
+              -d parse_mode="HTML"
           fi
 
-      - name: 📢 Notify Success
-        if: success()
-        run: |
-          echo "🎉 Deployment successful!"
-          echo "Backend: ${{ needs.deploy.outputs.backend-url || 'No changes' }}"
-          echo "Frontend: ${{ needs.deploy.outputs.frontend-url || 'No changes' }}"
-          echo "Environment: ${{ needs.detect-changes.outputs.target-env }}"
-
-# =====================================
-# WORKFLOW CONFIGURATION
-# =====================================
 concurrency:
-  group: deploy-${{ github.ref }}-${{ github.event.inputs.environment || 'auto' }}
+  group: main-pipeline-${{ github.sha }}
   cancel-in-progress: false

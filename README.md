@@ -2,6 +2,8 @@
 
 Sistema moderno de apoio à dispensação farmacêutica para hanseníase, desenvolvido com tecnologias de ponta e IA.
 
+> **✅ Sistema de Labels Inteligente ATIVO**: Labels automáticos baseados em arquivos alterados, branches e análise de impacto.
+
 ## 📁 Estrutura do Projeto
 
 ```

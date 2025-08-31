@@ -1,10 +1,9 @@
-# GitHub Dependabot Configuration - OTIMIZADA
-# Sistema centralizado com branch fixa 'dependabot-updates'
-# Tags automáticas para releases organizadas
-# NOVA ESTRATÉGIA: Branch única para todas as atualizações
+# GitHub Dependabot Configuration - Fixed Branch Strategy
+# All updates go to 'dependabot-updates' branch first, then sync to hml/main
+# Automatic tagging and release management via workflows
 version: 2
 updates:
-  # Frontend Next.js dependencies - BRANCH FIXA
+  # Frontend Next.js Dependencies - Unified
   - package-ecosystem: "npm"
     directory: "/apps/frontend-nextjs"
     target-branch: "dependabot-updates"
@@ -13,36 +12,52 @@ updates:
       day: "monday"
       time: "08:00"
       timezone: "America/Sao_Paulo"
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 10
+    groups:
+      react-ecosystem:
+        patterns:
+          - "react*"
+          - "next*"
+          - "@next/*"
+          - "@types/react*"
+          - "eslint*"
+          - "@typescript-eslint/*"
+        update-types:
+          - "minor"
+          - "patch"
+      ui-components:
+        patterns:
+          - "@radix-ui/*"
+          - "lucide-react"
+          - "tailwindcss"
+          - "@tailwindcss/*"
+          - "clsx"
+          - "class-variance-authority"
+      testing-tools:
+        patterns:
+          - "@testing-library/*"
+          - "jest*"
+          - "vitest*"
+          - "@jest/*"
+      build-tools:
+        patterns:
+          - "typescript"
+          - "postcss*"
+          - "autoprefixer"
+          - "@types/*"
     reviewers:
       - "AnalineS"
     assignees:
       - "AnalineS"
     commit-message:
-      prefix: "feat(frontend)"
+      prefix: "chore(deps)(frontend)"
       include: "scope"
     labels:
       - "dependencies"
       - "frontend"
-      - "auto-release"
-    groups:
-      react-ecosystem:
-        patterns:
-          - "react*"
-          - "@types/react*"
-          - "@testing-library/react"
-      nextjs-ecosystem:
-        patterns:
-          - "next*"
-          - "@next/*"
-      dev-tools:
-        patterns:
-          - "typescript"
-          - "eslint*" 
-          - "prettier"
-          - "jest*"
+      - "automated"
 
-  # Backend Python dependencies - BRANCH FIXA  
+  # Backend Python Dependencies - Unified
   - package-ecosystem: "pip"
     directory: "/apps/backend"
     target-branch: "dependabot-updates"
@@ -51,41 +66,67 @@ updates:
       day: "tuesday"
       time: "08:00"
       timezone: "America/Sao_Paulo"
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 10
+    groups:
+      flask-ecosystem:
+        patterns:
+          - "flask*"
+          - "Flask*"
+          - "werkzeug*"
+          - "jinja2*"
+          - "click*"
+          - "itsdangerous*"
+        update-types:
+          - "minor"
+          - "patch"
+      ai-ml:
+        patterns:
+          - "sentence-transformers*"
+          - "transformers*"
+          - "torch*"
+          - "numpy*"
+          - "scikit-learn*"
+          - "huggingface-hub*"
+          - "tokenizers*"
+      database:
+        patterns:
+          - "supabase*"
+          - "psycopg*"
+          - "sqlalchemy*"
+          - "alembic*"
+      security:
+        patterns:
+          - "cryptography*"
+          - "pyjwt*"
+          - "bcrypt*"
+          - "python-jose*"
+          - "passlib*"
+      google-cloud:
+        patterns:
+          - "google-*"
+          - "firebase-*"
+          - "protobuf*"
+      utilities:
+        patterns:
+          - "python-dotenv*"
+          - "requests*"
+          - "urllib3*"
+          - "certifi*"
+          - "charset-normalizer*"
+          - "idna*"
     reviewers:
       - "AnalineS"
     assignees:
       - "AnalineS"
     commit-message:
-      prefix: "feat(backend)"
+      prefix: "chore(deps)(backend)"
       include: "scope"
     labels:
       - "dependencies"
       - "backend"
-      - "auto-release"
-    groups:
-      ai-ml:
-        patterns:
-          - "sentence-transformers*"
-          - "openai*"
-          - "scikit-learn*"
-          - "numpy*"
-          - "torch*"
-      flask-ecosystem:
-        patterns:
-          - "Flask*"
-          - "Werkzeug*"
-          - "gunicorn*"
-      security:
-        patterns:
-          - "cryptography*"
-          - "PyJWT*" 
-          - "passlib*"
-      google-cloud:
-        patterns:
-          - "google-cloud-*"
-      
-  # GitHub Actions dependencies - BRANCH FIXA
+      - "automated"
+
+  # GitHub Actions Dependencies - Unified
   - package-ecosystem: "github-actions"
     directory: "/"
     target-branch: "dependabot-updates"
@@ -94,27 +135,28 @@ updates:
       day: "wednesday"
       time: "08:00"
       timezone: "America/Sao_Paulo"
-    open-pull-requests-limit: 2
+    open-pull-requests-limit: 5
+    groups:
+      core-actions:
+        patterns:
+          - "actions/*"
+        update-types:
+          - "minor"
+          - "patch"
+      google-cloud:
+        patterns:
+          - "google-github-actions/*"
+      security:
+        patterns:
+          - "github/codeql-action*"
+          - "ossf/scorecard-action*"
     reviewers:
       - "AnalineS"
     assignees:
       - "AnalineS"
     commit-message:
-      prefix: "feat(ci)"
+      prefix: "chore(ci)"
       include: "scope"
     labels:
       - "ci/cd"
-      - "github-actions"
-      - "auto-release"
-    groups:
-      setup-actions:
-        patterns:
-          - "actions/setup-*"
-          - "actions/checkout*"
-      google-actions:
-        patterns:
-          - "google-github-actions/*"
-      security-actions:
-        patterns:
-          - "github/codeql-action*"
-          - "ossf/scorecard-action*"
+      - "automated"

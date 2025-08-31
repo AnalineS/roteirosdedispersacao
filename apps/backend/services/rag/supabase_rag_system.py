@@ -163,7 +163,7 @@ class SupabaseRAGSystem:
         
         # Verificar cache primeiro
         if use_cache and self.cache:
-            cache_key = f"rag_context:{hashlib.md5(query.encode()).hexdigest()[:16]}"
+            cache_key = f"rag_context:{hashlib.sha256(query.encode()).hexdigest()[:16]}"
             cached_context = self.cache.get(cache_key)
             if cached_context:
                 self.stats['cache_hits'] += 1

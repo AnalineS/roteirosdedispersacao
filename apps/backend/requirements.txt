@@ -64,7 +64,7 @@ cachetools>=5.3.2
 psutil==7.0.0
 
 # Google Cloud Operations Suite
-google-cloud-monitoring==2.21.0
+google-cloud-monitoring==2.27.2
 google-cloud-logging==3.10.0
 google-cloud-firestore>=2.11.1
 
