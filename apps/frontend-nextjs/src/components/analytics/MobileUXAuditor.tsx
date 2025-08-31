@@ -35,7 +35,7 @@ export function MobileUXAuditor() {
   const [isAuditing, setIsAuditing] = useState(false);
   const [deviceInfo, setDeviceInfo] = useState<any>(null);
   const { trackCustomUXEvent } = useGoogleAnalyticsUX();
-  const auditRef = useRef<NodeJS.Timeout>();
+  const auditRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (isMobileDevice()) {

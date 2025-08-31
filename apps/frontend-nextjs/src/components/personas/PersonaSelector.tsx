@@ -25,7 +25,7 @@ interface Question {
     id: string;
     text: string;
     value: UserProfile['type'] | UserProfile['focus'];
-    icon: JSX.Element;
+    icon: React.JSX.Element;
   }[];
 }
 

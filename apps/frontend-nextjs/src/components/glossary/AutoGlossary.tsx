@@ -141,8 +141,9 @@ export function GlossaryWrapper({ children, enabled = true }: {
 
     if (React.isValidElement(node)) {
       // Se é um elemento React, processar seus filhos
-      const processedChildren = React.Children.map(node.props.children, processChildren);
-      return React.cloneElement(node, {}, processedChildren);
+      const nodeWithProps = node as React.ReactElement<any>;
+      const processedChildren = React.Children.map(nodeWithProps.props.children, processChildren);
+      return React.cloneElement(nodeWithProps, {}, processedChildren);
     }
 
     if (Array.isArray(node)) {

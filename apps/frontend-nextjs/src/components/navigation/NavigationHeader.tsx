@@ -91,7 +91,7 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
 
   // Configurar navegação por teclado
   useKeyboardNavigation({
-    containerRef: headerRef,
+    containerRef: headerRef as React.RefObject<HTMLElement>,
     enableArrowKeys: true,
     onEnter: (element) => {
       if (element.getAttribute('role') === 'button') {

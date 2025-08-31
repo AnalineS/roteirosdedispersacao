@@ -25,7 +25,7 @@ interface TypographyProps {
   children: React.ReactNode;
   className?: string;
   style?: CSSProperties;
-  as?: keyof JSX.IntrinsicElements;
+  as?: keyof React.JSX.IntrinsicElements;
   maxLines?: number;
   align?: 'left' | 'center' | 'right';
   spacing?: 'tight' | 'normal' | 'loose';
@@ -118,7 +118,7 @@ export function Typography({
   const scale = isMobile ? TYPOGRAPHY_SCALES.mobile : TYPOGRAPHY_SCALES.desktop;
   
   // Determinar tag HTML baseada no nível
-  const getDefaultTag = (): keyof JSX.IntrinsicElements => {
+  const getDefaultTag = (): keyof React.JSX.IntrinsicElements => {
     if (as) return as;
     
     switch (level) {

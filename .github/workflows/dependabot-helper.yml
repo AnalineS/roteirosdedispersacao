@@ -109,6 +109,9 @@ jobs:
     if: github.actor == 'dependabot[bot]'
     
     steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+        
       - name: 🔍 Find Duplicate PRs
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
