@@ -134,7 +134,7 @@ jobs:
         uses: trufflesecurity/trufflehog@main
         with:
           path: ./
-          extra_args: --only-verified --fail --json --results-format=json --results-file=trufflehog-results.json
+          extra_args: --only-verified --fail --json
         continue-on-error: false  # DEVE falhar se houver secrets!
         
       - name: "[SECURITY] Report Exposed Secrets (if any)"
@@ -163,7 +163,7 @@ jobs:
           echo "1. Identificar todos os secrets expostos acima"
           echo "2. Migrar para GitHub Secrets usando 'gh secret set'"
           echo "3. Remover secrets hardcoded do código"
-          echo "4. Substituir por variáveis \${{ secrets.NOME_DO_SECRET }}"
+          echo "4. Substituir por variáveis \\\${{ secrets.NOME_DO_SECRET }}"
           echo "5. Re-executar pipeline"
         
       - name: "[SECURITY] GitHub Security Scanning"
