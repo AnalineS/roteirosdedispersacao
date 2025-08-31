@@ -131,17 +131,20 @@ jobs:
           DESCRIPTION=$(gh pr view $PR_NUMBER --json body --jq '.body')
           if [ ${#DESCRIPTION} -lt 50 ]; then
             echo "⚠️ AVISO: PR crítico com descrição muito curta"
-            gh pr comment $PR_NUMBER --body "⚠️ **PR Crítico Detectado** 
-            
+            gh pr comment $PR_NUMBER --body "$(cat <<'COMMENT'
+⚠️ **PR Crítico Detectado** 
+
 Este PR foi marcado como **$PRIORITY** e tipo **$TYPE**.
-            
+
 **Ações Necessárias:**
 - [ ] Descrição detalhada dos changes
 - [ ] Evidências de teste
 - [ ] Revisão obrigatória de pelo menos 2 pessoas
 - [ ] Aprovação do tech lead antes do merge
 
-**Labels aplicados:** ${{ needs.apply-labels.outputs.all_labels }}"
+**Labels aplicados:** ${{ needs.apply-labels.outputs.all_labels }}
+COMMENT
+)"
           fi
           
           # Adicionar reviewers para PRs críticos
