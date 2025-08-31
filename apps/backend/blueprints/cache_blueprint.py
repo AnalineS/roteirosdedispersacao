@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Blueprint para gerenciamento de cache Redis
 Usa REDIS_URL do GitHub Secrets para conexão segura
@@ -42,11 +43,11 @@ def init_redis_client():
         
         # Testar conexão
         redis_client.ping()
-        logger.info("✅ Redis conectado com sucesso")
+        logger.info("[OK] Redis conectado com sucesso")
         return redis_client
         
     except Exception as e:
-        logger.error(f"❌ Erro ao conectar ao Redis: {e}")
+        logger.error(f"[ERROR] Erro ao conectar ao Redis: {e}")
         redis_client = None
         return None
 

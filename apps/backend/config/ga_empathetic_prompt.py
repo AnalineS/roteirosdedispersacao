@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Sistema de Prompts Empáticos para Gá
 Farmacêutico Humanizado Especialista em Comunicação Acessível

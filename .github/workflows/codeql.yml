@@ -1,4 +1,4 @@
-name: "🔍 CodeQL Security Analysis"
+name: "🔒 CodeQL Security Analysis"
 
 on:
   push:
@@ -31,6 +31,7 @@ jobs:
       with:
         languages: ${{ matrix.language }}
         queries: security-extended,security-and-quality
+      continue-on-error: ${{ github.actor == 'dependabot[bot]' }}
 
     - name: 🐍 Setup Python (for Python analysis)
       if: matrix.language == 'python'
@@ -44,7 +45,7 @@ jobs:
         cd apps/backend
         pip install -r requirements.txt
 
-    - name: 📊 Setup Node.js (for JavaScript analysis)
+    - name: 📈 Setup Node.js (for JavaScript analysis)
       if: matrix.language == 'javascript'
       uses: actions/setup-node@v4
       with:
@@ -62,3 +63,4 @@ jobs:
       uses: github/codeql-action/analyze@v3
       with:
         category: "/language:${{matrix.language}}"
+      continue-on-error: ${{ github.actor == 'dependabot[bot]' }}

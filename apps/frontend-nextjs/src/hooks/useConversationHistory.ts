@@ -119,6 +119,7 @@ export function useConversationHistory() {
           // Salvar no Redis para próxima vez (com tratamento de erro)
           if (validConversations.length > 0) {
             try {
+              const userId = auth.user?.uid || 'anonymous';
               redisCache.set(`conversations:${userId}`, validConversations, {
                 ttl: 1800, // 30 minutos
                 namespace: 'conversations'

@@ -1,8 +1,8 @@
 # 🔒 Correções de Segurança - Logging e Sanitização
 
-## 📋 **Resumo dos Alertas CodeQL Corrigidos**
+## [LIST] **Resumo dos Alertas CodeQL Corrigidos**
 
-### 1. ✅ **Clear-text logging of sensitive information**
+### 1. [OK] **Clear-text logging of sensitive information**
 **Arquivo**: `apps/backend/blueprints/health_blueprint.py:856`
 **Problema**: Logging com interpolação de variáveis (`f-string`) pode vazar informações
 
@@ -24,16 +24,16 @@ logger.info(
 )
 ```
 
-### 2. ✅ **Incomplete multi-character sanitization**
+### 2. [OK] **Incomplete multi-character sanitization**
 **Arquivo**: `apps/frontend-nextjs/src/utils/sanitization.ts:19`
 **Problema**: Regex `/<[^>]*>/g` pode ser bypassada com inputs maliciosos
 
 **Correção Aplicada:**
-- ✅ Implementada sanitização multi-passo server-side
-- ✅ Loop de sanitização até estabilização (anti-bypass)
-- ✅ Sanitização robusta para filenames (path traversal prevention)
+- [OK] Implementada sanitização multi-passo server-side
+- [OK] Loop de sanitização até estabilização (anti-bypass)
+- [OK] Sanitização robusta para filenames (path traversal prevention)
 
-## 🚨 **Arquivos com Logging Potencialmente Vulnerável**
+## [ALERT] **Arquivos com Logging Potencialmente Vulnerável**
 
 ### **Alta Prioridade (Revisar)**
 1. `chat_blueprint.py` - Logs com `request_id` e dados de usuário
@@ -46,9 +46,9 @@ logger.info(
 - **Format com dados sensíveis**: `logger.error(f"Error: {user_data}")`
 - **IDs não truncados**: `logger.info(f"Request: {full_request_id}")`
 
-## 🛡️ **Padrões de Logging Seguro Recomendados**
+## [SECURITY] **Padrões de Logging Seguro Recomendados**
 
-### ✅ **Estrutura Segura**
+### [OK] **Estrutura Segura**
 ```python
 # Logging estruturado com extra
 logger.info(
@@ -73,7 +73,7 @@ logger.error(
 )
 ```
 
-### ❌ **Padrões Inseguros a Evitar**
+### [ERROR] **Padrões Inseguros a Evitar**
 ```python
 # NUNCA fazer isso
 logger.info(f"User data: {user_data}")  # Pode vazar dados sensíveis
@@ -82,7 +82,7 @@ logger.debug(f"SQL: {sql_query}")       # Pode vazar queries/dados
 logger.info(f"Token: {jwt_token}")      # Pode vazar credenciais
 ```
 
-## 🔧 **Sanitização Robusta Implementada**
+## [FIX] **Sanitização Robusta Implementada**
 
 ### **Server-Side HTML Sanitization**
 ```typescript
@@ -121,16 +121,16 @@ do {
 } while (sanitized !== previous && iterations < maxIterations);
 ```
 
-## 📊 **Status das Correções**
+## [REPORT] **Status das Correções**
 
 | Tipo | Status | Detalhes |
 |------|--------|----------|
-| Clear-text logging | ✅ **CORRIGIDO** | health_blueprint.py |
-| Multi-char sanitization | ✅ **CORRIGIDO** | sanitization.ts |
-| Path traversal | ✅ **CORRIGIDO** | sanitizeFilename() |
-| HTML injection | ✅ **CORRIGIDO** | sanitizeHTMLServerSide() |
+| Clear-text logging | [OK] **CORRIGIDO** | health_blueprint.py |
+| Multi-char sanitization | [OK] **CORRIGIDO** | sanitization.ts |
+| Path traversal | [OK] **CORRIGIDO** | sanitizeFilename() |
+| HTML injection | [OK] **CORRIGIDO** | sanitizeHTMLServerSide() |
 
-## 🎯 **Próximos Passos Recomendados**
+## [TARGET] **Próximos Passos Recomendados**
 
 1. **Revisar arquivos críticos** listados acima
 2. **Padronizar logging** usando estrutura segura
@@ -150,5 +150,5 @@ do {
 
 ---
 **Data**: 2025-08-24  
-**Status**: ✅ **CORREÇÕES PRINCIPAIS APLICADAS**  
+**Status**: [OK] **CORREÇÕES PRINCIPAIS APLICADAS**  
 **CodeQL Alerts**: 2/2 Resolvidos

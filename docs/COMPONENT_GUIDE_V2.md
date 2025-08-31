@@ -19,10 +19,10 @@ import EducationalBreadcrumbs from '@/components/navigation/Breadcrumbs';
 ```
 
 **Características**:
-- ✅ 29+ páginas mapeadas com hierarquia
-- ✅ Mobile responsive com ellipsis
-- ✅ WCAG 2.1 AA compliant
-- ✅ CSS variables integration
+- [OK] 29+ páginas mapeadas com hierarquia
+- [OK] Mobile responsive com ellipsis
+- [OK] WCAG 2.1 AA compliant
+- [OK] CSS variables integration
 
 **Props**: Nenhuma (auto-detecta via usePathname)
 
@@ -40,8 +40,8 @@ Informações educacionais contextuais baseadas na página atual.
 ```
 
 **Características**:
-- 🎯 Objetivos de aprendizagem
-- 📋 Pré-requisitos
+- [TARGET] Objetivos de aprendizagem
+- [LIST] Pré-requisitos
 - 💡 Dicas práticas
 - ➡️ Próximas etapas
 
@@ -76,7 +76,7 @@ import ImprovedPersonaSwitch from '@/components/chat/modern/ImprovedPersonaSwitc
 - `currentMessageCount?`: number - Contador de mensagens
 
 **Características**:
-- 🔍 Busca por nome, personalidade e especialidades
+- [SEARCH] Busca por nome, personalidade e especialidades
 - ⚡ Transições suaves e animações
 - 🎭 Especialidades visíveis para cada persona
 - ♿ Navegação por teclado completa
@@ -154,7 +154,7 @@ interface ToastOptions {
 
 ---
 
-## 📝 Formulários e Inputs
+## [NOTE] Formulários e Inputs
 
 ### OptimizedForm
 **Localização**: `src/components/forms/OptimizedForm.tsx`
@@ -263,8 +263,8 @@ interface FormField {
 
 **Características**:
 - ⚡ Validação em tempo real
-- 💾 Auto-save inteligente
-- 📊 Progress tracking visual
+- [SAVE] Auto-save inteligente
+- [REPORT] Progress tracking visual
 - ♿ Acessibilidade completa
 - 📱 Layouts responsivos
 - 🎨 Design system integration
@@ -394,7 +394,7 @@ const isTablet = useMediaQuery('(max-width: 1024px)');
 
 ---
 
-## 🔧 Development Guidelines
+## [FIX] Development Guidelines
 
 ### Component Structure
 ```tsx
@@ -462,7 +462,7 @@ describe('MyComponent', () => {
 
 ---
 
-## 📊 Performance Considerations
+## [REPORT] Performance Considerations
 
 ### Optimization Strategies
 - React.memo para componentes puros
@@ -517,6 +517,6 @@ const { showNotification } = useImprovedFeedback();
 
 ---
 
-**🚀 Ready for Production!**
+**[START] Ready for Production!**
 
 *Este guia de componentes documenta todas as melhorias da Fase 2. Cada componente foi testado e aprovado para uso em produção com score de qualidade 8.78/10.*

@@ -1,6 +1,6 @@
 # Firebase Authentication Integration Guide
 
-## 📋 Guia de Integração do Sistema "Soft Authentication"
+## [LIST] Guia de Integração do Sistema "Soft Authentication"
 
 Este documento explica como integrar o sistema de autenticação Firebase na aplicação Next.js existente, mantendo total compatibilidade com o sistema atual.
 
@@ -26,7 +26,7 @@ Este documento explica como integrar o sistema de autenticação Firebase na apl
 - `src/components/auth/UserProfileWidget.tsx` - Widget de status do usuário
 - `src/components/auth/AuthProviderWrapper.tsx` - Provider global
 
-## 🚀 Passos de Integração
+## [START] Passos de Integração
 
 ### Passo 1: Configurar Variáveis de Ambiente
 
@@ -239,7 +239,7 @@ function ConversationPanel() {
 }
 ```
 
-## 🛡️ Configurações de Segurança
+## [SECURITY] Configurações de Segurança
 
 ### Firestore Rules
 As regras implementadas garantem:
@@ -254,7 +254,7 @@ Headers de segurança atualizados no `firebase.json`:
 - Proteção XSS mantida
 - CORS configurado adequadamente
 
-## 📊 Monitoramento e Debug
+## [REPORT] Monitoramento e Debug
 
 ### Feature Flags
 ```tsx
@@ -280,7 +280,7 @@ function AdminPanel() {
 }
 ```
 
-## 🎯 Estratégia de Rollout
+## [TARGET] Estratégia de Rollout
 
 ### Fase 1: Deploy Silencioso
 - Deploy com `AUTH_ENABLED=false`

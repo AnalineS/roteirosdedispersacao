@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Sistema de Referências Obrigatórias à Tese
 Força citações específicas e precisas para Dr. Gasnelio

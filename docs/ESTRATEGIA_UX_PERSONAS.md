@@ -1,6 +1,6 @@
 # Estratégia UX para Seleção e Transição de Personas
 
-## 🎯 VISÃO GERAL
+## [TARGET] VISÃO GERAL
 
 Sistema inteligente de seleção de personas baseado em contexto, perfil do usuário e complexidade da consulta, com transições suaves e educativas.
 
@@ -43,14 +43,14 @@ const ProfileDetector = {
 ```
 "Olá! Para oferecer a melhor experiência, preciso entender seu perfil:
 
-🎯 Qual dessas opções melhor descreve você?
+[TARGET] Qual dessas opções melhor descreve você?
 
 [ ] Profissional de saúde buscando informações técnicas
 [ ] Estudante da área da saúde
 [ ] Paciente ou familiar buscando orientações
 [ ] Cuidador ou pessoa interessada em aprender
 
-🔍 Sobre o que gostaria de conversar?
+[SEARCH] Sobre o que gostaria de conversar?
 
 [ ] Informações técnicas sobre medicamentos
 [ ] Como tomar corretamente os remédios
@@ -111,10 +111,10 @@ atua através da inibição da RNA polimerase bacteriana, garantindo ação
 bactericida rápida contra o Mycobacterium leprae.
 
 PROTOCOLO DE ADMINISTRAÇÃO:
-• Dose: 600mg (2 cápsulas de 300mg)
-• Frequência: Mensal supervisionada
-• Horário: Preferencialmente após desjejum
-• Monitorização: Função hepática se sintomas"
+* Dose: 600mg (2 cápsulas de 300mg)
+* Frequência: Mensal supervisionada
+* Horário: Preferencialmente após desjejum
+* Monitorização: Função hepática se sintomas"
 
 TRANSIÇÕES EMPÁTICAS:
 "Compreendo que esta informação seja técnica. Posso explicar de forma 
@@ -139,10 +139,10 @@ da hanseníase. Você toma ela uma vez por mês aqui na unidade, junto
 comigo ou com outro profissional.
 
 O QUE ESPERAR:
-• É uma cápsula vermelha, fácil de engolir
-• Pode deixar o xixi meio laranja (é normal!)
-• Funciona melhor se tomar após comer algo
-• Tomando certinho, a hanseníase tem cura
+* É uma cápsula vermelha, fácil de engolir
+* Pode deixar o xixi meio laranja (é normal!)
+* Funciona melhor se tomar após comer algo
+* Tomando certinho, a hanseníase tem cura
 
 Lembre-se: você não está sozinho nessa jornada! Estou aqui sempre que 
 precisar. Tem mais alguma dúvida que posso esclarecer?"
@@ -192,7 +192,7 @@ informações técnicas específicas que precisa, com base
 nos protocolos estabelecidos."
 ```
 
-## 📊 MÉTRICAS DE SUCESSO
+## [REPORT] MÉTRICAS DE SUCESSO
 
 ### KPIs Principais
 - **Taxa de Seleção Correta**: >85% de usuários satisfeitos com persona inicial

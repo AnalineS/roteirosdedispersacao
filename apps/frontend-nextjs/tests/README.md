@@ -1,36 +1,36 @@
-# 🔍 Sistema de Validação - Roteamento Inteligente
+# [SEARCH] Sistema de Validação - Roteamento Inteligente
 
 Este diretório contém uma suíte completa de validação para o Sistema de Roteamento Inteligente (FASE 3.2.1), desenvolvida por um Elite QA Engineer especializado em validação de sistemas de IA.
 
-## 📋 Visão Geral
+## [LIST] Visão Geral
 
 O sistema de validação foi projetado para garantir que o Roteamento Inteligente atenda a todos os critérios de qualidade, performance, robustez e experiência do usuário necessários para produção.
 
-### 🎯 Objetivos da Validação
+### [TARGET] Objetivos da Validação
 
-- ✅ **Funcionalidade:** Algoritmo de roteamento preciso e confiável
+- [OK] **Funcionalidade:** Algoritmo de roteamento preciso e confiável
 - ⚡ **Performance:** Resposta < 100ms, cache eficiente, sem memory leaks  
-- 🛡️ **Robustez:** Fallbacks resilientes, error handling completo
+- [SECURITY] **Robustez:** Fallbacks resilientes, error handling completo
 - 🎨 **UX/UI:** Interface responsiva, acessível (WCAG 2.1), transparente
 - 🔗 **Integração:** Comunicação backend robusta, fluxo end-to-end
-- 📊 **Analytics:** Métricas para melhoria contínua
+- [REPORT] **Analytics:** Métricas para melhoria contínua
 
 ## 🗂️ Estrutura dos Testes
 
 ```
 tests/
 ├── 📄 masterValidation.ts          # Orquestrador principal
-├── 🔧 intelligentRouting.validation.ts  # Validação funcional
+├── [FIX] intelligentRouting.validation.ts  # Validação funcional
 ├── ⚡ performance.validation.ts     # Performance e cache
-├── 🛡️ errorHandling.validation.ts   # Error handling e fallbacks  
+├── [SECURITY] errorHandling.validation.ts   # Error handling e fallbacks  
 ├── 🎨 uiux.validation.ts           # UI/UX e acessibilidade
 ├── 🔗 integration.validation.ts    # Integração backend/frontend
-├── 📊 analytics.validation.ts      # Analytics e tracking
-├── 🚀 runValidation.ts            # Script de execução
+├── [REPORT] analytics.validation.ts      # Analytics e tracking
+├── [START] runValidation.ts            # Script de execução
 └── 📖 README.md                   # Este arquivo
 ```
 
-## 🚀 Como Executar
+## [START] Como Executar
 
 ### Pré-requisitos
 
@@ -83,25 +83,25 @@ npm run validate
 node src/tests/runValidation.ts
 ```
 
-## 📊 Tipos de Validação
+## [REPORT] Tipos de Validação
 
-### 1. 🔧 Validação Funcional
+### 1. [FIX] Validação Funcional
 
 **Arquivo:** `intelligentRouting.validation.ts`
 
 **O que testa:**
-- ✅ Análise de keywords para Dr. Gasnelio e Gá
-- ✅ Algoritmo de scoring e confiança
-- ✅ Casos críticos de alta prioridade
-- ✅ Detecção de ambiguidade
-- ✅ Expertise das personas
+- [OK] Análise de keywords para Dr. Gasnelio e Gá
+- [OK] Algoritmo de scoring e confiança
+- [OK] Casos críticos de alta prioridade
+- [OK] Detecção de ambiguidade
+- [OK] Expertise das personas
 
 **Casos de Teste:**
 ```typescript
 // Exemplos testados
-"Qual a dose de rifampicina?" → Dr. Gasnelio (85% confiança)
-"Como explicar para a família?" → Gá (78% confiança)  
-"Protocolo PQT-U multibacilar" → Dr. Gasnelio (82% confiança)
+"Qual a dose de rifampicina?" -> Dr. Gasnelio (85% confiança)
+"Como explicar para a família?" -> Gá (78% confiança)  
+"Protocolo PQT-U multibacilar" -> Dr. Gasnelio (82% confiança)
 ```
 
 ### 2. ⚡ Validação de Performance
@@ -110,7 +110,7 @@ node src/tests/runValidation.ts
 
 **O que testa:**
 - ⏱️ Tempo de resposta (meta: <100ms)
-- 💾 Eficiência do cache (TTL 5min)
+- [SAVE] Eficiência do cache (TTL 5min)
 - 🔄 Debounce (1000ms)
 - 🧠 Memory leaks
 - 📈 Throughput e escalabilidade
@@ -121,15 +121,15 @@ node src/tests/runValidation.ts
 - Cache hit improvement > 50%
 - Memory growth < 50MB per 1000 ops
 
-### 3. 🛡️ Validação de Error Handling
+### 3. [SECURITY] Validação de Error Handling
 
 **Arquivo:** `errorHandling.validation.ts`
 
 **O que testa:**
-- 🌐 Network errors → Fallback local
-- ⏰ API timeouts → Recuperação rápida
-- 🚫 Server errors (500) → Graceful degradation
-- 📝 Edge cases (input vazio, malformado)
+- 🌐 Network errors -> Fallback local
+- ⏰ API timeouts -> Recuperação rápida
+- 🚫 Server errors (500) -> Graceful degradation
+- [NOTE] Edge cases (input vazio, malformado)
 - 💪 Stress conditions
 
 **Cenários de Falha:**
@@ -152,7 +152,7 @@ node src/tests/runValidation.ts
 **O que testa:**
 - 📱 Responsividade (320px - 1440px+)
 - ♿ Acessibilidade WCAG 2.1 AA
-- 🎯 Touch targets ≥44px
+- [TARGET] Touch targets ≥44px
 - ⌨️ Navegação por teclado
 - 🎨 Contraste e legibilidade
 - 🔄 Estados de loading
@@ -173,7 +173,7 @@ node src/tests/runValidation.ts
 - 🔌 Comunicação com API backend
 - 🪝 Integração do hook React
 - 🔄 Fluxo end-to-end completo
-- 📊 Consistency de dados
+- [REPORT] Consistency de dados
 - 🎛️ State management
 
 **API Testing:**
@@ -186,16 +186,16 @@ node src/tests/runValidation.ts
 - Retry logic (if implemented)
 ```
 
-### 6. 📊 Validação de Analytics
+### 6. [REPORT] Validação de Analytics
 
 **Arquivo:** `analytics.validation.ts`
 
 **O que testa:**
 - 📈 Métricas de uso (aceitação/rejeição)
-- 📝 Qualidade dos logs
+- [NOTE] Qualidade dos logs
 - 🔄 Continuous improvement data
-- 🛡️ Proteção de dados sensíveis
-- 📊 Performance tracking
+- [SECURITY] Proteção de dados sensíveis
+- [REPORT] Performance tracking
 
 **Métricas Capturadas:**
 - Recommendation acceptance rate
@@ -204,9 +204,9 @@ node src/tests/runValidation.ts
 - Error patterns
 - Usage patterns
 
-## 🎯 Critérios de Aprovação
+## [TARGET] Critérios de Aprovação
 
-### ✅ Critérios OBRIGATÓRIOS
+### [OK] Critérios OBRIGATÓRIOS
 
 1. **Functional Routing:** >80% accuracy em casos típicos
 2. **Performance:** Response time <100ms média
@@ -221,7 +221,7 @@ node src/tests/runValidation.ts
 3. **Cache:** >50% performance improvement
 4. **Mobile:** Responsive design adequado
 
-## 📊 Interpretando Resultados
+## [REPORT] Interpretando Resultados
 
 ### Scores
 
@@ -232,9 +232,9 @@ node src/tests/runValidation.ts
 
 ### Status
 
-- ✅ **PASSOU:** Critério atendido completamente
-- ⚠️ **ATENÇÃO:** Atendido mas com ressalvas
-- ❌ **FALHOU:** Critério não atendido
+- [OK] **PASSOU:** Critério atendido completamente
+- [WARNING] **ATENÇÃO:** Atendido mas com ressalvas
+- [ERROR] **FALHOU:** Critério não atendido
 
 ### Relatórios
 
@@ -243,7 +243,7 @@ Os resultados são exibidos no console e salvos em:
 - Console logs - Análise detalhada
 - `VALIDATION_REPORT.md` - Relatório executivo
 
-## 🔧 Configuração Avançada  
+## [FIX] Configuração Avançada  
 
 ### Mock Customization
 
@@ -271,7 +271,7 @@ const CONFIG = {
 };
 ```
 
-## 🚨 Troubleshooting
+## [ALERT] Troubleshooting
 
 ### Problemas Comuns
 
@@ -303,7 +303,7 @@ const CONFIG = {
    npm run validate functional # Testar categoria individual
    ```
 
-## 🎯 Contribuindo
+## [TARGET] Contribuindo
 
 ### Adicionando Novos Testes
 
@@ -330,11 +330,11 @@ const CONFIG = {
 
 ### Guidelines
 
-- ✅ Use console.log para feedback visual
-- ✅ Implemente try/catch robusto
-- ✅ Retorne structured results
-- ✅ Documente cada teste claramente
-- ✅ Use mocks consistentes
+- [OK] Use console.log para feedback visual
+- [OK] Implemente try/catch robusto
+- [OK] Retorne structured results
+- [OK] Documente cada teste claramente
+- [OK] Use mocks consistentes
 
 ## 📞 Suporte
 

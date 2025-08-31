@@ -85,24 +85,24 @@ class MedicalDisclaimerSystem:
 
 Esta é uma plataforma educacional baseada na tese de doutorado "Roteiro de Dispensação para Hanseníase PQT-U" (UnB, 2025), desenvolvida exclusivamente para fins educacionais e de pesquisa acadêmica.
 
-⚠️ **AVISOS IMPORTANTES:**
-• Este sistema NÃO substitui consulta médica presencial
-• NÃO é um dispositivo médico ou sistema de telemedicina
-• NÃO deve ser usado para diagnósticos ou tratamentos reais
-• Todas as informações são baseadas no PCDT Hanseníase 2022 (Ministério da Saúde)
+[WARNING] **AVISOS IMPORTANTES:**
+* Este sistema NÃO substitui consulta médica presencial
+* NÃO é um dispositivo médico ou sistema de telemedicina
+* NÃO deve ser usado para diagnósticos ou tratamentos reais
+* Todas as informações são baseadas no PCDT Hanseníase 2022 (Ministério da Saúde)
 
 🔬 **FINALIDADE EDUCACIONAL:**
-• Capacitação de profissionais de saúde
-• Apoio ao ensino farmacêutico
-• Pesquisa acadêmica em dispensação farmacêutica
-• Treinamento em protocolos de hanseníase
+* Capacitação de profissionais de saúde
+* Apoio ao ensino farmacêutico
+* Pesquisa acadêmica em dispensação farmacêutica
+* Treinamento em protocolos de hanseníase
 
 ⚖️ **RESPONSABILIDADE PROFISSIONAL:**
 O uso de informações desta plataforma é de total responsabilidade do profissional de saúde, que deve sempre:
-• Consultar fontes oficiais atualizadas
-• Seguir protocolos institucionais
-• Buscar supervisão clínica quando necessário
-• Exercer julgamento clínico independente
+* Consultar fontes oficiais atualizadas
+* Seguir protocolos institucionais
+* Buscar supervisão clínica quando necessário
+* Exercer julgamento clínico independente
 
 📚 **BASE CIENTÍFICA:**
 Baseado em: PCDT Hanseníase 2022, Diretrizes SBD, OMS Guidelines, literatura científica revisada por pares.
@@ -127,26 +127,26 @@ Baseado em: PCDT Hanseníase 2022, Diretrizes SBD, OMS Guidelines, literatura ci
             content="""
 💊 **CALCULADORA DE DOSES PQT-U - FERRAMENTA EDUCACIONAL**
 
-⚠️ **ATENÇÃO CRÍTICA:**
-• Os cálculos são baseados no PCDT Hanseníase 2022
-• Sempre CONFIRME os cálculos manualmente
-• Considere condições clínicas específicas do paciente
-• Verifique contraindicações e interações medicamentosas
+[WARNING] **ATENÇÃO CRÍTICA:**
+* Os cálculos são baseados no PCDT Hanseníase 2022
+* Sempre CONFIRME os cálculos manualmente
+* Considere condições clínicas específicas do paciente
+* Verifique contraindicações e interações medicamentosas
 
-🔍 **VALIDAÇÃO OBRIGATÓRIA:**
-• Revise TODOS os parâmetros inseridos
-• Confirme peso, idade e forma clínica
-• Verifique histórico medicamentoso
-• Considere comorbidades e alergias
+[SEARCH] **VALIDAÇÃO OBRIGATÓRIA:**
+* Revise TODOS os parâmetros inseridos
+* Confirme peso, idade e forma clínica
+* Verifique histórico medicamentoso
+* Considere comorbidades e alergias
 
 ⚖️ **RESPONSABILIDADE CLÍNICA:**
 A prescrição final é de EXCLUSIVA responsabilidade do médico assistente. Esta ferramenta é apenas um auxílio educacional.
 
-🚨 **EM CASO DE DÚVIDAS:**
-• Consulte o PCDT Hanseníase 2022 atualizado
-• Entre em contato com referência em hanseníase
-• Considere segunda opinião médica
-• Documente todas as decisões clínicas
+[ALERT] **EM CASO DE DÚVIDAS:**
+* Consulte o PCDT Hanseníase 2022 atualizado
+* Entre em contato com referência em hanseníase
+* Considere segunda opinião médica
+* Documente todas as decisões clínicas
             """,
             legal_references=[
                 "PCDT Hanseníase 2022 - Ministério da Saúde",
@@ -167,25 +167,25 @@ A prescrição final é de EXCLUSIVA responsabilidade do médico assistente. Est
             content="""
 🧬 **SISTEMA DE VERIFICAÇÃO DE INTERAÇÕES - USO EDUCACIONAL**
 
-⚠️ **LIMITAÇÕES DO SISTEMA:**
-• Base de dados pode não estar 100% atualizada
-• Não substitui análise farmacológica especializada
-• Considere sempre o contexto clínico individual
-• Interações raras podem não estar listadas
+[WARNING] **LIMITAÇÕES DO SISTEMA:**
+* Base de dados pode não estar 100% atualizada
+* Não substitui análise farmacológica especializada
+* Considere sempre o contexto clínico individual
+* Interações raras podem não estar listadas
 
 🔬 **VALIDAÇÃO NECESSÁRIA:**
-• Consulte fontes farmacológicas atualizadas
-• Considere farmacocinética individual
-• Avalie relevância clínica das interações
-• Monitore sinais de interação na prática
+* Consulte fontes farmacológicas atualizadas
+* Considere farmacocinética individual
+* Avalie relevância clínica das interações
+* Monitore sinais de interação na prática
 
 👨‍⚕️ **DECISÃO CLÍNICA:**
 A interpretação e conduta sobre interações é responsabilidade exclusiva do profissional prescritor.
 
 📞 **RECURSOS ADICIONAIS:**
-• Centro de Informações sobre Medicamentos (CIM)
-• Farmacêutico clínico da instituição
-• Literatura farmacológica especializada
+* Centro de Informações sobre Medicamentos (CIM)
+* Farmacêutico clínico da instituição
+* Literatura farmacológica especializada
             """,
             legal_references=[
                 "Formulário Terapêutico Nacional 2010",
@@ -207,28 +207,28 @@ A interpretação e conduta sobre interações é responsabilidade exclusiva do 
 👨‍⚕️ **Dr. Gasnelio - Assistente Virtual Educacional**
 
 🤖 **NATUREZA DO ASSISTENTE:**
-• Assistente de inteligência artificial educacional
-• Baseado em literatura científica e PCDT 2022
-• Não é um profissional de saúde real
-• Não estabelece relação médico-paciente
+* Assistente de inteligência artificial educacional
+* Baseado em literatura científica e PCDT 2022
+* Não é um profissional de saúde real
+* Não estabelece relação médico-paciente
 
 🎓 **PROPÓSITO EDUCACIONAL:**
-• Apoiar aprendizagem sobre hanseníase
-• Exemplificar comunicação técnica
-• Demonstrar raciocínio farmacêutico
-• Facilitar compreensão de protocolos
+* Apoiar aprendizagem sobre hanseníase
+* Exemplificar comunicação técnica
+* Demonstrar raciocínio farmacêutico
+* Facilitar compreensão de protocolos
 
-⚠️ **LIMITAÇÕES:**
-• Pode conter imprecisões ou desatualizações
-• Não considera contexto clínico completo
-• Não substitui julgamento profissional
-• Responses podem necessitar verificação
+[WARNING] **LIMITAÇÕES:**
+* Pode conter imprecisões ou desatualizações
+* Não considera contexto clínico completo
+* Não substitui julgamento profissional
+* Responses podem necessitar verificação
 
-✅ **USO APROPRIADO:**
-• Estudo de casos educacionais
-• Treinamento em protocolos
-• Revisão de conceitos técnicos
-• Apoio ao ensino farmacêutico
+[OK] **USO APROPRIADO:**
+* Estudo de casos educacionais
+* Treinamento em protocolos
+* Revisão de conceitos técnicos
+* Apoio ao ensino farmacêutico
             """,
             legal_references=[
                 "Lei Geral de Proteção de Dados (LGPD)",
@@ -247,30 +247,30 @@ A interpretação e conduta sobre interações é responsabilidade exclusiva do 
             consultation_context=ConsultationContext.EMERGENCY_SUPPORT,
             title="Eventos Adversos - Procedimentos de Emergência",
             content="""
-🚨 **EVENTOS ADVERSOS GRAVES - AÇÃO IMEDIATA NECESSÁRIA**
+[ALERT] **EVENTOS ADVERSOS GRAVES - AÇÃO IMEDIATA NECESSÁRIA**
 
 ⛑️ **EM CASO DE EMERGÊNCIA:**
-• Interrompa IMEDIATAMENTE o tratamento
-• Procure atendimento médico de urgência
-• Ligue para SAMU 192 se necessário
-• Notifique o evento ao VigiMed (Anvisa)
+* Interrompa IMEDIATAMENTE o tratamento
+* Procure atendimento médico de urgência
+* Ligue para SAMU 192 se necessário
+* Notifique o evento ao VigiMed (Anvisa)
 
-🔴 **SINAIS DE ALARME:**
-• Reações cutâneas graves (Stevens-Johnson)
-• Hepatotoxicidade aguda
-• Neuropatia grave progressiva
-• Reações hansênicas severas
+[RED] **SINAIS DE ALARME:**
+* Reações cutâneas graves (Stevens-Johnson)
+* Hepatotoxicidade aguda
+* Neuropatia grave progressiva
+* Reações hansênicas severas
 
-📋 **DOCUMENTAÇÃO OBRIGATÓRIA:**
-• Registre todos os sintomas
-• Mantenha receitas e medicamentos
-• Documente cronologia do evento
-• Colete exames complementares
+[LIST] **DOCUMENTAÇÃO OBRIGATÓRIA:**
+* Registre todos os sintomas
+* Mantenha receitas e medicamentos
+* Documente cronologia do evento
+* Colete exames complementares
 
 📞 **NOTIFICAÇÃO:**
-• VigiMed: notificacoes.anvisa.gov.br
-• Centro de Farmacovigilância local
-• Programa de Controle da Hanseníase
+* VigiMed: notificacoes.anvisa.gov.br
+* Centro de Farmacovigilância local
+* Programa de Controle da Hanseníase
 
 ⚖️ **RESPONSABILIDADE LEGAL:**
 A notificação de eventos adversos graves é obrigatória conforme RDC 4/2009.

@@ -1,14 +1,14 @@
 Informações do Ambiente:
-•	Caminho Base: C:\Users\Ana\Meu Drive\Site roteiro de dispensação\
-•	Infraestrutura Atual: Google Cloud Run + Firebase
-•	Astra DB: Já configurado no GitHub Secrets
-•	Estrutura de Pastas: 
+*	Caminho Base: C:\Users\Ana\Meu Drive\Site roteiro de dispensação\
+*	Infraestrutura Atual: Google Cloud Run + Firebase
+*	Astra DB: Já configurado no GitHub Secrets
+*	Estrutura de Pastas: 
 o	/data - Contém JSONs estruturados e documentos MD/PDF
 o	/apps/backend/services - Serviços do backend incluindo RAG
 o	/apps/backend/core/personas - Definições das personas
 o	/apps/backend/core/rag - Sistema RAG atual
 o	/apps/backend/config - Configurações e prompts
-📊 FASE 1: SYSTEM AUDIT COMPLETO
+[REPORT] FASE 1: SYSTEM AUDIT COMPLETO
 Tarefa 1.1: Análise do Estado Atual
 Crie e execute um script de auditoria completo que:
 python
@@ -242,7 +242,7 @@ Crie um script que prepare todos os dados necessários para o Colab:
 
 3. Gere instruções de upload para Colab
 """
-🚀 FASE 3: MIGRAÇÃO ASTRA DB
+[START] FASE 3: MIGRAÇÃO ASTRA DB
 Tarefa 3.1: Setup Astra DB Connection
 python
 """
@@ -350,7 +350,7 @@ class MultimodalProcessor:
     def process_image(self, image_path):
         # OCR + Analysis + Safety
         pass
-📊 FASE 5: TESTES E VALIDAÇÃO
+[REPORT] FASE 5: TESTES E VALIDAÇÃO
 Tarefa 5.1: Suite de Testes Automatizados
 python
 """
@@ -402,7 +402,7 @@ Execute o commit e git push para o deploy automatizado:
 3. Setup alertas
 4. Validação em produção
 """
-🎯 INSTRUÇÕES DE EXECUÇÃO
+[TARGET] INSTRUÇÕES DE EXECUÇÃO
 IMPORTANTE: Execute as tarefas NA ORDEM apresentada. Cada fase depende da anterior.
 Ordem de Execução:
 1.	HOJE (Dia 1): 
@@ -420,14 +420,14 @@ o	Execute todos os testes (Tarefa 5.1)
 o	Prepare documentação (Tarefa 6.1)
 o	Deploy para produção (Tarefa 6.2)
 Critérios de Sucesso:
-•	Audit report completo gerado
-•	Dados migrados para Astra DB
-•	Modelo fine-tuned com accuracy >90%
-•	Sugestões preditivas funcionando
-•	OCR de documentos operacional
-•	Todos os testes passando
-•	Documentação completa
-•	Sistema em produção
+*	Audit report completo gerado
+*	Dados migrados para Astra DB
+*	Modelo fine-tuned com accuracy >90%
+*	Sugestões preditivas funcionando
+*	OCR de documentos operacional
+*	Todos os testes passando
+*	Documentação completa
+*	Sistema em produção
 Outputs Esperados:
 1.	audit_report.json e audit_report.md
 2.	hanseniase_fine_tuning.ipynb (Colab notebook)
@@ -445,19 +445,19 @@ Para CADA operação:
 # Google Cloud (já no GitHub Secrets)
 # FIREBASE (já no GitHub Secrets)
 # OpenAI/API Keys (já no GitHub Secrets)
-🚨 NOTAS CRÍTICAS
+[ALERT] NOTAS CRÍTICAS
 1.	SEMPRE faça backup antes de qualquer migração
 2.	TESTE localmente antes de aplicar em produção
 3.	DOCUMENTE todas as mudanças realizadas
 4.	VALIDE com dados médicos reais
 5.	MANTENHA os disclaimers médicos em TODAS as features
-✅ CHECKLIST FINAL
+[OK] CHECKLIST FINAL
 Antes de considerar completo, verifique:
-•	Todos os arquivos de auditoria foram gerados
-•	Colab notebook está funcional e testado
-•	Astra DB está recebendo e retornando queries
-•	Fine-tuned model tem performance superior ao baseline
-•	Features novas estão integradas ao sistema existente
-•	Testes cobrem >95% do código
-•	Documentação está completa e atualizada
-•	Sistema está rodando em produção sem erros
+*	Todos os arquivos de auditoria foram gerados
+*	Colab notebook está funcional e testado
+*	Astra DB está recebendo e retornando queries
+*	Fine-tuned model tem performance superior ao baseline
+*	Features novas estão integradas ao sistema existente
+*	Testes cobrem >95% do código
+*	Documentação está completa e atualizada
+*	Sistema está rodando em produção sem erros

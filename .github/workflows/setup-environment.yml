@@ -2,7 +2,7 @@
 # Workflow para configurar e validar o ambiente Google Cloud/Firebase
 # Executa quando há mudanças nas configurações de ambiente
 
-name: 🔧 Setup & Validate Environment
+name: [FIX] Setup & Validate Environment
 
 on:
   workflow_dispatch:
@@ -33,13 +33,13 @@ env:
 
 jobs:
   validate-secrets:
-    name: 🔍 Validate GitHub Secrets
+    name: [SEARCH] Validate GitHub Secrets
     runs-on: ubuntu-latest
     
     steps:
     - name: Validate Required Secrets
       run: |
-        echo "🔍 Validating GitHub Secrets..."
+        echo "[SEARCH] Validating GitHub Secrets..."
         
         # Function to check if secret exists and is not empty
         check_secret() {
@@ -47,10 +47,10 @@ jobs:
           local secret_value=$2
           
           if [ -z "$secret_value" ]; then
-            echo "❌ MISSING: $secret_name"
+            echo "[ERROR] MISSING: $secret_name"
             return 1
           else
-            echo "✅ OK: $secret_name (${#secret_value} chars)"
+            echo "[OK] OK: $secret_name (${#secret_value} chars)"
             return 0
           fi
         }
@@ -58,13 +58,13 @@ jobs:
         # Track validation results
         all_valid=true
         
-        echo "📋 Google Cloud Secrets:"
+        echo "[LIST] Google Cloud Secrets:"
         check_secret "GCP_PROJECT_ID" "${{ secrets.GCP_PROJECT_ID }}" || all_valid=false
         check_secret "GCP_REGION" "${{ secrets.GCP_REGION }}" || all_valid=false
         check_secret "GCP_SERVICE_ACCOUNT_KEY" "${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}" || all_valid=false
         
         echo ""
-        echo "📋 Firebase Secrets:"
+        echo "[LIST] Firebase Secrets:"
         check_secret "FIREBASE_PROJECT_ID" "${{ secrets.FIREBASE_PROJECT_ID }}" || all_valid=false
         check_secret "FIREBASE_API_KEY" "${{ secrets.FIREBASE_API_KEY }}" || all_valid=false
         check_secret "FIREBASE_AUTH_DOMAIN" "${{ secrets.FIREBASE_AUTH_DOMAIN }}" || all_valid=false
@@ -74,32 +74,32 @@ jobs:
         check_secret "FIREBASE_TOKEN" "${{ secrets.FIREBASE_TOKEN }}" || all_valid=false
         
         echo ""
-        echo "📋 Analytics & Application Secrets:"
+        echo "[LIST] Analytics & Application Secrets:"
         check_secret "GA_MEASUREMENT_ID" "${{ secrets.GA_MEASUREMENT_ID }}" || all_valid=false
         check_secret "SECRET_KEY" "${{ secrets.SECRET_KEY }}" || all_valid=false
         
         echo ""
-        echo "📋 Optional API Secrets:"
+        echo "[LIST] Optional API Secrets:"
         if [ -n "${{ secrets.OPENROUTER_API_KEY }}" ]; then
-          echo "✅ OPENROUTER_API_KEY configured"
+          echo "[OK] OPENROUTER_API_KEY configured"
         else
-          echo "⚠️  OPENROUTER_API_KEY not configured (optional for medical AI)"
+          echo "[WARNING]  OPENROUTER_API_KEY not configured (optional for medical AI)"
         fi
         
         if [ -n "${{ secrets.HUGGINGFACE_API_KEY }}" ]; then
-          echo "✅ HUGGINGFACE_API_KEY configured"
+          echo "[OK] HUGGINGFACE_API_KEY configured"
         else
-          echo "⚠️  HUGGINGFACE_API_KEY not configured (optional for embeddings)"
+          echo "[WARNING]  HUGGINGFACE_API_KEY not configured (optional for embeddings)"
         fi
         
         # Final validation
         if [ "$all_valid" = true ]; then
           echo ""
           echo "🎉 All required secrets are configured!"
-          echo "✅ Environment is ready for medical platform deployment"
+          echo "[OK] Environment is ready for medical platform deployment"
         else
           echo ""
-          echo "❌ Some required secrets are missing!"
+          echo "[ERROR] Some required secrets are missing!"
           echo "📚 Please configure missing secrets in GitHub repository settings:"
           echo "   Repository > Settings > Secrets and variables > Actions"
           exit 1
@@ -124,14 +124,14 @@ jobs:
         
     - name: Validate GCP Project and APIs
       run: |
-        echo "🔍 Validating Google Cloud Project..."
+        echo "[SEARCH] Validating Google Cloud Project..."
         
         # Check project exists and is accessible
         PROJECT_INFO=$(gcloud projects describe ${{ secrets.GCP_PROJECT_ID }} --format="value(projectId,name,lifecycleState)")
-        echo "✅ Project: $PROJECT_INFO"
+        echo "[OK] Project: $PROJECT_INFO"
         
         echo ""
-        echo "🔍 Checking required APIs..."
+        echo "[SEARCH] Checking required APIs..."
         
         # List of required APIs for medical platform
         required_apis=(
@@ -147,9 +147,9 @@ jobs:
         
         for api in "${required_apis[@]}"; do
           if gcloud services list --enabled --filter="name:$api" --format="value(name)" | grep -q "$api"; then
-            echo "✅ $api - ENABLED"
+            echo "[OK] $api - ENABLED"
           else
-            echo "❌ $api - DISABLED"
+            echo "[ERROR] $api - DISABLED"
             all_apis_enabled=false
           fi
         done
@@ -159,16 +159,16 @@ jobs:
           echo "🎉 All required APIs are enabled!"
         else
           echo ""
-          echo "⚠️  Some APIs need to be enabled. Run the deploy workflow to enable them automatically."
+          echo "[WARNING]  Some APIs need to be enabled. Run the deploy workflow to enable them automatically."
         fi
         
         # Check Cloud Run region
         echo ""
-        echo "🔍 Validating Cloud Run region..."
+        echo "[SEARCH] Validating Cloud Run region..."
         if gcloud run regions list --filter="name:${{ secrets.GCP_REGION }}" --format="value(name)" | grep -q "${{ secrets.GCP_REGION }}"; then
-          echo "✅ Region ${{ secrets.GCP_REGION }} is available for Cloud Run"
+          echo "[OK] Region ${{ secrets.GCP_REGION }} is available for Cloud Run"
         else
-          echo "❌ Region ${{ secrets.GCP_REGION }} is not available for Cloud Run"
+          echo "[ERROR] Region ${{ secrets.GCP_REGION }} is not available for Cloud Run"
           echo "Available regions:"
           gcloud run regions list --format="table(name)"
           exit 1
@@ -193,54 +193,54 @@ jobs:
       
     - name: Validate Firebase Token
       run: |
-        echo "🔍 Validating Firebase authentication..."
+        echo "[SEARCH] Validating Firebase authentication..."
         
         # Test Firebase token
         echo "${{ secrets.FIREBASE_TOKEN }}" | firebase login:ci
         
-        echo "✅ Firebase authentication successful"
+        echo "[OK] Firebase authentication successful"
         
     - name: Validate Firebase Project
       run: |
-        echo "🔍 Validating Firebase project..."
+        echo "[SEARCH] Validating Firebase project..."
         
         # List projects to verify access
         firebase projects:list
         
         # Check if our project exists
         if firebase projects:list | grep -q "${{ secrets.FIREBASE_PROJECT_ID }}"; then
-          echo "✅ Firebase project ${{ secrets.FIREBASE_PROJECT_ID }} is accessible"
+          echo "[OK] Firebase project ${{ secrets.FIREBASE_PROJECT_ID }} is accessible"
         else
-          echo "❌ Firebase project ${{ secrets.FIREBASE_PROJECT_ID }} not found or not accessible"
+          echo "[ERROR] Firebase project ${{ secrets.FIREBASE_PROJECT_ID }} not found or not accessible"
           exit 1
         fi
         
     - name: Validate Firebase Configuration Files
       run: |
-        echo "🔍 Checking Firebase configuration files..."
+        echo "[SEARCH] Checking Firebase configuration files..."
         
         # Check if firebase.json exists
         if [ -f "firebase.json" ]; then
-          echo "✅ firebase.json exists"
+          echo "[OK] firebase.json exists"
           echo "📄 Configuration:"
-          cat firebase.json | jq '.' || echo "❌ firebase.json is not valid JSON"
+          cat firebase.json | jq '.' || echo "[ERROR] firebase.json is not valid JSON"
         else
-          echo "❌ firebase.json not found"
-          echo "🔧 Create firebase.json with: firebase init hosting"
+          echo "[ERROR] firebase.json not found"
+          echo "[FIX] Create firebase.json with: firebase init hosting"
         fi
         
         # Check if .firebaserc exists
         if [ -f ".firebaserc" ]; then
-          echo "✅ .firebaserc exists"
+          echo "[OK] .firebaserc exists"
           echo "📄 Project configuration:"
-          cat .firebaserc | jq '.' || echo "❌ .firebaserc is not valid JSON"
+          cat .firebaserc | jq '.' || echo "[ERROR] .firebaserc is not valid JSON"
         else
-          echo "❌ .firebaserc not found"
-          echo "🔧 This will be created automatically during firebase init"
+          echo "[ERROR] .firebaserc not found"
+          echo "[FIX] This will be created automatically during firebase init"
         fi
 
   setup-fresh-environment:
-    name: 🚀 Setup Fresh Environment
+    name: [START] Setup Fresh Environment
     runs-on: ubuntu-latest
     needs: [validate-secrets, validate-gcp-connection, validate-firebase-connection]
     if: ${{ github.event.inputs.setup_fresh == 'true' && !failure() }}
@@ -268,7 +268,7 @@ jobs:
         
     - name: Enable Required APIs
       run: |
-        echo "🔧 Enabling required APIs for medical platform..."
+        echo "[FIX] Enabling required APIs for medical platform..."
         
         apis=(
           "cloudbuild.googleapis.com"
@@ -286,11 +286,11 @@ jobs:
           gcloud services enable "$api" --project="${{ secrets.GCP_PROJECT_ID }}"
         done
         
-        echo "✅ All APIs enabled successfully"
+        echo "[OK] All APIs enabled successfully"
         
     - name: Setup Firebase Hosting
       run: |
-        echo "🔧 Setting up Firebase Hosting..."
+        echo "[FIX] Setting up Firebase Hosting..."
         
         # Authenticate Firebase
         echo "${{ secrets.FIREBASE_TOKEN }}" | firebase login:ci
@@ -298,10 +298,10 @@ jobs:
         # Initialize Firebase (non-interactive)
         firebase use ${{ secrets.FIREBASE_PROJECT_ID }}
         
-        echo "✅ Firebase setup completed"
+        echo "[OK] Firebase setup completed"
 
   environment-summary:
-    name: 📋 Environment Summary
+    name: [LIST] Environment Summary
     runs-on: ubuntu-latest
     needs: [validate-secrets, validate-gcp-connection, validate-firebase-connection]
     if: always()
@@ -316,7 +316,7 @@ jobs:
         echo "**Commit:** ${{ github.sha }}" >> environment-summary.md
         echo "" >> environment-summary.md
         
-        echo "## 🔍 Validation Results" >> environment-summary.md
+        echo "## [SEARCH] Validation Results" >> environment-summary.md
         echo "" >> environment-summary.md
         echo "| Component | Status |" >> environment-summary.md
         echo "|-----------|--------|" >> environment-summary.md
@@ -325,7 +325,7 @@ jobs:
         echo "| Firebase Connection | ${{ needs.validate-firebase-connection.result }} |" >> environment-summary.md
         
         echo "" >> environment-summary.md
-        echo "## 📊 Configuration Details" >> environment-summary.md
+        echo "## [REPORT] Configuration Details" >> environment-summary.md
         echo "" >> environment-summary.md
         echo "- **GCP Project:** ${{ secrets.GCP_PROJECT_ID }}" >> environment-summary.md
         echo "- **GCP Region:** ${{ secrets.GCP_REGION }}" >> environment-summary.md
@@ -335,9 +335,9 @@ jobs:
         echo "" >> environment-summary.md
         echo "## 🏥 Medical Platform Compliance" >> environment-summary.md
         echo "" >> environment-summary.md
-        echo "✅ **LGPD**: Lei Geral de Proteção de Dados" >> environment-summary.md
-        echo "✅ **CFM 2.314/2022**: Resolução sobre Telemedicina" >> environment-summary.md
-        echo "✅ **ANVISA RDC 4/2009**: Farmacovigilância" >> environment-summary.md
+        echo "[OK] **LGPD**: Lei Geral de Proteção de Dados" >> environment-summary.md
+        echo "[OK] **CFM 2.314/2022**: Resolução sobre Telemedicina" >> environment-summary.md
+        echo "[OK] **ANVISA RDC 4/2009**: Farmacovigilância" >> environment-summary.md
         echo "" >> environment-summary.md
         echo "## 🔗 Next Steps" >> environment-summary.md
         echo "" >> environment-summary.md
@@ -350,7 +350,7 @@ jobs:
           echo "- Push code to main branch for automatic deployment" >> environment-summary.md
           echo "- Access the application at https://${{ secrets.FIREBASE_PROJECT_ID }}.web.app" >> environment-summary.md
         else
-          echo "⚠️ **Setup incomplete.** Please:" >> environment-summary.md
+          echo "[WARNING] **Setup incomplete.** Please:" >> environment-summary.md
           echo "- Check failed validation steps above" >> environment-summary.md
           echo "- Configure missing secrets in repository settings" >> environment-summary.md
           echo "- Re-run this workflow after fixing issues" >> environment-summary.md

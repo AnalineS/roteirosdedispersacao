@@ -1,7 +1,8 @@
+# -*- coding: utf-8 -*-
 """
 Analytics Blueprint - UX Data Collection
 Parte da ETAPA 1: Auditoria UX Baseada em Dados
-Coleta métricas UX para análise e melhoria (Score 74→90+)
+Coleta métricas UX para análise e melhoria (Score 74->90+)
 """
 
 from flask import Blueprint, request, jsonify, g
@@ -137,7 +138,7 @@ def get_ux_report():
 def get_cognitive_load_analysis():
     """
     Análise específica de cognitive overload
-    Score atual: 8.9/10 → Meta: <4/10
+    Score atual: 8.9/10 -> Meta: <4/10
     """
     try:
         # Dados de cognitive load dos últimos 7 dias
@@ -169,7 +170,7 @@ def get_cognitive_load_analysis():
 def get_mobile_experience_analysis():
     """
     Análise específica da experiência móvel
-    Status atual: Deficitária → Meta: Excelente
+    Status atual: Deficitária -> Meta: Excelente
     """
     try:
         mobile_data = load_mobile_experience_data()
@@ -203,7 +204,7 @@ def get_mobile_experience_analysis():
 def get_onboarding_analysis():
     """
     Análise do funil de onboarding
-    Abandono atual: 75% → Meta: <20%
+    Abandono atual: 75% -> Meta: <20%
     """
     try:
         onboarding_data = load_onboarding_data()
@@ -416,4 +417,4 @@ def categorize_device(dims): return 'mobile'
 def categorize_onboarding_stage(step): return f'stage_{step}'
 
 # Log de inicialização
-logger.info(f"📊 Analytics Blueprint carregado {'com' if AUTH_AVAILABLE else 'sem'} autenticação")
+logger.info(f"[REPORT] Analytics Blueprint carregado {'com' if AUTH_AVAILABLE else 'sem'} autenticação")

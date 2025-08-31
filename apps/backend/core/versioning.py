@@ -27,9 +27,11 @@ def add_version_headers(response):
     """
     Adiciona headers de versionamento em todas as respostas
     """
-    response.headers['X-API-Version'] = API_VERSIONS[CURRENT_VERSION]['version']
-    response.headers['X-API-Status'] = API_VERSIONS[CURRENT_VERSION]['status']
-    response.headers['X-Supported-Versions'] = ','.join(API_VERSIONS.keys())
+    # Verificar se response tem headers (não é uma tupla de erro)
+    if hasattr(response, 'headers'):
+        response.headers['X-API-Version'] = API_VERSIONS[CURRENT_VERSION]['version']
+        response.headers['X-API-Status'] = API_VERSIONS[CURRENT_VERSION]['status']
+        response.headers['X-Supported-Versions'] = ','.join(API_VERSIONS.keys())
     return response
 
 def version_required(min_version='v1'):
@@ -105,7 +107,7 @@ class APIVersionManager:
         app.config['API_VERSION'] = CURRENT_VERSION
         app.config['API_VERSIONS'] = API_VERSIONS
         
-        logger.info(f"✅ API Version Manager inicializado - Versão atual: {CURRENT_VERSION}")
+        logger.info(f"[OK] API Version Manager inicializado - Versão atual: {CURRENT_VERSION}")
     
     def _before_request(self):
         """

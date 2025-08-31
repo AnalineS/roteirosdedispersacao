@@ -62,7 +62,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: 📊 Setup Node.js
+      - name: 📈 Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
@@ -308,7 +308,7 @@ jobs:
       - name: 📥 Checkout Code
         uses: actions/checkout@v4
 
-      - name: 📊 Setup Node.js
+      - name: 📈 Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
@@ -418,7 +418,7 @@ jobs:
                 fi
               fi
             done
-            echo "🚨 CRITICAL: $url failed after $max_attempts attempts"
+            echo "[ALERT] CRITICAL: $url failed after $max_attempts attempts"
             return 1
           }
           
@@ -460,7 +460,7 @@ jobs:
   # Setup Monitoramento Produção
   # =====================================
   setup-production-monitoring:
-    name: 📊 Setup Production Monitoring
+    name: 📈 Setup Production Monitoring
     runs-on: ubuntu-latest
     needs: [deploy-backend-production, deploy-frontend-production]
     if: always() && (needs.deploy-backend-production.result == 'success' || needs.deploy-backend-production.result == 'skipped') && (needs.deploy-frontend-production.result == 'success' || needs.deploy-frontend-production.result == 'skipped')
@@ -477,9 +477,9 @@ jobs:
       - name: 🛠️ Setup Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
-      - name: 🚨 Configure Production Alerts
+      - name: [ALERT] Configure Production Alerts
         run: |
-          echo "🚨 Configurando alertas de produção com integração Telegram..."
+          echo "[ALERT] Configurando alertas de produção com integração Telegram..."
           
           chmod +x scripts/setup-gcp-alerts-with-secrets.sh
           bash scripts/setup/setup-gcp-alerts-with-secrets.sh \
@@ -489,9 +489,9 @@ jobs:
         env:
           GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
 
-      - name: 📊 Create Production Dashboards
+      - name: 📈 Create Production Dashboards
         run: |
-          echo "📊 Criando dashboards de produção..."
+          echo "📈 Criando dashboards de produção..."
           
           chmod +x scripts/create-simple-dashboards.sh
           bash scripts/maintenance/create-simple-dashboards.sh ${{ secrets.GCP_PROJECT_ID }}
@@ -505,12 +505,12 @@ jobs:
           
           # Verificar dashboards
           DASHBOARDS=$(gcloud monitoring dashboards list --format="value(name)" --limit=10)
-          echo "📊 Dashboards encontrados:"
+          echo "📈 Dashboards encontrados:"
           echo "$DASHBOARDS"
           
           # Verificar políticas de alerta
           POLICIES=$(gcloud alpha monitoring policies list --format="value(name)" --limit=10)
-          echo "🚨 Políticas de alerta encontradas:"
+          echo "[ALERT] Políticas de alerta encontradas:"
           echo "$POLICIES"
           
           # Verificar canais de notificação
@@ -540,7 +540,7 @@ jobs:
           git tag -a "${{ github.event.inputs.version_tag }}" -m "Production release ${{ github.event.inputs.version_tag }}"
           git push origin "${{ github.event.inputs.version_tag }}"
 
-      - name: 📋 Create GitHub Release
+      - name: [LIST] Create GitHub Release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -610,21 +610,21 @@ jobs:
           ⏰ *Timestamp:* \`$(date -u)\`
           
           🔗 *URLs de Produção:*
-          • Backend: ${{ needs.deploy-backend-production.outputs.service-url }}
-          • Frontend: ${{ needs.deploy-frontend-production.outputs.frontend-url }}
+          * Backend: ${{ needs.deploy-backend-production.outputs.service-url }}
+          * Frontend: ${{ needs.deploy-frontend-production.outputs.frontend-url }}
           
-          📊 *Status dos Componentes:*
-          • Backend: ${{ needs.deploy-backend-production.result }}
-          • Frontend: ${{ needs.deploy-frontend-production.result }}
-          • Monitoramento: ${{ needs.setup-production-monitoring.result }}
-          • Smoke Tests: ${{ needs.production-smoke-tests.result }}
-          • Release: ${{ needs.create-release.result }}
+          📈 *Status dos Componentes:*
+          * Backend: ${{ needs.deploy-backend-production.result }}
+          * Frontend: ${{ needs.deploy-frontend-production.result }}
+          * Monitoramento: ${{ needs.setup-production-monitoring.result }}
+          * Smoke Tests: ${{ needs.production-smoke-tests.result }}
+          * Release: ${{ needs.create-release.result }}
           
-          🚨 *Sistema de Observabilidade:*
-          • Google Cloud Operations Suite ✅
-          • Alertas com Telegram configurados ✅
-          • Dashboards de produção criados ✅
-          • Métricas e logs estruturados ✅
+          [ALERT] *Sistema de Observabilidade:*
+          * Google Cloud Operations Suite ✅
+          * Alertas com Telegram configurados ✅
+          * Dashboards de produção criados ✅
+          * Métricas e logs estruturados ✅
           
           📝 *Release Notes:*
           ${{ github.event.inputs.release_notes }}
@@ -641,7 +641,7 @@ jobs:
         if: failure()
         run: |
           STATUS="❌ FALHA NO DEPLOY DE PRODUÇÃO"
-          EMOJI="🚨"
+          EMOJI="[ALERT]"
           
           MESSAGE="$EMOJI *$STATUS*
           
@@ -649,12 +649,12 @@ jobs:
           👤 *Tentativa por:* @${{ github.actor }}
           ⏰ *Timestamp:* \`$(date -u)\`
           
-          📊 *Status dos Jobs:*
-          • Validação: ${{ needs.pre-deployment-validation.result }}
-          • Backend: ${{ needs.deploy-backend-production.result }}
-          • Frontend: ${{ needs.deploy-frontend-production.result }}
-          • Monitoramento: ${{ needs.setup-production-monitoring.result }}
-          • Smoke Tests: ${{ needs.production-smoke-tests.result }}
+          📈 *Status dos Jobs:*
+          * Validação: ${{ needs.pre-deployment-validation.result }}
+          * Backend: ${{ needs.deploy-backend-production.result }}
+          * Frontend: ${{ needs.deploy-frontend-production.result }}
+          * Monitoramento: ${{ needs.setup-production-monitoring.result }}
+          * Smoke Tests: ${{ needs.production-smoke-tests.result }}
           
           🔧 *Ações Necessárias:*
           1. Verificar logs do workflow

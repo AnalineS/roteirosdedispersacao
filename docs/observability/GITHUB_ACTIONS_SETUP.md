@@ -1,6 +1,6 @@
-# 🔧 Configuração GitHub Actions - Observabilidade
+# [FIX] Configuração GitHub Actions - Observabilidade
 
-## 📋 Ativação do Workflow de Monitoramento
+## [LIST] Ativação do Workflow de Monitoramento
 
 ### 1️⃣ **Verificar Arquivo de Workflow**
 
@@ -36,11 +36,11 @@ GA_API_SECRET: "secret_from_google_analytics"
 ### 3️⃣ **Ativar GitHub Actions**
 
 1. **Verificar se Actions está habilitado:**
-   - Vá em `Settings → Actions → General`
+   - Vá em `Settings -> Actions -> General`
    - Certifique-se que `Allow all actions and reusable workflows` está selecionado
 
 2. **Dar permissões para criar Issues:**
-   - Em `Settings → Actions → General`
+   - Em `Settings -> Actions -> General`
    - Seção `Workflow permissions`
    - Selecione `Read and write permissions`
    - Marque `Allow GitHub Actions to create and approve pull requests`
@@ -54,7 +54,7 @@ git commit -m "feat: add observability monitoring workflow"
 git push origin main
 
 # 2. Executar manualmente pela primeira vez
-# Vá em Actions → Observability Monitoring → Run workflow
+# Vá em Actions -> Observability Monitoring -> Run workflow
 ```
 
 ### 5️⃣ **Verificar Execução**
@@ -78,43 +78,43 @@ gh run view --log
 
 ---
 
-## 📊 **Configuração de Alertas**
+## [REPORT] **Configuração de Alertas**
 
 ### **Tipos de Alertas Configurados:**
 
-1. **🚨 Sistema Offline**
+1. **[ALERT] Sistema Offline**
    - Backend API não responde (status ≠ 200)
    - Frontend não responde
    - **Ação**: Cria issue automática com label `critical`
 
-2. **⚠️ Quota de Métricas**
+2. **[WARNING] Quota de Métricas**
    - Uso > 90% do limite gratuito (140 MB)
    - **Ação**: Cria issue com label `warning`
 
-3. **📊 Relatório Mensal**
+3. **[REPORT] Relatório Mensal**
    - Todo dia 1 do mês
    - **Ação**: Cria issue com relatório de uso
 
 ### **Exemplo de Issue Criada Automaticamente:**
 
 ```markdown
-# 🚨 Alerta de Monitoramento - Sistema Offline
+# [ALERT] Alerta de Monitoramento - Sistema Offline
 
 ## Alerta Automático - 2025-08-16T14:30:00Z
 
-### ❌ Problema de Disponibilidade
+### [ERROR] Problema de Disponibilidade
 
-- **Backend API**: ❌ Offline (503)
-- **Frontend**: ✅ Online
+- **Backend API**: [ERROR] Offline (503)
+- **Frontend**: [OK] Online
 
-### 📊 Métricas do Sistema
+### [REPORT] Métricas do Sistema
 
 | Métrica | Valor | Status |
 |---------|-------|--------|
-| Backend API | 503 | ❌ |
-| Frontend | 200 | ✅ |
-| Uso de Métricas | 70 MB | ✅ |
-| Percentual | 50% | ✅ |
+| Backend API | 503 | [ERROR] |
+| Frontend | 200 | [OK] |
+| Uso de Métricas | 70 MB | [OK] |
+| Percentual | 50% | [OK] |
 
 ---
 *Alerta gerado automaticamente pelo GitHub Actions*
@@ -144,7 +144,7 @@ on:
 
 ```yaml
 # No step "Check API Health"
-- name: 🔍 Check API Health
+- name: [SEARCH] Check API Health
   run: |
     # Adicionar novos endpoints aqui
     CUSTOM_API_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://seu-novo-endpoint.com/health)
@@ -161,7 +161,7 @@ on:
     curl -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
       -H "Content-Type: application/json" \
       -d '{
-        "content": "🚨 Sistema offline detectado!",
+        "content": "[ALERT] Sistema offline detectado!",
         "embeds": [{
           "title": "Alerta de Monitoramento",
           "description": "Backend API: ${{ steps.api-health.outputs.backend_status }}",
@@ -172,7 +172,7 @@ on:
 
 ---
 
-## 🧪 **Testes e Validação**
+## [TEST] **Testes e Validação**
 
 ### **Testar Criação de Alertas:**
 
@@ -195,7 +195,7 @@ on:
 
 ```yaml
 # Testar se pode criar issues
-- name: 🧪 Test Permissions
+- name: [TEST] Test Permissions
   run: |
     echo "Testing if can create issues..."
     gh auth status
@@ -262,7 +262,7 @@ Isso permite:
 
 ---
 
-## ✅ **Checklist de Ativação**
+## [OK] **Checklist de Ativação**
 
 - [ ] **Workflow file criado**: `.github/workflows/observability-monitoring.yml`
 - [ ] **Secrets configurados**: GCP + GA credentials

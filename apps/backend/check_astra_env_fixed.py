@@ -91,7 +91,7 @@ def suggest_github_secrets_setup():
     ]
     
     for secret_name, example_value in secrets:
-        print(f"   • {secret_name}")
+        print(f"   * {secret_name}")
         print(f"     Valor: {example_value}")
         print()
 

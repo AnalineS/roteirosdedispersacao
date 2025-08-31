@@ -2,7 +2,7 @@
 
 Este documento lista todos os secrets necessários para configurar o ambiente de homologação (HML) no GitHub Actions.
 
-## 🔐 Secrets Obrigatórios
+## [AUTH] Secrets Obrigatórios
 
 ### Google Cloud Platform (GCP)
 ```bash
@@ -121,7 +121,7 @@ curl "https://api.telegram.org/bot<BOT_TOKEN>/getUpdates"
 # Adicione o ID como secret TELEGRAM_CHAT_ID
 ```
 
-## 📋 Lista de Verificação
+## [LIST] Lista de Verificação
 
 ### Secrets GCP/Firebase
 - [ ] `GOOGLE_CLOUD_PROJECT`
@@ -140,7 +140,7 @@ curl "https://api.telegram.org/bot<BOT_TOKEN>/getUpdates"
 ### Secrets HML
 - [ ] `HML_SEED_TOKEN`
 
-## 🔧 Teste de Configuração
+## [FIX] Teste de Configuração
 
 ### Verificar GCP Service Account
 ```bash
@@ -168,10 +168,10 @@ snyk test
 # Testar envio de mensagem
 curl -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" \
   -d chat_id="$TELEGRAM_CHAT_ID" \
-  -d text="🧪 Teste de configuração GitHub Actions HML"
+  -d text="[TEST] Teste de configuração GitHub Actions HML"
 ```
 
-## 🚨 Segurança
+## [ALERT] Segurança
 
 ### Boas Práticas
 1. **Rotação de Secrets**: Renove tokens periodicamente

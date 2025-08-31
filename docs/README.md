@@ -29,7 +29,7 @@ This repository has been organized for better maintainability and navigation.
 - Old release notes
 - Deprecated guides
 
-## 🔧 Scripts (/scripts)
+## [FIX] Scripts (/scripts)
 
 ### /scripts/deployment
 - Environment deployment scripts
@@ -51,7 +51,7 @@ This repository has been organized for better maintainability and navigation.
 - Vulnerability scanning
 - Automated reporting
 
-## 🧪 Tests (/tests)
+## [TEST] Tests (/tests)
 
 ### /tests/backend
 - Backend unit tests
@@ -73,7 +73,7 @@ This repository has been organized for better maintainability and navigation.
 - Penetration testing scripts
 - Vulnerability assessments
 
-## 🚀 Usage Examples
+## [START] Usage Examples
 
 ### Running Tests
 ```bash
@@ -103,7 +103,7 @@ python scripts/automation/security_issues_safe.py
 
 ---
 
-**🔧 Maintained by:** Development Team  
+**[FIX] Maintained by:** Development Team  
 **📅 Last Updated:** Tue, Aug 26, 2025  9:55:41 PM  
-**🎯 Purpose:** Educational platform for hanseníase medication dispensing
+**[TARGET] Purpose:** Educational platform for hanseníase medication dispensing
 

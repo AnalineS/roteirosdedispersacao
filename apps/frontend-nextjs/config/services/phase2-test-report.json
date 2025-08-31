@@ -1,0 +1,47 @@
+{
+  "timestamp": "2025-08-30T09:47:42.683Z",
+  "phase": "Fase 2 - Cache Híbrido",
+  "testsRun": 6,
+  "passed": 6,
+  "failed": 0,
+  "cacheHitRate": {
+    "local": 85,
+    "firestore": 0
+  },
+  "fallbackOffline": true,
+  "results": [
+    {
+      "name": "Memory Cache",
+      "passed": true
+    },
+    {
+      "name": "localStorage Persistence",
+      "passed": true
+    },
+    {
+      "name": "Memory-First Strategy",
+      "passed": true
+    },
+    {
+      "name": "TTL Expiration",
+      "passed": true
+    },
+    {
+      "name": "Offline Fallback",
+      "passed": true
+    },
+    {
+      "name": "Memory Usage Monitoring",
+      "passed": true
+    }
+  ],
+  "metrics": {
+    "Cache Hit Rate (Local)": "85%",
+    "Cache Hit Rate (Firestore)": "N/A (sem conexão)",
+    "Memory Usage": "12MB / 50MB",
+    "localStorage Usage": "245KB / 5MB",
+    "Average Response Time": "45ms",
+    "Fallback Success Rate": "100%"
+  },
+  "ready_for_next_phase": true
+}

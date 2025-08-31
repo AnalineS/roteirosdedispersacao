@@ -81,7 +81,7 @@ class OpenAPISpec:
                 
                 Em produção, use o header `X-API-Key` ou `Authorization: Bearer <token>`
                 
-                ## 📊 Rate Limiting
+                ## [REPORT] Rate Limiting
                 
                 - Chat: 60 requisições/minuto
                 - Cálculos: 30 requisições/minuto

@@ -1,6 +1,6 @@
 # Novo Design Corporativo - Roteiros de Dispensação
 
-## ✅ Mudanças Implementadas
+## [OK] Mudanças Implementadas
 
 ### 1. **Paleta de Cores Corporativa**
 - **Azul Principal**: `#0284c7` (UnB)
@@ -53,7 +53,7 @@
    - Espaçamento generoso
    - Foco na legibilidade e usabilidade
 
-## 🚀 Como Visualizar
+## [START] Como Visualizar
 
 O servidor está rodando em: http://localhost:3000
 
@@ -63,7 +63,7 @@ O servidor está rodando em: http://localhost:3000
 - **Dashboard**: http://localhost:3000/dashboard
 - **Recursos**: http://localhost:3000/resources
 
-## 📋 Próximos Passos (Opcional)
+## [LIST] Próximos Passos (Opcional)
 
 Se desejar ajustes adicionais:
 1. Remover completamente emojis dos textos

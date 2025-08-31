@@ -1,0 +1,562 @@
+{
+  "eff367bb13c15c0cca14d09b8346b8fccd4a13d112f4437fcffb89eb534e63f7": {
+    "id": "eff367bb13c15c0cca14d09b8346b8fccd4a13d112f4437fcffb89eb534e63f7",
+    "text": "https://www.gov.br/saude/pt-br/assuntos/saude-de-a-a-z/h/hanseniase/publicacoes/protocolo-clinico-e-diretrizes-terapeuticas-da-hanseniase-2022",
+    "metadata": {
+      "source_path": "pharmacovigilance_guidelines.regulatory_framework.national_protocol.url",
+      "parent_key": "url",
+      "original_category": "safety",
+      "word_count": 1
+    },
+    "chunk_type": "protocol",
+    "priority": 0.95,
+    "source_file": "pharmacovigilance_guidelines.json",
+    "created_at": "2025-08-30T16:08:41.630768+00:00"
+  },
+  "2e044e11b2e2eb906da0cb1dd1ccf856eea44757cbabe9b9c76dd1df0aa7c4a3": {
+    "id": "2e044e11b2e2eb906da0cb1dd1ccf856eea44757cbabe9b9c76dd1df0aa7c4a3",
+    "text": "https://www.gov.br/saude/pt-br/assuntos/saude-de-a-a-z/h/hanseniase/publicacoes/protocolo-clinico-e-diretrizes-terapeuticas-da-hanseniase-2022",
+    "metadata": {
+      "source_path": "clinical_references.national_guideline.url",
+      "parent_key": "url",
+      "original_category": "catalog",
+      "word_count": 1
+    },
+    "chunk_type": "protocol",
+    "priority": 0.8,
+    "source_file": "hanseniase_catalog.json",
+    "created_at": "2025-08-30T16:08:41.631484+00:00"
+  },
+  "37e0042da7c8742eb4b890fd6a726bb3bf928f2f5249314486997fbae9407df8": {
+    "id": "37e0042da7c8742eb4b890fd6a726bb3bf928f2f5249314486997fbae9407df8",
+    "text": "PQT-U (Poliquimioterapia Única) é o esquema terapêutico padrão para hanseníase, composto por rifampicina 600mg, clofazimina 300mg/50mg e dapsona 100mg, administrado por 12 meses independentemente da classificação operacional.",
+    "metadata": {
+      "source_path": "faq_hanseniase_pqtu.medicamentos.o_que_e_pqtu.gasnelio_answer",
+      "parent_key": "gasnelio_answer",
+      "original_category": "faq",
+      "word_count": 27
+    },
+    "chunk_type": "dosage",
+    "priority": 0.6,
+    "source_file": "frequently_asked_questions.json",
+    "created_at": "2025-08-30T16:08:41.671876+00:00"
+  },
+  "be2e70644f3fed3b58eaf13aa80a24909d9ecb1a4c749dbf96a030f356e7b8ca": {
+    "id": "be2e70644f3fed3b58eaf13aa80a24909d9ecb1a4c749dbf96a030f356e7b8ca",
+    "text": "PQT-U é o remédio usado para tratar hanseníase. São 3 medicamentos juntos que você toma por 1 ano. Eles trabalham em equipe para curar completamente a hanseníase.",
+    "metadata": {
+      "source_path": "faq_hanseniase_pqtu.medicamentos.o_que_e_pqtu.ga_answer",
+      "parent_key": "ga_answer",
+      "original_category": "faq",
+      "word_count": 27
+    },
+    "chunk_type": "faq",
+    "priority": 0.6,
+    "source_file": "frequently_asked_questions.json",
+    "created_at": "2025-08-30T16:08:41.700729+00:00"
+  },
+  "53575183dc70e62eb841f530f2aba95435ea19cc6a7016d9855cab2e0b0aed6f": {
+    "id": "53575183dc70e62eb841f530f2aba95435ea19cc6a7016d9855cab2e0b0aed6f",
+    "text": "A terapia tripla previne resistência bacteriana através de mecanismos de ação distintos: rifampicina (inibição RNA polimerase), clofazimina (ligação ao DNA) e dapsona (antagonismo PABA). Esta combinação garante eficácia bactericida e bacteriostática.",
+    "metadata": {
+      "source_path": "faq_hanseniase_pqtu.medicamentos.porque_3_medicamentos.gasnelio_answer",
+      "parent_key": "gasnelio_answer",
+      "original_category": "faq",
+      "word_count": 31
+    },
+    "chunk_type": "mechanism",
+    "priority": 0.6,
+    "source_file": "frequently_asked_questions.json",
+    "created_at": "2025-08-30T16:08:41.746690+00:00"
+  },
+  "1b51c96bcd2983c14649038d498b83b6a2281e0406c45c33f1816d26de401978": {
+    "id": "1b51c96bcd2983c14649038d498b83b6a2281e0406c45c33f1816d26de401978",
+    "text": "São 3 remédios porque cada um ataca a bactéria de um jeito diferente. Assim, a bactéria não consegue ficar resistente e o tratamento funciona melhor. É como ter 3 soldados lutando contra o mesmo inimigo.",
+    "metadata": {
+      "source_path": "faq_hanseniase_pqtu.medicamentos.porque_3_medicamentos.ga_answer",
+      "parent_key": "ga_answer",
+      "original_category": "faq",
+      "word_count": 35
+    },
+    "chunk_type": "faq",
+    "priority": 0.6,
+    "source_file": "frequently_asked_questions.json",
+    "created_at": "2025-08-30T16:08:41.772818+00:00"
+  },
+  "c428ce5a294ce5ad2148ea0ddd5b0b67d1a4371df82fe45523aaab0bb464fc73": {
+    "id": "c428ce5a294ce5ad2148ea0ddd5b0b67d1a4371df82fe45523aaab0bb464fc73",
+    "text": "Rifampicina: bactericida rápida, inibe RNA polimerase; Clofazimina: bactericida lenta, liga-se ao DNA, anti-inflamatória; Dapsona: bacteriostática, antagonista do PABA. Rifampicina é tomada apenas mensalmente, clofazimina e dapsona também diariamente.",
+    "metadata": {
+      "source_path": "faq_hanseniase_pqtu.medicamentos.diferenca_medicamentos.gasnelio_answer",
+      "parent_key": "gasnelio_answer",
+      "original_category": "faq",
+      "word_count": 28
+    },
+    "chunk_type": "faq",
+    "priority": 0.6,
+    "source_file": "frequently_asked_questions.json",
+    "created_at": "2025-08-30T16:08:41.802417+00:00"
+  },
+  "9b7a924d2ee899f4c503359290ca9efdbe83672d4c35103b6d4aedffe40779c3": {
+    "id": "9b7a924d2ee899f4c503359290ca9efdbe83672d4c35103b6d4aedffe40779c3",
+    "text": "Rifampicina (vermelha): mata rápido a bactéria, só mensal. Clofazimina (preta): mata devagar e diminui inflamação, mensal + diária. Dapsona (branca): impede crescimento da bactéria, mensal + diária.",
+    "metadata": {
+      "source_path": "faq_hanseniase_pqtu.medicamentos.diferenca_medicamentos.ga_answer",
+      "parent_key": "ga_answer",
+      "original_category": "faq",
+      "word_count": 27
+    },
+    "chunk_type": "mechanism",
+    "priority": 0.6,
+    "source_file": "frequently_asked_questions.json",
+    "created_at": "2025-08-30T16:08:41.828460+00:00"
+  },
+  "2aa32d554b1d5519ceb4cb50f200c2d9f7f52867da33e58c2f0df8e76d87be79": {
+    "id": "2aa32d554b1d5519ceb4cb50f200c2d9f7f52867da33e58c2f0df8e76d87be79",
+    "text": "Dose supervisionada mensal: rifampicina 600mg + clofazimina 300mg + dapsona 100mg, administrada na unidade de saúde sob observação direta do profissional, a cada 28 dias, preferencialmente após desjejum.",
+    "metadata": {
+      "source_path": "faq_hanseniase_pqtu.administracao.como_tomar_supervisionada.gasnelio_answer",
+      "parent_key": "gasnelio_answer",
+      "original_category": "faq",
+      "word_count": 28
+    },
+    "chunk_type": "dosage",
+    "priority": 0.7,
+    "source_file": "frequently_asked_questions.json",
+    "created_at": "2025-08-30T16:08:41.853792+00:00"
+  },
+  "465c88d41d7c19e2107eb9e8ca93f1c0ad317aea43846ae033621df170283caa": {
+    "id": "465c88d41d7c19e2107eb9e8ca93f1c0ad317aea43846ae033621df170283caa",
+    "text": "Uma vez por mês você vem na unidade de saúde e toma os remédios aqui, na frente do profissional. É importante para garantir que você está tomando certo e ver como está seu tratamento.",
+    "metadata": {
+      "source_path": "faq_hanseniase_pqtu.administracao.como_tomar_supervisionada.ga_answer",
+      "parent_key": "ga_answer",
+      "original_category": "faq",
+      "word_count": 34
+    },
+    "chunk_type": "faq",
+    "priority": 0.6,
+    "source_file": "frequently_asked_questions.json",
+    "created_at": "2025-08-30T16:08:41.878373+00:00"
+  },
+  "463ab62628e7ec5d311259f8a5ea12a1b65f6ca72989958f0a32c11e8ae9c133": {
+    "id": "463ab62628e7ec5d311259f8a5ea12a1b65f6ca72989958f0a32c11e8ae9c133",
+    "text": "Dose autoadministrada diária: clofazimina 50mg + dapsona 100mg, tomada em domicílio, preferencialmente à noite após jantar. Não administrar no dia da dose supervisionada.",
+    "metadata": {
+      "source_path": "faq_hanseniase_pqtu.administracao.como_tomar_diaria.gasnelio_answer",
+      "parent_key": "gasnelio_answer",
+      "original_category": "faq",
+      "word_count": 23
+    },
+    "chunk_type": "dosage",
+    "priority": 0.7,
+    "source_file": "frequently_asked_questions.json",
+    "created_at": "2025-08-30T16:08:41.901810+00:00"
+  },
+  "6161eabdf29b42ea53a51b2480bf1b7c040907bba08bbddd70f37b4bee2a50b8": {
+    "id": "6161eabdf29b42ea53a51b2480bf1b7c040907bba08bbddd70f37b4bee2a50b8",
+    "text": "Todo dia em casa você toma 2 remédios: a clofazimina (preta) e a dapsona (branca). Melhor à noite, depois do jantar. No dia que vier na unidade, não tome em casa.",
+    "metadata": {
+      "source_path": "faq_hanseniase_pqtu.administracao.como_tomar_diaria.ga_answer",
+      "parent_key": "ga_answer",
+      "original_category": "faq",
+      "word_count": 31
+    },
+    "chunk_type": "faq",
+    "priority": 0.6,
+    "source_file": "frequently_asked_questions.json",
+    "created_at": "2025-08-30T16:08:41.923065+00:00"
+  },
+  "11d8a3ae9c86cfd4ebc7fe2f4cad4a104c6a0ed372721f14965ba181c01404db": {
+    "id": "11d8a3ae9c86cfd4ebc7fe2f4cad4a104c6a0ed372721f14965ba181c01404db",
+    "text": "Se esquecer dose diária: tomar assim que lembrar no mesmo dia. Se lembrar no dia seguinte, tomar a dose normal e não dobrar. Se esquecer dose supervisionada, procurar a unidade o mais breve possível.",
+    "metadata": {
+      "source_path": "faq_hanseniase_pqtu.administracao.esqueci_dose.gasnelio_answer",
+      "parent_key": "gasnelio_answer",
+      "original_category": "faq",
+      "word_count": 34
+    },
+    "chunk_type": "dosage",
+    "priority": 0.7,
+    "source_file": "frequently_asked_questions.json",
+    "created_at": "2025-08-30T16:08:41.944382+00:00"
+  },
+  "6fde5c82d974fa2a0ab511d99cec15bda9245a1a2e2ae96a2415a826f2101804": {
+    "id": "6fde5c82d974fa2a0ab511d99cec15bda9245a1a2e2ae96a2415a826f2101804",
+    "text": "Se esqueceu a dose de casa: lembre no mesmo dia, pode tomar. Se só lembrar no outro dia, tome só a dose normal. Se perdeu a consulta do mês, procure a unidade o mais rápido possível.",
+    "metadata": {
+      "source_path": "faq_hanseniase_pqtu.administracao.esqueci_dose.ga_answer",
+      "parent_key": "ga_answer",
+      "original_category": "faq",
+      "word_count": 36
+    },
+    "chunk_type": "dosage",
+    "priority": 0.7,
+    "source_file": "frequently_asked_questions.json",
+    "created_at": "2025-08-30T16:08:41.965878+00:00"
+  },
+  "c7c016965bfd244bde848a14c8f79267cf0c941e49c530b9dbe97364b9818e26": {
+    "id": "c7c016965bfd244bde848a14c8f79267cf0c941e49c530b9dbe97364b9818e26",
+    "text": "A rifampicina causa coloração alaranjada da urina, lágrimas e saliva em >90% dos pacientes. É efeito esperado, não grave, reversível e não requer intervenção. Orientar que é normal e temporário.",
+    "metadata": {
+      "source_path": "faq_hanseniase_pqtu.efeitos_adversos.urina_laranja.gasnelio_answer",
+      "parent_key": "gasnelio_answer",
+      "original_category": "faq",
+      "word_count": 30
+    },
+    "chunk_type": "mechanism",
+    "priority": 0.6,
+    "source_file": "frequently_asked_questions.json",
+    "created_at": "2025-08-30T16:08:41.990418+00:00"
+  },
+  "c5a6efcf79a4b74e0ebb12cd6773c903e28c62f582ba94cd8e03f851462d5a01": {
+    "id": "c5a6efcf79a4b74e0ebb12cd6773c903e28c62f582ba94cd8e03f851462d5a01",
+    "text": "A rifampicina deixa o xixi, as lágrimas e a saliva meio laranja. Isso é normal, não é perigoso. Acontece com quase todo mundo. Quando parar o remédio, volta ao normal.",
+    "metadata": {
+      "source_path": "faq_hanseniase_pqtu.efeitos_adversos.urina_laranja.ga_answer",
+      "parent_key": "ga_answer",
+      "original_category": "faq",
+      "word_count": 30
+    },
+    "chunk_type": "faq",
+    "priority": 0.7,
+    "source_file": "frequently_asked_questions.json",
+    "created_at": "2025-08-30T16:08:42.013283+00:00"
+  },
+  "f3aa97f94a23bd81ca1042cb22426f99267a169363c6832375ff267d54a8f022": {
+    "id": "f3aa97f94a23bd81ca1042cb22426f99267a169363c6832375ff267d54a8f022",
+    "text": "A clofazimina causa hiperpigmentação cutânea em >90% dos pacientes, variando de vermelho a castanho escuro. É reversível após descontinuação, podendo levar meses a anos. Efeito estético, não grave.",
+    "metadata": {
+      "source_path": "faq_hanseniase_pqtu.efeitos_adversos.pele_escura.gasnelio_answer",
+      "parent_key": "gasnelio_answer",
+      "original_category": "faq",
+      "word_count": 28
+    },
+    "chunk_type": "mechanism",
+    "priority": 0.6,
+    "source_file": "frequently_asked_questions.json",
+    "created_at": "2025-08-30T16:08:42.040237+00:00"
+  },
+  "c290b65763c2825cffce658ded06259c66c2cc132b1f06d50cf0e06fc56533eb": {
+    "id": "c290b65763c2825cffce658ded06259c66c2cc132b1f06d50cf0e06fc56533eb",
+    "text": "A clofazimina pode escurecer sua pele, deixando ela mais vermelha ou marrom. É temporário, mas pode demorar meses ou anos para voltar ao normal depois que parar o remédio. Não faz mal à saúde.",
+    "metadata": {
+      "source_path": "faq_hanseniase_pqtu.efeitos_adversos.pele_escura.ga_answer",
+      "parent_key": "ga_answer",
+      "original_category": "faq",
+      "word_count": 34
+    },
+    "chunk_type": "faq",
+    "priority": 0.6,
+    "source_file": "frequently_asked_questions.json",
+    "created_at": "2025-08-30T16:08:42.064257+00:00"
+  },
+  "735eef7daf2d87f0c11174f14d5fdb05c1fd92f502fe327194296e8623ea719f": {
+    "id": "735eef7daf2d87f0c11174f14d5fdb05c1fd92f502fe327194296e8623ea719f",
+    "text": "Procurar atendimento imediato se: icterícia, eritema extenso com bolhas, febre + mal-estar + erupção cutânea, palidez extrema, dor abdominal intensa. Hemograma urgente se sinais de anemia.",
+    "metadata": {
+      "source_path": "faq_hanseniase_pqtu.efeitos_adversos.quando_preocupar.gasnelio_answer",
+      "parent_key": "gasnelio_answer",
+      "original_category": "faq",
+      "word_count": 26
+    },
+    "chunk_type": "faq",
+    "priority": 0.6,
+    "source_file": "frequently_asked_questions.json",
+    "created_at": "2025-08-30T16:08:42.089536+00:00"
+  },
+  "9352759776333cbb42db5fd312779df23f7bd44eecebc2f04aa47a6e5d4ad49e": {
+    "id": "9352759776333cbb42db5fd312779df23f7bd44eecebc2f04aa47a6e5d4ad49e",
+    "text": "Venha urgente se tiver: pele ou olhos amarelos, manchas vermelhas com bolhas pelo corpo, febre com mal-estar e vermelhidão, ficar muito pálido, ou dor forte na barriga.",
+    "metadata": {
+      "source_path": "faq_hanseniase_pqtu.efeitos_adversos.quando_preocupar.ga_answer",
+      "parent_key": "ga_answer",
+      "original_category": "faq",
+      "word_count": 27
+    },
+    "chunk_type": "faq",
+    "priority": 0.6,
+    "source_file": "frequently_asked_questions.json",
+    "created_at": "2025-08-30T16:08:42.116913+00:00"
+  },
+  "02ad14d43c82ae2f8e71e0484717ae5b4b2013c750a42c90ba0d93c1c18c81bb": {
+    "id": "02ad14d43c82ae2f8e71e0484717ae5b4b2013c750a42c90ba0d93c1c18c81bb",
+    "text": "Prescrição médica ou de enfermeiro em duas vias (para <30kg apenas médica), documento de identidade, Caderneta do Paciente com Hanseníase, e resultados de exames se solicitados.",
+    "metadata": {
+      "source_path": "faq_hanseniase_pqtu.dispensacao.documentos_necessarios.gasnelio_answer",
+      "parent_key": "gasnelio_answer",
+      "original_category": "faq",
+      "word_count": 26
+    },
+    "chunk_type": "faq",
+    "priority": 0.6,
+    "source_file": "frequently_asked_questions.json",
+    "created_at": "2025-08-30T16:08:42.150063+00:00"
+  },
+  "9976122165d8fcf4bf4920cc56fa53bf3bff97ecc5ada85ebe3eda818dc1f0c6": {
+    "id": "9976122165d8fcf4bf4920cc56fa53bf3bff97ecc5ada85ebe3eda818dc1f0c6",
+    "text": "Traga sempre: a receita (duas folhas iguais), seu documento, a caderneta da hanseníase, e os exames se o médico pediu. Para criança pequena, só receita de médico vale.",
+    "metadata": {
+      "source_path": "faq_hanseniase_pqtu.dispensacao.documentos_necessarios.ga_answer",
+      "parent_key": "ga_answer",
+      "original_category": "faq",
+      "word_count": 28
+    },
+    "chunk_type": "faq",
+    "priority": 0.6,
+    "source_file": "frequently_asked_questions.json",
+    "created_at": "2025-08-30T16:08:42.174473+00:00"
+  },
+  "5693263e1f3261c0ac7c2c384f06a4fb85a944d17107292dc72d7795bf04d66f": {
+    "id": "5693263e1f3261c0ac7c2c384f06a4fb85a944d17107292dc72d7795bf04d66f",
+    "text": "Primeira dispensação: 25-30 minutos (avaliação + orientações extensas). Dispensações subsequentes: 10-15 minutos (verificações + orientações de reforço). Tempo adicional se identificados problemas.",
+    "metadata": {
+      "source_path": "faq_hanseniase_pqtu.dispensacao.quanto_tempo_demora.gasnelio_answer",
+      "parent_key": "gasnelio_answer",
+      "original_category": "faq",
+      "word_count": 22
+    },
+    "chunk_type": "mechanism",
+    "priority": 0.6,
+    "source_file": "frequently_asked_questions.json",
+    "created_at": "2025-08-30T16:08:42.202767+00:00"
+  },
+  "02460f32c99a2ea6a61b9ae5bd48ce05a670230faa8c4e8a56b4bd2089692914": {
+    "id": "02460f32c99a2ea6a61b9ae5bd48ce05a670230faa8c4e8a56b4bd2089692914",
+    "text": "Na primeira vez demora mais, uns 30 minutos, porque o farmacêutico explica tudo direitinho. Nas próximas vezes é mais rápido, uns 15 minutos, só para verificar como está indo.",
+    "metadata": {
+      "source_path": "faq_hanseniase_pqtu.dispensacao.quanto_tempo_demora.ga_answer",
+      "parent_key": "ga_answer",
+      "original_category": "faq",
+      "word_count": 29
+    },
+    "chunk_type": "faq",
+    "priority": 0.6,
+    "source_file": "frequently_asked_questions.json",
+    "created_at": "2025-08-30T16:08:42.229774+00:00"
+  },
+  "7cefb048d018f5f6d1f198cb4af3e03b6ae7198537511f4b97063461aa9af3a9": {
+    "id": "7cefb048d018f5f6d1f198cb4af3e03b6ae7198537511f4b97063461aa9af3a9",
+    "text": "Protocolo de falta: contatar outras unidades da rede, solicitação urgente à coordenação municipal/estadual, comunicar ao paciente sobre prazo, garantir continuidade sem interrupção >48h.",
+    "metadata": {
+      "source_path": "faq_hanseniase_pqtu.dispensacao.medicamento_falta.gasnelio_answer",
+      "parent_key": "gasnelio_answer",
+      "original_category": "faq",
+      "word_count": 23
+    },
+    "chunk_type": "protocol",
+    "priority": 0.6,
+    "source_file": "frequently_asked_questions.json",
+    "created_at": "2025-08-30T16:08:42.252602+00:00"
+  },
+  "5903fe648e98f2f472612b8c76b31ec101cee9a16390484fdfb89607bd82390f": {
+    "id": "5903fe648e98f2f472612b8c76b31ec101cee9a16390484fdfb89607bd82390f",
+    "text": "Se faltar remédio aqui, a gente liga para outras unidades para conseguir, ou faz pedido urgente. Te avisamos quando chegar. O importante é não ficar sem remédio por mais de 2 dias.",
+    "metadata": {
+      "source_path": "faq_hanseniase_pqtu.dispensacao.medicamento_falta.ga_answer",
+      "parent_key": "ga_answer",
+      "original_category": "faq",
+      "word_count": 32
+    },
+    "chunk_type": "faq",
+    "priority": 0.6,
+    "source_file": "frequently_asked_questions.json",
+    "created_at": "2025-08-30T16:08:42.272909+00:00"
+  },
+  "f9b230c744c61db64902f6180014523704e063f4c01e1e50ddd27a698b356796": {
+    "id": "f9b230c744c61db64902f6180014523704e063f4c01e1e50ddd27a698b356796",
+    "text": "Sim, PQT-U é segura na gravidez. Manter tratamento completo. Suplementar vitamina K no terceiro trimestre. Monitorar prematuridade. Clofazimina pode causar pigmentação transitória no recém-nascido.",
+    "metadata": {
+      "source_path": "faq_hanseniase_pqtu.populacoes_especiais.gravidez_seguro.gasnelio_answer",
+      "parent_key": "gasnelio_answer",
+      "original_category": "faq",
+      "word_count": 24
+    },
+    "chunk_type": "mechanism",
+    "priority": 0.6,
+    "source_file": "frequently_asked_questions.json",
+    "created_at": "2025-08-30T16:08:42.295177+00:00"
+  },
+  "612433e927d28ad901372335b9c74bfdcca406759c140dc8dbd50ebc1b68039a": {
+    "id": "612433e927d28ad901372335b9c74bfdcca406759c140dc8dbd50ebc1b68039a",
+    "text": "Sim, pode tomar na gravidez. É seguro para você e o bebê. O médico pode dar vitamina K no final da gravidez. O bebê pode nascer meio rosadinho por causa da clofazimina, mas volta ao normal.",
+    "metadata": {
+      "source_path": "faq_hanseniase_pqtu.populacoes_especiais.gravidez_seguro.ga_answer",
+      "parent_key": "ga_answer",
+      "original_category": "faq",
+      "word_count": 36
+    },
+    "chunk_type": "faq",
+    "priority": 0.6,
+    "source_file": "frequently_asked_questions.json",
+    "created_at": "2025-08-30T16:08:42.316047+00:00"
+  },
+  "e4bf93c6763716fa560e759e2498c4a02c69747a56ab5a57ea63f575d38d5422": {
+    "id": "e4bf93c6763716fa560e759e2498c4a02c69747a56ab5a57ea63f575d38d5422",
+    "text": "Sim, PQT-U é compatível com amamentação. Clofazimina pode causar coloração rosada temporária do leite materno. Monitorar bebê para sinais de hemólise. Não interromper aleitamento.",
+    "metadata": {
+      "source_path": "faq_hanseniase_pqtu.populacoes_especiais.amamentacao.gasnelio_answer",
+      "parent_key": "gasnelio_answer",
+      "original_category": "faq",
+      "word_count": 24
+    },
+    "chunk_type": "mechanism",
+    "priority": 0.6,
+    "source_file": "frequently_asked_questions.json",
+    "created_at": "2025-08-30T16:08:42.338246+00:00"
+  },
+  "e6c87d374786e060a296a71966502d2340898e946b5c70834e872c07fcec29ab": {
+    "id": "e6c87d374786e060a296a71966502d2340898e946b5c70834e872c07fcec29ab",
+    "text": "Sim, pode amamentar normalmente. O leite pode ficar meio rosado por causa da clofazimina, mas não faz mal ao bebê. Continue amamentando tranquila.",
+    "metadata": {
+      "source_path": "faq_hanseniase_pqtu.populacoes_especiais.amamentacao.ga_answer",
+      "parent_key": "ga_answer",
+      "original_category": "faq",
+      "word_count": 23
+    },
+    "chunk_type": "faq",
+    "priority": 0.6,
+    "source_file": "frequently_asked_questions.json",
+    "created_at": "2025-08-30T16:08:42.357993+00:00"
+  },
+  "6233bd0d82ce521cec258a06f39ac23cb8a45308dce69cbff3f7542ac66780bc": {
+    "id": "6233bd0d82ce521cec258a06f39ac23cb8a45308dce69cbff3f7542ac66780bc",
+    "text": "Crianças <30kg: cálculo por peso (rifampicina 10mg/kg, clofazimina 6mg/kg supervisionada + 1mg/kg diária, dapsona 2mg/kg). Prescrição apenas médica. Doses podem ser divididas se necessário.",
+    "metadata": {
+      "source_path": "faq_hanseniase_pqtu.populacoes_especiais.crianca_dose.gasnelio_answer",
+      "parent_key": "gasnelio_answer",
+      "original_category": "faq",
+      "word_count": 24
+    },
+    "chunk_type": "dosage",
+    "priority": 0.7,
+    "source_file": "frequently_asked_questions.json",
+    "created_at": "2025-08-30T16:08:42.385415+00:00"
+  },
+  "23960e1b4381c2ceb7084f9203e63d23608c9b41eb64323a74a8d5019e891af9": {
+    "id": "23960e1b4381c2ceb7084f9203e63d23608c9b41eb64323a74a8d5019e891af9",
+    "text": "Para criança pequena (menos de 30kg), a dose é calculada pelo peso. Só médico pode receitar. Às vezes precisa dividir o comprimido. A família ajuda a dar o remédio certinho.",
+    "metadata": {
+      "source_path": "faq_hanseniase_pqtu.populacoes_especiais.crianca_dose.ga_answer",
+      "parent_key": "ga_answer",
+      "original_category": "faq",
+      "word_count": 30
+    },
+    "chunk_type": "dosage",
+    "priority": 0.7,
+    "source_file": "frequently_asked_questions.json",
+    "created_at": "2025-08-30T16:08:42.406945+00:00"
+  },
+  "19f6f513462109d91df5a0f62890778c3d57480fc07b93580732de74342faf83": {
+    "id": "19f6f513462109d91df5a0f62890778c3d57480fc07b93580732de74342faf83",
+    "text": "Baseline: hemograma, função hepática (ALT/AST/bilirrubinas), creatinina, G6PD se disponível. Seguimento: hemograma mensal primeiros 3 meses, depois trimestral. Função hepática se sintomas.",
+    "metadata": {
+      "source_path": "faq_hanseniase_pqtu.seguranca.exames_necessarios.gasnelio_answer",
+      "parent_key": "gasnelio_answer",
+      "original_category": "faq",
+      "word_count": 21
+    },
+    "chunk_type": "faq",
+    "priority": 0.6,
+    "source_file": "frequently_asked_questions.json",
+    "created_at": "2025-08-30T16:08:42.429199+00:00"
+  },
+  "8269993ae8d79b7398f4bcb2a096078d29eac7ff0bdea819663942fdc8465403": {
+    "id": "8269993ae8d79b7398f4bcb2a096078d29eac7ff0bdea819663942fdc8465403",
+    "text": "Antes de começar: exame de sangue completo, fígado e rim. Durante o tratamento: exame de sangue todo mês nos primeiros 3 meses, depois a cada 3 meses. Se sentir algo diferente, pode precisar de mais exames.",
+    "metadata": {
+      "source_path": "faq_hanseniase_pqtu.seguranca.exames_necessarios.ga_answer",
+      "parent_key": "ga_answer",
+      "original_category": "faq",
+      "word_count": 36
+    },
+    "chunk_type": "faq",
+    "priority": 0.6,
+    "source_file": "frequently_asked_questions.json",
+    "created_at": "2025-08-30T16:08:42.450198+00:00"
+  },
+  "93543a3b4a094244cd24bd000cd5333caa7b1c546837ccf28b64e36e10ff816f": {
+    "id": "93543a3b4a094244cd24bd000cd5333caa7b1c546837ccf28b64e36e10ff816f",
+    "text": "Sim, rifampicina induz enzimas hepáticas reduzindo eficácia dos anticoncepcionais orais. Orientar uso de métodos de barreira adicionais (preservativo) durante todo o tratamento e 1 mês após.",
+    "metadata": {
+      "source_path": "faq_hanseniase_pqtu.seguranca.interacao_anticoncepcional.gasnelio_answer",
+      "parent_key": "gasnelio_answer",
+      "original_category": "faq",
+      "word_count": 26
+    },
+    "chunk_type": "faq",
+    "priority": 0.6,
+    "source_file": "frequently_asked_questions.json",
+    "created_at": "2025-08-30T16:08:42.472371+00:00"
+  },
+  "33d00b3cb08dd35e20e322f607fb45efae7c7934cf2aaa622b38d1098db1c16f": {
+    "id": "33d00b3cb08dd35e20e322f607fb45efae7c7934cf2aaa622b38d1098db1c16f",
+    "text": "Sim, a rifampicina pode diminuir o efeito da pílula. Para não engravidar, use camisinha também durante todo o tratamento e 1 mês depois de terminar.",
+    "metadata": {
+      "source_path": "faq_hanseniase_pqtu.seguranca.interacao_anticoncepcional.ga_answer",
+      "parent_key": "ga_answer",
+      "original_category": "faq",
+      "word_count": 25
+    },
+    "chunk_type": "faq",
+    "priority": 0.6,
+    "source_file": "frequently_asked_questions.json",
+    "created_at": "2025-08-30T16:08:42.495176+00:00"
+  },
+  "c611d864bc4ad39ab38d5c7711013525f8d71c1307e902067c4bade92aba37a7": {
+    "id": "c611d864bc4ad39ab38d5c7711013525f8d71c1307e902067c4bade92aba37a7",
+    "text": "Não recomendado. Álcool potencializa hepatotoxicidade da rifampicina e pode interferir na adesão. Se uso ocasional, orientar moderação extrema e monitoramento hepático intensificado.",
+    "metadata": {
+      "source_path": "faq_hanseniase_pqtu.seguranca.alcool_tratamento.gasnelio_answer",
+      "parent_key": "gasnelio_answer",
+      "original_category": "faq",
+      "word_count": 22
+    },
+    "chunk_type": "mechanism",
+    "priority": 0.6,
+    "source_file": "frequently_asked_questions.json",
+    "created_at": "2025-08-30T16:08:42.528776+00:00"
+  },
+  "cc97a4ae7f2377a944463efce00c10d51df9090890d8432d3892d0d4aa97aef3": {
+    "id": "cc97a4ae7f2377a944463efce00c10d51df9090890d8432d3892d0d4aa97aef3",
+    "text": "É melhor não beber álcool durante o tratamento. Pode sobrecarregar o fígado junto com os remédios. Se beber raramente, seja bem pouco e conte para o médico.",
+    "metadata": {
+      "source_path": "faq_hanseniase_pqtu.seguranca.alcool_tratamento.ga_answer",
+      "parent_key": "ga_answer",
+      "original_category": "faq",
+      "word_count": 27
+    },
+    "chunk_type": "faq",
+    "priority": 0.6,
+    "source_file": "frequently_asked_questions.json",
+    "created_at": "2025-08-30T16:08:42.563161+00:00"
+  },
+  "7ea0081a8a91eae45f09cdec772b41f41bf41f25a3c381fbf1411e5e8133dea7": {
+    "id": "7ea0081a8a91eae45f09cdec772b41f41bf41f25a3c381fbf1411e5e8133dea7",
+    "text": "Este sistema baseia-se exclusivamente na tese sobre roteiro de dispensação para hanseníase PQT-U. Cobertura: protocolos de dispensação, medicamentos (rifampicina, clofazimina, dapsona), doses, administração, efeitos adversos, populações especiais e farmácovigilância.",
+    "metadata": {
+      "source_path": "faq_hanseniase_pqtu.limitacoes_conhecimento.escopo_tese.gasnelio_answer",
+      "parent_key": "gasnelio_answer",
+      "original_category": "faq",
+      "word_count": 29
+    },
+    "chunk_type": "dosage",
+    "priority": 0.7,
+    "source_file": "frequently_asked_questions.json",
+    "created_at": "2025-08-30T16:08:42.588391+00:00"
+  },
+  "b1fa2c8d350130b5857526301e651cf4a6fc9b112b189e75c51469a02a5fdbe4": {
+    "id": "b1fa2c8d350130b5857526301e651cf4a6fc9b112b189e75c51469a02a5fdbe4",
+    "text": "Eu posso te ajudar com tudo sobre o tratamento da hanseníase com PQT-U: como tomar os remédios, efeitos que podem aparecer, cuidados especiais, e como funciona a dispensação na farmácia.",
+    "metadata": {
+      "source_path": "faq_hanseniase_pqtu.limitacoes_conhecimento.escopo_tese.ga_answer",
+      "parent_key": "ga_answer",
+      "original_category": "faq",
+      "word_count": 30
+    },
+    "chunk_type": "safety",
+    "priority": 0.6,
+    "source_file": "frequently_asked_questions.json",
+    "created_at": "2025-08-30T16:08:42.609351+00:00"
+  }
+}

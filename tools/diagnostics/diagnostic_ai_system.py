@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 AI System Diagnostic Tool
 Investigates why AI responses are falling back to error messages
@@ -27,13 +28,13 @@ def test_ai_system_health():
         if response.status_code == 200:
             health_data = response.json()
             apis = health_data.get('components', {}).get('apis', {})
-            print(f"OpenRouter API: {'✅ Available' if apis.get('openrouter') else '❌ Unavailable'}")
-            print(f"HuggingFace API: {'✅ Available' if apis.get('huggingface') else '❌ Unavailable'}")
+            print(f"OpenRouter API: {'[OK] Available' if apis.get('openrouter') else '[ERROR] Unavailable'}")
+            print(f"HuggingFace API: {'[OK] Available' if apis.get('huggingface') else '[ERROR] Unavailable'}")
             print(f"APIs Status: {apis.get('status', 'unknown')}")
         else:
-            print(f"❌ Health endpoint failed: {response.status_code}")
+            print(f"[ERROR] Health endpoint failed: {response.status_code}")
     except Exception as e:
-        print(f"❌ Cannot reach health endpoint: {e}")
+        print(f"[ERROR] Cannot reach health endpoint: {e}")
     
     print()
     
@@ -45,14 +46,14 @@ def test_ai_system_health():
         if response.status_code == 200:
             health_data = response.json()
             kb = health_data.get('components', {}).get('knowledge_base', {})
-            print(f"Knowledge Base Loaded: {'✅' if kb.get('loaded') else '❌'}")
+            print(f"Knowledge Base Loaded: {'[OK]' if kb.get('loaded') else '[ERROR]'}")
             print(f"Size: {kb.get('size_chars', 0):,} characters")
-            print(f"Sources - Markdown: {'✅' if kb.get('sources', {}).get('markdown') else '❌'}")
-            print(f"Sources - Structured: {'✅' if kb.get('sources', {}).get('structured') else '❌'}")
+            print(f"Sources - Markdown: {'[OK]' if kb.get('sources', {}).get('markdown') else '[ERROR]'}")
+            print(f"Sources - Structured: {'[OK]' if kb.get('sources', {}).get('structured') else '[ERROR]'}")
         else:
-            print(f"❌ Cannot get knowledge base status")
+            print(f"[ERROR] Cannot get knowledge base status")
     except Exception as e:
-        print(f"❌ Error checking knowledge base: {e}")
+        print(f"[ERROR] Error checking knowledge base: {e}")
     
     print()
     
@@ -91,7 +92,7 @@ def test_ai_system_health():
                 answer = data.get('answer', '')
                 confidence = data.get('confidence', 0)
                 
-                print(f"  Status: {'✅' if confidence > 0 else '⚠️ Fallback'}")
+                print(f"  Status: {'[OK]' if confidence > 0 else '[WARNING] Fallback'}")
                 print(f"  Confidence: {confidence}")
                 print(f"  Response Length: {len(answer)} chars")
                 print(f"  Contains Error Message: {'Yes' if 'erro técnico' in answer.lower() else 'No'}")
@@ -106,14 +107,14 @@ def test_ai_system_health():
                 print(f"  Encoding Issues: {'Yes' if has_encoding_issues else 'No'}")
                 
                 if confidence == 0.0:
-                    print(f"  ❌ AI System appears to be in fallback mode")
+                    print(f"  [ERROR] AI System appears to be in fallback mode")
                 
             else:
-                print(f"  ❌ HTTP Error: {response.status_code}")
+                print(f"  [ERROR] HTTP Error: {response.status_code}")
                 print(f"  Response: {response.text[:200]}...")
                 
         except Exception as e:
-            print(f"  ❌ Request failed: {e}")
+            print(f"  [ERROR] Request failed: {e}")
     
     print()
     
@@ -136,7 +137,7 @@ def test_ai_system_health():
     if times:
         avg_time = sum(times) / len(times)
         print(f"  Average: {avg_time:.0f}ms")
-        print(f"  Status: {'✅ Good' if avg_time < 500 else '⚠️ Slow' if avg_time < 2000 else '❌ Critical'}")
+        print(f"  Status: {'[OK] Good' if avg_time < 500 else '[WARNING] Slow' if avg_time < 2000 else '[ERROR] Critical'}")
     
     print()
     
@@ -153,10 +154,10 @@ def test_ai_system_health():
     # AI system issues would be detected from previous tests
     print("Issues Detected:")
     if not issues_found:
-        print("  ✅ Basic connectivity working")
+        print("  [OK] Basic connectivity working")
     else:
         for issue in issues_found:
-            print(f"  ❌ {issue}")
+            print(f"  [ERROR] {issue}")
     
     print("\nRecommended Next Steps:")
     print("1. Check backend logs for AI API errors")

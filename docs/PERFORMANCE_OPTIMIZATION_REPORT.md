@@ -1,13 +1,13 @@
-# 🚀 Performance Optimization Report - Post-Fase 2
+# [START] Performance Optimization Report - Post-Fase 2
 **Data de Análise**: 24 de Agosto de 2024  
 **Versão**: 2.0.0  
 **Baseline**: Pós-implementação Fase 2
 
 ---
 
-## 📊 Estado Atual de Performance
+## [REPORT] Estado Atual de Performance
 
-### ✅ Conquistas da Fase 2
+### [OK] Conquistas da Fase 2
 - **TypeScript**: Zero erros de compilação
 - **Bundle Analysis**: Base estabelecida para otimizações
 - **Component Optimization**: React.memo e useMemo implementados
@@ -38,17 +38,17 @@ Critical Path Resources: ~500KB (compressed)
 
 ---
 
-## 🎯 Oportunidades de Otimização Identificadas
+## [TARGET] Oportunidades de Otimização Identificadas
 
 ### 1. **Image Optimization** (HIGH IMPACT)
 **Current State**: 10 `<img>` tags não otimizados  
 **Potential Savings**: 200-500ms LCP improvement
 
 ```tsx
-// ❌ Current (problematic)
+// [ERROR] Current (problematic)
 <img src="/personas/dr-gasnelio.jpg" alt="Dr. Gasnelio" />
 
-// ✅ Optimized (target)
+// [OK] Optimized (target)
 import Image from 'next/image';
 <Image 
   src="/personas/dr-gasnelio.jpg" 
@@ -95,10 +95,10 @@ const ImprovedPersonaSwitch = lazy(() => import('@/components/chat/modern/Improv
 **Potential Savings**: 50-100KB bundle size
 
 ```typescript
-// ❌ Full library imports
+// [ERROR] Full library imports
 import { ChevronDown, User, Stethoscope, Heart, Check, ArrowRight, Zap } from 'lucide-react';
 
-// ✅ Specific imports (if supported)
+// [OK] Specific imports (if supported)
 import ChevronDown from 'lucide-react/icons/chevron-down';
 import User from 'lucide-react/icons/user';
 // ... specific imports
@@ -127,7 +127,7 @@ import User from 'lucide-react/icons/user';
 
 ---
 
-## 🔧 Implementation Roadmap
+## [FIX] Implementation Roadmap
 
 ### Phase 1: Image Optimization (Week 1)
 **Effort**: 1-2 days  
@@ -199,7 +199,7 @@ npm install --save-dev @fullhuman/postcss-purgecss
 
 ---
 
-## 📊 Expected Results (Post-Optimization)
+## [REPORT] Expected Results (Post-Optimization)
 
 ### Performance Improvements
 | Metric | Before | After | Improvement |
@@ -219,7 +219,7 @@ npm install --save-dev @fullhuman/postcss-purgecss
 
 ---
 
-## 🔍 Monitoring & Measurement
+## [SEARCH] Monitoring & Measurement
 
 ### Tools & Metrics
 ```bash
@@ -243,16 +243,16 @@ npm run analyze
 
 ---
 
-## ⚠️ Risk Assessment
+## [WARNING] Risk Assessment
 
 ### Low Risk Optimizations
-- ✅ **Image optimization**: Only improves performance
-- ✅ **CSS cleanup**: Automated tools, safe
-- ✅ **Dependency updates**: Already at secure versions
+- [OK] **Image optimization**: Only improves performance
+- [OK] **CSS cleanup**: Automated tools, safe
+- [OK] **Dependency updates**: Already at secure versions
 
 ### Medium Risk Optimizations  
-- ⚠️ **Code splitting**: May introduce loading states issues
-- ⚠️ **Bundle restructuring**: Potential compatibility issues
+- [WARNING] **Code splitting**: May introduce loading states issues
+- [WARNING] **Bundle restructuring**: Potential compatibility issues
 
 ### Mitigation Strategies
 ```typescript
@@ -284,7 +284,7 @@ const ImageWithFallback = ({ src, alt, ...props }) => {
 
 ---
 
-## 📋 Implementation Checklist
+## [LIST] Implementation Checklist
 
 ### Pre-Optimization
 - [ ] **Baseline measurements**: Current Lighthouse scores
@@ -306,7 +306,7 @@ const ImageWithFallback = ({ src, alt, ...props }) => {
 
 ---
 
-## 🚀 Next Steps
+## [START] Next Steps
 
 ### Immediate Actions (Next Sprint)
 1. **Setup bundle analyzer**: `@next/bundle-analyzer`
@@ -325,9 +325,9 @@ const ImageWithFallback = ({ src, alt, ...props }) => {
 ## 💡 Recommendations
 
 ### Priority Order
-1. **🔴 HIGH**: Image optimization (quick wins)
-2. **🟡 MEDIUM**: Code splitting (substantial gains)
-3. **🟢 LOW**: Dependency optimization (marginal gains)
+1. **[RED] HIGH**: Image optimization (quick wins)
+2. **[YELLOW] MEDIUM**: Code splitting (substantial gains)
+3. **[GREEN] LOW**: Dependency optimization (marginal gains)
 
 ### Resource Allocation
 - **Week 1**: 1 developer, image optimization focus
@@ -343,7 +343,7 @@ const ImageWithFallback = ({ src, alt, ...props }) => {
 
 ---
 
-**🎯 READY FOR PHASE 3 PERFORMANCE OPTIMIZATION**
+**[TARGET] READY FOR PHASE 3 PERFORMANCE OPTIMIZATION**
 
 *Este relatório identifica oportunidades claras para 30%+ melhoria de performance através de otimizações focadas e mensuráveis.*
 

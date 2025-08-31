@@ -234,11 +234,11 @@ def main():
     # Analisar vector store local
     vs_analysis = analysis_results['vector_store']
     print(f"\n[VECTOR STORE] Análise do store local:")
-    print(f"  • Existe: {'SIM' if vs_analysis['exists'] else 'NÃO'}")
+    print(f"  * Existe: {'SIM' if vs_analysis['exists'] else 'NÃO'}")
     if vs_analysis['exists']:
-        print(f"  • Arquivo embeddings: {vs_analysis['embeddings_file_size']:.1f} KB")
-        print(f"  • Documentos em metadata: {vs_analysis['metadata_documents']}")
-        print(f"  • Vetores estimados: {vs_analysis['estimated_vectors']}")
+        print(f"  * Arquivo embeddings: {vs_analysis['embeddings_file_size']:.1f} KB")
+        print(f"  * Documentos em metadata: {vs_analysis['metadata_documents']}")
+        print(f"  * Vetores estimados: {vs_analysis['estimated_vectors']}")
     
     # Analisar dados estruturados
     structured_dir = data_dir / "structured"
@@ -249,7 +249,7 @@ def main():
         analysis_results['recommendations'].append("Criar diretório data/structured com arquivos JSON")
     else:
         json_files = list(structured_dir.glob("*.json"))
-        print(f"  • Arquivos JSON encontrados: {len(json_files)}")
+        print(f"  * Arquivos JSON encontrados: {len(json_files)}")
         
         for json_file in json_files:
             try:
@@ -279,14 +279,14 @@ def main():
                     doc_type = doc.get('type', 'unknown')
                     analysis_results['document_types'][doc_type] = analysis_results['document_types'].get(doc_type, 0) + 1
                 
-                print(f"    • Tamanho: {file_analysis['size_kb']:.1f} KB")
-                print(f"    • Profundidade: {structure_analysis['depth']} níveis")
-                print(f"    • Chaves totais: {structure_analysis['keys']}")
-                print(f"    • Documentos extraíveis: {len(potential_docs)}")
+                print(f"    * Tamanho: {file_analysis['size_kb']:.1f} KB")
+                print(f"    * Profundidade: {structure_analysis['depth']} níveis")
+                print(f"    * Chaves totais: {structure_analysis['keys']}")
+                print(f"    * Documentos extraíveis: {len(potential_docs)}")
                 
                 # Mostrar exemplos
                 if potential_docs:
-                    print(f"    • Exemplo: {potential_docs[0].get('type', 'N/A')} - {str(potential_docs[0]).get('content', str(potential_docs[0]))[:50]}...")
+                    print(f"    * Exemplo: {potential_docs[0].get('type', 'N/A')} - {str(potential_docs[0]).get('content', str(potential_docs[0]))[:50]}...")
                 
             except Exception as e:
                 print(f"    [ERROR] Erro ao analisar {json_file.name}: {e}")
@@ -294,14 +294,14 @@ def main():
     
     # Resumo da análise
     print(f"\n[SUMMARY] Resumo da análise:")
-    print(f"  • Total de documentos potenciais: {analysis_results['total_potential_documents']}")
-    print(f"  • Arquivos estruturados: {len(analysis_results['structured_files'])}")
-    print(f"  • Vector store local: {'Disponivel' if vs_analysis['exists'] else 'Nao encontrado'}")
+    print(f"  * Total de documentos potenciais: {analysis_results['total_potential_documents']}")
+    print(f"  * Arquivos estruturados: {len(analysis_results['structured_files'])}")
+    print(f"  * Vector store local: {'Disponivel' if vs_analysis['exists'] else 'Nao encontrado'}")
     
     print(f"\n[DOCUMENT TYPES] Distribuição por tipo:")
     for doc_type, count in sorted(analysis_results['document_types'].items()):
         percentage = (count / max(1, analysis_results['total_potential_documents'])) * 100
-        print(f"  • {doc_type}: {count} ({percentage:.1f}%)")
+        print(f"  * {doc_type}: {count} ({percentage:.1f}%)")
     
     # Recomendações
     print(f"\n[RECOMMENDATIONS] Recomendações:")

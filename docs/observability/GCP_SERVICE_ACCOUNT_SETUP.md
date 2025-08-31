@@ -1,6 +1,6 @@
-# 🔧 Configuração Service Account GCP - Observabilidade
+# [FIX] Configuração Service Account GCP - Observabilidade
 
-## 📋 Guia Passo-a-Passo
+## [LIST] Guia Passo-a-Passo
 
 ### 1️⃣ **Habilitar APIs no Google Cloud**
 
@@ -77,7 +77,7 @@ cat observability-key.json
 ### 5️⃣ **Configurar Secrets no GitHub**
 
 1. **Acesse seu repositório no GitHub**
-2. **Vá em Settings → Secrets and variables → Actions**
+2. **Vá em Settings -> Secrets and variables -> Actions**
 3. **Adicione os seguintes secrets:**
 
 ```yaml
@@ -91,7 +91,7 @@ Value: [Cole todo o conteúdo do observability-key.json aqui]
 Value: G-XXXXXXXXXX
 
 # Secret: GA_API_SECRET (para enviar métricas)
-Value: [Obter no Google Analytics → Admin → Data Streams → Measurement Protocol API secrets]
+Value: [Obter no Google Analytics -> Admin -> Data Streams -> Measurement Protocol API secrets]
 ```
 
 ### 6️⃣ **Testar Configuração**
@@ -116,9 +116,9 @@ gcloud logging read "test-log" --limit=1
 ## 🔒 **Segurança e Boas Práticas**
 
 ### **Princípio do Menor Privilégio**
-✅ **Só permissões de escrita** (write é gratuito)  
-✅ **Sem permissões de leitura** (read tem limite)  
-✅ **Sem permissões administrativas**  
+[OK] **Só permissões de escrita** (write é gratuito)  
+[OK] **Sem permissões de leitura** (read tem limite)  
+[OK] **Sem permissões administrativas**  
 
 ### **Rotação de Chaves**
 ```bash
@@ -140,7 +140,7 @@ gcloud monitoring metrics list --filter="metric.type=monitoring.googleapis.com/b
 
 ---
 
-## 📊 **Configuração de Métricas**
+## [REPORT] **Configuração de Métricas**
 
 ### **Arquivo de Configuração Environment**
 
@@ -170,14 +170,14 @@ export function initializeObservability() {
       status: '200'
     });
     
-    console.log('📊 Observability inicializada');
+    console.log('[REPORT] Observability inicializada');
   }
 }
 ```
 
 ---
 
-## 🧪 **Validação da Configuração**
+## [TEST] **Validação da Configuração**
 
 ### **Checklist de Verificação**
 
@@ -195,25 +195,25 @@ export function initializeObservability() {
 #!/bin/bash
 # test-observability-setup.sh
 
-echo "🔍 Testando configuração de Observabilidade..."
+echo "[SEARCH] Testando configuração de Observabilidade..."
 
 # 1. Verificar APIs
-echo "📋 Verificando APIs..."
-gcloud services list --enabled | grep -E "(monitoring|logging|trace)" || echo "❌ APIs não habilitadas"
+echo "[LIST] Verificando APIs..."
+gcloud services list --enabled | grep -E "(monitoring|logging|trace)" || echo "[ERROR] APIs não habilitadas"
 
 # 2. Verificar Service Account
 echo "👤 Verificando Service Account..."
-gcloud iam service-accounts list | grep "observability-free" || echo "❌ Service Account não encontrado"
+gcloud iam service-accounts list | grep "observability-free" || echo "[ERROR] Service Account não encontrado"
 
 # 3. Testar autenticação
-echo "🔐 Testando autenticação..."
-gcloud auth activate-service-account --key-file=observability-key.json && echo "✅ Autenticação OK" || echo "❌ Falha na autenticação"
+echo "[AUTH] Testando autenticação..."
+gcloud auth activate-service-account --key-file=observability-key.json && echo "[OK] Autenticação OK" || echo "[ERROR] Falha na autenticação"
 
 # 4. Enviar métrica de teste
-echo "📊 Enviando métrica de teste..."
-gcloud logging write test-observability "Setup test successful" --severity=INFO && echo "✅ Métrica enviada" || echo "❌ Falha no envio"
+echo "[REPORT] Enviando métrica de teste..."
+gcloud logging write test-observability "Setup test successful" --severity=INFO && echo "[OK] Métrica enviada" || echo "[ERROR] Falha no envio"
 
-echo "✅ Teste concluído!"
+echo "[OK] Teste concluído!"
 ```
 
 ---

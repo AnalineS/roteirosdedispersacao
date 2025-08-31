@@ -65,8 +65,8 @@ python-json-logger==2.0.7  # JSON formatted logs
 # - static analysis tools
 #
 # RESULT:
-# - 165 packages → 15 packages críticos
-# - ~3GB → ~150MB de dependências
+# - 165 packages -> 15 packages críticos
+# - ~3GB -> ~150MB de dependências
 # - 85% redução no tamanho
 # - 90% redução no tempo de build
 # ============================================================================

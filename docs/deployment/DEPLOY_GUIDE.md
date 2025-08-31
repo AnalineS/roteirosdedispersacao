@@ -1,6 +1,6 @@
-# 🚀 Guia de Deploy - Google Cloud + Firebase
+# [START] Guia de Deploy - Google Cloud + Firebase
 
-## 📋 **Resumo da Migração**
+## [LIST] **Resumo da Migração**
 
 Este documento descreve como fazer o deploy completo da aplicação **Roteiro de Dispensação** usando Google Cloud Run para o backend e Firebase Hosting para o frontend.
 
@@ -16,22 +16,22 @@ Este documento descreve como fazer o deploy completo da aplicação **Roteiro de
 roteiros-de-dispensacao.web.app  [URL_DO_CLOUD_RUN]
 ```
 
-## ✅ **Status Atual**
+## [OK] **Status Atual**
 
 ### **Concluído:**
-- ✅ Backend preparado para Cloud Run
-- ✅ Frontend configurado para múltiplos backends
-- ✅ Firebase Hosting atualizado
-- ✅ CORS configurado
-- ✅ Build otimizado
-- ✅ Deploy do backend no Cloud Run
-- ✅ Frontend atualizado com URL do Cloud Run
+- [OK] Backend preparado para Cloud Run
+- [OK] Frontend configurado para múltiplos backends
+- [OK] Firebase Hosting atualizado
+- [OK] CORS configurado
+- [OK] Build otimizado
+- [OK] Deploy do backend no Cloud Run
+- [OK] Frontend atualizado com URL do Cloud Run
 
 ### **Pendente:**
 - ⏳ Configuração de domínio personalizado
 - ⏳ Testes de integração completa
 
-## 🔧 **Arquivos Criados/Modificados**
+## [FIX] **Arquivos Criados/Modificados**
 
 ### **Backend (src/backend/)**
 - `Dockerfile` - Container otimizado para Cloud Run
@@ -48,7 +48,7 @@ roteiros-de-dispensacao.web.app  [URL_DO_CLOUD_RUN]
 - `scripts/install-gcloud.ps1` - Instalação do Google Cloud CLI
 - `scripts/setup-gcloud.bat` - Configuração e comandos de deploy
 
-## 🚀 **Como Fazer Deploy**
+## [START] **Como Fazer Deploy**
 
 ### **Pré-requisitos:**
 1. **Google Cloud CLI instalado**
@@ -148,7 +148,7 @@ gcloud run domain-mappings create \
   --region=us-central1
 ```
 
-## 🔍 **Testes Pós-Deploy**
+## [SEARCH] **Testes Pós-Deploy**
 
 ### **Backend:**
 ```bash
@@ -169,7 +169,7 @@ curl https://roteiro-dispensacao-api-xxxxx-uc.a.run.app/api/health
 - Testar seleção de personas
 - Confirmar componentes educacionais
 
-## 📊 **Monitoramento**
+## [REPORT] **Monitoramento**
 
 ### **Cloud Run (Backend):**
 ```bash
@@ -246,4 +246,4 @@ Em caso de problemas:
 
 **Última atualização:** Janeiro 2025  
 **Versão:** 1.0.0  
-**Status:** ✅ Deploy completo - Frontend + Backend funcionando
+**Status:** [OK] Deploy completo - Frontend + Backend funcionando

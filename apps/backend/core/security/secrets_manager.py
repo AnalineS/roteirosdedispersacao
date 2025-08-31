@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Sistema Robusto de Gestão de Secrets
 ====================================

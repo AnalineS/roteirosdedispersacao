@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Sistema de Monitoramento e Alertas de Segurança
 ==============================================

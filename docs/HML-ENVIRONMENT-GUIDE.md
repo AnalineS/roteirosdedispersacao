@@ -1,8 +1,8 @@
-# 🧪 Guia do Ambiente de Homologação (HML)
+# [TEST] Guia do Ambiente de Homologação (HML)
 
 Este documento descreve o ambiente de homologação (HML) implementado para o projeto Roteiro de Dispensação de Hanseníase.
 
-## 📋 Visão Geral
+## [LIST] Visão Geral
 
 O ambiente HML foi projetado para:
 - **Testes automatizados** antes do deploy de produção
@@ -41,7 +41,7 @@ O ambiente HML foi projetado para:
 | **Min Instances** | 0 | 1 |
 | **Max Instances** | 10 | 100 |
 
-## 🚀 Processo de Deploy
+## [START] Processo de Deploy
 
 ### 1. Deploy Automático HML
 ```bash
@@ -51,12 +51,12 @@ git commit -m "feat: nova funcionalidade"
 git push origin hml
 
 # GitHub Actions executa automaticamente:
-# ✅ Quality Gates (Snyk + Testes)
-# ✅ Deploy Backend (Cloud Run)
-# ✅ Deploy Frontend (Firebase)
-# ✅ Reset de dados + Seed
-# ✅ Smoke Tests
-# ✅ Notificações
+# [OK] Quality Gates (Snyk + Testes)
+# [OK] Deploy Backend (Cloud Run)
+# [OK] Deploy Frontend (Firebase)
+# [OK] Reset de dados + Seed
+# [OK] Smoke Tests
+# [OK] Notificações
 ```
 
 ### 2. Quality Gates (95% Coverage)
@@ -71,12 +71,12 @@ git push origin hml
 # Deploy manual para produção (após validação HML)
 # Acesse GitHub Actions > "Deploy Production"
 # Preencha os campos obrigatórios:
-# ✅ HML validation completed: true
-# ✅ Version tag: v1.2.3
-# ✅ Release notes: descrição das mudanças
+# [OK] HML validation completed: true
+# [OK] Version tag: v1.2.3
+# [OK] Release notes: descrição das mudanças
 ```
 
-## 🔧 Configuração e Uso
+## [FIX] Configuração e Uso
 
 ### URLs do Ambiente HML
 - **Frontend**: https://hml-roteiros-de-dispensacao.web.app
@@ -114,12 +114,12 @@ O ambiente HML é resetado a cada deploy com dados sintéticos:
 - **Segurança**: Tentativas de acesso indevido
 
 #### Alertas Configurados
-- **Downtime** > 1 minuto → Telegram imediato
-- **Response time** > 5s → Alerta diário
-- **Error rate** > 5% → Telegram imediato
-- **Deploy failure** → Telegram + Email
+- **Downtime** > 1 minuto -> Telegram imediato
+- **Response time** > 5s -> Alerta diário
+- **Error rate** > 5% -> Telegram imediato
+- **Deploy failure** -> Telegram + Email
 
-## 🧪 Testes Manuais Recomendados
+## [TEST] Testes Manuais Recomendados
 
 ### Checklist de Validação HML
 
@@ -244,7 +244,7 @@ firebase functions:log --only hosting
 # ACTIONS_RUNNER_DEBUG=true
 ```
 
-## 📊 Métricas e SLAs
+## [REPORT] Métricas e SLAs
 
 ### SLA do Ambiente HML
 - **Uptime**: > 95% (exceto durante deploys)
@@ -295,6 +295,6 @@ firebase functions:log --only hosting
 
 ---
 
-📝 **Documentação mantida pela equipe de desenvolvimento**  
+[NOTE] **Documentação mantida pela equipe de desenvolvimento**  
 🔄 **Última atualização**: Janeiro 2024  
 📍 **Localização**: `/docs/HML-ENVIRONMENT-GUIDE.md`

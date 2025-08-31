@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Comprehensive Quality Validation Suite for Roteiro de Dispensação System
 Backend Flask + Frontend Next.js Integration Testing

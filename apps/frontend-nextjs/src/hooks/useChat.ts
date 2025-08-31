@@ -196,7 +196,8 @@ export function useChat(options: UseChatOptions = {}) {
             timestamp: Date.now(),
             persona: personaId,
             metadata: {
-              fromCache: true,
+              isFallback: true,
+              fallbackSource: 'cache',
               confidence: cachedResponse.confidence
             }
           };

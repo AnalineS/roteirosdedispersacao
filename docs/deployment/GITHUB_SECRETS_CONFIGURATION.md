@@ -1,95 +1,95 @@
-# 🔐 Configuração de GitHub Secrets
+# [AUTH] Configuração de GitHub Secrets
 
-## 📋 Secrets Configurados no GitHub (MAPEAMENTO REAL)
+## [LIST] Secrets Configurados no GitHub (MAPEAMENTO REAL)
 
-### ✅ **Secrets Atualmente Disponíveis:**
+### [OK] **Secrets Atualmente Disponíveis:**
 
 #### **🔑 Astra Database (Cassandra/DataStax)**
 ```
-✅ ASTRA_BD_API_KEY
-✅ ASTRA_BD_APLICATION_TOKEN  
-✅ ASTRA_BD_CLIENTID
-✅ ASTRA_BD_SECRET
-✅ ASTRA_BD_TOKEN
+[OK] ASTRA_BD_API_KEY
+[OK] ASTRA_BD_APLICATION_TOKEN  
+[OK] ASTRA_BD_CLIENTID
+[OK] ASTRA_BD_SECRET
+[OK] ASTRA_BD_TOKEN
 ```
 - **Status:** Configurados no GitHub (BD ao invés de DB)
 - **Mapeamento:** Código agora suporta ambos `ASTRA_BD_*` e `ASTRA_DB_*`
 
 #### **🔥 Firebase Configuration**
 ```
-✅ FIREBASE_API_KEY
-✅ FIREBASE_APP_ID  
-✅ FIREBASE_AUTH_DOMAIN
-✅ FIREBASE_MESSAGING_SENDER_ID
-✅ FIREBASE_PROJECT_ID
-✅ FIREBASE_STORAGE_BUCKET
-✅ FIREBASE_TOKEN
+[OK] FIREBASE_API_KEY
+[OK] FIREBASE_APP_ID  
+[OK] FIREBASE_AUTH_DOMAIN
+[OK] FIREBASE_MESSAGING_SENDER_ID
+[OK] FIREBASE_PROJECT_ID
+[OK] FIREBASE_STORAGE_BUCKET
+[OK] FIREBASE_TOKEN
 ```
 - **Status:** Configurados no GitHub
 - **Mapeamento:** Código suporta `FIREBASE_*` e `NEXT_PUBLIC_FIREBASE_*`
 
-#### **📊 Google Analytics & GCP**
+#### **[REPORT] Google Analytics & GCP**
 ```
-✅ GA_MEASUREMENT_ID
-✅ GCP_PROJECT_ID
-✅ GCP_REGION
-✅ GCP_SERVICE_ACCOUNT_KEY
+[OK] GA_MEASUREMENT_ID
+[OK] GCP_PROJECT_ID
+[OK] GCP_REGION
+[OK] GCP_SERVICE_ACCOUNT_KEY
 ```
 - **Status:** Configurados no GitHub
 - **Mapeamento:** Código suporta `GA_*` e `NEXT_PUBLIC_GA_*`
 
 #### **🤖 AI APIs**
 ```
-✅ OPENROUTER_API_KEY
-✅ HUGGINGFACE_API_KEY
+[OK] OPENROUTER_API_KEY
+[OK] HUGGINGFACE_API_KEY
 ```
 - **Status:** Configurados no GitHub
 - **Uso:** Modelos Llama 3.2 e Kimie K2
 
-#### **🔐 Security & Application**
+#### **[AUTH] Security & Application**
 ```
-✅ SECRET_KEY
+[OK] SECRET_KEY
 ```
 - **Status:** Configurado no GitHub
 - **Uso:** Criptografia Flask
 
 #### **💬 Telegram Bot (Notificações)**
 ```
-✅ TELEGRAM_BOT_TOKEN
-✅ TELEGRAM_CHAT_ID
+[OK] TELEGRAM_BOT_TOKEN
+[OK] TELEGRAM_CHAT_ID
 ```
 - **Status:** Configurados no GitHub
 - **Uso:** Sistema de notificações
 
-### ❌ **Secrets Faltantes:**
+### [ERROR] **Secrets Faltantes:**
 
-#### **🚨 CRÍTICO: Backend API URL**
+#### **[ALERT] CRÍTICO: Backend API URL**
 ```
-❌ NEXT_PUBLIC_API_URL
+[ERROR] NEXT_PUBLIC_API_URL
 ```
 - **Status:** **NECESSÁRIO PARA RESOLVER "Modo offline ativo"**
-- **Urgência:** 🔴 **ALTA** - Sistema em modo offline sem este secret
+- **Urgência:** [RED] **ALTA** - Sistema em modo offline sem este secret
 - **Valor sugerido:** URL do backend em produção
 - **Exemplo:** `https://backend-dot-hansenase-webapp.rj.r.appspot.com`
 
 #### **🔄 Environment Toggles (Opcionais)**
 ```
-⚠️ NEXT_PUBLIC_ENVIRONMENT (padrão: production detectado automaticamente)
-⚠️ NEXT_PUBLIC_AUTH_ENABLED (padrão: true) 
-⚠️ NEXT_PUBLIC_FIRESTORE_ENABLED (padrão: true)
-⚠️ NEXT_PUBLIC_OFFLINE_MODE (padrão: false)
-⚠️ NEXT_PUBLIC_ANALYTICS_ENABLED (padrão: true)
+[WARNING] NEXT_PUBLIC_ENVIRONMENT (padrão: production detectado automaticamente)
+[WARNING] NEXT_PUBLIC_AUTH_ENABLED (padrão: true) 
+[WARNING] NEXT_PUBLIC_FIRESTORE_ENABLED (padrão: true)
+[WARNING] NEXT_PUBLIC_OFFLINE_MODE (padrão: false)
+[WARNING] NEXT_PUBLIC_ANALYTICS_ENABLED (padrão: true)
 ```
 - **Status:** Opcionais - código usa defaults inteligentes
-- **Prioridade:** 🟡 **BAIXA** - Sistema funciona sem eles
+- **Prioridade:** [YELLOW] **BAIXA** - Sistema funciona sem eles
 
 ---
 
-## 🚀 **Como Configurar no GitHub**
+## [START] **Como Configurar no GitHub**
 
 ### 1. **Acessar Repository Settings**
 ```
-GitHub Repository → Settings → Secrets and variables → Actions
+GitHub Repository -> Settings -> Secrets and variables -> Actions
 ```
 
 ### 2. **Adicionar Repository Secrets**
@@ -108,7 +108,7 @@ env:
 
 ---
 
-## 🔍 **Validação**
+## [SEARCH] **Validação**
 
 ### **Checklist Frontend**
 - [ ] `NEXT_PUBLIC_API_URL` - URL do backend válida
@@ -124,7 +124,7 @@ env:
 
 ---
 
-## 🛡️ **Segurança**
+## [SECURITY] **Segurança**
 
 ### **Boas Práticas**
 1. **Nunca commitar secrets** no código

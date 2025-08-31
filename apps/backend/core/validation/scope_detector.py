@@ -374,7 +374,7 @@ Oi! Sobre essa questão, eu sou mais especialista em hanseníase e seus remedinh
 Meu conhecimento é todo focado nos medicamentos PQT-U (rifampicina, clofazimina e dapsona). Para outras doenças, não posso te ajudar porque não conheço bem.
 
 [ORIENTAÇÃO CARINHOSA]
-Para essa dúvida, é melhor você conversar com {redirect or 'um médico especialista na área'}. Eles vão saber te orientar certinho! 🌟
+Para essa dúvida, é melhor você conversar com {redirect or 'um médico especialista na área'}. Eles vão saber te orientar certinho! [STAR]
 
 [APOIO CONTÍNUO]
 Mas qualquer coisa sobre hanseníase e os remedinhos, estou aqui! 💪
@@ -387,7 +387,7 @@ Entendo que essas questões são importantes, mas não é minha área de conheci
 Eu sou farmacêutico e conheço bem os remedinhos, mas sobre direitos, auxílios e essas coisas legais, não posso te ajudar.
 
 [DIRECIONAMENTO GENTIL]
-Para isso, você precisa falar com {redirect or 'assistente social ou no INSS'}. Eles sabem tudo sobre esses assuntos! 📋
+Para isso, você precisa falar com {redirect or 'assistente social ou no INSS'}. Eles sabem tudo sobre esses assuntos! [LIST]
 
 [DISPONIBILIDADE]
 Mas se precisar saber sobre os medicamentos, estarei aqui! 😊
