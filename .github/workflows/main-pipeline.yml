@@ -224,20 +224,20 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           
           git tag -a "$BACKUP_TAG" -m "🏷️ Backup de Produção - $(date '+%d/%m/%Y %H:%M:%S')
-
-📋 Informações do Backup:
-- Branch: main (produção)
-- Commit: ${{ github.sha }}
-- Executado por: ${{ github.actor }}
-- Tipo: Backup automático pré-deploy
-
-🎯 Finalidade:
-- Ponto de restauração seguro
-- Rollback rápido se necessário
-- Histórico de versões de produção
-
-🔄 Para restaurar:
-git checkout $BACKUP_TAG"
+          
+          📋 Informações do Backup:
+          - Branch: main (produção)
+          - Commit: ${{ github.sha }}
+          - Executado por: ${{ github.actor }}
+          - Tipo: Backup automático pré-deploy
+          
+          🎯 Finalidade:
+          - Ponto de restauração seguro
+          - Rollback rápido se necessário
+          - Histórico de versões de produção
+          
+          🔄 Para restaurar:
+          git checkout $BACKUP_TAG"
           
           git push origin "$BACKUP_TAG"
           
@@ -266,6 +266,7 @@ git checkout $BACKUP_TAG"
           credentials_json: ${{ secrets.GCP_SA_KEY }}
           project_id: ${{ secrets.GCP_PROJECT_ID }}
           export_environment_variables: true
+          create_credentials_file: true
 
       - name: 🛠️ Setup Cloud SDK
         uses: google-github-actions/setup-gcloud@v3
@@ -393,37 +394,53 @@ git checkout $BACKUP_TAG"
           echo "✅ Sistema operacional em produção"
           
           # Criar issue de tracking do deploy
-          cat > deploy_success.md << EOF
-# 🎉 Deploy em Produção Concluído
-
-## 📋 Informações
-- **Data**: $(date '+%d/%m/%Y %H:%M:%S')
-- **Commit**: ${{ github.sha }}
-- **Executado por**: ${{ github.actor }}
-- **Backup**: ${{ needs.production-backup.outputs.backup-tag || 'Não criado' }}
-
-## 🌐 URLs
-- **Backend**: ${{ needs.production-deploy.outputs.backend-url || 'Sem mudanças' }}
-- **Frontend**: ${{ needs.production-deploy.outputs.frontend-url || 'Sem mudanças' }}
-
-## ✅ Verificações
-- Health checks: Aprovado
-- Serviços: Operacionais
-- Status: Produção ativa
-
-## 🔄 Próximos Passos
-- Monitorar métricas por 1 hora
-- Verificar logs de erro
-- Confirmar funcionamento completo
-
----
-*Deploy realizado automaticamente pelo pipeline de produção*
-EOF
+          cat > deploy_success.md << 'EOF'
+          # 🎉 Deploy em Produção Concluído
+          
+          ## 📋 Informações
+          - **Data**: $(date '+%d/%m/%Y %H:%M:%S')
+          - **Commit**: ${{ github.sha }}
+          - **Executado por**: ${{ github.actor }}
+          - **Backup**: ${{ needs.production-backup.outputs.backup-tag || 'Não criado' }}
+          
+          ## 🌐 URLs
+          - **Backend**: ${{ needs.production-deploy.outputs.backend-url || 'Sem mudanças' }}
+          - **Frontend**: ${{ needs.production-deploy.outputs.frontend-url || 'Sem mudanças' }}
+          
+          ## ✅ Verificações
+          - Health checks: Aprovado
+          - Serviços: Operacionais
+          - Status: Produção ativa
+          
+          ## 🔄 Próximos Passos
+          - Monitorar métricas por 1 hora
+          - Verificar logs de erro
+          - Confirmar funcionamento completo
+          
+          ---
+          *Deploy realizado automaticamente pelo pipeline de produção*
+          EOF
           
           gh issue create \
             --title "🚀 Deploy Produção - $(date '+%d/%m/%Y %H:%M')" \
             --body-file deploy_success.md \
             --label "deployment,production,success"
+
+      - name: 📱 Alerta Telegram - Deploy Produção Sucesso
+        if: success()
+        run: |
+          curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage \
+            -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
+            -d parse_mode=HTML \
+            -d text="🌍 <b>Deploy PRODUÇÃO Concluído</b>%0A%0A📅 <b>Data:</b> $(date '+%d/%m/%Y %H:%M:%S')%0A🔄 <b>Commit:</b> ${{ github.sha }}%0A👤 <b>Por:</b> ${{ github.actor }}%0A💾 <b>Backup:</b> ${{ needs.production-backup.outputs.backup-tag || 'N/A' }}%0A%0A🌐 <b>URLs:</b>%0A• Backend: ${{ needs.production-deploy.outputs.backend-url || 'N/A' }}%0A• Frontend: ${{ needs.production-deploy.outputs.frontend-url || 'N/A' }}%0A%0A🎉 Sistema PRODUÇÃO operacional!"
+
+      - name: 📱 Alerta Telegram - Deploy Produção Falhou  
+        if: failure()
+        run: |
+          curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage \
+            -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
+            -d parse_mode=HTML \
+            -d text="🚨 <b>FALHA CRÍTICA Deploy PRODUÇÃO</b>%0A%0A📅 <b>Data:</b> $(date '+%d/%m/%Y %H:%M:%S')%0A🔄 <b>Commit:</b> ${{ github.sha }}%0A👤 <b>Por:</b> ${{ github.actor }}%0A%0A🔗 <b>Ver logs:</b> https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}%0A%0A‼️ INTERVENÇÃO URGENTE NECESSÁRIA%0A🔄 Considere rollback imediato"
 
 # =====================================
 # WORKFLOW CONFIGURATION
