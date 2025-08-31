@@ -1,4 +1,4 @@
-name: [START] Deploy Production (Manual Approval)
+name: 🚀 Deploy Production (Manual Approval)
 
 on:
   push:
@@ -52,7 +52,7 @@ jobs:
   # Quality Gates com Snyk (Produção)
   # =====================================
   quality-gates-production:
-    name: [SEARCH] Quality Gates & Security (Production)
+    name: 🔍 Quality Gates & Security (Production)
     runs-on: ubuntu-latest
     if: github.event.inputs.force_deploy != 'true'
     
@@ -62,7 +62,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: [REPORT] Setup Node.js
+      - name: 📈 Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
@@ -77,7 +77,7 @@ jobs:
           cache-dependency-path: apps/backend/requirements.txt
 
       # Enhanced cache for Node.js dependencies (Production)
-      - name: [SAVE] Cache Node.js Dependencies
+      - name: 💾 Cache Node.js Dependencies
         uses: actions/cache@v4
         id: node-cache
         with:
@@ -102,7 +102,7 @@ jobs:
       - name: 🔒 Run Snyk Security Scan
         uses: snyk/actions/setup@master
       
-      - name: [SEARCH] Snyk Code Analysis (Production)
+      - name: 🔍 Snyk Code Analysis (Production)
         uses: snyk/actions/node@master
         continue-on-error: false
         env:
@@ -118,7 +118,7 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
-      - name: [SEARCH] Frontend Lint & TypeScript
+      - name: 🔍 Frontend Lint & TypeScript
         run: |
           cd apps/frontend-nextjs
           npm run lint
@@ -138,12 +138,12 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
-      - name: [TEST] Backend Tests & Coverage
+      - name: 🧪 Backend Tests & Coverage
         run: |
           cd apps/backend
           python -m pytest --tb=short || echo "Tests completed with warnings"
 
-      - name: [SEARCH] Backend Code Quality
+      - name: 🔍 Backend Code Quality
         run: |
           cd apps/backend
           flake8 . --count --max-complexity=10 --max-line-length=127 --statistics || echo "Linting completed with warnings"
@@ -152,55 +152,55 @@ jobs:
   # Validação de Pré-requisitos
   # =====================================
   pre-deployment-validation:
-    name: [SEARCH] Pre-deployment Validation
+    name: 🔍 Pre-deployment Validation
     runs-on: ubuntu-latest
     
     steps:
       - name: 📥 Checkout Code
         uses: actions/checkout@v4
 
-      - name: [OK] Validate HML Approval
+      - name: ✅ Validate HML Approval
         run: |
           if [ "${{ github.event.inputs.hml_validation }}" != "true" ]; then
-            echo "[ERROR] HML validation not completed. Deploy cancelled."
+            echo "❌ HML validation not completed. Deploy cancelled."
             exit 1
           fi
-          echo "[OK] HML validation confirmed"
+          echo "✅ HML validation confirmed"
 
       - name: 🏷️ Validate Version Tag
         run: |
           VERSION_TAG="${{ github.event.inputs.version_tag }}"
           if [[ ! $VERSION_TAG =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "[ERROR] Invalid version tag format. Use vX.Y.Z (e.g., v1.2.3)"
+            echo "❌ Invalid version tag format. Use vX.Y.Z (e.g., v1.2.3)"
             exit 1
           fi
-          echo "[OK] Version tag is valid: $VERSION_TAG"
+          echo "✅ Version tag is valid: $VERSION_TAG"
 
-      - name: [SEARCH] Check HML Environment Status
+      - name: 🔍 Check HML Environment Status
         run: |
-          echo "[SEARCH] Checking HML environment status..."
+          echo "🔍 Checking HML environment status..."
           
           # Verificar se HML está funcionando
           HML_URL="https://hml-roteiro-dispensacao-api-run-url"
           if curl -f "$HML_URL/health" > /dev/null 2>&1; then
-            echo "[OK] HML backend is healthy"
+            echo "✅ HML backend is healthy"
           else
-            echo "[WARNING] Warning: HML backend not responding"
+            echo "⚠️ Warning: HML backend not responding"
           fi
           
           # Verificar frontend HML
           HML_FRONTEND="https://hml-roteiros-de-dispensacao.web.app"
           if curl -f "$HML_FRONTEND" > /dev/null 2>&1; then
-            echo "[OK] HML frontend is accessible"
+            echo "✅ HML frontend is accessible"
           else
-            echo "[WARNING] Warning: HML frontend not accessible"
+            echo "⚠️ Warning: HML frontend not accessible"
           fi
 
   # =====================================
   # Deploy Backend Production
   # =====================================
   deploy-backend-production:
-    name: [START] Deploy Backend Production
+    name: 🚀 Deploy Backend Production
     runs-on: ubuntu-latest
     needs: [quality-gates-production, pre-deployment-validation]
     if: always() && (needs.quality-gates-production.result == 'success' || github.event.inputs.force_deploy == 'true') && github.event.inputs.deploy_backend == 'true'
@@ -212,7 +212,7 @@ jobs:
       - name: 📥 Checkout Code
         uses: actions/checkout@v4
 
-      - name: [AUTH] Authenticate to Google Cloud
+      - name: 🔐 Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
@@ -223,7 +223,7 @@ jobs:
       - name: 🛠️ Setup Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
-      - name: [FIX] Configure Docker Auth
+      - name: 🔧 Configure Docker Auth
         run: |
           gcloud auth configure-docker --quiet
           gcloud auth configure-docker us-central1-docker.pkg.dev --quiet
@@ -253,7 +253,7 @@ jobs:
           docker push gcr.io/$PROJECT_ID/$BACKEND_SERVICE_NAME:${{ github.event.inputs.version_tag }}
           docker push gcr.io/$PROJECT_ID/$BACKEND_SERVICE_NAME:latest
 
-      - name: [START] Deploy to Cloud Run
+      - name: 🚀 Deploy to Cloud Run
         id: deploy
         run: |
           # Deploy no Cloud Run com variáveis de produção
@@ -285,7 +285,7 @@ jobs:
           
           for i in {1..15}; do
             if curl -f "${{ steps.deploy.outputs.url }}/health" > /dev/null 2>&1; then
-              echo "[OK] Production backend health check passed"
+              echo "✅ Production backend health check passed"
               break
             fi
             echo "⏳ Tentativa $i/15 - aguardando..."
@@ -308,7 +308,7 @@ jobs:
       - name: 📥 Checkout Code
         uses: actions/checkout@v4
 
-      - name: [REPORT] Setup Node.js
+      - name: 📈 Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
@@ -320,7 +320,7 @@ jobs:
           cd apps/frontend-nextjs
           npm ci
 
-      - name: [FIX] Configure Environment
+      - name: 🔧 Configure Environment
         run: |
           cd apps/frontend-nextjs
           
@@ -344,7 +344,7 @@ jobs:
       - name: 🔥 Setup Firebase CLI
         run: npm install -g firebase-tools
 
-      - name: [START] Deploy to Firebase
+      - name: 🚀 Deploy to Firebase
         run: |
           cd apps/frontend-nextjs
           
@@ -383,7 +383,7 @@ jobs:
   # Testes de Smoke Production
   # =====================================
   production-smoke-tests:
-    name: [TEST] Production Smoke Tests
+    name: 🧪 Production Smoke Tests
     runs-on: ubuntu-latest
     needs: [deploy-backend-production, deploy-frontend-production, setup-production-monitoring]
     if: always() && (needs.deploy-backend-production.result == 'success' || needs.deploy-backend-production.result == 'skipped') && (needs.deploy-frontend-production.result == 'success' || needs.deploy-frontend-production.result == 'skipped')
@@ -392,9 +392,9 @@ jobs:
       - name: 📥 Checkout Code
         uses: actions/checkout@v4
 
-      - name: [TEST] Production Smoke Tests
+      - name: 🧪 Production Smoke Tests
         run: |
-          echo "[TEST] Executando smoke tests de produção..."
+          echo "🧪 Executando smoke tests de produção..."
           
           BACKEND_URL="${{ needs.deploy-backend-production.outputs.service-url }}"
           FRONTEND_URL="${{ needs.deploy-frontend-production.outputs.frontend-url }}"
@@ -408,10 +408,10 @@ jobs:
             for attempt in $(seq 1 $max_attempts); do
               echo "⏳ Tentativa $attempt/$max_attempts: $url"
               if curl -f -s --max-time 30 "$url" > /dev/null 2>&1; then
-                echo "[OK] Success: $url"
+                echo "✅ Success: $url"
                 return 0
               else
-                echo "[ERROR] Failed attempt $attempt"
+                echo "❌ Failed attempt $attempt"
                 if [ $attempt -lt $max_attempts ]; then
                   echo "😴 Aguardando ${delay}s antes da próxima tentativa..."
                   sleep $delay
@@ -423,25 +423,25 @@ jobs:
           }
           
           # Critical health checks
-          echo "[SEARCH] Testando backend health..."
+          echo "🔍 Testando backend health..."
           retry_request "$BACKEND_URL/health" || exit 1
           
           sleep 5  # Delay between requests
           
-          echo "[SEARCH] Testando backend personas..."
+          echo "🔍 Testando backend personas..."
           retry_request "$BACKEND_URL/api/v1/personas" || exit 1
           
           sleep 5  # Delay between requests
           
           if [ -n "$FRONTEND_URL" ]; then
-            echo "[SEARCH] Testando frontend..."
+            echo "🔍 Testando frontend..."
             retry_request "$FRONTEND_URL" || exit 1
           else
-            echo "[WARNING]  Frontend URL not available"
+            echo "⚠️  Frontend URL not available"
             exit 1
           fi
           
-          echo "[OK] Todos os smoke tests de produção passaram"
+          echo "✅ Todos os smoke tests de produção passaram"
           
           # Teste 3: Performance básico
           echo "3️⃣ Testing basic performance..."
@@ -449,18 +449,18 @@ jobs:
           echo "Backend response time: ${RESPONSE_TIME}s"
           
           if (( $(echo "$RESPONSE_TIME > 5.0" | bc -l) )); then
-            echo "[WARNING] Warning: Backend response time is high"
+            echo "⚠️ Warning: Backend response time is high"
           else
-            echo "[OK] Backend response time is acceptable"
+            echo "✅ Backend response time is acceptable"
           fi
           
-          echo "[OK] Todos os smoke tests passaram"
+          echo "✅ Todos os smoke tests passaram"
 
   # =====================================
   # Setup Monitoramento Produção
   # =====================================
   setup-production-monitoring:
-    name: [REPORT] Setup Production Monitoring
+    name: 📈 Setup Production Monitoring
     runs-on: ubuntu-latest
     needs: [deploy-backend-production, deploy-frontend-production]
     if: always() && (needs.deploy-backend-production.result == 'success' || needs.deploy-backend-production.result == 'skipped') && (needs.deploy-frontend-production.result == 'success' || needs.deploy-frontend-production.result == 'skipped')
@@ -469,7 +469,7 @@ jobs:
       - name: 📥 Checkout Code
         uses: actions/checkout@v4
 
-      - name: [AUTH] Authenticate to Google Cloud
+      - name: 🔐 Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
@@ -489,9 +489,9 @@ jobs:
         env:
           GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
 
-      - name: [REPORT] Create Production Dashboards
+      - name: 📈 Create Production Dashboards
         run: |
-          echo "[REPORT] Criando dashboards de produção..."
+          echo "📈 Criando dashboards de produção..."
           
           chmod +x scripts/create-simple-dashboards.sh
           bash scripts/maintenance/create-simple-dashboards.sh ${{ secrets.GCP_PROJECT_ID }}
@@ -499,13 +499,13 @@ jobs:
           chmod +x scripts/create-remaining-dashboards.sh  
           bash scripts/maintenance/create-remaining-dashboards.sh ${{ secrets.GCP_PROJECT_ID }}
 
-      - name: [OK] Verify Monitoring Setup
+      - name: ✅ Verify Monitoring Setup
         run: |
-          echo "[OK] Verificando configuração de monitoramento..."
+          echo "✅ Verificando configuração de monitoramento..."
           
           # Verificar dashboards
           DASHBOARDS=$(gcloud monitoring dashboards list --format="value(name)" --limit=10)
-          echo "[REPORT] Dashboards encontrados:"
+          echo "📈 Dashboards encontrados:"
           echo "$DASHBOARDS"
           
           # Verificar políticas de alerta
@@ -548,7 +548,7 @@ jobs:
           tag_name: ${{ github.event.inputs.version_tag }}
           release_name: Release ${{ github.event.inputs.version_tag }}
           body: |
-            ## [START] Production Release ${{ github.event.inputs.version_tag }}
+            ## 🚀 Production Release ${{ github.event.inputs.version_tag }}
             
             **Deployed to:**
             - Backend: ${{ needs.deploy-backend-production.outputs.service-url }}
@@ -564,17 +564,17 @@ jobs:
             - Deployment time: ${{ github.event.head_commit.timestamp }}
             
             **Quality Gates:**
-            - [OK] HML validation completed
-            - [OK] Production smoke tests passed
-            - [OK] Security scans passed
-            - [OK] Performance tests passed
-            - [OK] Observability system configured
+            - ✅ HML validation completed
+            - ✅ Production smoke tests passed
+            - ✅ Security scans passed
+            - ✅ Performance tests passed
+            - ✅ Observability system configured
             
             **Monitoring & Observability:**
-            - [OK] Google Cloud Operations Suite active
-            - [OK] Production dashboards created
-            - [OK] Alert policies with Telegram integration
-            - [OK] Structured logging and metrics
+            - ✅ Google Cloud Operations Suite active
+            - ✅ Production dashboards created
+            - ✅ Alert policies with Telegram integration
+            - ✅ Structured logging and metrics
             
             ---
             🤖 *Release created automatically by GitHub Actions*
@@ -595,8 +595,8 @@ jobs:
         if: needs.production-smoke-tests.result == 'success'
         run: |
           # Status do deploy
-          STATUS="[OK] PRODUÇÃO DEPLOYADA COM SUCESSO"
-          EMOJI="[START]"
+          STATUS="✅ PRODUÇÃO DEPLOYADA COM SUCESSO"
+          EMOJI="🚀"
           
           # Commit info
           COMMIT_SHA=$(echo $GITHUB_SHA | cut -c1-7)
@@ -613,7 +613,7 @@ jobs:
           * Backend: ${{ needs.deploy-backend-production.outputs.service-url }}
           * Frontend: ${{ needs.deploy-frontend-production.outputs.frontend-url }}
           
-          [REPORT] *Status dos Componentes:*
+          📈 *Status dos Componentes:*
           * Backend: ${{ needs.deploy-backend-production.result }}
           * Frontend: ${{ needs.deploy-frontend-production.result }}
           * Monitoramento: ${{ needs.setup-production-monitoring.result }}
@@ -621,12 +621,12 @@ jobs:
           * Release: ${{ needs.create-release.result }}
           
           [ALERT] *Sistema de Observabilidade:*
-          * Google Cloud Operations Suite [OK]
-          * Alertas com Telegram configurados [OK]
-          * Dashboards de produção criados [OK]
-          * Métricas e logs estruturados [OK]
+          * Google Cloud Operations Suite ✅
+          * Alertas com Telegram configurados ✅
+          * Dashboards de produção criados ✅
+          * Métricas e logs estruturados ✅
           
-          [NOTE] *Release Notes:*
+          📝 *Release Notes:*
           ${{ github.event.inputs.release_notes }}
           
           🎉 *Sistema em produção e funcionando!*"
@@ -640,7 +640,7 @@ jobs:
       - name: 📱 Telegram Notification (Failure)
         if: failure()
         run: |
-          STATUS="[ERROR] FALHA NO DEPLOY DE PRODUÇÃO"
+          STATUS="❌ FALHA NO DEPLOY DE PRODUÇÃO"
           EMOJI="[ALERT]"
           
           MESSAGE="$EMOJI *$STATUS*
@@ -649,20 +649,20 @@ jobs:
           👤 *Tentativa por:* @${{ github.actor }}
           ⏰ *Timestamp:* \`$(date -u)\`
           
-          [REPORT] *Status dos Jobs:*
+          📈 *Status dos Jobs:*
           * Validação: ${{ needs.pre-deployment-validation.result }}
           * Backend: ${{ needs.deploy-backend-production.result }}
           * Frontend: ${{ needs.deploy-frontend-production.result }}
           * Monitoramento: ${{ needs.setup-production-monitoring.result }}
           * Smoke Tests: ${{ needs.production-smoke-tests.result }}
           
-          [FIX] *Ações Necessárias:*
+          🔧 *Ações Necessárias:*
           1. Verificar logs do workflow
           2. Validar ambiente HML
           3. Corrigir problemas identificados
           4. Executar novo deploy
           
-          [WARNING] *PRODUÇÃO NÃO AFETADA* - Deploy cancelado"
+          ⚠️ *PRODUÇÃO NÃO AFETADA* - Deploy cancelado"
           
           # Enviar para Telegram
           curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \

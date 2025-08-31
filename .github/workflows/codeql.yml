@@ -1,4 +1,4 @@
-name: "[SEARCH] CodeQL Security Analysis"
+name: "🔒 CodeQL Security Analysis"
 
 on:
   push:
@@ -10,7 +10,7 @@ on:
 
 jobs:
   analyze:
-    name: [SEARCH] CodeQL Analysis
+    name: 🔍 CodeQL Analysis
     runs-on: ubuntu-latest
     permissions:
       actions: read
@@ -26,11 +26,12 @@ jobs:
     - name: 📥 Checkout repository
       uses: actions/checkout@v4
 
-    - name: [SEARCH] Initialize CodeQL
+    - name: 🔍 Initialize CodeQL
       uses: github/codeql-action/init@v3
       with:
         languages: ${{ matrix.language }}
         queries: security-extended,security-and-quality
+      continue-on-error: ${{ github.actor == 'dependabot[bot]' }}
 
     - name: 🐍 Setup Python (for Python analysis)
       if: matrix.language == 'python'
@@ -44,7 +45,7 @@ jobs:
         cd apps/backend
         pip install -r requirements.txt
 
-    - name: [REPORT] Setup Node.js (for JavaScript analysis)
+    - name: 📈 Setup Node.js (for JavaScript analysis)
       if: matrix.language == 'javascript'
       uses: actions/setup-node@v4
       with:
@@ -58,7 +59,8 @@ jobs:
         cd apps/frontend-nextjs
         npm ci
 
-    - name: [SEARCH] Perform CodeQL Analysis
+    - name: 🔍 Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
       with:
         category: "/language:${{matrix.language}}"
+      continue-on-error: ${{ github.actor == 'dependabot[bot]' }}

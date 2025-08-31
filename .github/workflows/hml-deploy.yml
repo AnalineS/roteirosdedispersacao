@@ -36,7 +36,7 @@ jobs:
   # Path Detection for Conditional Deploy
   # =====================================
   detect-changes:
-    name: [SEARCH] Detect Changes
+    name: 🔍 Detect Changes
     runs-on: ubuntu-latest
     outputs:
       backend-changed: ${{ steps.changes.outputs.backend }}
@@ -50,7 +50,7 @@ jobs:
         with:
           fetch-depth: 2  # Need 2 commits to compare
       
-      - name: [SEARCH] Detect Changed Paths
+      - name: 🔍 Detect Changed Paths
         id: changes
         run: |
           # Compare with previous commit to detect changes
@@ -72,7 +72,7 @@ jobs:
             echo "🎨 No frontend changes"
           fi
       
-      - name: [TARGET] Decide Deployment Strategy
+      - name: 🎯 Decide Deployment Strategy
         id: decide
         run: |
           # Use manual input if provided, otherwise use auto-detection
@@ -98,7 +98,7 @@ jobs:
   # Quality Gates com Snyk - Conditional
   # =====================================
   quality-gates:
-    name: [SEARCH] Quality Gates & Security
+    name: 🔍 Quality Gates & Security
     runs-on: ubuntu-latest
     needs: detect-changes
     if: github.event.inputs.force_deploy != 'true' && (needs.detect-changes.outputs.deploy-backend == 'true' || needs.detect-changes.outputs.deploy-frontend == 'true')
@@ -109,7 +109,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: [REPORT] Setup Node.js
+      - name: 📊 Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
@@ -125,7 +125,7 @@ jobs:
 
       # Frontend Quality Gates - Install first
       # Enhanced cache for Node.js dependencies
-      - name: [SAVE] Cache Node.js Dependencies
+      - name: 💾 Cache Node.js Dependencies
         uses: actions/cache@v4
         id: node-cache
         if: needs.detect-changes.outputs.deploy-frontend == 'true'
@@ -148,7 +148,7 @@ jobs:
         run: echo "📦 Using cached Node.js dependencies"
 
       # GitHub Native Security Scanning (Simple & Free)
-      - name: [SECURITY] GitHub Advanced Security Scan
+      - name: 🛡️ GitHub Advanced Security Scan
         run: |
           echo "🔒 Using GitHub's native security features..."
           
@@ -156,7 +156,7 @@ jobs:
           if [ "${{ needs.detect-changes.outputs.deploy-frontend }}" == "true" ]; then
             cd apps/frontend-nextjs
             echo "📦 Scanning frontend dependencies..."
-            npm audit --audit-level=high || echo "[WARNING] Vulnerabilities found - check Dependabot alerts"
+            npm audit --audit-level=high || echo "⚠️ Vulnerabilities found - check Dependabot alerts"
             cd ../..
           fi
           
@@ -165,20 +165,20 @@ jobs:
             cd apps/backend
             echo "🐍 Scanning Python dependencies..."
             pip install safety
-            safety check || echo "[WARNING] Python vulnerabilities found - check Security tab"
+            safety check || echo "⚠️ Python vulnerabilities found - check Security tab"
             cd ../..
           fi
           
-          echo "[OK] GitHub Security scan completed - check Security tab for detailed reports"
+          echo "✅ GitHub Security scan completed - check Security tab for detailed reports"
 
-      - name: [SEARCH] Frontend Lint & TypeScript
+      - name: 🔍 Frontend Lint & TypeScript
         if: needs.detect-changes.outputs.deploy-frontend == 'true'
         run: |
           cd apps/frontend-nextjs
           npm run lint
           npm run type-check
 
-      - name: [TEST] Frontend Tests & Coverage
+      - name: 🧪 Frontend Tests & Coverage
         if: needs.detect-changes.outputs.deploy-frontend == 'true'
         run: |
           cd apps/frontend-nextjs
@@ -186,19 +186,19 @@ jobs:
           npm run test -- --passWithNoTests || echo "Tests completed with warnings"
           
       # Note: Coverage check disabled temporarily to allow HML deployment
-      # - name: [REPORT] Check Coverage Threshold (95%)
+      # - name: 📊 Check Coverage Threshold (95%)
       #   run: |
       #     cd apps/frontend-nextjs
       #     COVERAGE=$(npm run test:coverage:check | grep -o '[0-9]*\.[0-9]*' | tail -1)
       #     echo "Coverage: $COVERAGE%"
       #     if (( $(echo "$COVERAGE < 95" | bc -l) )); then
-      #       echo "[ERROR] Coverage $COVERAGE% is below 95% threshold"
+      #       echo "❌ Coverage $COVERAGE% is below 95% threshold"
       #       exit 1
       #     fi
-      #     echo "[OK] Coverage $COVERAGE% meets 95% threshold"
+      #     echo "✅ Coverage $COVERAGE% meets 95% threshold"
 
       # Enhanced cache for Python dependencies
-      - name: [SAVE] Cache Python Dependencies
+      - name: 💾 Cache Python Dependencies
         uses: actions/cache@v4
         id: python-cache
         if: needs.detect-changes.outputs.deploy-backend == 'true'
@@ -217,14 +217,14 @@ jobs:
           pip install pytest pytest-cov flake8 mypy
 
 
-      - name: [TEST] Backend Tests & Coverage
+      - name: 🧪 Backend Tests & Coverage
         if: needs.detect-changes.outputs.deploy-backend == 'true'
         run: |
           cd apps/backend
           # Skip coverage for initial deploy
           python -m pytest --tb=short || echo "Tests completed with warnings"
 
-      - name: [SEARCH] Backend Code Quality
+      - name: 🔍 Backend Code Quality
         if: needs.detect-changes.outputs.deploy-backend == 'true'
         run: |
           cd apps/backend
@@ -242,7 +242,7 @@ jobs:
   # Deploy Backend (Cloud Run) - Conditional
   # =====================================
   deploy-backend:
-    name: [START] Deploy Backend HML
+    name: 🚀 Deploy Backend HML
     runs-on: ubuntu-latest
     needs: [detect-changes, quality-gates]
     if: always() && (needs.quality-gates.result == 'success' || github.event.inputs.force_deploy == 'true') && needs.detect-changes.outputs.deploy-backend == 'true'
@@ -253,8 +253,10 @@ jobs:
     steps:
       - name: 📥 Checkout Code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && 'hml' || github.ref }}
 
-      - name: [AUTH] Authenticate to Google Cloud
+      - name: 🔐 Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
@@ -265,7 +267,7 @@ jobs:
       - name: 🛠️ Setup Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
-      - name: [FIX] Configure Docker Auth
+      - name: 🔧 Configure Docker Auth
         run: |
           gcloud auth configure-docker --quiet
           gcloud auth configure-docker us-central1-docker.pkg.dev --quiet
@@ -290,7 +292,7 @@ jobs:
           docker push gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA
           docker push gcr.io/$PROJECT_ID/$SERVICE_NAME:latest
 
-      - name: [START] Deploy to Cloud Run
+      - name: 🚀 Deploy to Cloud Run
         id: deploy
         run: |
           # Deploy no Cloud Run com variáveis essenciais
@@ -322,7 +324,7 @@ jobs:
           
           for i in {1..10}; do
             if curl -f "${{ steps.deploy.outputs.url }}/health" > /dev/null 2>&1; then
-              echo "[OK] Backend health check passed"
+              echo "✅ Backend health check passed"
               break
             fi
             echo "⏳ Tentativa $i/10 - aguardando..."
@@ -346,7 +348,7 @@ jobs:
       - name: 📥 Checkout Code
         uses: actions/checkout@v4
 
-      - name: [REPORT] Setup Node.js
+      - name: 📊 Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
@@ -354,7 +356,7 @@ jobs:
           cache-dependency-path: apps/frontend-nextjs/package-lock.json
 
       # Reuse cached dependencies
-      - name: [SAVE] Restore Node.js Cache
+      - name: 💾 Restore Node.js Cache
         uses: actions/cache@v4
         with:
           path: |
@@ -370,7 +372,7 @@ jobs:
           npm ci
 
       # Cache Next.js build for faster rebuilds
-      - name: [SAVE] Cache Next.js Build
+      - name: 💾 Cache Next.js Build
         uses: actions/cache@v4
         with:
           path: |
@@ -380,7 +382,7 @@ jobs:
             nextjs-build-${{ runner.os }}-${{ hashFiles('apps/frontend-nextjs/package-lock.json') }}-
             nextjs-build-${{ runner.os }}-
 
-      - name: [FIX] Configure Environment
+      - name: 🔧 Configure Environment
         run: |
           cd apps/frontend-nextjs
           cp .env.hml .env.production.local
@@ -404,7 +406,7 @@ jobs:
       - name: 🔥 Setup Firebase CLI
         run: npm install -g firebase-tools
 
-      - name: [START] Deploy to Firebase
+      - name: 🚀 Deploy to Firebase
         run: |
           cd apps/frontend-nextjs
           
@@ -443,7 +445,7 @@ jobs:
   # Setup GCP Monitoring & Alerts
   # =====================================
   setup-monitoring:
-    name: [REPORT] Setup GCP Monitoring & Alerts
+    name: 📊 Setup GCP Monitoring & Alerts
     runs-on: ubuntu-latest
     needs: [detect-changes, deploy-backend, deploy-frontend]
     if: always() && (needs.deploy-backend.result == 'success' || needs.deploy-backend.result == 'skipped') && (needs.deploy-frontend.result == 'success' || needs.deploy-frontend.result == 'skipped')
@@ -452,7 +454,7 @@ jobs:
       - name: 📥 Checkout Code
         uses: actions/checkout@v4
 
-      - name: [AUTH] Authenticate to Google Cloud
+      - name: 🔐 Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
@@ -460,17 +462,17 @@ jobs:
       - name: 🛠️ Setup Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
-      - name: [ALERT] Configure GCP Alerts with Telegram
+      - name: 🚨 Configure GCP Alerts with Telegram
         run: |
-          echo "[REPORT] Configurando alertas GCP com integração Telegram..."
+          echo "📊 Configurando alertas GCP com integração Telegram..."
           bash scripts/setup/setup-gcp-alerts-with-secrets.sh red-truck-468923-s4 "${{ secrets.TELEGRAM_BOT_TOKEN }}" "${{ secrets.TELEGRAM_CHAT_ID }}"
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
 
-      - name: [REPORT] Test Alert Configuration
+      - name: 📊 Test Alert Configuration
         run: |
-          echo "[TEST] Testando configuração de alertas..."
+          echo "🧪 Testando configuração de alertas..."
           # Listar políticas de alerta criadas
           gcloud alpha monitoring policies list --project=red-truck-468923-s4 --filter="displayName:Alta OR displayName:Erro OR displayName:Indisponível OR displayName:Memória" --format="table(displayName,enabled)"
 
@@ -478,7 +480,7 @@ jobs:
   # Reset Dados HML & Smoke Tests
   # =====================================
   post-deploy:
-    name: [TEST] Post-Deploy & Tests
+    name: 🧪 Post-Deploy & Tests
     runs-on: ubuntu-latest
     needs: [detect-changes, deploy-backend, deploy-frontend, setup-monitoring]
     if: always() && (needs.deploy-backend.result == 'success' || needs.deploy-backend.result == 'skipped') && (needs.deploy-frontend.result == 'success' || needs.deploy-frontend.result == 'skipped')
@@ -495,9 +497,9 @@ jobs:
           SERVICE_URL: ${{ needs.deploy-backend.outputs.service-url }}
           SEED_TOKEN: ${{ secrets.SECRET_KEY }}
 
-      - name: [TEST] Smoke Tests
+      - name: 🧪 Smoke Tests
         run: |
-          echo "[TEST] Executando smoke tests..."
+          echo "🧪 Executando smoke tests..."
           
           BACKEND_URL="${{ needs.deploy-backend.outputs.service-url }}"
           FRONTEND_URL="${{ needs.deploy-frontend.outputs.frontend-url }}"
@@ -511,10 +513,10 @@ jobs:
             for attempt in $(seq 1 $max_attempts); do
               echo "⏳ Tentativa $attempt/$max_attempts: $url"
               if curl -f -s --max-time 30 "$url" > /dev/null 2>&1; then
-                echo "[OK] Success: $url"
+                echo "✅ Success: $url"
                 return 0
               else
-                echo "[ERROR] Failed attempt $attempt"
+                echo "❌ Failed attempt $attempt"
                 if [ $attempt -lt $max_attempts ]; then
                   echo "😴 Aguardando ${delay}s antes da próxima tentativa..."
                   sleep $delay
@@ -525,40 +527,40 @@ jobs:
           }
           
           # Health checks com retry e rate limiting consideration
-          echo "[SEARCH] Testando backend health..."
+          echo "🔍 Testando backend health..."
           retry_request "$BACKEND_URL/health" || {
-            echo "[WARNING]  Backend health check failed - may be rate limited"
+            echo "⚠️ Backend health check failed - may be rate limited"
             # Don't exit, continue with other tests
           }
           
           sleep 3  # Delay between requests
           
-          echo "[SEARCH] Testando backend personas..."
+          echo "🔍 Testando backend personas..."
           retry_request "$BACKEND_URL/api/v1/personas" || {
-            echo "[WARNING]  Backend personas check failed - may be rate limited"
+            echo "⚠️ Backend personas check failed - may be rate limited"
             # Don't exit, continue with other tests
           }
           
           sleep 3  # Delay between requests
           
           if [ -n "$FRONTEND_URL" ]; then
-            echo "[SEARCH] Testando frontend..."
+            echo "🔍 Testando frontend..."
             retry_request "$FRONTEND_URL" || {
-              echo "[WARNING]  Frontend check failed"
+              echo "⚠️ Frontend check failed"
             }
           else
-            echo "[WARNING]  Frontend URL not available"
+            echo "⚠️ Frontend URL not available"
           fi
           
-          echo "[OK] Smoke tests completados (alguns podem ter falhado devido a rate limiting)"
+          echo "✅ Smoke tests completados (alguns podem ter falhado devido a rate limiting)"
 
-      - name: [REPORT] Generate Test Report
+      - name: 📊 Generate Test Report
         if: always()
         run: |
           cat > test-report.md << EOF
           # [LIST] HML Deploy Report
           
-          **[START] Deploy:** \`$GITHUB_SHA\`
+          **🚀 Deploy:** \`$GITHUB_SHA\`
           **🌿 Branch:** \`$GITHUB_REF_NAME\`
           **⏰ Timestamp:** \`$(date -u)\`
           
@@ -572,7 +574,7 @@ jobs:
           - Frontend Deploy: ${{ needs.deploy-frontend.result }}
           - Smoke Tests: ${{ job.status }}
           
-          ## [TEST] Next Steps
+          ## 🧪 Next Steps
           1. **Testes Manuais:** Validar funcionalidades críticas
           2. **QA Review:** Aprovar para produção
           3. **Deploy Prod:** Executar workflow de produção
@@ -581,7 +583,7 @@ jobs:
           🤖 *Relatório gerado automaticamente pelo GitHub Actions*
           EOF
           
-          echo "[REPORT] Relatório de deploy criado"
+          echo "📊 Relatório de deploy criado"
 
   # =====================================
   # Notificações
@@ -598,11 +600,11 @@ jobs:
         run: |
           # Status do deploy
           if [[ "${{ needs.post-deploy.result }}" == "success" ]]; then
-            STATUS="[OK] SUCESSO"
+            STATUS="✅ SUCESSO"
             EMOJI="🎉"
           else
-            STATUS="[ERROR] FALHOU"
-            EMOJI="[ALERT]"
+            STATUS="❌ FALHOU"
+            EMOJI="🚨"
           fi
           
           # Commit info
@@ -610,22 +612,22 @@ jobs:
           COMMIT_MSG=$(git log -1 --pretty=%B | head -1)
           
           # Mensagem com informações sobre deploy incremental
-          MESSAGE="$EMOJI *Deploy HML $STATUS* [START]
+          MESSAGE="$EMOJI *Deploy HML $STATUS* 🚀
           
           📦 *Commit:* \`$COMMIT_SHA\`
-          [NOTE] *Mensagem:* $COMMIT_MSG
+          📝 *Mensagem:* $COMMIT_MSG
           🌿 *Branch:* \`$GITHUB_REF_NAME\`
           ⏰ *Timestamp:* \`$(date -u)\`
           
-          [TARGET] *Deploy Incremental:*
-          * Backend: ${{ needs.detect-changes.outputs.deploy-backend == 'true' && '[OK] Deployado' || '⏭️ Pulado (sem mudanças)' }}
-          * Frontend: ${{ needs.detect-changes.outputs.deploy-frontend == 'true' && '[OK] Deployado' || '⏭️ Pulado (sem mudanças)' }}
+          🎯 *Deploy Incremental:*
+          * Backend: ${{ needs.detect-changes.outputs.deploy-backend == 'true' && '✅ Deployado' || '⏭️ Pulado (sem mudanças)' }}
+          * Frontend: ${{ needs.detect-changes.outputs.deploy-frontend == 'true' && '✅ Deployado' || '⏭️ Pulado (sem mudanças)' }}
           
           🔗 *URLs:*
           * Backend: ${{ needs.deploy-backend.outputs.service-url || 'Não deployado' }}
           * Frontend: ${{ needs.deploy-frontend.outputs.frontend-url || 'Não deployado' }}
           
-          [REPORT] *Status dos Jobs:*
+          📊 *Status dos Jobs:*
           * Changes Detection: ${{ needs.detect-changes.result }}
           * Quality Gates: ${{ needs.quality-gates.result }}
           * Backend Deploy: ${{ needs.deploy-backend.result }}
