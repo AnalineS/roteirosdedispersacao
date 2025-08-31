@@ -76,7 +76,7 @@ nltk==3.9.1
 
 # === MULTIMODAL PROCESSING ===
 # Computer vision and OCR
-opencv-python==4.10.0.84
+opencv-python==4.12.0.88
 Pillow==10.4.0
 pytesseract==0.3.10
 easyocr==1.7.1  # NOTE: Contains torch@2.8.0 with known vulnerabilities pending upstream fix
