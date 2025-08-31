@@ -19,7 +19,7 @@ jobs:
     
     steps:
       - name: 📥 Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         
       - name: 🔍 Check PR Details
         id: pr-check
@@ -110,7 +110,7 @@ jobs:
     
     steps:
       - name: 📥 Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         
       - name: 🔍 Find Duplicate PRs
         env:
@@ -152,7 +152,7 @@ jobs:
     
     steps:
       - name: 📥 Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         
       - name: 🔍 Check for Known Vulnerabilities
         run: |
