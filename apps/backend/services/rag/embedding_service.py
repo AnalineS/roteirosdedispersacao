@@ -3,6 +3,7 @@
 Embedding Service - Sistema de embeddings para RAG semântico (LAZY LOADING)
 Suporte para modelos multilíngues otimizados para português médico
 Implementa lazy loading para evitar timeout em Cloud Run
+Compatível com sentence-transformers v5.1+ - novas funcionalidades de performance
 """
 
 import os
@@ -375,13 +376,28 @@ class EmbeddingService:
                 text = text[:max_length]
                 logger.debug(f"[NOTE] Texto truncado para {max_length} caracteres")
             
-            # Gerar embedding
-            embedding = self.model.encode(
-                text,
-                convert_to_numpy=NUMPY_AVAILABLE,
-                normalize_embeddings=True,  # Importante para similaridade coseno
-                batch_size=1
-            )
+            # Gerar embedding - usando funcionalidades v5.1+
+            # Detectar contexto para otimizações (query vs document)
+            context_type = getattr(self.config, 'EMBEDDING_CONTEXT_TYPE', 'auto')
+            
+            encode_params = {
+                'convert_to_numpy': NUMPY_AVAILABLE,
+                'normalize_embeddings': True,  # Importante para similaridade coseno
+                'batch_size': 1
+            }
+            
+            # Sentence-transformers v5.1+ - usar encode com otimizações
+            # Suporte para parallel processing com multiple devices se disponível
+            if hasattr(self.model, 'encode') and hasattr(self.model, '_modules'):
+                # Verificar se temos GPU disponível para parallel processing
+                if self.device != 'cpu' and hasattr(self.model, 'device'):
+                    encode_params['device'] = self.device
+                
+                # Para v5.1+: usar chunk_size para melhor performance em textos longos
+                if len(text) > 256:
+                    encode_params['chunk_size'] = getattr(self.config, 'EMBEDDING_CHUNK_SIZE', 32)
+            
+            embedding = self.model.encode(text, **encode_params)
             
             embedding_time = (datetime.now() - start_time).total_seconds()
             
@@ -469,12 +485,23 @@ class EmbeddingService:
                             text = text[:self.config.EMBEDDINGS_MAX_LENGTH * 4]
                         processed_texts.append(text)
                     
-                    new_embeddings = self.model.encode(
-                        processed_texts,
-                        convert_to_numpy=True,
-                        normalize_embeddings=True,
-                        batch_size=batch_size
-                    )
+                    # Sentence-transformers v5.1+ - Parallel batch processing otimizado
+                    encode_params = {
+                        'convert_to_numpy': True,
+                        'normalize_embeddings': True,
+                        'batch_size': batch_size
+                    }
+                    
+                    # v5.1+ otimizações para lotes grandes
+                    if len(processed_texts) > 10:
+                        # Usar parallel processing se disponível (múltiplas GPUs/dispositivos)
+                        if self.device != 'cpu' and hasattr(self.model, 'pool'):
+                            encode_params['pool'] = True  # Ativar pooling paralelo
+                        
+                        # Chunk size otimizado para lotes
+                        encode_params['chunk_size'] = min(batch_size, 64)
+                    
+                    new_embeddings = self.model.encode(processed_texts, **encode_params)
                     
                     embedding_time = (datetime.now() - start_time).total_seconds()
                     
@@ -499,6 +526,144 @@ class EmbeddingService:
             embeddings.extend(batch_embeddings)
         
         return embeddings
+    
+    def embed_query(self, query: str) -> Optional[Union[list, 'np.ndarray']]:
+        """
+        Gera embedding otimizado para QUERY (sentence-transformers v5.1+)
+        Usa método especializado para melhor performance em information retrieval
+        
+        Args:
+            query: Texto da consulta/pergunta
+            
+        Returns:
+            Embedding otimizado para busca semântica
+        """
+        if not query or not query.strip():
+            return None
+        
+        query = query.strip()
+        
+        # Cache específico para queries
+        cache_key = f"query:{query}"
+        if self.cache and NUMPY_AVAILABLE:
+            cached_embedding = self.cache.get(cache_key, self.model_name)
+            if cached_embedding is not None:
+                self.stats['cache_hits'] += 1
+                return cached_embedding
+        
+        # Carregar modelo se necessário
+        if not self._load_model():
+            return None
+        
+        try:
+            start_time = datetime.now()
+            
+            # Sentence-transformers v5.1+ - encode_query se disponível
+            if hasattr(self.model, 'encode_query'):
+                # Usar método especializado para queries
+                embedding = self.model.encode_query(
+                    query,
+                    convert_to_numpy=NUMPY_AVAILABLE,
+                    normalize_embeddings=True
+                )
+                logger.debug(f"[V5.1+] Usando encode_query() otimizado")
+            else:
+                # Fallback para encode() padrão com hint de query
+                embedding = self.model.encode(
+                    query,
+                    convert_to_numpy=NUMPY_AVAILABLE,
+                    normalize_embeddings=True,
+                    task_type='query' if hasattr(self.model, 'task_type') else None
+                )
+            
+            embedding_time = (datetime.now() - start_time).total_seconds()
+            
+            # Estatísticas
+            self.stats['embeddings_created'] += 1
+            self.stats['query_embeddings'] = self.stats.get('query_embeddings', 0) + 1
+            
+            # Cache com prefixo específico
+            if self.cache and NUMPY_AVAILABLE and hasattr(embedding, 'shape'):
+                self.cache.set(cache_key, self.model_name, embedding)
+            
+            logger.debug(f"[OK] Query embedding gerado em {embedding_time:.3f}s")
+            return embedding
+            
+        except Exception as e:
+            logger.error(f"[ERROR] Erro ao gerar query embedding: {e}")
+            return None
+    
+    def embed_document(self, document: str) -> Optional[Union[list, 'np.ndarray']]:
+        """
+        Gera embedding otimizado para DOCUMENTO (sentence-transformers v5.1+)
+        Usa método especializado para melhor performance em information retrieval
+        
+        Args:
+            document: Texto do documento/resposta
+            
+        Returns:
+            Embedding otimizado para indexação semântica
+        """
+        if not document or not document.strip():
+            return None
+        
+        document = document.strip()
+        
+        # Cache específico para documentos
+        cache_key = f"doc:{document}"
+        if self.cache and NUMPY_AVAILABLE:
+            cached_embedding = self.cache.get(cache_key, self.model_name)
+            if cached_embedding is not None:
+                self.stats['cache_hits'] += 1
+                return cached_embedding
+        
+        # Carregar modelo se necessário
+        if not self._load_model():
+            return None
+        
+        try:
+            start_time = datetime.now()
+            
+            # Truncar documento se muito longo
+            max_length = getattr(self.config, 'EMBEDDINGS_MAX_LENGTH', 512) * 4
+            if len(document) > max_length:
+                document = document[:max_length]
+                logger.debug(f"[NOTE] Documento truncado para {max_length} caracteres")
+            
+            # Sentence-transformers v5.1+ - encode_document se disponível  
+            if hasattr(self.model, 'encode_document'):
+                # Usar método especializado para documentos
+                embedding = self.model.encode_document(
+                    document,
+                    convert_to_numpy=NUMPY_AVAILABLE,
+                    normalize_embeddings=True
+                )
+                logger.debug(f"[V5.1+] Usando encode_document() otimizado")
+            else:
+                # Fallback para encode() padrão com hint de document
+                embedding = self.model.encode(
+                    document,
+                    convert_to_numpy=NUMPY_AVAILABLE,
+                    normalize_embeddings=True,
+                    task_type='document' if hasattr(self.model, 'task_type') else None
+                )
+            
+            embedding_time = (datetime.now() - start_time).total_seconds()
+            
+            # Estatísticas
+            self.stats['embeddings_created'] += 1
+            self.stats['document_embeddings'] = self.stats.get('document_embeddings', 0) + 1
+            
+            # Cache com prefixo específico
+            if self.cache and NUMPY_AVAILABLE and hasattr(embedding, 'shape'):
+                self.cache.set(cache_key, self.model_name, embedding)
+            
+            logger.debug(f"[OK] Document embedding gerado em {embedding_time:.3f}s")
+            return embedding
+            
+        except Exception as e:
+            logger.error(f"[ERROR] Erro ao gerar document embedding: {e}")
+            return None
     
     def calculate_similarity(self, embedding1: np.ndarray, embedding2: np.ndarray) -> float:
         """
@@ -561,8 +726,20 @@ class EmbeddingService:
         return similarities
     
     def get_statistics(self) -> Dict[str, Any]:
-        """Retorna estatísticas do serviço (com lazy loading)"""
+        """Retorna estatísticas do serviço (com lazy loading) - v5.1+ enhanced"""
         stats = dict(self.stats)
+        
+        # Detectar funcionalidades v5.1+
+        v51_features = {}
+        if self._model_loaded and self.model:
+            v51_features = {
+                'encode_query_available': hasattr(self.model, 'encode_query'),
+                'encode_document_available': hasattr(self.model, 'encode_document'),
+                'sparse_encoder_available': hasattr(self.model, 'sparsity'),
+                'parallel_processing_available': hasattr(self.model, 'pool'),
+                'chunk_processing_available': 'chunk_size' in getattr(self.model, 'encode', lambda: {}).__code__.co_varnames if hasattr(self.model, 'encode') else False
+            }
+        
         stats.update({
             'model_loaded': self._model_loaded,
             'load_attempted': self._load_attempted,
@@ -573,7 +750,15 @@ class EmbeddingService:
             'sentence_transformers_available': _test_sentence_transformers(),
             'numpy_available': NUMPY_AVAILABLE,
             'cache_enabled': self.cache is not None,
-            'available': self.is_available()
+            'available': self.is_available(),
+            'v51_features': v51_features,
+            'embedding_methods_used': {
+                'query_embeddings': self.stats.get('query_embeddings', 0),
+                'document_embeddings': self.stats.get('document_embeddings', 0),
+                'general_embeddings': self.stats.get('embeddings_created', 0) - 
+                                    self.stats.get('query_embeddings', 0) - 
+                                    self.stats.get('document_embeddings', 0)
+            }
         })
         
         # Adicionar stats do cache se disponível
