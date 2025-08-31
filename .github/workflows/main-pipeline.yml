@@ -35,7 +35,7 @@ permissions:
 env:
   NODE_VERSION: '18'
   PYTHON_VERSION: '3.11'
-  TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+  TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
   TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
   SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
   # Timeout global para evitar jobs infinitos
@@ -215,7 +215,7 @@ jobs:
       - name: "[NOTIFY] Security Status (Otimizado)"
         if: always() && (failure() || github.event_name == 'schedule')
         env:
-          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           SCAN_TYPE="🔒 Scan agendado"
@@ -496,7 +496,7 @@ jobs:
     steps:
       - name: "[NOTIFY] Status Final"
         env:
-          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           BACKEND_STATUS="${{ needs.deploy-backend-prod.result }}"

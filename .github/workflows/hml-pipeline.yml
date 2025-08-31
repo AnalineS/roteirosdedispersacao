@@ -41,7 +41,7 @@ env:
   FRONTEND_SITE: hml-roteiros-de-dispensacao
   REGION: ${{ secrets.GCP_REGION }}
   ENVIRONMENT: homologacao
-  TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+  TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
   TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
   SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
   # HML com timeout menor para feedback rápido
@@ -256,7 +256,7 @@ jobs:
       - name: "[NOTIFY] Security Status"
         if: always()
         env:
-          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           if [ "${{ job.status }}" == "success" ]; then
@@ -540,7 +540,7 @@ jobs:
       - name: "[VALIDATION] Smoke Tests"
         id: validation
         env:
-          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           echo "Executando testes de smoke em HML..."
@@ -651,7 +651,7 @@ jobs:
     steps:
       - name: "[NOTIFY] Status Final"
         env:
-          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           if [[ "${{ needs.post-deploy-validation.outputs.validation-status }}" == "success" ]]; then
