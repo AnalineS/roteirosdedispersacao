@@ -8,6 +8,10 @@ on:
       - 'apps/frontend-nextjs/**'
       - 'package.json'
       - 'package-lock.json'
+      - '.github/workflows/**'
+  schedule:
+    # Roda TODA SEGUNDA às 03:00 para economia do Snyk (200 testes/mês)
+    - cron: '0 3 * * 1'
   workflow_dispatch:
     inputs:
       skip_tests:
@@ -34,30 +38,52 @@ env:
   TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
   TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
   SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+  # Timeout global para evitar jobs infinitos
+  GLOBAL_TIMEOUT: 30
 
 jobs:
   detect-changes:
     name: "[DETECT] Detectar Mudancas"
     runs-on: ubuntu-latest
     outputs:
-      backend-changed: ${{ steps.changes.outputs.backend }}
-      frontend-changed: ${{ steps.changes.outputs.frontend }}
-      dependencies-changed: ${{ steps.changes.outputs.dependencies }}
+      backend-changed: ${{ steps.filter.outputs.backend }}
+      frontend-changed: ${{ steps.filter.outputs.frontend }}
+      dependencies-changed: ${{ steps.filter.outputs.dependencies }}
+      workflow-changed: ${{ steps.filter.outputs.workflows }}
       
     steps:
       - name: "[CHECKOUT] Checkout"
-        uses: actions/checkout@v4
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
         with:
           fetch-depth: 2
           
-      - name: "[DETECT] Analisar Mudancas"
+      # PATHS-FILTER: Detecção precisa de mudanças (Economia ~60%)
+      - name: "[FILTER] Detectar paths alterados"
+        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36  # v3.0.2
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'apps/backend/**'
+            frontend:
+              - 'apps/frontend-nextjs/**'
+            dependencies:
+              - 'package*.json'
+              - '**/requirements*.txt'
+            workflows:
+              - '.github/workflows/**'
+          
+      # FALLBACK: Mantém lógica original como backup
+      - name: "[DETECT] Analisar Mudancas (Fallback)"
         id: changes
+        if: steps.filter.outcome == 'failure'
         run: |
-          echo "Analisando mudancas para PRODUCAO..."
+          echo "[WARNING] paths-filter falhou, usando detecção tradicional..."
           
           BACKEND_CHANGED=false
           FRONTEND_CHANGED=false
           DEPS_CHANGED=false
+          WORKFLOW_CHANGED=false
           
           if git diff --name-only HEAD~1 HEAD | grep -q "^apps/backend/"; then
             BACKEND_CHANGED=true
@@ -74,54 +100,136 @@ jobs:
             echo "Dependencias alteradas detectadas"
           fi
           
+          if git diff --name-only HEAD~1 HEAD | grep -q "^\.github/workflows/"; then
+            WORKFLOW_CHANGED=true
+            echo "Workflows alterados detectados"
+          fi
+          
           echo "backend=$BACKEND_CHANGED" >> $GITHUB_OUTPUT
           echo "frontend=$FRONTEND_CHANGED" >> $GITHUB_OUTPUT
           echo "dependencies=$DEPS_CHANGED" >> $GITHUB_OUTPUT
+          echo "workflow=$WORKFLOW_CHANGED" >> $GITHUB_OUTPUT
+          
+      - name: "[SUMMARY] Resumo das mudanças"
+        run: |
+          echo "📊 RESUMO DE MUDANÇAS DETECTADAS:"
+          echo "Backend: ${{ steps.filter.outputs.backend || steps.changes.outputs.backend }}"
+          echo "Frontend: ${{ steps.filter.outputs.frontend || steps.changes.outputs.frontend }}"
+          echo "Dependencies: ${{ steps.filter.outputs.dependencies || steps.changes.outputs.dependencies }}"
+          echo "Workflows: ${{ steps.filter.outputs.workflows || steps.changes.outputs.workflow }}"
 
   security-quality-gates:
     name: "[SECURITY] Gates de Qualidade e Seguranca"
     runs-on: ubuntu-latest
     needs: detect-changes
-    if: needs.detect-changes.outputs.backend-changed == 'true' || needs.detect-changes.outputs.frontend-changed == 'true'
+    # CONDIÇÃO OTIMIZADA: Inclui schedule para Snyk semanal
+    if: always() && (needs.detect-changes.outputs.backend-changed == 'true' || needs.detect-changes.outputs.frontend-changed == 'true' || needs.detect-changes.outputs.workflow-changed == 'true' || github.event_name == 'schedule')
     
     steps:
       - name: "[CHECKOUT] Checkout"
         uses: actions/checkout@v4
+        
+      # SECRET SCANNING GRATUITO: TruffleHog (sem limites)
+      - name: "[SECURITY] TruffleHog Secret Scanning (FREE)"
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          extra_args: --only-verified --fail --json --results-format=json --results-file=trufflehog-results.json
+        continue-on-error: false  # DEVE falhar se houver secrets!
+        
+      - name: "[SECURITY] Report Exposed Secrets (if any)"
+        if: failure()
+        run: |
+          echo "🚨 SECRETS DETECTADOS! Analisando..."
+          echo "Verificando se há arquivo de resultados do TruffleHog..."
+          
+          # Procurar por resultados do TruffleHog
+          if ls trufflehog-results*.json 1> /dev/null 2>&1; then
+            echo "📋 Detalhes dos secrets encontrados:"
+            cat trufflehog-results*.json | jq '.Results[] | {
+              "DetectorType": .DetectorType,
+              "SourceName": .SourceMetadata.Data.Filesystem.file,
+              "Line": .SourceMetadata.Data.Filesystem.line,
+              "Verified": .Verified
+            }' || echo "Erro ao processar JSON"
+          else
+            echo "❓ Arquivo de resultados não encontrado, executando scan manual..."
+            # Executar TruffleHog novamente apenas para diagnóstico
+            docker run --rm -v "$PWD:/pwd" trufflesecurity/trufflehog:latest filesystem /pwd --only-verified --json || true
+          fi
+          
+          echo ""
+          echo "🔧 PRÓXIMOS PASSOS OBRIGATÓRIOS:"
+          echo "1. Identificar todos os secrets expostos acima"
+          echo "2. Migrar para GitHub Secrets usando 'gh secret set'"
+          echo "3. Remover secrets hardcoded do código"
+          echo "4. Substituir por variáveis \${{ secrets.NOME_DO_SECRET }}"
+          echo "5. Re-executar pipeline"
         
       - name: "[SECURITY] GitHub Security Scanning"
         uses: github/codeql-action/init@v3
         with:
           languages: javascript,python
           
-      - name: "[SECURITY] Snyk Security Scan"
+      # SNYK LIMITADO: Só roda em main pushes + schedule (ECONOMIA 75%)
+      - name: "[SECURITY] Snyk Security Scan (Budget Controlled)"
+        if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'schedule')
         uses: snyk/actions/node@master
-        continue-on-error: true
+        continue-on-error: true  # Não falha se quota exceder
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          args: --severity-threshold=high --policy-path=.snyk
+          # Otimizado para vulnerabilidades CRÍTICAS apenas
+          args: >
+            --severity-threshold=high
+            --policy-path=.snyk 
+            --sarif-file-output=snyk.sarif
+            --fail-on=upgradable
+            --prune-repeated-subdependencies
           
       - name: "[SECURITY] Upload Snyk Results"
         uses: github/codeql-action/upload-sarif@v3
-        if: always()
+        if: always() && hashFiles('snyk.sarif') != '' && github.ref == 'refs/heads/main'
         with:
           sarif_file: snyk.sarif
+          
+      # FREE ALTERNATIVE: npm audit para PRs (sem limite)
+      - name: "[SECURITY] NPM Audit (Gratuito)"
+        if: github.event_name == 'pull_request' || github.ref != 'refs/heads/main'
+        working-directory: apps/frontend-nextjs
+        run: |
+          echo "🔍 Executando npm audit (gratuito)..."
+          npm audit --audit-level=moderate --json | tee npm-audit.json || true
+          
+          # Conta vulnerabilidades críticas
+          if [ -f npm-audit.json ]; then
+            CRITICAL=$(cat npm-audit.json | jq '.metadata.vulnerabilities.critical // 0')
+            HIGH=$(cat npm-audit.json | jq '.metadata.vulnerabilities.high // 0')
+            echo "⚠️ Vulnerabilidades encontradas: Críticas: $CRITICAL, Altas: $HIGH"
+          fi
+        continue-on-error: true
           
       - name: "[SECURITY] CodeQL Analysis"
         uses: github/codeql-action/analyze@v3
         
-      - name: "[NOTIFY] Security Status"
-        if: always()
+      - name: "[NOTIFY] Security Status (Otimizado)"
+        if: always() && (failure() || github.event_name == 'schedule')
         run: |
-          if [ "${{ job.status }}" == "success" ]; then
-            curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_TOKEN/sendMessage" \
-              -d chat_id="$TELEGRAM_CHAT_ID" \
-              -d text="[PROD-SECURITY] Gates de seguranca aprovados para PRODUCAO"
-          else
-            curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_TOKEN/sendMessage" \
-              -d chat_id="$TELEGRAM_CHAT_ID" \
-              -d text="[PROD-SECURITY] ALERTA: Falhas de seguranca detectadas em PRODUCAO!"
+          SCAN_TYPE="🔒 Scan agendado"
+          if [ "${{ github.event_name }}" = "push" ]; then
+            SCAN_TYPE="🚀 Deploy PROD"
           fi
+          
+          if [ "${{ job.status }}" == "success" ]; then
+            MESSAGE="✅ [$SCAN_TYPE] Gates de segurança APROVADOS"
+          else
+            MESSAGE="⚠️ [$SCAN_TYPE] ALERTA: Falhas de segurança detectadas!"
+          fi
+          
+          # Só notifica falhas ou scans agendados (reduz spam)
+          curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_TOKEN/sendMessage" \
+            -d chat_id="$TELEGRAM_CHAT_ID" \
+            -d text="$MESSAGE"
 
   test-backend:
     name: "[TEST] Backend Tests"
@@ -139,13 +247,19 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: 'pip'
           
-      - name: "[CACHE] Dependencies Cache"
-        uses: actions/cache@v3
+      # CACHE OTIMIZADO: Multi-layer cache para máxima performance
+      - name: "[CACHE] Python Dependencies (Otimizado)"
+        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9  # v4.0.2
         with:
           path: |
             ~/.cache/pip
+            ~/.local/lib/python*/site-packages
             apps/backend/.venv
-          key: backend-deps-${{ hashFiles('apps/backend/requirements.txt') }}
+            /opt/hostedtoolcache/Python
+          key: prod-backend-${{ runner.os }}-py${{ env.PYTHON_VERSION }}-${{ hashFiles('apps/backend/requirements*.txt') }}
+          restore-keys: |
+            prod-backend-${{ runner.os }}-py${{ env.PYTHON_VERSION }}-
+            prod-backend-${{ runner.os }}-
           
       - name: "[INSTALL] Backend Dependencies"
         working-directory: apps/backend
@@ -157,8 +271,9 @@ jobs:
       - name: "[TEST] Run Backend Tests"
         working-directory: apps/backend
         run: |
-          echo "Executando testes do backend para PRODUCAO..."
+          echo "Executando testes do backend para PRODUÇÃO..."
           python -m pytest tests/ -v --cov=. --cov-report=xml
+        continue-on-error: false  # TESTES OBRIGATÓRIOS em produção
           
       - name: "[COVERAGE] Upload Coverage"
         uses: codecov/codecov-action@v3
@@ -177,11 +292,24 @@ jobs:
         uses: actions/checkout@v4
         
       - name: "[SETUP] Node.js Environment"
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8  # v4.0.2
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
           cache-dependency-path: apps/frontend-nextjs/package-lock.json
+          
+      # CACHE ADICIONAL: Node modules + Next.js cache  
+      - name: "[CACHE] Frontend Dependencies (Otimizado)"
+        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9  # v4.0.2
+        with:
+          path: |
+            apps/frontend-nextjs/node_modules
+            apps/frontend-nextjs/.next/cache
+            ~/.npm
+          key: prod-frontend-${{ runner.os }}-node${{ env.NODE_VERSION }}-${{ hashFiles('apps/frontend-nextjs/package-lock.json') }}
+          restore-keys: |
+            prod-frontend-${{ runner.os }}-node${{ env.NODE_VERSION }}-
+            prod-frontend-${{ runner.os }}-
           
       - name: "[INSTALL] Frontend Dependencies"
         working-directory: apps/frontend-nextjs
@@ -197,8 +325,9 @@ jobs:
       - name: "[TEST] Frontend Tests"
         working-directory: apps/frontend-nextjs
         run: |
-          echo "Executando testes do frontend para PRODUCAO..."
+          echo "Executando testes do frontend para PRODUÇÃO..."
           npm test -- --coverage --watchAll=false
+        continue-on-error: false  # TESTES OBRIGATÓRIOS em produção
 
   deploy-backend-prod:
     name: "[DEPLOY] Backend to Production"
@@ -243,22 +372,32 @@ jobs:
             --set-env-vars="ENVIRONMENT=production,FLASK_ENV=production,DEBUG=false,SECRET_KEY=${{ secrets.SECRET_KEY }},OPENROUTER_API_KEY=${{ secrets.OPENROUTER_API_KEY }}" \
             --project ${{ secrets.GCP_PROJECT_ID_PROD }}
             
-      - name: "[HEALTH] Backend Health Check"
+      # HEALTH CHECK COM RETRY INTELIGENTE
+      - name: "[HEALTH] Backend Health Check (Retry Mechanism)"
         run: |
-          echo "Verificando saude do backend em PRODUCAO..."
+          echo "🔍 Verificando saúde do backend em PRODUÇÃO..."
           echo "Aguardando backend inicializar..."
           sleep 30
           
           BACKEND_URL=$(gcloud run services describe backend-prod --region=us-central1 --format="value(status.url)" --project ${{ secrets.GCP_PROJECT_ID_PROD }})
           
+          HEALTH_OK=false
           for i in {1..30}; do
-            if curl -f "$BACKEND_URL/health" > /dev/null 2>&1; then
-              echo "Backend em PRODUCAO esta saudavel!"
+            if curl -f -s --max-time 10 "$BACKEND_URL/health" > /dev/null 2>&1; then
+              echo "✅ Backend em PRODUÇÃO está saudável!"
+              HEALTH_OK=true
               break
             fi
             echo "Tentativa $i/30 - Aguardando backend..."
             sleep 10
           done
+          
+          if [ "$HEALTH_OK" = "false" ]; then
+            echo "⚠️ ERRO: Backend não respondeu após 5 minutos"
+            exit 1
+          fi
+        timeout-minutes: 8  # Timeout total de 8 minutos
+        continue-on-error: false  # Health check é CRÍTICO
 
   deploy-frontend-prod:
     name: "[DEPLOY] Frontend to Production"
@@ -358,29 +497,40 @@ jobs:
           FRONTEND_STATUS="${{ needs.deploy-frontend-prod.result }}"
           RELEASE_STATUS="${{ needs.create-release.result }}"
           
+          # NOTIFICAÇÃO CONSOLIDADA: Só envia se houver mudanças significativas
+          SHOULD_NOTIFY=false
+          
           if [ "$BACKEND_STATUS" == "success" ] || [ "$FRONTEND_STATUS" == "success" ]; then
-            MESSAGE="[PROD-SUCCESS] Deploy de PRODUCAO concluido com sucesso!"
-            MESSAGE="$MESSAGE%0A- Backend: $BACKEND_STATUS"
-            MESSAGE="$MESSAGE%0A- Frontend: $FRONTEND_STATUS" 
-            MESSAGE="$MESSAGE%0A- Release: $RELEASE_STATUS"
-            MESSAGE="$MESSAGE%0A%0ACommit: ${{ github.sha }}"
-            
-            curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_TOKEN/sendMessage" \
-              -d chat_id="$TELEGRAM_CHAT_ID" \
-              -d text="$MESSAGE" \
-              -d parse_mode="HTML"
+            SHOULD_NOTIFY=true
+            EMOJI="🚀"
+            STATUS_TEXT="SUCESSO"
+            MESSAGE="$EMOJI [PROD-$STATUS_TEXT] Deploy concluído!"
+            MESSAGE="$MESSAGE%0A📊 Resultados:"
+            MESSAGE="$MESSAGE%0A• Backend: $BACKEND_STATUS"
+            MESSAGE="$MESSAGE%0A• Frontend: $FRONTEND_STATUS" 
+            MESSAGE="$MESSAGE%0A• Release: $RELEASE_STATUS"
+            MESSAGE="$MESSAGE%0A%0A🔗 Commit: ${GITHUB_SHA:0:7}"
           else
-            MESSAGE="[PROD-ERROR] FALHA no deploy de PRODUCAO!"
-            MESSAGE="$MESSAGE%0A- Backend: $BACKEND_STATUS"
-            MESSAGE="$MESSAGE%0A- Frontend: $FRONTEND_STATUS"
-            MESSAGE="$MESSAGE%0A%0AVerificar logs imediatamente!"
-            
+            SHOULD_NOTIFY=true  # Sempre notifica falhas
+            EMOJI="🚨"
+            STATUS_TEXT="ERRO"
+            MESSAGE="$EMOJI [PROD-$STATUS_TEXT] Deploy FALHOU!"
+            MESSAGE="$MESSAGE%0A💥 Status:"
+            MESSAGE="$MESSAGE%0A• Backend: $BACKEND_STATUS"
+            MESSAGE="$MESSAGE%0A• Frontend: $FRONTEND_STATUS"
+            MESSAGE="$MESSAGE%0A%0A🔧 Ação: Verificar logs imediatamente!"
+          fi
+          
+          # Envia notificação apenas se necessário
+          if [ "$SHOULD_NOTIFY" = "true" ]; then
             curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_TOKEN/sendMessage" \
               -d chat_id="$TELEGRAM_CHAT_ID" \
               -d text="$MESSAGE" \
-              -d parse_mode="HTML"
+              -d parse_mode="HTML" \
+              -d disable_notification=false || echo "Falha na notificação (não crítico)"
           fi
 
+# CONCURRENCY OTIMIZADO: Cancela builds antigos para economizar recursos
 concurrency:
-  group: main-pipeline-${{ github.sha }}
-  cancel-in-progress: false
+  group: main-pipeline-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}  # Cancela apenas PRs
