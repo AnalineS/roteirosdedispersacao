@@ -214,6 +214,9 @@ jobs:
         
       - name: "[NOTIFY] Security Status (Otimizado)"
         if: always() && (failure() || github.event_name == 'schedule')
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           SCAN_TYPE="🔒 Scan agendado"
           if [ "${{ github.event_name }}" = "push" ]; then
@@ -492,6 +495,9 @@ jobs:
     
     steps:
       - name: "[NOTIFY] Status Final"
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           BACKEND_STATUS="${{ needs.deploy-backend-prod.result }}"
           FRONTEND_STATUS="${{ needs.deploy-frontend-prod.result }}"
