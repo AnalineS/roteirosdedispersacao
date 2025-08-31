@@ -104,8 +104,6 @@ jobs:
           echo "- Tipo: $TYPE" 
           echo "- Áreas: $AREAS"
           echo "- Ambiente: $ENVIRONMENT"
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   validate-critical-prs:
     name: "[VALIDATE] Validar PRs Críticos"
@@ -124,6 +122,7 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           PRIORITY: ${{ needs.apply-labels.outputs.priority }}
           TYPE: ${{ needs.apply-labels.outputs.type }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "Executando validações adicionais para PR crítico #$PR_NUMBER..."
           
@@ -139,8 +138,6 @@ jobs:
             echo "Adicionando reviewers obrigatórios para PR crítico..."
             gh pr edit $PR_NUMBER --add-reviewer "AnalineS"
           fi
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   notify-labeling:
     name: "[NOTIFY] Notificar Resultado do Labeling"
