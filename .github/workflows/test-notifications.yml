@@ -1,0 +1,66 @@
+name: 🔔 Test Notifications
+
+on:
+  workflow_dispatch:
+    inputs:
+      test_message:
+        description: 'Mensagem de teste para enviar'
+        required: false
+        default: 'Teste de notificações do Telegram'
+        type: string
+
+jobs:
+  test-telegram:
+    name: Test Telegram Notifications
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📤 Send Test Notification
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          echo "🔔 Enviando notificação de teste..."
+          
+          MESSAGE="🧪 [TESTE] Notificação de Teste"
+          MESSAGE="$MESSAGE%0A📝 Mensagem: ${{ github.event.inputs.test_message }}"
+          MESSAGE="$MESSAGE%0A📅 Data: $(date)"
+          MESSAGE="$MESSAGE%0A👤 Disparado por: ${{ github.actor }}"
+          MESSAGE="$MESSAGE%0A🔗 Workflow: ${{ github.workflow }}"
+          MESSAGE="$MESSAGE%0A✅ Se você recebeu esta mensagem, as notificações estão funcionando!"
+          
+          RESPONSE=$(curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_TOKEN/sendMessage" \
+            -d chat_id="$TELEGRAM_CHAT_ID" \
+            -d text="$MESSAGE" \
+            -d parse_mode="HTML")
+          
+          echo "Resposta do Telegram:"
+          echo "$RESPONSE" | jq '.' || echo "$RESPONSE"
+          
+          if echo "$RESPONSE" | grep -q '"ok":true'; then
+            echo "✅ Notificação enviada com sucesso!"
+          else
+            echo "❌ Erro ao enviar notificação"
+            exit 1
+          fi
+      
+      - name: 📊 Show Configuration Status
+        run: |
+          echo "📋 Status da Configuração:"
+          echo "=========================="
+          
+          if [ -n "${{ secrets.TELEGRAM_BOT_TOKEN }}" ]; then
+            echo "✅ TELEGRAM_BOT_TOKEN configurado"
+          else
+            echo "❌ TELEGRAM_BOT_TOKEN não configurado"
+          fi
+          
+          if [ -n "${{ secrets.TELEGRAM_CHAT_ID }}" ]; then
+            echo "✅ TELEGRAM_CHAT_ID configurado"
+          else
+            echo "❌ TELEGRAM_CHAT_ID não configurado"
+          fi
+          
+          echo ""
+          echo "🔍 Para verificar todos os secrets:"
+          echo "   Settings → Secrets and variables → Actions"
