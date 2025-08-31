@@ -21,13 +21,14 @@ if os.name == 'nt':
     sys.stdout = codecs.getwriter('utf-8')(sys.stdout.detach())
     sys.stderr = codecs.getwriter('utf-8')(sys.stderr.detach())
 
-# Adicionar diretório parent ao path para imports
-sys.path.append(str(Path(__file__).parent.parent))
+# Adicionar diretório backend ao path para imports
+backend_path = Path(__file__).parent.parent.parent / "apps" / "backend"
+sys.path.append(str(backend_path))
 
 from app_config import config
-from services.medical_chunking import MedicalChunker, ChunkPriority
-from services.supabase_vector_store import SupabaseVectorStore, VectorDocument
-from services.embedding_service import get_embedding_service
+from services.rag.medical_chunking import MedicalChunker, ChunkPriority
+from services.integrations.supabase_vector_store import SupabaseVectorStore, VectorDocument
+from services.rag.embedding_service import get_embedding_service
 
 # Setup logging
 logging.basicConfig(
@@ -49,8 +50,8 @@ class JSONToSupabaseMigrator:
         self.embedding_service = get_embedding_service()
         
         # Diretórios de dados - corrigido para estrutura real
-        # Backend está em apps/backend, então subir 3 níveis para chegar na raiz
-        self.data_dir = Path(__file__).parent.parent.parent.parent / "data" / "structured"
+        # Scripts estão em scripts/migration, então subir 2 níveis para chegar na raiz
+        self.data_dir = Path(__file__).parent.parent.parent / "data" / "structured"
         
         # Mapeamento de arquivos JSON para categorias
         self.json_files = {
