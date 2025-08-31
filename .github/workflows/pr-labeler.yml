@@ -202,6 +202,7 @@ jobs:
         env:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           PR_TITLE: ${{ github.event.pull_request.title }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "Aplicando labels específicos do Dependabot..."
           
@@ -229,8 +230,6 @@ jobs:
           gh pr edit $PR_NUMBER --add-label "dependabot: $AMBIENTE"
           
           echo "Labels do Dependabot aplicados: impacto $IMPACT, ambiente $AMBIENTE"
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 concurrency:
   group: pr-labeler-${{ github.event.pull_request.number || github.event.inputs.pr_number }}
