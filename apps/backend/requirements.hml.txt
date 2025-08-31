@@ -30,7 +30,7 @@ validators==0.22.0      # Input validation helpers
 
 # === CONFIGURATION & ENVIRONMENT ===
 # Environment e configuration management
-python-dotenv==1.0.1    # .env file loading
+python-dotenv==1.1.1    # .env file loading
 typing-extensions==4.12.2  # Type hints compatibility
 
 # === MONITORING & HEALTH CHECKS ===
