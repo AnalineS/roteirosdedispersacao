@@ -131,13 +131,42 @@ jobs:
         
       # SECRET SCANNING GRATUITO: TruffleHog (sem limites)
       - name: "[SECURITY] TruffleHog Secret Scanning (FREE)"
-        uses: trufflesecurity/trufflehog@2178b5ca0e5509ad8e2c9c0d6ec1e7e4158ced26  # v3.68.5
+        uses: trufflesecurity/trufflehog@main
         with:
           path: ./
           base: ${{ github.event.repository.default_branch }}
           head: HEAD
-          extra_args: --only-verified --fail
-        continue-on-error: true  # Não falha build por secrets antigos
+          extra_args: --only-verified --fail --json
+        continue-on-error: false  # DEVE falhar se houver secrets!
+        
+      - name: "[SECURITY] Report Exposed Secrets (if any)"
+        if: failure()
+        run: |
+          echo "🚨 SECRETS DETECTADOS! Analisando..."
+          echo "Verificando se há arquivo de resultados do TruffleHog..."
+          
+          # Procurar por resultados do TruffleHog
+          if ls trufflehog-results*.json 1> /dev/null 2>&1; then
+            echo "📋 Detalhes dos secrets encontrados:"
+            cat trufflehog-results*.json | jq '.Results[] | {
+              "DetectorType": .DetectorType,
+              "SourceName": .SourceMetadata.Data.Filesystem.file,
+              "Line": .SourceMetadata.Data.Filesystem.line,
+              "Verified": .Verified
+            }' || echo "Erro ao processar JSON"
+          else
+            echo "❓ Arquivo de resultados não encontrado, executando scan manual..."
+            # Executar TruffleHog novamente apenas para diagnóstico
+            docker run --rm -v "$PWD:/pwd" trufflesecurity/trufflehog:latest filesystem /pwd --only-verified --json || true
+          fi
+          
+          echo ""
+          echo "🔧 PRÓXIMOS PASSOS OBRIGATÓRIOS:"
+          echo "1. Identificar todos os secrets expostos acima"
+          echo "2. Migrar para GitHub Secrets usando 'gh secret set'"
+          echo "3. Remover secrets hardcoded do código"
+          echo "4. Substituir por variáveis \${{ secrets.NOME_DO_SECRET }}"
+          echo "5. Re-executar pipeline"
         
       - name: "[SECURITY] GitHub Security Scanning"
         uses: github/codeql-action/init@v3

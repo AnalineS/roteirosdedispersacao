@@ -177,13 +177,13 @@ jobs:
         
       # SECRET SCANNING HML: TruffleHog para detecção rápida
       - name: "[SECURITY] TruffleHog Secret Scanning HML (FREE)"
-        uses: trufflesecurity/trufflehog@2178b5ca0e5509ad8e2c9c0d6ec1e7e4158ced26  # v3.68.5
+        uses: trufflesecurity/trufflehog@main
         with:
           path: ./
           base: origin/main
           head: HEAD  
-          extra_args: --only-verified --no-fail
-        continue-on-error: true  # HML permite secrets para desenvolvimento
+          extra_args: --only-verified --fail --json
+        continue-on-error: false  # HML também deve falhar por secrets!
         
       - name: "[SECURITY] GitHub Security Scanning"
         uses: github/codeql-action/init@v3
