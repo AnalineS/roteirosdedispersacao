@@ -138,7 +138,7 @@ export default function FABCollisionDetector({
 }
 
 // Hook para marcar elementos que podem colidir com o FAB
-export const useFABCollisionAware = (elementRef: React.RefObject<HTMLElement>) => {
+export const useFABCollisionAware = (elementRef: React.RefObject<HTMLElement | null>) => {
   useEffect(() => {
     const element = elementRef.current;
     if (!element) return;

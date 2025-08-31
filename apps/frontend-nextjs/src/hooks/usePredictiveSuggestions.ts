@@ -67,7 +67,7 @@ export function usePredictiveSuggestions(): PredictiveSuggestionsHook {
   });
 
   // Debounce timer para evitar muitas requisições
-  const debounceTimer = useRef<NodeJS.Timeout>();
+  const debounceTimer = useRef<NodeJS.Timeout>(undefined);
   const suggestionsCache = useRef<Map<string, any>>(new Map());
 
   // Gerar chave de cache

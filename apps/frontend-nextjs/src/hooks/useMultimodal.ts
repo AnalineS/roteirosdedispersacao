@@ -142,8 +142,8 @@ export function useMultimodal(): MultimodalHook {
   });
 
   // Refs para controle de polling
-  const statusPollingRef = useRef<NodeJS.Timeout>();
-  const abortControllerRef = useRef<AbortController>();
+  const statusPollingRef = useRef<NodeJS.Timeout>(undefined);
+  const abortControllerRef = useRef<AbortController>(undefined);
 
   // Validar arquivo antes do upload
   const validateFile = useCallback((file: File): { valid: boolean; error?: string } => {

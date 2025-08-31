@@ -37,7 +37,7 @@ export function CognitiveLoadAuditor() {
   const [issues, setIssues] = useState<CognitiveLoadIssue[]>([]);
   const [isAuditing, setIsAuditing] = useState(false);
   const { trackCognitiveLoad, trackCustomUXEvent } = useGoogleAnalyticsUX();
-  const auditRef = useRef<NodeJS.Timeout>();
+  const auditRef = useRef<NodeJS.Timeout>(undefined);
 
   useEffect(() => {
     // Começar auditoria após carregamento da página

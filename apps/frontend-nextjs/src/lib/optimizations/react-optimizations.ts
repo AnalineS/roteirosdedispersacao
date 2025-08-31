@@ -27,7 +27,7 @@ import { UniversalCache, debounce, throttle } from './index';
  */
 export function useLazyComponent<T = any>(
   importFn: () => Promise<{ default: ComponentType<T> }>,
-  fallback?: ReactElement
+  fallback?: ReactElement<any>
 ): {
   Component: ComponentType<T> | null;
   loading: boolean;
@@ -75,7 +75,7 @@ export function useIntersectionObserver(
   options: IntersectionObserverInit = {}
 ): [MutableRefObject<any>, boolean] {
   const [isIntersecting, setIsIntersecting] = useState(false);
-  const targetRef = useRef();
+  const targetRef = useRef(undefined);
 
   useEffect(() => {
     const target = targetRef.current;
@@ -111,7 +111,7 @@ export function useResizeObserver(): [
   { width: number; height: number }
 ] {
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
-  const targetRef = useRef();
+  const targetRef = useRef(undefined);
 
   useLayoutEffect(() => {
     const target = targetRef.current;
