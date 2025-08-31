@@ -33,7 +33,7 @@ export function useFallback(options: UseFallbackOptions = {}) {
     systemHealth: 'good'
   });
 
-  const retryTimeoutRef = useRef<NodeJS.Timeout>();
+  const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   /**
    * Executa fallback para uma query que falhou

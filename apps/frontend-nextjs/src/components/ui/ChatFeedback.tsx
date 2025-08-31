@@ -34,7 +34,7 @@ export default function ChatFeedback({
   });
   
   const audioContextRef = useRef<AudioContext | null>(null);
-  const successTimeoutRef = useRef<NodeJS.Timeout>();
+  const successTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Inicializar AudioContext
   useEffect(() => {

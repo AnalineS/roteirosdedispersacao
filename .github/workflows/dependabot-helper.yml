@@ -109,31 +109,39 @@ jobs:
     if: github.actor == 'dependabot[bot]'
     
     steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+        
       - name: 🔍 Find Duplicate PRs
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # Get package name from PR title
           PACKAGE=$(echo "${{ github.event.pull_request.title }}" | sed -n 's/.*bump \(.*\) from.*/\1/p')
+          BASE_BRANCH="${{ github.base_ref }}"
           
           if [ -n "$PACKAGE" ]; then
-            echo "📦 Checking for duplicates of: $PACKAGE"
+            echo "📦 Checking for duplicates of: $PACKAGE (base: $BASE_BRANCH)"
             
-            # List all open PRs for this package
-            DUPLICATES=$(gh pr list --author app/dependabot --state open --search "$PACKAGE" --json number,title)
+            # List all open PRs for this package targeting the same base branch
+            DUPLICATES=$(gh pr list --author app/dependabot --state open --base "$BASE_BRANCH" --search "$PACKAGE" --json number,title,headRefName)
             
             COUNT=$(echo "$DUPLICATES" | jq length)
             if [ "$COUNT" -gt 1 ]; then
-              echo "⚠️ Found $COUNT PRs for $PACKAGE"
+              echo "⚠️ Found $COUNT PRs for $PACKAGE targeting $BASE_BRANCH"
               
               # Comment on PR about duplicates
               gh pr comment "${{ github.event.pull_request.html_url }}" \
-                --body "⚠️ **Duplicate PRs detected**
+                --body "⚠️ **Duplicate PRs detected para $BASE_BRANCH**
                 
-                Found multiple PRs for $PACKAGE. Consider closing older ones:
+                Found multiple PRs for $PACKAGE targeting $BASE_BRANCH:
                 \`\`\`
                 $DUPLICATES
-                \`\`\`"
+                \`\`\`
+                
+                Note: Paired PRs for main/hml branches are expected and normal."
+            else
+              echo "✅ No duplicates found for $PACKAGE on $BASE_BRANCH"
             fi
           fi
 
@@ -152,24 +160,43 @@ jobs:
           TITLE="${{ github.event.pull_request.title }}"
           
           # Check if it's a security update
+          BASE_BRANCH="${{ github.base_ref }}"
           if [[ "$TITLE" == *"security"* ]] || [[ "${{ github.event.pull_request.body }}" == *"vulnerability"* ]]; then
-            echo "🔒 Security update detected - prioritizing merge"
+            echo "🔒 Security update detected - prioritizing merge for $BASE_BRANCH"
             
-            # Add security label
+            # Add security label with branch info
             gh pr edit "${{ github.event.pull_request.html_url }}" \
-              --add-label "security,priority:high"
+              --add-label "security,priority:high,$BASE_BRANCH-environment"
               
-            # Request immediate review
+            # Request immediate review with branch context
             gh pr comment "${{ github.event.pull_request.html_url }}" \
-              --body "🔒 **Security Update - Priority Review Required**
+              --body "🔒 **Security Update - Priority Review Required ($BASE_BRANCH)**
               
-              This PR addresses security vulnerabilities. 
-              Recommended action: Review and merge ASAP.
+              This PR addresses security vulnerabilities for $BASE_BRANCH branch.
               
-              Auto-merge has been enabled for faster deployment."
+              ⚠️ **IMPORTANTE**: Esta atualização está sendo aplicada simultaneamente em:
+              - 📊 **main** (produção)
+              - 🧪 **hml** (homologação)
+              
+              **Ações requeridas:**
+              1. Review e merge ASAP
+              2. Monitor deploy automático
+              3. Verificar aplicação em ambos ambientes
+              
+              Auto-merge habilitado para deployment mais rápido."
               
             # Enable auto-merge regardless of version
             gh pr merge --auto --squash "${{ github.event.pull_request.html_url }}"
+          else
+            # Add branch context to regular updates
+            gh pr comment "${{ github.event.pull_request.html_url }}" \
+              --body "🤖 **Dependabot Update for $BASE_BRANCH**
+              
+              ℹ️ Esta atualização faz parte do sistema de deploy simultâneo:
+              - Esta PR: **$BASE_BRANCH** environment
+              - PR pareado: Verificar PRs do Dependabot para o branch complementar
+              
+              Ambos os PRs serão processados automaticamente conforme as regras de versionamento."
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,16 +1,18 @@
 # GitHub Dependabot Configuration
 # Automatically scans and updates dependencies
+# IMPORTANT: Updates applied to both hml AND main simultaneously for environment parity
 version: 2
 updates:
-  # Frontend Next.js dependencies
+  # Frontend Next.js dependencies - MAIN BRANCH
   - package-ecosystem: "npm"
     directory: "/apps/frontend-nextjs"
+    target-branch: "main"
     schedule:
       interval: "monthly"
       day: "monday"
       time: "08:00"
       timezone: "America/Sao_Paulo"
-    open-pull-requests-limit: 1  # Reduzido para evitar execuções simultâneas
+    open-pull-requests-limit: 1
     reviewers:
       - "AnalineS"
     assignees:
@@ -21,16 +23,41 @@ updates:
     labels:
       - "dependencies"
       - "security"
+      - "auto-deploy:hml"
+      - "auto-deploy:production"
 
-  # Backend Python dependencies
+  # Frontend Next.js dependencies - HML BRANCH (SAME TIME)
+  - package-ecosystem: "npm"
+    directory: "/apps/frontend-nextjs"
+    target-branch: "hml"
+    schedule:
+      interval: "monthly"
+      day: "monday"
+      time: "08:05"  # 5 minutos depois para evitar conflitos
+      timezone: "America/Sao_Paulo"
+    open-pull-requests-limit: 1
+    reviewers:
+      - "AnalineS"
+    assignees:
+      - "AnalineS"
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "security"
+      - "hml-environment"
+
+  # Backend Python dependencies - MAIN BRANCH
   - package-ecosystem: "pip"
     directory: "/apps/backend"
+    target-branch: "main"
     schedule:
       interval: "monthly"
       day: "tuesday"
       time: "08:00"
       timezone: "America/Sao_Paulo"
-    open-pull-requests-limit: 1  # Reduzido para evitar execuções simultâneas
+    open-pull-requests-limit: 1
     reviewers:
       - "AnalineS"
     assignees:
@@ -41,16 +68,41 @@ updates:
     labels:
       - "dependencies"
       - "security"
+      - "auto-deploy:hml"
+      - "auto-deploy:production"
+
+  # Backend Python dependencies - HML BRANCH (SAME TIME)
+  - package-ecosystem: "pip"
+    directory: "/apps/backend"
+    target-branch: "hml"
+    schedule:
+      interval: "monthly"
+      day: "tuesday"
+      time: "08:05"
+      timezone: "America/Sao_Paulo"
+    open-pull-requests-limit: 1
+    reviewers:
+      - "AnalineS"
+    assignees:
+      - "AnalineS"
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "security"
+      - "hml-environment"
       
-  # GitHub Actions dependencies
+  # GitHub Actions dependencies - MAIN BRANCH  
   - package-ecosystem: "github-actions"
     directory: "/"
+    target-branch: "main"
     schedule:
       interval: "monthly"
       day: "wednesday"
       time: "08:00"
       timezone: "America/Sao_Paulo"
-    open-pull-requests-limit: 1  # Apenas 1 PR de actions por vez
+    open-pull-requests-limit: 1
     reviewers:
       - "AnalineS"
     assignees:
@@ -60,3 +112,26 @@ updates:
     labels:
       - "ci/cd"
       - "security"
+      - "auto-deploy:hml"
+      - "auto-deploy:production"
+
+  # GitHub Actions dependencies - HML BRANCH (SAME TIME)
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    target-branch: "hml"
+    schedule:
+      interval: "monthly"
+      day: "wednesday"
+      time: "08:05"
+      timezone: "America/Sao_Paulo"
+    open-pull-requests-limit: 1
+    reviewers:
+      - "AnalineS"
+    assignees:
+      - "AnalineS"
+    commit-message:
+      prefix: "chore(ci)"
+    labels:
+      - "ci/cd"
+      - "security"
+      - "hml-environment"
