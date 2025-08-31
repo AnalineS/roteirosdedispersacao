@@ -314,13 +314,26 @@ async def main():
     level = logging.DEBUG if args.verbose else logging.INFO
     logging.basicConfig(level=level, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     
-    # Verificar arquivo de resultados
-    if not os.path.exists(args.results_file):
-        logger.error(f"❌ Arquivo de resultados não encontrado: {args.results_file}")
+    # Verificar arquivo de resultados - proteger contra path traversal
+    results_file = os.path.abspath(args.results_file)
+    
+    # Validar que o arquivo está em um diretório seguro
+    allowed_dirs = [
+        os.path.abspath('./tests'),
+        os.path.abspath('./reports'),
+        os.path.abspath('./')
+    ]
+    
+    if not any(results_file.startswith(allowed_dir) for allowed_dir in allowed_dirs):
+        logger.error(f"❌ Caminho não permitido por segurança: {results_file}")
+        sys.exit(1)
+    
+    if not os.path.exists(results_file):
+        logger.error(f"❌ Arquivo de resultados não encontrado: {results_file}")
         sys.exit(1)
     
     try:
-        with open(args.results_file, 'r', encoding='utf-8') as f:
+        with open(results_file, 'r', encoding='utf-8') as f:
             results = json.load(f)
     except Exception as e:
         logger.error(f"❌ Erro ao ler arquivo de resultados: {e}")
