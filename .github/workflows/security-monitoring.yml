@@ -162,7 +162,7 @@ jobs:
           fi
 
       - name: 📤 Upload Security Reports
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: security-reports
           path: |
@@ -237,9 +237,10 @@ jobs:
     
     steps:
       - name: 📥 Download Reports
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: security-reports
+          path: .
 
       - name: 📧 Send Email Notification
         if: needs.check-patches.outputs.has_updates == 'true'
