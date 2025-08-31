@@ -7,10 +7,13 @@ on:
       - 'apps/backend/**'
       - 'apps/frontend-nextjs/**'
       - '.github/workflows/main-pipeline.yml'
-      - '!**/*.md'
-      - '!**/README*'
+      # MANTER documentação - nunca ignorar
+      - '**/*.md'
+      - '**/README*'
+      - '**/*.json'  # package.json, etc
   pull_request:
     branches: [main, hml]
+    # Todos os PRs devem ser testados independente do conteúdo
   workflow_dispatch:
     inputs:
       environment:

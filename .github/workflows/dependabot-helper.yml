@@ -3,6 +3,8 @@ name: 🤖 Dependabot Helper
 on:
   pull_request:
     types: [opened, reopened, synchronize]
+    # Manter TODAS as execuções para segurança e qualidade
+    # Apenas otimizar condicionais para reduzir trabalho redundante
 
 permissions:
   contents: write
