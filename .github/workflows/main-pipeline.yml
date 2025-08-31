@@ -500,7 +500,7 @@ jobs:
               -d chat_id="$TELEGRAM_CHAT_ID" \
               -d text="$MESSAGE" \
               -d parse_mode="HTML" \
-              -d disable_notification=${{ success() && 'true' || 'false' }} || echo "Falha na notificação (não crítico)"
+              -d disable_notification=false || echo "Falha na notificação (não crítico)"
           fi
 
 # CONCURRENCY OTIMIZADO: Cancela builds antigos para economizar recursos
