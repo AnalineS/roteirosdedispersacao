@@ -383,10 +383,10 @@ jobs:
           echo "📋 Gerando relatório consolidado de segurança..."
           
           cat > security-consolidated-report.md << 'EOF'
-# 🔒 Relatório Consolidado de Segurança
-
-## 📊 Informações da Execução
-EOF
+          # 🔒 Relatório Consolidado de Segurança
+          
+          ## 📊 Informações da Execução
+          EOF
           
           echo "- **Data**: $(date '+%d/%m/%Y %H:%M:%S UTC')" >> security-consolidated-report.md
           echo "- **Estratégia**: ${{ needs.security-strategy.outputs.strategy-reason }}" >> security-consolidated-report.md

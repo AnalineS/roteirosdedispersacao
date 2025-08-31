@@ -133,10 +133,10 @@ jobs:
           
           # Create detailed explanatory comment
           cat > comment_body.md << 'EOF'
-## 🤖 Análise Automática do Dependabot
-
-### 📋 Resumo da Atualização
-EOF
+          ## 🤖 Análise Automática do Dependabot
+          
+          ### 📋 Resumo da Atualização
+          EOF
           
           echo "- **Pacote**: $PACKAGE_NAME" >> comment_body.md
           echo "- **Tipo de Atualização**: $UPDATE_TYPE" >> comment_body.md
@@ -148,7 +148,7 @@ EOF
           case "$UPDATE_TYPE" in
             security)
               cat >> comment_body.md << 'EOF'
-### 🔒 Atualização de Segurança - ALTA PRIORIDADE
+              ### 🔒 Atualização de Segurança - ALTA PRIORIDADE
 
 **Por que esta atualização é importante:**
 - Corrige vulnerabilidades de segurança conhecidas
@@ -168,7 +168,7 @@ EOF
               ;;
             major)
               cat >> comment_body.md << 'EOF'
-### ⚠️ Atualização Major - REVISÃO MANUAL NECESSÁRIA
+              ### ⚠️ Atualização Major - REVISÃO MANUAL NECESSÁRIA
 
 **Por que esta atualização precisa de atenção:**
 - Pode conter mudanças que quebram compatibilidade (breaking changes)
@@ -189,7 +189,7 @@ EOF
               ;;
             minor)
               cat >> comment_body.md << 'EOF'
-### 📈 Atualização Minor - REVISÃO RECOMENDADA
+              ### 📈 Atualização Minor - REVISÃO RECOMENDADA
 
 **O que esta atualização inclui:**
 - Novas funcionalidades compatíveis
@@ -209,7 +209,7 @@ EOF
               ;;
             patch)
               cat >> comment_body.md << 'EOF'
-### 🔧 Atualização Patch - BAIXO RISCO
+              ### 🔧 Atualização Patch - BAIXO RISCO
 
 **O que esta atualização inclui:**
 - Correções de bugs menores
@@ -230,10 +230,10 @@ EOF
           esac
           
           cat >> comment_body.md << 'EOF'
-
-### 🔄 Processo de Deploy
-
-**Ambientes Afetados:**
+          
+          ### 🔄 Processo de Deploy
+          
+          **Ambientes Afetados:**
 EOF
           
           if [ "$BASE_BRANCH" = "main" ]; then
@@ -243,17 +243,17 @@ EOF
           fi
           
           cat >> comment_body.md << 'EOF'
-
-**Pipeline Automático:**
-1. ✅ Testes de qualidade executados
-2. 🔒 Verificações de segurança aplicadas
-3. 🚀 Deploy automático (se auto-merge habilitado)
-4. 🏥 Health checks pós-deploy
-5. 📊 Monitoramento automático ativado
-
-### 📞 Suporte
-
-Em caso de problemas após o deploy:
+          
+          **Pipeline Automático:**
+          1. ✅ Testes de qualidade executados
+          2. 🔒 Verificações de segurança aplicadas
+          3. 🚀 Deploy automático (se auto-merge habilitado)
+          4. 🏥 Health checks pós-deploy
+          5. 📊 Monitoramento automático ativado
+          
+          ### 📞 Suporte
+          
+          Em caso de problemas após o deploy:
 1. 🚨 Rollback automático disponível
 2. 📧 Alertas serão enviados automaticamente
 3. 🔧 Logs detalhados disponíveis no CloudWatch

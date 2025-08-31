@@ -224,20 +224,20 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           
           git tag -a "$BACKUP_TAG" -m "🏷️ Backup de Produção - $(date '+%d/%m/%Y %H:%M:%S')
-
-📋 Informações do Backup:
-- Branch: main (produção)
-- Commit: ${{ github.sha }}
-- Executado por: ${{ github.actor }}
-- Tipo: Backup automático pré-deploy
-
-🎯 Finalidade:
-- Ponto de restauração seguro
-- Rollback rápido se necessário
-- Histórico de versões de produção
-
-🔄 Para restaurar:
-git checkout $BACKUP_TAG"
+          
+          📋 Informações do Backup:
+          - Branch: main (produção)
+          - Commit: ${{ github.sha }}
+          - Executado por: ${{ github.actor }}
+          - Tipo: Backup automático pré-deploy
+          
+          🎯 Finalidade:
+          - Ponto de restauração seguro
+          - Rollback rápido se necessário
+          - Histórico de versões de produção
+          
+          🔄 Para restaurar:
+          git checkout $BACKUP_TAG"
           
           git push origin "$BACKUP_TAG"
           
@@ -393,32 +393,32 @@ git checkout $BACKUP_TAG"
           echo "✅ Sistema operacional em produção"
           
           # Criar issue de tracking do deploy
-          cat > deploy_success.md << EOF
-# 🎉 Deploy em Produção Concluído
-
-## 📋 Informações
-- **Data**: $(date '+%d/%m/%Y %H:%M:%S')
-- **Commit**: ${{ github.sha }}
-- **Executado por**: ${{ github.actor }}
-- **Backup**: ${{ needs.production-backup.outputs.backup-tag || 'Não criado' }}
-
-## 🌐 URLs
-- **Backend**: ${{ needs.production-deploy.outputs.backend-url || 'Sem mudanças' }}
-- **Frontend**: ${{ needs.production-deploy.outputs.frontend-url || 'Sem mudanças' }}
-
-## ✅ Verificações
-- Health checks: Aprovado
-- Serviços: Operacionais
-- Status: Produção ativa
-
-## 🔄 Próximos Passos
-- Monitorar métricas por 1 hora
-- Verificar logs de erro
-- Confirmar funcionamento completo
-
----
-*Deploy realizado automaticamente pelo pipeline de produção*
-EOF
+          cat > deploy_success.md << 'EOF'
+          # 🎉 Deploy em Produção Concluído
+          
+          ## 📋 Informações
+          - **Data**: $(date '+%d/%m/%Y %H:%M:%S')
+          - **Commit**: ${{ github.sha }}
+          - **Executado por**: ${{ github.actor }}
+          - **Backup**: ${{ needs.production-backup.outputs.backup-tag || 'Não criado' }}
+          
+          ## 🌐 URLs
+          - **Backend**: ${{ needs.production-deploy.outputs.backend-url || 'Sem mudanças' }}
+          - **Frontend**: ${{ needs.production-deploy.outputs.frontend-url || 'Sem mudanças' }}
+          
+          ## ✅ Verificações
+          - Health checks: Aprovado
+          - Serviços: Operacionais
+          - Status: Produção ativa
+          
+          ## 🔄 Próximos Passos
+          - Monitorar métricas por 1 hora
+          - Verificar logs de erro
+          - Confirmar funcionamento completo
+          
+          ---
+          *Deploy realizado automaticamente pelo pipeline de produção*
+          EOF
           
           gh issue create \
             --title "🚀 Deploy Produção - $(date '+%d/%m/%Y %H:%M')" \
