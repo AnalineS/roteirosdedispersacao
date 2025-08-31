@@ -61,6 +61,10 @@ const nextConfig = {
     // Melhor tree-shaking para ícones SVG
     // optimizeCss: true, // Desabilitado - requer 'critters'
     // Next.js 15 optimizations
+    // React Compiler for automatic optimizations
+    reactCompiler: {
+      compilationMode: 'annotation', // Use 'annotation' mode for gradual adoption
+    },
     // ISR optimization for future use - removed invalid option
     // isrMemoryCacheSize: 0  // Disable memory cache for static export
   },
