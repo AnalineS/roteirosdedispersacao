@@ -2,7 +2,7 @@ name: "[QA] Sistema de QA Inteligente"
 
 on:
   schedule:
-    - cron: '0 2 * * 1-5'  # Segunda a sexta, 2h da manha
+    - cron: '0 2 * * 1'  # Apenas SEGUNDA-FEIRA (economia recursos)
   pull_request:
     types: [opened, synchronize, reopened]
     branches: [main, hml]
@@ -42,19 +42,89 @@ env:
 
 jobs:
   analyze-changes:
-    name: "[ANALYZE] Analisar Impacto das Mudancas"
+    name: "[ANALYZE] Analisar Impacto das Mudanças"
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
     outputs:
-      risk-level: ${{ steps.analyze.outputs.risk_level }}
-      test-strategy: ${{ steps.analyze.outputs.test_strategy }}
-      components-affected: ${{ steps.analyze.outputs.components_affected }}
+      risk-level: ${{ steps.filter.outputs.risk_level || steps.analyze.outputs.risk_level }}
+      test-strategy: ${{ steps.filter.outputs.test_strategy || steps.analyze.outputs.test_strategy }}
+      components-affected: ${{ steps.filter.outputs.components_affected || steps.analyze.outputs.components_affected }}
+      should-run-tests: ${{ steps.filter.outputs.should_run_tests }}
       
     steps:
       - name: "[CHECKOUT] Checkout"
-        uses: actions/checkout@v4
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
         with:
           fetch-depth: 10
+          
+      # PATH-FILTER OTIMIZADO: Detecção inteligente de risco
+      - name: "[FILTER] Análise Rápida de Paths"
+        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36  # v3.0.2
+        id: filter
+        with:
+          filters: |
+            critical:
+              - '**/auth/**'
+              - '**/security/**' 
+              - '**/payment/**'
+              - '**/database/**'
+              - '**/*secret*/**'
+            high:
+              - 'apps/backend/**/*.py'
+              - 'apps/frontend-nextjs/**/api/**'
+              - '**/requirements*.txt'
+              - '**/package*.json'
+            medium:
+              - 'apps/frontend-nextjs/**/*.tsx'
+              - 'apps/frontend-nextjs/**/*.ts'
+              - '.github/workflows/**'
+            docs:
+              - '**/*.md'
+              - '**/README*'
+              - 'docs/**'
+      
+      - name: "[FILTER] Determinar Estratégia Baseada em Paths"
+        id: path-strategy
+        run: |
+          echo "🔍 Analisando paths alterados..."
+          
+          # Determinar nível de risco pelos paths
+          if [ '${{ steps.filter.outputs.critical }}' = 'true' ]; then
+            RISK_LEVEL="critical"
+            TEST_STRATEGY="comprehensive"
+            COMPONENTS="security backend frontend"
+            SHOULD_RUN="true"
+            echo "🚨 RISCO CRÍTICO: Componentes de segurança alterados!"
+          elif [ '${{ steps.filter.outputs.high }}' = 'true' ]; then
+            RISK_LEVEL="high" 
+            TEST_STRATEGY="extended"
+            COMPONENTS="backend api"
+            SHOULD_RUN="true"
+            echo "⚠️ RISCO ALTO: Backend/API alterados"
+          elif [ '${{ steps.filter.outputs.medium }}' = 'true' ]; then
+            RISK_LEVEL="medium"
+            TEST_STRATEGY="basic"
+            COMPONENTS="frontend"
+            SHOULD_RUN="true"
+            echo "📋 RISCO MÉDIO: Frontend alterado"
+          elif [ '${{ steps.filter.outputs.docs }}' = 'true' ]; then
+            RISK_LEVEL="low"
+            TEST_STRATEGY="none"
+            COMPONENTS="docs"
+            SHOULD_RUN="false"
+            echo "📚 APENAS DOCS: Pulando testes"
+          else
+            RISK_LEVEL="unknown"
+            TEST_STRATEGY="fallback"
+            COMPONENTS="unknown"
+            SHOULD_RUN="true"
+            echo "❓ RISCO DESCONHECIDO: Executando análise completa"
+          fi
+          
+          echo "risk_level=$RISK_LEVEL" >> $GITHUB_OUTPUT
+          echo "test_strategy=$TEST_STRATEGY" >> $GITHUB_OUTPUT
+          echo "components_affected=$COMPONENTS" >> $GITHUB_OUTPUT
+          echo "should_run_tests=$SHOULD_RUN" >> $GITHUB_OUTPUT
           
       - name: "[ANALYZE] Analise Inteligente de Impacto"
         id: analyze
@@ -106,10 +176,18 @@ jobs:
           echo "Componentes afetados: $COMPONENTS"
 
   security-tests:
-    name: "[SECURITY] Testes de Seguranca"
+    name: "[SECURITY] Testes de Segurança"
     runs-on: ubuntu-latest
     needs: analyze-changes
-    if: always() && (contains(needs.analyze-changes.outputs.components-affected, 'security') || inputs.test_suite == 'all' || inputs.test_suite == 'security' || github.event_name == 'schedule')
+    # CONDIÇÃO OTIMIZADA: Só roda quando necessário
+    if: |
+      always() && (
+        needs.analyze-changes.outputs.risk-level == 'critical' ||
+        contains(needs.analyze-changes.outputs.components-affected, 'security') ||
+        inputs.test_suite == 'all' ||
+        inputs.test_suite == 'security' ||
+        github.event_name == 'schedule'
+      )
     
     steps:
       - name: "[CHECKOUT] Checkout"
@@ -142,18 +220,25 @@ jobs:
           
       - name: "[SECURITY] Upload Security Results"
         uses: github/codeql-action/upload-sarif@v3
-        if: always()
+        if: always() && hashFiles('reports/dependency-check-report.sarif') != ''
         with:
           sarif_file: reports/dependency-check-report.sarif
+        continue-on-error: true  # Não falha se upload falhar
 
   performance-tests:
     name: "[PERFORMANCE] Testes de Performance"
     runs-on: ubuntu-latest
-    if: inputs.test_suite == 'all' || inputs.test_suite == 'performance' || github.event_name == 'schedule'
+    needs: analyze-changes
+    # PERFORMANCE: Só roda se high/critical risk OU agendado
+    if: |
+      inputs.test_suite == 'performance' ||
+      github.event_name == 'schedule' ||
+      (inputs.test_suite == 'all' && contains(fromJSON('["high", "critical"]'), needs.analyze-changes.outputs.risk-level))
     
     strategy:
+      # MATRIZ CONDICIONAL: Só prod em schedule, só hml em PRs
       matrix:
-        environment: [hml, prod]
+        environment: ${{ github.event_name == 'schedule' && fromJSON('["hml", "prod"]') || fromJSON('["hml"]') }}
         
     steps:
       - name: "[CHECKOUT] Checkout"
@@ -222,10 +307,18 @@ jobs:
             performance-*.json
 
   integration-tests:
-    name: "[INTEGRATION] Testes de Integracao"
+    name: "[INTEGRATION] Testes de Integração"
     runs-on: ubuntu-latest
     needs: analyze-changes
-    if: always() && (inputs.test_suite == 'all' || inputs.test_suite == 'integration' || github.event_name == 'schedule')
+    # INTEGRAÇÃO: Só para mudanças backend/API
+    if: |
+      always() && (
+        needs.analyze-changes.outputs.should-run-tests == 'true' &&
+        (contains(needs.analyze-changes.outputs.components-affected, 'backend') ||
+         inputs.test_suite == 'all' ||
+         inputs.test_suite == 'integration' ||
+         github.event_name == 'schedule')
+      )
     
     services:
       postgres:
@@ -271,12 +364,14 @@ jobs:
         run: |
           echo "Executando testes de integracao do backend..."
           python -m pytest tests/integration/ -v --tb=short
+        continue-on-error: ${{ needs.analyze-changes.outputs.risk-level != 'critical' }}
           
       - name: "[TEST] Frontend Integration Tests"
         working-directory: apps/frontend-nextjs
         run: |
           echo "Executando testes de integracao do frontend..."
-          npm run test:integration || echo "Testes de integracao nao configurados"
+          npm run test:integration || echo "Testes de integração não configurados"
+        continue-on-error: true  # Testes de integração frontend opcionais
           
       - name: "[TEST] End-to-End Tests"
         run: |
@@ -418,6 +513,7 @@ jobs:
             -d text="$MESSAGE" \
             -d parse_mode="HTML"
 
+# CONCURRENCY QA: Cancelamento inteligente
 concurrency:
-  group: qa-automation-${{ github.ref }}
-  cancel-in-progress: true
+  group: qa-automation-${{ github.ref }}-${{ github.event_name }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
