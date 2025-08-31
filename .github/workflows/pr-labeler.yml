@@ -111,7 +111,9 @@ jobs:
     name: "[VALIDATE] Validar PRs Críticos"
     runs-on: ubuntu-latest
     needs: apply-labels
-    if: contains(needs.apply-labels.outputs.all_labels, 'prioridade: crítica') || contains(needs.apply-labels.outputs.all_labels, 'breaking-change')
+    if: >
+      contains(needs.apply-labels.outputs.all_labels, 'prioridade: crítica') ||
+      contains(needs.apply-labels.outputs.all_labels, 'breaking-change')
     
     steps:
       - name: "[CHECKOUT] Checkout"

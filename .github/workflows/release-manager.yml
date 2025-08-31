@@ -36,7 +36,6 @@ permissions:
   pull-requests: write
   actions: read
   repository-projects: write
-  metadata: read
 
 env:
   TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
