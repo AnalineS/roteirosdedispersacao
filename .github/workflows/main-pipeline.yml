@@ -134,9 +134,7 @@ jobs:
         uses: trufflesecurity/trufflehog@main
         with:
           path: ./
-          base: ${{ github.event.repository.default_branch }}
-          head: HEAD
-          extra_args: --only-verified --fail --json
+          extra_args: --only-verified --fail --json --results-format=json --results-file=trufflehog-results.json
         continue-on-error: false  # DEVE falhar se houver secrets!
         
       - name: "[SECURITY] Report Exposed Secrets (if any)"

@@ -70,10 +70,13 @@ fi
 
 # Google Cloud
 if grep -r "gcp\|google" . --exclude-dir=.git --exclude="*.sh" 2>/dev/null | head -1; then
+    echo "🌍 === GOOGLE CLOUD SECRETS ==="
+    add_secret "GCP_PROJECT_ID" "ID do projeto GCP compartilhado (HML/PROD)"
     add_secret "GCP_PROJECT_ID_PROD" "ID do projeto GCP para produção"
-    add_secret "GCP_PROJECT_ID_STAGING" "ID do projeto GCP para staging" 
+    add_secret "GCP_PROJECT_ID_STAGING" "ID do projeto GCP para staging/HML" 
+    add_secret "GCP_SA_KEY" "Service Account Key GCP compartilhado"
     add_secret "GCP_SA_KEY_PROD" "Service Account Key GCP (produção)"
-    add_secret "GCP_SA_KEY_STAGING" "Service Account Key GCP (staging)"
+    add_secret "GCP_SA_KEY_STAGING" "Service Account Key GCP (staging/HML)"
     add_secret "GCP_REGION" "Região do GCP (ex: us-central1)"
 fi
 
