@@ -21,7 +21,7 @@ scikit-learn==1.6.1
 
 # === AUTHENTICATION & JWT ===
 PyJWT==2.10.1      # SECURITY: Latest secure version
-cryptography==44.0.1  # SECURITY: Fixes CVE-2024-26130
+cryptography==45.0.6  # SECURITY: Fixes CVE-2024-26130
 passlib>=1.7.4     # Password hashing
 
 # === SECURITY FRAMEWORK ===
