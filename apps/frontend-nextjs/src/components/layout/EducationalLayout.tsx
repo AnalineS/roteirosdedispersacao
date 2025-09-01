@@ -59,7 +59,7 @@ export default function EducationalLayout({
         <SkipLink href="#main-content">
           Pular para conteúdo principal
         </SkipLink>
-        <SkipLink href="#chat-input" title="Ir para o campo de mensagem do chat">
+        <SkipLink href="#chat-input">
           Ir para campo de mensagem
         </SkipLink>
       </div>
