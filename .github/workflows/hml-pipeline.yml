@@ -389,19 +389,26 @@ jobs:
           gcloud auth configure-docker --quiet
           
       - name: "Build e Push Docker"
+        timeout-minutes: 25
         run: |
           cd apps/backend
           
+          echo "🚀 Iniciando build Docker com cache otimizado..."
           docker pull gcr.io/$PROJECT_ID/$BACKEND_SERVICE_NAME:latest || echo "Sem cache anterior"
           
+          echo "🔧 Construindo imagem com timeout estendido..."
           docker build \
             --cache-from gcr.io/$PROJECT_ID/$BACKEND_SERVICE_NAME:latest \
+            --build-arg BUILDKIT_INLINE_CACHE=1 \
+            --build-arg DOCKER_BUILDKIT=1 \
             -t gcr.io/$PROJECT_ID/$BACKEND_SERVICE_NAME:$GITHUB_SHA \
             -t gcr.io/$PROJECT_ID/$BACKEND_SERVICE_NAME:latest \
             .
             
-          docker push gcr.io/$PROJECT_ID/$BACKEND_SERVICE_NAME:$GITHUB_SHA
-          docker push gcr.io/$PROJECT_ID/$BACKEND_SERVICE_NAME:latest
+          echo "📤 Enviando imagem para registry..."
+          docker push gcr.io/$PROJECT_ID/$BACKEND_SERVICE_NAME:$GITHUB_SHA &
+          docker push gcr.io/$PROJECT_ID/$BACKEND_SERVICE_NAME:latest &
+          wait
           
       - name: "Deploy Cloud Run"
         id: deploy

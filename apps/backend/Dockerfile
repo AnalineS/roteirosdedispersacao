@@ -36,8 +36,23 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 # Copiar e instalar dependências Python primeiro (para cache do Docker)
 COPY --chown=appuser:appuser requirements.txt .
-RUN pip install --no-cache-dir --upgrade pip setuptools wheel \
-    && pip install --no-cache-dir -r requirements.txt
+
+# Instalar dependências críticas primeiro para evitar timeout
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
+    pip install --no-cache-dir --timeout 600 \
+        Flask==3.1.2 \
+        Flask-CORS==6.0.1 \
+        Werkzeug==3.1.3 \
+        gunicorn==23.0.0 \
+        openai \
+        PyJWT==2.10.1 \
+        cryptography==45.0.6 \
+        requests==2.32.4 \
+        python-dotenv==1.1.1 \
+        pydantic \
+        google-cloud-firestore \
+        google-cloud-logging && \
+    pip install --no-cache-dir --timeout 600 -r requirements.txt
 
 # Copiar código da aplicação (excluindo arquivos desnecessários)
 COPY --chown=appuser:appuser . .
