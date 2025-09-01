@@ -177,7 +177,7 @@ jobs:
     name: "[HML-SECURITY] Gates de Qualidade e Seguranca"
     runs-on: ubuntu-latest
     needs: detect-changes
-    if: always() && (needs.detect-changes.outputs.should-deploy == 'true' || needs.detect-changes.outputs.workflow-changed == 'true') && github.event.inputs.force_deploy != 'true'
+    if: always() && (needs.detect-changes.outputs.should-deploy == 'true' || needs.detect-changes.outputs.workflow-changed == 'true' || github.event.inputs.force_deploy == 'true')
     
     steps:
       - name: "[CHECKOUT] Checkout"
