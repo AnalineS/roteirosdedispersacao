@@ -136,13 +136,21 @@ jobs:
           
           DEPLOY_BACKEND="${{ github.event.inputs.deploy_backend }}"
           DEPLOY_FRONTEND="${{ github.event.inputs.deploy_frontend }}"
+          FORCE_DEPLOY="${{ github.event.inputs.force_deploy }}"
           
-          if [ "$DEPLOY_BACKEND" = "" ]; then
-            DEPLOY_BACKEND="$BACKEND_CHANGED"
-          fi
-          
-          if [ "$DEPLOY_FRONTEND" = "" ]; then
-            DEPLOY_FRONTEND="$FRONTEND_CHANGED"
+          # Se force_deploy=true, forçar deploy de tudo
+          if [ "$FORCE_DEPLOY" = "true" ]; then
+            echo "🚀 FORCE DEPLOY ativado - deployando TUDO!"
+            DEPLOY_BACKEND="true"
+            DEPLOY_FRONTEND="true"
+          else
+            if [ "$DEPLOY_BACKEND" = "" ]; then
+              DEPLOY_BACKEND="$BACKEND_CHANGED"
+            fi
+            
+            if [ "$DEPLOY_FRONTEND" = "" ]; then
+              DEPLOY_FRONTEND="$FRONTEND_CHANGED"
+            fi
           fi
           
           # Force security validation if workflows changed
@@ -410,7 +418,7 @@ jobs:
             --max-instances=10 \
             --min-instances=0 \
             --timeout=300 \
-            --set-env-vars="ENVIRONMENT=$ENVIRONMENT,FLASK_ENV=production,DEBUG=false,SECRET_KEY=${{ secrets.SECRET_KEY }},OPENROUTER_API_KEY=${{ secrets.OPENROUTER_API_KEY }}" \
+            --set-env-vars="ENVIRONMENT=$ENVIRONMENT,FLASK_ENV=production,DEBUG=false,SECRET_KEY=${{ secrets.SECRET_KEY }},OPENROUTER_API_KEY=${{ secrets.OPENROUTER_API_KEY }},SUPABASE_PROJECT_URL=${{ secrets.SUPABASE_PROJECT_URL }},SUPABASE_API_KEY=${{ secrets.SUPABASE_API_KEY }},SUPABASE_PROJECT_ID=${{ secrets.SUPABASE_PROJECT_ID }},EMBEDDINGS_ENABLED=true,RAG_AVAILABLE=true,VECTOR_DB_TYPE=supabase,SECURITY_MIDDLEWARE_ENABLED=true,FIRESTORE_CACHE_ENABLED=true,HYBRID_CACHE_STRATEGY=memory_first,ADVANCED_FEATURES=true" \
             --tag=hml-$(echo $GITHUB_SHA | cut -c1-7) \
             --quiet
             

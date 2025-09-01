@@ -238,7 +238,7 @@ jobs:
     name: "[TEST] Backend Tests"
     runs-on: ubuntu-latest
     needs: [detect-changes, security-quality-gates]
-    if: needs.detect-changes.outputs.backend-changed == 'true' && inputs.skip_tests != true
+    if: (needs.detect-changes.outputs.backend-changed == 'true' || inputs.force_deploy == true) && inputs.skip_tests != true
     
     steps:
       - name: "[CHECKOUT] Checkout"
@@ -252,7 +252,7 @@ jobs:
           
       # CACHE OTIMIZADO: Multi-layer cache para máxima performance
       - name: "[CACHE] Python Dependencies (Otimizado)"
-        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9  # v4.0.2
+        uses: actions/cache@v4
         with:
           path: |
             ~/.cache/pip
@@ -288,7 +288,7 @@ jobs:
     name: "[TEST] Frontend Tests"
     runs-on: ubuntu-latest
     needs: [detect-changes, security-quality-gates]
-    if: needs.detect-changes.outputs.frontend-changed == 'true' && inputs.skip_tests != true
+    if: (needs.detect-changes.outputs.frontend-changed == 'true' || inputs.force_deploy == true) && inputs.skip_tests != true
     
     steps:
       - name: "[CHECKOUT] Checkout"
@@ -303,7 +303,7 @@ jobs:
           
       # CACHE ADICIONAL: Node modules + Next.js cache  
       - name: "[CACHE] Frontend Dependencies (Otimizado)"
-        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9  # v4.0.2
+        uses: actions/cache@v4
         with:
           path: |
             apps/frontend-nextjs/node_modules
@@ -336,7 +336,7 @@ jobs:
     name: "[DEPLOY] Backend to Production"
     runs-on: ubuntu-latest
     needs: [detect-changes, security-quality-gates, test-backend]
-    if: always() && (needs.detect-changes.outputs.backend-changed == 'true' && (needs.test-backend.result == 'success' || inputs.force_deploy == true))
+    if: always() && ((needs.detect-changes.outputs.backend-changed == 'true' && needs.test-backend.result == 'success') || inputs.force_deploy == true)
     environment: production
     
     steps:
@@ -372,7 +372,7 @@ jobs:
             --max-instances 10 \
             --min-instances=0 \
             --timeout=300 \
-            --set-env-vars="ENVIRONMENT=production,FLASK_ENV=production,DEBUG=false,SECRET_KEY=${{ secrets.SECRET_KEY }},OPENROUTER_API_KEY=${{ secrets.OPENROUTER_API_KEY }}" \
+            --set-env-vars="ENVIRONMENT=production,FLASK_ENV=production,DEBUG=false,SECRET_KEY=${{ secrets.SECRET_KEY }},OPENROUTER_API_KEY=${{ secrets.OPENROUTER_API_KEY }},SUPABASE_PROJECT_URL=${{ secrets.SUPABASE_PROJECT_URL }},SUPABASE_API_KEY=${{ secrets.SUPABASE_API_KEY }},SUPABASE_PROJECT_ID=${{ secrets.SUPABASE_PROJECT_ID }},EMBEDDINGS_ENABLED=true,RAG_AVAILABLE=true,VECTOR_DB_TYPE=supabase,SECURITY_MIDDLEWARE_ENABLED=true,FIRESTORE_CACHE_ENABLED=true,HYBRID_CACHE_STRATEGY=memory_first,ADVANCED_FEATURES=true" \
             --project ${{ secrets.GCP_PROJECT_ID_PROD }}
             
       # HEALTH CHECK COM RETRY INTELIGENTE
@@ -406,7 +406,7 @@ jobs:
     name: "[DEPLOY] Frontend to Production"
     runs-on: ubuntu-latest
     needs: [detect-changes, security-quality-gates, test-frontend, deploy-backend-prod]
-    if: always() && (needs.detect-changes.outputs.frontend-changed == 'true' && (needs.test-frontend.result == 'success' || inputs.force_deploy == true))
+    if: always() && ((needs.detect-changes.outputs.frontend-changed == 'true' && needs.test-frontend.result == 'success') || inputs.force_deploy == true)
     environment: production
     
     steps:

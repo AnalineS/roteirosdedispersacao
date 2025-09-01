@@ -113,7 +113,13 @@ const ChatMessagesArea = memo(function ChatMessagesArea({
   };
 
   return (
-    <div className="chat-messages-area" ref={scrollAreaRef}>
+    <div 
+      className="chat-messages-area" 
+      ref={scrollAreaRef}
+      role="log"
+      aria-live="polite"
+      aria-label="Mensagens do chat"
+    >
       {/* Indicadores IA */}
       <SmartIndicators
         sentiment={currentSentiment}

@@ -21,22 +21,18 @@ fi
 echo "📱 Testando notificações do Telegram..."
 echo ""
 
-# Obter valores dos secrets
-echo "🔐 Obtendo secrets do GitHub..."
-TELEGRAM_TOKEN=$(gh secret get TELEGRAM_BOT_TOKEN --json 2>/dev/null | jq -r .value 2>/dev/null || echo "")
-TELEGRAM_CHAT_ID=$(gh secret get TELEGRAM_CHAT_ID --json 2>/dev/null | jq -r .value 2>/dev/null || echo "")
+# Verificar se os secrets estão configurados
+echo "🔐 Verificando secrets do GitHub..."
+echo ""
+echo "📋 Secrets do Telegram configurados:"
+gh secret list | grep TELEGRAM
+echo ""
 
-if [ -z "$TELEGRAM_TOKEN" ] || [ -z "$TELEGRAM_CHAT_ID" ]; then
-    echo "❌ Não foi possível obter os secrets do Telegram!"
-    echo ""
-    echo "📋 Secrets configurados:"
-    gh secret list | grep TELEGRAM
-    echo ""
-    echo "💡 Para configurar manualmente:"
-    echo "   gh secret set TELEGRAM_BOT_TOKEN"
-    echo "   gh secret set TELEGRAM_CHAT_ID"
-    exit 1
-fi
+echo "⚠️ NOTA: Por segurança, o GitHub não permite ler valores de secrets localmente."
+echo "💡 Para testar as notificações, faça um push que dispare o workflow."
+echo ""
+echo "🚀 Alternativa: Disparar workflow manualmente..."
+exit 0
 
 echo "✅ Secrets obtidos com sucesso!"
 echo ""

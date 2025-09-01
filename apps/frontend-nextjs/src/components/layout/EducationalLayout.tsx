@@ -47,21 +47,20 @@ export default function EducationalLayout({
       
       {/* Navigation Header */}
       {showHeader && (
-        <nav id="navigation" role="banner" aria-label="Navegação principal">
-          <NavigationHeader currentPersona={currentPersona} />
-        </nav>
+        <header role="banner">
+          <nav id="navigation" aria-label="Navegação principal">
+            <NavigationHeader currentPersona={currentPersona} />
+          </nav>
+        </header>
       )}
       
-      {/* Skip links para navegação rápida - Posicionados abaixo da navegação */}
-      <div className="skip-links-container-below-nav" role="navigation" aria-label="Links de navegação rápida">
+      {/* Skip links consolidados - Apenas os essenciais */}
+      <div className="skip-links-container" role="navigation" aria-label="Links de acesso rápido">
         <SkipLink href="#main-content">
-          Pular para o conteúdo principal
+          Pular para conteúdo principal
         </SkipLink>
-        <SkipLink href="#navigation">
-          Voltar para navegação
-        </SkipLink>
-        <SkipLink href="#footer">
-          Ir para rodapé
+        <SkipLink href="#chat-input" title="Ir para o campo de mensagem do chat">
+          Ir para campo de mensagem
         </SkipLink>
       </div>
       
