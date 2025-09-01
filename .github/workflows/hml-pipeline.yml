@@ -136,13 +136,21 @@ jobs:
           
           DEPLOY_BACKEND="${{ github.event.inputs.deploy_backend }}"
           DEPLOY_FRONTEND="${{ github.event.inputs.deploy_frontend }}"
+          FORCE_DEPLOY="${{ github.event.inputs.force_deploy }}"
           
-          if [ "$DEPLOY_BACKEND" = "" ]; then
-            DEPLOY_BACKEND="$BACKEND_CHANGED"
-          fi
-          
-          if [ "$DEPLOY_FRONTEND" = "" ]; then
-            DEPLOY_FRONTEND="$FRONTEND_CHANGED"
+          # Se force_deploy=true, forçar deploy de tudo
+          if [ "$FORCE_DEPLOY" = "true" ]; then
+            echo "🚀 FORCE DEPLOY ativado - deployando TUDO!"
+            DEPLOY_BACKEND="true"
+            DEPLOY_FRONTEND="true"
+          else
+            if [ "$DEPLOY_BACKEND" = "" ]; then
+              DEPLOY_BACKEND="$BACKEND_CHANGED"
+            fi
+            
+            if [ "$DEPLOY_FRONTEND" = "" ]; then
+              DEPLOY_FRONTEND="$FRONTEND_CHANGED"
+            fi
           fi
           
           # Force security validation if workflows changed
