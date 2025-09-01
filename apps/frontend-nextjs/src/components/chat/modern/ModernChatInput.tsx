@@ -12,6 +12,7 @@ interface ModernChatInputProps {
   personaId?: string;
   isLoading?: boolean;
   isMobile?: boolean;
+  disabled?: boolean;
   placeholder?: string;
   suggestions?: string[];
   onSuggestionClick?: (suggestion: string) => void;
@@ -187,8 +188,8 @@ export default function ModernChatInput({
 
   const getPlaceholder = () => {
     if (placeholder) return placeholder;
-    if (!persona) return 'Digite sua pergunta aqui...';
-    return `Pergunte ao ${persona.name}...`;
+    if (!persona) return 'Selecione uma persona para começar a conversar...';
+    return `Faça sua pergunta para ${persona.name}...`;
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -381,6 +382,7 @@ export default function ModernChatInput({
           
           <input
             ref={inputRef}
+            id="chat-input"
             type="text"
             value={value}
             onChange={(e) => onChange(e.target.value)}
