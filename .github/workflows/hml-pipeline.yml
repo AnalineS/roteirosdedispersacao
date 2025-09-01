@@ -389,7 +389,7 @@ jobs:
           gcloud auth configure-docker --quiet
           
       - name: "Build e Push Docker"
-        timeout-minutes: 25
+        timeout-minutes: 45
         run: |
           cd apps/backend
           
