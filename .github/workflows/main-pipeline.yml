@@ -238,7 +238,7 @@ jobs:
     name: "[TEST] Backend Tests"
     runs-on: ubuntu-latest
     needs: [detect-changes, security-quality-gates]
-    if: needs.detect-changes.outputs.backend-changed == 'true' && inputs.skip_tests != true
+    if: (needs.detect-changes.outputs.backend-changed == 'true' || inputs.force_deploy == true) && inputs.skip_tests != true
     
     steps:
       - name: "[CHECKOUT] Checkout"
@@ -288,7 +288,7 @@ jobs:
     name: "[TEST] Frontend Tests"
     runs-on: ubuntu-latest
     needs: [detect-changes, security-quality-gates]
-    if: needs.detect-changes.outputs.frontend-changed == 'true' && inputs.skip_tests != true
+    if: (needs.detect-changes.outputs.frontend-changed == 'true' || inputs.force_deploy == true) && inputs.skip_tests != true
     
     steps:
       - name: "[CHECKOUT] Checkout"
