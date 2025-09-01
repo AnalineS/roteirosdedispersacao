@@ -384,6 +384,15 @@ jobs:
       - name: "Setup Cloud SDK"
         uses: google-github-actions/setup-gcloud@v3
         
+      - name: "Limpar espaço em disco"
+        run: |
+          echo "🧹 Limpando espaço em disco antes do build..."
+          df -h
+          docker system prune -af --volumes
+          sudo apt-get clean
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc
+          df -h
+          
       - name: "Configurar Docker"
         run: |
           gcloud auth configure-docker --quiet

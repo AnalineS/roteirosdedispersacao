@@ -23,8 +23,9 @@ RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selectio
     python3-dev \
     curl \
     ca-certificates \
-    && rm -rf /var/lib/apt/lists/* \
-    && apt-get clean
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
+    && find /usr -name "*.pyc" -delete
 
 # Criar usuário não-root para segurança
 RUN groupadd -r appuser && useradd -r -g appuser appuser
@@ -37,9 +38,13 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 # Copiar e instalar dependências Python primeiro (para cache do Docker)
 COPY --chown=appuser:appuser requirements.txt .
 
-# Instalar todas as dependências com timeout estendido
-RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
-    pip install --no-cache-dir --timeout 1200 -r requirements.txt
+# Instalar todas as dependências com timeout estendido e limpeza agressiva
+RUN --mount=type=tmpfs,target=/tmp \
+    pip install --no-cache-dir --upgrade pip setuptools wheel && \
+    pip install --no-cache-dir --no-compile --timeout 1200 -r requirements.txt && \
+    find /app -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true && \
+    find /app -name "*.pyc" -delete && \
+    rm -rf ~/.cache/pip/* /tmp/*
 
 # Copiar código da aplicação (excluindo arquivos desnecessários)
 COPY --chown=appuser:appuser . .
