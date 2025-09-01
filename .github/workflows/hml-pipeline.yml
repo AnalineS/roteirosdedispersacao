@@ -287,7 +287,7 @@ jobs:
           
       # CACHE OTIMIZADO HML: Economia de 40% no build time
       - name: "[CACHE] Python Dependencies (HML Otimizado)"
-        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9  # v4.0.2
+        uses: actions/cache@v4
         with:
           path: |
             ~/.cache/pip
@@ -454,7 +454,7 @@ jobs:
           
       # CACHE MULTI-LAYER para Frontend HML
       - name: "[CACHE] Frontend Dependencies (HML Otimizado)"
-        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9  # v4.0.2
+        uses: actions/cache@v4
         with:
           path: |
             apps/frontend-nextjs/node_modules
