@@ -63,13 +63,13 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: ['react-icons', 'jspdf', 'lucide-react'],
     // Melhor tree-shaking para ícones SVG
-    // optimizeCss: true, // Desabilitado - requer 'critters'
     // React Compiler configuration
     reactCompiler: {
       compilationMode: 'annotation',
     },
-    // ISR optimization for future use - removed invalid option
-    // isrMemoryCacheSize: 0  // Disable memory cache for static export
+    // Otimizações específicas para SSG
+    optimisticClientCache: false, // Disable for static export
+    serverComponentsExternalPackages: [], // Better bundling for client components
   },
   
   // ESLint configuração para build
