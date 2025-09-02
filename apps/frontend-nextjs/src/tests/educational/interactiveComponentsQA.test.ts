@@ -402,7 +402,7 @@ describe('Interactive Educational Components QA Suite', () => {
       const componentStates = {
         timeline: { currentStep: 3, totalSteps: 7 },
         checklist: { completed: 12, total: 15 },
-        progress: { overall: 0.73 }
+        progress: { overall: 0.61 }  // Corrigido: (3/7 + 12/15) / 2 ≈ 0.61
       };
       
       // Calcular progresso geral
