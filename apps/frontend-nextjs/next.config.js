@@ -7,6 +7,9 @@ const nextConfig = {
   // Configuração condicional: export para build estático, server para desenvolvimento
   output: process.env.BUILD_STANDALONE ? undefined : 'export',
   
+  // Ensure trailingSlash is consistent with Firebase Hosting configuration
+  trailingSlash: false,
+  
   // INCREMENTAL BUILD OPTIMIZATIONS
   
   // SWC minification is now default in Next.js 15
