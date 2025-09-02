@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -9,6 +9,12 @@ import { Search, MessageCircle, BookOpen, Award } from 'lucide-react';
 export default function HeroSection() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  // Evitar hydration mismatch
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,7 +86,7 @@ export default function HeroSection() {
               type="submit" 
               className="search-btn" 
               aria-label="Realizar busca"
-              disabled={!searchQuery.trim()}
+              disabled={isHydrated ? !searchQuery.trim() : false}
             >
               Buscar
             </button>
