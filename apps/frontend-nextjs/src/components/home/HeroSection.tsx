@@ -72,7 +72,7 @@ export default function HeroSection() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyPress={handleSearchInputKeyPress}
-              placeholder="Busque por medicamento, dosagem ou protocolo..."
+              placeholder="Busque doses, efeitos adversos, contraindicações..."
               className="search-input"
               aria-label="Buscar informações"
             />

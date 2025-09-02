@@ -328,7 +328,7 @@ export default function HomePage() {
                 gap: '1rem'
               }}>
                 <div style={{ textAlign: 'center', width: '100%' }}>
-                  <HierarchyHeading level="h1" style={{ 
+                  <HierarchyHeading level="h2" style={{ 
                     textAlign: 'center',
                     margin: 0,
                     fontSize: 'clamp(1.8rem, 4vw, 2.5rem)',
