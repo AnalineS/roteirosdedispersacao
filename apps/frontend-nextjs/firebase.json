@@ -2,7 +2,7 @@
   "hosting": [
     {
       "target": "hml",
-      "public": "out",
+      "public": ".next",
       "ignore": [
         "firebase.json",
         "**/.*",
@@ -99,7 +99,7 @@
     },
     {
       "target": "prod",
-      "public": "out",
+      "public": ".next",
       "ignore": [
         "firebase.json",
         "**/.*",

@@ -5,7 +5,8 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 
 const nextConfig = {
   // Configuração condicional: export para build estático, server para desenvolvimento
-  output: process.env.BUILD_STANDALONE ? undefined : 'export',
+  // Temporarily disable static export to fix hydration issues
+  // output: process.env.BUILD_STANDALONE ? undefined : 'export',
   
   // Ensure trailingSlash is consistent with Firebase Hosting configuration
   trailingSlash: false,
