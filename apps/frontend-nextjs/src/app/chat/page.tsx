@@ -15,7 +15,8 @@ import ChatFeedback, { useChatFeedback } from '@/components/ui/ChatFeedback';
 
 // Lazy load dos componentes complementares
 const ConversationHistory = lazy(() => import('@/components/chat/ConversationHistory'));
-import { usePersonas } from '@/hooks/usePersonas';
+import { usePersonasEnhanced } from '@/hooks/usePersonasEnhanced';
+import { useCurrentPersona, usePersonaActions } from '@/contexts/PersonaContext';
 import { useChat } from '@/hooks/useChat';
 import { useConversationHistory } from '@/hooks/useConversationHistory';
 import { useIntelligentRouting } from '@/hooks/useIntelligentRouting';
@@ -27,7 +28,12 @@ import { redisCache } from '@/services/redisCache';
 
 export default function ChatPage() {
   const { setPersonaSelectionViewed } = useGlobalNavigation();
-  const { personas, loading: personasLoading, error: personasError } = usePersonas();
+  const { personas, loading: personasLoading, error: personasError } = usePersonasEnhanced({
+    includeFallback: true,
+    useCache: true
+  });
+  const { persona: contextPersona, isLoading: personaLoading } = useCurrentPersona();
+  const { setPersona } = usePersonaActions();
   
   // Chat feedback hook
   const { triggerSendFeedback, triggerReceiveFeedback, triggerErrorFeedback } = useChatFeedback();
@@ -96,7 +102,7 @@ export default function ChatPage() {
   });
   
   const [inputValue, setInputValue] = useState('');
-  const [selectedPersona, setSelectedPersona] = useState<string | null>(null); // Será definido baseado na URL ou preferência
+  const [selectedPersona, setSelectedPersona] = useState<string | null>(contextPersona); // Usar persona do contexto
   const [showHistory, setShowHistory] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [pendingQuestion, setPendingQuestion] = useState<string>('');
@@ -162,65 +168,17 @@ export default function ChatPage() {
     }
   }, [inputValue, selectedPersona, analyzeQuestion]);
 
-  // Carregar persona baseada no perfil do usuário ou localStorage
+  // Sincronizar persona do contexto com estado local
   useEffect(() => {
-    if (personas && Object.keys(personas).length > 0 && !selectedPersona) {
-      let selectedPersonaId = null;
+    if (contextPersona && contextPersona !== selectedPersona) {
+      setSelectedPersona(contextPersona);
       
-      // Prioridade 1: Persona do perfil do usuário
-      if (profile && profile.selectedPersona && personas[profile.selectedPersona]) {
-        selectedPersonaId = profile.selectedPersona;
-      }
-      // Prioridade 2: Recomendação baseada no perfil
-      else if (profile) {
-        const recommended = getRecommendedPersona();
-        if (recommended && personas[recommended]) {
-          selectedPersonaId = recommended;
-        }
-      }
-      
-      // Prioridade 3: localStorage (compatibilidade com versão anterior)
-      if (!selectedPersonaId && typeof window !== 'undefined') {
-        const storedPersona = localStorage.getItem('selectedPersona');
-        if (storedPersona && personas[storedPersona]) {
-          selectedPersonaId = storedPersona;
-        }
-      }
-      
-      // Prioridade 4: Usar 'ga' como padrão quando não há preferência específica
-      if (!selectedPersonaId) {
-        // Sempre preferir 'ga' como padrão
-        if (personas['ga']) {
-          selectedPersonaId = 'ga';
-        } else if (personas['dr_gasnelio']) {
-          selectedPersonaId = 'dr_gasnelio';
-        } else {
-          // Usar a primeira persona disponível como fallback
-          selectedPersonaId = Object.keys(personas)[0];
-        }
-      }
-
-      if (selectedPersonaId) {
-        console.log('[ChatPage] Setting initial persona:', selectedPersonaId);
-        setSelectedPersona(selectedPersonaId);
-        
-        // Salvar no localStorage
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('selectedPersona', selectedPersonaId);
-        }
-        
-        // Atualizar perfil se necessário
-        if (profile && profile.selectedPersona !== selectedPersonaId) {
-          updateProfile({ selectedPersona: selectedPersonaId });
-        }
-        
-        // Criar conversa se não houver uma ativa
-        if (!currentConversationId) {
-          createConversation(selectedPersonaId);
-        }
+      // Criar conversa se não houver uma ativa
+      if (!currentConversationId) {
+        createConversation(contextPersona);
       }
     }
-  }, [personas, selectedPersona, profile, getRecommendedPersona, updateProfile, currentConversationId, createConversation]);
+  }, [contextPersona, selectedPersona, currentConversationId, createConversation]);
 
 
   // Função wrapper para enviar mensagens e adicionar ao histórico
@@ -277,23 +235,27 @@ export default function ChatPage() {
     }
   };
 
-  const handlePersonaChange = useCallback((personaId: string) => {
-    setSelectedPersona(personaId);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('selectedPersona', personaId);
+  const handlePersonaChange = useCallback(async (personaId: string) => {
+    try {
+      // Usar o contexto unificado para mudar persona
+      await setPersona(personaId as any, 'explicit');
+      setSelectedPersona(personaId);
+      
+      // Criar nova conversa para a persona selecionada
+      createConversation(personaId);
+      
+      // Limpar análise de roteamento
+      clearAnalysis();
+      
+      // Se há uma pergunta pendente, enviá-la agora
+      if (pendingQuestion) {
+        setInputValue(pendingQuestion);
+        setPendingQuestion('');
+      }
+    } catch (error) {
+      console.error('Erro ao alterar persona:', error);
     }
-    // Criar nova conversa para a persona selecionada
-    createConversation(personaId);
-    
-    // Limpar análise de roteamento
-    clearAnalysis();
-    
-    // Se há uma pergunta pendente, enviá-la agora
-    if (pendingQuestion) {
-      setInputValue(pendingQuestion);
-      setPendingQuestion('');
-    }
-  }, [createConversation, clearAnalysis, pendingQuestion]);
+  }, [setPersona, createConversation, clearAnalysis, pendingQuestion]);
 
   // Handler para upload de arquivos
   const handleFileUpload = useCallback((files: FileList) => {

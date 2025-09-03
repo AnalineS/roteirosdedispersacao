@@ -3,7 +3,7 @@ import Image from 'next/image';
 import StaticEducationalLayout from '@/components/layout/StaticEducationalLayout';
 import HeroSection from '@/components/home/HeroSection';
 import FeaturesSection from '@/components/home/FeaturesSection';
-import PersonaSelector from '@/components/home/PersonaSelector';
+import PersonaSelectorUnified from '@/components/home/PersonaSelectorUnified';
 import TrustBadges from '@/components/home/TrustBadges';
 import ClientToastContainer from '@/components/ui/ClientToastContainer';
 import ClientAnalytics from '@/components/analytics/ClientAnalytics';
@@ -90,7 +90,7 @@ export default function HomePage() {
           <p>Carregando assistentes virtuais...</p>
         </div>
       }>
-        <PersonaSelector />
+        <PersonaSelectorUnified />
       </Suspense>
 
       {/* Static Features Section */}

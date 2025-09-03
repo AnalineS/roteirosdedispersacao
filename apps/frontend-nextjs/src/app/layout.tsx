@@ -8,6 +8,8 @@ import AuthProviderWrapper from '@/components/auth/AuthProviderWrapper'
 import { ThemeProvider } from '@/contexts/ThemeContext'
 import { AccessibilityProvider } from '@/contexts/AccessibilityContext'
 import { GlobalNavigationProvider } from '@/components/navigation/GlobalNavigationProvider'
+import { PersonaProvider } from '@/contexts/PersonaContext'
+import PersonaAccessibilityProvider from '@/components/accessibility/PersonaAccessibilityProvider'
 import EnhancedCoreWebVitals from '@/components/analytics/EnhancedCoreWebVitals'
 import SITE_CONFIG from '@/lib/config'
 import '@/styles/globals.css'
@@ -114,15 +116,19 @@ export default function RootLayout({
         <main id="main-content">
           <AccessibilityProvider>
             <ThemeProvider>
-              <GlobalNavigationProvider>
-                <AuthProviderWrapper>
-                  <AnalyticsProvider>
-                    <ErrorBoundary>
-                      {children}
-                    </ErrorBoundary>
-                  </AnalyticsProvider>
-                </AuthProviderWrapper>
-              </GlobalNavigationProvider>
+              <PersonaProvider>
+                <PersonaAccessibilityProvider>
+                  <GlobalNavigationProvider>
+                    <AuthProviderWrapper>
+                      <AnalyticsProvider>
+                        <ErrorBoundary>
+                          {children}
+                        </ErrorBoundary>
+                      </AnalyticsProvider>
+                    </AuthProviderWrapper>
+                  </GlobalNavigationProvider>
+                </PersonaAccessibilityProvider>
+              </PersonaProvider>
             </ThemeProvider>
           </AccessibilityProvider>
         </main>

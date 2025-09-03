@@ -1,10 +1,68 @@
-'use client';
-
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
+// Personas válidas
+const VALID_PERSONAS = ['dr_gasnelio', 'ga'] as const;
+type ValidPersona = typeof VALID_PERSONAS[number];
+
+// Normalização de persona ID (mesma lógica do hook)
+const normalizePersonaId = (personaId: string): ValidPersona | null => {
+  const normalized = personaId.toLowerCase().trim();
+  
+  const aliases: Record<string, ValidPersona> = {
+    'dr_gasnelio': 'dr_gasnelio',
+    'gasnelio': 'dr_gasnelio',
+    'dr.gasnelio': 'dr_gasnelio',
+    'drgasnelio': 'dr_gasnelio',
+    'technical': 'dr_gasnelio',
+    'doctor': 'dr_gasnelio',
+    'ga': 'ga',
+    'empathetic': 'ga',
+    'empathy': 'ga',
+    'welcoming': 'ga'
+  };
+  
+  return aliases[normalized] || null;
+};
+
 export function middleware(request: NextRequest) {
-  const response = NextResponse.next();
+  const url = request.nextUrl;
+  let response = NextResponse.next();
+
+  // === PERSONA URL HANDLING ===
+  // Validar e normalizar parâmetros de persona para /chat
+  if (url.pathname === '/chat') {
+    const personaParam = url.searchParams.get('persona');
+    
+    if (personaParam) {
+      const normalizedPersona = normalizePersonaId(personaParam);
+      
+      if (normalizedPersona) {
+        // Se persona foi normalizada, redirecionar para URL limpa
+        if (normalizedPersona !== personaParam) {
+          url.searchParams.set('persona', normalizedPersona);
+          response = NextResponse.redirect(url);
+        }
+      } else {
+        // Persona inválida - remover parâmetro e redirecionar
+        url.searchParams.delete('persona');
+        response = NextResponse.redirect(url);
+      }
+    }
+  }
+
+  // === REDIRECT FROM HOME WITH PERSONA ===
+  // Redirecionar seleções de persona da home para /chat
+  if (url.pathname === '/' && url.searchParams.has('persona')) {
+    const personaParam = url.searchParams.get('persona');
+    const normalizedPersona = normalizePersonaId(personaParam || '');
+    
+    if (normalizedPersona) {
+      const chatUrl = new URL('/chat', request.url);
+      chatUrl.searchParams.set('persona', normalizedPersona);
+      response = NextResponse.redirect(chatUrl);
+    }
+  }
 
   // Enhanced Security Headers for 9.7/10 Security Score
   
