@@ -95,7 +95,7 @@ beforeEach(() => {
     error: null,
     updateProfile: jest.fn(),
     refetch: jest.fn(),
-    getRecommendedPersona: jest.fn().mockReturnValue('ga')
+    getRecommendedPersona: jest.fn().mockReturnValue(null) // Por padrão sem recomendação
   });
 });
 
@@ -227,6 +227,16 @@ describe('Sistema Unificado de Personas - Fluxos E2E', () => {
         refetch: jest.fn()
       });
 
+      // Mock para retornar recomendação de perfil
+      jest.mocked(useUserProfile).mockReturnValue({
+        profile: null,
+        loading: false,
+        error: null,
+        updateProfile: jest.fn(),
+        refetch: jest.fn(),
+        getRecommendedPersona: jest.fn().mockReturnValue('dr_gasnelio')
+      });
+
       render(
         <TestWrapper>
           <React.Suspense fallback={<div>Loading...</div>}>
@@ -317,6 +327,17 @@ describe('Sistema Unificado de Personas - Fluxos E2E', () => {
         getRecommendedPersona: jest.fn().mockReturnValue(null) // Não retornar recomendação
       });
 
+      // Mock para simular que nenhuma persona está disponível (para impedir fallbacks)
+      jest.mocked(usePersonasEnhanced).mockReturnValue({
+        personas: mockPersonas,
+        loading: false,
+        error: null,
+        refetch: jest.fn(),
+        isPersonaAvailable: jest.fn().mockReturnValue(false), // Impede fallbacks
+        getPersonaConfig: jest.fn(),
+        stats: { totalPersonas: 2, availablePersonas: 0, lastUpdated: Date.now() }
+      });
+
       // Limpar completamente o localStorage para este teste
       Object.defineProperty(window, 'localStorage', {
         value: {
@@ -396,6 +417,17 @@ describe('Sistema Unificado de Personas - Fluxos E2E', () => {
   describe('4. Ordem de Prioridade', () => {
     
     it('deve priorizar URL sobre localStorage', async () => {
+      // Restaurar mock padrão para personas disponíveis
+      jest.mocked(usePersonasEnhanced).mockReturnValue({
+        personas: mockPersonas,
+        loading: false,
+        error: null,
+        refetch: jest.fn(),
+        isPersonaAvailable: jest.fn().mockReturnValue(true), // Restaurar disponibilidade
+        getPersonaConfig: jest.fn(),
+        stats: { totalPersonas: 2, availablePersonas: 2, lastUpdated: Date.now() }
+      });
+
       // Setup: localStorage tem 'ga', URL tem 'dr_gasnelio'
       const mockGetItem = jest.fn().mockReturnValue('ga');
       const mockParams = new URLSearchParams('persona=dr_gasnelio');
@@ -423,6 +455,15 @@ describe('Sistema Unificado de Personas - Fluxos E2E', () => {
         getRecommendedPersona: jest.fn().mockReturnValue(null) // Não dar recomendação para testar prioridades
       });
 
+      // Limpar também o mock de usePersonas para não ter recomendação
+      jest.mocked(usePersonas).mockReturnValue({
+        personas: mockPersonas,
+        loading: false,
+        error: null,
+        getRecommendedPersona: jest.fn().mockReturnValue(null), // Sem recomendação
+        refetch: jest.fn()
+      });
+
       render(
         <TestWrapper>
           <React.Suspense fallback={<div>Loading...</div>}>
@@ -437,14 +478,44 @@ describe('Sistema Unificado de Personas - Fluxos E2E', () => {
       }, { timeout: 3000 });
 
       // Verificar se é o Dr. Gasnelio que está ativo (URL tem prioridade)
-      const gasneliozCard = screen.getByLabelText(/Dr\. Gasnelio/);
+      const gasneliozCard = screen.getByLabelText(/Iniciar conversa com Dr. Gasnelio/);
       expect(gasneliozCard).toContainElement(screen.getByText('Ativo'));
     });
 
     it('deve usar localStorage quando não há parâmetro na URL', async () => {
+      // Restaurar mock padrão para personas disponíveis
+      jest.mocked(usePersonasEnhanced).mockReturnValue({
+        personas: mockPersonas,
+        loading: false,
+        error: null,
+        refetch: jest.fn(),
+        isPersonaAvailable: jest.fn().mockReturnValue(true), // Restaurar disponibilidade
+        getPersonaConfig: jest.fn(),
+        stats: { totalPersonas: 2, availablePersonas: 2, lastUpdated: Date.now() }
+      });
+
       const mockGetItem = jest.fn().mockReturnValue('dr_gasnelio');
       Object.defineProperty(window, 'localStorage', {
         value: { ...window.localStorage, getItem: mockGetItem }
+      });
+
+      // Limpar também o mock de usePersonas para não ter recomendação
+      jest.mocked(usePersonas).mockReturnValue({
+        personas: mockPersonas,
+        loading: false,
+        error: null,
+        getRecommendedPersona: jest.fn().mockReturnValue(null), // Sem recomendação
+        refetch: jest.fn()
+      });
+
+      // Garantir que o mock de UserProfile não interfira
+      jest.mocked(useUserProfile).mockReturnValue({
+        profile: null,
+        loading: false,
+        error: null,
+        updateProfile: jest.fn(),
+        refetch: jest.fn(),
+        getRecommendedPersona: jest.fn().mockReturnValue(null) // Não dar recomendação para testar prioridades
       });
 
       render(
@@ -457,7 +528,7 @@ describe('Sistema Unificado de Personas - Fluxos E2E', () => {
 
       await waitFor(() => {
         // Dr. Gasnelio deve estar ativo
-        const gasneliozCard = screen.getByLabelText(/Dr\. Gasnelio/);
+        const gasneliozCard = screen.getByLabelText(/Iniciar conversa com Dr. Gasnelio/);
         expect(gasneliozCard).toContainElement(screen.getByText('Ativo'));
       });
     });

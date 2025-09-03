@@ -299,7 +299,7 @@ export default function PersonaSelectorUnified({
   }, [setPersona, onPersonaSelected, router]);
 
   // Obter recomendação
-  const recommendedPersona = getRecommendedPersona?.() || 'ga';
+  const recommendedPersona = getRecommendedPersona?.();
 
   // Estados de loading
   if (loading) {
