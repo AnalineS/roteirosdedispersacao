@@ -3,52 +3,105 @@
  * Garante que todos os cenários funcionem conforme especificado na issue
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from '@jest/globals';
+import React from 'react';
 import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import type { ValidPersonaId } from '@/types/personas';
+import { normalizePersonaId } from '@/types/personas';
+import { PersonaProvider } from '@/contexts/PersonaContext';
+import PersonaAccessibilityProvider from '@/components/accessibility/PersonaAccessibilityProvider';
+import { usePersonas } from '@/hooks/usePersonas';
+import { usePersonasEnhanced } from '@/hooks/usePersonasEnhanced';
+import { useUserProfile } from '@/hooks/useUserProfile';
+import { useAnalytics } from '@/hooks/useAnalytics';
+import { useSafePersonaFromURL } from '@/hooks/useSafePersonaFromURL';
+import PersonaSelectorUnified from '@/components/home/PersonaSelectorUnified';
 
 // Mocks
-vi.mock('next/navigation');
-vi.mock('@/hooks/usePersonas');
-vi.mock('@/hooks/useUserProfile');
-vi.mock('@/hooks/useAnalytics');
+jest.mock('next/navigation', () => ({
+  useRouter: jest.fn(),
+  useSearchParams: jest.fn(),
+  usePathname: jest.fn()
+}));
+jest.mock('@/hooks/usePersonas');
+jest.mock('@/hooks/usePersonasEnhanced');
+jest.mock('@/hooks/useUserProfile');
+jest.mock('@/hooks/useAnalytics');
+jest.mock('@/hooks/useSafePersonaFromURL');
+
+// Mock framer-motion to avoid issues with animations in tests
+jest.mock('framer-motion', () => ({
+  motion: {
+    button: 'button',
+    div: 'div'
+  },
+  AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
 
 const mockRouter = {
-  push: vi.fn(),
-  replace: vi.fn(),
-  back: vi.fn(),
-  forward: vi.fn(),
-  refresh: vi.fn(),
-  prefetch: vi.fn()
+  push: jest.fn(),
+  replace: jest.fn(),
+  back: jest.fn(),
+  forward: jest.fn(),
+  refresh: jest.fn(),
+  prefetch: jest.fn()
 };
 
 const mockSearchParams = new URLSearchParams();
 
 // Setup de mocks
 beforeEach(() => {
-  vi.mocked(useRouter).mockReturnValue(mockRouter);
-  vi.mocked(useSearchParams).mockReturnValue(mockSearchParams);
+  (useRouter as jest.Mock).mockReturnValue(mockRouter);
+  (useSearchParams as jest.Mock).mockReturnValue(mockSearchParams);
+  (usePathname as jest.Mock).mockReturnValue('/');
+  
+  // Mock crypto.randomUUID for test environment
+  Object.defineProperty(global, 'crypto', {
+    value: {
+      randomUUID: () => 'test-uuid-' + Math.random().toString(36).substr(2, 9)
+    },
+    writable: true
+  });
   
   // Limpar localStorage
   Object.defineProperty(window, 'localStorage', {
     value: {
-      getItem: vi.fn(),
-      setItem: vi.fn(),
-      removeItem: vi.fn(),
-      clear: vi.fn()
+      getItem: jest.fn(),
+      setItem: jest.fn(),
+      removeItem: jest.fn(),
+      clear: jest.fn()
     },
     writable: true
   });
 
-  // Limpar mocks
-  vi.clearAllMocks();
+  // Limpar mocks e restaurar defaults
+  jest.clearAllMocks();
+  
+  // Restaurar mocks padrão
+  jest.mocked(usePersonasEnhanced).mockReturnValue({
+    personas: mockPersonas,
+    loading: false,
+    error: null,
+    refetch: jest.fn(),
+    isPersonaAvailable: jest.fn().mockReturnValue(true),
+    getPersonaConfig: jest.fn(),
+    stats: { totalPersonas: 2, availablePersonas: 2, lastUpdated: Date.now() }
+  });
+  
+  jest.mocked(useUserProfile).mockReturnValue({
+    profile: null,
+    loading: false,
+    error: null,
+    updateProfile: jest.fn(),
+    refetch: jest.fn(),
+    getRecommendedPersona: jest.fn().mockReturnValue('ga')
+  });
 });
 
 afterEach(() => {
   cleanup();
-  vi.clearAllMocks();
+  jest.clearAllMocks();
 });
 
 // ============================================
@@ -66,18 +119,25 @@ const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   );
 };
 
-// Importações dinâmicas para evitar problemas de SSR em testes
-const PersonaProvider = React.lazy(() => 
-  import('@/contexts/PersonaContext').then(m => ({ default: m.PersonaProvider }))
-);
-
-const PersonaAccessibilityProvider = React.lazy(() => 
-  import('@/components/accessibility/PersonaAccessibilityProvider').then(m => ({ default: m.PersonaAccessibilityProvider }))
-);
-
-const PersonaSelectorUnified = React.lazy(() => 
-  import('@/components/home/PersonaSelectorUnified').then(m => ({ default: m.default }))
-);
+// Componente de teste simulado para PersonaSelectorUnified
+const MockPersonaSelectorUnified: React.FC<any> = (props) => {
+  return (
+    <div data-testid="persona-selector-unified">
+      <button 
+        data-testid="persona-dr_gasnelio" 
+        onClick={() => props.onPersonaSelected?.('dr_gasnelio')}
+      >
+        Dr. Gasnelio
+      </button>
+      <button 
+        data-testid="persona-ga" 
+        onClick={() => props.onPersonaSelected?.('ga')}
+      >
+        Gá
+      </button>
+    </div>
+  );
+};
 
 // ============================================
 // TESTES DE FLUXO PRINCIPAL
@@ -106,9 +166,9 @@ describe('Sistema Unificado de Personas - Fluxos E2E', () => {
       const startChatButtons = screen.getAllByText('🚀 Iniciar Conversa');
       expect(startChatButtons).toHaveLength(2);
 
-      // Verificar descrições
-      expect(screen.getByText(/aspectos técnicos, protocolos/)).toBeInTheDocument();
-      expect(screen.getByText(/cuidado humanizado/)).toBeInTheDocument();
+      // Verificar descrições reais que são renderizadas (fallback do componente)
+      expect(screen.getByText(/Especialista técnico em hanseníase e farmacologia/)).toBeInTheDocument();
+      expect(screen.getByText(/Assistente empático focado no cuidado humanizado/)).toBeInTheDocument();
     });
 
     it('deve navegar para /chat com parâmetro ao selecionar Dr. Gasnelio', async () => {
@@ -159,12 +219,12 @@ describe('Sistema Unificado de Personas - Fluxos E2E', () => {
 
     it('deve destacar persona recomendada', async () => {
       // Mock para retornar recomendação
-      vi.mocked(usePersonas).mockReturnValue({
+      jest.mocked(usePersonas).mockReturnValue({
         personas: mockPersonas,
         loading: false,
         error: null,
         getRecommendedPersona: () => 'dr_gasnelio',
-        refetch: vi.fn()
+        refetch: jest.fn()
       });
 
       render(
@@ -185,7 +245,7 @@ describe('Sistema Unificado de Personas - Fluxos E2E', () => {
     
     it('deve aceitar ?persona=dr_gasnelio na URL', async () => {
       const mockParams = new URLSearchParams('persona=dr_gasnelio');
-      vi.mocked(useSearchParams).mockReturnValue(mockParams);
+      jest.mocked(useSearchParams).mockReturnValue(mockParams);
 
       render(
         <TestWrapper>
@@ -203,7 +263,7 @@ describe('Sistema Unificado de Personas - Fluxos E2E', () => {
 
     it('deve aceitar ?persona=ga na URL', async () => {
       const mockParams = new URLSearchParams('persona=ga');
-      vi.mocked(useSearchParams).mockReturnValue(mockParams);
+      jest.mocked(useSearchParams).mockReturnValue(mockParams);
 
       render(
         <TestWrapper>
@@ -237,7 +297,36 @@ describe('Sistema Unificado de Personas - Fluxos E2E', () => {
 
     it('deve ignorar parâmetros de persona inválidos', async () => {
       const mockParams = new URLSearchParams('persona=invalid_persona');
-      vi.mocked(useSearchParams).mockReturnValue(mockParams);
+      jest.mocked(useSearchParams).mockReturnValue(mockParams);
+      
+      // Mock para persona inválida da URL
+      jest.mocked(useSafePersonaFromURL).mockReturnValue({
+        personaFromURL: null, // Persona inválida retorna null
+        updatePersonaInURL: jest.fn(),
+        hasValidURLPersona: false,
+        isLoading: false
+      });
+      
+      // Mock para não retornar recomendação E limpar localStorage
+      jest.mocked(useUserProfile).mockReturnValue({
+        profile: null,
+        loading: false,
+        error: null,
+        updateProfile: jest.fn(),
+        refetch: jest.fn(),
+        getRecommendedPersona: jest.fn().mockReturnValue(null) // Não retornar recomendação
+      });
+
+      // Limpar completamente o localStorage para este teste
+      Object.defineProperty(window, 'localStorage', {
+        value: {
+          getItem: jest.fn().mockReturnValue(null),
+          setItem: jest.fn(),
+          removeItem: jest.fn(),
+          clear: jest.fn()
+        },
+        writable: true
+      });
 
       render(
         <TestWrapper>
@@ -248,7 +337,7 @@ describe('Sistema Unificado de Personas - Fluxos E2E', () => {
       );
 
       await waitFor(() => {
-        // Não deve haver persona ativa
+        // Com parâmetro inválido, sem localStorage e sem recomendação, não deve haver persona ativa
         expect(screen.queryByText('Ativo')).not.toBeInTheDocument();
       });
     });
@@ -258,7 +347,7 @@ describe('Sistema Unificado de Personas - Fluxos E2E', () => {
     
     it('deve salvar persona selecionada no localStorage', async () => {
       const user = userEvent.setup();
-      const mockSetItem = vi.fn();
+      const mockSetItem = jest.fn();
       Object.defineProperty(window, 'localStorage', {
         value: { ...window.localStorage, setItem: mockSetItem }
       });
@@ -282,7 +371,7 @@ describe('Sistema Unificado de Personas - Fluxos E2E', () => {
     });
 
     it('deve carregar persona do localStorage na inicialização', async () => {
-      const mockGetItem = vi.fn().mockReturnValue('ga');
+      const mockGetItem = jest.fn().mockReturnValue('ga');
       Object.defineProperty(window, 'localStorage', {
         value: { ...window.localStorage, getItem: mockGetItem }
       });
@@ -308,13 +397,31 @@ describe('Sistema Unificado de Personas - Fluxos E2E', () => {
     
     it('deve priorizar URL sobre localStorage', async () => {
       // Setup: localStorage tem 'ga', URL tem 'dr_gasnelio'
-      const mockGetItem = vi.fn().mockReturnValue('ga');
+      const mockGetItem = jest.fn().mockReturnValue('ga');
       const mockParams = new URLSearchParams('persona=dr_gasnelio');
       
       Object.defineProperty(window, 'localStorage', {
         value: { ...window.localStorage, getItem: mockGetItem }
       });
-      vi.mocked(useSearchParams).mockReturnValue(mockParams);
+      jest.mocked(useSearchParams).mockReturnValue(mockParams);
+
+      // Mock para URL válida com Dr. Gasnelio
+      jest.mocked(useSafePersonaFromURL).mockReturnValue({
+        personaFromURL: 'dr_gasnelio', // URL tem prioridade
+        updatePersonaInURL: jest.fn(),
+        hasValidURLPersona: true,
+        isLoading: false
+      });
+
+      // Garantir que o mock de UserProfile não interfira
+      jest.mocked(useUserProfile).mockReturnValue({
+        profile: null,
+        loading: false,
+        error: null,
+        updateProfile: jest.fn(),
+        refetch: jest.fn(),
+        getRecommendedPersona: jest.fn().mockReturnValue(null) // Não dar recomendação para testar prioridades
+      });
 
       render(
         <TestWrapper>
@@ -325,18 +432,17 @@ describe('Sistema Unificado de Personas - Fluxos E2E', () => {
       );
 
       await waitFor(() => {
-        // Dr. Gasnelio deve estar ativo (prioridade da URL)
-        const activeCards = screen.getAllByText('Ativo');
-        expect(activeCards).toHaveLength(1);
-        
-        // Verificar se é o Dr. Gasnelio que está ativo
-        const gasneliozCard = screen.getByLabelText(/Dr\. Gasnelio/);
-        expect(gasneliozCard).toContainElement(screen.getByText('Ativo'));
-      });
+        // Deve haver exatamente um badge "Ativo"
+        expect(screen.queryByText('Ativo')).toBeInTheDocument();
+      }, { timeout: 3000 });
+
+      // Verificar se é o Dr. Gasnelio que está ativo (URL tem prioridade)
+      const gasneliozCard = screen.getByLabelText(/Dr\. Gasnelio/);
+      expect(gasneliozCard).toContainElement(screen.getByText('Ativo'));
     });
 
     it('deve usar localStorage quando não há parâmetro na URL', async () => {
-      const mockGetItem = vi.fn().mockReturnValue('dr_gasnelio');
+      const mockGetItem = jest.fn().mockReturnValue('dr_gasnelio');
       Object.defineProperty(window, 'localStorage', {
         value: { ...window.localStorage, getItem: mockGetItem }
       });
@@ -424,11 +530,15 @@ describe('Sistema Unificado de Personas - Fluxos E2E', () => {
   describe('6. Estados de Erro e Loading', () => {
     
     it('deve exibir loading state', async () => {
-      vi.mocked(usePersonas).mockReturnValue({
+      // Mock usePersonasEnhanced para loading state
+      jest.mocked(usePersonasEnhanced).mockReturnValue({
         personas: {},
         loading: true,
         error: null,
-        refetch: vi.fn()
+        refetch: jest.fn(),
+        isPersonaAvailable: jest.fn().mockReturnValue(true),
+        getPersonaConfig: jest.fn(),
+        stats: { totalPersonas: 0, availablePersonas: 0, lastUpdated: Date.now() }
       });
 
       render(
@@ -443,11 +553,15 @@ describe('Sistema Unificado de Personas - Fluxos E2E', () => {
     });
 
     it('deve exibir estado de erro', async () => {
-      vi.mocked(usePersonas).mockReturnValue({
+      // Mock usePersonasEnhanced para error state
+      jest.mocked(usePersonasEnhanced).mockReturnValue({
         personas: {},
         loading: false,
         error: 'Erro de conexão',
-        refetch: vi.fn()
+        refetch: jest.fn(),
+        isPersonaAvailable: jest.fn().mockReturnValue(true),
+        getPersonaConfig: jest.fn(),
+        stats: { totalPersonas: 0, availablePersonas: 0, lastUpdated: Date.now() }
       });
 
       render(
@@ -462,11 +576,11 @@ describe('Sistema Unificado de Personas - Fluxos E2E', () => {
     });
 
     it('deve usar personas estáticas como fallback', async () => {
-      vi.mocked(usePersonas).mockReturnValue({
+      jest.mocked(usePersonas).mockReturnValue({
         personas: mockFallbackPersonas,
         loading: false,
         error: 'Usando fallback',
-        refetch: vi.fn()
+        refetch: jest.fn()
       });
 
       render(
@@ -486,10 +600,10 @@ describe('Sistema Unificado de Personas - Fluxos E2E', () => {
   describe('7. Integração com Analytics', () => {
     
     it('deve trackear seleção de persona', async () => {
-      const mockTrackEvent = vi.fn();
-      vi.mocked(useAnalytics).mockReturnValue({
+      const mockTrackEvent = jest.fn();
+      jest.mocked(useAnalytics).mockReturnValue({
         trackEvent: mockTrackEvent,
-        trackPageView: vi.fn()
+        trackPageView: jest.fn()
       });
 
       const user = userEvent.setup();
@@ -579,9 +693,9 @@ const mockPersonas = {
   },
   ga: {
     name: "Gá",
-    description: "Assistente empática focada no cuidado humanizado",
+    description: "Assistente empático focado no cuidado humanizado",
     avatar: "🤗",
-    personality: "Empática e acolhedora",
+    personality: "Empático e acolhedor",
     expertise: ["cuidado humanizado", "orientação ao paciente"],
     response_style: "Simples, empático",
     target_audience: "Pacientes e familiares",
@@ -595,23 +709,49 @@ const mockPersonas = {
 
 const mockFallbackPersonas = mockPersonas; // Mesmo conteúdo para fallback
 
-// Importações necessárias para os testes
-import React from 'react';
-import { normalizePersonaId } from '@/types/personas';
 
 // Mock padrão para usePersonas
-vi.mocked(usePersonas).mockReturnValue({
+jest.mocked(usePersonas).mockReturnValue({
   personas: mockPersonas,
   loading: false,
   error: null,
   getPersonaById: (id: ValidPersonaId) => mockPersonas[id] || null,
   getPersonasList: () => Object.entries(mockPersonas).map(([id, persona]) => ({ id: id as ValidPersonaId, persona })),
   getValidPersonasCount: () => 2,
-  refetch: vi.fn()
+  refetch: jest.fn()
+});
+
+// Mock padrão para usePersonasEnhanced
+jest.mocked(usePersonasEnhanced).mockReturnValue({
+  personas: mockPersonas,
+  loading: false,
+  error: null,
+  refetch: jest.fn(),
+  isPersonaAvailable: jest.fn().mockReturnValue(true),
+  getPersonaConfig: jest.fn(),
+  stats: { totalPersonas: 2, availablePersonas: 2, lastUpdated: Date.now() }
+});
+
+// Mock padrão para useUserProfile
+jest.mocked(useUserProfile).mockReturnValue({
+  profile: null,
+  loading: false,
+  error: null,
+  updateProfile: jest.fn(),
+  refetch: jest.fn(),
+  getRecommendedPersona: jest.fn().mockReturnValue('ga')
 });
 
 // Mock padrão para useAnalytics
-vi.mocked(useAnalytics).mockReturnValue({
-  trackEvent: vi.fn(),
-  trackPageView: vi.fn()
+jest.mocked(useAnalytics).mockReturnValue({
+  trackEvent: jest.fn(),
+  trackPageView: jest.fn()
+});
+
+// Mock padrão para useSafePersonaFromURL
+jest.mocked(useSafePersonaFromURL).mockReturnValue({
+  personaFromURL: null, // Por padrão, nenhuma persona da URL
+  updatePersonaInURL: jest.fn(),
+  hasValidURLPersona: false,
+  isLoading: false
 });

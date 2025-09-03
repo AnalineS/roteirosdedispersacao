@@ -38,7 +38,7 @@ export default function EducationalLayout({
         <FloatingElementsCoordinator>
           <VisualHierarchyOptimizer applyToRoot={true}>
             <MobileFirstFramework enableSwipeGestures={true} touchTargetSize="medium">
-              <div className="educational-layout hierarchy-content-container mobile-safe-area" role="document">
+              <div className="educational-layout hierarchy-content-container mobile-safe-area" role="document" style={{ width: '100%', maxWidth: '100%' }}>
         {/* Indicador de foco global */}
         <FocusIndicator 
           enabled={true}

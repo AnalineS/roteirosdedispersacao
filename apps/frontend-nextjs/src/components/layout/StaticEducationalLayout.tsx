@@ -19,9 +19,9 @@ export default function StaticEducationalLayout({ children }: StaticEducationalL
         boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
       }}>
         <nav style={{ 
-          maxWidth: 'min(1200px, 95vw)', 
+          width: '100%',
           margin: '0 auto',
-          padding: '0 1rem',
+          padding: '0 clamp(1rem, 3vw, 4rem)',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center'
@@ -120,9 +120,9 @@ export default function StaticEducationalLayout({ children }: StaticEducationalL
         marginTop: '4rem'
       }}>
         <div style={{ 
-          maxWidth: 'min(1200px, 95vw)', 
+          width: '100%',
           margin: '0 auto',
-          padding: '0 1rem',
+          padding: '0 clamp(1rem, 3vw, 4rem)',
           textAlign: 'center'
         }}>
           <div style={{

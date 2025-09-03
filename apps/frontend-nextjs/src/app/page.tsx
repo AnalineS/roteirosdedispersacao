@@ -50,9 +50,9 @@ export default function HomePage() {
         margin: '0'
       }}>
         <div style={{ 
-          maxWidth: 'min(1200px, 95vw)', 
+          width: '100%',
           margin: '0 auto',
-          padding: '0 1rem'
+          padding: '0 clamp(1rem, 3vw, 4rem)'
         }}>
           <div style={{
             display: 'flex',
@@ -81,9 +81,9 @@ export default function HomePage() {
       {/* Persona Selector - Client Component */}
       <Suspense fallback={
         <div style={{ 
-          maxWidth: 'min(1400px, 95vw)', 
+          width: '100%',
           margin: '3rem auto',
-          padding: '2.5rem',
+          padding: '2.5rem clamp(1rem, 3vw, 4rem)',
           textAlign: 'center'
         }}>
           <LoadingSpinner />
@@ -95,9 +95,9 @@ export default function HomePage() {
 
       {/* Static Features Section */}
       <section style={{ 
-        maxWidth: 'min(1400px, 95vw)', 
+        width: '100%',
         margin: '3rem auto',
-        padding: '2rem'
+        padding: '2rem clamp(1rem, 3vw, 4rem)'
       }}>
         <div className="text-center hierarchy-component" style={{ marginBottom: '3rem' }}>
           <HierarchyHeading level="h2" style={{
@@ -275,9 +275,9 @@ export default function HomePage() {
         marginTop: '4rem'
       }}>
         <div style={{ 
-          maxWidth: 'min(1200px, 95vw)', 
+          width: '100%',
           margin: '0 auto',
-          padding: '0 1rem',
+          padding: '0 clamp(1rem, 3vw, 4rem)',
           textAlign: 'center'
         }}>
           <HierarchyHeading level="h2" style={{

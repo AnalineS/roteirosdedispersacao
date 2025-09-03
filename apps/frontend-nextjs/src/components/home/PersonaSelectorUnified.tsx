@@ -341,9 +341,9 @@ export default function PersonaSelectorUnified({
   if (error && Object.keys(personas).length === 0) {
     return (
       <div className={className} style={{ 
-        maxWidth: 'min(1400px, 95vw)', 
+        width: '100%',
         margin: '3rem auto',
-        padding: '2.5rem',
+        padding: '2.5rem clamp(1rem, 3vw, 4rem)',
         textAlign: 'center'
       }}>
         <div style={{ color: '#ef4444', fontSize: '1.1rem' }}>
@@ -375,9 +375,9 @@ export default function PersonaSelectorUnified({
 
   return (
     <div className={className} style={{ 
-      maxWidth: 'min(1400px, 95vw)', 
+      width: '100%',
       margin: '3rem auto',
-      padding: '2.5rem',
+      padding: '2.5rem clamp(1rem, 3vw, 4rem)',
       background: 'rgba(255, 255, 255, 0.95)',
       borderRadius: '24px',
       boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',

@@ -374,8 +374,8 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: isWideScreen ? '0 clamp(1rem, 2vw, 2rem)' : '0 clamp(1rem, 2vw, 1.5rem)',
-        gap: '1rem',
+        padding: isMobile ? '0 1rem' : isTablet ? '0 clamp(1.5rem, 2vw, 2rem)' : '0 clamp(2rem, 3vw, 4rem)',
+        gap: isMobile ? '0.5rem' : isTablet ? '1rem' : '1.5rem',
         minHeight: '80px',
         boxSizing: 'border-box'
       }}

@@ -294,7 +294,7 @@ export default function PersonaSelector({ personas, onPersonaSelect }: PersonaSe
                 handlePersonaSelect('ga');
               }
             }}
-            aria-label="Escolher Gá como assistente - Clara e acolhedora"
+            aria-label="Escolher Gá como assistente - Claro e acolhedor"
             role="button"
             tabIndex={0}
           >
@@ -322,7 +322,7 @@ export default function PersonaSelector({ personas, onPersonaSelect }: PersonaSe
               Gá
             </h4>
             <p style={{ fontSize: '0.75rem', color: '#64748b' }}>
-              Clara e acolhedora
+              Claro e acolhedor
             </p>
           </button>
         </div>
