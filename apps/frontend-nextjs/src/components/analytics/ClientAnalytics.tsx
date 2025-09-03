@@ -7,19 +7,19 @@ import { LazyOnScroll } from '@/components/optimization/LazyComponent';
 const CognitiveLoadAuditor = React.lazy(() => 
   import('@/components/analytics/CognitiveLoadAuditor')
     .then(mod => ({ default: mod.CognitiveLoadAuditor }))
-    .catch(() => ({ default: () => null }))
+    .catch(() => ({ default: () => <div /> }))
 );
 
 const MobileUXAuditor = React.lazy(() => 
   import('@/components/analytics/MobileUXAuditor')
     .then(mod => ({ default: mod.MobileUXAuditor }))
-    .catch(() => ({ default: () => null }))
+    .catch(() => ({ default: () => <div /> }))
 );
 
 const AccessibilityAuditPanel = React.lazy(() => 
   import('@/components/accessibility/AccessibilityAuditPanel')
     .then(mod => ({ default: mod.default }))
-    .catch(() => ({ default: () => null }))
+    .catch(() => ({ default: () => <div /> }))
 );
 
 export default function ClientAnalytics() {

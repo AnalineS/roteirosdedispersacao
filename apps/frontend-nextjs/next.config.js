@@ -67,10 +67,10 @@ const nextConfig = {
     reactCompiler: {
       compilationMode: 'annotation',
     },
-    // Otimizações específicas para SSG
-    optimisticClientCache: false, // Disable for static export
-    serverComponentsExternalPackages: [], // Better bundling for client components
   },
+
+  // Server external packages (moved from experimental)
+  serverExternalPackages: [],
   
   // ESLint configuração para build
   eslint: {

@@ -6,7 +6,7 @@ import { usePersonas } from '@/hooks/usePersonas';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import type { UserProfile } from '@/hooks/useUserProfile';
 import { getPersonaAvatar } from '@/constants/avatars';
-import { ChatBotIcon } from '@/components/ui/EducationalIcons';
+import { ChatBotIcon } from '@/components/icons/NavigationIcons';
 
 export default function PersonaSelector() {
   const router = useRouter();
