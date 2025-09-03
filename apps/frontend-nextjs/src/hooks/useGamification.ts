@@ -7,7 +7,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useSafeAuth as useAuth } from '@/hooks/useSafeAuth';
 import type { 
   LearningProgress, 
   Achievement, 

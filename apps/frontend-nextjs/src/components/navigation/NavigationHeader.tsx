@@ -26,7 +26,7 @@ import MobileNavigation from './MobileNavigation';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import IntelligentSearchSystem from '@/components/search/IntelligentSearchSystem';
 import { AuthButton } from '@/components/auth';
-import { useAuth } from '@/contexts/AuthContext';
+import { useSafeAuth } from '@/hooks/useSafeAuth';
 import { SkipToContent, HighContrastToggle } from '@/components/accessibility';
 // Interfaces de navegação (movidas do Sidebar removido)
 export interface NavigationItem {
@@ -62,7 +62,7 @@ interface DropdownState {
 export default function NavigationHeader({ currentPersona, className = '' }: NavigationHeaderProps) {
   const pathname = usePathname();
   const { personas } = usePersonas();
-  const { isAdmin } = useAuth();
+  const { isAdmin } = useSafeAuth();
   const headerRef = useRef<HTMLElement>(null);
   const unbColors = getUnbColors();
   const shouldShowHeader = useNavigationVisibility('main-header');
@@ -783,7 +783,7 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
             </>
           )}
           
-          {isAdmin() && !isMobile && (
+          {isAdmin && !isMobile && (
             <Link 
               href="/admin"
               style={{

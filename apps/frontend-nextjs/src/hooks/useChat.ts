@@ -10,7 +10,7 @@ import { shouldSuggestPersonaSwitch, adjustResponseTone, SentimentResult } from 
 import { useKnowledgeBase } from '@/hooks/useKnowledgeBase';
 import { useFallback } from '@/hooks/useFallback';
 import { FallbackResult } from '@/services/fallbackSystem';
-import { useAuth } from '@/hooks/useAuth';
+import { useSafeAuth } from '@/hooks/useSafeAuth';
 import { generateTempUserId } from '@/utils/cryptoUtils';
 import { redisCache } from '@/services/redisCache';
 
@@ -36,7 +36,7 @@ export function useChat(options: UseChatOptions = {}) {
   } = options;
 
   // Auth state para sessionId
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated } = useSafeAuth();
 
   // SessionID híbrido: transição suave entre anônimo e logado
   const sessionId = useMemo(() => {

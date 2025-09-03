@@ -6,7 +6,7 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { ChatMessage } from '@/services/api';
-import { useAuth } from '@/contexts/AuthContext';
+import { useSafeAuth as useAuth } from '@/hooks/useSafeAuth';
 import { ConversationRepository } from '@/lib/firebase/firestore';
 import { FirestoreConversation, FirestoreMessage } from '@/lib/firebase/types';
 import { FEATURES } from '@/lib/firebase/config';

@@ -1,23 +1,20 @@
 'use client';
 
-import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { useState, useEffect, useCallback } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import { STATIC_PERSONAS } from '@/data/personas';
 import type { PersonasResponse } from '@/services/api';
 
-// Tipos válidos de persona
+// Re-export dos tipos da versão original
 export type ValidPersonaId = 'dr_gasnelio' | 'ga';
 
-// Validação de persona ID
 export const isValidPersonaId = (personaId: string | null): personaId is ValidPersonaId => {
   return personaId === 'dr_gasnelio' || personaId === 'ga';
 };
 
-// Normalização de persona ID (para compatibilidade)
 const normalizePersonaId = (personaId: string): ValidPersonaId | null => {
   const normalized = personaId.toLowerCase().trim();
   
-  // Mapeamentos para compatibilidade
   const aliases: Record<string, ValidPersonaId> = {
     'dr_gasnelio': 'dr_gasnelio',
     'gasnelio': 'dr_gasnelio',
@@ -35,31 +32,25 @@ const normalizePersonaId = (personaId: string): ValidPersonaId | null => {
 };
 
 interface UsePersonaFromURLOptions {
-  /** Persona padrão quando não há URL param válido */
   defaultPersona?: ValidPersonaId;
-  /** Se deve atualizar URL quando persona muda */
   updateURL?: boolean;
-  /** Personas disponíveis (usado para validação) */
   availablePersonas?: PersonasResponse;
 }
 
 interface UsePersonaFromURLReturn {
-  /** Persona ID atual da URL */
   personaFromURL: ValidPersonaId | null;
-  /** Se há um parâmetro de persona válido na URL */
   hasValidURLPersona: boolean;
-  /** Atualizar persona na URL */
   updatePersonaInURL: (personaId: ValidPersonaId | null) => void;
-  /** Limpar parâmetro persona da URL */
   clearPersonaFromURL: () => void;
-  /** Verificar se persona está válida contra personas disponíveis */
   isPersonaAvailable: (personaId: ValidPersonaId) => boolean;
-  /** Obter URL completa com persona */
   getURLWithPersona: (personaId: ValidPersonaId) => string;
-  /** Estado de loading enquanto processa parâmetros */
   isLoading: boolean;
 }
 
+/**
+ * Versão segura do useSafePersonaFromURL que funciona com SSG
+ * Não usa useSearchParams diretamente
+ */
 export function useSafePersonaFromURL(options: UsePersonaFromURLOptions = {}): UsePersonaFromURLReturn {
   const {
     defaultPersona = 'ga',
@@ -67,47 +58,49 @@ export function useSafePersonaFromURL(options: UsePersonaFromURLOptions = {}): U
     availablePersonas
   } = options;
 
-  const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
   const [isLoading, setIsLoading] = useState(true);
-
-  // Estado para evitar loops de re-render
   const [currentPersonaParam, setCurrentPersonaParam] = useState<ValidPersonaId | null>(null);
+  const [isClient, setIsClient] = useState(false);
 
-  // Verificar se persona está disponível nas personas carregadas
+  // Verificar se persona está disponível
   const isPersonaAvailable = useCallback((personaId: ValidPersonaId): boolean => {
     if (!availablePersonas) {
-      // Fallback para personas estáticas se não há personas dinâmicas
       return personaId in STATIC_PERSONAS;
     }
     return personaId in availablePersonas;
   }, [availablePersonas]);
 
-  // Processar parâmetro da URL
+  // Processar parâmetro da URL no client-side
   useEffect(() => {
+    setIsClient(true);
     setIsLoading(true);
     
-    const urlPersonaParam = searchParams?.get('persona');
-    let validPersonaId: ValidPersonaId | null = null;
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlPersonaParam = urlParams.get('persona');
+      let validPersonaId: ValidPersonaId | null = null;
 
-    if (urlPersonaParam) {
-      const normalized = normalizePersonaId(urlPersonaParam);
-      
-      if (normalized && isPersonaAvailable(normalized)) {
-        validPersonaId = normalized;
+      if (urlPersonaParam) {
+        const normalized = normalizePersonaId(urlPersonaParam);
+        
+        if (normalized && isPersonaAvailable(normalized)) {
+          validPersonaId = normalized;
+        }
       }
-    }
 
-    setCurrentPersonaParam(validPersonaId);
+      setCurrentPersonaParam(validPersonaId);
+    }
+    
     setIsLoading(false);
-  }, [searchParams, isPersonaAvailable]);
+  }, [isPersonaAvailable]);
 
   // Função para atualizar persona na URL
   const updatePersonaInURL = useCallback((personaId: ValidPersonaId | null) => {
-    if (!updateURL) return;
+    if (!updateURL || !isClient) return;
 
-    const params = new URLSearchParams(searchParams || '');
+    const params = new URLSearchParams(window.location.search);
     
     if (personaId && isPersonaAvailable(personaId)) {
       params.set('persona', personaId);
@@ -115,16 +108,13 @@ export function useSafePersonaFromURL(options: UsePersonaFromURLOptions = {}): U
       params.delete('persona');
     }
 
-    // Construir URL sem causar navegação desnecessária
     const newURL = `${pathname}?${params.toString()}`;
-    const currentURL = `${pathname}?${searchParams?.toString() || ''}`;
     
-    if (newURL !== currentURL) {
-      // Usar replace para não adicionar ao histórico
+    if (newURL !== window.location.pathname + window.location.search) {
       router.replace(newURL);
       setCurrentPersonaParam(personaId);
     }
-  }, [searchParams, pathname, router, updateURL, isPersonaAvailable]);
+  }, [pathname, router, updateURL, isPersonaAvailable, isClient]);
 
   // Função para limpar persona da URL
   const clearPersonaFromURL = useCallback(() => {
@@ -133,7 +123,7 @@ export function useSafePersonaFromURL(options: UsePersonaFromURLOptions = {}): U
 
   // Função para obter URL com persona específica
   const getURLWithPersona = useCallback((personaId: ValidPersonaId): string => {
-    const params = new URLSearchParams(searchParams || '');
+    const params = new URLSearchParams(isClient ? window.location.search : '');
     
     if (isPersonaAvailable(personaId)) {
       params.set('persona', personaId);
@@ -142,7 +132,7 @@ export function useSafePersonaFromURL(options: UsePersonaFromURLOptions = {}): U
     }
 
     return `${pathname}?${params.toString()}`;
-  }, [searchParams, pathname, isPersonaAvailable]);
+  }, [pathname, isPersonaAvailable, isClient]);
 
   return {
     personaFromURL: currentPersonaParam,
@@ -179,7 +169,7 @@ export function usePersonaURLSync(
   return { personaFromURL, updatePersonaInURL };
 }
 
-// Utilitários para validação em outros hooks
+// Re-export das utilitários
 export const personaValidation = {
   isValid: isValidPersonaId,
   normalize: normalizePersonaId,

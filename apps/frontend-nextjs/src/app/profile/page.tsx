@@ -15,7 +15,7 @@ import {
   Link as LinkIcon,
   Trash2
 } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useSafeAuth as useAuth } from '@/hooks/useSafeAuth';
 import { SocialAuthButtons } from '@/components/auth';
 import type { UserFocus } from '@/lib/firebase/types';
 
@@ -172,7 +172,7 @@ export default function ProfilePage() {
     return null; // Will redirect
   }
 
-  const connectedProviders = user?.providerData?.map(p => p.providerId) || [];
+  const connectedProviders = user?.providerData?.map((p: any) => p.providerId) || [];
 
   return (
     <div className="profile-container">
@@ -387,7 +387,7 @@ export default function ProfilePage() {
                 <div className="connected-accounts">
                   {connectedProviders.length > 0 ? (
                     <div className="account-list">
-                      {connectedProviders.map(provider => (
+                      {connectedProviders.map((provider: any) => (
                         <div key={provider} className="account-item connected">
                           <div className="account-info">
                             <LinkIcon size={20} />

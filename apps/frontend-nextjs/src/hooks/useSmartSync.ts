@@ -5,7 +5,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useSafeAuth as useAuth } from '@/hooks/useSafeAuth';
 import { SmartSyncManager } from '@/lib/firebase/sync/smartSyncManager';
 import { ConflictResolutionManager } from '@/lib/firebase/sync/conflictResolution';
 import { FEATURES } from '@/lib/firebase/config';

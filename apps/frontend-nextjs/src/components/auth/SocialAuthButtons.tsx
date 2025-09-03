@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useSafeAuth } from '@/hooks/useSafeAuth';
 import { AVAILABLE_PROVIDERS } from '@/lib/firebase/config';
 import type { SocialAuthCredentials } from '@/lib/firebase/types';
 
@@ -24,7 +24,7 @@ export default function SocialAuthButtons({
   showDivider = true,
   compact = false
 }: SocialAuthButtonsProps) {
-  const { loginWithSocial, linkSocialAccount, loading } = useAuth();
+  const { loginWithSocial, linkSocialAccount, isLoading } = useSafeAuth();
   const [loadingProvider, setLoadingProvider] = useState<string | null>(null);
 
   const handleSocialAuth = async (providerId: string) => {
@@ -122,7 +122,7 @@ export default function SocialAuthButtons({
       <div className="social-buttons-container">
         {enabledProviders.map((provider) => {
           const isLoading = loadingProvider === provider.id;
-          const isDisabled = loading || loadingProvider !== null;
+          const isDisabled = isLoading || loadingProvider !== null;
 
           return (
             <button

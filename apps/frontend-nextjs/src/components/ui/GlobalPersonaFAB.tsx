@@ -5,7 +5,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
 import { getPersonaAvatar } from '@/constants/avatars';
 import { useChat } from '@/hooks/useChat';
-import { useAuth } from '@/hooks/useAuth';
+import { useSafeAuth } from '@/hooks/useSafeAuth';
 import { useFloatingElement } from '@/components/navigation/FloatingElementsCoordinator';
 import { useFABVisibility } from '@/hooks/useResponsiveScreen';
 
@@ -41,7 +41,7 @@ export default function GlobalPersonaFAB({ className, style }: GlobalPersonaFABP
   
   // Hooks para chat e autenticação
   const { messages, sendMessage, loading, sessionId, getSessionInfo } = useChat();
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user } = useSafeAuth();
   
   // Informações da sessão para debugging/UX
   const sessionInfo = getSessionInfo();

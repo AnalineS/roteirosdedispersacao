@@ -7,7 +7,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useSafeAuth as useAuth } from '@/hooks/useSafeAuth';
 import { FEATURES, FIRESTORE_CONFIG } from '@/lib/firebase/config';
 import { generateSecureId } from '@/utils/cryptoUtils';
 import { 

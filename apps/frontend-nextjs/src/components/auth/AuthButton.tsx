@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useSafeAuth } from '@/hooks/useSafeAuth';
 import { useRouter } from 'next/navigation';
 import SocialAuthButtons from './SocialAuthButtons';
 
@@ -11,7 +11,7 @@ interface AuthButtonProps {
 }
 
 export default function AuthButton({ variant = 'header', className = '' }: AuthButtonProps) {
-  const { user, isAuthenticated, isAnonymous, logout, loading, profile } = useAuth();
+  const { user, isAuthenticated, isAnonymous, logout, isLoading, profile } = useSafeAuth();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const router = useRouter();
 
@@ -40,7 +40,7 @@ export default function AuthButton({ variant = 'header', className = '' }: AuthB
   };
 
   // Loading state
-  if (loading) {
+  if (isLoading) {
     return (
       <div className={`auth-button auth-button--${variant} ${className}`}>
         <div className="loading-spinner">
