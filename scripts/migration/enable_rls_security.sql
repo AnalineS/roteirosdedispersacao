@@ -85,6 +85,78 @@ GRANT ALL ON public.embeddings_metadata TO service_role;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO service_role;
 
 -- =============================================
+-- CORREÇÕES DE SEGURANÇA ADICIONAIS
+-- =============================================
+
+-- 1. Remover SECURITY DEFINER da view daily_search_stats
+-- Views com SECURITY DEFINER executam com permissões do criador
+DROP VIEW IF EXISTS public.daily_search_stats;
+-- Recriar a view sem SECURITY DEFINER (padrão é SECURITY INVOKER)
+CREATE VIEW public.daily_search_stats AS 
+SELECT 
+    DATE(created_at) as search_date,
+    COUNT(*) as total_searches,
+    COUNT(DISTINCT query) as unique_queries
+FROM public.search_cache 
+WHERE created_at >= CURRENT_DATE - INTERVAL '30 days'
+GROUP BY DATE(created_at)
+ORDER BY search_date DESC;
+
+-- 2. Definir search_path seguro para funções
+-- Função: cleanup_expired_cache
+ALTER FUNCTION public.cleanup_expired_cache() 
+SET search_path = public, pg_temp;
+
+-- Função: update_updated_at_column  
+ALTER FUNCTION public.update_updated_at_column()
+SET search_path = public, pg_temp;
+
+-- Função: search_similar_embeddings
+-- Tentar ambas as assinaturas possíveis da função
+DO $$ 
+BEGIN
+    -- Primeira assinatura: vector(384), float, int
+    BEGIN
+        ALTER FUNCTION public.search_similar_embeddings(vector(384), float, int)
+        SET search_path = public, pg_temp;
+    EXCEPTION WHEN undefined_function THEN
+        -- Segunda assinatura: vector(384), real, integer, text
+        BEGIN
+            ALTER FUNCTION public.search_similar_embeddings(vector(384), real, integer, text)
+            SET search_path = public, pg_temp;
+        EXCEPTION WHEN undefined_function THEN
+            -- Terceira assinatura: vector, double precision, integer  
+            BEGIN
+                ALTER FUNCTION public.search_similar_embeddings(vector, double precision, integer)
+                SET search_path = public, pg_temp;
+            EXCEPTION WHEN undefined_function THEN
+                RAISE NOTICE 'Função search_similar_embeddings não encontrada com nenhuma assinatura conhecida';
+            END;
+        END;
+    END;
+END $$;
+
+-- =============================================
+-- NOTA SOBRE EXTENSÃO VECTOR
+-- =============================================
+
+/*
+ALERTA: A extensão 'vector' está instalada no schema public.
+Para maior segurança, considere mover para um schema dedicado:
+
+1. Criar schema para extensões:
+   CREATE SCHEMA IF NOT EXISTS extensions;
+
+2. Mover a extensão:
+   ALTER EXTENSION vector SET SCHEMA extensions;
+
+3. Atualizar funções para usar extensions.vector
+
+IMPORTANTE: Esta mudança requer teste cuidadoso pois pode afetar 
+todas as funções que usam o tipo 'vector'.
+*/
+
+-- =============================================
 -- VERIFICAÇÃO - Confirmar RLS Habilitado
 -- =============================================
 
