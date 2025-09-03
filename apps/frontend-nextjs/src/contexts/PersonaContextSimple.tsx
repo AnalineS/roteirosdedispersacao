@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useCallback, useEffect, useMemo, useState } from 'react';
 import { usePersonasEnhanced } from '@/hooks/usePersonasEnhanced';
-import { usePersonaFromURL, type ValidPersonaId, isValidPersonaId } from '@/hooks/usePersonaFromURL';
+import { useSafePersonaFromURL, type ValidPersonaId, isValidPersonaId } from '@/hooks/useSafePersonaFromURL';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import type { PersonaConfig, PersonaSource } from '@/types/personas';
@@ -38,7 +38,7 @@ export function PersonaProvider({ children }: { children: React.ReactNode }) {
   });
 
   // Hook de URL
-  const { personaFromURL, updatePersonaInURL, hasValidURLPersona } = usePersonaFromURL({
+  const { personaFromURL, updatePersonaInURL, hasValidURLPersona } = useSafePersonaFromURL({
     availablePersonas: personas,
     updateURL: true
   });

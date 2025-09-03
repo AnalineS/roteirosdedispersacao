@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { usePersonaFromURL, type ValidPersonaId, isValidPersonaId } from './usePersonaFromURL';
+import { useSafePersonaFromURL, type ValidPersonaId, isValidPersonaId } from './useSafePersonaFromURL';
 import { usePersonasEnhanced } from './usePersonasEnhanced';
 import { useUserProfile } from './useUserProfile';
 import type { PersonasResponse } from '@/services/api';
@@ -70,7 +70,7 @@ export function usePersonaState(options: UsePersonaStateOptions = {}): UsePerson
   // Hooks de dados
   const { personas, loading: personasLoading } = usePersonasEnhanced();
   const { profile, getRecommendedPersona: getProfileRecommendation } = useUserProfile();
-  const { personaFromURL, updatePersonaInURL, hasValidURLPersona } = usePersonaFromURL({
+  const { personaFromURL, updatePersonaInURL, hasValidURLPersona } = useSafePersonaFromURL({
     availablePersonas: personas,
     updateURL: syncWithURL
   });
