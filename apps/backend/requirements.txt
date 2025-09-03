@@ -48,10 +48,10 @@ pydantic>=2.6.0,<3.0.0
 jsonschema>=4.23.0
 
 # === HTTP & NETWORKING ===
-requests==2.32.4   # SECURITY: Updated beyond CVE-2023-32681
+requests==2.32.5   # SECURITY: Updated beyond CVE-2023-32681
 httpx>=0.24.0
 urllib3>=1.26.0
-certifi==2024.8.30
+certifi==2025.8.3
 
 # === CACHE & PERFORMANCE ===
 # Redis removed - using Firestore hybrid cache system (Phases 2-4)
