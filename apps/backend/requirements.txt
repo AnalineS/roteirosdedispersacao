@@ -113,7 +113,7 @@ python-decouple>=3.8
 
 # === TESTING & QUALITY ASSURANCE ===
 pytest==7.4.3
-pytest-cov==4.1.0
+pytest-cov==6.2.1
 pytest-mock==3.12.0
 
 # === SECURITY ANALYSIS & COMPLIANCE ===
