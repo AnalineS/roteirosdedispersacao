@@ -141,7 +141,7 @@ asyncio>=3.4.3
 websockets>=11.0.0
 
 # === BACKGROUND TASKS ===
-# celery[redis]==5.3.4  # REMOVED: Will use Firestore backend instead
+# celery[redis]==5.5.3  # REMOVED: Will use Firestore backend instead
 celery==5.3.4  # Base celery without Redis dependency
 
 # === PERFORMANCE MONITORING ===
