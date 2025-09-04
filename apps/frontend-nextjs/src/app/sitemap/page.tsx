@@ -118,9 +118,14 @@ export default function SiteMapPage() {
           description: 'Protocolo completo para farmacêuticos'
         },
         {
+          title: 'Vida com a Doença',
+          href: '/modules/vida-com-doenca',
+          description: 'Qualidade de vida e orientações para pacientes'
+        },
+        {
           title: 'Vida com Hanseníase',
           href: '/vida-com-hanseniase',
-          description: 'Qualidade de vida e direitos (acesso público)',
+          description: 'Apoio e orientações - acesso público (link de suporte)',
           isPublic: true
         }
       ]
@@ -139,11 +144,6 @@ export default function SiteMapPage() {
           title: 'Calculadora de Doses PQT-U',
           href: '/resources/calculator',
           description: 'Cálculo automático de doses medicamentosas'
-        },
-        {
-          title: 'Verificador de Interações',
-          href: '/resources/interactions',
-          description: 'Análise de incompatibilidades medicamentosas'
         },
         {
           title: 'Checklist de Dispensação',
@@ -173,14 +173,24 @@ export default function SiteMapPage() {
           description: 'Pesquisa de doutorado em Ciências Farmacêuticas'
         },
         {
-          title: 'Sobre o Sistema',
+          title: 'Conheça a Equipe',
           href: '/sobre',
-          description: 'Informações sobre a plataforma educacional'
+          description: 'Pesquisadores e equipe multidisciplinar do projeto'
         },
         {
           title: 'Metodologia',
           href: '/metodologia',
           description: 'Métodos científicos e fundamentação teórica'
+        },
+        {
+          title: 'Metodologia Detalhada',
+          href: '/metodologia/detalhada',
+          description: 'Procedimentos científicos completos da pesquisa'
+        },
+        {
+          title: 'Referências Bibliográficas',
+          href: '/referencias',
+          description: 'Base científica e referencial teórico utilizado'
         }
       ]
     },
@@ -222,14 +232,24 @@ export default function SiteMapPage() {
       ]
     },
     {
-      title: 'Área Administrativa',
+      title: 'Conta e Administração',
       icon: ToolIcon,
       color: 'bg-orange-50 border-orange-200 text-orange-800',
       pages: [
         {
-          title: 'Configurações',
-          href: '/settings',
-          description: 'Preferências pessoais e personalização'
+          title: 'Perfil do Usuário',
+          href: '/profile',
+          description: 'Gerenciamento de perfil e configurações pessoais'
+        },
+        {
+          title: 'Login',
+          href: '/login',
+          description: 'Acesso à conta do usuário'
+        },
+        {
+          title: 'Cadastro',
+          href: '/cadastro',
+          description: 'Criar nova conta no sistema'
         },
         {
           title: 'Feedback',

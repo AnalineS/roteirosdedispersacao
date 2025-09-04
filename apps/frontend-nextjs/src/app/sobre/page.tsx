@@ -26,11 +26,11 @@ import {
 } from '@/components/icons/EducationalIcons';
 
 /**
- * Página dos Pesquisadores Envolvidos
+ * Página Conheça a Equipe
  * Apresentação da equipe multidisciplinar do projeto Hanseníase PQT-U
  */
 
-export default function SobrePage() {
+export default function ConhecaEquipePage() {
   return (
     <EducationalLayout>
       <div style={{
@@ -66,7 +66,7 @@ export default function SobrePage() {
               color: modernChatTheme.colors.neutral.text,
               margin: 0
             }}>
-              Pesquisadores Envolvidos
+              Conheça a Equipe
             </h1>
           </div>
           
