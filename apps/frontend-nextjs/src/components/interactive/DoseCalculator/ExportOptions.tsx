@@ -9,14 +9,14 @@ interface ExportOptionsProps {
   isAvailable: boolean;
 }
 
-export default function ExportOptions({ result, isAvailable }: ExportOptionsProps) {
+export default function ExportOptions({ result, isAvailable }: ExportOptionsProps): JSX.Element {
   const [emailAddress, setEmailAddress] = useState('');
   const [includeEducational, setIncludeEducational] = useState(true);
   const [additionalNotes, setAdditionalNotes] = useState('');
   const [isExporting, setIsExporting] = useState(false);
   const [exportStatus, setExportStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
-  const handlePDFExport = async () => {
+  const handlePDFExport = async (): Promise<void> => {
     if (!result) return;
     
     setIsExporting(true);
@@ -51,7 +51,7 @@ export default function ExportOptions({ result, isAvailable }: ExportOptionsProp
     setIsExporting(false);
   };
 
-  const handleEmailSend = async () => {
+  const handleEmailSend = async (): Promise<void> => {
     if (!result || !emailAddress) return;
     
     setIsExporting(true);

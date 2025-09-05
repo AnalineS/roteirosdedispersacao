@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 export default function EsqueciSenhaPage() {
@@ -10,7 +9,6 @@ export default function EsqueciSenhaPage() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  const router = useRouter();
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,7 +26,7 @@ export default function EsqueciSenhaPage() {
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       setIsSuccess(true);
-    } catch (error) {
+    } catch (_error) {
       setError('Erro ao enviar email de recuperação. Tente novamente.');
     } finally {
       setIsLoading(false);

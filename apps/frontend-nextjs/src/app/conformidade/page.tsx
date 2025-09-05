@@ -27,7 +27,7 @@ interface ComplianceFramework {
   status: 'compliant' | 'partial' | 'planned';
   measures: string[];
   references: string[];
-  icon: React.ComponentType<any>;
+  icon: React.ComponentType<{ size?: number; className?: string }>;
   color: string;
 }
 

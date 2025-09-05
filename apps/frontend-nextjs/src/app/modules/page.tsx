@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import EducationalLayout from '@/components/layout/EducationalLayout';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 
 interface Module {
   id: string;
@@ -23,7 +22,6 @@ export default function ModulesPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>('all');
   const [showGettingStarted, setShowGettingStarted] = useState(true);
-  const router = useRouter();
 
   const modules: Module[] = [
     {

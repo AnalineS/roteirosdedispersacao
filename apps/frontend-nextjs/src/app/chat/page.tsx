@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, Suspense, lazy, useRef } from 'react';
+import { useState, useEffect, useCallback, Suspense, lazy } from 'react';
 import Link from 'next/link';
 import EducationalLayout from '@/components/layout/EducationalLayout';
 import ModernChatContainer from '@/components/chat/modern/ModernChatContainer';
@@ -32,7 +32,7 @@ export default function ChatPage() {
     includeFallback: true,
     useCache: true
   });
-  const { persona: contextPersona, isLoading: personaLoading } = useCurrentPersona();
+  const { persona: contextPersona, isLoading: _personaLoading } = useCurrentPersona();
   const { setPersona } = usePersonaActions();
   
   // Chat feedback hook
@@ -76,19 +76,19 @@ export default function ChatPage() {
     getConversationsForPersona,
     currentConversationId
   } = useConversationHistory();
-  const { profile, updateProfile, getRecommendedPersona } = useUserProfile();
+  const { profile: _profile, updateProfile: _updateProfile, getRecommendedPersona: _getRecommendedPersona } = useUserProfile();
   const { 
     loading: chatLoading, 
-    error: chatError, 
+    error: _chatError, 
     sendMessage,
     currentSentiment,
-    personaSwitchSuggestion,
+    personaSwitchSuggestion: _personaSwitchSuggestion,
     knowledgeStats,
-    lastSearchResult,
+    lastSearchResult: _lastSearchResult,
     isSearchingKnowledge,
     fallbackState,
-    resetFallback,
-    resetSystemFailures
+    resetFallback: _resetFallback,
+    resetSystemFailures: _resetSystemFailures
   } = useChat({ 
     persistToLocalStorage: false, 
     enableSentimentAnalysis: true,
@@ -142,14 +142,14 @@ export default function ChatPage() {
   const currentMessages = getCurrentMessages();
   
   // Chat Navigation state
-  const { navigationState } = useChatNavigation(currentMessages);
+  const { navigationState: _navigationState } = useChatNavigation(currentMessages);
   
   // Hook de roteamento inteligente
   const {
-    currentAnalysis,
-    isAnalyzing,
-    shouldShowRouting,
-    getRecommendedPersona: getRoutingRecommendedPersona,
+    currentAnalysis: _currentAnalysis,
+    isAnalyzing: _isAnalyzing,
+    shouldShowRouting: _shouldShowRouting,
+    getRecommendedPersona: _getRoutingRecommendedPersona,
     analyzeQuestion,
     acceptRecommendation,
     rejectRecommendation,
@@ -286,7 +286,7 @@ export default function ChatPage() {
   }, [triggerReceiveFeedback]);
   
   const handleNewConversation = (personaId: string) => {
-    const conversationId = createConversation(personaId);
+    const _conversationId = createConversation(personaId);
     setSelectedPersona(personaId);
     if (typeof window !== 'undefined') {
       localStorage.setItem('selectedPersona', personaId);
@@ -308,16 +308,16 @@ export default function ChatPage() {
   };
   
   // Handlers para roteamento inteligente
-  const handleAcceptRouting = useCallback((personaId: string) => {
+  const _handleAcceptRouting = useCallback((personaId: string) => {
     acceptRecommendation();
     handlePersonaChange(personaId);
   }, [acceptRecommendation, handlePersonaChange]);
   
-  const handleRejectRouting = useCallback(() => {
+  const _handleRejectRouting = useCallback(() => {
     rejectRecommendation(selectedPersona || '');
   }, [rejectRecommendation, selectedPersona]);
   
-  const handleShowExplanation = useCallback(() => {
+  const _handleShowExplanation = useCallback(() => {
     console.log('Explicação do roteamento:', getExplanation());
   }, [getExplanation]);
 

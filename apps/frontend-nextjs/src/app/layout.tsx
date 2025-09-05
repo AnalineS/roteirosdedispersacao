@@ -1,5 +1,8 @@
 import type { Metadata, Viewport } from 'next'
 import ErrorBoundary from '@/components/ErrorBoundary'
+import { ErrorBoundary as AdvancedErrorBoundary } from '@/components/errors/ErrorBoundary'
+import { ErrorHandlerProvider } from '@/hooks/useErrorHandler'
+import ErrorToast from '@/components/errors/ErrorToast'
 import OfflineIndicator from '@/components/OfflineIndicator'
 import GoogleAnalytics from '@/components/GoogleAnalytics'
 import { AnalyticsProvider } from '@/components/analytics/AnalyticsProvider'
@@ -114,23 +117,55 @@ export default function RootLayout({
         <EnhancedCoreWebVitals />
         
         <main id="main-content">
-          <AccessibilityProvider>
-            <ThemeProvider>
-              <PersonaProvider>
-                <PersonaAccessibilityProvider>
-                  <GlobalNavigationProvider>
-                    <AuthProviderWrapper>
-                      <AnalyticsProvider>
-                        <ErrorBoundary>
-                          {children}
-                        </ErrorBoundary>
-                      </AnalyticsProvider>
-                    </AuthProviderWrapper>
-                  </GlobalNavigationProvider>
-                </PersonaAccessibilityProvider>
-              </PersonaProvider>
-            </ThemeProvider>
-          </AccessibilityProvider>
+          <ErrorHandlerProvider 
+            maxHistorySize={100}
+            onError={(errorData) => {
+              // Log estruturado para monitoramento
+              if (process.env.NODE_ENV === 'production') {
+                console.log('🔥 Global Error Captured:', errorData.id, errorData.severity);
+              }
+            }}
+          >
+            <AccessibilityProvider>
+              <ThemeProvider>
+                <PersonaProvider>
+                  <PersonaAccessibilityProvider>
+                    <GlobalNavigationProvider>
+                      <AuthProviderWrapper>
+                        <AnalyticsProvider>
+                          <AdvancedErrorBoundary 
+                            level="page"
+                            resetOnPropsChange={true}
+                            onError={(error, errorInfo) => {
+                              // Integração com sistema de analytics
+                              if (typeof window !== 'undefined' && (window as any).gtag) {
+                                (window as any).gtag('event', 'exception', {
+                                  description: error.message,
+                                  fatal: false,
+                                  custom_map: {
+                                    component_stack: errorInfo.componentStack
+                                  }
+                                });
+                              }
+                            }}
+                          >
+                            {children}
+                          </AdvancedErrorBoundary>
+                        </AnalyticsProvider>
+                      </AuthProviderWrapper>
+                    </GlobalNavigationProvider>
+                  </PersonaAccessibilityProvider>
+                </PersonaProvider>
+              </ThemeProvider>
+            </AccessibilityProvider>
+            
+            {/* Toast System - Fora dos providers para máxima compatibilidade */}
+            <ErrorToast 
+              position="top-right"
+              maxToasts={3}
+              autoCloseDuration={5000}
+            />
+          </ErrorHandlerProvider>
         </main>
         
         {/* PWA Manager - Service Worker desabilitado conforme solicitado */}

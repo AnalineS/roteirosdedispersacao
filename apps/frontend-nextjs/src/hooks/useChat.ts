@@ -5,6 +5,7 @@
 
 import { useCallback, useRef, useEffect, useMemo } from 'react';
 import { sendChatMessage, type ChatMessage, type ChatRequest, type ChatResponse } from '@/services/api';
+import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { useSentimentAnalysis } from '@/hooks/useSentimentAnalysis';
 import { shouldSuggestPersonaSwitch, adjustResponseTone, SentimentResult } from '@/services/sentimentAnalysis';
 import { useKnowledgeBase } from '@/hooks/useKnowledgeBase';
@@ -27,6 +28,7 @@ interface UseChatOptions {
 }
 
 export function useChat(options: UseChatOptions = {}) {
+  const { captureError } = useErrorHandler();
   const { 
     persistToLocalStorage = true, 
     storageKey = 'chat-history',

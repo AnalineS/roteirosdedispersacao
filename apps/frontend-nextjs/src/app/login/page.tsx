@@ -17,7 +17,7 @@ import { SocialAuthButtons } from '@/components/auth';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, isAuthenticated, loading: authLoading } = useAuth();
+  const { login, isAuthenticated, loading: _authLoading } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -46,7 +46,7 @@ export default function LoginPage() {
       } else {
         setError(result.error || 'Erro durante o login. Tente novamente.');
       }
-    } catch (err) {
+    } catch (_err) {
       setError('Erro inesperado. Tente novamente.');
     } finally {
       setIsLoading(false);

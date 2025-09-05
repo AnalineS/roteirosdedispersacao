@@ -26,7 +26,7 @@ interface BasicCalculatorProps {
   onCalculationComplete?: (result: CalculationResult) => void;
 }
 
-export default function BasicCalculator({ onCalculationComplete }: BasicCalculatorProps) {
+export default function BasicCalculator({ onCalculationComplete }: BasicCalculatorProps): JSX.Element {
   const [profile, setProfile] = useState<PatientProfile>({
     weight: 0,
     age: 0,
@@ -66,7 +66,7 @@ export default function BasicCalculator({ onCalculationComplete }: BasicCalculat
     setIsCalculating(false);
   }, [profile, onCalculationComplete]);
 
-  const handleInputChange = (field: keyof PatientProfile, value: any) => {
+  const handleInputChange = (field: keyof PatientProfile, value: unknown): void => {
     setProfile(prev => ({ ...prev, [field]: value }));
     setResult(null); // Limpar resultado anterior
   };

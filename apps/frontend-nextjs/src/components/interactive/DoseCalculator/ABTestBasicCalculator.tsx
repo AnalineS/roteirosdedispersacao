@@ -58,7 +58,7 @@ const ABTestBasicCalculator: React.FC<ABTestBasicCalculatorProps> = ({
   );
 
   // Handler para quando cálculo é completado - trackear conversão
-  const handleCalculationComplete = (result: CalculationResult) => {
+  const handleCalculationComplete = (result: CalculationResult): void => {
     // Trackear conversão no A/B test
     trackConversion({
       isValid: result.isValid,
@@ -73,7 +73,7 @@ const ABTestBasicCalculator: React.FC<ABTestBasicCalculatorProps> = ({
   };
 
   // Handler para interações - trackear engagement
-  const handleInteraction = (interactionType: string, data?: any) => {
+  const handleInteraction = (interactionType: string, data?: Record<string, unknown>): void => {
     trackInteraction({
       type: interactionType,
       variant,

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useCallback, useEffect } from 'react';
+import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { calculatePQTUDoses, validateCalculation } from '@/utils/doseCalculations';
 import { PatientProfile, CalculationResult, CalculationHistory } from '@/types/medication';
 import { modernChatTheme } from '@/config/modernTheme';
@@ -12,7 +13,8 @@ interface AdvancedCalculatorProps {
   onCalculationComplete?: (result: CalculationResult) => void;
 }
 
-export default function AdvancedCalculator({ onCalculationComplete }: AdvancedCalculatorProps) {
+export default function AdvancedCalculator({ onCalculationComplete }: AdvancedCalculatorProps): JSX.Element {
+  const { captureError } = useErrorHandler();
   const [activeTab, setActiveTab] = useState<'calculator' | 'history' | 'export'>('calculator');
   const [currentResult, setCurrentResult] = useState<CalculationResult | null>(null);
   const [history, setHistory] = useState<CalculationHistory[]>([]);
@@ -25,7 +27,12 @@ export default function AdvancedCalculator({ onCalculationComplete }: AdvancedCa
       try {
         setHistory(JSON.parse(savedHistory));
       } catch (error) {
-        console.error('Erro ao carregar histórico:', error);
+        captureError(error as Error, {
+          severity: 'low',
+          component: 'AdvancedCalculator',
+          action: 'load_calculation_history',
+          metadata: { storage_key: 'pqtu_calculation_history' }
+        });
       }
     }
   }, []);
@@ -133,7 +140,7 @@ export default function AdvancedCalculator({ onCalculationComplete }: AdvancedCa
         ].map(tab => (
           <button
             key={tab.key}
-            onClick={() => setActiveTab(tab.key as any)}
+            onClick={() => setActiveTab(tab.key as 'basic' | 'advanced' | 'history' | 'export')}
             style={{
               flex: 1,
               padding: modernChatTheme.spacing.md,
@@ -207,7 +214,7 @@ function EnhancedBasicCalculator({
   onCalculationComplete: (result: CalculationResult, profile?: PatientProfile) => void;
   onExportRequest: () => void;
   isAdvanced: boolean;
-}) {
+}): JSX.Element {
   const [profile, setProfile] = useState<PatientProfile>({
     weight: 0,
     age: 0,
@@ -408,7 +415,7 @@ function EnhancedBasicCalculator({
 }
 
 // Placeholder for Export Modal (will be implemented)
-function ExportModal({ result, onClose }: { result: CalculationResult; onClose: () => void }) {
+function ExportModal({ result, onClose }: { result: CalculationResult; onClose: () => void }): JSX.Element {
   return (
     <div style={{
       position: 'fixed',
