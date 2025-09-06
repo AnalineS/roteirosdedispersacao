@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, Suspense, lazy, useRef } from 'react';
+import { useState, useEffect, useCallback, Suspense, lazy } from 'react';
 import Link from 'next/link';
 import EducationalLayout from '@/components/layout/EducationalLayout';
 import ModernChatContainer from '@/components/chat/modern/ModernChatContainer';
@@ -24,7 +24,7 @@ import { useUserProfile } from '@/hooks/useUserProfile';
 import { theme } from '@/config/theme';
 import { SidebarLoader } from '@/components/LoadingSpinner';
 import { type ChatMessage } from '@/services/api';
-import { redisCache } from '@/services/redisCache';
+import { isValidPersonaId, type ValidPersonaId } from '@/types/personas';
 
 export default function ChatPage() {
   const { setPersonaSelectionViewed } = useGlobalNavigation();
@@ -32,7 +32,7 @@ export default function ChatPage() {
     includeFallback: true,
     useCache: true
   });
-  const { persona: contextPersona, isLoading: personaLoading } = useCurrentPersona();
+  const { persona: contextPersona, isLoading: _personaLoading } = useCurrentPersona();
   const { setPersona } = usePersonaActions();
   
   // Chat feedback hook
@@ -57,13 +57,9 @@ export default function ChatPage() {
     ];
     
     // Redis warmup com fallback robusto
-    Promise.resolve()
-      .then(() => redisCache.warmupCache(warmupTopics))
-      .then(() => console.log('🔥 Cache pré-aquecido com sucesso'))
-      .catch(err => {
-        console.warn('Erro no warmup do cache (continuando sem cache):', err);
-        // Não bloquear a aplicação se Redis falhar
-      });
+    // Cache warmup já implementado com firestoreCache
+    // Podem ser chamados os métodos de warmup quando necessário
+    console.log('🔥 Cache warmup disponível via firestoreCache.warmupCache()');
   }, [setPersonaSelectionViewed]);
   
   const {
@@ -76,23 +72,25 @@ export default function ChatPage() {
     getConversationsForPersona,
     currentConversationId
   } = useConversationHistory();
-  const { profile, updateProfile, getRecommendedPersona } = useUserProfile();
+  const { profile: _profile, updateProfile: _updateProfile, getRecommendedPersona: _getRecommendedPersona } = useUserProfile();
   const { 
     loading: chatLoading, 
-    error: chatError, 
+    error: _chatError, 
     sendMessage,
     currentSentiment,
-    personaSwitchSuggestion,
+    personaSwitchSuggestion: _personaSwitchSuggestion,
     knowledgeStats,
-    lastSearchResult,
+    lastSearchResult: _lastSearchResult,
     isSearchingKnowledge,
     fallbackState,
-    resetFallback,
-    resetSystemFailures
+    resetFallback: _resetFallback,
+    resetSystemFailures: _resetSystemFailures
   } = useChat({ 
     persistToLocalStorage: false, 
     enableSentimentAnalysis: true,
     enableKnowledgeEnrichment: true,
+    enableIntelligentRouting: true,
+    availablePersonas: personas,
     onMessageReceived: useCallback((message: ChatMessage) => {
       // Adicionar resposta da IA ao histórico de conversas
       addMessageToConversation(message);
@@ -142,14 +140,14 @@ export default function ChatPage() {
   const currentMessages = getCurrentMessages();
   
   // Chat Navigation state
-  const { navigationState } = useChatNavigation(currentMessages);
+  const { navigationState: _navigationState } = useChatNavigation(currentMessages);
   
   // Hook de roteamento inteligente
   const {
-    currentAnalysis,
-    isAnalyzing,
-    shouldShowRouting,
-    getRecommendedPersona: getRoutingRecommendedPersona,
+    currentAnalysis: _currentAnalysis,
+    isAnalyzing: _isAnalyzing,
+    shouldShowRouting: _shouldShowRouting,
+    getRecommendedPersona: _getRoutingRecommendedPersona,
     analyzeQuestion,
     acceptRecommendation,
     rejectRecommendation,
@@ -167,6 +165,38 @@ export default function ChatPage() {
       analyzeQuestion(inputValue);
     }
   }, [inputValue, selectedPersona, analyzeQuestion]);
+
+  // Handlers para aceitação e rejeição de routing
+  const handleAcceptRouting = useCallback((recommendedPersonaId: string) => {
+    // Validar se é uma persona válida antes de aceitar
+    if (!isValidPersonaId(recommendedPersonaId)) {
+      console.error('Invalid persona ID received:', recommendedPersonaId);
+      return;
+    }
+    
+    // Aceitar a recomendação e trocar para a persona sugerida
+    acceptRecommendation();
+    setPersona(recommendedPersonaId as ValidPersonaId);
+    setSelectedPersona(recommendedPersonaId);
+    
+    // Analytics para métricas de sucesso
+    console.log('Routing accepted:', {
+      from: selectedPersona,
+      to: recommendedPersonaId,
+      timestamp: Date.now()
+    });
+  }, [acceptRecommendation, setPersona, selectedPersona]);
+
+  const handleRejectRouting = useCallback(() => {
+    // Rejeitar a recomendação e manter persona atual
+    rejectRecommendation(selectedPersona || 'dr_gasnelio');
+    
+    // Analytics para melhoria do algoritmo
+    console.log('Routing rejected:', {
+      currentPersona: selectedPersona,
+      timestamp: Date.now()
+    });
+  }, [rejectRecommendation, selectedPersona]);
 
   // Sincronizar persona do contexto com estado local
   useEffect(() => {
@@ -238,7 +268,7 @@ export default function ChatPage() {
   const handlePersonaChange = useCallback(async (personaId: string) => {
     try {
       // Usar o contexto unificado para mudar persona
-      await setPersona(personaId as any, 'explicit');
+      await setPersona(personaId as ValidPersonaId, 'explicit');
       setSelectedPersona(personaId);
       
       // Criar nova conversa para a persona selecionada
@@ -286,7 +316,7 @@ export default function ChatPage() {
   }, [triggerReceiveFeedback]);
   
   const handleNewConversation = (personaId: string) => {
-    const conversationId = createConversation(personaId);
+    const _conversationId = createConversation(personaId);
     setSelectedPersona(personaId);
     if (typeof window !== 'undefined') {
       localStorage.setItem('selectedPersona', personaId);
@@ -308,16 +338,16 @@ export default function ChatPage() {
   };
   
   // Handlers para roteamento inteligente
-  const handleAcceptRouting = useCallback((personaId: string) => {
+  const _handleAcceptRouting = useCallback((personaId: string) => {
     acceptRecommendation();
     handlePersonaChange(personaId);
   }, [acceptRecommendation, handlePersonaChange]);
   
-  const handleRejectRouting = useCallback(() => {
+  const _handleRejectRouting = useCallback(() => {
     rejectRecommendation(selectedPersona || '');
   }, [rejectRecommendation, selectedPersona]);
   
-  const handleShowExplanation = useCallback(() => {
+  const _handleShowExplanation = useCallback(() => {
     console.log('Explicação do roteamento:', getExplanation());
   }, [getExplanation]);
 

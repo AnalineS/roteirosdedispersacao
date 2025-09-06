@@ -1,8 +1,10 @@
 import type { Metadata, Viewport } from 'next'
 import ErrorBoundary from '@/components/ErrorBoundary'
+import ErrorToast from '@/components/errors/ErrorToast'
 import OfflineIndicator from '@/components/OfflineIndicator'
 import GoogleAnalytics from '@/components/GoogleAnalytics'
 import { AnalyticsProvider } from '@/components/analytics/AnalyticsProvider'
+import { GlobalTrackingProvider } from '@/components/analytics/GlobalTrackingProvider'
 import PWAManager from '@/components/pwa/PWAManager'
 import AuthProviderWrapper from '@/components/auth/AuthProviderWrapper'
 import { ThemeProvider } from '@/contexts/ThemeContext'
@@ -11,6 +13,7 @@ import { GlobalNavigationProvider } from '@/components/navigation/GlobalNavigati
 import { PersonaProvider } from '@/contexts/PersonaContext'
 import PersonaAccessibilityProvider from '@/components/accessibility/PersonaAccessibilityProvider'
 import EnhancedCoreWebVitals from '@/components/analytics/EnhancedCoreWebVitals'
+import NumericNavigationWrapper from '@/components/navigation/NumericNavigationWrapper'
 import SITE_CONFIG from '@/lib/config'
 import '@/styles/globals.css'
 import '@/styles/fluid-typography.css'
@@ -114,23 +117,39 @@ export default function RootLayout({
         <EnhancedCoreWebVitals />
         
         <main id="main-content">
-          <AccessibilityProvider>
-            <ThemeProvider>
-              <PersonaProvider>
-                <PersonaAccessibilityProvider>
-                  <GlobalNavigationProvider>
-                    <AuthProviderWrapper>
-                      <AnalyticsProvider>
-                        <ErrorBoundary>
-                          {children}
-                        </ErrorBoundary>
-                      </AnalyticsProvider>
-                    </AuthProviderWrapper>
-                  </GlobalNavigationProvider>
-                </PersonaAccessibilityProvider>
-              </PersonaProvider>
-            </ThemeProvider>
-          </AccessibilityProvider>
+          <ErrorBoundary>
+            <GlobalTrackingProvider>
+              <AccessibilityProvider>
+                <ThemeProvider>
+                  <PersonaProvider>
+                    <PersonaAccessibilityProvider>
+                      <GlobalNavigationProvider>
+                        <AuthProviderWrapper>
+                          <AnalyticsProvider>
+                            {children}
+                          </AnalyticsProvider>
+                        </AuthProviderWrapper>
+                      </GlobalNavigationProvider>
+                    </PersonaAccessibilityProvider>
+                  </PersonaProvider>
+                </ThemeProvider>
+              </AccessibilityProvider>
+            </GlobalTrackingProvider>
+            
+            {/* Toast System - Fora dos providers para máxima compatibilidade */}
+            <ErrorToast 
+              position="top-right"
+              maxToasts={3}
+              autoCloseDuration={5000}
+            />
+
+            {/* Numeric Navigation System - PR #172 */}
+            <NumericNavigationWrapper 
+              enabled={true}
+              showHint={true}
+              hintPosition="bottom-right"
+            />
+          </ErrorBoundary>
         </main>
         
         {/* PWA Manager - Service Worker desabilitado conforme solicitado */}

@@ -1,6 +1,7 @@
 'use client';
 
 import EducationalLayout from '@/components/layout/EducationalLayout';
+import { DoctorIcon, PillIcon, HeartIcon } from '@/components/icons/FlatOutlineIcons';
 import Link from 'next/link';
 
 export default function MetodologiaDetalhadaPage() {
@@ -89,9 +90,14 @@ export default function MetodologiaDetalhadaPage() {
             fontSize: 'clamp(1.8rem, 3vw, 2.5rem)',
             color: '#003366',
             marginBottom: '1rem',
-            fontWeight: '700'
+            fontWeight: '700',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '0.75rem'
           }}>
-            🔬 Metodologia Detalhada
+            <DoctorIcon size={36} color="#003366" />
+            Metodologia Detalhada
           </h1>
           <p style={{
             fontSize: '1.1rem',
@@ -367,14 +373,10 @@ export default function MetodologiaDetalhadaPage() {
                 borderRadius: '6px',
                 textDecoration: 'none',
                 fontSize: '0.95rem',
-                transition: 'transform 0.2s'
+                transition: 'transform 0.2s',
+                display: 'inline-block'
               }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-2px)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-              }}
+              className="hover-lift"
             >
               Sobre a Tese
             </Link>
@@ -388,14 +390,10 @@ export default function MetodologiaDetalhadaPage() {
                 borderRadius: '6px',
                 textDecoration: 'none',
                 fontSize: '0.95rem',
-                transition: 'transform 0.2s'
+                transition: 'transform 0.2s',
+                display: 'inline-block'
               }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-2px)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-              }}
+              className="hover-lift"
             >
               Referências
             </Link>
@@ -409,20 +407,25 @@ export default function MetodologiaDetalhadaPage() {
                 borderRadius: '6px',
                 textDecoration: 'none',
                 fontSize: '0.95rem',
-                transition: 'transform 0.2s'
+                transition: 'transform 0.2s',
+                display: 'inline-block'
               }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-2px)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-              }}
+              className="hover-lift"
             >
               Conheça a Equipe
             </Link>
           </div>
         </div>
       </div>
+
+      <style jsx>{`
+        .hover-lift {
+          transition: transform 0.2s ease;
+        }
+        .hover-lift:hover {
+          transform: translateY(-2px);
+        }
+      `}</style>
     </EducationalLayout>
   );
 }

@@ -35,7 +35,7 @@ export interface RegisterData {
 }
 
 export interface SocialAuthCredentials {
-  providerId: 'google.com' | 'facebook.com' | 'apple.com';
+  providerId: 'google.com';
   preferredDisplayName?: string;
   preferredProfileType?: UserProfileType;
 }
@@ -144,6 +144,7 @@ export interface FirestoreConversation {
   messageCount: number;
   isArchived: boolean;
   tags?: string[];
+  summary?: string;
   rating?: number;
   feedback?: string;
   

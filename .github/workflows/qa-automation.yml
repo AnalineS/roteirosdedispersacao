@@ -55,7 +55,7 @@ jobs:
       - name: "[CHECKOUT] Checkout"
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
         with:
-          fetch-depth: 10
+          fetch-depth: 0  # Fetch completo para git diff funcionar
           
       # PATH-FILTER OTIMIZADO: Detecção inteligente de risco
       - name: "[FILTER] Análise Rápida de Paths"
@@ -135,8 +135,29 @@ jobs:
           TEST_STRATEGY="basic"
           COMPONENTS=""
           
-          # Analise de arquivos alterados
-          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
+          # Fetch all branches para garantir referências
+          git fetch origin
+          
+          # Determine target branch com fallback
+          TARGET_BRANCH="${{ github.base_ref || 'main' }}"
+          
+          # Get changed files com múltiplas estratégias
+          if git rev-parse --verify "origin/$TARGET_BRANCH" >/dev/null 2>&1; then
+            CHANGED_FILES=$(git diff --name-only "origin/$TARGET_BRANCH"...HEAD)
+            echo "✅ Using diff against origin/$TARGET_BRANCH"
+          else
+            # Fallback 1: usar diferença desde último commit main
+            if git rev-parse --verify "origin/main" >/dev/null 2>&1; then
+              CHANGED_FILES=$(git diff --name-only "origin/main"...HEAD)
+              echo "✅ Fallback: using diff against origin/main"
+            else
+              # Fallback 2: usar commits recentes
+              CHANGED_FILES=$(git diff --name-only HEAD~10...HEAD 2>/dev/null || git diff --name-only HEAD~1...HEAD 2>/dev/null || git ls-files -m)
+              echo "✅ Fallback: using recent commits or modified files"
+            fi
+          fi
+          
+          echo "Arquivos alterados detectados: $(echo "$CHANGED_FILES" | wc -l)"
           
           # Classificacao de risco baseada nos arquivos
           if echo "$CHANGED_FILES" | grep -q -E "(auth|security|payment|database)"; then
@@ -192,6 +213,35 @@ jobs:
     steps:
       - name: "[CHECKOUT] Checkout"
         uses: actions/checkout@v4
+        
+      - name: "🐍 Setup Python"
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          
+      - name: "📦 Setup Node.js"
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: apps/frontend-nextjs/package-lock.json
+          
+      - name: "📥 Install Dependencies"
+        run: |
+          echo "🔧 Instalando dependências para análise OWASP..."
+          
+          # Install Python dependencies
+          cd apps/backend
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          cd ../..
+          
+          # Install Node.js dependencies
+          cd apps/frontend-nextjs
+          npm ci --only=prod --no-audit
+          cd ../..
+          
+          echo "✅ Dependências instaladas com sucesso"
         
       - name: "[SECURITY] OWASP Dependency Check"
         uses: dependency-check/Dependency-Check_Action@main
@@ -346,7 +396,7 @@ jobs:
           artillery run load-test.yml --output performance-$ENVIRONMENT.json
           
       - name: "[UPLOAD] Performance Artifacts"
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: performance-results-${{ matrix.environment }}
           path: |
@@ -459,7 +509,7 @@ jobs:
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
         
       - name: "[REPORT] Download Artifacts"
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           path: qa-results/
           
@@ -569,7 +619,7 @@ jobs:
           echo "📄 Relatório gerado: $REPORT_FILE"
           
       - name: "[UPLOAD] Upload Relatório Completo"
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: qa-weekly-report-$(date +%Y-W%V)
           path: |

@@ -1,10 +1,13 @@
 /**
  * API Integration Layer - Next.js
  * Conecta com o backend Python que usa prompts de IA e personas
+ * Integrado com sistema robusto de tratamento de erros
  */
 
+import { useErrorHandler } from '@/hooks/useErrorHandler';
+
 // Configuração simplificada de API URL
-const getApiUrl = () => {
+const getApiUrl = (): string => {
   // PRIORIDADE 1: Variável de ambiente
   const envUrl = process.env.NEXT_PUBLIC_API_URL;
   if (envUrl && envUrl.trim() !== '') {
@@ -81,6 +84,19 @@ export async function getPersonas(): Promise<PersonasResponse> {
     return data;
   } catch (error) {
     console.error('[Personas] Erro no backend, usando dados estáticos:', error);
+    
+    // Capturar erro no sistema centralizado
+    if (typeof window !== 'undefined') {
+      const event = new CustomEvent('show-error-toast', {
+        detail: {
+          errorId: `api_personas_${Date.now()}`,
+          severity: 'medium',
+          message: 'Conectando com servidor offline. Usando dados locais.'
+        }
+      });
+      window.dispatchEvent(event);
+    }
+    
     return STATIC_PERSONAS;
   }
 }
@@ -97,7 +113,12 @@ export interface Persona {
   capabilities: string[];
   example_questions: string[];
   limitations: string[];
-  response_format: any;
+  response_format: {
+    technical: boolean;
+    citations?: boolean;
+    structured?: boolean;
+    empathetic?: boolean;
+  };
 }
 
 export interface PersonasResponse {
@@ -316,13 +337,14 @@ export async function checkAPIHealth(): Promise<{
 /**
  * Detecta escopo da pergunta
  */
-export async function detectQuestionScope(question: string) {
+export async function detectQuestionScope(question: string): Promise<{ scope: string; confidence: number; details: string; category?: string; is_medical?: boolean; offline_mode?: boolean; offline_fallback?: boolean }> {
   // Se backend está em modo offline, retornar escopo padrão
   if (!API_BASE_URL) {
     console.log('[Scope] Modo offline ativo, retornando escopo padrão');
     return {
       scope: 'medical_general',
       confidence: 0.8,
+      details: 'Modo offline - escopo médico geral detectado',
       category: 'hanseniase',
       is_medical: true,
       offline_mode: true
@@ -349,6 +371,7 @@ export async function detectQuestionScope(question: string) {
     return {
       scope: 'medical_general',
       confidence: 0.6,
+      details: 'Fallback para escopo médico geral após erro de rede',
       category: 'hanseniase',
       is_medical: true,
       offline_fallback: true
@@ -360,7 +383,7 @@ export async function detectQuestionScope(question: string) {
  * API Client para requisições HTTP
  */
 export const apiClient = {
-  async post<T>(endpoint: string, data: any): Promise<T> {
+  async post<T>(endpoint: string, data: Record<string, unknown>): Promise<T> {
     // Verificar se backend está em modo offline
     if (!API_BASE_URL) {
       console.log(`[ApiClient] POST ${endpoint} - Modo offline ativo`);

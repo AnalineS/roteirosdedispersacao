@@ -49,7 +49,7 @@ export default function CaseSelector({
     return categoryMatch && difficultyMatch;
   });
 
-  const getCategoryIcon = (category: string) => {
+  const getCategoryIcon = (category: string): React.ComponentType<{ size: number; color: string }> => {
     switch (category) {
       case 'pediatrico': return BabyIcon;
       case 'adulto': return UserIcon;
@@ -60,7 +60,7 @@ export default function CaseSelector({
     }
   };
 
-  const getCategoryName = (category: string) => {
+  const getCategoryName = (category: string): string => {
     switch (category) {
       case 'pediatrico': return 'Pediátrico';
       case 'adulto': return 'Adulto';

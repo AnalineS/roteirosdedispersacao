@@ -2,8 +2,24 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { knowledgeSearch, EnhancedMessage } from '@/services/knowledgeSearch';
-import { astraClient, AstraResponse, AstraStats } from '@/services/astraClient';
+// Removed astraClient import as it was deleted
 import { SentimentResult } from '@/services/sentimentAnalysis';
+
+// Compatible RAGResponse interface
+interface RAGResponse {
+  chunks: Array<{ content: string; score: number; section: string }>;
+  combined_context: string;
+  confidence: number;
+  sources: string[];
+  cached: boolean;
+  processing_time: number;
+}
+
+interface RAGStats {
+  totalQueries: number;
+  avgResponseTime: number;
+  cacheHitRate: number;
+}
 
 interface UseKnowledgeBaseOptions {
   prefetchCommon?: boolean;
@@ -14,12 +30,12 @@ interface UseKnowledgeBaseOptions {
 interface UseKnowledgeBaseReturn {
   // Estado
   isSearching: boolean;
-  lastSearchResult: AstraResponse | null;
-  stats: AstraStats | null;
+  lastSearchResult: RAGResponse | null;
+  stats: RAGStats | null;
   error: string | null;
   
   // Métodos
-  searchKnowledge: (question: string, sentiment?: SentimentResult, persona?: string) => Promise<AstraResponse>;
+  searchKnowledge: (question: string, sentiment?: SentimentResult, persona?: string) => Promise<RAGResponse>;
   enrichMessage: (message: string, sentiment?: SentimentResult, persona?: string) => Promise<EnhancedMessage>;
   rateResponse: (query: string, response: string, rating: number, comments?: string) => Promise<void>;
   refreshStats: () => Promise<void>;
@@ -34,8 +50,8 @@ export function useKnowledgeBase(options: UseKnowledgeBaseOptions = {}): UseKnow
   } = options;
   
   const [isSearching, setIsSearching] = useState(false);
-  const [lastSearchResult, setLastSearchResult] = useState<AstraResponse | null>(null);
-  const [stats, setStats] = useState<AstraStats | null>(null);
+  const [lastSearchResult, setLastSearchResult] = useState<RAGResponse | null>(null);
+  const [stats, setStats] = useState<RAGStats | null>(null);
   const [error, setError] = useState<string | null>(null);
   
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -59,7 +75,7 @@ export function useKnowledgeBase(options: UseKnowledgeBaseOptions = {}): UseKnow
     question: string,
     sentiment?: SentimentResult,
     persona?: string
-  ): Promise<AstraResponse> => {
+  ): Promise<RAGResponse> => {
     setIsSearching(true);
     setError(null);
     
@@ -69,7 +85,7 @@ export function useKnowledgeBase(options: UseKnowledgeBaseOptions = {}): UseKnow
     }
     
     try {
-      const result = await knowledgeSearch.searchKnowledge(
+      const astraResult = await knowledgeSearch.searchKnowledge(
         question,
         sentiment,
         persona,
@@ -79,17 +95,31 @@ export function useKnowledgeBase(options: UseKnowledgeBaseOptions = {}): UseKnow
         }
       );
       
-      setLastSearchResult(result);
+      // Convert AstraResponse to RAGResponse format
+      const ragResult: RAGResponse = {
+        chunks: astraResult.chunks.map(chunk => ({
+          content: chunk.content,
+          score: chunk.score,
+          section: chunk.section
+        })),
+        combined_context: astraResult.combined_context,
+        confidence: astraResult.confidence,
+        sources: astraResult.chunks.map(chunk => chunk.section),
+        cached: astraResult.cached,
+        processing_time: astraResult.processing_time
+      };
+      
+      setLastSearchResult(ragResult);
       
       // Log para analytics
       console.log('Knowledge search completed:', {
         question: question.substring(0, 50) + '...',
-        confidence: result.confidence,
-        chunks: result.chunks.length,
-        cached: result.cached
+        confidence: ragResult.confidence,
+        chunks: ragResult.chunks.length,
+        cached: ragResult.cached
       });
       
-      return result;
+      return ragResult;
       
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro ao buscar conhecimento';
@@ -97,10 +127,11 @@ export function useKnowledgeBase(options: UseKnowledgeBaseOptions = {}): UseKnow
       console.error('Erro na busca de conhecimento:', err);
       
       // Retornar resultado vazio em caso de erro
-      const emptyResult: AstraResponse = {
+      const emptyResult: RAGResponse = {
         chunks: [],
         combined_context: '',
         confidence: 0,
+        sources: [],
         cached: false,
         processing_time: 0
       };
@@ -161,12 +192,8 @@ export function useKnowledgeBase(options: UseKnowledgeBaseOptions = {}): UseKnow
     comments?: string
   ): Promise<void> => {
     try {
-      await astraClient.sendFeedback({
-        query,
-        response,
-        rating,
-        comments
-      });
+      // TODO: Implement feedback system with new RAG infrastructure
+      console.log('Feedback recorded:', { query, response, rating, comments });
       
       // Atualizar estatísticas após feedback
       setTimeout(() => refreshStats(), 1000);
@@ -183,8 +210,13 @@ export function useKnowledgeBase(options: UseKnowledgeBaseOptions = {}): UseKnow
    */
   const refreshStats = useCallback(async () => {
     try {
-      const newStats = await astraClient.getStats();
-      setStats(newStats);
+      // TODO: Implement stats gathering with new RAG infrastructure
+      const initialStats: RAGStats = {
+        totalQueries: 0,
+        avgResponseTime: 0,
+        cacheHitRate: 0
+      };
+      setStats(initialStats);
     } catch (err) {
       console.error('Erro ao buscar estatísticas:', err);
     }
@@ -194,7 +226,7 @@ export function useKnowledgeBase(options: UseKnowledgeBaseOptions = {}): UseKnow
    * Limpa o cache
    */
   const clearCache = useCallback(() => {
-    astraClient.clearCache();
+    // TODO: Implement cache clearing with new RAG infrastructure
     setLastSearchResult(null);
     console.log('Cache de conhecimento limpo');
   }, []);
@@ -233,9 +265,9 @@ export function useRealtimeKnowledge(
     debounceMs?: number;
     enabled?: boolean;
   }
-): AstraResponse | null {
+): RAGResponse | null {
   const { searchKnowledge, lastSearchResult } = useKnowledgeBase();
-  const [result, setResult] = useState<AstraResponse | null>(null);
+  const [result, setResult] = useState<RAGResponse | null>(null);
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   
   const {

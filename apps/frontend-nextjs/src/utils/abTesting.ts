@@ -718,6 +718,12 @@ export class ABTestingFramework {
     // Em produção, carregar do backend baseado no usuário atual
     // Para desenvolvimento, usar localStorage
   }
+
+  // Método público para integração
+  public initialize(): void {
+    this.initializeFramework();
+    console.log('A/B Testing Framework re-initialized');
+  }
 }
 
 // ===== INTERFACES AUXILIARES =====

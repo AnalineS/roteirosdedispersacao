@@ -18,6 +18,7 @@ import {
 import { useSafeAuth as useAuth } from '@/hooks/useSafeAuth';
 import { SocialAuthButtons } from '@/components/auth';
 import type { UserFocus } from '@/lib/firebase/types';
+import { SocialProfile, AvatarUploader, EmailPreferences, ConnectedAccounts } from '@/components/profile';
 
 interface ProfileFormData {
   displayName: string;
@@ -59,7 +60,7 @@ export default function ProfilePage() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
-  const [activeTab, setActiveTab] = useState<'profile' | 'account' | 'privacy'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'account' | 'privacy' | 'social'>('profile');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // Redirecionar se não autenticado
@@ -206,6 +207,13 @@ export default function ProfilePage() {
           >
             <Shield size={20} />
             Privacidade
+          </button>
+          <button
+            onClick={() => setActiveTab('social')}
+            className={`tab-button ${activeTab === 'social' ? 'active' : ''}`}
+          >
+            <LinkIcon size={20} />
+            Social
           </button>
         </div>
 
@@ -481,6 +489,43 @@ export default function ProfilePage() {
                     Termos de Uso
                   </a>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'social' && (
+            <div className="social-content">
+              {/* Social Profile Component - PR #175 */}
+              <div className="form-section">
+                <SocialProfile />
+              </div>
+
+              {/* Avatar Uploader - PR #175 */}
+              <div className="form-section">
+                <h3 className="section-title">Avatar do Perfil</h3>
+                <AvatarUploader 
+                  userId={user?.uid || ''}
+                  currentAvatarUrl={user?.photoURL || ''}
+                  onUploadComplete={(url) => console.log('Avatar uploaded:', url)}
+                />
+              </div>
+
+              {/* Email Preferences - PR #175 */}
+              <div className="form-section">
+                <h3 className="section-title">Preferências de Email</h3>
+                <EmailPreferences 
+                  userId={user?.uid || ''}
+                  onPreferencesChange={async (prefs) => {
+                    console.log('Email preferences updated:', prefs);
+                    return true;
+                  }}
+                />
+              </div>
+
+              {/* Connected Accounts - PR #175 */}
+              <div className="form-section">
+                <h3 className="section-title">Contas Conectadas</h3>
+                <ConnectedAccounts />
               </div>
             </div>
           )}

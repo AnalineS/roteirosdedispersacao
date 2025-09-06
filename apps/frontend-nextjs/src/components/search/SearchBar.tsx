@@ -4,6 +4,9 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useDebounce } from '@/hooks/useDebounce';
 import { getUnbColors } from '@/config/modernTheme';
+import { AlertIcon } from '@/components/icons/FlatOutlineIcons';
+import { useHapticFeedback } from '@/utils/hapticFeedback';
+import { SearchLoadingState } from '@/components/ui/LoadingStates';
 
 interface SearchResult {
   id: string;
@@ -62,12 +65,14 @@ export default function SearchBar({
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
+  const [isSearching, setIsSearching] = useState(false);
   const debouncedQuery = useDebounce(query, 300);
   const router = useRouter();
   const pathname = usePathname();
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const unbColors = getUnbColors();
+  const { info, success } = useHapticFeedback();
 
   // Função de busca fuzzy
   const searchPages = useCallback((searchQuery: string): SearchResult[] => {
@@ -103,11 +108,31 @@ export default function SearchBar({
 
   // Executar busca quando query mudar
   useEffect(() => {
-    const searchResults = searchPages(debouncedQuery);
-    setResults(searchResults);
-    setIsOpen(searchResults.length > 0);
-    setSelectedIndex(-1);
-  }, [debouncedQuery, searchPages]);
+    if (debouncedQuery && debouncedQuery.length >= 2) {
+      setIsSearching(true);
+      
+      // Simular delay de busca para mostrar loading state
+      const searchTimeout = setTimeout(() => {
+        const searchResults = searchPages(debouncedQuery);
+        setResults(searchResults);
+        setIsOpen(searchResults.length > 0);
+        setSelectedIndex(-1);
+        setIsSearching(false);
+        
+        // Haptic feedback quando resultados são encontrados
+        if (searchResults.length > 0) {
+          success();
+        }
+      }, 200);
+      
+      return () => clearTimeout(searchTimeout);
+    } else {
+      setResults([]);
+      setIsOpen(false);
+      setIsSearching(false);
+      setSelectedIndex(-1);
+    }
+  }, [debouncedQuery, searchPages, success]);
 
   // Fechar ao clicar fora
   useEffect(() => {
@@ -148,6 +173,8 @@ export default function SearchBar({
   };
 
   const handleNavigate = (href: string) => {
+    // Haptic feedback para navegação
+    info();
     router.push(href);
     setQuery('');
     setIsOpen(false);
@@ -287,8 +314,28 @@ export default function SearchBar({
         )}
       </div>
 
+      {/* Loading state da busca */}
+      {isSearching && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 'calc(100% + 8px)',
+            left: 0,
+            right: 0,
+            background: 'white',
+            border: `1px solid ${unbColors.alpha.primary}`,
+            borderRadius: '12px',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
+            zIndex: 1002,
+            padding: '12px'
+          }}
+        >
+          <SearchLoadingState query={query} withHaptic={false} />
+        </div>
+      )}
+
       {/* Resultados da busca */}
-      {isOpen && results.length > 0 && (
+      {!isSearching && isOpen && results.length > 0 && (
         <div
           id="search-results"
           role="listbox"

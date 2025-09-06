@@ -15,30 +15,12 @@ from .analytics_blueprint import analytics_bp
 from .predictions_blueprint import predictions_bp
 from .multimodal_blueprint import multimodal_bp
 from .observability import observability_bp
+from .notifications_blueprint import notifications_bp
 
-# Import cache blueprint
-try:
-    from .cache_blueprint import cache_blueprint
-    CACHE_BP_AVAILABLE = True
-except ImportError:
-    CACHE_BP_AVAILABLE = False
-    cache_blueprint = None
-
-# Import user blueprint (com fallback)
-try:
-    from .user_blueprint import user_bp
-    USER_BP_AVAILABLE = True
-except ImportError:
-    USER_BP_AVAILABLE = False
-    user_bp = None
-
-# Importar swagger ui blueprint
-try:
-    from core.openapi.spec import swagger_ui_blueprint
-    SWAGGER_AVAILABLE = True
-except ImportError:
-    SWAGGER_AVAILABLE = False
-    swagger_ui_blueprint = None
+# Import blueprints obrigatórios
+from .cache_blueprint import cache_blueprint
+from .user_blueprint import user_bp
+from core.openapi.spec import swagger_ui_blueprint
 
 # Lista de todos os blueprints para registro
 ALL_BLUEPRINTS = [
@@ -52,20 +34,12 @@ ALL_BLUEPRINTS = [
     analytics_bp,
     predictions_bp,
     multimodal_bp,
-    observability_bp
+    observability_bp,
+    notifications_bp,  # PR #175 - Social features
+    cache_blueprint,
+    user_bp,
+    swagger_ui_blueprint
 ]
-
-# Adicionar cache blueprint se disponível
-if CACHE_BP_AVAILABLE and cache_blueprint:
-    ALL_BLUEPRINTS.append(cache_blueprint)
-
-# Adicionar user blueprint se disponível
-if USER_BP_AVAILABLE and user_bp:
-    ALL_BLUEPRINTS.append(user_bp)
-
-# Adicionar swagger ui se disponível
-if SWAGGER_AVAILABLE and swagger_ui_blueprint:
-    ALL_BLUEPRINTS.append(swagger_ui_blueprint)
 
 __all__ = [
     'chat_bp',
@@ -79,6 +53,7 @@ __all__ = [
     'predictions_bp',
     'multimodal_bp',
     'observability_bp',
+    'notifications_bp',  # PR #175
     'cache_blueprint',
     'user_bp',
     'swagger_ui_blueprint',

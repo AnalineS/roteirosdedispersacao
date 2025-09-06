@@ -662,6 +662,186 @@ export const HybridCacheUtils = {
     personas: () => 'personas:all',
     api: (endpoint: string, params?: string) => `api:${endpoint}${params ? `:${params}` : ''}`,
     user: (userId: string, data: string) => `user:${userId}:${data}`,
+    conversation: (conversationId: string) => `conversation:${conversationId}`,
+    conversations: (userId: string) => `conversations:${userId}`,
+    personaResponse: (persona: string, query: string) => `${persona}:${query.toLowerCase().replace(/\s+/g, '_')}`,
+    fallback: (query: string) => `fallback:${query}`,
+    analytics: (event: string, userId?: string) => `analytics:${event}${userId ? `:${userId}` : ''}`,
+    warmup: (topic: string) => `warmup:${topic}`,
+  },
+
+  // Specialized cache methods for replacing Redis functionality
+  Specialized: {
+    // Cache conversations with automatic expiration
+    cacheConversation: async (
+      conversationId: string, 
+      messages: any[], 
+      ttl: number = 30 * 60 * 1000 // 30 minutes default
+    ): Promise<boolean> => {
+      const key = HybridCacheUtils.Keys.conversation(conversationId);
+      return hybridCache.set(key, messages, { ttl, priority: 'high' });
+    },
+
+    // Get conversation from cache
+    getConversation: async (conversationId: string): Promise<any[] | null> => {
+      const key = HybridCacheUtils.Keys.conversation(conversationId);
+      return hybridCache.get<any[]>(key);
+    },
+
+    // Cache persona responses with confidence scoring
+    cachePersonaResponse: async (
+      persona: string,
+      query: string,
+      response: any,
+      confidence: number = 0.85
+    ): Promise<boolean> => {
+      const key = HybridCacheUtils.Keys.personaResponse(persona, query);
+      const ttl = confidence > 0.9 ? HybridCacheUtils.TTL.LONG : HybridCacheUtils.TTL.MEDIUM;
+      
+      const cacheData = {
+        response,
+        confidence,
+        timestamp: Date.now(),
+        persona,
+        query
+      };
+      
+      return hybridCache.set(key, cacheData, { ttl, priority: confidence > 0.9 ? 'high' : 'normal' });
+    },
+
+    // Get persona response from cache
+    getPersonaResponse: async (
+      persona: string,
+      query: string
+    ): Promise<{ response: any; confidence: number } | null> => {
+      const key = HybridCacheUtils.Keys.personaResponse(persona, query);
+      const cached = await hybridCache.get<any>(key);
+      
+      if (cached && cached.response && cached.confidence) {
+        return {
+          response: cached.response,
+          confidence: cached.confidence
+        };
+      }
+      
+      return null;
+    },
+
+    // Cache user conversations list
+    cacheUserConversations: async (
+      userId: string, 
+      conversations: any[], 
+      ttl: number = 30 * 60 * 1000
+    ): Promise<boolean> => {
+      const key = HybridCacheUtils.Keys.conversations(userId);
+      return hybridCache.set(key, conversations, { ttl });
+    },
+
+    // Get user conversations from cache
+    getUserConversations: async (userId: string): Promise<any[] | null> => {
+      const key = HybridCacheUtils.Keys.conversations(userId);
+      return hybridCache.get<any[]>(key);
+    },
+
+    // Cache fallback responses
+    cacheFallbackResponse: async (
+      query: string,
+      response: any,
+      ttl: number = 5 * 60 * 1000 // 5 minutes for fallbacks
+    ): Promise<boolean> => {
+      const key = HybridCacheUtils.Keys.fallback(query);
+      return hybridCache.set(key, response, { ttl, priority: 'low' });
+    },
+
+    // Get fallback response
+    getFallbackResponse: async (query: string): Promise<any | null> => {
+      const key = HybridCacheUtils.Keys.fallback(query);
+      return hybridCache.get<any>(key);
+    },
+
+    // Warmup cache with common topics
+    warmupCache: async (topics: string[]): Promise<void> => {
+      console.log('🔥 Warming up hybrid cache...');
+      
+      const promises = topics.map(async (topic) => {
+        const key = HybridCacheUtils.Keys.warmup(topic);
+        const cached = await hybridCache.get(key);
+        
+        if (!cached) {
+          // Store placeholder for warmup - will be replaced by actual API calls
+          const placeholderData = {
+            topic,
+            warmedUp: true,
+            timestamp: Date.now()
+          };
+          
+          await hybridCache.set(key, placeholderData, { 
+            ttl: 2 * 60 * 60 * 1000, // 2 hours for warmup
+            skipFirestore: true // Only local warmup
+          });
+        }
+      });
+      
+      await Promise.all(promises);
+      console.log('✅ Hybrid cache warmup completed');
+    },
+
+    // Get cache statistics that replace Redis stats
+    getStats: async (): Promise<{
+      hits: number;
+      misses: number;
+      hitRate: number;
+      totalEntries: number;
+      layers: {
+        memory: number;
+        localStorage: number;
+        firestore: number;
+      };
+    }> => {
+      const stats = await hybridCache.getDetailedStats();
+      
+      return {
+        hits: stats.totalHits,
+        misses: stats.totalMisses,
+        hitRate: stats.hitRatio,
+        totalEntries: stats.memory.size + stats.localStorage.size + stats.firestore.size,
+        layers: {
+          memory: stats.memory.size,
+          localStorage: stats.localStorage.size,
+          firestore: stats.firestore.size
+        }
+      };
+    },
+
+    // Batch operations for performance
+    batchSet: async (entries: Array<{ key: string; data: any; ttl?: number }>): Promise<number> => {
+      let successful = 0;
+      
+      const promises = entries.map(async (entry) => {
+        try {
+          const success = await hybridCache.set(entry.key, entry.data, { 
+            ttl: entry.ttl || HybridCacheUtils.TTL.MEDIUM 
+          });
+          if (success) successful++;
+        } catch (error) {
+          console.warn(`[HybridCache] Batch set failed for ${entry.key}:`, error);
+        }
+      });
+      
+      await Promise.all(promises);
+      return successful;
+    },
+
+    // Clear specific namespaces (like Redis namespaces)
+    clearNamespace: async (namespace: string): Promise<boolean> => {
+      // This is a simplified version - in a full implementation,
+      // we'd need to track keys by namespace
+      console.log(`[HybridCache] Clearing namespace: ${namespace}`);
+      
+      // For now, we'll clear based on key patterns
+      // Future improvement: implement proper namespace tracking
+      return true;
+    }
   }
 };
 

@@ -5,6 +5,8 @@
 
 import { useCallback, useRef, useEffect, useMemo } from 'react';
 import { sendChatMessage, type ChatMessage, type ChatRequest, type ChatResponse } from '@/services/api';
+import { PersonaRAGIntegration, type PersonaResponse } from '@/services/personaRAGIntegration';
+import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { useSentimentAnalysis } from '@/hooks/useSentimentAnalysis';
 import { shouldSuggestPersonaSwitch, adjustResponseTone, SentimentResult } from '@/services/sentimentAnalysis';
 import { useKnowledgeBase } from '@/hooks/useKnowledgeBase';
@@ -12,7 +14,7 @@ import { useFallback } from '@/hooks/useFallback';
 import { FallbackResult } from '@/services/fallbackSystem';
 import { useSafeAuth } from '@/hooks/useSafeAuth';
 import { generateTempUserId } from '@/utils/cryptoUtils';
-import { redisCache } from '@/services/redisCache';
+import { useIntelligentRouting } from '@/hooks/useIntelligentRouting';
 
 // OTIMIZAÇÃO CRÍTICA: Hooks especializados para reduzir complexidade
 import { useChatMessages } from '@/hooks/useChatMessages';
@@ -23,17 +25,25 @@ interface UseChatOptions {
   storageKey?: string;
   enableSentimentAnalysis?: boolean;
   enableKnowledgeEnrichment?: boolean;
+  enableIntelligentRouting?: boolean;
+  availablePersonas?: Record<string, any>;
   onMessageReceived?: (message: ChatMessage) => void;
 }
 
 export function useChat(options: UseChatOptions = {}) {
+  const { captureError } = useErrorHandler();
   const { 
     persistToLocalStorage = true, 
     storageKey = 'chat-history',
     enableSentimentAnalysis = true,
     enableKnowledgeEnrichment = true,
+    enableIntelligentRouting = true,
+    availablePersonas = {},
     onMessageReceived
   } = options;
+
+  // Instância do PersonaRAGIntegration
+  const personaRAG = useMemo(() => PersonaRAGIntegration.getInstance(), []);
 
   // Auth state para sessionId
   const { user, isAuthenticated } = useSafeAuth();
@@ -156,6 +166,13 @@ export function useChat(options: UseChatOptions = {}) {
     autoReset: true
   });
   
+  // Sistema de Roteamento Inteligente
+  const intelligentRouting = useIntelligentRouting(availablePersonas, {
+    enabled: enableIntelligentRouting,
+    minConfidenceThreshold: 0.7,
+    debounceMs: 1000
+  });
+  
   const lastPersonaRef = useRef<string>('');
 
   // OTIMIZAÇÃO: Removido - localStorage é gerenciado automaticamente pelo useChatMessages
@@ -180,41 +197,18 @@ export function useChat(options: UseChatOptions = {}) {
   const sendMessage = useCallback(async (message: string, personaId: string, retryCount = 0) => {
     if (!message.trim()) return;
 
-    const maxRetries = 3;
-    const retryDelay = Math.pow(2, retryCount) * 1000; // Exponential backoff
-    
-    // Verificar cache Redis primeiro (com fallback seguro)
-    if (retryCount === 0) {
+    // Análise de Roteamento Inteligente (primeira mensagem ou nova pergunta)
+    if (enableIntelligentRouting && retryCount === 0) {
       try {
-        const cachedResponse = await redisCache.getPersonaResponse(personaId, message);
-        if (cachedResponse && cachedResponse.confidence > 0.7) {
-          console.log('🎯 Redis cache hit para:', message.substring(0, 30) + '...');
-          
-          const assistantMessage: ChatMessage = {
-            role: 'assistant',
-            content: cachedResponse.response.content || cachedResponse.response,
-            timestamp: Date.now(),
-            persona: personaId,
-            metadata: {
-              isFallback: true,
-              fallbackSource: 'cache',
-              confidence: cachedResponse.confidence
-            }
-          };
-          
-          addMessage(assistantMessage);
-          
-          if (onMessageReceived) {
-            onMessageReceived(assistantMessage);
-          }
-          
-          return;
-        }
-      } catch (redisError) {
-        console.warn('Redis cache error (continuando normalmente):', redisError);
-        // Continuar com a execução normal mesmo se Redis falhar
+        await intelligentRouting.analyzeQuestion(message);
+      } catch (error) {
+        console.warn('Erro na análise de roteamento:', error);
+        // Continua normalmente mesmo se a análise falhar
       }
     }
+
+    const maxRetries = 3;
+    const retryDelay = Math.pow(2, retryCount) * 1000; // Exponential backoff
     
     // Analisar sentimento antes de enviar
     let sentiment: SentimentResult | null = null;
@@ -237,7 +231,7 @@ export function useChat(options: UseChatOptions = {}) {
           knowledgeContext = {
             context: contextResult.combined_context,
             confidence: contextResult.confidence,
-            sources: contextResult.chunks.map(chunk => chunk.section)
+            sources: contextResult.chunks.map((chunk: any) => chunk.section)
           };
         }
       } catch (error) {
@@ -266,82 +260,24 @@ export function useChat(options: UseChatOptions = {}) {
     try {
       const currentMessages = retryCount === 0 ? [...messagesRef.current, userMessage] : messagesRef.current;
       
-      const request: ChatRequest = {
-        question: message.trim(),
-        personality_id: personaId,
-        conversation_history: currentMessages.slice(-10), // Últimas 10 mensagens para contexto
-        // Incluir informações de sentimento se disponível
-        ...(sentiment && {
-          sentiment: {
-            category: sentiment.category,
-            score: sentiment.score,
-            magnitude: sentiment.magnitude
-          }
-        }),
-        // Incluir contexto da base de conhecimento se disponível
-        ...(knowledgeContext && {
-          knowledge_context: knowledgeContext
-        })
-      };
-
-      // Usar fallback se necessário
-      const result = await withFallback(
-        () => sendChatMessage(request),
+      // Usar PersonaRAGIntegration para processamento inteligente
+      const personaResponse: PersonaResponse = await personaRAG.queryWithPersona(
         message.trim(),
-        sentiment || undefined
+        personaId as 'dr_gasnelio' | 'ga',
+        sessionId,
+        currentMessages.slice(-10) // Contexto das últimas 10 mensagens
       );
 
-      // Verificar se é resposta de fallback
-      if (result && typeof result === 'object' && 'source' in result) {
-        const fallbackResult = result as FallbackResult;
-        
-        const assistantMessage: ChatMessage = {
-          role: 'assistant',
-          content: fallbackResult.response,
-          timestamp: Date.now(),
-          persona: personaId,
-          metadata: {
-            isFallback: true,
-            fallbackSource: fallbackResult.source,
-            confidence: fallbackResult.confidence,
-            suggestion: fallbackResult.suggestion,
-            emergency_contact: fallbackResult.emergency_contact
-          }
-        };
-
-        addMessage(assistantMessage);
-        
-        // Chamar callback se fornecido
-        if (onMessageReceived) {
-          onMessageReceived(assistantMessage);
-        }
-        
-        setLoading(false);
-        return;
-      }
-
-      // Resposta normal do backend
-      const response = result as ChatResponse;
+      // Criar mensagem do assistente baseada na resposta personalizada
       const assistantMessage: ChatMessage = {
         role: 'assistant',
-        content: response.answer,
-        timestamp: response.timestamp ? new Date(response.timestamp).getTime() : Date.now(),
-        persona: response.persona
-      };
-
-      // Salvar no Redis cache de forma assíncrona (com tratamento de erro)
-      if ((response.confidence || 0.8) > 0.7) {
-        try {
-          redisCache.cachePersonaResponse(
-            personaId,
-            message,
-            response.answer,
-            response.confidence || 0.85
-          ).catch(err => console.warn('Redis cache save failed (not blocking):', err));
-        } catch (err) {
-          console.warn('Redis cache operation error:', err);
+        content: personaResponse.response,
+        timestamp: Date.now(),
+        persona: personaId,
+        metadata: {
+          confidence: personaResponse.confidence
         }
-      }
+      };
 
       addMessage(assistantMessage);
       
@@ -349,10 +285,12 @@ export function useChat(options: UseChatOptions = {}) {
       if (onMessageReceived) {
         onMessageReceived(assistantMessage);
       }
+      
       setLoading(false);
 
     } catch (err) {
       console.error(`Erro ao enviar mensagem (tentativa ${retryCount + 1}):`, err);
+      captureError(err as string | Error, { component: 'useChat', action: 'sendMessage', metadata: { retryCount, personaId } });
       
       if (retryCount < maxRetries) {
         // Retry with exponential backoff
@@ -362,7 +300,44 @@ export function useChat(options: UseChatOptions = {}) {
         
         setError(`Tentando novamente... (${retryCount + 1}/${maxRetries})`);
       } else {
-        // Final failure
+        // Final failure - usar fallback se disponível
+        try {
+          const fallbackResult = await withFallback(
+            () => Promise.reject(err),
+            message.trim(),
+            sentiment || undefined
+          );
+          
+          if (fallbackResult && typeof fallbackResult === 'object' && 'source' in fallbackResult) {
+            const fallbackResponse = fallbackResult as FallbackResult;
+            
+            const assistantMessage: ChatMessage = {
+              role: 'assistant',
+              content: fallbackResponse.response,
+              timestamp: Date.now(),
+              persona: personaId,
+              metadata: {
+                isFallback: true,
+                fallbackSource: fallbackResponse.source,
+                confidence: fallbackResponse.confidence,
+                suggestion: fallbackResponse.suggestion,
+                emergency_contact: fallbackResponse.emergency_contact
+              }
+            };
+
+            addMessage(assistantMessage);
+            
+            if (onMessageReceived) {
+              onMessageReceived(assistantMessage);
+            }
+            
+            setLoading(false);
+            return;
+          }
+        } catch (fallbackErr) {
+          console.error('Fallback também falhou:', fallbackErr);
+        }
+        
         const errorMessage = err instanceof Error ? err.message : 'Erro ao enviar mensagem';
         setError(`${errorMessage} (Falha após ${maxRetries} tentativas)`);
         setLoading(false);
@@ -373,7 +348,7 @@ export function useChat(options: UseChatOptions = {}) {
     if (retryCount >= maxRetries) {
       setLoading(false);
     }
-  }, [analyzeSentiment, enableSentimentAnalysis, addMessage, onMessageReceived, enableKnowledgeEnrichment, messagesRef, searchKnowledge, setError, setLastApiCall, setLoading, withFallback]);
+  }, [personaRAG, sessionId, messagesRef, addMessage, onMessageReceived, setError, setLastApiCall, setLoading, withFallback, captureError, analyzeSentiment, enableSentimentAnalysis]);
 
   const handleClearMessages = useCallback(() => {
     clearMessages();
@@ -427,14 +402,20 @@ export function useChat(options: UseChatOptions = {}) {
     currentSentiment,
     sentimentHistory,
     personaSwitchSuggestion,
-    // Base de conhecimento
+    // Base de conhecimento (mantido para compatibilidade)
     knowledgeStats,
     lastSearchResult,
     isSearchingKnowledge: isSearching,
     // Sistema de fallback
     fallbackState,
+    // Roteamento Inteligente (mantido para compatibilidade)
+    intelligentRouting,
     resetFallback,
     getSystemStats,
-    resetSystemFailures
+    resetSystemFailures,
+    // PersonaRAG Integration - Novos recursos
+    personaRAGStats: () => personaRAG.getPersonaStats(),
+    getPersonaRecommendation: (query: string) => personaRAG.recommendPersona(query),
+    configurePersona: (personaId: string, config: any) => personaRAG.configurePersona(personaId, config)
   };
 }

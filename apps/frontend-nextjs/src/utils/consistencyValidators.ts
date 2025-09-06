@@ -824,8 +824,9 @@ export class ReferenceConsistencyValidator {
     // Implementação simplificada - em produção usaria fetch
     if (reference.url) {
       try {
-        // Simular verificação de URL
-        return true;
+        // Simular verificação de URL - em produção seria uma requisição HTTP
+        const url = new URL(reference.url);
+        return url.protocol === 'http:' || url.protocol === 'https:';
       } catch {
         return false;
       }

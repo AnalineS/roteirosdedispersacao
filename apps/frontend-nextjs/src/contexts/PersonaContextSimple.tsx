@@ -79,7 +79,9 @@ export function PersonaProvider({ children }: { children: React.ReactNode }) {
         if (stored && isValidPersonaId(stored) && isPersonaAvailable(stored)) {
           return stored;
         }
-      } catch {}
+      } catch {
+        // Ignore localStorage access errors in SSR or restricted environments
+      }
     }
 
     // 5. Padrão
@@ -124,7 +126,9 @@ export function PersonaProvider({ children }: { children: React.ReactNode }) {
     // Persistir no localStorage
     try {
       localStorage.setItem('selectedPersona', personaId);
-    } catch {}
+    } catch {
+      // Ignore localStorage write errors
+    }
 
     // Track analytics
     if (trackEvent) {
@@ -142,7 +146,9 @@ export function PersonaProvider({ children }: { children: React.ReactNode }) {
     setExplicitPersona(null);
     try {
       localStorage.removeItem('selectedPersona');
-    } catch {}
+    } catch {
+      // Ignore localStorage remove errors
+    }
   }, []);
 
   // Recomendação

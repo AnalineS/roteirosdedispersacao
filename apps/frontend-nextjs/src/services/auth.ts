@@ -81,6 +81,19 @@ export class AuthService {
         }
       } catch (error) {
         console.error('[Auth] Error in auth state change:', error);
+        
+        // Capturar erro no sistema centralizado
+        if (typeof window !== 'undefined') {
+          const event = new CustomEvent('show-error-toast', {
+            detail: {
+              errorId: `auth_state_${Date.now()}`,
+              severity: 'high',
+              message: 'Erro na autenticação. Tente fazer login novamente.'
+            }
+          });
+          window.dispatchEvent(event);
+        }
+        
         this.notifyAuthStateChange({
           user: null,
           isLoading: false,

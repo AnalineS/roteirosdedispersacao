@@ -12,7 +12,7 @@ interface ReadOnlyChecklistProps {
 export default function ReadOnlyChecklist({ 
   stages, 
   showEducationalInfo = true 
-}: ReadOnlyChecklistProps) {
+}: ReadOnlyChecklistProps): React.JSX.Element {
   const [expandedStage, setExpandedStage] = useState<string | null>(stages[0]?.id || null);
   const [expandedActivity, setExpandedActivity] = useState<string | null>(null);
 
@@ -25,7 +25,7 @@ export default function ReadOnlyChecklist({
     return totalItems > 0 ? Math.round((requiredItems / totalItems) * 100) : 0;
   };
 
-  const getStageIcon = (stage: WorkflowStage) => {
+  const getStageIcon = (stage: WorkflowStage): string => {
     switch (stage.sequence) {
       case 1: return '🔍';
       case 2: return '📋';
@@ -34,7 +34,7 @@ export default function ReadOnlyChecklist({
     }
   };
 
-  const getSeverityColor = (severity: string) => {
+  const getSeverityColor = (severity: string): string => {
     switch (severity) {
       case 'high':
       case 'critical':

@@ -3,6 +3,8 @@
  * Tracking específico para UX médico e segurança farmacêutica
  */
 
+import { AnalyticsFirestoreCache } from '@/services/analyticsFirestoreCache';
+
 interface MedicalAnalyticsEvent {
   event: string;
   event_category: string;
@@ -148,6 +150,26 @@ export class MedicalAnalytics {
         value: enrichedEvent.value,
         ...enrichedEvent.custom_dimensions
       });
+
+      // Também salvar no Firestore para analytics médico avançado
+      const sessionId = this.getCurrentSessionId();
+      AnalyticsFirestoreCache.saveAnalyticsEvent({
+        id: `medical_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        sessionId,
+        timestamp: Date.now(),
+        event: enrichedEvent.event,
+        category: enrichedEvent.event_category,
+        label: enrichedEvent.event_label,
+        value: enrichedEvent.value,
+        customDimensions: enrichedEvent.custom_dimensions,
+        medicalContext: {
+          urgencyLevel: enrichedEvent.custom_dimensions?.urgency_level,
+          clinicalContext: enrichedEvent.custom_dimensions?.clinical_context,
+          userRole: enrichedEvent.custom_dimensions?.user_role
+        }
+      }).catch(error => {
+        console.warn('Failed to save medical event to Firestore:', error);
+      });
       
       // Log em desenvolvimento
       if (process.env.NODE_ENV === 'development') {
@@ -204,6 +226,21 @@ export class MedicalAnalytics {
         time_to_action: action.timeToComplete,
         success_rate: action.success ? 100 : 0
       }
+    });
+
+    // Track como ação crítica no Firestore
+    const sessionId = this.getCurrentSessionId();
+    AnalyticsFirestoreCache.trackMedicalMetric(sessionId, {
+      type: 'critical_action',
+      value: action.timeToComplete,
+      context: {
+        actionType: action.type,
+        success: action.success,
+        urgencyLevel: action.urgencyLevel,
+        errorCount: action.errorCount || 0
+      }
+    }).catch(error => {
+      console.warn('Failed to track critical medical action:', error);
     });
   }
   
@@ -430,6 +467,37 @@ export class MedicalAnalytics {
     const emergencyTasks = ['dose_calculation', 'interaction_check'];
     if (emergencyTasks.includes(taskType)) return 'emergency';
     return 'routine';
+  }
+
+  private getCurrentSessionId(): string {
+    if (!this.currentSessionId) {
+      this.currentSessionId = `medical_session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      // Iniciar sessão médica no Firestore
+      AnalyticsFirestoreCache.startAnalyticsSession({
+        id: this.currentSessionId,
+        deviceType: this.getDeviceType(),
+        userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'server'
+      }).catch(error => {
+        console.warn('Failed to start medical analytics session:', error);
+      });
+    }
+    return this.currentSessionId;
+  }
+
+  private currentSessionId: string | null = null;
+
+  // Método público para tracking de erros gerais
+  public trackError(error: {
+    type: string;
+    message: string;
+    page?: string;
+  }): void {
+    this.trackMedicalError({
+      type: 'system_error',
+      severity: 'medium',
+      context: error.page || 'unknown',
+      userAction: 'page_interaction'
+    });
   }
 }
 

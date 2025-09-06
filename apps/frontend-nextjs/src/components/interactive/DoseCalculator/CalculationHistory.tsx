@@ -14,7 +14,7 @@ export default function CalculationHistoryComponent({
   history,
   onClearHistory,
   onSelectCalculation
-}: CalculationHistoryProps) {
+}: CalculationHistoryProps): React.JSX.Element {
   
   if (history.length === 0) {
     return (
@@ -102,7 +102,7 @@ function HistoryItem({
   item: CalculationHistory; 
   index: number; 
   onSelect: () => void; 
-}) {
+}): React.JSX.Element {
   const isRecent = (Date.now() - item.timestamp.getTime()) < (24 * 60 * 60 * 1000); // Últimas 24h
   
   return (
