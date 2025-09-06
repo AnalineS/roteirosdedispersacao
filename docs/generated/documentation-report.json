@@ -1,0 +1,264 @@
+{
+  "timestamp": "2025-09-06T20:24:23.460Z",
+  "version": "2.0.0",
+  "project": {
+    "name": "Plataforma Educacional Médica - Hanseníase",
+    "context": {
+      "diseaseContext": "hanseníase",
+      "targetAudience": "farmacêuticos",
+      "clinicalPersonas": [
+        "dr_gasnelio",
+        "ga"
+      ],
+      "medicalStandards": [
+        "ANVISA",
+        "CID-10",
+        "RENAME"
+      ],
+      "educationalFramework": "Bloom_taxonomy"
+    }
+  },
+  "summary": {
+    "filesAnalyzed": 0,
+    "linesOfCode": 0,
+    "components": 0,
+    "apis": 0,
+    "medicalCalculators": 0,
+    "clinicalCases": 0
+  },
+  "quality": {
+    "testCoverage": 0,
+    "securityScore": 100,
+    "accessibilityScore": 0,
+    "lgpdCompliance": 100
+  },
+  "documentation": {
+    "apis": [],
+    "components": [],
+    "medicalCalculators": [],
+    "clinicalCases": [],
+    "educationalContent": [],
+    "codeMetrics": {
+      "totalFiles": 0,
+      "totalLines": 0,
+      "totalComponents": 0,
+      "totalApis": 0,
+      "totalTests": 0,
+      "testCoverage": 0,
+      "averageLinesPerFile": null,
+      "medicalRelevance": {
+        "components": 0,
+        "apis": 0,
+        "calculators": 0,
+        "clinicalCases": 0
+      }
+    },
+    "dependencies": {
+      "total": 43,
+      "categorized": {
+        "react": [
+          {
+            "name": "lucide-react",
+            "version": "^0.542.0"
+          },
+          {
+            "name": "react",
+            "version": "^19.1.1"
+          },
+          {
+            "name": "react-dom",
+            "version": "^19.1.1"
+          },
+          {
+            "name": "react-ga4",
+            "version": "^2.1.0"
+          },
+          {
+            "name": "react-image-crop",
+            "version": "^11.0.10"
+          },
+          {
+            "name": "@testing-library/react",
+            "version": "^16.3.0"
+          },
+          {
+            "name": "@types/react",
+            "version": "^19.1.12"
+          },
+          {
+            "name": "@types/react-dom",
+            "version": "^19.1.9"
+          },
+          {
+            "name": "babel-plugin-react-compiler",
+            "version": "^19.0.0-beta-af1b7da-20250417"
+          }
+        ],
+        "ui": [],
+        "testing": [
+          {
+            "name": "@jest/globals",
+            "version": "^29.7.0"
+          },
+          {
+            "name": "@testing-library/jest-dom",
+            "version": "^6.8.0"
+          },
+          {
+            "name": "@testing-library/user-event",
+            "version": "^14.5.0"
+          },
+          {
+            "name": "@types/jest",
+            "version": "^29.5.0"
+          },
+          {
+            "name": "jest",
+            "version": "^29.7.0"
+          },
+          {
+            "name": "jest-environment-jsdom",
+            "version": "^29.7.0"
+          },
+          {
+            "name": "ts-jest",
+            "version": "^29.1.0"
+          }
+        ],
+        "build": [
+          {
+            "name": "webpack-bundle-analyzer",
+            "version": "^4.10.2"
+          }
+        ],
+        "medical": [],
+        "analytics": [],
+        "security": [],
+        "other": [
+          {
+            "name": "@next/third-parties",
+            "version": "^15.4.6"
+          },
+          {
+            "name": "dompurify",
+            "version": "^3.2.6"
+          },
+          {
+            "name": "firebase",
+            "version": "^12.2.1"
+          },
+          {
+            "name": "framer-motion",
+            "version": "^12.23.12"
+          },
+          {
+            "name": "jspdf",
+            "version": "^3.0.2"
+          },
+          {
+            "name": "next",
+            "version": "^15.1.0"
+          },
+          {
+            "name": "web-vitals",
+            "version": "^5.1.0"
+          },
+          {
+            "name": "zod",
+            "version": "^4.1.5"
+          },
+          {
+            "name": "@eslint/eslintrc",
+            "version": "^3.3.1"
+          },
+          {
+            "name": "@next/bundle-analyzer",
+            "version": "^15.5.2"
+          },
+          {
+            "name": "@types/dompurify",
+            "version": "^3.0.5"
+          },
+          {
+            "name": "@types/glob",
+            "version": "^8.1.0"
+          },
+          {
+            "name": "@types/node",
+            "version": "^20.0.0"
+          },
+          {
+            "name": "@typescript-eslint/eslint-plugin",
+            "version": "^8.42.0"
+          },
+          {
+            "name": "@typescript-eslint/parser",
+            "version": "^8.42.0"
+          },
+          {
+            "name": "eslint",
+            "version": "^8.57.0"
+          },
+          {
+            "name": "eslint-config-next",
+            "version": "^15.1.0"
+          },
+          {
+            "name": "glob",
+            "version": "^11.0.3"
+          },
+          {
+            "name": "husky",
+            "version": "^9.1.7"
+          },
+          {
+            "name": "license-checker",
+            "version": "^25.0.1"
+          },
+          {
+            "name": "lint-staged",
+            "version": "^15.0.0"
+          },
+          {
+            "name": "prettier",
+            "version": "^3.0.0"
+          },
+          {
+            "name": "sharp",
+            "version": "^0.34.3"
+          },
+          {
+            "name": "string-replace-loader",
+            "version": "^3.2.0"
+          },
+          {
+            "name": "ts-node",
+            "version": "^10.9.0"
+          },
+          {
+            "name": "typescript",
+            "version": "^5.0.0"
+          }
+        ]
+      },
+      "vulnerabilities": []
+    },
+    "securityAnalysis": {
+      "issues": [],
+      "features": {
+        "authentication": 0,
+        "authorization": 0,
+        "inputValidation": 0,
+        "outputSanitization": 0,
+        "httpsEnforcement": 0,
+        "secureHeaders": 0
+      },
+      "score": 100,
+      "recommendations": [
+        "Implementar autenticação para proteger dados médicos",
+        "Implementar validação rigorosa de entradas",
+        "Configurar cabeçalhos de segurança HTTP"
+      ]
+    }
+  }
+}

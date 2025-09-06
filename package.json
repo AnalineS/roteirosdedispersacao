@@ -1,0 +1,42 @@
+{
+  "name": "roteiro-dispensacao-medical-platform",
+  "version": "2.0.0",
+  "description": "Plataforma educacional médica para hanseníase - Sistema de automação Claude",
+  "main": "index.js",
+  "scripts": {
+    "automation:docs": "node .claude/automation/auto-documentation.js",
+    "automation:lgpd": "node .claude/automation/lgpd-compliance-checker.js",
+    "automation:monitor": "node .claude/automation/continuous-monitoring-system.js",
+    "quality:check": "node scripts/claude-quality-check.js",
+    "docs:generate": "npm run automation:docs",
+    "compliance:check": "npm run automation:lgpd",
+    "monitor:start": "npm run automation:monitor"
+  },
+  "dependencies": {
+    "fs-extra": "^11.2.0",
+    "glob": "^10.3.12",
+    "chokidar": "^3.6.0",
+    "express": "^4.19.2",
+    "cors": "^2.8.5",
+    "chalk": "^4.1.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.12",
+    "typescript": "^5.4.5"
+  },
+  "keywords": [
+    "medical",
+    "hanseniase",
+    "education",
+    "automation",
+    "claude",
+    "lgpd",
+    "healthcare"
+  ],
+  "author": "Sistema de Automação Claude",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AnalineS/roteirosdedispersacao.git"
+  }
+}
