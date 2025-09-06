@@ -50,7 +50,7 @@ jsonschema>=4.23.0
 # === HTTP & NETWORKING ===
 requests==2.32.4   # SECURITY: Updated beyond CVE-2023-32681
 httpx>=0.24.0
-urllib3>=1.26.0
+urllib3>=1.26.19  # SECURITY: Fixes CVE-2021-33503, CVE-2025-50181, CVE-2023-43804
 certifi==2024.8.30
 
 # === CACHE & PERFORMANCE ===
