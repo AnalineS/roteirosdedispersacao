@@ -91,6 +91,7 @@ class ContextAnalyzer:
         return {
             'dosage_query': [
                 r'quanto.*\b(dose|dosagem|quantidade)\b',
+                r'qual.*\b(dose|dosagem)\b',
                 r'como.*\b(tomar|administrar|dar)\b',
                 r'\b(dose|mg|ml|comprimido)\b.*\b(dia|semana|mês)\b'
             ],
