@@ -300,12 +300,14 @@ jobs:
             --region=$REGION \
             --allow-unauthenticated \
             --port=8080 \
-            --memory=1Gi \
-            --cpu=1 \
-            --concurrency=100 \
+            --memory=2Gi \
+            --cpu=2 \
+            --concurrency=80 \
             --max-instances=10 \
             --min-instances=0 \
-            --timeout=300 \
+            --timeout=900 \
+            --cpu-throttling \
+            --execution-environment=gen2 \
             --set-env-vars="ENVIRONMENT=homologacao,FLASK_ENV=production,DEBUG=false,SECRET_KEY=${{ secrets.SECRET_KEY }},OPENROUTER_API_KEY=${{ secrets.OPENROUTER_API_KEY }},HUGGINGFACE_API_KEY=${{ secrets.HUGGINGFACE_API_KEY }}" \
             --tag=hml-$(echo $GITHUB_SHA | cut -c1-7) \
             --quiet
