@@ -113,7 +113,12 @@ export interface Persona {
   capabilities: string[];
   example_questions: string[];
   limitations: string[];
-  response_format: Record<string, unknown>;
+  response_format: {
+    technical: boolean;
+    citations?: boolean;
+    structured?: boolean;
+    empathetic?: boolean;
+  };
 }
 
 export interface PersonasResponse {
@@ -332,13 +337,14 @@ export async function checkAPIHealth(): Promise<{
 /**
  * Detecta escopo da pergunta
  */
-export async function detectQuestionScope(question: string): Promise<{ scope: string; confidence: number; details: string }> {
+export async function detectQuestionScope(question: string): Promise<{ scope: string; confidence: number; details: string; category?: string; is_medical?: boolean; offline_mode?: boolean; offline_fallback?: boolean }> {
   // Se backend está em modo offline, retornar escopo padrão
   if (!API_BASE_URL) {
     console.log('[Scope] Modo offline ativo, retornando escopo padrão');
     return {
       scope: 'medical_general',
       confidence: 0.8,
+      details: 'Modo offline - escopo médico geral detectado',
       category: 'hanseniase',
       is_medical: true,
       offline_mode: true
@@ -365,6 +371,7 @@ export async function detectQuestionScope(question: string): Promise<{ scope: st
     return {
       scope: 'medical_general',
       confidence: 0.6,
+      details: 'Fallback para escopo médico geral após erro de rede',
       category: 'hanseniase',
       is_medical: true,
       offline_fallback: true

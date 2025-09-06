@@ -12,6 +12,9 @@ import {
   CertificateIcon,
   MailIcon
 } from '@/components/ui/EducationalIcons';
+import { 
+  AlertIcon 
+} from '@/components/icons/FlatOutlineIcons';
 
 /**
  * Página de Conformidade do Sistema
@@ -27,7 +30,7 @@ interface ComplianceFramework {
   status: 'compliant' | 'partial' | 'planned';
   measures: string[];
   references: string[];
-  icon: React.ComponentType<{ size?: number; className?: string }>;
+  icon: React.ComponentType<{ size?: number; className?: string; color?: string }>;
   color: string;
 }
 

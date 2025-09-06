@@ -27,6 +27,8 @@
     "test:a11y": "jest --testPathPattern=accessibility --runInBand",
     "test:personas": "jest --testPathPattern=personas",
     "test:consistency": "jest --testPathPattern=consistency",
+    "test:cache": "node src/scripts/testCacheBasic.js",
+    "test:rag": "node src/scripts/runRAGTests.js",
     "qa:run": "node scripts/runQA.js",
     "integrate-errors": "tsx scripts/integrate-error-handlers.ts",
     "qa:full": "npm run qa:run -- --suite=full",
@@ -55,6 +57,7 @@
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-ga4": "^2.1.0",
+    "react-image-crop": "^11.0.10",
     "web-vitals": "^5.1.0",
     "zod": "^4.1.5"
   },

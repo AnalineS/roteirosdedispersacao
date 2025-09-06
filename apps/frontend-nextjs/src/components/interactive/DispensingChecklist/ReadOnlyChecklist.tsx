@@ -12,7 +12,7 @@ interface ReadOnlyChecklistProps {
 export default function ReadOnlyChecklist({ 
   stages, 
   showEducationalInfo = true 
-}: ReadOnlyChecklistProps): JSX.Element {
+}: ReadOnlyChecklistProps): React.JSX.Element {
   const [expandedStage, setExpandedStage] = useState<string | null>(stages[0]?.id || null);
   const [expandedActivity, setExpandedActivity] = useState<string | null>(null);
 

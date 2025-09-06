@@ -20,7 +20,7 @@ export default function DispensingChecklist({
   enablePersistence = false,
   onSessionSave,
   onSessionComplete
-}: DispensingChecklistProps): JSX.Element {
+}: DispensingChecklistProps): React.JSX.Element {
   const [isLoading, setIsLoading] = useState(true);
   const [workflowStages, setWorkflowStages] = useState<WorkflowStage[]>([]);
 
@@ -136,7 +136,7 @@ export default function DispensingChecklist({
 }
 
 // Loading component
-function LoadingState(): JSX.Element {
+function LoadingState(): React.JSX.Element {
   return (
     <div style={{
       display: 'flex',
@@ -183,7 +183,7 @@ function LoadingState(): JSX.Element {
 }
 
 // Feature comparison for anonymous users
-function FeatureComparison(): JSX.Element {
+function FeatureComparison(): React.JSX.Element {
   return (
     <div style={{
       marginBottom: modernChatTheme.spacing.xl,

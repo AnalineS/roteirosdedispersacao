@@ -5,6 +5,7 @@ import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { calculatePQTUDoses, validateCalculation } from '@/utils/doseCalculations';
 import { PatientProfile, CalculationResult, CalculationHistory } from '@/types/medication';
 import { modernChatTheme } from '@/config/modernTheme';
+import { PillIcon } from '@/components/icons/FlatOutlineIcons';
 import BasicCalculator from './BasicCalculator';
 import CalculationHistoryComponent from './CalculationHistory';
 import ExportOptions from './ExportOptions';
@@ -13,7 +14,7 @@ interface AdvancedCalculatorProps {
   onCalculationComplete?: (result: CalculationResult) => void;
 }
 
-export default function AdvancedCalculator({ onCalculationComplete }: AdvancedCalculatorProps): JSX.Element {
+export default function AdvancedCalculator({ onCalculationComplete }: AdvancedCalculatorProps): React.JSX.Element {
   const { captureError } = useErrorHandler();
   const [activeTab, setActiveTab] = useState<'calculator' | 'history' | 'export'>('calculator');
   const [currentResult, setCurrentResult] = useState<CalculationResult | null>(null);
@@ -99,9 +100,14 @@ export default function AdvancedCalculator({ onCalculationComplete }: AdvancedCa
           fontSize: '24px',
           fontWeight: '700',
           color: modernChatTheme.colors.neutral.text,
-          marginBottom: modernChatTheme.spacing.sm
+          marginBottom: modernChatTheme.spacing.sm,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '0.75rem'
         }}>
-          🎓 Calculadora PQT-U Avançada
+          <PillIcon size={28} color={modernChatTheme.colors.neutral.text} />
+          Calculadora PQT-U Avançada
         </h2>
         <p style={{
           fontSize: modernChatTheme.typography.meta.fontSize,
@@ -140,7 +146,7 @@ export default function AdvancedCalculator({ onCalculationComplete }: AdvancedCa
         ].map(tab => (
           <button
             key={tab.key}
-            onClick={() => setActiveTab(tab.key as 'basic' | 'advanced' | 'history' | 'export')}
+            onClick={() => setActiveTab(tab.key as 'calculator' | 'history' | 'export')}
             style={{
               flex: 1,
               padding: modernChatTheme.spacing.md,
@@ -214,7 +220,7 @@ function EnhancedBasicCalculator({
   onCalculationComplete: (result: CalculationResult, profile?: PatientProfile) => void;
   onExportRequest: () => void;
   isAdvanced: boolean;
-}): JSX.Element {
+}): React.JSX.Element {
   const [profile, setProfile] = useState<PatientProfile>({
     weight: 0,
     age: 0,
@@ -415,7 +421,7 @@ function EnhancedBasicCalculator({
 }
 
 // Placeholder for Export Modal (will be implemented)
-function ExportModal({ result, onClose }: { result: CalculationResult; onClose: () => void }): JSX.Element {
+function ExportModal({ result, onClose }: { result: CalculationResult; onClose: () => void }): React.JSX.Element {
   return (
     <div style={{
       position: 'fixed',

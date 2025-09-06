@@ -1,11 +1,10 @@
 import type { Metadata, Viewport } from 'next'
 import ErrorBoundary from '@/components/ErrorBoundary'
-import { ErrorBoundary as AdvancedErrorBoundary } from '@/components/errors/ErrorBoundary'
-import { ErrorHandlerProvider } from '@/hooks/useErrorHandler'
 import ErrorToast from '@/components/errors/ErrorToast'
 import OfflineIndicator from '@/components/OfflineIndicator'
 import GoogleAnalytics from '@/components/GoogleAnalytics'
 import { AnalyticsProvider } from '@/components/analytics/AnalyticsProvider'
+import { GlobalTrackingProvider } from '@/components/analytics/GlobalTrackingProvider'
 import PWAManager from '@/components/pwa/PWAManager'
 import AuthProviderWrapper from '@/components/auth/AuthProviderWrapper'
 import { ThemeProvider } from '@/contexts/ThemeContext'
@@ -14,6 +13,7 @@ import { GlobalNavigationProvider } from '@/components/navigation/GlobalNavigati
 import { PersonaProvider } from '@/contexts/PersonaContext'
 import PersonaAccessibilityProvider from '@/components/accessibility/PersonaAccessibilityProvider'
 import EnhancedCoreWebVitals from '@/components/analytics/EnhancedCoreWebVitals'
+import NumericNavigationWrapper from '@/components/navigation/NumericNavigationWrapper'
 import SITE_CONFIG from '@/lib/config'
 import '@/styles/globals.css'
 import '@/styles/fluid-typography.css'
@@ -117,47 +117,24 @@ export default function RootLayout({
         <EnhancedCoreWebVitals />
         
         <main id="main-content">
-          <ErrorHandlerProvider 
-            maxHistorySize={100}
-            onError={(errorData) => {
-              // Log estruturado para monitoramento
-              if (process.env.NODE_ENV === 'production') {
-                console.log('🔥 Global Error Captured:', errorData.id, errorData.severity);
-              }
-            }}
-          >
-            <AccessibilityProvider>
-              <ThemeProvider>
-                <PersonaProvider>
-                  <PersonaAccessibilityProvider>
-                    <GlobalNavigationProvider>
-                      <AuthProviderWrapper>
-                        <AnalyticsProvider>
-                          <AdvancedErrorBoundary 
-                            level="page"
-                            resetOnPropsChange={true}
-                            onError={(error, errorInfo) => {
-                              // Integração com sistema de analytics
-                              if (typeof window !== 'undefined' && (window as any).gtag) {
-                                (window as any).gtag('event', 'exception', {
-                                  description: error.message,
-                                  fatal: false,
-                                  custom_map: {
-                                    component_stack: errorInfo.componentStack
-                                  }
-                                });
-                              }
-                            }}
-                          >
+          <ErrorBoundary>
+            <GlobalTrackingProvider>
+              <AccessibilityProvider>
+                <ThemeProvider>
+                  <PersonaProvider>
+                    <PersonaAccessibilityProvider>
+                      <GlobalNavigationProvider>
+                        <AuthProviderWrapper>
+                          <AnalyticsProvider>
                             {children}
-                          </AdvancedErrorBoundary>
-                        </AnalyticsProvider>
-                      </AuthProviderWrapper>
-                    </GlobalNavigationProvider>
-                  </PersonaAccessibilityProvider>
-                </PersonaProvider>
-              </ThemeProvider>
-            </AccessibilityProvider>
+                          </AnalyticsProvider>
+                        </AuthProviderWrapper>
+                      </GlobalNavigationProvider>
+                    </PersonaAccessibilityProvider>
+                  </PersonaProvider>
+                </ThemeProvider>
+              </AccessibilityProvider>
+            </GlobalTrackingProvider>
             
             {/* Toast System - Fora dos providers para máxima compatibilidade */}
             <ErrorToast 
@@ -165,7 +142,14 @@ export default function RootLayout({
               maxToasts={3}
               autoCloseDuration={5000}
             />
-          </ErrorHandlerProvider>
+
+            {/* Numeric Navigation System - PR #172 */}
+            <NumericNavigationWrapper 
+              enabled={true}
+              showHint={true}
+              hintPosition="bottom-right"
+            />
+          </ErrorBoundary>
         </main>
         
         {/* PWA Manager - Service Worker desabilitado conforme solicitado */}

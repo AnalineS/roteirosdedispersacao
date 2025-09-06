@@ -157,13 +157,13 @@ export default function LoginPage() {
 
               <button
                 type="submit"
-                disabled={isLoading}
+                disabled={isLoading || _authLoading}
                 className="submit-button"
               >
-                {isLoading ? (
+                {(isLoading || _authLoading) ? (
                   <>
                     <Loader2 className="spinner" size={20} />
-                    Entrando...
+                    {_authLoading ? 'Autenticando...' : 'Entrando...'}
                   </>
                 ) : (
                   <>

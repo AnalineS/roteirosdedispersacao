@@ -1,7 +1,8 @@
 import ReactGA from 'react-ga4';
+import { AnalyticsFirestoreCache } from './analyticsFirestoreCache';
 
-// Google Analytics Measurement ID - Replace with your actual ID
-const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || 'G-XXXXXXXXXX';
+// Google Analytics Measurement ID - Configured via GitHub secrets
+const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || '';
 
 // Analytics Categories
 export const AnalyticsCategory = {
@@ -76,7 +77,7 @@ interface CustomMetrics {
 
 // Initialize GA4
 export const initGA = () => {
-  if (typeof window !== 'undefined' && GA_MEASUREMENT_ID !== 'G-XXXXXXXXXX') {
+  if (typeof window !== 'undefined' && GA_MEASUREMENT_ID) {
     ReactGA.initialize(GA_MEASUREMENT_ID, {
       gaOptions: {
         anonymizeIp: true, // LGPD compliance
@@ -122,6 +123,19 @@ export const logCustomMetrics = (metrics: Partial<CustomMetrics>) => {
     // Log as custom dimensions
     ReactGA.gtag('event', 'custom_metrics', {
       custom_parameter: metrics,
+    });
+
+    // Também salvar no Firestore para analytics avançado
+    const sessionId = getCurrentSessionId();
+    AnalyticsFirestoreCache.saveAnalyticsEvent({
+      id: `metrics_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      sessionId,
+      timestamp: Date.now(),
+      event: 'custom_metrics',
+      category: 'performance',
+      customDimensions: metrics
+    }).catch(error => {
+      console.warn('Failed to save metrics to Firestore:', error);
     });
   }
 };
@@ -255,6 +269,31 @@ export const trackAdminAction = (
   logEvent('ADMIN', action, details);
 };
 
+// Session Management para Firestore Integration
+let currentSessionId: string | null = null;
+
+const getCurrentSessionId = (): string => {
+  if (!currentSessionId) {
+    currentSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    // Iniciar sessão no Firestore
+    AnalyticsFirestoreCache.startAnalyticsSession({
+      id: currentSessionId,
+      deviceType: getDeviceType(),
+    }).catch(error => {
+      console.warn('Failed to start Firestore analytics session:', error);
+    });
+  }
+  return currentSessionId;
+};
+
+const getDeviceType = (): 'mobile' | 'tablet' | 'desktop' => {
+  if (typeof window === 'undefined') return 'desktop';
+  const width = window.innerWidth;
+  if (width < 768) return 'mobile';
+  if (width < 1024) return 'tablet';
+  return 'desktop';
+};
+
 // Export all tracking functions
 export const Analytics = {
   init: initGA,
@@ -272,6 +311,16 @@ export const Analytics = {
   education: trackEducationalProgress,
   compliance: trackCompliance,
   admin: trackAdminAction,
+  // Firestore integration
+  firestore: {
+    startSession: (sessionData?: any) => AnalyticsFirestoreCache.startAnalyticsSession(sessionData),
+    endSession: (sessionId: string) => AnalyticsFirestoreCache.endAnalyticsSession(sessionId),
+    getSession: (sessionId: string) => AnalyticsFirestoreCache.getAnalyticsSession(sessionId),
+    trackMedical: (sessionId: string, metric: any) => AnalyticsFirestoreCache.trackMedicalMetric(sessionId, metric),
+    getAggregated: (timeframe: any, start: number, end: number) => AnalyticsFirestoreCache.getAggregatedAnalytics(timeframe, start, end),
+    getRealtime: () => AnalyticsFirestoreCache.getRealtimeAnalytics(),
+    cleanup: (olderThanMs?: number) => AnalyticsFirestoreCache.cleanupOldAnalytics(olderThanMs)
+  }
 };
 
 export default Analytics;

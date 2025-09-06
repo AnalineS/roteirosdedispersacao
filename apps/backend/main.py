@@ -21,65 +21,19 @@ from datetime import datetime
 # Import do middleware CORS customizado para compatibilidade total com error handling
 from core.security.custom_cors import CustomCORSMiddleware
 
-# Imports opcionais com fallback
-try:
-    from core.versioning import APIVersionManager
-    VERSIONING_AVAILABLE = True
-except ImportError:
-    VERSIONING_AVAILABLE = False
-    APIVersionManager = None
+# Import obrigatório do versionamento
+from core.versioning import APIVersionManager
 
-# Import configuração centralizada (com fallback)
-try:
-    from app_config import config, EnvironmentConfig
-    CONFIG_AVAILABLE = True
-except ImportError:
-    CONFIG_AVAILABLE = False
-    # Fallback config simples
-    class SimpleConfig:
-        SECRET_KEY = os.environ.get('SECRET_KEY')
-        if not SECRET_KEY:
-            import secrets
-            SECRET_KEY = secrets.token_hex(32)
-            logger.warning("SECRET_KEY não definida! Usando chave temporária - NÃO USAR EM PRODUÇÃO!")
-        DEBUG = os.environ.get('FLASK_ENV') == 'development'
-        TESTING = False
-        MAX_CONTENT_LENGTH = 16 * 1024 * 1024
-        SESSION_COOKIE_SECURE = os.environ.get('SESSION_COOKIE_SECURE', 'false').lower() == 'true'
-        SESSION_COOKIE_HTTPONLY = True
-        SESSION_COOKIE_SAMESITE = 'Lax'
-        HOST = os.environ.get('HOST', '0.0.0.0')
-        PORT = int(os.environ.get('PORT', 8080))
-        LOG_LEVEL = 'INFO'
-        LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-        CORS_ORIGINS = os.environ.get('CORS_ORIGINS', '').split(',') if os.environ.get('CORS_ORIGINS') else []
-    
-    class SimpleEnvironmentConfig:
-        @staticmethod
-        def get_current():
-            return os.environ.get('ENVIRONMENT', 'development')
-    
-    config = SimpleConfig()
-    EnvironmentConfig = SimpleEnvironmentConfig()
+# Import obrigatório da configuração centralizada
+from app_config import config, EnvironmentConfig
 
-# Import sistema de dependências (com fallback)
-try:
-    from core.dependencies import dependency_injector
-    DEPENDENCIES_AVAILABLE = True
-except ImportError:
-    DEPENDENCIES_AVAILABLE = False
-    # Fallback simples
-    class SimpleDependencyInjector:
-        def inject_into_blueprint(self, blueprint):
-            pass
-        def get_dependencies(self):
-            return type('obj', (object,), {'cache': None, 'rag_service': None, 'qa_framework': None})()
-    dependency_injector = SimpleDependencyInjector()
+# Import obrigatório do sistema de dependências
+from core.dependencies import dependency_injector
 
 # Configurar logging ANTES de usar logger
 logging.basicConfig(
-    level=getattr(logging, config.LOG_LEVEL if CONFIG_AVAILABLE else 'INFO'),
-    format=config.LOG_FORMAT if CONFIG_AVAILABLE else '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=getattr(logging, config.LOG_LEVEL),
+    format=config.LOG_FORMAT
 )
 
 # Aplicar patch para Windows logging (resolve problemas com emojis)
@@ -232,7 +186,7 @@ def create_app():
 def setup_cors(app):
     """Configurar CORS baseado no ambiente"""
     # Usar origins do config
-    if CONFIG_AVAILABLE and hasattr(config, 'CORS_ORIGINS'):
+    if hasattr(config, 'CORS_ORIGINS'):
         allowed_origins = config.CORS_ORIGINS.copy()
     else:
         allowed_origins = []
@@ -444,12 +398,9 @@ def register_blueprints(app):
 
 def inject_dependencies_into_blueprints():
     """Injetar dependências em todos os blueprints"""
-    if DEPENDENCIES_AVAILABLE:
-        for blueprint in ALL_BLUEPRINTS:
-            dependency_injector.inject_into_blueprint(blueprint)
-            logger.info(f"✓ Dependências injetadas: {blueprint.name}")
-    else:
-        logger.info("✓ Dependências simplificadas - modo mínimo")
+    for blueprint in ALL_BLUEPRINTS:
+        dependency_injector.inject_into_blueprint(blueprint)
+        logger.info(f"✓ Dependências injetadas: {blueprint.name}")
 
 def setup_error_handlers(app):
     """Configurar handlers de erro globais"""
@@ -511,32 +462,21 @@ def log_startup_info():
     logger.info("=" * 60)
     logger.info("[START] ROTEIROS DE DISPENSAÇÃO PQT-U - BACKEND REFATORADO")
     logger.info("=" * 60)
-    logger.info(f"📦 Versão: {'blueprint_v1.0' if CONFIG_AVAILABLE else 'minimal_v1.0'}")
+    logger.info(f"📦 Versão: blueprint_v1.0")
     logger.info(f"🌍 Ambiente: {environment}")
     logger.info(f"🐍 Python: {sys.version.split()[0]}")
     logger.info(f"⚙️  Debug: {config.DEBUG}")
     
-    if CONFIG_AVAILABLE:
-        logger.info(f"[AUTH] QA Enabled: {getattr(config, 'QA_ENABLED', False)}")
-        logger.info(f"[SAVE] Cache: {'Advanced' if getattr(config, 'ADVANCED_CACHE', False) else 'Simple'}")
-        logger.info(f"🧠 RAG: {'Available' if getattr(config, 'RAG_AVAILABLE', False) else 'Unavailable'}")
-        logger.info(f"[REPORT] Metrics: {'Enabled' if getattr(config, 'METRICS_ENABLED', False) else 'Disabled'}")
-    else:
-        logger.info("[AUTH] QA Enabled: Minimal Mode")
-        logger.info("[SAVE] Cache: Simple")
-        logger.info("🧠 RAG: Unavailable")
-        logger.info("[REPORT] Metrics: Disabled")
+    logger.info(f"[AUTH] QA Enabled: {getattr(config, 'QA_ENABLED', False)}")
+    logger.info(f"[SAVE] Cache: {'Advanced' if getattr(config, 'ADVANCED_CACHE', False) else 'Simple'}")
+    logger.info(f"🧠 RAG: {'Available' if getattr(config, 'RAG_AVAILABLE', False) else 'Unavailable'}")
+    logger.info(f"[REPORT] Metrics: {'Enabled' if getattr(config, 'METRICS_ENABLED', False) else 'Disabled'}")
     
     # Status das dependências
-    if DEPENDENCIES_AVAILABLE:
-        deps = dependency_injector.get_dependencies()
-        logger.info(f"✓ Cache: {'OK' if deps.cache else 'FAIL'}")
-        logger.info(f"✓ RAG: {'OK' if deps.rag_service else 'FAIL'}")  
-        logger.info(f"✓ QA: {'OK' if deps.qa_framework else 'FAIL'}")
-    else:
-        logger.info("✓ Cache: SIMPLE")
-        logger.info("✓ RAG: DISABLED")
-        logger.info("✓ QA: DISABLED")
+    deps = dependency_injector.get_dependencies()
+    logger.info(f"✓ Cache: {'OK' if deps.cache else 'FAIL'}")
+    logger.info(f"✓ RAG: {'OK' if deps.rag_service else 'FAIL'}")  
+    logger.info(f"✓ QA: {'OK' if deps.qa_framework else 'FAIL'}")
     
     # Blueprints registrados
     logger.info(f"[LIST] Blueprints: {len(ALL_BLUEPRINTS)} registrados")

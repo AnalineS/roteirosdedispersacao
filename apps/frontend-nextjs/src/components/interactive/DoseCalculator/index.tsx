@@ -13,7 +13,7 @@ interface DoseCalculatorProps {
 export default function DoseCalculator({ 
   userType = 'anonymous',
   onCalculationComplete 
-}: DoseCalculatorProps): JSX.Element {
+}: DoseCalculatorProps): React.JSX.Element {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {

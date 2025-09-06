@@ -4,6 +4,8 @@ import React, { useState, useCallback } from 'react';
 import { calculatePQTUDoses, validateCalculation, formatDose } from '@/utils/doseCalculations';
 import { PatientProfile, CalculationResult } from '@/types/medication';
 import { modernChatTheme } from '@/config/modernTheme';
+import { useHapticFeedback } from '@/utils/hapticFeedback';
+import { ContextualLoadingMessage } from '@/components/ui/LoadingStates';
 import {
   PillIcon,
   AlertTriangleIcon,
@@ -26,7 +28,7 @@ interface BasicCalculatorProps {
   onCalculationComplete?: (result: CalculationResult) => void;
 }
 
-export default function BasicCalculator({ onCalculationComplete }: BasicCalculatorProps): JSX.Element {
+export default function BasicCalculator({ onCalculationComplete }: BasicCalculatorProps): React.JSX.Element {
   const [profile, setProfile] = useState<PatientProfile>({
     weight: 0,
     age: 0,
@@ -41,32 +43,49 @@ export default function BasicCalculator({ onCalculationComplete }: BasicCalculat
   const [result, setResult] = useState<CalculationResult | null>(null);
   const [isCalculating, setIsCalculating] = useState(false);
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
+  const { calculation, success, error, info } = useHapticFeedback();
 
   const handleCalculate = useCallback(async () => {
     if (profile.weight <= 0 || profile.age <= 0) {
+      error(); // Haptic feedback para erro
       alert('Por favor, preencha peso e idade válidos.');
       return;
     }
 
+    // Trigger haptic feedback para início do cálculo
+    calculation();
     setIsCalculating(true);
     
-    // Simular processamento (UX)
-    await new Promise(resolve => setTimeout(resolve, 500));
+    // Simular processamento (UX) com feedback visual melhorado
+    await new Promise(resolve => setTimeout(resolve, 800));
     
-    const validation = validateCalculation(profile);
-    if (!validation.isValid) {
-      alert(`Erro na validação: ${validation.errors.join(', ')}`);
+    try {
+      const validation = validateCalculation(profile);
+      if (!validation.isValid) {
+        error(); // Haptic feedback para erro de validação
+        alert(`Erro na validação: ${validation.errors.join(', ')}`);
+        setIsCalculating(false);
+        return;
+      }
+      
+      const calculationResult = calculatePQTUDoses(profile);
+      
+      // Success feedback
+      success();
+      setResult(calculationResult);
+      onCalculationComplete?.(calculationResult);
+    } catch (err) {
+      error(); // Haptic feedback para erro de cálculo
+      alert('Erro durante o cálculo. Tente novamente.');
+      console.error('Calculation error:', err);
+    } finally {
       setIsCalculating(false);
-      return;
     }
-    
-    const calculationResult = calculatePQTUDoses(profile);
-    setResult(calculationResult);
-    onCalculationComplete?.(calculationResult);
-    setIsCalculating(false);
-  }, [profile, onCalculationComplete]);
+  }, [profile, onCalculationComplete, calculation, success, error]);
 
   const handleInputChange = (field: keyof PatientProfile, value: unknown): void => {
+    // Subtle haptic feedback para input changes
+    info();
     setProfile(prev => ({ ...prev, [field]: value }));
     setResult(null); // Limpar resultado anterior
   };
@@ -386,19 +405,18 @@ export default function BasicCalculator({ onCalculationComplete }: BasicCalculat
         <span className="sr-only" id="calculate-button-desc">
           Calcular doses de medicamentos PQT-U baseado no peso e idade informados
         </span>
-        <div style={{ display: 'flex', alignItems: 'center', gap: modernChatTheme.spacing.sm, justifyContent: 'center' }}>
-          {isCalculating ? (
-            <>
-              <RefreshIcon size={16} color="currentColor" />
-              Calculando...
-            </>
-          ) : (
-            <>
-              <CalculatorIcon size={16} color="currentColor" />
-              Calcular Doses PQT-U
-            </>
-          )}
-        </div>
+        {isCalculating ? (
+          <ContextualLoadingMessage 
+            context="calculation" 
+            persona="gasnelio" 
+            withHaptic={false}
+          />
+        ) : (
+          <div style={{ display: 'flex', alignItems: 'center', gap: modernChatTheme.spacing.sm, justifyContent: 'center' }}>
+            <CalculatorIcon size={16} color="currentColor" />
+            Calcular Doses PQT-U
+          </div>
+        )}
       </button>
 
       {/* Resultados */}

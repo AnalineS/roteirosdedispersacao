@@ -1,6 +1,6 @@
 /**
  * Google Analytics Setup Component
- * Integra seu GA existente (G-3MQVGKVMLP) com UX tracking
+ * Integra seu Google Analytics com UX tracking
  * Parte da ETAPA 1: Auditoria UX Baseada em Dados
  */
 
@@ -234,8 +234,8 @@ export function useGoogleAnalyticsUX() {
 // Extend Window interface for TypeScript
 declare global {
   interface Window {
-    gtag?: (...args: any[]) => void;
-    dataLayer?: any[];
+    gtag?: (...args: unknown[]) => void;
+    dataLayer?: unknown[];
     trackUXEvent: (eventName: string, category: string, score?: number, parameters?: any) => void;
     trackCognitiveLoad: (score: number, context: string) => void;
     trackMobileIssue: (issueType: string, severity: number) => void;

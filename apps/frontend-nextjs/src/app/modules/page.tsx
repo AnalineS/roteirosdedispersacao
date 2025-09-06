@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import EducationalLayout from '@/components/layout/EducationalLayout';
 import Link from 'next/link';
+import { FeaturesSection, ProgressiveCard } from '@/components/educational';
 
 interface Module {
   id: string;
@@ -440,6 +441,40 @@ export default function ModulesPage() {
               </select>
             </div>
           </div>
+        </div>
+
+        {/* Educational Features Section - PR #172 */}
+        <div style={{ marginBottom: '2rem' }}>
+          <FeaturesSection variant="detailed" />
+        </div>
+
+        {/* Progressive Learning Card - PR #172 */}
+        <div style={{ marginBottom: '2rem' }}>
+          <ProgressiveCard 
+            title="Começando com PQT-U: Protocolo Essencial"
+            steps={[
+              {
+                id: "basico",
+                title: "Compreenda o Básico",
+                content: "PQT-U significa Poliquimioterapia Única. É o tratamento padrão recomendado pela OMS para hanseníase paucibacilar.",
+                isCompleted: true
+              },
+              {
+                id: "dispensacao",
+                title: "Aprenda a Dispensação",
+                content: "A dispensação correta envolve orientação sobre posologia, efeitos adversos e importância da adesão ao tratamento.",
+                isCompleted: false
+              },
+              {
+                id: "pratica",
+                title: "Pratique com Casos",
+                content: "Use os módulos práticos para simular situações reais de dispensação farmacêutica.",
+                isCompleted: false
+              }
+            ]}
+            autoProgress={false}
+            onComplete={() => console.log('Progressive card completed!')}
+          />
         </div>
 
         {/* Modules Grid */}

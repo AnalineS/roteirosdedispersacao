@@ -8,6 +8,7 @@ import {
   ChecklistConfig,
   QualityMetrics 
 } from '@/types/checklist';
+import { ClipboardIcon, CheckIcon, HeartIcon } from '@/components/icons/FlatOutlineIcons';
 import { modernChatTheme } from '@/config/modernTheme';
 
 interface InteractiveChecklistProps {
@@ -24,7 +25,7 @@ export default function InteractiveChecklist({
   patientName,
   onSessionSave,
   onSessionComplete
-}: InteractiveChecklistProps): JSX.Element {
+}: InteractiveChecklistProps): React.JSX.Element {
   const announcementRef = useRef<HTMLDivElement>(null);
   const [session, setSession] = useState<DispensingSession>(() => ({
     id: `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -195,11 +196,13 @@ export default function InteractiveChecklist({
     announceChange('Sessão retomada');
   }, [announceChange]);
 
-  const getStageIcon = (stage: WorkflowStage): string => {
-    if (stage.isCompleted) return '✅';
+  const getStageIcon = (stage: WorkflowStage) => {
+    if (stage.isCompleted) return <CheckIcon size={20} color="#22c55e" />;
     const progress = calculateStageProgress(stage);
-    if (progress > 0) return '⏳';
-    return stage.sequence === 1 ? '🔍' : stage.sequence === 2 ? '📋' : '📊';
+    if (progress > 0) return <HeartIcon size={20} color="#f59e0b" />;
+    return stage.sequence === 1 ? <ClipboardIcon size={20} color="#6366f1" /> : 
+           stage.sequence === 2 ? <ClipboardIcon size={20} color="#8b5cf6" /> : 
+           <HeartIcon size={20} color="#06b6d4" />;
   };
 
   const getCurrentStageIndex = (): number => {
@@ -683,7 +686,7 @@ function StageDetailView({
   onAddNote,
   expandedActivity,
   onActivityToggle
-}: StageDetailViewProps): JSX.Element {
+}: StageDetailViewProps): React.JSX.Element {
   const [editingNote, setEditingNote] = useState<string | null>(null);
   const [noteText, setNoteText] = useState('');
 

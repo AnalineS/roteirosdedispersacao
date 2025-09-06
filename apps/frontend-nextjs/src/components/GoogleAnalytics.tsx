@@ -15,7 +15,7 @@ interface GoogleAnalyticsProps {
 }
 
 export default function GoogleAnalytics({ 
-  GA_MEASUREMENT_ID = 'G-XXXXXXXXXX' // Placeholder - deve ser configurado via env
+  GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || ''
 }: GoogleAnalyticsProps) {
   
   useEffect(() => {
@@ -32,7 +32,7 @@ export default function GoogleAnalytics({
     }
 
     // Configuração inicial quando o script carregar
-    if (typeof window !== 'undefined' && GA_MEASUREMENT_ID && GA_MEASUREMENT_ID !== 'G-XXXXXXXXXX' && window.gtag) {
+    if (typeof window !== 'undefined' && GA_MEASUREMENT_ID && window.gtag) {
       window.gtag('js', new Date());
       window.gtag('config', GA_MEASUREMENT_ID, {
         page_title: document.title,
@@ -62,7 +62,7 @@ export default function GoogleAnalytics({
   }, [GA_MEASUREMENT_ID]);
 
   // Não carregar em desenvolvimento ou se não tiver ID configurado
-  if (process.env.NODE_ENV !== 'production' || !GA_MEASUREMENT_ID || GA_MEASUREMENT_ID === 'G-XXXXXXXXXX') {
+  if (process.env.NODE_ENV !== 'production' || !GA_MEASUREMENT_ID) {
     return null;
   }
 
