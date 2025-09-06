@@ -214,6 +214,35 @@ jobs:
       - name: "[CHECKOUT] Checkout"
         uses: actions/checkout@v4
         
+      - name: "🐍 Setup Python"
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          
+      - name: "📦 Setup Node.js"
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: apps/frontend-nextjs/package-lock.json
+          
+      - name: "📥 Install Dependencies"
+        run: |
+          echo "🔧 Instalando dependências para análise OWASP..."
+          
+          # Install Python dependencies
+          cd apps/backend
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          cd ../..
+          
+          # Install Node.js dependencies
+          cd apps/frontend-nextjs
+          npm ci --only=prod --no-audit
+          cd ../..
+          
+          echo "✅ Dependências instaladas com sucesso"
+        
       - name: "[SECURITY] OWASP Dependency Check"
         uses: dependency-check/Dependency-Check_Action@main
         with:
