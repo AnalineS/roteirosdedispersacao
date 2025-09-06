@@ -12,7 +12,7 @@ from typing import Dict, Any, List, Optional
 # Importações locais
 from core.security.enhanced_security import SecurityFramework
 from core.performance.cache_manager import CacheManager
-from services.predictive_system import get_predictive_engine, is_predictive_system_available
+from services.integrations.predictive_system import get_predictive_engine, is_predictive_system_available
 
 # Configurar blueprint
 predictions_bp = Blueprint('predictions', __name__, url_prefix='/api/predictions')
@@ -200,7 +200,7 @@ def track_interaction():
         engine = get_predictive_engine()
         
         # Reconstruir objetos de sugestão (simplificado para tracking)
-        from services.predictive_system import Suggestion
+        from services.integrations.predictive_system import Suggestion
         
         suggestion_objects = []
         for suggestion_id in suggestions_shown:
