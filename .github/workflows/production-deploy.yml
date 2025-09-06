@@ -477,7 +477,7 @@ jobs:
       - name: 🛠️ Setup Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
-      - name: [ALERT] Configure Production Alerts
+      - name: 🚨 Configure Production Alerts
         run: |
           echo "[ALERT] Configurando alertas de produção com integração Telegram..."
           
@@ -540,7 +540,7 @@ jobs:
           git tag -a "${{ github.event.inputs.version_tag }}" -m "Production release ${{ github.event.inputs.version_tag }}"
           git push origin "${{ github.event.inputs.version_tag }}"
 
-      - name: [LIST] Create GitHub Release
+      - name: 📋 Create GitHub Release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

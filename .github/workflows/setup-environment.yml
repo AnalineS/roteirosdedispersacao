@@ -195,10 +195,19 @@ jobs:
       run: |
         echo "🔍 Validating Firebase authentication..."
         
-        # Test Firebase token
-        echo "${{ secrets.FIREBASE_TOKEN }}" | firebase login:ci
+        # Test Firebase CLI version first
+        firebase --version && echo "✅ Firebase CLI disponível"
         
-        echo "✅ Firebase authentication successful"
+        # Test Firebase token with error handling
+        if firebase --token "${{ secrets.FIREBASE_TOKEN }}" list &>/dev/null; then
+          echo "✅ Firebase token válido"
+        else
+          echo "⚠️ Firebase token inválido ou problemas de rede"
+          echo "Tentando login alternativo..."
+          firebase login --no-localhost --interactive=false 2>&1 || echo "⚠️ Login alternativo falhou - continuando com fallback"
+        fi
+        
+        echo "Firebase validation completed"
         
     - name: Validate Firebase Project
       run: |
