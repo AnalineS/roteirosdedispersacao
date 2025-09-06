@@ -55,7 +55,7 @@ jobs:
       - name: "[CHECKOUT] Checkout"
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
         with:
-          fetch-depth: 10
+          fetch-depth: 0  # Fetch completo para git diff funcionar
           
       # PATH-FILTER OTIMIZADO: Detecção inteligente de risco
       - name: "[FILTER] Análise Rápida de Paths"
@@ -135,8 +135,29 @@ jobs:
           TEST_STRATEGY="basic"
           COMPONENTS=""
           
-          # Analise de arquivos alterados
-          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
+          # Fetch all branches para garantir referências
+          git fetch origin
+          
+          # Determine target branch com fallback
+          TARGET_BRANCH="${{ github.base_ref || 'main' }}"
+          
+          # Get changed files com múltiplas estratégias
+          if git rev-parse --verify "origin/$TARGET_BRANCH" >/dev/null 2>&1; then
+            CHANGED_FILES=$(git diff --name-only "origin/$TARGET_BRANCH"...HEAD)
+            echo "✅ Using diff against origin/$TARGET_BRANCH"
+          else
+            # Fallback 1: usar diferença desde último commit main
+            if git rev-parse --verify "origin/main" >/dev/null 2>&1; then
+              CHANGED_FILES=$(git diff --name-only "origin/main"...HEAD)
+              echo "✅ Fallback: using diff against origin/main"
+            else
+              # Fallback 2: usar commits recentes
+              CHANGED_FILES=$(git diff --name-only HEAD~10...HEAD 2>/dev/null || git diff --name-only HEAD~1...HEAD 2>/dev/null || git ls-files -m)
+              echo "✅ Fallback: using recent commits or modified files"
+            fi
+          fi
+          
+          echo "Arquivos alterados detectados: $(echo "$CHANGED_FILES" | wc -l)"
           
           # Classificacao de risco baseada nos arquivos
           if echo "$CHANGED_FILES" | grep -q -E "(auth|security|payment|database)"; then
