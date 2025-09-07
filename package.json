@@ -33,10 +33,27 @@
     "lgpd",
     "healthcare"
   ],
-  "author": "Sistema de Automação Claude",
+  "author": "AnalineS <sousa.analine@gmail.com>",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/AnalineS/roteirosdedispersacao.git"
+  },
+  "homepage": "https://roteirosdispensacao.com.br",
+  "bugs": {
+    "url": "https://github.com/AnalineS/roteirosdedispersacao/issues",
+    "email": "roteirosdedispensacaounb@gmail.com"
+  },
+  "config": {
+    "environments": {
+      "production": "https://roteirosdispensacao.com.br",
+      "staging": "https://hml-roteiros-de-dispensacao.web.app"
+    },
+    "admin_emails": [
+      "sousa.analine@gmail.com",
+      "roteirosdedispensacaounb@gmail.com",
+      "neliogmoura@gmail.com"
+    ],
+    "support_email": "roteirosdedispensacaounb@gmail.com"
   }
 }

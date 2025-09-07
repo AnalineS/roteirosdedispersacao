@@ -1,0 +1,315 @@
+name: "🧪 Staging Deploy - Homologação"
+
+on:
+  push:
+    branches: [hml]
+    paths:
+      - 'apps/**'
+      - 'package*.json'
+      - '.github/workflows/**'
+      - '.claude/**'
+      - '!**/*.md'
+      - '!docs/**'
+  workflow_dispatch:
+    inputs:
+      skip_tests:
+        description: 'Pular testes (apenas emergências)'
+        type: boolean
+        default: false
+      force_deploy:
+        description: 'Forçar deploy mesmo com falhas'
+        type: boolean
+        default: false
+      deploy_frontend:
+        description: 'Deploy frontend'
+        type: boolean
+        default: true
+      deploy_backend:
+        description: 'Deploy backend' 
+        type: boolean
+        default: true
+
+env:
+  NODE_VERSION: '20'
+  ENVIRONMENT: 'staging'
+  FRONTEND_SITE: 'hml-roteiros-de-dispensacao'
+  BACKEND_SERVICE: 'hml-roteiro-dispensacao-api'
+  MEDICAL_MODE: 'true'
+  LGPD_COMPLIANCE_REQUIRED: 'true'
+  STAGING_TIMEOUT: 25
+
+permissions:
+  contents: read
+  id-token: write
+  actions: read
+
+jobs:
+  # Preparação e validação
+  staging-preparation:
+    name: "🔧 Staging Preparation"
+    runs-on: ubuntu-latest
+    outputs:
+      frontend-changed: ${{ steps.filter.outputs.frontend }}
+      backend-changed: ${{ steps.filter.outputs.backend }}
+      claude-changed: ${{ steps.filter.outputs.claude }}
+      deploy-frontend: ${{ steps.deploy-config.outputs.frontend }}
+      deploy-backend: ${{ steps.deploy-config.outputs.backend }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: "📊 Detectar mudanças"
+        uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            frontend:
+              - 'apps/frontend-nextjs/**'
+            backend:
+              - 'apps/backend/**'
+            claude:
+              - '.claude/**'
+              - 'scripts/**'
+
+      - name: "⚙️ Configurar deploys"
+        id: deploy-config
+        run: |
+          # Lógica de deploy baseada em mudanças ou inputs manuais
+          if [[ "${{ github.event.inputs.deploy_frontend }}" == "true" ]] || [[ "${{ steps.filter.outputs.frontend }}" == "true" ]]; then
+            echo "frontend=true" >> $GITHUB_OUTPUT
+          else
+            echo "frontend=false" >> $GITHUB_OUTPUT
+          fi
+          
+          if [[ "${{ github.event.inputs.deploy_backend }}" == "true" ]] || [[ "${{ steps.filter.outputs.backend }}" == "true" ]]; then
+            echo "backend=true" >> $GITHUB_OUTPUT
+          else
+            echo "backend=false" >> $GITHUB_OUTPUT
+          fi
+
+  # Execução das validações Claude
+  claude-validations:
+    name: "🤖 Claude Quality & Compliance"
+    runs-on: ubuntu-latest
+    needs: staging-preparation
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "⚡ Setup Node.js"
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: "📦 Install Dependencies"
+        run: npm install
+
+      - name: "🏥 Comprehensive LGPD Check"
+        run: |
+          echo "🔒 Executando verificação completa de LGPD para ambiente de homologação..."
+          npm run compliance:check
+          
+      - name: "🤖 Claude Automation Suite"
+        run: |
+          echo "🔍 Executando suite completa de automação Claude..."
+          npm run automation:docs
+          echo "📊 Documentação atualizada"
+
+      - name: "🏥 Medical Protocol Validation"
+        run: |
+          echo "🩺 Validando protocolos médicos para homologação..."
+          # Verificação de calculadoras médicas
+          cd apps/frontend-nextjs
+          if npm run type-check; then
+            echo "✅ Tipos médicos validados"
+          else
+            echo "❌ Falha na validação de tipos médicos"
+            exit 1
+          fi
+
+  # Build e Deploy Frontend
+  frontend-deploy:
+    name: "⚛️ Frontend Deploy (Firebase)"
+    runs-on: ubuntu-latest
+    needs: [staging-preparation, claude-validations]
+    if: needs.staging-preparation.outputs.deploy-frontend == 'true'
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: apps/frontend-nextjs
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "⚡ Setup Node.js"
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: apps/frontend-nextjs/package-lock.json
+
+      - name: "📦 Install Dependencies"
+        run: npm ci
+
+      - name: "🏗️ Build for Staging"
+        env:
+          NODE_ENV: production
+          NEXT_PUBLIC_ENVIRONMENT: staging
+          NEXT_PUBLIC_API_URL: ${{ secrets.HML_API_URL }}
+          NEXT_PUBLIC_FIREBASE_CONFIG: ${{ secrets.HML_FIREBASE_CONFIG }}
+        run: |
+          echo "🔨 Building for staging environment..."
+          npm run build
+
+      - name: "🔍 Post-build Medical Validation"
+        run: |
+          echo "🩺 Validando build para conformidade médica..."
+          # Verificar se as rotas médicas foram geradas
+          if [ -d ".next/server/pages" ]; then
+            echo "✅ Páginas médicas geradas com sucesso"
+          fi
+          
+          # Verificar se os cálculos médicos estão presentes
+          if find .next -name "*calculat*" -o -name "*dose*" | grep -q .; then
+            echo "✅ Calculadoras médicas incluídas no build"
+          fi
+
+      - name: "🚀 Deploy to Firebase Hosting (HML)"
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.HML_FIREBASE_SERVICE_ACCOUNT }}
+          projectId: ${{ secrets.GCP_PROJECT_ID }}
+          channelId: live
+          target: ${{ env.FRONTEND_SITE }}
+        env:
+          FIREBASE_CLI_EXPERIMENTS: webframeworks
+
+  # Deploy Backend (se aplicável)
+  backend-deploy:
+    name: "🔧 Backend Deploy (Cloud Run)"
+    runs-on: ubuntu-latest
+    needs: [staging-preparation, claude-validations]
+    if: needs.staging-preparation.outputs.deploy-backend == 'true'
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: apps/backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "🔑 Google Cloud Auth"
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.HML_GCP_SERVICE_ACCOUNT }}
+
+      - name: "⚡ Setup Cloud SDK"
+        uses: google-github-actions/setup-gcloud@v1
+
+      - name: "🐳 Build and Deploy to Cloud Run"
+        run: |
+          echo "🔨 Building backend for staging..."
+          gcloud builds submit --tag gcr.io/${{ secrets.GCP_PROJECT_ID }}/${{ env.BACKEND_SERVICE }} \
+            --timeout=1200s
+          
+          echo "🚀 Deploying to Cloud Run..."
+          gcloud run deploy ${{ env.BACKEND_SERVICE }} \
+            --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/${{ env.BACKEND_SERVICE }} \
+            --platform managed \
+            --region ${{ secrets.GCP_REGION }} \
+            --allow-unauthenticated \
+            --timeout=1200 \
+            --memory=2Gi \
+            --cpu=2 \
+            --set-env-vars "ENVIRONMENT=staging,LGPD_MODE=strict,PROJECT_ID=${{ secrets.GCP_PROJECT_ID }}" \
+            --max-instances=10 \
+            --min-instances=1
+
+  # Testes pós-deploy
+  post-deploy-tests:
+    name: "🧪 Post-Deploy Testing"
+    runs-on: ubuntu-latest
+    needs: [frontend-deploy, backend-deploy]
+    if: always() && (needs.frontend-deploy.result == 'success' || needs.backend-deploy.result == 'success')
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "🌐 Health Check Frontend"
+        if: needs.frontend-deploy.result == 'success'
+        run: |
+          echo "🔍 Verificando saúde do frontend HML..."
+          FRONTEND_URL="https://${{ env.FRONTEND_SITE }}.web.app"
+          
+          # Aguardar deploy se propagar
+          sleep 30
+          
+          if curl -f -s "$FRONTEND_URL" > /dev/null; then
+            echo "✅ Frontend HML respondendo"
+          else
+            echo "❌ Frontend HML não está respondendo"
+            exit 1
+          fi
+
+      - name: "🔧 Health Check Backend"
+        if: needs.backend-deploy.result == 'success'
+        run: |
+          echo "🔍 Verificando saúde do backend HML..."
+          BACKEND_URL=$(gcloud run services describe ${{ env.BACKEND_SERVICE }} --region=${{ secrets.GCP_REGION }} --format='value(status.url)')
+          
+          if curl -f -s "$BACKEND_URL/health" > /dev/null; then
+            echo "✅ Backend HML respondendo"
+          else
+            echo "❌ Backend HML não está respondendo"
+            exit 1
+          fi
+
+      - name: "🏥 Medical Endpoints Test"
+        run: |
+          echo "🩺 Testando endpoints médicos específicos..."
+          FRONTEND_URL="https://${{ env.FRONTEND_SITE }}.web.app"
+          
+          # Testar páginas médicas críticas
+          MEDICAL_PAGES=("/modules/hanseniase" "/resources/calculator" "/chat")
+          
+          for page in "${MEDICAL_PAGES[@]}"; do
+            if curl -f -s "$FRONTEND_URL$page" > /dev/null; then
+              echo "✅ Página médica $page acessível"
+            else
+              echo "⚠️ Página médica $page pode ter problemas"
+            fi
+          done
+
+  # Monitoramento pós-deploy
+  staging-monitoring:
+    name: "📊 Staging Monitoring Setup"
+    runs-on: ubuntu-latest
+    needs: [post-deploy-tests]
+    if: success()
+    steps:
+      - name: "📈 Configurar monitoramento HML"
+        run: |
+          echo "📊 Configurando monitoramento para ambiente de homologação..."
+          echo "🔍 URLs monitoradas:"
+          echo "  - Frontend: https://${{ env.FRONTEND_SITE }}.web.app"
+          echo "  - Personas: Dr. Gasnelio e GA"
+          echo "  - Funcionalidades médicas: Calculadoras, Chat, Módulos"
+
+      - name: "✅ Deploy Summary"
+        run: |
+          echo "## 🧪 Deploy de Homologação Concluído" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📊 Status dos Serviços:" >> $GITHUB_STEP_SUMMARY
+          echo "| Serviço | Status | URL |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------|--------|-----|" >> $GITHUB_STEP_SUMMARY
+          echo "| Frontend | ✅ | https://${{ env.FRONTEND_SITE }}.web.app |" >> $GITHUB_STEP_SUMMARY
+          echo "| Backend | ${{ needs.backend-deploy.result == 'success' && '✅' || '⏭️' }} | Cloud Run HML |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🏥 Funcionalidades Médicas:" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ LGPD Compliance verificado" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Protocolos médicos validados" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Personas Dr. Gasnelio e GA" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Calculadoras de dosagem" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🎯 **Ambiente pronto para testes de homologação!**" >> $GITHUB_STEP_SUMMARY

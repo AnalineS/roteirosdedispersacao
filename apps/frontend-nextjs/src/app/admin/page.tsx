@@ -10,7 +10,7 @@ import { Shield, Users, BarChart3, Settings, Database, Activity, Lock, AlertCirc
 const ADMIN_EMAILS = [
   'neeliogomes@hotmail.com',
   'sousa.analine@gmail.com',
-  'roteirosdedispensacao@gmail.com',
+  'roteirosdedispensacaounb@gmail.com',
   'neliogmoura@gmail.com',
 ];
 

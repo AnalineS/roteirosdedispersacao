@@ -190,7 +190,7 @@ export class AuthService {
     const adminEmails = [
       'neeliogomes@hotmail.com',
       'sousa.analine@gmail.com',
-      'roteirosdedispensacao@gmail.com',
+      'roteirosdedispensacaounb@gmail.com',
       'neliogmoura@gmail.com',
       // Adicionar mais emails de admin conforme necessário
     ];

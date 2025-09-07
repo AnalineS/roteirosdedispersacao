@@ -49,6 +49,6 @@ Análise de segurança e recomendações.
 - **Padrões Médicos**: ANVISA, CID-10, RENAME
 
 ---
-*Documentação gerada automaticamente em 06/09/2025, 17:24:23*
+*Documentação gerada automaticamente em 07/09/2025, 08:37:42*
 
 **Sistema de Documentação Automática v2.0.0**

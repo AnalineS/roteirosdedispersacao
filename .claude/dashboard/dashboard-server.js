@@ -32,16 +32,68 @@ class MedicalDashboardServer {
         this.port = process.env.DASHBOARD_PORT || 3030;
         this.isRunning = false;
         this.metrics = {
-            medical: {},
-            lgpd: {},
-            accessibility: {},
-            performance: {},
-            scientific: {}
+            medical: {
+                accuracy: 0,
+                calculationErrors: 0,
+                protocolCompliance: 0,
+                lastUpdate: null
+            },
+            lgpd: {
+                compliance: 0,
+                violations: 0,
+                dataProtection: 0,
+                auditScore: 0,
+                lastUpdate: null
+            },
+            accessibility: {
+                wcagScore: 0,
+                violations: 0,
+                contrastRatio: 0,
+                keyboardNav: 0,
+                lastUpdate: null
+            },
+            performance: {
+                loadTime: 0,
+                lcp: 0,
+                fid: 0,
+                cls: 0,
+                optimizationsActive: 0,
+                lastUpdate: null
+            },
+            scientific: {
+                protocolsUpdated: 0,
+                validationStatus: 'pending',
+                lastValidation: null,
+                outdatedContent: 0
+            },
+            personas: {
+                'Dr. Gasnelio': {
+                    sessionCount: 0,
+                    avgResponseTime: 0,
+                    satisfaction: 0,
+                    activeOptimizations: 0
+                },
+                'GA': {
+                    sessionCount: 0,
+                    avgResponseTime: 0,
+                    satisfaction: 0,
+                    activeOptimizations: 0
+                }
+            },
+            system: {
+                uptime: Date.now(),
+                totalRequests: 0,
+                errorRate: 0,
+                optimizerStatus: 'inactive',
+                notificationSystemStatus: 'inactive',
+                circuitBreakers: {}
+            }
         };
         
         this.setupMiddleware();
         this.setupRoutes();
         this.setupSocketHandlers();
+        this.setupIntegrations();
         this.startMonitoring();
     }
     
@@ -672,6 +724,165 @@ class MedicalDashboardServer {
         });
     }
     
+    setupIntegrations() {
+        console.log('🔗 Configurando integrações com sistemas de otimização...');
+        
+        try {
+            // Tentativa de integração com o sistema de notificações inteligentes
+            const { notificationSystem } = require('../automation/intelligent-notification-system.js');
+            if (notificationSystem) {
+                this.integrations = this.integrations || {};
+                this.integrations.notificationSystem = notificationSystem;
+                this.metrics.system.notificationSystemStatus = 'active';
+                
+                // Escutar notificações para o dashboard
+                notificationSystem.on('dashboard_notification', (notification) => {
+                    this.handleIntelligentNotification(notification);
+                });
+                
+                console.log('✅ Sistema de notificações integrado');
+            }
+        } catch (error) {
+            console.warn('⚠️ Sistema de notificações não disponível:', error.message);
+        }
+
+        try {
+            // Tentativa de integração com o otimizador de performance
+            const { WorkflowPerformanceOptimizer } = require('../automation/workflow-performance-optimizer.js');
+            if (WorkflowPerformanceOptimizer) {
+                this.integrations = this.integrations || {};
+                this.integrations.performanceOptimizer = new WorkflowPerformanceOptimizer();
+                this.metrics.system.optimizerStatus = 'active';
+                
+                console.log('✅ Otimizador de performance integrado');
+            }
+        } catch (error) {
+            console.warn('⚠️ Otimizador de performance não disponível:', error.message);
+        }
+
+        try {
+            // Tentativa de integração com o sistema de tratamento de erros
+            const { MedicalErrorHandler } = require('../automation/enhanced-error-handling.js');
+            if (MedicalErrorHandler) {
+                this.integrations = this.integrations || {};
+                this.integrations.errorHandler = new MedicalErrorHandler();
+                
+                console.log('✅ Sistema de tratamento de erros integrado');
+            }
+        } catch (error) {
+            console.warn('⚠️ Sistema de tratamento de erros não disponível:', error.message);
+        }
+    }
+
+    handleIntelligentNotification(notification) {
+        // Processar notificação inteligente para o dashboard
+        this.io.emit('intelligent-notification', {
+            id: notification.id,
+            severity: notification.severity,
+            type: notification.type,
+            message: notification.data.message || 'Notificação do sistema',
+            timestamp: notification.timestamp,
+            personas: notification.personas,
+            suggestions: notification.suggestions
+        });
+
+        // Atualizar contadores de alertas
+        if (notification.severity && this.metrics.system.alertsCount[notification.severity.toLowerCase()]) {
+            this.metrics.system.alertsCount[notification.severity.toLowerCase()]++;
+        }
+
+        // Atualizar métricas específicas baseadas no tipo
+        this.updateMetricsFromNotification(notification);
+    }
+
+    updateMetricsFromNotification(notification) {
+        const now = new Date().toISOString();
+        
+        switch (notification.type) {
+            case 'medical_calculation_error':
+                this.metrics.medical.calculationErrors++;
+                this.metrics.medical.lastUpdate = now;
+                break;
+                
+            case 'lgpd_data_exposure':
+                this.metrics.lgpd.violations++;
+                this.metrics.lgpd.lastUpdate = now;
+                break;
+                
+            case 'accessibility_violation':
+                this.metrics.accessibility.violations++;
+                this.metrics.accessibility.lastUpdate = now;
+                break;
+                
+            case 'performance_degradation':
+                this.metrics.performance.lastUpdate = now;
+                break;
+        }
+
+        // Atualizar métricas de persona se especificado
+        if (notification.personas && notification.personas.length > 0) {
+            notification.personas.forEach(persona => {
+                if (this.metrics.personas[persona]) {
+                    // Lógica de atualização específica por persona
+                    this.updatePersonaMetrics(persona, notification);
+                }
+            });
+        }
+    }
+
+    updatePersonaMetrics(persona, notification) {
+        const personaMetrics = this.metrics.personas[persona];
+        
+        // Atualizar otimizações ativas
+        if (notification.suggestions && notification.suggestions.some(s => s.automated)) {
+            personaMetrics.activeOptimizations++;
+        }
+
+        // Atualizar satisfação baseada na severidade
+        if (notification.severity === 'CRITICAL') {
+            personaMetrics.satisfaction = Math.max(0, personaMetrics.satisfaction - 0.1);
+        } else if (notification.severity === 'INFO' && notification.autoResolved) {
+            personaMetrics.satisfaction = Math.min(1.0, personaMetrics.satisfaction + 0.05);
+        }
+    }
+
+    async getIntegratedMetrics() {
+        const integratedMetrics = { ...this.metrics };
+
+        // Enriquecer com dados do otimizador de performance se disponível
+        if (this.integrations?.performanceOptimizer) {
+            try {
+                const perfMetrics = this.integrations.performanceOptimizer.getPerformanceMetrics();
+                integratedMetrics.performance = {
+                    ...integratedMetrics.performance,
+                    cacheHitRate: perfMetrics.cacheHitRate,
+                    optimizationsSaved: perfMetrics.totalOptimizations,
+                    circuitBreakerStatus: perfMetrics.circuitBreakerStatus,
+                    workerPoolUtilization: perfMetrics.workerPoolUtilization
+                };
+            } catch (error) {
+                console.warn('⚠️ Erro ao coletar métricas do otimizador:', error);
+            }
+        }
+
+        // Enriquecer com dados do sistema de notificações se disponível
+        if (this.integrations?.notificationSystem) {
+            try {
+                const notifStats = this.integrations.notificationSystem.getNotificationStats();
+                integratedMetrics.system = {
+                    ...integratedMetrics.system,
+                    totalNotifications: notifStats.total,
+                    notificationsBySeverity: notifStats.bySeverity,
+                    recentNotifications: notifStats.recent24h
+                };
+            } catch (error) {
+                console.warn('⚠️ Erro ao coletar estatísticas de notificações:', error);
+            }
+        }
+
+        return integratedMetrics;
+    }
+
     startMonitoring() {
         console.log('🔄 Iniciando monitoramento automático...');
         
