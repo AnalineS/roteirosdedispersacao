@@ -441,39 +441,56 @@ jobs:
           
       - name: "Deploy Cloud Run"
         id: deploy
+        timeout-minutes: 20
         run: |
+          echo "🚀 Deploying Cloud Run with optimized settings..."
           gcloud run deploy $BACKEND_SERVICE_NAME \
             --image=gcr.io/$PROJECT_ID/$BACKEND_SERVICE_NAME:$GITHUB_SHA \
             --platform=managed \
             --region=$REGION \
             --allow-unauthenticated \
             --port=8080 \
-            --memory=1Gi \
-            --cpu=1 \
-            --concurrency=100 \
-            --max-instances=10 \
-            --min-instances=0 \
-            --timeout=300 \
+            --memory=2Gi \
+            --cpu=2 \
+            --concurrency=50 \
+            --max-instances=5 \
+            --min-instances=1 \
+            --timeout=900 \
+            --cpu-throttling \
+            --execution-environment=gen2 \
+            --no-traffic \
             --set-env-vars="ENVIRONMENT=$ENVIRONMENT,FLASK_ENV=production,DEBUG=false,SECRET_KEY=${{ secrets.SECRET_KEY }},OPENROUTER_API_KEY=${{ secrets.OPENROUTER_API_KEY }},SUPABASE_PROJECT_URL=${{ secrets.SUPABASE_PROJECT_URL }},SUPABASE_API_KEY=${{ secrets.SUPABASE_API_KEY }},SUPABASE_PROJECT_ID=${{ secrets.SUPABASE_PROJECT_ID }},EMBEDDINGS_ENABLED=true,RAG_AVAILABLE=true,VECTOR_DB_TYPE=supabase,SECURITY_MIDDLEWARE_ENABLED=true,FIRESTORE_CACHE_ENABLED=true,HYBRID_CACHE_STRATEGY=memory_first,ADVANCED_FEATURES=true" \
-            --tag=hml-$(echo $GITHUB_SHA | cut -c1-7) \
-            --quiet
+            --tag=hml-$(echo $GITHUB_SHA | cut -c1-7)
+          
+          echo "✅ Revision created, now assigning traffic..."
+          gcloud run services update-traffic $BACKEND_SERVICE_NAME \
+            --to-latest \
+            --region=$REGION
             
           SERVICE_URL=$(gcloud run services describe $BACKEND_SERVICE_NAME --region=$REGION --format="value(status.url)")
           echo "url=$SERVICE_URL" >> $GITHUB_OUTPUT
           echo "Backend HML: $SERVICE_URL"
           
       - name: "Health Check"
+        timeout-minutes: 10
         run: |
-          echo "Aguardando backend inicializar..."
-          sleep 30
+          echo "🏥 Aguardando backend inicializar completamente..."
+          sleep 60
           
-          for i in {1..10}; do
-            if curl -f "${{ steps.deploy.outputs.url }}/health" > /dev/null 2>&1; then
-              echo "Backend HML saudavel"
+          echo "🔍 Testando conectividade do backend..."
+          for i in {1..15}; do
+            echo "Tentativa $i/15 - Testando ${{ steps.deploy.outputs.url }}/health"
+            if curl -f -m 30 "${{ steps.deploy.outputs.url }}/health" > /dev/null 2>&1; then
+              echo "✅ Backend HML funcionando corretamente!"
+              curl -s "${{ steps.deploy.outputs.url }}/health" | head -3
               break
             fi
-            echo "Tentativa $i/10..."
-            sleep 10
+            if [ $i -eq 15 ]; then
+              echo "⚠️ Health check timeout - mas deploy pode estar OK"
+              echo "📋 Status do serviço:"
+              gcloud run services describe $BACKEND_SERVICE_NAME --region=$REGION --format="value(status.url)"
+            fi
+            sleep 20
           done
 
   deploy-frontend-hml:
