@@ -219,9 +219,9 @@ jobs:
             --platform managed \
             --region ${{ secrets.GCP_REGION }} \
             --allow-unauthenticated \
-            --timeout=1200 \
-            --memory=2Gi \
-            --cpu=2 \
+            --timeout=900 \
+            --memory=1Gi \
+            --cpu=1 \
             --set-env-vars "ENVIRONMENT=staging,LGPD_MODE=strict,PROJECT_ID=${{ secrets.GCP_PROJECT_ID }}" \
             --max-instances=10 \
             --min-instances=1
