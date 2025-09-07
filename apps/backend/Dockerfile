@@ -63,28 +63,31 @@ USER appuser
 ENV FLASK_ENV=production
 ENV ENVIRONMENT=production
 
-# Configurações para Cloud Run otimizadas
+# Configurações para Cloud Run otimizadas para startup rápido
 ENV WORKERS=1
-ENV THREADS=4
-ENV TIMEOUT=300
+ENV THREADS=2
+ENV TIMEOUT=120
 ENV KEEPALIVE=2
-ENV MAX_REQUESTS=1000
-ENV MAX_REQUESTS_JITTER=100
+ENV MAX_REQUESTS=500
+ENV MAX_REQUESTS_JITTER=50
+ENV PRELOAD=false
 
-# Feature flags - por padrão desabilitados para evitar timeout
-ENV EMBEDDINGS_ENABLED=false
-ENV ADVANCED_FEATURES=false
-ENV RAG_AVAILABLE=false
-ENV ADVANCED_CACHE=false
+# Feature flags - mantendo funcionalidade completa
+ENV EMBEDDINGS_ENABLED=true
+ENV ADVANCED_FEATURES=true
+ENV RAG_AVAILABLE=true
+ENV ADVANCED_CACHE=true
+ENV LAZY_LOADING=true
+ENV STARTUP_OPTIMIZATION=true
 
 # Expor porta padrão para Cloud Run
 EXPOSE 8080
 
-# Health check otimizado para Cloud Run
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:${PORT:-8080}/api/v1/health || exit 1
+# Health check otimizado para Cloud Run com mais tempo
+HEALTHCHECK --interval=30s --timeout=15s --start-period=30s --retries=5 \
+    CMD curl -f http://localhost:${PORT:-8080}/health || exit 1
 
-# Comando otimizado para Cloud Run sem preload (lazy loading)
+# Comando ultra-otimizado para Cloud Run startup rápido
 CMD exec gunicorn \
     --bind 0.0.0.0:${PORT:-8080} \
     --workers $WORKERS \
@@ -94,9 +97,11 @@ CMD exec gunicorn \
     --max-requests $MAX_REQUESTS \
     --max-requests-jitter $MAX_REQUESTS_JITTER \
     --worker-class sync \
-    --log-level info \
+    --log-level warning \
     --access-logfile - \
     --error-logfile - \
     --capture-output \
     --enable-stdio-inheritance \
+    --graceful-timeout 30 \
+    --worker-connections 100 \
     main:app

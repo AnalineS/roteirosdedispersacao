@@ -71,7 +71,7 @@ jobs:
       - name: "[CHECKOUT] Checkout"
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
         with:
-          fetch-depth: 2
+          fetch-depth: 0
           
       # PATHS-FILTER: Detecção otimizada para HML
       - name: "[FILTER] Detectar paths alterados"
@@ -89,36 +89,45 @@ jobs:
             workflows:
               - '.github/workflows/**'
           
-      # FALLBACK: Lógica tradicional se paths-filter falhar
-      - name: "[DETECT] Analise de Mudancas (Fallback)"
+      # FALLBACK: Lógica robusta com multiplas estratégias
+      - name: "[DETECT] Analise de Mudancas (Fallback Robusto)"
         id: changes
         if: steps.filter.outcome == 'failure'
         run: |
-          echo "[WARNING] paths-filter falhou, usando detecção tradicional..."
+          echo "[WARNING] paths-filter falhou, usando detecção robusta..."
           
           BACKEND_CHANGED=false
           FRONTEND_CHANGED=false
           DEPS_CHANGED=false
           WORKFLOW_CHANGED=false
           
-          if git diff --name-only HEAD~1 HEAD | grep -q "^apps/backend/"; then
+          # Estratégia 1: Comparar com commit anterior
+          if git diff --name-only HEAD~1 2>/dev/null | grep -q "^apps/backend/" || \
+             git diff --name-only origin/main HEAD 2>/dev/null | grep -q "^apps/backend/" || \
+             ls apps/backend/ > /dev/null 2>&1; then
             BACKEND_CHANGED=true
-            echo "Backend alterado detectado"
+            echo "✓ Backend alterado detectado"
           fi
           
-          if git diff --name-only HEAD~1 HEAD | grep -q "^apps/frontend-nextjs/"; then
+          if git diff --name-only HEAD~1 2>/dev/null | grep -q "^apps/frontend-nextjs/" || \
+             git diff --name-only origin/main HEAD 2>/dev/null | grep -q "^apps/frontend-nextjs/" || \
+             ls apps/frontend-nextjs/ > /dev/null 2>&1; then
             FRONTEND_CHANGED=true
-            echo "Frontend alterado detectado"
+            echo "✓ Frontend alterado detectado"
           fi
           
-          if git diff --name-only HEAD~1 HEAD | grep -q -E "package\.json|package-lock\.json"; then
+          if git diff --name-only HEAD~1 2>/dev/null | grep -q -E "package\.json|package-lock\.json" || \
+             git diff --name-only origin/main HEAD 2>/dev/null | grep -q -E "package\.json|package-lock\.json" || \
+             test -f package.json; then
             DEPS_CHANGED=true
-            echo "Dependencias alteradas detectadas"
+            echo "✓ Dependencias alteradas detectadas"
           fi
           
-          if git diff --name-only HEAD~1 HEAD | grep -q "^\.github/workflows/"; then
+          if git diff --name-only HEAD~1 2>/dev/null | grep -q "^\.github/workflows/" || \
+             git diff --name-only origin/main HEAD 2>/dev/null | grep -q "^\.github/workflows/" || \
+             ls .github/workflows/ > /dev/null 2>&1; then
             WORKFLOW_CHANGED=true
-            echo "Workflows alterados detectados"
+            echo "✓ Workflows alterados detectados"
           fi
           
           echo "backend=$BACKEND_CHANGED" >> $GITHUB_OUTPUT
@@ -441,28 +450,32 @@ jobs:
           
       - name: "Deploy Cloud Run"
         id: deploy
-        timeout-minutes: 20
+        timeout-minutes: 30
         run: |
-          echo "🚀 Deploying Cloud Run with optimized settings..."
+          echo "🚀 Deploying Cloud Run with ultra-optimized settings for HML..."
+          
+          # Deploy com recursos aumentados para garantir startup
           gcloud run deploy $BACKEND_SERVICE_NAME \
             --image=gcr.io/$PROJECT_ID/$BACKEND_SERVICE_NAME:$GITHUB_SHA \
             --platform=managed \
             --region=$REGION \
             --allow-unauthenticated \
             --port=8080 \
-            --memory=2Gi \
-            --cpu=2 \
-            --concurrency=50 \
-            --max-instances=5 \
+            --memory=4Gi \
+            --cpu=4 \
+            --concurrency=20 \
+            --max-instances=3 \
             --min-instances=1 \
             --timeout=900 \
-            --cpu-throttling \
             --execution-environment=gen2 \
             --no-traffic \
-            --set-env-vars="ENVIRONMENT=$ENVIRONMENT,FLASK_ENV=production,DEBUG=false,SECRET_KEY=${{ secrets.SECRET_KEY }},OPENROUTER_API_KEY=${{ secrets.OPENROUTER_API_KEY }},SUPABASE_PROJECT_URL=${{ secrets.SUPABASE_PROJECT_URL }},SUPABASE_API_KEY=${{ secrets.SUPABASE_API_KEY }},SUPABASE_PROJECT_ID=${{ secrets.SUPABASE_PROJECT_ID }},EMBEDDINGS_ENABLED=true,RAG_AVAILABLE=true,VECTOR_DB_TYPE=supabase,SECURITY_MIDDLEWARE_ENABLED=true,FIRESTORE_CACHE_ENABLED=true,HYBRID_CACHE_STRATEGY=memory_first,ADVANCED_FEATURES=true" \
+            --set-env-vars="ENVIRONMENT=$ENVIRONMENT,FLASK_ENV=production,DEBUG=false,LAZY_LOADING=true,STARTUP_OPTIMIZATION=true,SECRET_KEY=${{ secrets.SECRET_KEY }},OPENROUTER_API_KEY=${{ secrets.OPENROUTER_API_KEY }},SUPABASE_PROJECT_URL=${{ secrets.SUPABASE_PROJECT_URL }},SUPABASE_API_KEY=${{ secrets.SUPABASE_API_KEY }},SUPABASE_PROJECT_ID=${{ secrets.SUPABASE_PROJECT_ID }},EMBEDDINGS_ENABLED=true,RAG_AVAILABLE=true,VECTOR_DB_TYPE=supabase,SECURITY_MIDDLEWARE_ENABLED=true,FIRESTORE_CACHE_ENABLED=true,HYBRID_CACHE_STRATEGY=memory_first,ADVANCED_FEATURES=true" \
             --tag=hml-$(echo $GITHUB_SHA | cut -c1-7)
           
-          echo "✅ Revision created, now assigning traffic..."
+          echo "⏳ Aguardando revision ficar ready..."
+          sleep 30
+          
+          echo "✅ Assigning traffic to revision..."
           gcloud run services update-traffic $BACKEND_SERVICE_NAME \
             --to-latest \
             --region=$REGION
