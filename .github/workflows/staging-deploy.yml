@@ -32,7 +32,7 @@ on:
 env:
   NODE_VERSION: '20'
   ENVIRONMENT: 'staging'
-  FRONTEND_SITE: 'hml-roteiros-de-dispensacao'
+  FRONTEND_SITE: 'hml'
   BACKEND_SERVICE: 'hml-roteiro-dispensacao-api'
   MEDICAL_MODE: 'true'
   LGPD_COMPLIANCE_REQUIRED: 'true'
@@ -359,10 +359,11 @@ jobs:
           echo "✅ Autenticação verificada"
 
       - name: "🐳 Build and Deploy to Cloud Run"
+        working-directory: apps/backend
         run: |
           echo "🔨 Building backend for staging..."
           gcloud builds submit --tag gcr.io/${{ secrets.GCP_PROJECT_ID }}/${{ env.BACKEND_SERVICE }} \
-            --timeout=1200s
+            --timeout=1200s .
           
           echo "🚀 Deploying to Cloud Run..."
           gcloud run deploy ${{ env.BACKEND_SERVICE }} \

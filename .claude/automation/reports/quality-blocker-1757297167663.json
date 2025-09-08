@@ -1,0 +1,16 @@
+{
+  "timestamp": "2025-09-08T02:06:07.662Z",
+  "duration": 35,
+  "blocked": false,
+  "errors": [],
+  "warnings": [
+    "ESLint Critical Errors Check falhou: Command failed: npm run lint",
+    "LGPD Compliance Check falhou: Command failed: node \"C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\.claude\\automation\\lgpd-compliance-checker.js\" --quick-check"
+  ],
+  "status": "ALLOWED",
+  "medical_compliance": {
+    "typescript_ready": true,
+    "data_safe": true,
+    "quality_adequate": true
+  }
+}
