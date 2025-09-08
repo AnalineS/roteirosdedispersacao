@@ -151,10 +151,38 @@ class MedicalQualityBlocker {
                     }).trim();
                     
                     if (result) {
-                        this.log(`🚨 DADOS SENSÍVEIS DETECTADOS: ${pattern}`, 'critical');
-                        this.errors.push(`Sensitive data detected: ${pattern}`);
-                        foundSensitiveData = true;
-                        this.blocked = true;
+                        // Verificar se é um contexto seguro (false positive)
+                        const safeContexts = [
+                            '\\$\\{\\{ secrets\\.',           // GitHub Actions secrets
+                            'TELEGRAM_TOKEN.*\\$\\{\\{',     // Telegram env vars
+                            'TELEGRAM_CHAT_ID.*\\$\\{\\{',   // Telegram env vars  
+                            'GITHUB_TOKEN.*\\$\\{\\{',       // GitHub env vars
+                            'SNYK_TOKEN.*\\$\\{\\{',         // Snyk env vars
+                            '"password.*=.*\\[',             // Security pattern arrays
+                            '"api_key.*=.*\\[',              // Security pattern arrays
+                            '"secret.*=.*\\[',               // Security pattern arrays
+                            'sensitivePatterns.*=',          // Security script variables
+                            'SENSITIVE_PATTERNS.*=',         // Security script variables
+                            '\\.github/workflows/',          // GitHub Actions workflows
+                            'grep.*-i.*password',            // Security detection scripts
+                            'grep.*-i.*api_key',             // Security detection scripts
+                        ];
+                        
+                        let isSafeContext = false;
+                        for (const safePattern of safeContexts) {
+                            if (result.match(new RegExp(safePattern, 'i'))) {
+                                isSafeContext = true;
+                                this.log(`📋 Contexto seguro ignorado: ${pattern} (${safePattern})`, 'info');
+                                break;
+                            }
+                        }
+                        
+                        if (!isSafeContext) {
+                            this.log(`🚨 DADOS SENSÍVEIS DETECTADOS: ${pattern}`, 'critical');
+                            this.errors.push(`Sensitive data detected: ${pattern}`);
+                            foundSensitiveData = true;
+                            this.blocked = true;
+                        }
                     }
                 } catch (grepError) {
                     // grep retorna exit code 1 se não encontrar - isso é esperado

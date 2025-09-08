@@ -18,8 +18,8 @@ Documentação de todos os componentes React.
 
 ### 🏥 [Documentação Médica](./medical/README.md)
 Documentação específica para funcionalidades médicas.
-- Calculadoras médicas: 0
-- Casos clínicos: 0
+- Calculadoras médicas: 6
+- Casos clínicos: 1
 
 ### 📊 [Métricas](./metrics/README.md)
 Métricas detalhadas do código e qualidade.
@@ -30,15 +30,15 @@ Análise de segurança e recomendações.
 ## Resumo Executivo
 
 ### Estatísticas Gerais
-- **Arquivos Analisados**: 0
-- **Linhas de Código**: 0
+- **Arquivos Analisados**: 8
+- **Linhas de Código**: 140
 - **Componentes**: 0
 - **APIs**: 0
 - **Testes**: 0
 
 ### Qualidade e Conformidade
 - **Cobertura de Testes**: 0.0%
-- **Score de Segurança**: 100%
+- **Score de Segurança**: 90%
 - **Conformidade LGPD**: 0/0 APIs
 - **Acessibilidade**: 0.0% média
 
@@ -49,6 +49,6 @@ Análise de segurança e recomendações.
 - **Padrões Médicos**: ANVISA, CID-10, RENAME
 
 ---
-*Documentação gerada automaticamente em 07/09/2025, 22:59:38*
+*Documentação gerada automaticamente em 07/09/2025, 21:31:02*
 
-**Sistema de Documentação Automática v2.0.0**
+**Sistema de Documentação Automática v1.0.0**

@@ -382,46 +382,63 @@ jobs:
           echo "🔄 Sistema de rollback será ativado"
           # Aqui seria implementado o rollback automático real
 
-  # Criar release se aprovado
-  create-release:
-    name: "📦 Create Release"
+  # Integração com Claude Automation System para releases
+  trigger-claude-release:
+    name: "🤖 Trigger Claude Release System"
     runs-on: ubuntu-latest
     needs: [production-monitoring]
     if: success() && inputs.create_release == true
     steps:
       - uses: actions/checkout@v4
 
-      - name: "🏷️ Create Release Tag"
+      - name: "🤖 Trigger Claude Automation Release"
         run: |
-          VERSION="v$(date +'%Y.%m.%d')-$(git rev-parse --short HEAD)"
-          echo "Creating release $VERSION"
+          echo "🤖 Acionando Claude Automation System para criar release..."
           
-          git config --local user.email "roteirosdedispensacaounb@gmail.com"
-          git config --local user.name "Production Deploy Bot"
-          git tag -a "$VERSION" -m "Production release $VERSION"
-          git push origin "$VERSION"
+          # Trigger workflow via GitHub API
+          curl -X POST \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            "${{ github.api_url }}/repos/${{ github.repository }}/actions/workflows/claude-automation-system.yml/dispatches" \
+            -d '{
+              "ref": "main",
+              "inputs": {
+                "force_release": "true",
+                "release_type": "minor",
+                "documentation_only": "false"
+              }
+            }'
+          
+          echo "✅ Claude Automation System acionado para criar release automático"
+          echo "📊 O sistema irá analisar mudanças e criar release inteligente"
+          echo "📱 Notificações serão enviadas automaticamente"
 
-      - name: "📝 Generate Release Notes"
+      - name: "📋 Production Release Summary"
         run: |
-          echo "## 🏥 Release Notes - Plataforma Médica" > release_notes.md
-          echo "" >> release_notes.md
-          echo "### 🚀 Deploy de Produção Realizado" >> release_notes.md
-          echo "- ✅ LGPD Compliance verificado" >> release_notes.md
-          echo "- ✅ Protocolos médicos validados" >> release_notes.md
-          echo "- ✅ SLA ${{ env.SLA_TARGET }}% configurado" >> release_notes.md
-          echo "- ✅ Acessibilidade WCAG 2.1 AA" >> release_notes.md
-          echo "" >> release_notes.md
-          echo "### 🏥 Funcionalidades Médicas:" >> release_notes.md
-          echo "- Calculadoras de dosagem para hanseníase" >> release_notes.md
-          echo "- Personas educacionais (Dr. Gasnelio, GA)" >> release_notes.md
-          echo "- Casos clínicos interativos" >> release_notes.md
-          echo "- Conformidade com protocolos do Ministério da Saúde" >> release_notes.md
+          echo "## 🏥 Production Deploy & Release Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🚀 Deploy Status:" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Deploy de produção concluído com sucesso" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ SLA ${{ env.SLA_TARGET }}% ativo" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Monitoramento em operação" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🤖 Release Automation:" >> $GITHUB_STEP_SUMMARY
+          echo "- 🔄 Claude Automation System acionado" >> $GITHUB_STEP_SUMMARY
+          echo "- 📊 Análise inteligente de mudanças em andamento" >> $GITHUB_STEP_SUMMARY
+          echo "- 📱 Notificações automáticas configuradas" >> $GITHUB_STEP_SUMMARY
+          echo "- 📚 Documentação será gerada automaticamente" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🏥 Medical Platform Status:" >> $GITHUB_STEP_SUMMARY
+          echo "- 🌐 **Produção**: https://${{ env.PRODUCTION_DOMAIN }}" >> $GITHUB_STEP_SUMMARY
+          echo "- 🔒 **LGPD**: Conformidade estrita ativa" >> $GITHUB_STEP_SUMMARY
+          echo "- 🩺 **Protocolos**: Ministério da Saúde validados" >> $GITHUB_STEP_SUMMARY
+          echo "- ♿ **Acessibilidade**: WCAG 2.1 AA mantida" >> $GITHUB_STEP_SUMMARY
 
   # Resumo final do deploy
   production-deploy-summary:
     name: "📋 Production Deploy Summary"
     runs-on: ubuntu-latest
-    needs: [production-monitoring, create-release]
+    needs: [production-monitoring, trigger-claude-release]
     if: always()
     steps:
       - name: "✅ Deploy Summary"

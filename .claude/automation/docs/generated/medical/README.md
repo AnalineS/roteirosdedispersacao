@@ -4,16 +4,16 @@ Esta seção contém documentação específica para componentes e funcionalidad
 
 ## Calculadoras Médicas
 
-Nenhuma calculadora médica identificada.
+- [Calculator](./calculator_calculator.md)\n- [Calculator](./calculator_calculator.md)\n- [Calculator](./calculator_calculator.md)\n- [Calculator](./calculator_calculator.md)\n- [Calculator](./calculator_calculator.md)\n- [Calculator](./calculator_calculator.md)
 
 ## Casos Clínicos
 
-Nenhum caso clínico identificado.
+- [Caso clínico](./case_caso clínico.md) - N/A
 
 ## Estatísticas Médicas
 
-- **Calculadoras Médicas**: 0
-- **Casos Clínicos**: 0
+- **Calculadoras Médicas**: 6
+- **Casos Clínicos**: 1
 - **Referências Médicas Total**: 0
 
 ## Conformidade e Padrões
@@ -24,4 +24,4 @@ Nenhum caso clínico identificado.
 - **Padrões Médicos**: ANVISA, CID-10, RENAME
 
 ---
-*Documentação gerada automaticamente em 07/09/2025, 22:59:38*
+*Documentação gerada automaticamente em 07/09/2025, 21:31:02*

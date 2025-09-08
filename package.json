@@ -5,13 +5,17 @@
   "main": "index.js",
   "scripts": {
     "automation:docs": "node .claude/automation/auto-documentation.js",
-    "automation:lgpd": "node .claude/automation/lgpd-compliance-checker.js",
+    "automation:lgpd": "node .claude/automation/lgpd-robust.js",
     "automation:monitor": "node .claude/automation/continuous-monitoring-system.js",
     "quality:check": "node scripts/claude-quality-check.js",
     "docs:generate": "npm run automation:docs",
-    "compliance:check": "node .claude/automation/lgpd-robust.js",
-    "automation:lgpd": "node .claude/automation/lgpd-robust.js",
-    "monitor:start": "npm run automation:monitor"
+    "compliance:check": "npm run automation:lgpd",
+    "monitor:start": "npm run automation:monitor",
+    "type-check": "cd apps/frontend-nextjs && npm run type-check",
+    "lint": "cd apps/frontend-nextjs && npm run lint",
+    "test:ci": "cd apps/frontend-nextjs && npm run test:ci",
+    "test:accessibility": "cd apps/frontend-nextjs && npm run test:accessibility",
+    "build": "cd apps/frontend-nextjs && npm run build"
   },
   "dependencies": {
     "fs-extra": "^11.2.0",
