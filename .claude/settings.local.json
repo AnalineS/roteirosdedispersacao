@@ -9,7 +9,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node claude-quality-hooks/.claude/hooks/react-app/quality-check.js"
+            "command": "node .claude/hooks/medical-quality-blocker.js",
+            "timeout": 60000
           }
         ]
       }

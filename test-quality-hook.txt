@@ -1,0 +1,8 @@
+Teste do sistema de qualidade médica
+Este arquivo testa se o hook bloqueador está funcionando
+
+Sistema: Plataforma Educacional de Hanseníase
+Hook: medical-quality-blocker.js
+Objetivo: Bloquear códigos de baixa qualidade médica
+
+Timestamp: 2025-01-07 21:40:00
