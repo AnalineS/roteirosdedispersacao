@@ -303,6 +303,7 @@ jobs:
           projectId: ${{ secrets.GCP_PROJECT_ID }}
           channelId: live
           target: ${{ env.FRONTEND_SITE }}
+          entryPoint: apps/frontend-nextjs
         env:
           FIREBASE_CLI_EXPERIMENTS: webframeworks
 
@@ -322,19 +323,22 @@ jobs:
       - name: "🔍 Debug Secrets Availability"
         run: |
           echo "🔍 Verificando disponibilidade dos secrets..."
-          if [ -n "${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}" ]; then
-            echo "✅ GCP_SERVICE_ACCOUNT_KEY está disponível"
+          if [ -n "$GCP_SERVICE_ACCOUNT_KEY" ]; then
+            echo "✅ GCP_SERVICE_ACCOUNT_KEY está disponível (length: ${#GCP_SERVICE_ACCOUNT_KEY})"
           else
             echo "❌ GCP_SERVICE_ACCOUNT_KEY está vazio ou não configurado"
             exit 1
           fi
           
-          if [ -n "${{ secrets.GCP_PROJECT_ID }}" ]; then
-            echo "✅ GCP_PROJECT_ID está disponível"
+          if [ -n "$GCP_PROJECT_ID" ]; then
+            echo "✅ GCP_PROJECT_ID está disponível: $GCP_PROJECT_ID"
           else
             echo "❌ GCP_PROJECT_ID está vazio ou não configurado"
             exit 1
           fi
+        env:
+          GCP_SERVICE_ACCOUNT_KEY: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+          GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
 
       - name: "🔑 Google Cloud Auth"
         uses: google-github-actions/auth@v2
