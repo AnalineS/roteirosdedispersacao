@@ -7,6 +7,7 @@ import {
   Copy, Check, Image as ImageIcon,
   Calendar, Award, TrendingUp
 } from 'lucide-react';
+import Image from 'next/image';
 import { useHapticFeedback } from '@/utils/hapticFeedback';
 import { SocialService, ShareData } from '@/services/socialService';
 import { useSocialProfile } from '@/hooks/useSocialProfile';
@@ -345,7 +346,13 @@ export default function ShareProgress({
                 <div className="preview-header">
                   <div className="achievement-badge">
                     {selectedAchievement?.badge_url ? (
-                      <img src={selectedAchievement.badge_url} alt={selectedAchievement.name} />
+                      <Image 
+                        src={selectedAchievement.badge_url} 
+                        alt={selectedAchievement.name} 
+                        width={48}
+                        height={48}
+                        style={{ objectFit: 'contain' }}
+                      />
                     ) : (
                       <Trophy size={48} />
                     )}

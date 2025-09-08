@@ -236,7 +236,7 @@ export function sanitizeURL(url: string): string {
  * Sanitiza objeto JSON removendo propriedades perigosas
  * Previne prototype pollution e outros ataques
  */
-export function sanitizeJSON(obj: any): any {
+export function sanitizeJSON<T>(obj: T): T {
   if (!obj || typeof obj !== 'object') {
     return obj;
   }
@@ -245,13 +245,13 @@ export function sanitizeJSON(obj: any): any {
   const dangerousKeys = ['__proto__', 'constructor', 'prototype'];
   
   // Função recursiva para limpar objeto
-  function clean(item: any): any {
+  function clean(item: unknown): unknown {
     if (Array.isArray(item)) {
       return item.map(clean);
     }
     
     if (item && typeof item === 'object') {
-      const cleaned: any = {};
+      const cleaned: Record<string, unknown> = {};
       
       for (const key in item) {
         // Pular propriedades perigosas
@@ -261,7 +261,8 @@ export function sanitizeJSON(obj: any): any {
         
         // Verificar se é propriedade própria (não herdada)
         if (Object.prototype.hasOwnProperty.call(item, key)) {
-          cleaned[key] = clean(item[key]);
+          const itemObj = item as Record<string, unknown>;
+          cleaned[key] = clean(itemObj[key]);
         }
       }
       
@@ -271,7 +272,7 @@ export function sanitizeJSON(obj: any): any {
     return item;
   }
   
-  return clean(obj);
+  return clean(obj) as T;
 }
 
 // Exportar todas as funções como default também

@@ -3,6 +3,8 @@
  * Permite controle centralizado de funcionalidades com rollback instantâneo
  */
 
+import { secureLogger } from '@/utils/secureLogger';
+
 export interface FeatureFlag {
   key: string;
   defaultValue: boolean;
@@ -170,19 +172,24 @@ export const validateFlagsConfig = (config: Partial<FeatureFlagsConfig>): boolea
     Object.entries(config).forEach(([key, value]) => {
       const flagDef = FEATURE_FLAGS[key as keyof FeatureFlagsConfig];
       if (!flagDef) {
-        console.warn(`Feature flag desconhecida: ${key}`);
+        secureLogger.warn('Feature flag desconhecida', { key, component: 'FeatureFlags' });
         return;
       }
       
       // Validar tipo específico para ab_test_variant
       if (key === 'ab_test_variant' && !['A', 'B'].includes(value as string)) {
-        console.error(`Valor inválido para ab_test_variant: ${value}`);
+        secureLogger.error('Valor inválido para ab_test_variant', undefined, { value, component: 'FeatureFlags' });
         return false;
       }
       
       // Validar tipos boolean
       if (typeof value !== 'boolean' && key !== 'ab_test_variant') {
-        console.error(`Tipo inválido para ${key}: esperado boolean, recebido ${typeof value}`);
+        secureLogger.error('Tipo inválido para feature flag', undefined, { 
+          key, 
+          expectedType: 'boolean', 
+          receivedType: typeof value,
+          component: 'FeatureFlags'
+        });
         return false;
       }
     });

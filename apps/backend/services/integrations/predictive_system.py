@@ -124,15 +124,17 @@ class ContextAnalyzer:
             'persona_hints': []
         }
         
-        # Detectar categorias médicas
-        for category, terms in self.medical_terms.items():
-            if any(term in query_lower for term in terms):
-                analysis['medical_categories'].append(category)
+        # Detectar categorias médicas - otimizado com list comprehension
+        analysis['medical_categories'] = [
+            category for category, terms in self.medical_terms.items()
+            if any(term in query_lower for term in terms)
+        ]
         
-        # Detectar padrões de query
-        for pattern_type, patterns in self.category_patterns.items():
-            if any(re.search(pattern, query_lower) for pattern in patterns):
-                analysis['query_patterns'].append(pattern_type)
+        # Detectar padrões de query - otimizado com list comprehension
+        analysis['query_patterns'] = [
+            pattern_type for pattern_type, patterns in self.category_patterns.items()
+            if any(re.search(pattern, query_lower) for pattern in patterns)
+        ]
         
         # Detectar complexidade
         technical_indicators = ['mecanismo', 'farmacocinética', 'bioequivalência', 'metabolismo']
@@ -209,13 +211,14 @@ class PredictiveCache:
             key=lambda k: self.access_patterns.get(k, 0)
         )
         
-        # Remover 20% dos itens menos acessados
+        # Remover 20% dos itens menos acessados - otimizado
         items_to_remove = max(1, len(sorted_keys) // 5)
+        keys_to_remove = sorted_keys[:items_to_remove]
         
-        for key in sorted_keys[:items_to_remove]:
-            del self.cache[key]
-            if key in self.access_patterns:
-                del self.access_patterns[key]
+        # Usar bulk delete para melhor performance
+        for key in keys_to_remove:
+            self.cache.pop(key, None)
+            self.access_patterns.pop(key, None)
     
     def get_cache_stats(self) -> Dict[str, Any]:
         """Estatísticas do cache"""
@@ -533,11 +536,13 @@ class PredictiveEngine:
         
         suggestions = []
         
-        # Aplicar regras de predição
-        for rule in self.rules:
-            suggestion = self._apply_rule(rule, user_context, query_analysis)
-            if suggestion:
-                suggestions.append(suggestion)
+        # Aplicar regras de predição - otimizado com filter + map
+        suggestions = [
+            suggestion for suggestion in map(
+                lambda rule: self._apply_rule(rule, user_context, query_analysis),
+                self.rules
+            ) if suggestion is not None
+        ]
         
         # Adicionar sugestões baseadas em histórico
         history_suggestions = self._generate_history_based_suggestions(user_context, query_analysis)
@@ -666,13 +671,14 @@ class PredictiveEngine:
         
         suggestions = []
         
-        # Analisar padrões de queries anteriores
+        # Analisar padrões de queries anteriores - otimizado com functional approach
         if len(user_context.query_history) >= 2:
-            # Detectar progressão natural de perguntas
-            recent_categories = []
-            for query in user_context.query_history[-3:]:
-                analysis = self.context_analyzer.analyze_query(query)
-                recent_categories.extend(analysis.get('medical_categories', []))
+            # Detectar progressão natural de perguntas com list comprehension otimizada
+            recent_categories = [
+                category
+                for query in user_context.query_history[-3:]
+                for category in self.context_analyzer.analyze_query(query).get('medical_categories', [])
+            ]
             
             # Sugerir próximo tópico lógico
             category_progression = {
@@ -683,20 +689,22 @@ class PredictiveEngine:
                 'prevencao': ['sintomas', 'diagnostico']
             }
             
-            for category in set(recent_categories):
-                next_topics = category_progression.get(category, [])
-                for topic in next_topics:
-                    if topic not in recent_categories:  # Evitar repetição
-                        suggestion = Suggestion(
-                            suggestion_id=f"history_{topic}_{datetime.now().timestamp()}",
-                            text=f"Você também pode ter interesse em saber sobre {topic}",
-                            confidence=0.6,
-                            category=topic,
-                            persona=user_context.persona_preference,
-                            context_match=['history_pattern'],
-                            created_at=datetime.now()
-                        )
-                        suggestions.append(suggestion)
+            # Gerar sugestões usando functional programming otimizado
+            unique_categories = set(recent_categories)
+            suggestions = [
+                Suggestion(
+                    suggestion_id=f"history_{topic}_{datetime.now().timestamp()}",
+                    text=f"Você também pode ter interesse em saber sobre {topic}",
+                    confidence=0.6,
+                    category=topic,
+                    persona=user_context.persona_preference,
+                    context_match=['history_pattern'],
+                    created_at=datetime.now()
+                )
+                for category in unique_categories
+                for topic in category_progression.get(category, [])
+                if topic not in recent_categories
+            ]
         
         return suggestions[:2]  # Máximo 2 sugestões baseadas em histórico
     

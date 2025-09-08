@@ -175,7 +175,7 @@ export default function PersonaSelector({ personas, onPersonaSelect }: PersonaSe
     return { personaId, confidence, explanation };
   };
 
-  const handleAnswer = (questionId: string, value: any) => {
+  const handleAnswer = (questionId: string, value: UserProfile['type'] | UserProfile['focus']) => {
     const newAnswers = { ...answers, [questionId === 'profile' ? 'profile' : 'focus']: value };
     setAnswers(newAnswers);
 

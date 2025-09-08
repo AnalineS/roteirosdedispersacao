@@ -1,5 +1,18 @@
 {
   "permissions": {
     "defaultMode": "acceptEdits"
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node claude-quality-hooks/.claude/hooks/react-app/quality-check.js"
+          }
+        ]
+      }
+    ]
   }
 }

@@ -5,16 +5,16 @@
 import { useState, useEffect, useCallback } from 'react';
 import { authService } from '@/services/auth';
 import {
-  UserProfile,
+  AuthUserProfile,
   UserRole,
-  AuthState,
+  AuthenticationState,
   LoginOptions,
   RegistrationData,
   USER_LEVEL_BENEFITS,
 } from '@/types/auth';
 
 export function useAuth() {
-  const [authState, setAuthState] = useState<AuthState>({
+  const [authState, setAuthState] = useState<AuthenticationState>({
     user: null,
     isLoading: true,
     isAuthenticated: false,
@@ -117,13 +117,13 @@ export function useAuth() {
   // USER MANAGEMENT
   // ============================================================================
 
-  const updateProfile = useCallback(async (updates: Partial<UserProfile>) => {
+  const updateProfile = useCallback(async (updates: Partial<AuthUserProfile>) => {
     if (!authState.user) {
       throw new Error('Usuário não está logado');
     }
 
     try {
-      await authService.updateUserProfile(authState.user.uid, updates);
+      await authService.updateAuthUserProfile(authState.user.uid, updates);
     } catch (error) {
       throw error;
     }
@@ -145,7 +145,7 @@ export function useAuth() {
   // PERMISSION HELPERS
   // ============================================================================
 
-  const hasPermission = useCallback((permission: keyof UserProfile['permissions']) => {
+  const hasPermission = useCallback((permission: keyof AuthUserProfile['permissions']) => {
     return authService.hasPermission(authState.user, permission);
   }, [authState.user]);
 
@@ -284,7 +284,7 @@ export function useRequireAuth(requiredRole?: UserRole) {
 }
 
 // Hook para verificar permissões específicas
-export function usePermission(permission: keyof UserProfile['permissions']) {
+export function usePermission(permission: keyof AuthUserProfile['permissions']) {
   const { hasPermission } = useAuth();
   return hasPermission(permission);
 }

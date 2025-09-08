@@ -16,11 +16,10 @@ const HomeIcon = () => (
   </svg>
 );
 
-const ChatIcon = () => (
-  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-    <path fillRule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clipRule="evenodd" />
-  </svg>
-);
+// Importar sistema de ícones ativo
+import { ActiveIcon, useActiveIcons } from '@/components/icons/ActiveIconSystem';
+
+const ChatIcon = () => <ActiveIcon name="ChatIcon" size={20} />;
 
 const BookIcon = () => (
   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -84,6 +83,18 @@ export default function SiteMapPage() {
           title: 'Progresso',
           href: '/progress',
           description: 'Métricas detalhadas de aprendizagem'
+        }
+      ]
+    },
+    {
+      title: 'Assistentes Virtuais',
+      icon: ChatIcon,
+      color: 'bg-emerald-50 border-emerald-200 text-emerald-800',
+      pages: [
+        {
+          title: 'Chat Inteligente',
+          href: '/chat',
+          description: 'Converse com Dr. Gasnelio e Gá sobre hanseníase'
         }
       ]
     },
@@ -269,6 +280,9 @@ export default function SiteMapPage() {
       ]
     }
   ];
+
+  // Inicializar sistema de ícones ativos
+  const { icons, getIcon } = useActiveIcons();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">

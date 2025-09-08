@@ -47,6 +47,8 @@ export interface RAGResponse {
   processingTimeMs: number;
   cached?: boolean;
   enhanced?: boolean;
+  documents?: any[];
+  query?: string;
 }
 
 export interface RAGStats {
@@ -54,6 +56,7 @@ export interface RAGStats {
   cacheHits: number;
   supabaseSearches: number;
   avgContextScore: number;
+  avgRelevance?: number;
   scopeViolations: number;
   availableComponents: {
     vectorStore: boolean;

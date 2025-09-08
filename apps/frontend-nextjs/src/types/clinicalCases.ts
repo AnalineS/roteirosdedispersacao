@@ -267,7 +267,7 @@ export interface CaseSession {
 
 export interface StepResult {
   stepId: string;
-  response: any;
+  response: string | number | string[] | boolean; // Text, numeric, multiple choice, or boolean responses
   isCorrect: boolean;
   pointsEarned: number;
   timeSpent: number; // seconds

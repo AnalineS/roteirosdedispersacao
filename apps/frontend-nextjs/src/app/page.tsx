@@ -93,6 +93,9 @@ export default function HomePage() {
         <PersonaSelectorUnified />
       </Suspense>
 
+      {/* Features Section Ativada */}
+      <FeaturesSection />
+
       {/* Static Features Section */}
       <section style={{ 
         width: '100%',
@@ -164,10 +167,32 @@ export default function HomePage() {
             <p style={{
               color: '#6b7280',
               lineHeight: '1.6',
-              margin: 0
+              margin: '0 0 1rem 0'
             }}>
               Conteúdo estruturado sobre hanseníase, tratamento PQT-U e cuidado farmacêutico
             </p>
+            {/* Features destacadas com ícones ativos */}
+            <div style={{
+              display: 'flex',
+              gap: '1rem',
+              alignItems: 'center',
+              fontSize: '0.875rem',
+              color: '#10b981',
+              fontWeight: '500'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <CheckIcon size={16} color="#10b981" />
+                <span>Validado</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <TargetIcon size={16} color="#10b981" />
+                <span>Focado</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <DoctorIcon size={16} color="#10b981" />
+                <span>Profissional</span>
+              </div>
+            </div>
           </Link>
 
           {/* Recursos Práticos */}
@@ -210,10 +235,32 @@ export default function HomePage() {
             <p style={{
               color: '#6b7280',
               lineHeight: '1.6',
-              margin: 0
+              margin: '0 0 1rem 0'
             }}>
               Calculadora de doses, checklist de dispensação e ferramentas práticas
             </p>
+            {/* Features destacadas com ícones ativos */}
+            <div style={{
+              display: 'flex',
+              gap: '1rem',
+              alignItems: 'center',
+              fontSize: '0.875rem',
+              color: '#0284c7',
+              fontWeight: '500'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <PillIcon size={16} color="#0284c7" />
+                <span>PQT-U</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <BulbIcon size={16} color="#0284c7" />
+                <span>Inteligente</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <SupportIcon size={16} color="#0284c7" />
+                <span>Suporte 24h</span>
+              </div>
+            </div>
           </Link>
 
           {/* Chat Interativo */}
@@ -256,11 +303,97 @@ export default function HomePage() {
             <p style={{
               color: '#6b7280',
               lineHeight: '1.6',
-              margin: 0
+              margin: '0 0 1rem 0'
             }}>
               Converse com assistentes virtuais especializados em hanseníase
             </p>
+            {/* Features destacadas com ícones ativos */}
+            <div style={{
+              display: 'flex',
+              gap: '1rem',
+              alignItems: 'center',
+              fontSize: '0.875rem',
+              color: '#92400e',
+              fontWeight: '500'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <QuestionIcon size={16} color="#92400e" />
+                <span>Dúvidas</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <HeartIcon size={16} color="#92400e" />
+                <span>Cuidado</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <FamilyIcon size={16} color="#92400e" />
+                <span>Humanizado</span>
+              </div>
+            </div>
           </Link>
+        </div>
+      </section>
+
+      {/* Alertas e Status do Sistema */}
+      <section style={{
+        background: 'linear-gradient(135deg, #fef9e7 0%, #fde68a 100%)',
+        padding: '2rem 0',
+        margin: '3rem 0',
+        borderRadius: '16px',
+        border: '1px solid #f59e0b'
+      }}>
+        <div style={{ 
+          width: '100%',
+          margin: '0 auto',
+          padding: '0 clamp(1rem, 3vw, 4rem)',
+          textAlign: 'center'
+        }}>
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: '0.5rem',
+            marginBottom: '1rem'
+          }}>
+            <AlertIcon size={24} color="#f59e0b" />
+            <HierarchyHeading level="h3" style={{
+              fontSize: '1.25rem',
+              fontWeight: '600',
+              color: '#92400e',
+              margin: 0
+            }}>
+              Status do Sistema
+            </HierarchyHeading>
+          </div>
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+            gap: '2rem',
+            fontSize: '0.9rem'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#10b981' }}>
+              <CheckIcon size={16} color="#10b981" />
+              <span>Sistema Operacional</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#10b981' }}>
+              <HeartIcon size={16} color="#10b981" />
+              <span>Monitoramento Ativo</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#10b981', marginTop: '0.5rem' }}>
+              <Image 
+                src="/images/logo-sistema.png" 
+                alt="Sistema Certificado" 
+                width={16} 
+                height={16}
+                style={{ borderRadius: '2px' }}
+              />
+              <span>Sistema Certificado</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#10b981' }}>
+              <BulbIcon size={16} color="#10b981" />
+              <span>IA Disponível</span>
+            </div>
+          </div>
         </div>
       </section>
 

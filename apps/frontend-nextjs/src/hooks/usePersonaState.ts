@@ -5,6 +5,7 @@ import { useSafePersonaFromURL, type ValidPersonaId, isValidPersonaId } from './
 import { usePersonasEnhanced } from './usePersonasEnhanced';
 import { useUserProfile } from './useUserProfile';
 import type { PersonasResponse } from '@/services/api';
+import { secureLogger } from '@/utils/secureLogger';
 
 // Ordem de prioridade para seleção de persona
 enum PersonaPriority {
@@ -214,7 +215,11 @@ export function usePersonaState(options: UsePersonaStateOptions = {}): UsePerson
   // Função para alterar persona explicitamente
   const setPersona = useCallback((personaId: ValidPersonaId, source: 'explicit' | 'profile' = 'explicit') => {
     if (!isPersonaAvailable(personaId)) {
-      console.warn(`Persona ${personaId} não está disponível`);
+      secureLogger.warn('Persona indisponível tentada', { 
+        personaId, 
+        source, 
+        component: 'usePersonaState' 
+      });
       return;
     }
 

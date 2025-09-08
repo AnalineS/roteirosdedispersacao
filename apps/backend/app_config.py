@@ -132,15 +132,15 @@ class AppConfig:
         'general': float(os.getenv('WEIGHT_GENERAL', 0.2))
     }
     
-    # Database Config (AstraDB) - Mapeamento para GitHub Secrets
-    ASTRA_DB_ENABLED: bool = os.getenv('ASTRA_BD_ENABLED', os.getenv('ASTRA_DB_ENABLED', '')).lower() == 'true'
-    ASTRA_DB_URL: Optional[str] = os.getenv('ASTRA_BD_URL', os.getenv('ASTRA_DB_URL'))
-    ASTRA_DB_TOKEN: Optional[str] = os.getenv('ASTRA_BD_TOKEN', os.getenv('ASTRA_DB_TOKEN'))
-    ASTRA_DB_KEYSPACE: Optional[str] = os.getenv('ASTRA_BD_KEYSPACE', os.getenv('ASTRA_DB_KEYSPACE'))
-    ASTRA_DB_API_KEY: Optional[str] = os.getenv('ASTRA_BD_API_KEY')
-    ASTRA_DB_APPLICATION_TOKEN: Optional[str] = os.getenv('ASTRA_BD_APLICATION_TOKEN')
-    ASTRA_DB_CLIENT_ID: Optional[str] = os.getenv('ASTRA_BD_CLIENTID')
-    ASTRA_DB_SECRET: Optional[str] = os.getenv('ASTRA_BD_SECRET')
+    # Database Config (Supabase) - Mapeamento para GitHub Secrets
+    SUPABASE_URL: Optional[str] = os.getenv('SUPABASE_URL')
+    SUPABASE_ANON_KEY: Optional[str] = os.getenv('SUPABASE_ANON_KEY')
+    SUPABASE_SERVICE_KEY: Optional[str] = os.getenv('SUPABASE_SERVICE_KEY')
+    SUPABASE_JWT_SECRET: Optional[str] = os.getenv('SUPABASE_JWT_SECRET')
+    
+    # Vector Store Config (Supabase + pgvector)
+    SUPABASE_VECTOR_DIMENSION: int = int(os.getenv('SUPABASE_VECTOR_DIMENSION', 1536))
+    SUPABASE_VECTOR_SIMILARITY_THRESHOLD: float = float(os.getenv('SUPABASE_VECTOR_SIMILARITY_THRESHOLD', 0.8))
     
     # Redis Config - REMOVED (Replaced by Firestore hybrid cache in Phases 2-4)
     # REDIS_ENABLED: bool = os.getenv('REDIS_ENABLED', '').lower() == 'true'  # REMOVED
@@ -208,8 +208,9 @@ class AppConfig:
             'CORS_ORIGINS'
         ]
         
-        if self.ASTRA_DB_ENABLED:
-            required.extend(['ASTRA_DB_URL', 'ASTRA_DB_TOKEN', 'ASTRA_DB_KEYSPACE'])
+        # Validar Supabase se habilitado
+        if self.SUPABASE_URL:
+            required.extend(['SUPABASE_ANON_KEY', 'SUPABASE_SERVICE_KEY'])
         
         # Redis removido - usando apenas Firestore cache
         

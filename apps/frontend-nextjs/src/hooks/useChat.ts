@@ -31,7 +31,7 @@ interface UseChatOptions {
 }
 
 export function useChat(options: UseChatOptions = {}) {
-  const { captureError } = useErrorHandler();
+  const { handleError } = useErrorHandler();
   const { 
     persistToLocalStorage = true, 
     storageKey = 'chat-history',
@@ -290,7 +290,7 @@ export function useChat(options: UseChatOptions = {}) {
 
     } catch (err) {
       console.error(`Erro ao enviar mensagem (tentativa ${retryCount + 1}):`, err);
-      captureError(err as string | Error, { component: 'useChat', action: 'sendMessage', metadata: { retryCount, personaId } });
+      handleError(err as Error, 'medium');
       
       if (retryCount < maxRetries) {
         // Retry with exponential backoff
@@ -348,7 +348,7 @@ export function useChat(options: UseChatOptions = {}) {
     if (retryCount >= maxRetries) {
       setLoading(false);
     }
-  }, [personaRAG, sessionId, messagesRef, addMessage, onMessageReceived, setError, setLastApiCall, setLoading, withFallback, captureError, analyzeSentiment, enableSentimentAnalysis]);
+  }, [personaRAG, sessionId, messagesRef, addMessage, onMessageReceived, setError, setLastApiCall, setLoading, withFallback, handleError, analyzeSentiment, enableSentimentAnalysis]);
 
   const handleClearMessages = useCallback(() => {
     clearMessages();

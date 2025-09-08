@@ -12,6 +12,7 @@
 
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
+import { secureLogger } from '@/utils/secureLogger';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -90,12 +91,17 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
       severity: this.calculateSeverity(error, errorCount)
     };
 
-    // Console log estruturado (sempre ativo para debugging)
-    console.group(`🚨 ErrorBoundary [${level}] - ${errorData.id}`);
-    console.error('Error:', error);
-    console.error('Component Stack:', errorInfo.componentStack);
-    console.info('Error Data:', errorData);
-    console.groupEnd();
+    // Log estruturado e seguro para debugging
+    secureLogger.error(
+      `ErrorBoundary [${level}] - ${errorData.id}`,
+      error,
+      {
+        errorId: errorData.id,
+        severity: errorData.severity,
+        timestamp: errorData.timestamp,
+        errorCount
+      }
+    );
 
     // Atualizar contador
     this.setState(prevState => ({

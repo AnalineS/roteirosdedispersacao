@@ -9,6 +9,8 @@
  * - Informações de aprendizagem
  */
 
+import { secureLogger } from '@/utils/secureLogger';
+
 // ================== TIPOS LGPD ==================
 
 export interface DataSubject {
@@ -231,7 +233,13 @@ class ConsentManager {
     localStorage.setItem(consentKey, JSON.stringify(consent));
 
     // Log consent for audit
-    console.log(`LGPD: Consentimento registrado para ${subjectId}`, consent);
+    secureLogger.lgpd('Consentimento registrado', subjectId, { 
+      educational: consent.educational,
+      analytics: consent.analytics,
+      certificates: consent.certificates,
+      communications: consent.communications,
+      research: consent.research
+    });
   }
 
   /**
@@ -285,7 +293,7 @@ class ConsentManager {
     const consentKey = `consent_${subjectId}`;
     localStorage.setItem(consentKey, JSON.stringify(updated));
 
-    console.log(`LGPD: Consentimento retirado para ${subjectId}`, categories);
+    secureLogger.lgpd('Consentimento retirado', subjectId, { categories });
   }
 }
 
@@ -298,13 +306,13 @@ class DataManager {
   async collectData(
     subjectId: string,
     purpose: ProcessingPurpose,
-    data: any,
+    data: Record<string, unknown>,
     categories: DataCategory[]
   ): Promise<boolean> {
     // Verificar se há base legal para o processamento
     const hasLegalBasis = this.hasLegalBasisForProcessing(subjectId, purpose);
     if (!hasLegalBasis) {
-      console.warn(`LGPD: Sem base legal para coleta de dados - ${purpose}`);
+      secureLogger.warn('LGPD: Sem base legal para coleta de dados', { purpose });
       return false;
     }
 
@@ -353,11 +361,11 @@ class DataManager {
   /**
    * Minimização de dados - coletar apenas o necessário
    */
-  private minimizeData(data: any, purpose: ProcessingPurpose): any {
+  private minimizeData(data: Record<string, unknown>, purpose: ProcessingPurpose): Record<string, unknown> {
     const purposeConfig = LGPD_CONFIG.processingPurposes.find(p => p.purpose === purpose);
     if (!purposeConfig) return data;
 
-    const minimized: any = {};
+    const minimized: Record<string, unknown> = {};
 
     // Incluir apenas os dados necessários para a finalidade
     if (purposeConfig.dataCategories.includes('personal_identification')) {
@@ -382,7 +390,7 @@ class DataManager {
   /**
    * Pseudonimização quando apropriada
    */
-  private pseudonymizeIfNeeded(data: any, purpose: ProcessingPurpose): any {
+  private pseudonymizeIfNeeded(data: Record<string, unknown>, purpose: ProcessingPurpose): Record<string, unknown> {
     const nonEssentialPurposes = ['quality_improvement', 'research_academic'];
     
     if (!nonEssentialPurposes.includes(purpose)) {
@@ -391,11 +399,11 @@ class DataManager {
 
     const pseudonymized = { ...data };
     
-    if (pseudonymized.name) {
+    if (pseudonymized.name && typeof pseudonymized.name === 'string') {
       pseudonymized.name = this.createPseudonym(pseudonymized.name);
     }
     
-    if (pseudonymized.email) {
+    if (pseudonymized.email && typeof pseudonymized.email === 'string') {
       pseudonymized.email = this.createPseudonym(pseudonymized.email);
     }
 
@@ -435,9 +443,9 @@ class PrivacyRequestProcessor {
   /**
    * Processar solicitação de acesso aos dados
    */
-  async processAccessRequest(subjectId: string): Promise<any> {
+  async processAccessRequest(subjectId: string): Promise<Record<string, unknown>> {
     const dataKeys = this.getDataKeysForSubject(subjectId);
-    const userData: any = {
+    const userData: Record<string, unknown> = {
       personalData: {},
       processingActivities: [],
       retentionPolicies: LGPD_CONFIG.retentionPolicies,
@@ -448,7 +456,7 @@ class PrivacyRequestProcessor {
       const stored = localStorage.getItem(key);
       if (stored) {
         const record = JSON.parse(stored);
-        userData.processingActivities.push({
+        (userData.processingActivities as any[]).push({
           purpose: record.purpose,
           collectedAt: record.collectedAt,
           retentionUntil: record.retentionUntil,
@@ -458,7 +466,7 @@ class PrivacyRequestProcessor {
         
         // Merge data (sem exposição de dados pseudonimizados)
         if (record.data && typeof record.data === 'object') {
-          Object.assign(userData.personalData, record.data);
+          Object.assign(userData.personalData as any, record.data);
         }
       }
     }
@@ -502,14 +510,14 @@ class PrivacyRequestProcessor {
         // Verificar se pode ser deletado (algumas retenções são legalmente obrigatórias)
         if (this.canBeDeleted(record)) {
           localStorage.removeItem(key);
-          console.log(`LGPD: Dados deletados - ${key}`);
+          secureLogger.lgpd('Dados deletados', 'system-cleanup', { key });
         } else {
           // Anonimizar se não pode deletar
           record.data = this.anonymizeRecord(record.data);
           record.anonymizedAt = new Date();
           record.anonymizationReason = reason;
           localStorage.setItem(key, JSON.stringify(record));
-          console.log(`LGPD: Dados anonimizados - ${key}`);
+          secureLogger.lgpd('Dados anonimizados', 'system-cleanup', { key });
         }
       }
     }
@@ -533,7 +541,7 @@ class PrivacyRequestProcessor {
     return keys;
   }
 
-  private canBeDeleted(record: any): boolean {
+  private canBeDeleted(record: Record<string, unknown>): boolean {
     // Certificados profissionais não podem ser deletados (obrigação legal)
     if (record.purpose === 'certification_issuance') return false;
     
@@ -543,7 +551,7 @@ class PrivacyRequestProcessor {
     return true;
   }
 
-  private anonymizeRecord(data: any): any {
+  private anonymizeRecord(data: Record<string, unknown>): Record<string, unknown> {
     const anonymized = { ...data };
     
     // Remover/substituir identificadores diretos
@@ -561,7 +569,7 @@ class ComplianceAuditor {
   /**
    * Gerar relatório de compliance LGPD
    */
-  generateComplianceReport(): any {
+  generateComplianceReport(): Record<string, unknown> {
     return {
       timestamp: new Date().toISOString(),
       controller: LGPD_CONFIG.dataController,

@@ -3,8 +3,8 @@
 import React, { Suspense, lazy, ComponentType } from 'react';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 
-interface LazyComponentProps {
-  componentImport: () => Promise<{ default: ComponentType<any> }>;
+interface LazyComponentProps<T = {}> {
+  componentImport: () => Promise<{ default: ComponentType<T> }>;
   fallback?: React.ReactNode;
   onError?: (error: Error) => void;
   retryAttempts?: number;
@@ -26,7 +26,7 @@ class ErrorBoundary extends React.Component<
   },
   LazyWrapperState
 > {
-  constructor(props: any) {
+  constructor(props: { onError?: (error: Error) => void; retryAttempts?: number; fallback?: React.ReactNode; children: React.ReactNode; componentName: string }) {
     super(props);
     this.state = { hasError: false, retryCount: 0 };
   }
@@ -192,7 +192,7 @@ export default function LazyComponent({
       componentName={String(componentName)}
     >
       <Suspense fallback={fallback || defaultFallback}>
-        <LazyLoadedComponent {...props} />
+        <LazyLoadedComponent {...(props as any)} />
       </Suspense>
     </ErrorBoundary>
   );
@@ -272,7 +272,7 @@ export function withLazyLoading<T extends Record<string, any>>(
         fallback={options.fallback}
         onError={options.onError}
         retryAttempts={options.retryAttempts}
-        {...props}
+        {...(props as any)}
       />
     );
   };

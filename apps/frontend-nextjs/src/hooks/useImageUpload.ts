@@ -203,8 +203,8 @@ export function useImageUpload(options: UseImageUploadOptions = {}): UseImageUpl
 /**
  * Converte erros do Firebase Storage em mensagens amigáveis
  */
-function getErrorMessage(error: any): string {
-  if (error?.code) {
+function getErrorMessage(error: { code?: string; message?: string } | Error): string {
+  if ('code' in error && error?.code) {
     switch (error.code) {
       case 'storage/unauthorized':
         return 'Você não tem permissão para fazer upload';

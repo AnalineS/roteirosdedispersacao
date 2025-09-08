@@ -59,6 +59,9 @@ const nextConfig = {
     minimumCacheTTL: 60
   },
   
+  // Fix workspace root warning - point to the actual workspace root
+  outputFileTracingRoot: require('path').join(__dirname, '../../'),
+  
   // Configurações experimentais para otimização e segurança
   experimental: {
     optimizePackageImports: ['react-icons', 'jspdf', 'lucide-react'],

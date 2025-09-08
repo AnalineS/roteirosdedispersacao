@@ -12,6 +12,9 @@ export interface UserProfile {
   confidence: number;
   explanation: string;
   selectedPersona?: string;
+  name?: string;
+  professional?: boolean;
+  sessionCount?: number;
   preferences?: {
     language: 'simple' | 'technical';
     notifications: boolean;

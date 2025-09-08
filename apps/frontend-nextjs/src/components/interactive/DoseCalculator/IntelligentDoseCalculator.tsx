@@ -373,7 +373,7 @@ export default function IntelligentDoseCalculator({
                   </label>
                   <select
                     value={patientData.renalFunction || 'normal'}
-                    onChange={(e) => setPatientData(prev => ({ ...prev, renalFunction: e.target.value as any }))}
+                    onChange={(e) => setPatientData(prev => ({ ...prev, renalFunction: e.target.value as 'normal' | 'mild' | 'moderate' | 'severe' }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="normal">Normal</option>
@@ -432,7 +432,7 @@ export default function IntelligentDoseCalculator({
                 </label>
                 <select
                   value={lesionData.bacilloscopy}
-                  onChange={(e) => setLesionData(prev => ({ ...prev, bacilloscopy: e.target.value as any }))}
+                  onChange={(e) => setLesionData(prev => ({ ...prev, bacilloscopy: e.target.value as 'positive' | 'negative' | 'not_performed' }))}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="not_performed">Não realizada</option>

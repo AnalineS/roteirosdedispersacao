@@ -4,6 +4,7 @@ import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { modernChatTheme } from '@/config/modernTheme';
 import { validateFeedbackData, feedbackRateLimiter, generateSessionId } from '@/utils/securityUtils';
 import { useGoogleAnalytics } from '@/components/GoogleAnalytics';
+import type { FeedbackData, FeedbackValidation } from '@/types/feedback';
 
 interface FeedbackWidgetProps {
   messageId: string;
@@ -14,20 +15,6 @@ interface FeedbackWidgetProps {
   isVisible?: boolean;
 }
 
-interface FeedbackData {
-  messageId: string;
-  personaId: string;
-  question: string;
-  response: string;
-  rating: number;
-  comments?: string;
-  timestamp: number;
-  metadata?: {
-    hasSensitiveData: boolean;
-    sanitizationApplied: boolean;
-    clientTimestamp: number;
-  };
-}
 
 interface PersonaData {
   id: string;

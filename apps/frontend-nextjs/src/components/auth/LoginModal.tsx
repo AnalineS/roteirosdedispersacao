@@ -90,8 +90,15 @@ export default function LoginModal({
   };
 
   // Handle onboarding completion
-  const handleOnboardingComplete = (role: any) => {
-    completeOnboarding(role);
+  const handleOnboardingComplete = (role: { id: 'medical' | 'student' | 'patient'; title: string; recommendedPersona: string }) => {
+    const fullUserRole = {
+      ...role,
+      description: `Perfil selecionado: ${role.title}`,
+      icon: role.id === 'medical' ? '👨‍⚕️' : role.id === 'student' ? '👨‍🎓' : '👤',
+      benefits: [`Acesso personalizado para ${role.title}`],
+      recommendedPersona: role.recommendedPersona as 'dr-gasnelio' | 'ga'
+    };
+    completeOnboarding(fullUserRole);
     
     const userProfile = {
       type: role.id === 'medical' || role.id === 'student' ? 'professional' as const : 'patient' as const,

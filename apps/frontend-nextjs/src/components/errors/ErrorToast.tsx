@@ -12,7 +12,8 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { AlertCircle, AlertTriangle, XCircle, X, RefreshCw } from 'lucide-react';
-import { ErrorSeverity } from '@/hooks/useErrorHandler';
+// Define ErrorSeverity type locally since it's not exported from useErrorHandler
+type ErrorSeverity = 'low' | 'medium' | 'high' | 'critical';
 
 interface Toast {
   id: string;

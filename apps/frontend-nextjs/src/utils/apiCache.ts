@@ -447,9 +447,9 @@ export const ChatCache = {
     apiCache.get('chat', { message, persona }),
   getAsync: (message: string, persona: string) => 
     apiCache.getAsync('chat', { message, persona }),
-  set: (message: string, persona: string, response: any) => 
+  set: (message: string, persona: string, response: ChatResponse) => 
     apiCache.set('chat', response, { message, persona }, 2 * 60 * 1000), // 2 min
-  setAsync: (message: string, persona: string, response: any) => 
+  setAsync: (message: string, persona: string, response: ChatResponse) => 
     apiCache.setAsync('chat', response, { message, persona }, 2 * 60 * 1000),
   clear: () => apiCache.clear(),
   clearAsync: () => apiCache.clearAsync()
@@ -457,3 +457,4 @@ export const ChatCache = {
 
 // Import React for the hook
 import React from 'react';
+import type { ChatResponse } from '@/types/api';

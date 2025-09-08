@@ -296,21 +296,21 @@ export interface QueryFilters {
 }
 
 // Type guards
-export function isAuthUser(user: any): user is AuthUser {
-  return user && typeof user.uid === 'string';
+export function isAuthUser(user: unknown): user is AuthUser {
+  return !!(user && typeof (user as any).uid === 'string');
 }
 
-export function isFirestoreUserProfile(profile: any): profile is FirestoreUserProfile {
-  return profile && 
-         typeof profile.uid === 'string' && 
-         typeof profile.type === 'string' &&
-         profile.createdAt instanceof Timestamp;
+export function isFirestoreUserProfile(profile: unknown): profile is FirestoreUserProfile {
+  return !!(profile && 
+         typeof (profile as any).uid === 'string' && 
+         typeof (profile as any).type === 'string' &&
+         (profile as any).createdAt instanceof Timestamp);
 }
 
-export function isFirestoreConversation(conv: any): conv is FirestoreConversation {
-  return conv &&
-         typeof conv.id === 'string' &&
-         typeof conv.userId === 'string' &&
-         Array.isArray(conv.messages) &&
-         conv.createdAt instanceof Timestamp;
+export function isFirestoreConversation(conv: unknown): conv is FirestoreConversation {
+  return !!(conv &&
+         typeof (conv as any).id === 'string' &&
+         typeof (conv as any).userId === 'string' &&
+         Array.isArray((conv as any).messages) &&
+         (conv as any).createdAt instanceof Timestamp);
 }

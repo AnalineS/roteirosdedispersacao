@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
 import { useCurrentPersona, usePersonaAnalytics } from '@/contexts/PersonaContext';
 import type { ValidPersonaId } from '@/types/personas';
+import { secureLogger } from '@/utils/secureLogger';
 
 // ============================================
 // TIPOS E INTERFACES
@@ -105,7 +106,11 @@ export function PersonaAccessibilityProvider({
       }, 100);
     }
 
-    console.log(`[PersonaAccessibility] Announced (${priority}):`, message);
+    secureLogger.debug('PersonaAccessibility announcement', { 
+      priority, 
+      messageLength: message.length,
+      component: 'PersonaAccessibilityProvider'
+    });
   }, [config.announcementThrottle, lastAnnouncementTime]);
 
   // Função para anunciar mudanças de persona

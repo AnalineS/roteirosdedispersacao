@@ -13,12 +13,15 @@ interface RAGResponse {
   sources: string[];
   cached: boolean;
   processing_time: number;
+  documents?: any[];
+  query?: string;
 }
 
 interface RAGStats {
   totalQueries: number;
   avgResponseTime: number;
   cacheHitRate: number;
+  avgRelevance?: number;
 }
 
 interface UseKnowledgeBaseOptions {

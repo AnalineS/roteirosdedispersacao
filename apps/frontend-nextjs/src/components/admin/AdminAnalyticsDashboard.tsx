@@ -68,7 +68,7 @@ interface DashboardKPIs {
 
 interface ExportableReport {
   type: 'pdf' | 'excel' | 'json';
-  data: any;
+  data: Record<string, unknown> | ArrayBuffer | Blob;
   filename: string;
   generatedAt: Date;
 }
@@ -231,7 +231,7 @@ const AdminAnalyticsDashboard: React.FC<AdminDashboardProps> = ({
     }
   };
 
-  const downloadJSON = (data: any, filename: string) => {
+  const downloadJSON = (data: Record<string, unknown>, filename: string) => {
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -399,7 +399,7 @@ const AdminAnalyticsDashboard: React.FC<AdminDashboardProps> = ({
             ].map(tab => (
               <button
                 key={tab.id}
-                onClick={() => setSelectedView(tab.id as any)}
+                onClick={() => setSelectedView(tab.id as 'overview' | 'users' | 'education' | 'performance' | 'business')}
                 className={`py-2 px-1 border-b-2 font-medium text-sm ${
                   selectedView === tab.id
                     ? 'border-blue-500 text-blue-600'

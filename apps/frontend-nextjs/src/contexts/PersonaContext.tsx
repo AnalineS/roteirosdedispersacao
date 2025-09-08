@@ -12,6 +12,7 @@ import type {
   PersonaConfig
 } from '@/types/personas';
 import { STATIC_PERSONAS } from '@/data/personas';
+import { ErrorMonitorService } from '@/components/monitoring/ErrorMonitor';
 
 // ============================================
 // CONTEXTO E PROVIDER
@@ -218,6 +219,11 @@ export function PersonaProvider({ children, config = {} }: PersonaProviderProps)
             localStorage.setItem('selectedPersona', resolvedPersona);
           } catch (error) {
             console.warn('[PersonaContext] Erro ao salvar no localStorage:', error);
+            ErrorMonitorService.getInstance().logError(error as Error, {
+              component: 'PersonaContext',
+              severity: 'low',
+              context: { action: 'localStorage.setItem', persona: resolvedPersona }
+            });
           }
         }
 
@@ -348,6 +354,11 @@ export function PersonaProvider({ children, config = {} }: PersonaProviderProps)
           localStorage.setItem('personaLastChanged', new Date().toISOString());
         } catch (error) {
           console.warn('[PersonaContext] Erro ao salvar no localStorage:', error);
+          ErrorMonitorService.getInstance().logError(error as Error, {
+            component: 'PersonaContext',
+            severity: 'low',
+            context: { action: 'localStorage.setItem', persona: personaId }
+          });
         }
       }
 

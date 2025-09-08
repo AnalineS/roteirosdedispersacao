@@ -165,18 +165,18 @@ class SendGridProvider(BaseEmailProvider):
         if message.headers:
             payload["headers"] = message.headers
             
-        # Anexos
+        # Anexos - otimizado com list comprehension
         if message.attachments:
-            payload["attachments"] = []
-            for attachment in message.attachments:
-                import base64
-                content_b64 = base64.b64encode(attachment.content).decode()
-                payload["attachments"].append({
-                    "content": content_b64,
+            import base64
+            payload["attachments"] = [
+                {
+                    "content": base64.b64encode(attachment.content).decode(),
                     "filename": attachment.filename,
                     "type": attachment.content_type,
                     "disposition": "attachment"
-                })
+                }
+                for attachment in message.attachments
+            ]
         
         # Fazer requisição
         headers = {
@@ -228,10 +228,9 @@ class SMTPProvider(BaseEmailProvider):
             if message.reply_to:
                 msg['Reply-To'] = str(message.reply_to)
                 
-            # Adicionar headers customizados
+            # Adicionar headers customizados - otimizado
             if message.headers:
-                for key, value in message.headers.items():
-                    msg[key] = value
+                msg.update(message.headers)
             
             # Adicionar conteúdo
             if message.text_content:
@@ -242,9 +241,9 @@ class SMTPProvider(BaseEmailProvider):
                 html_part = MIMEText(message.html_content, 'html', 'utf-8')
                 msg.attach(html_part)
                 
-            # Adicionar anexos
+            # Adicionar anexos - otimizado com função auxiliar
             if message.attachments:
-                for attachment in message.attachments:
+                def create_attachment(attachment):
                     part = MIMEBase('application', 'octet-stream')
                     part.set_payload(attachment.content)
                     encoders.encode_base64(part)
@@ -252,6 +251,10 @@ class SMTPProvider(BaseEmailProvider):
                         'Content-Disposition',
                         f'attachment; filename= {attachment.filename}'
                     )
+                    return part
+                
+                # Usar map para criar anexos de forma funcional
+                for part in map(create_attachment, message.attachments):
                     msg.attach(part)
             
             # Conectar e enviar
@@ -262,12 +265,12 @@ class SMTPProvider(BaseEmailProvider):
                     server.starttls(context=context)
                 server.login(self.config.smtp_username, self.config.smtp_password)
                 
-                # Lista de todos os destinatários
-                recipients = [addr.email for addr in message.to]
-                if message.cc:
-                    recipients.extend(addr.email for addr in message.cc)
-                if message.bcc:
-                    recipients.extend(addr.email for addr in message.bcc)
+                # Lista de todos os destinatários - otimizado com functional approach
+                recipients = [
+                    addr.email
+                    for addr_list in [message.to, message.cc or [], message.bcc or []]
+                    for addr in addr_list
+                ]
                 
                 server.send_message(msg, to_addrs=recipients)
                 
@@ -298,16 +301,24 @@ class EmailTemplateManager:
         self._load_templates()
         
     def _load_templates(self):
-        """Carrega templates do diretório"""
-        template_files = list(self.config.template_dir.glob('*.json'))
-        for template_file in template_files:
+        """Carrega templates do diretório - otimizado com functional approach"""
+        def load_template(template_file):
             try:
                 with open(template_file, 'r', encoding='utf-8') as f:
                     template_data = json.load(f)
-                    template_id = template_file.stem
-                    self.templates[template_id] = EmailTemplate(**template_data)
+                    return template_file.stem, EmailTemplate(**template_data)
             except Exception as e:
                 logger.error(f"Erro ao carregar template {template_file}: {e}")
+                return None, None
+        
+        # Usar map e dict comprehension para carregar todos os templates
+        template_files = list(self.config.template_dir.glob('*.json'))
+        template_results = map(load_template, template_files)
+        self.templates = {
+            template_id: template 
+            for template_id, template in template_results 
+            if template_id is not None and template is not None
+        }
     
     def render_template(self, template_id: str, variables: Dict[str, Any]) -> EmailMessage:
         """Renderiza template com variáveis"""

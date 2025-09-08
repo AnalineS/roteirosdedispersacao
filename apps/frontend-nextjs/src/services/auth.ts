@@ -24,9 +24,9 @@ import {
 } from 'firebase/firestore';
 import { auth, db, FEATURES } from '@/lib/firebase/config';
 import {
-  UserProfile,
+  AuthUserProfile,
   UserRole,
-  AuthState,
+  AuthenticationState,
   LoginOptions,
   RegistrationData,
   USER_LEVEL_CONFIG,
@@ -41,7 +41,7 @@ googleProvider.addScope('profile');
 
 export class AuthService {
   private static instance: AuthService;
-  private authStateCallbacks: ((authState: AuthState) => void)[] = [];
+  private authStateCallbacks: ((authState: AuthenticationState) => void)[] = [];
 
   static getInstance(): AuthService {
     if (!AuthService.instance) {
@@ -64,7 +64,7 @@ export class AuthService {
     onAuthStateChanged(auth, async (firebaseUser) => {
       try {
         if (firebaseUser) {
-          const userProfile = await this.loadUserProfile(firebaseUser);
+          const userProfile = await this.loadAuthUserProfile(firebaseUser);
           this.notifyAuthStateChange({
             user: userProfile,
             isLoading: false,
@@ -104,14 +104,14 @@ export class AuthService {
     });
   }
 
-  onAuthStateChange(callback: (authState: AuthState) => void) {
+  onAuthStateChange(callback: (authState: AuthenticationState) => void) {
     this.authStateCallbacks.push(callback);
     return () => {
       this.authStateCallbacks = this.authStateCallbacks.filter(cb => cb !== callback);
     };
   }
 
-  private notifyAuthStateChange(authState: AuthState) {
+  private notifyAuthStateChange(authState: AuthenticationState) {
     this.authStateCallbacks.forEach(callback => callback(authState));
   }
 
@@ -119,7 +119,7 @@ export class AuthService {
   // USER PROFILE MANAGEMENT
   // ============================================================================
 
-  private async loadUserProfile(firebaseUser: User): Promise<UserProfile> {
+  private async loadAuthUserProfile(firebaseUser: User): Promise<AuthUserProfile> {
     if (!db) {
       throw new Error('Firestore não disponível');
     }
@@ -136,14 +136,14 @@ export class AuthService {
         'usage.totalSessions': increment(1),
       });
 
-      return this.mapFirestoreToUserProfile(firebaseUser.uid, data);
+      return this.mapFirestoreToAuthUserProfile(firebaseUser.uid, data);
     } else {
       // Criar perfil inicial para novo usuário
-      return await this.createUserProfile(firebaseUser);
+      return await this.createAuthUserProfile(firebaseUser);
     }
   }
 
-  private async createUserProfile(firebaseUser: User): Promise<UserProfile> {
+  private async createAuthUserProfile(firebaseUser: User): Promise<AuthUserProfile> {
     if (!db) {
       throw new Error('Firestore não disponível');
     }
@@ -151,7 +151,7 @@ export class AuthService {
     // Determinar role inicial
     const role: UserRole = this.determineInitialRole(firebaseUser.email);
 
-    const userProfile: UserProfile = {
+    const userProfile: AuthUserProfile = {
       uid: firebaseUser.uid,
       role,
       email: firebaseUser.email || undefined,
@@ -234,7 +234,7 @@ export class AuthService {
     };
   }
 
-  private mapFirestoreToUserProfile(uid: string, data: any): UserProfile {
+  private mapFirestoreToAuthUserProfile(uid: string, data: any): AuthUserProfile {
     return {
       uid,
       role: data.role || 'registered',
@@ -256,7 +256,7 @@ export class AuthService {
   // AUTHENTICATION METHODS
   // ============================================================================
 
-  async loginWithGoogle(options: LoginOptions = { provider: 'google' }): Promise<UserProfile> {
+  async loginWithGoogle(options: LoginOptions = { provider: 'google' }): Promise<AuthUserProfile> {
     if (!auth) {
       throw new Error('Firebase Auth não disponível');
     }
@@ -265,7 +265,7 @@ export class AuthService {
       Analytics.event('USER', 'login', 'google');
       
       const result = await signInWithPopup(auth, googleProvider);
-      const userProfile = await this.loadUserProfile(result.user);
+      const userProfile = await this.loadAuthUserProfile(result.user);
 
       return userProfile;
     } catch (error) {
@@ -277,7 +277,7 @@ export class AuthService {
     }
   }
 
-  async loginWithEmail(email: string, password: string): Promise<UserProfile> {
+  async loginWithEmail(email: string, password: string): Promise<AuthUserProfile> {
     if (!auth) {
       throw new Error('Firebase Auth não disponível');
     }
@@ -286,7 +286,7 @@ export class AuthService {
       Analytics.event('USER', 'login', 'email');
       
       const result = await signInWithEmailAndPassword(auth, email, password);
-      const userProfile = await this.loadUserProfile(result.user);
+      const userProfile = await this.loadAuthUserProfile(result.user);
 
       return userProfile;
     } catch (error) {
@@ -298,7 +298,7 @@ export class AuthService {
     }
   }
 
-  async registerWithEmail(data: RegistrationData): Promise<UserProfile> {
+  async registerWithEmail(data: RegistrationData): Promise<AuthUserProfile> {
     if (!auth || !data.password) {
       throw new Error('Firebase Auth não disponível ou senha ausente');
     }
@@ -313,11 +313,11 @@ export class AuthService {
       });
 
       // Criar perfil personalizado
-      const userProfile = await this.createUserProfile(result.user);
+      const userProfile = await this.createAuthUserProfile(result.user);
       
       // Atualizar com dados adicionais
       if (data.institution || data.specialization) {
-        await this.updateUserProfile(userProfile.uid, {
+        await this.updateAuthUserProfile(userProfile.uid, {
           institution: data.institution,
           specialization: data.specialization,
         });
@@ -353,7 +353,7 @@ export class AuthService {
   // USER MANAGEMENT
   // ============================================================================
 
-  async updateUserProfile(uid: string, updates: Partial<UserProfile>): Promise<void> {
+  async updateAuthUserProfile(uid: string, updates: Partial<AuthUserProfile>): Promise<void> {
     if (!db) {
       throw new Error('Firestore não disponível');
     }
@@ -394,12 +394,12 @@ export class AuthService {
     return !!auth?.currentUser;
   }
 
-  hasPermission(user: UserProfile | null, permission: keyof UserProfile['permissions']): boolean {
+  hasPermission(user: AuthUserProfile | null, permission: keyof AuthUserProfile['permissions']): boolean {
     if (!user) return false;
     return user.permissions[permission] as boolean;
   }
 
-  canAccessFeature(user: UserProfile | null, feature: string): boolean {
+  canAccessFeature(user: AuthUserProfile | null, feature: string): boolean {
     if (!user) {
       // Visitantes têm acesso básico
       const basicFeatures = ['chat', 'modules', 'faq', 'calculator'];

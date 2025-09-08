@@ -13,6 +13,7 @@ import { useMultimodal, useMultimodalHealth } from '@/hooks/useMultimodal';
 interface ImageUploaderProps {
   onAnalysisComplete?: (result: any) => void;
   onUploadSuccess?: (fileId: string) => void;
+  onClose?: () => void;
   className?: string;
   disabled?: boolean;
 }
@@ -20,6 +21,7 @@ interface ImageUploaderProps {
 export default function ImageUploader({
   onAnalysisComplete,
   onUploadSuccess,
+  onClose,
   className = '',
   disabled = false
 }: ImageUploaderProps) {

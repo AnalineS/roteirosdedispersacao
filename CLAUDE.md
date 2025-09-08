@@ -14,7 +14,6 @@ The project uses a monorepo structure with multiple specialized applications:
 roteiro-dispensacao/
 ├── apps/
 │   ├── backend/                 # Flask API with AI personas
-│   ├── frontend/               # Legacy Vite React app (archived)
 │   └── frontend-nextjs/        # Active Next.js application
 ├── data/                      # Knowledge base files
 ├── docs/                      # Documentation
@@ -109,7 +108,6 @@ The system uses a hybrid knowledge architecture:
 - `POST /api/feedback`: User feedback collection for ML improvement
 - `GET /api/stats`: System performance metrics
 - `GET /api/usability/monitor`: UX monitoring data
-```
 
 ## Security Considerations
 
@@ -157,46 +155,37 @@ cd apps/backend
 # Deployment handled by Cloud Run from repository
 ```
 
-## Development Guidelines and code review
-1 Functionality & Correctness
+## Development Guidelines and Code Review
 
-↳ Requirements: code does what it should
-↳ Logic: works for all expected inputs, including edge cases
-↳ Integration: works without breaking the existing features
-↳ Testing: includes tests for features and edge cases
+### 1. Functionality & Correctness
+- Requirements: code does what it should
+- Logic: works for all expected inputs, including edge cases
+- Integration: works without breaking the existing features
+- Testing: includes tests for features and edge cases
 
-----
+### 2. Readability & Clarity
+- Clarity: code is easy to read
+- Style: follows project style guidelines
+- Documentation: understandable and correct
+- Comments: explains why, not just what
 
-2 Readability & Clarity
+### 3. Performance & Efficiency
+- Algorithms: uses efficient algorithms and data structures
+- Scalability: works efficiently as users or data grow
+- Bottlenecks: avoid repeated computations or unnecessary operations
+- Reuse: no repeated code; instead, use shared code
+- Resources: uses cpu and memory effectively
+- Caching: reuse results to speed things up if needed
 
-↳ Clarity: code is easy to read
-↳ Style: follows project style guidelines
-↳ Documentation: understandable and correct
-↳ Comments: explains why, not just what
-
-----
-
-3 Performance & Efficiency
-
-↳ Algorithms: uses efficient algorithms and data structures
-↳ Scalability: works efficiently as users or data grow
-↳ Bottlenecks: avoid repeated computations or unnecessary operations
-↳ Reuse: no repeated code; instead, use shared code
-↳ Resources: uses cpu and memory effectively
-↳ Caching: reuse results to speed things up if needed
-
-----
-
-4 Security & Stability
-
-↳ Validation: sanitizes all inputs
-↳ Vulnerabilities: protects against common security holes
-↳ Data: handle sensitive information securely
-↳ Error Handling: does proper error handling and fails gracefully
-↳ Observability: simple to monitor and debug
-↳ Compatibility: works with older versions and features
-↳ API Design: simple and consistent
-↳ Dependencies: uses only safe and needed libraries
+### 4. Security & Stability
+- Validation: sanitizes all inputs
+- Vulnerabilities: protects against common security holes
+- Data: handle sensitive information securely
+- Error Handling: does proper error handling and fails gracefully
+- Observability: simple to monitor and debug
+- Compatibility: works with older versions and features
+- API Design: simple and consistent
+- Dependencies: uses only safe and needed libraries
 
 ### Code Patterns
 1. **Error Handling**: All API endpoints use comprehensive error handling with request IDs
@@ -218,19 +207,64 @@ The system includes several performance enhancements:
 - **Image Optimization**: Next.js optimized image loading
 - **PWA Features**: Service Worker implementation for offline capability
 
+## Quality Check Hooks
 
-### AI Model Availability
-- **Issue**: Free tier models may have rate limits
-- **Solution**: Automatic fallback between Llama 3.2 and Kimie K2
+The repository includes quality check hooks that automatically validate and fix code:
 
-### Knowledge Base Updates
-- **Issue**: Content changes require system restart
-- **Solution**: Structured JSON format allows hot-reloading
+### Hook System
+- Hooks are triggered after Write/Edit/MultiEdit operations on TypeScript/JavaScript files
+- Exit code 0 = success (silent), exit code 2 = quality issues found (blocking)
+- Each project type has its own quality check implementation
+
+### Quality Checks Performed
+1. TypeScript compilation checks (using project's tsconfig.json)
+2. ESLint with auto-fix capability
+3. Prettier formatting with auto-fix
+4. Custom rule validation (console usage, 'as any', debugger, TODOs)
+
+## Writing Style Guidelines
+
+Write facts, not fluff. Every word must justify its existence.
+
+**Banned Elements:**
+- No emojis
+- No marketing language or praise
+- No "thank you" pleasantries
+- No explanatory preambles ("Here is...", "This is...")
+- No adjectives that don't add information
+
+**Banned Words:**
+- powerful, seamless, comprehensive, robust, elegant
+- enhanced, amazing, great, awesome, wonderful, excellent
+- sophisticated, advanced, intuitive, user-friendly
+- cutting-edge, state-of-the-art, innovative, revolutionary
+
+**What TO Write:**
+- Facts only - What it does, not why it's good
+- Direct statements - Start with the point
+- Concrete specifics - Numbers, not abstractions
+- Technical accuracy - Precise, not approximate
+
+## TypeScript Code Quality Standards
+
+When fixing TypeScript `any` types:
+1. **Use specific types based on actual usage patterns**
+2. **Import proper type definitions from existing interfaces**
+3. **Create interfaces when patterns are consistent**
+4. **Use generic constraints for reusable functions**
+5. **Avoid `unknown` as a blanket replacement - be specific**
+
+Common patterns:
+- Event handlers: Use specific React event types (`React.MouseEvent`, `React.ChangeEvent`, etc.)
+- API responses: Use existing API interfaces from `@/types/api`
+- Form data: Use existing form interfaces from `@/types/forms`
+- Component props: Create specific prop interfaces
+- Error handling: Use `Error | unknown` with proper type guards
 
 ## Documentation References
 
 - `README.md`: General project overview
-- `PLANO_IMPLEMENTACAO_FRONTEND.md`: Detailed development roadmap
+- `claude_code_optimization_prompt.md`: Otimização e refatoramento de código
 - `docs/ESTRATEGIA_UX_PERSONAS.md`: UX strategy documentation
 - `qa-reports/VALIDATION_REPORT.md`: Quality assurance results
 

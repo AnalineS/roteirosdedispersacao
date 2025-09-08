@@ -46,7 +46,8 @@ export default function LoginPage() {
       } else {
         setError(result.error || 'Erro durante o login. Tente novamente.');
       }
-    } catch (_err) {
+    } catch (err) {
+      console.error('Erro durante login:', err);
       setError('Erro inesperado. Tente novamente.');
     } finally {
       setIsLoading(false);

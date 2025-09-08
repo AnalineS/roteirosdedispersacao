@@ -7,6 +7,7 @@ import {
   Award, Target, BookOpen, Clock,
   Share2, Edit, Camera, Check, X
 } from 'lucide-react';
+import Image from 'next/image';
 import AvatarUploader from './AvatarUploader';
 import EmailPreferences from './EmailPreferences';
 import ShareProgress from '../achievements/ShareProgress';
@@ -197,10 +198,13 @@ export default function SocialProfile({
           <div className="avatar-section">
             <div className="avatar-container">
               {profile.photoURL ? (
-                <img 
+                <Image 
                   src={profile.photoURL} 
-                  alt={profile.displayName}
+                  alt={profile.displayName || 'Foto do perfil'}
                   className="profile-avatar"
+                  width={96}
+                  height={96}
+                  style={{ objectFit: 'cover' }}
                 />
               ) : (
                 <div className="avatar-placeholder">

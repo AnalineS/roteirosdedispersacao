@@ -2,6 +2,7 @@
 
 import EducationalLayout from '@/components/layout/EducationalLayout';
 import Link from 'next/link';
+import { IndexIndicator } from '@/components/ui/IndexIndicator';
 
 export default function RoteiroDispensacaoModulePage() {
   const moduleContent = {
@@ -674,6 +675,12 @@ export default function RoteiroDispensacaoModulePage() {
               alignItems: 'center',
               gap: '10px'
             }}>
+              <IndexIndicator
+                index={index + 1}
+                color="#dc2626"
+                variant="badge"
+                size="medium"
+              />
               {section.title}
             </h2>
             

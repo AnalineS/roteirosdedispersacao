@@ -1,8 +1,14 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Persona } from '@/services/api';
 import { modernChatTheme, getPersonaColors } from '@/config/modernTheme';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useMultimodal, useMultimodalHealth, AnalysisResult } from '@/hooks/useMultimodal';
+import ImageUploader from '@/components/multimodal/ImageUploader';
+
+// Interface centralizada
+import type { ChatAttachment } from '@/types/chat';
 
 interface ModernChatInputProps {
   value: string;
@@ -22,6 +28,10 @@ interface ModernChatInputProps {
   onFileUpload?: (files: FileList) => void;
   acceptedFileTypes?: string;
   maxFileSize?: number;
+  // Funcionalidades multimodais
+  multimodal?: boolean;
+  onSendMessage?: (message: string, attachments?: ChatAttachment[]) => void;
+  onImageAnalysis?: (result: AnalysisResult) => void;
 }
 
 const SendIcon = () => (
@@ -66,6 +76,33 @@ const UploadIcon = () => (
     <line x1="16" y1="13" x2="8" y2="13"/>
     <line x1="16" y1="17" x2="8" y2="17"/>
     <polyline points="10,9 9,9 8,9"/>
+  </svg>
+);
+
+const CameraIcon = () => (
+  <svg 
+    width="20" 
+    height="20" 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2"
+  >
+    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+    <circle cx="12" cy="13" r="4"/>
+  </svg>
+);
+
+const AttachmentIcon = () => (
+  <svg 
+    width="20" 
+    height="20" 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2"
+  >
+    <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
   </svg>
 );
 
@@ -177,12 +214,25 @@ export default function ModernChatInput({
   showHistory = false,
   onFileUpload,
   acceptedFileTypes = ".jpg,.jpeg,.png,.pdf,.txt,.doc,.docx",
-  maxFileSize = 10 * 1024 * 1024 // 10MB
+  maxFileSize = 10 * 1024 * 1024, // 10MB
+  // Funcionalidades multimodais
+  multimodal = false,
+  onSendMessage,
+  onImageAnalysis
 }: ModernChatInputProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isFocused, setIsFocused] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
+
+  // Estados multimodais
+  const [attachedImages, setAttachedImages] = useState<ChatAttachment[]>([]);
+  const [showImageUploader, setShowImageUploader] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
+  
+  // Hooks multimodais (somente se multimodal estiver habilitado)
+  const multimodalHook = multimodal ? useMultimodal() : null;
+  const healthHook = multimodal ? useMultimodalHealth() : null;
 
   const colors = persona ? getPersonaColors(personaId) : null;
 
@@ -194,12 +244,18 @@ export default function ModernChatInput({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!value.trim() || isLoading) return;
+    if ((!value.trim() && attachedImages.length === 0) || isLoading) return;
     
     setIsAnimating(true);
     setTimeout(() => setIsAnimating(false), 300);
     
-    onSubmit(e);
+    // Se multimodal está habilitado e há callback específico, usar esse
+    if (multimodal && onSendMessage) {
+      handleMultimodalSubmit();
+      onChange(''); // Limpar input
+    } else {
+      onSubmit(e);
+    }
   };
 
   const handleFileUpload = () => {
@@ -232,6 +288,53 @@ export default function ModernChatInput({
     setTimeout(() => setIsFocused(false), 200);
   };
 
+  // Handlers multimodais
+  const handleAnalysisComplete = useCallback((result: AnalysisResult) => {
+    setAnalysisResult(result);
+    onImageAnalysis?.(result);
+    
+    // Adicionar resultado como anexo
+    setAttachedImages(prev => [...prev, {
+      id: result.file_id,
+      type: 'image_analysis' as const,
+      name: `Análise: ${result.extracted_text.slice(0, 50)}...`,
+      url: result.file_id,
+      confidence: result.confidence_score,
+      extracted_text: result.extracted_text,
+      result: result
+    }]);
+
+    // Sugerir mensagem baseada no resultado
+    if (result.extracted_text && result.medical_indicators.length > 0) {
+      const suggestedMessage = `Analisei a imagem e encontrei: ${result.medical_indicators.join(', ')}. Pode me explicar mais sobre isso?`;
+      onChange(suggestedMessage);
+    }
+
+    setShowImageUploader(false);
+  }, [onImageAnalysis, onChange]);
+
+  const handleUploadSuccess = useCallback((fileId: string) => {
+    console.log('Upload successful:', fileId);
+  }, []);
+
+  const removeAttachment = useCallback((index: number) => {
+    setAttachedImages(prev => prev.filter((_, i) => i !== index));
+  }, []);
+
+  const handleImageUpload = () => {
+    if (multimodal) {
+      setShowImageUploader(true);
+    }
+  };
+
+  const handleMultimodalSubmit = useCallback(() => {
+    if (multimodal && onSendMessage && (value.trim() || attachedImages.length > 0)) {
+      onSendMessage(value, attachedImages);
+      setAttachedImages([]);
+      setAnalysisResult(null);
+    }
+  }, [multimodal, onSendMessage, value, attachedImages]);
+
   // Auto-focus on mobile when persona is selected
   useEffect(() => {
     if (persona && isMobile && inputRef.current) {
@@ -240,7 +343,7 @@ export default function ModernChatInput({
   }, [persona, isMobile]);
 
   const isDisabled = !persona || isLoading;
-  const canSubmit = persona && value.trim() && !isLoading;
+  const canSubmit = persona && (value.trim() || attachedImages.length > 0) && !isLoading;
 
   return (
     <div
@@ -263,6 +366,143 @@ export default function ModernChatInput({
         persona={persona}
         personaId={personaId}
       />
+
+      {/* Área de Anexos - somente se multimodal */}
+      {multimodal && attachedImages.length > 0 && (
+        <div style={{ 
+          padding: modernChatTheme.spacing.md,
+          borderTop: `1px solid ${modernChatTheme.colors.neutral.divider}`,
+          background: modernChatTheme.colors.neutral.surface 
+        }}>
+          <div style={{ 
+            display: 'flex', 
+            flexWrap: 'wrap', 
+            gap: modernChatTheme.spacing.sm 
+          }}>
+            {attachedImages.map((attachment, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                style={{
+                  position: 'relative',
+                  background: 'white',
+                  borderRadius: modernChatTheme.borderRadius.md,
+                  padding: modernChatTheme.spacing.sm,
+                  border: `1px solid ${modernChatTheme.colors.neutral.border}`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: modernChatTheme.spacing.xs,
+                  maxWidth: '300px'
+                }}
+              >
+                <div style={{ 
+                  width: '32px',
+                  height: '32px', 
+                  borderRadius: '50%',
+                  background: colors?.alpha || modernChatTheme.colors.neutral.surface,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: colors?.primary || modernChatTheme.colors.neutral.text
+                }}>
+                  {attachment.type === 'image_analysis' ? '🔍' : '📎'}
+                </div>
+                
+                <div style={{ flex: 1, overflow: 'hidden' }}>
+                  <div style={{ 
+                    fontSize: modernChatTheme.typography.meta.fontSize,
+                    fontWeight: '500',
+                    color: colors?.primary || modernChatTheme.colors.neutral.text,
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis'
+                  }}>
+                    {attachment.type === 'image_analysis' ? 'Análise de Imagem' : attachment.name}
+                  </div>
+                  <div style={{ 
+                    fontSize: modernChatTheme.typography.meta.fontSize,
+                    color: modernChatTheme.colors.neutral.textMuted,
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis'
+                  }}>
+                    {attachment.type === 'image_analysis' && attachment.confidence 
+                      ? `${Math.round(attachment.confidence * 100)}% confiança`
+                      : attachment.name
+                    }
+                  </div>
+                </div>
+                
+                <button
+                  onClick={() => removeAttachment(index)}
+                  style={{
+                    width: '20px',
+                    height: '20px',
+                    borderRadius: '50%',
+                    border: 'none',
+                    background: modernChatTheme.colors.neutral.textMuted,
+                    color: 'white',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '12px'
+                  }}
+                  aria-label="Remover anexo"
+                >
+                  ×
+                </button>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Modal do Image Uploader */}
+      <AnimatePresence>
+        {multimodal && showImageUploader && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'rgba(0, 0, 0, 0.5)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1000,
+              padding: modernChatTheme.spacing.lg
+            }}
+            onClick={() => setShowImageUploader(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                background: 'white',
+                borderRadius: modernChatTheme.borderRadius.xl,
+                overflow: 'hidden',
+                maxWidth: '500px',
+                width: '100%'
+              }}
+            >
+              <ImageUploader
+                onAnalysisComplete={handleAnalysisComplete}
+                onUploadSuccess={handleUploadSuccess}
+                onClose={() => setShowImageUploader(false)}
+              />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <form onSubmit={handleSubmit} className="input-form">
         <div
@@ -378,6 +618,48 @@ export default function ModernChatInput({
                 <UploadIcon />
               </button>
             </>
+          )}
+
+          {/* Botão de Análise de Imagem - somente se multimodal */}
+          {multimodal && (
+            <button
+              type="button"
+              onClick={handleImageUpload}
+              aria-label="Analisar imagem médica"
+              title="Upload e análise de imagem médica"
+              style={{
+                width: '40px',
+                height: '40px',
+                borderRadius: '50%',
+                border: 'none',
+                background: modernChatTheme.colors.neutral.border,
+                color: modernChatTheme.colors.neutral.textMuted,
+                margin: '4px',
+                cursor: 'pointer',
+                transition: `all ${modernChatTheme.transitions.normal}`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+                touchAction: 'manipulation'
+              }}
+              onMouseEnter={(e) => {
+                if (!isMobile) {
+                  e.currentTarget.style.transform = 'scale(1.05)';
+                  e.currentTarget.style.background = colors?.alpha || 'rgba(0,0,0,0.1)';
+                  e.currentTarget.style.color = colors?.primary || modernChatTheme.colors.neutral.text;
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isMobile) {
+                  e.currentTarget.style.transform = 'scale(1)';
+                  e.currentTarget.style.background = modernChatTheme.colors.neutral.border;
+                  e.currentTarget.style.color = modernChatTheme.colors.neutral.textMuted;
+                }
+              }}
+            >
+              <CameraIcon />
+            </button>
           )}
           
           <input

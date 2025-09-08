@@ -4,14 +4,12 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
   User, 
-  Mail, 
   Shield, 
   Settings, 
   Save,
   Loader2,
   AlertCircle,
   CheckCircle,
-  Camera,
   Link as LinkIcon,
   Trash2
 } from 'lucide-react';
@@ -113,14 +111,14 @@ export default function ProfilePage() {
     }
   };
 
-  const handleInputChange = (field: keyof ProfileFormData, value: any) => {
+  const handleInputChange = <K extends keyof ProfileFormData>(field: K, value: ProfileFormData[K]) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
     }));
   };
 
-  const handlePreferenceChange = (field: keyof ProfileFormData['preferences'], value: any) => {
+  const handlePreferenceChange = <K extends keyof ProfileFormData['preferences']>(field: K, value: ProfileFormData['preferences'][K]) => {
     setFormData(prev => ({
       ...prev,
       preferences: {
@@ -173,7 +171,7 @@ export default function ProfilePage() {
     return null; // Will redirect
   }
 
-  const connectedProviders = user?.providerData?.map((p: any) => p.providerId) || [];
+  const connectedProviders = user?.providerData?.map((p: {providerId: string}) => p.providerId) || [];
 
   return (
     <div className="profile-container">
@@ -278,7 +276,7 @@ export default function ProfilePage() {
                   <select
                     id="profileType"
                     value={formData.profileType}
-                    onChange={(e) => handleInputChange('profileType', e.target.value)}
+                    onChange={(e) => handleInputChange('profileType', e.target.value as ProfileFormData['profileType'])}
                     className="form-select"
                   >
                     <option value="professional">Profissional de Saúde</option>
@@ -295,7 +293,7 @@ export default function ProfilePage() {
                   <select
                     id="focus"
                     value={formData.focus}
-                    onChange={(e) => handleInputChange('focus', e.target.value)}
+                    onChange={(e) => handleInputChange('focus', e.target.value as UserFocus)}
                     className="form-select"
                   >
                     <option value="general">Geral</option>
@@ -315,7 +313,7 @@ export default function ProfilePage() {
                   <select
                     id="language"
                     value={formData.preferences.language}
-                    onChange={(e) => handlePreferenceChange('language', e.target.value)}
+                    onChange={(e) => handlePreferenceChange('language', e.target.value as 'simple' | 'technical')}
                     className="form-select"
                   >
                     <option value="simple">Linguagem simples</option>
@@ -330,7 +328,7 @@ export default function ProfilePage() {
                   <select
                     id="theme"
                     value={formData.preferences.theme}
-                    onChange={(e) => handlePreferenceChange('theme', e.target.value)}
+                    onChange={(e) => handlePreferenceChange('theme', e.target.value as 'light' | 'dark' | 'auto')}
                     className="form-select"
                   >
                     <option value="light">Claro</option>
@@ -395,7 +393,7 @@ export default function ProfilePage() {
                 <div className="connected-accounts">
                   {connectedProviders.length > 0 ? (
                     <div className="account-list">
-                      {connectedProviders.map((provider: any) => (
+                      {connectedProviders.map((provider: string) => (
                         <div key={provider} className="account-item connected">
                           <div className="account-info">
                             <LinkIcon size={20} />

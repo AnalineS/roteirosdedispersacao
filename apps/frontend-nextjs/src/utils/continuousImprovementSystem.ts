@@ -11,7 +11,7 @@ import { LearningAnalytics, InteractionEvent } from '@/utils/educationalAnalytic
 
 // ===== INTERFACES DO SISTEMA =====
 
-export interface FeedbackData {
+export interface ImprovementFeedbackData {
   id: string;
   timestamp: Date;
   userId?: string;
@@ -345,13 +345,13 @@ interface VariantResult {
 // ===== SISTEMA PRINCIPAL =====
 
 export class ContinuousImprovementSystem {
-  private feedbackData: FeedbackData[] = [];
+  private feedbackData: ImprovementFeedbackData[] = [];
   private abTests: Map<string, ABTestConfiguration> = new Map();
   private improvements: Map<string, ImprovementRecommendation> = new Map();
   
   // ===== COLETA DE FEEDBACK =====
   
-  public collectFeedback(feedback: FeedbackData): void {
+  public collectFeedback(feedback: ImprovementFeedbackData): void {
     // Validar e sanitizar feedback
     const validatedFeedback = this.validateFeedback(feedback);
     
@@ -379,7 +379,7 @@ export class ContinuousImprovementSystem {
       existingFeedback.behavioralData = behavioralData;
     } else {
       // Criar feedback baseado apenas em dados comportamentais
-      const implicitFeedback: FeedbackData = {
+      const implicitFeedback: ImprovementFeedbackData = {
         id: `behavioral_${Date.now()}`,
         timestamp: new Date(),
         sessionId,
@@ -405,7 +405,7 @@ export class ContinuousImprovementSystem {
     }
   }
   
-  private validateFeedback(feedback: FeedbackData): FeedbackData {
+  private validateFeedback(feedback: ImprovementFeedbackData): ImprovementFeedbackData {
     // Sanitizar strings
     if (feedback.feedback.openFeedback) {
       feedback.feedback.openFeedback = this.sanitizeString(feedback.feedback.openFeedback);
@@ -419,7 +419,7 @@ export class ContinuousImprovementSystem {
     return feedback;
   }
   
-  private performImmediateAnalysis(feedback: FeedbackData): void {
+  private performImmediateAnalysis(feedback: ImprovementFeedbackData): void {
     // Detectar issues críticos
     const criticalIssues = feedback.feedback.technicalIssues.filter(
       issue => issue.severity === 'critical'
@@ -457,7 +457,7 @@ export class ContinuousImprovementSystem {
     return insights;
   }
   
-  private performQuantitativeAnalysis(feedback: FeedbackData[]): any {
+  private performQuantitativeAnalysis(feedback: ImprovementFeedbackData[]): any {
     const totalFeedbacks = feedback.length;
     const averageRatings = this.calculateAverageRatings(feedback);
     const trendAnalysis = this.analyzeTrends(feedback);
@@ -471,7 +471,7 @@ export class ContinuousImprovementSystem {
     };
   }
   
-  private performQualitativeAnalysis(feedback: FeedbackData[]): any {
+  private performQualitativeAnalysis(feedback: ImprovementFeedbackData[]): any {
     const textFeedback = feedback
       .filter(f => f.feedback.openFeedback)
       .map(f => f.feedback.openFeedback);
@@ -489,7 +489,7 @@ export class ContinuousImprovementSystem {
     };
   }
   
-  private generateRecommendations(feedback: FeedbackData[]): ImprovementRecommendation[] {
+  private generateRecommendations(feedback: ImprovementFeedbackData[]): ImprovementRecommendation[] {
     const recommendations: ImprovementRecommendation[] = [];
     
     // Análise de padrões para gerar recomendações
@@ -704,22 +704,22 @@ export class ContinuousImprovementSystem {
   }
   
   // Implementações simplificadas para métodos complexos
-  private getRelevantFeedback(timeframe?: any): FeedbackData[] { return this.feedbackData; }
-  private calculateAverageRatings(feedback: FeedbackData[]): any { return {}; }
-  private analyzeTrends(feedback: FeedbackData[]): any { return []; }
-  private analyzeSegments(feedback: FeedbackData[]): any { return []; }
+  private getRelevantFeedback(timeframe?: any): ImprovementFeedbackData[] { return this.feedbackData; }
+  private calculateAverageRatings(feedback: ImprovementFeedbackData[]): any { return {}; }
+  private analyzeTrends(feedback: ImprovementFeedbackData[]): any { return []; }
+  private analyzeSegments(feedback: ImprovementFeedbackData[]): any { return []; }
   private extractCommonThemes(textFeedback: string[]): any { return []; }
   private analyzeSentiment(textFeedback: string[]): any { return { overall: 0.2 }; }
-  private identifyPriorityIssues(feedback: FeedbackData[]): any { return []; }
-  private analyzeUserJourneys(feedback: FeedbackData[]): any { return []; }
-  private calculateImpactMetrics(feedback: FeedbackData[]): any { return {}; }
-  private identifyCommonIssues(feedback: FeedbackData[]): any { return []; }
-  private identifyImprovementOpportunities(feedback: FeedbackData[]): any { return []; }
+  private identifyPriorityIssues(feedback: ImprovementFeedbackData[]): any { return []; }
+  private analyzeUserJourneys(feedback: ImprovementFeedbackData[]): any { return []; }
+  private calculateImpactMetrics(feedback: ImprovementFeedbackData[]): any { return {}; }
+  private identifyCommonIssues(feedback: ImprovementFeedbackData[]): any { return []; }
+  private identifyImprovementOpportunities(feedback: ImprovementFeedbackData[]): any { return []; }
   private prioritizeRecommendations(recommendations: any[]): any { return recommendations; }
   private createIssueRecommendations(issues: any[]): any { return []; }
   private createOpportunityRecommendations(opportunities: any[]): any { return []; }
-  private triggerCriticalIssueAlert(issues: any[], feedback: FeedbackData): void {}
-  private flagNegativeFeedback(feedback: FeedbackData): void {}
+  private triggerCriticalIssueAlert(issues: any[], feedback: ImprovementFeedbackData): void {}
+  private flagNegativeFeedback(feedback: ImprovementFeedbackData): void {}
   private triggerIncrementalAnalysis(): void {}
   private calculateCompletionRate(interactions: InteractionEvent[]): number { return 0.85; }
   

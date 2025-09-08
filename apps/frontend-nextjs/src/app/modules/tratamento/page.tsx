@@ -3,6 +3,7 @@
 import EducationalLayout from '@/components/layout/EducationalLayout';
 import Link from 'next/link';
 import { HanseníaseModuleStructuredData } from '@/components/seo/MedicalStructuredData';
+import { IndexIndicator } from '@/components/ui/IndexIndicator';
 import { ContentSegment, AudienceSelector, useAudiencePreference } from '@/components/content/ContentSegmentation';
 import { GlossaryWrapper } from '@/components/glossary/AutoGlossary';
 import LastUpdated from '@/components/content/LastUpdated';
@@ -674,6 +675,10 @@ export default function TratamentoModulePage() {
         />
 
         {/* Module Content */}
+        <IndexIndicator 
+          index={0} 
+          label="Seções do Módulo" 
+        />
         {moduleContent.sections.map((section, index) => {
           // Define audience and complexity based on section content
           let audience: ('professional' | 'patient' | 'student' | 'general')[] = ['professional'];

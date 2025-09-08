@@ -193,15 +193,22 @@ const PersonaIntroductionStep = ({ selectedRole }: { selectedRole: UserRole }) =
 };
 
 // Componente para questionário informativo (usuários logados)
-const InformativeSurveyStep = ({ onComplete }: { onComplete: (data: any) => void }) => {
-  const [answers, setAnswers] = useState({
+interface SurveyAnswers {
+  institution: string;
+  role: string;
+  experience: string;
+  interests: string[];
+}
+
+const InformativeSurveyStep = ({ onComplete }: { onComplete: (data: SurveyAnswers) => void }) => {
+  const [answers, setAnswers] = useState<SurveyAnswers>({
     institution: '',
     role: '',
     experience: '',
     interests: [] as string[]
   });
 
-  const handleAnswerChange = (field: string, value: any) => {
+  const handleAnswerChange = <K extends keyof SurveyAnswers>(field: K, value: SurveyAnswers[K]) => {
     setAnswers(prev => ({
       ...prev,
       [field]: value

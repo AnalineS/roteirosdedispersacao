@@ -4,7 +4,7 @@
 
 export type UserRole = 'visitor' | 'registered' | 'admin';
 
-export interface UserProfile {
+export interface AuthUserProfile {
   uid: string;
   role: UserRole;
   email?: string;
@@ -15,12 +15,12 @@ export interface UserProfile {
   verified: boolean;
   createdAt: Date;
   lastLoginAt: Date;
-  preferences: UserPreferences;
+  preferences: AuthUserPreferences;
   permissions: UserPermissions;
   usage: UserUsage;
 }
 
-export interface UserPreferences {
+export interface AuthUserPreferences {
   preferredPersona: 'dr_gasnelio' | 'ga' | null;
   language: 'pt-BR' | 'en' | 'es';
   theme: 'light' | 'dark' | 'auto';
@@ -71,8 +71,8 @@ export interface UserUsage {
   averageSessionDuration: number;
 }
 
-export interface AuthState {
-  user: UserProfile | null;
+export interface AuthenticationState {
+  user: AuthUserProfile | null;
   isLoading: boolean;
   isAuthenticated: boolean;
   error: string | null;

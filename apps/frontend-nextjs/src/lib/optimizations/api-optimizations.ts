@@ -383,6 +383,11 @@ interface BatchableRequest {
   variables?: Record<string, any>;
 }
 
+interface BatchResult<T = unknown> {
+  data?: T;
+  error?: { message: string };
+}
+
 export class APIBatcher {
   private pending: Array<{
     request: BatchableRequest;
@@ -435,7 +440,7 @@ export class APIBatcher {
       });
 
       // Processar respostas
-      response.results.forEach((result: any, index: number) => {
+      response.results.forEach((result: BatchResult, index: number) => {
         const { resolve, reject } = batch[index];
         
         if (result.error) {

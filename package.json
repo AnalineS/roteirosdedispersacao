@@ -9,7 +9,8 @@
     "automation:monitor": "node .claude/automation/continuous-monitoring-system.js",
     "quality:check": "node scripts/claude-quality-check.js",
     "docs:generate": "npm run automation:docs",
-    "compliance:check": "npm run automation:lgpd",
+    "compliance:check": "node .claude/automation/lgpd-robust.js",
+    "automation:lgpd": "node .claude/automation/lgpd-robust.js",
     "monitor:start": "npm run automation:monitor"
   },
   "dependencies": {

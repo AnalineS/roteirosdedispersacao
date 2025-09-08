@@ -6,6 +6,7 @@ import ProgressSystem, { useProgressData } from '@/components/navigation/Progres
 import { usePersonas } from '@/hooks/usePersonas';
 import { useSafeAuth as useAuth } from '@/hooks/useSafeAuth';
 import { ShareProgress } from '@/components/achievements';
+import { IndexIndicator, IndexProgress } from '@/components/ui/IndexIndicator';
 
 interface PageProgressData {
   totalTime: number;
@@ -319,7 +320,7 @@ export default function ProgressPage() {
                 }} />
               </div>
 
-              {/* Learning Path Items */}
+              {/* Learning Path Items with Index Indicators */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
                 {progressData.learningPath.map((item, index) => (
                   <div
@@ -332,6 +333,16 @@ export default function ProgressPage() {
                       zIndex: 1
                     }}
                   >
+                    {/* Index Number */}
+                    <IndexIndicator
+                      index={index + 1}
+                      color="#003366"
+                      variant="step"
+                      size="large"
+                      completed={item.status === 'completed'}
+                      active={item.status === 'in-progress'}
+                    />
+
                     {/* Status Icon */}
                     <div style={{
                       width: '50px',

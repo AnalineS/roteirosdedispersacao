@@ -72,7 +72,7 @@ export function useChatService(options: UseChatServiceOptions = {}): UseChatServ
 
   // Dependências
   const { user, isAuthenticated } = useSafeAuth();
-  const { captureError } = useErrorHandler();
+  const { handleError } = useErrorHandler();
   const chatService = useMemo(() => ChatService.getInstance(), []);
 
   // Estados
@@ -97,10 +97,10 @@ export function useChatService(options: UseChatServiceOptions = {}): UseChatServ
         .then(setPreferences)
         .catch(error => {
           console.error('Erro ao carregar preferências:', error);
-          captureError(error, { component: 'useChatService', action: 'loadPreferences' });
+          handleError(error, 'medium');
         });
     }
-  }, [isAuthenticated, user?.uid, chatService, captureError]);
+  }, [isAuthenticated, user?.uid, chatService, handleError]);
 
   // Auto-start session se configurado
   useEffect(() => {
@@ -166,7 +166,7 @@ export function useChatService(options: UseChatServiceOptions = {}): UseChatServ
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Erro ao iniciar sessão');
       setError(error.message);
-      captureError(error, { component: 'useChatService', action: 'startSession' });
+      handleError(error, 'medium');
       
       if (onError) {
         onError(error);
@@ -174,7 +174,7 @@ export function useChatService(options: UseChatServiceOptions = {}): UseChatServ
     } finally {
       setLoading(false);
     }
-  }, [user?.uid, defaultPersona, defaultPreferences, chatService, onSessionStart, enableAnalytics, onError, captureError]);
+  }, [user?.uid, defaultPersona, defaultPreferences, chatService, onSessionStart, enableAnalytics, onError, handleError]);
 
   // Finalizar sessão
   const endSession = useCallback(async () => {
@@ -199,9 +199,9 @@ export function useChatService(options: UseChatServiceOptions = {}): UseChatServ
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Erro ao finalizar sessão');
       console.error('Erro ao finalizar sessão:', error);
-      captureError(error, { component: 'useChatService', action: 'endSession' });
+      handleError(error, 'medium');
     }
-  }, [session, chatService, onSessionEnd, enableAnalytics, captureError]);
+  }, [session, chatService, onSessionEnd, enableAnalytics, handleError]);
 
   // Enviar mensagem
   const sendMessage = useCallback(async (message: string): Promise<ChatMessage | null> => {
@@ -244,7 +244,7 @@ export function useChatService(options: UseChatServiceOptions = {}): UseChatServ
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Erro ao enviar mensagem');
       setError(error.message);
-      captureError(error, { component: 'useChatService', action: 'sendMessage' });
+      handleError(error, 'medium');
       
       if (onError) {
         onError(error);
@@ -254,7 +254,7 @@ export function useChatService(options: UseChatServiceOptions = {}): UseChatServ
     } finally {
       setLoading(false);
     }
-  }, [session, chatService, onMessageProcessed, enableAnalytics, onError, captureError]);
+  }, [session, chatService, onMessageProcessed, enableAnalytics, onError, handleError]);
 
   // Trocar persona
   const switchPersona = useCallback(async (persona: 'dr_gasnelio' | 'ga'): Promise<boolean> => {
@@ -278,10 +278,10 @@ export function useChatService(options: UseChatServiceOptions = {}): UseChatServ
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Erro ao trocar persona');
       console.error('Erro ao trocar persona:', error);
-      captureError(error, { component: 'useChatService', action: 'switchPersona' });
+      handleError(error, 'medium');
       return false;
     }
-  }, [session, chatService, enableAnalytics, captureError]);
+  }, [session, chatService, enableAnalytics, handleError]);
 
   // Obter histórico
   const getHistory = useCallback(async (): Promise<ChatMessage[]> => {
@@ -316,9 +316,9 @@ export function useChatService(options: UseChatServiceOptions = {}): UseChatServ
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Erro ao atualizar preferências');
       console.error('Erro ao atualizar preferências:', error);
-      captureError(error, { component: 'useChatService', action: 'updatePreferences' });
+      handleError(error, 'medium');
     }
-  }, [isAuthenticated, user?.uid, chatService, enableAnalytics, captureError]);
+  }, [isAuthenticated, user?.uid, chatService, enableAnalytics, handleError]);
 
   // Atualizar analytics
   const refreshAnalytics = useCallback(() => {

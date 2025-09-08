@@ -114,7 +114,7 @@ export function useGoogleAnalytics() {
     category: string,
     label?: string,
     value?: number,
-    customParameters?: Record<string, any>
+    customParameters?: Record<string, unknown>
   ) => {
     if (typeof window !== 'undefined' && window.gtag) {
       window.gtag('event', action, {
@@ -143,7 +143,7 @@ export function useGoogleAnalytics() {
     element_type: string,
     element_id?: string,
     persona_id?: string,
-    additional_data?: Record<string, any>
+    additional_data?: Record<string, unknown>
   ) => {
     trackEvent('user_interaction', 'ui', element_type, undefined, {
       element_id,
@@ -157,7 +157,7 @@ export function useGoogleAnalytics() {
     rating: number,
     persona_id: string,
     has_comments?: boolean,
-    additional_data?: Record<string, any>
+    additional_data?: Record<string, unknown>
   ) => {
     trackEvent('feedback_submitted', 'user_feedback', feedback_type, rating, {
       persona_id,
@@ -170,7 +170,7 @@ export function useGoogleAnalytics() {
     interaction_type: string,
     persona_id: string,
     question_type?: string,
-    additional_data?: Record<string, any>
+    additional_data?: Record<string, unknown>
   ) => {
     trackEvent(interaction_type, 'persona_interaction', persona_id, undefined, {
       question_type,
@@ -182,7 +182,7 @@ export function useGoogleAnalytics() {
     error_type: string,
     error_message: string,
     component?: string,
-    additional_data?: Record<string, any>
+    additional_data?: Record<string, unknown>
   ) => {
     trackEvent('error_occurred', 'error', error_type, undefined, {
       error_message: error_message.substring(0, 100), // Limitar tamanho

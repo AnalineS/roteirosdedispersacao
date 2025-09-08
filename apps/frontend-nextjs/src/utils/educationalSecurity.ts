@@ -278,7 +278,7 @@ export function validateEmail(email: string): ValidationResult {
 /**
  * Criptografia de dados sensíveis (LGPD Compliance)
  */
-export async function encryptSensitiveData(data: any): Promise<string> {
+export async function encryptSensitiveData(data: Record<string, unknown> | string | number | boolean | null): Promise<string> {
   // Para implementação real, usar crypto-js ou similar
   // Por enquanto, retornar encoded string para demonstração
   const jsonString = JSON.stringify(data);
@@ -288,7 +288,7 @@ export async function encryptSensitiveData(data: any): Promise<string> {
 /**
  * Descriptografia de dados sensíveis
  */
-export async function decryptSensitiveData(encryptedData: string): Promise<any> {
+export async function decryptSensitiveData(encryptedData: string): Promise<Record<string, unknown> | string | number | boolean | null> {
   try {
     const jsonString = atob(encryptedData);
     return JSON.parse(jsonString);

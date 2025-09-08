@@ -5,7 +5,8 @@ import { ChatMessage, Persona } from '@/services/api';
 import PersonaAvatar from '../PersonaAvatar';
 import FeedbackWidget from '../FeedbackWidget';
 import { modernChatTheme, getPersonaColors } from '@/config/modernTheme';
-import { useFeedback, type FeedbackData } from '@/hooks/useFeedback';
+import { useFeedback } from '@/hooks/useFeedback';
+import type { FeedbackData } from '@/types/feedback';
 
 interface MessageBubbleProps {
   message: ChatMessage;
@@ -65,7 +66,7 @@ const MessageMeta = ({ timestamp }: { timestamp: number }) => {
   );
 };
 
-const FallbackIndicator = ({ metadata }: { metadata: any }) => {
+const FallbackIndicator = ({ metadata }: { metadata: { isFallback?: boolean; fallbackSource?: string; confidence?: number } }) => {
   if (!metadata?.isFallback) return null;
 
   const getFallbackInfo = (source: string) => {
@@ -77,7 +78,7 @@ const FallbackIndicator = ({ metadata }: { metadata: any }) => {
     }
   };
 
-  const fallbackInfo = getFallbackInfo(metadata.fallbackSource);
+  const fallbackInfo = getFallbackInfo(metadata.fallbackSource || 'cache');
 
   return (
     <div
@@ -275,7 +276,7 @@ export default function MessageBubble({
         </div>
         
         {/* Fallback Indicator */}
-        <FallbackIndicator metadata={message.metadata} />
+        {message.metadata && <FallbackIndicator metadata={message.metadata} />}
         
         {/* User message timestamp */}
         {isUser && (

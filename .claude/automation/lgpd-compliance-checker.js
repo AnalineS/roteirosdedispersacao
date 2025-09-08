@@ -1,7 +1,13 @@
 #!/usr/bin/env node
 
 /**
- * LGPD Compliance Checker para Plataforma Educacional Médica
+ * LGPD Compliance Checker - Sistema Robusto para Plataforma Médica
+ * 
+ * Verificação rigorosa de conformidade LGPD para dados médicos de hanseníase
+ * Análise completa de código, dados sensíveis e conformidade médica
+ * 
+ * @version 3.0.0 - Máxima Performance
+ * @author Sistema de Automação Claude - Médico Especializado
  * 
  * Sistema avançado de verificação de conformidade com a LGPD
  * Específico para dados médicos e educacionais sobre hanseníase

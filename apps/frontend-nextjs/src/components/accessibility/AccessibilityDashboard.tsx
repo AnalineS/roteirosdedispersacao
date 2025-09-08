@@ -403,7 +403,7 @@ export const AccessibilityDashboard: React.FC<{
           {tabs.map(tab => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
+              onClick={() => setActiveTab(tab.id as 'overview' | 'wcag' | 'screen-reader' | 'keyboard' | 'contrast')}
               style={{
                 background: activeTab === tab.id ? 'white' : 'transparent',
                 border: activeTab === tab.id ? '1px solid #e2e8f0' : '1px solid transparent',

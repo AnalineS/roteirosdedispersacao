@@ -4,6 +4,7 @@ import React, { useState, useRef, useCallback } from 'react';
 import { Camera, Upload, X, Check, AlertCircle } from 'lucide-react';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { useHapticFeedback } from '@/utils/hapticFeedback';
+import Image from 'next/image';
 
 interface AvatarUploaderProps {
   currentAvatarUrl?: string;
@@ -159,16 +160,22 @@ export default function AvatarUploader({
         {/* Avatar atual ou preview */}
         <div className="avatar-preview">
           {previewUrl ? (
-            <img
+            <Image
               src={previewUrl}
               alt="Preview do avatar"
               className="preview-image"
+              width={120}
+              height={120}
+              style={{ objectFit: 'cover' }}
             />
           ) : currentAvatarUrl ? (
-            <img
+            <Image
               src={currentAvatarUrl}
               alt="Avatar atual"
               className="current-avatar"
+              width={120}
+              height={120}
+              style={{ objectFit: 'cover' }}
             />
           ) : (
             <div className="avatar-placeholder">

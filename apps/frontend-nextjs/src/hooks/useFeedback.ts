@@ -1,15 +1,6 @@
 import { useState, useCallback } from 'react';
 import { apiClient } from '@/services/api';
-
-export interface FeedbackData {
-  messageId: string;
-  personaId: string;
-  question: string;
-  response: string;
-  rating: number;
-  comments?: string;
-  timestamp: number;
-}
+import type { FeedbackData } from '@/types/feedback';
 
 export interface FeedbackResponse {
   message: string;
@@ -308,7 +299,21 @@ export function useFeedbackStats() {
     try {
       // Aqui poderia ser uma chamada específica para stats de feedback
       // Por ora, usar o endpoint de stats geral
-      const response = await apiClient.get<any>('/api/v1/feedback/stats');
+      interface FeedbackStatsApiResponse {
+        rag?: {
+          feedback_count?: number;
+          average_rating?: number;
+          ratings_distribution?: Record<number, number>;
+          recent_feedbacks?: Array<{
+            rating: number;
+            timestamp: string;
+            personaId: string;
+            hasComments: boolean;
+          }>;
+        };
+      }
+      
+      const response = await apiClient.get<FeedbackStatsApiResponse>('/api/v1/feedback/stats');
       
       // Extrair dados de feedback se disponível
       const mockStats: FeedbackStats = {

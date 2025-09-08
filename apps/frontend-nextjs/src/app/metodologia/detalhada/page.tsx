@@ -139,9 +139,11 @@ export default function MetodologiaDetalhadaPage() {
               borderRadius: '8px',
               textAlign: 'center'
             }}>
-              <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>🎯</div>
+              <div style={{ marginBottom: '0.5rem', display: 'flex', justifyContent: 'center' }}>
+                <PillIcon size={24} color="#003366" />
+              </div>
               <div style={{ fontWeight: '600', color: '#003366' }}>Tipo</div>
-              <div style={{ fontSize: '0.9rem', color: '#6b7280' }}>Pesquisa Aplicada</div>
+              <div style={{ fontSize: '0.9rem', color: '#6b7280' }}>Pesquisa Aplicada - Farmácia</div>
             </div>
             <div style={{
               padding: '1rem',
@@ -169,9 +171,11 @@ export default function MetodologiaDetalhadaPage() {
               borderRadius: '8px',
               textAlign: 'center'
             }}>
-              <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>👥</div>
+              <div style={{ marginBottom: '0.5rem', display: 'flex', justifyContent: 'center' }}>
+                <HeartIcon size={24} color="#003366" />
+              </div>
               <div style={{ fontWeight: '600', color: '#003366' }}>Participantes</div>
-              <div style={{ fontSize: '0.9rem', color: '#6b7280' }}>205 profissionais</div>
+              <div style={{ fontSize: '0.9rem', color: '#6b7280' }}>205 profissionais de saúde</div>
             </div>
           </div>
         </div>

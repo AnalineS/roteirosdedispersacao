@@ -97,13 +97,13 @@ export function AuthProviderWrapper({ children }: AuthProviderWrapperProps) {
           error: null 
         }));
 
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('Erro na inicialização da autenticação:', error);
         
         setInitializationState(prev => ({ 
           ...prev, 
           isLoading: false,
-          error: error.message || 'Erro desconhecido',
+          error: (error as Error)?.message || 'Erro desconhecido',
           retryCount: prev.retryCount + 1
         }));
       }

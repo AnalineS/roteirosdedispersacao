@@ -2,6 +2,7 @@
 
 import EducationalLayout from '@/components/layout/EducationalLayout';
 import ModuleTemplate, { ModuleData } from '@/components/educational/ModuleTemplate';
+import { secureLogger } from '@/utils/secureLogger';
 
 export default function SobreATesetModulePage() {
   const moduleData: ModuleData = {
@@ -344,12 +345,12 @@ export default function SobreATesetModulePage() {
         moduleData={moduleData}
         onSectionComplete={(sectionId) => {
           if (process.env.NODE_ENV === 'development') {
-            console.log(`Seção concluída: ${sectionId}`);
+            secureLogger.debug('Seção de módulo concluída', { sectionId, module: 'sobre-a-tese' });
           }
         }}
         onModuleComplete={() => {
           if (process.env.NODE_ENV === 'development') {
-            console.log('Módulo "Sobre a Tese" concluído!');
+            secureLogger.info('Módulo educacional concluído', { module: 'sobre-a-tese', type: 'completion' });
           }
         }}
         showChatIntegration={true}

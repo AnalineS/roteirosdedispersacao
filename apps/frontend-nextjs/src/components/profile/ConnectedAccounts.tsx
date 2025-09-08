@@ -6,6 +6,7 @@ import {
   Shield, Clock, UserCheck, RefreshCw,
   Eye, EyeOff, ChevronDown, ChevronUp
 } from 'lucide-react';
+import Image from 'next/image';
 import { useHapticFeedback } from '@/utils/hapticFeedback';
 
 interface ConnectedAccount {
@@ -392,10 +393,13 @@ export default function ConnectedAccounts({
                     <div className="details-section">
                       <h4>Foto do Perfil</h4>
                       <div className="profile-photo">
-                        <img 
+                        <Image 
                           src={account.photoURL} 
                           alt={`Foto de perfil de ${account.displayName}`}
                           className="account-photo"
+                          width={80}
+                          height={80}
+                          style={{ objectFit: 'cover' }}
                         />
                       </div>
                     </div>
