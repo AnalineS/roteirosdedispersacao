@@ -271,8 +271,13 @@ jobs:
         env:
           NODE_ENV: production
           NEXT_PUBLIC_ENVIRONMENT: staging
-          NEXT_PUBLIC_API_URL: ${{ secrets.HML_API_URL }}
-          NEXT_PUBLIC_FIREBASE_CONFIG: ${{ secrets.HML_FIREBASE_CONFIG }}
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+          NEXT_PUBLIC_FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+          NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_AUTH_DOMAIN }}
+          NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_STORAGE_BUCKET }}
+          NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}
+          NEXT_PUBLIC_FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
         run: |
           echo "🔨 Building for staging environment..."
           npm run build
@@ -294,7 +299,7 @@ jobs:
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.HML_FIREBASE_SERVICE_ACCOUNT }}
+          firebaseServiceAccount: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
           projectId: ${{ secrets.GCP_PROJECT_ID }}
           channelId: live
           target: ${{ env.FRONTEND_SITE }}
@@ -314,13 +319,40 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: "🔍 Debug Secrets Availability"
+        run: |
+          echo "🔍 Verificando disponibilidade dos secrets..."
+          if [ -n "${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}" ]; then
+            echo "✅ GCP_SERVICE_ACCOUNT_KEY está disponível"
+          else
+            echo "❌ GCP_SERVICE_ACCOUNT_KEY está vazio ou não configurado"
+            exit 1
+          fi
+          
+          if [ -n "${{ secrets.GCP_PROJECT_ID }}" ]; then
+            echo "✅ GCP_PROJECT_ID está disponível"
+          else
+            echo "❌ GCP_PROJECT_ID está vazio ou não configurado"
+            exit 1
+          fi
+
       - name: "🔑 Google Cloud Auth"
-        uses: google-github-actions/auth@v1
+        uses: google-github-actions/auth@v2
         with:
-          credentials_json: ${{ secrets.HML_GCP_SERVICE_ACCOUNT }}
+          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
 
       - name: "⚡ Setup Cloud SDK"
-        uses: google-github-actions/setup-gcloud@v1
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+
+      - name: "🔍 Verify Authentication"
+        run: |
+          echo "🔍 Verificando autenticação do Google Cloud..."
+          gcloud auth list
+          gcloud config get-value project
+          echo "✅ Autenticação verificada"
 
       - name: "🐳 Build and Deploy to Cloud Run"
         run: |
