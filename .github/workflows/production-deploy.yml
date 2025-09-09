@@ -238,6 +238,16 @@ jobs:
           BUILD_SIZE=$(du -sh .next | cut -f1)
           echo "📊 Tamanho do build: $BUILD_SIZE"
 
+      - name: "🔧 Configure Firebase Target for Production"
+        working-directory: apps/frontend-nextjs
+        run: |
+          echo "Configurando target Firebase para Produção..."
+          echo '${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}' > gcp-key.json
+          export GOOGLE_APPLICATION_CREDENTIALS="$(pwd)/gcp-key.json"
+          npx firebase-tools@latest use red-truck-468923-s4
+          npx firebase-tools@latest target:apply hosting prod red-truck-468923-s4
+          rm gcp-key.json
+
       - name: "🚀 Deploy to Production (Firebase)"
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
