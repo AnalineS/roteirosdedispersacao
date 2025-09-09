@@ -39,12 +39,11 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 COPY --chown=appuser:appuser requirements.txt .
 
 # Instalar todas as dependências com timeout estendido e limpeza agressiva
-RUN --mount=type=tmpfs,target=/tmp \
-    pip install --no-cache-dir --upgrade pip setuptools wheel && \
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
     pip install --no-cache-dir --no-compile --timeout 1200 -r requirements.txt && \
     find /app -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true && \
     find /app -name "*.pyc" -delete && \
-    rm -rf ~/.cache/pip/* /tmp/*
+    rm -rf ~/.cache/pip/*
 
 # Copiar código da aplicação (excluindo arquivos desnecessários)
 COPY --chown=appuser:appuser . .

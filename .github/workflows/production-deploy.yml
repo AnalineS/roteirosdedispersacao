@@ -243,7 +243,7 @@ jobs:
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
-          projectId: ${{ secrets.GCP_PROJECT_ID }}
+          projectId: red-truck-468923-s4
           channelId: live
           target: prod
           entryPoint: apps/frontend-nextjs
@@ -296,7 +296,7 @@ jobs:
         run: |
           echo "🔨 Building production backend image..."
           cd apps/backend
-          gcloud builds submit --tag gcr.io/${{ env.PROJECT_ID }}/${{ env.BACKEND_SERVICE }}:${{ github.sha }} .
+          gcloud builds submit --tag gcr.io/red-truck-468923-s4/${{ env.BACKEND_SERVICE }}:${{ github.sha }} .
 
       - name: "🔄 Blue-Green Deploy"
         run: |
@@ -304,7 +304,7 @@ jobs:
           
           # Deploy nova versão sem tráfego
           gcloud run deploy ${{ env.BACKEND_SERVICE }}-green \
-            --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/${{ env.BACKEND_SERVICE }}:${{ github.sha }} \
+            --image gcr.io/red-truck-468923-s4/${{ env.BACKEND_SERVICE }}:${{ github.sha }} \
             --platform managed \
             --region ${{ secrets.GCP_REGION }} \
             --no-traffic \

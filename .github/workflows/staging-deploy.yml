@@ -300,7 +300,7 @@ jobs:
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
-          projectId: ${{ secrets.GCP_PROJECT_ID }}
+          projectId: red-truck-468923-s4
           channelId: live
           target: ${{ env.FRONTEND_SITE }}
           entryPoint: apps/frontend-nextjs
@@ -362,19 +362,19 @@ jobs:
         working-directory: apps/backend
         run: |
           echo "🔨 Building backend for staging..."
-          gcloud builds submit --tag gcr.io/${{ secrets.GCP_PROJECT_ID }}/${{ env.BACKEND_SERVICE }} \
+          gcloud builds submit --tag gcr.io/red-truck-468923-s4/${{ env.BACKEND_SERVICE }} \
             --timeout=1200s .
           
           echo "🚀 Deploying to Cloud Run..."
           gcloud run deploy ${{ env.BACKEND_SERVICE }} \
-            --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/${{ env.BACKEND_SERVICE }} \
+            --image gcr.io/red-truck-468923-s4/${{ env.BACKEND_SERVICE }} \
             --platform managed \
             --region ${{ secrets.GCP_REGION }} \
             --allow-unauthenticated \
             --timeout=900 \
             --memory=1Gi \
             --cpu=1 \
-            --set-env-vars "ENVIRONMENT=staging,LGPD_MODE=strict,PROJECT_ID=${{ secrets.GCP_PROJECT_ID }}" \
+            --set-env-vars "ENVIRONMENT=staging,LGPD_MODE=strict,PROJECT_ID=red-truck-468923-s4" \
             --max-instances=10 \
             --min-instances=1
 
