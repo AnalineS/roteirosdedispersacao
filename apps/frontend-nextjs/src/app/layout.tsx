@@ -126,21 +126,21 @@ export default function RootLayout({
           <FeedbackProvider>
             <main id="main-content">
               <IntegratedTrackingProvider>
-                <GlobalContextProvider>
-                  <WCAGComplianceProvider>
-                    <PersonaProvider>
-                      <PersonaAccessibilityProvider>
-                      <GlobalNavigationProvider>
-                        <AuthProviderWrapper>
+                <WCAGComplianceProvider>
+                  <PersonaProvider>
+                    <PersonaAccessibilityProvider>
+                    <GlobalNavigationProvider>
+                      <AuthProviderWrapper>
+                        <GlobalContextProvider>
                           <AnalyticsProvider>
                             {children}
                           </AnalyticsProvider>
-                        </AuthProviderWrapper>
-                      </GlobalNavigationProvider>
-                      </PersonaAccessibilityProvider>
-                    </PersonaProvider>
-                  </WCAGComplianceProvider>
-                </GlobalContextProvider>
+                        </GlobalContextProvider>
+                      </AuthProviderWrapper>
+                    </GlobalNavigationProvider>
+                    </PersonaAccessibilityProvider>
+                  </PersonaProvider>
+                </WCAGComplianceProvider>
             </IntegratedTrackingProvider>
 
             {/* Numeric Navigation System - PR #172 */}

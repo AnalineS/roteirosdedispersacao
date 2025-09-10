@@ -357,12 +357,18 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({
     ...initialData
   });
 
-  // Integration with tracking
-  const tracking = useTrackingContext();
+  // Integration with tracking (optional)
+  let tracking = null;
+  try {
+    tracking = useTrackingContext();
+  } catch (error) {
+    // Tracking context not available yet, will sync later
+    console.log('Tracking context not available, continuing without it');
+  }
 
-  // Sync with tracking context
+  // Sync with tracking context when available
   useEffect(() => {
-    if (tracking.isInitialized) {
+    if (tracking?.isInitialized) {
       dispatch({
         type: 'SET_USER',
         payload: {
@@ -371,7 +377,7 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({
         }
       });
     }
-  }, [tracking.isInitialized, tracking.userId, tracking.sessionId]);
+  }, [tracking?.isInitialized, tracking?.userId, tracking?.sessionId]);
 
   // Online status monitoring
   useEffect(() => {

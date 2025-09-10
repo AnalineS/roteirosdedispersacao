@@ -9,7 +9,7 @@ import React, {
   useContext,
   createContext
 } from 'react';
-import { useGlobalContext } from '@/contexts/GlobalContextHub';
+// import { useGlobalContext } from '@/contexts/GlobalContextHub'; // Removed to avoid circular dependency
 import { useSimpleTrack } from '@/components/tracking/IntegratedTrackingProvider';
 
 // ============================================
@@ -112,7 +112,7 @@ export const WCAGComplianceProvider: React.FC<WCAGProviderProps> = ({
     navigationMode: 'mouse'
   });
 
-  const globalContext = useGlobalContext();
+  // const globalContext = useGlobalContext(); // Removed to avoid circular dependency
   const tracking = useSimpleTrack();
   const announceRef = useRef<HTMLDivElement>(null);
 
