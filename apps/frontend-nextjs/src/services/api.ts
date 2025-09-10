@@ -8,44 +8,48 @@ import { useErrorHandler } from '@/hooks/useErrorHandler';
 
 // Configuração simplificada de API URL
 const getApiUrl = (): string => {
-  // PRIORIDADE 1: Variável de ambiente
+  // PRIORIDADE 1: Variável de ambiente explícita
   const envUrl = process.env.NEXT_PUBLIC_API_URL;
   if (envUrl && envUrl.trim() !== '') {
     console.log(`[API] Usando URL do ambiente: ${envUrl}`);
     return envUrl.trim();
   }
   
-  // PRIORIDADE 2: Detectar ambiente
+  // PRIORIDADE 2: URLs específicas por ambiente via variáveis
+  const hmlApiUrl = process.env.NEXT_PUBLIC_HML_API_URL || 'https://hml-roteiro-dispensacao-api-4f2gjf6cua-uc.a.run.app';
+  const prodApiUrl = process.env.NEXT_PUBLIC_PROD_API_URL || 'https://roteiro-dispensacao-api-4f2gjf6cua-uc.a.run.app';
+  const devApiUrl = process.env.NEXT_PUBLIC_DEV_API_URL || 'http://localhost:8080';
+  
+  // PRIORIDADE 3: Detectar ambiente baseado no hostname
   if (typeof window !== 'undefined') {
     const hostname = window.location.hostname;
     
     // Desenvolvimento local
     if (hostname === 'localhost' || hostname === '127.0.0.1') {
       console.log('[API] Ambiente local detectado');
-      return 'http://localhost:8080';
+      return devApiUrl;
     }
     
     // Homologação
     if (hostname.includes('hml-roteiros-de-dispensacao.web.app')) {
       console.log('[API] Ambiente de homologação detectado');
-      return 'https://hml-roteiro-dispensacao-api-4f2gjf6cua-uc.a.run.app';
+      return hmlApiUrl;
     }
     
     // Produção
     if (hostname.includes('roteirosdispensacao.com') || hostname.includes('roteiros-de-dispensacao.web.app')) {
       console.log('[API] Produção detectada, usando Cloud Run');
-      // Primeiro, tentar reativar o serviço de produção
-      return 'https://roteiro-dispensacao-api-4f2gjf6cua-uc.a.run.app';
+      return prodApiUrl;
     }
     
     console.log('[API] Hostname não reconhecido, usando homologação como fallback');
     // Fallback para homologação se hostname não for reconhecido
-    return 'https://hml-roteiro-dispensacao-api-4f2gjf6cua-uc.a.run.app';
+    return hmlApiUrl;
   }
   
-  // PRIORIDADE 3: Fallback para desenvolvimento  
-  console.log('[API] Fallback para desenvolvimento');
-  return 'http://localhost:8080';
+  // PRIORIDADE 4: Fallback para desenvolvimento (SSR)
+  console.log('[API] Fallback para desenvolvimento (SSR)');
+  return devApiUrl;
 };
 
 const API_BASE_URL = getApiUrl();
