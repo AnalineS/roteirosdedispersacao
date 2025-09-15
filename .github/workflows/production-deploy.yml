@@ -63,7 +63,7 @@ jobs:
           fetch-depth: 0
 
       - name: "🚫 Block Non-Main Branch Execution"
-        if: github.ref_name != 'main'
+        if: ${{ github.ref_name != 'main' }}
         run: |
           echo "❌ BLOQUEIO: Este workflow só deve executar na branch 'main'"
           echo "Branch atual: ${{ github.ref_name }}"

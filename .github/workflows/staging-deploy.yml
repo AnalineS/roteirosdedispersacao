@@ -59,7 +59,7 @@ jobs:
           fetch-depth: 0
 
       - name: "🚫 Block Non-HML Branch Execution"
-        if: github.ref_name != 'hml'
+        if: ${{ github.ref_name != 'hml' }}
         run: |
           echo "❌ BLOQUEIO: Este workflow só deve executar na branch 'hml'"
           echo "Branch atual: ${{ github.ref_name }}"
