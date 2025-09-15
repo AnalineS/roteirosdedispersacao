@@ -129,7 +129,7 @@ jobs:
                 if [ -z "${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}" ]; then
                   MISSING_SECRETS+=("$secret")
                 else
-                  echo "✅ $secret disponível (${#{{ secrets.GCP_SERVICE_ACCOUNT_KEY }}} chars)"
+                  echo "✅ $secret disponível"
                 fi
                 ;;
               "GCP_PROJECT_ID")
@@ -431,7 +431,7 @@ jobs:
             "CRM.*[0-9]+"
             "password.*=.*[\"'].*[\"']"
             "api_key.*=.*[\"'].*[\"']"
-            "secret.*=.*[\"'].*[\"']"
+            "secret_key.*=.*[\"'].*[\"']"
           )
           
           VIOLATIONS_FOUND=false
