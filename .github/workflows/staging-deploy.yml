@@ -6,7 +6,7 @@ on:
     paths:
       - 'apps/**'
       - 'package*.json'
-      - '.github/workflows/**'
+      - '.github/workflows/staging-deploy.yml'
       - '.claude/**'
       - '!**/*.md'
       - '!docs/**'
