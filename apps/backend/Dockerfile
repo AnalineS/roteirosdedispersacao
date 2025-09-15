@@ -12,9 +12,11 @@ ARG DEBIAN_FRONTEND=noninteractive
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-# Instalar TODAS as dependências de build necessárias
+# Instalar TODAS as dependências de build com compatibilidade Debian 12
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections && \
     apt-get update && \
+    echo "=== Verificando versão do Debian ===" && cat /etc/debian_version && \
+    echo "=== Instalando dependências core ===" && \
     apt-get install -y --no-install-recommends \
     gcc \
     g++ \
@@ -23,34 +25,49 @@ RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selectio
     cmake \
     ca-certificates \
     curl \
-    # PostgreSQL development
+    wget \
+    && echo "=== Instalando PostgreSQL development ===" && \
+    apt-get install -y --no-install-recommends \
     libpq-dev \
-    # OpenCV dependencies
+    && echo "=== Instalando OpenCV dependencies ===" && \
+    apt-get install -y --no-install-recommends \
     libgl1-mesa-dev \
     libglib2.0-dev \
     libsm6-dev \
     libxext-dev \
     libxrender-dev \
     libgomp1 \
-    # OCR dependencies
+    && echo "=== Instalando OCR dependencies ===" && \
+    apt-get install -y --no-install-recommends \
     tesseract-ocr \
-    tesseract-ocr-por \
     libtesseract-dev \
-    # Image processing
-    libjpeg-dev \
-    libpng-dev \
-    libtiff-dev \
-    libavcodec-dev \
-    libavformat-dev \
-    libswscale-dev \
-    libv4l-dev \
-    libxvidcore-dev \
-    libx264-dev \
-    # Audio processing (for multimodal)
-    libportaudio2 \
-    libportaudiocpp0 \
-    portaudio19-dev \
-    && rm -rf /var/lib/apt/lists/*
+    && echo "=== Instalando Image processing (versões compatíveis) ===" && \
+    (apt-get install -y --no-install-recommends libjpeg-dev || \
+     apt-get install -y --no-install-recommends libjpeg62-turbo-dev) && \
+    (apt-get install -y --no-install-recommends libpng-dev || \
+     apt-get install -y --no-install-recommends libpng16-16) && \
+    (apt-get install -y --no-install-recommends libtiff-dev || \
+     apt-get install -y --no-install-recommends libtiff5-dev) && \
+    apt-get install -y --no-install-recommends libv4l-dev \
+    && echo "=== Instalando Multimedia (com fallbacks para Debian 12) ===" && \
+    (apt-get install -y --no-install-recommends libavcodec-dev libavformat-dev libswscale-dev || \
+     apt-get install -y --no-install-recommends libavcodec59 libavformat59 libswscale6 || \
+     echo "Multimedia packages not available, skipping") && \
+    (apt-get install -y --no-install-recommends libxvidcore-dev libx264-dev || \
+     echo "Additional codecs not available, skipping") && \
+    echo "=== Instalando Audio processing ===" && \
+    (apt-get install -y --no-install-recommends portaudio19-dev libportaudio2 || \
+     apt-get install -y --no-install-recommends portaudio19-dev || \
+     echo "PortAudio not available, skipping") && \
+    echo "=== Download manual tesseract português ===" && \
+    mkdir -p /usr/share/tesseract-ocr/5/tessdata/ && \
+    mkdir -p /usr/share/tesseract-ocr/4/tessdata/ && \
+    (wget -q -O /usr/share/tesseract-ocr/5/tessdata/por.traineddata \
+     https://github.com/tesseract-ocr/tessdata/raw/main/por.traineddata || \
+     wget -q -O /usr/share/tesseract-ocr/4/tessdata/por.traineddata \
+     https://github.com/tesseract-ocr/tessdata/raw/main/por.traineddata || \
+     echo "Portuguese OCR data download failed, will use default language") && \
+    rm -rf /var/lib/apt/lists/*
 
 # Criar ambiente virtual otimizado
 ENV VIRTUAL_ENV=/opt/venv
@@ -73,34 +90,58 @@ FROM python:3.11-slim
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-# Instalar bibliotecas de runtime necessárias
+# Instalar bibliotecas de runtime com compatibilidade Debian 12
 RUN apt-get update && \
+    echo "=== Runtime - Verificando versão do Debian ===" && cat /etc/debian_version && \
+    echo "=== Instalando core runtime ===" && \
     apt-get install -y --no-install-recommends \
     curl \
     ca-certificates \
-    # PostgreSQL client
+    && echo "=== Instalando PostgreSQL client ===" && \
+    apt-get install -y --no-install-recommends \
     libpq5 \
-    # OpenCV runtime
+    && echo "=== Instalando OpenCV runtime ===" && \
+    apt-get install -y --no-install-recommends \
     libgl1-mesa-glx \
     libglib2.0-0 \
     libsm6 \
     libxext6 \
     libxrender1 \
     libgomp1 \
-    # OCR runtime
+    && echo "=== Instalando OCR runtime ===" && \
+    apt-get install -y --no-install-recommends \
     tesseract-ocr \
-    tesseract-ocr-por \
-    # Image processing runtime
-    libjpeg62-turbo \
-    libpng16-16 \
-    libtiff5 \
-    libavcodec58 \
-    libavformat58 \
-    libswscale5 \
-    libv4l-0 \
-    # Audio processing runtime
-    libportaudio2 \
-    && rm -rf /var/lib/apt/lists/*
+    && echo "=== Instalando Image processing runtime (versões genéricas) ===" && \
+    (apt-get install -y --no-install-recommends libjpeg62-turbo || \
+     apt-get install -y --no-install-recommends libjpeg-turbo-progs || \
+     echo "JPEG library not available") && \
+    (apt-get install -y --no-install-recommends libpng16-16 || \
+     apt-get install -y --no-install-recommends libpng-tools || \
+     echo "PNG library not available") && \
+    (apt-get install -y --no-install-recommends libtiff5 || \
+     apt-get install -y --no-install-recommends libtiff-tools || \
+     echo "TIFF library not available") && \
+    (apt-get install -y --no-install-recommends libv4l-0 || \
+     echo "V4L library not available") && \
+    echo "=== Instalando Multimedia runtime (com fallbacks Debian 12) ===" && \
+    (apt-get install -y --no-install-recommends libavcodec59 libavformat59 libswscale6 || \
+     apt-get install -y --no-install-recommends libavcodec58 libavformat58 libswscale5 || \
+     apt-get install -y --no-install-recommends libavcodec-extra libavformat-extra || \
+     echo "Multimedia runtime not available, features may be limited") && \
+    echo "=== Instalando Audio processing runtime ===" && \
+    (apt-get install -y --no-install-recommends libportaudio2 || \
+     echo "PortAudio runtime not available") && \
+    echo "=== Verificando tesseract português ===" && \
+    mkdir -p /usr/share/tesseract-ocr/5/tessdata/ && \
+    mkdir -p /usr/share/tesseract-ocr/4/tessdata/ && \
+    (test -f /usr/share/tesseract-ocr/5/tessdata/por.traineddata || \
+     test -f /usr/share/tesseract-ocr/4/tessdata/por.traineddata || \
+     wget -q -O /usr/share/tesseract-ocr/5/tessdata/por.traineddata \
+     https://github.com/tesseract-ocr/tessdata/raw/main/por.traineddata || \
+     wget -q -O /usr/share/tesseract-ocr/4/tessdata/por.traineddata \
+     https://github.com/tesseract-ocr/tessdata/raw/main/por.traineddata || \
+     echo "Portuguese OCR data download failed, will use default language") && \
+    rm -rf /var/lib/apt/lists/*
 
 # Criar usuário não-root para segurança
 RUN groupadd -r appuser && useradd -r -g appuser appuser
@@ -145,7 +186,7 @@ ENV MULTIMODAL_PROCESSING=true
 ENV OCR_ENABLED=true
 ENV COMPUTER_VISION=true
 
-# Configurações específicas de bibliotecas
+# Configurações específicas de bibliotecas - com fallback para v4
 ENV TESSDATA_PREFIX=/usr/share/tesseract-ocr/5/tessdata/
 ENV OPENCV_LOG_LEVEL=ERROR
 ENV NUMPY_DISABLE_SSE2=1

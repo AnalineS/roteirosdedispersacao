@@ -2,7 +2,7 @@
   "hosting": [
     {
       "target": "hml",
-      "public": ".next/standalone/apps/frontend-nextjs",
+      "public": ".next/standalone",
       "ignore": [
         "firebase.json",
         "**/.*",
@@ -106,7 +106,7 @@
     },
     {
       "target": "prod",
-      "public": ".next/standalone/apps/frontend-nextjs",
+      "public": ".next/standalone",
       "ignore": [
         "firebase.json",
         "**/.*",
