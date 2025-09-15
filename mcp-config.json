@@ -1,0 +1,183 @@
+{
+  "$schema": "https://schema.modelcontextprotocol.io/v1/server-config.json",
+  "mcpServers": {
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp@latest"],
+      "env": {
+        "CONTEXT7_API_KEY": "${CONTEXT7_API_KEY}",
+        "NODE_ENV": "${NODE_ENV:-development}",
+        "MCP_ENVIRONMENT": "${MCP_ENVIRONMENT:-dev}",
+        "CACHE_TTL": "${CONTEXT7_CACHE_TTL:-3600}",
+        "HEALTH_CHECK_ENABLED": "true"
+      },
+      "description": "Context7 MCP Server for up-to-date documentation",
+      "endpoints": {
+        "dev": {
+          "host": "127.0.0.1",
+          "port": 7001,
+          "bind": "local"
+        },
+        "hml": {
+          "execution": "ci-only",
+          "runner": "github-actions",
+          "network": "controlled"
+        },
+        "main": {
+          "execution": "ci-only", 
+          "runner": "github-actions",
+          "network": "controlled"
+        }
+      },
+      "documentation_sources": [
+        "mdn",
+        "react",
+        "nodejs", 
+        "fastapi",
+        "supabase",
+        "postgres",
+        "python"
+      ],
+      "security": {
+        "require_auth": true,
+        "api_key_required": true,
+        "rate_limiting": true,
+        "audit_logs": true
+      }
+    },
+    "testmaster": {
+      "command": "node",
+      "args": ["scripts/mcp/testmaster-server.js"],
+      "env": {
+        "TESTMASTER_API_KEY": "${TESTMASTER_API_KEY}",
+        "NODE_ENV": "${NODE_ENV:-development}",
+        "TEST_CONCURRENCY": "${TEST_CONCURRENCY:-4}",
+        "TEST_TIMEOUT": "${TEST_TIMEOUT:-60000}",
+        "INTEGRATION_ENABLED": "true"
+      },
+      "description": "Custom Test Master AI MCP Server for pipeline integration",
+      "endpoints": {
+        "dev": {
+          "host": "127.0.0.1",
+          "port": 7002,
+          "bind": "local"
+        },
+        "hml": {
+          "execution": "ci-only",
+          "runner": "github-actions",
+          "network": "controlled"
+        },
+        "main": {
+          "execution": "ci-only",
+          "runner": "github-actions", 
+          "network": "controlled"
+        }
+      },
+      "test_directories": {
+        "frontend": "apps/frontend-nextjs/src",
+        "backend": "apps/backend"
+      },
+      "test_commands": {
+        "frontend": ["npm run test", "npm run type-check", "npm run lint"],
+        "backend": ["python -m pytest", "flake8", "mypy"]
+      },
+      "security": {
+        "require_auth": true,
+        "api_key_required": true,
+        "execution_limits": true,
+        "audit_logs": true
+      }
+    },
+    "postgres": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-postgres"],
+      "env": {
+        "POSTGRES_URL_MCP": "${POSTGRES_URL_MCP}",
+        "POSTGRES_SSL": "${POSTGRES_SSL:-true}",
+        "POSTGRES_CA_CERT": "${POSTGRES_CA_CERT}",
+        "NODE_ENV": "${NODE_ENV:-development}",
+        "MCP_POSTGRES_READ_ONLY": "${MCP_POSTGRES_READ_ONLY:-false}"
+      },
+      "description": "PostgreSQL MCP Server with environment-specific permissions",
+      "endpoints": {
+        "dev": {
+          "host": "127.0.0.1", 
+          "port": 7003,
+          "bind": "local",
+          "permissions": "read-write"
+        },
+        "hml": {
+          "execution": "ci-only",
+          "runner": "github-actions",
+          "network": "controlled",
+          "permissions": "read-write"
+        },
+        "main": {
+          "execution": "ci-only",
+          "runner": "github-actions",
+          "network": "controlled", 
+          "permissions": "read-only"
+        }
+      },
+      "database_config": {
+        "roles": {
+          "dev": "mcp_user_dev",
+          "hml": "mcp_user_hml", 
+          "main": "mcp_user_prod"
+        },
+        "allowed_schemas": ["public", "medical", "logs"],
+        "allowed_tables": {
+          "main": ["users", "sessions", "audit_logs"],
+          "hml": ["users", "sessions", "audit_logs", "test_data"],
+          "dev": "*"
+        }
+      },
+      "security": {
+        "require_auth": true,
+        "ssl_required": true,
+        "connection_limits": true,
+        "audit_logs": true
+      }
+    }
+  },
+  "global_config": {
+    "timeout": 30000,
+    "max_concurrent_connections": 10,
+    "health_check_interval": 60000,
+    "log_level": "info",
+    "audit": {
+      "enabled": true,
+      "log_access": true,
+      "exclude_pii": true,
+      "retention_days": 30
+    },
+    "security": {
+      "require_https": true,
+      "validate_certificates": true,
+      "rate_limiting": {
+        "requests_per_minute": 100,
+        "burst_limit": 20
+      }
+    }
+  },
+  "environments": {
+    "dev": {
+      "bind_address": "127.0.0.1",
+      "public_access": false,
+      "debug_mode": true,
+      "audit_level": "basic"
+    },
+    "hml": {
+      "execution_mode": "ci-only",
+      "public_access": false,
+      "debug_mode": false,
+      "audit_level": "standard"
+    },
+    "main": {
+      "execution_mode": "ci-only",
+      "public_access": false,
+      "debug_mode": false,
+      "audit_level": "strict"
+    }
+  }
+}

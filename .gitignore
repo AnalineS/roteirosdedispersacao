@@ -223,6 +223,41 @@ INTERNAL_*
 /docs/private/
 
 # ==========================================
+# COMPLIANCE E LGPD - DADOS SENSÍVEIS
+# ==========================================
+
+# Relatórios de compliance que podem conter dados pessoais
+.claude/automation/reports/
+**/lgpd-compliance-*.json
+**/quality-blocker-*.json
+**/compliance-*.json
+**/privacy-scan-*.json
+**/data-leak-*.json
+
+# Arquivos de análise que podem expor informações sensíveis
+**/patient-data-*.json
+**/medical-records-*.json
+**/personal-info-*.json
+
+# Arquivos de backup e configuração que podem conter dados sensíveis
+backup/
+archive/
+.env.template
+build-with-secrets.sh
+DEPLOYMENT_GUIDE.md
+MONITORING_SETUP.md
+PR_*_IMPLEMENTATION_SUMMARY.md
+pr_*_comment.md
+
+# Arquivos de configuração e documentação com exemplos sensíveis
+.claude/subagents/
+.github/workflows/
+docs/mcp-*.md
+scripts/gh/
+scripts/health/
+scripts/mcp/
+
+# ==========================================
 # ASSETS GRANDES
 # ==========================================
 

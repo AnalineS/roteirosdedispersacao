@@ -17,6 +17,13 @@ try:
     ADVANCED_CACHE_AVAILABLE = True
 except ImportError:
     ADVANCED_CACHE_AVAILABLE = False
+
+# Import unified cache system
+try:
+    from services.cache.unified_cache_manager import get_unified_cache
+    UNIFIED_CACHE_AVAILABLE = True
+except ImportError:
+    UNIFIED_CACHE_AVAILABLE = False
     
 try:
     from services.simple_rag import generate_context_from_rag
@@ -77,12 +84,23 @@ class DependencyInjector:
         deps.config = config
         deps.logger = logger
         
-        # Cache Service
-        if ADVANCED_CACHE_AVAILABLE and config.ADVANCED_CACHE:
+        # Cache Service - Unified Cache Manager
+        if UNIFIED_CACHE_AVAILABLE and getattr(config, 'UNIFIED_CACHE_ENABLED', True):
+            try:
+                deps.cache = get_unified_cache()
+                if deps.cache:
+                    logger.info("[OK] Cache unificado inicializado")
+                else:
+                    logger.warning("[WARNING] Cache unificado não disponível, usando fallback")
+                    deps.cache = self._create_fallback_cache()
+            except Exception as e:
+                logger.error(f"[ERROR] Erro ao inicializar cache unificado: {e}")
+                deps.cache = self._create_fallback_cache()
+        elif ADVANCED_CACHE_AVAILABLE and config.ADVANCED_CACHE:
             try:
                 deps.cache = PerformanceCache(
-                    max_size=config.CACHE_MAX_SIZE,
-                    ttl_minutes=config.CACHE_TTL_MINUTES
+                    max_size=getattr(config, 'CACHE_MAX_SIZE', 2000),
+                    ttl_minutes=getattr(config, 'CACHE_TTL_MINUTES', 120)
                 )
                 logger.info("[OK] Cache avançado inicializado")
             except Exception as e:

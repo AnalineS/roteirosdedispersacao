@@ -49,6 +49,13 @@ class AppConfig:
     OPENAI_TEST_AVAILABLE: bool = os.getenv('OPENAI_TEST_AVAILABLE', 'false').lower() == 'true'
     ADVANCED_CACHE: bool = os.getenv('ADVANCED_CACHE', 'false').lower() == 'true'
     
+    # Unified Cache Config - Sistema Integrado
+    UNIFIED_CACHE_ENABLED: bool = os.getenv('UNIFIED_CACHE_ENABLED', 'true').lower() == 'true'
+    MEMORY_CACHE_SIZE: int = int(os.getenv('MEMORY_CACHE_SIZE', 2000))
+    MEMORY_CACHE_TTL: int = int(os.getenv('MEMORY_CACHE_TTL', 120))
+    CLOUD_CACHE_ENABLED: bool = os.getenv('CLOUD_CACHE_ENABLED', 'true').lower() == 'true'
+    API_CACHE_ENABLED: bool = os.getenv('API_CACHE_ENABLED', 'true').lower() == 'true'
+    
     # Embeddings Config - Configuração unificada para ML features + sentence-transformers v5.1+
     EMBEDDING_MODEL: str = os.getenv('EMBEDDING_MODEL', 'sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2')
     EMBEDDING_DEVICE: str = os.getenv('EMBEDDING_DEVICE', 'cpu')  # cpu/cuda

@@ -41,6 +41,8 @@
     "analyze:bundle": "ANALYZE=true npm run build",
     "audit:security": "npm audit --audit-level moderate",
     "audit:licenses": "license-checker --summary",
+    "audit:supply-chain": "node security_audit_script.js",
+    "security:check": "npm run audit:security && npm run audit:supply-chain",
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
     "pre-commit": "lint-staged",

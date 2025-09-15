@@ -9,6 +9,7 @@ from .personas_blueprint import personas_bp
 from .feedback_blueprint import feedback_bp
 from .health_blueprint import health_bp
 from .monitoring_blueprint import monitoring_bp
+from .ux_tracking_blueprint import ux_tracking_bp
 from .metrics_blueprint import metrics_bp
 from .docs_blueprint import docs_bp
 from .analytics_blueprint import analytics_bp
@@ -16,6 +17,7 @@ from .predictions_blueprint import predictions_bp
 from .multimodal_blueprint import multimodal_bp
 from .observability import observability_bp
 from .notifications_blueprint import notifications_bp
+from .validation_blueprint import validation_bp
 
 # Import blueprints obrigatórios
 from .cache_blueprint import cache_blueprint
@@ -29,6 +31,7 @@ ALL_BLUEPRINTS = [
     feedback_bp,
     health_bp,
     monitoring_bp,
+    ux_tracking_bp,  # UX Monitoring integration
     metrics_bp,
     docs_bp,
     analytics_bp,
@@ -36,6 +39,7 @@ ALL_BLUEPRINTS = [
     multimodal_bp,
     observability_bp,
     notifications_bp,  # PR #175 - Social features
+    validation_bp,  # Educational validation system
     cache_blueprint,
     user_bp,
     swagger_ui_blueprint
@@ -47,6 +51,7 @@ __all__ = [
     'feedback_bp',
     'health_bp',
     'monitoring_bp',
+    'ux_tracking_bp',  # UX Monitoring
     'metrics_bp',
     'docs_bp',
     'analytics_bp',
@@ -54,6 +59,7 @@ __all__ = [
     'multimodal_bp',
     'observability_bp',
     'notifications_bp',  # PR #175
+    'validation_bp',  # Educational validation
     'cache_blueprint',
     'user_bp',
     'swagger_ui_blueprint',

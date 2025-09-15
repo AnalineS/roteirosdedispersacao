@@ -170,6 +170,8 @@ export default [
       '.vercel/**',
       '*.config.js',
       '*.config.mjs',
+      'next.config.js',
+      'eslint.config.mjs',
       'scripts/**',
     ],
   },

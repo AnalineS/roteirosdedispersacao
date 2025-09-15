@@ -12,6 +12,20 @@
       "trailingSlash": false,
       "rewrites": [
         {
+          "source": "/api/**",
+          "run": {
+            "serviceId": "hml-roteiro-dispensacao-api",
+            "region": "us-central1"
+          }
+        },
+        {
+          "source": "/",
+          "run": {
+            "serviceId": "hml-roteiro-dispensacao-frontend",
+            "region": "us-central1"
+          }
+        },
+        {
           "source": "**",
           "destination": "/index.html"
         }
@@ -108,6 +122,20 @@
       "cleanUrls": true,
       "trailingSlash": false,
       "rewrites": [
+        {
+          "source": "/api/**",
+          "run": {
+            "serviceId": "roteiro-dispensacao-api",
+            "region": "us-central1"
+          }
+        },
+        {
+          "source": "/",
+          "run": {
+            "serviceId": "roteiro-dispensacao-frontend",
+            "region": "us-central1"
+          }
+        },
         {
           "source": "**",
           "destination": "/index.html"

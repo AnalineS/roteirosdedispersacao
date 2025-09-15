@@ -1,28 +1,33 @@
-'use client';
+"use client";
 
-import EducationalLayout from '@/components/layout/EducationalLayout';
-import Link from 'next/link';
-import { IndexIndicator } from '@/components/ui/IndexIndicator';
+import EducationalLayout from "@/components/layout/EducationalLayout";
+import Link from "next/link";
+import { IndexIndicator } from "@/components/ui/IndexIndicator";
+
+// Force dynamic rendering
+export const dynamic = "force-dynamic";
 
 export default function RoteiroDispensacaoModulePage() {
   const moduleContent = {
-    title: 'Roteiro de Dispensação Farmacêutica',
-    subtitle: 'Protocolo técnico-científico para dispensação segura de PQT-U',
-    duration: '35 minutos',
-    level: 'Técnico-científico',
-    category: 'Farmácia Clínica',
-    description: 'Módulo especializado para farmacêuticos clínicos sobre dispensação farmacêutica de PQT-U. Baseado na tese de doutorado e protocolos do Ministério da Saúde.',
-    targetAudience: 'Farmacêuticos clínicos, residentes em farmácia hospitalar e estudantes de farmácia',
+    title: "Roteiro de Dispensação Farmacêutica",
+    subtitle: "Protocolo técnico-científico para dispensação segura de PQT-U",
+    duration: "35 minutos",
+    level: "Técnico-científico",
+    category: "Farmácia Clínica",
+    description:
+      "Módulo especializado para farmacêuticos clínicos sobre dispensação farmacêutica de PQT-U. Baseado na tese de doutorado e protocolos do Ministério da Saúde.",
+    targetAudience:
+      "Farmacêuticos clínicos, residentes em farmácia hospitalar e estudantes de farmácia",
     references: [
-      'Roteiro de Dispensação - Hanseníase.pdf (Tese de Doutorado)',
-      'Brasil. Ministério da Saúde. Protocolo Clínico e Diretrizes Terapêuticas da Hanseníase (2022)',
-      'Conselho Federal de Farmácia. Serviços farmacêuticos diretamente destinados ao paciente (2016)'
+      "Roteiro de Dispensação - Hanseníase.pdf (Tese de Doutorado)",
+      "Brasil. Ministério da Saúde. Protocolo Clínico e Diretrizes Terapêuticas da Hanseníase (2022)",
+      "Conselho Federal de Farmácia. Serviços farmacêuticos diretamente destinados ao paciente (2016)",
     ],
-    
+
     sections: [
       {
-        id: 'fundamentos-dispensacao',
-        title: '🎯 Fundamentos da Dispensação de PQT-U',
+        id: "fundamentos-dispensacao",
+        title: "🎯 Fundamentos da Dispensação de PQT-U",
         content: `
           **CONCEITUAÇÃO TÉCNICA:**
           
@@ -81,22 +86,22 @@ export default function RoteiroDispensacaoModulePage() {
           **💼 Caso Clínico 2:** Durante dispensação, paciente relata "manchas ficando mais escuras". **Avaliação farmacêutica:** Hiperpigmentação por clofazimina (normal). **Intervenção:** Orientação sobre reversibilidade, suporte psicológico, manutenção da adesão.
         `,
         keyPoints: [
-          'Dispensação de PQT-U é ato privativo do farmacêutico com responsabilidade técnica integral',
-          'Dose mensal supervisionada é obrigatória - nunca dispensar para casa',
-          'Medicamento do Componente Estratégico - fornecimento gratuito pelo SUS',
-          'Documentação rigorosa obrigatória: SINAN, cartão controle, evolução farmacológica'
+          "Dispensação de PQT-U é ato privativo do farmacêutico com responsabilidade técnica integral",
+          "Dose mensal supervisionada é obrigatória - nunca dispensar para casa",
+          "Medicamento do Componente Estratégico - fornecimento gratuito pelo SUS",
+          "Documentação rigorosa obrigatória: SINAN, cartão controle, evolução farmacológica",
         ],
         askAssistant: {
           suggestedQuestions: [
-            'Dr. Gasnelio, qual a diferença entre dispensação comum e dispensação supervisionada?',
-            'Como proceder quando a prescrição está incompleta ou ilegível?',
-            'Quais as responsabilidades legais do farmacêutico na dispensação de PQT-U?'
-          ]
-        }
+            "Dr. Gasnelio, qual a diferença entre dispensação comum e dispensação supervisionada?",
+            "Como proceder quando a prescrição está incompleta ou ilegível?",
+            "Quais as responsabilidades legais do farmacêutico na dispensação de PQT-U?",
+          ],
+        },
       },
       {
-        id: 'protocolo-dispensacao',
-        title: '📋 Protocolo Técnico de Dispensação',
+        id: "protocolo-dispensacao",
+        title: "📋 Protocolo Técnico de Dispensação",
         content: `
           **FLUXOGRAMA DE DISPENSAÇÃO FARMACÊUTICA:**
           
@@ -193,22 +198,22 @@ export default function RoteiroDispensacaoModulePage() {
           **💼 Caso Clínico 4:** Durante anamnese, paciente relata uso de warfarina 5mg/dia. **Identificação:** Interação grave (rifampicina induz metabolismo da warfarina). **Conduta:** Comunicação médica urgente para ajuste posológico e monitorização do INR.
         `,
         keyPoints: [
-          'Análise farmacêutica completa obrigatória antes de qualquer dispensação',
-          'Anamnese deve identificar medicamentos concomitantes e fatores de risco',
-          'Dose mensal supervisionada requer protocolo rigoroso de administração',
-          'Busca ativa de faltosos é obrigação legal do serviço de saúde'
+          "Análise farmacêutica completa obrigatória antes de qualquer dispensação",
+          "Anamnese deve identificar medicamentos concomitantes e fatores de risco",
+          "Dose mensal supervisionada requer protocolo rigoroso de administração",
+          "Busca ativa de faltosos é obrigação legal do serviço de saúde",
         ],
         askAssistant: {
           suggestedQuestions: [
-            'Dr. Gasnelio, como proceder quando identifico interação medicamentosa grave?',
-            'Qual o protocolo correto para busca ativa de pacientes faltosos?',
-            'Como diferenciar estado reacional de reação adversa na prática?'
-          ]
-        }
+            "Dr. Gasnelio, como proceder quando identifico interação medicamentosa grave?",
+            "Qual o protocolo correto para busca ativa de pacientes faltosos?",
+            "Como diferenciar estado reacional de reação adversa na prática?",
+          ],
+        },
       },
       {
-        id: 'documentacao-controle',
-        title: '📊 Documentação e Controle Farmacêutico',
+        id: "documentacao-controle",
+        title: "📊 Documentação e Controle Farmacêutico",
         content: `
           **SISTEMA DE DOCUMENTAÇÃO FARMACÊUTICA:**
           
@@ -326,22 +331,22 @@ export default function RoteiroDispensacaoModulePage() {
           **💼 Caso Clínico 6:** Paciente apresenta RAM grave (hepatotoxicidade) após 4ª dose. **Documentação:** Notificação NOTIVISA, comunicação médica imediata, registro detalhado na ficha. **Acompanhamento:** Suspensão da rifampicina, esquema alternativo, monitorização hepática.
         `,
         keyPoints: [
-          'Documentação completa é obrigação legal e instrumento de qualidade',
-          'Sistemas informatizados devem ser alimentados em tempo real',
-          'Indicadores farmacêuticos orientam melhorias na assistência',
-          'Comunicação multiprofissional é essencial para resultados clínicos'
+          "Documentação completa é obrigação legal e instrumento de qualidade",
+          "Sistemas informatizados devem ser alimentados em tempo real",
+          "Indicadores farmacêuticos orientam melhorias na assistência",
+          "Comunicação multiprofissional é essencial para resultados clínicos",
         ],
         askAssistant: {
           suggestedQuestions: [
-            'Dr. Gasnelio, quais documentos são obrigatórios na dispensação de PQT-U?',
-            'Como calcular e interpretar os indicadores de adesão?',
-            'Quando devo notificar uma reação adversa no NOTIVISA?'
-          ]
-        }
+            "Dr. Gasnelio, quais documentos são obrigatórios na dispensação de PQT-U?",
+            "Como calcular e interpretar os indicadores de adesão?",
+            "Quando devo notificar uma reação adversa no NOTIVISA?",
+          ],
+        },
       },
       {
-        id: 'educacao-orientacao',
-        title: '👥 Educação em Saúde e Orientação ao Paciente',
+        id: "educacao-orientacao",
+        title: "👥 Educação em Saúde e Orientação ao Paciente",
         content: `
           **ESTRATÉGIAS EDUCACIONAIS EM FARMÁCIA CLÍNICA:**
           
@@ -467,22 +472,22 @@ export default function RoteiroDispensacaoModulePage() {
           **💼 Caso Clínico 8:** Adolescente de 16 anos com hanseníase, constrangida pela hiperpigmentação. **Abordagem:** Educação específica sobre reversibilidade, apoio psicológico, grupo de jovens, estratégias cosméticas, empoderamento através de conhecimento científico.
         `,
         keyPoints: [
-          'Educação farmacêutica deve ser personalizada ao perfil do paciente',
-          'Material educativo visual e linguagem adequada são fundamentais',
-          'Abordagem de barreiras específicas (estigma, reações adversas) é essencial',
-          'Monitorização educacional orienta ajustes nas estratégias'
+          "Educação farmacêutica deve ser personalizada ao perfil do paciente",
+          "Material educativo visual e linguagem adequada são fundamentais",
+          "Abordagem de barreiras específicas (estigma, reações adversas) é essencial",
+          "Monitorização educacional orienta ajustes nas estratégias",
         ],
         askAssistant: {
           suggestedQuestions: [
-            'Dr. Gasnelio, como abordar paciente com baixo nível educacional?',
-            'Quais estratégias para lidar com o estigma da hanseníase?',
-            'Como educar sobre diferença entre estado reacional e reação adversa?'
-          ]
-        }
+            "Dr. Gasnelio, como abordar paciente com baixo nível educacional?",
+            "Quais estratégias para lidar com o estigma da hanseníase?",
+            "Como educar sobre diferença entre estado reacional e reação adversa?",
+          ],
+        },
       },
       {
-        id: 'tese-dispensacao-content',
-        title: '📖 Conteúdo da Tese: Roteiro Completo',
+        id: "tese-dispensacao-content",
+        title: "📖 Conteúdo da Tese: Roteiro Completo",
         content: `
           **Baseado na tese "Roteiro de Dispensação - Hanseníase.pdf"**
           
@@ -525,156 +530,189 @@ export default function RoteiroDispensacaoModulePage() {
           utilize o link de download abaixo.
         `,
         downloadSection: {
-          title: '📥 Download da Tese Completa',
-          description: 'Acesse o documento completo "Roteiro de Dispensação - Hanseníase.pdf" com protocolos detalhados, instrumentos validados e manual de implementação.',
-          fileSize: '988.5KB',
-          fileName: 'Roteiro de Dsispensação - Hanseníase.pdf'
+          title: "📥 Download da Tese Completa",
+          description:
+            'Acesse o documento completo "Roteiro de Dispensação - Hanseníase.pdf" com protocolos detalhados, instrumentos validados e manual de implementação.',
+          fileSize: "988.5KB",
+          fileName: "Roteiro de Dsispensação - Hanseníase.pdf",
         },
         keyPoints: [
-          'Protocolo cientificamente validado em estudo de doutorado',
-          'Melhoria comprovada em indicadores de qualidade assistencial',
-          'Instrumentos prontos para implementação em serviços de saúde',
-          'Base científica sólida para farmácia clínica em hanseníase'
-        ]
-      }
+          "Protocolo cientificamente validado em estudo de doutorado",
+          "Melhoria comprovada em indicadores de qualidade assistencial",
+          "Instrumentos prontos para implementação em serviços de saúde",
+          "Base científica sólida para farmácia clínica em hanseníase",
+        ],
+      },
     ],
-    
+
     quiz: [
       {
-        question: 'Segundo a legislação brasileira, qual é a característica obrigatória da dispensação da dose mensal de PQT-U?',
+        question:
+          "Segundo a legislação brasileira, qual é a característica obrigatória da dispensação da dose mensal de PQT-U?",
         options: [
-          'Deve ser dispensada mensalmente para uso domiciliar',
-          'Deve ser supervisionada e administrada na unidade de saúde',
-          'Pode ser dispensada para 2 meses se o paciente for aderente',
-          'Deve ser administrada apenas por médicos'
+          "Deve ser dispensada mensalmente para uso domiciliar",
+          "Deve ser supervisionada e administrada na unidade de saúde",
+          "Pode ser dispensada para 2 meses se o paciente for aderente",
+          "Deve ser administrada apenas por médicos",
         ],
         correct: 1,
-        explanation: 'A dose mensal de PQT-U deve ser SEMPRE supervisionada e administrada na unidade de saúde. Esta é uma exigência do PCDT e garante a adesão adequada ao tratamento.',
-        level: 'técnico'
+        explanation:
+          "A dose mensal de PQT-U deve ser SEMPRE supervisionada e administrada na unidade de saúde. Esta é uma exigência do PCDT e garante a adesão adequada ao tratamento.",
+        level: "técnico",
       },
       {
-        question: 'Durante a anamnese farmacêutica, um paciente relata uso de warfarina. Qual a principal preocupação com a PQT-U?',
+        question:
+          "Durante a anamnese farmacêutica, um paciente relata uso de warfarina. Qual a principal preocupação com a PQT-U?",
         options: [
-          'Aumento do risco de sangramento',
-          'Redução da eficácia da rifampicina',
-          'Indução do metabolismo da warfarina pela rifampicina',
-          'Potencialização da anticoagulação'
+          "Aumento do risco de sangramento",
+          "Redução da eficácia da rifampicina",
+          "Indução do metabolismo da warfarina pela rifampicina",
+          "Potencialização da anticoagulação",
         ],
         correct: 2,
-        explanation: 'A rifampicina é um potente indutor da CYP3A4, aumentando o metabolismo da warfarina e reduzindo sua eficácia anticoagulante. É necessário ajuste da dose e monitorização rigorosa do INR.',
-        level: 'avançado'
+        explanation:
+          "A rifampicina é um potente indutor da CYP3A4, aumentando o metabolismo da warfarina e reduzindo sua eficácia anticoagulante. É necessário ajuste da dose e monitorização rigorosa do INR.",
+        level: "avançado",
       },
       {
-        question: 'Qual o procedimento correto quando um paciente falta à dose mensal supervisionada?',
+        question:
+          "Qual o procedimento correto quando um paciente falta à dose mensal supervisionada?",
         options: [
-          'Aguardar o paciente retornar por conta própria',
-          'Dispensar a dose para casa na próxima visita',
-          'Iniciar busca ativa imediatamente (contato em 24h)',
-          'Considerar abandono após 1 mês de falta'
+          "Aguardar o paciente retornar por conta própria",
+          "Dispensar a dose para casa na próxima visita",
+          "Iniciar busca ativa imediatamente (contato em 24h)",
+          "Considerar abandono após 1 mês de falta",
         ],
         correct: 2,
-        explanation: 'A busca ativa deve ser iniciada imediatamente após a falta, com primeiro contato em até 24 horas. A continuidade do tratamento é fundamental para evitar resistência e garantir a cura.',
-        level: 'técnico'
+        explanation:
+          "A busca ativa deve ser iniciada imediatamente após a falta, com primeiro contato em até 24 horas. A continuidade do tratamento é fundamental para evitar resistência e garantir a cura.",
+        level: "técnico",
       },
       {
-        question: 'Na educação farmacêutica, como deve ser abordada a hiperpigmentação pela clofazimina?',
+        question:
+          "Na educação farmacêutica, como deve ser abordada a hiperpigmentação pela clofazimina?",
         options: [
-          'Como reação adversa grave que pode indicar toxicidade',
-          'Como efeito esperado e reversível em 6-12 meses',
-          'Recomendando suspensão temporária do medicamento',
-          'Sugerindo redução da dose para minimizar o efeito'
+          "Como reação adversa grave que pode indicar toxicidade",
+          "Como efeito esperado e reversível em 6-12 meses",
+          "Recomendando suspensão temporária do medicamento",
+          "Sugerindo redução da dose para minimizar o efeito",
         ],
         correct: 1,
-        explanation: 'A hiperpigmentação pela clofazimina é um efeito esperado que ocorre em 100% dos pacientes, sendo reversível em 6-12 meses após o término do tratamento. A educação adequada previne abandono desnecessário.',
-        level: 'técnico'
+        explanation:
+          "A hiperpigmentação pela clofazimina é um efeito esperado que ocorre em 100% dos pacientes, sendo reversível em 6-12 meses após o término do tratamento. A educação adequada previne abandono desnecessário.",
+        level: "técnico",
       },
       {
-        question: 'Quais são os documentos obrigatórios no protocolo de dispensação farmacêutica de PQT-U?',
+        question:
+          "Quais são os documentos obrigatórios no protocolo de dispensação farmacêutica de PQT-U?",
         options: [
-          'Apenas prescrição médica e cartão do paciente',
-          'Livro de dispensação, SINAN, cartão controle e ficha de acompanhamento',
-          'Somente registros no sistema informatizado',
-          'Prescrição médica e termo de responsabilidade'
+          "Apenas prescrição médica e cartão do paciente",
+          "Livro de dispensação, SINAN, cartão controle e ficha de acompanhamento",
+          "Somente registros no sistema informatizado",
+          "Prescrição médica e termo de responsabilidade",
         ],
         correct: 1,
-        explanation: 'A documentação completa inclui: livro de dispensação (obrigatório por lei), notificação SINAN (compulsória), cartão de controle do paciente e ficha de acompanhamento farmacoterapêutico.',
-        level: 'avançado'
-      }
-    ]
+        explanation:
+          "A documentação completa inclui: livro de dispensação (obrigatório por lei), notificação SINAN (compulsória), cartão de controle do paciente e ficha de acompanhamento farmacoterapêutico.",
+        level: "avançado",
+      },
+    ],
   };
 
   return (
     <EducationalLayout>
-      <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+      <div style={{ maxWidth: "900px", margin: "0 auto" }}>
         {/* Module Header */}
-        <div style={{
-          background: 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)',
-          color: 'white',
-          padding: '30px',
-          borderRadius: '12px',
-          marginBottom: '30px'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '15px' }}>
-            <span style={{ fontSize: '3rem' }}>⚕️</span>
+        <div
+          style={{
+            background: "linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)",
+            color: "white",
+            padding: "30px",
+            borderRadius: "12px",
+            marginBottom: "30px",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "15px",
+              marginBottom: "15px",
+            }}
+          >
+            <span style={{ fontSize: "3rem" }}>⚕️</span>
             <div>
-              <h1 style={{ margin: 0, fontSize: '2.2rem', fontWeight: 'bold' }}>
+              <h1 style={{ margin: 0, fontSize: "2.2rem", fontWeight: "bold" }}>
                 {moduleContent.title}
               </h1>
-              <p style={{ margin: '5px 0 0', fontSize: '1.1rem', opacity: 0.9 }}>
+              <p
+                style={{ margin: "5px 0 0", fontSize: "1.1rem", opacity: 0.9 }}
+              >
                 {moduleContent.subtitle}
               </p>
             </div>
           </div>
-          
-          <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
-            <span style={{
-              background: 'rgba(255,255,255,0.2)',
-              padding: '5px 12px',
-              borderRadius: '20px',
-              fontSize: '0.9rem'
-            }}>
+
+          <div style={{ display: "flex", gap: "15px", flexWrap: "wrap" }}>
+            <span
+              style={{
+                background: "rgba(255,255,255,0.2)",
+                padding: "5px 12px",
+                borderRadius: "20px",
+                fontSize: "0.9rem",
+              }}
+            >
               📊 {moduleContent.level}
             </span>
-            <span style={{
-              background: 'rgba(255,255,255,0.2)',
-              padding: '5px 12px',
-              borderRadius: '20px',
-              fontSize: '0.9rem'
-            }}>
+            <span
+              style={{
+                background: "rgba(255,255,255,0.2)",
+                padding: "5px 12px",
+                borderRadius: "20px",
+                fontSize: "0.9rem",
+              }}
+            >
               ⏱️ {moduleContent.duration}
             </span>
-            <span style={{
-              background: 'rgba(255,255,255,0.2)',
-              padding: '5px 12px',
-              borderRadius: '20px',
-              fontSize: '0.9rem'
-            }}>
+            <span
+              style={{
+                background: "rgba(255,255,255,0.2)",
+                padding: "5px 12px",
+                borderRadius: "20px",
+                fontSize: "0.9rem",
+              }}
+            >
               📚 {moduleContent.category}
             </span>
           </div>
-          
-          <p style={{ margin: '15px 0 0', fontSize: '1rem', opacity: 0.9 }}>
+
+          <p style={{ margin: "15px 0 0", fontSize: "1rem", opacity: 0.9 }}>
             {moduleContent.description}
           </p>
         </div>
 
         {/* Module Content */}
         {moduleContent.sections.map((section, index) => (
-          <div key={section.id} style={{
-            background: 'white',
-            borderRadius: '12px',
-            padding: '25px',
-            marginBottom: '20px',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-          }}>
-            <h2 style={{
-              fontSize: '1.5rem',
-              color: '#dc2626',
-              marginBottom: '15px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px'
-            }}>
+          <div
+            key={section.id}
+            style={{
+              background: "white",
+              borderRadius: "12px",
+              padding: "25px",
+              marginBottom: "20px",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+            }}
+          >
+            <h2
+              style={{
+                fontSize: "1.5rem",
+                color: "#dc2626",
+                marginBottom: "15px",
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+              }}
+            >
               <IndexIndicator
                 index={index + 1}
                 color="#dc2626"
@@ -683,118 +721,157 @@ export default function RoteiroDispensacaoModulePage() {
               />
               {section.title}
             </h2>
-            
-            <div style={{
-              fontSize: '1rem',
-              lineHeight: '1.6',
-              color: '#444',
-              marginBottom: '20px',
-              whiteSpace: 'pre-line'
-            }}>
+
+            <div
+              style={{
+                fontSize: "1rem",
+                lineHeight: "1.6",
+                color: "#444",
+                marginBottom: "20px",
+                whiteSpace: "pre-line",
+              }}
+            >
               {section.content}
             </div>
-            
+
             {/* Clinical Cases */}
             {section.clinicalCases && (
-              <div style={{
-                background: '#f0f9ff',
-                padding: '15px',
-                borderRadius: '8px',
-                marginBottom: '15px',
-                borderLeft: '4px solid #0ea5e9'
-              }}>
-                <h4 style={{ margin: '0 0 10px', color: '#0ea5e9' }}>📋 Casos Clínicos:</h4>
-                <div style={{ fontSize: '0.95rem', lineHeight: '1.6', whiteSpace: 'pre-line' }}>
+              <div
+                style={{
+                  background: "#f0f9ff",
+                  padding: "15px",
+                  borderRadius: "8px",
+                  marginBottom: "15px",
+                  borderLeft: "4px solid #0ea5e9",
+                }}
+              >
+                <h4 style={{ margin: "0 0 10px", color: "#0ea5e9" }}>
+                  📋 Casos Clínicos:
+                </h4>
+                <div
+                  style={{
+                    fontSize: "0.95rem",
+                    lineHeight: "1.6",
+                    whiteSpace: "pre-line",
+                  }}
+                >
                   {section.clinicalCases}
                 </div>
               </div>
             )}
-            
+
             {/* Ask Assistant */}
             {section.askAssistant && (
-              <div style={{
-                background: '#fef3c7',
-                padding: '15px',
-                borderRadius: '8px',
-                marginBottom: '15px',
-                borderLeft: '4px solid #f59e0b'
-              }}>
-                <h4 style={{ margin: '0 0 10px', color: '#d97706' }}>🤖 Pergunte ao Assistente:</h4>
-                <div style={{ fontSize: '0.9rem' }}>
-                  {section.askAssistant.suggestedQuestions.map((question, idx) => (
-                    <div key={idx} style={{
-                      background: 'rgba(251, 191, 36, 0.1)',
-                      padding: '8px 12px',
-                      borderRadius: '6px',
-                      margin: '5px 0',
-                      cursor: 'pointer',
-                      border: '1px solid rgba(251, 191, 36, 0.3)'
-                    }}>
-                      💬 {question}
-                    </div>
-                  ))}
+              <div
+                style={{
+                  background: "#fef3c7",
+                  padding: "15px",
+                  borderRadius: "8px",
+                  marginBottom: "15px",
+                  borderLeft: "4px solid #f59e0b",
+                }}
+              >
+                <h4 style={{ margin: "0 0 10px", color: "#d97706" }}>
+                  🤖 Pergunte ao Assistente:
+                </h4>
+                <div style={{ fontSize: "0.9rem" }}>
+                  {section.askAssistant.suggestedQuestions.map(
+                    (question, idx) => (
+                      <div
+                        key={idx}
+                        style={{
+                          background: "rgba(251, 191, 36, 0.1)",
+                          padding: "8px 12px",
+                          borderRadius: "6px",
+                          margin: "5px 0",
+                          cursor: "pointer",
+                          border: "1px solid rgba(251, 191, 36, 0.3)",
+                        }}
+                      >
+                        💬 {question}
+                      </div>
+                    ),
+                  )}
                 </div>
               </div>
             )}
-            
+
             {/* Download Section */}
             {section.downloadSection && (
-              <div style={{
-                background: '#f3f4f6',
-                padding: '15px',
-                borderRadius: '8px',
-                marginBottom: '15px',
-                borderLeft: '4px solid #6b7280'
-              }}>
-                <h4 style={{ margin: '0 0 10px', color: '#374151' }}>{section.downloadSection.title}</h4>
-                <p style={{ margin: '0 0 10px', fontSize: '0.9rem', color: '#6b7280' }}>
+              <div
+                style={{
+                  background: "#f3f4f6",
+                  padding: "15px",
+                  borderRadius: "8px",
+                  marginBottom: "15px",
+                  borderLeft: "4px solid #6b7280",
+                }}
+              >
+                <h4 style={{ margin: "0 0 10px", color: "#374151" }}>
+                  {section.downloadSection.title}
+                </h4>
+                <p
+                  style={{
+                    margin: "0 0 10px",
+                    fontSize: "0.9rem",
+                    color: "#6b7280",
+                  }}
+                >
                   {section.downloadSection.description}
                 </p>
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '10px',
-                  padding: '10px',
-                  background: 'white',
-                  borderRadius: '6px',
-                  border: '1px solid #d1d5db'
-                }}>
-                  <span style={{ fontSize: '1.5rem' }}>📄</span>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "10px",
+                    padding: "10px",
+                    background: "white",
+                    borderRadius: "6px",
+                    border: "1px solid #d1d5db",
+                  }}
+                >
+                  <span style={{ fontSize: "1.5rem" }}>📄</span>
                   <div>
-                    <div style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>
+                    <div style={{ fontWeight: "bold", fontSize: "0.9rem" }}>
                       {section.downloadSection.fileName}
                     </div>
-                    <div style={{ fontSize: '0.8rem', color: '#6b7280' }}>
+                    <div style={{ fontSize: "0.8rem", color: "#6b7280" }}>
                       Tamanho: {section.downloadSection.fileSize}
                     </div>
                   </div>
-                  <button style={{
-                    marginLeft: 'auto',
-                    background: '#dc2626',
-                    color: 'white',
-                    border: 'none',
-                    padding: '8px 16px',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    fontSize: '0.9rem'
-                  }}>
+                  <button
+                    style={{
+                      marginLeft: "auto",
+                      background: "#dc2626",
+                      color: "white",
+                      border: "none",
+                      padding: "8px 16px",
+                      borderRadius: "6px",
+                      cursor: "pointer",
+                      fontSize: "0.9rem",
+                    }}
+                  >
                     Download
                   </button>
                 </div>
               </div>
             )}
-            
+
             {/* Key Points */}
-            <div style={{
-              background: '#fef2f2',
-              padding: '15px',
-              borderRadius: '8px',
-              borderLeft: '4px solid #dc2626'
-            }}>
-              <h4 style={{ margin: '0 0 10px', color: '#dc2626' }}>🎯 Pontos-chave:</h4>
-              <ul style={{ margin: 0, paddingLeft: '20px' }}>
+            <div
+              style={{
+                background: "#fef2f2",
+                padding: "15px",
+                borderRadius: "8px",
+                borderLeft: "4px solid #dc2626",
+              }}
+            >
+              <h4 style={{ margin: "0 0 10px", color: "#dc2626" }}>
+                🎯 Pontos-chave:
+              </h4>
+              <ul style={{ margin: 0, paddingLeft: "20px" }}>
                 {section.keyPoints.map((point, idx) => (
-                  <li key={idx} style={{ marginBottom: '5px', color: '#555' }}>
+                  <li key={idx} style={{ marginBottom: "5px", color: "#555" }}>
                     {point}
                   </li>
                 ))}
@@ -804,69 +881,93 @@ export default function RoteiroDispensacaoModulePage() {
         ))}
 
         {/* Quiz Section */}
-        <div style={{
-          background: 'white',
-          borderRadius: '12px',
-          padding: '25px',
-          marginBottom: '30px',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-        }}>
-          <h2 style={{
-            fontSize: '1.5rem',
-            color: '#dc2626',
-            marginBottom: '20px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px'
-          }}>
+        <div
+          style={{
+            background: "white",
+            borderRadius: "12px",
+            padding: "25px",
+            marginBottom: "30px",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+          }}
+        >
+          <h2
+            style={{
+              fontSize: "1.5rem",
+              color: "#dc2626",
+              marginBottom: "20px",
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+            }}
+          >
             🧠 Teste seus conhecimentos
           </h2>
-          
+
           {moduleContent.quiz.map((question, index) => (
-            <div key={index} style={{
-              background: '#fef2f2',
-              padding: '20px',
-              borderRadius: '8px',
-              marginBottom: '15px'
-            }}>
-              <h4 style={{ marginBottom: '15px', color: '#333' }}>
+            <div
+              key={index}
+              style={{
+                background: "#fef2f2",
+                padding: "20px",
+                borderRadius: "8px",
+                marginBottom: "15px",
+              }}
+            >
+              <h4 style={{ marginBottom: "15px", color: "#333" }}>
                 {index + 1}. {question.question}
               </h4>
-              
+
               {question.options.map((option, optIndex) => (
-                <div key={optIndex} style={{
-                  padding: '8px 12px',
-                  margin: '5px 0',
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  background: optIndex === question.correct ? '#fde8e8' : '#fff',
-                  border: optIndex === question.correct ? '2px solid #dc2626' : '1px solid #ddd'
-                }}>
+                <div
+                  key={optIndex}
+                  style={{
+                    padding: "8px 12px",
+                    margin: "5px 0",
+                    borderRadius: "6px",
+                    cursor: "pointer",
+                    background:
+                      optIndex === question.correct ? "#fde8e8" : "#fff",
+                    border:
+                      optIndex === question.correct
+                        ? "2px solid #dc2626"
+                        : "1px solid #ddd",
+                  }}
+                >
                   {String.fromCharCode(65 + optIndex)}. {option}
                   {optIndex === question.correct && (
-                    <span style={{ color: '#dc2626', marginLeft: '10px', fontWeight: 'bold' }}>
+                    <span
+                      style={{
+                        color: "#dc2626",
+                        marginLeft: "10px",
+                        fontWeight: "bold",
+                      }}
+                    >
                       ✓ Correto
                     </span>
                   )}
                 </div>
               ))}
-              
-              <div style={{
-                marginTop: '10px',
-                padding: '10px',
-                background: '#fef3cd',
-                borderRadius: '6px',
-                fontSize: '0.9rem',
-                color: '#92400e'
-              }}>
+
+              <div
+                style={{
+                  marginTop: "10px",
+                  padding: "10px",
+                  background: "#fef3cd",
+                  borderRadius: "6px",
+                  fontSize: "0.9rem",
+                  color: "#92400e",
+                }}
+              >
                 <strong>💡 Explicação:</strong> {question.explanation}
               </div>
-              
-              <div style={{
-                marginTop: '8px',
-                fontSize: '0.8rem',
-                color: '#6b7280'
-              }}>
+
+              <div
+                style={{
+                  marginTop: "8px",
+                  fontSize: "0.8rem",
+                  color: "#6b7280",
+                }}
+              >
                 <strong>Nível:</strong> {question.level}
               </div>
             </div>
@@ -874,44 +975,46 @@ export default function RoteiroDispensacaoModulePage() {
         </div>
 
         {/* Navigation */}
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          background: 'white',
-          padding: '20px',
-          borderRadius: '12px',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-        }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            background: "white",
+            padding: "20px",
+            borderRadius: "12px",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+          }}
+        >
           <Link
             href="/modules/tratamento"
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '10px 20px',
-              background: '#6b7280',
-              color: 'white',
-              textDecoration: 'none',
-              borderRadius: '8px',
-              fontWeight: 'bold'
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              padding: "10px 20px",
+              background: "#6b7280",
+              color: "white",
+              textDecoration: "none",
+              borderRadius: "8px",
+              fontWeight: "bold",
             }}
           >
             ← Anterior: Tratamento PQT-U
           </Link>
-          
+
           <Link
             href="/modules/vida-com-doenca"
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '10px 20px',
-              background: '#dc2626',
-              color: 'white',
-              textDecoration: 'none',
-              borderRadius: '8px',
-              fontWeight: 'bold'
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              padding: "10px 20px",
+              background: "#dc2626",
+              color: "white",
+              textDecoration: "none",
+              borderRadius: "8px",
+              fontWeight: "bold",
             }}
           >
             Próximo: Vida com a Doença →

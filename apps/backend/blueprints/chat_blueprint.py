@@ -29,6 +29,13 @@ except ImportError:
 # Importar dependências
 from core.dependencies import get_cache, get_rag, get_qa, get_config
 
+# Import unified cache for enhanced performance
+try:
+    from services.cache.unified_cache_manager import get_unified_cache
+    UNIFIED_CACHE_AVAILABLE = True
+except ImportError:
+    UNIFIED_CACHE_AVAILABLE = False
+
 # Import sistema de métricas e logging seguro
 try:
     from core.metrics.performance_monitor import performance_monitor, record_ai_metric
@@ -91,6 +98,15 @@ try:
 except ImportError:
     MEDICAL_DISCLAIMERS_AVAILABLE = False
 
+# Import Educational QA Framework for validation
+try:
+    from core.validation.educational_qa_framework import (
+        EducationalQAFramework, PersonaType, ValidationResult
+    )
+    QA_FRAMEWORK_AVAILABLE = True
+except ImportError:
+    QA_FRAMEWORK_AVAILABLE = False
+
 # Import Zero-Trust Security System
 try:
     from core.security.zero_trust import (
@@ -118,6 +134,16 @@ if SECURE_LOGGING_AVAILABLE:
     logger = get_secure_logger(__name__)
 else:
     logger = logging.getLogger(__name__)
+
+# Initialize QA Framework globally
+qa_framework = None
+if QA_FRAMEWORK_AVAILABLE:
+    try:
+        qa_framework = EducationalQAFramework()
+        logger.info("Educational QA Framework inicializado com sucesso")
+    except Exception as e:
+        logger.warning(f"Erro ao inicializar QA Framework: {e}")
+        qa_framework = None
 
 # Criar blueprint
 chat_bp = Blueprint('chat', __name__, url_prefix='/api/v1')
@@ -623,7 +649,66 @@ def chat_api():
         # Processar com RAG e IA
         answer, metadata = process_question_with_rag(question, personality_id, request_id)
         
-        # ENHANCED VALIDATION: Validação específica das personas (se disponível)
+        # EDUCATIONAL QA VALIDATION: Validação completa usando EducationalQAFramework
+        qa_validation_result = None
+        if qa_framework and QA_FRAMEWORK_AVAILABLE:
+            try:
+                # Mapear persona para enum
+                persona_type = PersonaType.DR_GASNELIO if personality_id == 'dr_gasnelio' else PersonaType.GA
+                
+                # Executar validação completa
+                qa_validation_start = datetime.now()
+                qa_validation_result = qa_framework.validate_response(
+                    answer, persona_type, question, metadata
+                )
+                qa_validation_time = (datetime.now() - qa_validation_start).total_seconds() * 1000
+                
+                logger.info(f"[{request_id}] QA Validation - Score: {qa_validation_result.score:.2f}, "
+                           f"Passed: {qa_validation_result.passed}, Time: {qa_validation_time:.0f}ms")
+                
+                # Se validação falhar criticamente, tentar regenerar
+                if (not qa_validation_result.passed and 
+                    qa_validation_result.severity.value in ['critical', 'high'] and
+                    qa_validation_result.score < 0.5):
+                    
+                    logger.warning(f"[{request_id}] QA validation falhou criticamente (score: {qa_validation_result.score:.2f}), regenerando resposta")
+                    answer, metadata = process_question_with_rag(question, personality_id, request_id)
+                    
+                    # Segunda validação
+                    qa_validation_result = qa_framework.validate_response(
+                        answer, persona_type, question, metadata
+                    )
+                    logger.info(f"[{request_id}] QA Re-validation - Score: {qa_validation_result.score:.2f}, "
+                               f"Passed: {qa_validation_result.passed}")
+                
+                # Adicionar informações de validação QA aos metadados
+                metadata['qa_validation'] = {
+                    'passed': qa_validation_result.passed,
+                    'score': qa_validation_result.score,
+                    'severity': qa_validation_result.severity.value,
+                    'recommendations': qa_validation_result.recommendations[:3],  # Top 3 recommendations
+                    'validation_time_ms': qa_validation_time,
+                    'framework_version': '1.0.0',
+                    'persona_consistency': qa_validation_result.details.get('persona_consistency', {}),
+                    'medical_accuracy': qa_validation_result.details.get('medical_accuracy', {})
+                }
+                
+            except Exception as qa_error:
+                logger.error(f"[{request_id}] Erro na validação QA: {qa_error}")
+                metadata['qa_validation'] = {
+                    'passed': None,
+                    'error': 'QA validation failed',
+                    'framework_available': True
+                }
+        else:
+            # Fallback para validação legacy se QA Framework não disponível
+            metadata['qa_validation'] = {
+                'passed': None,
+                'framework_available': False,
+                'fallback_mode': True
+            }
+        
+        # LEGACY VALIDATION: Manter validação específica das personas (se disponível) como backup
         if ENHANCED_SERVICES:
             try:
                 validation_passed = False
@@ -634,29 +719,17 @@ def chat_api():
                     validation_result = validate_dr_gasnelio_response(answer, question)
                     validation_passed = validation_result.get('valid', True)
                     validation_details = validation_result.get('details', {})
-                    logger.info(f"[{request_id}] Dr. Gasnelio validation: {validation_passed}")
+                    logger.debug(f"[{request_id}] Legacy Dr. Gasnelio validation: {validation_passed}")
                     
                 elif personality_id == 'ga':
                     # Validar resposta do Gá
                     validation_result = validate_ga_response(answer, question)
                     validation_passed = validation_result.get('valid', True)
                     validation_details = validation_result.get('details', {})
-                    logger.info(f"[{request_id}] Gá validation: {validation_passed}")
+                    logger.debug(f"[{request_id}] Legacy Gá validation: {validation_passed}")
                 
-                # Se validação falhar, tentar regenerar uma vez
-                if not validation_passed and validation_details.get('severity', 'low') == 'high':
-                    logger.warning(f"[{request_id}] Validação de persona falhou (alta severidade), regenerando resposta")
-                    answer, metadata = process_question_with_rag(question, personality_id, request_id)
-                    
-                    # Segunda validação
-                    if personality_id == 'dr_gasnelio':
-                        validation_result = validate_dr_gasnelio_response(answer, question)
-                    else:
-                        validation_result = validate_ga_response(answer, question)
-                    validation_passed = validation_result.get('valid', True)
-                
-                # Adicionar informações de validação aos metadados
-                metadata['persona_validation'] = {
+                # Adicionar informações de validação legacy aos metadados
+                metadata['legacy_validation'] = {
                     'passed': validation_passed,
                     'details': validation_details,
                     'validator': f'{personality_id}_validator'

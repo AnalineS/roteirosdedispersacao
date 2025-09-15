@@ -14,6 +14,8 @@ import PersonaAccessibilityProvider from '@/components/accessibility/PersonaAcce
 import { WCAGComplianceProvider } from '@/components/accessibility/WCAGComplianceSystem'
 import EnhancedCoreWebVitals from '@/components/analytics/EnhancedCoreWebVitals'
 import NumericNavigationWrapper from '@/components/navigation/NumericNavigationWrapper'
+import { ServicesProvider } from '@/providers/ServicesProvider'
+import AccessibilityPanel from '@/components/accessibility/AccessibilityPanel'
 import SITE_CONFIG from '@/lib/config'
 import '@/styles/globals.css'
 import '@/styles/fluid-typography.css'
@@ -123,25 +125,26 @@ export default function RootLayout({
           autoCloseDuration={5000}
           toastPosition="top-right"
         >
-          <FeedbackProvider>
-            <main id="main-content">
-              <IntegratedTrackingProvider>
-                <WCAGComplianceProvider>
-                  <PersonaProvider>
-                    <PersonaAccessibilityProvider>
-                    <GlobalNavigationProvider>
-                      <AuthProviderWrapper>
-                        <GlobalContextProvider>
-                          <AnalyticsProvider>
-                            {children}
-                          </AnalyticsProvider>
-                        </GlobalContextProvider>
-                      </AuthProviderWrapper>
-                    </GlobalNavigationProvider>
-                    </PersonaAccessibilityProvider>
-                  </PersonaProvider>
-                </WCAGComplianceProvider>
-            </IntegratedTrackingProvider>
+          <ServicesProvider>
+            <FeedbackProvider>
+              <main id="main-content">
+                <IntegratedTrackingProvider>
+                  <WCAGComplianceProvider>
+                    <PersonaProvider>
+                      <PersonaAccessibilityProvider>
+                      <GlobalNavigationProvider>
+                        <AuthProviderWrapper>
+                          <GlobalContextProvider>
+                            <AnalyticsProvider>
+                              {children}
+                            </AnalyticsProvider>
+                          </GlobalContextProvider>
+                        </AuthProviderWrapper>
+                      </GlobalNavigationProvider>
+                      </PersonaAccessibilityProvider>
+                    </PersonaProvider>
+                  </WCAGComplianceProvider>
+              </IntegratedTrackingProvider>
 
             {/* Numeric Navigation System - PR #172 */}
             <NumericNavigationWrapper 
@@ -150,8 +153,12 @@ export default function RootLayout({
               hintPosition="bottom-right"
             />
           </main>
-          </FeedbackProvider>
+            </FeedbackProvider>
+          </ServicesProvider>
         </UnifiedErrorSystem>
+        
+        {/* Accessibility Panel - Floating */}
+        <AccessibilityPanel floating={true} />
         
         {/* PWA Manager - Service Worker desabilitado conforme solicitado */}
         <PWAManager enableServiceWorker={false} />
