@@ -3,10 +3,10 @@ name: "🚀 Production Deploy - Produção"
 on:
   push:
     branches: [main]
+    branches-ignore: [hml, develop, feature/*, hotfix/*]
     paths:
       - 'apps/**'
       - 'package*.json'
-      - '.github/workflows/production-deploy.yml'
       - '.claude/**'
       - '!**/*.md'
       - '!docs/**'
