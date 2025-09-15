@@ -3,12 +3,6 @@ name: "🧪 Staging Deploy - Homologação"
 on:
   push:
     branches: [hml]
-    paths:
-      - 'apps/**'
-      - 'package*.json'
-      - '.claude/**'
-      - '!**/*.md'
-      - '!docs/**'
   workflow_dispatch:
     inputs:
       skip_tests:
