@@ -214,7 +214,14 @@ jobs:
           echo "|--------|---------|--------|" >> $GITHUB_STEP_SUMMARY
           echo "| GCP Service Account | ✅ Valid | JSON format verified |" >> $GITHUB_STEP_SUMMARY
           echo "| Firebase Config | ✅ Valid | Connectivity tested |" >> $GITHUB_STEP_SUMMARY
-          echo "| Telegram Bot | ${{ secrets.TELEGRAM_BOT_TOKEN && '✅ Configured' || '⚠️ Optional' }} | ${{ secrets.TELEGRAM_BOT_TOKEN && 'Bot responsive' || 'Notifications disabled' }} |" >> $GITHUB_STEP_SUMMARY
+
+          # Check Telegram configuration
+          if [ -n "${{ secrets.TELEGRAM_BOT_TOKEN }}" ]; then
+            echo "| Telegram Bot | ✅ Configured | Bot responsive |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| Telegram Bot | ⚠️ Optional | Notifications disabled |" >> $GITHUB_STEP_SUMMARY
+          fi
+
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Environment**: Staging (HML)" >> $GITHUB_STEP_SUMMARY
           echo "**Validation Time**: $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
