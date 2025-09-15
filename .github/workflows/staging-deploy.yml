@@ -189,7 +189,7 @@ jobs:
           echo "🧹 Credenciais temporárias removidas"
 
       - name: "🤖 Test Telegram Bot (Optional)"
-        if: ${{ secrets.TELEGRAM_BOT_TOKEN != '' }}
+        if: ${{ secrets.TELEGRAM_BOT_TOKEN }}
         run: |
           echo "📱 Testando bot Telegram..."
 
@@ -214,7 +214,7 @@ jobs:
           echo "|--------|---------|--------|" >> $GITHUB_STEP_SUMMARY
           echo "| GCP Service Account | ✅ Valid | JSON format verified |" >> $GITHUB_STEP_SUMMARY
           echo "| Firebase Config | ✅ Valid | Connectivity tested |" >> $GITHUB_STEP_SUMMARY
-          echo "| Telegram Bot | ${{ secrets.TELEGRAM_BOT_TOKEN != '' && '✅ Configured' || '⚠️ Optional' }} | ${{ secrets.TELEGRAM_BOT_TOKEN != '' && 'Bot responsive' || 'Notifications disabled' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Telegram Bot | ${{ secrets.TELEGRAM_BOT_TOKEN && '✅ Configured' || '⚠️ Optional' }} | ${{ secrets.TELEGRAM_BOT_TOKEN && 'Bot responsive' || 'Notifications disabled' }} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Environment**: Staging (HML)" >> $GITHUB_STEP_SUMMARY
           echo "**Validation Time**: $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
