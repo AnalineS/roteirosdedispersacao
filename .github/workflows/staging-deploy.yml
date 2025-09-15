@@ -58,6 +58,14 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: "🚫 Block Non-HML Branch Execution"
+        if: github.ref_name != 'hml'
+        run: |
+          echo "❌ BLOQUEIO: Este workflow só deve executar na branch 'hml'"
+          echo "Branch atual: ${{ github.ref_name }}"
+          echo "Este workflow foi disparado incorretamente e será encerrado."
+          exit 1
+
       - name: "📊 Detectar mudanças"
         uses: dorny/paths-filter@v2
         id: filter

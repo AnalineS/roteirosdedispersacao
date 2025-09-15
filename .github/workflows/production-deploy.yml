@@ -3,7 +3,6 @@ name: "🚀 Production Deploy - Produção"
 on:
   push:
     branches: [main]
-    branches-ignore: [hml, develop, feature/*, hotfix/*]
     paths:
       - 'apps/**'
       - 'package*.json'
@@ -62,6 +61,14 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: "🚫 Block Non-Main Branch Execution"
+        if: github.ref_name != 'main'
+        run: |
+          echo "❌ BLOQUEIO: Este workflow só deve executar na branch 'main'"
+          echo "Branch atual: ${{ github.ref_name }}"
+          echo "Este workflow foi disparado incorretamente e será encerrado."
+          exit 1
 
       - name: "🔒 Critical Safety Checks"
         id: safety-check
