@@ -31,8 +31,8 @@ on:
 env:
   NODE_VERSION: '20'
   ENVIRONMENT: 'staging'
-  FRONTEND_SITE: 'hml'
-  BACKEND_SERVICE: 'hml-roteiro-dispensacao-api'
+  FRONTEND_SITE: 'hml-roteiros-de-dispensacao'
+  BACKEND_SERVICE: 'backend-roteiro-dispensacao-hml'
   MEDICAL_MODE: 'true'
   LGPD_COMPLIANCE_REQUIRED: 'true'
   STAGING_TIMEOUT: 25

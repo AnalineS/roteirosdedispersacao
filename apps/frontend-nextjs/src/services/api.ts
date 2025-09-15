@@ -15,9 +15,9 @@ const getApiUrl = (): string => {
     return envUrl.trim();
   }
   
-  // PRIORIDADE 2: URLs específicas por ambiente via variáveis
-  const hmlApiUrl = process.env.NEXT_PUBLIC_HML_API_URL || 'https://hml-roteiro-dispensacao-api-4f2gjf6cua-uc.a.run.app';
-  const prodApiUrl = process.env.NEXT_PUBLIC_PROD_API_URL || 'https://roteiro-dispensacao-api-4f2gjf6cua-uc.a.run.app';
+  // PRIORIDADE 2: URLs específicas por ambiente via GitHub Variables
+  const hmlApiUrl = process.env.NEXT_PUBLIC_API_URL_STAGING;
+  const prodApiUrl = process.env.NEXT_PUBLIC_API_URL_PRODUCTION;
   const devApiUrl = process.env.NEXT_PUBLIC_DEV_API_URL || 'http://localhost:8080';
   
   // PRIORIDADE 3: Detectar ambiente baseado no hostname
@@ -33,18 +33,25 @@ const getApiUrl = (): string => {
     // Homologação
     if (hostname.includes('hml-roteiros-de-dispensacao.web.app')) {
       console.log('[API] Ambiente de homologação detectado');
+      if (!hmlApiUrl) {
+        console.error('[API] NEXT_PUBLIC_API_URL_STAGING não configurada');
+        return devApiUrl;
+      }
       return hmlApiUrl;
     }
-    
+
     // Produção
     if (hostname.includes('roteirosdispensacao.com') || hostname.includes('roteiros-de-dispensacao.web.app')) {
       console.log('[API] Produção detectada, usando Cloud Run');
+      if (!prodApiUrl) {
+        console.error('[API] NEXT_PUBLIC_API_URL_PRODUCTION não configurada');
+        return devApiUrl;
+      }
       return prodApiUrl;
     }
-    
-    console.log('[API] Hostname não reconhecido, usando homologação como fallback');
-    // Fallback para homologação se hostname não for reconhecido
-    return hmlApiUrl;
+
+    console.log('[API] Hostname não reconhecido, usando desenvolvimento');
+    return devApiUrl;
   }
   
   // PRIORIDADE 4: Fallback para desenvolvimento (SSR)

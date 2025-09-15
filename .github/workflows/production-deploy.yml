@@ -36,7 +36,7 @@ env:
   NODE_VERSION: '20'
   ENVIRONMENT: 'production'
   PRODUCTION_DOMAIN: 'roteirosdispensacao.com.br'
-  BACKEND_SERVICE: 'roteiro-dispensacao-api'
+  BACKEND_SERVICE: 'backend-roteiro-dispensacao-prod'
   MEDICAL_MODE: 'production'
   LGPD_COMPLIANCE_REQUIRED: 'strict'
   SLA_TARGET: '99.9'
