@@ -189,13 +189,15 @@ jobs:
           echo "🧹 Credenciais temporárias removidas"
 
       - name: "🤖 Test Telegram Bot (Optional)"
-        if: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           echo "📱 Testando bot Telegram..."
 
-          if [ -n "${{ secrets.TELEGRAM_BOT_TOKEN }}" ] && [ -n "${{ secrets.TELEGRAM_CHAT_ID }}" ]; then
+          if [ -n "$TELEGRAM_TOKEN" ] && [ -n "$TELEGRAM_CHAT_ID" ]; then
             # Test bot connectivity
-            RESPONSE=$(curl -s "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/getMe")
+            RESPONSE=$(curl -s "https://api.telegram.org/bot$TELEGRAM_TOKEN/getMe")
             if echo "$RESPONSE" | jq -e '.ok' > /dev/null; then
               echo "✅ Telegram bot está funcional"
               BOT_NAME=$(echo "$RESPONSE" | jq -r '.result.first_name')
@@ -208,6 +210,8 @@ jobs:
           fi
 
       - name: "📊 Generate Secrets Report"
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
         run: |
           echo "## 🔐 Secrets Validation Report - Staging" >> $GITHUB_STEP_SUMMARY
           echo "| Secret | Status | Notes |" >> $GITHUB_STEP_SUMMARY
@@ -216,7 +220,7 @@ jobs:
           echo "| Firebase Config | ✅ Valid | Connectivity tested |" >> $GITHUB_STEP_SUMMARY
 
           # Check Telegram configuration
-          if [ -n "${{ secrets.TELEGRAM_BOT_TOKEN }}" ]; then
+          if [ -n "$TELEGRAM_TOKEN" ]; then
             echo "| Telegram Bot | ✅ Configured | Bot responsive |" >> $GITHUB_STEP_SUMMARY
           else
             echo "| Telegram Bot | ⚠️ Optional | Notifications disabled |" >> $GITHUB_STEP_SUMMARY
