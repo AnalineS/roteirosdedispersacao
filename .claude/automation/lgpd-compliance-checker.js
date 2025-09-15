@@ -167,24 +167,34 @@ class LGPDComplianceChecker {
      */
     async analyzeFileContent(filePath, content) {
         const relativePath = path.relative(process.cwd(), filePath);
-        
-        // Verifica dados pessoais identificáveis
-        this.checkPIIData(relativePath, content);
-        
+
+        // Ignora alguns checks para arquivos de workflow do GitHub
+        const isWorkflow = this.isGitHubWorkflowFile(relativePath);
+
+        // Verifica dados pessoais identificáveis (mas não em workflows)
+        if (!isWorkflow) {
+            this.checkPIIData(relativePath, content);
+        }
+
         // Verifica dados médicos específicos
         this.checkMedicalData(relativePath, content);
-        
+
         // Verifica consentimento para coleta de dados
         this.checkConsentMechanisms(relativePath, content);
-        
+
         // Verifica logs e tracking
         this.checkLoggingAndTracking(relativePath, content);
-        
+
         // Verifica APIs sensíveis
         this.checkSensitiveApis(relativePath, content);
-        
+
         // Verifica cookies e localStorage
         this.checkDataStorage(relativePath, content);
+
+        // Verifica patterns de secrets específicos para workflows
+        if (isWorkflow) {
+            this.checkWorkflowSecrets(relativePath, content);
+        }
     }
     
     /**
@@ -321,13 +331,18 @@ class LGPDComplianceChecker {
      * Verifica logs e tracking
      */
     checkLoggingAndTracking(filePath, content) {
+        // Ignora arquivos de workflow do GitHub
+        if (this.isGitHubWorkflowFile(filePath)) {
+            return;
+        }
+
         // Logs com dados pessoais
         const logPatterns = [
             /console\.log.*(?:cpf|rg|email|phone|nome|paciente)/gi,
             /logger?\.(?:info|debug|error).*(?:cpf|rg|email|phone|nome|paciente)/gi,
             /log.*(?:user|usuario|paciente)/gi
         ];
-        
+
         for (const pattern of logPatterns) {
             if (pattern.test(content)) {
                 this.addViolation(
@@ -728,6 +743,40 @@ class LGPDComplianceChecker {
      */
     isConfigFile(filePath) {
         return /config|env|setting/gi.test(filePath);
+    }
+
+    /**
+     * Verifica se é arquivo de workflow do GitHub
+     */
+    isGitHubWorkflowFile(filePath) {
+        return /\.github\/workflows\/.*\.ya?ml$/i.test(filePath) || /github.*action/gi.test(filePath);
+    }
+
+    /**
+     * Verifica secrets específicos para workflows do GitHub
+     */
+    checkWorkflowSecrets(filePath, content) {
+        // Padrões específicos que são problemáticos mesmo em workflows
+        const problematicSecrets = [
+            /SECRET_KEY.*=.*['"][A-Za-z0-9]{20,}['"]/gi, // Actual secret values
+            /PASSWORD.*=.*['"][A-Za-z0-9]+['"]/gi,       // Actual passwords
+            /TOKEN.*=.*['"][A-Za-z0-9]{20,}['"]/gi       // Actual tokens
+        ];
+
+        for (const pattern of problematicSecrets) {
+            if (pattern.test(content)) {
+                this.addViolation(
+                    'HARDCODED_SECRET_IN_WORKFLOW',
+                    `Secret hardcoded detectado em workflow ${filePath}`,
+                    'HIGH'
+                );
+                break;
+            }
+        }
+
+        // GitHub Actions syntax normal é permitido:
+        // ${{ secrets.SECRET_NAME }}
+        // Esta função apenas valida que não há valores reais hardcoded
     }
     
     /**

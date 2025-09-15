@@ -113,12 +113,6 @@ jobs:
             "GCP_SERVICE_ACCOUNT_KEY"
             "GCP_PROJECT_ID"
             "GCP_REGION"
-            "FIREBASE_API_KEY"
-            "FIREBASE_AUTH_DOMAIN"
-            "FIREBASE_PROJECT_ID"
-            "FIREBASE_STORAGE_BUCKET"
-            "FIREBASE_MESSAGING_SENDER_ID"
-            "FIREBASE_APP_ID"
           )
 
           MISSING_SECRETS=()
@@ -165,6 +159,93 @@ jobs:
 
           echo "✅ Todos os secrets obrigatórios estão disponíveis"
 
+      - name: "📋 Validate GitHub Variables"
+        run: |
+          echo "📋 Validando GitHub Variables obrigatórias..."
+
+          # Variables obrigatórias para deploy
+          REQUIRED_VARS=(
+            "NEXT_PUBLIC_API_URL_STAGING"
+            "NEXT_PUBLIC_API_URL_PRODUCTION"
+            "NEXT_PUBLIC_FIREBASE_API_KEY"
+            "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN"
+            "NEXT_PUBLIC_FIREBASE_PROJECT_ID"
+            "NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET"
+            "NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID"
+            "NEXT_PUBLIC_FIREBASE_APP_ID"
+          )
+
+          MISSING_VARS=()
+
+          for var_name in "${REQUIRED_VARS[@]}"; do
+            case $var_name in
+              "NEXT_PUBLIC_API_URL_STAGING")
+                if [ -z "${{ vars.NEXT_PUBLIC_API_URL_STAGING }}" ]; then
+                  MISSING_VARS+=("$var_name")
+                else
+                  echo "✅ $var_name: ${{ vars.NEXT_PUBLIC_API_URL_STAGING }}"
+                fi
+                ;;
+              "NEXT_PUBLIC_API_URL_PRODUCTION")
+                if [ -z "${{ vars.NEXT_PUBLIC_API_URL_PRODUCTION }}" ]; then
+                  MISSING_VARS+=("$var_name")
+                else
+                  echo "✅ $var_name: ${{ vars.NEXT_PUBLIC_API_URL_PRODUCTION }}"
+                fi
+                ;;
+              "NEXT_PUBLIC_FIREBASE_API_KEY")
+                if [ -z "${{ vars.NEXT_PUBLIC_FIREBASE_API_KEY }}" ]; then
+                  MISSING_VARS+=("$var_name")
+                else
+                  echo "✅ $var_name disponível"
+                fi
+                ;;
+              "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN")
+                if [ -z "${{ vars.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN }}" ]; then
+                  MISSING_VARS+=("$var_name")
+                else
+                  echo "✅ $var_name disponível"
+                fi
+                ;;
+              "NEXT_PUBLIC_FIREBASE_PROJECT_ID")
+                if [ -z "${{ vars.NEXT_PUBLIC_FIREBASE_PROJECT_ID }}" ]; then
+                  MISSING_VARS+=("$var_name")
+                else
+                  echo "✅ $var_name disponível"
+                fi
+                ;;
+              "NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET")
+                if [ -z "${{ vars.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET }}" ]; then
+                  MISSING_VARS+=("$var_name")
+                else
+                  echo "✅ $var_name disponível"
+                fi
+                ;;
+              "NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID")
+                if [ -z "${{ vars.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID }}" ]; then
+                  MISSING_VARS+=("$var_name")
+                else
+                  echo "✅ $var_name disponível"
+                fi
+                ;;
+              "NEXT_PUBLIC_FIREBASE_APP_ID")
+                if [ -z "${{ vars.NEXT_PUBLIC_FIREBASE_APP_ID }}" ]; then
+                  MISSING_VARS+=("$var_name")
+                else
+                  echo "✅ $var_name disponível"
+                fi
+                ;;
+            esac
+          done
+
+          if [ ${#MISSING_VARS[@]} -ne 0 ]; then
+            echo "❌ GitHub Variables obrigatórias ausentes:"
+            printf '  - %s\n' "${MISSING_VARS[@]}"
+            exit 1
+          fi
+
+          echo "✅ Todas as GitHub Variables obrigatórias estão disponíveis"
+
       - name: "🔗 Test Firebase Connectivity"
         run: |
           echo "🔥 Testando conectividade Firebase..."
@@ -209,15 +290,17 @@ jobs:
             echo "⚠️ Telegram secrets não configurados - notificações desabilitadas"
           fi
 
-      - name: "📊 Generate Secrets Report"
+      - name: "📊 Generate Configuration Report"
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
         run: |
-          echo "## 🔐 Secrets Validation Report - Staging" >> $GITHUB_STEP_SUMMARY
-          echo "| Secret | Status | Notes |" >> $GITHUB_STEP_SUMMARY
-          echo "|--------|---------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "## 🔐 Configuration Validation Report - Staging" >> $GITHUB_STEP_SUMMARY
+          echo "| Configuration | Status | Notes |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------------|---------|--------|" >> $GITHUB_STEP_SUMMARY
           echo "| GCP Service Account | ✅ Valid | JSON format verified |" >> $GITHUB_STEP_SUMMARY
-          echo "| Firebase Config | ✅ Valid | Connectivity tested |" >> $GITHUB_STEP_SUMMARY
+          echo "| GCP Project & Region | ✅ Valid | Connectivity tested |" >> $GITHUB_STEP_SUMMARY
+          echo "| Firebase Variables | ✅ Valid | All NEXT_PUBLIC vars set |" >> $GITHUB_STEP_SUMMARY
+          echo "| API URLs | ✅ Valid | Staging & Production URLs configured |" >> $GITHUB_STEP_SUMMARY
 
           # Check Telegram configuration
           if [ -n "$TELEGRAM_TOKEN" ]; then
@@ -226,6 +309,11 @@ jobs:
             echo "| Telegram Bot | ⚠️ Optional | Notifications disabled |" >> $GITHUB_STEP_SUMMARY
           fi
 
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🎯 URLs Configuradas:" >> $GITHUB_STEP_SUMMARY
+          echo "- **Staging API**: ${{ vars.NEXT_PUBLIC_API_URL_STAGING }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Production API**: ${{ vars.NEXT_PUBLIC_API_URL_PRODUCTION }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Firebase Project**: ${{ vars.NEXT_PUBLIC_FIREBASE_PROJECT_ID }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Environment**: Staging (HML)" >> $GITHUB_STEP_SUMMARY
           echo "**Validation Time**: $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
