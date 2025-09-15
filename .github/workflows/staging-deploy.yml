@@ -552,8 +552,8 @@ jobs:
   frontend-deploy:
     name: "⚛️ Frontend Deploy (Firebase)"
     runs-on: ubuntu-latest
-    needs: [staging-preparation, claude-validations, security-analysis]
-    if: needs.staging-preparation.outputs.deploy-frontend == 'true'
+    needs: [staging-preparation, claude-validations, security-analysis, backend-deploy]
+    if: needs.staging-preparation.outputs.deploy-frontend == 'true' && (needs.backend-deploy.result == 'success' || needs.backend-deploy.result == 'skipped')
     timeout-minutes: 15
     defaults:
       run:
@@ -709,10 +709,12 @@ jobs:
             exit 1
           fi
 
-          # Build com monitoramento
+          # Build com monitoramento e sem log streaming
           BUILD_START=$(date +%s)
           gcloud builds submit --tag gcr.io/red-truck-468923-s4/${{ env.BACKEND_SERVICE }} \
-            --timeout=3000s .
+            --timeout=3000s \
+            --no-user-output-enabled \
+            --verbosity=warning .
           BUILD_END=$(date +%s)
 
           BUILD_DURATION=$((BUILD_END - BUILD_START))

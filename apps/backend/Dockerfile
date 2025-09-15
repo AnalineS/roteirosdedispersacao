@@ -1,5 +1,5 @@
 # Multi-stage Dockerfile completo para Cloud Run - Roteiro de Dispensação
-# Stage 1: Build dependencies
+# Stage 1: Build dependencies com cache otimizado
 FROM python:3.11-slim as builder
 
 # Metadados da imagem
@@ -77,13 +77,12 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 # Copiar requirements primeiro (para cache Docker)
 COPY requirements.txt .
 
-# Instalar dependências Python com timeout estendido e otimizações
-RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
-    pip install --no-cache-dir --timeout 1800 -r requirements.txt && \
-    # Limpar cache pip
-    pip cache purge
+# Instalar dependências Python com cache e timeout estendido
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --upgrade pip setuptools wheel && \
+    pip install --timeout 1800 -r requirements.txt
 
-# Stage 2: Runtime otimizado
+# Stage 2: Runtime otimizado com cache
 FROM python:3.11-slim
 
 # Configurações de ambiente
