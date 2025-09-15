@@ -31,7 +31,7 @@ env:
   GCP_REGION: 'us-central1'
   MEDICAL_MODE: 'true'
   LGPD_COMPLIANCE_REQUIRED: 'true'
-  STAGING_TIMEOUT: 45
+  STAGING_TIMEOUT: 60
 
 permissions:
   contents: read
@@ -646,7 +646,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [staging-preparation, claude-validations, security-analysis]
     if: needs.staging-preparation.outputs.deploy-backend == 'true'
-    timeout-minutes: 35
+    timeout-minutes: 55
     defaults:
       run:
         working-directory: apps/backend
@@ -694,11 +694,32 @@ jobs:
       - name: "🐳 Build and Deploy to Cloud Run"
         working-directory: apps/backend
         run: |
-          echo "🔨 Building backend for staging..."
+          echo "🔨 Building backend completo for staging..."
+          echo "⏰ Timestamp início: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+          echo "📊 Timeout configurado: 3000s (50 minutos)"
+          echo "🐳 Build completo: OpenCV + OCR + PostgreSQL + 60+ dependências"
+          echo "⏳ Tempo estimado: 35-45 minutos"
+
+          # Verificar Dockerfile
+          if [ -f "Dockerfile" ]; then
+            echo "✅ Dockerfile encontrado"
+            echo "📋 Tamanho do Dockerfile: $(wc -l < Dockerfile) linhas"
+          else
+            echo "❌ Dockerfile não encontrado"
+            exit 1
+          fi
+
+          # Build com monitoramento
+          BUILD_START=$(date +%s)
           gcloud builds submit --tag gcr.io/red-truck-468923-s4/${{ env.BACKEND_SERVICE }} \
-            --timeout=1800s .
-          
+            --timeout=3000s .
+          BUILD_END=$(date +%s)
+
+          BUILD_DURATION=$((BUILD_END - BUILD_START))
+          echo "⏱️ Tempo de build: ${BUILD_DURATION}s ($(($BUILD_DURATION / 60))m $(($BUILD_DURATION % 60))s)"
+
           echo "🚀 Deploying to Cloud Run..."
+          echo "⏰ Timestamp deploy: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
           gcloud run deploy ${{ env.BACKEND_SERVICE }} \
             --image gcr.io/red-truck-468923-s4/${{ env.BACKEND_SERVICE }} \
             --platform managed \
@@ -726,16 +747,43 @@ jobs:
         run: |
           echo "🔍 Verificando saúde do frontend HML..."
           FRONTEND_URL="https://${{ env.FRONTEND_SITE }}.web.app"
-          
-          # Aguardar deploy se propagar
-          sleep 30
-          
-          if curl -f -s "$FRONTEND_URL" > /dev/null; then
-            echo "✅ Frontend HML respondendo"
-          else
-            echo "❌ Frontend HML não está respondendo"
-            exit 1
-          fi
+
+          echo "🌐 URL do frontend: $FRONTEND_URL"
+
+          # Aguardar deploy se propagar com retry inteligente
+          echo "⏳ Aguardando propagação do deploy..."
+          for i in {1..6}; do
+            echo "🔄 Tentativa $i/6..."
+
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$FRONTEND_URL")
+            echo "📡 HTTP Code: $HTTP_CODE"
+
+            if [ "$HTTP_CODE" = "200" ]; then
+              echo "✅ Frontend HML respondendo (HTTP 200)"
+
+              # Verificar se contém conteúdo Next.js
+              CONTENT=$(curl -s "$FRONTEND_URL")
+              if echo "$CONTENT" | grep -q "Next.js\|__NEXT_DATA__\|_app\|DOCTYPE html"; then
+                echo "✅ Conteúdo HTML/Next.js detectado"
+                echo "✅ Frontend HML confirmado como funcional"
+                exit 0
+              else
+                echo "⚠️ Resposta sem conteúdo HTML esperado"
+              fi
+            else
+              echo "❌ Frontend retornou HTTP $HTTP_CODE"
+            fi
+
+            if [ $i -lt 6 ]; then
+              echo "⏳ Aguardando 30s antes da próxima tentativa..."
+              sleep 30
+            fi
+          done
+
+          echo "❌ Frontend HML falhou após 6 tentativas"
+          echo "🔍 Debug final:"
+          curl -v "$FRONTEND_URL" || true
+          exit 1
 
       - name: "🔧 Health Check Backend"
         if: needs.backend-deploy.result == 'success'
