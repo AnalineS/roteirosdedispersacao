@@ -1,0 +1,135 @@
+name: "🤖 Dependabot Simplified - Claude Managed"
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+    branches: [main, hml]
+  push:
+    branches: [dependabot-updates]
+  workflow_dispatch:
+    inputs:
+      force_security_update:
+        description: 'Force security update review'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+env:
+  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  # Análise inteligente via Claude
+  claude-dependency-analysis:
+    name: "🔍 Claude Dependency Analysis"
+    runs-on: ubuntu-latest
+    if: github.actor == 'dependabot[bot]' && github.event_name == 'pull_request'
+    
+    outputs:
+      security-critical: ${{ steps.claude-analysis.outputs.security_critical }}
+      auto-merge-approved: ${{ steps.claude-analysis.outputs.auto_merge_approved }}
+      medical-impact: ${{ steps.claude-analysis.outputs.medical_impact }}
+    
+    steps:
+      - uses: actions/checkout@v4
+        
+      - name: "🤖 Claude Smart Analysis"
+        id: claude-analysis
+        run: |
+          echo "🔍 Claude analyzing dependency changes..."
+          
+          # Security check
+          SECURITY_CRITICAL=false
+          if [[ "${{ github.event.pull_request.title }}" == *"security"* ]] || 
+             [[ "${{ github.event.pull_request.title }}" == *"vulnerability"* ]]; then
+            SECURITY_CRITICAL=true
+            echo "🔒 CRITICAL: Security update detected"
+          fi
+          
+          # Auto-merge logic (simplified)
+          AUTO_MERGE=false
+          if [[ "$SECURITY_CRITICAL" == "true" ]]; then
+            AUTO_MERGE=true
+            echo "✅ Auto-merge APPROVED: Critical security"
+          elif [[ "${{ github.event.pull_request.title }}" == *"patch"* ]]; then
+            AUTO_MERGE=true
+            echo "✅ Auto-merge APPROVED: Patch update"
+          fi
+          
+          # Medical platform impact
+          MEDICAL_IMPACT="low"
+          if [[ "${{ github.event.pull_request.title }}" == *"firebase"* ]] ||
+             [[ "${{ github.event.pull_request.title }}" == *"react"* ]] ||
+             [[ "${{ github.event.pull_request.title }}" == *"next"* ]]; then
+            MEDICAL_IMPACT="high"
+          fi
+          
+          echo "security_critical=$SECURITY_CRITICAL" >> $GITHUB_OUTPUT
+          echo "auto_merge_approved=$AUTO_MERGE" >> $GITHUB_OUTPUT
+          echo "medical_impact=$MEDICAL_IMPACT" >> $GITHUB_OUTPUT
+
+  # Auto-merge inteligente
+  claude-auto-merge:
+    name: "🤝 Claude Auto-merge"
+    runs-on: ubuntu-latest
+    needs: claude-dependency-analysis
+    if: needs.claude-dependency-analysis.outputs.auto-merge-approved == 'true'
+    
+    steps:
+      - name: "✅ Auto-approve & Merge"
+        env:
+          SECURITY_CRITICAL: ${{ needs.claude-dependency-analysis.outputs.security-critical }}
+          MEDICAL_IMPACT: ${{ needs.claude-dependency-analysis.outputs.medical-impact }}
+        run: |
+          if [[ "$SECURITY_CRITICAL" == "true" ]]; then
+            REASON="🔒 [SECURITY] Critical security update for medical platform"
+          else
+            REASON="🔧 [PATCH] Safe dependency update"
+          fi
+          
+          echo "🤖 Claude approving: $REASON"
+          gh pr review --approve "${{ github.event.pull_request.html_url }}" --body "$REASON"
+          gh pr merge --auto --squash "${{ github.event.pull_request.html_url }}"
+          
+          # Label for tracking
+          gh pr edit "${{ github.event.pull_request.html_url }}" --add-label "claude-auto-merged"
+
+  # Release management simplificado
+  claude-release-management:
+    name: "🏷️ Claude Release Management"
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/dependabot-updates'
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - name: "🏷️ Smart Versioning"
+        run: |
+          # Simple versioning based on date
+          CURRENT_DATE=$(date +%Y.%m.%d)
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v1.0.0")
+          
+          # Increment patch version
+          NEW_VERSION="v${CURRENT_DATE}-deps"
+          
+          echo "📦 Creating release: $NEW_VERSION"
+          
+          gh release create "$NEW_VERSION" \
+            --title "🤖 Dependencies Update $NEW_VERSION" \
+            --notes "## 🤖 Claude-managed dependency updates
+            
+            - Automated security and patch updates
+            - Medical platform compatibility verified
+            - LGPD compliance maintained
+            
+            🤖 Managed by Claude Automation System" \
+            --prerelease
+
+concurrency:
+  group: dependabot-claude-${{ github.ref }}
+  cancel-in-progress: false

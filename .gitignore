@@ -251,7 +251,6 @@ pr_*_comment.md
 
 # Arquivos de configuração e documentação com exemplos sensíveis
 .claude/subagents/
-.github/workflows/
 docs/mcp-*.md
 scripts/gh/
 scripts/health/
