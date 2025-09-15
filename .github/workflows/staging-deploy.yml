@@ -31,7 +31,7 @@ env:
   GCP_REGION: 'us-central1'
   MEDICAL_MODE: 'true'
   LGPD_COMPLIANCE_REQUIRED: 'true'
-  STAGING_TIMEOUT: 25
+  STAGING_TIMEOUT: 45
 
 permissions:
   contents: read
@@ -586,17 +586,36 @@ jobs:
           echo "🔨 Building for staging environment..."
           npm run build
 
-      - name: "🔍 Post-build Medical Validation"
+      - name: "🔍 Post-build Standalone Validation"
         run: |
-          echo "🩺 Validando build para conformidade médica..."
-          # Verificar se as rotas médicas foram geradas
-          if [ -d ".next/server/pages" ]; then
-            echo "✅ Páginas médicas geradas com sucesso"
+          echo "🔨 Validando build standalone para Firebase..."
+
+          # Verificar se o build standalone foi gerado
+          if [ -d ".next/standalone" ]; then
+            echo "✅ Build standalone gerado com sucesso"
+            echo "📁 Conteúdo da pasta standalone:"
+            ls -la .next/standalone/
+          else
+            echo "❌ Pasta .next/standalone não encontrada"
+            echo "📁 Conteúdo atual de .next:"
+            ls -la .next/ || echo "Pasta .next não existe"
+            exit 1
           fi
-          
-          # Verificar se os cálculos médicos estão presentes
-          if find .next -name "*calculat*" -o -name "*dose*" | grep -q .; then
-            echo "✅ Calculadoras médicas incluídas no build"
+
+          # Verificar se server.js existe
+          if [ -f ".next/standalone/apps/frontend-nextjs/server.js" ]; then
+            echo "✅ server.js encontrado"
+          else
+            echo "❌ server.js não encontrado na pasta correta"
+            exit 1
+          fi
+
+          # Verificar estrutura de páginas
+          if [ -d ".next/standalone/apps/frontend-nextjs/.next" ]; then
+            echo "✅ Estrutura Next.js preservada no standalone"
+          else
+            echo "❌ Estrutura Next.js não encontrada no standalone"
+            exit 1
           fi
 
       - name: "🔧 Configure Firebase Target"
@@ -627,7 +646,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [staging-preparation, claude-validations, security-analysis]
     if: needs.staging-preparation.outputs.deploy-backend == 'true'
-    timeout-minutes: 25
+    timeout-minutes: 35
     defaults:
       run:
         working-directory: apps/backend
@@ -677,7 +696,7 @@ jobs:
         run: |
           echo "🔨 Building backend for staging..."
           gcloud builds submit --tag gcr.io/red-truck-468923-s4/${{ env.BACKEND_SERVICE }} \
-            --timeout=1200s .
+            --timeout=1800s .
           
           echo "🚀 Deploying to Cloud Run..."
           gcloud run deploy ${{ env.BACKEND_SERVICE }} \

@@ -8,8 +8,8 @@ const nextConfig = {
   // Dynamic rendering para features em tempo real (leaderboard, chat AI, analytics)
   // output: 'export', // Removido para habilitar SSR e funcionalidades dinâmicas
 
-  // Standalone output para Cloud Run deployment
-  output: process.env.BUILD_STANDALONE ? "standalone" : undefined,
+  // Standalone output para Firebase Hosting híbrido
+  output: "standalone",
 
   // Ensure trailingSlash is consistent with Firebase Hosting configuration
   trailingSlash: false,

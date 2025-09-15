@@ -2,6 +2,7 @@
  * API Integration Layer - Next.js
  * Conecta com o backend Python que usa prompts de IA e personas
  * Integrado com sistema robusto de tratamento de erros
+ * Deploy configurado com Cloud Run correto
  */
 
 import { useErrorHandler } from '@/hooks/useErrorHandler';
