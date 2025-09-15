@@ -32,7 +32,9 @@ env:
   NODE_VERSION: '20'
   ENVIRONMENT: 'staging'
   FRONTEND_SITE: 'hml-roteiros-de-dispensacao'
-  BACKEND_SERVICE: 'backend-roteiro-dispensacao-hml'
+  BACKEND_SERVICE: 'hml-roteiro-dispensacao-api'
+  GCP_PROJECT_ID: 'red-truck-468923-s4'
+  GCP_REGION: 'us-central1'
   MEDICAL_MODE: 'true'
   LGPD_COMPLIANCE_REQUIRED: 'true'
   STAGING_TIMEOUT: 25
