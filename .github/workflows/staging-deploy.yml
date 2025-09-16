@@ -96,7 +96,7 @@ jobs:
     name: "🔐 Secrets & Connectivity Validation"
     runs-on: ubuntu-latest
     needs: staging-preparation
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
 
@@ -319,7 +319,7 @@ jobs:
     name: "🤖 MCP Servers Setup - Staging"
     runs-on: ubuntu-latest
     needs: [staging-preparation, secrets-validation]
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
 
@@ -449,7 +449,7 @@ jobs:
     name: "🔒 Security Analysis (CodeQL)"
     runs-on: ubuntu-latest
     needs: [staging-preparation, secrets-validation]
-    timeout-minutes: 20
+    timeout-minutes: 35
     permissions:
       security-events: write
       actions: read
@@ -820,7 +820,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [frontend-deploy, backend-deploy]
     if: always() && (needs.frontend-deploy.result == 'success' || needs.backend-deploy.result == 'success')
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
 
