@@ -2,7 +2,7 @@
   "hosting": [
     {
       "target": "hml",
-      "public": ".next/standalone",
+      "public": ".next/static",
       "ignore": [
         "firebase.json",
         "**/.*",
@@ -20,7 +20,10 @@
         },
         {
           "source": "**",
-          "destination": "/index.html"
+          "run": {
+            "serviceId": "hml-roteiro-dispensacao-frontend",
+            "region": "us-central1"
+          }
         }
       ],
     "headers": [
@@ -106,7 +109,7 @@
     },
     {
       "target": "prod",
-      "public": ".next/standalone",
+      "public": ".next/static",
       "ignore": [
         "firebase.json",
         "**/.*",
@@ -124,7 +127,10 @@
         },
         {
           "source": "**",
-          "destination": "/index.html"
+          "run": {
+            "serviceId": "roteiro-dispensacao-frontend",
+            "region": "us-central1"
+          }
         }
       ],
       "headers": [

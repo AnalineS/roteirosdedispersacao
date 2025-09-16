@@ -242,9 +242,9 @@ jobs:
 
           echo "✅ Todas as GitHub Variables obrigatórias estão disponíveis"
 
-      - name: "🔗 Test Firebase Connectivity"
+      - name: "🔗 Test Firebase & Firestore Connectivity"
         run: |
-          echo "🔥 Testando conectividade Firebase..."
+          echo "🔥 Testando conectividade Firebase e Firestore (não Redis)..."
 
           # Criar arquivo temporário de credenciais
           echo '${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}' > /tmp/gcp-key.json
@@ -259,6 +259,14 @@ jobs:
           else
             echo "❌ Firebase authentication failed"
             exit 1
+          fi
+
+          # Testar Firestore específicamente (validação honesta)
+          echo "🗄️ Validando acesso ao Firestore..."
+          if firebase firestore:databases:list --project=${{ vars.GCP_PROJECT_ID }} >/dev/null 2>&1; then
+            echo "✅ Firestore connection validated - sistema usa Firestore, não Redis"
+          else
+            echo "⚠️ Firestore access limited but Firebase auth working"
           fi
 
           # Cleanup
@@ -873,7 +881,7 @@ jobs:
           echo "🔍 Verificando saúde do backend HML..."
           BACKEND_URL=$(gcloud run services describe ${{ env.BACKEND_SERVICE }} --region=${{ secrets.GCP_REGION }} --format='value(status.url)')
           
-          if curl -f -s "$BACKEND_URL/health" > /dev/null; then
+          if curl -f -s "$BACKEND_URL/api/v1/health" > /dev/null; then
             echo "✅ Backend HML respondendo"
           else
             echo "❌ Backend HML não está respondendo"

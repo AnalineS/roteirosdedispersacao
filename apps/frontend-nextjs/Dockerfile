@@ -43,5 +43,9 @@ EXPOSE 8080
 ENV HOSTNAME "0.0.0.0"
 ENV PORT ${PORT:-8080}
 
+# Health check honesto que valida Next.js server real
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD node -e "const http = require('http'); const options = {hostname: 'localhost', port: process.env.PORT || 8080, path: '/', timeout: 3000}; const req = http.request(options, (res) => {process.exit(res.statusCode === 200 ? 0 : 1)}); req.on('error', () => process.exit(1)); req.on('timeout', () => {req.destroy(); process.exit(1)}); req.end();" || exit 1
+
 # Command that respects the PORT environment variable from Cloud Run
 CMD ["sh", "-c", "PORT=${PORT:-8080} node server.js"]

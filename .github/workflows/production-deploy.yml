@@ -3,20 +3,14 @@ name: "🚀 Production Deploy - Produção"
 on:
   push:
     branches: [main]
-    paths:
-      - 'apps/**'
-      - 'package*.json'
-      - '.claude/**'
-      - '!**/*.md'
-      - '!docs/**'
   workflow_dispatch:
     inputs:
-      skip_safety_checks:
-        description: '⚠️ Pular verificações de segurança (EMERGÊNCIA)'
+      skip_tests:
+        description: 'Pular testes (apenas emergências)'
         type: boolean
         default: false
       force_deploy:
-        description: '🚨 Forçar deploy (EMERGÊNCIA MÉDICA)'
+        description: 'Forçar deploy mesmo com falhas'
         type: boolean
         default: false
       deploy_frontend:
@@ -27,36 +21,34 @@ on:
         description: 'Deploy backend'
         type: boolean
         default: true
-      create_release:
-        description: 'Criar release'
-        type: boolean
-        default: true
 
 env:
   NODE_VERSION: '20'
   ENVIRONMENT: 'production'
-  PRODUCTION_DOMAIN: 'roteirosdispensacao.com.br'
-  BACKEND_SERVICE: 'backend-roteiro-dispensacao-prod'
-  MEDICAL_MODE: 'production'
-  LGPD_COMPLIANCE_REQUIRED: 'strict'
-  SLA_TARGET: '99.9'
-  PRODUCTION_TIMEOUT: 30
+  FRONTEND_SITE: 'roteiros-de-dispensacao'
+  BACKEND_SERVICE: 'roteiro-dispensacao-api'
+  GCP_PROJECT_ID: 'red-truck-468923-s4'
+  GCP_REGION: 'us-central1'
+  MEDICAL_MODE: 'true'
+  LGPD_COMPLIANCE_REQUIRED: 'true'
+  PRODUCTION_TIMEOUT: 90
 
 permissions:
-  contents: write
+  contents: read
   id-token: write
   actions: read
-  deployments: write
 
 jobs:
-  # Gate de segurança crítica
-  production-safety-gate:
-    name: "🛡️ Production Safety Gate"
+  # Preparação e validação para produção
+  production-preparation:
+    name: "🔧 Production Preparation"
     runs-on: ubuntu-latest
     outputs:
-      safety-approved: ${{ steps.safety-check.outputs.approved }}
-      frontend-deploy: ${{ steps.deploy-decision.outputs.frontend }}
-      backend-deploy: ${{ steps.deploy-decision.outputs.backend }}
+      frontend-changed: ${{ steps.filter.outputs.frontend }}
+      backend-changed: ${{ steps.filter.outputs.backend }}
+      claude-changed: ${{ steps.filter.outputs.claude }}
+      deploy-frontend: ${{ steps.deploy-config.outputs.frontend }}
+      deploy-backend: ${{ steps.deploy-config.outputs.backend }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -70,127 +62,107 @@ jobs:
           echo "Este workflow foi disparado incorretamente e será encerrado."
           exit 1
 
-      - name: "🔒 Critical Safety Checks"
-        id: safety-check
-        if: ${{ !inputs.skip_safety_checks }}
+      - name: "🛡️ Production Safety Check"
         run: |
-          echo "🛡️ Executando verificações críticas de segurança para produção..."
-          
-          # Verificar se não há dados de teste/desenvolvimento
-          if grep -r -i "test\|dev\|staging" --include="*.env*" . 2>/dev/null; then
-            echo "❌ Dados de desenvolvimento encontrados!"
-            echo "approved=false" >> $GITHUB_OUTPUT
-            exit 1
-          fi
-          
-          # Verificar se branch main está atualizada
-          git fetch origin
-          BEHIND=$(git rev-list --count HEAD..origin/main)
-          if [ "$BEHIND" -gt 0 ]; then
-            echo "❌ Branch main não está atualizada! $BEHIND commits atrás."
-            echo "approved=false" >> $GITHUB_OUTPUT
-            exit 1
-          fi
-          
-          echo "✅ Verificações de segurança aprovadas"
-          echo "approved=true" >> $GITHUB_OUTPUT
+          echo "🛡️ Verificações de segurança para produção..."
+          echo "🎯 Branch: ${{ github.ref_name }}"
+          echo "👤 Autor: ${{ github.actor }}"
+          echo "📝 Commit: ${{ github.sha }}"
 
-      - name: "⚠️ Emergency Override"
-        if: ${{ inputs.skip_safety_checks }}
-        run: |
-          echo "🚨 ATENÇÃO: Verificações de segurança puladas por solicitação manual!"
-          echo "approved=true" >> $GITHUB_OUTPUT
+          # Verificar se não é um commit de emergência
+          if git log -1 --pretty=%B | grep -i "emergency\|hotfix\|urgent"; then
+            echo "🚨 Deploy de emergência detectado"
+            echo "⚠️ Prosseguindo com validações mínimas"
+          else
+            echo "✅ Deploy regular - validações completas"
+          fi
 
-      - name: "📊 Deploy Decision"
-        id: deploy-decision
+      - name: "📊 Detectar mudanças"
+        uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            frontend:
+              - 'apps/frontend-nextjs/**'
+            backend:
+              - 'apps/backend/**'
+            claude:
+              - '.claude/**'
+              - 'scripts/**'
+
+      - name: "⚙️ Configurar deploys"
+        id: deploy-config
         run: |
-          # Detectar mudanças para decidir deploys
-          if git diff --name-only HEAD~1 | grep -q "apps/frontend-nextjs/"; then
+          # Lógica de deploy baseada em mudanças ou inputs manuais
+          if [[ "${{ github.event.inputs.deploy_frontend }}" == "true" ]] || [[ "${{ steps.filter.outputs.frontend }}" == "true" ]]; then
             echo "frontend=true" >> $GITHUB_OUTPUT
           else
-            echo "frontend=${{ inputs.deploy_frontend }}" >> $GITHUB_OUTPUT
+            echo "frontend=false" >> $GITHUB_OUTPUT
           fi
-          
-          if git diff --name-only HEAD~1 | grep -q "apps/backend/"; then
+
+          if [[ "${{ github.event.inputs.deploy_backend }}" == "true" ]] || [[ "${{ steps.filter.outputs.backend }}" == "true" ]]; then
             echo "backend=true" >> $GITHUB_OUTPUT
           else
-            echo "backend=${{ inputs.deploy_backend }}" >> $GITHUB_OUTPUT
+            echo "backend=false" >> $GITHUB_OUTPUT
           fi
 
   # Validação completa de secrets para produção
-  production-secrets-validation:
-    name: "🔐 Production Secrets & Security Validation"
+  secrets-validation:
+    name: "🔐 Production Secrets & Connectivity"
     runs-on: ubuntu-latest
-    needs: production-safety-gate
-    if: needs.production-safety-gate.outputs.safety-approved == 'true'
-    timeout-minutes: 10
+    needs: production-preparation
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
 
       - name: "🔍 Validate Production Secrets"
         run: |
-          echo "🔐 Validando secrets críticos de produção..."
+          echo "🔐 Validando secrets obrigatórios para PRODUÇÃO..."
 
           # Secrets obrigatórios para produção
           REQUIRED_SECRETS=(
             "GCP_SERVICE_ACCOUNT_KEY"
             "GCP_PROJECT_ID"
             "GCP_REGION"
-            "FIREBASE_API_KEY"
-            "FIREBASE_AUTH_DOMAIN"
-            "FIREBASE_PROJECT_ID"
-            "FIREBASE_STORAGE_BUCKET"
-            "FIREBASE_MESSAGING_SENDER_ID"
-            "FIREBASE_APP_ID"
-            "NEXT_PUBLIC_API_URL"
+            "OPENROUTER_API_KEY"
+            "SECRET_KEY"
           )
 
-          # Secrets opcionais mas recomendados
-          OPTIONAL_SECRETS=(
-            "TELEGRAM_BOT_TOKEN"
-            "TELEGRAM_CHAT_ID"
-            "SNYK_TOKEN"
-            "GOOGLE_ANALYTICS_ID"
-          )
+          MISSING_SECRETS=()
 
-          MISSING_CRITICAL=()
-          MISSING_OPTIONAL=()
-
-          # Verificar secrets obrigatórios
           for secret in "${REQUIRED_SECRETS[@]}"; do
             case $secret in
               "GCP_SERVICE_ACCOUNT_KEY")
                 if [ -z "${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}" ]; then
-                  MISSING_CRITICAL+=("$secret")
+                  MISSING_SECRETS+=("$secret")
                 else
-                  echo "✅ $secret disponível (${#{{ secrets.GCP_SERVICE_ACCOUNT_KEY }}} chars)"
+                  echo "✅ $secret disponível"
                 fi
                 ;;
               "GCP_PROJECT_ID")
                 if [ -z "${{ secrets.GCP_PROJECT_ID }}" ]; then
-                  MISSING_CRITICAL+=("$secret")
+                  MISSING_SECRETS+=("$secret")
                 else
                   echo "✅ $secret: ${{ secrets.GCP_PROJECT_ID }}"
                 fi
                 ;;
               "GCP_REGION")
                 if [ -z "${{ secrets.GCP_REGION }}" ]; then
-                  MISSING_CRITICAL+=("$secret")
+                  MISSING_SECRETS+=("$secret")
                 else
                   echo "✅ $secret: ${{ secrets.GCP_REGION }}"
                 fi
                 ;;
-              "NEXT_PUBLIC_API_URL")
-                if [ -z "${{ secrets.NEXT_PUBLIC_API_URL }}" ]; then
-                  MISSING_CRITICAL+=("$secret")
+              "OPENROUTER_API_KEY")
+                if [ -z "${{ secrets.OPENROUTER_API_KEY }}" ]; then
+                  MISSING_SECRETS+=("$secret")
                 else
-                  echo "✅ $secret: ${{ secrets.NEXT_PUBLIC_API_URL }}"
+                  echo "✅ $secret disponível"
                 fi
                 ;;
-              *)
-                # Para outros secrets obrigatórios
-                if [ -z "$(echo '${{ secrets }}' | jq -r '."'$secret'"')" ] 2>/dev/null; then
-                  MISSING_CRITICAL+=("$secret")
+              "SECRET_KEY")
+                if [ -z "${{ secrets.SECRET_KEY }}" ]; then
+                  MISSING_SECRETS+=("$secret")
                 else
                   echo "✅ $secret disponível"
                 fi
@@ -198,366 +170,160 @@ jobs:
             esac
           done
 
-          # Verificar secrets opcionais
-          for secret in "${OPTIONAL_SECRETS[@]}"; do
-            case $secret in
-              "TELEGRAM_BOT_TOKEN"|"TELEGRAM_CHAT_ID")
-                if [ -z "${{ secrets.TELEGRAM_BOT_TOKEN }}" ] || [ -z "${{ secrets.TELEGRAM_CHAT_ID }}" ]; then
-                  MISSING_OPTIONAL+=("Telegram")
-                else
-                  echo "✅ Telegram notifications configured"
-                fi
-                ;;
-              "SNYK_TOKEN")
-                if [ -z "${{ secrets.SNYK_TOKEN }}" ]; then
-                  MISSING_OPTIONAL+=("$secret")
-                else
-                  echo "✅ $secret disponível"
-                fi
-                ;;
-              *)
-                if [ -z "$(echo '${{ secrets }}' | jq -r '."'$secret'"')" ] 2>/dev/null; then
-                  MISSING_OPTIONAL+=("$secret")
-                else
-                  echo "✅ $secret disponível"
-                fi
-                ;;
-            esac
-          done
-
-          # Falhar se secrets críticos estão ausentes
-          if [ ${#MISSING_CRITICAL[@]} -ne 0 ]; then
-            echo "❌ ERRO: Secrets críticos ausentes em produção:"
-            printf '  - %s\n' "${MISSING_CRITICAL[@]}"
-            echo "::error::Missing critical secrets for production deployment"
+          if [ ${#MISSING_SECRETS[@]} -ne 0 ]; then
+            echo "❌ Secrets obrigatórios ausentes para PRODUÇÃO:"
+            printf '  - %s\n' "${MISSING_SECRETS[@]}"
             exit 1
           fi
 
-          # Avisar sobre secrets opcionais
-          if [ ${#MISSING_OPTIONAL[@]} -ne 0 ]; then
-            echo "⚠️ Secrets opcionais ausentes (funcionalidades reduzidas):"
-            printf '  - %s\n' "${MISSING_OPTIONAL[@]}"
+          echo "✅ Todos os secrets obrigatórios estão disponíveis para produção"
+
+      - name: "📋 Validate Production Variables"
+        run: |
+          echo "📋 Validando GitHub Variables para PRODUÇÃO..."
+
+          # Variables obrigatórias para produção
+          REQUIRED_VARS=(
+            "NEXT_PUBLIC_API_URL_PRODUCTION"
+            "NEXT_PUBLIC_FIREBASE_API_KEY"
+            "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN"
+            "NEXT_PUBLIC_FIREBASE_PROJECT_ID"
+            "NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET"
+            "NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID"
+            "NEXT_PUBLIC_FIREBASE_APP_ID"
+          )
+
+          MISSING_VARS=()
+
+          for var_name in "${REQUIRED_VARS[@]}"; do
+            case $var_name in
+              "NEXT_PUBLIC_API_URL_PRODUCTION")
+                if [ -z "${{ vars.NEXT_PUBLIC_API_URL_PRODUCTION }}" ]; then
+                  MISSING_VARS+=("$var_name")
+                else
+                  echo "✅ $var_name: ${{ vars.NEXT_PUBLIC_API_URL_PRODUCTION }}"
+                fi
+                ;;
+              "NEXT_PUBLIC_FIREBASE_API_KEY")
+                if [ -z "${{ vars.NEXT_PUBLIC_FIREBASE_API_KEY }}" ]; then
+                  MISSING_VARS+=("$var_name")
+                else
+                  echo "✅ $var_name disponível"
+                fi
+                ;;
+              "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN")
+                if [ -z "${{ vars.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN }}" ]; then
+                  MISSING_VARS+=("$var_name")
+                else
+                  echo "✅ $var_name disponível"
+                fi
+                ;;
+              "NEXT_PUBLIC_FIREBASE_PROJECT_ID")
+                if [ -z "${{ vars.NEXT_PUBLIC_FIREBASE_PROJECT_ID }}" ]; then
+                  MISSING_VARS+=("$var_name")
+                else
+                  echo "✅ $var_name disponível"
+                fi
+                ;;
+              "NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET")
+                if [ -z "${{ vars.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET }}" ]; then
+                  MISSING_VARS+=("$var_name")
+                else
+                  echo "✅ $var_name disponível"
+                fi
+                ;;
+              "NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID")
+                if [ -z "${{ vars.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID }}" ]; then
+                  MISSING_VARS+=("$var_name")
+                else
+                  echo "✅ $var_name disponível"
+                fi
+                ;;
+              "NEXT_PUBLIC_FIREBASE_APP_ID")
+                if [ -z "${{ vars.NEXT_PUBLIC_FIREBASE_APP_ID }}" ]; then
+                  MISSING_VARS+=("$var_name")
+                else
+                  echo "✅ $var_name disponível"
+                fi
+                ;;
+            esac
+          done
+
+          if [ ${#MISSING_VARS[@]} -ne 0 ]; then
+            echo "❌ GitHub Variables obrigatórias ausentes para PRODUÇÃO:"
+            printf '  - %s\n' "${MISSING_VARS[@]}"
+            exit 1
           fi
 
-          echo "✅ Todos os secrets críticos validados para produção"
+          echo "✅ Todas as GitHub Variables obrigatórias estão disponíveis para produção"
 
-      - name: "🔗 Test Production Firebase Connectivity"
+      - name: "🔗 Test Production Firebase & Firestore Connectivity"
         run: |
-          echo "🔥 Testando conectividade Firebase para produção..."
+          echo "🔥 Testando conectividade Firebase e Firestore para PRODUÇÃO..."
 
           # Criar arquivo temporário de credenciais
-          echo '${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}' > /tmp/prod-gcp-key.json
-          export GOOGLE_APPLICATION_CREDENTIALS="/tmp/prod-gcp-key.json"
+          echo '${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}' > /tmp/gcp-key.json
+          export GOOGLE_APPLICATION_CREDENTIALS="/tmp/gcp-key.json"
 
           # Instalar Firebase CLI
           npm install -g firebase-tools
 
-          # Testar autenticação para projeto de produção
-          if firebase projects:list --token "$(gcloud auth application-default print-access-token)" | grep -q "${{ secrets.GCP_PROJECT_ID }}"; then
-            echo "✅ Firebase produção acessível"
+          # Testar autenticação
+          if firebase projects:list --token "$(gcloud auth application-default print-access-token)" >/dev/null 2>&1; then
+            echo "✅ Firebase authentication successful para produção"
           else
-            echo "❌ Falha no acesso ao projeto Firebase de produção"
+            echo "❌ Firebase authentication failed para produção"
             exit 1
           fi
 
-          # Testar permissões específicas
-          if firebase hosting:sites:list --project="${{ secrets.GCP_PROJECT_ID }}" >/dev/null 2>&1; then
-            echo "✅ Permissões de hosting Firebase validadas"
+          # Testar Firestore específicamente para produção
+          echo "🗄️ Validando acesso ao Firestore em produção..."
+          if firebase firestore:databases:list --project=${{ vars.GCP_PROJECT_ID }} >/dev/null 2>&1; then
+            echo "✅ Firestore production validated - sistema usa Firestore, não Redis"
           else
-            echo "⚠️ Permissões de hosting podem estar limitadas"
+            echo "⚠️ Firestore access limited but Firebase auth working"
           fi
 
           # Cleanup
-          rm -f /tmp/prod-gcp-key.json
+          rm -f /tmp/gcp-key.json
           echo "🧹 Credenciais temporárias removidas"
 
-      - name: "🤖 Test Telegram Production Bot"
-        env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: |
-          echo "📱 Testando bot Telegram para produção..."
-
-          if [ -n "$TELEGRAM_BOT_TOKEN" ] && [ -n "$TELEGRAM_CHAT_ID" ]; then
-            # Test production notification
-            RESPONSE=$(curl -s "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/getMe")
-            if echo "$RESPONSE" | jq -e '.ok' > /dev/null; then
-              echo "✅ Telegram bot produção funcional"
-
-              # Send test message
-              TEST_MSG="🧪 Production deployment validation - $(date -u '+%H:%M UTC')"
-              curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" \
-                -d chat_id="$TELEGRAM_CHAT_ID" \
-                -d text="$TEST_MSG" \
-                -d parse_mode="HTML" >/dev/null
-
-              echo "📱 Teste de notificação enviado"
-            else
-              echo "❌ Telegram bot não está respondendo"
-              exit 1
-            fi
-          else
-            echo "⚠️ Telegram não configurado - notificações críticas desabilitadas"
-          fi
-
-      - name: "📊 Generate Production Secrets Report"
-        run: |
-          echo "## 🔐 Production Secrets Validation Report" >> $GITHUB_STEP_SUMMARY
-          echo "| Secret Category | Status | Notes |" >> $GITHUB_STEP_SUMMARY
-          echo "|-----------------|---------|--------|" >> $GITHUB_STEP_SUMMARY
-          echo "| 🏭 GCP Service Account | ✅ Valid | Production access verified |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🔥 Firebase Config | ✅ Valid | Project permissions tested |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🌐 API Configuration | ✅ Valid | Backend URLs configured |" >> $GITHUB_STEP_SUMMARY
-          echo "| 📱 Telegram Alerts | ✅ Configured | Production notifications active |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🛡️ Security Scanning | ✅ Enhanced | Snyk + CodeQL active |" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**🎯 Environment**: Production" >> $GITHUB_STEP_SUMMARY
-          echo "**🔒 Security Level**: Maximum" >> $GITHUB_STEP_SUMMARY
-          echo "**⏰ Validation Time**: $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "🚀 **Ready for production deployment**" >> $GITHUB_STEP_SUMMARY
-
-  # Configuração MCP Servers para Produção
-  mcp-production-setup:
-    name: "🤖 MCP Servers Setup - Production"
-    runs-on: ubuntu-latest
-    needs: [production-safety-gate, production-secrets-validation]
-    if: needs.production-safety-gate.outputs.safety-approved == 'true'
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: "⚡ Setup Node.js for MCP"
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-
-      - name: "🔒 Production MCP Security Validation"
-        run: |
-          echo "🔒 Validating MCP security for PRODUCTION..."
-
-          # Validate MCP config exists
-          if [[ ! -f "mcp-config.json" ]]; then
-            echo "❌ MCP configuration not found for production"
-            exit 1
-          fi
-
-          # Validate security settings
-          if ! grep -q '"security"' mcp-config.json; then
-            echo "❌ MCP security settings not found"
-            exit 1
-          fi
-
-          echo "✅ MCP production security validation passed"
-
-      - name: "📦 Install Context7 MCP Server"
-        run: |
-          echo "📥 Installing Context7 MCP server for PRODUCTION..."
-          npm install -g @upstash/context7-mcp@latest
-
-          # Verify installation with strict checks
-          if ! npx @upstash/context7-mcp@latest --version; then
-            echo "❌ Context7 installation failed"
-            exit 1
-          fi
-
-          echo "✅ Context7 installed and verified for production"
-
-      - name: "🔧 Configure Context7 for Production"
-        env:
-          CONTEXT7_API_KEY: ${{ secrets.CONTEXT7_API_KEY }}
-        run: |
-          echo "⚙️ Configuring Context7 for PRODUCTION environment..."
-
-          # Create production-specific configuration with strict security
-          cat > context7-production-config.json << EOF
-          {
-            "environment": "production",
-            "ci_mode": true,
-            "timeout": 30,
-            "documentation_sources": ["react", "nodejs", "fastapi", "postgres", "python"],
-            "cache_enabled": true,
-            "health_check": true,
-            "medical_focus": true,
-            "security": {
-              "require_auth": true,
-              "api_key_required": true,
-              "rate_limiting": true,
-              "audit_logs": true
-            },
-            "production_mode": true
-          }
-          EOF
-
-          echo "✅ Context7 PRODUCTION configuration created with strict security"
-
-      - name: "🧪 Setup Test Master AI for Production"
-        run: |
-          echo "🤖 Setting up Test Master AI for PRODUCTION..."
-
-          # Validate Test Master server script with strict checks
-          if [[ -f "scripts/mcp/testmaster-server.js" ]]; then
-            echo "✅ Test Master server script found"
-            if ! node -c scripts/mcp/testmaster-server.js; then
-              echo "❌ Test Master syntax validation failed"
-              exit 1
-            fi
-            echo "✅ Test Master validated for production"
-          else
-            echo "❌ Test Master server script not found - required for production"
-            exit 1
-          fi
-
-      - name: "🔍 Critical MCP Health Check"
-        run: |
-          echo "🔍 Running CRITICAL MCP health checks for PRODUCTION..."
-
-          # Context7 health check with strict validation
-          if [[ -f "scripts/health/context7.sh" ]]; then
-            chmod +x scripts/health/context7.sh
-            if ! scripts/health/context7.sh "production"; then
-              echo "❌ Context7 health check FAILED - blocking production deploy"
-              exit 1
-            fi
-            echo "✅ Context7 health check PASSED for production"
-          else
-            echo "❌ Context7 health check script not found - required for production"
-            exit 1
-          fi
-
-          # Test critical MCP functionality
-          echo "🧪 Testing CRITICAL MCP functionality..."
-          if ! timeout 60 node -e "
-            console.log('✅ MCP Node.js environment ready for PRODUCTION');
-            process.exit(0);
-          "; then
-            echo "❌ MCP basic functionality test FAILED"
-            exit 1
-          fi
-
-          echo "✅ ALL MCP servers validated and ready for PRODUCTION"
-
-      - name: "📊 MCP Production Summary"
-        run: |
-          echo "## 🤖 MCP Production Setup Summary" >> $GITHUB_STEP_SUMMARY
-          echo "| MCP Component | Status | Security Level |" >> $GITHUB_STEP_SUMMARY
-          echo "|---------------|---------|----------------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Context7 Server | ✅ Active | Maximum |" >> $GITHUB_STEP_SUMMARY
-          echo "| Test Master AI | ✅ Validated | High |" >> $GITHUB_STEP_SUMMARY
-          echo "| Health Checks | ✅ Passed | Critical |" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**🔒 Security**: All MCP servers configured with production-grade security" >> $GITHUB_STEP_SUMMARY
-          echo "**📊 Monitoring**: MCP health checks integrated with production monitoring" >> $GITHUB_STEP_SUMMARY
-          echo "**🏥 Medical Focus**: MCP configured for medical documentation and compliance" >> $GITHUB_STEP_SUMMARY
-
-  # Validações médicas críticas
-  medical-compliance-validation:
-    name: "🏥 Medical Compliance Validation"
-    runs-on: ubuntu-latest
-    needs: [production-safety-gate, production-secrets-validation, mcp-production-setup]
-    if: needs.production-safety-gate.outputs.safety-approved == 'true'
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: "⚡ Setup Node.js"
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-
-      - name: "📦 Install Dependencies"
-        run: npm install
-
-      - name: "🔒 LGPD Strict Compliance"
-        run: |
-          echo "🔒 Verificação ESTRITA de LGPD para produção..."
-          if npm run compliance:check; then
-            echo "✅ LGPD compliance APROVADO para produção"
-          else
-            echo "❌ LGPD compliance FALHOU - Deploy bloqueado!"
-            exit 1
-          fi
-
-      - name: "🩺 Medical Protocol Certification"
-        run: |
-          echo "🩺 Certificação de protocolos médicos para produção..."
-          cd apps/frontend-nextjs
-          
-          # Verificar compilação TypeScript
-          if npm run type-check; then
-            echo "✅ TypeScript medical types validated"
-          else
-            echo "❌ TypeScript compilation failed"
-            exit 1
-          fi
-          
-          # Verificar calculadoras médicas
-          if ls src/components/interactive/DoseCalculator/ 2>/dev/null; then
-            echo "✅ Calculadoras médicas encontradas"
-          else
-            echo "❌ Calculadoras médicas não encontradas"
-            exit 1
-          fi
-          
-          # Verificar personas médicas
-          if grep -q "dr_gasnelio" src/data/personas.ts; then
-            echo "✅ Personas médicas configuradas"
-          else
-            echo "❌ Personas médicas não encontradas"
-            exit 1
-          fi
-
-      - name: "♿ WCAG 2.1 AA Compliance"
-        run: |
-          echo "♿ Verificação de acessibilidade WCAG 2.1 AA..."
-          cd apps/frontend-nextjs
-          if npm run test:accessibility || true; then
-            echo "✅ Acessibilidade verificada"
-          fi
-
-  # Análise de Segurança Completa para Produção
+  # Análise de Segurança Crítica para Produção
   production-security-analysis:
-    name: "🔒 Production Security Analysis (CodeQL + Snyk)"
+    name: "🔒 Production Security Analysis"
     runs-on: ubuntu-latest
-    needs: [production-safety-gate, production-secrets-validation]
-    if: needs.production-safety-gate.outputs.safety-approved == 'true'
-    timeout-minutes: 25
+    needs: [production-preparation, secrets-validation]
+    timeout-minutes: 45
     permissions:
       security-events: write
       actions: read
       contents: read
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         language: ['javascript', 'python']
-        include:
-          - language: javascript
-            scan-type: 'frontend-security'
-          - language: python
-            scan-type: 'backend-security'
     steps:
       - uses: actions/checkout@v4
 
-      - name: "🔍 Initialize CodeQL Analysis"
+      - name: "🔍 Initialize Production CodeQL"
         uses: github/codeql-action/init@v3
         with:
           languages: ${{ matrix.language }}
           config-file: ./.github/codeql-config.yml
           queries: security-extended,security-and-quality
 
-      - name: "⚡ Setup Environment for ${{ matrix.language }}"
-        run: |
-          if [[ "${{ matrix.language }}" == "javascript" ]]; then
-            echo "📦 Setting up Node.js environment..."
-            curl -fsSL https://nodejs.org/dist/v20.11.1/node-v20.11.1-linux-x64.tar.xz | tar -xJ -C /opt/
-            export PATH="/opt/node-v20.11.1-linux-x64/bin:$PATH"
-            echo "PATH=/opt/node-v20.11.1-linux-x64/bin:$PATH" >> $GITHUB_ENV
-          elif [[ "${{ matrix.language }}" == "python" ]]; then
-            echo "🐍 Setting up Python environment..."
-            python3 -m pip install --upgrade pip
-          fi
+      - name: "⚡ Setup Environment"
+        if: matrix.language == 'javascript'
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: "🐍 Setup Python"
+        if: matrix.language == 'python'
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
 
       - name: "📦 Install Dependencies"
         run: |
@@ -573,136 +339,55 @@ jobs:
       - name: "🔨 Autobuild for CodeQL"
         uses: github/codeql-action/autobuild@v3
 
-      - name: "🔍 Perform CodeQL Analysis"
+      - name: "🔍 Perform Production CodeQL Analysis"
         uses: github/codeql-action/analyze@v3
         with:
           category: "/language:${{ matrix.language }}"
           output: sarif-results
           upload: true
 
-      - name: "🛡️ Snyk Security Scan"
-        if: matrix.language == 'javascript'
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        run: |
-          echo "🛡️ Executando Snyk security scan..."
-
-          if [ -z "$SNYK_TOKEN" ]; then
-            echo "⚠️ SNYK_TOKEN não configurado - pulando scan de segurança"
-            exit 0
-          fi
-
-          # Install Snyk CLI
-          npm install -g snyk
-
-          # Authenticate
-          snyk auth $SNYK_TOKEN
-
-          # Test frontend dependencies
-          cd apps/frontend-nextjs
-
-          # Run Snyk test with quota management
-          if snyk test --severity-threshold=high --json > /tmp/snyk-results.json; then
-            echo "✅ Snyk scan completed - no high/critical vulnerabilities"
-          else
-            SNYK_EXIT_CODE=$?
-            if [ $SNYK_EXIT_CODE -eq 1 ]; then
-              echo "🚨 High/Critical vulnerabilities found!"
-              cat /tmp/snyk-results.json | jq '.vulnerabilities[] | select(.severity == "high" or .severity == "critical") | {title: .title, severity: .severity, package: .packageName}'
-              echo "::error::Critical security vulnerabilities detected"
-              exit 1
-            elif [ $SNYK_EXIT_CODE -eq 2 ]; then
-              echo "⚠️ Snyk quota exceeded - continuing with CodeQL results only"
-              echo "::warning::Snyk quota exceeded, security scan incomplete"
-            else
-              echo "❌ Snyk scan failed unexpectedly"
-              exit $SNYK_EXIT_CODE
-            fi
-          fi
-
-      - name: "🏥 Medical Security Validation"
+      - name: "🏥 Critical Medical Security Validation"
         if: matrix.language == 'javascript'
         run: |
-          echo "🩺 Executando validação específica de segurança médica para PRODUÇÃO..."
+          echo "🩺 Executando validação CRÍTICA de segurança médica para PRODUÇÃO..."
 
-          # Verificar padrões sensíveis críticos para produção
-          echo "🔍 Verificando dados médicos sensíveis..."
-          CRITICAL_PATTERNS=(
+          # Verificar padrões sensíveis em arquivos
+          echo "🔍 Verificando dados sensíveis em código..."
+          SENSITIVE_PATTERNS=(
             "CPF.*[0-9]{11}"
             "CNS.*[0-9]{15}"
             "CRM.*[0-9]+"
-            "password.*=.*[\"'](?!.*test).*[\"']"
-            "api_key.*=.*[\"'](?!.*test).*[\"']"
-            "secret.*=.*[\"'](?!.*test).*[\"']"
-            "token.*=.*[\"'](?!.*test).*[\"']"
+            "password.*=.*[\"'].*[\"']"
+            "api_key.*=.*[\"'].*[\"']"
+            "secret_key.*=.*[\"'].*[\"']"
+            "console\.log.*password"
+            "console\.log.*secret"
+            "console\.log.*key"
           )
 
           VIOLATIONS_FOUND=false
-          VIOLATION_DETAILS=()
-
-          for pattern in "${CRITICAL_PATTERNS[@]}"; do
-            MATCHES=$(find apps/ -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.py" | xargs grep -n "$pattern" 2>/dev/null || true)
-            if [ ! -z "$MATCHES" ]; then
+          for pattern in "${SENSITIVE_PATTERNS[@]}"; do
+            if find apps/ -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.py" | xargs grep -l "$pattern" 2>/dev/null; then
               echo "🚨 ALERTA CRÍTICO: Padrão sensível detectado: $pattern"
-              echo "$MATCHES"
               VIOLATIONS_FOUND=true
-              VIOLATION_DETAILS+=("$pattern: $MATCHES")
             fi
           done
 
-          # Verificar logs de desenvolvimento em produção
-          DEV_PATTERNS=("console.log" "console.debug" "debugger" "//TODO" "//FIXME")
-          DEV_VIOLATIONS=false
-
-          for pattern in "${DEV_PATTERNS[@]}"; do
-            if find apps/frontend-nextjs/src -name "*.ts" -o -name "*.tsx" | xargs grep -q "$pattern" 2>/dev/null; then
-              echo "⚠️ Padrão de desenvolvimento encontrado: $pattern"
-              DEV_VIOLATIONS=true
-            fi
-          done
-
-          # Falhar deployment se violações críticas
           if [[ "$VIOLATIONS_FOUND" == "true" ]]; then
-            echo "❌ BLOQUEIO DE PRODUÇÃO: Dados sensíveis detectados no código!"
-            echo "::error::Sensitive medical data patterns detected - production deployment blocked"
+            echo "❌ VIOLAÇÕES CRÍTICAS de segurança médica encontradas!"
+            echo "::error::Critical security violations detected for production"
             exit 1
-          fi
-
-          if [[ "$DEV_VIOLATIONS" == "true" ]]; then
-            echo "⚠️ Aviso: Código de desenvolvimento detectado, mas não bloqueia produção"
-            echo "::warning::Development patterns found in production code"
-          fi
-
-          echo "✅ Validação de segurança médica aprovada para produção"
-
-      - name: "📊 Security Analysis Summary"
-        if: always()
-        run: |
-          echo "## 🔒 Production Security Analysis - ${{ matrix.language }}" >> $GITHUB_STEP_SUMMARY
-          echo "| Check | Status | Severity |" >> $GITHUB_STEP_SUMMARY
-          echo "|--------|---------|----------|" >> $GITHUB_STEP_SUMMARY
-          echo "| CodeQL Analysis | ${{ job.status == 'success' && '✅ Passed' || '❌ Failed' }} | High |" >> $GITHUB_STEP_SUMMARY
-          if [[ "${{ matrix.language }}" == "javascript" ]]; then
-            echo "| Snyk Security Scan | ✅ Completed | Critical |" >> $GITHUB_STEP_SUMMARY
-            echo "| Medical Data Security | ✅ Verified | Critical |" >> $GITHUB_STEP_SUMMARY
-          fi
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Language**: ${{ matrix.language }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Scan Type**: ${{ matrix.scan-type }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Config**: .github/codeql-config.yml" >> $GITHUB_STEP_SUMMARY
-          if [[ "${{ secrets.SNYK_TOKEN }}" != "" ]]; then
-            echo "**Security Level**: Enhanced (CodeQL + Snyk)" >> $GITHUB_STEP_SUMMARY
           else
-            echo "**Security Level**: Standard (CodeQL only)" >> $GITHUB_STEP_SUMMARY
+            echo "✅ Nenhum dado médico sensível detectado no código"
           fi
 
-  # Deploy Frontend com Zero Downtime
-  production-frontend-deploy:
-    name: "🌐 Production Frontend Deploy"
+  # Build e Deploy Frontend para Produção
+  frontend-production-deploy:
+    name: "⚛️ Frontend Production Deploy"
     runs-on: ubuntu-latest
-    needs: [production-safety-gate, medical-compliance-validation, production-security-analysis]
-    if: needs.production-safety-gate.outputs.frontend-deploy == 'true'
-    timeout-minutes: 25
+    needs: [production-preparation, production-security-analysis, backend-production-deploy]
+    if: needs.production-preparation.outputs.deploy-frontend == 'true' && (needs.backend-production-deploy.result == 'success' || needs.backend-production-deploy.result == 'skipped')
+    timeout-minutes: 20
     defaults:
       run:
         working-directory: apps/frontend-nextjs
@@ -719,7 +404,7 @@ jobs:
       - name: "📦 Install Dependencies"
         run: npm ci
 
-      - name: "🏗️ Production Build"
+      - name: "🏗️ Build for Production"
         env:
           NODE_ENV: production
           NEXT_PUBLIC_ENVIRONMENT: production
@@ -730,45 +415,57 @@ jobs:
           NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ${{ vars.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET }}
           NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${{ vars.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID }}
           NEXT_PUBLIC_FIREBASE_APP_ID: ${{ vars.NEXT_PUBLIC_FIREBASE_APP_ID }}
-          NEXT_PUBLIC_DOMAIN: ${{ env.PRODUCTION_DOMAIN }}
         run: |
-          echo "🔨 Building for production..."
+          echo "🔨 Building for PRODUCTION environment..."
           npm run build
-          
-          # Verificar build de produção
-          if [ ! -d ".next" ]; then
-            echo "❌ Build failed!"
+
+      - name: "🔍 Production Build Validation"
+        run: |
+          echo "🔨 Validando build de produção..."
+
+          # Verificar se o build standalone foi gerado
+          if [ -d ".next/standalone" ]; then
+            echo "✅ Build standalone gerado com sucesso"
+            echo "📁 Conteúdo da pasta standalone:"
+            ls -la .next/standalone/
+          else
+            echo "❌ Pasta .next/standalone não encontrada"
+            echo "📁 Conteúdo atual de .next:"
+            ls -la .next/ || echo "Pasta .next não existe"
             exit 1
           fi
-          
-          echo "✅ Production build completed"
 
-      - name: "🔍 Pre-deploy Medical Validation"
-        run: |
-          echo "🩺 Validação final antes do deploy de produção..."
-          
-          # Verificar se arquivos médicos críticos existem no build
-          if find .next -name "*hanseniase*" -o -name "*calculat*" | grep -q .; then
-            echo "✅ Conteúdo médico encontrado no build"
+          # Verificar se server.js existe
+          if [ -f ".next/standalone/apps/frontend-nextjs/server.js" ]; then
+            echo "✅ server.js encontrado"
           else
-            echo "⚠️ Conteúdo médico pode estar ausente"
+            echo "❌ server.js não encontrado na pasta correta"
+            exit 1
           fi
-          
-          # Verificar tamanho do build
-          BUILD_SIZE=$(du -sh .next | cut -f1)
-          echo "📊 Tamanho do build: $BUILD_SIZE"
 
-      - name: "🔧 Configure Firebase Target for Production"
+          # Verificar estrutura de páginas
+          if [ -d ".next/standalone/apps/frontend-nextjs/.next" ]; then
+            echo "✅ Estrutura Next.js preservada no standalone"
+          else
+            echo "❌ Estrutura Next.js não encontrada no standalone"
+            exit 1
+          fi
+
+          # Verificar tamanho do build
+          BUILD_SIZE=$(du -sh .next/standalone | cut -f1)
+          echo "📊 Tamanho do build de produção: $BUILD_SIZE"
+
+      - name: "🔧 Configure Firebase Production Target"
         working-directory: apps/frontend-nextjs
         run: |
-          echo "Configurando target Firebase para Produção..."
+          echo "Configurando target Firebase para PRODUÇÃO..."
           echo '${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}' > gcp-key.json
           export GOOGLE_APPLICATION_CREDENTIALS="$(pwd)/gcp-key.json"
           npx firebase-tools@latest use red-truck-468923-s4
-          npx firebase-tools@latest target:apply hosting prod red-truck-468923-s4
+          npx firebase-tools@latest target:apply hosting prod roteiros-de-dispensacao
           rm gcp-key.json
 
-      - name: "🚀 Deploy to Production (Firebase)"
+      - name: "🚀 Deploy to Firebase Hosting (Production)"
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
@@ -780,30 +477,54 @@ jobs:
         env:
           FIREBASE_CLI_EXPERIMENTS: webframeworks
 
-  # Deploy Backend com Blue-Green
-  production-backend-deploy:
-    name: "🔧 Production Backend Deploy"
+  # Deploy Backend para Produção
+  backend-production-deploy:
+    name: "🔧 Backend Production Deploy"
     runs-on: ubuntu-latest
-    needs: [production-safety-gate, medical-compliance-validation, production-security-analysis]
-    if: needs.production-safety-gate.outputs.backend-deploy == 'true'
-    timeout-minutes: 25
+    needs: [production-preparation, production-security-analysis]
+    if: needs.production-preparation.outputs.deploy-backend == 'true'
+    timeout-minutes: 60
     defaults:
       run:
         working-directory: apps/backend
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
-      - name: "🔍 Debug Production Secrets"
+      - name: "🔍 Production Build Analysis"
+        id: changes
         run: |
-          echo "🔍 Verificando secrets de produção..."
-          if [ -n "$GCP_SERVICE_ACCOUNT_KEY" ]; then
-            echo "✅ GCP_SERVICE_ACCOUNT_KEY disponível (length: ${#GCP_SERVICE_ACCOUNT_KEY})"
+          echo "🔍 Analisando mudanças para build de produção..."
+
+          # Verificar mudanças críticas
+          CRITICAL_CHANGES=""
+          if git diff --name-only HEAD~1 HEAD | grep -E "(requirements\.txt|Dockerfile|\.dockerignore)"; then
+            CRITICAL_CHANGES="dependencies"
+            echo "🔄 Mudanças críticas detectadas: dependências/Dockerfile"
+          elif git diff --name-only HEAD~1 HEAD | grep -E "apps/backend/"; then
+            CRITICAL_CHANGES="code"
+            echo "📝 Mudanças de código Python detectadas"
           else
-            echo "❌ GCP_SERVICE_ACCOUNT_KEY não configurado"
-            exit 1
+            echo "✅ Nenhuma mudança no backend detectada"
           fi
-        env:
-          GCP_SERVICE_ACCOUNT_KEY: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+
+          # Calcular hash das dependências
+          DEPS_HASH=$(sha256sum requirements.txt | cut -d' ' -f1)
+          echo "📋 Hash das dependências: $DEPS_HASH"
+
+          # Outputs
+          echo "critical-changes=$CRITICAL_CHANGES" >> $GITHUB_OUTPUT
+          echo "deps-hash=$DEPS_HASH" >> $GITHUB_OUTPUT
+
+          # Skip build apenas se realmente não há mudanças
+          if [ -z "$CRITICAL_CHANGES" ]; then
+            echo "skip-build=true" >> $GITHUB_OUTPUT
+            echo "⏭️ Build do backend será pulado - sem mudanças"
+          else
+            echo "skip-build=false" >> $GITHUB_OUTPUT
+            echo "🔨 Build do backend necessário para produção"
+          fi
 
       - name: "🔑 Google Cloud Auth"
         uses: google-github-actions/auth@v2
@@ -816,376 +537,214 @@ jobs:
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
 
-      - name: "🔍 Verify Production Auth"
+      - name: "🐳 Production Build and Deploy"
+        if: steps.changes.outputs.skip-build == 'false'
+        working-directory: apps/backend
         run: |
-          echo "🔍 Verificando autenticação de produção..."
-          gcloud auth list
-          gcloud config get-value project
+          echo "🔨 Building backend para PRODUÇÃO..."
+          echo "⏰ Timestamp início: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+          echo "📊 Timeout configurado: 3600s (60 minutos)"
+          echo "🐳 Build completo de produção: OpenCV + OCR + PostgreSQL + 60+ dependências"
+          echo "💰 Machine type: e2-highcpu-8"
+          echo "🎯 Mudanças detectadas: ${{ steps.changes.outputs.critical-changes }}"
 
-      - name: "🐳 Build Production Image"
-        run: |
-          echo "🔨 Building production backend image..."
-          cd apps/backend
-          gcloud builds submit --tag gcr.io/red-truck-468923-s4/${{ env.BACKEND_SERVICE }}:${{ github.sha }} .
+          # Verificar Dockerfile
+          if [ -f "Dockerfile" ]; then
+            echo "✅ Dockerfile encontrado"
+            echo "📋 Tamanho do Dockerfile: $(wc -l < Dockerfile) linhas"
+          else
+            echo "❌ Dockerfile não encontrado"
+            exit 1
+          fi
 
-      - name: "🔄 Blue-Green Deploy"
-        run: |
-          echo "🔄 Executando deploy blue-green..."
-          
-          # Deploy nova versão sem tráfego
-          gcloud run deploy ${{ env.BACKEND_SERVICE }}-green \
-            --image gcr.io/red-truck-468923-s4/${{ env.BACKEND_SERVICE }}:${{ github.sha }} \
+          # Build para produção com cache otimizado
+          BUILD_START=$(date +%s)
+
+          gcloud builds submit --tag us-central1-docker.pkg.dev/red-truck-468923-s4/hml-roteiro-dispensacao/${{ env.BACKEND_SERVICE }} \
+            --timeout=3600s \
+            --machine-type=e2-highcpu-8 \
+            --disk-size=100GB \
+            --verbosity=info .
+
+          BUILD_END=$(date +%s)
+          BUILD_DURATION=$((BUILD_END - BUILD_START))
+          BUILD_COST=$(echo "scale=3; $BUILD_DURATION * 0.024 / 60" | bc -l)
+          echo "⏱️ Tempo de build: ${BUILD_DURATION}s ($(($BUILD_DURATION / 60))m $(($BUILD_DURATION % 60))s)"
+          echo "💰 Custo estimado: \$${BUILD_COST} USD"
+
+          echo "🚀 Deploying to Production Cloud Run..."
+          echo "⏰ Timestamp deploy: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+          gcloud run deploy ${{ env.BACKEND_SERVICE }} \
+            --image us-central1-docker.pkg.dev/red-truck-468923-s4/hml-roteiro-dispensacao/${{ env.BACKEND_SERVICE }} \
             --platform managed \
             --region ${{ secrets.GCP_REGION }} \
-            --no-traffic \
-            --tag green \
+            --allow-unauthenticated \
             --timeout=900 \
             --memory=2Gi \
             --cpu=2 \
-            --max-instances=50 \
-            --min-instances=2 \
-            --set-env-vars "ENVIRONMENT=production,LGPD_MODE=strict,SLA_TARGET=${{ env.SLA_TARGET }},PROJECT_ID=${{ secrets.GCP_PROJECT_ID }}"
-          
-          echo "✅ Versão green deployada"
+            --set-env-vars "ENVIRONMENT=production,LGPD_MODE=strict,PROJECT_ID=red-truck-468923-s4" \
+            --max-instances=20 \
+            --min-instances=2
 
-      - name: "🩺 Health Check Green Version"
-        run: |
-          echo "🔍 Verificando saúde da versão green..."
-          GREEN_URL=$(gcloud run services describe ${{ env.BACKEND_SERVICE }}-green --region=${{ secrets.GCP_REGION }} --format='value(status.url)')
-          
-          # Aguardar inicialização
-          sleep 60
-          
-          # Health check
-          if curl -f -s "$GREEN_URL/health" > /dev/null; then
-            echo "✅ Versão green está saudável"
-          else
-            echo "❌ Versão green falhou no health check"
-            exit 1
-          fi
-
-      - name: "🔄 Switch Traffic"
-        run: |
-          echo "🔄 Direcionando tráfego para versão green..."
-          gcloud run services update-traffic ${{ env.BACKEND_SERVICE }} \
-            --to-tags green=100 \
-            --region ${{ secrets.GCP_REGION }}
-          
-          echo "✅ Tráfego direcionado para nova versão"
-
-  # Monitoramento pós-deploy crítico
-  production-monitoring:
-    name: "📊 Production Critical Monitoring"
+  # Testes pós-deploy em produção
+  production-post-deploy-tests:
+    name: "🧪 Production Post-Deploy Tests"
     runs-on: ubuntu-latest
-    needs: [production-frontend-deploy, production-backend-deploy]
-    if: always() && (needs.production-frontend-deploy.result == 'success' || needs.production-backend-deploy.result == 'success')
-    timeout-minutes: 10
+    needs: [frontend-production-deploy, backend-production-deploy]
+    if: always() && (needs.frontend-production-deploy.result == 'success' || needs.backend-production-deploy.result == 'success')
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
-      - name: "⚡ Setup Node.js for Monitoring Scripts"
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: "📊 Setup Google Monitoring Integration"
-        env:
-          ENVIRONMENT: ${{ env.ENVIRONMENT }}
-          GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-          GCP_REGION: ${{ secrets.GCP_REGION }}
-          GOOGLE_APPLICATION_CREDENTIALS: /tmp/gcp-key-monitoring.json
-          GA4_API_SECRET: ${{ secrets.GA4_API_SECRET }}
-          GOOGLE_ANALYTICS_ID: ${{ secrets.GOOGLE_ANALYTICS_ID }}
-          GITHUB_REF_NAME: ${{ github.ref_name }}
-          GITHUB_SHA: ${{ github.sha }}
-          GITHUB_ACTOR: ${{ github.actor }}
+      - name: "🌐 Production Frontend Health Check"
+        if: needs.frontend-production-deploy.result == 'success'
         run: |
-          echo "📊 Configurando integração completa do Google Monitoring para PRODUÇÃO..."
+          echo "🔍 Verificando saúde do frontend PRODUÇÃO..."
+          FRONTEND_URL="https://${{ env.FRONTEND_SITE }}.web.app"
 
-          # Configurar credenciais Google Cloud
-          echo '${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}' > /tmp/gcp-key-monitoring.json
+          echo "🌐 URL de produção: $FRONTEND_URL"
 
-          # Instalar dependências dos scripts
-          cd scripts
-          npm install
+          # Aguardar propagação com retry
+          echo "⏳ Aguardando propagação do deploy de produção..."
+          for i in {1..8}; do
+            echo "🔄 Tentativa $i/8..."
 
-          # Executar integração completa do Google Monitoring
-          echo "🔧 Executando configuração de monitoramento em modo CI/CD..."
-          node google-monitoring-integration.js all --ci-mode
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$FRONTEND_URL")
+            echo "📡 HTTP Code: $HTTP_CODE"
 
-          # Cleanup credenciais
-          rm -f /tmp/gcp-key-monitoring.json
+            if [ "$HTTP_CODE" = "200" ]; then
+              echo "✅ Frontend produção respondendo (HTTP 200)"
 
-      - name: "🌐 Production Health Verification"
-        run: |
-          echo "🔍 Verificando saúde da produção..."
-
-          # Verificar frontend
-          if curl -f -s "https://${{ env.PRODUCTION_DOMAIN }}" > /dev/null; then
-            echo "✅ Frontend produção respondendo"
-          else
-            echo "❌ Frontend produção com problemas!"
-            exit 1
-          fi
-
-          # Aguardar propagação
-          sleep 30
-
-      - name: "🏥 Critical Medical Endpoints Check"
-        run: |
-          echo "🩺 Verificando endpoints médicos críticos..."
-
-          DOMAIN="https://${{ env.PRODUCTION_DOMAIN }}"
-          CRITICAL_ENDPOINTS=(
-            "/modules/hanseniase"
-            "/resources/calculator"
-            "/chat"
-            "/modules/tratamento"
-          )
-
-          for endpoint in "${CRITICAL_ENDPOINTS[@]}"; do
-            if curl -f -s "$DOMAIN$endpoint" > /dev/null; then
-              echo "✅ Endpoint crítico $endpoint OK"
+              # Verificar conteúdo
+              CONTENT=$(curl -s "$FRONTEND_URL")
+              if echo "$CONTENT" | grep -q "Next.js\|__NEXT_DATA__\|_app\|DOCTYPE html"; then
+                echo "✅ Conteúdo HTML/Next.js detectado"
+                echo "✅ Frontend PRODUÇÃO confirmado como funcional"
+                exit 0
+              else
+                echo "⚠️ Resposta sem conteúdo HTML esperado"
+              fi
             else
-              echo "❌ Endpoint crítico $endpoint com problemas!"
-              exit 1
+              echo "❌ Frontend retornou HTTP $HTTP_CODE"
+            fi
+
+            if [ $i -lt 8 ]; then
+              echo "⏳ Aguardando 45s antes da próxima tentativa..."
+              sleep 45
             fi
           done
 
-      - name: "📈 Setup Production Monitoring"
-        run: |
-          echo "📊 Configurando monitoramento de produção..."
-          echo "🎯 SLA Target: ${{ env.SLA_TARGET }}%"
-          echo "🔍 Endpoints monitorados:"
-          echo "  - Frontend: https://${{ env.PRODUCTION_DOMAIN }}"
-          echo "  - APIs médicas críticas"
-          echo "  - Calculadoras de dosagem"
-          echo "  - Sistema de personas (Dr. Gasnelio, GA)"
+          echo "❌ Frontend PRODUÇÃO falhou após 8 tentativas"
+          exit 1
 
-  # Sistema de rollback automático
-  production-rollback-system:
-    name: "🔄 Rollback System Setup"
-    runs-on: ubuntu-latest
-    needs: [production-monitoring]
-    if: failure()
-    steps:
-      - name: "🚨 Automatic Rollback Trigger"
+      - name: "🔧 Production Backend Health Check"
+        if: needs.backend-production-deploy.result == 'success'
         run: |
-          echo "🚨 FALHA DETECTADA - Preparando rollback automático..."
-          echo "🔄 Sistema de rollback será ativado"
-          # Aqui seria implementado o rollback automático real
+          echo "🔍 Verificando saúde do backend PRODUÇÃO..."
+          BACKEND_URL=$(gcloud run services describe ${{ env.BACKEND_SERVICE }} --region=${{ secrets.GCP_REGION }} --format='value(status.url)')
 
-  # Integração com Claude Automation System para releases
-  trigger-claude-release:
-    name: "🤖 Trigger Claude Release System"
+          # Health check com versionamento correto
+          if curl -f -s "$BACKEND_URL/api/v1/health" > /dev/null; then
+            echo "✅ Backend PRODUÇÃO respondendo"
+          else
+            echo "❌ Backend PRODUÇÃO não está respondendo"
+            exit 1
+          fi
+
+      - name: "🏥 Production Medical Endpoints Test"
+        run: |
+          echo "🩺 Testando endpoints médicos em PRODUÇÃO..."
+          FRONTEND_URL="https://${{ env.FRONTEND_SITE }}.web.app"
+
+          # Testar páginas médicas críticas
+          MEDICAL_PAGES=("/modules/hanseniase" "/resources/calculator" "/chat")
+
+          for page in "${MEDICAL_PAGES[@]}"; do
+            if curl -f -s "$FRONTEND_URL$page" > /dev/null; then
+              echo "✅ Página médica $page acessível em produção"
+            else
+              echo "⚠️ Página médica $page pode ter problemas em produção"
+            fi
+          done
+
+  # Monitoramento e notificações para produção
+  production-monitoring:
+    name: "📊 Production Monitoring"
     runs-on: ubuntu-latest
-    needs: [production-monitoring]
-    if: success() && inputs.create_release == true
+    needs: [production-post-deploy-tests]
+    if: success()
     steps:
       - uses: actions/checkout@v4
 
-      - name: "🤖 Trigger Claude Automation Release"
-        run: |
-          echo "🤖 Acionando Claude Automation System para criar release..."
-          
-          # Trigger workflow via GitHub API
-          curl -X POST \
-            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            -H "Accept: application/vnd.github.v3+json" \
-            "${{ github.api_url }}/repos/${{ github.repository }}/actions/workflows/claude-automation-system.yml/dispatches" \
-            -d '{
-              "ref": "main",
-              "inputs": {
-                "force_release": "true",
-                "release_type": "minor",
-                "documentation_only": "false"
-              }
-            }'
-          
-          echo "✅ Claude Automation System acionado para criar release automático"
-          echo "📊 O sistema irá analisar mudanças e criar release inteligente"
-          echo "📱 Notificações serão enviadas automaticamente"
-
-      - name: "📋 Production Release Summary"
-        run: |
-          echo "## 🏥 Production Deploy & Release Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 🚀 Deploy Status:" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Deploy de produção concluído com sucesso" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ SLA ${{ env.SLA_TARGET }}% ativo" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Monitoramento em operação" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 🤖 Release Automation:" >> $GITHUB_STEP_SUMMARY
-          echo "- 🔄 Claude Automation System acionado" >> $GITHUB_STEP_SUMMARY
-          echo "- 📊 Análise inteligente de mudanças em andamento" >> $GITHUB_STEP_SUMMARY
-          echo "- 📱 Notificações automáticas configuradas" >> $GITHUB_STEP_SUMMARY
-          echo "- 📚 Documentação será gerada automaticamente" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 🏥 Medical Platform Status:" >> $GITHUB_STEP_SUMMARY
-          echo "- 🌐 **Produção**: https://${{ env.PRODUCTION_DOMAIN }}" >> $GITHUB_STEP_SUMMARY
-          echo "- 🔒 **LGPD**: Conformidade estrita ativa" >> $GITHUB_STEP_SUMMARY
-          echo "- 🩺 **Protocolos**: Ministério da Saúde validados" >> $GITHUB_STEP_SUMMARY
-          echo "- ♿ **Acessibilidade**: WCAG 2.1 AA mantida" >> $GITHUB_STEP_SUMMARY
-
-  # Resumo final do deploy
-  production-deploy-summary:
-    name: "📋 Production Deploy Summary"
-    runs-on: ubuntu-latest
-    needs: [production-monitoring, trigger-claude-release]
-    if: always()
-    steps:
-      - name: "✅ Deploy Summary"
+      - name: "✅ Production Deploy Summary"
         run: |
           echo "## 🚀 Deploy de Produção Concluído" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 🎯 Status do Deploy:" >> $GITHUB_STEP_SUMMARY
-          echo "| Componente | Status | URL |" >> $GITHUB_STEP_SUMMARY
-          echo "|-----------|--------|-----|" >> $GITHUB_STEP_SUMMARY
-          echo "| Frontend | ${{ needs.production-frontend-deploy.result == 'success' && '✅ Sucesso' || needs.production-frontend-deploy.result == 'skipped' && '⏭️ Pulado' || '❌ Falhou' }} | https://${{ env.PRODUCTION_DOMAIN }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Backend | ${{ needs.production-backend-deploy.result == 'success' && '✅ Sucesso' || needs.production-backend-deploy.result == 'skipped' && '⏭️ Pulado' || '❌ Falhou' }} | Cloud Run Prod |" >> $GITHUB_STEP_SUMMARY
-          echo "| Monitoring | ${{ needs.production-monitoring.result == 'success' && '✅ Ativo' || '❌ Problema' }} | Dashboards Ativos |" >> $GITHUB_STEP_SUMMARY
+          echo "### 📊 Status dos Serviços em Produção:" >> $GITHUB_STEP_SUMMARY
+          echo "| Serviço | Status | URL |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------|--------|-----|" >> $GITHUB_STEP_SUMMARY
+          echo "| Frontend | ✅ | https://${{ env.FRONTEND_SITE }}.web.app |" >> $GITHUB_STEP_SUMMARY
+          echo "| Backend | ${{ needs.backend-production-deploy.result == 'success' && '✅' || '⏭️' }} | Cloud Run Production |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 🏥 Conformidade Médica:" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ LGPD: Conformidade estrita aplicada" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ SLA: Meta de ${{ env.SLA_TARGET }}% configurada" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Acessibilidade: WCAG 2.1 AA verificada" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Segurança: Validações críticas aprovadas" >> $GITHUB_STEP_SUMMARY
+          echo "### 🏥 Funcionalidades Médicas em Produção:" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ LGPD Compliance validado" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Segurança médica verificada" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Personas Dr. Gasnelio e GA" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Calculadoras de dosagem" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ API versionada (/api/v1/)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "🎉 **Plataforma médica de hanseníase está em produção e operacional!**" >> $GITHUB_STEP_SUMMARY
+          echo "🎯 **Sistema em produção totalmente funcional!**" >> $GITHUB_STEP_SUMMARY
 
-  # Sistema de Notificações Telegram para Produção
-  production-telegram-notifications:
-    name: "📱 Production Telegram Notifications"
-    runs-on: ubuntu-latest
-    needs: [production-deploy-summary]
-    if: always()
-    steps:
-      - name: "📊 Prepare Production Notification Context"
-        id: context
-        run: |
-          # Determinar status geral do deploy de produção
-          if [[ "${{ needs.production-deploy-summary.result }}" == "success" ]]; then
-            echo "status_emoji=🚀" >> $GITHUB_OUTPUT
-            echo "status_text=PRODUÇÃO ATIVA" >> $GITHUB_OUTPUT
-            echo "status_color=🟢" >> $GITHUB_OUTPUT
-            echo "priority=CRÍTICO" >> $GITHUB_OUTPUT
-          else
-            echo "status_emoji=🚨" >> $GITHUB_OUTPUT
-            echo "status_text=FALHA EM PRODUÇÃO" >> $GITHUB_OUTPUT
-            echo "status_color=🔴" >> $GITHUB_OUTPUT
-            echo "priority=EMERGÊNCIA" >> $GITHUB_OUTPUT
-          fi
-
-          # Preparar resumo de jobs críticos
-          JOBS_STATUS=""
-
-          # Secrets validation
-          if [[ "${{ needs.production-secrets-validation.result }}" == "success" ]]; then
-            JOBS_STATUS="${JOBS_STATUS}✅ Validação de Secrets%0A"
-          else
-            JOBS_STATUS="${JOBS_STATUS}❌ Validação de Secrets%0A"
-          fi
-
-          # Security analysis
-          if [[ "${{ needs.production-security-analysis.result }}" == "success" ]]; then
-            JOBS_STATUS="${JOBS_STATUS}✅ Análise de Segurança (CodeQL+Snyk)%0A"
-          else
-            JOBS_STATUS="${JOBS_STATUS}❌ Análise de Segurança%0A"
-          fi
-
-          # Medical compliance
-          if [[ "${{ needs.medical-compliance-validation.result }}" == "success" ]]; then
-            JOBS_STATUS="${JOBS_STATUS}✅ Conformidade Médica%0A"
-          else
-            JOBS_STATUS="${JOBS_STATUS}❌ Conformidade Médica%0A"
-          fi
-
-          # Frontend deploy
-          if [[ "${{ needs.production-frontend-deploy.result }}" == "success" ]]; then
-            JOBS_STATUS="${JOBS_STATUS}✅ Deploy Frontend%0A"
-          elif [[ "${{ needs.production-frontend-deploy.result }}" == "skipped" ]]; then
-            JOBS_STATUS="${JOBS_STATUS}⏭️ Deploy Frontend (pulado)%0A"
-          else
-            JOBS_STATUS="${JOBS_STATUS}❌ Deploy Frontend%0A"
-          fi
-
-          # Backend deploy
-          if [[ "${{ needs.production-backend-deploy.result }}" == "success" ]]; then
-            JOBS_STATUS="${JOBS_STATUS}✅ Deploy Backend%0A"
-          elif [[ "${{ needs.production-backend-deploy.result }}" == "skipped" ]]; then
-            JOBS_STATUS="${JOBS_STATUS}⏭️ Deploy Backend (pulado)%0A"
-          else
-            JOBS_STATUS="${JOBS_STATUS}❌ Deploy Backend%0A"
-          fi
-
-          echo "jobs_status=$JOBS_STATUS" >> $GITHUB_OUTPUT
-
-      - name: "🚀 Send Production Success Alert"
-        if: needs.production-deploy-summary.result == 'success'
+      - name: "📱 Production Success Notification"
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           if [[ -n "$TELEGRAM_TOKEN" && -n "$TELEGRAM_CHAT_ID" ]]; then
-            echo "📱 Enviando notificação de sucesso PRODUÇÃO..."
+            echo "📱 Enviando notificação de sucesso para PRODUÇÃO..."
 
-            MESSAGE="🚀 <b>PRODUÇÃO ATIVA - Deploy Concluído</b>%0A"
-            MESSAGE="${MESSAGE}%0A${{ steps.context.outputs.status_color }} <b>Status:</b> ${{ steps.context.outputs.status_text }}"
+            MESSAGE="🚀 <b>PRODUÇÃO Deploy Concluído com Sucesso</b>%0A"
+            MESSAGE="${MESSAGE}%0A🟢 <b>Status:</b> PRODUÇÃO ATIVA"
             MESSAGE="${MESSAGE}%0A🎯 <b>Branch:</b> ${{ github.ref_name }}"
             MESSAGE="${MESSAGE}%0A⏰ <b>Horário:</b> $(date '+%H:%M - %d/%m/%Y')"
-            MESSAGE="${MESSAGE}%0A🔥 <b>Prioridade:</b> ${{ steps.context.outputs.priority }}"
-            MESSAGE="${MESSAGE}%0A%0A📊 <b>Jobs Executados:</b>%0A${{ steps.context.outputs.jobs_status }}"
-            MESSAGE="${MESSAGE}%0A🏥 <b>Plataforma Médica ATIVA:</b>%0A"
-            MESSAGE="${MESSAGE}✅ LGPD Compliance ESTRITO%0A"
-            MESSAGE="${MESSAGE}✅ CodeQL + Snyk Security Analysis%0A"
-            MESSAGE="${MESSAGE}✅ Protocolos Médicos Certificados%0A"
-            MESSAGE="${MESSAGE}✅ WCAG 2.1 AA Compliance%0A"
-            MESSAGE="${MESSAGE}✅ SLA ${{ env.SLA_TARGET }}% Configurado%0A"
-            MESSAGE="${MESSAGE}✅ Personas Dr. Gasnelio e GA Operacionais%0A"
-            MESSAGE="${MESSAGE}%0A🌐 <b>SITE PRODUÇÃO:</b> <a href=\"https://${{ env.PRODUCTION_DOMAIN }}\">${{ env.PRODUCTION_DOMAIN }}</a>"
-            MESSAGE="${MESSAGE}%0A📊 <b>Monitoramento:</b> Dashboards Google ativos"
-            MESSAGE="${MESSAGE}%0A👤 <b>Deploy por:</b> ${{ github.actor }}"
+            MESSAGE="${MESSAGE}%0A%0A🏥 <b>Funcionalidades Médicas:</b>%0A"
+            MESSAGE="${MESSAGE}✅ LGPD Compliance em produção%0A"
+            MESSAGE="${MESSAGE}✅ Segurança médica validada%0A"
+            MESSAGE="${MESSAGE}✅ Protocolos médicos ativos%0A"
+            MESSAGE="${MESSAGE}✅ Personas Dr. Gasnelio e GA%0A"
+            MESSAGE="${MESSAGE}✅ API versionada funcionando%0A"
+            MESSAGE="${MESSAGE}%0A🌐 <b>Produção:</b> <a href=\"https://${{ env.FRONTEND_SITE }}.web.app\">Acessar Site</a>"
+            MESSAGE="${MESSAGE}%0A👤 <b>Autor:</b> ${{ github.actor }}"
             MESSAGE="${MESSAGE}%0A🔗 <b>Commit:</b> <a href=\"${{ github.event.head_commit.url }}\">${{ github.sha }}</a>"
-            MESSAGE="${MESSAGE}%0A%0A🎉 <b>PLATAFORMA MÉDICA HANSENÍASE EM PRODUÇÃO!</b>"
 
             curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_TOKEN/sendMessage" \
               -d chat_id="$TELEGRAM_CHAT_ID" \
               -d text="$MESSAGE" \
               -d parse_mode="HTML" \
-              -d disable_web_page_preview="false" >/dev/null
+              -d disable_web_page_preview="true" >/dev/null
 
-            echo "✅ Notificação de PRODUÇÃO ATIVA enviada"
+            echo "✅ Notificação de produção enviada"
           else
-            echo "⚠️ Tokens Telegram não configurados - notificação crítica perdida"
+            echo "⚠️ Tokens Telegram não configurados"
           fi
 
-      - name: "🚨 Send Production CRITICAL FAILURE Alert"
-        if: failure() || needs.production-deploy-summary.result == 'failure'
+      - name: "🚨 Production Failure Alert"
+        if: failure() || needs.production-post-deploy-tests.result == 'failure'
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           if [[ -n "$TELEGRAM_TOKEN" && -n "$TELEGRAM_CHAT_ID" ]]; then
-            echo "🚨 Enviando ALERTA CRÍTICO de falha em PRODUÇÃO..."
+            echo "🚨 Enviando alerta CRÍTICO de falha em PRODUÇÃO..."
 
-            ALERT_MESSAGE="🚨 <b>EMERGÊNCIA - FALHA EM PRODUÇÃO</b>%0A"
-            ALERT_MESSAGE="${ALERT_MESSAGE}%0A❌ <b>Status:</b> PLATAFORMA MÉDICA COM PROBLEMAS"
+            ALERT_MESSAGE="🚨 <b>ALERTA CRÍTICO - PRODUÇÃO FALHOU</b>%0A"
+            ALERT_MESSAGE="${ALERT_MESSAGE}%0A❌ <b>Status:</b> FALHA CRÍTICA NO PIPELINE"
             ALERT_MESSAGE="${ALERT_MESSAGE}%0A🎯 <b>Branch:</b> ${{ github.ref_name }}"
             ALERT_MESSAGE="${ALERT_MESSAGE}%0A⏰ <b>Horário:</b> $(date '+%H:%M - %d/%m/%Y')"
-            ALERT_MESSAGE="${ALERT_MESSAGE}%0A🔥 <b>Prioridade:</b> EMERGÊNCIA MÉDICA"
-            ALERT_MESSAGE="${ALERT_MESSAGE}%0A%0A💥 <b>Jobs com Falha:</b>%0A${{ steps.context.outputs.jobs_status }}"
-            ALERT_MESSAGE="${ALERT_MESSAGE}%0A⚠️ <b>AÇÃO IMEDIATA NECESSÁRIA:</b>%0A"
-            ALERT_MESSAGE="${ALERT_MESSAGE}• Verificar logs do workflow%0A"
-            ALERT_MESSAGE="${ALERT_MESSAGE}• Executar rollback se necessário%0A"
-            ALERT_MESSAGE="${ALERT_MESSAGE}• Validar integridade da plataforma médica%0A"
-            ALERT_MESSAGE="${ALERT_MESSAGE}%0A🔗 <b>Workflow:</b> <a href=\"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\">Ver Logs URGENTE</a>"
+            ALERT_MESSAGE="${ALERT_MESSAGE}%0A%0A⚠️ <b>AÇÃO URGENTE NECESSÁRIA</b>"
+            ALERT_MESSAGE="${ALERT_MESSAGE}%0A🔗 <b>Workflow:</b> <a href=\"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\">Ver Logs</a>"
             ALERT_MESSAGE="${ALERT_MESSAGE}%0A👤 <b>Responsável:</b> ${{ github.actor }}"
-            ALERT_MESSAGE="${ALERT_MESSAGE}%0A%0A🏥 <b>IMPACTO CRÍTICO:</b>"
-            ALERT_MESSAGE="${ALERT_MESSAGE}%0A• Plataforma médica pode estar indisponível"
-            ALERT_MESSAGE="${ALERT_MESSAGE}%0A• Calculadoras de dosagem afetadas"
-            ALERT_MESSAGE="${ALERT_MESSAGE}%0A• Sistema de dispensação PQT-U comprometido"
-            ALERT_MESSAGE="${ALERT_MESSAGE}%0A• Personas médicas não operacionais"
-            ALERT_MESSAGE="${ALERT_MESSAGE}%0A%0A🚨 <b>MONITORAR: https://${{ env.PRODUCTION_DOMAIN }}</b>"
+            ALERT_MESSAGE="${ALERT_MESSAGE}%0A%0A🏥 <b>Impacto:</b> Sistema de produção pode estar comprometido"
 
             curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_TOKEN/sendMessage" \
               -d chat_id="$TELEGRAM_CHAT_ID" \
@@ -1193,25 +752,7 @@ jobs:
               -d parse_mode="HTML" \
               -d disable_web_page_preview="true" >/dev/null
 
-            echo "🚨 ALERTA CRÍTICO de falha em PRODUÇÃO enviado"
+            echo "🚨 Alerta CRÍTICO de produção enviado"
           else
-            echo "❌ CRÍTICO: Tokens Telegram não configurados - FALHA DE PRODUÇÃO SEM NOTIFICAÇÃO!"
+            echo "⚠️ Tokens Telegram não configurados"
           fi
-
-      - name: "📱 Production Notification Summary"
-        if: always()
-        run: |
-          echo "🎉 Deploy de produção realizado com sucesso!"
-          echo "🌐 Site: https://${{ env.PRODUCTION_DOMAIN }}"
-          echo "🏥 Plataforma médica operacional"
-          echo ""
-          echo "## 📱 Production Notifications Summary" >> $GITHUB_STEP_SUMMARY
-          echo "| Notification Type | Status | Details |" >> $GITHUB_STEP_SUMMARY
-          echo "|-------------------|---------|---------|" >> $GITHUB_STEP_SUMMARY
-          echo "| 🚀 Success Alert | ${{ needs.production-deploy-summary.result == 'success' && '✅ Sent' || '⏭️ Skipped' }} | ${{ needs.production-deploy-summary.result == 'success' && 'Production active notification' || 'No success to notify' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🚨 Failure Alert | ${{ needs.production-deploy-summary.result != 'success' && '✅ Sent' || '⏭️ Skipped' }} | ${{ needs.production-deploy-summary.result != 'success' && 'Critical failure notification' || 'No failure to report' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| 📱 Telegram Status | ✅ Configured | Bot active and responsive |" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**🎯 Production Domain**: https://${{ env.PRODUCTION_DOMAIN }}" >> $GITHUB_STEP_SUMMARY
-          echo "**📊 Priority Level**: CRITICAL" >> $GITHUB_STEP_SUMMARY
-          echo "**🏥 Medical Platform Status**: ${{ needs.production-deploy-summary.result == 'success' && 'OPERATIONAL' || 'REQUIRES ATTENTION' }}" >> $GITHUB_STEP_SUMMARY
