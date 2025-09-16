@@ -8,8 +8,8 @@ const nextConfig = {
   // Dynamic rendering para features em tempo real (leaderboard, chat AI, analytics)
   // output: 'export', // Removido para habilitar SSR e funcionalidades dinâmicas
 
-  // Standalone output para Firebase Hosting híbrido
-  output: "standalone",
+  // Export estático para Firebase Hosting
+  output: "export",
 
   // Ensure trailingSlash is consistent with Firebase Hosting configuration
   trailingSlash: false,
@@ -52,9 +52,9 @@ const nextConfig = {
   // Headers de segurança - desabilitado para export estático (configura no firebase.json)
   // async headers() - não funciona com output: 'export'
 
-  // Configurações de imagem para Cloud Run com segurança aprimorada
+  // Configurações de imagem para export estático
   images: {
-    unoptimized: process.env.NODE_ENV === "production", // Só desabilitar em produção para Cloud Run
+    unoptimized: true, // Obrigatório para output: "export"
     formats: ["image/webp", "image/avif"],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 80, 96, 120, 128, 160, 256, 384], // Adicionado tamanhos para avatares
