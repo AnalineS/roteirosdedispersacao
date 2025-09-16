@@ -118,8 +118,10 @@ echo "⚠️  The following secrets need to be configured manually with actual v
 echo "   - OPENROUTER_API_KEY"
 echo "   - CONTEXT7_API_KEY"
 echo "   - SECRET_KEY"
-echo "   - GCP_SA_KEY"
+echo "   - GCP_SA_KEY (Service Account JSON)"
 echo "   - FIREBASE_TOKEN"
+echo ""
+echo "✅ GCP_PROJECT_ID and GCP_REGION configured as VARIABLES (not secrets)"
 
 # Environment-specific secrets that can be set
 echo "🔐 Setting environment-specific secrets..."

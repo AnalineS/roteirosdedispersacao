@@ -140,17 +140,17 @@ jobs:
                 fi
                 ;;
               "GCP_PROJECT_ID")
-                if [ -z "${{ secrets.GCP_PROJECT_ID }}" ]; then
+                if [ -z "${{ vars.GCP_PROJECT_ID }}" ]; then
                   MISSING_SECRETS+=("$secret")
                 else
-                  echo "✅ $secret: ${{ secrets.GCP_PROJECT_ID }}"
+                  echo "✅ $secret: ${{ vars.GCP_PROJECT_ID }}"
                 fi
                 ;;
               "GCP_REGION")
-                if [ -z "${{ secrets.GCP_REGION }}" ]; then
+                if [ -z "${{ vars.GCP_REGION }}" ]; then
                   MISSING_SECRETS+=("$secret")
                 else
-                  echo "✅ $secret: ${{ secrets.GCP_REGION }}"
+                  echo "✅ $secret: ${{ vars.GCP_REGION }}"
                 fi
                 ;;
               "OPENROUTER_API_KEY")
@@ -530,12 +530,12 @@ jobs:
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          project_id: ${{ vars.GCP_PROJECT_ID }}
 
       - name: "⚡ Setup Cloud SDK"
         uses: google-github-actions/setup-gcloud@v2
         with:
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          project_id: ${{ vars.GCP_PROJECT_ID }}
 
       - name: "🐳 Production Build and Deploy"
         if: steps.changes.outputs.skip-build == 'false'
@@ -577,7 +577,7 @@ jobs:
           gcloud run deploy ${{ env.BACKEND_SERVICE }} \
             --image us-central1-docker.pkg.dev/red-truck-468923-s4/hml-roteiro-dispensacao/${{ env.BACKEND_SERVICE }} \
             --platform managed \
-            --region ${{ secrets.GCP_REGION }} \
+            --region ${{ vars.GCP_REGION }} \
             --allow-unauthenticated \
             --timeout=900 \
             --memory=2Gi \
@@ -641,7 +641,7 @@ jobs:
         if: needs.backend-production-deploy.result == 'success'
         run: |
           echo "🔍 Verificando saúde do backend PRODUÇÃO..."
-          BACKEND_URL=$(gcloud run services describe ${{ env.BACKEND_SERVICE }} --region=${{ secrets.GCP_REGION }} --format='value(status.url)')
+          BACKEND_URL=$(gcloud run services describe ${{ env.BACKEND_SERVICE }} --region=${{ vars.GCP_REGION }} --format='value(status.url)')
 
           # Health check com versionamento correto
           if curl -f -s "$BACKEND_URL/api/v1/health" > /dev/null; then
