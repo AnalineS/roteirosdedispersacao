@@ -228,6 +228,7 @@ INTERNAL_*
 
 # Relatórios de compliance que podem conter dados pessoais
 .claude/automation/reports/
+reports/
 **/lgpd-compliance-*.json
 **/quality-blocker-*.json
 **/compliance-*.json

@@ -5,7 +5,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { leaderboardService, type LeaderboardEntry } from '@/services/firebaseLeaderboard';
+import { leaderboardService, type LeaderboardEntry } from '@/services/leaderboardService';
 import { apiClient } from '@/services/api';
 
 export interface Achievement {

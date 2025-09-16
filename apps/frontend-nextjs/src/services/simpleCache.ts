@@ -58,7 +58,7 @@ interface RealtimeAnalytics {
 // Cache simples para substituir Firestore Cache
 export class FirestoreCache<T> extends SimpleCache<T> {
   constructor(collection: string, ttl?: number) {
-    super(`firestore:${collection}`, ttl);
+    super(`analytics:${collection}`, ttl);
   }
 
   // Métodos compatíveis com o Firebase Cache anterior
@@ -159,7 +159,7 @@ export const analyticsCache = new FirestoreCache('analytics', 5 * 60 * 1000);
 export const ragCache = new FirestoreCache('rag', 10 * 60 * 1000);
 export const knowledgeCache = new FirestoreCache('knowledge', 30 * 60 * 1000);
 
-// Alias para compatibilidade
-export const firestoreCache = analyticsCache;
+// Export principal para analytics
+export const analyticsSimpleCache = analyticsCache;
 
 export default FirestoreCache;

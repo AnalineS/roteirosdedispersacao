@@ -1,5 +1,5 @@
 /**
- * Sistema de Feature Flags baseado em Firebase Remote Config
+ * Sistema de Feature Flags baseado em API backend
  * Permite controle centralizado de funcionalidades com rollback instantâneo
  */
 
@@ -24,7 +24,7 @@ export interface FeatureFlagsConfig {
   ab_test_variant: 'A' | 'B';
   debug_mode: boolean;
   
-  // User flags (Firestore preferences)
+  // User flags (API backend preferences)
   custom_shortcuts: boolean;
   advanced_analytics: boolean;
 }
@@ -77,7 +77,7 @@ export const FEATURE_FLAGS: Record<keyof FeatureFlagsConfig, FeatureFlag> = {
     scope: 'session'
   },
   
-  // User flags via Firestore
+  // User flags via API backend
   custom_shortcuts: {
     key: 'custom_shortcuts',
     defaultValue: false,
@@ -107,7 +107,7 @@ export const DEFAULT_FLAGS: FeatureFlagsConfig = {
 
 // Storage keys
 export const STORAGE_KEYS = {
-  REMOTE_CONFIG_CACHE: 'firebase_remote_config_cache',
+  REMOTE_CONFIG_CACHE: 'api_remote_config_cache',
   SESSION_FLAGS: 'session_feature_flags',
   USER_FLAGS: 'user_feature_flags',
   AB_TEST_ASSIGNMENT: 'ab_test_assignment'
@@ -126,7 +126,7 @@ export const FLAG_ENVIRONMENTS = {
     urgency_badges: true
   },
   production: {
-    // Controlado via Remote Config
+    // Controlado via API backend
   }
 } as const;
 

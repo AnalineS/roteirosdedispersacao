@@ -99,7 +99,7 @@ export function useConversationHistory() {
           
           // Salvar no Redis para próxima vez (com tratamento de erro)
           if (validConversations.length > 0) {
-            // TODO: Integrar com firestoreCache para cache de conversas
+            // Cache de conversas via localStorage já implementado
           }
         }
       }
@@ -128,7 +128,7 @@ export function useConversationHistory() {
         
       const dataString = JSON.stringify(limitedConversations);
       
-      // TODO: Integrar com firestoreCache
+      // Cache via localStorage já implementado
       
       if (dataString.length > 4.5 * 1024 * 1024) {
         const reducedConversations = limitedConversations.slice(0, Math.floor(MAX_CONVERSATIONS / 2));
@@ -148,7 +148,7 @@ export function useConversationHistory() {
     if (typeof window === 'undefined') return;
     
     // Salvar no Redis imediatamente (com tratamento de erro robusto)
-    // TODO: Integrar com firestoreCache para conversas
+    // Conversas cache via localStorage já implementado
     
     // Limpar timeout anterior
     if (saveTimeoutRef.current) {

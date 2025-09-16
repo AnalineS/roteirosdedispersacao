@@ -114,6 +114,8 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: "🔍 Validate Production Secrets"
         run: |
@@ -180,17 +182,13 @@ jobs:
 
       - name: "📋 Validate Production Variables"
         run: |
-          echo "📋 Validando GitHub Variables para PRODUÇÃO..."
+          echo "📋 Validando GitHub Variables para PRODUÇÃO Cloud Run..."
 
-          # Variables obrigatórias para produção
+          # Variables obrigatórias para Cloud Run apenas
           REQUIRED_VARS=(
             "NEXT_PUBLIC_API_URL_PRODUCTION"
-            "NEXT_PUBLIC_FIREBASE_API_KEY"
-            "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN"
-            "NEXT_PUBLIC_FIREBASE_PROJECT_ID"
-            "NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET"
-            "NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID"
-            "NEXT_PUBLIC_FIREBASE_APP_ID"
+            "GCP_PROJECT_ID"
+            "GCP_REGION"
           )
 
           MISSING_VARS=()
@@ -204,46 +202,18 @@ jobs:
                   echo "✅ $var_name: ${{ vars.NEXT_PUBLIC_API_URL_PRODUCTION }}"
                 fi
                 ;;
-              "NEXT_PUBLIC_FIREBASE_API_KEY")
-                if [ -z "${{ vars.NEXT_PUBLIC_FIREBASE_API_KEY }}" ]; then
+              "GCP_PROJECT_ID")
+                if [ -z "${{ vars.GCP_PROJECT_ID }}" ]; then
                   MISSING_VARS+=("$var_name")
                 else
-                  echo "✅ $var_name disponível"
+                  echo "✅ $var_name: ${{ vars.GCP_PROJECT_ID }}"
                 fi
                 ;;
-              "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN")
-                if [ -z "${{ vars.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN }}" ]; then
+              "GCP_REGION")
+                if [ -z "${{ vars.GCP_REGION }}" ]; then
                   MISSING_VARS+=("$var_name")
                 else
-                  echo "✅ $var_name disponível"
-                fi
-                ;;
-              "NEXT_PUBLIC_FIREBASE_PROJECT_ID")
-                if [ -z "${{ vars.NEXT_PUBLIC_FIREBASE_PROJECT_ID }}" ]; then
-                  MISSING_VARS+=("$var_name")
-                else
-                  echo "✅ $var_name disponível"
-                fi
-                ;;
-              "NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET")
-                if [ -z "${{ vars.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET }}" ]; then
-                  MISSING_VARS+=("$var_name")
-                else
-                  echo "✅ $var_name disponível"
-                fi
-                ;;
-              "NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID")
-                if [ -z "${{ vars.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID }}" ]; then
-                  MISSING_VARS+=("$var_name")
-                else
-                  echo "✅ $var_name disponível"
-                fi
-                ;;
-              "NEXT_PUBLIC_FIREBASE_APP_ID")
-                if [ -z "${{ vars.NEXT_PUBLIC_FIREBASE_APP_ID }}" ]; then
-                  MISSING_VARS+=("$var_name")
-                else
-                  echo "✅ $var_name disponível"
+                  echo "✅ $var_name: ${{ vars.GCP_REGION }}"
                 fi
                 ;;
             esac
@@ -255,33 +225,31 @@ jobs:
             exit 1
           fi
 
-          echo "✅ Todas as GitHub Variables obrigatórias estão disponíveis para produção"
+          echo "✅ Todas as GitHub Variables obrigatórias estão disponíveis para produção Cloud Run"
 
-      - name: "🔗 Test Production Firebase & Firestore Connectivity"
+      - name: "🔗 Test Production Cloud Run Connectivity"
         run: |
-          echo "🔥 Testando conectividade Firebase e Firestore para PRODUÇÃO..."
+          echo "☁️ Testando conectividade Cloud Run para PRODUÇÃO..."
 
           # Criar arquivo temporário de credenciais
           echo '${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}' > /tmp/gcp-key.json
           export GOOGLE_APPLICATION_CREDENTIALS="/tmp/gcp-key.json"
 
-          # Instalar Firebase CLI
-          npm install -g firebase-tools
-
-          # Testar autenticação
-          if firebase projects:list --token "$(gcloud auth application-default print-access-token)" >/dev/null 2>&1; then
-            echo "✅ Firebase authentication successful para produção"
+          # Testar autenticação GCP
+          if gcloud auth activate-service-account --key-file=/tmp/gcp-key.json >/dev/null 2>&1; then
+            echo "✅ GCP authentication successful para produção"
           else
-            echo "❌ Firebase authentication failed para produção"
+            echo "❌ GCP authentication failed para produção"
             exit 1
           fi
 
-          # Testar Firestore específicamente para produção
-          echo "🗄️ Validando acesso ao Firestore em produção..."
-          if firebase firestore:databases:list --project=${{ vars.GCP_PROJECT_ID }} >/dev/null 2>&1; then
-            echo "✅ Firestore production validated - sistema usa Firestore, não Redis"
+          # Testar acesso Cloud Run especificamente
+          echo "🚀 Validando acesso ao Cloud Run em produção..."
+          if gcloud run services list --region=${{ vars.GCP_REGION }} --project=${{ vars.GCP_PROJECT_ID }} >/dev/null 2>&1; then
+            echo "✅ Cloud Run production validated - arquitetura 100% Cloud Run"
           else
-            echo "⚠️ Firestore access limited but Firebase auth working"
+            echo "❌ Cloud Run access failed"
+            exit 1
           fi
 
           # Cleanup
@@ -304,6 +272,8 @@ jobs:
         language: ['javascript', 'python']
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: "🔍 Initialize Production CodeQL"
         uses: github/codeql-action/init@v3
@@ -393,6 +363,8 @@ jobs:
         working-directory: apps/frontend-nextjs
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: "⚡ Setup Node.js"
         uses: actions/setup-node@v4
@@ -408,13 +380,8 @@ jobs:
         env:
           NODE_ENV: production
           NEXT_PUBLIC_ENVIRONMENT: production
-          NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL_PRODUCTION }}
-          NEXT_PUBLIC_FIREBASE_API_KEY: ${{ vars.NEXT_PUBLIC_FIREBASE_API_KEY }}
-          NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ vars.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN }}
-          NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${{ vars.NEXT_PUBLIC_FIREBASE_PROJECT_ID }}
-          NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ${{ vars.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET }}
-          NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${{ vars.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID }}
-          NEXT_PUBLIC_FIREBASE_APP_ID: ${{ vars.NEXT_PUBLIC_FIREBASE_APP_ID }}
+          NEXT_PUBLIC_BACKEND_URL: ${{ vars.NEXT_PUBLIC_API_URL_PRODUCTION }}
+          NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
         run: |
           echo "🔨 Building for PRODUCTION environment..."
           npm run build
@@ -455,27 +422,61 @@ jobs:
           BUILD_SIZE=$(du -sh .next/standalone | cut -f1)
           echo "📊 Tamanho do build de produção: $BUILD_SIZE"
 
-      - name: "🔧 Configure Firebase Production Target"
+      - name: "🔑 Google Cloud Auth"
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+
+      - name: "⚡ Setup Cloud SDK"
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+
+      - name: "🐳 Build and Deploy Frontend to Cloud Run (Production)"
         working-directory: apps/frontend-nextjs
         run: |
-          echo "Configurando target Firebase para PRODUÇÃO..."
-          echo '${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}' > gcp-key.json
-          export GOOGLE_APPLICATION_CREDENTIALS="$(pwd)/gcp-key.json"
-          npx firebase-tools@latest use red-truck-468923-s4
-          npx firebase-tools@latest target:apply hosting prod roteiros-de-dispensacao
-          rm gcp-key.json
+          echo "🔨 Building frontend para PRODUÇÃO..."
+          echo "⏰ Timestamp início: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+          echo "🚀 Deploy Cloud Run Frontend - standalone Next.js"
 
-      - name: "🚀 Deploy to Firebase Hosting (Production)"
-        uses: FirebaseExtended/action-hosting-deploy@v0
-        with:
-          repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
-          projectId: red-truck-468923-s4
-          channelId: live
-          target: prod
-          entryPoint: apps/frontend-nextjs
-        env:
-          FIREBASE_CLI_EXPERIMENTS: webframeworks
+          # Verificar Dockerfile
+          if [ -f "Dockerfile" ]; then
+            echo "✅ Dockerfile encontrado"
+            echo "📋 Tamanho do Dockerfile: $(wc -l < Dockerfile) linhas"
+          else
+            echo "❌ Dockerfile não encontrado"
+            exit 1
+          fi
+
+          # Build para produção com cache otimizado
+          BUILD_START=$(date +%s)
+
+          gcloud builds submit --tag us-central1-docker.pkg.dev/red-truck-468923-s4/hml-roteiro-dispensacao/roteiro-dispensacao-frontend \
+            --timeout=1800s \
+            --machine-type=e2-highcpu-4 \
+            --disk-size=50GB \
+            --verbosity=info .
+
+          BUILD_END=$(date +%s)
+          BUILD_DURATION=$((BUILD_END - BUILD_START))
+          echo "⏱️ Tempo de build: ${BUILD_DURATION}s ($(($BUILD_DURATION / 60))m $(($BUILD_DURATION % 60))s)"
+
+          echo "🚀 Deploying to Production Cloud Run..."
+          echo "⏰ Timestamp deploy: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+          gcloud run deploy roteiro-dispensacao-frontend \
+            --image us-central1-docker.pkg.dev/red-truck-468923-s4/hml-roteiro-dispensacao/roteiro-dispensacao-frontend \
+            --platform managed \
+            --region us-central1 \
+            --port 8080 \
+            --memory 1Gi \
+            --cpu 1 \
+            --max-instances 10 \
+            --allow-unauthenticated \
+            --set-env-vars "NODE_ENV=production,NEXT_PUBLIC_BACKEND_URL=${{ vars.NEXT_PUBLIC_API_URL_PRODUCTION }}" \
+            --verbosity info
+
+          echo "✅ Frontend Cloud Run deploy concluído!"
 
   # Deploy Backend para Produção
   backend-production-deploy:
@@ -596,11 +597,28 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: "🔑 Google Cloud Auth for Health Checks"
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+
+      - name: "⚡ Setup Cloud SDK for Health Checks"
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+
       - name: "🌐 Production Frontend Health Check"
         if: needs.frontend-production-deploy.result == 'success'
         run: |
           echo "🔍 Verificando saúde do frontend PRODUÇÃO..."
-          FRONTEND_URL="https://${{ env.FRONTEND_SITE }}.web.app"
+          # Obter URL do Cloud Run Frontend
+          FRONTEND_URL=$(gcloud run services describe roteiro-dispensacao-frontend --region=${{ vars.GCP_REGION }} --format='value(status.url)' 2>/dev/null || echo "")
+
+          if [ -z "$FRONTEND_URL" ]; then
+            echo "⚠️ Frontend Cloud Run não encontrado, usando URL de fallback"
+            FRONTEND_URL="https://roteiro-dispensacao-frontend-339202208157.us-central1.run.app"
+          fi
 
           echo "🌐 URL de produção: $FRONTEND_URL"
 
@@ -654,7 +672,13 @@ jobs:
       - name: "🏥 Production Medical Endpoints Test"
         run: |
           echo "🩺 Testando endpoints médicos em PRODUÇÃO..."
-          FRONTEND_URL="https://${{ env.FRONTEND_SITE }}.web.app"
+          # Obter URL do Cloud Run Frontend
+          FRONTEND_URL=$(gcloud run services describe roteiro-dispensacao-frontend --region=${{ vars.GCP_REGION }} --format='value(status.url)' 2>/dev/null || echo "")
+
+          if [ -z "$FRONTEND_URL" ]; then
+            echo "⚠️ Frontend Cloud Run não encontrado, usando URL de fallback"
+            FRONTEND_URL="https://roteiro-dispensacao-frontend-339202208157.us-central1.run.app"
+          fi
 
           # Testar páginas médicas críticas
           MEDICAL_PAGES=("/modules/hanseniase" "/resources/calculator" "/chat")
@@ -675,6 +699,8 @@ jobs:
     if: success()
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: "✅ Production Deploy Summary"
         run: |
@@ -683,7 +709,7 @@ jobs:
           echo "### 📊 Status dos Serviços em Produção:" >> $GITHUB_STEP_SUMMARY
           echo "| Serviço | Status | URL |" >> $GITHUB_STEP_SUMMARY
           echo "|---------|--------|-----|" >> $GITHUB_STEP_SUMMARY
-          echo "| Frontend | ✅ | https://${{ env.FRONTEND_SITE }}.web.app |" >> $GITHUB_STEP_SUMMARY
+          echo "| Frontend | ✅ | Cloud Run Production |" >> $GITHUB_STEP_SUMMARY
           echo "| Backend | ${{ needs.backend-production-deploy.result == 'success' && '✅' || '⏭️' }} | Cloud Run Production |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 🏥 Funcionalidades Médicas em Produção:" >> $GITHUB_STEP_SUMMARY
@@ -713,7 +739,7 @@ jobs:
             MESSAGE="${MESSAGE}✅ Protocolos médicos ativos%0A"
             MESSAGE="${MESSAGE}✅ Personas Dr. Gasnelio e GA%0A"
             MESSAGE="${MESSAGE}✅ API versionada funcionando%0A"
-            MESSAGE="${MESSAGE}%0A🌐 <b>Produção:</b> <a href=\"https://${{ env.FRONTEND_SITE }}.web.app\">Acessar Site</a>"
+            MESSAGE="${MESSAGE}%0A🌐 <b>Produção:</b> Cloud Run Active"
             MESSAGE="${MESSAGE}%0A👤 <b>Autor:</b> ${{ github.actor }}"
             MESSAGE="${MESSAGE}%0A🔗 <b>Commit:</b> <a href=\"${{ github.event.head_commit.url }}\">${{ github.sha }}</a>"
 

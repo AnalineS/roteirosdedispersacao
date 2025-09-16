@@ -921,7 +921,7 @@ if (require.main === module) {
             }
             
             // Salva relatório em arquivo
-            const reportPath = `./reports/lgpd-compliance-${Date.now()}.json`;
+            const reportPath = path.join(process.cwd(), 'reports', `lgpd-compliance-${Date.now()}.json`);
             require('fs').writeFileSync(reportPath, JSON.stringify(report, null, 2));
             console.log(`📄 Relatório salvo em: ${reportPath}\\n`);
             

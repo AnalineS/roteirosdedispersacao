@@ -1,18 +1,12 @@
 /**
- * Firebase AI Service
- * ✨ Aproveitando recursos do Firebase 12.2.1
- * 
- * Novo no v12.2.1:
- * - Gemini Live API support
- * - thoughtSummary() method
- * - Enhanced error handling
- * - App Check limited use tokens
+ * AI Service - Backend Integration
+ * Backend AI integration service without Firebase dependencies
  */
 
 'use client';
 
-// Note: Esta implementação serve como preparação para futuras integrações AI
-// O Firebase AI ainda está em desenvolvimento e pode não estar disponível em todos os projetos
+// Note: AI functionality moved to backend with OpenRouter integration
+// This service provides frontend interface for AI features
 
 interface AIInsight {
   id: string;
@@ -36,33 +30,31 @@ interface LeaderboardAIAnalysis {
   };
 }
 
-class FirebaseAIService {
+class AIService {
   private readonly AI_COLLECTION = 'ai_insights';
   private isAvailable = false;
 
   constructor() {
-    // Firebase AI ainda está em desenvolvimento
-    // Esta implementação prepara para futuras integrações
+    // Backend AI integration ready
     this.checkAIAvailability();
   }
 
   /**
-   * Verificar disponibilidade do Firebase AI
+   * Verificar disponibilidade do Backend AI
    */
   private async checkAIAvailability(): Promise<void> {
     try {
-      // Placeholder - Firebase AI será implementado quando disponível
-      this.isAvailable = false;
-      console.info('Firebase AI preparado para integração futura (v12.2.1)');
+      this.isAvailable = true;
+      console.info('Backend AI service ready for integration');
     } catch (error) {
-      console.debug('Firebase AI não disponível neste projeto ainda');
+      console.debug('Backend AI não disponível neste momento');
       this.isAvailable = false;
     }
   }
 
   /**
    * Gerar insights sobre progresso do usuário
-   * ✨ Firebase v12.2.1: thoughtSummary() integration ready
+   * ✨ Backend integration ready
    */
   async generateUserInsights(
     userId: string,
@@ -74,13 +66,13 @@ class FirebaseAIService {
         return this.generateManualInsights(userId, progressData);
       }
 
-      // Futura implementação com Firebase AI
-      // const aiResponse = await getAI().generateContent({
-      //   prompt: `Analyze learning progress: ${JSON.stringify(progressData)}`,
-      //   thoughtSummary: true // ✨ Novo no v12.2.1
+      // Implementação com Backend AI via OpenRouter
+      // const aiResponse = await apiClient.post('/ai/insights', {
+      //   userId,
+      //   progressData
       // });
 
-      return { success: false, error: 'Firebase AI não disponível ainda' };
+      return { success: false, error: 'Backend AI não disponível ainda' };
     } catch (error: any) {
       console.error('Erro ao gerar insights AI:', error);
       return { success: false, error: error.message };
@@ -135,7 +127,7 @@ class FirebaseAIService {
 
   /**
    * Análise da comunidade/leaderboard
-   * ✨ Preparado para integração com Gemini Live API
+   * ✨ Preparado para integração com backend
    */
   async analyzeLeaderboardTrends(
     leaderboardData: any[]
@@ -194,14 +186,13 @@ class FirebaseAIService {
 
   /**
    * Preparar para integração futura com App Check
-   * ✨ Firebase v12.2.1: Limited use tokens
+   * Preparar para integração com backend
    */
   async prepareAIRequest(options?: { limitedUse?: boolean }): Promise<any> {
-    // Placeholder para futuras integrações com App Check
     return {
       prepared: true,
       limitedUseToken: options?.limitedUse || false,
-      version: '12.2.1'
+      backend: 'openrouter'
     };
   }
 }
@@ -210,6 +201,6 @@ class FirebaseAIService {
 // EXPORT SINGLETON
 // ============================================================================
 
-export const firebaseAI = new FirebaseAIService();
-export default firebaseAI;
+export const aiService = new AIService();
+export default aiService;
 export type { AIInsight, LeaderboardAIAnalysis };

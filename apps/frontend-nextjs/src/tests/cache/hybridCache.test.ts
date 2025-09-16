@@ -1,22 +1,18 @@
 /**
  * Testes para Sistema de Cache Híbrido
- * Cobertura: Memory, localStorage, Firestore integration, sync, fallback
+ * Cobertura: Memory, localStorage, API integration, sync, fallback
  */
 
 import { hybridCache, HybridCacheUtils } from '../../services/hybridCache';
-import { firestoreCache } from '../../lib/firebase/firestoreCache';
-
-// Mock do Firestore para testes
-jest.mock('../../lib/firebase/firestoreCache', () => ({
-  firestoreCache: {
-    get: jest.fn(),
-    set: jest.fn(),
-    delete: jest.fn(),
-    clear: jest.fn(),
-    isReady: jest.fn(),
-    getStats: jest.fn(),
-  }
-}));
+// Mock do cache API para testes
+const mockApiCache = {
+  get: jest.fn(),
+  set: jest.fn(),
+  delete: jest.fn(),
+  clear: jest.fn(),
+  isReady: jest.fn(),
+  getStats: jest.fn(),
+};
 
 // Mock do localStorage
 const localStorageMock = (() => {

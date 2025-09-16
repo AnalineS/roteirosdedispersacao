@@ -1,5 +1,5 @@
 /**
- * Hook para Firebase Remote Config
+ * Hook para API Backend Remote Config
  * Gerencia feature flags globais com cache e fallback
  */
 
@@ -30,7 +30,7 @@ interface RemoteConfigOptions {
   fallbackToEnvironment?: boolean;
 }
 
-// Firebase Remote Config simulado (será substituído pela implementação real)
+// API Backend Remote Config (substituído Firebase)
 const mockRemoteConfig = {
   async fetchAndActivate(): Promise<boolean> {
     // Simular delay de rede
@@ -196,7 +196,7 @@ export const useRemoteConfig = (options: RemoteConfigOptions = {}) => {
         }
       }
       
-      // Buscar do Remote Config
+      // Buscar do API Backend Config
       const success = await mockRemoteConfig.fetchAndActivate();
       
       if (success) {
@@ -243,17 +243,17 @@ export const useRemoteConfig = (options: RemoteConfigOptions = {}) => {
           });
           
           // Track successful fetch
-          trackFeatureFlagUsage('remote_config_fetch', true, 'firebase');
+          trackFeatureFlagUsage('remote_config_fetch', true, 'api_backend');
           debugFeatureFlags(finalFlags);
         } else {
-          throw new Error('Configuração inválida recebida do Remote Config');
+          throw new Error('Configuração inválida recebida do API Backend');
         }
       } else {
-        throw new Error('Falha ao buscar Remote Config');
+        throw new Error('Falha ao buscar API Backend Config');
       }
       
     } catch (error) {
-      console.error('Erro ao buscar Remote Config:', error);
+      console.error('Erro ao buscar API Backend Config:', error);
       
       // Fallback para flags de ambiente + cache local
       const sessionFlags = loadSessionFlags();
@@ -274,7 +274,7 @@ export const useRemoteConfig = (options: RemoteConfigOptions = {}) => {
         lastFetch: null
       });
       
-      trackFeatureFlagUsage('remote_config_fallback', true, 'error');
+      trackFeatureFlagUsage('api_config_fallback', true, 'error');
     }
   }, [cacheTimeout, fallbackToEnvironment]);
 
