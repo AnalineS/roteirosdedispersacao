@@ -6,8 +6,8 @@
 
 import { ragIntegrationService, IntegratedRAGResponse } from './ragIntegrationService';
 import { ragPerformanceOptimizer } from './ragPerformanceOptimizer';
-import { AnalyticsFirestoreCache } from './analyticsFirestoreCache';
-import { firestoreCache } from './firestoreCache';
+// Removido: AnalyticsFirestoreCache (usando localStorage apenas)
+import { conversationCache } from './simpleCache';
 
 export interface PersonaConfig {
   id: 'dr_gasnelio' | 'ga';
@@ -684,28 +684,8 @@ export class PersonaRAGIntegration {
     response: PersonaResponse,
     userId?: string
   ): Promise<void> {
-    try {
-      await AnalyticsFirestoreCache.saveAnalyticsEvent({
-        id: `persona_interaction_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        sessionId: userId || 'anonymous',
-        timestamp: Date.now(),
-        event: 'persona_interaction',
-        category: 'persona_usage',
-        label: personaId,
-        value: Math.round(response.personalizationScore),
-        customDimensions: {
-          persona: personaId,
-          qualityScore: response.confidence,
-          personalizationScore: response.personalizationScore,
-          contextRelevance: response.contextRelevance,
-          userSatisfactionPrediction: response.userSatisfactionPrediction,
-          processingTime: response.processingTime || 0,
-          knowledgeSource: 'PersonaRAG'
-        }
-      });
-    } catch (error) {
-      console.debug('Error tracking persona interaction:', error);
-    }
+    // REMOVIDO: Analytics Firestore - usando arquitetura simplificada Cloud Run + SQLite
+    console.log(`Persona ${personaId} interaction completed for user ${userId || 'anonymous'}`);
   }
 
   private updateStats(personaId: string, response: PersonaResponse): void {

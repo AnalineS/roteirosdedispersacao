@@ -7,7 +7,7 @@ import { logEvent } from './analytics';
 import { PersonaRAGIntegration } from './personaRAGIntegration';
 import { ChatService } from './chatService';
 import { RAGIntegrationService } from './ragIntegrationService';
-import { firestoreCache } from './firestoreCache';
+import { conversationCache } from './simpleCache';
 
 export interface UserLearningProfile {
   userId: string;
@@ -97,7 +97,7 @@ export interface EducationalInsights {
 
 export class AdvancedAnalyticsService {
   private static instance: AdvancedAnalyticsService;
-  private cache = firestoreCache;
+  private cache = conversationCache;
   private personaRAG: PersonaRAGIntegration;
   private chatService: ChatService;
   private ragService: RAGIntegrationService;
@@ -121,8 +121,8 @@ export class AdvancedAnalyticsService {
   async generateUserLearningProfile(userId: string): Promise<UserLearningProfile> {
     try {
       const cacheKey = `learning_profile:${userId}`;
-      const cached = await this.cache.get(cacheKey);
-      
+      const cached = await this.cache.get(cacheKey) as { lastUpdated: number; profile: UserLearningProfile } | null;
+
       if (cached && Date.now() - cached.lastUpdated < 24 * 60 * 60 * 1000) {
         return cached.profile;
       }
@@ -151,7 +151,7 @@ export class AdvancedAnalyticsService {
       await this.cache.set(cacheKey, { 
         profile, 
         lastUpdated: Date.now() 
-      }, { ttl: 24 * 60 * 60 * 1000 });
+      }, 24 * 60 * 60 * 1000);
 
       return profile;
     } catch (error) {
@@ -181,8 +181,8 @@ export class AdvancedAnalyticsService {
   async getLearningMetrics(): Promise<LearningMetrics> {
     try {
       const cacheKey = 'learning_metrics_global';
-      const cached = await this.cache.get(cacheKey);
-      
+      const cached = await this.cache.get(cacheKey) as { lastUpdated: number; metrics: LearningMetrics } | null;
+
       if (cached && Date.now() - cached.lastUpdated < 60 * 60 * 1000) { // 1 hora
         return cached.metrics;
       }
@@ -215,7 +215,7 @@ export class AdvancedAnalyticsService {
       await this.cache.set(cacheKey, { 
         metrics, 
         lastUpdated: Date.now() 
-      }, { ttl: 60 * 60 * 1000 });
+      }, 60 * 60 * 1000);
 
       return metrics;
     } catch (error) {
@@ -370,8 +370,9 @@ export class AdvancedAnalyticsService {
     try {
       const eventData = {
         userId,
-        timestamp: Date.now(),
-        ...event
+        timestamp: new Date().toISOString(),
+        type: event.type,
+        data: event
       };
 
       // Registrar no analytics global
@@ -379,7 +380,7 @@ export class AdvancedAnalyticsService {
 
       // Armazenar para análises futuras
       const userEventsKey = `learning_events:${userId}`;
-      const userEvents = await this.cache.get(userEventsKey) || [];
+      const userEvents = (await this.cache.get(userEventsKey) as Array<{ type: string; timestamp: string; userId: string; data: Record<string, unknown> }> | null) || [];
       userEvents.push(eventData);
       
       // Manter apenas os últimos 1000 eventos por usuário
@@ -387,7 +388,7 @@ export class AdvancedAnalyticsService {
         userEvents.splice(0, userEvents.length - 1000);
       }
       
-      await this.cache.set(userEventsKey, userEvents, { ttl: 30 * 24 * 60 * 60 * 1000 }); // 30 dias
+      await this.cache.set(userEventsKey, userEvents, 30 * 24 * 60 * 60 * 1000); // 30 dias
 
       console.log(`📊 Evento de aprendizado registrado: ${event.type} para usuário ${userId}`);
     } catch (error) {
@@ -404,8 +405,8 @@ export class AdvancedAnalyticsService {
   private async getPreferredPersona(userId: string): Promise<'dr_gasnelio' | 'ga'> {
     try {
       const prefsKey = `preferences:${userId}`;
-      const prefs = await this.cache.get(prefsKey);
-      return prefs?.preferredPersona || 'dr_gasnelio';
+      const prefs = await this.cache.get(prefsKey) as { preferredPersona?: 'dr_gasnelio' | 'ga' } | null;
+      return (prefs?.preferredPersona as 'dr_gasnelio' | 'ga') || 'dr_gasnelio';
     } catch {
       return 'dr_gasnelio';
     }

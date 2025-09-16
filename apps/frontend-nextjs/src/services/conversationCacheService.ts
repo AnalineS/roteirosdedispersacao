@@ -98,7 +98,7 @@ class ConversationCacheService {
           metadata: {
             persona: session.persona,
             totalMessages: messages.length,
-            duration: session.duration
+            duration: new Date(session.updatedAt).getTime() - new Date(session.createdAt).getTime()
           }
         };
       }

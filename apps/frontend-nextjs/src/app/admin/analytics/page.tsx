@@ -70,12 +70,8 @@ export default function AnalyticsDashboard() {
             startDate: dateRange.start.toISOString(),
             endDate: dateRange.end.toISOString(),
           }),
-          Analytics.firestore.getAggregated(
-            "daily",
-            dateRange.start.getTime(),
-            dateRange.end.getTime(),
-          ),
-          Analytics.firestore.getRealtime(),
+          Analytics.local.getMetrics(),
+          Analytics.local.getSessions(),
         ],
       );
 
@@ -90,7 +86,7 @@ export default function AnalyticsDashboard() {
       setMetrics({
         totalSessions: sessionsData.data?.sessions || 1247,
         avgSessionDuration: sessionsData.data?.avgDuration || 185,
-        realTimeUsers: realtimeData?.activeSessions || 23,
+        realTimeUsers: Array.isArray(realtimeData) ? realtimeData.length : 23,
         bounceRate: sessionsData.data?.bounceRate || 0.32,
         conversionRate: sessionsData.data?.conversionRate || 0.087,
 

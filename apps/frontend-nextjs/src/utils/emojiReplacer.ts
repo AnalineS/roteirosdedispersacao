@@ -32,7 +32,7 @@ export function replaceEmojiWithIcon(text: string, size = 16, className = ''): R
           key: `icon-${match.index}`,
           size: size,
           className: `inline mr-1 ${className}`,
-          'aria-label': match[0] // Manter acessibilidade
+          // title: match[0] // Removido: não suportado por IconProps
         })
       );
     } else {

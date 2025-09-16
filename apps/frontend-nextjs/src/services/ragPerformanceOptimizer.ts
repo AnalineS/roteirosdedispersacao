@@ -7,7 +7,7 @@
 import { ragIntegrationService } from './ragIntegrationService';
 import { semanticSearchEngine } from './semanticSearchEngine';
 import { embeddingService } from './embeddingService';
-import { firestoreCache } from './firestoreCache';
+import { ragCache } from './simpleCache';
 
 export interface PerformanceMetrics {
   avgQueryTime: number;
@@ -148,7 +148,7 @@ export class RAGPerformanceOptimizer {
     const cacheKey = `search:${this.hashQuery(query, options)}`;
     
     // Verificar cache primeiro
-    const cached = await firestoreCache.get(cacheKey);
+    const cached = await ragCache.get(cacheKey);
     if (cached) {
       this.metrics.cacheHitRate += 0.1;
       return cached;
@@ -167,7 +167,7 @@ export class RAGPerformanceOptimizer {
     if (results.length > 0) {
       const avgScore = results.reduce((sum, r) => sum + r.finalScore, 0) / results.length;
       if (avgScore > 0.6) {
-        await firestoreCache.set(cacheKey, results, { ttl: 30 * 60 * 1000 }); // 30 min
+        await ragCache.set(cacheKey, results, 30 * 60 * 1000); // 30 min
       }
     }
 

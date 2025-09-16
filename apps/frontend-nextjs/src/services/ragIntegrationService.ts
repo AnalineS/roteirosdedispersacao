@@ -6,7 +6,7 @@
 import { supabaseRAGClient, RAGResponse, RAGQuery } from './supabaseRAGClient';
 import { medicalKnowledgeBase, SearchResult } from './medicalKnowledgeBase';
 import { embeddingService } from './embeddingService';
-import { firestoreCache } from './firestoreCache';
+import { ragCache } from './simpleCache';
 import { AnalyticsFirestoreCache } from './analyticsFirestoreCache';
 
 export interface RAGIntegrationConfig {
@@ -603,15 +603,15 @@ export class RAGIntegrationService {
       // Cache se qualidade for boa
       if (this.config.cacheResults && response.qualityScore >= 0.6) {
         const cacheKey = `rag_integrated:${strategy}:${this.hashQuery(query)}`;
-        await firestoreCache.set(cacheKey, response, { ttl: 30 * 60 * 1000 }); // 30 min
+        await ragCache.set(cacheKey, response, 30 * 60 * 1000); // 30 min
       }
 
       // Track analytics
       await AnalyticsFirestoreCache.saveAnalyticsEvent({
         id: `rag_query_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         sessionId: 'rag_session',
-        timestamp: Date.now(),
-        event: 'rag_query_executed',
+        timestamp: new Date().toISOString(),
+        type: 'rag_query_executed',
         category: 'knowledge_retrieval',
         label: strategy,
         value: Math.round(response.qualityScore * 100),

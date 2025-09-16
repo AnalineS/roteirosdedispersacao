@@ -3,7 +3,7 @@
  * Substitui o sistema de cache Firebase Analytics
  */
 
-import { FirestoreCache } from './firestoreCache';
+import { FirestoreCache } from './simpleCache';
 
 // Cache específico para analytics
 export const analyticsFirestoreCache = new FirestoreCache('analytics', 5 * 60 * 1000);

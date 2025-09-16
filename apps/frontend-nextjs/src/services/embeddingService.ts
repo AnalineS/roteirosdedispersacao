@@ -4,7 +4,7 @@
  * Sistema 100% funcional sem mocks ou fallbacks
  */
 
-import { firestoreCache } from './firestoreCache';
+import { conversationCache } from './simpleCache';
 
 export interface EmbeddingRequest {
   texts: string[];
@@ -42,7 +42,7 @@ interface EmbeddingCache {
 
 export class EmbeddingService {
   private static instance: EmbeddingService;
-  private cache = firestoreCache;
+  private cache = conversationCache;
   private providers: Map<string, EmbeddingProvider> = new Map();
   private defaultProvider = 'openrouter';
   private defaultModel = 'text-embedding-3-small';
@@ -87,7 +87,7 @@ export class EmbeddingService {
 
       // Verificar cache primeiro
       if (useCache) {
-        const cached = await this.cache.get<EmbeddingCache>(cacheKey);
+        const cached = await this.cache.get(cacheKey) as EmbeddingCache | null;
         if (cached) {
           this.stats.cacheHits++;
           return cached.embedding;
@@ -115,9 +115,7 @@ export class EmbeddingService {
             tokenCount: response.tokensUsed
           };
           
-          await this.cache.set(cacheKey, cacheData, { 
-            ttl: 7 * 24 * 60 * 60 * 1000 // 7 dias
-          });
+          await this.cache.set(cacheKey, cacheData, 7 * 24 * 60 * 60 * 1000); // 7 dias
         }
 
         // Atualizar estatísticas
@@ -197,7 +195,7 @@ export class EmbeddingService {
 
           // Verificar cache
           if (useCache) {
-            const cached = await this.cache.get<EmbeddingCache>(cacheKey);
+            const cached = await this.cache.get(cacheKey) as EmbeddingCache | null;
             if (cached) {
               batchResults.push(cached.embedding);
               cacheHits++;
@@ -221,9 +219,7 @@ export class EmbeddingService {
                 tokenCount: this.estimateTokenCount(cleanText)
               };
               
-              await this.cache.set(cacheKey, cacheData, { 
-                ttl: 7 * 24 * 60 * 60 * 1000 
-              });
+              await this.cache.set(cacheKey, cacheData, 7 * 24 * 60 * 60 * 1000);
             }
           } else {
             // Se falhar, usar embedding zero (último recurso)

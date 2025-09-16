@@ -6,7 +6,7 @@
 
 import { embeddingService } from './embeddingService';
 import { medicalKnowledgeBase, SearchResult, MedicalDocument } from './medicalKnowledgeBase';
-import { firestoreCache } from './firestoreCache';
+import { ragCache } from './simpleCache';
 import { supabaseRAGClient } from './supabaseRAGClient';
 
 export interface SemanticQuery {
@@ -77,7 +77,7 @@ interface QueryExpansion {
 
 export class SemanticSearchEngine {
   private static instance: SemanticSearchEngine;
-  private cache = firestoreCache;
+  private cache = ragCache;
   private knowledgeBase = medicalKnowledgeBase;
   private ragClient = supabaseRAGClient;
   
@@ -152,7 +152,7 @@ export class SemanticSearchEngine {
       
       // Verificar cache se habilitado
       if (options.useCache) {
-        const cached = await this.cache.get<EnhancedSearchResult[]>(cacheKey);
+        const cached = await this.cache.get(cacheKey) as EnhancedSearchResult[] | null;
         if (cached) {
           this.stats.cacheHitRate = (this.stats.cacheHitRate * this.stats.totalQueries + 1) / (this.stats.totalQueries + 1);
           this.updateQueryStats(query, cached.length, Date.now() - startTime);
@@ -179,7 +179,7 @@ export class SemanticSearchEngine {
 
       // Cachear resultados
       if (options.useCache && rankedResults.length > 0) {
-        await this.cache.set(cacheKey, rankedResults, { ttl: 30 * 60 * 1000 }); // 30 minutos
+        await this.cache.set(cacheKey, rankedResults, 30 * 60 * 1000); // 30 minutos
       }
 
       // Atualizar estatísticas
@@ -339,7 +339,7 @@ export class SemanticSearchEngine {
     
     // Carregar estatísticas do cache se disponível
     try {
-      const savedStats = await this.cache.get<SearchStats>('search_stats');
+      const savedStats = await this.cache.get('search_stats') as SearchStats | null;
       if (savedStats) {
         this.stats = { ...this.stats, ...savedStats };
       }
@@ -689,7 +689,7 @@ export class SemanticSearchEngine {
 
     // Salvar estatísticas no cache periodicamente
     if (this.stats.totalQueries % 10 === 0) {
-      this.cache.set('search_stats', this.stats, { ttl: 24 * 60 * 60 * 1000 });
+      this.cache.set('search_stats', this.stats, 24 * 60 * 60 * 1000);
     }
   }
 

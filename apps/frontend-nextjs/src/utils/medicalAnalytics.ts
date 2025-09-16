@@ -156,8 +156,8 @@ export class MedicalAnalytics {
       AnalyticsFirestoreCache.saveAnalyticsEvent({
         id: `medical_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         sessionId,
-        timestamp: Date.now(),
-        event: enrichedEvent.event,
+        timestamp: new Date().toISOString(),
+        type: enrichedEvent.event,
         category: enrichedEvent.event_category,
         label: enrichedEvent.event_label,
         value: enrichedEvent.value,
@@ -230,8 +230,8 @@ export class MedicalAnalytics {
 
     // Track como ação crítica no Firestore
     const sessionId = this.getCurrentSessionId();
-    AnalyticsFirestoreCache.trackMedicalMetric(sessionId, {
-      type: 'critical_action',
+    AnalyticsFirestoreCache.trackMedicalMetric({
+      type: 'adverse_effect',
       value: action.timeToComplete,
       context: {
         actionType: action.type,
@@ -475,8 +475,13 @@ export class MedicalAnalytics {
       // Iniciar sessão médica no Firestore
       AnalyticsFirestoreCache.startAnalyticsSession({
         id: this.currentSessionId,
-        deviceType: this.getDeviceType(),
-        userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'server'
+        startTime: new Date().toISOString(),
+        status: 'active',
+        events: [],
+        metadata: {
+          deviceType: this.getDeviceType(),
+          userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'server'
+        }
       }).catch((error: unknown) => {
         console.warn('Failed to start medical analytics session:', error);
       });

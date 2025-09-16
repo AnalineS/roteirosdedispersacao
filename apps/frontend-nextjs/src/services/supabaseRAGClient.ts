@@ -3,7 +3,7 @@
  * Integra frontend Next.js com backend RAG Supabase
  */
 
-import { firestoreCache } from './firestoreCache';
+import { ragCache } from './simpleCache';
 
 export interface RAGQuery {
   query: string;
@@ -70,7 +70,7 @@ export class SupabaseRAGClient {
   private static instance: SupabaseRAGClient;
   private baseUrl: string;
   private apiKey: string | null = null;
-  private cache = firestoreCache;
+  private cache = ragCache;
   private stats: Partial<RAGStats> = {
     queriesProcessed: 0,
     cacheHits: 0,
@@ -104,10 +104,10 @@ export class SupabaseRAGClient {
       
       // Tentar cache primeiro se habilitado
       if (ragQuery.useCache !== false) {
-        const cached = await this.cache.get<RAGResponse>(cacheKey);
+        const cached = await this.cache.get(cacheKey) as RAGResponse | null;
         if (cached) {
           this.stats.cacheHits = (this.stats.cacheHits || 0) + 1;
-          return { ...cached, cached: true };
+          return cached;
         }
       }
 
@@ -122,7 +122,7 @@ export class SupabaseRAGClient {
       if (response) {
         // Cachear resposta se for de boa qualidade
         if (response.qualityScore >= 0.6) {
-          await this.cache.set(cacheKey, response, { ttl: 30 * 60 * 1000 }); // 30 minutos
+          await this.cache.set(cacheKey, response, 30 * 60 * 1000); // 30 minutos
         }
 
         this.stats.queriesProcessed = (this.stats.queriesProcessed || 0) + 1;

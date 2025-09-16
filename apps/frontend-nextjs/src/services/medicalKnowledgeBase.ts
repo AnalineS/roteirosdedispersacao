@@ -6,7 +6,7 @@
  */
 
 import { embeddingService } from './embeddingService';
-import { firestoreCache } from './firestoreCache';
+import { knowledgeCache } from './simpleCache';
 import { supabaseRAGClient } from './supabaseRAGClient';
 
 export interface MedicalDocument {
@@ -54,7 +54,7 @@ export interface KnowledgeStats {
 
 export class MedicalKnowledgeBase {
   private static instance: MedicalKnowledgeBase;
-  private cache = firestoreCache;
+  private cache = knowledgeCache;
   private documents: Map<string, MedicalDocument> = new Map();
   private chunks: Map<string, MedicalChunk> = new Map();
   private categoryIndex: Map<string, Set<string>> = new Map();
@@ -108,7 +108,7 @@ export class MedicalKnowledgeBase {
       this.updateIndexes(document);
 
       // Cachear documento
-      await this.cache.set(`medical_doc:${document.id}`, document, { ttl: 24 * 60 * 60 * 1000 });
+      await this.cache.set(`medical_doc:${document.id}`, document, 24 * 60 * 60 * 1000);
 
       // Atualizar estatísticas
       this.updateStats();
@@ -213,7 +213,7 @@ export class MedicalKnowledgeBase {
     let document = this.documents.get(id);
     
     if (!document) {
-      const cachedDocument = await this.cache.get<MedicalDocument>(`medical_doc:${id}`);
+      const cachedDocument = await this.cache.get(`medical_doc:${id}`) as MedicalDocument | null;
       if (cachedDocument) {
         this.documents.set(id, cachedDocument);
         document = cachedDocument;

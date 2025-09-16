@@ -6,7 +6,7 @@
 import { PersonaRAGIntegration, type PersonaResponse } from './personaRAGIntegration';
 import { RAGIntegrationService } from './ragIntegrationService';
 import { logEvent } from './analytics';
-import { firestoreCache } from './firestoreCache';
+import { conversationCache } from './simpleCache';
 
 export interface ChatSession {
   id: string;
@@ -65,7 +65,7 @@ export class ChatService {
   private static instance: ChatService;
   private personaRAG: PersonaRAGIntegration;
   private ragService: RAGIntegrationService;
-  private cache = firestoreCache;
+  private cache = conversationCache;
   private activeSessions = new Map<string, ChatSession>();
   private analytics: ChatAnalytics;
 
@@ -130,7 +130,7 @@ export class ChatService {
     this.analytics.totalSessions++;
 
     // Salvar sessão no cache
-    await this.cache.set(`session:${sessionId}`, session, { ttl: 24 * 60 * 60 * 1000 }); // 24 horas
+    await this.cache.set(`session:${sessionId}`, session, 24 * 60 * 60 * 1000); // 24 horas
 
     // Analytics
     logEvent('CHAT', 'session_started', JSON.stringify({
@@ -195,7 +195,7 @@ export class ChatService {
       await this.cache.set(
         `message:${assistantMessage.id}`, 
         assistantMessage, 
-        { ttl: 7 * 24 * 60 * 60 * 1000 } // 7 dias
+        7 * 24 * 60 * 60 * 1000 // 7 dias
       );
 
       // Atualizar analytics
@@ -294,7 +294,7 @@ export class ChatService {
       duration: sessionDuration
     };
 
-    await this.cache.set(`session:${sessionId}`, session, { ttl: 7 * 24 * 60 * 60 * 1000 });
+    await this.cache.set(`session:${sessionId}`, session, 7 * 24 * 60 * 60 * 1000);
 
     console.log(`🏁 Sessão finalizada: ${sessionId} (${sessionDuration}ms, ${session.messageCount} msgs)`);
   }
@@ -355,7 +355,7 @@ export class ChatService {
     const updated = { ...current, ...preferences };
     
     const cacheKey = `preferences:${userId}`;
-    await this.cache.set(cacheKey, updated, { ttl: 30 * 24 * 60 * 60 * 1000 }); // 30 dias
+    await this.cache.set(cacheKey, updated, 30 * 24 * 60 * 60 * 1000); // 30 dias
 
     logEvent('USER', 'preferences_updated', JSON.stringify({
       userId,
@@ -435,7 +435,7 @@ export class ChatService {
 
   private async saveAnalytics(): Promise<void> {
     try {
-      await this.cache.set('chat_analytics', this.analytics, { ttl: 24 * 60 * 60 * 1000 });
+      await this.cache.set('chat_analytics', this.analytics, 24 * 60 * 60 * 1000);
     } catch (error) {
       console.error('Erro ao salvar analytics:', error);
     }
@@ -470,7 +470,7 @@ export class ChatService {
     try {
       const testKey = 'health_check';
       const testValue = Date.now();
-      await this.cache.set(testKey, testValue, { ttl: 1000 });
+      await this.cache.set(testKey, testValue, 1000);
       const retrieved = await this.cache.get(testKey);
       return retrieved === testValue;
     } catch {

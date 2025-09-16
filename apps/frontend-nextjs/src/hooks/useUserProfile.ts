@@ -59,7 +59,10 @@ const STORAGE_VERSION = '1.0';
 const defaultPreferences = {
   language: 'simple' as const,
   notifications: true,
-  theme: 'auto' as const
+  theme: 'auto' as const,
+  emailUpdates: false,
+  dataCollection: false,
+  lgpdConsent: false
 };
 
 export function useUserProfile(): UserProfileHook {
@@ -205,13 +208,13 @@ export function useUserProfile(): UserProfileHook {
   // FUNÇÕES DE SALVAMENTO
   // ============================================
 
-  const saveToLocalStorageOnly = useCallback((profileToSave: LocalUserProfile): BaseUserProfile => {
+  const saveToLocalStorageOnly = useCallback((profileToSave: LocalUserProfile): void => {
     try {
-      const enrichedProfile: UserProfile = {
+      const enrichedProfile: LocalUserProfile = {
         ...profileToSave,
         preferences: { ...defaultPreferences, ...profileToSave.preferences },
         history: {
-          lastPersona: profileToSave.selectedPersona || 'ga',
+          lastPersona: (profileToSave.selectedPersona as 'ga' | 'dr_gasnelio') || 'ga',
           conversationCount: (profile?.history?.conversationCount || 0) + 1,
           lastAccess: new Date().toISOString(),
           preferredTopics: profile?.history?.preferredTopics || []
@@ -231,16 +234,16 @@ export function useUserProfile(): UserProfileHook {
     }
   }, [profile]);
 
-  const saveProfile = async (newProfile: LocalUserProfile): Promise<BaseUserProfile> => {
+  const saveProfile = async (newProfile: LocalUserProfile): Promise<void> => {
     try {
       setSyncStatus('syncing');
 
       // Atualizar estado local imediatamente
-      const enrichedProfile: UserProfile = {
+      const enrichedProfile: LocalUserProfile = {
         ...newProfile,
         preferences: { ...defaultPreferences, ...newProfile.preferences },
         history: {
-          lastPersona: newProfile.selectedPersona || 'ga',
+          lastPersona: (newProfile.selectedPersona as 'ga' | 'dr_gasnelio') || 'ga',
           conversationCount: (profile?.history?.conversationCount || 0) + 1,
           lastAccess: new Date().toISOString(),
           preferredTopics: profile?.history?.preferredTopics || []
