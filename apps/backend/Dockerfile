@@ -12,8 +12,10 @@ ARG DEBIAN_FRONTEND=noninteractive
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-# Instalar TODAS as dependências de build com compatibilidade Debian 12
-RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections && \
+# Instalar TODAS as dependências de build com cache APT estratégico
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections && \
     apt-get update && \
     echo "=== Verificando versão do Debian ===" && cat /etc/debian_version && \
     echo "=== Instalando dependências core ===" && \
@@ -77,9 +79,11 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 # Copiar requirements primeiro (para cache Docker)
 COPY requirements.txt .
 
-# Instalar dependências Python com cache e timeout estendido
-RUN --mount=type=cache,target=/root/.cache/pip \
+# Instalar dependências Python com cache otimizado estratégico
+# Cache multi-layer para máxima eficiência
+RUN --mount=type=cache,target=/root/.cache/pip,sharing=locked \
     pip install --upgrade pip setuptools wheel && \
+    pip install --timeout 1800 --no-deps -r requirements.txt || \
     pip install --timeout 1800 -r requirements.txt
 
 # Stage 2: Runtime otimizado com cache
