@@ -3,19 +3,20 @@
  * Pode ser executado via npm run test:cache ou diretamente
  */
 
-import CachePerformanceTest from '../tests/cachePerformanceTest';
+import { runCachePerformanceTest } from '../tests/cachePerformanceTest';
 
 async function runCachePerformanceTests() {
   console.log('🎯 Executando testes de performance do cache híbrido...\n');
 
   try {
-    const tester = new CachePerformanceTest();
-    
     // Executar testes completos
-    const metrics = await tester.runCompletePerformanceTest();
-    
-    // Gerar relatório
-    const report = tester.generateDetailedReport(metrics);
+    const metrics = await runCachePerformanceTest();
+
+    // Gerar relatório simplificado
+    console.log('Resultados dos testes:');
+    metrics.forEach(result => {
+      console.log(`- ${result.operation}: ${result.duration.toFixed(2)}ms (${result.success ? 'OK' : 'ERRO'})`);
+    });
     
     console.log('\n' + '='.repeat(80));
     console.log('📋 RELATÓRIO DE PERFORMANCE');

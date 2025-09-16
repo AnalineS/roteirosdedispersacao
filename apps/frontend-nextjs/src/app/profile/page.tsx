@@ -15,7 +15,9 @@ import {
 } from 'lucide-react';
 import { useSafeAuth as useAuth } from '@/hooks/useSafeAuth';
 import { SocialAuthButtons } from '@/components/auth';
-import type { UserFocus } from '@/lib/firebase/types';
+import type { UserProfile } from '@/types/auth';
+
+type UserFocus = UserProfile['focus'];
 import { SocialProfile, AvatarUploader, EmailPreferences, ConnectedAccounts } from '@/components/profile';
 
 interface ProfileFormData {
@@ -511,13 +513,7 @@ export default function ProfilePage() {
               {/* Email Preferences - PR #175 */}
               <div className="form-section">
                 <h3 className="section-title">Preferências de Email</h3>
-                <EmailPreferences 
-                  userId={user?.uid || ''}
-                  onPreferencesChange={async (prefs) => {
-                    console.log('Email preferences updated:', prefs);
-                    return true;
-                  }}
-                />
+                <EmailPreferences />
               </div>
 
               {/* Connected Accounts - PR #175 */}

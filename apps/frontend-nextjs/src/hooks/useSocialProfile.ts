@@ -1,24 +1,16 @@
-'use client';
+/**
+ * Social Profile Hook - Perfil Social Baseado em API
+ * Substitui Firebase com funcionalidades sociais via API
+ */
 
 import { useState, useEffect, useCallback } from 'react';
-import { useSafeAuth as useAuth } from './useSafeAuth';
-import { db } from '@/lib/firebase/config';
-import { 
-  doc, 
-  getDoc, 
-  setDoc, 
-  updateDoc, 
-  serverTimestamp,
-  onSnapshot,
-  Unsubscribe 
-} from 'firebase/firestore';
+import { useAuth } from '@/hooks/useAuth';
+import { socialService, type SocialProfile, type ShareableContent } from '@/services/socialService';
+import type { AuthUser } from '@/types/auth';
 
-export interface SocialProfile {
-  uid: string;
+// Extended SocialProfile para compatibilidade com SocialProfile.tsx
+export interface ExtendedSocialProfile extends SocialProfile {
   email?: string;
-  displayName?: string;
-  photoURL?: string;
-  bio?: string;
   location?: string;
   website?: string;
   socialLinks?: {
@@ -26,342 +18,306 @@ export interface SocialProfile {
     linkedin?: string;
     github?: string;
   };
-  emailPreferences?: {
-    notifications: boolean;
-    marketing: boolean;
-    weeklyDigest: boolean;
-    mentions: boolean;
-  };
-  privacy?: {
-    profileVisible: boolean;
-    progressVisible: boolean;
-    achievementsVisible: boolean;
-    emailVisible: boolean;
-  };
-  stats?: {
-    completedModules: number;
-    totalPoints: number;
-    streak: number;
-    joinedAt: string;
-    lastActive: string;
-  };
-  achievements?: string[];
-  connectedAccounts?: {
-    google?: {
-      connected: boolean;
-      email?: string;
-      connectedAt?: string;
-    };
-    microsoft?: {
-      connected: boolean;
-      email?: string;
-      connectedAt?: string;
-    };
-  };
   createdAt?: string;
-  updatedAt?: string;
+  privacy?: {
+    profileVisible?: boolean;
+    progressVisible?: boolean;
+    achievementsVisible?: boolean;
+    emailVisible?: boolean;
+  };
+  emailPreferences?: {
+    dailyDigest?: boolean;
+    weeklyReport?: boolean;
+    achievements?: boolean;
+    certificates?: boolean;
+    newFeatures?: boolean;
+  };
+  stats: {
+    totalConversations: number;
+    certificatesEarned: number;
+    streakDays: number;
+    joinedAt: string;
+    // Compatibilidade adicional
+    totalPoints?: number;
+    completedModules?: number;
+    streak?: number;
+  };
 }
 
-interface UseSocialProfileReturn {
-  profile: SocialProfile | null;
+export interface SocialProfileHook {
+  profile: ExtendedSocialProfile | null;
   loading: boolean;
   error: string | null;
-  updateProfile: (updates: Partial<SocialProfile>) => Promise<boolean>;
-  updateAvatar: (photoURL: string) => Promise<boolean>;
-  updateEmailPreferences: (preferences: SocialProfile['emailPreferences']) => Promise<boolean>;
-  updatePrivacySettings: (privacy: SocialProfile['privacy']) => Promise<boolean>;
-  connectAccount: (provider: 'google' | 'microsoft', accountData: any) => Promise<boolean>;
-  disconnectAccount: (provider: 'google' | 'microsoft') => Promise<boolean>;
+
+  // Profile Management
+  updateProfile: (updates: Partial<ExtendedSocialProfile>) => Promise<boolean>;
+  updateAvatar: (url: string) => Promise<boolean>;
+  updateEmailPreferences: (preferences: any) => Promise<boolean>;
+  updatePrivacySettings: (settings: any) => Promise<boolean>;
+  toggleProfileVisibility: () => Promise<boolean>;
+
+  // Sharing Functions
+  shareAchievement: (achievementId: string) => Promise<{ success: boolean; shareUrl?: string }>;
+  shareCertificate: (certificateId: string) => Promise<{ success: boolean; shareUrl?: string }>;
+  shareProgress: (progressData: any) => Promise<{ success: boolean; shareUrl?: string }>;
+
+  // Social Features
+  getPublicProfiles: (limit?: number) => Promise<ExtendedSocialProfile[]>;
+  generateShareUrl: (type: 'achievement' | 'certificate', id: string) => string;
+
+  // Utility
   refreshProfile: () => Promise<void>;
-  reset: () => void;
 }
 
-const DEFAULT_EMAIL_PREFERENCES: SocialProfile['emailPreferences'] = {
-  notifications: true,
-  marketing: false,
-  weeklyDigest: true,
-  mentions: true,
-};
-
-const DEFAULT_PRIVACY: SocialProfile['privacy'] = {
-  profileVisible: true,
-  progressVisible: true,
-  achievementsVisible: true,
-  emailVisible: false,
-};
-
-export function useSocialProfile(): UseSocialProfileReturn {
-  const { user, loading: authLoading } = useAuth();
-  const [profile, setProfile] = useState<SocialProfile | null>(null);
+export function useSocialProfile(): SocialProfileHook {
+  const { user, isAuthenticated } = useAuth();
+  const [profile, setProfile] = useState<ExtendedSocialProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const reset = useCallback(() => {
-    setProfile(null);
-    setLoading(true);
-    setError(null);
-  }, []);
-
-  // Criar perfil social padrão para novo usuário
-  const createDefaultProfile = useCallback(async (user: any): Promise<SocialProfile> => {
-    const defaultProfile: SocialProfile = {
-      uid: user.uid,
-      email: user.email || '',
-      displayName: user.displayName || '',
-      photoURL: user.photoURL || '',
-      bio: '',
-      location: '',
-      website: '',
-      socialLinks: {},
-      emailPreferences: DEFAULT_EMAIL_PREFERENCES,
-      privacy: DEFAULT_PRIVACY,
-      stats: {
-        completedModules: 0,
-        totalPoints: 0,
-        streak: 0,
-        joinedAt: new Date().toISOString(),
-        lastActive: new Date().toISOString(),
-      },
-      achievements: [],
-      connectedAccounts: {},
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    try {
-      if (!db) throw new Error('Firebase não configurado');
-      const profileRef = doc(db, 'socialProfiles', user.uid);
-      await setDoc(profileRef, {
-        ...defaultProfile,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-        'stats.joinedAt': serverTimestamp(),
-        'stats.lastActive': serverTimestamp(),
-      });
-      
-      return defaultProfile;
-    } catch (err) {
-      console.error('Erro ao criar perfil social padrão:', err);
-      throw err;
-    }
-  }, []);
-
-  // Buscar perfil social do Firestore
-  const fetchProfile = useCallback(async (uid: string): Promise<SocialProfile | null> => {
-    try {
-      if (!db) throw new Error('Firebase não configurado');
-      const profileRef = doc(db, 'socialProfiles', uid);
-      const profileDoc = await getDoc(profileRef);
-      
-      if (profileDoc.exists()) {
-        const data = profileDoc.data();
-        
-        // Converter timestamps do Firestore para strings ISO
-        const profile: SocialProfile = {
-          ...data as SocialProfile,
-          uid,
-          createdAt: data.createdAt?.toDate?.()?.toISOString() || data.createdAt,
-          updatedAt: data.updatedAt?.toDate?.()?.toISOString() || data.updatedAt,
-          stats: {
-            ...data.stats,
-            joinedAt: data.stats?.joinedAt?.toDate?.()?.toISOString() || data.stats?.joinedAt || new Date().toISOString(),
-            lastActive: data.stats?.lastActive?.toDate?.()?.toISOString() || data.stats?.lastActive || new Date().toISOString(),
-          },
-        };
-        
-        return profile;
-      }
-      
-      return null;
-    } catch (err) {
-      console.error('Erro ao buscar perfil social:', err);
-      throw err;
-    }
-  }, []);
-
-  // Carregar perfil quando usuário está autenticado
-  useEffect(() => {
-    if (authLoading) return;
-
-    if (!user) {
+  /**
+   * Carregar perfil social do usuário
+   */
+  const loadProfile = useCallback(async () => {
+    if (!isAuthenticated || !user) {
       setProfile(null);
       setLoading(false);
       return;
     }
 
-    let unsubscribe: Unsubscribe;
-
-    const loadProfile = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        // Tentar buscar perfil existente
-        let socialProfile = await fetchProfile(user.uid);
-        
-        // Se não existe, criar um novo
-        if (!socialProfile) {
-          socialProfile = await createDefaultProfile(user);
-        }
-
-        setProfile(socialProfile);
-
-        // Configurar listener em tempo real
-        if (!db) throw new Error('Firebase não configurado');
-      const profileRef = doc(db, 'socialProfiles', user.uid);
-        unsubscribe = onSnapshot(profileRef, (doc) => {
-          if (doc.exists()) {
-            const data = doc.data();
-            const updatedProfile: SocialProfile = {
-              ...data as SocialProfile,
-              uid: user.uid,
-              createdAt: data.createdAt?.toDate?.()?.toISOString() || data.createdAt,
-              updatedAt: data.updatedAt?.toDate?.()?.toISOString() || data.updatedAt,
-              stats: {
-                ...data.stats,
-                joinedAt: data.stats?.joinedAt?.toDate?.()?.toISOString() || data.stats?.joinedAt || new Date().toISOString(),
-                lastActive: data.stats?.lastActive?.toDate?.()?.toISOString() || data.stats?.lastActive || new Date().toISOString(),
-              },
-            };
-            setProfile(updatedProfile);
-          }
-        }, (error) => {
-          console.error('Erro no listener do perfil social:', error);
-          setError('Erro ao sincronizar perfil social');
-        });
-        
-      } catch (err: any) {
-        console.error('Erro ao carregar perfil social:', err);
-        setError(err.message || 'Erro ao carregar perfil social');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadProfile();
-
-    // Cleanup
-    return () => {
-      if (unsubscribe) {
-        unsubscribe();
-      }
-    };
-  }, [user, authLoading, fetchProfile, createDefaultProfile]);
-
-  // Atualizar perfil
-  const updateProfile = useCallback(async (updates: Partial<SocialProfile>): Promise<boolean> => {
-    if (!user || !profile) {
-      setError('Usuário não autenticado ou perfil não carregado');
-      return false;
-    }
-
-    try {
-      if (!db) throw new Error('Firebase não configurado');
-      const profileRef = doc(db, 'socialProfiles', user.uid);
-      const updateData = {
-        ...updates,
-        updatedAt: serverTimestamp(),
-        'stats.lastActive': serverTimestamp(),
-      };
-
-      await updateDoc(profileRef, updateData);
-      return true;
-    } catch (err: any) {
-      console.error('Erro ao atualizar perfil social:', err);
-      setError(err.message || 'Erro ao atualizar perfil social');
-      return false;
-    }
-  }, [user, profile]);
-
-  // Atualizar avatar
-  const updateAvatar = useCallback(async (photoURL: string): Promise<boolean> => {
-    if (!user) {
-      setError('Usuário não autenticado');
-      return false;
-    }
-
-    try {
-      // Atualizar no perfil social
-      const success = await updateProfile({ photoURL });
-      
-      // Também atualizar no Firebase Auth se necessário
-      if (success && user.photoURL !== photoURL) {
-        const { updateProfile: updateAuthProfile } = await import('firebase/auth');
-        const { auth } = await import('@/lib/firebase/config');
-        if (auth && auth.currentUser) {
-          await updateAuthProfile(auth.currentUser, { photoURL });
-        }
-      }
-      
-      return success;
-    } catch (err: any) {
-      console.error('Erro ao atualizar avatar:', err);
-      setError(err.message || 'Erro ao atualizar avatar');
-      return false;
-    }
-  }, [user, updateProfile]);
-
-  // Atualizar preferências de email
-  const updateEmailPreferences = useCallback(async (emailPreferences: SocialProfile['emailPreferences']): Promise<boolean> => {
-    return updateProfile({ emailPreferences });
-  }, [updateProfile]);
-
-  // Atualizar configurações de privacidade
-  const updatePrivacySettings = useCallback(async (privacy: SocialProfile['privacy']): Promise<boolean> => {
-    return updateProfile({ privacy });
-  }, [updateProfile]);
-
-  // Conectar conta externa
-  const connectAccount = useCallback(async (provider: 'google' | 'microsoft', accountData: any): Promise<boolean> => {
-    if (!profile) return false;
-
-    const connectedAccounts = {
-      ...profile.connectedAccounts,
-      [provider]: {
-        connected: true,
-        email: accountData.email,
-        connectedAt: new Date().toISOString(),
-      },
-    };
-
-    return updateProfile({ connectedAccounts });
-  }, [profile, updateProfile]);
-
-  // Desconectar conta externa
-  const disconnectAccount = useCallback(async (provider: 'google' | 'microsoft'): Promise<boolean> => {
-    if (!profile) return false;
-
-    const connectedAccounts = {
-      ...profile.connectedAccounts,
-      [provider]: {
-        connected: false,
-        email: undefined,
-        connectedAt: undefined,
-      },
-    };
-
-    return updateProfile({ connectedAccounts });
-  }, [profile, updateProfile]);
-
-  // Atualizar dados manualmente
-  const refreshProfile = useCallback(async (): Promise<void> => {
-    if (!user) return;
-
     try {
       setLoading(true);
       setError(null);
-      
-      const refreshedProfile = await fetchProfile(user.uid);
-      if (refreshedProfile) {
-        setProfile(refreshedProfile);
+
+      const socialProfile = await socialService.getUserSocialProfile(user.uid);
+
+      // Converter SocialProfile para ExtendedSocialProfile
+      if (socialProfile) {
+        const extendedProfile: ExtendedSocialProfile = {
+          ...socialProfile,
+          email: user.email || undefined,
+          createdAt: socialProfile.stats.joinedAt,
+          privacy: {
+            profileVisible: socialProfile.isPublic,
+            progressVisible: true,
+            achievementsVisible: true,
+            emailVisible: false
+          },
+          emailPreferences: {
+            dailyDigest: false,
+            weeklyReport: false,
+            achievements: true,
+            certificates: true,
+            newFeatures: false
+          },
+          stats: {
+            ...socialProfile.stats,
+            totalPoints: socialProfile.achievements.length * 100,
+            completedModules: Math.floor(socialProfile.achievements.length / 2),
+            streak: socialProfile.stats.streakDays
+          }
+        };
+        setProfile(extendedProfile);
+      } else {
+        setProfile(null);
       }
-    } catch (err: any) {
-      console.error('Erro ao atualizar perfil social:', err);
-      setError(err.message || 'Erro ao atualizar perfil social');
+
+    } catch (err) {
+      console.error('Erro ao carregar perfil social:', err);
+      setError('Erro ao carregar perfil social');
     } finally {
       setLoading(false);
     }
-  }, [user, fetchProfile]);
+  }, [user, isAuthenticated]);
+
+  /**
+   * Atualizar perfil social
+   */
+  const updateProfile = useCallback(async (updates: Partial<ExtendedSocialProfile>): Promise<boolean> => {
+    if (!isAuthenticated || !user || !profile) return false;
+
+    try {
+      const success = await socialService.updateSocialProfile(user.uid, updates);
+
+      if (success) {
+        setProfile(prev => prev ? { ...prev, ...updates } : null);
+      }
+
+      return success;
+    } catch (error) {
+      console.error('Erro ao atualizar perfil social:', error);
+      return false;
+    }
+  }, [user, isAuthenticated, profile]);
+
+  /**
+   * Alternar visibilidade do perfil
+   */
+  const toggleProfileVisibility = useCallback(async (): Promise<boolean> => {
+    if (!profile) return false;
+
+    return await updateProfile({ isPublic: !profile.isPublic });
+  }, [profile, updateProfile]);
+
+  /**
+   * Compartilhar conquista
+   */
+  const shareAchievement = useCallback(async (achievementId: string): Promise<{ success: boolean; shareUrl?: string }> => {
+    if (!isAuthenticated || !user) {
+      return { success: false };
+    }
+
+    try {
+      const content: ShareableContent = {
+        type: 'achievement',
+        title: 'Nova Conquista Desbloqueada! 🏆',
+        description: `${user.displayName || 'Usuário'} desbloqueou uma nova conquista no Sistema de Dispensação de Hanseníase`,
+        metadata: {
+          achievementId,
+          userId: user.uid,
+          timestamp: new Date().toISOString()
+        }
+      };
+
+      const result = await socialService.shareContent(content);
+      return result;
+
+    } catch (error) {
+      console.error('Erro ao compartilhar conquista:', error);
+      return { success: false };
+    }
+  }, [user, isAuthenticated]);
+
+  /**
+   * Compartilhar certificado
+   */
+  const shareCertificate = useCallback(async (certificateId: string): Promise<{ success: boolean; shareUrl?: string }> => {
+    if (!isAuthenticated || !user) {
+      return { success: false };
+    }
+
+    try {
+      const content: ShareableContent = {
+        type: 'certificate',
+        title: 'Certificado Conquistado! 📜',
+        description: `${user.displayName || 'Usuário'} conquistou um certificado no Sistema de Dispensação de Hanseníase`,
+        metadata: {
+          certificateId,
+          userId: user.uid,
+          timestamp: new Date().toISOString()
+        }
+      };
+
+      const result = await socialService.shareContent(content);
+      return result;
+
+    } catch (error) {
+      console.error('Erro ao compartilhar certificado:', error);
+      return { success: false };
+    }
+  }, [user, isAuthenticated]);
+
+  /**
+   * Compartilhar progresso
+   */
+  const shareProgress = useCallback(async (progressData: any): Promise<{ success: boolean; shareUrl?: string }> => {
+    if (!isAuthenticated || !user) {
+      return { success: false };
+    }
+
+    try {
+      const content: ShareableContent = {
+        type: 'progress',
+        title: 'Progresso no Aprendizado! 📈',
+        description: `${user.displayName || 'Usuário'} está progredindo no Sistema de Dispensação de Hanseníase`,
+        metadata: {
+          ...progressData,
+          userId: user.uid,
+          timestamp: new Date().toISOString()
+        }
+      };
+
+      const result = await socialService.shareContent(content);
+      return result;
+
+    } catch (error) {
+      console.error('Erro ao compartilhar progresso:', error);
+      return { success: false };
+    }
+  }, [user, isAuthenticated]);
+
+  /**
+   * Atualizar avatar
+   */
+  const updateAvatar = useCallback(async (url: string): Promise<boolean> => {
+    return await updateProfile({ photoURL: url });
+  }, [updateProfile]);
+
+  /**
+   * Atualizar preferências de email
+   */
+  const updateEmailPreferences = useCallback(async (preferences: any): Promise<boolean> => {
+    return await updateProfile({ emailPreferences: preferences });
+  }, [updateProfile]);
+
+  /**
+   * Atualizar configurações de privacidade
+   */
+  const updatePrivacySettings = useCallback(async (settings: any): Promise<boolean> => {
+    return await updateProfile({
+      privacy: settings,
+      isPublic: settings.profileVisible
+    });
+  }, [updateProfile]);
+
+  /**
+   * Obter perfis públicos
+   */
+  const getPublicProfiles = useCallback(async (limit: number = 10): Promise<ExtendedSocialProfile[]> => {
+    try {
+      const profiles = await socialService.getPublicAchievements(limit);
+      return profiles.map(profile => ({
+        ...profile,
+        createdAt: profile.stats.joinedAt,
+        privacy: { profileVisible: profile.isPublic },
+        stats: {
+          ...profile.stats,
+          totalPoints: profile.achievements.length * 100,
+          completedModules: Math.floor(profile.achievements.length / 2),
+          streak: profile.stats.streakDays
+        }
+      }));
+    } catch (error) {
+      console.error('Erro ao carregar perfis públicos:', error);
+      return [];
+    }
+  }, []);
+
+  /**
+   * Gerar URL de compartilhamento
+   */
+  const generateShareUrl = useCallback((type: 'achievement' | 'certificate', id: string): string => {
+    switch (type) {
+      case 'achievement':
+        return socialService.generateAchievementShareUrl(id);
+      case 'certificate':
+        return socialService.generateCertificateShareUrl(id);
+      default:
+        return '';
+    }
+  }, []);
+
+  /**
+   * Atualizar perfil
+   */
+  const refreshProfile = useCallback(async () => {
+    await loadProfile();
+  }, [loadProfile]);
+
+  // Effect para carregar perfil inicial
+  useEffect(() => {
+    loadProfile();
+  }, [loadProfile]);
 
   return {
     profile,
@@ -371,9 +327,12 @@ export function useSocialProfile(): UseSocialProfileReturn {
     updateAvatar,
     updateEmailPreferences,
     updatePrivacySettings,
-    connectAccount,
-    disconnectAccount,
-    refreshProfile,
-    reset,
+    toggleProfileVisibility,
+    shareAchievement,
+    shareCertificate,
+    shareProgress,
+    getPublicProfiles,
+    generateShareUrl,
+    refreshProfile
   };
 }

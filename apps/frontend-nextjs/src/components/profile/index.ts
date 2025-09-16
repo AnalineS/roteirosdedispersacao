@@ -1,4 +1,4 @@
-// Profile Components - PR #175
+// Profile Components - Funcionalidades completas
 export { default as AvatarUploader } from './AvatarUploader';
 export { default as ImageCropper } from './ImageCropper';
 export { default as EmailPreferences } from './EmailPreferences';

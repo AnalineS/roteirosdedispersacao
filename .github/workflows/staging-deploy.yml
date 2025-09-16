@@ -558,7 +558,7 @@ jobs:
 
   # Build e Deploy Frontend
   frontend-deploy:
-    name: "⚛️ Frontend Deploy (Firebase)"
+    name: "⚛️ Frontend Deploy (Cloud Run)"
     runs-on: ubuntu-latest
     needs: [staging-preparation, claude-validations, security-analysis, backend-deploy]
     if: needs.staging-preparation.outputs.deploy-frontend == 'true' && (needs.backend-deploy.result == 'success' || needs.backend-deploy.result == 'skipped')
@@ -583,13 +583,8 @@ jobs:
         env:
           NODE_ENV: production
           NEXT_PUBLIC_ENVIRONMENT: staging
-          NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL_STAGING }}
-          NEXT_PUBLIC_FIREBASE_API_KEY: ${{ vars.NEXT_PUBLIC_FIREBASE_API_KEY }}
-          NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ vars.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN }}
-          NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${{ vars.NEXT_PUBLIC_FIREBASE_PROJECT_ID }}
-          NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ${{ vars.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET }}
-          NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${{ vars.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID }}
-          NEXT_PUBLIC_FIREBASE_APP_ID: ${{ vars.NEXT_PUBLIC_FIREBASE_APP_ID }}
+          NEXT_PUBLIC_BACKEND_URL: ${{ vars.NEXT_PUBLIC_API_URL_STAGING }}
+          NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
         run: |
           echo "🔨 Building for staging environment..."
           npm run build
@@ -626,27 +621,59 @@ jobs:
             exit 1
           fi
 
-      - name: "🔧 Configure Firebase Target"
-        working-directory: apps/frontend-nextjs
-        run: |
-          echo "Configurando target Firebase para HML..."
-          echo '${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}' > gcp-key.json
-          export GOOGLE_APPLICATION_CREDENTIALS="$(pwd)/gcp-key.json"
-          npx firebase-tools@latest use red-truck-468923-s4
-          npx firebase-tools@latest target:apply hosting hml hml-roteiros-de-dispensacao
-          rm gcp-key.json
-
-      - name: "🚀 Deploy to Firebase Hosting (HML)"
-        uses: FirebaseExtended/action-hosting-deploy@v0
+      - name: "🔧 Setup Google Cloud"
+        uses: google-github-actions/setup-gcloud@v2
         with:
-          repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
-          projectId: red-truck-468923-s4
-          channelId: live
-          target: hml
-          entryPoint: apps/frontend-nextjs
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          export_default_credentials: true
+
+      - name: "🐳 Configure Docker to use gcloud as credential helper"
+        run: gcloud auth configure-docker
+
+      - name: "🏗️ Build and Push Frontend Docker Image"
         env:
-          FIREBASE_CLI_EXPERIMENTS: webframeworks
+          NEXT_PUBLIC_BACKEND_URL: ${{ vars.NEXT_PUBLIC_API_URL_STAGING }}
+          NEXT_PUBLIC_ENVIRONMENT: staging
+          NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+        run: |
+          echo "🐳 Building frontend Docker image..."
+
+          # Build da imagem
+          docker build \
+            --build-arg NEXT_PUBLIC_BACKEND_URL="${NEXT_PUBLIC_BACKEND_URL}" \
+            --build-arg NEXT_PUBLIC_ENVIRONMENT="${NEXT_PUBLIC_ENVIRONMENT}" \
+            --build-arg NEXT_PUBLIC_GOOGLE_CLIENT_ID="${NEXT_PUBLIC_GOOGLE_CLIENT_ID}" \
+            -t gcr.io/${{ vars.GCP_PROJECT_ID }}/hml-roteiro-dispensacao-frontend:${{ github.sha }} \
+            -t gcr.io/${{ vars.GCP_PROJECT_ID }}/hml-roteiro-dispensacao-frontend:latest \
+            .
+
+          # Push da imagem
+          docker push gcr.io/${{ vars.GCP_PROJECT_ID }}/hml-roteiro-dispensacao-frontend:${{ github.sha }}
+          docker push gcr.io/${{ vars.GCP_PROJECT_ID }}/hml-roteiro-dispensacao-frontend:latest
+
+      - name: "🚀 Deploy to Cloud Run Frontend"
+        run: |
+          echo "🚀 Deploying frontend to Cloud Run..."
+
+          gcloud run deploy hml-roteiro-dispensacao-frontend \
+            --image gcr.io/${{ vars.GCP_PROJECT_ID }}/hml-roteiro-dispensacao-frontend:${{ github.sha }} \
+            --region ${{ vars.GCP_REGION }} \
+            --platform managed \
+            --allow-unauthenticated \
+            --port 8080 \
+            --memory 1Gi \
+            --cpu 1 \
+            --max-instances 10 \
+            --set-env-vars="NODE_ENV=production,NEXT_PUBLIC_ENVIRONMENT=staging,NEXT_PUBLIC_BACKEND_URL=${{ vars.NEXT_PUBLIC_API_URL_STAGING }}" \
+            --timeout 120 \
+            --concurrency 80
+
+          echo "✅ Frontend deployed successfully"
+
+          # Obter URL do serviço
+          SERVICE_URL=$(gcloud run services describe hml-roteiro-dispensacao-frontend --region=${{ vars.GCP_REGION }} --format='value(status.url)')
+          echo "🌐 Frontend URL: $SERVICE_URL"
 
   # Deploy Backend (se aplicável)
   backend-deploy:
@@ -832,11 +859,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: "🔧 Setup Google Cloud for health checks"
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          export_default_credentials: true
+
       - name: "🌐 Health Check Frontend"
         if: needs.frontend-deploy.result == 'success'
         run: |
           echo "🔍 Verificando saúde do frontend HML..."
-          FRONTEND_URL="https://${{ env.FRONTEND_SITE }}.web.app"
+
+          # Obter URL do Cloud Run frontend
+          FRONTEND_URL=$(gcloud run services describe hml-roteiro-dispensacao-frontend --region=${{ vars.GCP_REGION }} --format='value(status.url)')
 
           echo "🌐 URL do frontend: $FRONTEND_URL"
 
@@ -891,7 +927,9 @@ jobs:
       - name: "🏥 Medical Endpoints Test"
         run: |
           echo "🩺 Testando endpoints médicos específicos..."
-          FRONTEND_URL="https://${{ env.FRONTEND_SITE }}.web.app"
+
+          # Obter URL do Cloud Run frontend
+          FRONTEND_URL=$(gcloud run services describe hml-roteiro-dispensacao-frontend --region=${{ vars.GCP_REGION }} --format='value(status.url)')
           
           # Testar páginas médicas críticas
           MEDICAL_PAGES=("/modules/hanseniase" "/resources/calculator" "/chat")

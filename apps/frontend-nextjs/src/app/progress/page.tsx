@@ -530,39 +530,20 @@ export default function ProgressPage() {
           textAlign: 'center', 
           marginBottom: '40px' 
         }}>
-          <ShareProgress 
-            isOpen={false}
-            onClose={() => {}}
-            progressData={{
+          <ShareProgress
+            customContent={{
+              title: 'Progresso no Aprendizado! 📈',
+              description: 'Confira meu progresso no Sistema de Dispensação de Hanseníase',
+              metadata: {
               totalPoints: 250,
               achievements_count: 3,
               completedModules: 2,
               streak: 5,
-              recent_achievements: [
-                {
-                  id: 'first-lesson',
-                  name: 'Primeira lição concluída',
-                  description: 'Completou a primeira lição sobre hanseníase',
-                  badge_url: '',
-                  earned_date: new Date().toISOString(),
-                  xp_gained: 50,
-                  category: 'learning'
-                },
-                {
-                  id: 'study-streak',
-                  name: 'Sequência de estudos',
-                  description: 'Manteve sequência de 5 dias de estudo',
-                  badge_url: '',
-                  earned_date: new Date().toISOString(),
-                  xp_gained: 100,
-                  category: 'consistency'
-                }
-              ]
+              level: 3
+              }
             }}
-            userProfile={{
-              name: user?.displayName || 'Usuário',
-              avatar_url: user?.photoURL || '',
-              uid: user?.uid || ''
+            onShare={(result) => {
+              console.log('Progress shared:', result);
             }}
           />
         </div>

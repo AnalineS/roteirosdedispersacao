@@ -12,7 +12,7 @@ import AvatarUploader from './AvatarUploader';
 import EmailPreferences from './EmailPreferences';
 import ShareProgress from '../achievements/ShareProgress';
 import { useHapticFeedback } from '@/utils/hapticFeedback';
-import { useSocialProfile } from '@/hooks/useSocialProfile';
+import { useSocialProfile, type ExtendedSocialProfile } from '@/hooks/useSocialProfile';
 import { useSafeAuth as useAuth } from '@/hooks/useSafeAuth';
 
 interface Achievement {
@@ -23,32 +23,6 @@ interface Achievement {
   earned_date: string;
   xp_gained: number;
   category: string;
-}
-
-interface UserProfile {
-  uid: string;
-  email: string;
-  displayName: string;
-  photoURL?: string;
-  profileType: 'admin' | 'professional' | 'student' | 'patient' | 'caregiver';
-  isPublic: boolean;
-  bio?: string;
-  institution?: string;
-  specialization?: string;
-  experience_years?: number;
-  joined_date: string;
-  last_active: string;
-}
-
-interface UserStats {
-  level: number;
-  xp_total: number;
-  achievements_count: number;
-  completion_percentage: number;
-  streak_days: number;
-  modules_completed: number;
-  total_study_hours: number;
-  badges_earned: number;
 }
 
 interface SocialProfileProps {
@@ -176,7 +150,8 @@ export default function SocialProfile({
     );
   }
 
-  const getProfileTypeLabel = (email: string) => {
+  const getProfileTypeLabel = (email?: string | null) => {
+    if (!email) return 'Usuário';
     if (email.includes('admin')) return 'Administrador';
     if (email.includes('dr.') || email.includes('prof.')) return 'Profissional';
     return 'Usuário';
@@ -258,7 +233,7 @@ export default function SocialProfile({
               ) : (
                 <>
                   <h1 className="profile-name">{profile.displayName}</h1>
-                  <p className="profile-type">{getProfileTypeLabel(profile.email || '')}</p>
+                  <p className="profile-type">{getProfileTypeLabel(profile.email)}</p>
                   {profile.bio && <p className="profile-bio">{profile.bio}</p>}
                   
                   <div className="profile-meta">
@@ -276,7 +251,7 @@ export default function SocialProfile({
                     )}
                     <span className="meta-item">
                       <Calendar size={14} />
-                      Desde {formatDate(profile.createdAt || new Date().toISOString())}
+                      Desde {formatDate(profile.createdAt || profile.stats.joinedAt)}
                     </span>
                   </div>
                 </>
@@ -315,7 +290,7 @@ export default function SocialProfile({
         {profile.stats && (
           <div className="profile-stats">
             <div className="stat-item">
-              <div className="stat-number">{profile.stats.totalPoints}</div>
+              <div className="stat-number">{profile.stats.totalPoints || 0}</div>
               <div className="stat-label">Pontos</div>
             </div>
             <div className="stat-item">
@@ -323,11 +298,11 @@ export default function SocialProfile({
               <div className="stat-label">Conquistas</div>
             </div>
             <div className="stat-item">
-              <div className="stat-number">{profile.stats.completedModules}</div>
+              <div className="stat-number">{profile.stats.completedModules || 0}</div>
               <div className="stat-label">Módulos</div>
             </div>
             <div className="stat-item">
-              <div className="stat-number">{profile.stats.streak}</div>
+              <div className="stat-number">{profile.stats.streak || profile.stats.streakDays}</div>
               <div className="stat-label">Sequência</div>
             </div>
           </div>
@@ -387,7 +362,7 @@ export default function SocialProfile({
                     </div>
                     <div className="detail-item">
                       <Clock size={16} />
-                      <span>Membro desde {formatDate(profile.createdAt || new Date().toISOString())}</span>
+                      <span>Membro desde {formatDate(profile.createdAt || profile.stats.joinedAt)}</span>
                     </div>
                   </div>
                 </div>
@@ -411,7 +386,7 @@ export default function SocialProfile({
                     </div>
                     <div className="summary-item">
                       <TrendingUp size={16} />
-                      <span>Sequência de {profile.stats?.streak || 0} dias</span>
+                      <span>Sequência de {profile.stats?.streak || profile.stats?.streakDays || 0} dias</span>
                     </div>
                   </div>
                 </div>
@@ -493,12 +468,8 @@ export default function SocialProfile({
                 <input
                   type="checkbox"
                   checked={profile.privacy?.profileVisible ?? true}
-                  onChange={async (e) => {
-                    const newPrivacy = { 
-                      ...profile.privacy,
-                      profileVisible: e.target.checked 
-                    };
-                    await updatePrivacySettings({ 
+                  onChange={async (e: React.ChangeEvent<HTMLInputElement>) => {
+                    await updatePrivacySettings({
                       profileVisible: e.target.checked,
                       progressVisible: e.target.checked,
                       achievementsVisible: e.target.checked,
@@ -516,7 +487,7 @@ export default function SocialProfile({
             
             <EmailPreferences
               userId={user.uid}
-              preferences={profile.emailPreferences}
+              preferences={profile.emailPreferences || {}}
               onPreferencesChange={updateEmailPreferences}
             />
           </div>
@@ -550,7 +521,7 @@ export default function SocialProfile({
           totalPoints: profile.stats?.totalPoints || 0,
           achievements_count: profile.achievements?.length || 0,
           completedModules: profile.stats?.completedModules || 0,
-          streak: profile.stats?.streak || 0,
+          streak: profile.stats?.streak || profile.stats?.streakDays || 0,
           recent_achievements: (profile.achievements || []).slice(0, 3).map((achievement: string) => ({
             id: `ach-${Math.random().toString(36).substr(2, 9)}`,
             name: achievement,

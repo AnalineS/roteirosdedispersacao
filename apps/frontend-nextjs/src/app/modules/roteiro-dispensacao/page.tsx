@@ -4,7 +4,7 @@ import EducationalLayout from "@/components/layout/EducationalLayout";
 import Link from "next/link";
 import { IndexIndicator } from "@/components/ui/IndexIndicator";
 
-// Force dynamic rendering
+// Force dynamic rendering for Cloud Run SSR
 export const dynamic = "force-dynamic";
 
 export default function RoteiroDispensacaoModulePage() {

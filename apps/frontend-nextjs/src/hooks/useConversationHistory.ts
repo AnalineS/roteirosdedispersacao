@@ -1,16 +1,19 @@
 /**
  * Hook para gerenciar histórico de conversas por persona
  * Permite múltiplas conversas simultâneas e navegação entre elas
- * Suporta sincronização automática com Firestore quando autenticado
+ * Suporta persistência local com localStorage
  */
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { ChatMessage } from '@/services/api';
 import { useSafeAuth as useAuth } from '@/hooks/useSafeAuth';
-import { ConversationRepository } from '@/lib/firebase/firestore';
-import { FirestoreConversation, FirestoreMessage } from '@/lib/firebase/types';
-import { FEATURES } from '@/lib/firebase/config';
 import { generateSecureId } from '@/utils/cryptoUtils';
+
+// Features configuration
+const FEATURES = {
+  FIRESTORE_ENABLED: false, // Disabled - using local storage only
+  AUTH_ENABLED: true,
+};
 
 // Constantes
 const MAX_CONVERSATIONS = 50;
@@ -47,10 +50,10 @@ export function useConversationHistory() {
   const syncTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
   // Flags para controlar o tipo de persistência
-  const useFirestore = auth.isAuthenticated && FEATURES.FIRESTORE_ENABLED;
-  const useLocalStorage = !useFirestore || FEATURES.AUTH_ENABLED;
+  const useFirestore = false; // Disabled
+  const useLocalStorage = true; // Always use localStorage
 
-  // Carregar conversas (localStorage ou Firestore)
+  // Carregar conversas (localStorage apenas)
   useEffect(() => {
     if (typeof window === 'undefined') return;
     
@@ -59,21 +62,14 @@ export function useConversationHistory() {
         setLoading(true);
         setError(null);
 
-        if (useFirestore && auth.user) {
-          // Carregar do Firestore
-          await loadFromFirestore();
-        } else if (useLocalStorage) {
-          // Carregar do localStorage
-          loadFromLocalStorage();
-        }
+        // Carregar do localStorage
+        loadFromLocalStorage();
       } catch (error) {
         console.error('Erro ao carregar conversas:', error);
         setError('Erro ao carregar histórico de conversas');
         
-        // Fallback para localStorage em caso de erro do Firestore
-        if (useFirestore) {
-          loadFromLocalStorage();
-        }
+        // Sempre usar localStorage
+        loadFromLocalStorage();
       } finally {
         setLoading(false);
       }
@@ -81,7 +77,7 @@ export function useConversationHistory() {
 
     loadConversations();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [auth.user, auth.isAuthenticated, useFirestore, useLocalStorage]);
+  }, [auth.user, auth.isAuthenticated, useLocalStorage]);
 
   // ============================================
   // FUNÇÕES DE CARREGAMENTO
@@ -89,7 +85,7 @@ export function useConversationHistory() {
 
   const loadFromLocalStorage = useCallback(async () => {
     try {
-      // TODO: Implementar cache de conversas com Firestore Cache Service futuramente
+      // TODO: Implementar cache de conversas com cache service futuramente
       
       // Carregar do localStorage
       const stored = localStorage.getItem(STORAGE_KEY);
@@ -113,49 +109,7 @@ export function useConversationHistory() {
     }
   }, []);
 
-  const loadFromFirestore = useCallback(async () => {
-    if (!auth.user) return;
-
-    try {
-      setSyncStatus('syncing');
-      const result = await ConversationRepository.getUserConversations(auth.user.uid, {
-        limit: MAX_CONVERSATIONS
-      });
-
-      if (result.success && result.data) {
-        // Converter FirestoreConversation para Conversation local
-        const localConversations: Conversation[] = result.data.map(firestoreConv => ({
-          id: firestoreConv.id,
-          personaId: firestoreConv.personaId,
-          title: firestoreConv.title,
-          messages: firestoreConv.messages.map(msg => ({
-            id: msg.id,
-            content: msg.content,
-            role: msg.role,
-            timestamp: msg.timestamp.toDate().getTime(),
-            persona: msg.persona
-          })),
-          lastActivity: firestoreConv.lastActivity.toDate().getTime(),
-          createdAt: firestoreConv.createdAt.toDate().getTime()
-        }));
-
-        setConversations(localConversations);
-        setSyncStatus('idle');
-
-        // Também salvar no localStorage como backup
-        if (useLocalStorage) {
-          saveToLocalStorageOnly(localConversations);
-        }
-      } else {
-        throw new Error(result.error || 'Erro ao carregar do Firestore');
-      }
-    } catch (error) {
-      setSyncStatus('error');
-      console.error('Erro ao carregar do Firestore:', error);
-      throw error;
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [auth.user, useLocalStorage]);
+  // Firestore loading disabled - using localStorage only
 
   // ============================================
   // FUNÇÕES DE SALVAMENTO
@@ -187,47 +141,9 @@ export function useConversationHistory() {
     }
   }, [auth.user?.uid]);
 
-  const saveToFirestore = useCallback(async (conversation: Conversation) => {
-    if (!auth.user || !useFirestore) return;
+  // Firestore saving disabled - localStorage only
 
-    try {
-      setSyncStatus('syncing');
-      
-      // Converter Conversation local para FirestoreConversation
-      const firestoreConv: Partial<FirestoreConversation> = {
-        id: conversation.id,
-        userId: auth.user.uid,
-        personaId: conversation.personaId,
-        title: conversation.title,
-        messages: conversation.messages.map((msg, index) => ({
-          id: generateSecureId(`msg_${index}_`, 12),
-          content: msg.content,
-          role: msg.role,
-          timestamp: new Date(msg.timestamp) as any, // Will be converted to Timestamp
-          persona: msg.persona
-        })),
-        lastActivity: new Date(conversation.lastActivity) as any,
-        createdAt: new Date(conversation.createdAt) as any,
-        messageCount: conversation.messages.length,
-        isArchived: false,
-        syncStatus: 'synced'
-      };
-
-      const result = await ConversationRepository.saveConversation(firestoreConv as FirestoreConversation);
-      
-      if (result.success) {
-        setSyncStatus('idle');
-      } else {
-        setSyncStatus('error');
-        console.error('Erro ao salvar no Firestore:', result.error);
-      }
-    } catch (error) {
-      setSyncStatus('error');
-      console.error('Erro ao salvar no Firestore:', error);
-    }
-  }, [auth.user, useFirestore]);
-
-  // Salvar conversas (Redis + localStorage + Firestore se disponível)
+  // Salvar conversas (localStorage apenas)
   const saveToStorage = useCallback((newConversations: Conversation[]) => {
     if (typeof window === 'undefined') return;
     
@@ -285,18 +201,8 @@ export function useConversationHistory() {
       }, DEBOUNCE_DELAY);
     }
 
-    // Salvar no Firestore (sem debounce para melhor experiência)
-    if (useFirestore) {
-      // Debounce para Firestore também, mas menor delay
-      if (syncTimeoutRef.current) {
-        clearTimeout(syncTimeoutRef.current);
-      }
-      
-      syncTimeoutRef.current = setTimeout(() => {
-        saveToFirestore(conversation);
-      }, 1000); // 1 segundo de debounce para Firestore
-    }
-  }, [useLocalStorage, useFirestore, saveToLocalStorageOnly, saveToFirestore]);
+    // Firestore saving disabled
+  }, [useLocalStorage, saveToLocalStorageOnly]);
 
   // Gerar título automático para conversa baseado na primeira mensagem
   const generateConversationTitle = useCallback((firstMessage: string): string => {
@@ -431,15 +337,7 @@ export function useConversationHistory() {
   // Excluir conversa
   const deleteConversation = useCallback(async (conversationId: string) => {
     try {
-      // Deletar do Firestore se disponível
-      if (useFirestore) {
-        setSyncStatus('syncing');
-        const result = await ConversationRepository.deleteConversation(conversationId);
-        if (!result.success) {
-          console.error('Erro ao deletar do Firestore:', result.error);
-        }
-        setSyncStatus('idle');
-      }
+      // Firestore deletion disabled
 
       // Atualizar estado local
       const updatedConversations = conversations.filter(conv => conv.id !== conversationId);
@@ -460,7 +358,7 @@ export function useConversationHistory() {
       console.error('Erro ao deletar conversa:', error);
       setError('Erro ao deletar conversa');
     }
-  }, [conversations, currentConversationId, saveToStorage, useFirestore, useLocalStorage]);
+  }, [conversations, currentConversationId, saveToStorage, useLocalStorage]);
 
   // Renomear conversa
   const renameConversation = useCallback(async (conversationId: string, newTitle: string) => {
@@ -531,7 +429,7 @@ export function useConversationHistory() {
     syncStatus,
     
     // Flags de funcionalidade
-    isUsingFirestore: useFirestore,
+    isUsingFirestore: false,
     isUsingLocalStorage: useLocalStorage,
     
     // Conversa atual
@@ -554,9 +452,7 @@ export function useConversationHistory() {
     
     // Sincronização manual
     forceSync: () => {
-      if (useFirestore && auth.user) {
-        loadFromFirestore();
-      }
+      // Firestore sync disabled
     },
     
     // Controle de erro

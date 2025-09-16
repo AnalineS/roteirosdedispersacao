@@ -2,8 +2,17 @@
 
 import React, { useState } from 'react';
 import { useSafeAuth } from '@/hooks/useSafeAuth';
-import { AVAILABLE_PROVIDERS } from '@/lib/firebase/config';
-import type { SocialAuthCredentials } from '@/lib/firebase/types';
+import type { SocialAuthCredentials } from '@/types/auth';
+
+// Available providers configuration
+const AVAILABLE_PROVIDERS = {
+  google: {
+    enabled: true,
+    name: 'Google',
+    icon: '🔍',
+    color: 'bg-red-500 hover:bg-red-600'
+  }
+};
 
 interface SocialAuthButtonsProps {
   mode?: 'login' | 'register' | 'link';
@@ -71,13 +80,11 @@ export default function SocialAuthButtons({
   };
 
   const getProviderName = (providerId: string) => {
-    const provider = AVAILABLE_PROVIDERS.find(p => p.id === providerId);
-    return provider?.name || providerId;
+    return AVAILABLE_PROVIDERS.google?.name || providerId;
   };
 
   const getProviderColor = (providerId: string) => {
-    const provider = AVAILABLE_PROVIDERS.find(p => p.id === providerId);
-    return provider?.color || '#666';
+    return AVAILABLE_PROVIDERS.google?.color || '#666';
   };
 
   const getModeText = () => {
@@ -91,7 +98,9 @@ export default function SocialAuthButtons({
     }
   };
 
-  const enabledProviders = AVAILABLE_PROVIDERS.filter(provider => provider.enabled);
+  const enabledProviders = Object.entries(AVAILABLE_PROVIDERS)
+    .filter(([_, config]) => config.enabled)
+    .map(([id, config]) => ({ id, ...config }));
 
   if (enabledProviders.length === 0) {
     return null;

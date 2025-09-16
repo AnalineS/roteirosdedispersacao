@@ -30,6 +30,10 @@ from app_config import config, EnvironmentConfig
 # Import obrigatório do sistema de dependências
 from core.dependencies import dependency_injector
 
+# Import dos novos sistemas
+from services.storage.sqlite_manager import init_database
+from services.auth.jwt_auth_manager import get_auth_manager
+
 # Configurar logging ANTES de usar logger
 logging.basicConfig(
     level=getattr(logging, config.LOG_LEVEL),
@@ -166,9 +170,17 @@ def create_app():
     elif cloud_run_env:
         logger.info("☁️ Cloud Run detectado - otimizações carregadas sob demanda")
     
+    # Inicializar novo sistema de dados
+    try:
+        init_database(app)
+        get_auth_manager()  # Inicializar auth manager
+        logger.info("[DATABASE] SQLite + Cloud Storage inicializado")
+    except Exception as e:
+        logger.error(f"[ERROR] Falha ao inicializar database: {e}")
+
     # Registrar blueprints
     register_blueprints(app)
-    
+
     # Injetar dependências nos blueprints
     inject_dependencies_into_blueprints()
     

@@ -11,7 +11,7 @@ import GamificationWidget from "@/components/gamification/GamificationWidget";
 import React, { Suspense } from "react";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
-// Force dynamic rendering for this page
+// Force dynamic rendering for Cloud Run SSR
 export const dynamic = "force-dynamic";
 
 // Server-side components

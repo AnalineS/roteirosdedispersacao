@@ -2,11 +2,20 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useSafeAuth as useAuth } from '@/hooks/useSafeAuth';
-import { UserProfileRepository } from '@/lib/firebase/firestore';
-import { FirestoreUserProfile } from '@/lib/firebase/types';
-import { FEATURES } from '@/lib/firebase/config';
+import type { UserProfile as BaseUserProfile } from '@/types/auth';
 
-export interface UserProfile {
+// Features configuration
+const FEATURES = {
+  AUTH_ENABLED: true,
+  FIRESTORE_ENABLED: false, // Disabled - using local storage
+  OFFLINE_MODE: false,
+};
+
+// Use the central UserProfile type
+export type { UserProfile } from '@/types/auth';
+
+// Local UserProfile interface for hook compatibility
+interface LocalUserProfile {
   type: 'admin' | 'professional' | 'student' | 'patient' | 'caregiver';
   focus: 'technical' | 'practical' | 'effects' | 'general' | 'empathetic';
   confidence: number;
@@ -19,9 +28,12 @@ export interface UserProfile {
     language: 'simple' | 'technical';
     notifications: boolean;
     theme: 'light' | 'dark' | 'auto';
+    emailUpdates: boolean;
+    dataCollection: boolean;
+    lgpdConsent: boolean;
   };
   history?: {
-    lastPersona: string;
+    lastPersona: 'ga' | 'dr_gasnelio';
     conversationCount: number;
     lastAccess: string;
     preferredTopics: string[];
@@ -29,11 +41,11 @@ export interface UserProfile {
 }
 
 interface UserProfileHook {
-  profile: UserProfile | null;
+  profile: LocalUserProfile | null;
   isLoading: boolean;
   syncStatus: 'idle' | 'syncing' | 'error';
-  saveProfile: (profile: UserProfile) => Promise<void>;
-  updateProfile: (updates: Partial<UserProfile>) => Promise<void>;
+  saveProfile: (profile: LocalUserProfile) => Promise<void>;
+  updateProfile: (updates: Partial<LocalUserProfile>) => Promise<void>;
   clearProfile: () => Promise<void>;
   getRecommendedPersona: () => string;
   hasProfile: boolean;
@@ -52,7 +64,7 @@ const defaultPreferences = {
 
 export function useUserProfile(): UserProfileHook {
   const auth = useAuth();
-  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [profile, setProfile] = useState<LocalUserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'error'>('idle');
   
@@ -115,77 +127,57 @@ export function useUserProfile(): UserProfileHook {
   }, []);
 
   const loadFromFirestore = useCallback(async () => {
-    if (!auth.user) return;
-
-    try {
-      setSyncStatus('syncing');
-      
-      // Primeiro verificar se há perfil no contexto de auth
-      if (auth.profile) {
-        const localProfile = convertFirestoreToLocal(auth.profile);
-        setProfile(localProfile);
-        setSyncStatus('idle');
-        return;
-      }
-
-      // Se não, carregar diretamente do Firestore
-      const result = await UserProfileRepository.getProfile(auth.user.uid);
-      
-      if (result.success && result.data) {
-        const localProfile = convertFirestoreToLocal(result.data);
-        setProfile(localProfile);
-        setSyncStatus('idle');
-
-        // Também salvar no localStorage como backup
-        if (useLocalStorage) {
-          saveToLocalStorageOnly(localProfile);
-        }
-      } else {
-        // Perfil não existe no Firestore - usar localStorage se disponível
-        if (useLocalStorage) {
-          loadFromLocalStorage();
-        }
-        setSyncStatus('idle');
-      }
-    } catch (error) {
-      setSyncStatus('error');
-      console.error('Erro ao carregar do Firestore:', error);
-      throw error;
+    // Firestore disabled - only use localStorage
+    if (useLocalStorage) {
+      loadFromLocalStorage();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [auth.user, auth.profile, useLocalStorage]);
+    setSyncStatus('idle');
+  }, [useLocalStorage, loadFromLocalStorage]);
 
   // ============================================
   // FUNÇÕES DE CONVERSÃO
   // ============================================
 
-  const convertFirestoreToLocal = useCallback((firestoreProfile: FirestoreUserProfile): UserProfile => {
+  // Conversion functions simplified for local storage only
+  const convertFirestoreToLocal = useCallback((profile: BaseUserProfile): LocalUserProfile => {
     return {
-      type: firestoreProfile.type,
-      focus: firestoreProfile.focus,
-      confidence: firestoreProfile.confidence,
-      explanation: firestoreProfile.explanation,
-      selectedPersona: firestoreProfile.selectedPersona,
-      preferences: firestoreProfile.preferences,
-      history: firestoreProfile.history
+      type: profile.type as any,
+      focus: profile.focus as any,
+      confidence: profile.confidence,
+      explanation: profile.explanation,
+      selectedPersona: profile.history?.lastPersona || 'ga',
+      preferences: {
+        language: profile.preferences?.language || 'simple',
+        notifications: profile.preferences?.notifications || true,
+        theme: profile.preferences?.theme || 'auto',
+        emailUpdates: profile.preferences?.emailUpdates || false,
+        dataCollection: profile.preferences?.dataCollection || false,
+        lgpdConsent: profile.preferences?.lgpdConsent || false,
+      },
+      history: profile.history
     };
   }, []);
 
-  const convertLocalToFirestore = useCallback((localProfile: UserProfile): Partial<FirestoreUserProfile> => {
+  const convertLocalToFirestore = useCallback((localProfile: LocalUserProfile): BaseUserProfile => {
     if (!auth.user) throw new Error('Usuário não autenticado');
 
     return {
       uid: auth.user.uid,
       email: auth.user.email || undefined,
       displayName: auth.user.displayName || undefined,
-      type: localProfile.type,
+      type: (localProfile.type === 'caregiver' ? 'patient' : localProfile.type) as 'patient' | 'professional' | 'student' | 'admin',
       focus: localProfile.focus,
       confidence: localProfile.confidence,
       explanation: localProfile.explanation,
-      selectedPersona: localProfile.selectedPersona,
-      preferences: { ...defaultPreferences, ...localProfile.preferences },
+      preferences: {
+        ...defaultPreferences,
+        ...localProfile.preferences,
+        emailUpdates: localProfile.preferences?.emailUpdates ?? defaultPreferences.emailUpdates,
+        dataCollection: localProfile.preferences?.dataCollection ?? defaultPreferences.dataCollection,
+        lgpdConsent: localProfile.preferences?.lgpdConsent ?? defaultPreferences.lgpdConsent
+      },
       history: {
-        lastPersona: localProfile.history?.lastPersona || localProfile.selectedPersona || 'ga',
+        lastPersona: (localProfile.history?.lastPersona || localProfile.selectedPersona || 'ga') as 'dr_gasnelio' | 'ga',
         conversationCount: localProfile.history?.conversationCount || 0,
         lastAccess: new Date().toISOString(),
         preferredTopics: localProfile.history?.preferredTopics || [],
@@ -194,16 +186,26 @@ export function useUserProfile(): UserProfileHook {
         completedModules: [],
         achievements: []
       },
-      isAnonymous: auth.isAnonymous,
+      stats: {
+        joinedAt: new Date().toISOString(),
+        lastActiveAt: new Date().toISOString(),
+        sessionCount: localProfile.history?.conversationCount || 0,
+        messageCount: 0,
+        averageSessionDuration: 0,
+        favoritePersona: (localProfile.selectedPersona as 'dr_gasnelio' | 'ga') || 'ga',
+        completionRate: 0,
+      },
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
       version: '2.0'
     };
-  }, [auth.user, auth.isAnonymous]);
+  }, [auth.user]);
 
   // ============================================
   // FUNÇÕES DE SALVAMENTO
   // ============================================
 
-  const saveToLocalStorageOnly = useCallback((profileToSave: UserProfile) => {
+  const saveToLocalStorageOnly = useCallback((profileToSave: LocalUserProfile): BaseUserProfile => {
     try {
       const enrichedProfile: UserProfile = {
         ...profileToSave,
@@ -229,7 +231,7 @@ export function useUserProfile(): UserProfileHook {
     }
   }, [profile]);
 
-  const saveProfile = async (newProfile: UserProfile): Promise<void> => {
+  const saveProfile = async (newProfile: LocalUserProfile): Promise<BaseUserProfile> => {
     try {
       setSyncStatus('syncing');
 
@@ -252,15 +254,14 @@ export function useUserProfile(): UserProfileHook {
         saveToLocalStorageOnly(enrichedProfile);
       }
 
-      // Salvar no Firestore se disponível
-      if (useFirestore && auth.user) {
-        const firestoreProfile = convertLocalToFirestore(enrichedProfile);
-        const result = await auth.updateUserProfile(firestoreProfile as FirestoreUserProfile);
-        
-        if (!result.success) {
-          console.error('Erro ao salvar no Firestore:', result.error);
-          setSyncStatus('error');
-          return;
+      // Save to auth service for JWT backend integration
+      if (auth.user && auth.updateUserProfile) {
+        try {
+          const backendProfile = convertLocalToFirestore(enrichedProfile);
+          await auth.updateUserProfile(backendProfile);
+        } catch (error) {
+          console.warn('Erro ao sincronizar com backend:', error);
+          // Continue with local storage only
         }
       }
 
@@ -272,7 +273,7 @@ export function useUserProfile(): UserProfileHook {
     }
   };
 
-  const updateProfile = async (updates: Partial<UserProfile>): Promise<void> => {
+  const updateProfile = async (updates: Partial<LocalUserProfile>): Promise<void> => {
     if (!profile) {
       throw new Error('Nenhum perfil para atualizar');
     }
@@ -281,7 +282,7 @@ export function useUserProfile(): UserProfileHook {
       ...profile,
       ...updates,
       history: {
-        lastPersona: updates.selectedPersona || profile.history?.lastPersona || 'ga',
+        lastPersona: (updates.selectedPersona || profile.history?.lastPersona || 'ga') as 'dr_gasnelio' | 'ga',
         conversationCount: profile.history?.conversationCount || 0,
         lastAccess: new Date().toISOString(),
         preferredTopics: profile.history?.preferredTopics || []
@@ -295,12 +296,9 @@ export function useUserProfile(): UserProfileHook {
     try {
       setSyncStatus('syncing');
 
-      // Limpar do Firestore se disponível
-      if (useFirestore && auth.user) {
-        const result = await UserProfileRepository.deleteProfile(auth.user.uid);
-        if (!result.success) {
-          console.error('Erro ao deletar do Firestore:', result.error);
-        }
+        // Clear from backend if available
+      if (auth.user) {
+        console.log('Backend profile clear not implemented yet');
       }
 
       // Limpar localStorage
@@ -427,7 +425,7 @@ export function useProfileDetection() {
 
 // Utility functions
 export const profileUtils = {
-  getProfileTypeLabel: (type: UserProfile['type']): string => {
+  getProfileTypeLabel: (type: LocalUserProfile['type']): string => {
     const labels = {
       admin: 'Administrador',
       professional: 'Profissional de Saúde',
@@ -438,7 +436,7 @@ export const profileUtils = {
     return labels[type];
   },
 
-  getFocusLabel: (focus: UserProfile['focus']): string => {
+  getFocusLabel: (focus: LocalUserProfile['focus']): string => {
     const labels = {
       technical: 'Informações Técnicas',
       practical: 'Orientações Práticas',
@@ -449,9 +447,9 @@ export const profileUtils = {
     return labels[focus];
   },
 
-  getPersonaCompatibility: (profile: UserProfile, personaId: string): number => {
+  getPersonaCompatibility: (profile: LocalUserProfile, personaId: string): number => {
     const { type, focus } = profile;
-    
+
     if (personaId === 'dr_gasnelio') {
       if (type === 'professional' || type === 'student') {
         return focus === 'technical' ? 0.9 : 0.7;

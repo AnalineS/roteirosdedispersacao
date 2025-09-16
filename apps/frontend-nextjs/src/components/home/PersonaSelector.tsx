@@ -86,11 +86,42 @@ export default function PersonaSelector() {
         {/* Dr. Gasnelio Card - Clickable */}
         <button
           onClick={() => {
-            const userProfile = {
+            const userProfile: UserProfile = {
+              uid: 'temp-' + Date.now(),
               type: 'professional' as const,
               focus: 'technical' as const,
               confidence: 0.9,
-              explanation: 'Selecionado diretamente pelo perfil técnico'
+              explanation: 'Selecionado diretamente pelo perfil técnico',
+              preferences: {
+                language: 'technical' as const,
+                notifications: true,
+                theme: 'auto' as const,
+                emailUpdates: false,
+                dataCollection: true,
+                lgpdConsent: true
+              },
+              history: {
+                lastPersona: 'dr_gasnelio' as const,
+                conversationCount: 0,
+                lastAccess: new Date().toISOString(),
+                preferredTopics: [],
+                totalSessions: 0,
+                totalTimeSpent: 0,
+                completedModules: [],
+                achievements: []
+              },
+              stats: {
+                joinedAt: new Date().toISOString(),
+                lastActiveAt: new Date().toISOString(),
+                sessionCount: 0,
+                messageCount: 0,
+                averageSessionDuration: 0,
+                favoritePersona: 'dr_gasnelio' as const,
+                completionRate: 0
+              },
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+              version: '1.0'
             };
             handlePersonaSelect('dr_gasnelio', userProfile);
           }}
@@ -199,11 +230,42 @@ export default function PersonaSelector() {
         {/* GA Card - Clickable */}
         <button
           onClick={() => {
-            const userProfile = {
+            const userProfile: UserProfile = {
+              uid: 'temp-' + Date.now(),
               type: 'patient' as const,
               focus: 'empathetic' as const,
               confidence: 0.9,
-              explanation: 'Selecionado diretamente pelo perfil empático'
+              explanation: 'Selecionado diretamente pelo perfil empático',
+              preferences: {
+                language: 'simple' as const,
+                notifications: true,
+                theme: 'auto' as const,
+                emailUpdates: false,
+                dataCollection: true,
+                lgpdConsent: true
+              },
+              history: {
+                lastPersona: 'ga' as const,
+                conversationCount: 0,
+                lastAccess: new Date().toISOString(),
+                preferredTopics: [],
+                totalSessions: 0,
+                totalTimeSpent: 0,
+                completedModules: [],
+                achievements: []
+              },
+              stats: {
+                joinedAt: new Date().toISOString(),
+                lastActiveAt: new Date().toISOString(),
+                sessionCount: 0,
+                messageCount: 0,
+                averageSessionDuration: 0,
+                favoritePersona: 'ga' as const,
+                completionRate: 0
+              },
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+              version: '1.0'
             };
             handlePersonaSelect('ga', userProfile);
           }}

@@ -8,7 +8,13 @@
 
 import React, { ReactNode, useEffect, useState } from 'react';
 import { AuthProvider } from '@/contexts/AuthContext';
-import { FEATURES } from '@/lib/firebase/config';
+
+// Features configuration - moved from Firebase config
+const FEATURES = {
+  AUTH_ENABLED: true,
+  FIRESTORE_ENABLED: false, // Disabled since we use local storage
+  OFFLINE_MODE: false,
+};
 
 interface AuthProviderWrapperProps {
   children: ReactNode;

@@ -38,18 +38,19 @@ export default function AvatarUploader({
     isUploading,
     error: uploadError,
     reset: resetUpload
-  } = useImageUpload({
-    onSuccess: (url) => {
-      success();
-      onUploadComplete?.(url);
-      setSelectedFile(null);
-      setPreviewUrl(null);
-    },
-    onError: (err) => {
-      error();
-      onUploadError?.(err);
-    }
-  });
+  } = useImageUpload();
+
+  const handleUploadSuccess = (url: string) => {
+    success();
+    onUploadComplete?.(url);
+    setSelectedFile(null);
+    setPreviewUrl(null);
+  };
+
+  const handleUploadError = (err: Error) => {
+    error();
+    onUploadError?.(err.message);
+  };
 
   const validateFile = useCallback((file: File): string | null => {
     // Verificar tipo
@@ -114,8 +115,15 @@ export default function AvatarUploader({
   const handleUpload = useCallback(async () => {
     if (!selectedFile) return;
 
-    await uploadFile(selectedFile, `avatars/${userId}`);
-  }, [selectedFile, uploadFile, userId]);
+    uploadFile(
+      selectedFile,
+      (progress: number) => {
+        // Progress is handled by the hook internally
+      },
+      handleUploadSuccess,
+      handleUploadError
+    );
+  }, [selectedFile, uploadFile, handleUploadSuccess, handleUploadError]);
 
   const handleCancel = useCallback(() => {
     info();

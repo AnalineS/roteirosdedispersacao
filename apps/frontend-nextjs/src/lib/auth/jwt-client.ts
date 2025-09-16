@@ -1,0 +1,264 @@
+/**
+ * JWT Client - Comunicação com Backend Auth API
+ * Substitui Firebase Auth por sistema JWT próprio
+ */
+
+import axios, { AxiosInstance, AxiosResponse } from 'axios';
+import Cookies from 'js-cookie';
+
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  picture?: string;
+  provider: 'google' | 'email';
+  verified: boolean;
+  createdAt: string;
+  lastLoginAt?: string;
+}
+
+export interface AuthTokens {
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
+}
+
+export interface AuthResponse {
+  user: User;
+  tokens: AuthTokens;
+}
+
+export interface GoogleAuthResponse {
+  authUrl: string;
+  state: string;
+}
+
+class JWTClient {
+  private api: AxiosInstance;
+  private baseURL: string;
+  private accessToken: string | null = null;
+  private refreshToken: string | null = null;
+
+  constructor() {
+    this.baseURL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+
+    this.api = axios.create({
+      baseURL: `${this.baseURL}/api/v1`,
+      timeout: 10000,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    // Interceptor para adicionar token
+    this.api.interceptors.request.use((config) => {
+      if (this.accessToken) {
+        config.headers.Authorization = `Bearer ${this.accessToken}`;
+      }
+      return config;
+    });
+
+    // Interceptor para refresh automático
+    this.api.interceptors.response.use(
+      (response) => response,
+      async (error) => {
+        if (error.response?.status === 401 && this.refreshToken) {
+          try {
+            await this.refreshAccessToken();
+            // Retry original request
+            const originalRequest = error.config;
+            originalRequest.headers.Authorization = `Bearer ${this.accessToken}`;
+            return this.api(originalRequest);
+          } catch (refreshError) {
+            this.logout();
+            throw refreshError;
+          }
+        }
+        throw error;
+      }
+    );
+
+    // Carregar tokens do cookie
+    this.loadTokensFromStorage();
+  }
+
+  private loadTokensFromStorage(): void {
+    if (typeof window !== 'undefined') {
+      this.accessToken = Cookies.get('auth_token') || null;
+      this.refreshToken = Cookies.get('refresh_token') || null;
+    }
+  }
+
+  private saveTokensToStorage(tokens: AuthTokens): void {
+    if (typeof window !== 'undefined') {
+      const expiresAt = new Date(Date.now() + tokens.expiresIn * 1000);
+
+      Cookies.set('auth_token', tokens.accessToken, {
+        expires: expiresAt,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict'
+      });
+
+      Cookies.set('refresh_token', tokens.refreshToken, {
+        expires: 30, // 30 days
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict'
+      });
+
+      this.accessToken = tokens.accessToken;
+      this.refreshToken = tokens.refreshToken;
+    }
+  }
+
+  private clearTokensFromStorage(): void {
+    if (typeof window !== 'undefined') {
+      Cookies.remove('auth_token');
+      Cookies.remove('refresh_token');
+      this.accessToken = null;
+      this.refreshToken = null;
+    }
+  }
+
+  /**
+   * Iniciar fluxo OAuth Google
+   */
+  async initiateGoogleAuth(): Promise<GoogleAuthResponse> {
+    try {
+      const response: AxiosResponse<GoogleAuthResponse> = await this.api.post('/auth/google/initiate');
+      return response.data;
+    } catch (error) {
+      console.error('Error initiating Google auth:', error);
+      throw new Error('Failed to initiate Google authentication');
+    }
+  }
+
+  /**
+   * Completar fluxo OAuth Google
+   */
+  async completeGoogleAuth(code: string, state: string): Promise<AuthResponse> {
+    try {
+      const response: AxiosResponse<AuthResponse> = await this.api.post('/auth/google/callback', {
+        code,
+        state
+      });
+
+      this.saveTokensToStorage(response.data.tokens);
+      return response.data;
+    } catch (error) {
+      console.error('Error completing Google auth:', error);
+      throw new Error('Failed to complete Google authentication');
+    }
+  }
+
+  /**
+   * Login com email/senha (futuro)
+   */
+  async loginWithEmail(email: string, password: string): Promise<AuthResponse> {
+    try {
+      const response: AxiosResponse<AuthResponse> = await this.api.post('/auth/login', {
+        email,
+        password
+      });
+
+      this.saveTokensToStorage(response.data.tokens);
+      return response.data;
+    } catch (error) {
+      console.error('Error logging in with email:', error);
+      throw new Error('Failed to login with email');
+    }
+  }
+
+  /**
+   * Refresh access token
+   */
+  async refreshAccessToken(): Promise<AuthTokens> {
+    if (!this.refreshToken) {
+      throw new Error('No refresh token available');
+    }
+
+    try {
+      const response: AxiosResponse<{ tokens: AuthTokens }> = await this.api.post('/auth/refresh', {
+        refreshToken: this.refreshToken
+      });
+
+      this.saveTokensToStorage(response.data.tokens);
+      return response.data.tokens;
+    } catch (error) {
+      console.error('Error refreshing token:', error);
+      this.clearTokensFromStorage();
+      throw new Error('Failed to refresh token');
+    }
+  }
+
+  /**
+   * Obter usuário atual
+   */
+  async getCurrentUser(): Promise<User | null> {
+    if (!this.accessToken) {
+      return null;
+    }
+
+    try {
+      const response: AxiosResponse<{ user: User }> = await this.api.get('/auth/me');
+      return response.data.user;
+    } catch (error) {
+      console.error('Error getting current user:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Atualizar perfil do usuário
+   */
+  async updateProfile(updates: Partial<Pick<User, 'name' | 'picture'>>): Promise<User> {
+    try {
+      const response: AxiosResponse<{ user: User }> = await this.api.patch('/auth/profile', updates);
+      return response.data.user;
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      throw new Error('Failed to update profile');
+    }
+  }
+
+  /**
+   * Logout
+   */
+  async logout(): Promise<void> {
+    try {
+      if (this.refreshToken) {
+        await this.api.post('/auth/logout', {
+          refreshToken: this.refreshToken
+        });
+      }
+    } catch (error) {
+      console.error('Error during logout:', error);
+    } finally {
+      this.clearTokensFromStorage();
+    }
+  }
+
+  /**
+   * Verificar se usuário está autenticado
+   */
+  isAuthenticated(): boolean {
+    return !!this.accessToken;
+  }
+
+  /**
+   * Obter token atual
+   */
+  getAccessToken(): string | null {
+    return this.accessToken;
+  }
+
+  /**
+   * Cliente API autenticado
+   */
+  getAuthenticatedClient(): AxiosInstance {
+    return this.api;
+  }
+}
+
+// Singleton instance
+export const jwtClient = new JWTClient();
+export default jwtClient;

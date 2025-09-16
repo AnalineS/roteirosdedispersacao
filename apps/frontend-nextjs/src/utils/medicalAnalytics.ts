@@ -167,7 +167,7 @@ export class MedicalAnalytics {
           clinicalContext: enrichedEvent.custom_dimensions?.clinical_context,
           userRole: enrichedEvent.custom_dimensions?.user_role
         }
-      }).catch(error => {
+      }).catch((error: unknown) => {
         console.warn('Failed to save medical event to Firestore:', error);
       });
       
@@ -239,7 +239,7 @@ export class MedicalAnalytics {
         urgencyLevel: action.urgencyLevel,
         errorCount: action.errorCount || 0
       }
-    }).catch(error => {
+    }).catch((error: unknown) => {
       console.warn('Failed to track critical medical action:', error);
     });
   }
@@ -477,7 +477,7 @@ export class MedicalAnalytics {
         id: this.currentSessionId,
         deviceType: this.getDeviceType(),
         userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'server'
-      }).catch(error => {
+      }).catch((error: unknown) => {
         console.warn('Failed to start medical analytics session:', error);
       });
     }

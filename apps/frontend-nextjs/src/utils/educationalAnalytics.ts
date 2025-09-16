@@ -273,7 +273,7 @@ export class EducationalMonitoringSystem {
         stepsCompleted: caseSession.stepResults.length,
         successRate: caseSession.totalScore
       }
-    }).catch(error => {
+    }).catch((error: unknown) => {
       console.warn('Failed to save case completion to Firestore:', error);
     });
 
@@ -286,7 +286,7 @@ export class EducationalMonitoringSystem {
         timeSpent: caseSession.timeSpent,
         errorCount: caseSession.stepResults.filter(s => !s.isCorrect).length
       }
-    }).catch(error => {
+    }).catch((error: unknown) => {
       console.warn('Failed to track medical metric:', error);
     });
   }

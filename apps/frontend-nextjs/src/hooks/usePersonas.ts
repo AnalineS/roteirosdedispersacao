@@ -20,9 +20,9 @@ export function usePersonas() {
         setError(null);
         
         // Verificar cache primeiro
-        const cachedPersonas = PersonasCache.get();
+        const cachedPersonas = await PersonasCache.get('personas');
         if (cachedPersonas) {
-          setPersonas(cachedPersonas);
+          setPersonas(cachedPersonas as PersonasResponse);
           setLoading(false);
           return;
         }
@@ -33,7 +33,7 @@ export function usePersonas() {
         const validPersonas = filterValidPersonas(personasData);
         
         // Salvar no cache
-        PersonasCache.set(validPersonas);
+        await PersonasCache.set('personas', validPersonas);
         setPersonas(validPersonas);
       } catch (err) {
         console.error('Erro ao carregar personas:', err);

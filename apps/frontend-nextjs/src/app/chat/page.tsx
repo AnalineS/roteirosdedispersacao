@@ -26,6 +26,7 @@ import { theme } from '@/config/theme';
 import { SidebarLoader } from '@/components/LoadingSpinner';
 import { type ChatMessage } from '@/services/api';
 import { isValidPersonaId, type ValidPersonaId } from '@/types/personas';
+import { LightbulbIcon, DoctorIcon, BookIcon, StarIcon } from '@/components/icons/EducationalIcons';
 
 export default function ChatPage() {
   const { setPersonaSelectionViewed } = useGlobalNavigation();
@@ -545,7 +546,7 @@ export default function ChatPage() {
             border: '1px solid #ff9800'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span>💡</span>
+              <LightbulbIcon size={16} className="inline" />
               <span style={{ fontWeight: 600, color: '#e65100' }}>
                 Sugestão: {personaSwitchSuggestion}
               </span>
@@ -640,7 +641,7 @@ export default function ChatPage() {
                 fontWeight: 'bold',
                 fontSize: '18px'
               }}>
-                {profile.name ? profile.name.charAt(0).toUpperCase() : '👤'}
+                {profile.name ? profile.name.charAt(0).toUpperCase() : <DoctorIcon size={18} className="inline" />}
               </div>
               <div>
                 <h3 style={{ margin: 0, color: '#1e293b', fontSize: '16px', fontWeight: '600' }}>
@@ -659,8 +660,8 @@ export default function ChatPage() {
                   )}
                 </h3>
                 <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '14px' }}>
-                  📚 {profile.sessionCount || 0} sessões • 
-                  ⭐ Recomendação: {getRecommendedPersona() || 'Dr. Gasnélio'}
+                  <BookIcon size={14} className="inline mr-1" /> {profile.sessionCount || 0} sessões •{' '}
+                  <StarIcon size={14} className="inline mr-1" /> Recomendação: {getRecommendedPersona() || 'Dr. Gasnélio'}
                 </p>
               </div>
             </div>

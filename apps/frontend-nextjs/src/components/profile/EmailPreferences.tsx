@@ -1,956 +1,327 @@
+/**
+ * Email Preferences Component - Gerenciamento de Preferências de Email
+ * Componente funcional baseado na nova arquitetura API
+ */
+
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { 
-  Mail, Bell, Trophy, TrendingUp, Users, 
-  Clock, Check, X, AlertCircle,
-  Send, TestTube, History
-} from 'lucide-react';
-import { useHapticFeedback } from '@/utils/hapticFeedback';
-import { useSocialProfile } from '@/hooks/useSocialProfile';
-import { SocialService } from '@/services/socialService';
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '@/hooks/useAuth';
+import { useUserProfile } from '@/hooks/useUserProfile';
+import { socialService } from '@/services/socialService';
 
-interface EmailPreferencesData {
-  notifications: boolean;
-  marketing: boolean;
-  weeklyDigest: boolean;
-  mentions: boolean;
-}
-
-interface NotificationHistory {
-  type: string;
-  subject: string;
-  email: string;
-  sent_at: string;
-  success: boolean;
+interface EmailPreference {
+  id: string;
+  title: string;
+  description: string;
+  enabled: boolean;
+  frequency: 'instant' | 'daily' | 'weekly' | 'monthly';
+  category: 'system' | 'social' | 'educational' | 'promotional';
 }
 
 interface EmailPreferencesProps {
-  userId: string;
-  preferences?: EmailPreferencesData;
-  onPreferencesChange?: (preferences: EmailPreferencesData) => Promise<boolean>;
   className?: string;
+  userId?: string;
+  preferences?: any;
+  onPreferencesChange?: (preferences: any) => Promise<boolean>;
 }
 
 export default function EmailPreferences({
+  className = '',
   userId,
-  preferences: initialPreferences,
-  onPreferencesChange,
-  className = ''
+  preferences: externalPreferences,
+  onPreferencesChange
 }: EmailPreferencesProps) {
-  const { profile, updateEmailPreferences } = useSocialProfile();
-  const [preferences, setPreferences] = useState<EmailPreferencesData>({
-    notifications: true,
-    marketing: false,
-    weeklyDigest: true,
-    mentions: true
-  });
-  
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [showHistory, setShowHistory] = useState(false);
-  const [history, setHistory] = useState<NotificationHistory[]>([]);
-  const [testingEmail, setTestingEmail] = useState<string | null>(null);
+  const { user } = useAuth();
+  const { profile, updateProfile } = useUserProfile();
+  const [preferences, setPreferences] = useState<EmailPreference[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  const { success, error: hapticError, info } = useHapticFeedback();
+  // Preferências padrão
+  const defaultPreferences: EmailPreference[] = [
+    {
+      id: 'system_notifications',
+      title: 'Notificações do Sistema',
+      description: 'Atualizações importantes sobre sua conta e segurança',
+      enabled: true,
+      frequency: 'instant',
+      category: 'system'
+    },
+    {
+      id: 'achievement_unlocked',
+      title: 'Conquistas Desbloqueadas',
+      description: 'Receba notificações quando desbloquear novas conquistas',
+      enabled: true,
+      frequency: 'instant',
+      category: 'social'
+    },
+    {
+      id: 'certificate_earned',
+      title: 'Certificados Conquistados',
+      description: 'Notificações sobre certificados obtidos',
+      enabled: true,
+      frequency: 'instant',
+      category: 'educational'
+    },
+    {
+      id: 'weekly_progress',
+      title: 'Relatório Semanal de Progresso',
+      description: 'Resumo semanal do seu progresso e atividades',
+      enabled: false,
+      frequency: 'weekly',
+      category: 'educational'
+    },
+    {
+      id: 'streak_reminders',
+      title: 'Lembretes de Sequência',
+      description: 'Lembretes para manter sua sequência de dias ativos',
+      enabled: false,
+      frequency: 'daily',
+      category: 'social'
+    },
+    {
+      id: 'new_content',
+      title: 'Novos Conteúdos',
+      description: 'Notificações sobre novos módulos e recursos disponíveis',
+      enabled: false,
+      frequency: 'weekly',
+      category: 'educational'
+    },
+    {
+      id: 'platform_updates',
+      title: 'Atualizações da Plataforma',
+      description: 'Novidades e melhorias na plataforma educacional',
+      enabled: false,
+      frequency: 'monthly',
+      category: 'promotional'
+    }
+  ];
 
-  // Sincronizar preferências
   useEffect(() => {
-    if (initialPreferences) {
-      setPreferences(initialPreferences);
-    } else if (profile?.emailPreferences) {
-      setPreferences(profile.emailPreferences);
-    }
-    setIsLoading(false);
-  }, [initialPreferences, profile]);
+    loadPreferences();
+  }, [profile]);
 
-
-  // Salvar preferências
-  const savePreferences = useCallback(async (newPreferences: EmailPreferencesData) => {
+  const loadPreferences = async () => {
+    setLoading(true);
     try {
-      setIsSaving(true);
-      setError(null);
-      setSuccessMessage(null);
-
-      let successResult = false;
-      if (onPreferencesChange) {
-        successResult = await onPreferencesChange(newPreferences);
-      } else {
-        successResult = await updateEmailPreferences(newPreferences);
-      }
-
-      if (successResult) {
-        setPreferences(newPreferences);
-        setSuccessMessage('Preferências salvas com sucesso!');
-        success();
-        
-        // Limpar mensagem após 3 segundos
-        setTimeout(() => setSuccessMessage(null), 3000);
-      } else {
-        setError('Erro ao salvar preferências');
-        hapticError();
-      }
-    } catch (err: any) {
-      setError('Erro de conexão');
-      hapticError();
-    } finally {
-      setIsSaving(false);
-    }
-  }, [onPreferencesChange, updateEmailPreferences, success, hapticError]);
-
-  // Carregar histórico
-  const loadHistory = useCallback(async () => {
-    try {
-      const result = await SocialService.getUserNotifications(userId, 10);
-      
-      if (result.success && result.notifications) {
-        const mappedHistory = result.notifications.map(n => ({
-          type: n.category,
-          subject: n.title,
-          email: userId,
-          sent_at: n.createdAt,
-          success: n.status === 'sent'
+      // Carregar preferências salvas do perfil do usuário
+      if (profile?.preferences) {
+        const savedPrefs = profile.preferences as any;
+        const updatedPrefs = defaultPreferences.map(pref => ({
+          ...pref,
+          enabled: savedPrefs[pref.id] !== undefined ? savedPrefs[pref.id] : pref.enabled,
+          frequency: savedPrefs[`${pref.id}_frequency`] || pref.frequency
         }));
-        setHistory(mappedHistory);
+        setPreferences(updatedPrefs);
       } else {
-        console.error('Erro ao carregar histórico:', result.error);
+        setPreferences(defaultPreferences);
       }
-    } catch (err) {
-      console.error('Erro ao carregar histórico:', err);
+    } catch (error) {
+      console.error('Erro ao carregar preferências:', error);
+      setPreferences(defaultPreferences);
+    } finally {
+      setLoading(false);
     }
-  }, [userId]);
+  };
 
-  // Enviar email de teste
-  const sendTestEmail = useCallback(async (type: string) => {
+  const handlePreferenceChange = (prefId: string, enabled: boolean) => {
+    setPreferences(prev => prev.map(pref =>
+      pref.id === prefId ? { ...pref, enabled } : pref
+    ));
+  };
+
+  const handleFrequencyChange = (prefId: string, frequency: EmailPreference['frequency']) => {
+    setPreferences(prev => prev.map(pref =>
+      pref.id === prefId ? { ...pref, frequency } : pref
+    ));
+  };
+
+  const savePreferences = async () => {
+    if (!profile) return;
+
+    setSaving(true);
+    setMessage(null);
+
     try {
-      setTestingEmail(type);
-      info();
-
-      // Criar uma notificação de teste
-      const result = await SocialService.createNotification({
-        userId,
-        type: 'email',
-        category: type as any,
-        title: `Teste - ${type}`,
-        message: `Este é um email de teste do tipo ${type}`,
-        status: 'pending'
+      // Converter preferências para formato do perfil
+      const preferencesData: any = {};
+      preferences.forEach(pref => {
+        preferencesData[pref.id] = pref.enabled;
+        preferencesData[`${pref.id}_frequency`] = pref.frequency;
       });
 
-      if (result.success) {
-        success();
-        setSuccessMessage(`Email de teste (${type}) criado com sucesso!`);
-        setTimeout(() => setSuccessMessage(null), 3000);
-      } else {
-        hapticError();
-        setError(`Erro ao enviar email de teste: ${result.error}`);
-        setTimeout(() => setError(null), 3000);
+      // Atualizar perfil com novas preferências
+      try {
+        await updateProfile({
+          preferences: {
+            ...profile?.preferences,
+            emailUpdates: preferences.some(p => p.enabled),
+            ...preferencesData
+          }
+        });
+        setMessage({ type: 'success', text: 'Preferências salvas com sucesso!' });
+      } catch (error) {
+        setMessage({ type: 'error', text: 'Erro ao salvar preferências.' });
       }
-    } catch (err: any) {
-      hapticError();
-      setError('Erro de conexão');
-      setTimeout(() => setError(null), 3000);
+
+    } catch (error) {
+      console.error('Erro ao salvar preferências:', error);
+      setMessage({ type: 'error', text: 'Erro ao salvar preferências.' });
     } finally {
-      setTestingEmail(null);
+      setSaving(false);
     }
-  }, [userId, info, success, hapticError]);
+  };
 
-  // Manipuladores de mudança
-  const handleToggleChange = useCallback((field: keyof EmailPreferencesData) => {
-    const newPreferences = {
-      ...preferences,
-      [field]: !preferences[field]
-    };
-    
-    // Se desabilitar notificações gerais, desabilitar todas as específicas
-    if (field === 'notifications' && !newPreferences.notifications) {
-      newPreferences.marketing = false;
-      newPreferences.weeklyDigest = false;
-      newPreferences.mentions = false;
+  const getCategoryIcon = (category: EmailPreference['category']): string => {
+    switch (category) {
+      case 'system': return '⚙️';
+      case 'social': return '🏆';
+      case 'educational': return '📚';
+      case 'promotional': return '📢';
+      default: return '📧';
     }
-    
-    info();
-    savePreferences(newPreferences);
-  }, [preferences, savePreferences, info]);
+  };
 
-
-  // Mostrar/ocultar histórico
-  const toggleHistory = useCallback(() => {
-    if (!showHistory) {
-      loadHistory();
+  const getCategoryColor = (category: EmailPreference['category']): string => {
+    switch (category) {
+      case 'system': return 'bg-red-50 border-red-200';
+      case 'social': return 'bg-blue-50 border-blue-200';
+      case 'educational': return 'bg-green-50 border-green-200';
+      case 'promotional': return 'bg-purple-50 border-purple-200';
+      default: return 'bg-gray-50 border-gray-200';
     }
-    setShowHistory(prev => !prev);
-    info();
-  }, [showHistory, loadHistory, info]);
+  };
 
-  if (isLoading) {
+  if (!user) {
     return (
-      <div className={`email-preferences loading ${className}`}>
-        <div className="loading-content">
-          <div className="loading-spinner" />
-          <p>Carregando preferências de email...</p>
-        </div>
+      <div className={`text-center p-6 bg-gray-50 rounded-lg ${className}`}>
+        <p className="text-gray-600">Faça login para gerenciar suas preferências de email</p>
       </div>
     );
   }
 
   return (
-    <div className={`email-preferences ${className}`}>
-      {/* Header */}
-      <div className="preferences-header">
-        <div className="header-content">
-          <Mail size={24} />
-          <div className="header-text">
-            <h2>Preferências de Email</h2>
-            <p>Configure como e quando você quer receber notificações por email</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Mensagens de status */}
-      {error && (
-        <div className="status-message error">
-          <AlertCircle size={16} />
-          <span>{error}</span>
-          <button onClick={() => setError(null)} className="close-button">
-            <X size={14} />
-          </button>
-        </div>
-      )}
-
-      {successMessage && (
-        <div className="status-message success">
-          <Check size={16} />
-          <span>{successMessage}</span>
-          <button onClick={() => setSuccessMessage(null)} className="close-button">
-            <X size={14} />
-          </button>
-        </div>
-      )}
-
-      {/* Configuração principal */}
-      <div className="preference-section">
-        <div className="section-header">
-          <Bell size={20} />
-          <h3>Notificações Gerais</h3>
-        </div>
-        
-        <div className="preference-item main-toggle">
-          <div className="item-info">
-            <label className="item-label">Receber emails de notificação</label>
-            <p className="item-description">
-              Ativar/desativar todas as notificações por email
-            </p>
-          </div>
-          <label className="toggle-switch">
-            <input
-              type="checkbox"
-              checked={preferences.notifications}
-              onChange={() => handleToggleChange('notifications')}
-              disabled={isSaving}
-            />
-            <span className="slider"></span>
-          </label>
-        </div>
-      </div>
-
-      {/* Tipos de notificação */}
-      <div className="preference-section">
-        <div className="section-header">
-          <div className="section-icon">📧</div>
-          <h3>Tipos de Notificação</h3>
-        </div>
-        
-        <div className="preference-group">
-          {/* Menções */}
-          <div className="preference-item">
-            <div className="item-info">
-              <div className="item-header">
-                <Trophy size={18} />
-                <label className="item-label">Menções e Interações</label>
-              </div>
-              <p className="item-description">
-                Notificações quando alguém interagir com seu conteúdo
-              </p>
-            </div>
-            <label className="toggle-switch">
-              <input
-                type="checkbox"
-                checked={preferences.mentions && preferences.notifications}
-                onChange={() => handleToggleChange('mentions')}
-                disabled={isSaving || !preferences.notifications}
-              />
-              <span className="slider"></span>
-            </label>
-          </div>
-
-          {/* Resumo Semanal */}
-          <div className="preference-item">
-            <div className="item-info">
-              <div className="item-header">
-                <TrendingUp size={18} />
-                <label className="item-label">Resumo Semanal</label>
-              </div>
-              <p className="item-description">
-                Resumo semanal das suas atividades e progressos
-              </p>
-            </div>
-            <label className="toggle-switch">
-              <input
-                type="checkbox"
-                checked={preferences.weeklyDigest && preferences.notifications}
-                onChange={() => handleToggleChange('weeklyDigest')}
-                disabled={isSaving || !preferences.notifications}
-              />
-              <span className="slider"></span>
-            </label>
-          </div>
-
-
-          {/* Marketing */}
-          <div className="preference-item">
-            <div className="item-info">
-              <div className="item-header">
-                <Mail size={18} />
-                <label className="item-label">Novidades e Dicas</label>
-              </div>
-              <p className="item-description">
-                Emails com novidades do sistema e dicas educativas
-              </p>
-            </div>
-            <label className="toggle-switch">
-              <input
-                type="checkbox"
-                checked={preferences.marketing && preferences.notifications}
-                onChange={() => handleToggleChange('marketing')}
-                disabled={isSaving || !preferences.notifications}
-              />
-              <span className="slider"></span>
-            </label>
-          </div>
-        </div>
-      </div>
-
-
-      {/* Ações de teste */}
-      <div className="preference-section">
-        <div className="section-header">
-          <TestTube size={20} />
-          <h3>Testar Notificações</h3>
-        </div>
-        
-        <div className="test-actions">
-          <button
-            onClick={() => sendTestEmail('achievement')}
-            disabled={testingEmail === 'achievement' || !preferences.notifications}
-            className="test-button"
-          >
-            {testingEmail === 'achievement' ? (
-              <>
-                <div className="loading-spinner small" />
-                Enviando...
-              </>
-            ) : (
-              <>
-                <Trophy size={16} />
-                Testar Conquista
-              </>
-            )}
-          </button>
-
-          <button
-            onClick={() => sendTestEmail('progress')}
-            disabled={testingEmail === 'progress' || !preferences.notifications}
-            className="test-button"
-          >
-            {testingEmail === 'progress' ? (
-              <>
-                <div className="loading-spinner small" />
-                Enviando...
-              </>
-            ) : (
-              <>
-                <TrendingUp size={16} />
-                Testar Progresso
-              </>
-            )}
-          </button>
-
-          <button
-            onClick={() => sendTestEmail('welcome')}
-            disabled={testingEmail === 'welcome' || !preferences.notifications}
-            className="test-button"
-          >
-            {testingEmail === 'welcome' ? (
-              <>
-                <div className="loading-spinner small" />
-                Enviando...
-              </>
-            ) : (
-              <>
-                <Send size={16} />
-                Testar Boas-vindas
-              </>
-            )}
-          </button>
-        </div>
-        
-        <p className="test-note">
-          Os emails de teste serão enviados para seu endereço cadastrado
+    <div className={`bg-white rounded-lg shadow-lg p-6 ${className}`}>
+      <div className="mb-6">
+        <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+          Preferências de Email
+        </h2>
+        <p className="text-gray-600">
+          Configure quais notificações você deseja receber por email
         </p>
       </div>
 
-      {/* Histórico */}
-      <div className="preference-section">
-        <button
-          onClick={toggleHistory}
-          className="section-toggle"
-        >
-          <History size={20} />
-          <span>Histórico de Emails</span>
-          <div className={`toggle-icon ${showHistory ? 'open' : ''}`}>▼</div>
-        </button>
-        
-        {showHistory && (
-          <div className="history-content">
-            {history.length === 0 ? (
-              <p className="no-history">Nenhum email enviado ainda</p>
-            ) : (
-              <div className="history-list">
-                {history.map((item, index) => (
-                  <div key={index} className="history-item">
-                    <div className="history-info">
-                      <span className="history-subject">{item.subject}</span>
-                      <span className="history-date">
-                        {new Date(item.sent_at).toLocaleDateString('pt-BR', {
-                          day: '2-digit',
-                          month: '2-digit',
-                          year: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
-                      </span>
-                    </div>
-                    <div className={`history-status ${item.success ? 'success' : 'failed'}`}>
-                      {item.success ? <Check size={14} /> : <X size={14} />}
-                    </div>
+      {loading ? (
+        <div className="text-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Carregando preferências...</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {preferences.map((pref, index) => (
+            <div
+              key={pref.id}
+              className={`border rounded-lg p-4 transition-all ${getCategoryColor(pref.category)}`}
+            >
+              <div className="flex items-start justify-between">
+                <div className="flex-1 mr-4">
+                  <div className="flex items-center mb-2">
+                    <span className="text-lg mr-2">{getCategoryIcon(pref.category)}</span>
+                    <h3 className="font-medium text-gray-900">{pref.title}</h3>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+                  <p className="text-sm text-gray-600 mb-3">{pref.description}</p>
 
-      {/* Loading overlay */}
-      {isSaving && (
-        <div className="saving-overlay">
-          <div className="saving-content">
-            <div className="loading-spinner" />
-            <p>Salvando preferências...</p>
-          </div>
+                  {pref.enabled && (
+                    <div className="flex items-center space-x-4">
+                      <label className="text-sm text-gray-700">Frequência:</label>
+                      <select
+                        value={pref.frequency}
+                        onChange={(e) => handleFrequencyChange(pref.id, e.target.value as EmailPreference['frequency'])}
+                        className="text-sm border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
+                        <option value="instant">Instantâneo</option>
+                        <option value="daily">Diário</option>
+                        <option value="weekly">Semanal</option>
+                        <option value="monthly">Mensal</option>
+                      </select>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex-shrink-0">
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={pref.enabled}
+                      onChange={(e) => handlePreferenceChange(pref.id, e.target.checked)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                  </label>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       )}
 
-      <style jsx>{`
-        .email-preferences {
-          width: 100%;
-          max-width: 800px;
-          background: white;
-          border-radius: var(--radius-lg);
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-          overflow: hidden;
-        }
-
-        .preferences-header {
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          color: white;
-          padding: var(--spacing-xl);
-        }
-
-        .header-content {
-          display: flex;
-          align-items: center;
-          gap: var(--spacing-md);
-        }
-
-        .header-text h2 {
-          margin: 0 0 var(--spacing-xs) 0;
-          font-size: var(--font-size-xl);
-          font-weight: var(--font-weight-semibold);
-        }
-
-        .header-text p {
-          margin: 0;
-          opacity: 0.9;
-          font-size: var(--font-size-sm);
-        }
-
-        .status-message {
-          display: flex;
-          align-items: center;
-          gap: var(--spacing-sm);
-          padding: var(--spacing-md);
-          margin: var(--spacing-lg);
-          border-radius: var(--radius-md);
-          font-size: var(--font-size-sm);
-          font-weight: var(--font-weight-medium);
-        }
-
-        .status-message.success {
-          background: var(--color-success-50);
-          color: var(--color-success-700);
-          border: 1px solid var(--color-success-200);
-        }
-
-        .status-message.error {
-          background: var(--color-error-50);
-          color: var(--color-error-700);
-          border: 1px solid var(--color-error-200);
-        }
-
-        .close-button {
-          margin-left: auto;
-          background: none;
-          border: none;
-          cursor: pointer;
-          padding: var(--spacing-xs);
-          border-radius: var(--radius-sm);
-          color: inherit;
-          opacity: 0.7;
-          transition: opacity var(--transition-fast);
-        }
-
-        .close-button:hover {
-          opacity: 1;
-        }
-
-        .preference-section {
-          padding: var(--spacing-lg);
-          border-bottom: 1px solid var(--color-gray-200);
-        }
-
-        .preference-section:last-child {
-          border-bottom: none;
-        }
-
-        .section-header {
-          display: flex;
-          align-items: center;
-          gap: var(--spacing-sm);
-          margin-bottom: var(--spacing-lg);
-        }
-
-        .section-header h3 {
-          margin: 0;
-          font-size: var(--font-size-lg);
-          font-weight: var(--font-weight-semibold);
-          color: var(--color-gray-800);
-        }
-
-        .section-icon {
-          font-size: var(--font-size-lg);
-        }
-
-        .preference-item {
-          display: flex;
-          align-items: flex-start;
-          justify-content: space-between;
-          gap: var(--spacing-md);
-          padding: var(--spacing-md) 0;
-          border-bottom: 1px solid var(--color-gray-100);
-        }
-
-        .preference-item:last-child {
-          border-bottom: none;
-        }
-
-        .preference-item.main-toggle {
-          background: var(--color-gray-50);
-          border-radius: var(--radius-md);
-          padding: var(--spacing-lg);
-          border-bottom: none;
-        }
-
-        .item-info {
-          flex: 1;
-        }
-
-        .item-header {
-          display: flex;
-          align-items: center;
-          gap: var(--spacing-sm);
-          margin-bottom: var(--spacing-xs);
-        }
-
-        .item-label {
-          font-size: var(--font-size-base);
-          font-weight: var(--font-weight-medium);
-          color: var(--color-gray-800);
-          cursor: pointer;
-        }
-
-        .item-description {
-          margin: 0;
-          font-size: var(--font-size-sm);
-          color: var(--color-gray-600);
-          line-height: var(--line-height-relaxed);
-        }
-
-        .toggle-switch {
-          position: relative;
-          display: inline-block;
-          width: 50px;
-          height: 28px;
-          cursor: pointer;
-        }
-
-        .toggle-switch input {
-          opacity: 0;
-          width: 0;
-          height: 0;
-        }
-
-        .slider {
-          position: absolute;
-          cursor: pointer;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background-color: var(--color-gray-300);
-          transition: var(--transition-fast);
-          border-radius: 28px;
-        }
-
-        .slider:before {
-          position: absolute;
-          content: "";
-          height: 20px;
-          width: 20px;
-          left: 4px;
-          bottom: 4px;
-          background-color: white;
-          transition: var(--transition-fast);
-          border-radius: 50%;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        }
-
-        input:checked + .slider {
-          background-color: var(--color-primary-600);
-        }
-
-        input:checked + .slider:before {
-          transform: translateX(22px);
-        }
-
-        input:disabled + .slider {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
-
-        .frequency-options {
-          display: flex;
-          flex-direction: column;
-          gap: var(--spacing-sm);
-        }
-
-        .frequency-option {
-          display: flex;
-          align-items: center;
-          gap: var(--spacing-md);
-          padding: var(--spacing-md);
-          border: 2px solid var(--color-gray-200);
-          border-radius: var(--radius-md);
-          cursor: pointer;
-          transition: all var(--transition-fast);
-        }
-
-        .frequency-option:hover {
-          border-color: var(--color-primary-300);
-          background: var(--color-primary-50);
-        }
-
-        .frequency-option input {
-          margin: 0;
-        }
-
-        .frequency-option:has(input:checked) {
-          border-color: var(--color-primary-600);
-          background: var(--color-primary-50);
-        }
-
-        .frequency-option:has(input:disabled) {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
-
-        .option-content {
-          display: flex;
-          flex-direction: column;
-          gap: var(--spacing-xs);
-        }
-
-        .option-label {
-          font-weight: var(--font-weight-medium);
-          color: var(--color-gray-800);
-        }
-
-        .option-description {
-          font-size: var(--font-size-sm);
-          color: var(--color-gray-600);
-        }
-
-        .test-actions {
-          display: flex;
-          gap: var(--spacing-md);
-          margin-bottom: var(--spacing-md);
-        }
-
-        .test-button {
-          display: flex;
-          align-items: center;
-          gap: var(--spacing-xs);
-          padding: var(--spacing-sm) var(--spacing-md);
-          border: 2px solid var(--color-gray-300);
-          border-radius: var(--radius-md);
-          background: white;
-          color: var(--color-gray-700);
-          font-size: var(--font-size-sm);
-          font-weight: var(--font-weight-medium);
-          cursor: pointer;
-          transition: all var(--transition-fast);
-        }
-
-        .test-button:hover:not(:disabled) {
-          border-color: var(--color-primary-500);
-          background: var(--color-primary-50);
-          color: var(--color-primary-700);
-        }
-
-        .test-button:disabled {
-          opacity: 0.6;
-          cursor: not-allowed;
-        }
-
-        .test-note {
-          margin: 0;
-          font-size: var(--font-size-xs);
-          color: var(--color-gray-500);
-          font-style: italic;
-        }
-
-        .section-toggle {
-          display: flex;
-          align-items: center;
-          gap: var(--spacing-sm);
-          width: 100%;
-          padding: var(--spacing-md) 0;
-          border: none;
-          background: none;
-          font-size: var(--font-size-lg);
-          font-weight: var(--font-weight-semibold);
-          color: var(--color-gray-800);
-          cursor: pointer;
-          text-align: left;
-        }
-
-        .toggle-icon {
-          margin-left: auto;
-          transition: transform var(--transition-fast);
-        }
-
-        .toggle-icon.open {
-          transform: rotate(180deg);
-        }
-
-        .history-content {
-          margin-top: var(--spacing-md);
-        }
-
-        .no-history {
-          text-align: center;
-          color: var(--color-gray-500);
-          font-style: italic;
-          margin: var(--spacing-lg) 0;
-        }
-
-        .history-list {
-          display: flex;
-          flex-direction: column;
-          gap: var(--spacing-sm);
-        }
-
-        .history-item {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: var(--spacing-md);
-          background: var(--color-gray-50);
-          border-radius: var(--radius-md);
-        }
-
-        .history-info {
-          display: flex;
-          flex-direction: column;
-          gap: var(--spacing-xs);
-        }
-
-        .history-subject {
-          font-weight: var(--font-weight-medium);
-          color: var(--color-gray-800);
-        }
-
-        .history-date {
-          font-size: var(--font-size-sm);
-          color: var(--color-gray-600);
-        }
-
-        .history-status {
-          display: flex;
-          align-items: center;
-          padding: var(--spacing-xs);
-          border-radius: var(--radius-sm);
-        }
-
-        .history-status.success {
-          color: var(--color-success-600);
-          background: var(--color-success-50);
-        }
-
-        .history-status.failed {
-          color: var(--color-error-600);
-          background: var(--color-error-50);
-        }
-
-        .loading-spinner {
-          width: 24px;
-          height: 24px;
-          border: 2px solid rgba(99, 102, 241, 0.2);
-          border-top-color: var(--color-primary-600);
-          border-radius: 50%;
-          animation: spin 1s linear infinite;
-        }
-
-        .loading-spinner.small {
-          width: 16px;
-          height: 16px;
-        }
-
-        .loading-content,
-        .saving-content {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: var(--spacing-md);
-          padding: var(--spacing-xl);
-          color: var(--color-gray-600);
-        }
-
-        .saving-overlay {
-          position: absolute;
-          inset: 0;
-          background: rgba(255, 255, 255, 0.9);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          z-index: 10;
-        }
-
-        .email-preferences.loading {
-          min-height: 400px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        @keyframes spin {
-          to {
-            transform: rotate(360deg);
-          }
-        }
-
-        /* Responsive */
-        @media (max-width: 640px) {
-          .test-actions {
-            flex-direction: column;
-          }
-
-          .test-button {
-            justify-content: center;
-          }
-
-          .frequency-option {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: var(--spacing-sm);
-          }
-
-          .preference-item {
-            flex-direction: column;
-            align-items: stretch;
-            gap: var(--spacing-sm);
-          }
-
-          .toggle-switch {
-            align-self: flex-start;
-          }
-        }
-
-        /* Dark mode */
-        [data-theme="dark"] .email-preferences {
-          background: var(--color-gray-800);
-          color: var(--color-gray-100);
-        }
-
-        [data-theme="dark"] .preference-section {
-          border-color: var(--color-gray-700);
-        }
-
-        [data-theme="dark"] .item-label {
-          color: var(--color-gray-100);
-        }
-
-        [data-theme="dark"] .item-description {
-          color: var(--color-gray-300);
-        }
-
-        [data-theme="dark"] .frequency-option {
-          background: var(--color-gray-700);
-          border-color: var(--color-gray-600);
-        }
-
-        [data-theme="dark"] .test-button {
-          background: var(--color-gray-700);
-          border-color: var(--color-gray-600);
-          color: var(--color-gray-200);
-        }
-
-        /* High contrast mode */
-        @media (prefers-contrast: high) {
-          .toggle-switch .slider {
-            border: 2px solid var(--color-gray-600);
-          }
-
-          .frequency-option {
-            border-width: 3px;
-          }
-        }
-
-        /* Reduced motion */
-        @media (prefers-reduced-motion: reduce) {
-          .loading-spinner {
-            animation: none;
-          }
-
-          .toggle-icon,
-          .slider,
-          .slider:before {
-            transition: none;
-          }
-        }
-      `}</style>
+      {/* Botões de ação */}
+      <div className="mt-6 flex justify-between items-center">
+        <button
+          onClick={() => {
+            setPreferences(prev => prev.map(pref => ({ ...pref, enabled: false })));
+          }}
+          className="text-sm text-gray-600 hover:text-gray-800 transition-colors"
+        >
+          Desabilitar Tudo
+        </button>
+
+        <div className="space-x-3">
+          <button
+            onClick={loadPreferences}
+            disabled={loading || saving}
+            className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={savePreferences}
+            disabled={loading || saving}
+            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center"
+          >
+            {saving && (
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+            )}
+            Salvar Preferências
+          </button>
+        </div>
+      </div>
+
+      {/* Mensagem de feedback */}
+      {message && (
+        <div className={`mt-4 p-3 rounded-lg ${
+          message.type === 'success'
+            ? 'bg-green-50 border border-green-200 text-green-800'
+            : 'bg-red-50 border border-red-200 text-red-800'
+        }`}>
+          <p className="text-sm font-medium">
+            {message.type === 'success' ? '✅' : '❌'} {message.text}
+          </p>
+        </div>
+      )}
+
+      {/* Informações adicionais */}
+      <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+        <h4 className="font-medium text-blue-900 mb-2">ℹ️ Informações Importantes</h4>
+        <ul className="text-sm text-blue-800 space-y-1">
+          <li>• Notificações do sistema são obrigatórias para segurança da conta</li>
+          <li>• Você pode alterar suas preferências a qualquer momento</li>
+          <li>• Links de descadastro estão disponíveis em todos os emails</li>
+          <li>• Respeitamos sua privacidade conforme a LGPD</li>
+        </ul>
+      </div>
     </div>
   );
 }

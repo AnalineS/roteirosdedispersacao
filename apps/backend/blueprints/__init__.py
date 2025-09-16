@@ -22,6 +22,7 @@ from .validation_blueprint import validation_bp
 # Import blueprints obrigatórios
 from .cache_blueprint import cache_blueprint
 from .user_blueprint import user_bp
+from .auth_blueprint import auth_bp  # Novo sistema de autenticação JWT
 from core.openapi.spec import swagger_ui_blueprint
 
 # Lista de todos os blueprints para registro
@@ -42,6 +43,7 @@ ALL_BLUEPRINTS = [
     validation_bp,  # Educational validation system
     cache_blueprint,
     user_bp,
+    auth_bp,  # Novo sistema de autenticação JWT
     swagger_ui_blueprint
 ]
 
@@ -62,6 +64,7 @@ __all__ = [
     'validation_bp',  # Educational validation
     'cache_blueprint',
     'user_bp',
+    'auth_bp',  # Novo sistema de autenticação JWT
     'swagger_ui_blueprint',
     'ALL_BLUEPRINTS'
 ]
