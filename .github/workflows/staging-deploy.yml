@@ -709,12 +709,13 @@ jobs:
             exit 1
           fi
 
-          # Build com monitoramento e sem log streaming
+          # Build com Artifact Registry (recomendação Google)
           BUILD_START=$(date +%s)
-          gcloud builds submit --tag gcr.io/red-truck-468923-s4/${{ env.BACKEND_SERVICE }} \
+          gcloud builds submit --tag us-central1-docker.pkg.dev/red-truck-468923-s4/hml-roteiro-dispensacao/${{ env.BACKEND_SERVICE }} \
             --timeout=3000s \
-            --no-user-output-enabled \
-            --verbosity=warning .
+            --machine-type=e2-highmem-4 \
+            --disk-size=100GB \
+            --verbosity=info .
           BUILD_END=$(date +%s)
 
           BUILD_DURATION=$((BUILD_END - BUILD_START))
@@ -723,7 +724,7 @@ jobs:
           echo "🚀 Deploying to Cloud Run..."
           echo "⏰ Timestamp deploy: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
           gcloud run deploy ${{ env.BACKEND_SERVICE }} \
-            --image gcr.io/red-truck-468923-s4/${{ env.BACKEND_SERVICE }} \
+            --image us-central1-docker.pkg.dev/red-truck-468923-s4/hml-roteiro-dispensacao/${{ env.BACKEND_SERVICE }} \
             --platform managed \
             --region ${{ secrets.GCP_REGION }} \
             --allow-unauthenticated \
