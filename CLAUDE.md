@@ -268,6 +268,51 @@ Common patterns:
 - `docs/ESTRATEGIA_UX_PERSONAS.md`: UX strategy documentation
 - `qa-reports/VALIDATION_REPORT.md`: Quality assurance results
 
+## REGRAS CRÍTICAS DE QUALIDADE E CONCLUSÃO DE TAREFAS
+
+### NUNCA MARQUE COMO CONCLUÍDO ALGO QUE NÃO ESTÁ 100% FUNCIONAL
+
+**REGRA ABSOLUTA**: Independente da complexidade ou tipo de atividade, uma tarefa só pode ser marcada como "completed" quando:
+
+1. **Zero Erros de Importação**: Todos os imports funcionam sem ModuleNotFoundError ou ImportError
+2. **Zero Erros de Sintaxe**: Código compila/executa sem SyntaxError
+3. **Zero Warnings Críticos**: Sem UnicodeEncodeError, TypeError, ou AttributeError
+4. **Funcionalidade Verificada**: Sistema demonstravelmente funcional através de teste
+
+### Abordagem Obrigatória para Resolução de Problemas
+
+Quando encontrar erros ou warnings:
+
+1. **PARE a tarefa atual**
+2. **IDENTIFIQUE todos os erros/warnings**
+3. **PLANEJE a resolução completa**
+4. **RESOLVA 100% dos problemas**
+5. **TESTE a funcionalidade**
+6. **SÓ ENTÃO marque como completed**
+
+### Exemplos de Aplicação
+
+❌ **ERRADO**:
+- Marcar "logging_blueprint integrado" quando ainda há ImportError
+- Marcar "sistema funcionando" quando há UnicodeEncodeError
+- Ignorar warnings "porque a funcionalidade principal funciona"
+
+✅ **CORRETO**:
+- Resolver todos os erros de import antes de marcar como concluído
+- Corrigir problemas de encoding e dependências
+- Criar fallbacks funcionais para dependências ausentes
+- Verificar que o sistema realmente funciona end-to-end
+
+### Tolerância Zero para "Quase Funcionando"
+
+- Não existe "funcionando com pequenos problemas"
+- Não existe "99% concluído"
+- Uma funcionalidade ou está 100% funcional ou não está
+- Problemas aparentemente "pequenos" frequentemente quebram todo o sistema
+
+**Esta regra se aplica a TODAS as atividades, independente de sua natureza ou complexidade.**
+
 ## Contact and Support
 
 This educational platform is based on doctoral thesis research for hanseníase medication dispensing protocols, following Brazilian Ministry of Health guidelines (PCDT Hanseníase 2022).
+- to memorize ao testar algo local use o github cli para usar variáveis e secrets e trazer mais veracidade aos teste

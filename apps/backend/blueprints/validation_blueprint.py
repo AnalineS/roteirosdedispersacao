@@ -26,7 +26,7 @@ from core.validation.educational_qa_framework import (
     ValidationSeverity, create_comprehensive_qa_report
 )
 from services.cache.unified_cache_manager import get_unified_cache
-from core.rate_limiting import apply_rate_limit
+from utils.rate_limiter import rate_limit
 
 # Setup
 validation_bp = Blueprint('validation', __name__)
@@ -42,7 +42,7 @@ VALIDATION_ALERTS_KEY = "validation:alerts:active"
 VALIDATION_HISTORY_KEY = "validation:history:{}:7d"
 
 @validation_bp.route('/api/v1/validation/response', methods=['POST'])
-@apply_rate_limit("validation_response", 100, 3600)  # 100 requests per hour
+@rate_limit(max_requests=100, window_seconds=3600)  # 100 requests per hour
 def validate_response():
     """
     Valida uma resposta individual usando EducationalQAFramework
@@ -128,7 +128,7 @@ def validate_response():
         }), 500
 
 @validation_bp.route('/api/v1/validation/metrics', methods=['GET'])
-@apply_rate_limit("validation_metrics", 200, 3600)  # 200 requests per hour
+@rate_limit(max_requests=200, window_seconds=3600)  # 200 requests per hour
 def get_validation_metrics():
     """
     Obtém métricas agregadas de validação
@@ -181,7 +181,7 @@ def get_validation_metrics():
         }), 500
 
 @validation_bp.route('/api/v1/validation/batch', methods=['POST'])
-@apply_rate_limit("validation_batch", 20, 3600)  # 20 batch requests per hour
+@rate_limit(max_requests=20, window_seconds=3600)  # 20 batch requests per hour
 def validate_batch():
     """
     Valida múltiplas respostas em lote
@@ -253,7 +253,7 @@ def validate_batch():
         }), 500
 
 @validation_bp.route('/api/v1/validation/dashboard-data', methods=['GET'])
-@apply_rate_limit("validation_dashboard", 300, 3600)  # 300 requests per hour
+@rate_limit(max_requests=300, window_seconds=3600)  # 300 requests per hour
 def get_dashboard_data():
     """
     Obtém dados formatados para o Quality Dashboard
@@ -316,7 +316,7 @@ def get_dashboard_data():
         }), 500
 
 @validation_bp.route('/api/v1/validation/alerts', methods=['GET'])
-@apply_rate_limit("validation_alerts", 100, 3600)
+@rate_limit(max_requests=100, window_seconds=3600)
 def get_validation_alerts():
     """
     Obtém alertas ativos do sistema de validação

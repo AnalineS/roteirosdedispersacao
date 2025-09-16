@@ -230,16 +230,16 @@ def usability_monitoring():
                         "timestamp": datetime.now().isoformat(),
                         "source": "ux_monitoring_manager",
                         "version": "2.0_integrated"
-                "report_version": "1.0",
-                "data_collection_period": "last_24_hours"
-            },
-            "recommendations": [
-                "Monitor response times to keep under 500ms",
-                "Maintain user satisfaction above 80%",
-                "Keep error rate below 5%",
-                "Monitor cache hit rate for performance"
-            ]
-        }
+                    },
+                    "report_version": "1.0",
+                    "data_collection_period": "last_24_hours",
+                    "recommendations": [
+                        "Monitor response times to keep under 500ms",
+                        "Maintain user satisfaction above 80%",
+                        "Keep error rate below 5%",
+                        "Monitor cache hit rate for performance"
+                    ]
+                }
         
         logger.info(f"[{request_id}] Relatório de usabilidade gerado")
         return jsonify(response), 200

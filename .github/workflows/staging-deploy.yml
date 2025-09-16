@@ -753,7 +753,7 @@ jobs:
           fi
         env:
           GCP_SERVICE_ACCOUNT_KEY: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
-          GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+          GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
 
       - name: "💾 Cache Dependencies Hash"
         uses: actions/cache@v4

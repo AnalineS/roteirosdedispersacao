@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Vector Store - Sistema de armazenamento de vetores com AstraDB e fallback local
-Suporta busca semântica eficiente para RAG médico
+Vector Store - Sistema de armazenamento de vetores com Supabase e fallback local
+Suporta busca semântica eficiente para RAG médico - migração completa do AstraDB
 """
 
 import os
@@ -26,23 +26,9 @@ except ImportError as e:
     logger.warning(f"[WARNING] SupabaseVectorStore não disponível: {e}")
     SUPABASE_VECTOR_AVAILABLE = False
 
-# AstraDB - DEPRECATED em FASE 3 - mantido para compatibilidade
-ASTRADB_AVAILABLE = False
-try:
-    # Tentar import mais robusto
-    import eventlet
-    eventlet.monkey_patch()
-    from cassandra.cluster import Cluster
-    from cassandra.auth import PlainTextAuthProvider
-    from cassandra.query import SimpleStatement
-    ASTRADB_AVAILABLE = True
-    logger.info("[WARNING] AstraDB disponível mas DEPRECATED - migrando para Supabase")
-except ImportError as e:
-    logger.info(f"AstraDB não disponível (esperado em FASE 3): {e}")
-    ASTRADB_AVAILABLE = False
-except Exception as e:
-    logger.info(f"AstraDB skip (esperado em FASE 3): {e}")
-    ASTRADB_AVAILABLE = False
+# AstraDB - REMOVIDO - migração completa para Supabase
+# ASTRADB_AVAILABLE = False  # Deprecated - using Supabase only
+logger.info("[INFO] Sistema migrado completamente para Supabase - AstraDB removido")
 
 @dataclass
 class VectorDocument:
@@ -253,6 +239,7 @@ class LocalVectorStore:
             distribution[chunk_type] = distribution.get(chunk_type, 0) + 1
         return distribution
 
+# DEPRECATED: AstraDB migrado para Supabase - classe mantida apenas para compatibilidade
 class AstraDBVectorStore:
     """
     Vector store usando DataStax AstraDB (Cassandra)
@@ -274,39 +261,9 @@ class AstraDBVectorStore:
             self._setup_schema()
     
     def _connect_astradb(self) -> bool:
-        """Conecta ao AstraDB"""
-        if not ASTRADB_AVAILABLE:
-            logger.warning("[WARNING] Cassandra driver não instalado - usando store local")
-            return False
-        
-        if not self.config.ASTRA_DB_URL or not self.config.ASTRA_DB_TOKEN:
-            logger.info("📁 AstraDB não configurado - usando store local para desenvolvimento")
-            return False
-        
-        try:
-            # Parse connection bundle ou use cloud config
-            cloud_config = {
-                'secure_connect_bundle': self.config.ASTRA_DB_URL  # Path to secure bundle
-            }
-            
-            auth_provider = PlainTextAuthProvider(
-                username='token',
-                password=self.config.ASTRA_DB_TOKEN
-            )
-            
-            self.cluster = Cluster(
-                cloud=cloud_config,
-                auth_provider=auth_provider
-            )
-            
-            self.session = self.cluster.connect()
-            
-            logger.info(f"[OK] Conectado ao AstraDB - Keyspace: {self.keyspace}")
-            return True
-            
-        except Exception as e:
-            logger.warning(f"[WARNING] Falha ao conectar AstraDB: {e} - usando store local")
-            return False
+        """DEPRECATED: AstraDB removido - migração completa para Supabase"""
+        logger.info("📦 AstraDB foi migrado para Supabase - usando fallback local se necessário")
+        return False
     
     def _setup_schema(self):
         """Cria schema no AstraDB se não existir"""

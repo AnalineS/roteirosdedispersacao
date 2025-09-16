@@ -16,6 +16,8 @@ import EnhancedCoreWebVitals from '@/components/analytics/EnhancedCoreWebVitals'
 import NumericNavigationWrapper from '@/components/navigation/NumericNavigationWrapper'
 import { ServicesProvider } from '@/providers/ServicesProvider'
 import AccessibilityPanel from '@/components/accessibility/AccessibilityPanel'
+import LGPDCompliance from '@/components/privacy/LGPDCompliance'
+import LGPDBanner from '@/components/privacy/LGPDBanner'
 import SITE_CONFIG from '@/lib/config'
 import '@/styles/globals.css'
 import '@/styles/fluid-typography.css'
@@ -117,6 +119,9 @@ export default function RootLayout({
         
         <OfflineIndicator />
         <EnhancedCoreWebVitals />
+
+        {/* LGPD Mandatory Consent Banner */}
+        <LGPDBanner />
         
         <UnifiedErrorSystem
           enableMonitoring={true}

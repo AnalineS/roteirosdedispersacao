@@ -21,7 +21,8 @@ from utils.auth_utils import require_auth, get_current_user
 from utils.validation_utils import validate_email, validate_required_fields
 from utils.rate_limiter import rate_limit
 from core.database import get_db_connection
-from core.cache import cache_service
+from core.performance.cache_manager import PerformanceCache
+cache_service = PerformanceCache()
 
 logger = logging.getLogger(__name__)
 
@@ -116,7 +117,7 @@ def get_email_preferences():
 
 @notifications_bp.route('/preferences', methods=['PUT'])
 @require_auth
-@rate_limit(requests_per_minute=10)
+@rate_limit(max_requests=10, window_seconds=60)
 def update_email_preferences():
     """Atualiza preferências de email do usuário"""
     try:
@@ -196,7 +197,7 @@ def update_email_preferences():
 
 @notifications_bp.route('/send-achievement', methods=['POST'])
 @require_auth
-@rate_limit(requests_per_minute=20)
+@rate_limit(max_requests=20, window_seconds=60)
 @async_route
 async def send_achievement_notification():
     """Envia notificação de conquista por email"""
@@ -248,7 +249,7 @@ async def send_achievement_notification():
 
 @notifications_bp.route('/send-progress', methods=['POST']) 
 @require_auth
-@rate_limit(requests_per_minute=10)
+@rate_limit(max_requests=10, window_seconds=60)
 @async_route
 async def send_progress_notification():
     """Envia notificação de progresso por email"""
@@ -300,7 +301,7 @@ async def send_progress_notification():
 
 @notifications_bp.route('/send-welcome', methods=['POST'])
 @require_auth
-@rate_limit(requests_per_minute=5)
+@rate_limit(max_requests=5, window_seconds=60)
 @async_route
 async def send_welcome_notification():
     """Envia email de boas-vindas"""
@@ -395,7 +396,7 @@ def get_notification_history():
 
 @notifications_bp.route('/test', methods=['POST'])
 @require_auth
-@rate_limit(requests_per_minute=3)
+@rate_limit(max_requests=3, window_seconds=60)
 @async_route
 async def send_test_notification():
     """Envia notificação de teste"""

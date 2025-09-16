@@ -9,6 +9,7 @@ import SystemStatus from '@/components/system/SystemStatus';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { useGlobalNavigation } from '@/components/navigation/GlobalNavigationProvider';
 import LGPDCompliance, { useLGPDConsent } from '@/components/privacy/LGPDCompliance';
+import { useGeneralConsent } from '@/components/privacy/LGPDBanner';
 import ChatNavigation, { useChatNavigation } from '@/components/navigation/ChatNavigation';
 import ConversationProgress from '@/components/progress/ConversationProgress';
 import ChatFeedback, { useChatFeedback } from '@/components/ui/ChatFeedback';
@@ -22,6 +23,7 @@ import { useConversationHistory } from '@/hooks/useConversationHistory';
 import { useIntelligentRouting } from '@/hooks/useIntelligentRouting';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useSimpleTrack } from '@/components/tracking/IntegratedTrackingProvider';
+import { useCloudLogger } from '@/utils/cloudLogger';
 import { theme } from '@/config/theme';
 import { SidebarLoader } from '@/components/LoadingSpinner';
 import { type ChatMessage } from '@/services/api';
@@ -36,6 +38,10 @@ export default function ChatPage() {
   });
   const { persona: contextPersona, isLoading: personaLoading } = useCurrentPersona();
   const { setPersona } = usePersonaActions();
+
+  // LGPD Compliance hooks
+  const { hasConsent: hasGeneralConsent, isLoading: generalConsentLoading } = useGeneralConsent();
+  const { hasConsent: hasChatConsent, isLoading: chatConsentLoading, giveConsent: giveChatConsent } = useLGPDConsent('chat');
   
   // Chat feedback hook
   const { triggerSendFeedback, triggerReceiveFeedback, triggerErrorFeedback } = useChatFeedback();
@@ -123,8 +129,7 @@ export default function ChatPage() {
   const [isMobile, setIsMobile] = useState(false);
   const [pendingQuestion, setPendingQuestion] = useState<string>('');
   
-  // LGPD Compliance para coleta de dados sensíveis de saúde
-  const { hasConsent, isLoading: lgpdLoading } = useLGPDConsent('chat');
+  // LGPD Compliance para coleta de dados sensíveis de saúde - removido duplicação
   
   // Função helper para obter todas as conversas com validações
   const getAllConversations = useCallback(() => {
@@ -397,22 +402,48 @@ export default function ChatPage() {
 
   const currentPersona = selectedPersona ? personas[selectedPersona] : null;
 
+  // Verificar se tem consentimento antes de mostrar o chat
+  if (!generalConsentLoading && !hasGeneralConsent) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        <div style={{ textAlign: 'center', maxWidth: '500px', padding: '2rem' }}>
+          <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>🔒</div>
+          <h2 style={{ marginBottom: '1rem' }}>Consentimento Necessário</h2>
+          <p style={{ marginBottom: '2rem', lineHeight: '1.6' }}>
+            Para acessar o chat educacional sobre hanseníase, você precisa aceitar nossa política de privacidade no banner no topo da página.
+          </p>
+          <Link href="/" style={{
+            display: 'inline-block',
+            padding: '0.75rem 1.5rem',
+            background: '#003366',
+            color: 'white',
+            textDecoration: 'none',
+            borderRadius: '8px',
+            fontWeight: '600'
+          }}>
+            Voltar ao Início
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <ChatAccessibilityProvider>
-      <EducationalLayout 
+      <EducationalLayout
         currentPersona={currentPersona?.name}
         showBreadcrumbs={false}
         footerVariant="simple"
       >
-      {/* LGPD Compliance Modal */}
-      {!lgpdLoading && !hasConsent && (
-        <LGPDCompliance 
+      {/* LGPD Compliance Modal para Chat Específico */}
+      {!chatConsentLoading && !hasChatConsent && (
+        <LGPDCompliance
           context="chat"
           onAccept={() => {
-            // Consentimento aceito, usuário pode continuar
+            giveChatConsent();
           }}
           onDecline={() => {
-            // Redirecionar para página inicial ou mostrar alternativas
+            // Redirecionar para página inicial
             window.location.href = '/';
           }}
         />
@@ -453,7 +484,7 @@ export default function ChatPage() {
         </div>
         
         {/* Conversation Progress Indicator */}
-        {hasConsent && currentMessages.length > 0 && (
+        {hasChatConsent && currentMessages.length > 0 && (
           <div style={{
             maxWidth: '800px',
             margin: '0 auto 1rem',

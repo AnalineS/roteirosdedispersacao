@@ -95,8 +95,8 @@ class UnifiedCacheManager:
         """Inicializa cache via API (Firestore)"""
         try:
             if self.cache_layers['api']:
-                from blueprints.cache_blueprint import init_firestore_client
-                self.api_cache_client = init_firestore_client()
+                from blueprints.cache_blueprint import init_cache_system
+                self.api_cache_client = init_cache_system()
                 if self.api_cache_client:
                     logger.info("[OK] API Cache inicializado")
                 else:

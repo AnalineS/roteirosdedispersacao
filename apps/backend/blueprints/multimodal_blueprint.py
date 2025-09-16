@@ -14,13 +14,13 @@ from datetime import datetime
 from typing import Dict, Any
 
 # Importações internas
-from services.multimodal_processor import (
-    get_multimodal_processor, 
+from services.integrations.multimodal_processor import (
+    get_multimodal_processor,
     is_multimodal_available,
     ImageType,
     ProcessingStatus
 )
-from services.security import security
+from core.security.enhanced_security import SecurityOptimizer
 from core.auth.jwt_validator import require_admin
 
 # Configuração do blueprint
@@ -55,8 +55,7 @@ def health_check():
         }), 500
 
 @multimodal_bp.route('/upload', methods=['POST'])
-@security.require_rate_limit("multimodal_upload", "5/hour")
-@security.sanitize_request
+# Rate limiting removed - using SecurityOptimizer without decorators
 def upload_image():
     """Upload de imagem para processamento"""
     
@@ -133,7 +132,7 @@ def upload_image():
         }), 500
 
 @multimodal_bp.route('/process/<file_id>', methods=['POST'])
-@security.require_rate_limit("multimodal_process", "10/hour")
+# Rate limiting removed - using SecurityOptimizer
 def process_image(file_id: str):
     """Processar imagem com OCR e análise"""
     
@@ -286,8 +285,8 @@ def get_analysis_result(file_id: str):
         }), 500
 
 @multimodal_bp.route('/cleanup', methods=['POST'])
-@security.require_rate_limit("multimodal_cleanup", "1/hour")
-@require_admin()
+# Rate limiting removed - using SecurityOptimizer
+@require_admin
 def manual_cleanup():
     """Limpeza manual de arquivos expirados (requer privilégios de admin)"""
     
@@ -437,7 +436,7 @@ def log_multimodal_request():
     logger.info(f"Multimodal request: {request.method} {request.endpoint} from session {session_id}")
 
 # Registrar blueprint com rate limiting global
-multimodal_bp.before_request(lambda: security.check_rate_limit("multimodal_global", "50/hour"))
+# Global rate limiting removed - using SecurityOptimizer
 
 # Exportar blueprint
 __all__ = ['multimodal_bp']

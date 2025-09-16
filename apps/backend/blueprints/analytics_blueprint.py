@@ -13,7 +13,7 @@ import os
 
 # Import decorators de autenticação se disponível
 try:
-    from core.auth.jwt_validator import require_auth
+    from core.auth.jwt_validator import require_auth, optional_auth
     AUTH_AVAILABLE = True
 except ImportError:
     AUTH_AVAILABLE = False
@@ -32,7 +32,7 @@ analytics_bp = Blueprint('analytics', __name__, url_prefix='/api/analytics')
 # =============================================
 
 @analytics_bp.route('/ux', methods=['POST'])
-@require_auth(optional=True)
+@optional_auth
 def collect_ux_data():
     """
     Coleta dados de UX Analytics para auditoria
@@ -103,7 +103,7 @@ def collect_ux_data():
         }), 500
 
 @analytics_bp.route('/ux/report', methods=['GET'])
-@require_auth(optional=True)
+@optional_auth
 def get_ux_report():
     """
     Gera relatório de UX baseado nos dados coletados
