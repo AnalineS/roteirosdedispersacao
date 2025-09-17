@@ -123,11 +123,11 @@ class UXMonitoringManager:
             from services.cache.unified_cache_manager import get_unified_cache
             self.unified_cache = get_unified_cache()
             if self.unified_cache:
-                logger.info("✅ UX Monitor integrado com cache unificado")
+                logger.info("UX Monitor integrado com cache unificado")
         except ImportError:
             logger.debug("Cache unificado não disponível para UX monitoring")
-        
-        logger.info("🎯 UX Monitoring Manager inicializado com sucesso")
+
+        logger.info("UX Monitoring Manager inicializado com sucesso")
     
     def _get_config(self):
         """Obtém configuração do sistema"""
@@ -143,7 +143,7 @@ class UXMonitoringManager:
         try:
             from core.metrics.performance_monitor import performance_monitor
             self.performance_monitor = performance_monitor
-            logger.info("✅ PerformanceMonitor integrado")
+            logger.info("PerformanceMonitor integrado")
         except ImportError:
             self.performance_monitor = None
             logger.debug("PerformanceMonitor não disponível")
@@ -152,7 +152,7 @@ class UXMonitoringManager:
         try:
             from core.performance.monitoring import UsabilityMonitor
             self.usability_monitor = UsabilityMonitor()
-            logger.info("✅ UsabilityMonitor integrado")
+            logger.info("UsabilityMonitor integrado")
         except ImportError:
             self.usability_monitor = None
             logger.debug("UsabilityMonitor não disponível")
@@ -195,7 +195,7 @@ class UXMonitoringManager:
         # Atualizar stats em tempo real
         self._update_realtime_stats()
         
-        logger.debug(f"📄 Page view: {user_id} -> {page}")
+        logger.debug(f"Page view: {user_id} -> {page}")
     
     def track_user_interaction(self, user_id: str, session_id: str, action: str, 
                               element: str, metadata: Optional[Dict] = None):
@@ -303,7 +303,7 @@ class UXMonitoringManager:
                 {'component': component, 'user_id': user_id}
             )
         
-        logger.warning(f"❌ Error: {user_id} -> {error_type}: {error_message}")
+        logger.warning(f"Error: {user_id} -> {error_type}: {error_message}")
     
     def track_web_vitals(self, user_id: str, lcp: float, fid: float, cls: float, 
                         additional_metrics: Optional[Dict] = None):
@@ -339,7 +339,7 @@ class UXMonitoringManager:
                 {'lcp': lcp, 'fid': fid, 'cls': cls, 'user_id': user_id}
             )
         
-        logger.debug(f"🎯 Web Vitals: {user_id} -> LCP:{lcp:.0f} FID:{fid:.0f} CLS:{cls:.3f}")
+        logger.debug(f"Web Vitals: {user_id} -> LCP:{lcp:.0f} FID:{fid:.0f} CLS:{cls:.3f}")
     
     def track_accessibility_event(self, user_id: str, event_type: str, details: Dict):
         """Registra evento de acessibilidade"""
@@ -516,7 +516,7 @@ class UXMonitoringManager:
         self.alerts.append(alert)
         
         # Log do alerta
-        logger.warning(f"🚨 UX Alert [{severity.upper()}]: {title} - {description}")
+        logger.warning(f"UX Alert [{severity.upper()}]: {title} - {description}")
     
     def _check_alert_conditions(self, metrics: UXMetrics):
         """Verifica condições que geram alertas"""
@@ -703,22 +703,22 @@ class UXMonitoringManager:
         recommendations = []
         
         if metrics.avg_response_time_ms > 1000:
-            recommendations.append("⚡ Otimize o tempo de resposta - meta: <1s")
+            recommendations.append("Otimize o tempo de resposta - meta: <1s")
         
         if metrics.bounce_rate > 60:
-            recommendations.append("📍 Melhore o engajamento inicial - taxa de rejeição alta")
+            recommendations.append("Melhore o engajamento inicial - taxa de rejeição alta")
         
         if metrics.web_vitals_score < 75:
-            recommendations.append("🎯 Otimize Core Web Vitals - impacta SEO e UX")
+            recommendations.append("Otimize Core Web Vitals - impacta SEO e UX")
         
         if metrics.user_satisfaction < 4.0 and metrics.user_satisfaction > 0:
-            recommendations.append("😊 Investigue fatores de insatisfação do usuário")
+            recommendations.append("Investigue fatores de insatisfação do usuário")
         
         if metrics.error_rate > 2.0:
-            recommendations.append("🐛 Reduza taxa de erros - impacta confiança")
+            recommendations.append("Reduza taxa de erros - impacta confiança")
         
         if not recommendations:
-            recommendations.append("✅ Excelente! Sistema operando dentro dos padrões de UX")
+            recommendations.append("Excelente! Sistema operando dentro dos padrões de UX")
         
         return recommendations
 
@@ -733,7 +733,7 @@ def get_ux_monitoring_manager() -> Optional[UXMonitoringManager]:
         try:
             from app_config import config
             _ux_monitoring_manager = UXMonitoringManager(config)
-            logger.info("🎯 UX Monitoring Manager global inicializado")
+            logger.info("UX Monitoring Manager global inicializado")
         except Exception as e:
             logger.error(f"Erro ao inicializar UX monitoring manager: {e}")
             return None

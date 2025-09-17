@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { theme } from '@/config/theme';
 import { getUniversityLogo } from '@/constants/avatars';
 import Image from 'next/image';
-import { 
+import {
   BookOpenIcon,
   ClipboardListIcon,
   HeartPulseIcon,
@@ -14,7 +14,8 @@ import {
   TrophyIcon,
   StethoscopeIcon,
   LockIcon,
-  CalculatorIcon
+  CalculatorIcon,
+  GraduationCapIcon
 } from '@/components/ui/EducationalIcons';
 
 interface NavigationProps {
@@ -67,6 +68,13 @@ export default function Navigation({ currentPersona }: NavigationProps) {
       href: '/progress',
       icon: TargetIcon,
       description: 'Acompanhe seu aprendizado'
+    },
+    {
+      id: 'certification',
+      label: 'Certificação',
+      href: '/certificacao',
+      icon: GraduationCapIcon,
+      description: 'Obtenha seu certificado oficial'
     },
     {
       id: 'about',

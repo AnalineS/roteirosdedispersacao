@@ -74,10 +74,19 @@ class EmailNotificationChannel(NotificationChannel):
         self.smtp_pass = os.getenv('ALERT_EMAIL_SMTP_PASS')
         self.to_email = os.getenv('ALERT_EMAIL_TO')
 
+        # Modo demo para desenvolvimento
+        self.demo_mode = os.getenv('ALERT_DEMO_MODE', 'true').lower() == 'true'
+
         # Verificar configuração
         if not all([self.smtp_user, self.smtp_pass, self.to_email]):
-            logger.warning("Email não configurado completamente. Alertas por email desabilitados.")
-            self.enabled = False
+            if self.demo_mode:
+                logger.info("Email em modo demo - simulando envios")
+                self.enabled = True
+            else:
+                logger.warning("Email não configurado completamente. Alertas por email desabilitados.")
+                self.enabled = False
+        else:
+            self.enabled = True
 
     def _get_email_template(self, alert: AlertData) -> str:
         """Gera template HTML do email"""
@@ -226,6 +235,14 @@ class EmailNotificationChannel(NotificationChannel):
             logger.warning(f"Rate limit atingido para email. Alerta {alert.alert_id} não enviado.")
             return False
 
+        # Modo demo - simular envio
+        if self.demo_mode:
+            logger.info(f"[EMAIL DEMO] Alerta enviado: [{alert.severity.upper()}] {alert.title}")
+            logger.info(f"[EMAIL DEMO] Destinatário: admin@roteiros.com (demo)")
+            logger.info(f"[EMAIL DEMO] Conteúdo: {alert.message[:100]}...")
+            self.last_alerts.append(datetime.utcnow())
+            return True
+
         try:
             # Criar mensagem
             msg = MIMEMultipart('alternative')
@@ -259,12 +276,21 @@ class TelegramNotificationChannel(NotificationChannel):
         super().__init__("telegram")
         self.bot_token = os.getenv('TELEGRAM_BOT_TOKEN')
         self.chat_id = os.getenv('TELEGRAM_CHAT_ID')
-        self.api_url = f"https://api.telegram.org/bot{self.bot_token}"
+        self.api_url = f"https://api.telegram.org/bot{self.bot_token}" if self.bot_token else None
+
+        # Modo demo para desenvolvimento
+        self.demo_mode = os.getenv('ALERT_DEMO_MODE', 'true').lower() == 'true'
 
         # Verificar configuração
         if not all([self.bot_token, self.chat_id]):
-            logger.warning("Telegram não configurado completamente. Alertas por Telegram desabilitados.")
-            self.enabled = False
+            if self.demo_mode:
+                logger.info("Telegram em modo demo - simulando envios")
+                self.enabled = True
+            else:
+                logger.warning("Telegram não configurado completamente. Alertas por Telegram desabilitados.")
+                self.enabled = False
+        else:
+            self.enabled = True
 
     def _get_telegram_message(self, alert: AlertData) -> str:
         """Formata mensagem para Telegram"""
@@ -322,6 +348,15 @@ class TelegramNotificationChannel(NotificationChannel):
         if self.is_rate_limited():
             logger.warning(f"Rate limit atingido para Telegram. Alerta {alert.alert_id} não enviado.")
             return False
+
+        # Modo demo - simular envio
+        if self.demo_mode:
+            message = self._get_telegram_message(alert)
+            logger.info(f"[TELEGRAM DEMO] Alerta enviado: [{alert.severity.upper()}] {alert.title}")
+            logger.info(f"[TELEGRAM DEMO] Chat ID: @roteiros_bot (demo)")
+            logger.info(f"[TELEGRAM DEMO] Mensagem: {message[:200]}...")
+            self.last_alerts.append(datetime.utcnow())
+            return True
 
         try:
             message = self._get_telegram_message(alert)

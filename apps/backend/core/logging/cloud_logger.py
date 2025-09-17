@@ -262,6 +262,11 @@ class CloudLogger:
         entry = self._create_log_entry('CRITICAL', message, context or {}, 'audit', user_id)
         self._send_to_cloud_logging(entry)
 
+    def audit(self, message: str, context: Dict[str, Any] = None, user_id: str = None):
+        """Log de auditoria LGPD com retenção estendida"""
+        entry = self._create_log_entry('INFO', message, context or {}, 'audit', user_id)
+        self._send_to_cloud_logging(entry)
+
     # Métodos especializados LGPD
     def lgpd_event(self, action: str, user_id: str, details: Dict[str, Any] = None):
         """Log específico para eventos LGPD"""

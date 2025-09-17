@@ -28,7 +28,7 @@ import { theme } from '@/config/theme';
 import { SidebarLoader } from '@/components/LoadingSpinner';
 import { type ChatMessage } from '@/services/api';
 import { isValidPersonaId, type ValidPersonaId } from '@/types/personas';
-import { LightbulbIcon, DoctorIcon, BookIcon, StarIcon } from '@/components/icons/EducationalIcons';
+import { LightbulbIcon, DoctorIcon, BookIcon, StarIcon, AlertTriangleIcon, CheckCircleIcon, RefreshIcon, ChartIcon, CalculatorIcon } from '@/components/icons/EducationalIcons';
 
 export default function ChatPage() {
   const { setPersonaSelectionViewed } = useGlobalNavigation();
@@ -390,7 +390,9 @@ export default function ChatPage() {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
         <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⚠️</div>
+          <div style={{ fontSize: '3rem', marginBottom: '1rem', display: 'flex', justifyContent: 'center' }}>
+            <AlertTriangleIcon size={48} color="#dc2626" />
+          </div>
           <p>Erro ao carregar chat: {personasError}</p>
           <Link href="/" style={{ color: theme.colors.primary[500], textDecoration: 'underline' }}>
             Voltar ao início
@@ -532,7 +534,8 @@ export default function ChatPage() {
                       cursor: 'pointer'
                     }}
                   >
-                    ✅ Aceitar
+                    <CheckCircleIcon size={16} color="white" />
+                    Aceitar
                   </button>
                   <button 
                     onClick={handleRejectRoutingMain}
@@ -545,7 +548,8 @@ export default function ChatPage() {
                       cursor: 'pointer'
                     }}
                   >
-                    ❌ Continuar aqui
+                    <AlertTriangleIcon size={16} color="white" />
+                    Continuar aqui
                   </button>
                   <button 
                     onClick={handleShowExplanation}
@@ -558,7 +562,8 @@ export default function ChatPage() {
                       cursor: 'pointer'
                     }}
                   >
-                    ℹ️ Por quê?
+                    <LightbulbIcon size={16} color="#1976d2" />
+                    Por quê?
                   </button>
                 </div>
               </div>
@@ -596,7 +601,7 @@ export default function ChatPage() {
             border: '1px solid #f44336'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span>⚠️</span>
+              <AlertTriangleIcon size={20} color="#d32f2f" />
               <span style={{ color: '#d32f2f' }}>Erro: {chatError}</span>
               {resetFallback && (
                 <button 
@@ -711,7 +716,11 @@ export default function ChatPage() {
                   cursor: 'pointer'
                 }}
               >
-                {profile.professional ? '❌ Remover Profissional' : '✅ Marcar como Profissional'}
+                {profile.professional ? (
+                  <><AlertTriangleIcon size={14} color="white" /> Remover Profissional</>
+                ) : (
+                  <><CheckCircleIcon size={14} color="white" /> Marcar como Profissional</>
+                )}
               </button>
               
               <button
@@ -809,7 +818,7 @@ export default function ChatPage() {
             border: '1px solid #f87171'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
-              <span>⚠️</span>
+              <AlertTriangleIcon size={20} color="#dc2626" />
               <h4 style={{ margin: 0, color: '#dc2626', fontSize: '14px', fontWeight: '600' }}>
                 Sistema de Recuperação Ativo
               </h4>

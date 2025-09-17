@@ -165,8 +165,8 @@ export default function RootLayout({
         {/* Accessibility Panel - Floating */}
         <AccessibilityPanel floating={true} />
         
-        {/* PWA Manager - Service Worker desabilitado conforme solicitado */}
-        <PWAManager enableServiceWorker={false} />
+        {/* PWA Manager - Service Worker ativado para funcionalidade PWA completa */}
+        <PWAManager enableServiceWorker={true} />
         
         {/* Loading screen removal script */}
         <script

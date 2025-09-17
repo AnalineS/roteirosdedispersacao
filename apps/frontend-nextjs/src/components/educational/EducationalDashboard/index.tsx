@@ -5,6 +5,12 @@ import { useUserProfile } from '@/hooks/useUserProfile';
 import ProgressIndicator from '@/components/navigation/Progress/ProgressIndicator';
 import { ProgressData } from '@/components/navigation/Progress';
 import Link from 'next/link';
+import GamificationWidget from '@/components/gamification/GamificationWidget';
+import ProgressDashboard from '@/components/gamification/ProgressDashboard';
+import EducationalQuizComponent from '@/components/gamification/EducationalQuiz';
+import type { LearningProgress, Achievement as GamificationAchievement, GamificationNotification, QuizAttempt, EducationalQuiz } from '@/types/gamification';
+import { UserLevel } from '@/types/disclosure';
+import { EDUCATIONAL_QUIZZES, getQuizById } from '@/data/educationalQuizzes';
 
 interface Achievement {
   id: string;
@@ -42,6 +48,8 @@ interface EducationalDashboardProps {
 export default function EducationalDashboard({ currentPersona }: EducationalDashboardProps) {
   const { profile, hasProfile } = useUserProfile();
   const [selectedLearningPath, setSelectedLearningPath] = useState<string>('clinical-complete');
+  const [selectedQuizId, setSelectedQuizId] = useState<string>('hanseniase-fundamentals');
+  const [showQuizSelection, setShowQuizSelection] = useState(true);
 
   // Dados educacionais avançados
   const achievements: Achievement[] = [
@@ -134,6 +142,7 @@ export default function EducationalDashboard({ currentPersona }: EducationalDash
   const streak = 7; // dias consecutivos
 
   const currentPath = learningPaths.find(path => path.id === selectedLearningPath);
+  const currentQuiz = getQuizById(selectedQuizId);
 
   const getRarityColor = (rarity: Achievement['rarity']) => {
     switch (rarity) {
@@ -151,6 +160,26 @@ export default function EducationalDashboard({ currentPersona }: EducationalDash
       case 'pharmaceutical': return '💊';
       case 'management': return '📊';
       default: return '📚';
+    }
+  };
+
+  const getDifficultyColor = (difficulty: string) => {
+    switch (difficulty) {
+      case 'beginner': return '#22c55e';
+      case 'intermediate': return '#f59e0b';
+      case 'advanced': return '#dc2626';
+      case 'expert': return '#7c3aed';
+      default: return '#6b7280';
+    }
+  };
+
+  const getDifficultyLabel = (difficulty: string) => {
+    switch (difficulty) {
+      case 'beginner': return 'Iniciante';
+      case 'intermediate': return 'Intermediário';
+      case 'advanced': return 'Avançado';
+      case 'expert': return 'Especialista';
+      default: return 'Padrão';
     }
   };
 
@@ -174,6 +203,11 @@ export default function EducationalDashboard({ currentPersona }: EducationalDash
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Sistema de Gamificação Integrado */}
+      <div className="mb-8">
+        <GamificationWidget compact={false} showOnlyOverview={false} />
       </div>
 
       {/* Métricas Principais */}
@@ -384,6 +418,109 @@ export default function EducationalDashboard({ currentPersona }: EducationalDash
             <Link href="/progress" className="block mt-4 text-center py-2 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors">
               Ver todas as conquistas
             </Link>
+          </div>
+
+          {/* Sistema de Aprendizagem Interativa */}
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900 mb-2">Sistema de Aprendizagem</h2>
+                <p className="text-gray-600 text-sm">
+                  Quizzes baseados em protocolos clínicos reais de hanseníase
+                </p>
+              </div>
+              <div className="text-right">
+                <div className="text-sm text-gray-500">Baseado em</div>
+                <div className="text-sm font-semibold text-blue-600">Tese Doutoral UnB</div>
+              </div>
+            </div>
+
+            {showQuizSelection ? (
+              <div className="space-y-4">
+                <h3 className="font-semibold text-gray-800 mb-4">Escolha seu Quiz:</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {EDUCATIONAL_QUIZZES.map((quiz) => (
+                    <div
+                      key={quiz.id}
+                      className={`p-4 border rounded-lg cursor-pointer transition-all ${
+                        selectedQuizId === quiz.id
+                          ? 'border-blue-500 bg-blue-50'
+                          : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                      }`}
+                      onClick={() => setSelectedQuizId(quiz.id)}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-semibold text-gray-900 text-sm">{quiz.title}</h4>
+                        <span
+                          className="px-2 py-1 rounded-full text-xs font-medium text-white"
+                          style={{ backgroundColor: getDifficultyColor(quiz.difficulty) }}
+                        >
+                          {getDifficultyLabel(quiz.difficulty)}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-600 mb-3">{quiz.description}</p>
+                      <div className="flex items-center justify-between text-xs text-gray-500">
+                        <span>{quiz.questions.length} questões</span>
+                        <span>{Math.floor((quiz.timeLimit || 10) / 60)} min</span>
+                        <span>{quiz.xpReward} XP</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {currentQuiz && (
+                  <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-semibold text-blue-900">{currentQuiz.title}</h4>
+                        <p className="text-sm text-blue-700 mt-1">{currentQuiz.description}</p>
+                        <div className="flex items-center gap-4 mt-2 text-xs text-blue-600">
+                          <span>🎯 {currentQuiz.questions.length} questões</span>
+                          <span>⏱️ {Math.floor((currentQuiz.timeLimit || 10) / 60)} minutos</span>
+                          <span>🏆 {currentQuiz.xpReward} pontos XP</span>
+                          <span>📊 Nota mínima: {currentQuiz.passingScore}%</span>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => setShowQuizSelection(false)}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                      >
+                        Iniciar Quiz
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold text-gray-800">{currentQuiz?.title}</h3>
+                  <button
+                    onClick={() => setShowQuizSelection(true)}
+                    className="text-sm text-gray-500 hover:text-gray-700"
+                  >
+                    ← Escolher outro quiz
+                  </button>
+                </div>
+
+                {currentQuiz && (
+                  <EducationalQuizComponent
+                    quiz={currentQuiz}
+                    userLevel={profile?.professional ? 'profissional' : 'estudante'}
+                    onQuizComplete={(attempt: QuizAttempt) => {
+                      console.log('Quiz completed:', attempt);
+                      // Aqui você pode implementar lógica para salvar o resultado
+                      // e atualizar pontuação/conquistas
+                      setShowQuizSelection(true);
+                    }}
+                    onQuizExit={() => {
+                      console.log('Quiz exited');
+                      setShowQuizSelection(true);
+                    }}
+                  />
+                )}
+              </div>
+            )}
           </div>
 
           {/* Ações Rápidas */}
