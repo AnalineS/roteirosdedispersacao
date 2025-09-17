@@ -61,9 +61,15 @@ export default function ProgressDashboard({
   
   const completedModules = progress.moduleProgress.filter(m => m.status === 'completed').length;
   const totalModules = progress.moduleProgress.length;
-  
+
   const averageQuizScore = progress.quizStats.averageScore || 0;
   const totalQuizzes = progress.quizStats.totalQuizzes || 0;
+
+  // Clinical Case Statistics
+  const completedCases = progress.caseStats.completedCases || 0;
+  const totalCases = progress.caseStats.totalCases || 0;
+  const averageCaseScore = progress.caseStats.averageScore || 0;
+  const caseTimeSpent = progress.caseStats.timeSpentCases || 0;
 
   // Calcular posição no leaderboard
   const userRank = leaderboard.findIndex(entry => entry.userId === progress.userId) + 1;
@@ -107,7 +113,7 @@ export default function ProgressDashboard({
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
           <div className="text-center">
             <div className="text-2xl font-bold text-green-600">
@@ -163,6 +169,20 @@ export default function ProgressDashboard({
             </div>
           </div>
         </div>
+
+        <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
+          <div className="text-center">
+            <div className="text-2xl font-bold text-teal-600">
+              {completedCases}
+            </div>
+            <div className="text-sm text-gray-600">
+              Casos clínicos
+            </div>
+            <div className="text-xs text-gray-500 mt-1">
+              🩺 {averageCaseScore > 0 ? `${averageCaseScore.toFixed(1)}% precisão` : 'Nenhum completado'}
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Progress Section */}
@@ -196,6 +216,13 @@ export default function ProgressDashboard({
               total={20}
               label="Quiz Realizados"
               color="#8b5cf6"
+            />
+
+            <ProgressBar
+              current={completedCases}
+              total={Math.max(totalCases, 5)} // Show at least 5 cases as target
+              label="Casos Clínicos"
+              color="#0d9488"
             />
           </div>
         </div>
@@ -404,7 +431,7 @@ export default function ProgressDashboard({
         {/* XP Breakdown */}
         <div className="bg-white rounded-xl p-6 shadow-lg md:col-span-2">
           <h3 className="text-lg font-semibold mb-4">⚡ Distribuição de XP</h3>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
             <div className="text-center">
               <div className="text-2xl font-bold text-blue-600">
                 {progress.experiencePoints.byCategory.chat_interactions}
@@ -434,6 +461,12 @@ export default function ProgressDashboard({
                 {progress.experiencePoints.byCategory.achievement_bonus}
               </div>
               <div className="text-sm text-gray-600">Conquistas</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-teal-600">
+                {progress.experiencePoints.byCategory.case_completion}
+              </div>
+              <div className="text-sm text-gray-600">Casos</div>
             </div>
           </div>
         </div>

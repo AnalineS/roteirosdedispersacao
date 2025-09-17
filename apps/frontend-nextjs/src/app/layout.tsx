@@ -4,6 +4,9 @@ import { FeedbackProvider } from '@/components/feedback/UnifiedFeedbackSystem'
 import OfflineIndicator from '@/components/OfflineIndicator'
 import GoogleAnalytics from '@/components/GoogleAnalytics'
 import { AnalyticsProvider } from '@/components/analytics/AnalyticsProvider'
+import { UXAnalyticsProvider } from '@/components/analytics/UXAnalyticsProvider'
+import AccessibilityValidator from '@/components/accessibility/AccessibilityValidator'
+import AccessibilityPanel from '@/components/accessibility/AccessibilityPanel'
 import IntegratedTrackingProvider from '@/components/tracking/IntegratedTrackingProvider'
 import PWAManager from '@/components/pwa/PWAManager'
 import AuthProviderWrapper from '@/components/auth/AuthProviderWrapper'
@@ -14,8 +17,9 @@ import PersonaAccessibilityProvider from '@/components/accessibility/PersonaAcce
 import { WCAGComplianceProvider } from '@/components/accessibility/WCAGComplianceSystem'
 import EnhancedCoreWebVitals from '@/components/analytics/EnhancedCoreWebVitals'
 import NumericNavigationWrapper from '@/components/navigation/NumericNavigationWrapper'
+import { SmartNavigationProvider } from '@/components/navigation/SmartNavigationSystem'
+import MobileFirstFramework from '@/components/mobile/MobileFirstFramework'
 import { ServicesProvider } from '@/providers/ServicesProvider'
-import AccessibilityPanel from '@/components/accessibility/AccessibilityPanel'
 import LGPDCompliance from '@/components/privacy/LGPDCompliance'
 import LGPDBanner from '@/components/privacy/LGPDBanner'
 import SITE_CONFIG from '@/lib/config'
@@ -130,41 +134,59 @@ export default function RootLayout({
           autoCloseDuration={5000}
           toastPosition="top-right"
         >
-          <ServicesProvider>
-            <FeedbackProvider>
-              <main id="main-content">
-                <IntegratedTrackingProvider>
-                  <WCAGComplianceProvider>
-                    <PersonaProvider>
-                      <PersonaAccessibilityProvider>
-                      <GlobalNavigationProvider>
-                        <AuthProviderWrapper>
-                          <GlobalContextProvider>
-                            <AnalyticsProvider>
-                              {children}
-                            </AnalyticsProvider>
-                          </GlobalContextProvider>
-                        </AuthProviderWrapper>
-                      </GlobalNavigationProvider>
-                      </PersonaAccessibilityProvider>
-                    </PersonaProvider>
-                  </WCAGComplianceProvider>
-              </IntegratedTrackingProvider>
+          <GlobalContextProvider>
+            <ServicesProvider>
+              <SmartNavigationProvider>
+                <FeedbackProvider>
+                  <main id="main-content">
+                    <MobileFirstFramework
+                      touchTargetSize="medium"
+                      enableSwipeGestures={true}
+                      className="mobile-safe-area"
+                    >
+                      <IntegratedTrackingProvider>
+                        <WCAGComplianceProvider>
+                          <PersonaProvider>
+                            <PersonaAccessibilityProvider>
+                            <GlobalNavigationProvider>
+                              <AuthProviderWrapper>
+                                  <AnalyticsProvider>
+                                    <UXAnalyticsProvider enableTracking={true}>
+                                      {children}
+                                    </UXAnalyticsProvider>
+                                  </AnalyticsProvider>
+                              </AuthProviderWrapper>
+                            </GlobalNavigationProvider>
+                            </PersonaAccessibilityProvider>
+                          </PersonaProvider>
+                        </WCAGComplianceProvider>
+                    </IntegratedTrackingProvider>
 
-            {/* Numeric Navigation System - PR #172 */}
-            <NumericNavigationWrapper 
-              enabled={true}
-              showHint={true}
-              hintPosition="bottom-right"
-            />
-          </main>
-            </FeedbackProvider>
-          </ServicesProvider>
+                    {/* WCAG Accessibility Validator - Inside provider hierarchy */}
+                    <AccessibilityValidator
+                      autoValidate={true}
+                      validationInterval={15000}
+                      showLiveResults={true}
+                      educationalMode={true}
+                    />
+                    </MobileFirstFramework>
+
+              {/* Numeric Navigation System - PR #172 */}
+              <NumericNavigationWrapper
+                enabled={true}
+                showHint={true}
+                hintPosition="bottom-right"
+              />
+            </main>
+
+            {/* Accessibility Panel - Floating */}
+            <AccessibilityPanel floating={true} />
+                </FeedbackProvider>
+              </SmartNavigationProvider>
+            </ServicesProvider>
+          </GlobalContextProvider>
         </UnifiedErrorSystem>
-        
-        {/* Accessibility Panel - Floating */}
-        <AccessibilityPanel floating={true} />
-        
+
         {/* PWA Manager - Service Worker ativado para funcionalidade PWA completa */}
         <PWAManager enableServiceWorker={true} />
         

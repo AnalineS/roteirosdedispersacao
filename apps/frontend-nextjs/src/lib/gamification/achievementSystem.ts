@@ -45,14 +45,16 @@ export class AchievementSystem {
     quizCorrect: number,
     quizIncorrect: number,
     modulesCompleted: number,
+    casesCompleted: number,
     streakDays: number,
     achievementsCount: number
   ): ExperiencePoints {
     const byCategory = {
       chat_interactions: chatMessages * XP_RATES.CHAT_MESSAGE,
-      quiz_completion: (quizCorrect * XP_RATES.QUIZ_QUESTION_CORRECT) + 
+      quiz_completion: (quizCorrect * XP_RATES.QUIZ_QUESTION_CORRECT) +
                       (quizIncorrect * XP_RATES.QUIZ_QUESTION_INCORRECT),
       module_completion: modulesCompleted * XP_RATES.MODULE_COMPLETION,
+      case_completion: casesCompleted * XP_RATES.CASE_COMPLETION_BASIC, // Simplified for now
       streak_bonus: this.calculateStreakBonus(streakDays),
       achievement_bonus: achievementsCount * XP_RATES.ACHIEVEMENT_BONUS
     };
@@ -584,6 +586,7 @@ export class AchievementSystem {
       quizStats.completedQuizzes || 0,
       0, // Quiz incorretos - implementar depois
       moduleProgress.filter(m => m.status === 'completed').length,
+      currentProfile.gamification?.caseStats?.completedCases || 0, // Cases completed
       updatedStreak.currentStreak,
       currentProfile.gamification?.achievements?.length || 0
     );
@@ -597,6 +600,34 @@ export class AchievementSystem {
       streakData: updatedStreak,
       moduleProgress: moduleProgress || [],
       quizStats,
+      caseStats: currentProfile.gamification?.caseStats || {
+        totalCases: 0,
+        completedCases: 0,
+        averageScore: 0,
+        totalXPFromCases: 0,
+        casesPassedFirstAttempt: 0,
+        bestDiagnosticStreak: 0,
+        currentDiagnosticStreak: 0,
+        categoriesCompleted: {
+          pediatrico: 0,
+          adulto: 0,
+          gravidez: 0,
+          complicacoes: 0,
+          interacoes: 0
+        },
+        difficultyCompleted: {
+          basico: 0,
+          intermediario: 0,
+          avancado: 0,
+          complexo: 0
+        },
+        averageTimePerCase: 0,
+        fastestCompletion: 0,
+        timeSpentCases: 0,
+        favoriteCategories: [],
+        strongestSkills: [],
+        areasForImprovement: []
+      },
       lastActivity: new Date().toISOString(),
       totalTimeSpent: currentProfile.gamification?.totalTimeSpent || 0,
       preferredPersona: (currentProfile.selectedPersona as 'ga' | 'dr-gasnelio') || 'ga'

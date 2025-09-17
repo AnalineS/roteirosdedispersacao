@@ -73,7 +73,7 @@ interface WCAGContextType {
   validateWCAG: (element: HTMLElement) => AccessibilityViolation[];
 }
 
-const WCAGContext = createContext<WCAGContextType | undefined>(undefined);
+export const WCAGContext = createContext<WCAGContextType | undefined>(undefined);
 
 // ============================================
 // PROVIDER DE ACESSIBILIDADE WCAG

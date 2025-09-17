@@ -15,7 +15,8 @@ import {
   StethoscopeIcon,
   LockIcon,
   CalculatorIcon,
-  GraduationCapIcon
+  GraduationCapIcon,
+  FlaskIcon
 } from '@/components/ui/EducationalIcons';
 
 interface NavigationProps {
@@ -54,6 +55,13 @@ export default function Navigation({ currentPersona }: NavigationProps) {
       href: '/modules',
       icon: BookOpenIcon,
       description: 'Conteúdo educacional estruturado'
+    },
+    {
+      id: 'simulator',
+      label: 'Simulador',
+      href: '/simulador',
+      icon: FlaskIcon,
+      description: 'Casos clínicos reais e simulações'
     },
     {
       id: 'resources',

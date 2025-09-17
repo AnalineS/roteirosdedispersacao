@@ -19,6 +19,8 @@ from .observability import observability_bp
 from .notifications_blueprint import notifications_bp
 from .validation_blueprint import validation_bp
 from .logging_blueprint import logging_bp
+from .alerts_blueprint import alerts_bp
+from .ga4_integration_blueprint import ga4_integration_bp
 
 # Import blueprints obrigatórios
 from .cache_blueprint import cache_blueprint
@@ -43,6 +45,8 @@ ALL_BLUEPRINTS = [
     notifications_bp,  # PR #175 - Social features
     validation_bp,  # Educational validation system
     logging_bp,  # Cloud logging and LGPD compliance
+    alerts_bp,  # Email + Telegram alert system
+    ga4_integration_bp,  # GA4 analytics integration
     cache_blueprint,
     user_bp,
     auth_bp,  # Novo sistema de autenticação JWT
@@ -65,6 +69,8 @@ __all__ = [
     'notifications_bp',  # PR #175
     'validation_bp',  # Educational validation
     'logging_bp',  # Cloud logging
+    'alerts_bp',  # Email + Telegram alerts
+    'ga4_integration_bp',  # GA4 analytics integration
     'cache_blueprint',
     'user_bp',
     'auth_bp',  # Novo sistema de autenticação JWT

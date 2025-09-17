@@ -18,7 +18,7 @@ interface UXAnalyticsContextType {
   isInitialized: boolean;
 }
 
-const UXAnalyticsContext = createContext<UXAnalyticsContextType | null>(null);
+export const UXAnalyticsContext = createContext<UXAnalyticsContextType | null>(null);
 
 interface UXAnalyticsProviderProps {
   children: React.ReactNode;

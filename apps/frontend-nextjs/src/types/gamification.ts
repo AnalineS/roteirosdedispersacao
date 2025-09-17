@@ -16,6 +16,7 @@ export interface ExperiencePoints {
     chat_interactions: number;
     quiz_completion: number;
     module_completion: number;
+    case_completion: number; // XP from clinical case completion
     streak_bonus: number;
     achievement_bonus: number;
   };
@@ -39,7 +40,7 @@ export interface Achievement {
   relatedPersona?: 'ga' | 'dr-gasnelio' | 'both';
 }
 
-export type AchievementCategory = 
+export type AchievementCategory =
   | 'first_steps'        // Primeiros passos na plataforma
   | 'knowledge_master'   // Domínio de conhecimento
   | 'interaction_expert' // Especialista em interações
@@ -47,6 +48,7 @@ export type AchievementCategory =
   | 'quiz_master'        // Mestre dos quiz
   | 'module_graduate'    // Graduado em módulos
   | 'persona_specialist' // Especialista em personas
+  | 'clinical_simulator' // Especialista em casos clínicos
   | 'helping_hand';      // Ajuda à comunidade
 
 export type AchievementRarity = 'common' | 'rare' | 'epic' | 'legendary';
@@ -60,8 +62,9 @@ export type BadgeColor =
   | 'persona_gasnelio_clinical'; // Cores Dr. Gasnelio
 
 export interface AchievementRequirement {
-  type: 'xp_total' | 'quiz_score' | 'streak_days' | 'modules_completed' | 
-        'chat_messages' | 'user_level' | 'persona_used' | 'time_spent';
+  type: 'xp_total' | 'quiz_score' | 'streak_days' | 'modules_completed' |
+        'chat_messages' | 'user_level' | 'persona_used' | 'time_spent' |
+        'cases_completed' | 'case_difficulty' | 'case_accuracy' | 'case_time';
   value: number | string;
   operator: '>=' | '==' | '>' | '<' | 'includes';
 }
@@ -78,6 +81,7 @@ export interface LearningProgress {
   streakData: StreakData;
   moduleProgress: ModuleProgress[];
   quizStats: QuizStatistics;
+  caseStats: ClinicalCaseStatistics; // Statistics for clinical cases
   lastActivity: string; // ISO date
   totalTimeSpent: number; // em minutos
   preferredPersona: 'ga' | 'dr-gasnelio';
@@ -180,6 +184,65 @@ export interface QuizStatistics {
   weakestTopics: string[];
   timeSpentQuizzes: number; // em minutos
   lastQuizDate?: string; // ISO date
+}
+
+// ============================================================================
+// CLINICAL CASE STATISTICS
+// ============================================================================
+
+export interface ClinicalCaseStatistics {
+  totalCases: number;
+  completedCases: number;
+  averageScore: number; // Diagnostic accuracy percentage
+  totalXPFromCases: number;
+  casesPassedFirstAttempt: number;
+  bestDiagnosticStreak: number; // Casos corretos consecutivos
+  currentDiagnosticStreak: number;
+  categoriesCompleted: {
+    pediatrico: number;
+    adulto: number;
+    gravidez: number;
+    complicacoes: number;
+    interacoes: number;
+  };
+  difficultyCompleted: {
+    basico: number;
+    intermediario: number;
+    avancado: number;
+    complexo: number;
+  };
+  averageTimePerCase: number; // em minutos
+  fastestCompletion: number; // em minutos
+  timeSpentCases: number; // em minutos total
+  lastCaseDate?: string; // ISO date
+  favoriteCategories: string[];
+  strongestSkills: string[]; // Based on learning objectives
+  areasForImprovement: string[];
+}
+
+export interface CompletedCase {
+  caseId: string;
+  title: string;
+  difficulty: 'básico' | 'intermediário' | 'avançado' | 'complexo';
+  category: string;
+  completedAt: string; // ISO date
+  timeSpent: number; // em minutos
+  diagnosticAccuracy: number; // 0-100
+  xpEarned: number;
+  attempts: number;
+  perfectScore: boolean;
+  stepResults: CaseStepResult[];
+  competencyScores: { [key: string]: number }; // Learning objectives scores
+}
+
+export interface CaseStepResult {
+  stepId: string;
+  stepNumber: number;
+  title: string;
+  score: number; // 0-100
+  timeSpent: number; // em segundos
+  attempts: number;
+  completed: boolean;
 }
 
 // ============================================================================
@@ -338,6 +401,12 @@ export const XP_RATES = {
   QUIZ_QUESTION_CORRECT: 15,
   QUIZ_QUESTION_INCORRECT: 3,
   MODULE_COMPLETION: 100,
+  CASE_COMPLETION_BASIC: 150,      // Casos básicos
+  CASE_COMPLETION_INTERMEDIATE: 250, // Casos intermediários
+  CASE_COMPLETION_ADVANCED: 400,   // Casos avançados
+  CASE_COMPLETION_COMPLEX: 600,    // Casos complexos
+  CASE_ACCURACY_BONUS: 50,         // Bônus por alta precisão diagnóstica
+  CASE_SPEED_BONUS: 25,            // Bônus por completar rapidamente
   DAILY_LOGIN: 10,
   STREAK_MULTIPLIER: 1.2, // Multiplicador por dia de streak
   ACHIEVEMENT_BONUS: 50 // Bônus base por achievement
@@ -428,6 +497,92 @@ export const DEFAULT_ACHIEVEMENTS: Achievement[] = [
     requirements: [
       { type: 'modules_completed', value: 5, operator: '>=' },
       { type: 'user_level', value: 'profissional', operator: '==' }
+    ],
+    celebrationType: 'visual',
+    badgeColor: 'especialista_gold',
+    relatedPersona: 'dr-gasnelio'
+  },
+
+  // Clinical Case Achievements
+  {
+    id: 'first_case_completed',
+    title: 'Primeiro Caso Clínico',
+    description: 'Completou seu primeiro caso clínico no simulador',
+    category: 'clinical_simulator',
+    rarity: 'common',
+    xpReward: 100,
+    icon: '🩺',
+    isUnlocked: false,
+    requirements: [
+      { type: 'cases_completed', value: 1, operator: '>=' }
+    ],
+    celebrationType: 'visual',
+    badgeColor: 'estudante_blue',
+    relatedPersona: 'both'
+  },
+  {
+    id: 'pediatric_specialist',
+    title: 'Especialista Pediátrico',
+    description: 'Dominou casos pediátricos de hanseníase',
+    category: 'clinical_simulator',
+    rarity: 'rare',
+    xpReward: 250,
+    icon: '👶',
+    isUnlocked: false,
+    requirements: [
+      { type: 'case_difficulty', value: 'pediatrico', operator: 'includes' },
+      { type: 'cases_completed', value: 3, operator: '>=' }
+    ],
+    celebrationType: 'visual',
+    badgeColor: 'profissional_purple',
+    relatedPersona: 'dr-gasnelio'
+  },
+  {
+    id: 'diagnostic_accuracy_master',
+    title: 'Mestre do Diagnóstico',
+    description: 'Mantém alta precisão diagnóstica (>90%) em casos clínicos',
+    category: 'clinical_simulator',
+    rarity: 'epic',
+    xpReward: 400,
+    icon: '🎯',
+    isUnlocked: false,
+    requirements: [
+      { type: 'case_accuracy', value: 90, operator: '>=' },
+      { type: 'cases_completed', value: 5, operator: '>=' }
+    ],
+    celebrationType: 'visual',
+    badgeColor: 'especialista_gold',
+    relatedPersona: 'dr-gasnelio'
+  },
+  {
+    id: 'speed_clinician',
+    title: 'Clínico Eficiente',
+    description: 'Completa casos clínicos em tempo otimizado',
+    category: 'clinical_simulator',
+    rarity: 'rare',
+    xpReward: 200,
+    icon: '⚡',
+    isUnlocked: false,
+    requirements: [
+      { type: 'case_time', value: 10, operator: '<' }, // Menos de 10 min por caso
+      { type: 'cases_completed', value: 3, operator: '>=' }
+    ],
+    celebrationType: 'discrete',
+    badgeColor: 'profissional_purple',
+    relatedPersona: 'both'
+  },
+  {
+    id: 'clinical_simulator_champion',
+    title: 'Campeão do Simulador',
+    description: 'Completou todos os tipos de casos clínicos disponíveis',
+    category: 'clinical_simulator',
+    rarity: 'legendary',
+    xpReward: 750,
+    icon: '🏅',
+    isUnlocked: false,
+    requirements: [
+      { type: 'cases_completed', value: 10, operator: '>=' },
+      { type: 'case_accuracy', value: 85, operator: '>=' }
     ],
     celebrationType: 'visual',
     badgeColor: 'especialista_gold',

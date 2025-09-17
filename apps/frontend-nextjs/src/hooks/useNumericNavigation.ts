@@ -14,12 +14,12 @@ interface NavigationRoute {
 // Mapeamento numérico das rotas principais
 const NUMERIC_ROUTES: Record<string, NavigationRoute> = {
   '1': { key: '1', path: '/', title: 'Início', description: 'Página inicial do sistema' },
-  '2': { key: '2', path: '/modules', title: 'Módulos', description: 'Módulos educacionais' },
-  '3': { key: '3', path: '/metodologia/detalhada', title: 'Metodologia', description: 'Metodologia detalhada' },
-  '4': { key: '4', path: '/conformidade', title: 'Conformidade', description: 'Conformidade regulatória' },
-  '5': { key: '5', path: '/referencias', title: 'Referências', description: 'Referências bibliográficas' },
-  '6': { key: '6', path: '/offline', title: 'Modo Offline', description: 'Funcionalidades offline' },
-  '7': { key: '7', path: '/personas', title: 'Personas', description: 'Assistentes virtuais' },
+  '2': { key: '2', path: '/dashboard', title: 'Dashboard', description: 'Dashboard educacional com progress tracking' },
+  '3': { key: '3', path: '/chat', title: 'Chat', description: 'Assistentes virtuais Dr. Gasnelio & Gá' },
+  '4': { key: '4', path: '/simulador', title: 'Simulador', description: 'Simulador clínico de casos reais' },
+  '5': { key: '5', path: '/certificacao', title: 'Certificação', description: 'Sistema de certificação educacional' },
+  '6': { key: '6', path: '/acessibilidade', title: 'Acessibilidade', description: 'Ferramentas de acessibilidade' },
+  '7': { key: '7', path: '/timeline', title: 'Timeline', description: 'Timeline interativa do tratamento PQT-U' },
   '8': { key: '8', path: '/calculadora', title: 'Calculadora', description: 'Calculadora PQT-U' },
   '9': { key: '9', path: '/checklist', title: 'Checklist', description: 'Checklist de dispensação' }
 };
