@@ -5,7 +5,7 @@
 # ============================================================================
 
 # === STAGE 1: BUILD DEPENDENCIES ===
-FROM python:3.11-slim as builder
+FROM python:3.14.0rc2-alpine3.22 as builder
 
 # Metadados
 LABEL stage="builder"
@@ -101,7 +101,7 @@ RUN find $VIRTUAL_ENV -name "*.pyc" -delete && \
     find $VIRTUAL_ENV -name "docs" -type d -exec rm -rf {} + || true
 
 # === STAGE 2: RUNTIME ===
-FROM python:3.11-slim as runtime
+FROM python:3.14.0rc2-alpine3.22 as runtime
 
 # Metadados de runtime
 LABEL maintainer="Roteiro de Dispensação API"
