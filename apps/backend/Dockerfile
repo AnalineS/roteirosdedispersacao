@@ -1,5 +1,5 @@
 # Dockerfile otimizado para Cloud Run - Roteiro de Dispensação
-FROM python:3.11-slim
+FROM python:3.14.0rc2-alpine3.22
 
 # Metadados da imagem
 LABEL maintainer="Roteiro de Dispensação API"
