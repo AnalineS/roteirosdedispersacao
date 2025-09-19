@@ -240,11 +240,11 @@ class SecretsManager:
                 # Log de auditoria
                 self._log_access(name, 'SET', success=True, details={'encrypted': encrypt, 'critical': is_critical})
                 
-                security_logger.info(f"Secret '{name}' definido com sucesso")
+                security_logger.info(f"Secret '{self._mask_secret_name(name)}' definido com sucesso")
                 return True
                 
             except Exception as e:
-                security_logger.error(f"Erro ao definir secret '{name}': {e}")
+                security_logger.error(f"Erro ao definir secret '{self._mask_secret_name(name)}': Falha na operação")
                 self._log_access(name, 'SET', success=False, error=str(e))
                 return False
     
@@ -275,7 +275,7 @@ class SecretsManager:
                 
                 # Verificar expiração
                 if metadata.expires_at and datetime.now() > metadata.expires_at:
-                    security_logger.warning(f"Secret '{name}' expirado")
+                    security_logger.warning(f"Secret '{self._mask_secret_name(name)}' expirado")
                     if log_access:
                         self._log_access(name, 'GET', success=False, error='Secret expirado')
                     return None
@@ -303,7 +303,7 @@ class SecretsManager:
                 return decrypted_value
                 
             except Exception as e:
-                security_logger.error(f"Erro ao obter secret '{name}': {e}")
+                security_logger.error(f"Erro ao obter secret '{self._mask_secret_name(name)}': Falha na operação")
                 if log_access:
                     self._log_access(name, 'GET', success=False, error=str(e))
                 return None
@@ -329,11 +329,11 @@ class SecretsManager:
                 self._save_metadata()
                 
                 self._log_access(name, 'ROTATE', success=True)
-                security_logger.info(f"Secret '{name}' rotacionado com sucesso")
+                security_logger.info(f"Secret '{self._mask_secret_name(name)}' rotacionado com sucesso")
                 return True
                 
             except Exception as e:
-                security_logger.error(f"Erro ao rotacionar secret '{name}': {e}")
+                security_logger.error(f"Erro ao rotacionar secret '{self._mask_secret_name(name)}': Falha na operação")
                 self._log_access(name, 'ROTATE', success=False, error=str(e))
                 return False
     
@@ -380,7 +380,11 @@ class SecretsManager:
             name for name, metadata in self.metadata.items()
             if self.rotation_policy.should_rotate(metadata)
         ]
-    
+
+    def _mask_secret_name(self, name: str) -> str:
+        """Mascara nome do secret para logging seguro"""
+        return f"secret_{hashlib.sha256(name.encode()).hexdigest()[:8]}"
+
     def _log_access(self, secret_name: str, operation: str, success: bool, details: Dict = None, error: str = None):
         """Registra acesso para auditoria"""
         log_entry = {
