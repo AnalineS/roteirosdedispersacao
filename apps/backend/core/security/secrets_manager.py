@@ -402,8 +402,15 @@ class SecretsManager:
         if len(self.access_log) > 1000:
             self.access_log = self.access_log[-1000:]
         
-        # Log estruturado para o sistema
-        security_logger.info(f"SECRET_ACCESS: {json.dumps(log_entry)}")
+        # Log estruturado para o sistema (sanitizado para segurança)
+        safe_log_entry = {
+            'timestamp': log_entry['timestamp'],
+            'operation': log_entry['operation'],
+            'success': log_entry['success'],
+            'client_info': log_entry['client_info']
+            # secret_name, details e error omitidos por segurança
+        }
+        security_logger.info(f"SECRET_ACCESS: {json.dumps(safe_log_entry)}")
     
     def _start_rotation_thread(self):
         """Inicia thread para rotação automática"""
