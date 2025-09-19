@@ -148,7 +148,7 @@ export default function VisualCard({
   className = '' 
 }: VisualCardProps) {
   const [checklistState, setChecklistState] = useState<ChecklistItem[]>(
-    type === 'checklist' ? data : []
+    type === 'checklist' ? (data as ChecklistItem[]) : []
   );
 
   const toggleChecklistItem = (id: string) => {

@@ -891,7 +891,9 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
                 window.gtag('event', 'mobile_search_accessed', {
                   event_category: 'navigation',
                   event_label: 'search_button',
-                  transport_type: 'beacon'
+                  custom_parameters: {
+                    transport_type: 'beacon'
+                  }
                 });
               }
             }}
@@ -1005,7 +1007,7 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
         isOpen={isMobileMenuOpen}
         onClose={() => setIsMobileMenuOpen(false)}
         categories={navigationCategories}
-        currentPersona={currentPersonaData}
+        currentPersona={currentPersonaData || undefined}
         isActive={isActive}
       />
 

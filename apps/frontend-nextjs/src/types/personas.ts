@@ -64,7 +64,7 @@ export interface PersonaConfig {
     empathetic?: boolean;
   };
   // Frontend-specific properties para compatibilidade com useChat
-  tone: 'formal' | 'casual' | 'empathetic' | 'professional' | 'technical';
+  tone: 'professional' | 'empathetic' | 'educational';
   specialties: string[];
   responseStyle: 'detailed' | 'concise' | 'interactive';
   enabled: boolean;
@@ -184,7 +184,7 @@ export interface PersonaChangeEvent {
     from: ValidPersonaId | null;
     to: ValidPersonaId;
     source: PersonaSource;
-    timestamp: Date;
+    timestamp: number;
     duration?: number; // tempo na persona anterior
     sessionId: string;
     userProfile?: {

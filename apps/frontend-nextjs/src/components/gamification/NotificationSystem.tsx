@@ -7,11 +7,38 @@
 'use client';
 
 import React, { useState, useEffect, createContext, useContext } from 'react';
-import type { 
-  GamificationNotification, 
-  Achievement 
+import type {
+  GamificationNotification,
+  Achievement
 } from '@/types/gamification';
 import BadgeCard from './BadgeCard';
+
+// Interface para dados de notificação nativa
+interface NotificationData {
+  notificationId?: string;
+  navigateToGamification?: boolean;
+  [key: string]: unknown;
+}
+
+// Interface WindowWithGtag para gtag tracking
+interface WindowWithGtag extends Window {
+  gtag?: (
+    command: 'event' | 'config',
+    eventNameOrId: string,
+    parameters?: {
+      event_category?: string;
+      event_label?: string;
+      value?: number;
+      custom_parameters?: Record<string, unknown>;
+      [key: string]: unknown;
+    }
+  ) => void;
+}
+
+// Helper para acessar gtag de forma type-safe
+function getWindowWithGtag(): WindowWithGtag | null {
+  return typeof window !== 'undefined' ? (window as WindowWithGtag) : null;
+}
 
 interface NotificationContextType {
   showNotification: (notification: GamificationNotification) => void;
@@ -258,8 +285,9 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
 
   const requestNotificationPermission = async (): Promise<boolean> => {
     if (!('Notification' in window)) {
-      if (typeof window !== 'undefined' && window.gtag) {
-        window.gtag('event', 'notification_unsupported', {
+      const windowWithGtag = getWindowWithGtag();
+      if (windowWithGtag?.gtag) {
+        windowWithGtag.gtag('event', 'notification_unsupported', {
           event_category: 'gamification',
           event_label: 'browser_compatibility_issue',
           custom_parameters: {
@@ -301,10 +329,10 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
   };
 
   const showNativeNotification = (
-    title: string, 
-    body: string, 
+    title: string,
+    body: string,
     icon?: string,
-    data?: unknown
+    data?: NotificationData
   ) => {
     if (!isNotificationEnabled) return;
 
@@ -334,8 +362,9 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
         }
       };
     } catch (error) {
-      if (typeof window !== 'undefined' && window.gtag) {
-        window.gtag('event', 'notification_display_error', {
+      const windowWithGtag = getWindowWithGtag();
+      if (windowWithGtag?.gtag) {
+        windowWithGtag.gtag('event', 'notification_display_error', {
           event_category: 'gamification_error',
           event_label: 'native_notification_failed',
           custom_parameters: {

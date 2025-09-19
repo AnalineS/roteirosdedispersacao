@@ -633,7 +633,7 @@ function AddMedicationModal({
     medicationName: '',
     dosage: '',
     time: '',
-    frequency: 'daily' as const
+    frequency: 'daily' as 'daily' | 'weekly' | 'monthly'
   });
 
   const handleSubmit = () => {
@@ -842,7 +842,7 @@ function AddAppointmentModal({
     date: '',
     time: '',
     location: '',
-    reminderTime: '1_hour' as const
+    reminderTime: '1_hour' as 'on_time' | '15_min' | '30_min' | '1_hour' | '1_day'
   });
 
   const handleSubmit = () => {

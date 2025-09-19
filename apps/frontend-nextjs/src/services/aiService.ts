@@ -151,7 +151,7 @@ class AIService {
     const insights: AIInsight[] = [];
 
     // Análise baseada em padrões conhecidos
-    if (progressData.completedModules?.length < 3) {
+    if ((progressData.completedModules?.length ?? 0) < 3) {
       insights.push({
         id: `suggestion_${Date.now()}_1`,
         type: 'learning_suggestion',
@@ -173,7 +173,7 @@ class AIService {
       });
     }
 
-    if (progressData.experiencePoints?.total > 500) {
+    if ((progressData.experiencePoints?.total ?? 0) > 500) {
       insights.push({
         id: `suggestion_${Date.now()}_3`,
         type: 'content_recommendation',

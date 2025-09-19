@@ -75,7 +75,7 @@ export function useConversationHistory() {
     };
 
     loadConversations();
-  }, [auth.user, auth.isAuthenticated, loadFromLocalStorage]);
+  }, [auth.user, auth.isAuthenticated]);
 
   // ============================================
   // FUNÇÕES DE CARREGAMENTO

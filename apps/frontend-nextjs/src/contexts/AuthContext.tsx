@@ -6,7 +6,7 @@
 
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
 import { jwtClient, User as JWTUser, AuthResponse, GoogleAuthResponse } from '@/lib/auth/jwt-client';
 
 interface AuthenticationError {

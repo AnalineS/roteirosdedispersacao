@@ -112,7 +112,16 @@ export function useChatService(options: UseChatServiceOptions = {}): UseChatServ
       chatService.getUserPreferences(user.uid)
         .then(setPreferences)
         .catch(error => {
-          console.error('Erro ao carregar preferências:', error);
+          if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'chat_preferences_load_error', {
+            event_category: 'medical_error',
+            event_label: 'preferences_load_failed',
+            custom_parameters: {
+              medical_context: 'chat_service_preferences',
+              error_message: error instanceof Error ? error.message : String(error)
+            }
+          });
+        }
           handleError(error, 'medium');
         });
     }
@@ -139,9 +148,34 @@ export function useChatService(options: UseChatServiceOptions = {}): UseChatServ
     const checkHealth = async () => {
       try {
         const health = await chatService.checkSystemHealth();
-        setSystemHealth(health);
+        // Transform to match SystemHealth interface
+        const systemHealth: SystemHealth = {
+          status: health.status === 'critical' ? 'unhealthy' : health.status === 'degraded' ? 'degraded' : 'healthy',
+          services: {
+            chat: health.services['personaRAG'] || false,
+            personas: health.services['ragIntegration'] || false,
+            analytics: health.services['analytics'] || false,
+            storage: health.services['cache'] || false
+          },
+          performance: {
+            averageResponseTime: health.metrics['responseTime'] || 0,
+            uptime: health.metrics['uptime'] || 100,
+            errorRate: health.metrics['errorRate'] || 0
+          },
+          lastChecked: new Date().toISOString()
+        };
+        setSystemHealth(systemHealth);
       } catch (error) {
-        console.error('Erro ao verificar saúde do sistema:', error);
+        if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'chat_system_health_error', {
+            event_category: 'medical_error',
+            event_label: 'system_health_check_failed',
+            custom_parameters: {
+              medical_context: 'chat_service_health',
+              error_message: error instanceof Error ? error.message : String(error)
+            }
+          });
+        }
       }
     };
 
@@ -178,7 +212,16 @@ export function useChatService(options: UseChatServiceOptions = {}): UseChatServ
         logEvent('CHAT', 'session_started', newSession.id);
       }
 
-      console.log('🚀 Sessão ChatService iniciada:', newSession.id);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'chat_session_started', {
+          event_category: 'medical_chat',
+          event_label: 'session_started',
+          custom_parameters: {
+            medical_context: 'chat_service_session',
+            session_id: newSession.id
+          }
+        });
+      }
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Erro ao iniciar sessão');
       setError(error.message);
@@ -211,10 +254,28 @@ export function useChatService(options: UseChatServiceOptions = {}): UseChatServ
         logEvent('CHAT', 'session_ended', session.id, Date.now() - session.startTime);
       }
 
-      console.log('🏁 Sessão ChatService finalizada:', session.id);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'chat_session_finished', {
+          event_category: 'medical_chat',
+          event_label: 'session_finished',
+          custom_parameters: {
+            medical_context: 'chat_service_session',
+            session_id: session.id
+          }
+        });
+      }
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Erro ao finalizar sessão');
-      console.error('Erro ao finalizar sessão:', error);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'chat_session_finish_error', {
+          event_category: 'medical_error',
+          event_label: 'session_finish_failed',
+          custom_parameters: {
+            medical_context: 'chat_service_session',
+            error_message: error instanceof Error ? error.message : String(error)
+          }
+        });
+      }
       handleError(error, 'medium');
     }
   }, [session, chatService, onSessionEnd, enableAnalytics, handleError]);
@@ -293,7 +354,16 @@ export function useChatService(options: UseChatServiceOptions = {}): UseChatServ
       return success;
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Erro ao trocar persona');
-      console.error('Erro ao trocar persona:', error);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'chat_persona_switch_error', {
+          event_category: 'medical_error',
+          event_label: 'persona_switch_failed',
+          custom_parameters: {
+            medical_context: 'chat_service_persona',
+            error_message: error instanceof Error ? error.message : String(error)
+          }
+        });
+      }
       handleError(error, 'medium');
       return false;
     }
@@ -308,7 +378,16 @@ export function useChatService(options: UseChatServiceOptions = {}): UseChatServ
       conversationHistory.current = history;
       return history;
     } catch (error) {
-      console.error('Erro ao obter histórico:', error);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'chat_history_retrieval_error', {
+          event_category: 'medical_error',
+          event_label: 'history_retrieval_failed',
+          custom_parameters: {
+            medical_context: 'chat_service_history',
+            error_message: error instanceof Error ? error.message : String(error)
+          }
+        });
+      }
       return conversationHistory.current;
     }
   }, [session, chatService]);
@@ -331,7 +410,16 @@ export function useChatService(options: UseChatServiceOptions = {}): UseChatServ
       }
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Erro ao atualizar preferências');
-      console.error('Erro ao atualizar preferências:', error);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'chat_preferences_update_error', {
+          event_category: 'medical_error',
+          event_label: 'preferences_update_failed',
+          custom_parameters: {
+            medical_context: 'chat_service_preferences',
+            error_message: error instanceof Error ? error.message : String(error)
+          }
+        });
+      }
       handleError(error, 'medium');
     }
   }, [isAuthenticated, user?.uid, chatService, enableAnalytics, handleError]);
@@ -365,11 +453,29 @@ export function useChatService(options: UseChatServiceOptions = {}): UseChatServ
 
       // Restaurar histórico
       conversationHistory.current = importData.history;
-      
-      console.log('✅ Conversa importada com sucesso');
+
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'chat_conversation_imported', {
+          event_category: 'medical_chat',
+          event_label: 'conversation_import_success',
+          custom_parameters: {
+            medical_context: 'chat_service_import',
+            import_type: 'conversation_data'
+          }
+        });
+      }
       return true;
     } catch (error) {
-      console.error('Erro ao importar conversa:', error);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'chat_conversation_import_error', {
+          event_category: 'medical_error',
+          event_label: 'conversation_import_failed',
+          custom_parameters: {
+            medical_context: 'chat_service_import',
+            error_message: error instanceof Error ? error.message : String(error)
+          }
+        });
+      }
       return false;
     }
   }, []);

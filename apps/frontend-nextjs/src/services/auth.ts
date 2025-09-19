@@ -117,25 +117,13 @@ const AUTH_EVENTS = {
   ROLE_UPGRADE: 'role_upgrade'
 };
 
-// Global gtag declaration
-declare global {
-  interface Window {
-    gtag?: (
-      command: 'event',
-      eventName: string,
-      parameters?: {
-        event_category?: string;
-        event_label?: string;
-        custom_dimensions?: Record<string, unknown>;
-      }
-    ) => void;
-  }
-}
+// Import unified analytics types
+import '@/types/analytics';
 
 interface JWTUser {
   id: string;
   email: string;
-  name?: string;
+  name?: string | null;
   verified: boolean;
   picture?: string;
   provider: string;
@@ -248,7 +236,7 @@ export class AuthService {
     return {
       uid: jwtUser.id,
       email: jwtUser.email,
-      displayName: jwtUser.name || null,
+      displayName: jwtUser.name ?? null,
       emailVerified: jwtUser.verified,
       isAnonymous: false,
       photoURL: jwtUser.picture,

@@ -235,7 +235,12 @@ export function usePersonasEnhanced(options: UsePersonasEnhancedOptions = {}): U
       capabilities: persona.capabilities,
       example_questions: persona.example_questions,
       limitations: persona.limitations,
-      response_format: persona.response_format
+      response_format: persona.response_format,
+      // Frontend-specific properties for dual persona tone system
+      tone: personaId === 'ga' ? 'empathetic' : 'professional',
+      specialties: persona.expertise,
+      responseStyle: personaId === 'ga' ? 'interactive' : 'detailed',
+      enabled: true
     };
   }, [personas]);
 

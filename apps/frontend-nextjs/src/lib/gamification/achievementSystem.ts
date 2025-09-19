@@ -4,15 +4,16 @@
  * Conquistas paralelas com celebrações visuais para marcos importantes
  */
 
-import type { 
-  Achievement, 
-  AchievementRequirement, 
-  LearningProgress, 
+import type {
+  Achievement,
+  AchievementRequirement,
+  LearningProgress,
   ExperiencePoints,
   StreakData,
   QuizStatistics,
   GamificationNotification,
-  ExtendedUserProfile
+  ExtendedUserProfile,
+  ModuleProgress
 } from '../../types/gamification';
 import {
   XP_RATES,
@@ -28,6 +29,25 @@ interface ModuleProgressItem {
   completedAt?: string;
   timeSpent?: number;
   [key: string]: unknown;
+}
+
+// Helper function to convert ModuleProgressItem to ModuleProgress
+function convertToModuleProgress(items: ModuleProgressItem[]): ModuleProgress[] {
+  return items.map(item => ({
+    moduleId: item.id,
+    title: item.id, // Fallback, should be enriched with actual title
+    userLevel: ['paciente'] as UserLevel[], // Default level
+    status: item.status === 'not_started' ? 'locked' :
+            item.status === 'in_progress' ? 'in_progress' :
+            item.status === 'completed' ? 'completed' : 'available',
+    progress: item.status === 'completed' ? 100 : item.status === 'in_progress' ? 50 : 0,
+    completedAt: item.completedAt,
+    timeSpent: item.timeSpent || 0,
+    xpEarned: item.score ? item.score * 10 : 0, // Convert score to XP
+    quizScores: item.score ? [item.score] : [],
+    estimatedTimeMinutes: 30, // Default estimate
+    prerequisites: []
+  }));
 }
 
 export class AchievementSystem {
@@ -607,7 +627,7 @@ export class AchievementSystem {
       experiencePoints,
       achievements: currentProfile.gamification?.achievements || [],
       streakData: updatedStreak,
-      moduleProgress: moduleProgress || [],
+      moduleProgress: moduleProgress ? convertToModuleProgress(moduleProgress) : [],
       quizStats,
       caseStats: currentProfile.gamification?.caseStats || {
         totalCases: 0,
@@ -639,7 +659,14 @@ export class AchievementSystem {
       },
       lastActivity: new Date().toISOString(),
       totalTimeSpent: currentProfile.gamification?.totalTimeSpent || 0,
-      preferredPersona: (currentProfile.selectedPersona as 'ga' | 'dr-gasnelio') || 'ga'
+      preferredPersona: (currentProfile.selectedPersona as 'ga' | 'dr-gasnelio') || 'ga',
+      // Additional properties for compatibility
+      totalXP: experiencePoints.total,
+      completedCases: [], // TODO: Extract from caseStats when available
+      unlockedAchievements: (currentProfile.gamification?.achievements || []).filter((achievement: Achievement) => achievement.isUnlocked),
+      streakDays: updatedStreak.currentStreak,
+      progressPercentage: Math.min((experiencePoints.total / experiencePoints.nextLevelXP) * 100, 100),
+      nextLevelXP: experiencePoints.nextLevelXP
     };
 
     // Verificar novas conquistas

@@ -101,7 +101,8 @@ export const useActiveHooksSystem = (config: ActiveHooksConfig = {}) => {
         interactionCount: interactionCountRef.current,
         errorCount: errorCountRef.current,
         intersectionRatio,
-        dimensions,
+        dimensionsWidth: dimensions.width,
+        dimensionsHeight: dimensions.height,
         memoryUsage: optimization.memoryUsage
       };
 
@@ -226,8 +227,10 @@ export const useActiveHooksSystem = (config: ActiveHooksConfig = {}) => {
         if (enableTracking) {
           tracking.track('scroll', 'dimension_change', {
             component: componentName,
-            from: previousDimensions,
-            to: dimensions
+            fromWidth: previousDimensions?.width || 0,
+            fromHeight: previousDimensions?.height || 0,
+            toWidth: dimensions.width,
+            toHeight: dimensions.height
           });
         }
       }
@@ -271,26 +274,29 @@ export const useActiveHooksSystem = (config: ActiveHooksConfig = {}) => {
   // EVENT HANDLERS OTIMIZADOS
   // ============================================
 
-  const handleInteraction = optimization.throttledCallback(
-    useCallback((event: React.SyntheticEvent, interactionType: string) => {
-      interactionCountRef.current += 1;
+  const throttledInteractionHandler = useMemo(() =>
+    optimization.createThrottledFunction(
+      (event: React.SyntheticEvent, interactionType: string) => {
+        interactionCountRef.current += 1;
 
-      if (enableAccessibility) {
-        optimization.announceToScreenReader(
-          `${componentName} ${interactionType}`,
-          'polite'
-        );
-      }
+        if (enableAccessibility) {
+          optimization.announceToScreenReader(
+            `${componentName} ${interactionType}`,
+            'polite'
+          );
+        }
 
-      if (enableTracking) {
-        tracking.track('click', `${componentName}_${interactionType}`, {
-          target: (event.target as HTMLElement)?.tagName,
-          timestamp: Date.now()
-        });
-      }
-    }, [componentName, enableAccessibility, optimization, enableTracking, tracking]),
-    100
-  );
+        if (enableTracking) {
+          tracking.track('click', `${componentName}_${interactionType}`, {
+            target: (event.target as HTMLElement)?.tagName,
+            timestamp: Date.now()
+          });
+        }
+      },
+      100
+    ), [componentName, enableAccessibility, optimization, enableTracking, tracking]);
+
+  const handleInteraction = throttledInteractionHandler;
 
   const handleFocus = useCallback((event: React.FocusEvent) => {
     handleInteraction(event, 'focus');
@@ -328,7 +334,8 @@ export const useActiveHooksSystem = (config: ActiveHooksConfig = {}) => {
       errors: errorCountRef.current,
       retries: retryCount,
       visibility: intersectionRatio,
-      dimensions
+      dimensionsWidth: dimensions.width,
+      dimensionsHeight: dimensions.height
     }
   }), [isIntersecting, optimization.isOptimized, isRetrying, retryCount, intersectionRatio, dimensions]);
 
@@ -354,7 +361,13 @@ export const useActiveHooksSystem = (config: ActiveHooksConfig = {}) => {
       if (enableTracking) {
         tracking.track('click', 'component_cleanup', {
           component: componentName,
-          finalMetrics: componentStatus.metrics
+          finalRenders: componentStatus.metrics.renders,
+          finalInteractions: componentStatus.metrics.interactions,
+          finalErrors: componentStatus.metrics.errors,
+          finalRetries: componentStatus.metrics.retries,
+          finalVisibility: componentStatus.metrics.visibility,
+          finalDimensionsWidth: componentStatus.metrics.dimensionsWidth,
+          finalDimensionsHeight: componentStatus.metrics.dimensionsHeight
         });
       }
     });
@@ -392,8 +405,8 @@ export const useActiveHooksSystem = (config: ActiveHooksConfig = {}) => {
     optimization: {
       isOptimized: optimization.isOptimized,
       clearMemory: optimization.clearMemory,
-      debouncedValue: optimization.debouncedValue,
-      throttledCallback: optimization.throttledCallback
+      createDebouncedFunction: optimization.createDebouncedFunction,
+      createThrottledFunction: optimization.createThrottledFunction
     },
     
     // Hooks utilities (for custom usage)
@@ -411,28 +424,33 @@ export const useActiveHooksSystem = (config: ActiveHooksConfig = {}) => {
 // HOC PARA AUTO-ATIVAÇÃO
 // ============================================
 
-export const withActiveHooks = <P extends object>(
+interface EventHandlerProps {
+  onClick?: (event: React.MouseEvent) => void;
+  onFocus?: (event: React.FocusEvent) => void;
+  onKeyDown?: (event: React.KeyboardEvent) => void;
+}
+
+export const withActiveHooks = <P extends Record<string, unknown>>(
   Component: React.ComponentType<P>,
   config: ActiveHooksConfig = {}
 ) => {
-  const WrappedComponent = React.forwardRef<HTMLDivElement, P>((props, ref) => {
+  const WrappedComponent = React.forwardRef<HTMLDivElement, P & EventHandlerProps>((props, ref) => {
     const hooks = useActiveHooksSystem({
       ...config,
       componentName: Component.displayName || Component.name || 'Component'
     });
 
+    const componentProps = config.autoActivate ? {
+      ...props,
+      onClick: hooks.handleClick,
+      onFocus: hooks.handleFocus,
+      onKeyDown: hooks.handleKeyDown
+    } : props;
+
     return (
       <div ref={hooks.componentRef} style={{ display: 'contents' }}>
         <div ref={hooks.announceRef} className="sr-only" aria-live="polite" />
-        <Component
-          {...props}
-          {...(ref && { ref })}
-          {...(config.autoActivate && {
-            onClick: hooks.handleClick,
-            onFocus: hooks.handleFocus,
-            onKeyDown: hooks.handleKeyDown
-          })}
-        />
+        <Component {...(componentProps as P)} />
       </div>
     );
   });

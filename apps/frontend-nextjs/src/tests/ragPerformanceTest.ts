@@ -10,21 +10,8 @@ import { semanticSearchEngine } from '../services/semanticSearchEngine';
 import { embeddingService } from '../services/embeddingService';
 import { medicalKnowledgeBase } from '../services/medicalKnowledgeBase';
 
-// Type declarations for gtag
-declare global {
-  interface Window {
-    gtag?: (
-      command: 'event',
-      eventName: string,
-      parameters?: {
-        event_category?: string;
-        event_label?: string;
-        value?: number;
-        custom_parameters?: Record<string, unknown>;
-      }
-    ) => void;
-  }
-}
+// Import unified analytics types
+import '@/types/analytics';
 
 interface RAGPerformanceResult {
   component: string;

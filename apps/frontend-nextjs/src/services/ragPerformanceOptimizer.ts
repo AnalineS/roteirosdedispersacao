@@ -12,21 +12,8 @@ import { embeddingService } from './embeddingService';
 import { ragCache } from './simpleCache';
 import type { SearchResult as MedicalSearchResult } from './medicalKnowledgeBase';
 
-// Global gtag type declaration
-declare global {
-  interface Window {
-    gtag?: (
-      command: 'event',
-      eventName: string,
-      parameters?: {
-        event_category?: string;
-        event_label?: string;
-        value?: number;
-        custom_parameters?: Record<string, unknown>;
-      }
-    ) => void;
-  }
-}
+// Import unified analytics types
+import '@/types/analytics';
 
 interface QueryOptions {
   maxResults?: number;
@@ -607,7 +594,7 @@ export class RAGPerformanceOptimizer {
         const result = this.convertToRAGQueryResult(response, 0);
         item.resolve(result);
       } catch (error) {
-        item.reject(error);
+        item.reject(error instanceof Error ? error : new Error(String(error)));
       }
     });
 
@@ -620,7 +607,13 @@ export class RAGPerformanceOptimizer {
     // Verificar se já está sendo processada
     if (this.processingQueue.has(queryId)) {
       // Esperar resultado da query existente
-      return this.waitForProcessing(queryId);
+      const result = await this.waitForProcessing(queryId);
+      return result ?? {
+        response: 'Não foi possível processar a consulta no momento.',
+        sources: [],
+        confidence: 0,
+        processingTime: 0
+      };
     }
 
     // Marcar como em processamento

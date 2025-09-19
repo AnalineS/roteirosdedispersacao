@@ -127,8 +127,9 @@ export const WCAGComplianceProvider: React.FC<WCAGProviderProps> = ({
     }));
 
     tracking.track('click', 'accessibility_settings_changed', {
-      changed: Object.keys(newSettings),
-      values: newSettings
+      changed_count: Object.keys(newSettings).length,
+      changed_keys: Object.keys(newSettings).join(','),
+      settings_snapshot: JSON.stringify(newSettings)
     });
   }, [tracking]);
 

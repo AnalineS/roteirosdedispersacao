@@ -7,7 +7,7 @@
 
 'use client';
 
-import { useEffect, useCallback, useState } from 'react';
+import { useEffect, useCallback, useState, useMemo } from 'react';
 import { debounce } from '@/lib/optimizations';
 
 interface ViewportInfo {
@@ -97,11 +97,8 @@ export function useOptimizedResize({
   }, [viewport, onResize, mobileBreakpoint, tabletBreakpoint]);
 
   // Debounced resize handler
-  const debouncedResizeHandler = useCallback(
-    (...args: any[]) => {
-      const debouncedFn = debounce(updateViewport, debounceMs, { maxWait: debounceMs * 2 });
-      return debouncedFn(...args);
-    },
+  const debouncedResizeHandler = useMemo(
+    () => debounce(updateViewport, debounceMs, { maxWait: debounceMs * 2 }),
     [updateViewport, debounceMs]
   );
 
@@ -121,7 +118,7 @@ export function useOptimizedResize({
       }
 
       // Cancelar debounce
-      if ('cancel' in debouncedResizeHandler) {
+      if (debouncedResizeHandler && typeof debouncedResizeHandler.cancel === 'function') {
         debouncedResizeHandler.cancel();
       }
     };

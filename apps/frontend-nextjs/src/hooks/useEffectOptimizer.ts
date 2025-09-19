@@ -300,7 +300,7 @@ export const useAsyncEffect = (
         cleanup();
       }
     };
-  }, [asyncEffect, onError].concat(deps || []));
+  }, [asyncEffect, onError, ...(deps || [])]);
 
   useEffect(() => {
     return () => {
@@ -413,7 +413,7 @@ export const useConditionalEffect = (
     }
 
     lastConditionRef.current = currentCondition;
-  }, [condition, effect].concat(deps || []));
+  }, [condition, effect, ...(deps || [])]);
 };
 
 // ============================================

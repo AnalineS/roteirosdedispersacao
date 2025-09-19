@@ -17,6 +17,18 @@ interface SpeechRecognitionErrorEvent extends Event {
   message: string;
 }
 
+interface SpeechGrammarList {
+  readonly length: number;
+  item(index: number): SpeechGrammar;
+  addFromURI(src: string, weight?: number): void;
+  addFromString(string: string, weight?: number): void;
+}
+
+interface SpeechGrammar {
+  src: string;
+  weight: number;
+}
+
 interface SpeechRecognition extends EventTarget {
   continuous: boolean;
   grammars: SpeechGrammarList;
@@ -24,6 +36,10 @@ interface SpeechRecognition extends EventTarget {
   lang: string;
   maxAlternatives: number;
   serviceURI: string;
+  onstart?: (() => void) | null;
+  onresult?: ((event: SpeechRecognitionEvent) => void) | null;
+  onerror?: ((event: SpeechRecognitionErrorEvent) => void) | null;
+  onend?: (() => void) | null;
   start(): void;
   stop(): void;
   abort(): void;
@@ -34,11 +50,13 @@ interface SpeechRecognition extends EventTarget {
   removeEventListener(type: string, listener: EventListener): void;
 }
 
+// Import unified analytics types
+import '@/types/analytics';
+
 declare global {
   interface Window {
     webkitSpeechRecognition: new () => SpeechRecognition;
     SpeechRecognition: new () => SpeechRecognition;
-    gtag?: (command: string, action: string, parameters?: Record<string, unknown>) => void;
   }
 }
 

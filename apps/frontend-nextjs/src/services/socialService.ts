@@ -5,6 +5,25 @@
 
 import { apiClient } from '@/services/api';
 
+// Sistema de logging controlado
+const isDevelopment = process.env.NODE_ENV === 'development';
+
+const logger = {
+  error: (message: string, error?: unknown) => {
+    if (isDevelopment && typeof window !== 'undefined') {
+      // Em desenvolvimento, apenas armazena no localStorage
+      const logs = JSON.parse(localStorage.getItem('social_service_logs') || '[]');
+      logs.push({
+        level: 'error',
+        message,
+        error: error instanceof Error ? error.message : String(error),
+        timestamp: Date.now()
+      });
+      localStorage.setItem('social_service_logs', JSON.stringify(logs.slice(-100)));
+    }
+  }
+};
+
 export interface SocialProfile {
   uid: string;
   displayName: string;
@@ -29,6 +48,7 @@ export interface ShareableContent {
   metadata: {
     [key: string]: unknown;
   };
+  [key: string]: unknown;
 }
 
 class SocialService {
@@ -41,7 +61,7 @@ class SocialService {
       const response = await apiClient.get<SocialProfile>(`/social/profile/${uid}`);
       return response;
     } catch (error) {
-      console.error('Erro ao carregar perfil social:', error);
+      logger.error('Erro ao carregar perfil social:', error);
 
       // Fallback para dados locais/simulados
       return this.getLocalSocialProfile(uid);
@@ -56,7 +76,7 @@ class SocialService {
       await apiClient.post(`/social/profile/${uid}`, updates);
       return true;
     } catch (error) {
-      console.error('Erro ao atualizar perfil social:', error);
+      logger.error('Erro ao atualizar perfil social:', error);
       return false;
     }
   }
@@ -72,7 +92,7 @@ class SocialService {
         shareUrl: response.shareUrl
       };
     } catch (error) {
-      console.error('Erro ao compartilhar conteúdo:', error);
+      logger.error('Erro ao compartilhar conteúdo:', error);
       return { success: false };
     }
   }
@@ -85,7 +105,7 @@ class SocialService {
       const response = await apiClient.get<SocialProfile[]>(`/social/achievements?limit=${limit}`);
       return response;
     } catch (error) {
-      console.error('Erro ao carregar conquistas públicas:', error);
+      logger.error('Erro ao carregar conquistas públicas:', error);
       return [];
     }
   }
@@ -119,7 +139,7 @@ class SocialService {
       const response = await apiClient.get<any>(`/social/metadata/${type}/${id}`);
       return response;
     } catch (error) {
-      console.error('Erro ao carregar metadados de compartilhamento:', error);
+      logger.error('Erro ao carregar metadados de compartilhamento:', error);
       return null;
     }
   }
@@ -149,7 +169,7 @@ class SocialService {
         badges: []
       };
     } catch (error) {
-      console.error('Erro ao carregar perfil social local:', error);
+      logger.error('Erro ao carregar perfil social local:', error);
       return null;
     }
   }
@@ -161,7 +181,7 @@ class SocialService {
     try {
       localStorage.setItem(`social-profile-${uid}`, JSON.stringify(profile));
     } catch (error) {
-      console.error('Erro ao salvar perfil social local:', error);
+      logger.error('Erro ao salvar perfil social local:', error);
     }
   }
 }

@@ -196,7 +196,7 @@ export function usePersonalization() {
       medicalAnalytics.trackCriticalMedicalAction({
         type: action.includes('drug') ? 'drug_interaction' : 'protocol_access',
         success: !actionContext.error,
-        timeToComplete: actionContext.duration || 0,
+        timeToComplete: typeof actionContext.duration === 'number' ? actionContext.duration : 0,
         urgencyLevel: 'critical'
       });
     }

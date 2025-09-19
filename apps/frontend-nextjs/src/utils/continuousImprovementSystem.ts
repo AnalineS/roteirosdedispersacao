@@ -1,10 +1,29 @@
 /**
  * Continuous Improvement System
  * Framework de feedback e melhoria contínua para recursos educativos
- * 
+ *
  * @author Claude Code QA Specialist
  * @version 1.0.0
  */
+
+// Interface para Window com gtag tracking
+interface WindowWithGtag extends Window {
+  gtag?: (
+    command: 'event' | 'config',
+    eventNameOrId: string,
+    parameters?: {
+      event_category?: string;
+      event_label?: string;
+      custom_parameters?: Record<string, unknown>;
+      [key: string]: unknown;
+    }
+  ) => void;
+}
+
+// Helper para acessar gtag de forma type-safe
+function getWindowWithGtag(): WindowWithGtag | null {
+  return typeof window !== 'undefined' ? (window as WindowWithGtag) : null;
+}
 
 // Internal type definitions for continuous improvement
 interface ClinicalCase {
@@ -694,8 +713,9 @@ export class ContinuousImprovementSystem {
     config.status = 'draft';
     this.abTests.set(config.id, config);
     
-    if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('event', 'ab_test_created', {
+    const windowWithGtag = getWindowWithGtag();
+    if (windowWithGtag?.gtag) {
+      windowWithGtag.gtag('event', 'ab_test_created', {
         event_category: 'medical_improvement',
         event_label: config.name,
         custom_parameters: {
@@ -720,8 +740,9 @@ export class ContinuousImprovementSystem {
     test.status = 'running';
     test.duration.start = new Date();
     
-    if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('event', 'ab_test_started', {
+    const windowWithGtag = getWindowWithGtag();
+    if (windowWithGtag?.gtag) {
+      windowWithGtag.gtag('event', 'ab_test_started', {
         event_category: 'medical_improvement',
         event_label: test.name,
         custom_parameters: {
@@ -777,8 +798,9 @@ export class ContinuousImprovementSystem {
     this.setupImpactMonitoring(recommendation);
     
     // Log implementação
-    if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('event', 'improvement_implemented', {
+    const windowWithGtag = getWindowWithGtag();
+    if (windowWithGtag?.gtag) {
+      windowWithGtag.gtag('event', 'improvement_implemented', {
         event_category: 'medical_improvement',
         event_label: recommendation.title,
         custom_parameters: {

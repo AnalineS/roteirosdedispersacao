@@ -474,6 +474,19 @@ export function useChat(options: UseChatOptions = {}) {
     // PersonaRAG Integration - Novos recursos
     personaRAGStats: () => personaRAG.getPersonaStats(),
     getPersonaRecommendation: (query: string) => personaRAG.recommendPersona(query),
-    configurePersona: (personaId: string, config: PersonaConfig) => personaRAG.configurePersona(personaId, config)
+    configurePersona: (personaId: string, config: PersonaConfig) => {
+      // Transform PersonaConfig responseStyle to PersonaRAG format
+      const ragConfig = {
+        ...config,
+        responseStyle: {
+          formality: config.tone === 'professional' ? 'formal' as const : 'casual' as const,
+          technicality: config.tone === 'professional' ? 'high' as const : 'medium' as const,
+          empathy: config.tone === 'empathetic' ? 'high' as const : 'medium' as const,
+          examples: true,
+          citations: config.tone === 'professional'
+        }
+      };
+      return personaRAG.configurePersona(personaId, ragConfig);
+    }
   };
 }

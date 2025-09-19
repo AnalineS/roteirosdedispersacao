@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useHydration, type IsomorphicAuthData, type AuthState } from './useIsomorphicAuth';
+import { useHydration, type IsomorphicAuthData, type AuthState, type SocialCredentials } from './useIsomorphicAuth';
 
 interface LoginCredentials {
   email?: string;
@@ -9,8 +9,8 @@ interface LoginCredentials {
   rememberMe?: boolean;
 }
 
-interface SocialCredentials {
-  provider: 'google';  // Only Google authentication is supported
+interface SafeAuthSocialCredentials {
+  provider: 'google' | 'facebook' | 'apple';  // Aligned with useIsomorphicAuth types
   token?: string;
   accessToken?: string;
   idToken?: string;
@@ -55,7 +55,7 @@ export function useSafeAuth(): IsomorphicAuthData {
     setAuthData({ user: null, profile: null, error: null });
   }, [isHydrated]);
 
-  const defaultSocialLogin = useCallback(async (credentials: SocialCredentials) => {
+  const defaultSocialLogin = useCallback(async (credentials: SafeAuthSocialCredentials) => {
     return { success: false, error: 'Social login not available' };
   }, []);
 
@@ -154,8 +154,8 @@ export function useSafeAuth(): IsomorphicAuthData {
     // Funções principais
     login: defaultLogin,
     logout: defaultLogout,
-    loginWithSocial: defaultSocialLogin,
-    linkSocialAccount: defaultSocialLogin,
+    loginWithSocial: defaultSocialLogin as (credentials: SocialCredentials) => Promise<{ success: boolean; error?: string }>,
+    linkSocialAccount: defaultSocialLogin as (credentials: SocialCredentials) => Promise<{ success: boolean; error?: string }>,
     updateUserProfile: defaultUpdateProfile,
     deleteAccount: defaultDeleteAccount,
 

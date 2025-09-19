@@ -49,11 +49,8 @@ export interface PersonasResponse {
  * Mapeia propriedades diferentes entre backend e frontend
  */
 export function mapPersonaToPersonaConfig(personaId: string, persona: Persona): PersonaConfig {
-  // Mapear tone baseado na personality
-  const tone: PersonaConfig['tone'] =
-    persona.personality.toLowerCase().includes('empathetic') || persona.personality.toLowerCase().includes('caring') ? 'empathetic' :
-    persona.personality.toLowerCase().includes('technical') || persona.personality.toLowerCase().includes('professional') ? 'professional' :
-    persona.personality.toLowerCase().includes('formal') ? 'formal' : 'casual';
+  // Mapear tone baseado no personaId direto
+  const tone: PersonaConfig['tone'] = personaId === 'ga' ? 'empathetic' : 'professional';
 
   // Mapear responseStyle baseado no response_style
   const responseStyle: PersonaConfig['responseStyle'] =

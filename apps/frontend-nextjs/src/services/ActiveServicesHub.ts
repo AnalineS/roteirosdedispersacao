@@ -139,7 +139,7 @@ class ActiveServicesHub {
   // HTTP CLIENT
   // ============================================
 
-  async request<T>(
+  async request<T = unknown>(
     serviceName: string,
     method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' = 'GET',
     endpoint: string = '',
@@ -200,7 +200,7 @@ class ActiveServicesHub {
       const cached = this.cache.get(cacheKey);
       if (cached && Date.now() - cached.timestamp < cached.maxAge) {
         return {
-          data: cached.data,
+          data: cached.data as T,
           status: 200,
           message: 'Success (cached)',
           timestamp: cached.timestamp,
@@ -214,7 +214,7 @@ class ActiveServicesHub {
 
     // Transform request
     if (service.transform?.request && data) {
-      requestData = service.transform.request(data);
+      requestData = service.transform.request(data) as RequestData;
     }
 
     const requestOptions: RequestInit = {
@@ -350,7 +350,7 @@ class ActiveServicesHub {
       return await response.json();
     } catch (error) {
       if (integration.fallback) {
-        return integration.fallback;
+        return integration.fallback as T;
       }
       throw error;
     }
@@ -381,7 +381,17 @@ class ActiveServicesHub {
   // UTILITY METHODS
   // ============================================
 
-  getServiceStats(serviceName?: string) {
+  getServiceStats(serviceName?: string): {
+    totalServices?: number;
+    totalIntegrations?: number;
+    totalCacheEntries?: number;
+    circuitBreakers?: Record<string, unknown>;
+    rateLimits?: Record<string, unknown>;
+    service?: ServiceConfig | undefined;
+    circuitBreaker?: unknown;
+    rateLimit?: unknown;
+    cacheEntries?: number;
+  } {
     if (serviceName) {
       const service = this.services.get(serviceName);
       const breaker = this.circuitBreakers.get(serviceName);
@@ -489,9 +499,10 @@ export const useActiveServices = () => {
       setIsInitialized(true);
 
       // Track initialization
+      const stats = servicesHub.getServiceStats();
       tracking.track('click', 'services_initialized', {
-        services: servicesHub.getServiceStats().totalServices,
-        integrations: servicesHub.getServiceStats().totalIntegrations
+        services: stats.totalServices || 0,
+        integrations: stats.totalIntegrations || 0
       });
     }
   }, [isInitialized, servicesHub, tracking]);
@@ -658,7 +669,7 @@ export const useActiveServices = () => {
 
   const clearCache = useCallback((pattern?: string) => {
     servicesHub.clearCache(pattern);
-    tracking.track('click', 'cache_cleared', { pattern });
+    tracking.track('click', 'cache_cleared', { pattern: pattern || 'all' });
   }, [servicesHub, tracking]);
 
   const resetCircuitBreaker = useCallback((serviceName: string) => {

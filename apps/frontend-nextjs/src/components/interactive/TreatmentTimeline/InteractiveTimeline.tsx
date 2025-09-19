@@ -510,10 +510,10 @@ export default function InteractiveTimeline({
         )}
 
         {activeTab === 'appointments' && (
-          <AppointmentsTab 
+          <AppointmentsTab
             timeline={timeline}
             config={config}
-            onAppointmentSchedule={onAppointmentSchedule}
+            onAppointmentSchedule={onAppointmentSchedule || (() => {})}
           />
         )}
       </div>

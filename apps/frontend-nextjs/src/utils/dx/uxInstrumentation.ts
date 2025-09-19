@@ -521,8 +521,10 @@ class UXInstrumentationManager {
       window.gtag('event', 'ux_instrumentation', {
         event_category: 'UX',
         event_label: fullEvent.type,
-        custom_parameter_1: fullEvent.element || 'unknown',
-        custom_parameter_2: JSON.stringify(fullEvent.data)
+        custom_parameters: {
+          element: fullEvent.element || 'unknown',
+          data: JSON.stringify(fullEvent.data)
+        }
       });
     }
   }

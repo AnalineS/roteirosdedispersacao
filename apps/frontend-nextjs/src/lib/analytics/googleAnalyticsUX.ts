@@ -55,13 +55,8 @@ export interface GAUXEvent {
   custom_parameters?: Record<string, string | number>;
 }
 
-// Tipos para window.gtag
-declare global {
-  interface Window {
-    gtag?: (command: string, action: string, parameters?: Record<string, unknown>) => void;
-    dataLayer?: unknown[];
-  }
-}
+// Import unified analytics types
+import '@/types/analytics';
 
 // Enhanced Google Analytics para UX
 class GoogleAnalyticsUX {

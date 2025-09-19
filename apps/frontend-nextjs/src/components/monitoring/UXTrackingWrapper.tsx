@@ -341,8 +341,10 @@ const UXTrackingWrapper: React.FC<UXTrackingWrapperProps> = ({
       const fidObserver = new PerformanceObserver((list) => {
         const entries = list.getEntries();
         entries.forEach((entry: PerformanceEntryWithDetails) => {
-          webVitalsMetrics.fid = entry.processingStart - entry.startTime;
-          trackWebVitals(webVitalsMetrics);
+          if (entry.processingStart !== undefined) {
+            webVitalsMetrics.fid = entry.processingStart - entry.startTime;
+            trackWebVitals(webVitalsMetrics);
+          }
         });
       });
 

@@ -14,6 +14,17 @@ import type {
 import { STATIC_PERSONAS } from '@/data/personas';
 import { ErrorMonitorService } from '@/components/monitoring/ErrorMonitor';
 
+// Interface para gtag tracking (compatível com interface global)
+interface WindowWithGtag extends Window {
+  gtag?: (
+    command: 'event' | 'config',
+    eventNameOrId: string,
+    parameters?: Record<string, unknown>
+  ) => void;
+}
+
+declare const window: WindowWithGtag;
+
 // ============================================
 // CONTEXTO E PROVIDER
 // ============================================
@@ -57,7 +68,14 @@ export function PersonaProvider({ children, config = {} }: PersonaProviderProps)
     useCache: true,
     autoRefreshInterval: 5 * 60 * 1000, // 5 minutos
     onPersonasLoaded: (personas) => {
-      console.log('[PersonaContext] Personas carregadas:', Object.keys(personas).length);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'personas_loaded', {
+          event_category: 'persona_context',
+          event_label: 'context_initialization',
+          persona_context: 'personas_loaded',
+          personas_count: Object.keys(personas).length
+        });
+      }
     }
   });
 
@@ -195,7 +213,16 @@ export function PersonaProvider({ children, config = {} }: PersonaProviderProps)
     const { persona: resolvedPersona, source, confidence } = resolved;
     
     if (resolvedPersona !== currentPersona) {
-      console.log(`[PersonaContext] Persona resolved: ${resolvedPersona} (${source}, confidence: ${confidence})`);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'persona_resolved', {
+          event_category: 'persona_context',
+          event_label: 'persona_resolution',
+          persona_context: 'persona_resolved',
+          resolved_persona: String(resolvedPersona),
+          source: String(source),
+          confidence: Number(confidence)
+        });
+      }
       
       setCurrentPersona(resolvedPersona);
       
@@ -218,7 +245,14 @@ export function PersonaProvider({ children, config = {} }: PersonaProviderProps)
           try {
             localStorage.setItem('selectedPersona', resolvedPersona);
           } catch (error) {
-            console.warn('[PersonaContext] Erro ao salvar no localStorage:', error);
+            if (typeof window !== 'undefined' && window.gtag) {
+              window.gtag('event', 'persona_localstorage_error', {
+                event_category: 'persona_context',
+                event_label: 'storage_error',
+                persona_context: 'localstorage_save_error_initial',
+                error_message: String(error)
+              });
+            }
             ErrorMonitorService.getInstance().logError(error as Error, {
               component: 'PersonaContext',
               severity: 'low',
@@ -273,7 +307,11 @@ export function PersonaProvider({ children, config = {} }: PersonaProviderProps)
         capabilities: staticPersona.capabilities,
         example_questions: staticPersona.example_questions,
         limitations: staticPersona.limitations,
-        response_format: staticPersona.response_format
+        response_format: staticPersona.response_format,
+        tone: personaId === 'ga' ? 'empathetic' : 'professional',
+        specialties: staticPersona.expertise,
+        responseStyle: 'detailed' as 'detailed' | 'concise' | 'interactive',
+        enabled: true
       };
     }
 
@@ -289,12 +327,28 @@ export function PersonaProvider({ children, config = {} }: PersonaProviderProps)
     try {
       // Validação rigorosa
       if (!isPersonaAvailable(personaId)) {
-        console.warn(`[PersonaContext] Persona ${personaId} não está disponível`);
+        if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'persona_unavailable', {
+            event_category: 'persona_context',
+            event_label: 'validation_error',
+            persona_context: 'persona_unavailable',
+            persona_id: String(personaId)
+          });
+        }
         throw new Error(`Persona ${personaId} não está disponível`);
       }
 
       // Log detalhado da mudança
-      console.log(`[PersonaContext] Changing persona: ${previousPersona} → ${personaId} (${source})`);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'persona_change_started', {
+          event_category: 'persona_context',
+          event_label: 'persona_change',
+          persona_context: 'persona_change_started',
+          previous_persona: String(previousPersona),
+          new_persona: String(personaId),
+          source: String(source)
+        });
+      }
 
       // Definir persona explicitamente
       setExplicitPersona(personaId);
@@ -310,7 +364,7 @@ export function PersonaProvider({ children, config = {} }: PersonaProviderProps)
             from: previousPersona,
             to: personaId,
             source,
-            timestamp: new Date(),
+            timestamp: Date.now(),
             duration: sessionDuration,
             sessionId,
             userProfile: {
@@ -353,7 +407,14 @@ export function PersonaProvider({ children, config = {} }: PersonaProviderProps)
           localStorage.setItem('selectedPersona', personaId);
           localStorage.setItem('personaLastChanged', new Date().toISOString());
         } catch (error) {
-          console.warn('[PersonaContext] Erro ao salvar no localStorage:', error);
+          if (typeof window !== 'undefined' && window.gtag) {
+            window.gtag('event', 'persona_localstorage_error', {
+              event_category: 'persona_context',
+              event_label: 'storage_error',
+              persona_context: 'localstorage_save_error_setpersona',
+              error_message: String(error)
+            });
+          }
           ErrorMonitorService.getInstance().logError(error as Error, {
             component: 'PersonaContext',
             severity: 'low',
@@ -367,10 +428,24 @@ export function PersonaProvider({ children, config = {} }: PersonaProviderProps)
         updatePersonaInURL(personaId);
       }
 
-      console.log(`[PersonaContext] ✅ Persona successfully changed to ${personaId}`);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'persona_change_success', {
+          event_category: 'persona_context',
+          event_label: 'persona_change',
+          persona_context: 'persona_change_success',
+          persona_id: String(personaId)
+        });
+      }
 
     } catch (error) {
-      console.error(`[PersonaContext] ❌ Erro ao alterar persona:`, error);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'persona_change_error', {
+          event_category: 'persona_context',
+          event_label: 'persona_change_error',
+          persona_context: 'persona_change_error',
+          error_message: String(error)
+        });
+      }
       
       // Analytics de erro
       if (enableAnalytics && trackEvent) {
@@ -379,7 +454,7 @@ export function PersonaProvider({ children, config = {} }: PersonaProviderProps)
           attemptedTo: personaId,
           source,
           error: error instanceof Error ? error.message : 'Erro desconhecido',
-          timestamp: new Date()
+          timestamp: Date.now()
         });
       }
       
@@ -413,7 +488,14 @@ export function PersonaProvider({ children, config = {} }: PersonaProviderProps)
         try {
           localStorage.removeItem('selectedPersona');
         } catch (error) {
-          console.warn('[PersonaContext] Erro ao limpar localStorage:', error);
+          if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'persona_localstorage_clear_error', {
+            event_category: 'persona_context',
+            event_label: 'storage_error',
+            persona_context: 'localstorage_clear_error',
+            error_message: String(error)
+          });
+        }
         }
       }
       
@@ -421,13 +503,27 @@ export function PersonaProvider({ children, config = {} }: PersonaProviderProps)
       if (enableAnalytics && trackEvent && previousPersona) {
         trackEvent('persona_cleared', {
           from: previousPersona,
-          timestamp: new Date()
+          timestamp: Date.now()
         });
       }
 
-      console.log(`[PersonaContext] Persona cleared (was: ${previousPersona})`);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'persona_cleared', {
+          event_category: 'persona_context',
+          event_label: 'persona_clear',
+          persona_context: 'persona_cleared',
+          previous_persona: String(previousPersona)
+        });
+      }
     } catch (error) {
-      console.error(`[PersonaContext] Erro ao limpar persona:`, error);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'persona_clear_error', {
+          event_category: 'persona_context',
+          event_label: 'persona_clear_error',
+          persona_context: 'persona_clear_error',
+          error_message: String(error)
+        });
+      }
       throw error;
     }
   }, [currentPersona, enableLocalStorage, enableAnalytics, trackEvent]);
@@ -437,13 +533,26 @@ export function PersonaProvider({ children, config = {} }: PersonaProviderProps)
     try {
       // Esta seria a lógica para recarregar personas do servidor
       // Por enquanto, apenas log
-      console.log('[PersonaContext] Refreshing personas...');
+      if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'personas_refresh_started', {
+        event_category: 'persona_context',
+        event_label: 'personas_refresh',
+        persona_context: 'personas_refresh_started'
+      });
+    }
       
       // Em uma implementação real, você faria:
       // await refetchPersonas();
       
     } catch (error) {
-      console.error('[PersonaContext] Erro ao atualizar personas:', error);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'personas_refresh_error', {
+          event_category: 'persona_context',
+          event_label: 'personas_refresh_error',
+          persona_context: 'personas_refresh_error',
+          error_message: String(error)
+        });
+      }
       throw error;
     }
   }, []);
@@ -455,7 +564,14 @@ export function PersonaProvider({ children, config = {} }: PersonaProviderProps)
   // Log de mudanças de persona para debugging
   useEffect(() => {
     if (currentPersona) {
-      console.log(`[PersonaContext] Active persona: ${currentPersona}`);
+      if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'active_persona_debug', {
+        event_category: 'persona_context',
+        event_label: 'debug_info',
+        persona_context: 'active_persona_debug',
+        current_persona: String(currentPersona)
+      });
+    }
     }
   }, [currentPersona]);
 

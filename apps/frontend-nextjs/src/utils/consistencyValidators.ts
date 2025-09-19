@@ -1,14 +1,78 @@
 /**
  * Consistency Validation System
  * Validadores especializados para personas, terminologia e referências
- * 
+ *
  * @author Claude Code QA Specialist
  * @version 1.0.0
  */
 
-import { ClinicalCase, CaseStep, StepResult } from '@/types/clinicalCases';
+// Interface para Window com gtag tracking
+interface WindowWithGtag extends Window {
+  gtag?: (
+    command: 'event' | 'config',
+    eventNameOrId: string,
+    parameters?: {
+      event_category?: string;
+      event_label?: string;
+      custom_parameters?: Record<string, unknown>;
+      [key: string]: unknown;
+    }
+  ) => void;
+}
+
+// Helper para acessar gtag de forma type-safe
+function getWindowWithGtag(): WindowWithGtag | null {
+  return typeof window !== 'undefined' ? (window as WindowWithGtag) : null;
+}
+
+// Internal types for consistency validation
+interface ClinicalCase {
+  id: string;
+  title: string;
+  scenario: { presentation: string };
+  learningObjectives: string[];
+  steps: CaseStep[];
+  references?: Reference[];
+}
+
+interface CaseStep {
+  id: string;
+  title: string;
+  description: string;
+  instruction: string;
+  validation: {
+    clinicalRationale: string;
+    feedback: {
+      correct: { message: string };
+      incorrect: { message: string };
+    };
+  };
+}
+
+interface StepResult {
+  stepId: string;
+  completed: boolean;
+  score?: number;
+}
 
 interface ProfileObject {
+  [key: string]: number | string | string[];
+}
+
+// Extend profile interfaces to support index signature
+interface VocabularyProfileWithIndex extends VocabularyProfile {
+  [key: string]: number | string | string[];
+}
+
+interface ToneProfileWithIndex extends ToneProfile {
+  [key: string]: number | string | string[];
+}
+
+interface ExpertiseProfileWithIndex extends ExpertiseProfile {
+  [key: string]: number | string | string[];
+}
+
+interface PedagogicalProfileWithIndex extends PedagogicalProfile {
   [key: string]: number | string | string[];
 }
 
@@ -20,6 +84,7 @@ interface Reference {
   url?: string;
   year?: number;
   author?: string;
+  [key: string]: unknown;
 }
 
 interface ComponentData {
@@ -333,10 +398,22 @@ export class PersonaConsistencyValidator {
       pedagogical: 0.15
     };
     
-    const vocabularyScore = this.calculateProfileSimilarity(actual.vocabulary, expected.vocabulary);
-    const toneScore = this.calculateProfileSimilarity(actual.tone, expected.tone);
-    const expertiseScore = this.calculateProfileSimilarity(actual.expertise, expected.expertise);
-    const pedagogicalScore = this.calculateProfileSimilarity(actual.pedagogicalApproach, expected.pedagogicalApproach);
+    const vocabularyScore = this.calculateProfileSimilarity(
+      this.vocabularyProfileToProfileObject(actual.vocabulary),
+      this.vocabularyProfileToProfileObject(expected.vocabulary)
+    );
+    const toneScore = this.calculateProfileSimilarity(
+      this.toneProfileToProfileObject(actual.tone),
+      this.toneProfileToProfileObject(expected.tone)
+    );
+    const expertiseScore = this.calculateProfileSimilarity(
+      this.expertiseProfileToProfileObject(actual.expertise),
+      this.expertiseProfileToProfileObject(expected.expertise)
+    );
+    const pedagogicalScore = this.calculateProfileSimilarity(
+      this.pedagogicalProfileToProfileObject(actual.pedagogicalApproach),
+      this.pedagogicalProfileToProfileObject(expected.pedagogicalApproach)
+    );
     
     return Math.round(
       vocabularyScore * weights.vocabulary +
@@ -346,17 +423,58 @@ export class PersonaConsistencyValidator {
     );
   }
   
+  private vocabularyProfileToProfileObject(profile: VocabularyProfile): ProfileObject {
+    return {
+      technicalTermsUsage: profile.technicalTermsUsage,
+      simplificationLevel: profile.simplificationLevel,
+      medicalJargonFrequency: profile.medicalJargonFrequency,
+      commonInconsistencies: profile.commonInconsistencies
+    };
+  }
+
+  private toneProfileToProfileObject(profile: ToneProfile): ProfileObject {
+    return {
+      professionalismLevel: profile.professionalismLevel,
+      empathyLevel: profile.empathyLevel,
+      formalityLevel: profile.formalityLevel,
+      encouragementFrequency: profile.encouragementFrequency
+    };
+  }
+
+  private expertiseProfileToProfileObject(profile: ExpertiseProfile): ProfileObject {
+    return {
+      clinicalDepth: profile.clinicalDepth,
+      practicalFocus: profile.practicalFocus,
+      evidenceReferences: profile.evidenceReferences,
+      protocolAdherence: profile.protocolAdherence
+    };
+  }
+
+  private pedagogicalProfileToProfileObject(profile: PedagogicalProfile): ProfileObject {
+    return {
+      explanationComplexity: profile.explanationComplexity,
+      exampleUsage: profile.exampleUsage,
+      stepByStepApproach: profile.stepByStepApproach,
+      reinforcementPatterns: profile.reinforcementPatterns
+    };
+  }
+
   private calculateProfileSimilarity(actual: ProfileObject, expected: ProfileObject): number {
     const keys = Object.keys(expected).filter(key => typeof expected[key] === 'number');
     let totalSimilarity = 0;
-    
+
     for (const key of keys) {
-      const difference = Math.abs(actual[key] - expected[key]);
-      const similarity = Math.max(0, 1 - difference);
-      totalSimilarity += similarity;
+      const actualValue = actual[key];
+      const expectedValue = expected[key];
+
+      if (typeof actualValue === 'number' && typeof expectedValue === 'number') {
+        const difference = Math.abs(actualValue - expectedValue);
+        const similarity = Math.max(0, 1 - difference);
+        totalSimilarity += similarity;
+      }
     }
-    
-    return (totalSimilarity / keys.length) * 100;
+
+    return keys.length > 0 ? (totalSimilarity / keys.length) * 100 : 0;
   }
   
   private analyzeCrossPersonaConsistency(content: string): CrossPersonaAnalysis {
@@ -682,11 +800,11 @@ export class TerminologyConsistencyValidator {
     }
     
     // Identificar grupos com múltiplas variações
-    for (const [concept, variations] of termGroups) {
+    termGroups.forEach((variations, concept) => {
       if (variations.size > 1) {
         inconsistentTerms.set(concept, Array.from(variations));
       }
-    }
+    });
     
     return inconsistentTerms;
   }
@@ -702,7 +820,16 @@ export class TerminologyConsistencyValidator {
       }
     }
     
-    return [...new Set(missing)]; // Remover duplicatas
+    // Remover duplicatas convertendo para array
+    const uniqueMissing: string[] = [];
+    const seen = new Set<string>();
+    for (const term of missing) {
+      if (!seen.has(term)) {
+        seen.add(term);
+        uniqueMissing.push(term);
+      }
+    }
+    return uniqueMissing;
   }
   
   private calculateTerminologyScore(
@@ -846,14 +973,25 @@ export class ReferenceConsistencyValidator {
         
         validated.push({
           id: ref.id || ref.title,
-          type: ref.type,
+          type: ref.type as 'protocolo_nacional' | 'tese_doutorado' | 'literatura_cientifica',
           title: ref.title,
           isAccessible,
           lastValidated: new Date(),
           reliability
         });
       } catch (error) {
-        console.warn(`Could not validate reference: ${ref.title}`);
+        const windowWithGtag = getWindowWithGtag();
+        if (windowWithGtag?.gtag) {
+          windowWithGtag.gtag('event', 'reference_validation_failed', {
+            event_category: 'medical_consistency',
+            event_label: ref.title,
+            custom_parameters: {
+              medical_context: 'reference_validation',
+              error_type: 'validation_failure',
+              reference_type: ref.type
+            }
+          });
+        }
       }
     }
     
@@ -882,7 +1020,8 @@ export class ReferenceConsistencyValidator {
     // Verificar fonte confiável
     if (reference.source) {
       const source = reference.source.toLowerCase();
-      for (const trustedSource of this.TRUSTED_SOURCES) {
+      const trustedSourcesArray = Array.from(this.TRUSTED_SOURCES);
+      for (const trustedSource of trustedSourcesArray) {
         if (source.includes(trustedSource)) {
           score += 0.3;
           break;

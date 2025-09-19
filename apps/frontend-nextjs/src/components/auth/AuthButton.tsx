@@ -357,7 +357,7 @@ export default function AuthButton({ variant = 'header', className = '' }: AuthB
                   custom_parameters: {
                     medical_context: 'auth_button_social_login',
                     error_type: 'social_auth_failure',
-                    error_message: error instanceof Error ? error.message : String(error)
+                    error_message: typeof error === 'string' ? error : String(error)
                   }
                 });
               }

@@ -8,13 +8,14 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { 
-  UserLevel, 
-  DisclosureState, 
+import {
+  UserLevel,
+  DisclosureState,
   DisclosureContent,
+  ContentType,
   USER_LEVELS,
   PERSONA_TO_LEVEL,
-  CONTENT_PRIORITY 
+  CONTENT_PRIORITY
 } from '@/types/disclosure';
 
 interface UseProgressiveDisclosureOptions {

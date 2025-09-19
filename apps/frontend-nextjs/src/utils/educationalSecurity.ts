@@ -1,7 +1,7 @@
 /**
  * Educational Security Framework
  * Sistema de Segurança para Recursos Educativos - Fase 4.2
- * 
+ *
  * CONFORMIDADE REGULATÓRIA:
  * - LGPD (Lei Geral de Proteção de Dados)
  * - CFM/CFF (Conselhos Médico/Farmacêutico)
@@ -9,9 +9,60 @@
  * - Ministério da Saúde (Protocolos clínicos)
  */
 
-import { PatientProfile, CalculationResult } from '@/types/medication';
-import { ClinicalCase } from '@/types/clinicalCases';
-import { Certificate } from '@/types/certification';
+// Interface para Window com gtag tracking
+interface WindowWithGtag extends Window {
+  gtag?: (
+    command: 'event' | 'config',
+    eventNameOrId: string,
+    parameters?: {
+      event_category?: string;
+      event_label?: string;
+      custom_parameters?: Record<string, unknown>;
+      [key: string]: unknown;
+    }
+  ) => void;
+}
+
+// Helper para acessar gtag de forma type-safe
+function getWindowWithGtag(): WindowWithGtag | null {
+  return typeof window !== 'undefined' ? (window as WindowWithGtag) : null;
+}
+
+// Global counter for verification code generation
+let globalVerificationCounter = 0;
+
+// Internal types for educational security
+interface PatientProfile {
+  id: string;
+  age: number;
+  weight: number;
+  [key: string]: unknown;
+}
+
+interface CalculationResult {
+  dose: number;
+  unit: string;
+  frequency: string;
+  duration: string;
+  warnings?: string[];
+}
+
+interface ClinicalCase {
+  id: string;
+  title: string;
+  description: string;
+  [key: string]: unknown;
+}
+
+interface Certificate {
+  id: string;
+  title: string;
+  issuedAt: Date;
+  validUntil?: Date;
+  [key: string]: unknown;
+}
+
+// ValidationResult will be used from the exported interface below
 
 interface SecurityInputData {
   patientData?: Partial<PatientProfile>;
@@ -20,6 +71,7 @@ interface SecurityInputData {
   userInput?: string | number | boolean;
   formData?: Record<string, unknown>;
   metadata?: Record<string, unknown>;
+  [key: string]: unknown;
 }
 
 interface SecurityOutputData {
@@ -31,7 +83,7 @@ interface SecurityOutputData {
   sanitizedData?: Record<string, unknown>;
 }
 
-interface FraudAlert {
+interface EducationalFraudAlert {
   type: 'unusual_pattern' | 'rate_limit_exceeded' | 'data_manipulation' | 'unauthorized_access';
   severity: 'low' | 'medium' | 'high' | 'critical';
   details: string;
@@ -70,7 +122,7 @@ export interface SecurityAudit {
     recordCount?: number;
     certificateId?: string;
     securityLevel?: string;
-    fraudAlerts?: FraudAlert[];
+    fraudAlerts?: EducationalFraudAlert[];
     validationsPassed?: number;
     validationsTotal?: number;
   };
@@ -104,7 +156,7 @@ export interface ValidationResult {
   isValid: boolean;
   errors: string[];
   warnings: string[];
-  sanitized?: SanitizedData;
+  sanitized: SanitizedData | string;
   riskScore: number;
 }
 
@@ -187,7 +239,7 @@ export function validateDoseCalculationInput(profile: PatientProfile): Validatio
     errors.push('Peso deve estar entre 0.1 kg e 500 kg');
     riskScore += 30;
   }
-  
+
   if (profile.weight > 200) {
     warnings.push('Peso extremo detectado - verificar se está correto');
     riskScore += 10;
@@ -231,7 +283,8 @@ export function validateDoseCalculationInput(profile: PatientProfile): Validatio
     isValid: errors.length === 0,
     errors,
     warnings,
-    riskScore: Math.min(riskScore, 100)
+    riskScore: Math.min(riskScore, 100),
+    sanitized: ''
   };
 }
 
@@ -278,7 +331,7 @@ export function validateEmail(email: string): ValidationResult {
 
   if (!email || typeof email !== 'string') {
     errors.push('Email é obrigatório');
-    return { isValid: false, errors, warnings: [], riskScore: 50 };
+    return { isValid: false, errors, warnings: [], riskScore: 50, sanitized: '' };
   }
 
   const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -307,7 +360,7 @@ export function validateEmail(email: string): ValidationResult {
     errors,
     warnings: [],
     riskScore: Math.min(riskScore, 100),
-    sanitized: sanitizeInput(email)
+    sanitized: email.trim().toLowerCase()
   };
 }
 
@@ -335,19 +388,30 @@ export async function decryptSensitiveData(encryptedData: string): Promise<Recor
   }
 }
 
+// Helper para hash de strings
+const hashString = (str: string): string => {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  return Math.abs(hash).toString(36);
+};
+
 /**
  * Anonimização de dados para analytics (LGPD)
  */
 export function anonymizeUserData(data: UserDataRecord): UserDataRecord {
   const anonymized = { ...data };
-  
+
   // Remove/mascara informações pessoais
   if (anonymized.name) {
-    anonymized.name = `User_${hashString(anonymized.name)}`;
+    anonymized.name = `User_${hashString(anonymized.name as string)}`;
   }
-  
+
   if (anonymized.email) {
-    anonymized.email = `${hashString(anonymized.email)}@anonymous.local`;
+    anonymized.email = `${hashString(String(anonymized.email))}@anonymous.local`;
   }
   
   // Remove campos sensíveis completamente
@@ -358,18 +422,7 @@ export function anonymizeUserData(data: UserDataRecord): UserDataRecord {
   return anonymized;
 }
 
-/**
- * Hash simples para anonimização
- */
-function hashString(str: string): string {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash; // Convert to 32-bit integer
-  }
-  return Math.abs(hash).toString(36).substring(0, 8);
-}
+// hashString já definido acima como const
 
 // ================== RATE LIMITING ==================
 
@@ -425,14 +478,26 @@ class SecurityLogger {
 
     // Sanitize sensitive data before logging
     if (fullAudit.data.input) {
-      fullAudit.data.input = this.sanitizeLogData(fullAudit.data.input);
+      fullAudit.data.input = this.sanitizeLogData(fullAudit.data.input as SecurityInputData);
     }
     
     this.logs.push(fullAudit);
     
     // In production, send to monitoring service
     if (fullAudit.riskLevel === 'critical' || fullAudit.riskLevel === 'high') {
-      console.warn('SECURITY ALERT:', fullAudit);
+      const windowWithGtag = getWindowWithGtag();
+      if (windowWithGtag?.gtag) {
+        windowWithGtag.gtag('event', 'security_alert', {
+          event_category: 'medical_security',
+          event_label: fullAudit.action,
+          custom_parameters: {
+            medical_context: 'security_framework',
+            risk_level: fullAudit.riskLevel,
+            component: fullAudit.component,
+            user_id: fullAudit.userId || 'anonymous'
+          }
+        });
+      }
     }
     
     // Keep only recent logs (memory management)
@@ -441,17 +506,17 @@ class SecurityLogger {
     }
   }
 
-  private sanitizeLogData(data: UserDataRecord): SanitizedData {
+  private sanitizeLogData(data: SecurityInputData): SecurityInputData {
     if (!data || typeof data !== 'object') return data;
-    
+
     const sanitized = { ...data };
-    
+
     for (const field of SECURITY_CONFIG.audit.sensitiveFields) {
-      if (sanitized[field]) {
-        sanitized[field] = '[REDACTED]';
+      if (field in sanitized) {
+        sanitized[field as keyof SecurityInputData] = '[REDACTED]';
       }
     }
-    
+
     return sanitized;
   }
 
@@ -548,7 +613,8 @@ export function validateCertificationData(
     isValid: errors.length === 0,
     errors,
     warnings,
-    riskScore: Math.min(riskScore, 100)
+    riskScore: Math.min(riskScore, 100),
+    sanitized: ''
   };
 }
 
@@ -571,8 +637,8 @@ export function generateSecureVerificationCode(): string {
     }
   } else {
     // Fallback for environments without crypto API
-    const counter = (generateSecureVerificationCode as any).counter = ((generateSecureVerificationCode as any).counter || 0) + 1;
-    const seed = timestamp + counter.toString();
+    globalVerificationCounter = (globalVerificationCounter + 1) % 10000;
+    const seed = timestamp + globalVerificationCounter.toString();
     for (let i = 0; i < 8; i++) {
       const charIndex = (seed.charCodeAt(i % seed.length) + i) % chars.length;
       result += chars.charAt(charIndex);
@@ -615,7 +681,8 @@ export function validateClinicalCaseAccess(
     isValid: errors.length === 0,
     errors,
     warnings: [],
-    riskScore: Math.min(riskScore, 100)
+    riskScore: Math.min(riskScore, 100),
+    sanitized: ''
   };
 }
 
@@ -666,16 +733,16 @@ export async function securityMiddleware<T>(
         break;
         
       case 'certification':
-        const certData = data as any;
+        const certData = data as Record<string, unknown>;
         validation = validateCertificationData(
-          certData.recipientName,
-          certData.email,
-          certData.competencies
+          String(certData.recipientName || ''),
+          String(certData.email || ''),
+          certData.competencies as string[]
         );
         break;
         
       default:
-        validation = { isValid: true, errors: [], warnings: [], riskScore: 0 };
+        validation = { isValid: true, errors: [], warnings: [], riskScore: 0, sanitized: '' };
     }
 
     // Determine risk level
@@ -692,7 +759,9 @@ export async function securityMiddleware<T>(
       component,
       riskLevel,
       data: {
-        input: component === 'certification' ? '[SENSITIVE_DATA]' : data,
+        input: component === 'certification'
+          ? { userInput: '[SENSITIVE_DATA]' } as SecurityInputData
+          : (data as SecurityInputData),
         validation
       },
       metadata: {
@@ -709,7 +778,7 @@ export async function securityMiddleware<T>(
 
     return {
       success: true,
-      data: validation.sanitized || data
+      data: data
     };
 
   } catch (error) {

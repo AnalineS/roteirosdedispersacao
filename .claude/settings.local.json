@@ -1,5 +1,9 @@
 {
   "permissions": {
+    "allow": [
+      "Bash(npx tsc:*)",
+      "Bash(npm run type-check:*)"
+    ],
     "defaultMode": "acceptEdits"
   },
   "hooks": {
@@ -10,50 +14,42 @@
           {
             "type": "command",
             "command": "node .claude/hooks/medical-quality-blocker.js",
-            "timeout": 45000,
-            "description": "Validação médica crítica e dados sensíveis (OBRIGATÓRIO)"
+            "timeout": 45000
           },
           {
             "type": "command",
             "command": "node claude-quality-hooks/.claude/hooks/react-app/quality-check.js",
-            "timeout": 60000,
-            "description": "Auto-fix TypeScript, ESLint, Prettier para frontend"
+            "timeout": 60000
           }
         ]
       },
       {
         "matcher": "Write|Edit|MultiEdit",
-        "filePattern": "*.py|*.json|*.yaml|*.yml",
         "hooks": [
           {
             "type": "command",
             "command": "node .claude/hooks/medical-quality-blocker.js",
-            "timeout": 45000,
-            "description": "Validação médica para arquivos backend"
+            "timeout": 45000
           },
           {
             "type": "command",
             "command": "node claude-quality-hooks/.claude/hooks/node-typescript/quality-check.js",
-            "timeout": 60000,
-            "description": "Validação de qualidade para backend/configs"
+            "timeout": 60000
           }
         ]
       },
       {
         "matcher": "Write|Edit|MultiEdit",
-        "filePattern": "*.config.*|*.rc.*|*.json|package.json|tsconfig.json",
         "hooks": [
           {
             "type": "command",
             "command": "node .claude/hooks/medical-quality-blocker.js",
-            "timeout": 30000,
-            "description": "Validação de configurações críticas"
+            "timeout": 30000
           },
           {
             "type": "command",
             "command": "node claude-quality-hooks/.claude/hooks/vscode-extension/quality-check.js",
-            "timeout": 45000,
-            "description": "Validação de arquivos de configuração"
+            "timeout": 45000
           }
         ]
       }

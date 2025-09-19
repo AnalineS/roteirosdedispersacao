@@ -133,9 +133,13 @@ export default function FastAccessBar({
           // Analytics para acesso por teclado
           if (typeof window !== 'undefined' && window.gtag) {
             window.gtag('event', 'keyboard_shortcut_used', {
-              shortcut_id: shortcut.id,
-              shortcut_key: pressedKey,
-              page_path: pathname
+              event_category: 'navigation',
+              event_label: 'keyboard_shortcut',
+              custom_parameters: {
+                shortcut_id: shortcut.id,
+                shortcut_key: pressedKey,
+                page_path: pathname
+              }
             });
           }
           

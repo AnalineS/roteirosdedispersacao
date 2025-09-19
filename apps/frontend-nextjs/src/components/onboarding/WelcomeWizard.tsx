@@ -535,7 +535,13 @@ export function WelcomeWizard({ onComplete }: {
 
   // Handler para completar o questionário informativo (usuários logados)
   const handleSurveyComplete = useCallback((surveyData: SurveyAnswers) => {
-    trackUserInteraction('user_survey_completed', '', 'informative_survey', surveyData);
+    trackUserInteraction('user_survey_completed', '', 'informative_survey', {
+      institution: surveyData.institution,
+      role: surveyData.role,
+      experience: surveyData.experience,
+      interests_count: surveyData.interests.length,
+      interests_list: surveyData.interests.join(', ')
+    });
     setIsVisible(false);
     
     setTimeout(() => {

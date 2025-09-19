@@ -3,7 +3,7 @@
  * Hook que usa o AuthContext com compatibilidade para o sistema anterior
  */
 
-import { useAuth as useAuthContext } from '@/contexts/AuthContext';
+import { useAuth as useAuthContext, type UserProfile } from '@/contexts/AuthContext';
 import { useCallback } from 'react';
 import type {
   UserRole,
@@ -17,6 +17,8 @@ interface GoogleLoginOptions {
   enableGranularConsent?: boolean;
   loginHint?: string;
   hd?: string;
+  displayName?: string;
+  profileType?: 'patient' | 'professional' | 'student';
 }
 
 interface RegistrationData {
@@ -29,18 +31,7 @@ interface RegistrationData {
   optInMarketing?: boolean;
 }
 
-interface ProfileUpdates {
-  displayName?: string;
-  email?: string;
-  photoURL?: string;
-  type?: 'patient' | 'professional' | 'student' | 'admin';
-  focus?: 'general' | 'technical' | 'practical' | 'effects' | 'empathetic';
-  preferences?: {
-    language?: 'simple' | 'technical';
-    notifications?: boolean;
-    theme?: 'auto' | 'light' | 'dark';
-  };
-}
+type ProfileUpdates = Partial<UserProfile>;
 
 // USER_LEVEL_BENEFITS imported from @/types/auth
 

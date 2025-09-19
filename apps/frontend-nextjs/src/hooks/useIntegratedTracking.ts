@@ -154,8 +154,8 @@ export const useIntegratedTracking = (config: IntegratedTrackingConfig = {}) => 
     const interactionData = {
       chat_type: chatType,
       message_length: message.length,
-      response_time: responseTime,
-      persona,
+      response_time: responseTime || 0,
+      persona: persona || 'general',
       has_response: !!responseTime
     };
 
@@ -190,8 +190,8 @@ export const useIntegratedTracking = (config: IntegratedTrackingConfig = {}) => 
 
     const errorData = {
       error_type: errorType,
-      component,
-      stack: stack?.substring(0, 500), // Limitar tamanho
+      component: component || 'unknown',
+      stack: stack?.substring(0, 500) || 'no_stack',
       timestamp: Date.now()
     };
 
@@ -224,7 +224,7 @@ export const useIntegratedTracking = (config: IntegratedTrackingConfig = {}) => 
       rating,
       has_comments: !!comments,
       comment_length: comments?.length || 0,
-      persona
+      persona: persona || 'general'
     };
 
     // Local tracking
@@ -290,7 +290,7 @@ export const useIntegratedTracking = (config: IntegratedTrackingConfig = {}) => 
     if (enableGoogleAnalytics && googleAnalytics.isLoaded) {
       googleAnalytics.trackEvent('preferences_updated', 'user_settings', 'profile_update', undefined, {
         user_id: currentUserId,
-        updated_fields: Object.keys(preferences),
+        updated_fields: Object.keys(preferences).join(','),
         preferences_count: Object.keys(preferences).length
       });
     }

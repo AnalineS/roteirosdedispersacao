@@ -256,7 +256,9 @@ export const useRemoteConfig = (options: RemoteConfigOptions = {}) => {
         Object.keys(remoteFlags).forEach(key => {
           if (key in DEFAULT_FLAGS) {
             const remoteFlag = (remoteFlags as RemoteFlagsObject)[key];
-            globalFlags[key as keyof FeatureFlagsConfig] = remoteFlag.asBoolean();
+            const value = remoteFlag.asBoolean();
+            // Type-safe assignment using object spread
+            Object.assign(globalFlags, { [key]: value });
           }
         });
         

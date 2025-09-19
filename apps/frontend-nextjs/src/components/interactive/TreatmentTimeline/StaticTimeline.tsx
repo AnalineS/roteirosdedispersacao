@@ -19,6 +19,30 @@ export default function StaticTimeline({
   const template = TREATMENT_TIMELINE_TEMPLATES[protocol];
   const totalDays = template.duration;
 
+  // Convert template milestones to TimelineMilestone format
+  const convertToTimelineMilestones = (templateMilestones: any[]): (TimelineMilestone & { day: number })[] => {
+    return templateMilestones.map((milestone, index) => {
+      const baseDate = new Date();
+      const scheduledDate = new Date(baseDate.getTime() + milestone.day * 24 * 60 * 60 * 1000);
+
+      return {
+        id: `milestone-${index}-${milestone.type}`,
+        type: milestone.type,
+        title: milestone.title,
+        description: milestone.description,
+        scheduledDate,
+        status: index < 2 ? 'completed' : 'pending' as 'pending' | 'completed' | 'missed' | 'rescheduled',
+        doseNumber: milestone.doseNumber,
+        objectives: milestone.objectives || [],
+        completed: index < 2,
+        day: milestone.day || 0
+      };
+    });
+  };
+
+  const timelineMilestones = convertToTimelineMilestones(template.milestones);
+
+
   const getMilestoneIcon = (type: string, isCompleted: boolean = false) => {
     if (isCompleted) return '✅';
     
@@ -270,12 +294,12 @@ export default function StaticTimeline({
 
       {/* Calendar View */}
       {viewMode === 'calendar' && (
-        <CalendarView milestones={template.milestones} protocol={protocol} />
+        <CalendarView milestones={timelineMilestones} protocol={protocol} />
       )}
 
       {/* List View */}
       {viewMode === 'list' && (
-        <ListView milestones={template.milestones} protocol={protocol} />
+        <ListView milestones={timelineMilestones} protocol={protocol} />
       )}
 
       {/* Call to Action */}
@@ -323,12 +347,12 @@ export default function StaticTimeline({
 }
 
 // Calendar View Component
-function CalendarView({ 
-  milestones, 
-  protocol 
-}: { 
-  milestones: TimelineMilestone[], 
-  protocol: string 
+function CalendarView({
+  milestones,
+  protocol
+}: {
+  milestones: (TimelineMilestone & { day: number })[],
+  protocol: string
 }) {
   return (
     <div style={{
@@ -389,7 +413,7 @@ function CalendarView({
                   color: modernChatTheme.colors.neutral.textMuted,
                   margin: 0
                 }}>
-                  Dia {milestone.day} • {milestone.day === 0 ? 'Hoje' : `${Math.round(milestone.day / 7)} semanas`}
+                  Dia {milestone.day || 0} • {(milestone.day || 0) === 0 ? 'Hoje' : `${Math.round((milestone.day || 0) / 7)} semanas`}
                 </p>
               </div>
             </div>
@@ -449,12 +473,12 @@ function CalendarView({
 }
 
 // List View Component
-function ListView({ 
-  milestones, 
-  protocol 
-}: { 
-  milestones: TimelineMilestone[], 
-  protocol: string 
+function ListView({
+  milestones,
+  protocol
+}: {
+  milestones: (TimelineMilestone & { day: number })[],
+  protocol: string
 }) {
   return (
     <div style={{
@@ -528,7 +552,7 @@ function ListView({
                   fontSize: '10px',
                   fontWeight: '600'
                 }}>
-                  DIA {milestone.day}
+                  DIA {milestone.day || 0}
                 </span>
               </div>
 

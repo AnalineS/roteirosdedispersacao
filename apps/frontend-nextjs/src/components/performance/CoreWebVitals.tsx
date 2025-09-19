@@ -39,7 +39,7 @@ export default function CoreWebVitals() {
 
     // Import web-vitals dynamically
     import('web-vitals').then(({ onCLS, onFCP, onLCP, onTTFB, onINP }) => {
-      const reportMetric = (metric: { name: string; value: number; [key: string]: unknown }) => {
+      const reportMetric = (metric: { name: string; value: number; id: string; delta: number; entries: PerformanceEntry[] }) => {
         let rating: 'good' | 'needs-improvement' | 'poor';
         
         switch (metric.name) {
@@ -64,7 +64,7 @@ export default function CoreWebVitals() {
           name: metric.name,
           value: metric.value,
           rating,
-          id: metric.id
+          id: String(metric.id || 'unknown')
         };
 
         // Performance tracking in development
@@ -72,8 +72,13 @@ export default function CoreWebVitals() {
         // Send to analytics if available
         if (typeof window !== 'undefined' && 'gtag' in window && typeof window.gtag === 'function') {
           window.gtag('event', metric.name, {
-            custom_parameter_1: metric.value,
-            custom_parameter_2: rating
+            event_category: 'web_vitals',
+            event_label: 'core_performance',
+            value: metric.value,
+            custom_parameters: {
+              metric_value: metric.value,
+              rating: rating
+            }
           });
         }
 

@@ -170,7 +170,6 @@ export function MedicalAccordion({
           <AccordionSection
             key={section.id}
             section={section}
-            index={index}
             isExpanded={isSectionExpanded(section.id)}
             onToggle={() => toggleSection(section.id)}
           />

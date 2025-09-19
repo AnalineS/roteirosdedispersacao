@@ -7,6 +7,17 @@ import { useUserProfile } from '@/hooks/useUserProfile';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import type { PersonaConfig, PersonaSource } from '@/types/personas';
 
+// Interface para gtag tracking (compatível com interface global)
+interface WindowWithGtag extends Window {
+  gtag?: (
+    command: 'event' | 'config',
+    eventNameOrId: string,
+    parameters?: Record<string, unknown>
+  ) => void;
+}
+
+declare const window: WindowWithGtag;
+
 interface PersonaContextValue {
   currentPersona: ValidPersonaId | null;
   availablePersonas: Record<ValidPersonaId, PersonaConfig>;
@@ -116,7 +127,14 @@ export function PersonaProvider({ children }: { children: React.ReactNode }) {
   // Função para alterar persona
   const setPersona = useCallback(async (personaId: ValidPersonaId, source: PersonaSource = 'explicit') => {
     if (!isPersonaAvailable(personaId)) {
-      console.warn(`Persona ${personaId} não disponível`);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'persona_unavailable', {
+          event_category: 'persona_context_simple',
+          event_label: 'validation_error',
+          persona_context: 'persona_unavailable',
+          persona_id: String(personaId)
+        });
+      }
       return;
     }
 
@@ -136,7 +154,7 @@ export function PersonaProvider({ children }: { children: React.ReactNode }) {
         from: currentPersona,
         to: personaId,
         source,
-        timestamp: new Date()
+        timestamp: Date.now()
       });
     }
   }, [isPersonaAvailable, updatePersonaInURL, currentPersona, trackEvent]);

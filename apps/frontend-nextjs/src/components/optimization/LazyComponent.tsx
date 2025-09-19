@@ -3,12 +3,15 @@
 import React, { Suspense, lazy, ComponentType } from 'react';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 
-interface LazyComponentProps<T = {}> extends T {
-  componentImport: () => Promise<{ default: ComponentType<T> }>;
+interface LazyComponentWrapperProps {
   fallback?: React.ReactNode;
   onError?: (error: Error) => void;
   retryAttempts?: number;
-  children?: React.ReactNode;
+}
+
+interface LazyComponentProps<T extends Record<string, unknown>> extends LazyComponentWrapperProps {
+  componentImport: () => Promise<{ default: React.ComponentType<T> }>;
+  componentProps?: T;
 }
 
 interface LazyWrapperState {
@@ -148,13 +151,13 @@ class ErrorBoundary extends React.Component<
   }
 }
 
-export default function LazyComponent<T = {}>(
+export default function LazyComponent<T extends Record<string, unknown>>(
   {
     componentImport,
     fallback,
     onError,
     retryAttempts = 3,
-    ...props
+    componentProps
   }: LazyComponentProps<T>
 ) {
   // Create lazy component with retry logic
@@ -215,7 +218,7 @@ export default function LazyComponent<T = {}>(
       componentName={String(componentName)}
     >
       <Suspense fallback={fallback || defaultFallback}>
-        <LazyLoadedComponent {...(props as T)} />
+        <LazyLoadedComponent {...(componentProps || ({} as T))} />
       </Suspense>
     </ErrorBoundary>
   );
@@ -280,8 +283,8 @@ export function LazyOnScroll({
 }
 
 // HOC para lazy loading de componentes
-export function withLazyLoading<T extends Record<string, any>>(
-  componentImport: () => Promise<{ default: ComponentType<T> }>,
+export function withLazyLoading<T extends Record<string, unknown>>(
+  componentImport: () => Promise<{ default: React.ComponentType<T> }>,
   options: {
     fallback?: React.ReactNode;
     onError?: (error: Error) => void;
@@ -290,12 +293,12 @@ export function withLazyLoading<T extends Record<string, any>>(
 ) {
   return function LazyWrappedComponent(props: T) {
     return (
-      <LazyComponent
+      <LazyComponent<T>
         componentImport={componentImport}
         fallback={options.fallback}
         onError={options.onError}
         retryAttempts={options.retryAttempts}
-        {...props}
+        componentProps={props}
       />
     );
   };

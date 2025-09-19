@@ -38,7 +38,7 @@ interface LoginCredentials {
   rememberMe?: boolean;
 }
 
-interface SocialCredentials {
+export interface SocialCredentials {
   provider: 'google' | 'facebook' | 'apple';
   token?: string;
   id?: string;

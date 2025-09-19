@@ -8,7 +8,7 @@ import { secureLogger } from './secureLogger';
 interface CloudLogEvent {
   level: 'debug' | 'info' | 'warning' | 'error' | 'critical';
   message: string;
-  context?: Record<string, string | number | boolean | null>;
+  context?: Record<string, string | number | boolean | null | Record<string, unknown>>;
   category?: 'personal_data' | 'analytics' | 'system' | 'audit';
   userId?: string;
   sessionId?: string;
@@ -165,8 +165,8 @@ class CloudLoggerClient {
       message,
       context: {
         ...context,
-        errorMessage: error?.message,
-        errorStack: error?.stack,
+        errorMessage: error?.message || null,
+        errorStack: error?.stack || null,
       },
       category: 'system',
       userId,
@@ -198,7 +198,7 @@ class CloudLoggerClient {
   }
 
   // Métodos especializados LGPD
-  async lgpdEvent(action: string, userId: string, details?: Record<string, any>): Promise<void> {
+  async lgpdEvent(action: string, userId: string, details?: Record<string, string | number | boolean>): Promise<void> {
     const event: CloudLogEvent = {
       level: 'info',
       message: `LGPD: ${action}`,
@@ -238,7 +238,7 @@ class CloudLoggerClient {
     secureLogger.medical('chat_interaction', { persona, queryLength, responseTime });
   }
 
-  async analyticsEvent(eventType: string, properties: Record<string, any>): Promise<void> {
+  async analyticsEvent(eventType: string, properties: Record<string, string | number | boolean>): Promise<void> {
     // Analytics são anônimos, mas podem ir para Cloud para análise
     const event: CloudLogEvent = {
       level: 'info',
@@ -259,7 +259,7 @@ class CloudLoggerClient {
     secureLogger.info(`Analytics: ${eventType}`, { properties });
   }
 
-  async securityAlert(alertType: string, details: Record<string, any>, userId?: string): Promise<void> {
+  async securityAlert(alertType: string, details: Record<string, string | number | boolean>, userId?: string): Promise<void> {
     const event: CloudLogEvent = {
       level: 'critical',
       message: `Security Alert: ${alertType}`,
@@ -393,11 +393,11 @@ export const logUtils = {
   },
 
   // Log de performance (analytics)
-  logPerformance: async (metric: string, value: number, context?: Record<string, any>) => {
+  logPerformance: async (metric: string, value: number, context?: Record<string, string | number | boolean>) => {
     await cloudLogger.analyticsEvent('performance_metric', {
       metric,
       value,
-      context: context || {}
+      ...(context || {})
     });
   },
 };

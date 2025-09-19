@@ -497,7 +497,12 @@ export default function SocialProfile({
             
             <EmailPreferences
               userId={user.uid}
-              preferences={profile.emailPreferences || {}}
+              preferences={Object.fromEntries(
+                Object.entries(profile.emailPreferences || {}).map(([key, enabled]) => [
+                  key,
+                  { enabled: Boolean(enabled), frequency: 'daily' as const }
+                ])
+              )}
               onPreferencesChange={updateEmailPreferences}
             />
           </div>
@@ -512,7 +517,7 @@ export default function SocialProfile({
               currentAvatarUrl={profile.photoURL}
               userId={profile.uid}
               onUploadComplete={handleAvatarUpload}
-              onUploadError={(error) => {
+              onUploadError={(error: string) => {
                 if (typeof window !== 'undefined' && window.gtag) {
                   window.gtag('event', 'social_profile_avatar_upload_error', {
                     event_category: 'medical_user_profile',
@@ -520,7 +525,7 @@ export default function SocialProfile({
                     custom_parameters: {
                       medical_context: 'social_profile_avatar',
                       error_type: 'avatar_upload_failure',
-                      error_message: error instanceof Error ? error.message : String(error)
+                      error_message: error
                     }
                   });
                 }

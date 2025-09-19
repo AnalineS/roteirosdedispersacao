@@ -16,9 +16,17 @@ interface AnalyticsEventData {
 export const useAnalytics = () => {
   const trackEvent = useCallback(async (eventName: string, data: AnalyticsEventData) => {
     try {
-      Analytics.event('USER', eventName, data);
+      Analytics.event('USER', eventName, data.category || 'user_action', data.value as number, false);
     } catch (error) {
-      console.warn('Analytics error:', error);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'analytics_tracking_error', {
+          event_category: 'medical_analytics',
+          event_label: 'track_event_failed',
+          custom_parameters: {
+            error_details: error instanceof Error ? error.message : String(error)
+          }
+        });
+      }
     }
   }, []);
 
@@ -26,7 +34,15 @@ export const useAnalytics = () => {
     try {
       Analytics.pageView(page);
     } catch (error) {
-      console.warn('Analytics page view error:', error);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'analytics_pageview_error', {
+          event_category: 'medical_analytics',
+          event_label: 'pageview_tracking_failed',
+          custom_parameters: {
+            error_details: error instanceof Error ? error.message : String(error)
+          }
+        });
+      }
     }
   }, []);
 

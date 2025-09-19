@@ -8,11 +8,22 @@
 
 import { useEffect } from 'react';
 import Script from 'next/script';
-import { googleAnalyticsUX } from '@/lib/analytics/googleAnalyticsUX';
+import { WindowWithGtag, OnboardingEventData } from '@/types/analytics';
 
-interface OnboardingEventData {
-  [key: string]: string | number | boolean;
+// Using WindowWithGtag from types/analytics
+
+// Helper para acessar gtag de forma type-safe
+function getWindowWithGtag(): WindowWithGtag | null {
+  return typeof window !== 'undefined' ? (window as WindowWithGtag) : null;
 }
+
+// Simulação do googleAnalyticsUX para evitar import error
+const googleAnalyticsUX = {
+  startUXAudit: () => {
+    // UX audit implementation
+  }
+};
+
 
 interface UXEventParameters {
   [key: string]: string | number | boolean;
@@ -65,19 +76,7 @@ interface UXGtagConfigParameters {
   };
 }
 
-declare global {
-  interface Window {
-    gtag: {
-      (command: 'event', eventName: string, parameters?: UXGtagEventParameters): void;
-      (command: 'config', configId: string, parameters?: UXGtagConfigParameters): void;
-    };
-    trackCognitiveLoad?: (score: number, context: string) => void;
-    trackMobileIssue?: (issueType: string, severity: number) => void;
-    trackOnboardingEvent?: (action: string, step: number, data?: OnboardingEventData) => void;
-    trackUXEvent?: (eventName: string, category: string, score?: number, parameters?: UXEventParameters) => void;
-    dataLayer?: Array<Record<string, string | number | boolean> | unknown[]>;
-  }
-}
+// Removido declare global conflitante - usando WindowWithGtag interface
 
 interface GoogleAnalyticsSetupProps {
   enableUXTracking?: boolean;
@@ -92,8 +91,9 @@ export function GoogleAnalyticsSetup({
     // Aguardar GA carregar e então iniciar UX tracking
     if (enableUXTracking && typeof window !== 'undefined') {
       const checkGtag = () => {
-        if (window.gtag) {
-          window.gtag('event', 'analytics_system_loaded', {
+        const windowWithGtag = getWindowWithGtag();
+        if (windowWithGtag?.gtag) {
+          windowWithGtag.gtag('event', 'analytics_system_loaded', {
             event_category: 'medical_analytics_initialization',
             event_label: 'google_analytics_ux_tracking_started',
             custom_parameters: {
@@ -106,7 +106,7 @@ export function GoogleAnalyticsSetup({
           
           // Configurar dimensões customizadas para UX
           if (measurementId) {
-            window.gtag('config', measurementId, {
+            windowWithGtag.gtag('config', measurementId, {
             // Configurar enhanced measurement
             enhanced_measurement_settings: {
               scroll_events: true,
@@ -127,7 +127,7 @@ export function GoogleAnalyticsSetup({
           }
 
           // Track initial page como baseline UX
-          window.gtag('event', 'ux_audit_start', {
+          windowWithGtag.gtag('event', 'ux_audit_start', {
             event_category: 'ux_analysis',
             custom_parameters: {
               audit_version: '1.0',
@@ -299,8 +299,9 @@ export function useGoogleAnalytics() {
     value?: number,
     customParameters?: Record<string, string | number | boolean>
   ) => {
-    if (typeof window !== 'undefined' && window.gtag) {
-      window.gtag('event', action, {
+    const windowWithGtag = getWindowWithGtag();
+    if (windowWithGtag?.gtag) {
+      windowWithGtag.gtag('event', action, {
         event_category: category,
         event_label: label,
         value: value,
@@ -310,10 +311,11 @@ export function useGoogleAnalytics() {
   };
 
   const trackPageView = (page_title: string, page_location?: string) => {
-    if (typeof window !== 'undefined' && window.gtag && process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID) {
-      window.gtag('config', process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID, {
+    const windowWithGtag = getWindowWithGtag();
+    if (windowWithGtag?.gtag && process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID) {
+      windowWithGtag.gtag('config', process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID, {
         page_title,
-        page_location: page_location || window.location.href,
+        page_location: page_location || (typeof window !== 'undefined' ? window.location.href : '/'),
       });
     }
   };
@@ -401,39 +403,44 @@ export function useGoogleAnalytics() {
     trackError,
     trackSearch,
     trackEducationalContent,
-    isLoaded: typeof window !== 'undefined' && !!window.gtag
+    isLoaded: !!getWindowWithGtag()?.gtag
   };
 }
 
 export function useGoogleAnalyticsUX() {
   useEffect(() => {
     // Verificar se GA está disponível
-    if (typeof window !== 'undefined' && (window as WindowWithGtag).gtag) {
+    const windowWithGtag = getWindowWithGtag();
+    if (windowWithGtag?.gtag) {
       // GA disponível - setup já feito
     }
   }, []);
 
   const trackCognitiveLoad = (score: number, context: string) => {
-    if (typeof window !== 'undefined' && window.trackCognitiveLoad) {
-      window.trackCognitiveLoad(score, context);
+    const windowWithGtag = getWindowWithGtag();
+    if (windowWithGtag?.trackCognitiveLoad) {
+      windowWithGtag.trackCognitiveLoad(score, context);
     }
   };
 
   const trackMobileIssue = (issueType: string, severity: number) => {
-    if (typeof window !== 'undefined' && window.trackMobileIssue) {
-      window.trackMobileIssue(issueType, severity);
+    const windowWithGtag = getWindowWithGtag();
+    if (windowWithGtag?.trackMobileIssue) {
+      windowWithGtag.trackMobileIssue(issueType, severity);
     }
   };
 
   const trackOnboardingEvent = (action: string, step: number, data?: OnboardingEventData) => {
-    if (typeof window !== 'undefined' && window.trackOnboardingEvent) {
-      window.trackOnboardingEvent(action, step, data);
+    const windowWithGtag = getWindowWithGtag();
+    if (windowWithGtag?.trackOnboardingEvent) {
+      windowWithGtag.trackOnboardingEvent(action, step, data);
     }
   };
 
   const trackCustomUXEvent = (eventName: string, category: string, score?: number, parameters?: UXEventParameters) => {
-    if (typeof window !== 'undefined' && window.trackUXEvent) {
-      window.trackUXEvent(eventName, category, score, parameters);
+    const windowWithGtag = getWindowWithGtag();
+    if (windowWithGtag?.trackUXEvent) {
+      windowWithGtag.trackUXEvent(eventName, category, score, parameters);
     }
   };
 

@@ -9,9 +9,22 @@ import { embeddingService } from './embeddingService';
 import { ragCache } from './simpleCache';
 import { AnalyticsFirestoreCache } from './analyticsFirestoreCache';
 
+// Helper para mapear categorias
+function mapCategoryToMedical(category: string): 'dosage' | 'protocol' | 'contraindication' | 'side_effect' | 'interaction' | 'general' {
+  const categoryMap: Record<string, 'dosage' | 'protocol' | 'contraindication' | 'side_effect' | 'interaction' | 'general'> = {
+    'medication': 'dosage',
+    'procedure': 'protocol',
+    'safety': 'contraindication',
+    'general': 'general'
+  };
+  return categoryMap[category] || 'general';
+}
+
 interface QueryAnalysis {
   complexity: 'simple' | 'medium' | 'complex';
   medicalTerms: string[];
+  categories: string[];
+  requiresContext: boolean;
   confidence: number;
   intent: 'dosage' | 'safety' | 'procedure' | 'general';
   suggestedStrategy: 'supabase' | 'local' | 'hybrid' | 'fallback';
@@ -201,7 +214,7 @@ export class RAGIntegrationService {
               id: `supabase_${chunk.source}`,
               title: chunk.source,
               content: chunk.content,
-              category: chunk.category as 'medication' | 'procedure' | 'safety' | 'general',
+              category: mapCategoryToMedical(chunk.category),
               priority: chunk.priority,
               source: 'Supabase RAG',
               lastUpdated: new Date().toISOString(),
@@ -351,15 +364,10 @@ export class RAGIntegrationService {
     }
   }
 
-  private async analyzeQuery(query: string): Promise<{
-    complexity: 'simple' | 'medium' | 'complex';
-    medicalTerms: string[];
-    categories: string[];
-    requiresContext: boolean;
-  }> {
+  private async analyzeQuery(query: string): Promise<QueryAnalysis> {
     const medicalTerms = this.extractMedicalTerms(query);
     const categories = this.detectCategories(query);
-    
+
     let complexity: 'simple' | 'medium' | 'complex' = 'simple';
     if (medicalTerms.length > 2 || categories.length > 1) {
       complexity = 'medium';
@@ -368,11 +376,35 @@ export class RAGIntegrationService {
       complexity = 'complex';
     }
 
+    // Determinar intent baseado em categorias
+    let intent: 'dosage' | 'safety' | 'procedure' | 'general' = 'general';
+    if (categories.includes('dosage') || categories.includes('dose')) {
+      intent = 'dosage';
+    } else if (categories.includes('safety') || categories.includes('contraindication')) {
+      intent = 'safety';
+    } else if (categories.includes('procedure') || categories.includes('protocol')) {
+      intent = 'procedure';
+    }
+
+    // Calcular confidence
+    const confidence = Math.min(1, (medicalTerms.length * 0.2) + (categories.length * 0.3) + 0.3);
+
+    // Determinar estratégia sugerida
+    let suggestedStrategy: 'supabase' | 'local' | 'hybrid' | 'fallback' = 'hybrid';
+    if (complexity === 'simple' && medicalTerms.length === 0) {
+      suggestedStrategy = 'local';
+    } else if (complexity === 'complex' || intent === 'dosage') {
+      suggestedStrategy = 'supabase';
+    }
+
     return {
       complexity,
       medicalTerms,
       categories,
-      requiresContext: complexity !== 'simple'
+      requiresContext: complexity !== 'simple',
+      confidence,
+      intent,
+      suggestedStrategy
     };
   }
 
@@ -703,11 +735,11 @@ export class RAGIntegrationService {
   private generateErrorResponse(
     query: string,
     persona: string,
-    error: RAGError | Error | unknown,
+    error: unknown,
     processingSteps: string[]
   ): IntegratedRAGResponse {
     return {
-      answer: `**Sistema:** Ocorreu um erro interno. Erro: ${error.message}`,
+      answer: `**Sistema:** Ocorreu um erro interno. Erro: ${error instanceof Error ? error.message : String(error)}`,
       context: {
         chunks: [],
         totalScore: 0,
@@ -719,12 +751,12 @@ export class RAGIntegrationService {
       persona,
       qualityScore: 0.1,
       sources: [],
-      limitations: [`Erro interno: ${error.message}`],
+      limitations: [`Erro interno: ${error instanceof Error ? error.message : String(error)}`],
       generatedAt: new Date().toISOString(),
       processingTimeMs: 0,
       strategy: 'fallback',
       knowledgeSource: 'Error Handler',
-      processingSteps: [...processingSteps, `Erro: ${error.message}`]
+      processingSteps: [...processingSteps, `Erro: ${error instanceof Error ? error.message : String(error)}`]
     };
   }
 

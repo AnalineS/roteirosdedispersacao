@@ -447,7 +447,7 @@ export class APIBatcher {
     resolve: (value: unknown) => void;
     reject: (error: Error) => void;
   }> = [];
-  
+
   private timer: NodeJS.Timeout | null = null;
 
   constructor(
@@ -459,8 +459,12 @@ export class APIBatcher {
   ) {}
 
   async request<T = any>(request: BatchableRequest): Promise<T> {
-    return new Promise((resolve, reject) => {
-      this.pending.push({ request, resolve, reject });
+    return new Promise<T>((resolve, reject) => {
+      this.pending.push({
+        request,
+        resolve: resolve as (value: unknown) => void,
+        reject
+      });
 
       const maxSize = this.options.maxBatchSize || 10;
       const maxWait = this.options.maxWaitTime || 50;

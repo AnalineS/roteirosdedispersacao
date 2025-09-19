@@ -5,7 +5,7 @@ import {
   useIntegratedTracking,
   type IntegratedTrackingConfig,
 } from "@/hooks/useIntegratedTracking";
-import type { UserPreferences } from "@/services/UserTrackingService";
+import type { UserPreferences, InteractionType } from "@/services/UserTrackingService";
 
 // ============================================
 // CONTEXTO DE TRACKING INTEGRADO
@@ -16,9 +16,9 @@ interface IntegratedTrackingContextType {
   userId: string;
   isInitialized: boolean;
   trackInteraction: (
-    type: string,
+    type: InteractionType,
     element: string,
-    metadata?: Record<string, unknown>,
+    metadata?: Record<string, string | number | boolean>,
   ) => void;
   trackPageView: (page: string, title?: string) => void;
   trackModuleProgress: (

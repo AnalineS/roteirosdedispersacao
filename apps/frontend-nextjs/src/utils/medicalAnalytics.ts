@@ -7,7 +7,7 @@ import { AnalyticsFirestoreCache } from '@/services/analyticsFirestoreCache';
 import { secureLogger } from '@/utils/secureLogger';
 
 interface MedicalError {
-  type: 'calculation_error' | 'interaction_error' | 'protocol_error' | 'system_error';
+  type: 'calculation_error' | 'system_error' | 'interaction_missed' | 'navigation_error';
   message: string;
   code?: string;
   severity: 'low' | 'medium' | 'high' | 'critical';
@@ -589,7 +589,12 @@ export const medicalAnalytics = {
     const instance = typeof window !== 'undefined' ? MedicalAnalytics.getInstance() : null;
     if (instance) instance.trackEvent(event);
   },
-  trackMedicalError: (error: MedicalError) => {
+  trackMedicalError: (error: {
+    type: 'calculation_error' | 'system_error' | 'interaction_missed' | 'navigation_error';
+    severity: 'high' | 'medium' | 'low' | 'critical';
+    context: string;
+    userAction?: string;
+  }) => {
     const instance = typeof window !== 'undefined' ? MedicalAnalytics.getInstance() : null;
     if (instance) instance.trackMedicalError(error);
   },
@@ -601,7 +606,11 @@ export const medicalAnalytics = {
     const instance = typeof window !== 'undefined' ? MedicalAnalytics.getInstance() : null;
     if (instance) instance.trackCriticalMedicalAction(action);
   },
-  trackFastAccessUsage: (shortcutId: string, context: UsageContext) => {
+  trackFastAccessUsage: (shortcutId: string, context: {
+    urgencyLevel: 'critical' | 'important' | 'standard';
+    accessMethod: 'click' | 'keyboard' | 'swipe';
+    timeFromPageLoad: number;
+  }) => {
     const instance = typeof window !== 'undefined' ? MedicalAnalytics.getInstance() : null;
     if (instance) instance.trackFastAccessUsage(shortcutId, context);
   },
@@ -609,9 +618,15 @@ export const medicalAnalytics = {
     const instance = typeof window !== 'undefined' ? MedicalAnalytics.getInstance() : null;
     if (instance) instance.trackFeatureFlagUsage(flagKey, flagValue, source);
   },
-  setUserRole: (role: UserRole) => {
+  setUserRole: (role: 'pharmacy' | 'medicine' | 'nursing' | 'student' | 'unknown' | UserRole) => {
     const instance = typeof window !== 'undefined' ? MedicalAnalytics.getInstance() : null;
-    if (instance) instance.setUserRole(role);
+    if (instance) {
+      // Extrair role primário se for um objeto UserRole
+      const primaryRole = typeof role === 'string' ? role : role.primary;
+      // Mapear 'admin' para 'unknown' se necessário
+      const normalizedRole = primaryRole === 'admin' ? 'unknown' : primaryRole;
+      instance.setUserRole(normalizedRole);
+    }
   }
 };
 
@@ -620,7 +635,11 @@ export const trackCriticalAction = (action: Parameters<MedicalAnalytics['trackCr
   medicalAnalytics.trackCriticalMedicalAction(action);
 };
 
-export const trackFastAccess = (shortcutId: string, context: Parameters<MedicalAnalytics['trackFastAccessUsage']>[1]) => {
+export const trackFastAccess = (shortcutId: string, context: {
+  urgencyLevel: 'critical' | 'important' | 'standard';
+  accessMethod: 'click' | 'keyboard' | 'swipe';
+  timeFromPageLoad: number;
+}) => {
   medicalAnalytics.trackFastAccessUsage(shortcutId, context);
 };
 
@@ -628,7 +647,7 @@ export const trackFeatureFlag = (flagKey: string, flagValue: boolean, source: st
   medicalAnalytics.trackFeatureFlagUsage(flagKey, flagValue, source);
 };
 
-export const setUserRole = (role: Parameters<MedicalAnalytics['setUserRole']>[0]) => {
+export const setUserRole = (role: 'pharmacy' | 'medicine' | 'nursing' | 'student' | 'unknown' | UserRole) => {
   medicalAnalytics.setUserRole(role);
 };
 

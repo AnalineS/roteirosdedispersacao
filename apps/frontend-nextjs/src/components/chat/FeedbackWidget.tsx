@@ -189,8 +189,8 @@ export default function FeedbackWidget({
     try {
       trackUserInteraction('quick_feedback', messageId, personaId, {
         feedback_type: rating >= 4 ? 'positive' : 'negative',
-        persona_name: personaData?.name,
-        sanitization_applied: validation.sanitizedData.metadata?.sanitizationApplied
+        persona_name: personaData?.name || 'unknown',
+        sanitization_applied: validation.sanitizedData.metadata?.sanitizationApplied || false
       });
       
       // Simular API call (integração real com backend pendente)
@@ -198,7 +198,7 @@ export default function FeedbackWidget({
       
       onFeedbackSubmit?.(validation.sanitizedData);
       trackFeedback('quick', validation.sanitizedData.rating, personaId, false, {
-        persona_name: personaData?.name
+        persona_name: personaData?.name || 'unknown'
       });
       
       setFeedbackState('submitted');
@@ -294,8 +294,8 @@ export default function FeedbackWidget({
       trackUserInteraction('detailed_feedback', messageId, personaId, {
         rating: validation.sanitizedData.rating,
         has_comments: !!validation.sanitizedData.comments,
-        persona_name: personaData?.name,
-        sanitization_applied: validation.sanitizedData.metadata?.sanitizationApplied
+        persona_name: personaData?.name || 'unknown',
+        sanitization_applied: validation.sanitizedData.metadata?.sanitizationApplied || false
       });
       
       // Simular API call (integração real com backend pendente)
@@ -303,7 +303,7 @@ export default function FeedbackWidget({
       
       onFeedbackSubmit?.(validation.sanitizedData);
       trackFeedback('detailed', validation.sanitizedData.rating, personaId, !!validation.sanitizedData.comments, {
-        persona_name: personaData?.name
+        persona_name: personaData?.name || 'unknown'
       });
       
       setFeedbackState('submitted');

@@ -5,18 +5,37 @@
 
 'use client';
 
-import { 
-  useState, 
-  useEffect, 
-  useCallback, 
-  useMemo, 
-  useRef, 
+import {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef,
   useLayoutEffect,
   ComponentType,
   ReactElement,
   MutableRefObject
 } from 'react';
 import { UniversalCache, debounce, throttle } from './index';
+
+// Sistema de logging controlado
+const isDevelopment = process.env.NODE_ENV === 'development';
+
+const logger = {
+  warn: (message: string, error?: unknown) => {
+    if (isDevelopment && typeof window !== 'undefined') {
+      // Em desenvolvimento, apenas armazena no localStorage
+      const logs = JSON.parse(localStorage.getItem('react_optimization_logs') || '[]');
+      logs.push({
+        level: 'warn',
+        message,
+        error: error instanceof Error ? error.message : String(error),
+        timestamp: Date.now()
+      });
+      localStorage.setItem('react_optimization_logs', JSON.stringify(logs.slice(-100)));
+    }
+  }
+};
 
 // ============================================
 // HOOKS DE PERFORMANCE
@@ -157,7 +176,7 @@ export function useOptimizedLocalStorage<T>(
       const item = localStorage.getItem(key);
       return item ? deserialize(item) : initialValue;
     } catch (error) {
-      console.warn(`Error reading localStorage key "${key}":`, error);
+      logger.warn(`Error reading localStorage key "${key}":`, error);
       return initialValue;
     }
   });
@@ -172,7 +191,7 @@ export function useOptimizedLocalStorage<T>(
         localStorage.setItem(key, serialized);
       }
     } catch (error) {
-      console.warn(`Error setting localStorage key "${key}":`, error);
+      logger.warn(`Error setting localStorage key "${key}":`, error);
     }
   }, [key, serialize, storedValue]);
 
@@ -190,7 +209,7 @@ export function useDebouncedState<T>(
   const [debouncedValue, setDebouncedValue] = useState(initialValue);
 
   const debouncedSetValue = useMemo(
-    () => debounce((value: T) => setDebouncedValue(value), delay),
+    () => debounce((...args: unknown[]) => setDebouncedValue(args[0] as T), delay),
     [delay]
   );
 
@@ -213,7 +232,7 @@ export function useThrottledState<T>(
   const [throttledValue, setThrottledValue] = useState(initialValue);
 
   const throttledSetValue = useMemo(
-    () => throttle((value: T) => setThrottledValue(value), limit),
+    () => throttle((...args: unknown[]) => setThrottledValue(args[0] as T), limit),
     [limit]
   );
 

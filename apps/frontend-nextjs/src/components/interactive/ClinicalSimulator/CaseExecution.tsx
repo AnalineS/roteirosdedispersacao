@@ -13,7 +13,7 @@ import { SelectOption } from '@/types/components';
 import { getUnbColors } from '@/config/modernTheme';
 
 interface UserAnswer {
-  value: string | number | boolean | string[];
+  value: string | number | boolean | string[] | number[];
   confidence?: number;
   reasoning?: string;
   timeSpent?: number;
@@ -29,7 +29,7 @@ interface FormField {
   type: 'text' | 'number' | 'select' | 'textarea' | 'radio' | 'checkbox';
   label: string;
   required?: boolean;
-  options?: SelectOption[];
+  options?: ClinicalSelectOption[];
   unit?: string;
   validation?: {
     required?: boolean;
@@ -39,13 +39,21 @@ interface FormField {
   };
 }
 
-// SelectOption agora importado de @/types/components
-interface ExtendedSelectOption extends SelectOption {
+// Interface local para casos clínicos que estende SelectOption
+interface ClinicalSelectOption {
+  value: string;
+  label: string;
   text?: string;
   category?: string;
   points?: number;
   required?: boolean;
   id?: string | number;
+  disabled?: boolean;
+  group?: string;
+  icon?: React.ReactNode;
+  isCorrect?: boolean;
+  explanation?: string;
+  consequences?: string;
 }
 
 interface StepParameters {
@@ -87,7 +95,7 @@ interface StepState {
 interface PersonaFeedback {
   persona: 'dr-gasnelio' | 'ga';
   message: string;
-  tone: 'encouraging' | 'technical' | 'supportive' | 'corrective';
+  tone: 'professional' | 'empathetic';
   xpBonus?: number;
 }
 
@@ -157,14 +165,14 @@ export default function CaseExecution({
       if (isCorrect) {
         return {
           persona: 'dr-gasnelio',
-          tone: 'technical',
+          tone: 'professional',
           message: `Procedimento executado corretamente! Pontuação: ${score}/${maxScore} (${percentage.toFixed(1)}%). Sua abordagem seguiu os protocolos estabelecidos no PCDT Hanseníase 2022. ${percentage >= 90 ? 'Performance excepcional - demonstra domínio técnico da dispensação PQT-U.' : 'Bom desempenho técnico. Continue aplicando os fundamentos farmacológicos.'}`,
           xpBonus: percentage >= 90 ? 25 : percentage >= 80 ? 15 : 10
         };
       } else {
         return {
           persona: 'dr-gasnelio',
-          tone: 'corrective',
+          tone: 'professional',
           message: `Análise técnica: ${score}/${maxScore} pontos. Revise os aspectos farmacológicos: ${step.validation.feedback.incorrect.explanation} É fundamental seguir rigorosamente os protocolos para garantir eficácia terapêutica e segurança do paciente.`,
           xpBonus: 5
         };
@@ -174,14 +182,14 @@ export default function CaseExecution({
       if (isCorrect) {
         return {
           persona: 'ga',
-          tone: 'encouraging',
+          tone: 'empathetic',
           message: `Muito bem! 🌟 Você mostrou cuidado e atenção com o paciente. ${score}/${maxScore} pontos! ${percentage >= 90 ? 'Sua dedicação em aprender sobre hanseníase faz toda a diferença na vida das pessoas. Continue assim!' : 'Você está no caminho certo. Cada passo que dá é importante para ajudar quem precisa.'}`,
           xpBonus: percentage >= 90 ? 20 : percentage >= 80 ? 12 : 8
         };
       } else {
         return {
           persona: 'ga',
-          tone: 'supportive',
+          tone: 'empathetic',
           message: `Não desanime! 💪 Aprender leva tempo e você está se esforçando. ${score}/${maxScore} pontos desta vez. Lembre-se: ${step.validation.feedback.incorrect.explanation} Vamos continuar juntos - cada erro é uma oportunidade de crescer!`,
           xpBonus: 3
         };
@@ -256,7 +264,7 @@ export default function CaseExecution({
       case 'checklist':
         const requiredItems = step.interaction.checklistItems?.filter(item => item.required) || [];
         const userArrayAnswer = Array.isArray(userAnswer.value) ? userAnswer.value : userAnswer.selectedItems || [];
-        const selectedRequired = userArrayAnswer.filter((id: string) =>
+        const selectedRequired = (userArrayAnswer as string[]).filter((id: string) =>
           requiredItems.some(item => item.id === id)
         );
 
@@ -452,16 +460,17 @@ function StepExecutionInterface({
   isProcessing,
   userLevel
 }: StepExecutionInterfaceProps) {
-  const [userAnswer, setUserAnswer] = useState<any>(null);
+  const [userAnswer, setUserAnswer] = useState<string | number | boolean | string[] | { [key: string]: number } | null>(null);
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
 
   const handleSubmit = () => {
     if (step.interaction.type === 'checklist') {
       onSubmit({ value: selectedItems, selectedItems });
-    } else if (step.interaction.type === 'calculation') {
-      onSubmit({ value: userAnswer, calculations: userAnswer });
-    } else {
-      onSubmit({ value: userAnswer });
+    } else if (step.interaction.type === 'calculation' && userAnswer && typeof userAnswer === 'object' && !Array.isArray(userAnswer)) {
+      const calculationValues = userAnswer as { [key: string]: number };
+      onSubmit({ value: Object.values(calculationValues) as number[], calculations: calculationValues });
+    } else if (userAnswer !== null && typeof userAnswer !== 'object') {
+      onSubmit({ value: userAnswer as string | number | boolean });
     }
   };
 
@@ -469,7 +478,7 @@ function StepExecutionInterface({
     if (step.interaction.type === 'checklist') {
       return selectedItems.length > 0;
     } else if (step.interaction.type === 'calculation') {
-      return userAnswer && Object.keys(userAnswer).length > 0;
+      return userAnswer && typeof userAnswer === 'object' && Object.keys(userAnswer).length > 0;
     } else {
       return userAnswer !== null && userAnswer !== undefined;
     }
@@ -508,12 +517,12 @@ function StepExecutionInterface({
               ? { value: item, label: item }
               : {
                   value: item.id || item.text || String(index),
-                  label: item.text || item.label || String(item),
-                  text: item.text,
-                  category: item.category,
-                  points: item.points,
-                  required: item.required,
-                  id: item.id
+                  label: (item as ClinicalSelectOption).text || (item as ClinicalSelectOption).label || String(item),
+                  text: (item as ClinicalSelectOption).text,
+                  category: (item as ClinicalSelectOption).category,
+                  points: (item as ClinicalSelectOption).points,
+                  required: (item as ClinicalSelectOption).required,
+                  id: (item as ClinicalSelectOption).id
                 }
           )}
           selectedItems={selectedItems}
@@ -523,21 +532,47 @@ function StepExecutionInterface({
 
       {step.interaction.type === 'multiple_choice' && (
         <MultipleChoiceInterface
-          options={(step.interaction.options || []).map((option, index) =>
-            typeof option === 'string'
-              ? { value: option, label: option }
-              : { value: option.id || option.text || String(index), label: option.text || option.label || String(option) }
-          )}
-          selectedOption={userAnswer}
-          onSelectionChange={setUserAnswer}
+          options={(step.interaction.options || []).map((option, index): ClinicalSelectOption => {
+            if (typeof option === 'string') {
+              return {
+                value: option,
+                label: option,
+                text: option,
+                id: String(index)
+              };
+            }
+            const clinicalOption = option as ClinicalSelectOption;
+            return {
+              value: String(clinicalOption.id || clinicalOption.text || index),
+              label: clinicalOption.text || clinicalOption.label || String(option),
+              text: clinicalOption.text,
+              id: clinicalOption.id,
+              category: clinicalOption.category,
+              points: clinicalOption.points,
+              required: clinicalOption.required,
+              disabled: clinicalOption.disabled,
+              group: clinicalOption.group,
+              icon: clinicalOption.icon,
+              isCorrect: clinicalOption.isCorrect,
+              explanation: clinicalOption.explanation,
+              consequences: clinicalOption.consequences
+            };
+          })}
+          selectedOption={typeof userAnswer === 'string' ? userAnswer : null}
+          onSelectionChange={(option: string) => setUserAnswer(option as string)}
         />
       )}
 
-      {step.interaction.type === 'calculation' && (
+      {step.interaction.type === 'calculation' && step.interaction.calculationParameters && (
         <CalculationInterface
-          parameters={step.interaction.calculationParameters!}
-          values={userAnswer || {}}
-          onValuesChange={setUserAnswer}
+          parameters={{
+            inputFields: (step.interaction.calculationParameters.inputFields || []) as FormField[],
+            validationType: 'calculation',
+            expectedResult: step.interaction.calculationParameters.expectedResult as { [key: string]: number },
+            tolerance: step.interaction.calculationParameters.tolerance
+          }}
+          values={(userAnswer && typeof userAnswer === 'object' && !Array.isArray(userAnswer)) ? userAnswer as { [key: string]: number } : {}}
+          onValuesChange={(values: { [key: string]: number }) => setUserAnswer(values as { [key: string]: number })}
         />
       )}
 
@@ -580,7 +615,7 @@ function StepExecutionInterface({
 
 // Checklist Interface Component
 interface ChecklistInterfaceProps {
-  items: ExtendedSelectOption[];
+  items: ClinicalSelectOption[];
   selectedItems: string[];
   onSelectionChange: (items: string[]) => void;
 }
@@ -652,7 +687,7 @@ function ChecklistInterface({ items, selectedItems, onSelectionChange }: Checkli
 
 // Multiple Choice Interface Component
 interface MultipleChoiceInterfaceProps {
-  options: SelectOption[];
+  options: ClinicalSelectOption[];
   selectedOption: string | null;
   onSelectionChange: (option: string) => void;
 }
@@ -670,23 +705,23 @@ function MultipleChoiceInterface({
       <div style={{ display: 'grid', gap: '0.75rem' }}>
         {options.map((option) => (
           <label
-            key={option.id}
+            key={option.id || option.value}
             style={{
               display: 'flex',
               alignItems: 'center',
               gap: '0.75rem',
               padding: '1rem',
-              border: selectedOption === String(option.id) ? '2px solid #10b981' : '1px solid #e2e8f0',
+              border: selectedOption === String(option.id || option.value) ? '2px solid #10b981' : '1px solid #e2e8f0',
               borderRadius: '8px',
               cursor: 'pointer',
-              background: selectedOption === String(option.id) ? '#f0fdfa' : 'white'
+              background: selectedOption === String(option.id || option.value) ? '#f0fdfa' : 'white'
             }}
           >
             <input
               type="radio"
               name="multiple-choice"
-              checked={selectedOption === String(option.id)}
-              onChange={() => onSelectionChange(String(option.id))}
+              checked={selectedOption === String(option.id || option.value)}
+              onChange={() => onSelectionChange(String(option.id || option.value))}
             />
             <div style={{ flex: 1, fontWeight: '500' }}>
               {option.text || option.label}

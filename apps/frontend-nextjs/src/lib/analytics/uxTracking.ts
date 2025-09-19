@@ -110,13 +110,16 @@ class UXAnalytics {
   private setupGA4UXEvents() {
     // Enhanced GA4 tracking for UX metrics
     if (typeof window !== 'undefined' && (window as WindowWithGtag).gtag) {
-      (window as WindowWithGtag).gtag!('config', process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || process.env.GA_MEASUREMENT_ID, {
-        custom_map: {
-          'custom_parameter_1': 'cognitive_load_score',
-          'custom_parameter_2': 'mobile_experience_score',
-          'custom_parameter_3': 'onboarding_completion'
+      const measurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || process.env.GA_MEASUREMENT_ID;
+      if (measurementId) {
+          (window as WindowWithGtag).gtag!('config', measurementId, {
+            custom_map: {
+              'custom_parameter_1': 'cognitive_load_score',
+              'custom_parameter_2': 'mobile_experience_score',
+              'custom_parameter_3': 'onboarding_completion'
+            }
+          });
         }
-      });
     }
   }
 

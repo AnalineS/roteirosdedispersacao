@@ -243,6 +243,7 @@ export interface CaseReference {
   page?: number;
   url?: string;
   relevance: 'primary' | 'secondary' | 'supplementary';
+  [key: string]: unknown;
 }
 
 export interface CaseQualityMetrics {

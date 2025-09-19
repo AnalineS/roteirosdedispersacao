@@ -2,10 +2,9 @@ import { useState, useCallback } from 'react';
 import { apiClient } from '@/services/api';
 import type { FeedbackData } from '@/types/feedback';
 
-// Interface para gtag analytics
-interface WindowWithGtag extends Window {
-  gtag?: (command: string, action: string, parameters?: Record<string, unknown>) => void;
-}
+// Import unified analytics types
+import '@/types/analytics';
+import type { WindowWithGtag } from '@/types/analytics';
 
 export interface FeedbackResponse {
   message: string;
@@ -100,7 +99,7 @@ export function useFeedback(options: UseFeedbackOptions = {}) {
           return response;
 
         } catch (attemptError: Error | unknown) {
-          lastError = attemptError;
+          lastError = attemptError instanceof Error ? attemptError : new Error(String(attemptError));
           
           if (attempt < retryAttempts) {
             // Exponential backoff
@@ -114,7 +113,7 @@ export function useFeedback(options: UseFeedbackOptions = {}) {
       throw lastError;
 
     } catch (submitError: Error | unknown) {
-      const errorMessage = submitError?.message || 'Erro ao enviar feedback';
+      const errorMessage = submitError instanceof Error ? submitError.message : 'Erro ao enviar feedback';
       setError(errorMessage);
 
       // Adicionar à queue offline se habilitado
@@ -132,7 +131,7 @@ export function useFeedback(options: UseFeedbackOptions = {}) {
           });
         }
       } else {
-        onError?.(submitError);
+        onError?.(submitError instanceof Error ? submitError : new Error(String(submitError)));
       }
 
       throw submitError;
@@ -429,7 +428,7 @@ export function useFeedbackStats() {
       setStats(mockStats);
 
     } catch (fetchError: Error | unknown) {
-      setError(fetchError?.message || 'Erro ao buscar estatísticas');
+      setError(fetchError instanceof Error ? fetchError.message : 'Erro ao buscar estatísticas');
       // Erro ao buscar stats de feedback
       if (typeof process !== 'undefined' && process.stderr) {
         process.stderr.write(`❌ ERRO - Falha ao buscar stats de feedback: ${fetchError}\n`);

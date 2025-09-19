@@ -192,14 +192,14 @@ export const useDynamicOptimization = (config: OptimizationConfig = {}) => {
     };
   }, [debounceMs]);
 
-  const createThrottledFunction = useCallback(<T extends (...args: unknown[]) => unknown>(
+  const createThrottledFunction = useCallback(<T extends (...args: [React.SyntheticEvent, string]) => void>(
     callback: T,
     delay: number = throttleMs
   ): T => {
     let lastCall = 0;
     let timeoutId: NodeJS.Timeout | undefined;
 
-    const throttledFn = (...args: Parameters<T>) => {
+    const throttledFn = (...args: [React.SyntheticEvent, string]) => {
       const now = Date.now();
 
       if (now - lastCall >= delay) {

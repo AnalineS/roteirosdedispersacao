@@ -14,6 +14,14 @@ import validationService, {
   ValidationAlert,
 } from "@/services/validationService";
 
+type MistakePattern = {
+  pattern: string;
+  frequency: number;
+  severity: "critical" | "high" | "medium" | "low";
+  recommendation: string;
+  category: string;
+};
+
 interface QualityDashboardProps {
   refreshInterval?: number; // ms, default 30000
   showDetailedMetrics?: boolean;
@@ -377,10 +385,10 @@ const LearningTab: React.FC<{ metrics: DashboardData["metrics"] }> = ({
         <h3>Padrões de Erro Comuns</h3>
         {metrics.learning.mistakePatterns
           .slice(0, 5)
-          .map((pattern: { stepId: string; mistakeType: string; severity: string; [key: string]: unknown }) => (
-            <div key={pattern.stepId} className="mistake-pattern">
+          .map((pattern: MistakePattern, index: number) => (
+            <div key={index} className="mistake-pattern">
               <div className="pattern-header">
-                <span className="pattern-type">{pattern.mistakeType}</span>
+                <span className="pattern-type">{pattern.pattern}</span>
                 <span className={`pattern-severity ${pattern.severity}`}>
                   {pattern.severity.toUpperCase()}
                 </span>
@@ -389,16 +397,12 @@ const LearningTab: React.FC<{ metrics: DashboardData["metrics"] }> = ({
                 <span className="frequency">
                   Frequência: {pattern.frequency}
                 </span>
-                <span className="step-id">Step: {pattern.stepId}</span>
+                <span className="step-id">Categoria: {pattern.category}</span>
               </div>
               <div className="pattern-improvements">
-                {pattern.suggestedImprovements.map(
-                  (improvement: string, idx: number) => (
-                    <span key={idx} className="improvement-tag">
-                      {improvement}
-                    </span>
-                  ),
-                )}
+                <span className="improvement-tag">
+                  {pattern.recommendation}
+                </span>
               </div>
             </div>
           ))}

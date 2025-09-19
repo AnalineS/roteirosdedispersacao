@@ -588,7 +588,7 @@ export default function ProgressPage() {
             padding: '30px',
             boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
             marginBottom: '40px',
-            border: `3px solid ${currentPersona.tone === 'technical' ? '#3b82f6' : '#10b981'}`
+            border: `3px solid ${currentPersona.id === 'dr_gasnelio' ? '#3b82f6' : '#10b981'}`
           }}>
             <div style={{
               display: 'flex',
@@ -600,7 +600,7 @@ export default function ProgressPage() {
                 width: '80px',
                 height: '80px',
                 borderRadius: '50%',
-                background: `linear-gradient(135deg, ${currentPersona.tone === 'technical' ? '#3b82f6' : '#10b981'} 0%, ${currentPersona.tone === 'technical' ? '#1e40af' : '#059669'} 100%)`,
+                background: `linear-gradient(135deg, ${currentPersona.id === 'dr_gasnelio' ? '#3b82f6' : '#10b981'} 0%, ${currentPersona.id === 'dr_gasnelio' ? '#1e40af' : '#059669'} 100%)`,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -608,7 +608,7 @@ export default function ProgressPage() {
                 color: 'white',
                 boxShadow: '0 8px 24px rgba(0,0,0,0.2)'
               }}>
-                {currentPersona.tone === 'technical' ? '👨‍⚕️' : '👩‍🏫'}
+                {currentPersona.id === 'dr_gasnelio' ? '👨‍⚕️' : '👩‍🏫'}
               </div>
               <div>
                 <h3 style={{
@@ -631,10 +631,10 @@ export default function ProgressPage() {
                 <div style={{
                   marginTop: '8px',
                   fontSize: '0.9rem',
-                  color: currentPersona.tone === 'technical' ? '#3b82f6' : '#10b981',
+                  color: currentPersona.id === 'dr_gasnelio' ? '#3b82f6' : '#10b981',
                   fontWeight: '600'
                 }}>
-                  📊 Estilo: {currentPersona.responseStyle || (currentPersona.tone === 'technical' ? 'Técnico e Preciso' : 'Empático e Didático')}
+                  📊 Estilo: {currentPersona.responseStyle || (currentPersona.id === 'dr_gasnelio' ? 'Técnico e Preciso' : 'Empático e Didático')}
                 </div>
               </div>
             </div>
@@ -647,13 +647,13 @@ export default function ProgressPage() {
               <div style={{
                 textAlign: 'center',
                 padding: '20px',
-                background: `${currentPersona.tone === 'technical' ? '#3b82f6' : '#10b981'}10`,
+                background: `${currentPersona.id === 'dr_gasnelio' ? '#3b82f6' : '#10b981'}10`,
                 borderRadius: '12px'
               }}>
                 <div style={{
                   fontSize: '2.2rem',
                   fontWeight: 'bold',
-                  color: currentPersona.tone === 'technical' ? '#3b82f6' : '#10b981',
+                  color: currentPersona.id === 'dr_gasnelio' ? '#3b82f6' : '#10b981',
                   marginBottom: '8px'
                 }}>
                   {Math.floor(progressData.chatSessions * 0.6)}
@@ -666,13 +666,13 @@ export default function ProgressPage() {
               <div style={{
                 textAlign: 'center',
                 padding: '20px',
-                background: `${currentPersona.tone === 'technical' ? '#3b82f6' : '#10b981'}10`,
+                background: `${currentPersona.id === 'dr_gasnelio' ? '#3b82f6' : '#10b981'}10`,
                 borderRadius: '12px'
               }}>
                 <div style={{
                   fontSize: '2.2rem',
                   fontWeight: 'bold',
-                  color: currentPersona.tone === 'technical' ? '#3b82f6' : '#10b981',
+                  color: currentPersona.id === 'dr_gasnelio' ? '#3b82f6' : '#10b981',
                   marginBottom: '8px'
                 }}>
                   {Math.floor(progressData.questionsAsked * 0.7)}%
@@ -685,13 +685,13 @@ export default function ProgressPage() {
               <div style={{
                 textAlign: 'center',
                 padding: '20px',
-                background: `${currentPersona.tone === 'technical' ? '#3b82f6' : '#10b981'}10`,
+                background: `${currentPersona.id === 'dr_gasnelio' ? '#3b82f6' : '#10b981'}10`,
                 borderRadius: '12px'
               }}>
                 <div style={{
                   fontSize: '2.2rem',
                   fontWeight: 'bold',
-                  color: currentPersona.tone === 'technical' ? '#3b82f6' : '#10b981',
+                  color: currentPersona.id === 'dr_gasnelio' ? '#3b82f6' : '#10b981',
                   marginBottom: '8px'
                 }}>
                   {formatTime(Math.floor(progressData.totalTime * 0.65))}
@@ -711,7 +711,7 @@ export default function ProgressPage() {
               color: '#666',
               textAlign: 'center'
             }}>
-              💡 Dica: {currentPersona.tone === 'technical'
+              💡 Dica: {currentPersona.id === 'dr_gasnelio'
                 ? 'Faça perguntas específicas sobre dosagens e protocolos para aproveitar ao máximo o Dr. Gasnelio'
                 : 'Use linguagem natural e pergunte sobre conceitos básicos para uma melhor experiência com a Gá'
               }

@@ -90,7 +90,8 @@ export function useOptimizedInput<T = string>({
 
   // Handler debouncado para mudanças
   const debouncedChangeHandler = useCallback(
-    debounce((val: T) => {
+    debounce((...args: unknown[]) => {
+      const val = args[0] as T;
       const validationResult = validateValue(val);
       setDebouncedValue(val);
 
@@ -98,7 +99,7 @@ export function useOptimizedInput<T = string>({
         onDebouncedChange(val, validationResult);
       }
     }, debounceMs),
-    [debounce, validateValue, onDebouncedChange, debounceMs]
+    [validateValue, onDebouncedChange, debounceMs]
   );
 
   // Handler para mudanças de valor

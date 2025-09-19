@@ -11,6 +11,7 @@ interface UXEvent {
   action: string;
   label: string;
   custom_dimensions?: Record<string, string | number>;
+  custom_parameters?: Record<string, string | number | boolean>;
 }
 
 interface CognitiveLoadMetrics {
@@ -50,19 +51,63 @@ interface MockUXAnalytics {
 class UXAnalytics implements MockUXAnalytics {
   trackEvent(event: UXEvent) {
     // Implementação mock - será conectada ao sistema real depois
-    console.debug('UX Event tracked:', event);
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'ux_event_tracked', {
+        event_category: 'medical_ux_tracking',
+        event_label: 'ux_event_execution',
+        custom_parameters: {
+          medical_context: 'ux_analytics_system',
+          event_category: event.category,
+          event_action: event.action,
+          event_label: event.label
+        }
+      });
+    }
   }
   
   trackCognitiveLoad(metrics: CognitiveLoadMetrics) {
-    console.debug('Cognitive Load tracked:', metrics);
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'cognitive_load_tracked', {
+        event_category: 'medical_ux_tracking',
+        event_label: 'cognitive_load_measurement',
+        custom_parameters: {
+          medical_context: 'cognitive_analytics_system',
+          elements_per_page: metrics.elements_per_page,
+          information_density: metrics.information_density,
+          decision_points: metrics.decision_points
+        }
+      });
+    }
   }
   
   trackMobileExperience(metrics: MobileExperienceMetrics) {
-    console.debug('Mobile Experience tracked:', metrics);
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'mobile_experience_tracked', {
+        event_category: 'medical_ux_tracking',
+        event_label: 'mobile_experience_measurement',
+        custom_parameters: {
+          medical_context: 'mobile_analytics_system',
+          device_type: metrics.device_type,
+          screen_size: metrics.screen_size,
+          touch_accuracy: metrics.touch_accuracy
+        }
+      });
+    }
   }
   
   trackOnboarding(metrics: OnboardingMetrics) {
-    console.debug('Onboarding tracked:', metrics);
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'onboarding_tracked', {
+        event_category: 'medical_ux_tracking',
+        event_label: 'onboarding_measurement',
+        custom_parameters: {
+          medical_context: 'onboarding_analytics_system',
+          onboarding_step: metrics.step,
+          completion_rate: metrics.completion_rate,
+          time_spent: metrics.time_spent
+        }
+      });
+    }
   }
 }
 
@@ -117,8 +162,8 @@ export function useGlobalTracking(config: TrackingConfig = DEFAULT_CONFIG) {
       
       // Track page transition
       trackCustomUXEvent('page_transition', 'navigation', undefined, {
-        from: previousPathname.current,
-        to: pathname,
+        from: previousPathname.current || 'unknown',
+        to: pathname || '/',
         time_on_previous_page: timeOnPage,
         interaction_count: interactionCount.current,
         scroll_depth: scrollDepth.current,

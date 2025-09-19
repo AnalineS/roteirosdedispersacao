@@ -71,20 +71,6 @@ export default function ImageCropper({
     info(); // Haptic feedback quando imagem carrega
   }, [aspectRatio, info]);
 
-  // Processar crop quando completado
-  useEffect(() => {
-    if (completedCrop?.width && completedCrop?.height && imgRef.current && canvasRef.current) {
-      generateCroppedImage(
-        imgRef.current,
-        canvasRef.current,
-        completedCrop,
-        scale,
-        rotate,
-        quality
-      );
-    }
-  }, [completedCrop, scale, rotate, quality, generateCroppedImage]);
-
   // Função para gerar imagem cortada
   const generateCroppedImage = useCallback(
     (image: HTMLImageElement, canvas: HTMLCanvasElement, crop: PixelCrop, scale: number, rotate: number, quality: number) => {
@@ -135,6 +121,20 @@ export default function ImageCropper({
     },
     []
   );
+
+  // Processar crop quando completado
+  useEffect(() => {
+    if (completedCrop?.width && completedCrop?.height && imgRef.current && canvasRef.current) {
+      generateCroppedImage(
+        imgRef.current,
+        canvasRef.current,
+        completedCrop,
+        scale,
+        rotate,
+        quality
+      );
+    }
+  }, [completedCrop, scale, rotate, quality, generateCroppedImage]);
 
   // Aplicar crop final
   const handleCropApply = useCallback(async () => {
