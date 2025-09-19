@@ -5,13 +5,22 @@
  * Sistema completo de notificações com push notifications, lembretes e alertas médicos
  */
 
+export interface NotificationData {
+  type?: 'medication' | 'appointment' | 'emergency' | 'educational' | 'reminder';
+  reminderId?: string;
+  location?: string;
+  emergency?: boolean;
+  moduleId?: string;
+  [key: string]: unknown;
+}
+
 export interface NotificationConfig {
   title: string;
   body: string;
   icon?: string;
   badge?: string;
   vibrate?: number[];
-  data?: any;
+  data?: NotificationData;
   actions?: NotificationAction[];
   tag?: string;
   requireInteraction?: boolean;

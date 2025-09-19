@@ -6,9 +6,21 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useSocialProfile } from '@/hooks/useSocialProfile';
+import { useSocialProfile, type ProgressData } from '@/hooks/useSocialProfile';
 import { useGamification } from '@/hooks/useGamification';
 import { useAuth } from '@/hooks/useAuth';
+
+interface ShareContentMetadata {
+  level?: number;
+  totalPoints?: number;
+  achievements?: number;
+  streak?: number;
+  achievementId?: string;
+  certificateId?: string;
+  moduleId?: string;
+  shareType?: 'achievement' | 'certificate' | 'progress' | 'milestone';
+  [key: string]: unknown;
+}
 
 interface ShareProgressProps {
   // Legacy props para compatibilidade
@@ -41,7 +53,7 @@ interface ShareProgressProps {
   customContent?: {
     title: string;
     description: string;
-    metadata: any;
+    metadata: ShareContentMetadata;
   };
   onShare?: (result: { success: boolean; shareUrl?: string }) => void;
   className?: string;
@@ -80,15 +92,38 @@ export default function ShareProgress({
       } else if (certificateId) {
         result = await shareCertificate(certificateId);
       } else if (customContent) {
-        result = await shareProgress(customContent.metadata);
+        // Convert ShareContentMetadata to ProgressData
+        const progressData: ProgressData = {
+          userId: user?.uid || 'anonymous',
+          totalPoints: customContent.metadata.totalPoints || 0,
+          completedModules: customContent.metadata.moduleId ? 1 : 0,
+          certificatesEarned: customContent.metadata.certificateId ? 1 : 0,
+          streakDays: customContent.metadata.streak || 0,
+          achievements: customContent.metadata.achievementId ? [{
+            id: customContent.metadata.achievementId,
+            name: 'Achievement',
+            earnedAt: new Date().toISOString()
+          }] : [],
+          recentActivity: []
+        };
+        result = await shareProgress(progressData);
       } else if (progress) {
-        // Compartilhar progresso geral
-        result = await shareProgress({
-          level: progress.level,
+        // Compartilhar progresso geral - convert to ProgressData
+        const progressData: ProgressData = {
+          userId: user?.uid || 'anonymous',
           totalPoints: progress.totalPoints,
-          achievements: progress.achievements.length,
-          streak: progress.streak
-        });
+          completedModules: progress.completedModules || 0,
+          certificatesEarned: progress.certificates?.length || 0,
+          streakDays: progress.streak,
+          achievements: progress.achievements?.map(achievement => ({
+            id: achievement.id,
+            name: achievement.name || achievement.title,
+            earnedAt: achievement.earnedAt || achievement.unlockedAt || new Date().toISOString(),
+            description: achievement.description
+          })) || [],
+          recentActivity: progress.recentActivity || []
+        };
+        result = await shareProgress(progressData);
       }
 
       setShareResult(result);
@@ -117,7 +152,18 @@ export default function ShareProgress({
       onShare?.(result);
 
     } catch (error) {
-      console.error('Erro ao compartilhar:', error);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'share_progress_error', {
+          event_category: 'medical_social_sharing',
+          event_label: 'progress_share_failed',
+          custom_parameters: {
+            medical_context: 'achievement_social_sharing',
+            share_type: 'progress_share',
+            error_type: 'sharing_failure',
+            error_message: error instanceof Error ? error.message : String(error)
+          }
+        });
+      }
       setShareResult({ success: false });
     } finally {
       setIsSharing(false);
@@ -151,7 +197,18 @@ export default function ShareProgress({
       await navigator.clipboard.writeText(url);
       alert('Link copiado para a área de transferência!');
     } catch (error) {
-      console.error('Erro ao copiar para área de transferência:', error);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'share_clipboard_error', {
+          event_category: 'medical_social_sharing',
+          event_label: 'clipboard_copy_failed',
+          custom_parameters: {
+            medical_context: 'achievement_clipboard_sharing',
+            share_type: 'clipboard_copy',
+            error_type: 'clipboard_failure',
+            error_message: error instanceof Error ? error.message : String(error)
+          }
+        });
+      }
     }
   };
 

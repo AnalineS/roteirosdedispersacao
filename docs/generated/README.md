@@ -30,8 +30,8 @@ Análise de segurança e recomendações.
 ## Resumo Executivo
 
 ### Estatísticas Gerais
-- **Arquivos Analisados**: 0
-- **Linhas de Código**: 0
+- **Arquivos Analisados**: 2
+- **Linhas de Código**: 3
 - **Componentes**: 0
 - **APIs**: 0
 - **Testes**: 0
@@ -49,6 +49,6 @@ Análise de segurança e recomendações.
 - **Padrões Médicos**: ANVISA, CID-10, RENAME
 
 ---
-*Documentação gerada automaticamente em 07/09/2025, 22:59:38*
+*Documentação gerada automaticamente em 17/09/2025, 09:14:49*
 
 **Sistema de Documentação Automática v2.0.0**

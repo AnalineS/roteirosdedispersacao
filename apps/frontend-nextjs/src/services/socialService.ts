@@ -27,7 +27,7 @@ export interface ShareableContent {
   description: string;
   imageUrl?: string;
   metadata: {
-    [key: string]: any;
+    [key: string]: unknown;
   };
 }
 

@@ -147,14 +147,19 @@ export const ErrorHandlerProvider: React.FC<{
       errorHistory.current = errorHistory.current.slice(0, maxHistorySize);
     }
 
-    // Log estruturado
-    console.group(`🚨 Error Captured [${severity.toUpperCase()}] - ${errorId}`);
-    console.error('Error:', errorObj);
-    console.info('Context:', errorData.context);
-    if (options.metadata) {
-      console.info('Metadata:', options.metadata);
+    // Analytics tracking para sistema médico
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'medical_error_captured', {
+        event_category: 'medical_safety',
+        event_label: `error_${severity}`,
+        custom_parameters: {
+          error_id: errorId,
+          medical_severity: severity,
+          component_context: options.component || 'unknown',
+          medical_action: options.action || 'unspecified'
+        }
+      });
     }
-    console.groupEnd();
 
     // Callback customizado
     if (onError) {
@@ -166,14 +171,21 @@ export const ErrorHandlerProvider: React.FC<{
       showToast(errorId, severity, errorObj.message);
     }
 
-    // Logging para produção (placeholder para integração futura)
-    if (process.env.NODE_ENV === 'production') {
+    // Medical analytics para produção
+    if (process.env.NODE_ENV === 'production' && typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'medical_error_logged', {
+        event_category: 'medical_infrastructure',
+        event_label: 'production_error_tracking',
+        custom_parameters: {
+          error_id: errorId,
+          medical_system_health: 'error_logged'
+        }
+      });
       // TODO: Integrar com Sentry, LogRocket, etc.
-      console.log('📤 Error enviado para logging service:', errorId);
     }
 
     return errorId;
-  }, [generateErrorId, calculateSeverity, maxHistorySize, onError]);
+  }, [generateErrorId, calculateSeverity, maxHistorySize, onError, showToast]);
 
   const showToast = useCallback((errorId: string, severity: ErrorSeverity, message: string) => {
     // Trigger toast notification

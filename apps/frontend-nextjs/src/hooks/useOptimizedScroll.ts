@@ -110,7 +110,7 @@ export function useOptimizedScroll({
   // Throttled scroll handler
   const throttledScrollHandler = useCallback(
     throttle(handleScroll, throttleMs, { leading: true, trailing: true }),
-    [handleScroll, throttleMs]
+    [throttle, handleScroll, throttleMs]
   );
 
   useEffect(() => {

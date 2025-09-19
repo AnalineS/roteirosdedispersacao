@@ -245,7 +245,7 @@ export function useMedicalOptimisticUpdate<T>(
       asyncOperation,
       updateOptions
     );
-  }, [optimisticHook.performOptimisticUpdate, medicalValidation]);
+  }, [optimisticHook, medicalValidation]);
 
   return {
     ...optimisticHook,

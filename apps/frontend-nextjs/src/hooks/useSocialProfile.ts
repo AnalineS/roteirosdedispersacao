@@ -8,6 +8,60 @@ import { useAuth } from '@/hooks/useAuth';
 import { socialService, type SocialProfile, type ShareableContent } from '@/services/socialService';
 import type { AuthUser } from '@/types/auth';
 
+// Window interface with gtag for medical tracking
+interface WindowWithGtag extends Window {
+  gtag?: (
+    command: 'event' | 'config',
+    eventNameOrId: string,
+    parameters?: Record<string, unknown>
+  ) => void;
+}
+
+interface EmailPreferences {
+  dailyDigest?: boolean;
+  weeklyReport?: boolean;
+  achievements?: boolean;
+  certificates?: boolean;
+  newFeatures?: boolean;
+  marketing?: boolean;
+  productUpdates?: boolean;
+  securityAlerts?: boolean;
+}
+
+interface PrivacySettings {
+  profileVisible?: boolean;
+  progressVisible?: boolean;
+  achievementsVisible?: boolean;
+  emailVisible?: boolean;
+  statsVisible?: boolean;
+  allowMessages?: boolean;
+  showOnlineStatus?: boolean;
+  shareAnalytics?: boolean;
+}
+
+export interface ProgressData {
+  userId: string;
+  totalPoints: number;
+  completedModules: number;
+  certificatesEarned: number;
+  streakDays: number;
+  achievements: Array<{
+    id: string;
+    name: string;
+    earnedAt: string;
+    description?: string;
+  }>;
+  recentActivity: Array<{
+    type: 'conversation' | 'module' | 'certificate';
+    title: string;
+    completedAt: string;
+  }>;
+  timeFrame?: {
+    start: string;
+    end: string;
+  };
+}
+
 // Extended SocialProfile para compatibilidade com SocialProfile.tsx
 export interface ExtendedSocialProfile extends SocialProfile {
   email?: string;
@@ -52,14 +106,14 @@ export interface SocialProfileHook {
   // Profile Management
   updateProfile: (updates: Partial<ExtendedSocialProfile>) => Promise<boolean>;
   updateAvatar: (url: string) => Promise<boolean>;
-  updateEmailPreferences: (preferences: any) => Promise<boolean>;
-  updatePrivacySettings: (settings: any) => Promise<boolean>;
+  updateEmailPreferences: (preferences: EmailPreferences) => Promise<boolean>;
+  updatePrivacySettings: (settings: PrivacySettings) => Promise<boolean>;
   toggleProfileVisibility: () => Promise<boolean>;
 
   // Sharing Functions
   shareAchievement: (achievementId: string) => Promise<{ success: boolean; shareUrl?: string }>;
   shareCertificate: (certificateId: string) => Promise<{ success: boolean; shareUrl?: string }>;
-  shareProgress: (progressData: any) => Promise<{ success: boolean; shareUrl?: string }>;
+  shareProgress: (progressData: ProgressData) => Promise<{ success: boolean; shareUrl?: string }>;
 
   // Social Features
   getPublicProfiles: (limit?: number) => Promise<ExtendedSocialProfile[]>;
@@ -123,7 +177,18 @@ export function useSocialProfile(): SocialProfileHook {
       }
 
     } catch (err) {
-      console.error('Erro ao carregar perfil social:', err);
+      // Medical tracking for profile load error
+      if (typeof window !== 'undefined' && (window as WindowWithGtag).gtag) {
+        (window as WindowWithGtag).gtag!('event', 'social_profile_load_error', {
+          event_category: 'medical_analytics_error',
+          event_label: 'social_profile_load_failure',
+          custom_parameters: {
+            medical_context: 'social_profile_error_system',
+            error_message: err instanceof Error ? err.message : 'Unknown error',
+            failed_operation: 'load_social_profile'
+          }
+        });
+      }
       setError('Erro ao carregar perfil social');
     } finally {
       setLoading(false);
@@ -145,7 +210,18 @@ export function useSocialProfile(): SocialProfileHook {
 
       return success;
     } catch (error) {
-      console.error('Erro ao atualizar perfil social:', error);
+      // Medical tracking for profile update error
+      if (typeof window !== 'undefined' && (window as WindowWithGtag).gtag) {
+        (window as WindowWithGtag).gtag!('event', 'social_profile_update_error', {
+          event_category: 'medical_analytics_error',
+          event_label: 'social_profile_update_failure',
+          custom_parameters: {
+            medical_context: 'social_profile_error_system',
+            error_message: error instanceof Error ? error.message : 'Unknown error',
+            failed_operation: 'update_social_profile'
+          }
+        });
+      }
       return false;
     }
   }, [user, isAuthenticated, profile]);
@@ -183,7 +259,18 @@ export function useSocialProfile(): SocialProfileHook {
       return result;
 
     } catch (error) {
-      console.error('Erro ao compartilhar conquista:', error);
+      // Medical tracking for achievement share error
+      if (typeof window !== 'undefined' && (window as WindowWithGtag).gtag) {
+        (window as WindowWithGtag).gtag!('event', 'achievement_share_error', {
+          event_category: 'medical_analytics_error',
+          event_label: 'achievement_share_failure',
+          custom_parameters: {
+            medical_context: 'social_profile_error_system',
+            error_message: error instanceof Error ? error.message : 'Unknown error',
+            failed_operation: 'share_achievement'
+          }
+        });
+      }
       return { success: false };
     }
   }, [user, isAuthenticated]);
@@ -212,7 +299,18 @@ export function useSocialProfile(): SocialProfileHook {
       return result;
 
     } catch (error) {
-      console.error('Erro ao compartilhar certificado:', error);
+      // Medical tracking for certificate share error
+      if (typeof window !== 'undefined' && (window as WindowWithGtag).gtag) {
+        (window as WindowWithGtag).gtag!('event', 'certificate_share_error', {
+          event_category: 'medical_analytics_error',
+          event_label: 'certificate_share_failure',
+          custom_parameters: {
+            medical_context: 'social_profile_error_system',
+            error_message: error instanceof Error ? error.message : 'Unknown error',
+            failed_operation: 'share_certificate'
+          }
+        });
+      }
       return { success: false };
     }
   }, [user, isAuthenticated]);
@@ -220,7 +318,7 @@ export function useSocialProfile(): SocialProfileHook {
   /**
    * Compartilhar progresso
    */
-  const shareProgress = useCallback(async (progressData: any): Promise<{ success: boolean; shareUrl?: string }> => {
+  const shareProgress = useCallback(async (progressData: ProgressData): Promise<{ success: boolean; shareUrl?: string }> => {
     if (!isAuthenticated || !user) {
       return { success: false };
     }
@@ -241,7 +339,18 @@ export function useSocialProfile(): SocialProfileHook {
       return result;
 
     } catch (error) {
-      console.error('Erro ao compartilhar progresso:', error);
+      // Medical tracking for progress share error
+      if (typeof window !== 'undefined' && (window as WindowWithGtag).gtag) {
+        (window as WindowWithGtag).gtag!('event', 'progress_share_error', {
+          event_category: 'medical_analytics_error',
+          event_label: 'progress_share_failure',
+          custom_parameters: {
+            medical_context: 'social_profile_error_system',
+            error_message: error instanceof Error ? error.message : 'Unknown error',
+            failed_operation: 'share_progress'
+          }
+        });
+      }
       return { success: false };
     }
   }, [user, isAuthenticated]);
@@ -256,14 +365,14 @@ export function useSocialProfile(): SocialProfileHook {
   /**
    * Atualizar preferências de email
    */
-  const updateEmailPreferences = useCallback(async (preferences: any): Promise<boolean> => {
+  const updateEmailPreferences = useCallback(async (preferences: EmailPreferences): Promise<boolean> => {
     return await updateProfile({ emailPreferences: preferences });
   }, [updateProfile]);
 
   /**
    * Atualizar configurações de privacidade
    */
-  const updatePrivacySettings = useCallback(async (settings: any): Promise<boolean> => {
+  const updatePrivacySettings = useCallback(async (settings: PrivacySettings): Promise<boolean> => {
     return await updateProfile({
       privacy: settings,
       isPublic: settings.profileVisible
@@ -288,7 +397,18 @@ export function useSocialProfile(): SocialProfileHook {
         }
       }));
     } catch (error) {
-      console.error('Erro ao carregar perfis públicos:', error);
+      // Medical tracking for public profiles load error
+      if (typeof window !== 'undefined' && (window as WindowWithGtag).gtag) {
+        (window as WindowWithGtag).gtag!('event', 'public_profiles_load_error', {
+          event_category: 'medical_analytics_error',
+          event_label: 'public_profiles_load_failure',
+          custom_parameters: {
+            medical_context: 'social_profile_error_system',
+            error_message: error instanceof Error ? error.message : 'Unknown error',
+            failed_operation: 'load_public_profiles'
+          }
+        });
+      }
       return [];
     }
   }, []);

@@ -27,7 +27,7 @@ export default function QuickNavigationMenu({
   const shouldShow = useNavigationVisibility('quick-nav-fab');
   const { optimalPosition, updateVisibility } = useFloatingElement(
     'quick-nav-fab',
-    position as any,
+    position as 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right',
     3, // Priority
     'medium'
   );

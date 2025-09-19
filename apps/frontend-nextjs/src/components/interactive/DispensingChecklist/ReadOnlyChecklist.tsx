@@ -98,7 +98,7 @@ export default function ReadOnlyChecklist({
         gap: modernChatTheme.spacing.md,
         marginBottom: modernChatTheme.spacing.xl
       }}>
-        {stages.map((stage, index) => (
+        {stages.map((stage) => (
           <div
             key={stage.id}
             style={{
@@ -347,7 +347,7 @@ export default function ReadOnlyChecklist({
                         {expandedActivity === activity.id && (
                           <div style={{ padding: modernChatTheme.spacing.md }}>
                             <div style={{ display: 'grid', gap: modernChatTheme.spacing.sm }}>
-                              {activity.items.map((item, index) => (
+                              {activity.items.map((item) => (
                                 <div
                                   key={item.id}
                                   style={{

@@ -47,7 +47,7 @@ export interface RAGResponse {
   processingTimeMs: number;
   cached?: boolean;
   enhanced?: boolean;
-  documents?: any[];
+  documents?: Record<string, unknown>[];
   query?: string;
 }
 

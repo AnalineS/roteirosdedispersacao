@@ -72,7 +72,7 @@ export default function FastAccessBar({
       window.gtag('event', shortcut.analytics?.event || 'fast_access_click', {
         event_category: shortcut.analytics?.category || 'fast_access_bar',
         event_label: shortcut.analytics?.label || shortcut.id,
-        custom_dimensions: {
+        custom_parameters: {
           urgency: shortcut.urgency,
           category: shortcut.category,
           user_role: userProfile?.role || 'unknown',
@@ -154,7 +154,7 @@ export default function FastAccessBar({
   }
 
   // Função para throttle do scroll
-  function throttle<T extends (...args: any[]) => any>(func: T, delay: number): T {
+  function throttle<T extends (...args: unknown[]) => unknown>(func: T, delay: number): T {
     let timeoutId: NodeJS.Timeout | null = null;
     let lastExecTime = 0;
     
@@ -223,7 +223,7 @@ export default function FastAccessBar({
           msOverflowStyle: 'none', // IE/Edge
           paddingBottom: '4px'
         }}>
-          {shortcuts.map((shortcut, index) => {
+          {shortcuts.map((shortcut) => {
             const colors = getUrgencyColor(shortcut.urgency);
             const accessKey = ACCESS_KEYS[shortcut.id as keyof typeof ACCESS_KEYS];
             

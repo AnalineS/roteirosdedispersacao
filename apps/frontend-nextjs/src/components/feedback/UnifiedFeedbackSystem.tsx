@@ -393,7 +393,7 @@ export const useFeedbackActions = () => {
         type: 'success',
         title: 'Salvo com sucesso!',
         message: 'Suas alterações foram salvas automaticamente.',
-        actions: [{ label: 'Ver detalhes', onClick: () => console.log('Details') }]
+        actions: [{ label: 'Ver detalhes', onClick: () => undefined }]
       }),
 
     showLoadingProgress: (message: string = 'Carregando...') =>

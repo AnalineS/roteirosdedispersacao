@@ -83,7 +83,7 @@ export default function ImageCropper({
         quality
       );
     }
-  }, [completedCrop, scale, rotate, quality]);
+  }, [completedCrop, scale, rotate, quality, generateCroppedImage]);
 
   // Função para gerar imagem cortada
   const generateCroppedImage = useCallback(
@@ -164,7 +164,12 @@ export default function ImageCropper({
       success();
       onCropComplete(blob);
     } catch (err) {
-      console.error('Erro ao processar crop:', err);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'image_crop_processing_error', {
+          event_category: 'image',
+          event_label: 'crop_error'
+        });
+      }
       error();
     } finally {
       setIsProcessing(false);

@@ -4,9 +4,9 @@
 
 | Métrica | Valor |
 |---------|-------|
-| Total de Arquivos | 0 |
-| Linhas de Código | 0 |
-| Média de Linhas/Arquivo | NaN |
+| Total de Arquivos | 2 |
+| Linhas de Código | 3 |
+| Média de Linhas/Arquivo | 2 |
 | Componentes React | 0 |
 | APIs | 0 |
 | Testes | 0 |
@@ -32,8 +32,8 @@
 | Médicas | 0 |
 | Analytics | 0 |
 | Segurança | 0 |
-| Outras | 26 |
-| **Total** | **43** |
+| Outras | 28 |
+| **Total** | **45** |
 
 ---
-*Métricas calculadas em 07/09/2025, 22:59:38*
+*Métricas calculadas em 17/09/2025, 09:14:49*

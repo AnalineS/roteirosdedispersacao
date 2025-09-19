@@ -62,7 +62,16 @@ export const useOptimizedEffect = (
       if (onError) {
         onError(error as Error);
       } else {
-        console.error('Effect error:', error);
+        if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'effect_optimizer_error', {
+            event_category: 'medical_hooks',
+            event_label: 'optimized_effect_failed',
+            custom_parameters: {
+              medical_context: 'effect_optimization',
+              error_type: 'effect_execution'
+            }
+          });
+        }
       }
     }
   }, [effect, skipOnMount, condition, throttle, onError]);
@@ -87,7 +96,7 @@ export const useOptimizedEffect = (
     } else {
       return wrappedEffect();
     }
-  }, deps);
+  }, [deps, debounce, wrappedEffect].concat(deps || []));
 
   useEffect(() => {
     return () => {
@@ -122,7 +131,16 @@ export const useAutoCleanup = () => {
         try {
           fn();
         } catch (error) {
-          console.error('Cleanup error:', error);
+          if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'effect_cleanup_error', {
+            event_category: 'medical_hooks',
+            event_label: 'cleanup_effect_failed',
+            custom_parameters: {
+              medical_context: 'effect_cleanup',
+              error_type: 'cleanup_execution'
+            }
+          });
+        }
         }
       });
       cleanupFnsRef.current = [];
@@ -259,7 +277,16 @@ export const useAsyncEffect = (
           if (onError) {
             onError(error as Error);
           } else {
-            console.error('Async effect error:', error);
+            if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'async_effect_error', {
+            event_category: 'medical_hooks',
+            event_label: 'async_effect_failed',
+            custom_parameters: {
+              medical_context: 'async_effect_execution',
+              error_type: 'async_operation'
+            }
+          });
+        }
           }
         }
       }
@@ -273,7 +300,7 @@ export const useAsyncEffect = (
         cleanup();
       }
     };
-  }, deps);
+  }, [asyncEffect, onError].concat(deps || []));
 
   useEffect(() => {
     return () => {
@@ -316,7 +343,16 @@ export const useEffectQueue = () => {
           cleanupFunctions.push(cleanup);
         }
       } catch (error) {
-        console.error('Queue effect error:', error);
+        if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'queue_effect_error', {
+            event_category: 'medical_hooks',
+            event_label: 'queue_effect_failed',
+            custom_parameters: {
+              medical_context: 'effect_queue_management',
+              error_type: 'queue_execution'
+            }
+          });
+        }
       }
     });
 
@@ -328,7 +364,16 @@ export const useEffectQueue = () => {
         try {
           cleanup();
         } catch (error) {
-          console.error('Queue cleanup error:', error);
+          if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'queue_cleanup_error', {
+            event_category: 'medical_hooks',
+            event_label: 'queue_cleanup_failed',
+            custom_parameters: {
+              medical_context: 'effect_queue_cleanup',
+              error_type: 'queue_cleanup'
+            }
+          });
+        }
         }
       });
     };
@@ -366,9 +411,9 @@ export const useConditionalEffect = (
       lastConditionRef.current = currentCondition;
       return cleanup;
     }
-    
+
     lastConditionRef.current = currentCondition;
-  }, deps);
+  }, [condition, effect].concat(deps || []));
 };
 
 // ============================================

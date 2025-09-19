@@ -36,18 +36,18 @@ class AppConfig:
     OPENROUTER_API_KEY: Optional[str] = os.getenv('OPENROUTER_API_KEY')
     HUGGINGFACE_API_KEY: Optional[str] = os.getenv('HUGGINGFACE_API_KEY')
     
-    # Supabase Config - FASE 3 RAG Integration
-    SUPABASE_URL: Optional[str] = os.getenv('SUPABASE_PROJECT_URL')
-    SUPABASE_KEY: Optional[str] = os.getenv('SUPABASE_PUBLISHABLE_KEY')
-    SUPABASE_SERVICE_KEY: Optional[str] = os.getenv('SUPABASE_SERVICE_ROLE_KEY')
-    SUPABASE_JWT_SECRET: Optional[str] = os.getenv('SUPABASE_JWT_SIGNING_KEY')
+    # Supabase Config - RAG COMPLETO ATIVADO
+    SUPABASE_URL: Optional[str] = os.getenv('SUPABASE_URL')
+    SUPABASE_ANON_KEY: Optional[str] = os.getenv('SUPABASE_ANON_KEY')
+    SUPABASE_SERVICE_KEY: Optional[str] = os.getenv('SUPABASE_SERVICE_KEY')
+    SUPABASE_JWT_SECRET: Optional[str] = os.getenv('SUPABASE_JWT_SECRET')
     
-    # Feature Flags - Padrão conservador para evitar timeout Cloud Run
-    EMBEDDINGS_ENABLED: bool = os.getenv('EMBEDDINGS_ENABLED', 'false').lower() == 'true'
-    ADVANCED_FEATURES: bool = os.getenv('ADVANCED_FEATURES', 'false').lower() == 'true'
-    RAG_AVAILABLE: bool = os.getenv('RAG_AVAILABLE', 'false').lower() == 'true'
-    OPENAI_TEST_AVAILABLE: bool = os.getenv('OPENAI_TEST_AVAILABLE', 'false').lower() == 'true'
-    ADVANCED_CACHE: bool = os.getenv('ADVANCED_CACHE', 'false').lower() == 'true'
+    # Feature Flags - TODAS AS FUNCIONALIDADES ATIVADAS
+    EMBEDDINGS_ENABLED: bool = os.getenv('EMBEDDINGS_ENABLED', 'true').lower() == 'true'
+    ADVANCED_FEATURES: bool = os.getenv('ADVANCED_FEATURES', 'true').lower() == 'true'
+    RAG_AVAILABLE: bool = os.getenv('RAG_AVAILABLE', 'true').lower() == 'true'
+    OPENAI_TEST_AVAILABLE: bool = os.getenv('OPENAI_TEST_AVAILABLE', 'true').lower() == 'true'
+    ADVANCED_CACHE: bool = os.getenv('ADVANCED_CACHE', 'true').lower() == 'true'
     
     # Unified Cache Config - Sistema Integrado
     UNIFIED_CACHE_ENABLED: bool = os.getenv('UNIFIED_CACHE_ENABLED', 'true').lower() == 'true'
@@ -75,8 +75,8 @@ class AppConfig:
     SEMANTIC_SIMILARITY_THRESHOLD: float = float(os.getenv('SEMANTIC_SIMILARITY_THRESHOLD', '0.7'))
     PGVECTOR_DIMENSIONS: int = int(os.getenv('PGVECTOR_DIMENSIONS', '384'))  # MiniLM dimensions
     
-    # Cloud Storage Config - FASE 3 Cache Cloud-Native
-    EMBEDDINGS_CLOUD_CACHE: bool = os.getenv('EMBEDDINGS_CLOUD_CACHE', 'false').lower() == 'true'
+    # Cloud Storage Config - CACHE CLOUD ATIVADO
+    EMBEDDINGS_CLOUD_CACHE: bool = os.getenv('EMBEDDINGS_CLOUD_CACHE', 'true').lower() == 'true'
     CLOUD_STORAGE_BUCKET: Optional[str] = os.getenv('CLOUD_STORAGE_BUCKET')
     EMBEDDINGS_LAZY_LOAD: bool = os.getenv('EMBEDDINGS_LAZY_LOAD', 'true').lower() == 'true'
     MIN_INSTANCES: int = int(os.getenv('MIN_INSTANCES', '0'))  # Cloud Run min instances
@@ -85,8 +85,8 @@ class AppConfig:
     CACHE_MAX_SIZE: int = int(os.getenv('CACHE_MAX_SIZE', 1000))
     CACHE_TTL_MINUTES: int = int(os.getenv('CACHE_TTL_MINUTES', 60))
     
-    # Security Middleware - FASE 4 HABILITADO
-    SECURITY_MIDDLEWARE_ENABLED: bool = os.getenv('SECURITY_MIDDLEWARE_ENABLED', 'false').lower() == 'true'
+    # Security Middleware - ATIVADO POR PADRÃO
+    SECURITY_MIDDLEWARE_ENABLED: bool = os.getenv('SECURITY_MIDDLEWARE_ENABLED', 'true').lower() == 'true'
     
     # Rate Limiting - Configurações moderadas
     RATE_LIMIT_ENABLED: bool = os.getenv('RATE_LIMIT_ENABLED', '').lower() != 'false'
@@ -162,12 +162,15 @@ class AppConfig:
     FIRESTORE_CACHE_ENABLED: bool = os.getenv('FIRESTORE_CACHE_ENABLED', 'true').lower() == 'true'
     HYBRID_CACHE_STRATEGY: str = os.getenv('HYBRID_CACHE_STRATEGY', 'memory_first')
     
-    # Email Config (para alertas)
-    EMAIL_ENABLED: bool = os.getenv('EMAIL_ENABLED', '').lower() == 'true'
-    EMAIL_FROM: Optional[str] = os.getenv('EMAIL_FROM')
+    # Email Config - GMAIL CONFIGURADO
+    EMAIL_ENABLED: bool = os.getenv('EMAIL_ENABLED', 'true').lower() == 'true'
+    EMAIL_FROM: str = os.getenv('EMAIL_FROM', 'roteirosdedispensacaounb@gmail.com')
+    EMAIL_FROM_NAME: str = os.getenv('EMAIL_FROM_NAME', 'Roteiro de Dispensação PQT-U')
+    EMAIL_REPLY_TO: str = os.getenv('EMAIL_REPLY_TO', 'roteirosdedispensacaounb@gmail.com')
     EMAIL_SMTP_HOST: str = os.getenv('EMAIL_SMTP_HOST', 'smtp.gmail.com')
     EMAIL_SMTP_PORT: int = int(os.getenv('EMAIL_SMTP_PORT', 587))
-    EMAIL_PASSWORD: Optional[str] = os.getenv('EMAIL_PASSWORD')  # App password
+    EMAIL_SMTP_USE_TLS: bool = os.getenv('EMAIL_SMTP_USE_TLS', 'true').lower() == 'true'
+    EMAIL_PASSWORD: Optional[str] = os.getenv('EMAIL_PASSWORD')  # Gmail App password
     
     # Google Cloud Config
     GCP_PROJECT_ID: Optional[str] = os.getenv('GCP_PROJECT_ID')
@@ -179,6 +182,16 @@ class AppConfig:
     METRICS_RETENTION_DAYS: int = int(os.getenv('METRICS_RETENTION_DAYS', '30'))
     MEDICAL_METRICS_NAMESPACE: str = os.getenv('MEDICAL_METRICS_NAMESPACE', 'medical_platform')
     GOOGLE_CLOUD_MONITORING_ENABLED: bool = os.getenv('GOOGLE_CLOUD_MONITORING_ENABLED', 'true').lower() == 'true'
+
+    # Advanced Systems Config - ATIVADOS POR PADRÃO
+    UX_MONITORING_ENABLED: bool = os.getenv('UX_MONITORING_ENABLED', 'true').lower() == 'true'
+    PREDICTIVE_ANALYTICS_ENABLED: bool = os.getenv('PREDICTIVE_ANALYTICS_ENABLED', 'true').lower() == 'true'
+    ADVANCED_ANALYTICS_ENABLED: bool = os.getenv('ADVANCED_ANALYTICS_ENABLED', 'true').lower() == 'true'
+    PERSONA_ANALYTICS_ENABLED: bool = os.getenv('PERSONA_ANALYTICS_ENABLED', 'true').lower() == 'true'
+    BEHAVIOR_TRACKING_ENABLED: bool = os.getenv('BEHAVIOR_TRACKING_ENABLED', 'true').lower() == 'true'
+    LEARNING_ANALYTICS_ENABLED: bool = os.getenv('LEARNING_ANALYTICS_ENABLED', 'true').lower() == 'true'
+    PERFORMANCE_MONITORING_ENABLED: bool = os.getenv('PERFORMANCE_MONITORING_ENABLED', 'true').lower() == 'true'
+    AI_SUGGESTIONS_ENABLED: bool = os.getenv('AI_SUGGESTIONS_ENABLED', 'true').lower() == 'true'
     
     
     # Data Redaction for Logs
@@ -255,6 +268,37 @@ class EnvironmentConfig:
     def is_staging() -> bool:
         """Verifica se está em staging"""
         return EnvironmentConfig.get_current() == 'staging'
+
+# Adicionar configurações extras no AppConfig após line 189
+def _add_multimodal_and_celery_config():
+    """Adiciona configurações de multimodal e Celery ao AppConfig"""
+
+    # Multimodal Processing - ATIVADO
+    AppConfig.MULTIMODAL_PROCESSING = os.getenv('MULTIMODAL_PROCESSING', 'true').lower() == 'true'
+    AppConfig.OCR_ENABLED = os.getenv('OCR_ENABLED', 'true').lower() == 'true'
+    AppConfig.COMPUTER_VISION = os.getenv('COMPUTER_VISION', 'true').lower() == 'true'
+    AppConfig.DOCUMENT_ANALYSIS = os.getenv('DOCUMENT_ANALYSIS', 'true').lower() == 'true'
+    AppConfig.IMAGE_UPLOAD_MAX_SIZE = int(os.getenv('IMAGE_UPLOAD_MAX_SIZE', 10485760))  # 10MB
+    AppConfig.ALLOWED_IMAGE_FORMATS = os.getenv('ALLOWED_IMAGE_FORMATS', 'jpg,jpeg,png,pdf,tiff').split(',')
+
+    # Tesseract Config
+    AppConfig.TESSDATA_PREFIX = os.getenv('TESSDATA_PREFIX', '/usr/share/tesseract-ocr/5/tessdata/')
+    AppConfig.OCR_LANGUAGE = os.getenv('OCR_LANGUAGE', 'por+eng')
+    AppConfig.OCR_PSM = int(os.getenv('OCR_PSM', 6))  # Page segmentation mode
+
+    # Background Jobs (Celery) - ATIVADO
+    AppConfig.CELERY_ENABLED = os.getenv('CELERY_ENABLED', 'true').lower() == 'true'
+    AppConfig.BACKGROUND_ANALYTICS = os.getenv('BACKGROUND_ANALYTICS', 'true').lower() == 'true'
+    AppConfig.AUTO_BACKUP_ENABLED = os.getenv('AUTO_BACKUP_ENABLED', 'true').lower() == 'true'
+    AppConfig.BACKGROUND_REPORTS = os.getenv('BACKGROUND_REPORTS', 'true').lower() == 'true'
+
+    # SQLite specific configs
+    AppConfig.SQLITE_DB_PATH = os.getenv('SQLITE_DB_PATH', './data/roteiros.db')
+    AppConfig.SQLITE_BACKUP_INTERVAL = int(os.getenv('SQLITE_BACKUP_INTERVAL', 3600))  # 1 hora
+    AppConfig.SQLITE_AUTO_VACUUM = os.getenv('SQLITE_AUTO_VACUUM', 'true').lower() == 'true'
+
+# Executar adição de configurações
+_add_multimodal_and_celery_config()
 
 # Instância global de configuração
 config = AppConfig()

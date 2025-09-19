@@ -1,9 +1,20 @@
 import { useCallback, useRef, useEffect } from 'react';
 import Analytics from '@/services/analytics';
 
+interface AnalyticsEventData {
+  userId?: string;
+  sessionId?: string;
+  timestamp?: number;
+  metadata?: Record<string, unknown>;
+  value?: string | number;
+  category?: string;
+  duration?: number;
+  [key: string]: unknown;
+}
+
 // Hook principal de analytics
 export const useAnalytics = () => {
-  const trackEvent = useCallback(async (eventName: string, data: any) => {
+  const trackEvent = useCallback(async (eventName: string, data: AnalyticsEventData) => {
     try {
       Analytics.event('USER', eventName, data);
     } catch (error) {

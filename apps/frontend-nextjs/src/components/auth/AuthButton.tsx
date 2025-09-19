@@ -29,7 +29,17 @@ export default function AuthButton({ variant = 'header', className = '' }: AuthB
       await logout();
       router.push('/');
     } catch (error) {
-      console.error('Erro ao fazer logout:', error);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'auth_button_logout_error', {
+          event_category: 'medical_authentication',
+          event_label: 'auth_button_logout_failed',
+          custom_parameters: {
+            medical_context: 'auth_button_logout',
+            error_type: 'logout_failure',
+            error_message: error instanceof Error ? error.message : String(error)
+          }
+        });
+      }
     } finally {
       setIsLoggingOut(false);
     }
@@ -340,7 +350,17 @@ export default function AuthButton({ variant = 'header', className = '' }: AuthB
               // Login social bem-sucedido
             }}
             onError={(error) => {
-              console.error('Erro no login social:', error);
+              if (typeof window !== 'undefined' && window.gtag) {
+                window.gtag('event', 'auth_button_social_login_error', {
+                  event_category: 'medical_authentication',
+                  event_label: 'social_login_failed',
+                  custom_parameters: {
+                    medical_context: 'auth_button_social_login',
+                    error_type: 'social_auth_failure',
+                    error_message: error instanceof Error ? error.message : String(error)
+                  }
+                });
+              }
             }}
             className="inline-social-auth"
           />

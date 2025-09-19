@@ -1,9 +1,15 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Calendar, Users, BookOpen, Activity, Download, BarChart3, TrendingUp, AlertCircle, CheckCircle, RefreshCw } from 'lucide-react';
 import { useTracking } from './GlobalTrackingProvider';
 import { fetchDailyMetrics, getGA4Status, type GA4Metrics } from '@/lib/analytics/ga4DataFetcher';
+
+// Interfaces para componentes de abas
+interface TabsProps {
+  activeTab?: string;
+  setActiveTab?: (tab: string) => void;
+}
 
 // Componentes UI simples para o dashboard
 const Card = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
@@ -58,7 +64,7 @@ const Tabs = ({ children, defaultValue, className = '' }: { children: React.Reac
   return (
     <div className={className} data-active-tab={activeTab}>
       {React.Children.map(children, child =>
-        React.isValidElement(child) ? React.cloneElement(child, { activeTab, setActiveTab } as any) : child
+        React.isValidElement(child) ? React.cloneElement(child, { activeTab, setActiveTab } as TabsProps) : child
       )}
     </div>
   );
@@ -67,7 +73,7 @@ const Tabs = ({ children, defaultValue, className = '' }: { children: React.Reac
 const TabsList = ({ children, activeTab, setActiveTab }: { children: React.ReactNode; activeTab?: string; setActiveTab?: (tab: string) => void }) => (
   <div className="inline-flex h-9 items-center justify-center rounded-lg bg-muted p-1 text-muted-foreground">
     {React.Children.map(children, child =>
-      React.isValidElement(child) ? React.cloneElement(child, { activeTab, setActiveTab } as any) : child
+      React.isValidElement(child) ? React.cloneElement(child, { activeTab, setActiveTab } as TabsProps) : child
     )}
   </div>
 );
@@ -107,7 +113,7 @@ export default function MasterDashboard() {
   const tracking = useTracking();
 
   // Carregar dados reais do GA4
-  const loadMetrics = async () => {
+  const loadMetrics = useCallback(async () => {
     try {
       setLoading(true);
       const data = await fetchDailyMetrics('7d');
@@ -121,12 +127,17 @@ export default function MasterDashboard() {
       });
       
     } catch (error) {
-      console.error('Error loading dashboard metrics:', error);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'dashboard_metrics_load_error', {
+          event_category: 'analytics',
+          event_label: 'ga4_fetch_error'
+        });
+      }
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, [tracking]);
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -135,11 +146,11 @@ export default function MasterDashboard() {
 
   useEffect(() => {
     loadMetrics();
-    
+
     // Refresh automático a cada 4 horas (não é real-time, mas mantém dados frescos)
     const interval = setInterval(loadMetrics, 4 * 60 * 60 * 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [loadMetrics]);
 
   const handleExportReport = () => {
     tracking?.trackCustomEvent('dashboard_export', 'analytics', 1, {

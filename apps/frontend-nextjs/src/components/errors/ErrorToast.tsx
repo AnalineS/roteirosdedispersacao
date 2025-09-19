@@ -46,6 +46,10 @@ export const ErrorToast: React.FC<ErrorToastProps> = ({
 }) => {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
+  const removeToast = useCallback((toastId: string) => {
+    setToasts(prevToasts => prevToasts.filter(toast => toast.id !== toastId));
+  }, []);
+
   const addToast = useCallback((detail: { errorId: string; severity: ErrorSeverity; message: string }) => {
     const newToast: Toast = {
       id: detail.errorId,
@@ -63,11 +67,7 @@ export const ErrorToast: React.FC<ErrorToastProps> = ({
     setTimeout(() => {
       removeToast(detail.errorId);
     }, autoCloseDuration);
-  }, [maxToasts, autoCloseDuration]);
-
-  const removeToast = useCallback((toastId: string) => {
-    setToasts(prevToasts => prevToasts.filter(toast => toast.id !== toastId));
-  }, []);
+  }, [maxToasts, autoCloseDuration, removeToast]);
 
   const clearAllToasts = useCallback(() => {
     setToasts([]);

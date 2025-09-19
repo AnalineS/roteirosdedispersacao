@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { ChatMessage, Persona } from '@/services/api';
+import { type ChatMessage } from '@/types/api';
+import { type Persona } from '@/services/api';
 import PersonaAvatar from '../PersonaAvatar';
 import FeedbackWidget from '../FeedbackWidget';
 import { modernChatTheme, getPersonaColors } from '@/config/modernTheme';
@@ -128,10 +129,35 @@ export default function MessageBubble({
   // Feedback handling
   const { submitFeedback, isSubmitting } = useFeedback({
     onSuccess: (response) => {
-      console.log('Feedback enviado com sucesso:', response);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'message_bubble_feedback_success', {
+          event_category: 'medical_chat_feedback',
+          event_label: 'feedback_submitted_successfully',
+          custom_parameters: {
+            medical_context: 'message_bubble_feedback',
+            message_id: messageId,
+            persona_id: personaId,
+            persona_name: persona?.name || 'unknown',
+            feedback_type: 'message_feedback'
+          }
+        });
+      }
     },
     onError: (error) => {
-      console.error('Erro ao enviar feedback:', error);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'message_bubble_feedback_error', {
+          event_category: 'medical_chat_feedback',
+          event_label: 'feedback_submission_failed',
+          custom_parameters: {
+            medical_context: 'message_bubble_feedback',
+            message_id: messageId,
+            persona_id: personaId,
+            persona_name: persona?.name || 'unknown',
+            error_type: 'feedback_submission',
+            error_message: error instanceof Error ? error.message : String(error)
+          }
+        });
+      }
     },
     enableOfflineQueue: true
   });
@@ -141,7 +167,20 @@ export default function MessageBubble({
       await submitFeedback(feedbackData);
     } catch (error) {
       // Erro já tratado no hook
-      console.warn('Feedback submission failed:', error);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'message_bubble_feedback_fallback_error', {
+          event_category: 'medical_chat_feedback',
+          event_label: 'feedback_fallback_warning',
+          custom_parameters: {
+            medical_context: 'message_bubble_fallback',
+            message_id: messageId,
+            persona_id: personaId,
+            persona_name: persona?.name || 'unknown',
+            error_type: 'feedback_fallback',
+            error_message: error instanceof Error ? error.message : String(error)
+          }
+        });
+      }
     }
   };
 
@@ -258,7 +297,7 @@ export default function MessageBubble({
             >
               {persona.name}
             </span>
-            <MessageMeta timestamp={message.timestamp} />
+            <MessageMeta timestamp={typeof message.timestamp === 'string' ? parseInt(message.timestamp) : message.timestamp} />
           </div>
         )}
         
@@ -287,7 +326,7 @@ export default function MessageBubble({
               opacity: 0.8
             }}
           >
-            <MessageMeta timestamp={message.timestamp} />
+            <MessageMeta timestamp={typeof message.timestamp === 'string' ? parseInt(message.timestamp) : message.timestamp} />
           </div>
         )}
 

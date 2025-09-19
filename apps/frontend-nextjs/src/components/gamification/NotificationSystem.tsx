@@ -258,7 +258,15 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
 
   const requestNotificationPermission = async (): Promise<boolean> => {
     if (!('Notification' in window)) {
-      console.warn('Este navegador não suporta notificações');
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'notification_unsupported', {
+          event_category: 'gamification',
+          event_label: 'browser_compatibility_issue',
+          custom_parameters: {
+            browser: navigator.userAgent
+          }
+        });
+      }
       return false;
     }
 
@@ -278,7 +286,16 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
       
       return isEnabled;
     } catch (error) {
-      console.error('Erro ao solicitar permissão de notificação:', error);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'notification_permission_error', {
+          event_category: 'gamification_error',
+          event_label: 'permission_request_failed',
+          custom_parameters: {
+            medical_context: 'notification_system',
+            error_type: 'permission_api'
+          }
+        });
+      }
       return false;
     }
   };
@@ -287,7 +304,7 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
     title: string, 
     body: string, 
     icon?: string,
-    data?: any
+    data?: unknown
   ) => {
     if (!isNotificationEnabled) return;
 
@@ -317,7 +334,16 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
         }
       };
     } catch (error) {
-      console.error('Erro ao mostrar notificação nativa:', error);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'notification_display_error', {
+          event_category: 'gamification_error',
+          event_label: 'native_notification_failed',
+          custom_parameters: {
+            medical_context: 'notification_system',
+            error_type: 'display_api'
+          }
+        });
+      }
     }
   };
 

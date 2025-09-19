@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { getPersonas, type Persona, type PersonasResponse } from '@/services/api';
+import { getPersonaConfigs, type Persona, type PersonasResponse } from '@/services/api';
 import { filterValidPersonas } from '@/constants/avatars';
 import { PersonasCache } from '@/utils/apiCache';
 import { STATIC_PERSONAS } from '@/data/personas';
@@ -19,12 +19,12 @@ interface UsePersonasEnhancedOptions {
   /** Intervalo para refresh automático (ms) */
   autoRefreshInterval?: number;
   /** Callback para quando personas são carregadas */
-  onPersonasLoaded?: (personas: PersonasResponse) => void;
+  onPersonasLoaded?: (personas: Record<string, PersonaConfig>) => void;
 }
 
 interface UsePersonasEnhancedReturn {
   /** Personas disponíveis */
-  personas: PersonasResponse;
+  personas: Record<string, PersonaConfig>;
   /** Estado das personas com metadados */
   personaStates: Record<ValidPersonaId, PersonaState>;
   /** Se está carregando */
@@ -34,9 +34,9 @@ interface UsePersonasEnhancedReturn {
   /** Função para recarregar personas */
   refetch: () => Promise<void>;
   /** Obter persona por ID com fallback */
-  getPersonaById: (id: ValidPersonaId) => Persona | null;
+  getPersonaById: (id: ValidPersonaId) => PersonaConfig | null;
   /** Lista de personas como array */
-  getPersonasList: () => Array<{ id: ValidPersonaId; persona: Persona }>;
+  getPersonasList: () => Array<{ id: ValidPersonaId; persona: PersonaConfig }>;
   /** Contador de personas válidas */
   getValidPersonasCount: () => number;
   /** Verificar se persona está disponível */
@@ -61,7 +61,7 @@ export function usePersonasEnhanced(options: UsePersonasEnhancedOptions = {}): U
   } = options;
 
   // Estados
-  const [personas, setPersonas] = useState<PersonasResponse>({});
+  const [personas, setPersonas] = useState<Record<string, PersonaConfig>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
@@ -71,17 +71,17 @@ export function usePersonasEnhanced(options: UsePersonasEnhancedOptions = {}): U
     try {
       setLoading(true);
       setError(null);
-      
-      let personasData: PersonasResponse = {};
+
+      let personasData: Record<string, PersonaConfig> = {};
 
       if (fromCache && useCache) {
         // Verificar cache primeiro
         const cachedPersonas = await PersonasCache.get('personas');
         if (cachedPersonas) {
-          personasData = cachedPersonas as PersonasResponse;
+          personasData = cachedPersonas as Record<string, PersonaConfig>;
           setPersonas(personasData);
           setLastRefresh(new Date());
-          
+
           // Se tem cache, ainda tenta atualizar em background
           if (fromCache) {
             loadPersonas(false); // Reload sem cache em background
@@ -94,7 +94,7 @@ export function usePersonasEnhanced(options: UsePersonasEnhancedOptions = {}): U
       if (Object.keys(personasData).length === 0) {
         // Buscar do servidor
         try {
-          personasData = await getPersonas();
+          personasData = await getPersonaConfigs();
           // Filtrar apenas personas com avatares configurados
           const validPersonas = filterValidPersonas(personasData);
           
@@ -105,12 +105,30 @@ export function usePersonasEnhanced(options: UsePersonasEnhancedOptions = {}): U
           
           personasData = validPersonas;
         } catch (serverError) {
-          console.warn('Erro ao carregar personas do servidor:', serverError);
+          if (typeof window !== 'undefined' && window.gtag) {
+            window.gtag('event', 'personas_server_error', {
+              event_category: 'medical_personas',
+              event_label: 'server_load_failed',
+              custom_parameters: {
+                medical_context: 'personas_system',
+                error_type: 'server_connection'
+              }
+            });
+          }
           
           // Se falhou e deve incluir fallback, usar personas estáticas
           if (includeFallback) {
-            console.log('Usando personas estáticas como fallback');
-            personasData = STATIC_PERSONAS as PersonasResponse;
+            if (typeof window !== 'undefined' && window.gtag) {
+              window.gtag('event', 'personas_fallback_used', {
+                event_category: 'medical_personas',
+                event_label: 'static_fallback_activated',
+                custom_parameters: {
+                  medical_context: 'personas_fallback',
+                  fallback_type: 'static_personas'
+                }
+              });
+            }
+            personasData = STATIC_PERSONAS as Record<string, PersonaConfig>;
           } else {
             throw serverError;
           }
@@ -126,18 +144,27 @@ export function usePersonasEnhanced(options: UsePersonasEnhancedOptions = {}): U
       }
 
     } catch (err) {
-      console.error('Erro ao carregar personas:', err);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'personas_load_error', {
+          event_category: 'medical_personas',
+          event_label: 'personas_load_failed',
+          custom_parameters: {
+            medical_context: 'personas_loading',
+            error_type: 'general_loading_error'
+          }
+        });
+      }
       setError(err instanceof Error ? err.message : 'Erro desconhecido');
       
       // Em caso de erro, usar personas estáticas se disponível
       if (includeFallback && Object.keys(personas).length === 0) {
-        setPersonas(STATIC_PERSONAS as PersonasResponse);
+        setPersonas(STATIC_PERSONAS as Record<string, PersonaConfig>);
         setError(null); // Limpar erro se fallback funcionou
       }
     } finally {
       setLoading(false);
     }
-  }, [useCache, includeFallback, onPersonasLoaded]);
+  }, [useCache, includeFallback, onPersonasLoaded, personas]);
 
   // Efeito para carregar personas inicialmente
   useEffect(() => {
@@ -159,11 +186,11 @@ export function usePersonasEnhanced(options: UsePersonasEnhancedOptions = {}): U
   // FUNÇÕES DERIVADAS
   // ============================================
 
-  const getPersonaById = useCallback((personaId: ValidPersonaId): Persona | null => {
+  const getPersonaById = useCallback((personaId: ValidPersonaId): PersonaConfig | null => {
     return personas[personaId] || null;
   }, [personas]);
 
-  const getPersonasList = useCallback((): Array<{id: ValidPersonaId; persona: Persona}> => {
+  const getPersonasList = useCallback((): Array<{id: ValidPersonaId; persona: PersonaConfig}> => {
     return Object.entries(personas)
       .filter(([id]) => isValidPersonaId(id))
       .map(([id, persona]) => ({
@@ -174,7 +201,16 @@ export function usePersonasEnhanced(options: UsePersonasEnhancedOptions = {}): U
   
   const getValidPersonasCount = useCallback((): number => {
     const count = Object.keys(personas).length;
-    console.log('[usePersonasEnhanced] getValidPersonasCount:', { personas, count });
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'personas_count_calculated', {
+        event_category: 'medical_personas',
+        event_label: 'valid_personas_counted',
+        custom_parameters: {
+          medical_context: 'personas_validation',
+          valid_count: count.toString()
+        }
+      });
+    }
     return count > 0 ? count : 2; // Fallback para Dr. Gasnelio + Gá
   }, [personas]);
 
@@ -205,7 +241,7 @@ export function usePersonasEnhanced(options: UsePersonasEnhancedOptions = {}): U
 
   // Estados das personas com metadados
   const personaStates = useMemo((): Record<ValidPersonaId, PersonaState> => {
-    const states: Record<ValidPersonaId, PersonaState> = {} as any;
+    const states: Record<ValidPersonaId, PersonaState> = {} as Record<ValidPersonaId, PersonaState>;
     
     Object.entries(personas).forEach(([id, persona]) => {
       if (isValidPersonaId(id)) {

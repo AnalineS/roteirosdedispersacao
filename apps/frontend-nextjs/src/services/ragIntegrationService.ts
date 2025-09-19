@@ -9,6 +9,42 @@ import { embeddingService } from './embeddingService';
 import { ragCache } from './simpleCache';
 import { AnalyticsFirestoreCache } from './analyticsFirestoreCache';
 
+interface QueryAnalysis {
+  complexity: 'simple' | 'medium' | 'complex';
+  medicalTerms: string[];
+  confidence: number;
+  intent: 'dosage' | 'safety' | 'procedure' | 'general';
+  suggestedStrategy: 'supabase' | 'local' | 'hybrid' | 'fallback';
+  embedding?: number[];
+}
+
+interface RAGQueryOptions {
+  maxResults?: number;
+  threshold?: number;
+  includeDebug?: boolean;
+  timeout?: number;
+  useCache?: boolean;
+  filters?: {
+    category?: string;
+    dateRange?: { start: Date; end: Date };
+    source?: string[];
+  };
+  context?: {
+    previousQueries?: string[];
+    userLevel?: 'beginner' | 'intermediate' | 'advanced';
+    persona?: 'dr_gasnelio' | 'ga';
+  };
+}
+
+interface RAGError {
+  code: string;
+  message: string;
+  service: 'supabase' | 'local' | 'hybrid' | 'embedding';
+  details?: string;
+  retryable: boolean;
+  timestamp: Date;
+}
+
 export interface RAGIntegrationConfig {
   useLocalKnowledge: boolean;
   useSupabaseRAG: boolean;
@@ -124,7 +160,13 @@ export class RAGIntegrationService {
       return response;
 
     } catch (error) {
-      console.error('Error in RAG integration:', error);
+      // Error tracking for RAG integration failure
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'rag_integration_error', {
+          event_category: 'knowledge_retrieval',
+          event_label: 'query_execution_failed'
+        });
+      }
       this.updateStats(Date.now() - startTime, false);
       
       return this.generateErrorResponse(query, persona, error, processingSteps);
@@ -159,7 +201,7 @@ export class RAGIntegrationService {
               id: `supabase_${chunk.source}`,
               title: chunk.source,
               content: chunk.content,
-              category: chunk.category as any,
+              category: chunk.category as 'medication' | 'procedure' | 'safety' | 'general',
               priority: chunk.priority,
               source: 'Supabase RAG',
               lastUpdated: new Date().toISOString(),
@@ -180,7 +222,13 @@ export class RAGIntegrationService {
       });
 
     } catch (error) {
-      console.error('Error in RAG search:', error);
+      // Error tracking for RAG search failure
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'rag_search_error', {
+          event_category: 'knowledge_retrieval',
+          event_label: 'search_execution_failed'
+        });
+      }
       return [];
     }
   }
@@ -190,7 +238,13 @@ export class RAGIntegrationService {
    */
   configure(newConfig: Partial<RAGIntegrationConfig>): void {
     this.config = { ...this.config, ...newConfig };
-    console.log('RAG Integration configured:', this.config);
+    // Configuration tracking for RAG service
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'rag_service_configured', {
+        event_category: 'service_configuration',
+        event_label: 'rag_integration_config_updated'
+      });
+    }
   }
 
   /**
@@ -279,9 +333,21 @@ export class RAGIntegrationService {
         await medicalKnowledgeBase.getStats(); // Trigger lazy initialization
       }
 
-      console.log('🧠 RAG Integration Service initialized');
+      // Service initialization tracking
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'rag_service_initialized', {
+          event_category: 'service_lifecycle',
+          event_label: 'rag_integration_startup_success'
+        });
+      }
     } catch (error) {
-      console.error('Error initializing RAG Integration Service:', error);
+      // Service initialization error tracking
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'rag_service_init_error', {
+          event_category: 'service_lifecycle',
+          event_label: 'rag_integration_startup_failed'
+        });
+      }
     }
   }
 
@@ -347,7 +413,7 @@ export class RAGIntegrationService {
       .map(([category]) => category);
   }
 
-  private determineStrategy(analysis: any): 'supabase' | 'local' | 'hybrid' | 'fallback' {
+  private determineStrategy(analysis: QueryAnalysis): 'supabase' | 'local' | 'hybrid' | 'fallback' {
     // Estratégia baseada na complexidade e configuração
     if (!this.config.useSupabaseRAG && !this.config.useLocalKnowledge) {
       return 'fallback';
@@ -371,14 +437,14 @@ export class RAGIntegrationService {
   private async executeSupabaseQuery(
     query: string,
     persona: string,
-    options: any,
+    options: RAGQueryOptions | undefined,
     processingSteps: string[]
   ): Promise<IntegratedRAGResponse> {
     processingSteps.push('Executando query no Supabase RAG');
 
     const supabaseResponse = await supabaseRAGClient.query({
       query,
-      persona: persona as any,
+      persona: persona as 'dr_gasnelio' | 'ga',
       ...options
     });
 
@@ -448,14 +514,14 @@ export class RAGIntegrationService {
   private async executeHybridQuery(
     query: string,
     persona: string,
-    options: any,
+    options: RAGQueryOptions | undefined,
     processingSteps: string[]
   ): Promise<IntegratedRAGResponse> {
     processingSteps.push('Executando query híbrida (Supabase + Local)');
 
     // Executar ambos em paralelo
     const [supabaseResponse, localResults] = await Promise.all([
-      supabaseRAGClient.query({ query, persona: persona as any, ...options }),
+      supabaseRAGClient.query({ query, persona: persona as 'dr_gasnelio' | 'ga', ...options }),
       medicalKnowledgeBase.search(query, { maxResults: 2, useChunks: true })
     ]);
 
@@ -547,10 +613,10 @@ export class RAGIntegrationService {
       ? "**Dr. Gasnelio (Farmacêutico Clínico):**\n\nBaseado na literatura médica disponível:\n\n"
       : "**Gá (Assistente Empático):**\n\nVou te explicar o que sei sobre isso:\n\n";
 
-    const content = results.map((result, index) => {
-      const confidence = result.confidence >= 0.8 ? '[ALTA CONFIANÇA]' : 
+    const content = results.map((result) => {
+      const confidence = result.confidence >= 0.8 ? '[ALTA CONFIANÇA]' :
                         result.confidence >= 0.6 ? '[MÉDIA CONFIANÇA]' : '[BAIXA CONFIANÇA]';
-      
+
       return `${confidence} ${result.document.content}`;
     }).join('\n\n');
 
@@ -576,7 +642,7 @@ export class RAGIntegrationService {
 
   private async postProcessResponse(
     response: IntegratedRAGResponse,
-    analysis: any,
+    analysis: QueryAnalysis,
     processingSteps: string[]
   ): Promise<IntegratedRAGResponse> {
     processingSteps.push('Pós-processamento da resposta');
@@ -624,14 +690,20 @@ export class RAGIntegrationService {
       });
 
     } catch (error) {
-      console.debug('Error caching/tracking RAG response:', error);
+      // Error tracking for cache/analytics failure (silent)
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'rag_cache_tracking_error', {
+          event_category: 'cache_analytics',
+          event_label: 'cache_or_tracking_failed'
+        });
+      }
     }
   }
 
   private generateErrorResponse(
     query: string,
     persona: string,
-    error: any,
+    error: RAGError | Error | unknown,
     processingSteps: string[]
   ): IntegratedRAGResponse {
     return {
@@ -683,14 +755,14 @@ export const ragIntegrationService = RAGIntegrationService.getInstance();
 export async function queryRAGIntegrated(
   query: string,
   persona: 'dr_gasnelio' | 'ga' = 'dr_gasnelio',
-  options?: any
+  options?: RAGQueryOptions
 ): Promise<IntegratedRAGResponse> {
   return ragIntegrationService.query(query, persona, options);
 }
 
 export async function searchMedicalRAG(
   query: string,
-  options?: any
+  options?: RAGQueryOptions
 ): Promise<SearchResult[]> {
   return ragIntegrationService.search(query, options);
 }

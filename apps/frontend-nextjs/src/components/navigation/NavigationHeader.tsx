@@ -247,6 +247,14 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
               icon: '📄',
               description: 'Materiais complementares',
               category: 'learning'
+            },
+            {
+              id: 'sitemap',
+              label: 'Mapa do Site',
+              href: '/sitemap',
+              icon: '🗺️',
+              description: 'Navegação completa do sistema educacional',
+              category: 'tools'
             }
           ]
         }
@@ -875,8 +883,17 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
         {isMobile && (
           <button
             onClick={() => {
-              // TODO: Implement mobile search modal
-              console.log('Mobile search modal not implemented yet');
+              // Implementar busca mobile via redirecionamento para glossário
+              window.location.href = '/glossario';
+
+              // Log busca mobile via analytics
+              if (typeof window !== 'undefined' && window.gtag) {
+                window.gtag('event', 'mobile_search_accessed', {
+                  event_category: 'navigation',
+                  event_label: 'search_button',
+                  transport_type: 'beacon'
+                });
+              }
             }}
             style={{
               background: 'none',

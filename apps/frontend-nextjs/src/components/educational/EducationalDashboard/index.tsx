@@ -508,13 +508,32 @@ export default function EducationalDashboard({ currentPersona }: EducationalDash
                     quiz={currentQuiz}
                     userLevel={profile?.professional ? 'profissional' : 'estudante'}
                     onQuizComplete={(attempt: QuizAttempt) => {
-                      console.log('Quiz completed:', attempt);
+                      if (typeof window !== 'undefined' && window.gtag) {
+                        window.gtag('event', 'quiz_completed', {
+                          event_category: 'educational',
+                          event_label: 'quiz_assessment',
+                          custom_parameters: {
+                            medical_context: 'hanseniase_education',
+                            quiz_score: attempt.score,
+                            user_level: profile?.professional ? 'profissional' : 'estudante'
+                          }
+                        });
+                      }
                       // Aqui você pode implementar lógica para salvar o resultado
                       // e atualizar pontuação/conquistas
                       setShowQuizSelection(true);
                     }}
                     onQuizExit={() => {
-                      console.log('Quiz exited');
+                      if (typeof window !== 'undefined' && window.gtag) {
+                        window.gtag('event', 'quiz_exited', {
+                          event_category: 'educational',
+                          event_label: 'quiz_abandonment',
+                          custom_parameters: {
+                            medical_context: 'hanseniase_education',
+                            user_level: profile?.professional ? 'profissional' : 'estudante'
+                          }
+                        });
+                      }
                       setShowQuizSelection(true);
                     }}
                   />

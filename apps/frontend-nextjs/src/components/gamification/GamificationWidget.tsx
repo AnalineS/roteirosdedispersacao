@@ -56,7 +56,6 @@ export default function GamificationWidget({
       if (notificationsData?.data) setNotifications(notificationsData.data);
     } catch (error) {
       // Se APIs não estão disponíveis, não mostrar o widget
-      console.log("Gamification APIs not available:", error);
       setProgress(null);
       setAchievements([]);
       setNotifications([]);
@@ -229,7 +228,7 @@ export function useGamification() {
 
   const trackLearningEvent = (
     eventType: "module_start" | "module_complete" | "quiz_complete",
-    data: any,
+    data: { moduleId: string; score?: number; [key: string]: unknown },
   ) => {
     analytics.trackEducational(
       data.moduleId,

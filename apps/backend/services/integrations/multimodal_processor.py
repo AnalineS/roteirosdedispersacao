@@ -718,11 +718,14 @@ class MultimodalProcessor:
 multimodal_processor = None
 
 def get_multimodal_processor() -> MultimodalProcessor:
-    """Obter instância do processador multimodal"""
+    """Obter instância do processador multimodal OTIMIZADO"""
     global multimodal_processor
     if multimodal_processor is None:
-        storage_path = os.getenv('MULTIMODAL_STORAGE_PATH', 'uploads')
-        multimodal_processor = MultimodalProcessor(storage_path)
+        # Configurações otimizadas para sistema médico
+        storage_path = os.getenv('MULTIMODAL_STORAGE_PATH', './uploads/medical_docs')
+        retention_days = int(os.getenv('MULTIMODAL_RETENTION_DAYS', '3'))  # Retenção mais curta para dados médicos
+        multimodal_processor = MultimodalProcessor(storage_path, retention_days)
+        logger.info(f"[OK] MultimodalProcessor inicializado: {storage_path}, retenção {retention_days} dias")
     return multimodal_processor
 
 def is_multimodal_available() -> bool:

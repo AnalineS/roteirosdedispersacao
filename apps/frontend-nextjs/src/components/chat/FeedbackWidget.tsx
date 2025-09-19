@@ -3,7 +3,7 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { modernChatTheme } from '@/config/modernTheme';
 import { validateFeedbackData, feedbackRateLimiter, generateSessionId } from '@/utils/securityUtils';
-import { useGoogleAnalytics } from '@/components/GoogleAnalytics';
+import { useGoogleAnalytics } from '@/components/analytics/GoogleAnalyticsSetup';
 import type { FeedbackData, FeedbackValidation } from '@/types/feedback';
 
 interface FeedbackWidgetProps {
@@ -103,7 +103,19 @@ export default function FeedbackWidget({
         setPersonaData(persona || null);
         setFeedbackState('idle');
       } catch (error) {
-        console.error('Error loading persona data:', error);
+        if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'feedback_widget_persona_load_error', {
+            event_category: 'medical_chat_feedback',
+            event_label: 'persona_data_load_failed',
+            custom_parameters: {
+              medical_context: 'feedback_widget_initialization',
+              persona_id: personaId,
+              message_id: messageId,
+              error_type: 'persona_load',
+              error_message: error instanceof Error ? error.message : String(error)
+            }
+          });
+        }
         setFeedbackState('idle'); // Fallback to idle even if persona load fails
       }
     };
@@ -144,12 +156,25 @@ export default function FeedbackWidget({
     
     // Validar e sanitizar dados
     const validation = validateFeedbackData(feedbackData);
-    
+
     if (!validation.isValid) {
-      console.error('Dados de feedback inválidos:', validation.errors);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'feedback_widget_validation_error_quick', {
+          event_category: 'medical_chat_feedback',
+          event_label: 'quick_feedback_validation_failed',
+          custom_parameters: {
+            medical_context: 'feedback_validation_system',
+            persona_id: personaId,
+            message_id: messageId,
+            rating: rating,
+            error_type: 'validation',
+            validation_errors: validation.errors.join(', ')
+          }
+        });
+      }
       trackError('validation_error', validation.errors.join(', '), 'FeedbackWidget');
       setFeedbackState('error');
-      
+
       setTimeout(() => {
         setFeedbackState('idle');
         setSelectedRating(null);
@@ -184,10 +209,24 @@ export default function FeedbackWidget({
       }, 3000);
 
     } catch (error) {
-      console.error('Erro ao enviar feedback:', error);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'feedback_widget_submit_error_quick', {
+          event_category: 'medical_chat_feedback',
+          event_label: 'quick_feedback_submit_failed',
+          custom_parameters: {
+            medical_context: 'feedback_submission_system',
+            persona_id: personaId,
+            persona_name: personaData?.name || 'unknown',
+            message_id: messageId,
+            rating: rating,
+            error_type: 'submission',
+            error_message: error instanceof Error ? error.message : String(error)
+          }
+        });
+      }
       trackError('submit_error', String(error), 'FeedbackWidget');
       setFeedbackState('error');
-      
+
       setTimeout(() => {
         setFeedbackState('idle');
         setSelectedRating(null);
@@ -225,9 +264,23 @@ export default function FeedbackWidget({
     
     // Validar e sanitizar dados
     const validation = validateFeedbackData(feedbackData);
-    
+
     if (!validation.isValid) {
-      console.error('Dados de feedback inválidos:', validation.errors);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'feedback_widget_validation_error_detailed', {
+          event_category: 'medical_chat_feedback',
+          event_label: 'detailed_feedback_validation_failed',
+          custom_parameters: {
+            medical_context: 'feedback_validation_system',
+            persona_id: personaId,
+            message_id: messageId,
+            rating: selectedRating,
+            has_comments: !!comments.trim(),
+            error_type: 'validation',
+            validation_errors: validation.errors.join(', ')
+          }
+        });
+      }
       trackError('validation_error', validation.errors.join(', '), 'FeedbackWidget');
       setFeedbackState('error');
       return;
@@ -261,7 +314,22 @@ export default function FeedbackWidget({
       }, 4000);
 
     } catch (error) {
-      console.error('Erro ao enviar feedback detalhado:', error);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'feedback_widget_submit_error_detailed', {
+          event_category: 'medical_chat_feedback',
+          event_label: 'detailed_feedback_submit_failed',
+          custom_parameters: {
+            medical_context: 'feedback_submission_system',
+            persona_id: personaId,
+            persona_name: personaData?.name || 'unknown',
+            message_id: messageId,
+            rating: selectedRating,
+            has_comments: !!comments.trim(),
+            error_type: 'submission',
+            error_message: error instanceof Error ? error.message : String(error)
+          }
+        });
+      }
       trackError('submit_error', String(error), 'FeedbackWidget');
       setFeedbackState('error');
     }

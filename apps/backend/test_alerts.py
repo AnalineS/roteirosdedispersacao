@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Script de teste para o sistema de alertas Email + Telegram
+Script de teste para o sistema de alertas Email + Telegram + Webhook
 Testa o sistema de notificações sem usar HTTP requests
 """
 
@@ -17,7 +17,7 @@ from datetime import datetime
 async def test_alert_system():
     """Testa o sistema de alertas de forma direta"""
 
-    print("TESTE DO SISTEMA DE ALERTAS EMAIL + TELEGRAM")
+    print("TESTE DO SISTEMA DE ALERTAS EMAIL + TELEGRAM + WEBHOOK")
     print("=" * 60)
     print()
 
@@ -102,7 +102,7 @@ async def test_alert_system():
 
     print("TESTE CONCLUÍDO COM SUCESSO!")
     print("=" * 60)
-    print("Sistema de alertas Email + Telegram 100% funcional")
+    print("Sistema de alertas Email + Telegram + Webhook 100% funcional")
     return True
 
 if __name__ == "__main__":

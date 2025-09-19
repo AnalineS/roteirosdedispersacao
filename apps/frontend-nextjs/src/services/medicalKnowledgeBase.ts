@@ -8,6 +8,7 @@
 import { embeddingService } from './embeddingService';
 import { knowledgeCache } from './simpleCache';
 import { supabaseRAGClient } from './supabaseRAGClient';
+import { secureLogger } from '@/utils/secureLogger';
 
 export interface MedicalDocument {
   id: string;
@@ -113,11 +114,19 @@ export class MedicalKnowledgeBase {
       // Atualizar estatísticas
       this.updateStats();
 
-      console.log(`📚 Documento médico adicionado: ${document.title} (${chunks.length} chunks)`);
+      secureLogger.medical('document_added', {
+        documentId: document.id,
+        category: document.category,
+        chunksCount: chunks.length,
+        wordCount: document.content.length
+      });
       return true;
 
     } catch (error) {
-      console.error('Error adding medical document:', error);
+      secureLogger.error('Failed to add medical document', error as Error, {
+        component: 'MedicalKnowledgeBase',
+        operation: 'addDocument'
+      });
       return false;
     }
   }
@@ -170,7 +179,11 @@ export class MedicalKnowledgeBase {
       return results.slice(0, maxResults);
 
     } catch (error) {
-      console.error('Error in medical knowledge search:', error);
+      secureLogger.error('Medical knowledge search failed', error as Error, {
+        component: 'MedicalKnowledgeBase',
+        operation: 'search',
+        queryLength: query.length
+      });
       return [];
     }
   }
@@ -243,7 +256,10 @@ export class MedicalKnowledgeBase {
    */
   async reindexKnowledge(): Promise<boolean> {
     try {
-      console.log('🔄 Reindexing medical knowledge base...');
+      secureLogger.medical('reindex_started', {
+        totalDocuments: this.documents.size,
+        totalChunks: this.chunks.size
+      });
 
       // Limpar índices
       this.categoryIndex.clear();
@@ -264,11 +280,17 @@ export class MedicalKnowledgeBase {
 
       this.updateStats();
       
-      console.log('✅ Knowledge base reindexed');
+      secureLogger.medical('reindex_completed', {
+        totalDocuments: this.documents.size,
+        totalChunks: this.chunks.size
+      });
       return true;
 
     } catch (error) {
-      console.error('Error reindexing knowledge base:', error);
+      secureLogger.error('Knowledge base reindex failed', error as Error, {
+        component: 'MedicalKnowledgeBase',
+        operation: 'reindexKnowledge'
+      });
       return false;
     }
   }
@@ -296,7 +318,9 @@ export class MedicalKnowledgeBase {
     stats?: KnowledgeStats;
   }): Promise<boolean> {
     try {
-      console.log(`📥 Importing ${backup.documents.length} medical documents...`);
+      secureLogger.medical('import_started', {
+        documentsCount: backup.documents.length
+      });
 
       // Limpar dados existentes
       this.documents.clear();
@@ -313,11 +337,17 @@ export class MedicalKnowledgeBase {
         this.stats = { ...backup.stats };
       }
 
-      console.log('✅ Knowledge base imported successfully');
+      secureLogger.medical('import_completed', {
+        documentsCount: backup.documents.length,
+        totalDocuments: this.documents.size
+      });
       return true;
 
     } catch (error) {
-      console.error('Error importing knowledge base:', error);
+      secureLogger.error('Knowledge base import failed', error as Error, {
+        component: 'MedicalKnowledgeBase',
+        operation: 'importKnowledge'
+      });
       return false;
     }
   }
@@ -329,10 +359,16 @@ export class MedicalKnowledgeBase {
       // Carregar conhecimento base do sistema
       await this.loadBaseKnowledge();
       this.updateStats();
-      console.log(`📚 Knowledge base initialized: ${this.stats.totalDocuments} documents`);
+      secureLogger.medical('knowledge_base_initialized', {
+        totalDocuments: this.stats.totalDocuments,
+        totalChunks: this.stats.totalChunks
+      });
 
     } catch (error) {
-      console.error('Error initializing knowledge base:', error);
+      secureLogger.error('Knowledge base initialization failed', error as Error, {
+        component: 'MedicalKnowledgeBase',
+        operation: 'initializeKnowledgeBase'
+      });
     }
   }
 

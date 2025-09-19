@@ -52,7 +52,25 @@ export interface IntegrationConfig {
     password?: string;
   };
   healthCheck?: string;
-  fallback?: any;
+  fallback?: {
+    endpoint?: string;
+    staticData?: unknown;
+    handler?: () => unknown;
+  };
+}
+
+interface CacheEntry {
+  data: unknown;
+  timestamp: number;
+  maxAge: number;
+}
+
+interface APIPayload {
+  [key: string]: unknown;
+}
+
+interface RequestData {
+  [key: string]: unknown;
 }
 
 // ============================================
@@ -63,7 +81,7 @@ class ActiveServicesHub {
   private static instance: ActiveServicesHub;
   private services = new Map<string, ServiceConfig>();
   private integrations = new Map<string, IntegrationConfig>();
-  private cache = new Map<string, { data: any; timestamp: number; maxAge: number }>();
+  private cache = new Map<string, CacheEntry>();
   private rateLimits = new Map<string, { count: number; window: number; lastReset: number }>();
   private circuitBreakers = new Map<string, { failures: number; lastFailure: number; state: 'open' | 'closed' | 'half-open' }>();
 
@@ -125,7 +143,7 @@ class ActiveServicesHub {
     serviceName: string,
     method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' = 'GET',
     endpoint: string = '',
-    data?: any,
+    data?: RequestData,
     options: RequestInit = {}
   ): Promise<ServiceResponse<T>> {
     const service = this.services.get(serviceName);
@@ -271,13 +289,18 @@ class ActiveServicesHub {
         }
       }
 
+      // Type-safe error handling
+      const errorMessage = error instanceof Error ? error.message : 'Request failed';
+      const errorName = error instanceof Error ? error.name : 'REQUEST_FAILED';
+      const errorStatus = error && typeof error === 'object' && 'status' in error ? (error as { status: number }).status : undefined;
+
       throw new Error(JSON.stringify({
-        code: (error as any).name || 'REQUEST_FAILED',
-        message: (error as any).message || 'Request failed',
+        code: errorName,
+        message: errorMessage,
         service: serviceName,
         retryable: true,
         timestamp: Date.now(),
-        status: (error as any).status
+        status: errorStatus
       }));
     }
   }
@@ -286,7 +309,7 @@ class ActiveServicesHub {
   // INTEGRATION METHODS
   // ============================================
 
-  async callIntegration<T>(integrationName: string, payload?: any): Promise<T> {
+  async callIntegration<T>(integrationName: string, payload?: APIPayload): Promise<T> {
     const integration = this.integrations.get(integrationName);
     if (!integration) {
       throw new Error(`Integration '${integrationName}' not found`);
@@ -497,7 +520,7 @@ export const useActiveServices = () => {
       return status;
     } catch (error) {
       globalContext.addError({
-        message: `Health check failed: ${(error as any).message}`,
+        message: `Health check failed: ${error instanceof Error ? error.message : String(error)}`,
         context: 'health-check',
         severity: 'high'
       });
@@ -529,7 +552,7 @@ export const useActiveServices = () => {
     serviceName: string,
     method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' = 'GET',
     endpoint: string = '',
-    data?: any,
+    data?: RequestData,
     options?: RequestInit
   ): Promise<ServiceResponse<T>> => {
     try {
@@ -544,14 +567,14 @@ export const useActiveServices = () => {
 
       return result;
     } catch (error) {
-      tracking.trackError('service_call_failed', (error as any).message, serviceName);
+      tracking.trackError('service_call_failed', error instanceof Error ? error.message : String(error), serviceName);
       throw error;
     }
   }, [servicesHub, tracking]);
 
   const callIntegration = useCallback(async <T>(
     integrationName: string,
-    payload?: any
+    payload?: APIPayload
   ): Promise<T> => {
     try {
       const result = await servicesHub.callIntegration<T>(integrationName, payload);
@@ -563,7 +586,7 @@ export const useActiveServices = () => {
 
       return result;
     } catch (error) {
-      tracking.trackError('integration_call_failed', (error as any).message, integrationName);
+      tracking.trackError('integration_call_failed', error instanceof Error ? error.message : String(error), integrationName);
       throw error;
     }
   }, [servicesHub, tracking]);
@@ -575,9 +598,9 @@ export const useActiveServices = () => {
   const apiService = useMemo(() => ({
     get: <T>(endpoint: string, options?: RequestInit) => 
       callService<T>('api', 'GET', endpoint, undefined, options),
-    post: <T>(endpoint: string, data: any, options?: RequestInit) => 
+    post: <T>(endpoint: string, data: RequestData, options?: RequestInit) => 
       callService<T>('api', 'POST', endpoint, data, options),
-    put: <T>(endpoint: string, data: any, options?: RequestInit) => 
+    put: <T>(endpoint: string, data: RequestData, options?: RequestInit) => 
       callService<T>('api', 'PUT', endpoint, data, options),
     delete: <T>(endpoint: string, options?: RequestInit) => 
       callService<T>('api', 'DELETE', endpoint, undefined, options)

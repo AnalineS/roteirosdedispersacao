@@ -88,7 +88,17 @@ export default function SocialProfile({
         hapticError();
       }
     } catch (err) {
-      console.error('Erro ao salvar perfil:', err);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'social_profile_save_error', {
+          event_category: 'medical_user_profile',
+          event_label: 'profile_save_failed',
+          custom_parameters: {
+            medical_context: 'social_profile_management',
+            error_type: 'profile_save_failure',
+            error_message: err instanceof Error ? err.message : String(err)
+          }
+        });
+      }
       hapticError();
     }
   }, [editForm, updateProfile, success, hapticError]);
@@ -502,7 +512,19 @@ export default function SocialProfile({
               currentAvatarUrl={profile.photoURL}
               userId={profile.uid}
               onUploadComplete={handleAvatarUpload}
-              onUploadError={(error) => console.error('Erro no upload:', error)}
+              onUploadError={(error) => {
+                if (typeof window !== 'undefined' && window.gtag) {
+                  window.gtag('event', 'social_profile_avatar_upload_error', {
+                    event_category: 'medical_user_profile',
+                    event_label: 'avatar_upload_failed',
+                    custom_parameters: {
+                      medical_context: 'social_profile_avatar',
+                      error_type: 'avatar_upload_failure',
+                      error_message: error instanceof Error ? error.message : String(error)
+                    }
+                  });
+                }
+              }}
             />
             <button
               onClick={() => setShowAvatarUploader(false)}

@@ -221,10 +221,10 @@ export interface ProgressUpdate {
 
 // Chat/Persona API
 export interface ChatMessage {
-  id: string;
+  id?: string; // Optional para compatibilidade com services/api.ts
   content: string;
   role: 'user' | 'assistant';
-  timestamp: string;
+  timestamp: string | number; // Flexível para compatibilidade
   persona?: string;
   metadata?: ChatMessageMetadata;
 }
@@ -235,6 +235,11 @@ export interface ChatMessageMetadata {
   confidence?: number;
   sources?: string[];
   processingTime?: number;
+  // Propriedades específicas de fallback do services/api.ts
+  isFallback?: boolean;
+  fallbackSource?: 'cache' | 'local_knowledge' | 'emergency' | 'generic';
+  suggestion?: string;
+  emergency_contact?: string;
 }
 
 export interface ChatRequest {

@@ -4,6 +4,13 @@
  */
 
 import { jwtClient } from '@/lib/auth/jwt-client';
+import type {
+  ChatMessage,
+  ChatMessageMetadata,
+  ChatRequest as ChatRequestBase,
+  ChatResponse as ChatResponseBase
+} from '@/types/api';
+import type { PersonaConfig, ValidPersonaId } from '@/types/personas';
 
 // ============================================
 // TYPES
@@ -33,20 +40,63 @@ export interface PersonasResponse {
   [key: string]: Persona;
 }
 
-export interface ChatMessage {
-  id?: string;
-  role: 'user' | 'assistant';
-  content: string;
-  timestamp: number;
-  persona?: string;
-  metadata?: {
-    isFallback?: boolean;
-    fallbackSource?: 'cache' | 'local_knowledge' | 'emergency' | 'generic';
-    confidence?: number;
-    suggestion?: string;
-    emergency_contact?: string;
+// ============================================
+// MAPPING FUNCTIONS
+// ============================================
+
+/**
+ * Converte Persona do backend para PersonaConfig do frontend
+ * Mapeia propriedades diferentes entre backend e frontend
+ */
+export function mapPersonaToPersonaConfig(personaId: string, persona: Persona): PersonaConfig {
+  // Mapear tone baseado na personality
+  const tone: PersonaConfig['tone'] =
+    persona.personality.toLowerCase().includes('empathetic') || persona.personality.toLowerCase().includes('caring') ? 'empathetic' :
+    persona.personality.toLowerCase().includes('technical') || persona.personality.toLowerCase().includes('professional') ? 'professional' :
+    persona.personality.toLowerCase().includes('formal') ? 'formal' : 'casual';
+
+  // Mapear responseStyle baseado no response_style
+  const responseStyle: PersonaConfig['responseStyle'] =
+    persona.response_style.toLowerCase().includes('detailed') ? 'detailed' :
+    persona.response_style.toLowerCase().includes('concise') ? 'concise' : 'interactive';
+
+  return {
+    id: personaId as ValidPersonaId,
+    name: persona.name,
+    description: persona.description,
+    avatar: persona.avatar,
+    personality: persona.personality,
+    expertise: persona.expertise,
+    response_style: persona.response_style,
+    target_audience: persona.target_audience,
+    system_prompt: persona.system_prompt,
+    capabilities: persona.capabilities,
+    example_questions: persona.example_questions,
+    limitations: persona.limitations,
+    response_format: persona.response_format,
+    // Frontend-specific mapped properties
+    tone,
+    specialties: persona.expertise, // Mapear expertise para specialties
+    responseStyle,
+    enabled: true // Assumir que todas as personas do backend estão habilitadas
   };
 }
+
+/**
+ * Converte PersonasResponse para Record<string, PersonaConfig>
+ * Para compatibilidade com componentes frontend
+ */
+export function mapPersonasResponseToConfigs(personas: PersonasResponse): Record<string, PersonaConfig> {
+  const configs: Record<string, PersonaConfig> = {};
+
+  for (const [personaId, persona] of Object.entries(personas)) {
+    configs[personaId] = mapPersonaToPersonaConfig(personaId, persona);
+  }
+
+  return configs;
+}
+
+// ChatMessage agora importado de @/types/api
 
 export interface ChatRequest {
   question: string;
@@ -114,6 +164,32 @@ export interface UserAnalytics {
   lastActivity: string;
 }
 
+export interface APIError {
+  response?: {
+    data?: {
+      message?: string;
+      error?: string;
+    };
+    status?: number;
+    statusText?: string;
+  };
+  message?: string;
+  code?: string;
+}
+
+export interface ActivityData {
+  messageId?: string;
+  sessionId?: string;
+  persona?: 'dr_gasnelio' | 'ga';
+  feature?: string;
+  duration?: number;
+  metadata?: Record<string, string | number | boolean>;
+}
+
+export interface RequestData {
+  [key: string]: unknown;
+}
+
 // ============================================
 // CONFIGURAÇÃO DE URL
 // ============================================
@@ -171,7 +247,7 @@ class APIClient {
   /**
    * Generic POST method
    */
-  async post<T>(endpoint: string, data?: any): Promise<T> {
+  async post<T>(endpoint: string, data?: RequestData): Promise<T> {
     const client = jwtClient.getAuthenticatedClient();
     const response = await client.post(endpoint, data);
     return response.data;
@@ -184,10 +260,46 @@ class APIClient {
     try {
       const client = jwtClient.getAuthenticatedClient();
       const response = await client.get('/personas');
-      console.log('[Personas] Carregadas do backend:', Object.keys(response.data).length);
+      // Medical API success tracking
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'medical_api_personas_loaded', {
+          event_category: 'medical_api_success',
+          event_label: 'personas_backend_loaded',
+          value: Object.keys(response.data).length,
+          custom_parameters: {
+            medical_context: 'api_personas_loading',
+            personas_count: Object.keys(response.data).length,
+            api_base_url: this.baseURL,
+            load_source: 'backend'
+          }
+        });
+      }
       return response.data;
     } catch (error) {
-      console.error('[Personas] Erro no backend, usando dados estáticos:', error);
+      // Medical API personas fallback - explicit stderr + tracking
+      const errorMessage = error instanceof Error ? error.message : String(error);
+
+      // Explicit error to stderr for medical system visibility
+      if (typeof process !== 'undefined' && process.stderr) {
+        process.stderr.write(`❌ ERRO - Falha ao carregar personas médicas do backend:\n` +
+          `  BackendURL: ${this.baseURL}\n` +
+          `  Error: ${errorMessage}\n` +
+          `  Fallback: Usando dados estáticos\n\n`);
+      }
+
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'medical_api_personas_backend_error', {
+          event_category: 'medical_error_critical',
+          event_label: 'personas_backend_failed_fallback_static',
+          custom_parameters: {
+            medical_context: 'api_personas_loading',
+            api_base_url: this.baseURL,
+            error_type: 'backend_unavailable',
+            error_message: errorMessage,
+            fallback_type: 'static_data'
+          }
+        });
+      }
 
       // Mostrar toast de erro se disponível
       if (typeof window !== 'undefined') {
@@ -206,6 +318,14 @@ class APIClient {
   }
 
   /**
+   * Busca personas do backend e retorna como PersonaConfig para compatibilidade frontend
+   */
+  async getPersonaConfigs(): Promise<Record<string, PersonaConfig>> {
+    const personas = await this.getPersonas();
+    return mapPersonasResponseToConfigs(personas);
+  }
+
+  /**
    * Envia mensagem para o chat com fallback offline
    */
   async sendChatMessage(request: ChatRequest): Promise<ChatResponse> {
@@ -214,7 +334,32 @@ class APIClient {
       const response = await client.post('/chat', request);
       return response.data;
     } catch (error) {
-      console.error('[Chat] Erro no backend, usando resposta offline:', error);
+      // Medical API chat fallback - explicit stderr + tracking
+      const errorMessage = error instanceof Error ? error.message : String(error);
+
+      // Explicit error to stderr for medical system visibility
+      if (typeof process !== 'undefined' && process.stderr) {
+        process.stderr.write(`❌ ERRO - Falha no chat médico do backend:\n` +
+          `  BackendURL: ${this.baseURL}\n` +
+          `  PersonaID: ${request.personality_id}\n` +
+          `  Error: ${errorMessage}\n` +
+          `  Fallback: Resposta offline ativada\n\n`);
+      }
+
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'medical_api_chat_backend_error', {
+          event_category: 'medical_error_critical',
+          event_label: 'chat_backend_failed_fallback_offline',
+          custom_parameters: {
+            medical_context: 'api_chat_processing',
+            api_base_url: this.baseURL,
+            persona_id: request.personality_id,
+            error_type: 'backend_unavailable',
+            error_message: errorMessage,
+            fallback_type: 'offline_response'
+          }
+        });
+      }
       return this.generateOfflineResponse(request);
     }
   }
@@ -238,9 +383,33 @@ class APIClient {
       });
 
       return response.data;
-    } catch (error: any) {
-      console.error('Error sending message:', error);
-      throw new Error(error.response?.data?.message || 'Failed to send message');
+    } catch (error: APIError | Error | unknown) {
+      // Medical API message send error - explicit stderr + tracking
+      const errorMessage = error instanceof Error ? error.message : String(error);
+
+      // Explicit error to stderr for medical system visibility
+      if (typeof process !== 'undefined' && process.stderr) {
+        process.stderr.write(`❌ ERRO CRÍTICO - Falha ao enviar mensagem médica:\n` +
+          `  Persona: ${persona}\n` +
+          `  SessionID: ${sessionId || 'none'}\n` +
+          `  Error: ${errorMessage}\n\n`);
+      }
+
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'medical_api_send_message_error', {
+          event_category: 'medical_error_critical',
+          event_label: 'message_send_failed',
+          custom_parameters: {
+            medical_context: 'api_message_sending',
+            persona_id: persona,
+            session_id: sessionId || 'none',
+            error_type: 'message_send_failure',
+            error_message: errorMessage
+          }
+        });
+      }
+      const apiError = error as APIError;
+      throw new Error(apiError.response?.data?.message || 'Failed to send message');
     }
   }
 
@@ -261,7 +430,30 @@ class APIClient {
       const response = await client.post('/scope', { question });
       return response.data;
     } catch (error) {
-      console.error('Erro ao detectar escopo:', error);
+      // Medical API scope detection error - explicit stderr + tracking
+      const errorMessage = error instanceof Error ? error.message : String(error);
+
+      // Explicit error to stderr for medical system visibility
+      if (typeof process !== 'undefined' && process.stderr) {
+        process.stderr.write(`❌ ERRO - Falha na detecção de escopo médico:\n` +
+          `  Question: ${question.substring(0, 100)}...\n` +
+          `  Error: ${errorMessage}\n` +
+          `  Fallback: Escopo médico geral\n\n`);
+      }
+
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'medical_api_scope_detection_error', {
+          event_category: 'medical_error_critical',
+          event_label: 'scope_detection_failed',
+          custom_parameters: {
+            medical_context: 'api_scope_detection',
+            question_length: question.length,
+            error_type: 'scope_detection_failure',
+            error_message: errorMessage,
+            fallback_scope: 'medical_general'
+          }
+        });
+      }
       // Fallback para escopo offline
       return {
         scope: 'medical_general',
@@ -285,8 +477,31 @@ class APIClient {
         params: { limit, offset }
       });
       return response.data.sessions || [];
-    } catch (error: any) {
-      console.error('Error getting sessions:', error);
+    } catch (error: APIError | Error | unknown) {
+      // Medical API sessions retrieval error - explicit stderr + tracking
+      const errorMessage = error instanceof Error ? error.message : String(error);
+
+      // Explicit error to stderr for medical system visibility
+      if (typeof process !== 'undefined' && process.stderr) {
+        process.stderr.write(`❌ ERRO - Falha ao buscar sessões médicas:\n` +
+          `  Limit: ${limit}\n` +
+          `  Offset: ${offset}\n` +
+          `  Error: ${errorMessage}\n\n`);
+      }
+
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'medical_api_get_sessions_error', {
+          event_category: 'medical_error_critical',
+          event_label: 'sessions_retrieval_failed',
+          custom_parameters: {
+            medical_context: 'api_sessions_management',
+            limit: limit,
+            offset: offset,
+            error_type: 'sessions_retrieval_failure',
+            error_message: errorMessage
+          }
+        });
+      }
       return [];
     }
   }
@@ -297,8 +512,29 @@ class APIClient {
     try {
       const response = await client.get(`/chat/sessions/${sessionId}`);
       return response.data.session;
-    } catch (error: any) {
-      console.error('Error getting session:', error);
+    } catch (error: APIError | Error | unknown) {
+      // Medical API session retrieval error - explicit stderr + tracking
+      const errorMessage = error instanceof Error ? error.message : String(error);
+
+      // Explicit error to stderr for medical system visibility
+      if (typeof process !== 'undefined' && process.stderr) {
+        process.stderr.write(`❌ ERRO - Falha ao buscar sessão médica:\n` +
+          `  SessionID: ${sessionId}\n` +
+          `  Error: ${errorMessage}\n\n`);
+      }
+
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'medical_api_get_session_error', {
+          event_category: 'medical_error_critical',
+          event_label: 'session_retrieval_failed',
+          custom_parameters: {
+            medical_context: 'api_session_management',
+            session_id: sessionId,
+            error_type: 'session_retrieval_failure',
+            error_message: errorMessage
+          }
+        });
+      }
       return null;
     }
   }
@@ -309,8 +545,29 @@ class APIClient {
     try {
       await client.delete(`/chat/sessions/${sessionId}`);
       return true;
-    } catch (error: any) {
-      console.error('Error deleting session:', error);
+    } catch (error: APIError | Error | unknown) {
+      // Medical API session deletion error - explicit stderr + tracking
+      const errorMessage = error instanceof Error ? error.message : String(error);
+
+      // Explicit error to stderr for medical system visibility
+      if (typeof process !== 'undefined' && process.stderr) {
+        process.stderr.write(`❌ ERRO - Falha ao excluir sessão médica:\n` +
+          `  SessionID: ${sessionId}\n` +
+          `  Error: ${errorMessage}\n\n`);
+      }
+
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'medical_api_delete_session_error', {
+          event_category: 'medical_error_critical',
+          event_label: 'session_deletion_failed',
+          custom_parameters: {
+            medical_context: 'api_session_management',
+            session_id: sessionId,
+            error_type: 'session_deletion_failure',
+            error_message: errorMessage
+          }
+        });
+      }
       return false;
     }
   }
@@ -323,8 +580,29 @@ class APIClient {
         archived: true
       });
       return true;
-    } catch (error: any) {
-      console.error('Error archiving session:', error);
+    } catch (error: APIError | Error | unknown) {
+      // Medical API session archiving error - explicit stderr + tracking
+      const errorMessage = error instanceof Error ? error.message : String(error);
+
+      // Explicit error to stderr for medical system visibility
+      if (typeof process !== 'undefined' && process.stderr) {
+        process.stderr.write(`❌ ERRO - Falha ao arquivar sessão médica:\n` +
+          `  SessionID: ${sessionId}\n` +
+          `  Error: ${errorMessage}\n\n`);
+      }
+
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'medical_api_archive_session_error', {
+          event_category: 'medical_error_critical',
+          event_label: 'session_archiving_failed',
+          custom_parameters: {
+            medical_context: 'api_session_management',
+            session_id: sessionId,
+            error_type: 'session_archiving_failure',
+            error_message: errorMessage
+          }
+        });
+      }
       return false;
     }
   }
@@ -338,15 +616,34 @@ class APIClient {
     try {
       const response = await client.get('/analytics/user');
       return response.data.analytics;
-    } catch (error: any) {
-      console.error('Error getting user analytics:', error);
+    } catch (error: APIError | Error | unknown) {
+      // Medical API user analytics error - explicit stderr + tracking
+      const errorMessage = error instanceof Error ? error.message : String(error);
+
+      // Explicit error to stderr for medical system visibility
+      if (typeof process !== 'undefined' && process.stderr) {
+        process.stderr.write(`❌ ERRO - Falha ao buscar analytics médicos do usuário:\n` +
+          `  Error: ${errorMessage}\n\n`);
+      }
+
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'medical_api_user_analytics_error', {
+          event_category: 'medical_error_critical',
+          event_label: 'user_analytics_retrieval_failed',
+          custom_parameters: {
+            medical_context: 'api_user_analytics',
+            error_type: 'analytics_retrieval_failure',
+            error_message: errorMessage
+          }
+        });
+      }
       return null;
     }
   }
 
   async recordActivity(activity: {
     type: 'message_sent' | 'session_started' | 'persona_changed' | 'feature_used';
-    data?: any;
+    data?: ActivityData;
   }): Promise<boolean> {
     const client = jwtClient.getAuthenticatedClient();
 
@@ -356,8 +653,29 @@ class APIClient {
         timestamp: new Date().toISOString()
       });
       return true;
-    } catch (error: any) {
-      console.error('Error recording activity:', error);
+    } catch (error: APIError | Error | unknown) {
+      // Medical API activity recording error - explicit stderr + tracking
+      const errorMessage = error instanceof Error ? error.message : String(error);
+
+      // Explicit error to stderr for medical system visibility
+      if (typeof process !== 'undefined' && process.stderr) {
+        process.stderr.write(`❌ ERRO - Falha ao registrar atividade médica:\n` +
+          `  ActivityType: ${activity.type}\n` +
+          `  Error: ${errorMessage}\n\n`);
+      }
+
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'medical_api_record_activity_error', {
+          event_category: 'medical_error_critical',
+          event_label: 'activity_recording_failed',
+          custom_parameters: {
+            medical_context: 'api_activity_tracking',
+            activity_type: activity.type,
+            error_type: 'activity_recording_failure',
+            error_message: errorMessage
+          }
+        });
+      }
       return false;
     }
   }
@@ -377,8 +695,31 @@ class APIClient {
     try {
       await client.post('/feedback', feedback);
       return true;
-    } catch (error: any) {
-      console.error('Error submitting feedback:', error);
+    } catch (error: APIError | Error | unknown) {
+      // Medical API feedback submission error - explicit stderr + tracking
+      const errorMessage = error instanceof Error ? error.message : String(error);
+
+      // Explicit error to stderr for medical system visibility
+      if (typeof process !== 'undefined' && process.stderr) {
+        process.stderr.write(`❌ ERRO - Falha ao enviar feedback médico:\n` +
+          `  Rating: ${feedback.rating}\n` +
+          `  Type: ${feedback.type}\n` +
+          `  Error: ${errorMessage}\n\n`);
+      }
+
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'medical_api_submit_feedback_error', {
+          event_category: 'medical_error_critical',
+          event_label: 'feedback_submission_failed',
+          custom_parameters: {
+            medical_context: 'api_feedback_system',
+            feedback_rating: feedback.rating,
+            feedback_type: feedback.type,
+            error_type: 'feedback_submission_failure',
+            error_message: errorMessage
+          }
+        });
+      }
       return false;
     }
   }
@@ -401,8 +742,33 @@ class APIClient {
       });
 
       return response.data.url;
-    } catch (error: any) {
-      console.error('Error uploading file:', error);
+    } catch (error: APIError | Error | unknown) {
+      // Medical API file upload error - explicit stderr + tracking
+      const errorMessage = error instanceof Error ? error.message : String(error);
+
+      // Explicit error to stderr for medical system visibility
+      if (typeof process !== 'undefined' && process.stderr) {
+        process.stderr.write(`❌ ERRO - Falha no upload de arquivo médico:\n` +
+          `  FileType: ${type}\n` +
+          `  FileName: ${file.name}\n` +
+          `  FileSize: ${file.size} bytes\n` +
+          `  Error: ${errorMessage}\n\n`);
+      }
+
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'medical_api_file_upload_error', {
+          event_category: 'medical_error_critical',
+          event_label: 'file_upload_failed',
+          custom_parameters: {
+            medical_context: 'api_file_upload',
+            file_type: type,
+            file_name: file.name,
+            file_size_bytes: file.size,
+            error_type: 'file_upload_failure',
+            error_message: errorMessage
+          }
+        });
+      }
       return null;
     }
   }
@@ -430,7 +796,30 @@ class APIClient {
 
       throw new Error('Health check failed');
     } catch (error) {
-      console.error('[API Health] Backend indisponível:', error);
+      // Medical API health check error - explicit stderr + tracking
+      const errorMessage = error instanceof Error ? error.message : String(error);
+
+      // Explicit error to stderr for medical system visibility
+      if (typeof process !== 'undefined' && process.stderr) {
+        process.stderr.write(`❌ ERRO CRÍTICO - Backend médico indisponível:\n` +
+          `  BackendURL: ${this.baseURL}\n` +
+          `  Error: ${errorMessage}\n` +
+          `  Status: Fallback ativado\n\n`);
+      }
+
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'medical_api_health_check_failed', {
+          event_category: 'medical_error_critical',
+          event_label: 'backend_unavailable_fallback_active',
+          custom_parameters: {
+            medical_context: 'api_health_monitoring',
+            api_base_url: this.baseURL,
+            error_type: 'backend_unavailable',
+            error_message: errorMessage,
+            fallback_status: 'active'
+          }
+        });
+      }
       return {
         available: false,
         url: this.baseURL,
@@ -464,8 +853,31 @@ class APIClient {
       });
 
       return response.data;
-    } catch (error: any) {
-      console.error('Error searching knowledge base:', error);
+    } catch (error: APIError | Error | unknown) {
+      // Medical API knowledge base search error - explicit stderr + tracking
+      const errorMessage = error instanceof Error ? error.message : String(error);
+
+      // Explicit error to stderr for medical system visibility
+      if (typeof process !== 'undefined' && process.stderr) {
+        process.stderr.write(`❌ ERRO - Falha na busca da base de conhecimento médico:\n` +
+          `  Query: ${query.substring(0, 100)}...\n` +
+          `  Filters: ${JSON.stringify(filters || {})}\n` +
+          `  Error: ${errorMessage}\n\n`);
+      }
+
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'medical_api_knowledge_search_error', {
+          event_category: 'medical_error_critical',
+          event_label: 'knowledge_base_search_failed',
+          custom_parameters: {
+            medical_context: 'api_knowledge_search',
+            query_length: query.length,
+            filters_applied: filters ? Object.keys(filters).length : 0,
+            error_type: 'knowledge_search_failure',
+            error_message: errorMessage
+          }
+        });
+      }
       return { results: [], total: 0 };
     }
   }
@@ -531,7 +943,9 @@ Sua consulta: "${request.question}"
 export const apiClient = new APIClient();
 
 // Export das funções principais para compatibilidade
-export const getPersonas = () => apiClient.getPersonas();
+export const getPersonas = () => apiClient.getPersonaConfigs(); // Retorna PersonaConfig para compatibilidade frontend
+export const getPersonasRaw = () => apiClient.getPersonas(); // Retorna Persona original do backend
+export const getPersonaConfigs = () => apiClient.getPersonaConfigs(); // Alias explícito
 export const sendChatMessage = (request: ChatRequest) => apiClient.sendChatMessage(request);
 export const detectQuestionScope = (question: string) => apiClient.detectQuestionScope(question);
 export const checkAPIHealth = () => apiClient.checkAPIHealth();

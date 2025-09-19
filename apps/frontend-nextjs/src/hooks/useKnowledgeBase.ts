@@ -6,6 +6,17 @@ import { knowledgeSearch, EnhancedMessage } from '@/services/knowledgeSearch';
 import { SentimentResult } from '@/services/sentimentAnalysis';
 
 // Compatible RAGResponse interface
+interface KnowledgeDocument {
+  id: string;
+  title: string;
+  content: string;
+  category: string;
+  tags: string[];
+  lastUpdated: string;
+  source: string;
+  confidence?: number;
+}
+
 interface RAGResponse {
   chunks: Array<{ content: string; score: number; section: string }>;
   combined_context: string;
@@ -13,7 +24,7 @@ interface RAGResponse {
   sources: string[];
   cached: boolean;
   processing_time: number;
-  documents?: any[];
+  documents?: KnowledgeDocument[];
   query?: string;
 }
 

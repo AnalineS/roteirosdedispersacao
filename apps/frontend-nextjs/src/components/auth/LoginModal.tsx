@@ -66,7 +66,17 @@ export default function LoginModal({
       await loginWithGoogle();
       // Don't close immediately - let the useEffect handle wizard display
     } catch (error) {
-      console.error('Google login failed:', error);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'auth_google_login_error', {
+          event_category: 'medical_authentication',
+          event_label: 'google_login_failed',
+          custom_parameters: {
+            medical_context: 'login_modal_google_auth',
+            error_type: 'google_auth_failure',
+            error_message: error instanceof Error ? error.message : String(error)
+          }
+        });
+      }
     }
   };
 
@@ -85,7 +95,18 @@ export default function LoginModal({
       }
       // Don't close immediately - let the useEffect handle wizard display
     } catch (error) {
-      console.error('Email auth failed:', error);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'auth_email_login_error', {
+          event_category: 'medical_authentication',
+          event_label: 'email_auth_failed',
+          custom_parameters: {
+            medical_context: 'login_modal_email_auth',
+            auth_mode: mode,
+            error_type: 'email_auth_failure',
+            error_message: error instanceof Error ? error.message : String(error)
+          }
+        });
+      }
     }
   };
 

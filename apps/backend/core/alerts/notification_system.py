@@ -1,6 +1,6 @@
 """
 Sistema de Notificações para Alertas LGPD
-Envia alertas por Email e Telegram para violações e eventos críticos
+Envia alertas por Email, Telegram e Webhook para violações e eventos críticos
 """
 
 import os
@@ -382,13 +382,115 @@ class TelegramNotificationChannel(NotificationChannel):
             logger.error(f"Erro ao enviar Telegram: {e}")
             return False
 
+class WebhookNotificationChannel(NotificationChannel):
+    """Canal de notificação por Webhook - para integrações futuras"""
+
+    def __init__(self):
+        super().__init__("webhook")
+        self.webhook_url = os.getenv('ALERT_WEBHOOK_URL')
+        self.webhook_secret = os.getenv('ALERT_WEBHOOK_SECRET')
+        self.webhook_timeout = int(os.getenv('ALERT_WEBHOOK_TIMEOUT', '10'))
+
+        # Modo demo para desenvolvimento
+        self.demo_mode = os.getenv('ALERT_DEMO_MODE', 'true').lower() == 'true'
+
+        # Verificar configuração
+        if not self.webhook_url:
+            if self.demo_mode:
+                logger.info("Webhook em modo demo - simulando envios")
+                self.enabled = True
+            else:
+                logger.info("Webhook não configurado. Canal disponível para configuração futura.")
+                self.enabled = False
+        else:
+            self.enabled = True
+
+    def _get_webhook_payload(self, alert: AlertData) -> Dict[str, Any]:
+        """Formata payload para webhook"""
+
+        payload = {
+            'alert_id': alert.alert_id,
+            'alert_type': alert.alert_type,
+            'severity': alert.severity,
+            'title': alert.title,
+            'message': alert.message,
+            'timestamp': alert.timestamp.isoformat(),
+            'requires_immediate_action': alert.requires_immediate_action,
+            'details': alert.details,
+            'system': 'roteiro_dispensacao_lgpd',
+            'version': '1.0.0'
+        }
+
+        if alert.user_id:
+            payload['user_id'] = alert.user_id[:8] + '***'  # Anonimizar para webhook
+
+        return payload
+
+    async def send(self, alert: AlertData) -> bool:
+        """Envia alerta via webhook"""
+        if not self.enabled:
+            return False
+
+        if self.is_rate_limited():
+            logger.warning(f"Rate limit atingido para webhook. Alerta {alert.alert_id} não enviado.")
+            return False
+
+        # Modo demo - simular envio
+        if self.demo_mode:
+            payload = self._get_webhook_payload(alert)
+            logger.info(f"[WEBHOOK DEMO] Alerta enviado: [{alert.severity.upper()}] {alert.title}")
+            logger.info(f"[WEBHOOK DEMO] URL: {self.webhook_url or 'https://webhook.example.com/alerts'}")
+            logger.info(f"[WEBHOOK DEMO] Payload: {json.dumps(payload, indent=2)[:200]}...")
+            self.last_alerts.append(datetime.utcnow())
+            return True
+
+        try:
+            payload = self._get_webhook_payload(alert)
+
+            headers = {
+                'Content-Type': 'application/json',
+                'User-Agent': 'RoteiroPQTU-AlertSystem/1.0'
+            }
+
+            # Adicionar autenticação se secret fornecido
+            if self.webhook_secret:
+                import hmac
+                import hashlib
+                payload_str = json.dumps(payload, sort_keys=True)
+                signature = hmac.new(
+                    self.webhook_secret.encode(),
+                    payload_str.encode(),
+                    hashlib.sha256
+                ).hexdigest()
+                headers['X-Alert-Signature'] = f'sha256={signature}'
+
+            async with aiohttp.ClientSession() as session:
+                async with session.post(
+                    self.webhook_url,
+                    json=payload,
+                    headers=headers,
+                    timeout=aiohttp.ClientTimeout(total=self.webhook_timeout)
+                ) as response:
+                    if response.status == 200:
+                        self.record_alert()
+                        logger.info(f"Webhook enviado com sucesso: {self.webhook_url}")
+                        return True
+                    else:
+                        logger.error(f"Erro webhook: {response.status} - {await response.text()}")
+                        return False
+
+        except Exception as e:
+            logger.error(f"Erro ao enviar webhook: {e}")
+            return False
+
 class AlertManager:
     """Gerenciador central de alertas"""
 
     def __init__(self):
         self.channels = [
             EmailNotificationChannel(),
-            TelegramNotificationChannel()
+            TelegramNotificationChannel(),
+            WebhookNotificationChannel()
         ]
         self.alert_history = []
 

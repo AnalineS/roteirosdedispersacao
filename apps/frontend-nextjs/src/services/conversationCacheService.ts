@@ -4,7 +4,8 @@
  */
 
 import { apiClient } from '@/services/api';
-import type { ChatMessage, ChatSession } from '@/services/api';
+import type { ChatMessage } from '@/types/api';
+import type { ChatSession } from '@/services/api';
 
 interface CachedConversation {
   id: string;
@@ -41,7 +42,22 @@ class ConversationCacheService {
       const cache: ConversationCache = JSON.parse(cached);
       return Object.values(cache.conversations || {});
     } catch (error) {
-      console.error('Erro ao carregar conversas do cache:', error);
+      // Medical system error - explicit stderr + tracking
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      if (typeof process !== 'undefined' && process.stderr) {
+        process.stderr.write(`❌ ERRO - Falha ao carregar cache de conversas médicas:\n  Error: ${errorMessage}\n\n`);
+      }
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'medical_conversation_cache_load_error', {
+          event_category: 'medical_error_critical',
+          event_label: 'conversation_cache_load_failed',
+          custom_parameters: {
+            medical_context: 'conversation_cache_service',
+            error_type: 'cache_load_failure',
+            error_message: errorMessage
+          }
+        });
+      }
       return [];
     }
   }
@@ -65,7 +81,22 @@ class ConversationCacheService {
 
       localStorage.setItem(this.cacheKey, JSON.stringify(cache));
     } catch (error) {
-      console.error('Erro ao salvar conversa no cache:', error);
+      // Medical system error - explicit stderr + tracking
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      if (typeof process !== 'undefined' && process.stderr) {
+        process.stderr.write(`❌ ERRO - Falha ao salvar conversa no cache médico:\n  Error: ${errorMessage}\n\n`);
+      }
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'medical_conversation_cache_save_error', {
+          event_category: 'medical_error_critical',
+          event_label: 'conversation_cache_save_failed',
+          custom_parameters: {
+            medical_context: 'conversation_cache_service',
+            error_type: 'cache_save_failure',
+            error_message: errorMessage
+          }
+        });
+      }
       throw error;
     }
   }
@@ -114,7 +145,22 @@ class ConversationCacheService {
       return true;
 
     } catch (error) {
-      console.error('Erro na sincronização com backend:', error);
+      // Medical system error - explicit stderr + tracking
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      if (typeof process !== 'undefined' && process.stderr) {
+        process.stderr.write(`❌ ERRO - Falha na sincronização com backend médico:\n  Error: ${errorMessage}\n\n`);
+      }
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'medical_conversation_sync_error', {
+          event_category: 'medical_error_critical',
+          event_label: 'conversation_backend_sync_failed',
+          custom_parameters: {
+            medical_context: 'conversation_cache_sync',
+            error_type: 'backend_sync_failure',
+            error_message: errorMessage
+          }
+        });
+      }
       return false;
     } finally {
       this.syncInProgress = false;
@@ -156,7 +202,22 @@ class ConversationCacheService {
 
       return success;
     } catch (error) {
-      console.error('Erro ao arquivar conversa:', error);
+      // Medical system error - explicit stderr + tracking
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      if (typeof process !== 'undefined' && process.stderr) {
+        process.stderr.write(`❌ ERRO - Falha ao arquivar conversa médica:\n  Error: ${errorMessage}\n\n`);
+      }
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'medical_conversation_archive_error', {
+          event_category: 'medical_error_critical',
+          event_label: 'conversation_archive_failed',
+          custom_parameters: {
+            medical_context: 'conversation_archive_service',
+            error_type: 'conversation_archive_failure',
+            error_message: errorMessage
+          }
+        });
+      }
       return false;
     }
   }

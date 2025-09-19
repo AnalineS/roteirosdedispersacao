@@ -5,7 +5,7 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { socialService } from '@/services/socialService';
@@ -19,11 +19,16 @@ interface EmailPreference {
   category: 'system' | 'social' | 'educational' | 'promotional';
 }
 
+type EmailPreferencesData = Record<string, {
+  enabled: boolean;
+  frequency: EmailPreference['frequency'];
+}>;
+
 interface EmailPreferencesProps {
   className?: string;
   userId?: string;
-  preferences?: any;
-  onPreferencesChange?: (preferences: any) => Promise<boolean>;
+  preferences?: EmailPreferencesData;
+  onPreferencesChange?: (preferences: EmailPreferencesData) => Promise<boolean>;
 }
 
 export default function EmailPreferences({
@@ -40,7 +45,7 @@ export default function EmailPreferences({
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   // Preferências padrão
-  const defaultPreferences: EmailPreference[] = [
+  const defaultPreferences: EmailPreference[] = useMemo(() => [
     {
       id: 'system_notifications',
       title: 'Notificações do Sistema',
@@ -97,34 +102,40 @@ export default function EmailPreferences({
       frequency: 'monthly',
       category: 'promotional'
     }
-  ];
+  ], []);
 
-  useEffect(() => {
-    loadPreferences();
-  }, [profile]);
-
-  const loadPreferences = async () => {
+  const loadPreferences = useCallback(async () => {
     setLoading(true);
     try {
       // Carregar preferências salvas do perfil do usuário
       if (profile?.preferences) {
-        const savedPrefs = profile.preferences as any;
-        const updatedPrefs = defaultPreferences.map(pref => ({
+        const savedPrefs = profile.preferences as Record<string, boolean | string | undefined>;
+        const updatedPrefs: EmailPreference[] = defaultPreferences.map(pref => ({
           ...pref,
-          enabled: savedPrefs[pref.id] !== undefined ? savedPrefs[pref.id] : pref.enabled,
-          frequency: savedPrefs[`${pref.id}_frequency`] || pref.frequency
+          enabled: savedPrefs[pref.id] !== undefined ? Boolean(savedPrefs[pref.id]) : pref.enabled,
+          frequency: (savedPrefs[`${pref.id}_frequency`] as EmailPreference['frequency']) || pref.frequency
         }));
         setPreferences(updatedPrefs);
       } else {
         setPreferences(defaultPreferences);
       }
     } catch (error) {
-      console.error('Erro ao carregar preferências:', error);
+      // Silent error handling for preferences loading
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'email_preferences_load_error', {
+          event_category: 'profile',
+          event_label: 'preferences_load_failed'
+        });
+      }
       setPreferences(defaultPreferences);
     } finally {
       setLoading(false);
     }
-  };
+  }, [profile, defaultPreferences]);
+
+  useEffect(() => {
+    loadPreferences();
+  }, [profile, loadPreferences]);
 
   const handlePreferenceChange = (prefId: string, enabled: boolean) => {
     setPreferences(prev => prev.map(pref =>
@@ -146,18 +157,24 @@ export default function EmailPreferences({
 
     try {
       // Converter preferências para formato do perfil
-      const preferencesData: any = {};
+      const preferencesData: EmailPreferencesData = {};
       preferences.forEach(pref => {
-        preferencesData[pref.id] = pref.enabled;
-        preferencesData[`${pref.id}_frequency`] = pref.frequency;
+        preferencesData[pref.id] = {
+          enabled: pref.enabled,
+          frequency: pref.frequency
+        };
       });
 
       // Atualizar perfil com novas preferências
       try {
         await updateProfile({
           preferences: {
-            ...profile?.preferences,
+            language: profile?.preferences?.language || 'simple',
+            notifications: profile?.preferences?.notifications ?? true,
+            theme: profile?.preferences?.theme || 'auto',
             emailUpdates: preferences.some(p => p.enabled),
+            dataCollection: profile?.preferences?.dataCollection ?? true,
+            lgpdConsent: profile?.preferences?.lgpdConsent ?? true,
             ...preferencesData
           }
         });
@@ -167,7 +184,13 @@ export default function EmailPreferences({
       }
 
     } catch (error) {
-      console.error('Erro ao salvar preferências:', error);
+      // Silent error handling for preferences saving
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'email_preferences_save_error', {
+          event_category: 'profile',
+          event_label: 'preferences_save_failed'
+        });
+      }
       setMessage({ type: 'error', text: 'Erro ao salvar preferências.' });
     } finally {
       setSaving(false);
@@ -220,7 +243,7 @@ export default function EmailPreferences({
         </div>
       ) : (
         <div className="space-y-4">
-          {preferences.map((pref, index) => (
+          {preferences.map((pref) => (
             <div
               key={pref.id}
               className={`border rounded-lg p-4 transition-all ${getCategoryColor(pref.category)}`}

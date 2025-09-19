@@ -196,7 +196,18 @@ export const ActiveToolbar: React.FC<{
     {
       name: 'MenuIcon' as const,
       label: 'Menu',
-      onClick: () => console.log('Menu clicked'),
+      onClick: () => {
+        if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'menu_clicked', {
+            event_category: 'navigation',
+            event_label: 'main_menu_access',
+            custom_parameters: {
+              interaction_type: 'menu_navigation',
+              component: 'ActiveNavigationPanel'
+            }
+          });
+        }
+      },
       color: '#374151'
     },
     {

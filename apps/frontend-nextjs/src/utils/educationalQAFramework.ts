@@ -12,6 +12,39 @@
 import { ClinicalCase, CaseStep, StepResult } from '@/types/clinicalCases';
 import { MedicationDose, CalculationResult, SafetyAlert } from '@/types/medication';
 
+interface QAEvidence {
+  screenshots?: string[];
+  logs?: string[];
+  errorMessages?: string[];
+  performanceMetrics?: Record<string, number>;
+  userInteractions?: string[];
+  technicalData?: Record<string, unknown>;
+}
+
+interface AccuracyMetrics {
+  pcdt2022Compliance: boolean;
+  dosageAccuracy: boolean;
+  safetyCompliance: boolean;
+  referencesValid: boolean;
+  clinicalRationale: number;
+}
+
+interface EducationalMetrics {
+  learningObjectiveAlignment: boolean;
+  feedbackQuality: number;
+  difficultyProgression: boolean;
+  engagementLevel: number;
+  pedagogicalSoundness: number;
+}
+
+interface ValidationComponent {
+  id: string;
+  type: string;
+  content: string;
+  metadata?: Record<string, unknown>;
+  configuration?: Record<string, unknown>;
+}
+
 // ===== INTERFACES CORE DO QA FRAMEWORK =====
 
 export interface EducationalQualityMetrics {
@@ -104,7 +137,7 @@ export interface QAViolation {
     lineNumber?: number;
   };
   
-  evidence: any; // Screenshots, logs, dados específicos
+  evidence: QAEvidence;
   fixSuggestions: string[];
 }
 
@@ -453,12 +486,12 @@ export class EducationalQAFramework {
   private validateDosageCalculations(clinicalCase: ClinicalCase): boolean { return true; }
   private validateSafetyAlerts(clinicalCase: ClinicalCase): boolean { return true; }
   private async validateScientificReferences(clinicalCase: ClinicalCase): Promise<QAReferenceValidation[]> { return []; }
-  private calculateClinicalAccuracyScore(accuracy: any): number { return 95; }
+  private calculateClinicalAccuracyScore(accuracy: AccuracyMetrics): number { return 95; }
   private validateLearningAlignment(clinicalCase: ClinicalCase): boolean { return true; }
   private assessFeedbackQuality(clinicalCase: ClinicalCase): number { return 4.5; }
   private validateDifficultyProgression(clinicalCase: ClinicalCase): boolean { return true; }
   private assessEngagementLevel(clinicalCase: ClinicalCase): number { return 4.0; }
-  private calculateEducationalScore(educational: any): number { return 88; }
+  private calculateEducationalScore(educational: EducationalMetrics): number { return 88; }
   private validateConsistency(clinicalCase: ClinicalCase, result: QAValidationResult): Promise<void> { return Promise.resolve(); }
   private async validateCalculatorUX(result: QAValidationResult): Promise<void> {}
   private calculateExpectedDoses(weight: number): MedicationDose { return {} as MedicationDose; }
@@ -476,42 +509,42 @@ export class EducationalQAFramework {
 
 abstract class QAValidationRule {
   abstract ruleName: string;
-  abstract validate(component: any): Promise<QAValidationRule>;
+  abstract validate(component: ValidationComponent): Promise<QAValidationRule>;
 }
 
 class ClinicalAccuracyRule extends QAValidationRule {
   ruleName = 'Clinical Accuracy Validation';
-  async validate(component: any): Promise<QAValidationRule> { return this; }
+  async validate(component: ValidationComponent): Promise<QAValidationRule> { return this; }
 }
 
 class EducationalValueRule extends QAValidationRule {
   ruleName = 'Educational Value Assessment';  
-  async validate(component: any): Promise<QAValidationRule> { return this; }
+  async validate(component: ValidationComponent): Promise<QAValidationRule> { return this; }
 }
 
 class ConsistencyRule extends QAValidationRule {
   ruleName = 'Consistency Validation';
-  async validate(component: any): Promise<QAValidationRule> { return this; }
+  async validate(component: ValidationComponent): Promise<QAValidationRule> { return this; }
 }
 
 class AccessibilityRule extends QAValidationRule {
   ruleName = 'Accessibility Compliance';
-  async validate(component: any): Promise<QAValidationRule> { return this; }
+  async validate(component: ValidationComponent): Promise<QAValidationRule> { return this; }
 }
 
 class CalculationPrecisionRule extends QAValidationRule {
   ruleName = 'Calculation Precision Validation';
-  async validate(component: any): Promise<QAValidationRule> { return this; }
+  async validate(component: ValidationComponent): Promise<QAValidationRule> { return this; }
 }
 
 class SafetyValidationRule extends QAValidationRule {
   ruleName = 'Safety Alert Validation';
-  async validate(component: any): Promise<QAValidationRule> { return this; }
+  async validate(component: ValidationComponent): Promise<QAValidationRule> { return this; }
 }
 
 class UXValidationRule extends QAValidationRule {
   ruleName = 'User Experience Validation';
-  async validate(component: any): Promise<QAValidationRule> { return this; }
+  async validate(component: ValidationComponent): Promise<QAValidationRule> { return this; }
 }
 
 // ===== CONFIGURAÇÕES DE QUALIDADE =====

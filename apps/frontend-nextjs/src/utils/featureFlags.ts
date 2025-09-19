@@ -34,31 +34,31 @@ export const FEATURE_FLAGS: Record<keyof FeatureFlagsConfig, FeatureFlag> = {
   // Global flags via Remote Config
   new_footer: {
     key: 'new_footer',
-    defaultValue: false,
+    defaultValue: true,
     description: 'Novo footer com 3 seções e tabs otimizadas',
     scope: 'global'
   },
   fast_access_bar: {
     key: 'fast_access_bar',
-    defaultValue: false,
+    defaultValue: true,
     description: 'Barra de acesso rápido para emergências médicas',
     scope: 'global'
   },
   urgency_badges: {
     key: 'urgency_badges',
-    defaultValue: false,
+    defaultValue: true,
     description: 'Badges de urgência médica na navegação',
     scope: 'global'
   },
   personalization_system: {
     key: 'personalization_system',
-    defaultValue: false,
+    defaultValue: true,
     description: 'Sistema de personalização por perfil médico',
     scope: 'global'
   },
   virtual_scrolling: {
     key: 'virtual_scrolling',
-    defaultValue: false,
+    defaultValue: true,
     description: 'Virtual scrolling para listas longas (>50 items)',
     scope: 'global'
   },
@@ -80,13 +80,13 @@ export const FEATURE_FLAGS: Record<keyof FeatureFlagsConfig, FeatureFlag> = {
   // User flags via API backend
   custom_shortcuts: {
     key: 'custom_shortcuts',
-    defaultValue: false,
+    defaultValue: true,
     description: 'Atalhos customizáveis pelo usuário',
     scope: 'user'
   },
   advanced_analytics: {
     key: 'advanced_analytics',
-    defaultValue: false,
+    defaultValue: true,
     description: 'Analytics avançado e tracking detalhado',
     scope: 'user'
   }
@@ -94,15 +94,15 @@ export const FEATURE_FLAGS: Record<keyof FeatureFlagsConfig, FeatureFlag> = {
 
 // Valores padrão para fallback
 export const DEFAULT_FLAGS: FeatureFlagsConfig = {
-  new_footer: false,
-  fast_access_bar: false,
-  urgency_badges: false,
-  personalization_system: false,
-  virtual_scrolling: false,
+  new_footer: true,
+  fast_access_bar: true,
+  urgency_badges: true,
+  personalization_system: true,
+  virtual_scrolling: true,
   ab_test_variant: 'A' as 'A',
   debug_mode: false,
-  custom_shortcuts: false,
-  advanced_analytics: false
+  custom_shortcuts: true,
+  advanced_analytics: true
 };
 
 // Storage keys
@@ -156,7 +156,7 @@ export const trackFeatureFlagUsage = (flagKey: string, value: boolean, source: s
     window.gtag('event', 'feature_flag_usage', {
       event_category: 'feature_flags',
       event_label: flagKey,
-      custom_dimensions: {
+      custom_parameters: {
         flag_value: value,
         flag_source: source,
         environment: process.env.NODE_ENV

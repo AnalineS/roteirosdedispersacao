@@ -21,6 +21,15 @@ import {
 } from '../../types/gamification';
 import type { UserLevel } from '../../types/disclosure';
 
+interface ModuleProgressItem {
+  id: string;
+  status: 'not_started' | 'in_progress' | 'completed';
+  score?: number;
+  completedAt?: string;
+  timeSpent?: number;
+  [key: string]: unknown;
+}
+
 export class AchievementSystem {
   private static instance: AchievementSystem;
   
@@ -561,7 +570,7 @@ export class AchievementSystem {
     currentProfile: ExtendedUserProfile,
     chatMessages: number,
     quizStats: QuizStatistics,
-    moduleProgress: any[],
+    moduleProgress: ModuleProgressItem[],
     hasActivityToday: boolean
   ): {
     updatedProgress: LearningProgress,

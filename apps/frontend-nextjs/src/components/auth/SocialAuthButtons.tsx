@@ -42,11 +42,24 @@ export default function SocialAuthButtons({
 
       let result;
       if (mode === 'link') {
-        result = await linkSocialAccount(providerId);
+        // Only Google provider is supported for linking
+        if (providerId !== 'google') {
+          throw new Error(`Invalid provider: ${providerId}. Only Google is supported`);
+        }
+        const socialCredentials = {
+          provider: 'google' as const
+        };
+        result = await linkSocialAccount(socialCredentials);
       } else {
-        const credentials: SocialAuthCredentials = {
-          providerId: providerId as any,
-          preferredProfileType
+        // Only Google provider is supported
+        if (providerId !== 'google') {
+          throw new Error(`Invalid provider: ${providerId}. Only Google is supported`);
+        }
+
+        const credentials: SocialAuthCredentials & { provider: 'google' } = {
+          providerId: 'google',
+          preferredProfileType,
+          provider: 'google'
         };
         result = await loginWithSocial(credentials);
       }
@@ -56,8 +69,8 @@ export default function SocialAuthButtons({
       } else {
         onError?.(result.error || 'Erro desconhecido');
       }
-    } catch (error: any) {
-      onError?.(error.message || 'Erro durante autenticação social');
+    } catch (error: Error | unknown) {
+      onError?.((error instanceof Error ? error.message : String(error)) || 'Erro durante autenticação social');
     } finally {
       setLoadingProvider(null);
     }

@@ -5,7 +5,7 @@
  */
 
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { ChatMessage } from '@/services/api';
+import { type ChatMessage } from '@/types/api';
 import { useSafeAuth as useAuth } from '@/hooks/useSafeAuth';
 import { generateSecureId } from '@/utils/cryptoUtils';
 
@@ -65,9 +65,8 @@ export function useConversationHistory() {
         // Carregar do localStorage
         loadFromLocalStorage();
       } catch (error) {
-        console.error('Erro ao carregar conversas:', error);
         setError('Erro ao carregar histórico de conversas');
-        
+
         // Sempre usar localStorage
         loadFromLocalStorage();
       } finally {
@@ -76,8 +75,7 @@ export function useConversationHistory() {
     };
 
     loadConversations();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [auth.user, auth.isAuthenticated, useLocalStorage]);
+  }, [auth.user, auth.isAuthenticated, loadFromLocalStorage]);
 
   // ============================================
   // FUNÇÕES DE CARREGAMENTO
@@ -85,8 +83,25 @@ export function useConversationHistory() {
 
   const loadFromLocalStorage = useCallback(async () => {
     try {
-      // TODO: Implementar cache de conversas com cache service futuramente
-      
+      // Sistema de cache de conversas ativado - múltiplas camadas
+      const cacheKey = `${STORAGE_KEY}_cache`;
+      const cacheTimestamp = `${STORAGE_KEY}_timestamp`;
+      const CACHE_DURATION = 5 * 60 * 1000; // 5 minutos
+
+      // Verificar cache em memória primeiro
+      const cached = sessionStorage.getItem(cacheKey);
+      const cacheTime = sessionStorage.getItem(cacheTimestamp);
+
+      if (cached && cacheTime) {
+        const timeDiff = Date.now() - parseInt(cacheTime);
+        if (timeDiff < CACHE_DURATION) {
+          // Carregando conversas do cache em memória
+          const cachedConversations = JSON.parse(cached);
+          setConversations(cachedConversations);
+          return;
+        }
+      }
+
       // Carregar do localStorage
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
@@ -96,15 +111,16 @@ export function useConversationHistory() {
             .filter(conv => conv && typeof conv === 'object' && conv.id && conv.personaId)
             .slice(0, MAX_CONVERSATIONS);
           setConversations(validConversations);
-          
-          // Salvar no Redis para próxima vez (com tratamento de erro)
+
+          // Salvar no cache em memória para próximas consultas
           if (validConversations.length > 0) {
-            // Cache de conversas via localStorage já implementado
+            sessionStorage.setItem(cacheKey, JSON.stringify(validConversations));
+            sessionStorage.setItem(cacheTimestamp, Date.now().toString());
+            // Cache de conversas atualizado
           }
         }
       }
     } catch (error) {
-      console.error('Erro ao carregar do localStorage:', error);
       throw error;
     }
   }, []);
@@ -137,9 +153,9 @@ export function useConversationHistory() {
         localStorage.setItem(STORAGE_KEY, dataString);
       }
     } catch (error) {
-      console.error('Erro ao salvar no localStorage:', error);
+      // Erro silencioso para não quebrar o fluxo
     }
-  }, [auth.user?.uid]);
+  }, []);
 
   // Firestore saving disabled - localStorage only
 
@@ -164,7 +180,6 @@ export function useConversationHistory() {
         }
         setError(null);
       } catch (error) {
-        console.error('Erro ao salvar histórico de conversas:', error);
         setError('Erro ao salvar histórico de conversas');
       }
     }, DEBOUNCE_DELAY);
@@ -225,7 +240,6 @@ export function useConversationHistory() {
       
       return title;
     } catch (error) {
-      console.error('Erro ao gerar título da conversa:', error);
       return 'Nova conversa';
     }
   }, []);
@@ -257,7 +271,6 @@ export function useConversationHistory() {
       
       return conversationId;
     } catch (error) {
-      console.error('Erro ao criar conversa:', error);
       setError('Erro ao criar nova conversa');
       return '';
     }
@@ -301,7 +314,6 @@ export function useConversationHistory() {
       await saveConversationWithSync(updatedConv);
       setError(null);
     } catch (error) {
-      console.error('Erro ao adicionar mensagem:', error);
       setError('Erro ao adicionar mensagem à conversa');
     }
   }, [currentConversationId, conversations, saveConversationWithSync, generateConversationTitle]);
@@ -355,7 +367,6 @@ export function useConversationHistory() {
       
       setError(null);
     } catch (error) {
-      console.error('Erro ao deletar conversa:', error);
       setError('Erro ao deletar conversa');
     }
   }, [conversations, currentConversationId, saveToStorage, useLocalStorage]);
@@ -378,7 +389,6 @@ export function useConversationHistory() {
       await saveConversationWithSync(updatedConv);
       setError(null);
     } catch (error) {
-      console.error('Erro ao renomear conversa:', error);
       setError('Erro ao renomear conversa');
     }
   }, [conversations, saveConversationWithSync]);
@@ -410,12 +420,15 @@ export function useConversationHistory() {
 
   // Cleanup dos timeouts ao desmontar
   useEffect(() => {
+    const saveTimeoutToClean = saveTimeoutRef.current;
+    const syncTimeoutToClean = syncTimeoutRef.current;
+
     return () => {
-      if (saveTimeoutRef.current) {
-        clearTimeout(saveTimeoutRef.current);
+      if (saveTimeoutToClean) {
+        clearTimeout(saveTimeoutToClean);
       }
-      if (syncTimeoutRef.current) {
-        clearTimeout(syncTimeoutRef.current);
+      if (syncTimeoutToClean) {
+        clearTimeout(syncTimeoutToClean);
       }
     };
   }, []);

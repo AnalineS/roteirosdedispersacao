@@ -45,10 +45,22 @@ const PersonaAvatar = memo(function PersonaAvatar({
   const avatarUrl = useMemo(() => {
     const url = getPersonaAvatar(personaId);
     // Debug: verificar se os avatares estão sendo encontrados
-    console.log(`[PersonaAvatar] personaId: ${personaId}, avatarUrl: ${url}`);
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'persona_avatar_url_resolved', {
+        event_category: 'medical_chat_ui',
+        event_label: 'avatar_url_resolution',
+        custom_parameters: {
+          medical_context: 'persona_avatar_system',
+          persona_id: personaId,
+          persona_name: persona.name,
+          avatar_url: url || 'none',
+          avatar_found: !!url
+        }
+      });
+    }
     // Para caminhos locais, não precisamos validar URL
     return url ? url : null;
-  }, [personaId]);
+  }, [personaId, persona.name]);
 
   const personaTheme = useMemo(() => {
     return getPersonaTheme(personaId);
@@ -73,10 +85,22 @@ const PersonaAvatar = memo(function PersonaAvatar({
   }, []);
   
   const handleImageError = useCallback(() => {
-    console.warn(`Erro ao carregar avatar para persona ${personaId}:`, avatarUrl);
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'persona_avatar_load_error', {
+        event_category: 'medical_chat_ui',
+        event_label: 'avatar_image_load_failed',
+        custom_parameters: {
+          medical_context: 'persona_avatar_loading',
+          persona_id: personaId,
+          persona_name: persona.name,
+          avatar_url: avatarUrl || 'none',
+          error_type: 'image_load_failure'
+        }
+      });
+    }
     setImageError(true);
     setIsLoading(false);
-  }, [personaId, avatarUrl]);
+  }, [personaId, avatarUrl, persona.name]);
   
   const handleImageLoadStart = useCallback(() => {
     setIsLoading(true);

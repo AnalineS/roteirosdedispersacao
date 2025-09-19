@@ -108,7 +108,18 @@ const UXDashboard: React.FC<UXDashboardProps> = ({
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro de conexão');
-      console.error('Dashboard fetch error:', err);
+
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'ux_dashboard_fetch_error', {
+          event_category: 'medical_system_monitoring',
+          event_label: 'dashboard_data_load_failed',
+          custom_parameters: {
+            medical_context: 'ux_monitoring_dashboard',
+            error_type: 'data_fetch_failure',
+            error_message: err instanceof Error ? err.message : String(err)
+          }
+        });
+      }
     } finally {
       setLoading(false);
     }

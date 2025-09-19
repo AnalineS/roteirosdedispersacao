@@ -293,6 +293,59 @@ export default function Navigation({ currentPersona }: NavigationProps) {
           ))}
         </div>
 
+        {/* Utilidades - ClipboardListIcon ativado */}
+        <div style={{
+          padding: '16px 20px',
+          borderTop: '1px solid rgba(255,255,255,0.1)'
+        }}>
+          <button
+            onClick={async () => {
+              try {
+                const currentUrl = window.location.href;
+                await navigator.clipboard.writeText(currentUrl);
+                // Feedback visual temporário
+                const button = document.activeElement as HTMLButtonElement;
+                const originalText = button.textContent;
+                button.textContent = '✓ Copiado!';
+                setTimeout(() => {
+                  if (button) button.textContent = originalText;
+                }, 2000);
+              } catch (_error) {
+                // Fallback para browsers sem suporte
+                const textArea = document.createElement('textarea');
+                textArea.value = window.location.href;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+              }
+            }}
+            style={{
+              width: '100%',
+              padding: '12px 16px',
+              background: 'rgba(255,255,255,0.1)',
+              border: '1px solid rgba(255,255,255,0.2)',
+              borderRadius: '8px',
+              color: 'white',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              fontSize: '0.9rem'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(255,255,255,0.15)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+            }}
+          >
+            <ClipboardListIcon size={16} color="white" />
+            Copiar URL da Página
+          </button>
+        </div>
+
         {/* Footer */}
         <div style={{
           position: 'absolute',

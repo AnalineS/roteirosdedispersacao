@@ -7,7 +7,7 @@ import UserTrackingService, {
   type UserPreferences,
   type InteractionType 
 } from '@/services/UserTrackingService';
-import { useGoogleAnalytics } from '@/components/GoogleAnalytics';
+import { useGoogleAnalytics } from '@/components/analytics/GoogleAnalyticsSetup';
 
 // ============================================
 // HOOK INTEGRADO DE TRACKING 
@@ -67,7 +67,7 @@ export const useIntegratedTracking = (config: IntegratedTrackingConfig = {}) => 
         }
       }
     };
-  }, [userId, isInitialized]);
+  }, [userId, isInitialized, currentUserId, enableGoogleAnalytics, googleAnalytics, sessionId, syncWithGA, trackingService]);
 
   // ============================================
   // TRACKING DE INTERAÇÕES
@@ -100,7 +100,7 @@ export const useIntegratedTracking = (config: IntegratedTrackingConfig = {}) => 
         ...metadata
       });
     }
-  }, [currentUserId, sessionId, isInitialized, enableLocalTracking, enableGoogleAnalytics]);
+  }, [currentUserId, sessionId, isInitialized, enableLocalTracking, enableGoogleAnalytics, trackingService, googleAnalytics]);
 
   const trackPageView = useCallback((page: string, title?: string) => {
     if (!isInitialized) return;
@@ -114,7 +114,7 @@ export const useIntegratedTracking = (config: IntegratedTrackingConfig = {}) => 
     if (enableGoogleAnalytics && googleAnalytics.isLoaded) {
       googleAnalytics.trackPageView(title || document.title, page);
     }
-  }, [currentUserId, sessionId, isInitialized]);
+  }, [currentUserId, sessionId, isInitialized, enableLocalTracking, enableGoogleAnalytics, trackingService, googleAnalytics]);
 
   const trackModuleProgress = useCallback((
     module: string,
@@ -141,7 +141,7 @@ export const useIntegratedTracking = (config: IntegratedTrackingConfig = {}) => 
         });
       }
     }
-  }, [currentUserId, sessionId, isInitialized]);
+  }, [currentUserId, sessionId, isInitialized, enableLocalTracking, enableGoogleAnalytics, trackingService, googleAnalytics]);
 
   const trackChatInteraction = useCallback((
     chatType: 'persona' | 'general',
@@ -178,7 +178,7 @@ export const useIntegratedTracking = (config: IntegratedTrackingConfig = {}) => 
         googleAnalytics.trackEvent('chat_interaction', 'communication', chatType, responseTime, interactionData);
       }
     }
-  }, [currentUserId, sessionId, isInitialized]);
+  }, [currentUserId, sessionId, isInitialized, enableLocalTracking, enableGoogleAnalytics, trackingService, googleAnalytics]);
 
   const trackError = useCallback((
     errorType: string,
@@ -210,7 +210,7 @@ export const useIntegratedTracking = (config: IntegratedTrackingConfig = {}) => 
     if (enableGoogleAnalytics && googleAnalytics.isLoaded) {
       googleAnalytics.trackError(errorType, errorMessage, component, errorData);
     }
-  }, [currentUserId, sessionId, isInitialized]);
+  }, [currentUserId, sessionId, isInitialized, enableLocalTracking, enableGoogleAnalytics, trackingService, googleAnalytics]);
 
   const trackFeedback = useCallback((
     type: 'quick' | 'detailed',
@@ -242,7 +242,7 @@ export const useIntegratedTracking = (config: IntegratedTrackingConfig = {}) => 
     if (enableGoogleAnalytics && googleAnalytics.isLoaded) {
       googleAnalytics.trackFeedback(type, rating, persona || 'general', !!comments, feedbackData);
     }
-  }, [currentUserId, sessionId, isInitialized]);
+  }, [currentUserId, sessionId, isInitialized, enableLocalTracking, enableGoogleAnalytics, trackingService, googleAnalytics]);
 
   const trackSearch = useCallback((
     searchTerm: string,
@@ -272,7 +272,7 @@ export const useIntegratedTracking = (config: IntegratedTrackingConfig = {}) => 
     if (enableGoogleAnalytics && googleAnalytics.isLoaded) {
       googleAnalytics.trackSearch(searchTerm, resultsCount, searchType);
     }
-  }, [currentUserId, sessionId, isInitialized]);
+  }, [currentUserId, sessionId, isInitialized, enableLocalTracking, enableGoogleAnalytics, trackingService, googleAnalytics]);
 
   // ============================================
   // GESTÃO DE PREFERÊNCIAS
@@ -294,7 +294,7 @@ export const useIntegratedTracking = (config: IntegratedTrackingConfig = {}) => 
         preferences_count: Object.keys(preferences).length
       });
     }
-  }, [currentUserId, isInitialized]);
+  }, [currentUserId, isInitialized, enableLocalTracking, enableGoogleAnalytics, trackingService, googleAnalytics]);
 
   // ============================================
   // DADOS E MÉTRICAS
@@ -303,17 +303,17 @@ export const useIntegratedTracking = (config: IntegratedTrackingConfig = {}) => 
   const getLocalAnalytics = useCallback(() => {
     if (!enableLocalTracking) return null;
     return trackingService.getAnalytics();
-  }, [enableLocalTracking]);
+  }, [enableLocalTracking, trackingService]);
 
   const getUserProgress = useCallback(() => {
     if (!enableLocalTracking) return null;
     return trackingService.getUserProgress(currentUserId);
-  }, [currentUserId, enableLocalTracking]);
+  }, [currentUserId, enableLocalTracking, trackingService]);
 
   const getHeatmapData = useCallback(() => {
     if (!enableLocalTracking) return {};
     return trackingService.getHeatmapData();
-  }, [enableLocalTracking]);
+  }, [enableLocalTracking, trackingService]);
 
   // ============================================
   // UTILITÁRIOS

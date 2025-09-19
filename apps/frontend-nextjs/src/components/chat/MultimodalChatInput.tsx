@@ -112,7 +112,18 @@ export default function MultimodalChatInput({
 
   // Handler para upload bem-sucedido
   const handleUploadSuccess = useCallback((fileId: string) => {
-    console.log('Upload successful:', fileId);
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'multimodal_chat_upload_success', {
+        event_category: 'medical_chat_multimodal',
+        event_label: 'file_upload_completed',
+        custom_parameters: {
+          medical_context: 'multimodal_chat_system',
+          file_id: fileId,
+          upload_type: 'chat_attachment',
+          component: 'MultimodalChatInput'
+        }
+      });
+    }
   }, []);
 
   // Remover anexo

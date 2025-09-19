@@ -48,7 +48,18 @@ export default function DispensingChecklist({
         setWorkflowStages(processedStages);
         setIsLoading(false);
       } catch (error) {
-        console.error('Erro ao carregar workflow de dispensação:', error);
+        if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'dispensing_checklist_workflow_load_error', {
+            event_category: 'medical_dispensing_workflow',
+            event_label: 'workflow_load_failed',
+            custom_parameters: {
+              medical_context: 'dispensing_checklist_workflow',
+              user_type: userType,
+              error_type: 'workflow_load_failure',
+              error_message: error instanceof Error ? error.message : String(error)
+            }
+          });
+        }
         setIsLoading(false);
       }
     };

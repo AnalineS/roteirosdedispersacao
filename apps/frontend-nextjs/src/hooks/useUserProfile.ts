@@ -89,7 +89,12 @@ export function useUserProfile(): UserProfileHook {
           loadFromLocalStorage();
         }
       } catch (error) {
-        console.error('Erro ao carregar perfil:', error);
+        if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'profile_load_error', {
+          event_category: 'user_profile',
+          event_label: 'load_failed'
+        });
+      }
         
         // Fallback para localStorage em caso de erro do Firestore
         if (useFirestore) {
@@ -118,12 +123,22 @@ export function useUserProfile(): UserProfileHook {
           setProfile(data.profile);
         } else {
           // Migração de versão se necessário
-          console.log('Migrando perfil para nova versão');
+          if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'profile_migration', {
+            event_category: 'user_profile',
+            event_label: 'version_upgrade'
+          });
+        }
           localStorage.removeItem(STORAGE_KEY);
         }
       }
     } catch (error) {
-      console.error('Erro ao carregar do localStorage:', error);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'local_storage_load_error', {
+          event_category: 'user_profile',
+          event_label: 'localStorage_failed'
+        });
+      }
       localStorage.removeItem(STORAGE_KEY);
       throw error;
     }
@@ -144,8 +159,8 @@ export function useUserProfile(): UserProfileHook {
   // Conversion functions simplified for local storage only
   const convertFirestoreToLocal = useCallback((profile: BaseUserProfile): LocalUserProfile => {
     return {
-      type: profile.type as any,
-      focus: profile.focus as any,
+      type: profile.type as LocalUserProfile['type'],
+      focus: profile.focus as LocalUserProfile['focus'],
       confidence: profile.confidence,
       explanation: profile.explanation,
       selectedPersona: profile.history?.lastPersona || 'ga',
@@ -229,7 +244,12 @@ export function useUserProfile(): UserProfileHook {
 
       localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
     } catch (error) {
-      console.error('Erro ao salvar no localStorage:', error);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'local_storage_save_error', {
+          event_category: 'user_profile',
+          event_label: 'localStorage_save_failed'
+        });
+      }
       throw error;
     }
   }, [profile]);
@@ -263,14 +283,24 @@ export function useUserProfile(): UserProfileHook {
           const backendProfile = convertLocalToFirestore(enrichedProfile);
           await auth.updateUserProfile(backendProfile);
         } catch (error) {
-          console.warn('Erro ao sincronizar com backend:', error);
+          if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'backend_sync_error', {
+          event_category: 'user_profile',
+          event_label: 'sync_warning'
+        });
+      }
           // Continue with local storage only
         }
       }
 
       setSyncStatus('idle');
     } catch (error) {
-      console.error('Erro ao salvar perfil do usuário:', error);
+      if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'user_profile_save_error', {
+        event_category: 'user_profile',
+        event_label: 'save_failed'
+      });
+    }
       setSyncStatus('error');
       throw error;
     }
@@ -301,7 +331,12 @@ export function useUserProfile(): UserProfileHook {
 
         // Clear from backend if available
       if (auth.user) {
-        console.log('Backend profile clear not implemented yet');
+        if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'backend_clear_not_implemented', {
+          event_category: 'user_profile',
+          event_label: 'feature_not_available'
+        });
+      }
       }
 
       // Limpar localStorage
@@ -312,7 +347,12 @@ export function useUserProfile(): UserProfileHook {
       setProfile(null);
       setSyncStatus('idle');
     } catch (error) {
-      console.error('Erro ao limpar perfil do usuário:', error);
+      if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'user_profile_clear_error', {
+        event_category: 'user_profile',
+        event_label: 'clear_failed'
+      });
+    }
       setSyncStatus('error');
       throw error;
     }

@@ -40,9 +40,10 @@ export default function ChatFeedback({
   useEffect(() => {
     if (enableSound && typeof window !== 'undefined') {
       try {
-        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+        audioContextRef.current = new AudioContextClass();
       } catch (error) {
-        console.warn('AudioContext não disponível:', error);
+        // AudioContext not available - continue without sound
       }
     }
 
@@ -175,7 +176,7 @@ export default function ChatFeedback({
     // Mostrar notificação de erro
     if (enableVisualFeedback) {
       // Aqui você pode integrar com um sistema de notificações
-      console.error(message);
+      // Error feedback would be shown via UI notification system
     }
   };
 
@@ -361,7 +362,7 @@ export function useChatFeedback() {
     triggerErrorFeedback: (message?: string) => void;
   } | null>(null);
 
-  const setFeedbackRef = (ref: any) => {
+  const setFeedbackRef = (ref: { triggerSendFeedback: () => void; triggerReceiveFeedback: () => void; triggerErrorFeedback: (message?: string) => void } | null) => {
     feedbackRef.current = ref;
   };
 

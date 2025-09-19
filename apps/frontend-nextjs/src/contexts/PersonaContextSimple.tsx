@@ -9,7 +9,7 @@ import type { PersonaConfig, PersonaSource } from '@/types/personas';
 
 interface PersonaContextValue {
   currentPersona: ValidPersonaId | null;
-  availablePersonas: any;
+  availablePersonas: Record<ValidPersonaId, PersonaConfig>;
   isLoading: boolean;
   error: string | null;
   setPersona: (personaId: ValidPersonaId, source?: PersonaSource) => Promise<void>;

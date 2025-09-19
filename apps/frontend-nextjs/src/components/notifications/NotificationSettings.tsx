@@ -31,13 +31,13 @@ export default function NotificationSettings() {
     }
   };
 
-  const handlePreferenceChange = (key: keyof NotificationPreferences, value: any) => {
+  const handlePreferenceChange = (key: keyof NotificationPreferences, value: boolean | string | number) => {
     const newPreferences = { ...preferences, [key]: value };
     setPreferences(newPreferences);
     NotificationSystem.updatePreferences({ [key]: value });
   };
 
-  const handleQuietHoursChange = (field: 'enabled' | 'start' | 'end', value: any) => {
+  const handleQuietHoursChange = (field: 'enabled' | 'start' | 'end', value: boolean | string) => {
     const newQuietHours = { ...preferences.quietHours, [field]: value };
     const newPreferences = { ...preferences, quietHours: newQuietHours };
     setPreferences(newPreferences);
@@ -768,7 +768,7 @@ function AddMedicationModal({
             </label>
             <select
               value={formData.frequency}
-              onChange={(e) => setFormData({ ...formData, frequency: e.target.value as any })}
+              onChange={(e) => setFormData({ ...formData, frequency: e.target.value as 'daily' | 'weekly' | 'monthly' })}
               style={{
                 width: '100%',
                 padding: '0.75rem',
@@ -859,7 +859,7 @@ function AddAppointmentModal({
       description: formData.description,
       date: appointmentDate,
       location: formData.location,
-      reminderTime: formData.reminderTime as any,
+      reminderTime: formData.reminderTime as 'on_time' | '15_min' | '30_min' | '1_hour' | '1_day',
       enabled: true
     });
   };
@@ -1032,7 +1032,7 @@ function AddAppointmentModal({
             </label>
             <select
               value={formData.reminderTime}
-              onChange={(e) => setFormData({ ...formData, reminderTime: e.target.value as any })}
+              onChange={(e) => setFormData({ ...formData, reminderTime: e.target.value as 'on_time' | '15_min' | '30_min' | '1_hour' | '1_day' })}
               style={{
                 width: '100%',
                 padding: '0.75rem',

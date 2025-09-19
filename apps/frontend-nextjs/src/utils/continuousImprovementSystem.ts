@@ -6,10 +6,189 @@
  * @version 1.0.0
  */
 
-import { ClinicalCase, CaseSession, StepResult } from '@/types/clinicalCases';
-import { LearningAnalytics, InteractionEvent } from '@/utils/educationalAnalytics';
+// Internal type definitions for continuous improvement
+interface ClinicalCase {
+  id: string;
+  title: string;
+  description: string;
+}
+
+interface CaseSession {
+  id: string;
+  userId: string;
+  caseId: string;
+  startTime: Date;
+  endTime?: Date;
+}
+
+interface StepResult {
+  stepId: string;
+  completed: boolean;
+  score?: number;
+  timeSpent: number;
+}
+
+interface LearningAnalytics {
+  userId: string;
+  sessionId: string;
+  interactions: InteractionEvent[];
+  outcomes: Record<string, unknown>;
+}
+
+interface InteractionEvent {
+  id: string;
+  type: 'click' | 'navigation' | 'error' | 'help_request' | 'completion';
+  timestamp: Date;
+  data: Record<string, unknown>;
+}
 
 // ===== INTERFACES DO SISTEMA =====
+
+interface BehavioralData {
+  timeSpent: number;
+  interactionCount: number;
+  completionRate: number;
+  retryCount: number;
+  helpRequestCount: number;
+  errorCount: number;
+}
+
+interface AnalyticsData {
+  sessionDuration: number;
+  clickCount: number;
+  scrollDepth: number;
+  errorRate: number;
+  conversionRate: number;
+  [key: string]: string | number;
+}
+
+interface VariantImplementation {
+  componentProps?: Record<string, unknown>;
+  styleChanges?: Record<string, string>;
+  contentChanges?: Record<string, string>;
+  behaviorChanges?: Record<string, unknown>;
+}
+
+interface RatingObject {
+  [key: string]: number;
+}
+
+type AnyRating = UsabilityRating | ContentQualityRating | LearningEffectivenessRating;
+
+interface QuantitativeAnalysisResult {
+  totalFeedbacks: number;
+  averageRatings: AverageRatings;
+  trendAnalysis: TrendAnalysis[];
+  segmentAnalysis: SegmentAnalysis[];
+}
+
+interface QualitativeAnalysisResult {
+  commonThemes: ThemeAnalysis[];
+  sentimentAnalysis: SentimentAnalysis;
+  priorityIssues: PriorityIssue[];
+  userJourneyInsights: UserJourneyInsight[];
+}
+
+interface ImpactMetrics {
+  userSatisfactionTrend: number[];
+  performanceImprovements: PerformanceMetric[];
+  learningOutcomeImprovements: LearningOutcomeMetric[];
+  adoptionRates: AdoptionMetric[];
+}
+
+interface ImpactMeasurement {
+  recommendation: string;
+  metrics: Array<{
+    metric: string;
+    baseline: number;
+    current: number;
+    improvement: number;
+    target: number;
+  }>;
+}
+
+interface TimeframeFilter {
+  start?: Date;
+  end?: Date;
+  duration?: number;
+}
+
+interface FeedbackSummary {
+  totalFeedbacks: number;
+  averageRating: number;
+  lastUpdated: Date;
+  criticalIssues: number;
+}
+
+interface ABTestFeedback {
+  testId: string;
+  variantId: string;
+  userId: string;
+  timestamp: Date;
+  metrics: Record<string, number>;
+  outcome: boolean;
+}
+
+interface StatisticalAnalysis {
+  totalSessions: number;
+  conversionRates: Map<string, number>;
+  confidenceLevel: number;
+  pValue: number;
+  statisticalSignificance: boolean;
+}
+
+interface VariantPerformance {
+  variantId: string;
+  sessions: number;
+  conversions: number;
+  conversionRate: number;
+  metrics: Record<string, { value: number; improvement: number; significance: boolean }>;
+  userFeedback: {
+    averageRating: number;
+    sentimentScore: number;
+    commonComments: string[];
+  };
+}
+
+interface TestWinner {
+  variantId: string;
+  confidenceLevel: number;
+  improvementPercentage: number;
+  significantMetrics: string[];
+}
+
+interface TestInsights {
+  keyFindings: string[];
+  unexpectedResults: string[];
+  segmentDifferences: string[];
+  recommendations: string[];
+}
+
+interface ImplementationPlan {
+  phases: string[];
+  timeline: string;
+  resources: string[];
+  risks: string[];
+  successCriteria: string[];
+}
+
+interface BaselineMetrics {
+  [metricName: string]: number;
+}
+
+interface IssueList {
+  id: string;
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  description: string;
+  frequency: number;
+}
+
+interface OpportunityList {
+  id: string;
+  impact: 'low' | 'medium' | 'high';
+  description: string;
+  effort: 'small' | 'medium' | 'large';
+}
 
 export interface ImprovementFeedbackData {
   id: string;
@@ -104,8 +283,8 @@ export interface ImprovementInsights {
   quantitative: {
     totalFeedbacks: number;
     averageRatings: AverageRatings;
-    trendAnalysis: TrendAnalysis;
-    segmentAnalysis: SegmentAnalysis;
+    trendAnalysis: TrendAnalysis[];
+    segmentAnalysis: SegmentAnalysis[];
   };
   
   // Análises qualitativas
@@ -182,7 +361,7 @@ interface PriorityIssue {
     feedbackCount: number;
     reproductionRate: number;
     userReports: string[];
-    analyticsData: any;
+    analyticsData: AnalyticsData;
   };
   
   suggestedSolution: string;
@@ -285,7 +464,7 @@ interface VariantChange {
   componentId: string;
   changeType: 'content' | 'design' | 'interaction' | 'flow';
   description: string;
-  implementation: any; // JSON representation of changes
+  implementation: VariantImplementation;
 }
 
 export interface ABTestResult {
@@ -398,7 +577,7 @@ export class ContinuousImprovementSystem {
           suggestions: [],
           openFeedback: ''
         },
-        behavioralData
+        behavioralData: behavioralData as BehavioralData
       };
       
       this.feedbackData.push(implicitFeedback);
@@ -412,9 +591,9 @@ export class ContinuousImprovementSystem {
     }
     
     // Validar ranges numéricos
-    feedback.feedback.usabilityRating = this.validateRatingRange(feedback.feedback.usabilityRating);
-    feedback.feedback.contentQuality = this.validateRatingRange(feedback.feedback.contentQuality);
-    feedback.feedback.learningEffectiveness = this.validateRatingRange(feedback.feedback.learningEffectiveness);
+    feedback.feedback.usabilityRating = this.validateUsabilityRating(feedback.feedback.usabilityRating);
+    feedback.feedback.contentQuality = this.validateContentQualityRating(feedback.feedback.contentQuality);
+    feedback.feedback.learningEffectiveness = this.validateLearningEffectivenessRating(feedback.feedback.learningEffectiveness);
     
     return feedback;
   }
@@ -457,7 +636,7 @@ export class ContinuousImprovementSystem {
     return insights;
   }
   
-  private performQuantitativeAnalysis(feedback: ImprovementFeedbackData[]): any {
+  private performQuantitativeAnalysis(feedback: ImprovementFeedbackData[]): QuantitativeAnalysisResult {
     const totalFeedbacks = feedback.length;
     const averageRatings = this.calculateAverageRatings(feedback);
     const trendAnalysis = this.analyzeTrends(feedback);
@@ -471,7 +650,7 @@ export class ContinuousImprovementSystem {
     };
   }
   
-  private performQualitativeAnalysis(feedback: ImprovementFeedbackData[]): any {
+  private performQualitativeAnalysis(feedback: ImprovementFeedbackData[]): QualitativeAnalysisResult {
     const textFeedback = feedback
       .filter(f => f.feedback.openFeedback)
       .map(f => f.feedback.openFeedback);
@@ -515,7 +694,17 @@ export class ContinuousImprovementSystem {
     config.status = 'draft';
     this.abTests.set(config.id, config);
     
-    console.log(`A/B Test created: ${config.name}`);
+    if (typeof window !== 'undefined' && (window as any).gtag) {
+      (window as any).gtag('event', 'ab_test_created', {
+        event_category: 'medical_improvement',
+        event_label: config.name,
+        custom_parameters: {
+          medical_context: 'continuous_improvement',
+          test_id: config.id,
+          variant_count: config.variants.length
+        }
+      });
+    }
   }
   
   public startABTest(testId: string): void {
@@ -531,7 +720,17 @@ export class ContinuousImprovementSystem {
     test.status = 'running';
     test.duration.start = new Date();
     
-    console.log(`A/B Test started: ${test.name}`);
+    if (typeof window !== 'undefined' && (window as any).gtag) {
+      (window as any).gtag('event', 'ab_test_started', {
+        event_category: 'medical_improvement',
+        event_label: test.name,
+        custom_parameters: {
+          medical_context: 'continuous_improvement',
+          test_id: testId,
+          duration: test.duration.end.getTime() - test.duration.start.getTime()
+        }
+      });
+    }
   }
   
   public analyzeABTest(testId: string): ABTestResult | null {
@@ -578,10 +777,21 @@ export class ContinuousImprovementSystem {
     this.setupImpactMonitoring(recommendation);
     
     // Log implementação
-    console.log(`Implementing improvement: ${recommendation.title}`);
+    if (typeof window !== 'undefined' && (window as any).gtag) {
+      (window as any).gtag('event', 'improvement_implemented', {
+        event_category: 'medical_improvement',
+        event_label: recommendation.title,
+        custom_parameters: {
+          medical_context: 'continuous_improvement',
+          recommendation_id: recommendationId,
+          priority: recommendation.priority,
+          category: recommendation.category
+        }
+      });
+    }
   }
   
-  public measureImpact(recommendationId: string, timeframe: { start: Date; end: Date }): any {
+  public measureImpact(recommendationId: string, timeframe: { start: Date; end: Date }): ImpactMeasurement | null {
     const recommendation = this.improvements.get(recommendationId);
     if (!recommendation) return null;
     
@@ -602,7 +812,7 @@ export class ContinuousImprovementSystem {
   
   // ===== FUNÇÕES AUXILIARES =====
   
-  private analyzeBehavioralPatterns(interactions: InteractionEvent[]): any {
+  private analyzeBehavioralPatterns(interactions: InteractionEvent[]): BehavioralData {
     const totalTime = interactions.length > 0 
       ? interactions[interactions.length - 1].timestamp.getTime() - interactions[0].timestamp.getTime()
       : 0;
@@ -626,7 +836,7 @@ export class ContinuousImprovementSystem {
     return 'desktop';
   }
   
-  private inferUsabilityFromBehavior(behavioralData: any): UsabilityRating {
+  private inferUsabilityFromBehavior(behavioralData: BehavioralData): UsabilityRating {
     // Inferir ratings baseado em comportamento
     const baseRating = 3.5; // Neutro
     const timeAdjustment = behavioralData.timeSpent > 600 ? -0.5 : 0.2; // Muito tempo = confuso
@@ -658,7 +868,7 @@ export class ContinuousImprovementSystem {
     };
   }
   
-  private inferLearningFromBehavior(behavioralData: any): LearningEffectivenessRating {
+  private inferLearningFromBehavior(behavioralData: BehavioralData): LearningEffectivenessRating {
     const completionBonus = behavioralData.completionRate > 0.8 ? 0.5 : 0;
     const engagementScore = Math.min(5, 3 + (behavioralData.interactionCount / 10));
     
@@ -680,20 +890,40 @@ export class ContinuousImprovementSystem {
       .trim();
   }
   
-  private validateRatingRange(rating: any): any {
-    // Garantir que ratings estão entre 1-5
-    const validated = { ...rating };
-    
-    for (const key in validated) {
-      if (typeof validated[key] === 'number') {
-        validated[key] = Math.max(1, Math.min(5, validated[key]));
-      }
-    }
-    
-    return validated;
+  private validateUsabilityRating(rating: UsabilityRating): UsabilityRating {
+    return {
+      easeOfUse: Math.max(1, Math.min(5, rating.easeOfUse)),
+      navigationClarity: Math.max(1, Math.min(5, rating.navigationClarity)),
+      visualDesign: Math.max(1, Math.min(5, rating.visualDesign)),
+      responsiveness: Math.max(1, Math.min(5, rating.responsiveness)),
+      accessibility: Math.max(1, Math.min(5, rating.accessibility)),
+      overallSatisfaction: Math.max(1, Math.min(5, rating.overallSatisfaction))
+    };
+  }
+
+  private validateContentQualityRating(rating: ContentQualityRating): ContentQualityRating {
+    return {
+      accuracy: Math.max(1, Math.min(5, rating.accuracy)),
+      relevance: Math.max(1, Math.min(5, rating.relevance)),
+      clarity: Math.max(1, Math.min(5, rating.clarity)),
+      completeness: Math.max(1, Math.min(5, rating.completeness)),
+      upToDateness: Math.max(1, Math.min(5, rating.upToDateness)),
+      practicalValue: Math.max(1, Math.min(5, rating.practicalValue))
+    };
+  }
+
+  private validateLearningEffectivenessRating(rating: LearningEffectivenessRating): LearningEffectivenessRating {
+    return {
+      objectiveAlignment: Math.max(1, Math.min(5, rating.objectiveAlignment)),
+      engagementLevel: Math.max(1, Math.min(5, rating.engagementLevel)),
+      difficultyAppropriate: Math.max(1, Math.min(5, rating.difficultyAppropriate)),
+      feedbackQuality: Math.max(1, Math.min(5, rating.feedbackQuality)),
+      knowledgeRetention: Math.max(1, Math.min(5, rating.knowledgeRetention)),
+      skillApplication: Math.max(1, Math.min(5, rating.skillApplication))
+    };
   }
   
-  private calculateAverageRating(feedback: any): number {
+  private calculateAverageRating(feedback: { usabilityRating: UsabilityRating; contentQuality: ContentQualityRating; learningEffectiveness: LearningEffectivenessRating; }): number {
     const allRatings = [
       ...Object.values(feedback.usabilityRating),
       ...Object.values(feedback.contentQuality),
@@ -704,38 +934,40 @@ export class ContinuousImprovementSystem {
   }
   
   // Implementações simplificadas para métodos complexos
-  private getRelevantFeedback(timeframe?: any): ImprovementFeedbackData[] { return this.feedbackData; }
-  private calculateAverageRatings(feedback: ImprovementFeedbackData[]): any { return {}; }
-  private analyzeTrends(feedback: ImprovementFeedbackData[]): any { return []; }
-  private analyzeSegments(feedback: ImprovementFeedbackData[]): any { return []; }
-  private extractCommonThemes(textFeedback: string[]): any { return []; }
-  private analyzeSentiment(textFeedback: string[]): any { return { overall: 0.2 }; }
-  private identifyPriorityIssues(feedback: ImprovementFeedbackData[]): any { return []; }
-  private analyzeUserJourneys(feedback: ImprovementFeedbackData[]): any { return []; }
-  private calculateImpactMetrics(feedback: ImprovementFeedbackData[]): any { return {}; }
-  private identifyCommonIssues(feedback: ImprovementFeedbackData[]): any { return []; }
-  private identifyImprovementOpportunities(feedback: ImprovementFeedbackData[]): any { return []; }
-  private prioritizeRecommendations(recommendations: any[]): any { return recommendations; }
-  private createIssueRecommendations(issues: any[]): any { return []; }
-  private createOpportunityRecommendations(opportunities: any[]): any { return []; }
-  private triggerCriticalIssueAlert(issues: any[], feedback: ImprovementFeedbackData): void {}
+  private getRelevantFeedback(timeframe?: TimeframeFilter): ImprovementFeedbackData[] { return this.feedbackData; }
+  private calculateAverageRatings(feedback: ImprovementFeedbackData[]): AverageRatings { return {} as AverageRatings; }
+  private analyzeTrends(feedback: ImprovementFeedbackData[]): TrendAnalysis[] { return []; }
+  private analyzeSegments(feedback: ImprovementFeedbackData[]): SegmentAnalysis[] { return []; }
+  private extractCommonThemes(textFeedback: string[]): ThemeAnalysis[] { return []; }
+  private analyzeSentiment(textFeedback: string[]): SentimentAnalysis { return { overall: 0.2, byComponent: new Map(), byUserType: new Map(), keyPositives: [], keyNegatives: [] }; }
+  private identifyPriorityIssues(feedback: ImprovementFeedbackData[]): PriorityIssue[] { return []; }
+  private analyzeUserJourneys(feedback: ImprovementFeedbackData[]): UserJourneyInsight[] { return []; }
+  private calculateImpactMetrics(feedback: ImprovementFeedbackData[]): ImpactMetrics { return { userSatisfactionTrend: [], performanceImprovements: [], learningOutcomeImprovements: [], adoptionRates: [] }; }
+  private identifyCommonIssues(feedback: ImprovementFeedbackData[]): IssueList[] { return []; }
+  private identifyImprovementOpportunities(feedback: ImprovementFeedbackData[]): OpportunityList[] { return []; }
+  private prioritizeRecommendations(recommendations: ImprovementRecommendation[]): ImprovementRecommendation[] { return recommendations; }
+  private createIssueRecommendations(issues: IssueList[]): ImprovementRecommendation[] { return []; }
+  private createOpportunityRecommendations(opportunities: OpportunityList[]): ImprovementRecommendation[] { return []; }
+  private triggerCriticalIssueAlert(issues: TechnicalIssue[], feedback: ImprovementFeedbackData): void {}
   private flagNegativeFeedback(feedback: ImprovementFeedbackData): void {}
   private triggerIncrementalAnalysis(): void {}
   private calculateCompletionRate(interactions: InteractionEvent[]): number { return 0.85; }
   
   // A/B Testing methods (simplified)
   private validateABTestConfig(config: ABTestConfiguration): void {}
-  private getABTestFeedback(testId: string): any { return []; }
-  private performStatisticalAnalysis(feedback: any, variants: any): any { return {}; }
-  private analyzeVariantPerformance(feedback: any, variants: any): any { return []; }
-  private determineWinner(variantResults: any): any { return {}; }
-  private generateABTestInsights(feedback: any, results: any): any { return {}; }
+  private getABTestFeedback(testId: string): ABTestFeedback[] { return []; }
+  private performStatisticalAnalysis(feedback: ABTestFeedback[], variants: ABTestVariant[]): StatisticalAnalysis { return { totalSessions: 0, conversionRates: new Map(), confidenceLevel: 0, pValue: 0, statisticalSignificance: false }; }
+  private analyzeVariantPerformance(feedback: ABTestFeedback[], variants: ABTestVariant[]): VariantResult[] {
+    return [];
+  }
+  private determineWinner(variantResults: VariantResult[]): TestWinner { return { variantId: '', confidenceLevel: 0, improvementPercentage: 0, significantMetrics: [] }; }
+  private generateABTestInsights(feedback: ABTestFeedback[], results: VariantResult[]): TestInsights { return { keyFindings: [], unexpectedResults: [], segmentDifferences: [], recommendations: [] }; }
   
   // Implementation methods (simplified)
-  private createImplementationPlan(recommendation: ImprovementRecommendation): any { return {}; }
+  private createImplementationPlan(recommendation: ImprovementRecommendation): ImplementationPlan { return { phases: [], timeline: '', resources: [], risks: [], successCriteria: [] }; }
   private setupImpactMonitoring(recommendation: ImprovementRecommendation): void {}
-  private getBaselineMetrics(recommendation: ImprovementRecommendation, timeframe: any): any { return {}; }
-  private getCurrentMetrics(recommendation: ImprovementRecommendation, timeframe: any): any { return {}; }
+  private getBaselineMetrics(recommendation: ImprovementRecommendation, timeframe: TimeframeFilter): BaselineMetrics { return {}; }
+  private getCurrentMetrics(recommendation: ImprovementRecommendation, timeframe: TimeframeFilter): BaselineMetrics { return {}; }
   private calculateImprovement(baseline: number, current: number): number { 
     return baseline ? ((current - baseline) / baseline) * 100 : 0; 
   }
@@ -743,7 +975,7 @@ export class ContinuousImprovementSystem {
   
   // ===== API PÚBLICA =====
   
-  public getFeedbackSummary(): any {
+  public getFeedbackSummary(): FeedbackSummary {
     return {
       totalFeedbacks: this.feedbackData.length,
       averageRating: this.feedbackData.length > 0 

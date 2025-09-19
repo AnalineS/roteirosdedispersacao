@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-09-08T01:59:55.250Z",
+  "timestamp": "2025-09-17T12:15:05.305Z",
   "version": "2.0.0",
   "project": {
     "name": "Plataforma Educacional Médica - Hanseníase",
@@ -19,8 +19,8 @@
     }
   },
   "summary": {
-    "filesAnalyzed": 0,
-    "linesOfCode": 0,
+    "filesAnalyzed": 2,
+    "linesOfCode": 3,
     "components": 0,
     "apis": 0,
     "medicalCalculators": 0,
@@ -39,13 +39,13 @@
     "clinicalCases": [],
     "educationalContent": [],
     "codeMetrics": {
-      "totalFiles": 0,
-      "totalLines": 0,
+      "totalFiles": 2,
+      "totalLines": 3,
       "totalComponents": 0,
       "totalApis": 0,
       "totalTests": 0,
       "testCoverage": 0,
-      "averageLinesPerFile": null,
+      "averageLinesPerFile": 1.5,
       "medicalRelevance": {
         "components": 0,
         "apis": 0,
@@ -54,7 +54,7 @@
       }
     },
     "dependencies": {
-      "total": 43,
+      "total": 45,
       "categorized": {
         "react": [
           {
@@ -140,16 +140,20 @@
             "version": "^15.4.6"
           },
           {
+            "name": "axios",
+            "version": "1.12.2"
+          },
+          {
             "name": "dompurify",
             "version": "^3.2.6"
           },
           {
-            "name": "firebase",
-            "version": "^12.2.1"
-          },
-          {
             "name": "framer-motion",
             "version": "^12.23.12"
+          },
+          {
+            "name": "js-cookie",
+            "version": "3.0.5"
           },
           {
             "name": "jspdf",
@@ -182,6 +186,10 @@
           {
             "name": "@types/glob",
             "version": "^8.1.0"
+          },
+          {
+            "name": "@types/js-cookie",
+            "version": "3.0.6"
           },
           {
             "name": "@types/node",
@@ -246,7 +254,7 @@
     "securityAnalysis": {
       "issues": [],
       "features": {
-        "authentication": 0,
+        "authentication": 1,
         "authorization": 0,
         "inputValidation": 0,
         "outputSanitization": 0,
@@ -255,7 +263,6 @@
       },
       "score": 100,
       "recommendations": [
-        "Implementar autenticação para proteger dados médicos",
         "Implementar validação rigorosa de entradas",
         "Configurar cabeçalhos de segurança HTTP"
       ]
@@ -269,7 +276,7 @@
         "synchronized": 0,
         "failed": 9,
         "conflicts": 0,
-        "lastSync": "2025-09-08T01:59:55.250Z"
+        "lastSync": "2025-09-17T12:15:05.305Z"
       }
     }
   }

@@ -290,7 +290,18 @@ export default function PersonaSelectorUnified({
       router.push(`/chat?persona=${personaId}`);
 
     } catch (error) {
-      console.error('Erro ao selecionar persona:', error);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'persona_selector_unified_error', {
+          event_category: 'medical_persona_interaction',
+          event_label: 'unified_persona_selection_failed',
+          custom_parameters: {
+            medical_context: 'unified_persona_selector',
+            persona_id: personaId,
+            error_type: 'persona_selection_failure',
+            error_message: error instanceof Error ? error.message : String(error)
+          }
+        });
+      }
       // Em caso de erro, ainda tenta navegar
       router.push(`/chat?persona=${personaId}`);
     } finally {

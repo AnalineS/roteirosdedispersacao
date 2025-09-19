@@ -1,9 +1,16 @@
 /**
  * Sistema de Haptic Feedback para Dispositivos Móveis - PR #174
- * 
+ *
  * Implementa feedback tátil contextual para melhorar a experiência móvel
  * no contexto médico e educacional do sistema PQT-U
  */
+
+// Interface para extensões vendor-specific do Navigator
+interface ExtendedNavigator extends Navigator {
+  webkitVibrate?: (pattern: number | number[]) => boolean;
+  mozVibrate?: (pattern: number | number[]) => boolean;
+  msVibrate?: (pattern: number | number[]) => boolean;
+}
 
 export interface HapticPattern {
   duration: number;
@@ -76,11 +83,12 @@ export class HapticFeedbackSystem {
     }
 
     // Verificar APIs de vibração disponíveis
+    const extendedNavigator = navigator as ExtendedNavigator;
     this.isSupported = !!(
-      navigator.vibrate || 
-      (navigator as any).webkitVibrate ||
-      (navigator as any).mozVibrate ||
-      (navigator as any).msVibrate
+      navigator.vibrate ||
+      extendedNavigator.webkitVibrate ||
+      extendedNavigator.mozVibrate ||
+      extendedNavigator.msVibrate
     );
 
     // Verificar se é dispositivo móvel/touch
@@ -103,7 +111,26 @@ export class HapticFeedbackSystem {
         this.userPreferences = { ...this.userPreferences, ...JSON.parse(saved) };
       }
     } catch (error) {
-      console.warn('Erro ao carregar preferências de haptic feedback:', error);
+      // Haptic preferences loading error - explicit stderr + tracking
+      const errorMessage = error instanceof Error ? error.message : String(error);
+
+      // Explicit error to stderr for system visibility
+      if (typeof process !== 'undefined' && process.stderr) {
+        process.stderr.write(`⚠️ AVISO - Falha ao carregar preferências de haptic feedback:\n` +
+          `  Error: ${errorMessage}\n\n`);
+      }
+
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'haptic_preferences_load_error', {
+          event_category: 'haptic_warning',
+          event_label: 'haptic_preferences_load_failed',
+          custom_parameters: {
+            haptic_context: 'preferences_loading',
+            error_type: 'preferences_load_failure',
+            error_message: errorMessage
+          }
+        });
+      }
     }
   }
 
@@ -116,7 +143,26 @@ export class HapticFeedbackSystem {
     try {
       localStorage.setItem('haptic-preferences', JSON.stringify(this.userPreferences));
     } catch (error) {
-      console.warn('Erro ao salvar preferências de haptic feedback:', error);
+      // Haptic preferences saving error - explicit stderr + tracking
+      const errorMessage = error instanceof Error ? error.message : String(error);
+
+      // Explicit error to stderr for system visibility
+      if (typeof process !== 'undefined' && process.stderr) {
+        process.stderr.write(`⚠️ AVISO - Falha ao salvar preferências de haptic feedback:\n` +
+          `  Error: ${errorMessage}\n\n`);
+      }
+
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'haptic_preferences_save_error', {
+          event_category: 'haptic_warning',
+          event_label: 'haptic_preferences_save_failed',
+          custom_parameters: {
+            haptic_context: 'preferences_saving',
+            error_type: 'preferences_save_failure',
+            error_message: errorMessage
+          }
+        });
+      }
     }
   }
 
@@ -164,7 +210,28 @@ export class HapticFeedbackSystem {
       navigator.vibrate(pattern);
       return true;
     } catch (error) {
-      console.warn('Erro ao executar vibração:', error);
+      // Haptic vibration execution error - explicit stderr + tracking
+      const errorMessage = error instanceof Error ? error.message : String(error);
+
+      // Explicit error to stderr for system visibility
+      if (typeof process !== 'undefined' && process.stderr) {
+        process.stderr.write(`⚠️ AVISO - Falha ao executar vibração haptic:\n` +
+          `  Pattern: ${JSON.stringify(pattern)}\n` +
+          `  Error: ${errorMessage}\n\n`);
+      }
+
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'haptic_vibration_execution_error', {
+          event_category: 'haptic_warning',
+          event_label: 'haptic_vibration_failed',
+          custom_parameters: {
+            haptic_context: 'vibration_execution',
+            pattern_length: pattern.length,
+            error_type: 'vibration_execution_failure',
+            error_message: errorMessage
+          }
+        });
+      }
       return false;
     }
   }
@@ -202,11 +269,20 @@ export class HapticFeedbackSystem {
     const success = this.executeVibration(vibrationPattern);
     
     if (success) {
-      // Log para debugging/analytics
-      console.debug(`Haptic feedback triggered: ${type}`, { 
-        pattern: vibrationPattern,
-        userAgent: navigator.userAgent.substring(0, 50)
-      });
+      // Haptic feedback success tracking
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'haptic_feedback_triggered', {
+          event_category: 'haptic_interaction',
+          event_label: `haptic_${type}_success`,
+          custom_parameters: {
+            haptic_context: 'feedback_trigger',
+            haptic_type: type,
+            pattern_length: vibrationPattern.length,
+            user_agent_short: navigator.userAgent.substring(0, 50),
+            is_mobile: this.getSupport().isMobile
+          }
+        });
+      }
     }
 
     return success;

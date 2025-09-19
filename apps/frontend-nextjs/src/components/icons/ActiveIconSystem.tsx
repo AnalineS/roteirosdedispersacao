@@ -97,7 +97,17 @@ export const ActiveIcon: React.FC<ActiveIconProps> = ({
   const IconComponent = ActiveIcons[name];
   
   if (!IconComponent) {
-    console.warn(`Ícone "${name}" não encontrado no ActiveIcons`);
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'icon_system_missing_icon', {
+        event_category: 'medical_ui_components',
+        event_label: 'icon_not_found',
+        custom_parameters: {
+          medical_context: 'active_icon_system',
+          icon_name: name,
+          error_type: 'missing_icon'
+        }
+      });
+    }
     return null;
   }
 
@@ -155,7 +165,7 @@ export const ActiveIcon: React.FC<ActiveIconProps> = ({
       className={className}
       style={getVariantStyles()}
       onClick={onClick}
-      onMouseEnter={() => animate && console.log('hover animation')}
+      onMouseEnter={() => animate && undefined}
     />
   );
 

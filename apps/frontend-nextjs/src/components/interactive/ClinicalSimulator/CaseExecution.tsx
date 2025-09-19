@@ -9,7 +9,53 @@
 import React, { useState, useEffect } from 'react';
 import { ClinicalCase, CaseStep, StepValidation } from '@/types/clinicalCases';
 import { CompletedCase, CaseStepResult } from '@/types/gamification';
+import { SelectOption } from '@/types/components';
 import { getUnbColors } from '@/config/modernTheme';
+
+interface UserAnswer {
+  value: string | number | boolean | string[];
+  confidence?: number;
+  reasoning?: string;
+  timeSpent?: number;
+  // Support for checklist (array of selected IDs)
+  selectedItems?: string[];
+  // Support for calculation (key-value pairs)
+  calculations?: { [key: string]: number };
+  [key: string]: unknown;
+}
+
+interface FormField {
+  name: string;
+  type: 'text' | 'number' | 'select' | 'textarea' | 'radio' | 'checkbox';
+  label: string;
+  required?: boolean;
+  options?: SelectOption[];
+  unit?: string;
+  validation?: {
+    required?: boolean;
+    min?: number;
+    max?: number;
+    pattern?: string;
+  };
+}
+
+// SelectOption agora importado de @/types/components
+interface ExtendedSelectOption extends SelectOption {
+  text?: string;
+  category?: string;
+  points?: number;
+  required?: boolean;
+  id?: string | number;
+}
+
+interface StepParameters {
+  inputFields: FormField[];
+  validationType?: 'exact' | 'range' | 'multiple' | 'calculation';
+  expectedAnswer?: unknown;
+  acceptableAnswers?: unknown[];
+  tolerance?: number;
+  expectedResult?: { [key: string]: number };
+}
 import {
   CheckCircleIcon,
   ClockIcon,
@@ -34,7 +80,7 @@ interface StepState {
   maxScore: number;
   timeSpent: number;
   attempts: number;
-  userAnswer: any;
+  userAnswer: UserAnswer | null;
   feedback?: string;
 }
 
@@ -144,7 +190,7 @@ export default function CaseExecution({
   };
 
   // Handle step completion
-  const handleStepSubmit = async (userAnswer: any) => {
+  const handleStepSubmit = async (userAnswer: UserAnswer) => {
     if (isProcessing) return;
 
     setIsProcessing(true);
@@ -201,7 +247,7 @@ export default function CaseExecution({
   };
 
   // Validate step answer based on interaction type
-  const validateStepAnswer = (step: CaseStep, userAnswer: any) => {
+  const validateStepAnswer = (step: CaseStep, userAnswer: UserAnswer) => {
     const validation = step.validation;
     let isCorrect = false;
     let score = 0;
@@ -209,7 +255,8 @@ export default function CaseExecution({
     switch (step.interaction.type) {
       case 'checklist':
         const requiredItems = step.interaction.checklistItems?.filter(item => item.required) || [];
-        const selectedRequired = userAnswer.filter((id: string) =>
+        const userArrayAnswer = Array.isArray(userAnswer.value) ? userAnswer.value : userAnswer.selectedItems || [];
+        const selectedRequired = userArrayAnswer.filter((id: string) =>
           requiredItems.some(item => item.id === id)
         );
 
@@ -219,7 +266,7 @@ export default function CaseExecution({
 
       case 'multiple_choice':
         const correctOption = step.interaction.options?.find(opt => opt.isCorrect);
-        isCorrect = userAnswer === correctOption?.id;
+        isCorrect = userAnswer.value === correctOption?.id;
         score = isCorrect ? validation.points : 0;
         break;
 
@@ -230,10 +277,12 @@ export default function CaseExecution({
           let totalFields = Object.keys(expectedResults).length;
 
           Object.entries(expectedResults).forEach(([key, expectedValue]) => {
-            const userValue = userAnswer[key];
+            const userCalculations = userAnswer.calculations || {};
+            const userValue = userCalculations[key];
             const tolerance = step.interaction.calculationParameters?.tolerance || 10;
 
-            if (userValue && Math.abs(userValue - (expectedValue as number)) <= tolerance) {
+            if (typeof userValue === 'number' && typeof expectedValue === 'number' &&
+                Math.abs(userValue - expectedValue) <= tolerance) {
               correctCount++;
             }
           });
@@ -284,6 +333,7 @@ export default function CaseExecution({
       completedAt: endTime.toISOString(),
       timeSpent: totalTimeSpent,
       diagnosticAccuracy,
+      score: diagnosticAccuracy, // Add missing score property
       xpEarned: totalScore + totalPersonaXP,
       attempts: 1,
       perfectScore: diagnosticAccuracy >= 95,
@@ -390,7 +440,7 @@ export default function CaseExecution({
 interface StepExecutionInterfaceProps {
   step: CaseStep;
   stepState: StepState;
-  onSubmit: (answer: any) => void;
+  onSubmit: (answer: UserAnswer) => void;
   isProcessing: boolean;
   userLevel: string;
 }
@@ -407,9 +457,11 @@ function StepExecutionInterface({
 
   const handleSubmit = () => {
     if (step.interaction.type === 'checklist') {
-      onSubmit(selectedItems);
+      onSubmit({ value: selectedItems, selectedItems });
+    } else if (step.interaction.type === 'calculation') {
+      onSubmit({ value: userAnswer, calculations: userAnswer });
     } else {
-      onSubmit(userAnswer);
+      onSubmit({ value: userAnswer });
     }
   };
 
@@ -451,7 +503,19 @@ function StepExecutionInterface({
       {/* Render interaction based on type */}
       {step.interaction.type === 'checklist' && (
         <ChecklistInterface
-          items={step.interaction.checklistItems || []}
+          items={(step.interaction.checklistItems || []).map((item, index) =>
+            typeof item === 'string'
+              ? { value: item, label: item }
+              : {
+                  value: item.id || item.text || String(index),
+                  label: item.text || item.label || String(item),
+                  text: item.text,
+                  category: item.category,
+                  points: item.points,
+                  required: item.required,
+                  id: item.id
+                }
+          )}
           selectedItems={selectedItems}
           onSelectionChange={setSelectedItems}
         />
@@ -459,7 +523,11 @@ function StepExecutionInterface({
 
       {step.interaction.type === 'multiple_choice' && (
         <MultipleChoiceInterface
-          options={step.interaction.options || []}
+          options={(step.interaction.options || []).map((option, index) =>
+            typeof option === 'string'
+              ? { value: option, label: option }
+              : { value: option.id || option.text || String(index), label: option.text || option.label || String(option) }
+          )}
           selectedOption={userAnswer}
           onSelectionChange={setUserAnswer}
         />
@@ -512,7 +580,7 @@ function StepExecutionInterface({
 
 // Checklist Interface Component
 interface ChecklistInterfaceProps {
-  items: any[];
+  items: ExtendedSelectOption[];
   selectedItems: string[];
   onSelectionChange: (items: string[]) => void;
 }
@@ -533,27 +601,27 @@ function ChecklistInterface({ items, selectedItems, onSelectionChange }: Checkli
       <div style={{ display: 'grid', gap: '0.75rem' }}>
         {items.map((item) => (
           <label
-            key={item.id}
+            key={item.value}
             style={{
               display: 'flex',
               alignItems: 'flex-start',
               gap: '0.75rem',
               padding: '1rem',
-              border: selectedItems.includes(item.id) ? '2px solid #10b981' : '1px solid #e2e8f0',
+              border: selectedItems.includes(String(item.value)) ? '2px solid #10b981' : '1px solid #e2e8f0',
               borderRadius: '8px',
               cursor: 'pointer',
-              background: selectedItems.includes(item.id) ? '#f0fdfa' : 'white'
+              background: selectedItems.includes(String(item.value)) ? '#f0fdfa' : 'white'
             }}
           >
             <input
               type="checkbox"
-              checked={selectedItems.includes(item.id)}
-              onChange={() => handleItemToggle(item.id)}
+              checked={selectedItems.includes(String(item.value))}
+              onChange={() => handleItemToggle(String(item.value))}
               style={{ marginTop: '2px' }}
             />
             <div style={{ flex: 1 }}>
               <div style={{ fontWeight: '500', marginBottom: '0.25rem' }}>
-                {item.text}
+                {item.text || item.label}
               </div>
               <div style={{
                 fontSize: '0.875rem',
@@ -561,8 +629,8 @@ function ChecklistInterface({ items, selectedItems, onSelectionChange }: Checkli
                 display: 'flex',
                 justifyContent: 'space-between'
               }}>
-                <span>Categoria: {item.category}</span>
-                <span>{item.points} pontos</span>
+                <span>Categoria: {item.category || 'Geral'}</span>
+                <span>{item.points || 0} pontos</span>
               </div>
               {item.required && (
                 <div style={{
@@ -584,7 +652,7 @@ function ChecklistInterface({ items, selectedItems, onSelectionChange }: Checkli
 
 // Multiple Choice Interface Component
 interface MultipleChoiceInterfaceProps {
-  options: any[];
+  options: SelectOption[];
   selectedOption: string | null;
   onSelectionChange: (option: string) => void;
 }
@@ -608,20 +676,20 @@ function MultipleChoiceInterface({
               alignItems: 'center',
               gap: '0.75rem',
               padding: '1rem',
-              border: selectedOption === option.id ? '2px solid #10b981' : '1px solid #e2e8f0',
+              border: selectedOption === String(option.id) ? '2px solid #10b981' : '1px solid #e2e8f0',
               borderRadius: '8px',
               cursor: 'pointer',
-              background: selectedOption === option.id ? '#f0fdfa' : 'white'
+              background: selectedOption === String(option.id) ? '#f0fdfa' : 'white'
             }}
           >
             <input
               type="radio"
               name="multiple-choice"
-              checked={selectedOption === option.id}
-              onChange={() => onSelectionChange(option.id)}
+              checked={selectedOption === String(option.id)}
+              onChange={() => onSelectionChange(String(option.id))}
             />
             <div style={{ flex: 1, fontWeight: '500' }}>
-              {option.text}
+              {option.text || option.label}
             </div>
           </label>
         ))}
@@ -748,7 +816,7 @@ function PersonaChatOverlay({ feedback, onClose }: PersonaChatOverlayProps) {
 
 // Calculation Interface Component
 interface CalculationInterfaceProps {
-  parameters: any;
+  parameters: StepParameters;
   values: { [key: string]: number };
   onValuesChange: (values: { [key: string]: number }) => void;
 }
@@ -787,7 +855,7 @@ function CalculationInterface({
       </div>
 
       <div style={{ display: 'grid', gap: '1rem' }}>
-        {parameters.inputFields.map((field: any) => (
+        {parameters.inputFields.map((field: FormField) => (
           <div key={field.name} style={{
             padding: '1rem',
             border: '1px solid #e2e8f0',
@@ -808,9 +876,9 @@ function CalculationInterface({
                 type="number"
                 value={values[field.name] || ''}
                 onChange={(e) => handleInputChange(field.name, Number(e.target.value))}
-                min={field.validation.min}
-                max={field.validation.max}
-                required={field.validation.required}
+                min={field.validation?.min}
+                max={field.validation?.max}
+                required={field.validation?.required}
                 style={{
                   padding: '0.75rem',
                   border: '1px solid #d1d5db',
@@ -820,17 +888,17 @@ function CalculationInterface({
                 }}
               />
               <span style={{ color: '#64748b', fontSize: '0.875rem' }}>
-                {field.unit}
+                {field.unit || 'mg'}
               </span>
             </div>
 
-            {field.validation.min && field.validation.max && (
+            {field.validation?.min && field.validation?.max && (
               <div style={{
                 fontSize: '0.75rem',
                 color: '#64748b',
                 marginTop: '0.25rem'
               }}>
-                Faixa esperada: {field.validation.min}-{field.validation.max} {field.unit}
+                Faixa esperada: {field.validation.min}-{field.validation.max} {field.unit || 'mg'}
               </div>
             )}
           </div>
@@ -851,10 +919,10 @@ function CalculationInterface({
           </h4>
           <div style={{ fontSize: '0.875rem', color: '#0c4a6e' }}>
             {Object.entries(values).map(([key, value]) => {
-              const field = parameters.inputFields.find((f: any) => f.name === key);
+              const field = parameters.inputFields.find((f: FormField) => f.name === key);
               return field ? (
                 <div key={key} style={{ marginBottom: '0.25rem' }}>
-                  <strong>{field.label}:</strong> {value} {field.unit}
+                  <strong>{field.label}:</strong> {value} {field.unit || 'mg'}
                 </div>
               ) : null;
             })}

@@ -9,6 +9,7 @@ import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { PersonaRAGIntegration } from '@/services/personaRAGIntegration';
 import { logEvent } from '@/services/analytics';
 import { motion, AnimatePresence } from 'framer-motion';
+import { secureLogger } from '@/utils/secureLogger';
 
 export interface PatientData {
   weight: number;
@@ -116,7 +117,11 @@ export default function IntelligentDoseCalculator({
       
       return validation;
     } catch (error) {
-      console.error('Erro na validação RAG:', error);
+      secureLogger.error('RAG validation failed', error as Error, {
+        component: 'IntelligentDoseCalculator',
+        operation: 'validateWithRAG',
+        persona
+      });
       setValidationStatus('error');
       return null;
     }
@@ -140,7 +145,7 @@ export default function IntelligentDoseCalculator({
   };
 
   // Calcular doses baseado nos algoritmos padrão
-  const calculateDoses = useCallback((patient: PatientData, lesions: any): DoseRecommendation => {
+  const calculateDoses = useCallback((patient: PatientData, lesions: { count: number; bacilloscopy?: string; type?: string; [key: string]: unknown }): DoseRecommendation => {
     const { weight, age, pregnant, renalFunction, hepaticFunction } = patient;
     
     // Determinar classificação
@@ -302,7 +307,12 @@ export default function IntelligentDoseCalculator({
       }));
 
     } catch (error) {
-      console.error('Erro no cálculo de dose:', error);
+      secureLogger.error('Dose calculation failed', error as Error, {
+        component: 'IntelligentDoseCalculator',
+        operation: 'handleCalculate',
+        hasPatientData: !!patientData,
+        hasLesionData: !!lesionData
+      });
       alert('Erro ao calcular doses. Tente novamente.');
     } finally {
       setLoading(false);

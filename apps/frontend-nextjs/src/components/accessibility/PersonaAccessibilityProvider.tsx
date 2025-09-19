@@ -113,6 +113,32 @@ export function PersonaAccessibilityProvider({
     });
   }, [config.announcementThrottle, lastAnnouncementTime]);
 
+  // Função para feedback sonoro (experimental)
+  const playPersonaChangeSound = useCallback((personaId: ValidPersonaId) => {
+    if (typeof window === 'undefined' || !window.speechSynthesis) return;
+
+    try {
+      // Usar Web Speech API para feedback sonoro sutil
+      const utterance = new SpeechSynthesisUtterance('');
+      utterance.volume = 0.1; // Muito baixo
+      utterance.rate = 2; // Rápido
+      utterance.pitch = personaId === 'dr_gasnelio' ? 0.8 : 1.2; // Tom diferente por persona
+
+      // Som muito curto
+      utterance.text = personaId === 'dr_gasnelio' ? 'Dr.' : 'Gá';
+
+      window.speechSynthesis.speak(utterance);
+    } catch (error) {
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'persona_sound_feedback_error', {
+          event_category: 'accessibility',
+          event_label: 'audio_error',
+          custom_parameters: { personaId }
+        });
+      }
+    }
+  }, []);
+
   // Função para anunciar mudanças de persona
   const announcePersonaChange = useCallback((personaId: ValidPersonaId, isInitial: boolean = false) => {
     if (!config.announceChanges) return;
@@ -159,27 +185,7 @@ export function PersonaAccessibilityProvider({
     if (config.enableSoundFeedback) {
       playPersonaChangeSound(personaId);
     }
-  }, [config, personaConfig, stats, announceMessage]);
-
-  // Função para feedback sonoro (experimental)
-  const playPersonaChangeSound = useCallback((personaId: ValidPersonaId) => {
-    if (typeof window === 'undefined' || !window.speechSynthesis) return;
-
-    try {
-      // Usar Web Speech API para feedback sonoro sutil
-      const utterance = new SpeechSynthesisUtterance('');
-      utterance.volume = 0.1; // Muito baixo
-      utterance.rate = 2; // Rápido
-      utterance.pitch = personaId === 'dr_gasnelio' ? 0.8 : 1.2; // Tom diferente por persona
-      
-      // Som muito curto
-      utterance.text = personaId === 'dr_gasnelio' ? 'Dr.' : 'Gá';
-      
-      window.speechSynthesis.speak(utterance);
-    } catch (error) {
-      console.warn('Erro no feedback sonoro:', error);
-    }
-  }, []);
+  }, [config, personaConfig, stats, announceMessage, playPersonaChangeSound]);
 
   // ============================================
   // EFEITOS
@@ -206,7 +212,12 @@ export function PersonaAccessibilityProvider({
         setConfig(prev => ({ ...prev, ...parsed }));
       }
     } catch (error) {
-      console.warn('Erro ao carregar configuração de acessibilidade:', error);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'accessibility_config_load_error', {
+          event_category: 'accessibility',
+          event_label: 'config_error'
+        });
+      }
     }
   }, []);
 
@@ -219,7 +230,12 @@ export function PersonaAccessibilityProvider({
       try {
         localStorage.setItem('personaAccessibilityConfig', JSON.stringify(updatedConfig));
       } catch (error) {
-        console.warn('Erro ao salvar configuração de acessibilidade:', error);
+        if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'accessibility_config_save_error', {
+            event_category: 'accessibility',
+            event_label: 'storage_error'
+          });
+        }
       }
     }
   }, [config]);

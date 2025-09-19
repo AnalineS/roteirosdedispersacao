@@ -6,11 +6,30 @@
  * @version 1.0.0
  */
 
+interface DetailedValidationResult {
+  validation_id: string;
+  test_name: string;
+  passed: boolean;
+  score: number;
+  severity: "critical" | "high" | "medium" | "low" | "info";
+  details: Record<string, unknown>;
+  recommendations: string[];
+  timestamp: string;
+}
+
+interface MistakePattern {
+  pattern: string;
+  frequency: number;
+  severity: "critical" | "high" | "medium" | "low";
+  recommendation: string;
+  category: string;
+}
+
 interface ValidationRequest {
   response: string;
   persona: "dr_gasnelio" | "ga";
   user_question: string;
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
   store_result?: boolean;
 }
 
@@ -21,7 +40,7 @@ interface ValidationResult {
     passed: boolean;
     score: number;
     severity: "critical" | "high" | "medium" | "low" | "info";
-    details: Record<string, any>;
+    details: Record<string, unknown>;
     recommendations: string[];
     timestamp: string;
   };
@@ -62,7 +81,7 @@ interface BatchValidationResult {
       overall_quality_score: number;
       critical_issues_found: number;
     };
-    detailed_results: any[];
+    detailed_results: DetailedValidationResult[];
     recommendations: string[];
   };
   metadata: {
@@ -83,7 +102,7 @@ interface DashboardData {
     };
     learning: {
       knowledgeRetention: number;
-      mistakePatterns: any[];
+      mistakePatterns: MistakePattern[];
       conceptMastery: Record<string, number>;
     };
     quality: {
@@ -102,7 +121,7 @@ interface DashboardData {
       };
     };
   };
-  alerts: any[];
+  alerts: ValidationAlert[];
   summary: {
     totalValidations: number;
     criticalIssues: number;
@@ -308,7 +327,7 @@ class ValidationService {
 
       // Converter timestamp strings para Date objects
       if (data.alerts) {
-        data.alerts = data.alerts.map((alert: any) => ({
+        data.alerts = data.alerts.map((alert: ValidationAlert) => ({
           ...alert,
           timestamp: new Date(alert.timestamp),
         }));
@@ -371,7 +390,7 @@ class ValidationService {
     response: string,
     persona: "dr_gasnelio" | "ga",
     userQuestion: string,
-    context?: Record<string, any>,
+    context?: Record<string, unknown>,
   ): ValidationRequest {
     return {
       response,

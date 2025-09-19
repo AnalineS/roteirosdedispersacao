@@ -3,7 +3,7 @@
 import React, { Suspense, lazy, ComponentType } from 'react';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 
-interface LazyComponentProps<T = {}> {
+interface LazyComponentProps<T = {}> extends T {
   componentImport: () => Promise<{ default: ComponentType<T> }>;
   fallback?: React.ReactNode;
   onError?: (error: Error) => void;
@@ -36,7 +36,18 @@ class ErrorBoundary extends React.Component<
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error(`LazyComponent (${this.props.componentName}) failed to load:`, error, errorInfo);
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'lazy_component_error', {
+        event_category: 'medical_system_performance',
+        event_label: 'lazy_component_load_failed',
+        custom_parameters: {
+          medical_context: 'lazy_component_loading',
+          component_name: this.props.componentName,
+          error_type: 'component_load_failure',
+          error_message: error instanceof Error ? error.message : String(error)
+        }
+      });
+    }
     this.props.onError?.(error);
   }
 
@@ -137,18 +148,30 @@ class ErrorBoundary extends React.Component<
   }
 }
 
-export default function LazyComponent({
-  componentImport,
-  fallback,
-  onError,
-  retryAttempts = 3,
-  ...props
-}: LazyComponentProps) {
+export default function LazyComponent<T = {}>(
+  {
+    componentImport,
+    fallback,
+    onError,
+    retryAttempts = 3,
+    ...props
+  }: LazyComponentProps<T>
+) {
   // Create lazy component with retry logic
   const LazyLoadedComponent = React.useMemo(() => {
     return lazy(() => 
       componentImport().catch(error => {
-        console.error('Failed to load lazy component:', error);
+        if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'lazy_component_import_error', {
+            event_category: 'medical_system_performance',
+            event_label: 'component_import_failed',
+            custom_parameters: {
+              medical_context: 'lazy_component_import',
+              error_type: 'import_failure',
+              error_message: error instanceof Error ? error.message : String(error)
+            }
+          });
+        }
         throw error;
       })
     );
@@ -192,7 +215,7 @@ export default function LazyComponent({
       componentName={String(componentName)}
     >
       <Suspense fallback={fallback || defaultFallback}>
-        <LazyLoadedComponent {...(props as any)} />
+        <LazyLoadedComponent {...(props as T)} />
       </Suspense>
     </ErrorBoundary>
   );
@@ -272,7 +295,7 @@ export function withLazyLoading<T extends Record<string, any>>(
         fallback={options.fallback}
         onError={options.onError}
         retryAttempts={options.retryAttempts}
-        {...(props as any)}
+        {...props}
       />
     );
   };

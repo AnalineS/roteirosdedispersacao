@@ -5,7 +5,6 @@ import { usePathname, useSearchParams } from 'next/navigation';
 import { useGoogleAnalyticsUX } from '@/components/analytics/GoogleAnalyticsSetup';
 import { MedicalAnalytics } from '@/utils/medicalAnalytics';
 import EducationalMonitoringSystem from '@/utils/educationalAnalytics';
-import ABTestingFramework from '@/utils/abTesting';
 // UX Analytics será implementado localmente por não estar exportado
 interface UXEvent {
   category: string;
@@ -79,7 +78,6 @@ interface TrackingConfig {
   enableOnboarding?: boolean;
   enableMedicalActions?: boolean;
   enableEducational?: boolean;
-  enableABTesting?: boolean;
   enablePerformance?: boolean;
   enableErrors?: boolean;
 }
@@ -90,7 +88,6 @@ const DEFAULT_CONFIG: TrackingConfig = {
   enableOnboarding: true,
   enableMedicalActions: true,
   enableEducational: true,
-  enableABTesting: true,
   enablePerformance: true,
   enableErrors: true,
 };
@@ -140,7 +137,7 @@ export function useGlobalTracking(config: TrackingConfig = DEFAULT_CONFIG) {
         category: 'navigation',
         action: 'page_view',
         label: pathname || '/',
-        custom_dimensions: {
+        custom_parameters: {
           search_params: searchParams?.toString() || '',
           referrer: document.referrer,
           user_agent: navigator.userAgent
@@ -363,26 +360,6 @@ export function useGlobalTracking(config: TrackingConfig = DEFAULT_CONFIG) {
     return () => observer.disconnect();
   }, [pathname, trackCustomUXEvent, config.enablePerformance]);
 
-  // A/B Testing Integration
-  useEffect(() => {
-    if (!config.enableABTesting) return;
-
-    // Activate A/B testing framework
-    const abTestingFramework = ABTestingFramework.getInstance();
-    abTestingFramework.initialize();
-    
-    // Track experiment exposure
-    const activeExperiments = abTestingFramework.getAllActiveExperiments();
-    if (activeExperiments && Array.isArray(activeExperiments)) {
-      activeExperiments.forEach(experiment => {
-        trackCustomUXEvent('ab_test_exposure', 'experiment', undefined, {
-          experiment_id: experiment.id,
-          variant: experiment.variants[0]?.id || 'control',
-          page: pathname || '/'
-        });
-      });
-    }
-  }, [pathname, trackCustomUXEvent, config.enableABTesting]);
 
   // Onboarding Tracking
   const trackOnboarding = useCallback((step: number, action: string, data?: Record<string, string | number>) => {

@@ -21,11 +21,14 @@ from .validation_blueprint import validation_bp
 from .logging_blueprint import logging_bp
 from .alerts_blueprint import alerts_bp
 from .ga4_integration_blueprint import ga4_integration_bp
+from .advanced_systems_blueprint import advanced_systems_bp  # Sistema de gestão avançada
 
 # Import blueprints obrigatórios
 from .cache_blueprint import cache_blueprint
 from .user_blueprint import user_bp
 from .auth_blueprint import auth_bp  # Novo sistema de autenticação JWT
+from .email_blueprint import email_bp  # Sistema de email médico
+from .internal_blueprint import internal_bp  # APIs administrativas
 from core.openapi.spec import swagger_ui_blueprint
 
 # Lista de todos os blueprints para registro
@@ -45,11 +48,14 @@ ALL_BLUEPRINTS = [
     notifications_bp,  # PR #175 - Social features
     validation_bp,  # Educational validation system
     logging_bp,  # Cloud logging and LGPD compliance
-    alerts_bp,  # Email + Telegram alert system
+    alerts_bp,  # Email + Telegram + Webhook alert system
     ga4_integration_bp,  # GA4 analytics integration
+    advanced_systems_bp,  # Sistema de gestão de sistemas avançados
     cache_blueprint,
     user_bp,
     auth_bp,  # Novo sistema de autenticação JWT
+    email_bp,  # Sistema de email médico ATIVADO
+    internal_bp,  # APIs administrativas ATIVADAS
     swagger_ui_blueprint
 ]
 
@@ -69,11 +75,14 @@ __all__ = [
     'notifications_bp',  # PR #175
     'validation_bp',  # Educational validation
     'logging_bp',  # Cloud logging
-    'alerts_bp',  # Email + Telegram alerts
+    'alerts_bp',  # Email + Telegram + Webhook alerts
     'ga4_integration_bp',  # GA4 analytics integration
+    'advanced_systems_bp',  # Sistema de gestão avançada
     'cache_blueprint',
     'user_bp',
     'auth_bp',  # Novo sistema de autenticação JWT
+    'email_bp',  # Sistema de email médico
+    'internal_bp',  # APIs administrativas
     'swagger_ui_blueprint',
     'ALL_BLUEPRINTS'
 ]

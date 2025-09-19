@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { TREATMENT_TIMELINE_TEMPLATES } from '@/types/timeline';
+import { TREATMENT_TIMELINE_TEMPLATES, TimelineMilestone } from '@/types/timeline';
 import { modernChatTheme } from '@/config/modernTheme';
 
 interface StaticTimelineProps {
@@ -95,7 +95,7 @@ export default function StaticTimeline({
           {['timeline', 'calendar', 'list'].map(mode => (
             <button
               key={mode}
-              onClick={() => setViewMode(mode as any)}
+              onClick={() => setViewMode(mode as 'timeline' | 'calendar' | 'list')}
               style={{
                 padding: `${modernChatTheme.spacing.xs} ${modernChatTheme.spacing.sm}`,
                 background: viewMode === mode 
@@ -327,7 +327,7 @@ function CalendarView({
   milestones, 
   protocol 
 }: { 
-  milestones: any[], 
+  milestones: TimelineMilestone[], 
   protocol: string 
 }) {
   return (
@@ -453,7 +453,7 @@ function ListView({
   milestones, 
   protocol 
 }: { 
-  milestones: any[], 
+  milestones: TimelineMilestone[], 
   protocol: string 
 }) {
   return (

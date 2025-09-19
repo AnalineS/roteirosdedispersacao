@@ -108,18 +108,33 @@ def get_suggestions():
         # Analisar contexto da query
         context_analysis = engine.context_analyzer.analyze_query(query)
         
-        # Preparar resposta
+        # Preparar resposta e armazenar detalhes das sugestões no cache
+        suggestion_list = []
+        for s in suggestions:
+            suggestion_data = {
+                "id": s.suggestion_id,
+                "text": s.text,
+                "confidence": round(s.confidence, 3),
+                "category": s.category,
+                "persona": s.persona,
+                "context_match": s.context_match
+            }
+            suggestion_list.append(suggestion_data)
+
+            # Armazenar detalhes da sugestão individual no cache para tracking posterior
+            suggestion_cache_key = f"suggestion:{s.suggestion_id}"
+            suggestion_details = {
+                "text": s.text,
+                "confidence": s.confidence,
+                "category": s.category,
+                "persona": s.persona,
+                "context_match": s.context_match,
+                "created_at": datetime.now().isoformat()
+            }
+            cache_manager.set(suggestion_cache_key, suggestion_details, ttl=3600)  # 1 hora
+
         response_data = {
-            "suggestions": [
-                {
-                    "id": s.suggestion_id,
-                    "text": s.text,
-                    "confidence": round(s.confidence, 3),
-                    "category": s.category,
-                    "persona": s.persona,
-                    "context_match": s.context_match
-                } for s in suggestions
-            ],
+            "suggestions": suggestion_list,
             "context": {
                 "analyzed_categories": context_analysis.get('medical_categories', []),
                 "query_patterns": context_analysis.get('query_patterns', []),
@@ -129,8 +144,8 @@ def get_suggestions():
             "cache_hit": False,
             "timestamp": datetime.now().isoformat()
         }
-        
-        # Armazenar no cache por 10 minutos
+
+        # Armazenar resposta completa no cache por 10 minutos
         cache_manager.set(cache_key, response_data, ttl=600)
         
         logger.info(f"Sugestões geradas para sessão {session_id}: {len(suggestions)} sugestões")
@@ -196,21 +211,37 @@ def track_interaction():
         # Obter motor preditivo
         engine = get_predictive_engine()
         
-        # Reconstruir objetos de sugestão (simplificado para tracking)
-        from services.predictive_system import Suggestion
-        
+        # Reconstruir objetos de sugestão com dados reais do cache ou geração
+        from services.integrations.predictive_system import Suggestion
+
         suggestion_objects = []
         for suggestion_id in suggestions_shown:
-            # Criar objeto placeholder para tracking
-            suggestion_objects.append(Suggestion(
-                suggestion_id=suggestion_id,
-                text="[tracked]",
-                confidence=0.5,
-                category="unknown",
-                persona=persona_used,
-                context_match=[],
-                created_at=datetime.now()
-            ))
+            # Tentar recuperar dados reais da sugestão do cache
+            cache_key = f"suggestion:{suggestion_id}"
+            cached_suggestion = cache_manager.get(cache_key)
+
+            if cached_suggestion:
+                # Usar dados reais do cache
+                suggestion_objects.append(Suggestion(
+                    suggestion_id=suggestion_id,
+                    text=cached_suggestion.get('text', '[cached suggestion]'),
+                    confidence=cached_suggestion.get('confidence', 0.8),
+                    category=cached_suggestion.get('category', 'medical'),
+                    persona=persona_used,
+                    context_match=cached_suggestion.get('context_match', []),
+                    created_at=datetime.fromisoformat(cached_suggestion.get('created_at', datetime.now().isoformat()))
+                ))
+            else:
+                # Fallback: criar objeto básico para tracking
+                suggestion_objects.append(Suggestion(
+                    suggestion_id=suggestion_id,
+                    text="[tracked interaction]",
+                    confidence=0.7,
+                    category="interaction",
+                    persona=persona_used,
+                    context_match=[],
+                    created_at=datetime.now()
+                ))
         
         # Registrar interação
         engine.track_suggestion_interaction(

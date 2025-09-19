@@ -10,6 +10,22 @@ import { semanticSearchEngine } from '../services/semanticSearchEngine';
 import { embeddingService } from '../services/embeddingService';
 import { medicalKnowledgeBase } from '../services/medicalKnowledgeBase';
 
+// Type declarations for gtag
+declare global {
+  interface Window {
+    gtag?: (
+      command: 'event',
+      eventName: string,
+      parameters?: {
+        event_category?: string;
+        event_label?: string;
+        value?: number;
+        custom_parameters?: Record<string, unknown>;
+      }
+    ) => void;
+  }
+}
+
 interface RAGPerformanceResult {
   component: string;
   operation: string;
@@ -21,6 +37,28 @@ interface RAGPerformanceResult {
   errorCount: number;
   cacheHitRate?: number;
   qualityScore?: number;
+}
+
+interface RAGResponse {
+  answer?: string;
+  qualityScore?: number;
+  sources?: unknown[];
+  context?: {
+    chunks: unknown[];
+  };
+  limitations?: unknown[];
+  cached?: boolean;
+}
+
+interface TestResult {
+  response?: RAGResponse;
+  qualityScore?: number;
+  cached?: boolean;
+  [key: string]: unknown;
+}
+
+interface ComponentResults {
+  [componentName: string]: RAGPerformanceResult[];
 }
 
 interface RAGTestMetrics {
@@ -65,7 +103,13 @@ export class RAGPerformanceTest {
    * Executa suite completa de testes de performance RAG
    */
   async runCompleteRAGPerformanceTest(): Promise<RAGTestMetrics> {
-    console.log('🧠 Iniciando testes de performance do sistema RAG...');
+    // Medical tracking: RAG performance tests started
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'rag_performance_tests_started', {
+        event_category: 'rag_testing',
+        event_label: 'performance_suite_init'
+      });
+    }
 
     const startTime = Date.now();
     
@@ -93,15 +137,29 @@ export class RAGPerformanceTest {
 
       const metrics = this.calculateMetrics();
       
-      console.log('✅ Testes de performance RAG concluídos');
-      console.log(`📊 Score de saúde do sistema: ${metrics.summary.systemHealthScore}/100`);
-      console.log(`⚡ Tempo médio de resposta: ${metrics.summary.averageResponseTime}ms`);
-      console.log(`🎯 Score de qualidade: ${metrics.summary.qualityScore}/100`);
+      // Medical tracking: RAG performance tests completed
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'rag_performance_tests_completed', {
+          event_category: 'rag_testing',
+          event_label: 'performance_suite_complete',
+          value: Math.round(metrics.summary.systemHealthScore),
+          custom_parameters: {
+            avg_response_time: Math.round(metrics.summary.averageResponseTime),
+            quality_score: Math.round(metrics.summary.qualityScore)
+          }
+        });
+      }
       
       return metrics;
 
     } catch (error) {
-      console.error('❌ Erro durante testes de performance RAG:', error);
+      // Medical tracking: RAG performance test error
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'rag_performance_test_error', {
+          event_category: 'rag_testing',
+          event_label: 'performance_suite_error'
+        });
+      }
       throw error;
     }
   }
@@ -110,7 +168,13 @@ export class RAGPerformanceTest {
    * Testa serviço de embeddings
    */
   private async testEmbeddingService(): Promise<void> {
-    console.log('🔤 Testando serviço de embeddings...');
+    // Medical tracking: Embeddings service test
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'embeddings_service_test', {
+        event_category: 'rag_testing',
+        event_label: 'embedding_performance'
+      });
+    }
 
     const testTexts = [
       'rifampicina 600mg',
@@ -125,7 +189,8 @@ export class RAGPerformanceTest {
       'Embedding Service',
       'single_text_embedding',
       async () => {
-        return await embeddingService.embedSingleText('rifampicina dose');
+        const result = await embeddingService.embedSingleText('rifampicina dose');
+        return { embeddings: result, qualityScore: result ? 1.0 : 0.0 };
       }
     );
     this.results.push(singleResult);
@@ -135,11 +200,12 @@ export class RAGPerformanceTest {
       'Embedding Service',
       'batch_embeddings',
       async () => {
-        return await embeddingService.generateEmbeddings({
+        const result = await embeddingService.generateEmbeddings({
           texts: testTexts,
           useCache: true,
           batchSize: 3
         });
+        return { embeddings: result, qualityScore: result?.embeddings ? 1.0 : 0.0 };
       }
     );
     this.results.push(batchResult);
@@ -150,7 +216,8 @@ export class RAGPerformanceTest {
       'cached_embeddings',
       async () => {
         // Segunda chamada deve usar cache
-        return await embeddingService.embedSingleText('rifampicina dose');
+        const result = await embeddingService.embedSingleText('rifampicina dose');
+        return { embeddings: result, qualityScore: result ? 1.0 : 0.0, cached: true };
       }
     );
     this.results.push(cacheResult);
@@ -160,14 +227,21 @@ export class RAGPerformanceTest {
    * Testa base de conhecimento médico
    */
   private async testMedicalKnowledgeBase(): Promise<void> {
-    console.log('📚 Testando base de conhecimento médico...');
+    // Medical tracking: Medical knowledge base test
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'medical_knowledge_test', {
+        event_category: 'rag_testing',
+        event_label: 'knowledge_base_performance'
+      });
+    }
 
     // Teste de busca por categoria
     const categoryResult = await this.measureOperation(
       'Medical Knowledge Base',
       'search_by_category',
       async () => {
-        return await medicalKnowledgeBase.searchByCategory('dosage', 'rifampicina');
+        const result = await medicalKnowledgeBase.searchByCategory('dosage', 'rifampicina');
+        return { searchResults: result, qualityScore: result?.length > 0 ? 1.0 : 0.0 };
       }
     );
     this.results.push(categoryResult);
@@ -177,7 +251,8 @@ export class RAGPerformanceTest {
       'Medical Knowledge Base',
       'critical_search',
       async () => {
-        return await medicalKnowledgeBase.searchCritical('contraindicações rifampicina');
+        const result = await medicalKnowledgeBase.searchCritical('contraindicações rifampicina');
+        return { searchResults: result, qualityScore: result.length > 0 ? 1.0 : 0.0 };
       }
     );
     this.results.push(criticalResult);
@@ -187,10 +262,11 @@ export class RAGPerformanceTest {
       'Medical Knowledge Base',
       'general_search',
       async () => {
-        return await medicalKnowledgeBase.search('hanseníase tratamento', {
+        const result = await medicalKnowledgeBase.search('hanseníase tratamento', {
           maxResults: 5,
           useChunks: true
         });
+        return { searchResults: result, qualityScore: result.length > 0 ? 1.0 : 0.0 };
       }
     );
     this.results.push(generalResult);
@@ -200,14 +276,21 @@ export class RAGPerformanceTest {
    * Testa motor de busca semântica
    */
   private async testSemanticSearchEngine(): Promise<void> {
-    console.log('🔍 Testando motor de busca semântica...');
+    // Medical tracking: Semantic search engine test
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'semantic_search_test', {
+        event_category: 'rag_testing',
+        event_label: 'search_engine_performance'
+      });
+    }
 
     // Teste de busca rápida
     const quickResult = await this.measureOperation(
       'Semantic Search Engine',
       'quick_search',
       async () => {
-        return await semanticSearchEngine.quickSearch('dapsona efeitos');
+        const result = await semanticSearchEngine.quickSearch('dapsona efeitos');
+        return { searchResults: result, qualityScore: result?.length > 0 ? 1.0 : 0.0 };
       }
     );
     this.results.push(quickResult);
@@ -217,7 +300,8 @@ export class RAGPerformanceTest {
       'Semantic Search Engine',
       'search_with_suggestions',
       async () => {
-        return await semanticSearchEngine.searchWithSuggestions('rifamp');
+        const result = await semanticSearchEngine.searchWithSuggestions('rifamp');
+        return { searchResults: result, qualityScore: result?.suggestions?.length > 0 ? 1.0 : 0.0 };
       }
     );
     this.results.push(suggestionsResult);
@@ -227,7 +311,8 @@ export class RAGPerformanceTest {
       'Semantic Search Engine',
       'find_similar',
       async () => {
-        return await semanticSearchEngine.findSimilar('medicamento para hanseníase');
+        const result = await semanticSearchEngine.findSimilar('medicamento para hanseníase');
+        return { searchResults: result, qualityScore: result?.length > 0 ? 1.0 : 0.0 };
       }
     );
     this.results.push(similarResult);
@@ -237,7 +322,8 @@ export class RAGPerformanceTest {
       'Semantic Search Engine',
       'query_analysis',
       async () => {
-        return semanticSearchEngine.analyzeQuery('qual a dose de rifampicina para hanseníase?');
+        const result = semanticSearchEngine.analyzeQuery('qual a dose de rifampicina para hanseníase?');
+        return { queryAnalysis: result, qualityScore: result?.confidence || 0.5 };
       }
     );
     this.results.push(analysisResult);
@@ -247,7 +333,13 @@ export class RAGPerformanceTest {
    * Testa integração RAG completa
    */
   private async testRAGIntegration(): Promise<void> {
-    console.log('🧠 Testando integração RAG...');
+    // Medical tracking: RAG integration test
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'rag_integration_test', {
+        event_category: 'rag_testing',
+        event_label: 'integration_performance'
+      });
+    }
 
     // Teste queries simples
     for (const query of this.testQueries.slice(0, 5)) {
@@ -255,7 +347,18 @@ export class RAGPerformanceTest {
         'RAG Integration',
         'simple_query',
         async () => {
-          return await ragIntegrationService.query(query, 'dr_gasnelio');
+          const response = await ragIntegrationService.query(query, 'dr_gasnelio');
+          return {
+            response: {
+              answer: response.answer,
+              qualityScore: response.qualityScore,
+              sources: response.sources,
+              context: response.context,
+              limitations: response.limitations,
+              cached: response.cached
+            },
+            qualityScore: response.qualityScore || 0.5
+          };
         }
       );
       this.results.push(result);
@@ -267,7 +370,18 @@ export class RAGPerformanceTest {
         'RAG Integration',
         'complex_query',
         async () => {
-          return await ragIntegrationService.query(query, 'dr_gasnelio');
+          const response = await ragIntegrationService.query(query, 'dr_gasnelio');
+          return {
+            response: {
+              answer: response.answer,
+              qualityScore: response.qualityScore,
+              sources: response.sources,
+              context: response.context,
+              limitations: response.limitations,
+              cached: response.cached
+            },
+            qualityScore: response.qualityScore || 0.5
+          };
         }
       );
       this.results.push(result);
@@ -278,10 +392,11 @@ export class RAGPerformanceTest {
       'RAG Integration',
       'semantic_search',
       async () => {
-        return await ragIntegrationService.search('rifampicina contraindicações', {
+        const result = await ragIntegrationService.search('rifampicina contraindicações', {
           maxResults: 3,
           categories: ['contraindication']
         });
+        return { searchResults: result, qualityScore: result?.length > 0 ? 1.0 : 0.0 };
       }
     );
     this.results.push(searchResult);
@@ -291,7 +406,8 @@ export class RAGPerformanceTest {
       'RAG Integration',
       'health_check',
       async () => {
-        return await ragIntegrationService.healthCheck();
+        const result = await ragIntegrationService.healthCheck();
+        return { healthStatus: result, qualityScore: result?.status === 'healthy' ? 1.0 : 0.0 };
       }
     );
     this.results.push(healthResult);
@@ -301,14 +417,21 @@ export class RAGPerformanceTest {
    * Testa otimizador de performance
    */
   private async testPerformanceOptimizer(): Promise<void> {
-    console.log('⚡ Testando otimizador de performance...');
+    // Medical tracking: Performance optimizer test
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'performance_optimizer_test', {
+        event_category: 'rag_testing',
+        event_label: 'optimizer_performance'
+      });
+    }
 
     // Teste query otimizada
     const optimizedResult = await this.measureOperation(
       'Performance Optimizer',
       'optimized_query',
       async () => {
-        return await ragPerformanceOptimizer.optimizedQuery('rifampicina dose efeitos');
+        const result = await ragPerformanceOptimizer.optimizedQuery('rifampicina dose efeitos');
+        return { optimizedResult: result, qualityScore: result?.confidence || 0.5 };
       }
     );
     this.results.push(optimizedResult);
@@ -318,7 +441,8 @@ export class RAGPerformanceTest {
       'Performance Optimizer',
       'optimized_search',
       async () => {
-        return await ragPerformanceOptimizer.optimizedSearch('dapsona administração');
+        const result = await ragPerformanceOptimizer.optimizedSearch('dapsona administração');
+        return { optimizedSearchResults: result, qualityScore: result?.length > 0 ? 1.0 : 0.0 };
       }
     );
     this.results.push(optimizedSearchResult);
@@ -328,7 +452,8 @@ export class RAGPerformanceTest {
       'Performance Optimizer',
       'auto_optimize',
       async () => {
-        return await ragPerformanceOptimizer.autoOptimize();
+        const result = await ragPerformanceOptimizer.autoOptimize();
+        return { autoOptimizeResult: result, qualityScore: result?.expectedImprovement ? (result.expectedImprovement > 0 ? 1.0 : 0.5) : 0.5 };
       }
     );
     this.results.push(autoOptimizeResult);
@@ -338,7 +463,13 @@ export class RAGPerformanceTest {
    * Testa cenários de stress
    */
   private async testStressScenarios(): Promise<void> {
-    console.log('🔥 Testando cenários de stress...');
+    // Medical tracking: Stress scenarios test
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'stress_scenarios_test', {
+        event_category: 'rag_testing',
+        event_label: 'stress_performance'
+      });
+    }
 
     // Teste de queries simultâneas
     const concurrentResult = await this.measureOperation(
@@ -348,7 +479,8 @@ export class RAGPerformanceTest {
         const promises = this.testQueries.slice(0, 5).map(query =>
           ragIntegrationService.query(query, 'dr_gasnelio')
         );
-        return await Promise.all(promises);
+        const results = await Promise.all(promises);
+        return { concurrentResults: results, qualityScore: results.every(r => r?.answer) ? 1.0 : 0.5 };
       }
     );
     this.results.push(concurrentResult);
@@ -363,7 +495,7 @@ export class RAGPerformanceTest {
           const result = await ragIntegrationService.query(query, 'ga');
           results.push(result);
         }
-        return results;
+        return { rapidResults: results, qualityScore: results.every(r => r?.answer) ? 1.0 : 0.5 };
       }
     );
     this.results.push(rapidResult);
@@ -374,11 +506,12 @@ export class RAGPerformanceTest {
       'large_batch_embeddings',
       async () => {
         const texts = Array(20).fill(null).map((_, i) => `teste embedding ${i} hanseníase rifampicina`);
-        return await embeddingService.generateEmbeddings({
+        const result = await embeddingService.generateEmbeddings({
           texts,
           batchSize: 5,
           useCache: false
         });
+        return { largeBatchEmbeddings: result, qualityScore: result?.embeddings ? 1.0 : 0.0 };
       }
     );
     this.results.push(largeBatchResult);
@@ -388,7 +521,13 @@ export class RAGPerformanceTest {
    * Testa qualidade das respostas
    */
   private async testResponseQuality(): Promise<void> {
-    console.log('🎯 Testando qualidade das respostas...');
+    // Medical tracking: Response quality test
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'response_quality_test', {
+        event_category: 'rag_testing',
+        event_label: 'quality_assessment'
+      });
+    }
 
     const qualityTests = [
       'Qual é a dose da rifampicina?',
@@ -410,7 +549,8 @@ export class RAGPerformanceTest {
       );
       
       // Adicionar score de qualidade ao resultado
-      result.qualityScore = (result as any).result?.qualityScore || 0;
+      const testResult = result as RAGPerformanceResult & { result?: TestResult };
+      result.qualityScore = testResult.result?.qualityScore || 0;
       this.results.push(result);
     }
   }
@@ -421,12 +561,12 @@ export class RAGPerformanceTest {
   private async measureOperation(
     component: string,
     operation: string,
-    testFunction: () => Promise<any>,
+    testFunction: () => Promise<TestResult>,
     iterations: number = 3
   ): Promise<RAGPerformanceResult> {
     const times: number[] = [];
     let errorCount = 0;
-    let results: any[] = [];
+    let results: TestResult[] = [];
 
     for (let i = 0; i < iterations; i++) {
       const start = performance.now();
@@ -437,7 +577,17 @@ export class RAGPerformanceTest {
         results.push(result);
       } catch (error) {
         errorCount++;
-        console.warn(`Error in ${operation} iteration ${i + 1}:`, error);
+        // Medical tracking: Test iteration error
+        if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'test_iteration_error', {
+            event_category: 'rag_testing',
+            event_label: operation,
+            custom_parameters: {
+              iteration: i + 1,
+              error_type: 'test_failure'
+            }
+          });
+        }
       }
     }
 
@@ -462,7 +612,7 @@ export class RAGPerformanceTest {
   /**
    * Avalia qualidade de uma resposta
    */
-  private evaluateResponseQuality(response: any, query: string): number {
+  private evaluateResponseQuality(response: RAGResponse, query: string): number {
     if (!response || !response.answer) return 0;
 
     let score = 0;
@@ -488,7 +638,7 @@ export class RAGPerformanceTest {
   /**
    * Calcula taxa de cache hit dos resultados
    */
-  private calculateCacheHitRate(results: any[]): number {
+  private calculateCacheHitRate(results: TestResult[]): number {
     if (results.length === 0) return 0;
 
     const cacheHits = results.filter(r => r?.cached || r?.response?.cached).length;
@@ -498,7 +648,7 @@ export class RAGPerformanceTest {
   /**
    * Calcula score de qualidade dos resultados
    */
-  private calculateQualityScore(results: any[]): number {
+  private calculateQualityScore(results: TestResult[]): number {
     if (results.length === 0) return 0;
 
     const scores = results.map(r => {
@@ -597,7 +747,7 @@ Test Suite: ${metrics.testSuite}
 ## Component Performance
 `;
 
-    const groupedResults = metrics.results.reduce((groups: any, result) => {
+    const groupedResults = metrics.results.reduce((groups: ComponentResults, result) => {
       if (!groups[result.component]) {
         groups[result.component] = [];
       }

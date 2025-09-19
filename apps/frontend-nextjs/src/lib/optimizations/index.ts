@@ -91,7 +91,7 @@ export class UniversalCache<T = any> {
 /**
  * Memoização de funções com cache inteligente
  */
-export function memoize<T extends (...args: any[]) => any>(
+export function memoize<T extends (...args: unknown[]) => unknown>(
   fn: T,
   options: {
     ttl?: number;
@@ -123,7 +123,7 @@ export function memoize<T extends (...args: any[]) => any>(
 /**
  * Debounce com cancelamento e execução imediata opcional
  */
-export function debounce<T extends (...args: any[]) => any>(
+export function debounce<T extends (...args: unknown[]) => unknown>(
   fn: T,
   delay: number,
   options: { immediate?: boolean; maxWait?: number } = {}
@@ -207,7 +207,7 @@ export function debounce<T extends (...args: any[]) => any>(
 /**
  * Throttle com controle de frequência
  */
-export function throttle<T extends (...args: any[]) => any>(
+export function throttle<T extends (...args: unknown[]) => unknown>(
   fn: T,
   limit: number,
   options: { leading?: boolean; trailing?: boolean } = { leading: true, trailing: true }
@@ -628,7 +628,7 @@ export class OptimizedStorage {
   /**
    * Salvar dados comprimidos
    */
-  static async setCompressed(key: string, data: any): Promise<void> {
+  static async setCompressed(key: string, data: unknown): Promise<void> {
     if (typeof window === 'undefined') return;
 
     try {

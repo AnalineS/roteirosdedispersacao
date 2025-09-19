@@ -127,7 +127,31 @@ export class EmbeddingService {
       return null;
 
     } catch (error) {
-      console.error('Error generating single embedding:', error);
+      // Medical embedding generation error - explicit stderr + tracking
+      const errorMessage = error instanceof Error ? error.message : String(error);
+
+      // Explicit error to stderr for medical system visibility
+      if (typeof process !== 'undefined' && process.stderr) {
+        process.stderr.write(`❌ ERRO - Falha ao gerar embedding médico único:\n` +
+          `  Text: ${text.substring(0, 100)}...\n` +
+          `  Model: ${model}\n` +
+          `  Error: ${errorMessage}\n\n`);
+      }
+
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'medical_embedding_single_generation_error', {
+          event_category: 'medical_error_critical',
+          event_label: 'single_embedding_generation_failed',
+          custom_parameters: {
+            medical_context: 'embedding_generation',
+            text_length: text.length,
+            model_used: model,
+            error_type: 'single_embedding_failure',
+            error_message: errorMessage,
+            processing_time_ms: Date.now() - startTime
+          }
+        });
+      }
       this.stats.errorCount++;
       return null;
     }
@@ -157,7 +181,32 @@ export class EmbeddingService {
       return response?.embeddings || null;
 
     } catch (error) {
-      console.error('Error generating multiple embeddings:', error);
+      // Medical multiple embeddings error - explicit stderr + tracking
+      const errorMessage = error instanceof Error ? error.message : String(error);
+
+      // Explicit error to stderr for medical system visibility
+      if (typeof process !== 'undefined' && process.stderr) {
+        process.stderr.write(`❌ ERRO - Falha ao gerar múltiplos embeddings médicos:\n` +
+          `  TextsCount: ${texts.length}\n` +
+          `  Model: ${model}\n` +
+          `  BatchSize: ${batchSize}\n` +
+          `  Error: ${errorMessage}\n\n`);
+      }
+
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'medical_embedding_multiple_generation_error', {
+          event_category: 'medical_error_critical',
+          event_label: 'multiple_embeddings_generation_failed',
+          custom_parameters: {
+            medical_context: 'embedding_generation',
+            texts_count: texts.length,
+            model_used: model,
+            batch_size: batchSize,
+            error_type: 'multiple_embeddings_failure',
+            error_message: errorMessage
+          }
+        });
+      }
       this.stats.errorCount++;
       return null;
     }
@@ -252,7 +301,36 @@ export class EmbeddingService {
       };
 
     } catch (error) {
-      console.error('Error in generateEmbeddings:', error);
+      // Medical embeddings core error - explicit stderr + tracking
+      const errorMessage = error instanceof Error ? error.message : String(error);
+
+      // Explicit error to stderr for medical system visibility
+      if (typeof process !== 'undefined' && process.stderr) {
+        process.stderr.write(`❌ ERRO CRÍTICO - Falha no sistema de embeddings médicos:\n` +
+          `  TextsCount: ${texts.length}\n` +
+          `  Model: ${model}\n` +
+          `  BatchSize: ${batchSize}\n` +
+          `  UseCache: ${useCache}\n` +
+          `  ProcessingTime: ${Date.now() - startTime}ms\n` +
+          `  Error: ${errorMessage}\n\n`);
+      }
+
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'medical_embedding_core_system_error', {
+          event_category: 'medical_error_critical',
+          event_label: 'embeddings_core_system_failed',
+          custom_parameters: {
+            medical_context: 'embedding_core_system',
+            texts_count: texts.length,
+            model_used: model,
+            batch_size: batchSize,
+            use_cache: useCache,
+            processing_time_ms: Date.now() - startTime,
+            error_type: 'embeddings_core_failure',
+            error_message: errorMessage
+          }
+        });
+      }
       this.stats.errorCount++;
       return null;
     }
@@ -270,7 +348,29 @@ export class EmbeddingService {
     try {
       const apiKey = this.getAPIKey();
       if (!apiKey) {
-        console.warn('No API key configured for embedding service');
+        // Medical embedding API key warning - explicit stderr + tracking
+
+        // Explicit warning to stderr for medical system visibility
+        if (typeof process !== 'undefined' && process.stderr) {
+          process.stderr.write(`⚠️ AVISO - Chave API não configurada para embeddings médicos:\n` +
+            `  Provider: ${this.defaultProvider}\n` +
+            `  Model: ${model}\n` +
+            `  Fallback: Embedding local ativado\n\n`);
+        }
+
+        if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'medical_embedding_api_key_missing', {
+            event_category: 'medical_warning',
+            event_label: 'embedding_api_key_not_configured',
+            custom_parameters: {
+              medical_context: 'embedding_api_configuration',
+              provider: this.defaultProvider,
+              model_used: model,
+              fallback_type: 'local_embedding',
+              warning_type: 'api_key_missing'
+            }
+          });
+        }
         return this.generateLocalEmbedding(text);
       }
 
@@ -302,7 +402,34 @@ export class EmbeddingService {
       throw new Error('Invalid response format from embedding API');
 
     } catch (error) {
-      console.error('Embedding API call failed:', error);
+      // Medical embedding API call error - explicit stderr + tracking
+      const errorMessage = error instanceof Error ? error.message : String(error);
+
+      // Explicit error to stderr for medical system visibility
+      if (typeof process !== 'undefined' && process.stderr) {
+        process.stderr.write(`❌ ERRO - Falha na API de embeddings médicos:\n` +
+          `  Provider: ${provider?.name || 'unknown'}\n` +
+          `  Model: ${model}\n` +
+          `  Text: ${text.substring(0, 100)}...\n` +
+          `  Error: ${errorMessage}\n` +
+          `  Fallback: Embedding local ativado\n\n`);
+      }
+
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'medical_embedding_api_call_error', {
+          event_category: 'medical_error_critical',
+          event_label: 'embedding_api_call_failed',
+          custom_parameters: {
+            medical_context: 'embedding_api_call',
+            provider_name: provider?.name || 'unknown',
+            model_used: model,
+            text_length: text.length,
+            error_type: 'api_call_failure',
+            error_message: errorMessage,
+            fallback_type: 'local_embedding'
+          }
+        });
+      }
       // Fallback para embedding local
       return this.generateLocalEmbedding(text);
     }
@@ -387,7 +514,26 @@ export class EmbeddingService {
       await this.cache.clear('embedding_*');
       return true;
     } catch (error) {
-      console.error('Error clearing embedding cache:', error);
+      // Medical embedding cache clear error - explicit stderr + tracking
+      const errorMessage = error instanceof Error ? error.message : String(error);
+
+      // Explicit error to stderr for medical system visibility
+      if (typeof process !== 'undefined' && process.stderr) {
+        process.stderr.write(`❌ ERRO - Falha ao limpar cache de embeddings médicos:\n` +
+          `  Error: ${errorMessage}\n\n`);
+      }
+
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'medical_embedding_cache_clear_error', {
+          event_category: 'medical_error_critical',
+          event_label: 'embedding_cache_clear_failed',
+          custom_parameters: {
+            medical_context: 'embedding_cache_management',
+            error_type: 'cache_clear_failure',
+            error_message: errorMessage
+          }
+        });
+      }
       return false;
     }
   }

@@ -58,6 +58,7 @@ interface UnifiedErrorSystemState {
 export class UnifiedErrorSystem extends Component<UnifiedErrorSystemProps, UnifiedErrorSystemState> {
   private errorService = ErrorMonitorService.getInstance();
   private toastTimeouts = new Map<string, NodeJS.Timeout>();
+  private cleanup?: () => void;
 
   public state: UnifiedErrorSystemState = {
     hasError: false,
@@ -75,8 +76,19 @@ export class UnifiedErrorSystem extends Component<UnifiedErrorSystemProps, Unifi
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('UnifiedErrorSystem caught an error:', error, errorInfo);
-    
+    // Híbrido: gtag tracking + stderr para sistema crítico de error handling
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'unified_error_system_catch', {
+        event_category: 'medical_system_critical_errors',
+        event_label: 'unified_error_boundary_triggered',
+        custom_parameters: {
+          medical_context: 'unified_error_system',
+          error_type: 'component_error_boundary',
+          error_message: error instanceof Error ? error.message : String(error),
+          component_stack: errorInfo.componentStack
+        }
+      });
+    }
     // Log no monitor
     if (this.props.enableMonitoring !== false) {
       this.errorService.logError(error, {
@@ -163,7 +175,7 @@ export class UnifiedErrorSystem extends Component<UnifiedErrorSystemProps, Unifi
     window.addEventListener('unhandledrejection', this.handleUnhandledRejection);
 
     // Cleanup
-    (this as any).cleanup = () => {
+    this.cleanup = () => {
       unsubscribe();
       window.removeEventListener('show-error-toast', this.handleShowToast as EventListener);
       window.removeEventListener('clear-error-toast', this.handleClearToast as EventListener);
@@ -177,7 +189,7 @@ export class UnifiedErrorSystem extends Component<UnifiedErrorSystemProps, Unifi
   }
 
   public componentWillUnmount() {
-    (this as any).cleanup?.();
+    this.cleanup?.();
   }
 
   private handleShowToast = (event: CustomEvent) => {

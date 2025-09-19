@@ -9,6 +9,24 @@ import { z } from 'zod';
 // TIPOS BASE
 // ============================================
 
+interface PersonaPreferences {
+  preferred_communication_style?: 'formal' | 'casual' | 'technical';
+  response_detail_level?: 'brief' | 'detailed' | 'comprehensive';
+  show_citations?: boolean;
+  empathy_level?: 'low' | 'medium' | 'high';
+  educational_focus?: string[];
+  [key: string]: unknown;
+}
+
+interface GuardCheckObject {
+  id?: unknown;
+  name?: unknown;
+  description?: unknown;
+  personaId?: unknown;
+  source?: unknown;
+  timestamp?: unknown;
+}
+
 // Personas válidas - fonte única de verdade
 export const VALID_PERSONA_IDS = ['dr_gasnelio', 'ga'] as const;
 export type ValidPersonaId = typeof VALID_PERSONA_IDS[number];
@@ -25,7 +43,7 @@ const isValidPersonaIdInternal = (value: unknown): value is ValidPersonaId => {
 // TIPOS ESTENDIDOS
 // ============================================
 
-// Configuração de persona
+// Configuração de persona - unificada para frontend e backend
 export interface PersonaConfig {
   id: ValidPersonaId;
   name: string;
@@ -45,6 +63,12 @@ export interface PersonaConfig {
     structured?: boolean;
     empathetic?: boolean;
   };
+  // Frontend-specific properties para compatibilidade com useChat
+  tone: 'formal' | 'casual' | 'empathetic' | 'professional' | 'technical';
+  specialties: string[];
+  responseStyle: 'detailed' | 'concise' | 'interactive';
+  enabled: boolean;
+  [key: string]: unknown;
 }
 
 // Estado de persona no sistema
@@ -91,7 +115,7 @@ const LocalStoragePersonaSchemaInternal = z.object({
 const UserProfilePersonaSchemaInternal = z.object({
   selectedPersona: PersonaIdSchemaInternal.optional(),
   lastPersona: PersonaIdSchemaInternal.optional(),
-  personaPreferences: z.record(z.string(), z.any()).optional()
+  personaPreferences: z.record(z.string(), z.unknown()).optional()
 });
 
 // ============================================
@@ -202,7 +226,7 @@ export interface PersonaSystemConfig {
 // ============================================
 
 // Type guards para runtime safety
-export const isPersonaConfig = (obj: any): obj is PersonaConfig => {
+export const isPersonaConfig = (obj: GuardCheckObject): obj is PersonaConfig => {
   return obj && 
          typeof obj === 'object' &&
          isValidPersonaId(obj.id) &&
@@ -210,7 +234,7 @@ export const isPersonaConfig = (obj: any): obj is PersonaConfig => {
          typeof obj.description === 'string';
 };
 
-export const isPersonaHistoryEntry = (obj: any): obj is PersonaHistoryEntry => {
+export const isPersonaHistoryEntry = (obj: GuardCheckObject): obj is PersonaHistoryEntry => {
   return obj &&
          typeof obj === 'object' &&
          isValidPersonaId(obj.personaId) &&

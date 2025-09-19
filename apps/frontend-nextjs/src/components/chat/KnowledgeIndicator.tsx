@@ -9,7 +9,7 @@ interface KnowledgeChunk {
   content: string;
   score: number;
   section?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, string | number | boolean | null>;
 }
 
 // Estatísticas do sistema RAG

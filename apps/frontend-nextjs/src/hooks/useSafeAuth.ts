@@ -3,6 +3,26 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useHydration, type IsomorphicAuthData, type AuthState } from './useIsomorphicAuth';
 
+interface LoginCredentials {
+  email?: string;
+  password?: string;
+  rememberMe?: boolean;
+}
+
+interface SocialCredentials {
+  provider: 'google';  // Only Google authentication is supported
+  token?: string;
+  accessToken?: string;
+  idToken?: string;
+}
+
+interface ProfileUpdateData {
+  displayName?: string;
+  email?: string;
+  photoURL?: string;
+  preferences?: Record<string, unknown>;
+}
+
 /**
  * Hook robusto e isomórfico para autenticação
  * Compatível com SSG/SSR e todos os cenários de uso
@@ -17,7 +37,7 @@ export function useSafeAuth(): IsomorphicAuthData {
   });
 
   // Funções padrão seguras
-  const defaultLogin = useCallback(async (credentials?: any) => {
+  const defaultLogin = useCallback(async (credentials?: LoginCredentials) => {
     if (!isHydrated) {
       return { success: false, error: 'Not available during server rendering' };
     }
@@ -35,11 +55,11 @@ export function useSafeAuth(): IsomorphicAuthData {
     setAuthData({ user: null, profile: null, error: null });
   }, [isHydrated]);
 
-  const defaultSocialLogin = useCallback(async (credentials: any) => {
+  const defaultSocialLogin = useCallback(async (credentials: SocialCredentials) => {
     return { success: false, error: 'Social login not available' };
   }, []);
 
-  const defaultUpdateProfile = useCallback(async (data: any) => {
+  const defaultUpdateProfile = useCallback(async (data: ProfileUpdateData) => {
     return { success: false, error: 'Profile update not available' };
   }, []);
 
@@ -75,7 +95,18 @@ export function useSafeAuth(): IsomorphicAuthData {
           setAuthState('anonymous');
         }
       } catch (error) {
-        console.warn('Auth context not available, using anonymous state');
+        // Medical tracking for auth context availability
+        if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'auth_context_unavailable', {
+            event_category: 'medical_analytics_auth',
+            event_label: 'auth_context_anonymous_fallback',
+            custom_parameters: {
+              medical_context: 'safe_auth_hook',
+              auth_state: 'anonymous',
+              error_message: error instanceof Error ? error.message : 'Auth context not available'
+            }
+          });
+        }
         setAuthState('anonymous');
       }
     };

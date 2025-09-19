@@ -111,21 +111,25 @@ export const IndexIndicator: React.FC<IndexIndicatorProps> = ({
  * Componente de Lista com Índices Visuais
  * Ativa índices em listas de forma automática
  */
-export const IndexedList: React.FC<{
-  items: any[];
-  renderItem: (item: any, index: number) => React.ReactNode;
+export const IndexedList = <T,>({ items, renderItem, ...props }: {
+  items: T[];
+  renderItem: (item: T, index: number) => React.ReactNode;
   color?: string;
   variant?: 'circle' | 'square' | 'badge' | 'step';
   activeIndex?: number;
   completedIndices?: number[];
-}> = ({
-  items,
-  renderItem,
-  color = '#003366',
-  variant = 'circle',
-  activeIndex,
-  completedIndices = []
+} & {
+  color?: string;
+  variant?: 'circle' | 'square' | 'badge' | 'step';
+  activeIndex?: number;
+  completedIndices?: number[];
 }) => {
+  const {
+    color = '#003366',
+    variant = 'circle',
+    activeIndex,
+    completedIndices = []
+  } = props;
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
       {items.map((item, index) => (

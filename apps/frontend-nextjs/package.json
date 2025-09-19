@@ -46,7 +46,14 @@
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
     "pre-commit": "lint-staged",
-    "prepare": "echo 'Skipping husky install in subproject'"
+    "prepare": "echo 'Skipping husky install in subproject'",
+    "claude:activate": "node ../../scripts/activate-claude-automations.js",
+    "claude:health": "node ../../scripts/activate-claude-automations.js --health",
+    "claude:stop": "node ../../scripts/activate-claude-automations.js --stop",
+    "claude:status": "node ../../scripts/activate-claude-automations.js --status",
+    "claude:quality-check": "node ../../scripts/claude-quality-check.js",
+    "claude:lgpd": "node ../../.claude/automation/lgpd-robust.js",
+    "claude:monitoring": "node ../../.claude/automation/continuous-monitoring-system.js"
   },
   "dependencies": {
     "@next/third-parties": "^15.4.6",

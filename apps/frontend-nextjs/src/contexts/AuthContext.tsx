@@ -9,6 +9,12 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { jwtClient, User as JWTUser, AuthResponse, GoogleAuthResponse } from '@/lib/auth/jwt-client';
 
+interface AuthenticationError {
+  code?: string;
+  message: string;
+  details?: string;
+}
+
 // ============================================
 // TYPES
 // ============================================
@@ -191,24 +197,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     provider: 'anonymous'
   });
 
-  const loadUserProfile = async (userId: string): Promise<void> => {
-    try {
-      const stored = localStorage.getItem(`user-profile-${userId}`);
-      if (stored) {
-        const parsedProfile = JSON.parse(stored);
-        setProfile(parsedProfile);
-      } else {
-        // Criar perfil padrão
-        const defaultProfile = createDefaultProfile(userId, user);
-        setProfile(defaultProfile);
-        localStorage.setItem(`user-profile-${userId}`, JSON.stringify(defaultProfile));
-      }
-    } catch (error) {
-      console.error('Erro ao carregar perfil:', error);
-    }
-  };
-
-  const createDefaultProfile = (userId: string, currentUser: AuthUser | null): UserProfile => {
+  const createDefaultProfile = useCallback((userId: string, currentUser: AuthUser | null): UserProfile => {
     const now = new Date().toISOString();
 
     return {
@@ -250,7 +239,29 @@ export function AuthProvider({ children }: AuthProviderProps) {
       updatedAt: now,
       version: '2.0'
     };
-  };
+  }, []);
+
+  const loadUserProfile = useCallback(async (userId: string): Promise<void> => {
+    try {
+      const stored = localStorage.getItem(`user-profile-${userId}`);
+      if (stored) {
+        const parsedProfile = JSON.parse(stored);
+        setProfile(parsedProfile);
+      } else {
+        // Criar perfil padrão
+        const defaultProfile = createDefaultProfile(userId, user);
+        setProfile(defaultProfile);
+        localStorage.setItem(`user-profile-${userId}`, JSON.stringify(defaultProfile));
+      }
+    } catch (error) {
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'user_profile_load_error', {
+          event_category: 'auth',
+          event_label: 'profile_load_failed'
+        });
+      }
+    }
+  }, [user, createDefaultProfile]);
 
   // ============================================
   // AUTHENTICATION METHODS
@@ -269,8 +280,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       await loadUserProfile(authUser.uid);
 
       return { success: true };
-    } catch (error: any) {
-      const errorMessage = error.message || 'Erro ao fazer login';
+    } catch (error: AuthenticationError | Error | unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao fazer login';
       setError(errorMessage);
       return { success: false, error: errorMessage };
     } finally {
@@ -291,7 +302,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setProfile(null);
       setError(null);
       return { success: true };
-    } catch (error: any) {
+    } catch (error: AuthenticationError | Error | unknown) {
       const errorMessage = 'Erro ao fazer logout';
       setError(errorMessage);
       return { success: false, error: errorMessage };
@@ -328,8 +339,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       window.location.href = googleAuth.authUrl;
 
       return { success: true };
-    } catch (error: any) {
-      const errorMessage = error.message || 'Erro ao iniciar login social';
+    } catch (error: AuthenticationError | Error | unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao iniciar login social';
       setError(errorMessage);
       return { success: false, error: errorMessage };
     } finally {
@@ -355,7 +366,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       await loadUserProfile(anonUser.uid);
 
       return { success: true };
-    } catch (error: any) {
+    } catch (error: AuthenticationError | Error | unknown) {
       const errorMessage = 'Erro ao continuar como visitante';
       setError(errorMessage);
       return { success: false, error: errorMessage };
@@ -391,14 +402,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
             localStorage.removeItem(anonProfileKey);
             setProfile(parsedProfile);
           } catch (e) {
-            console.error('Erro ao migrar perfil anônimo:', e);
+            if (typeof window !== 'undefined' && window.gtag) {
+              window.gtag('event', 'anonymous_profile_migration_error', {
+                event_category: 'auth',
+                event_label: 'migration_failed'
+              });
+            }
           }
         }
       }
 
       return result;
-    } catch (error: any) {
-      const errorMessage = error.message || 'Erro ao upgradar conta';
+    } catch (error: AuthenticationError | Error | unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao upgradar conta';
       setError(errorMessage);
       return { success: false, error: errorMessage };
     }
@@ -428,7 +444,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
             picture: updates.preferences?.theme === 'dark' ? undefined : undefined // Placeholder
           });
         } catch (backendError) {
-          console.warn('Erro ao atualizar perfil no backend:', backendError);
+          if (typeof window !== 'undefined' && window.gtag) {
+            window.gtag('event', 'backend_profile_update_error', {
+              event_category: 'auth',
+              event_label: 'backend_update_failed'
+            });
+          }
         }
       }
 
@@ -437,8 +458,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       localStorage.setItem(`user-profile-${user.uid}`, JSON.stringify(updatedProfile));
 
       return { success: true };
-    } catch (error: any) {
-      const errorMessage = error.message || 'Erro ao atualizar perfil';
+    } catch (error: AuthenticationError | Error | unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao atualizar perfil';
       return { success: false, error: errorMessage };
     }
   };
@@ -463,7 +484,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setUser(null);
 
       return { success: true };
-    } catch (error: any) {
+    } catch (error: AuthenticationError | Error | unknown) {
       const errorMessage = 'Erro ao deletar conta';
       setError(errorMessage);
       return { success: false, error: errorMessage };
@@ -513,7 +534,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
         }
       }
     } catch (error) {
-      console.error('Erro ao atualizar autenticação:', error);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'auth_refresh_error', {
+          event_category: 'auth',
+          event_label: 'refresh_failed'
+        });
+      }
     }
   };
 
@@ -572,7 +598,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
             return;
           } catch (oauthError) {
-            console.error('OAuth completion error:', oauthError);
+            if (typeof window !== 'undefined' && window.gtag) {
+              window.gtag('event', 'oauth_completion_error', {
+                event_category: 'auth',
+                event_label: 'google_oauth_failed'
+              });
+            }
             setError('Erro ao completar login com Google');
           }
         }
@@ -588,7 +619,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
               return;
             }
           } catch (tokenError) {
-            console.error('Token validation error:', tokenError);
+            if (typeof window !== 'undefined' && window.gtag) {
+              window.gtag('event', 'token_validation_error', {
+                event_category: 'auth',
+                event_label: 'token_invalid'
+              });
+            }
             // Token invalid, continue as guest
           }
         }
@@ -599,7 +635,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
         await loadUserProfile(anonUser.uid);
 
       } catch (error) {
-        console.error('Erro na inicialização da auth:', error);
+        if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'auth_initialization_error', {
+            event_category: 'auth',
+            event_label: 'init_failed'
+          });
+        }
         setError('Erro ao carregar dados de autenticação');
       } finally {
         setLoading(false);
@@ -607,7 +648,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     };
 
     initAuth();
-  }, []);
+  }, [loadUserProfile]);
 
   // ============================================
   // CONTEXT VALUE

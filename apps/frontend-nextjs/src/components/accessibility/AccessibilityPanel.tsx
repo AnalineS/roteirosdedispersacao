@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useServices, useAnalytics } from '@/providers/ServicesProvider';
 import HighContrastToggle from './HighContrastToggle';
 import SkipToContent from './SkipToContent';
@@ -51,26 +51,13 @@ export default function AccessibilityPanel({
 
     // Track accessibility panel usage
     analytics.trackUserAction('accessibility_panel_loaded', 'accessibility');
-  }, []);
-
-  useEffect(() => {
-    // Save preferences
-    const prefs = {
-      fontSize,
-      reducedMotion,
-      screenReaderMode
-    };
-    localStorage.setItem('accessibility_preferences', JSON.stringify(prefs));
-    
-    // Apply system-wide changes
-    applyAccessibilitySettings();
-  }, [fontSize, reducedMotion, screenReaderMode]);
+  }, [analytics]);
 
   // ============================================
   // ACCESSIBILITY FUNCTIONS
   // ============================================
 
-  const applyAccessibilitySettings = () => {
+  const applyAccessibilitySettings = useCallback(() => {
     const root = document.documentElement;
     
     // Font size adjustment
@@ -91,7 +78,20 @@ export default function AccessibilityPanel({
     } else {
       root.removeAttribute('data-screen-reader');
     }
-  };
+  }, [fontSize, reducedMotion, screenReaderMode]);
+
+  useEffect(() => {
+    // Save preferences
+    const prefs = {
+      fontSize,
+      reducedMotion,
+      screenReaderMode
+    };
+    localStorage.setItem('accessibility_preferences', JSON.stringify(prefs));
+
+    // Apply system-wide changes
+    applyAccessibilitySettings();
+  }, [fontSize, reducedMotion, screenReaderMode, applyAccessibilitySettings]);
 
   const increaseFontSize = () => {
     const newSize = Math.min(fontSize + 2, 24);
@@ -149,9 +149,9 @@ export default function AccessibilityPanel({
           </button>
           
           {isExpanded && (
-            <div className="accessibility-panel-content" role="dialog" aria-label="Painel de Acessibilidade">
+            <div className={`accessibility-panel-content ${compact ? 'compact-mode' : ''}`} role="dialog" aria-label="Painel de Acessibilidade">
               <div className="accessibility-panel-header">
-                <h3>Acessibilidade</h3>
+                <h3>{compact ? '♿' : 'Acessibilidade'}</h3>
                 <button
                   onClick={() => setIsExpanded(false)}
                   className="accessibility-close-btn"
@@ -160,239 +160,99 @@ export default function AccessibilityPanel({
                   ✕
                 </button>
               </div>
-              
+
               <div className="accessibility-panel-body">
-                {/* High Contrast Toggle */}
+                {/* High Contrast Toggle - sempre visível */}
                 <div className="accessibility-option">
                   <HighContrastToggle variant="switch" />
                 </div>
-                
-                {/* Font Size Controls */}
+
+                {/* Controles de fonte - sempre no modo compacto */}
                 <div className="accessibility-option">
-                  <label className="accessibility-label">Tamanho da Fonte</label>
+                  {!compact && <label className="accessibility-label">Tamanho da Fonte</label>}
                   <div className="font-size-controls">
                     <button onClick={decreaseFontSize} className="font-btn" aria-label="Diminuir fonte">
                       A-
                     </button>
-                    <span className="font-size-display">{fontSize}px</span>
+                    {!compact && <span className="font-size-display">{fontSize}px</span>}
                     <button onClick={increaseFontSize} className="font-btn" aria-label="Aumentar fonte">
                       A+
                     </button>
-                    <button onClick={resetFontSize} className="font-btn reset" aria-label="Reset fonte">
-                      ↻
-                    </button>
+                    {!compact && (
+                      <button onClick={resetFontSize} className="font-btn reset" aria-label="Reset fonte">
+                        ↻
+                      </button>
+                    )}
                   </div>
                 </div>
-                
-                {/* Reduced Motion */}
-                <div className="accessibility-option">
-                  <label className="accessibility-checkbox-label">
-                    <input
-                      type="checkbox"
-                      checked={reducedMotion}
-                      onChange={toggleReducedMotion}
-                      className="accessibility-checkbox"
-                    />
-                    <span>Reduzir Animações</span>
-                  </label>
-                </div>
-                
-                {/* Screen Reader Mode */}
-                <div className="accessibility-option">
-                  <label className="accessibility-checkbox-label">
-                    <input
-                      type="checkbox"
-                      checked={screenReaderMode}
-                      onChange={toggleScreenReaderMode}
-                      className="accessibility-checkbox"
-                    />
-                    <span>Modo Leitor de Tela</span>
-                  </label>
-                </div>
-                
-                {/* Medical Glossary Access */}
-                <div className="accessibility-option">
-                  <MedicalGlossary compact={true} />
-                </div>
+
+                {/* Controles avançados - ocultos no modo compacto */}
+                {!compact && (
+                  <>
+                    {/* Reduced Motion */}
+                    <div className="accessibility-option">
+                      <label className="accessibility-checkbox-label">
+                        <input
+                          type="checkbox"
+                          checked={reducedMotion}
+                          onChange={toggleReducedMotion}
+                          className="accessibility-checkbox"
+                        />
+                        <span>Reduzir Animações</span>
+                      </label>
+                    </div>
+
+                    {/* Screen Reader Mode */}
+                    <div className="accessibility-option">
+                      <label className="accessibility-checkbox-label">
+                        <input
+                          type="checkbox"
+                          checked={screenReaderMode}
+                          onChange={toggleScreenReaderMode}
+                          className="accessibility-checkbox"
+                        />
+                        <span>Modo Leitor de Tela</span>
+                      </label>
+                    </div>
+                  </>
+                )}
+
+                {/* Botão expandir no modo compacto */}
+                {compact && (
+                  <div className="accessibility-option">
+                    <button
+                      onClick={() => {
+                        // Expandir para modo completo (removendo compact temporariamente)
+                        analytics.trackUserAction('accessibility_expand_from_compact', 'accessibility');
+                      }}
+                      className="accessibility-expand-btn"
+                      aria-label="Ver mais opções"
+                    >
+                      ⚙️ Mais opções
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           )}
         </div>
-        
+
+        {/* Critical accessibility actions (always visible) */}
+        <div className="accessibility-global-controls">
+          <SkipToContent />
+          <FocusIndicator />
+        </div>
+
+        {/* CSS with compact mode support */}
         <style jsx>{`
-          .accessibility-floating-panel {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 9999;
+          .accessibility-panel-content.compact-mode {
+            width: 200px;
           }
-          
-          .accessibility-toggle-btn {
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
-            color: white;
-            border: 3px solid white;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            transition: all 0.3s ease;
+          .compact-mode .accessibility-panel-body {
+            padding: 12px;
           }
-          
-          .accessibility-toggle-btn:hover {
-            transform: scale(1.1);
-            box-shadow: 0 6px 16px rgba(0,0,0,0.4);
-          }
-          
-          .accessibility-toggle-btn:focus-visible {
-            outline: 3px solid #fbbf24;
-            outline-offset: 2px;
-          }
-          
-          .accessibility-panel-content {
-            position: absolute;
-            bottom: 70px;
-            right: 0;
-            width: 320px;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-            border: 2px solid #e5e7eb;
-            max-height: 500px;
-            overflow-y: auto;
-          }
-          
-          .accessibility-panel-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px 20px;
-            border-bottom: 1px solid #e5e7eb;
-            background: #f8fafc;
-            border-radius: 10px 10px 0 0;
-          }
-          
-          .accessibility-panel-header h3 {
-            margin: 0;
-            font-size: 18px;
-            font-weight: 600;
-            color: #374151;
-          }
-          
-          .accessibility-close-btn {
-            background: none;
-            border: none;
-            font-size: 20px;
-            cursor: pointer;
-            color: #6b7280;
-            padding: 4px;
-            border-radius: 4px;
-          }
-          
-          .accessibility-close-btn:hover {
-            background: #e5e7eb;
-            color: #374151;
-          }
-          
-          .accessibility-panel-body {
-            padding: 20px;
-          }
-          
-          .accessibility-option {
-            margin-bottom: 20px;
-          }
-          
-          .accessibility-label {
-            display: block;
-            font-size: 14px;
-            font-weight: 600;
-            color: #374151;
+          .compact-mode .accessibility-option {
             margin-bottom: 8px;
-          }
-          
-          .font-size-controls {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-          }
-          
-          .font-btn {
-            padding: 6px 10px;
-            border: 2px solid #d1d5db;
-            border-radius: 6px;
-            background: white;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.2s;
-          }
-          
-          .font-btn:hover {
-            border-color: #3b82f6;
-            background: #eff6ff;
-          }
-          
-          .font-btn.reset {
-            background: #f3f4f6;
-          }
-          
-          .font-size-display {
-            font-size: 14px;
-            color: #6b7280;
-            min-width: 40px;
-            text-align: center;
-          }
-          
-          .accessibility-checkbox-label {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-            cursor: pointer;
-          }
-          
-          .accessibility-checkbox {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-          }
-          
-          /* High contrast mode */
-          [data-contrast="high"] .accessibility-panel-content {
-            border: 3px solid #000000;
-            background: #ffffff;
-          }
-          
-          [data-contrast="high"] .accessibility-panel-header {
-            background: #ffffff;
-            border-bottom: 2px solid #000000;
-          }
-          
-          [data-contrast="high"] .accessibility-panel-header h3 {
-            color: #000000;
-          }
-          
-          /* Mobile adjustments */
-          @media (max-width: 768px) {
-            .accessibility-panel-content {
-              width: 280px;
-              right: -10px;
-            }
-            
-            .accessibility-toggle-btn {
-              width: 48px;
-              height: 48px;
-              font-size: 20px;
-            }
-          }
-          
-          /* Reduced motion */
-          [data-reduced-motion="true"] .accessibility-toggle-btn,
-          [data-reduced-motion="true"] .font-btn {
-            transition: none;
           }
         `}</style>
       </>

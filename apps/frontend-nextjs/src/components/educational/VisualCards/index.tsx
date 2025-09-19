@@ -24,7 +24,7 @@ interface InfographicData {
 interface VisualCardProps {
   type: 'infographic' | 'checklist' | 'timeline' | 'comparison';
   title: string;
-  data: any;
+  data: unknown;
   variant?: 'default' | 'compact' | 'detailed';
   interactive?: boolean;
   className?: string;

@@ -679,7 +679,7 @@ export default function TratamentoModulePage() {
           index={0} 
           label="Seções do Módulo" 
         />
-        {moduleContent.sections.map((section, index) => {
+        {moduleContent.sections.map((section) => {
           // Define audience and complexity based on section content
           let audience: ('professional' | 'patient' | 'student' | 'general')[] = ['professional'];
           let complexity: 'basic' | 'intermediate' | 'advanced' | 'technical' = 'technical';

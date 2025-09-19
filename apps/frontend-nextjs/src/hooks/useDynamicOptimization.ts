@@ -18,6 +18,13 @@ import { useGlobalContext } from '@/contexts/GlobalContextHub';
 // HOOK DE OTIMIZAÇÃO DINÂMICA
 // ============================================
 
+export interface ErrorInfo {
+  componentStack?: string;
+  errorBoundary?: string;
+  errorBoundaryStack?: string;
+  [key: string]: unknown;
+}
+
 export interface OptimizationConfig {
   enablePerformanceTracking?: boolean;
   enableMemoryOptimization?: boolean;
@@ -170,50 +177,44 @@ export const useDynamicOptimization = (config: OptimizationConfig = {}) => {
   // DEBOUNCE E THROTTLE HOOKS
   // ============================================
 
-  const debouncedValue = useCallback(<T>(value: T, delay: number = debounceMs): T => {
-    const [debouncedVal, setDebouncedVal] = useState(value);
-    const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
+  // Helper para criar debounced functions
+  const createDebouncedFunction = useCallback(<T extends (...args: any[]) => any>(
+    fn: T,
+    delay: number = debounceMs
+  ): ((...args: Parameters<T>) => void) => {
+    let timeoutRef: NodeJS.Timeout | undefined;
 
-    useEffect(() => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
+    return (...args: Parameters<T>) => {
+      if (timeoutRef) {
+        clearTimeout(timeoutRef);
       }
-
-      timeoutRef.current = setTimeout(() => {
-        setDebouncedVal(value);
-      }, delay);
-
-      return () => {
-        if (timeoutRef.current) {
-          clearTimeout(timeoutRef.current);
-        }
-      };
-    }, [value, delay]);
-
-    return debouncedVal;
+      timeoutRef = setTimeout(() => fn(...args), delay);
+    };
   }, [debounceMs]);
 
-  const throttledCallback = useCallback(<T extends (...args: any[]) => any>(
-    callback: T, 
+  const createThrottledFunction = useCallback(<T extends (...args: unknown[]) => unknown>(
+    callback: T,
     delay: number = throttleMs
   ): T => {
-    const lastCallRef = useRef<number>(0);
-    const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
+    let lastCall = 0;
+    let timeoutId: NodeJS.Timeout | undefined;
 
-    return useCallback((...args: Parameters<T>) => {
+    const throttledFn = (...args: Parameters<T>) => {
       const now = Date.now();
-      
-      if (now - lastCallRef.current >= delay) {
-        lastCallRef.current = now;
+
+      if (now - lastCall >= delay) {
+        lastCall = now;
         return callback(...args);
-      } else if (!timeoutRef.current) {
-        timeoutRef.current = setTimeout(() => {
-          lastCallRef.current = Date.now();
+      } else if (!timeoutId) {
+        timeoutId = setTimeout(() => {
+          lastCall = Date.now();
           callback(...args);
-          timeoutRef.current = undefined;
-        }, delay - (now - lastCallRef.current));
+          timeoutId = undefined;
+        }, delay - (now - lastCall));
       }
-    }, [callback, delay]) as T;
+    };
+
+    return throttledFn as T;
   }, [throttleMs]);
 
   // ============================================
@@ -244,13 +245,18 @@ export const useDynamicOptimization = (config: OptimizationConfig = {}) => {
 
   const errorBoundaryRef = useRef<Error | null>(null);
   
-  const handleError = useCallback((error: Error, errorInfo?: any) => {
+  const handleError = useCallback((error: Error, errorInfo?: ErrorInfo) => {
     if (!enableErrorBoundary) return;
 
     errorBoundaryRef.current = error;
     lifecycleRef.current.errors += 1;
     
-    console.error('Component Error Caught:', error, errorInfo);
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'component_error_caught', {
+        event_category: 'optimization',
+        event_label: 'error_boundary_triggered'
+      });
+    }
     
     setMetrics(prev => ({
       ...prev,
@@ -337,7 +343,12 @@ export const useDynamicOptimization = (config: OptimizationConfig = {}) => {
         setStoredValue(valueToStore);
         localStorage.setItem(key, JSON.stringify(valueToStore));
       } catch (error) {
-        console.error('Error saving to localStorage:', error);
+        if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'optimization_storage_error', {
+            event_category: 'optimization',
+            event_label: 'localstorage_save_failed'
+          });
+        }
       }
     }, [key, storedValue]);
 
@@ -348,30 +359,30 @@ export const useDynamicOptimization = (config: OptimizationConfig = {}) => {
   // EXTERNAL STORE SYNC
   // ============================================
 
-  const useExternalStoreSync = useCallback(<T>(
-    store: { 
+  const createExternalStoreSync = <T>(
+    store: {
       subscribe: (callback: () => void) => () => void;
       getSnapshot: () => T;
     }
   ) => {
-    return useSyncExternalStore(
-      store.subscribe,
-      store.getSnapshot,
-      store.getSnapshot // server snapshot (same as client for SSR)
-    );
-  }, []);
+    return {
+      subscribe: store.subscribe,
+      getSnapshot: store.getSnapshot,
+      getServerSnapshot: store.getSnapshot // server snapshot (same as client for SSR)
+    };
+  };
 
   // ============================================
   // IMPERATIVE HANDLE
   // ============================================
 
-  const useImperativeHandleWrapper = useCallback(<T>(
+  const createImperativeHandle = <T>(
     ref: React.Ref<T>,
     createHandle: () => T,
     deps?: React.DependencyList
   ) => {
-    useImperativeHandle(ref, createHandle, deps);
-  }, []);
+    return { ref, createHandle, deps };
+  };
 
   // ============================================
   // RETORNO DO HOOK
@@ -387,8 +398,8 @@ export const useDynamicOptimization = (config: OptimizationConfig = {}) => {
     trackRender,
     
     // Optimization utilities
-    debouncedValue,
-    throttledCallback,
+    createDebouncedFunction,
+    createThrottledFunction,
     
     // Accessibility
     announceToScreenReader,
@@ -403,8 +414,8 @@ export const useDynamicOptimization = (config: OptimizationConfig = {}) => {
     useResizeObserver,
     usePrevious,
     useLocalStorage,
-    useExternalStoreSync,
-    useImperativeHandleWrapper,
+    createExternalStoreSync,
+    createImperativeHandle,
     
     // Memory management
     memoryUsage: metrics.memoryUsage,

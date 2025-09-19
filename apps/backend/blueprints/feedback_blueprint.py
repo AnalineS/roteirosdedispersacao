@@ -147,14 +147,17 @@ def update_feedback_stats(rating: int, persona_id: Optional[str] = None):
         cache.set(f"feedback:stats:{persona_id}", persona_stats, ttl=86400 * 7)
 
 def check_rate_limit(endpoint_type: str = 'default'):
-    """Decorator simplificado para rate limiting"""
-    def decorator(f):
-        def wrapper(*args, **kwargs):
-            # TODO: Implementar rate limiting específico para feedback
-            return f(*args, **kwargs)
-        wrapper.__name__ = f.__name__
-        return wrapper
-    return decorator
+    """Rate limiting real para feedback usando SQLite"""
+    from services.security.sqlite_rate_limiter import rate_limit
+
+    # Limites específicos para feedback (mais restritivos)
+    limits = {
+        'feedback': (10, 300),  # 10 feedbacks por 5 minutos
+        'default': (20, 300)    # 20 req por 5 minutos (geral)
+    }
+
+    max_requests, window_seconds = limits.get(endpoint_type, limits['default'])
+    return rate_limit(f"feedback_{endpoint_type}", max_requests, window_seconds)
 
 @feedback_bp.route('/feedback', methods=['POST'])
 @check_rate_limit('feedback')

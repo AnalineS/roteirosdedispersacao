@@ -18,6 +18,19 @@ export interface Achievement {
   progress?: number;
   maxProgress?: number;
   category: 'conversation' | 'learning' | 'streak' | 'social' | 'milestone';
+  // Compatibility properties for ShareProgress.tsx
+  name: string;  // Same as title
+  earnedAt?: string;  // Same as unlockedAt
+}
+
+export interface PointsMetadata {
+  source?: string;
+  activityId?: string;
+  sessionId?: string;
+  difficulty?: 'easy' | 'medium' | 'hard';
+  timeSpent?: number;
+  accuracy?: number;
+  [key: string]: unknown;
 }
 
 export interface UserProgress {
@@ -32,6 +45,19 @@ export interface UserProgress {
   badges: string[];
   rank?: number;
   totalUsers?: number;
+  // Additional properties for ProgressData compatibility
+  completedModules?: number;
+  certificates?: Array<{
+    id: string;
+    name: string;
+    earnedAt: string;
+    description?: string;
+  }>;
+  recentActivity?: Array<{
+    type: 'conversation' | 'module' | 'certificate';
+    title: string;
+    completedAt: string;
+  }>;
 }
 
 export interface GamificationHook {
@@ -42,11 +68,12 @@ export interface GamificationHook {
   error: string | null;
 
   // Actions
-  addPoints: (points: number, category: string, metadata?: any) => Promise<boolean>;
+  addPoints: (points: number, category: string, metadata?: PointsMetadata) => Promise<boolean>;
   unlockAchievement: (achievementId: string) => Promise<boolean>;
   updateStreak: () => Promise<boolean>;
   refreshData: () => Promise<void>;
   getAvailableAchievements: () => Promise<Achievement[]>;
+  checkForNewAchievements: (points: number, category: string) => Promise<void>;
 }
 
 export function useGamification(): GamificationHook {
@@ -74,6 +101,34 @@ export function useGamification(): GamificationHook {
       pointsToNextLevel
     };
   }, []);
+
+  /**
+   * Carregar conquistas do usuário
+   */
+  const loadUserAchievements = useCallback(async () => {
+    if (!isAuthenticated || !user) return;
+
+    try {
+      const userAchievements = await apiClient.get<Achievement[]>(`/gamification/user/${user.uid}/achievements`);
+      setAchievements(userAchievements);
+
+      // Atualizar progresso com conquistas
+      setProgress(prev => prev ? { ...prev, achievements: userAchievements } : null);
+    } catch (error) {
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'gamification_achievements_error', {
+          event_category: 'medical_gamification',
+          event_label: 'achievements_load_failed',
+          custom_parameters: {
+            medical_context: 'achievements_system',
+            error_type: 'achievements_loading'
+          }
+        });
+      }
+      // Usar conquistas padrão em caso de erro
+      setAchievements(getDefaultAchievements());
+    }
+  }, [user, isAuthenticated]);
 
   /**
    * Carregar dados de progresso do usuário
@@ -110,31 +165,21 @@ export function useGamification(): GamificationHook {
       await loadUserAchievements();
 
     } catch (err) {
-      console.error('Erro ao carregar progresso:', err);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'gamification_load_error', {
+          event_category: 'medical_gamification',
+          event_label: 'user_progress_load_failed',
+          custom_parameters: {
+            medical_context: 'gamification_system',
+            error_type: 'progress_loading'
+          }
+        });
+      }
       setError('Erro ao carregar dados de gamificação');
     } finally {
       setLoading(false);
     }
-  }, [user, isAuthenticated, calculateLevel]);
-
-  /**
-   * Carregar conquistas do usuário
-   */
-  const loadUserAchievements = useCallback(async () => {
-    if (!isAuthenticated || !user) return;
-
-    try {
-      const userAchievements = await apiClient.get<Achievement[]>(`/gamification/user/${user.uid}/achievements`);
-      setAchievements(userAchievements);
-
-      // Atualizar progresso com conquistas
-      setProgress(prev => prev ? { ...prev, achievements: userAchievements } : null);
-    } catch (error) {
-      console.error('Erro ao carregar conquistas:', error);
-      // Usar conquistas padrão em caso de erro
-      setAchievements(getDefaultAchievements());
-    }
-  }, [user, isAuthenticated]);
+  }, [user, isAuthenticated, calculateLevel, loadUserAchievements]);
 
   /**
    * Carregar leaderboard
@@ -144,48 +189,35 @@ export function useGamification(): GamificationHook {
       const leaderboardData = await leaderboardService.getLeaderboard('points', 'monthly', 10);
       setLeaderboard(leaderboardData);
     } catch (error) {
-      console.error('Erro ao carregar leaderboard:', error);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'gamification_leaderboard_error', {
+          event_category: 'medical_gamification',
+          event_label: 'leaderboard_load_failed',
+          custom_parameters: {
+            medical_context: 'leaderboard_system',
+            error_type: 'leaderboard_loading'
+          }
+        });
+      }
     }
   }, []);
 
   /**
-   * Adicionar pontos ao usuário
+   * Verificar se deve desbloquear conquista
    */
-  const addPoints = useCallback(async (points: number, category: string, metadata?: any): Promise<boolean> => {
-    if (!isAuthenticated || !user) return false;
-
-    try {
-      const success = await leaderboardService.updateUserScore(user.uid, {
-        category,
-        points,
-        metadata
-      });
-
-      if (success) {
-        // Atualizar progresso local
-        setProgress(prev => {
-          if (!prev) return null;
-
-          const newTotalPoints = prev.totalPoints + points;
-          const levelInfo = calculateLevel(newTotalPoints);
-
-          return {
-            ...prev,
-            ...levelInfo,
-            totalPoints: newTotalPoints
-          };
-        });
-
-        // Verificar se desbloqueou novas conquistas
-        await checkForNewAchievements(points, category);
-      }
-
-      return success;
-    } catch (error) {
-      console.error('Erro ao adicionar pontos:', error);
-      return false;
+  const shouldUnlockAchievement = useCallback((achievement: Achievement, points: number, category: string): boolean => {
+    // Implementar lógica de desbloqueio baseada nos critérios da conquista
+    switch (achievement.id) {
+      case 'first_conversation':
+        return category === 'conversation' && points > 0;
+      case 'point_collector':
+        return Boolean(progress && progress.totalPoints >= 100);
+      case 'streak_week':
+        return Boolean(progress && progress.streak >= 7);
+      default:
+        return false;
     }
-  }, [user, isAuthenticated, calculateLevel]);
+  }, [progress]);
 
   /**
    * Desbloquear conquista
@@ -211,10 +243,94 @@ export function useGamification(): GamificationHook {
 
       return success;
     } catch (error) {
-      console.error('Erro ao desbloquear conquista:', error);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'gamification_unlock_error', {
+          event_category: 'medical_gamification',
+          event_label: 'achievement_unlock_failed',
+          custom_parameters: {
+            medical_context: 'achievement_unlock',
+            error_type: 'achievement_operation'
+          }
+        });
+      }
       return false;
     }
   }, [user, isAuthenticated]);
+
+  /**
+   * Obter conquistas disponíveis
+   */
+  const getAvailableAchievements = useCallback(async (): Promise<Achievement[]> => {
+    try {
+      const available = await apiClient.get<Achievement[]>('/gamification/achievements');
+      return available;
+    } catch (error) {
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'gamification_available_error', {
+          event_category: 'medical_gamification',
+          event_label: 'available_achievements_load_failed',
+          custom_parameters: {
+            medical_context: 'available_achievements',
+            error_type: 'available_loading'
+          }
+        });
+      }
+      return getDefaultAchievements();
+    }
+  }, []);
+
+  /**
+   * Adicionar pontos ao usuário
+   */
+  const addPoints = useCallback(async (points: number, category: string, metadata?: PointsMetadata): Promise<boolean> => {
+    if (!isAuthenticated || !user) return false;
+
+    try {
+      const success = await leaderboardService.updateUserScore(user.uid, {
+        category,
+        points,
+        metadata
+      });
+
+      if (success) {
+        // Atualizar progresso local
+        setProgress(prev => {
+          if (!prev) return null;
+
+          const newTotalPoints = prev.totalPoints + points;
+          const levelInfo = calculateLevel(newTotalPoints);
+
+          return {
+            ...prev,
+            ...levelInfo,
+            totalPoints: newTotalPoints
+          };
+        });
+
+        // Verificar se desbloqueou novas conquistas (inline)
+        const availableAchievements = await getAvailableAchievements();
+        for (const achievement of availableAchievements) {
+          if (!achievement.unlockedAt && shouldUnlockAchievement(achievement, points, category)) {
+            await unlockAchievement(achievement.id);
+          }
+        }
+      }
+
+      return success;
+    } catch (error) {
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'gamification_points_error', {
+          event_category: 'medical_gamification',
+          event_label: 'points_addition_failed',
+          custom_parameters: {
+            medical_context: 'points_system',
+            error_type: 'points_operation'
+          }
+        });
+      }
+      return false;
+    }
+  }, [user, isAuthenticated, calculateLevel, getAvailableAchievements, shouldUnlockAchievement, unlockAchievement]);
 
   /**
    * Atualizar sequência de dias
@@ -234,54 +350,31 @@ export function useGamification(): GamificationHook {
 
       return success;
     } catch (error) {
-      console.error('Erro ao atualizar sequência:', error);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'gamification_streak_error', {
+          event_category: 'medical_gamification',
+          event_label: 'streak_update_failed',
+          custom_parameters: {
+            medical_context: 'streak_system',
+            error_type: 'streak_operation'
+          }
+        });
+      }
       return false;
     }
   }, [user, isAuthenticated]);
 
   /**
-   * Verificar novas conquistas
+   * Verificar novas conquistas (função exportada)
    */
   const checkForNewAchievements = useCallback(async (points: number, category: string) => {
-    // Lógica para verificar se o usuário desbloqueou novas conquistas
     const availableAchievements = await getAvailableAchievements();
-
     for (const achievement of availableAchievements) {
       if (!achievement.unlockedAt && shouldUnlockAchievement(achievement, points, category)) {
         await unlockAchievement(achievement.id);
       }
     }
-  }, [unlockAchievement]);
-
-  /**
-   * Verificar se deve desbloquear conquista
-   */
-  const shouldUnlockAchievement = (achievement: Achievement, points: number, category: string): boolean => {
-    // Implementar lógica de desbloqueio baseada nos critérios da conquista
-    switch (achievement.id) {
-      case 'first_conversation':
-        return category === 'conversation' && points > 0;
-      case 'point_collector':
-        return Boolean(progress && progress.totalPoints >= 100);
-      case 'streak_week':
-        return Boolean(progress && progress.streak >= 7);
-      default:
-        return false;
-    }
-  };
-
-  /**
-   * Obter conquistas disponíveis
-   */
-  const getAvailableAchievements = useCallback(async (): Promise<Achievement[]> => {
-    try {
-      const available = await apiClient.get<Achievement[]>('/gamification/achievements');
-      return available;
-    } catch (error) {
-      console.error('Erro ao carregar conquistas disponíveis:', error);
-      return getDefaultAchievements();
-    }
-  }, []);
+  }, [getAvailableAchievements, shouldUnlockAchievement, unlockAchievement]);
 
   /**
    * Atualizar todos os dados
@@ -315,7 +408,8 @@ export function useGamification(): GamificationHook {
     unlockAchievement,
     updateStreak,
     refreshData,
-    getAvailableAchievements
+    getAvailableAchievements,
+    checkForNewAchievements
   };
 }
 
@@ -327,6 +421,7 @@ function getDefaultAchievements(): Achievement[] {
     {
       id: 'first_conversation',
       title: 'Primeira Conversa',
+      name: 'Primeira Conversa',
       description: 'Inicie sua primeira conversa com Dr. Gasnelio ou Gá',
       icon: '💬',
       points: 10,
@@ -335,6 +430,7 @@ function getDefaultAchievements(): Achievement[] {
     {
       id: 'point_collector',
       title: 'Colecionador',
+      name: 'Colecionador',
       description: 'Acumule 100 pontos',
       icon: '⭐',
       points: 50,
@@ -343,6 +439,7 @@ function getDefaultAchievements(): Achievement[] {
     {
       id: 'streak_week',
       title: 'Sequência Semanal',
+      name: 'Sequência Semanal',
       description: 'Mantenha uma sequência de 7 dias',
       icon: '🔥',
       points: 30,
@@ -351,6 +448,7 @@ function getDefaultAchievements(): Achievement[] {
     {
       id: 'social_sharer',
       title: 'Compartilhador',
+      name: 'Compartilhador',
       description: 'Compartilhe seu primeiro certificado',
       icon: '📢',
       points: 20,

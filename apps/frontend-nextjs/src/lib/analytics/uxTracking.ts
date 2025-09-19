@@ -11,6 +11,27 @@ export interface UXEvent {
   label?: string;
   value?: number;
   custom_dimensions?: Record<string, string | number>;
+  custom_parameters?: Record<string, unknown>;
+}
+
+// Specific interfaces for Performance API types
+interface PerformanceEntryWithElement extends PerformanceEntry {
+  element?: {
+    tagName: string;
+  };
+}
+
+interface PerformanceEventTimingEntry extends PerformanceEntry {
+  processingStart: number;
+}
+
+// Window interface with gtag
+interface WindowWithGtag extends Window {
+  gtag?: (
+    command: 'event' | 'config',
+    eventNameOrId: string,
+    parameters?: Record<string, unknown>
+  ) => void;
 }
 
 export interface CognitiveLoadMetrics {
@@ -77,7 +98,7 @@ class UXAnalytics {
     this.trackEvent({
       category: 'engagement',
       action: 'session_start',
-      custom_dimensions: {
+      custom_parameters: {
         session_id: this.sessionId,
         user_agent: navigator.userAgent,
         screen_resolution: `${screen.width}x${screen.height}`,
@@ -88,8 +109,8 @@ class UXAnalytics {
 
   private setupGA4UXEvents() {
     // Enhanced GA4 tracking for UX metrics
-    if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('config', process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || process.env.GA_MEASUREMENT_ID, {
+    if (typeof window !== 'undefined' && (window as WindowWithGtag).gtag) {
+      (window as WindowWithGtag).gtag!('config', process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || process.env.GA_MEASUREMENT_ID, {
         custom_map: {
           'custom_parameter_1': 'cognitive_load_score',
           'custom_parameter_2': 'mobile_experience_score',
@@ -170,7 +191,7 @@ class UXAnalytics {
       category: 'cognitive_load',
       action: 'page_analysis',
       value: cognitiveLoadScore,
-      custom_dimensions: {
+      custom_parameters: {
         ...metrics,
         page_url: window.location.pathname,
         cognitive_load_score: cognitiveLoadScore
@@ -269,7 +290,7 @@ class UXAnalytics {
     this.trackEvent({
       category: 'mobile_experience',
       action: 'mobile_audit',
-      custom_dimensions: metrics as unknown as Record<string, string | number>
+      custom_parameters: metrics as unknown as Record<string, string | number>
     });
 
     // Track touch accuracy
@@ -374,7 +395,7 @@ class UXAnalytics {
       category: 'onboarding',
       action: 'step_reached',
       value: currentStep,
-      custom_dimensions: {
+      custom_parameters: {
         time_spent: (Date.now() - this.startTime) / 1000,
         session_id: this.sessionId
       }
@@ -385,7 +406,7 @@ class UXAnalytics {
     this.trackEvent({
       category: 'onboarding',
       action: 'completed',
-      custom_dimensions: {
+      custom_parameters: {
         total_time: (Date.now() - this.startTime) / 1000,
         session_id: this.sessionId
       }
@@ -397,7 +418,7 @@ class UXAnalytics {
       category: 'onboarding',
       action: 'abandoned',
       label: reason,
-      custom_dimensions: {
+      custom_parameters: {
         abandonment_point: window.location.pathname,
         time_spent: (Date.now() - this.startTime) / 1000
       }
@@ -434,7 +455,7 @@ class UXAnalytics {
           category: 'navigation',
           action: 'failed_click',
           label: target.tagName.toLowerCase(),
-          custom_dimensions: {
+          custom_parameters: {
             element_text: target.textContent?.substr(0, 50) || '',
             page_url: window.location.pathname
           }
@@ -476,8 +497,8 @@ class UXAnalytics {
           category: 'engagement',
           action: 'lcp',
           value: lastEntry.startTime,
-          custom_dimensions: {
-            element: (lastEntry as any).element?.tagName || 'unknown'
+          custom_parameters: {
+            element: (lastEntry as PerformanceEntryWithElement).element?.tagName || 'unknown'
           }
         });
       }).observe({ entryTypes: ['largest-contentful-paint'] });
@@ -489,7 +510,7 @@ class UXAnalytics {
           this.trackEvent({
             category: 'engagement',
             action: 'fid',
-            value: (entry as any).processingStart - entry.startTime
+            value: (entry as PerformanceEventTimingEntry).processingStart - entry.startTime
           });
         });
       }).observe({ entryTypes: ['first-input'] });
@@ -504,8 +525,8 @@ class UXAnalytics {
     if (!this.isInitialized) return;
 
     // Send to Google Analytics
-    if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('event', event.action, {
+    if (typeof window !== 'undefined' && (window as WindowWithGtag).gtag) {
+      (window as WindowWithGtag).gtag!('event', event.action, {
         event_category: event.category,
         event_label: event.label,
         value: event.value,
@@ -516,9 +537,18 @@ class UXAnalytics {
     // Send to custom analytics endpoint
     this.sendToCustomEndpoint(event);
 
-    // Console log for development
-    if (process.env.NODE_ENV === 'development') {
-      console.log('UX Event:', event);
+    // Medical tracking for development
+    if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined' && (window as WindowWithGtag).gtag) {
+      (window as WindowWithGtag).gtag!('event', 'ux_event_tracked', {
+        event_category: 'medical_analytics_development',
+        event_label: 'ux_event_development_log',
+        custom_parameters: {
+          medical_context: 'ux_event_tracking_system',
+          event_category: event.category,
+          event_action: event.action,
+          development_mode: true
+        }
+      });
     }
   }
 
@@ -539,7 +569,18 @@ class UXAnalytics {
           referrer: document.referrer
         })
       }).catch(err => {
-        console.warn('Failed to send UX analytics:', err);
+        // Medical tracking for analytics failures
+        if (typeof window !== 'undefined' && (window as WindowWithGtag).gtag) {
+          (window as WindowWithGtag).gtag!('event', 'ux_analytics_failed', {
+            event_category: 'medical_analytics_error',
+            event_label: 'ux_analytics_send_failure',
+            custom_parameters: {
+              medical_context: 'ux_analytics_error_system',
+              error_message: err instanceof Error ? err.message : 'Unknown error',
+              failed_operation: 'send_ux_analytics'
+            }
+          });
+        }
       });
     }
   }

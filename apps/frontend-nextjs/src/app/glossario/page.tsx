@@ -91,6 +91,74 @@ export default function GlossarioPage() {
           </div>
         </section>
 
+        {/* Sistema de Busca Rápida - termosComTooltip ativado */}
+        <section style={{
+          background: 'white',
+          padding: '2rem',
+          borderRadius: '16px',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+          marginBottom: '2rem'
+        }}>
+          <h2 style={{ margin: '0 0 1.5rem', color: unbColors.primary, fontSize: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <TargetIcon size={24} color={unbColors.primary} /> Busca Rápida de Termos
+          </h2>
+          <p style={{ marginBottom: '1.5rem', color: '#64748b', lineHeight: '1.6' }}>
+            Clique nos termos abaixo para encontrá-los rapidamente nas categorias:
+          </p>
+
+          <div style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: '0.75rem',
+            marginBottom: '1rem'
+          }}>
+            {termosComTooltip.map((termo) => (
+              <button
+                key={termo}
+                onClick={() => {
+                  // Buscar o termo na página e destacá-lo
+                  const elemento = document.querySelector(`[data-termo="${termo}"]`) as HTMLElement;
+                  if (elemento) {
+                    elemento.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    elemento.style.animation = 'highlight 2s ease-in-out';
+                  }
+                }}
+                style={{
+                  background: `linear-gradient(135deg, ${unbColors.primary} 0%, ${unbColors.secondary} 100%)`,
+                  color: 'white',
+                  border: 'none',
+                  padding: '0.5rem 1rem',
+                  borderRadius: '20px',
+                  fontSize: '0.9rem',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+                }}
+                title={`Encontrar "${termo}" na página`}
+              >
+                {termo}
+              </button>
+            ))}
+          </div>
+
+          <div style={{
+            fontSize: '0.8rem',
+            color: '#888',
+            fontStyle: 'italic'
+          }}>
+            ✨ {termosComTooltip.length} termos médicos especializados disponíveis
+          </div>
+        </section>
+
         {/* Termos por categoria */}
         <section style={{
           background: 'white',

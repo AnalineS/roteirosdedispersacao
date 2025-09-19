@@ -62,7 +62,13 @@ const QualityDashboard: React.FC<QualityDashboardProps> = ({
       setDashboardData(dashboardResponse);
       setAlerts(alertsResponse.alerts);
     } catch (error) {
-      console.error("Error loading dashboard data:", error);
+      // Silent error handling for dashboard data loading
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'qa_dashboard_load_error', {
+          event_category: 'quality_assurance',
+          event_label: 'dashboard_data_load_failed'
+        });
+      }
       setError(error instanceof Error ? error.message : "Erro desconhecido");
     } finally {
       setIsLoading(false);
@@ -95,7 +101,12 @@ const QualityDashboard: React.FC<QualityDashboardProps> = ({
     if (!allowAlertManagement) return;
 
     // TODO: Implementar endpoint para acknowledge de alertas
-    console.log("Acknowledging alert:", alertId);
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'qa_alert_acknowledged', {
+        event_category: 'quality_assurance',
+        event_label: 'alert_management'
+      });
+    }
     loadDashboardData();
   };
 
@@ -103,7 +114,12 @@ const QualityDashboard: React.FC<QualityDashboardProps> = ({
     if (!allowAlertManagement) return;
 
     // TODO: Implementar endpoint para resolver alertas
-    console.log("Resolving alert:", alertId);
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'qa_alert_resolved', {
+        event_category: 'quality_assurance',
+        event_label: 'alert_management'
+      });
+    }
     loadDashboardData();
   };
 
@@ -361,7 +377,7 @@ const LearningTab: React.FC<{ metrics: DashboardData["metrics"] }> = ({
         <h3>Padrões de Erro Comuns</h3>
         {metrics.learning.mistakePatterns
           .slice(0, 5)
-          .map((pattern: any, index: number) => (
+          .map((pattern: { stepId: string; mistakeType: string; severity: string; [key: string]: unknown }) => (
             <div key={pattern.stepId} className="mistake-pattern">
               <div className="pattern-header">
                 <span className="pattern-type">{pattern.mistakeType}</span>

@@ -6,7 +6,7 @@
 
 | Recurso | Quantidade |
 |---------|------------|
-| Autenticação | 0 |
+| Autenticação | 1 |
 | Autorização | 0 |
 | Validação de Entrada | 0 |
 | Sanitização de Saída | 0 |
@@ -23,7 +23,7 @@
 
 ## Recomendações
 
-1. Implementar autenticação para proteger dados médicos\n2. Implementar validação rigorosa de entradas\n3. Configurar cabeçalhos de segurança HTTP
+1. Implementar validação rigorosa de entradas\n2. Configurar cabeçalhos de segurança HTTP
 
 ---
-*Análise de segurança realizada em 07/09/2025, 22:59:38*
+*Análise de segurança realizada em 17/09/2025, 09:14:49*

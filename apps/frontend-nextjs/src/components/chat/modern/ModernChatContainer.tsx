@@ -1,7 +1,8 @@
 'use client';
 
 import React, { memo, useRef, useState, useEffect } from 'react';
-import { ChatMessage, Persona } from '@/services/api';
+import { type ChatMessage } from '@/types/api';
+import { type Persona } from '@/services/api';
 import { modernChatTheme, getCSSVariables } from '@/config/modernTheme';
 
 // OTIMIZAÇÃO CRÍTICA: Componentes especializados para reduzir complexidade

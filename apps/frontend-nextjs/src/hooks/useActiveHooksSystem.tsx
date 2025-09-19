@@ -66,12 +66,17 @@ export const useActiveHooksSystem = (config: ActiveHooksConfig = {}) => {
   const { addCleanup } = EffectUtils.useAutoCleanup();
 
   // Intersection observer para performance
-  const { isIntersecting, intersectionRatio } = optimization.useIntersectionObserver(componentRef as any, {
-    threshold: [0, 0.25, 0.5, 0.75, 1]
-  });
+  const { isIntersecting, intersectionRatio } = optimization.useIntersectionObserver(
+    componentRef as React.RefObject<HTMLDivElement>,
+    {
+      threshold: [0, 0.25, 0.5, 0.75, 1]
+    }
+  );
 
   // Resize observer para responsividade
-  const dimensions = optimization.useResizeObserver(componentRef as any);
+  const dimensions = optimization.useResizeObserver(
+    componentRef as React.RefObject<HTMLDivElement>
+  );
 
   // Previous state tracking
   const previousDimensions = optimization.usePrevious(dimensions);
@@ -410,7 +415,7 @@ export const withActiveHooks = <P extends object>(
   Component: React.ComponentType<P>,
   config: ActiveHooksConfig = {}
 ) => {
-  const WrappedComponent = React.forwardRef<any, P>((props, ref) => {
+  const WrappedComponent = React.forwardRef<HTMLDivElement, P>((props, ref) => {
     const hooks = useActiveHooksSystem({
       ...config,
       componentName: Component.displayName || Component.name || 'Component'
@@ -420,7 +425,7 @@ export const withActiveHooks = <P extends object>(
       <div ref={hooks.componentRef} style={{ display: 'contents' }}>
         <div ref={hooks.announceRef} className="sr-only" aria-live="polite" />
         <Component
-          {...(props as any)}
+          {...props}
           {...(ref && { ref })}
           {...(config.autoActivate && {
             onClick: hooks.handleClick,

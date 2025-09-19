@@ -6,7 +6,8 @@
 'use client';
 
 import React, { memo, useEffect, useRef, useCallback } from 'react';
-import { ChatMessage, Persona } from '@/services/api';
+import { type ChatMessage } from '@/types/api';
+import { type Persona } from '@/services/api';
 import MessageBubble from './MessageBubble';
 import SmartIndicators from './SmartIndicators';
 

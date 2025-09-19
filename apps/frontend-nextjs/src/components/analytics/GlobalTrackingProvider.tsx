@@ -37,7 +37,6 @@ export function GlobalTrackingProvider({ children }: { children: ReactNode }) {
     enableOnboarding: true,
     enableMedicalActions: true,
     enableEducational: true,
-    enableABTesting: true,
     enablePerformance: true,
     enableErrors: true,
   });

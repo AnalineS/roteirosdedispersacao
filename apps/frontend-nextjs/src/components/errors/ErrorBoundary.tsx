@@ -24,6 +24,21 @@ interface ErrorBoundaryProps {
   level?: 'page' | 'section' | 'component';
 }
 
+interface ErrorLogData {
+  error: Error;
+  errorInfo: ErrorInfo;
+  userId?: string;
+  timestamp: number;
+  userAgent: string;
+  url: string;
+  component?: string;
+  level: string;
+  errorId: string;
+  errorCount: number;
+  sessionId?: string;
+  [key: string]: unknown;
+}
+
 interface ErrorBoundaryState {
   hasError: boolean;
   error: Error | null;
@@ -69,36 +84,32 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     const { onError, level = 'component' } = this.props;
     const { errorCount } = this.state;
 
-    // Dados estruturados do erro
-    const errorData = {
-      id: this.state.errorId,
-      timestamp: new Date().toISOString(),
+    // Dados estruturados do erro para ErrorLogData compatibility
+    const errorLogData: ErrorLogData = {
+      error,
+      errorInfo,
+      userId: typeof window !== 'undefined' ? 'user_id_placeholder' : undefined,
+      timestamp: Date.now(),
+      userAgent: typeof window !== 'undefined' ? navigator.userAgent : 'Server',
+      url: typeof window !== 'undefined' ? window.location.href : 'SSR',
+      component: `ErrorBoundary_${level}`,
       level,
-      error: {
-        name: error.name,
-        message: error.message,
-        stack: error.stack
-      },
-      context: {
-        componentStack: errorInfo.componentStack,
-        url: typeof window !== 'undefined' ? window.location.href : 'SSR',
-        userAgent: typeof window !== 'undefined' ? navigator.userAgent : 'Server',
-        viewport: typeof window !== 'undefined' ? 
-          `${window.innerWidth}x${window.innerHeight}` : 'unknown',
-        timestamp: Date.now()
-      },
-      count: errorCount + 1,
-      severity: this.calculateSeverity(error, errorCount)
+      errorId: this.state.errorId,
+      errorCount: errorCount + 1,
+      sessionId: `session_${Date.now()}`,
+      severity: this.calculateSeverity(error, errorCount),
+      viewport: typeof window !== 'undefined' ?
+        `${window.innerWidth}x${window.innerHeight}` : 'unknown'
     };
 
     // Log estruturado e seguro para debugging
     secureLogger.error(
-      `ErrorBoundary [${level}] - ${errorData.id}`,
+      `ErrorBoundary [${level}] - ${errorLogData.errorId}`,
       error,
       {
-        errorId: errorData.id,
-        severity: errorData.severity,
-        timestamp: errorData.timestamp,
+        errorId: errorLogData.errorId,
+        severity: errorLogData.severity,
+        timestamp: errorLogData.timestamp,
         errorCount
       }
     );
@@ -115,11 +126,22 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     }
 
     // Logging para produção (simulado - integração futura)
-    this.logErrorToService(errorData);
+    this.logErrorToService(errorLogData);
 
     // Prevenção de loops infinitos
     if (errorCount > 5) {
-      console.error('🔥 Loop de erro detectado! Desabilitando auto-reset.');
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'error_loop_detected', {
+          event_category: 'medical_error_critical',
+          event_label: 'infinite_error_loop_prevention',
+          custom_parameters: {
+            medical_context: 'error_boundary_system',
+            error_count: errorCount,
+            error_id: this.state.errorId,
+            component_level: level
+          }
+        });
+      }
       this.clearResetTimeouts();
     }
   }
@@ -160,12 +182,23 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     return count > 1 ? 'high' : 'medium';
   }
 
-  private logErrorToService = (errorData: any): void => {
+  private logErrorToService = (errorData: ErrorLogData): void => {
     // Simulação de envio para serviço de logging
     // TODO: Integrar com Sentry, LogRocket, etc.
     if (process.env.NODE_ENV === 'production') {
       // fetch('/api/errors', { method: 'POST', body: JSON.stringify(errorData) })
-      console.log('📤 Error enviado para logging service:', errorData.id);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'error_logged_to_service', {
+          event_category: 'medical_error_tracking',
+          event_label: 'error_sent_to_logging_service',
+          custom_parameters: {
+            medical_context: 'error_logging_system',
+            error_id: errorData.errorId,
+            severity: errorData.severity || 'unknown',
+            component_level: errorData.level
+          }
+        });
+      }
     }
   };
 
@@ -175,7 +208,18 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   };
 
   private handleReset = (): void => {
-    console.log('🔄 Resetando ErrorBoundary...');
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'error_boundary_reset', {
+        event_category: 'medical_error_recovery',
+        event_label: 'error_boundary_manual_reset',
+        custom_parameters: {
+          medical_context: 'error_recovery_system',
+          previous_error_id: this.state.errorId,
+          error_count: this.state.errorCount,
+          recovery_method: 'manual_reset'
+        }
+      });
+    }
     this.setState({
       hasError: false,
       error: null,
@@ -186,14 +230,36 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   };
 
   private handleGoHome = (): void => {
-    console.log('🏠 Redirecionando para home...');
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'error_recovery_home_redirect', {
+        event_category: 'medical_error_recovery',
+        event_label: 'user_redirected_to_home',
+        custom_parameters: {
+          medical_context: 'error_recovery_navigation',
+          error_id: this.state.errorId,
+          error_count: this.state.errorCount,
+          recovery_method: 'home_redirect'
+        }
+      });
+    }
     if (typeof window !== 'undefined') {
       window.location.href = '/';
     }
   };
 
   private handleReload = (): void => {
-    console.log('🔄 Recarregando página...');
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'error_recovery_page_reload', {
+        event_category: 'medical_error_recovery',
+        event_label: 'user_triggered_page_reload',
+        custom_parameters: {
+          medical_context: 'error_recovery_reload',
+          error_id: this.state.errorId,
+          error_count: this.state.errorCount,
+          recovery_method: 'page_reload'
+        }
+      });
+    }
     if (typeof window !== 'undefined') {
       window.location.reload();
     }

@@ -26,7 +26,7 @@ import { useSimpleTrack } from '@/components/tracking/IntegratedTrackingProvider
 import { useCloudLogger } from '@/utils/cloudLogger';
 import { theme } from '@/config/theme';
 import { SidebarLoader } from '@/components/LoadingSpinner';
-import { type ChatMessage } from '@/services/api';
+import { type ChatMessage } from '@/types/api';
 import { isValidPersonaId, type ValidPersonaId } from '@/types/personas';
 import { LightbulbIcon, DoctorIcon, BookIcon, StarIcon, AlertTriangleIcon, CheckCircleIcon, RefreshIcon, ChartIcon, CalculatorIcon } from '@/components/icons/EducationalIcons';
 
@@ -45,6 +45,9 @@ export default function ChatPage() {
   
   // Chat feedback hook
   const { triggerSendFeedback, triggerReceiveFeedback, triggerErrorFeedback } = useChatFeedback();
+
+  // Cloud logging para interações médicas críticas
+  const { info: logInfo, warning: logWarning, error: logError, medicalInteraction } = useCloudLogger();
   
   // Tracking integrado
   const { trackChat, trackModule, trackError } = useSimpleTrack();
@@ -77,12 +80,25 @@ export default function ChatPage() {
         // Pre-cache dos tópicos mais comuns
         localStorage.setItem(`cache_warmup_${topic.replace(/\s+/g, '_')}`, Date.now().toString());
       });
-      console.log('🔥 Cache warmup executado para', warmupTopics.length, 'tópicos médicos');
+
+      // Cloud logging para performance tracking
+      logInfo('Cache warmup executado com sucesso', {
+        topicsCount: warmupTopics.length,
+        topics: warmupTopics.slice(0, 5), // Primeiros 5 para logging
+        performance: 'cache_warmup',
+        module: 'chat'
+      });
     } catch (error) {
-      console.warn('⚠️ Cache warmup falhou, continuando sem cache:', error);
+      // Cloud logging para erro de cache
+      logWarning('Cache warmup falhou', {
+        error: error instanceof Error ? error.message : 'Unknown cache warmup error',
+        topicsAttempted: warmupTopics.length,
+        module: 'chat',
+        fallback: 'continuing_without_cache'
+      });
       trackError('cache_warmup_failed', error instanceof Error ? error.message : 'Unknown cache warmup error');
     }
-  }, [setPersonaSelectionViewed, trackModule, trackError]);
+  }, [setPersonaSelectionViewed, trackModule, trackError, logInfo, logWarning]);
   
   const {
     createConversation,
@@ -143,10 +159,16 @@ export default function ChatPage() {
         return getConversationsForPersona(personaId);
       });
     } catch (error) {
-      console.error('Erro ao obter conversas:', error);
+      logError('Erro ao obter conversas',
+        error instanceof Error ? error : new Error(String(error)),
+        {
+          module: 'chat',
+          operation: 'get_all_conversations'
+        }
+      );
       return [];
     }
-  }, [personas, getConversationsForPersona]);
+  }, [personas, getConversationsForPersona, logError]);
   
   // Detectar dispositivo móvel
   useEffect(() => {
@@ -193,7 +215,14 @@ export default function ChatPage() {
   const handleAcceptRoutingMain = useCallback((recommendedPersonaId: string) => {
     // Validar se é uma persona válida antes de aceitar
     if (!isValidPersonaId(recommendedPersonaId)) {
-      console.error('Invalid persona ID received:', recommendedPersonaId);
+      logError('Invalid persona ID received',
+        new Error(`Invalid persona ID: ${recommendedPersonaId}`),
+        {
+          receivedId: recommendedPersonaId,
+          module: 'chat',
+          operation: 'routing_acceptance'
+        }
+      );
       return;
     }
     
@@ -203,23 +232,25 @@ export default function ChatPage() {
     setSelectedPersona(recommendedPersonaId);
     
     // Analytics para métricas de sucesso
-    console.log('Routing accepted:', {
-      from: selectedPersona,
-      to: recommendedPersonaId,
-      timestamp: Date.now()
+    logInfo('Routing accepted', {
+      fromPersona: selectedPersona,
+      toPersona: recommendedPersonaId,
+      module: 'chat',
+      operation: 'intelligent_routing'
     });
-  }, [acceptRecommendation, setPersona, selectedPersona]);
+  }, [acceptRecommendation, setPersona, selectedPersona, logInfo, logError]);
 
   const handleRejectRoutingMain = useCallback(() => {
     // Rejeitar a recomendação e manter persona atual
     rejectRecommendation(selectedPersona || 'dr_gasnelio');
     
     // Analytics para melhoria do algoritmo
-    console.log('Routing rejected:', {
+    logInfo('Routing rejected', {
       currentPersona: selectedPersona,
-      timestamp: Date.now()
+      module: 'chat',
+      operation: 'intelligent_routing'
     });
-  }, [rejectRecommendation, selectedPersona]);
+  }, [rejectRecommendation, selectedPersona, logInfo]);
 
   // Sincronizar persona do contexto com estado local
   useEffect(() => {
@@ -260,12 +291,19 @@ export default function ChatPage() {
       // O feedback de recebimento será disparado no onMessageReceived
       
     } catch (error) {
-      console.error('Erro ao enviar mensagem:', error);
+      logError('Erro ao enviar mensagem',
+        error instanceof Error ? error : new Error(String(error)),
+        {
+          personaId,
+          module: 'chat',
+          operation: 'send_message_with_history'
+        }
+      );
       trackError('message_send_failed', `Failed to send message to ${personaId}: ${error instanceof Error ? error.message : 'Unknown error'}`);
       // Trigger feedback de erro
       triggerErrorFeedback('Erro ao enviar mensagem. Tente novamente.');
     }
-  }, [sendMessage, addMessageToConversation, triggerSendFeedback, triggerErrorFeedback, trackChat, trackError]);
+  }, [sendMessage, addMessageToConversation, triggerSendFeedback, triggerErrorFeedback, trackChat, trackError, logError]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -285,9 +323,33 @@ export default function ChatPage() {
       setInputValue('');
       
       try {
+        // Log da interação médica antes do envio
+        await logInfo('Chat message sent', {
+          personaId: selectedPersona,
+          messageLength: messageText.length,
+          hasPersonaContext: !!contextPersona,
+          module: 'chat',
+          operation: 'send_message'
+        });
+
         await sendMessageWithHistory(messageText, selectedPersona);
       } catch (error) {
-        console.error('Erro ao enviar mensagem:', error);
+        // Log de erro crítico
+        await logError('Chat message failed',
+          error instanceof Error ? error : new Error(String(error)),
+          {
+            personaId: selectedPersona,
+            messageText: messageText.substring(0, 100)
+          }
+        );
+        logError('Chat message send failed',
+          error instanceof Error ? error : new Error(String(error)),
+          {
+            personaId: selectedPersona,
+            module: 'chat',
+            operation: 'handle_send_message'
+          }
+        );
       }
     }
   };
@@ -297,7 +359,16 @@ export default function ChatPage() {
       // Usar o contexto unificado para mudar persona
       await setPersona(personaId as ValidPersonaId, 'explicit');
       setSelectedPersona(personaId);
-      
+
+      // Log da mudança de persona para análise médica
+      await logInfo('Persona change', {
+        newPersonaId: personaId,
+        changeMethod: 'explicit',
+        previousPersona: contextPersona || 'none',
+        module: 'chat',
+        operation: 'persona_change'
+      });
+
       // Criar nova conversa para a persona selecionada
       createConversation(personaId);
       
@@ -310,13 +381,26 @@ export default function ChatPage() {
         setPendingQuestion('');
       }
     } catch (error) {
-      console.error('Erro ao alterar persona:', error);
+      logError('Erro ao alterar persona',
+        error instanceof Error ? error : new Error(String(error)),
+        {
+          newPersonaId: personaId,
+          module: 'chat',
+          operation: 'persona_change'
+        }
+      );
     }
-  }, [setPersona, createConversation, clearAnalysis, pendingQuestion]);
+  }, [setPersona, createConversation, clearAnalysis, pendingQuestion, contextPersona, logError, medicalInteraction]);
 
   // Handler para upload de arquivos
   const handleFileUpload = useCallback((files: FileList) => {
-    console.log('Files uploaded:', files);
+    logInfo('Files uploaded', {
+      fileCount: files.length,
+      fileTypes: Array.from(files).map(f => f.type),
+      fileSizes: Array.from(files).map(f => f.size),
+      module: 'chat',
+      operation: 'file_upload'
+    });
     
     // Trigger feedback de arquivo recebido
     triggerReceiveFeedback();
@@ -332,7 +416,11 @@ export default function ChatPage() {
       alert(privacyMessage);
     }
     
-    console.log(privacyMessage);
+    logInfo('Privacy notice displayed', {
+      fileCount: files.length,
+      module: 'chat',
+      operation: 'file_upload_privacy'
+    });
     
     // TODO: Implementar processamento de arquivos
     // - Upload temporário para backend
@@ -340,7 +428,7 @@ export default function ChatPage() {
     // - Extração de texto
     // - Adicionar ao contexto da conversa
     // - Exclusão automática após processamento
-  }, [triggerReceiveFeedback]);
+  }, [triggerReceiveFeedback, logInfo]);
   
   const handleNewConversation = (personaId: string) => {
     const conversationId = createConversation(personaId);
@@ -349,7 +437,12 @@ export default function ChatPage() {
       localStorage.setItem('selectedPersona', personaId);
     }
     // Log da nova conversa criada para analytics
-    console.log('📝 Nova conversa criada:', { conversationId, personaId });
+    logInfo('Nova conversa criada', {
+      conversationId,
+      personaId,
+      module: 'chat',
+      operation: 'new_conversation'
+    });
   };
   
   const handleConversationSelect = (conversationId: string) => {
@@ -369,12 +462,16 @@ export default function ChatPage() {
   // Handlers para roteamento inteligente (secundários - removidos para evitar duplicação)
   
   const handleShowExplanation = useCallback(() => {
-    console.log('Explicação do roteamento:', getExplanation());
+    logInfo('Explicação do roteamento solicitada', {
+      explanation: getExplanation(),
+      module: 'chat',
+      operation: 'show_routing_explanation'
+    });
     // Mostrar modal ou tooltip com explicação detalhada
     if (typeof window !== 'undefined') {
       alert('Explicação do roteamento inteligente:\n\n' + JSON.stringify(getExplanation(), null, 2));
     }
-  }, [getExplanation]);
+  }, [getExplanation, logInfo]);
 
   if (personasLoading) {
     return (
@@ -492,11 +589,127 @@ export default function ChatPage() {
             margin: '0 auto 1rem',
             padding: '0 1rem'
           }}>
-            <ConversationProgress 
+            <ConversationProgress
               messages={currentMessages}
               currentPersona={currentPersona?.name}
               variant="detailed"
             />
+          </div>
+        )}
+
+        {/* Quick Actions Toolbar */}
+        {hasChatConsent && (
+          <div style={{
+            maxWidth: '800px',
+            margin: '0 auto 1rem',
+            padding: '0 1rem'
+          }}>
+            <div style={{
+              display: 'flex',
+              gap: '0.5rem',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              padding: '0.75rem',
+              background: 'rgba(0, 51, 102, 0.05)',
+              borderRadius: '8px',
+              border: '1px solid rgba(0, 51, 102, 0.1)'
+            }}>
+              <button
+                onClick={() => handleNewConversation(selectedPersona || 'dr_gasnelio')}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  padding: '0.5rem 1rem',
+                  background: 'white',
+                  border: '1px solid #e0e0e0',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: '0.9rem',
+                  color: '#424242',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = '#f5f5f5';
+                  e.currentTarget.style.borderColor = '#1976d2';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'white';
+                  e.currentTarget.style.borderColor = '#e0e0e0';
+                }}
+                title="Nova conversa"
+              >
+                <RefreshIcon size={16} />
+                Renovar
+              </button>
+
+              <button
+                onClick={() => {
+                  const stats = {
+                    messages: currentMessages.length,
+                    persona: currentPersona?.name || 'Nenhuma',
+                    duration: 'Ativa'
+                  };
+                  alert(`📊 Estatísticas da Conversa:\n\n• Mensagens: ${stats.messages}\n• Persona: ${stats.persona}\n• Status: ${stats.duration}`);
+                }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  padding: '0.5rem 1rem',
+                  background: 'white',
+                  border: '1px solid #e0e0e0',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: '0.9rem',
+                  color: '#424242',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = '#f5f5f5';
+                  e.currentTarget.style.borderColor = '#1976d2';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'white';
+                  e.currentTarget.style.borderColor = '#e0e0e0';
+                }}
+                title="Estatísticas da conversa"
+              >
+                <ChartIcon size={16} />
+                Estatísticas
+              </button>
+
+              <button
+                onClick={() => {
+                  window.open('/resources/calculator', '_blank');
+                }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  padding: '0.5rem 1rem',
+                  background: 'white',
+                  border: '1px solid #e0e0e0',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: '0.9rem',
+                  color: '#424242',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = '#f5f5f5';
+                  e.currentTarget.style.borderColor = '#1976d2';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'white';
+                  e.currentTarget.style.borderColor = '#e0e0e0';
+                }}
+                title="Abrir calculadora de doses"
+              >
+                <CalculatorIcon size={16} />
+                Calculadora
+              </button>
+            </div>
           </div>
         )}
 

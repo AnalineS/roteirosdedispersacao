@@ -400,7 +400,7 @@ export default function ChatNavigation({
 }
 
 // Hook para gerenciar estado de navegação do chat
-export function useChatNavigation(conversationMessages: any[] = []) {
+export function useChatNavigation(conversationMessages: import('@/types/api').ChatMessage[] = []) {
   const [navigationState, setNavigationState] = useState({
     conversationLength: 0,
     flowType: 'free' as 'chat' | 'onboarding' | 'assessment' | 'free',

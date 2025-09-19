@@ -206,20 +206,39 @@ Conclusão realizada em {issueDate}, com {casesCompleted} casos clínicos resolv
     };
 
     loadCertificationData();
-  }, []);
+  }, [unbColors.primary]);
 
   const criteria = DEFAULT_CERTIFICATION_CONFIG.criteria;
 
   const handleDownload = (format: 'pdf' | 'png') => {
-    console.log(`Baixando certificado em formato ${format}`);
+    // Track certificate download in analytics
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'certificate_download', {
+        event_category: 'certification',
+        event_label: format,
+        value: 1
+      });
+    }
   };
 
   const handleEmail = (email: string) => {
-    console.log(`Enviando certificado para ${email}`);
+    // Track certificate email sending
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'certificate_email_sent', {
+        event_category: 'certification',
+        event_label: 'email_delivery'
+      });
+    }
   };
 
   const handleShare = () => {
-    console.log('Compartilhando certificado');
+    // Track certificate sharing
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'certificate_shared', {
+        event_category: 'certification',
+        event_label: 'social_share'
+      });
+    }
   };
 
   if (isLoading) {
@@ -513,7 +532,7 @@ Conclusão realizada em {issueDate}, com {casesCompleted} casos clínicos resolv
             </h3>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              {progress.casesCompleted.map((case_, index) => (
+              {progress.casesCompleted.map((case_) => (
                 <div key={case_.caseId} style={{
                   padding: '1rem',
                   border: '1px solid #e2e8f0',

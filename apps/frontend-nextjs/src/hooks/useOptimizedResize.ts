@@ -98,7 +98,10 @@ export function useOptimizedResize({
 
   // Debounced resize handler
   const debouncedResizeHandler = useCallback(
-    debounce(updateViewport, debounceMs, { maxWait: debounceMs * 2 }),
+    (...args: any[]) => {
+      const debouncedFn = debounce(updateViewport, debounceMs, { maxWait: debounceMs * 2 });
+      return debouncedFn(...args);
+    },
     [updateViewport, debounceMs]
   );
 

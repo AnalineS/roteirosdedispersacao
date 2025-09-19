@@ -39,7 +39,7 @@ export default function CoreWebVitals() {
 
     // Import web-vitals dynamically
     import('web-vitals').then(({ onCLS, onFCP, onLCP, onTTFB, onINP }) => {
-      const reportMetric = (metric: any) => {
+      const reportMetric = (metric: { name: string; value: number; [key: string]: unknown }) => {
         let rating: 'good' | 'needs-improvement' | 'poor';
         
         switch (metric.name) {
@@ -67,15 +67,7 @@ export default function CoreWebVitals() {
           id: metric.id
         };
 
-        // Log to console in development
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`📊 ${metric.name}:`, {
-            value: metric.value,
-            rating,
-            unit: getUnit(metric.name),
-            recommendation: getRatingRecommendation(metric.name, rating)
-          });
-        }
+        // Performance tracking in development
 
         // Send to analytics if available
         if (typeof window !== 'undefined' && 'gtag' in window && typeof window.gtag === 'function') {
@@ -102,7 +94,7 @@ export default function CoreWebVitals() {
       onLCP(reportMetric);
       onTTFB(reportMetric);
     }).catch(error => {
-      console.warn('Failed to load web-vitals:', error);
+      // Silent fallback if web-vitals library is not available
     });
 
     // Performance observer for additional metrics
@@ -120,9 +112,7 @@ export default function CoreWebVitals() {
               domProcessing: navEntry.domComplete - navEntry.domContentLoadedEventStart
             };
 
-            if (process.env.NODE_ENV === 'development') {
-              console.log('📈 Navigation Metrics:', metrics);
-            }
+            // Navigation metrics collected for analytics
 
             // Store custom metrics
             sessionStorage.setItem('navigation-metrics', JSON.stringify(metrics));

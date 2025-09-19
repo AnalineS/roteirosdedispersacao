@@ -15,7 +15,7 @@ export interface ChatSession {
   startTime: number;
   lastActivity: number;
   messageCount: number;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface ChatMessage {
@@ -31,7 +31,7 @@ export interface ChatMessage {
     personaAdapted?: boolean;
     processingTime?: number;
     fallbackUsed?: boolean;
-    analytics?: any;
+    analytics?: Record<string, unknown>;
     isFallback?: boolean;
     fallbackSource?: string;
     suggestion?: string;
@@ -139,7 +139,21 @@ export class ChatService {
       userId: userId || 'anonymous'
     }));
 
-    console.log(`🗣️ Nova sessão de chat iniciada: ${sessionId} (${persona})`);
+    // Medical chat session tracking
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'medical_chat_session_started', {
+        event_category: 'medical_chat_critical',
+        event_label: 'new_medical_chat_session',
+        custom_parameters: {
+          medical_context: 'chat_session_management',
+          session_id: sessionId,
+          persona_type: persona,
+          user_type: userId ? 'authenticated' : 'anonymous',
+          session_start_time: session.startTime,
+          preferred_language: 'pt-BR'
+        }
+      });
+    }
     return session;
   }
 
@@ -211,11 +225,53 @@ export class ChatService {
         fallbackUsed: response.fallbackUsed
       }));
 
-      console.log(`✅ Mensagem processada: ${processingTime}ms (conf: ${response.confidence})`);
+      // Medical message processing tracking
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'medical_message_processed_successfully', {
+          event_category: 'medical_chat_critical',
+          event_label: 'medical_response_generated',
+          value: Math.round(processingTime),
+          custom_parameters: {
+            medical_context: 'chat_message_processing',
+            session_id: sessionId,
+            persona_type: session.persona,
+            processing_time_ms: processingTime,
+            confidence_score: Math.round((response.confidence || 0) * 100),
+            rag_sources_count: response.ragSources?.length || 0,
+            persona_adapted: response.personaAdapted || false,
+            fallback_used: response.fallbackUsed || false
+          }
+        });
+      }
       return assistantMessage;
 
     } catch (error) {
-      console.error('Erro ao processar mensagem:', error);
+      // Critical medical error tracking + explicit stderr logging
+      const errorMessage = error instanceof Error ? error.message : String(error);
+
+      // Explicit error to stderr for medical system visibility
+      if (typeof process !== 'undefined' && process.stderr) {
+        process.stderr.write(`❌ ERRO CRÍTICO - Processamento de mensagem médica falhou:\n` +
+          `  SessionID: ${sessionId}\n` +
+          `  Persona: ${session?.persona || 'unknown'}\n` +
+          `  Error: ${errorMessage}\n` +
+          `  ProcessingTime: ${Date.now() - startTime}ms\n\n`);
+      }
+
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'medical_chat_processing_error', {
+          event_category: 'medical_error_critical',
+          event_label: 'chat_message_processing_failed',
+          custom_parameters: {
+            medical_context: 'critical_chat_error',
+            session_id: sessionId,
+            persona_type: session?.persona || 'unknown',
+            error_type: 'message_processing_failure',
+            error_message: errorMessage,
+            processing_time_ms: Date.now() - startTime
+          }
+        });
+      }
       
       // Analytics erro
       logEvent('ERROR', 'chat_error', JSON.stringify({
@@ -258,7 +314,28 @@ export class ChatService {
       // Em produção, aqui buscaria do Firestore
       return [];
     } catch (error) {
-      console.error('Erro ao buscar histórico:', error);
+      // Medical history retrieval error - explicit stderr + tracking
+      const errorMessage = error instanceof Error ? error.message : String(error);
+
+      // Explicit error to stderr for medical system visibility
+      if (typeof process !== 'undefined' && process.stderr) {
+        process.stderr.write(`❌ ERRO - Falha ao buscar histórico médico da sessão:\n` +
+          `  SessionID: ${sessionId}\n` +
+          `  Error: ${errorMessage}\n\n`);
+      }
+
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'medical_chat_history_error', {
+          event_category: 'medical_error_critical',
+          event_label: 'chat_history_retrieval_failed',
+          custom_parameters: {
+            medical_context: 'chat_history_management',
+            session_id: sessionId,
+            error_type: 'history_retrieval_failure',
+            error_message: errorMessage
+          }
+        });
+      }
       return [];
     }
   }
@@ -270,7 +347,27 @@ export class ChatService {
     const session = this.activeSessions.get(sessionId);
     
     if (!session) {
-      console.warn(`Sessão ${sessionId} não encontrada para finalização`);
+      // Medical session management warning - explicit stderr + tracking
+
+      // Explicit warning to stderr for medical system visibility
+      if (typeof process !== 'undefined' && process.stderr) {
+        process.stderr.write(`⚠️ AVISO - Tentativa de finalizar sessão médica inexistente:\n` +
+          `  SessionID: ${sessionId}\n` +
+          `  Operation: endSession\n\n`);
+      }
+
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'medical_chat_session_not_found', {
+          event_category: 'medical_warning',
+          event_label: 'session_end_attempt_invalid',
+          custom_parameters: {
+            medical_context: 'chat_session_management',
+            session_id: sessionId,
+            operation: 'session_end_attempt',
+            warning_type: 'session_not_found'
+          }
+        });
+      }
       return;
     }
 
@@ -296,7 +393,22 @@ export class ChatService {
 
     await this.cache.set(`session:${sessionId}`, session, 7 * 24 * 60 * 60 * 1000);
 
-    console.log(`🏁 Sessão finalizada: ${sessionId} (${sessionDuration}ms, ${session.messageCount} msgs)`);
+    // Medical session completion tracking
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'medical_chat_session_ended', {
+        event_category: 'medical_chat_critical',
+        event_label: 'medical_session_completed',
+        value: Math.round(sessionDuration / 1000), // Duration in seconds
+        custom_parameters: {
+          medical_context: 'chat_session_management',
+          session_id: sessionId,
+          persona_type: session.persona,
+          session_duration_ms: sessionDuration,
+          message_count: session.messageCount,
+          completion_type: 'normal_completion'
+        }
+      });
+    }
   }
 
   /**
@@ -320,7 +432,20 @@ export class ChatService {
       toPersona: newPersona
     }));
 
-    console.log(`🔄 Persona alterada: ${oldPersona} → ${newPersona} (sessão ${sessionId})`);
+    // Medical persona switch tracking
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'medical_persona_switched', {
+        event_category: 'medical_chat_critical',
+        event_label: 'persona_change_medical_chat',
+        custom_parameters: {
+          medical_context: 'persona_management',
+          session_id: sessionId,
+          from_persona: oldPersona,
+          to_persona: newPersona,
+          switch_timestamp: session.lastActivity
+        }
+      });
+    }
     return true;
   }
 
@@ -429,7 +554,26 @@ export class ChatService {
         this.analytics = { ...this.analytics, ...cached };
       }
     } catch (error) {
-      console.error('Erro ao carregar analytics:', error);
+      // Medical analytics loading error - explicit stderr + tracking
+      const errorMessage = error instanceof Error ? error.message : String(error);
+
+      // Explicit error to stderr for medical system visibility
+      if (typeof process !== 'undefined' && process.stderr) {
+        process.stderr.write(`❌ ERRO - Falha ao carregar analytics do chat médico:\n` +
+          `  Error: ${errorMessage}\n\n`);
+      }
+
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'medical_analytics_load_error', {
+          event_category: 'medical_error_critical',
+          event_label: 'chat_analytics_load_failed',
+          custom_parameters: {
+            medical_context: 'chat_analytics_management',
+            error_type: 'analytics_load_failure',
+            error_message: errorMessage
+          }
+        });
+      }
     }
   }
 
@@ -437,7 +581,28 @@ export class ChatService {
     try {
       await this.cache.set('chat_analytics', this.analytics, 24 * 60 * 60 * 1000);
     } catch (error) {
-      console.error('Erro ao salvar analytics:', error);
+      // Medical analytics save error - explicit stderr + tracking
+      const errorMessage = error instanceof Error ? error.message : String(error);
+
+      // Explicit error to stderr for medical system visibility
+      if (typeof process !== 'undefined' && process.stderr) {
+        process.stderr.write(`❌ ERRO - Falha ao salvar analytics do chat médico:\n` +
+          `  Error: ${errorMessage}\n` +
+          `  TotalMessages: ${this.analytics.totalMessages}\n\n`);
+      }
+
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'medical_analytics_save_error', {
+          event_category: 'medical_error_critical',
+          event_label: 'chat_analytics_save_failed',
+          custom_parameters: {
+            medical_context: 'chat_analytics_management',
+            error_type: 'analytics_save_failure',
+            error_message: errorMessage,
+            total_messages: this.analytics.totalMessages
+          }
+        });
+      }
     }
   }
 

@@ -281,8 +281,28 @@ export default function SiteMapPage() {
     }
   ];
 
-  // Inicializar sistema de ícones ativos
-  const { icons, getIcon } = useActiveIcons();
+  // Sistema de ícones ativo - mapeamento de páginas para ícones
+  const icons = {
+    '/': '🏠',
+    '/chat': '🤖',
+    '/modules': '📚',
+    '/simulador': '🩺',
+    '/resources': '🛠️',
+    '/resources/calculator': '🧮',
+    '/resources/interactions': '⚠️',
+    '/resources/emergency': '🚨',
+    '/certificacao': '🎓',
+    '/profile': '👤',
+    '/progress': '📊',
+    '/sobre-a-tese': '📖',
+    '/glossario': '📝',
+    '/sitemap': '🗺️',
+    '/admin': '⚙️'
+  };
+
+  const getIcon = (href: string) => {
+    return icons[href as keyof typeof icons] || '📄';
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
@@ -341,9 +361,17 @@ export default function SiteMapPage() {
                     >
                       <div className="space-y-3">
                         <div className="flex items-start justify-between">
-                          <h3 className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
-                            {page.title}
-                          </h3>
+                          <div className="flex items-center gap-2">
+                            {/* Sistema de ícones ativo - icons e getIcon */}
+                            {getIcon && (
+                              <span className="text-lg opacity-70 group-hover:opacity-100 transition-opacity">
+                                {getIcon(page.href) || '📝'}
+                              </span>
+                            )}
+                            <h3 className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                              {page.title}
+                            </h3>
+                          </div>
                           {page.isPublic && (
                             <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full shrink-0 ml-2">
                               Público

@@ -9,6 +9,83 @@ import { ragPerformanceOptimizer } from './ragPerformanceOptimizer';
 // Removido: AnalyticsFirestoreCache (usando localStorage apenas)
 import { conversationCache } from './simpleCache';
 
+interface ConversationMessage {
+  id?: string; // Optional para compatibilidade com ChatMessage
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: string | number | Date; // Flexível para compatibilidade com ChatMessage
+  persona?: string;
+  query?: string;
+  metadata?: {
+    confidence?: number;
+    sources?: string[];
+    processingTime?: number;
+  };
+}
+
+interface UserProfile {
+  id: string;
+  preferredPersona: 'dr_gasnelio' | 'ga';
+  expertiseLevel: 'beginner' | 'intermediate' | 'advanced';
+  interactionHistory: {
+    totalQueries: number;
+    favoriteTopics: string[];
+    avgSessionDuration: number;
+    lastActive: Date;
+  };
+  personalizationSettings: {
+    technicalLevel: 'low' | 'medium' | 'high';
+    preferredResponseLength: 'short' | 'medium' | 'long';
+    includeExamples: boolean;
+    includeCitations: boolean;
+  };
+  // Propriedades adicionais usadas no código
+  userId: string;
+  commonTopics: string[];
+  preferredExplanationStyle: 'balanced' | 'simple' | 'detailed' | 'technical';
+  interactions: number;
+  lastInteraction: number;
+}
+
+interface ContextualInfo {
+  previousQueries?: string[];
+  currentTopic?: string;
+  userExpertiseLevel?: string;
+  conversationFlow?: string;
+  relevantHistory?: ConversationMessage[];
+}
+
+interface PersonaAnalysis {
+  selectedPersona: string;
+  confidence: number;
+  reasoning: string[];
+  adaptations: string[];
+  alternativePersona?: string;
+  complexity: 'simple' | 'medium' | 'complex';
+  emotionalTone: 'neutral' | 'anxious' | 'urgent';
+  technicalLevel: 'basic' | 'intermediate' | 'advanced';
+  intent: 'information' | 'dosage' | 'safety' | 'support';
+}
+
+interface UserPreference {
+  preferredPersona: 'dr_gasnelio' | 'ga';
+  technicalLevel: 'high' | 'medium' | 'low';
+  responseStyle: 'detailed' | 'concise' | 'examples';
+  topicPreferences: string[];
+  interactionStyle: 'formal' | 'casual' | 'educational';
+  interactions?: number;
+}
+
+interface PersonaError {
+  code: string;
+  message: string;
+  persona?: string;
+  userId?: string;
+  query?: string;
+  timestamp: Date;
+  recoverable: boolean;
+}
+
 export interface PersonaConfig {
   id: 'dr_gasnelio' | 'ga';
   name: string;
@@ -61,7 +138,7 @@ export interface PersonaResponse {
 export class PersonaRAGIntegration {
   private static instance: PersonaRAGIntegration;
   private personaConfigs: Map<string, PersonaConfig> = new Map();
-  private conversationHistory: Map<string, any[]> = new Map();
+  private conversationHistory: Map<string, ConversationMessage[]> = new Map();
   private userProfiles: Map<string, UserProfile> = new Map();
 
   private stats = {
@@ -90,7 +167,7 @@ export class PersonaRAGIntegration {
     query: string,
     personaId: 'dr_gasnelio' | 'ga',
     userId?: string,
-    conversationContext?: any[]
+    conversationContext?: ConversationMessage[]
   ): Promise<PersonaResponse> {
     const startTime = Date.now();
 
@@ -124,9 +201,36 @@ export class PersonaRAGIntegration {
         throw new Error('RAG system returned null response');
       }
 
+      // Converter RAGQueryResult para IntegratedRAGResponse
+      const integratedResponse: IntegratedRAGResponse = {
+        answer: ragResponse.response,
+        context: {
+          chunks: [],
+          totalScore: ragResponse.confidence,
+          sourceFiles: ragResponse.sources,
+          chunkTypes: ['medical_guidance'],
+          confidenceLevel: ragResponse.confidence > 0.8 ? 'high' : ragResponse.confidence > 0.5 ? 'medium' : 'low',
+          metadata: {
+            query,
+            searchTimeMs: ragResponse.processingTime,
+            similarityThreshold: 0.7,
+            chunksFound: ragResponse.sources.length
+          }
+        },
+        persona: personaId,
+        qualityScore: ragResponse.confidence,
+        sources: ragResponse.sources,
+        limitations: [],
+        generatedAt: new Date().toISOString(),
+        processingTimeMs: ragResponse.processingTime,
+        strategy: 'hybrid',
+        knowledgeSource: 'persona_rag_integration',
+        processingSteps: ['query_analysis', 'persona_selection', 'rag_execution', 'response_adaptation']
+      };
+
       // Adaptar resposta à persona
       const adaptedResponse = await this.adaptResponseToPersona(
-        ragResponse,
+        integratedResponse,
         persona,
         query,
         userId
@@ -175,7 +279,35 @@ export class PersonaRAGIntegration {
       return personaResponse;
 
     } catch (error) {
-      console.error('Error in persona RAG integration:', error);
+      // Critical medical persona error - explicit stderr + tracking
+      const errorMessage = error instanceof Error ? error.message : String(error);
+
+      // Explicit error to stderr for medical system visibility
+      if (typeof process !== 'undefined' && process.stderr) {
+        process.stderr.write(`❌ ERRO CRÍTICO - Falha na integração PersonaRAG médica:\n` +
+          `  PersonaID: ${personaId}\n` +
+          `  Query: ${query.substring(0, 100)}...\n` +
+          `  UserID: ${userId || 'anonymous'}\n` +
+          `  Error: ${errorMessage}\n` +
+          `  ProcessingTime: ${Date.now() - startTime}ms\n\n`);
+      }
+
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'medical_persona_rag_integration_error', {
+          event_category: 'medical_error_critical',
+          event_label: 'persona_rag_query_failed',
+          custom_parameters: {
+            medical_context: 'critical_persona_rag_error',
+            persona_id: personaId,
+            user_id: userId || 'anonymous',
+            query_length: query.length,
+            error_type: 'persona_rag_integration_failure',
+            error_message: errorMessage,
+            processing_time_ms: Date.now() - startTime
+          }
+        });
+      }
+
       return this.generateFallbackPersonaResponse(query, personaId, error);
     }
   }
@@ -186,7 +318,7 @@ export class PersonaRAGIntegration {
   async recommendPersona(
     query: string,
     userId?: string,
-    context?: any
+    context?: ContextualInfo
   ): Promise<{
     recommendedPersona: 'dr_gasnelio' | 'ga';
     confidence: number;
@@ -205,8 +337,28 @@ export class PersonaRAGIntegration {
       const userPreference = userId ? this.getUserPersonaPreference(userId) : null;
       
       // Calcular scores para cada persona
-      const drGasnelioScore = this.calculatePersonaScore('dr_gasnelio', analysis, userPreference);
-      const gaScore = this.calculatePersonaScore('ga', analysis, userPreference);
+      const defaultUserPreference: UserPreference = {
+        preferredPersona: 'dr_gasnelio',
+        technicalLevel: 'medium',
+        responseStyle: 'detailed',
+        topicPreferences: [],
+        interactionStyle: 'educational'
+      };
+
+      const drGasnelioScore = this.calculatePersonaScore('dr_gasnelio', {
+        ...analysis,
+        selectedPersona: 'dr_gasnelio',
+        confidence: 0.8,
+        reasoning: [],
+        adaptations: []
+      }, userPreference || defaultUserPreference);
+      const gaScore = this.calculatePersonaScore('ga', {
+        ...analysis,
+        selectedPersona: 'ga',
+        confidence: 0.8,
+        reasoning: [],
+        adaptations: []
+      }, userPreference || defaultUserPreference);
       
       const recommendedPersona = drGasnelioScore > gaScore ? 'dr_gasnelio' : 'ga';
       const confidence = Math.max(drGasnelioScore, gaScore);
@@ -214,7 +366,13 @@ export class PersonaRAGIntegration {
       return {
         recommendedPersona,
         confidence,
-        reasoning: this.generateRecommendationReasoning(recommendedPersona, analysis),
+        reasoning: this.generateRecommendationReasoning(recommendedPersona, {
+          ...analysis,
+          selectedPersona: recommendedPersona,
+          confidence,
+          reasoning: [],
+          adaptations: []
+        }),
         alternatives: [
           {
             persona: recommendedPersona === 'dr_gasnelio' ? 'ga' : 'dr_gasnelio',
@@ -225,7 +383,32 @@ export class PersonaRAGIntegration {
       };
 
     } catch (error) {
-      console.error('Error recommending persona:', error);
+      // Medical persona recommendation error - explicit stderr + tracking
+      const errorMessage = error instanceof Error ? error.message : String(error);
+
+      // Explicit error to stderr for medical system visibility
+      if (typeof process !== 'undefined' && process.stderr) {
+        process.stderr.write(`❌ ERRO - Falha na recomendação de persona médica:\n` +
+          `  Query: ${query.substring(0, 100)}...\n` +
+          `  UserID: ${userId || 'anonymous'}\n` +
+          `  Error: ${errorMessage}\n\n`);
+      }
+
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'medical_persona_recommendation_error', {
+          event_category: 'medical_error_critical',
+          event_label: 'persona_recommendation_failed',
+          custom_parameters: {
+            medical_context: 'persona_recommendation_system',
+            user_id: userId || 'anonymous',
+            query_length: query.length,
+            error_type: 'persona_recommendation_failure',
+            error_message: errorMessage,
+            fallback_persona: 'dr_gasnelio'
+          }
+        });
+      }
+
       return {
         recommendedPersona: 'dr_gasnelio',
         confidence: 0.5,
@@ -517,8 +700,8 @@ export class PersonaRAGIntegration {
 
   private calculatePersonaScore(
     personaId: string,
-    analysis: any,
-    userPreference: any
+    analysis: PersonaAnalysis,
+    userPreference: UserPreference
   ): number {
     let score = 0.5; // Base score
 
@@ -542,7 +725,7 @@ export class PersonaRAGIntegration {
     return Math.min(1.0, score);
   }
 
-  private generateRecommendationReasoning(persona: string, analysis: any): string {
+  private generateRecommendationReasoning(persona: string, analysis: PersonaAnalysis): string {
     if (persona === 'dr_gasnelio') {
       if (analysis.technicalLevel === 'advanced') {
         return 'Recomendado Dr. Gasnelio para consulta técnica especializada';
@@ -600,33 +783,50 @@ export class PersonaRAGIntegration {
 
   private updateUserProfile(userId: string, query: string, personaId: string): void {
     let profile = this.userProfiles.get(userId);
-    
+
     if (!profile) {
       profile = {
+        id: userId,
+        preferredPersona: personaId as 'dr_gasnelio' | 'ga',
+        expertiseLevel: 'beginner',
+        interactionHistory: {
+          totalQueries: 0,
+          favoriteTopics: [],
+          avgSessionDuration: 0,
+          lastActive: new Date()
+        },
+        personalizationSettings: {
+          technicalLevel: 'low',
+          preferredResponseLength: 'medium',
+          includeExamples: true,
+          includeCitations: false
+        },
         userId,
         interactions: 0,
-        preferredPersona: personaId,
         commonTopics: [],
         preferredExplanationStyle: 'balanced',
         lastInteraction: Date.now()
       };
+      this.userProfiles.set(userId, profile);
     }
 
-    profile.interactions++;
-    profile.lastInteraction = Date.now();
-    
-    // Atualizar tópicos comuns
-    const topics = this.extractTopicsFromQuery(query);
-    for (const topic of topics) {
-      if (!profile.commonTopics.includes(topic)) {
-        profile.commonTopics.push(topic);
+    if (profile) {
+      profile.interactions++;
+      profile.lastInteraction = Date.now();
+
+      // Atualizar tópicos comuns
+      const topics = this.extractTopicsFromQuery(query);
+      for (const topic of topics) {
+        if (!profile.commonTopics.includes(topic)) {
+          profile.commonTopics.push(topic);
+        }
       }
+
+      // Limitar tópicos a 10 mais recentes
+      profile.commonTopics = profile.commonTopics.slice(-10);
+
+      this.userProfiles.set(userId, profile);
     }
-
-    // Limitar tópicos a 10 mais recentes
-    profile.commonTopics = profile.commonTopics.slice(-10);
-
-    this.userProfiles.set(userId, profile);
   }
 
   private extractTopicsFromQuery(query: string): string[] {
@@ -651,10 +851,14 @@ export class PersonaRAGIntegration {
     return topics;
   }
 
-  private getUserPersonaPreference(userId: string): any {
+  private getUserPersonaPreference(userId: string): UserPreference | null {
     const profile = this.userProfiles.get(userId);
     return profile ? {
       preferredPersona: profile.preferredPersona,
+      technicalLevel: 'medium',
+      responseStyle: 'detailed',
+      topicPreferences: profile.commonTopics,
+      interactionStyle: 'educational',
       interactions: profile.interactions
     } : null;
   }
@@ -663,12 +867,16 @@ export class PersonaRAGIntegration {
     let history = this.conversationHistory.get(userId) || [];
     
     history.push({
+      id: `msg_${Date.now()}`,
+      role: 'assistant' as const,
+      content: response.response,
       timestamp: Date.now(),
       query,
-      response: response.response,
       persona: response.persona,
-      quality: response.confidence,
-      personalization: response.personalizationScore
+      metadata: {
+        confidence: response.confidence,
+        processingTime: response.processingTime
+      }
     });
 
     // Manter últimas 50 interações
@@ -684,8 +892,23 @@ export class PersonaRAGIntegration {
     response: PersonaResponse,
     userId?: string
   ): Promise<void> {
-    // REMOVIDO: Analytics Firestore - usando arquitetura simplificada Cloud Run + SQLite
-    console.log(`Persona ${personaId} interaction completed for user ${userId || 'anonymous'}`);
+    // Medical persona interaction tracking
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'medical_persona_interaction_completed', {
+        event_category: 'medical_persona_tracking',
+        event_label: 'persona_interaction_success',
+        custom_parameters: {
+          medical_context: 'persona_interaction_tracking',
+          persona_id: personaId,
+          user_id: userId || 'anonymous',
+          response_confidence: Math.round((response.confidence || 0) * 100),
+          personalization_score: Math.round(response.personalizationScore || 0),
+          processing_time_ms: response.processingTime || 0,
+          sources_used: response.sources?.length || 0,
+          fallback_used: response.fallbackUsed || false
+        }
+      });
+    }
   }
 
   private updateStats(personaId: string, response: PersonaResponse): void {
@@ -711,7 +934,7 @@ export class PersonaRAGIntegration {
   private generateFallbackPersonaResponse(
     query: string,
     personaId: string,
-    error: any
+    error: PersonaError | Error | unknown
   ): PersonaResponse {
     const persona = this.personaConfigs.get(personaId);
     const fallbackAnswer = persona?.id === 'dr_gasnelio'
@@ -742,14 +965,7 @@ export class PersonaRAGIntegration {
   }
 }
 
-interface UserProfile {
-  userId: string;
-  interactions: number;
-  preferredPersona: string;
-  commonTopics: string[];
-  preferredExplanationStyle: 'simple' | 'detailed' | 'balanced';
-  lastInteraction: number;
-}
+// Removed duplicate UserProfile interface - using the one defined at the top
 
 // Instância singleton
 export const personaRAGIntegration = PersonaRAGIntegration.getInstance();
@@ -759,7 +975,7 @@ export async function queryPersonaRAG(
   query: string,
   personaId: 'dr_gasnelio' | 'ga',
   userId?: string,
-  context?: any[]
+  context?: ConversationMessage[]
 ): Promise<PersonaResponse> {
   return personaRAGIntegration.queryWithPersona(query, personaId, userId, context);
 }

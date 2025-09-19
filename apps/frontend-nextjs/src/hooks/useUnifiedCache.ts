@@ -148,7 +148,6 @@ export const useUnifiedCache = <T = any>(config: UnifiedCacheConfig = {}) => {
         stats.current.localStorageHits++;
         return entry.data;
       } catch (error) {
-        console.debug("localStorage cache error:", error);
         return null;
       }
     },
@@ -178,7 +177,7 @@ export const useUnifiedCache = <T = any>(config: UnifiedCacheConfig = {}) => {
         // Atualizar estatísticas
         stats.current.localStorageSize = localStorage.length;
       } catch (error) {
-        console.debug("localStorage set error:", error);
+        // Silent fail for localStorage
       }
     },
     [finalConfig.enableLocalStorage],
@@ -213,7 +212,6 @@ export const useUnifiedCache = <T = any>(config: UnifiedCacheConfig = {}) => {
 
         return null;
       } catch (error) {
-        console.debug("API cache error:", error);
         return null;
       }
     },
@@ -244,7 +242,7 @@ export const useUnifiedCache = <T = any>(config: UnifiedCacheConfig = {}) => {
           }),
         });
       } catch (error) {
-        console.debug("API cache set error:", error);
+        // Silent fail for API cache
       }
     },
     [finalConfig.enableAPICache, finalConfig.apiCacheEndpoint],
@@ -341,7 +339,7 @@ export const useUnifiedCache = <T = any>(config: UnifiedCacheConfig = {}) => {
             body: JSON.stringify({ key: cacheKey }),
           });
         } catch (error) {
-          console.debug("API cache delete error:", error);
+          // Silent fail for API cache delete
         }
       }
     },
@@ -379,7 +377,7 @@ export const useUnifiedCache = <T = any>(config: UnifiedCacheConfig = {}) => {
           body: JSON.stringify({ namespace: "frontend" }),
         });
       } catch (error) {
-        console.debug("API cache clear error:", error);
+        // Silent fail for API cache clear
       }
     }
 
@@ -427,7 +425,7 @@ export const useUnifiedCache = <T = any>(config: UnifiedCacheConfig = {}) => {
     async (
       persona: string,
       query: string,
-      response: any,
+      response: { answer?: string; context?: unknown; sources?: unknown[]; qualityScore?: number; [key: string]: unknown },
       confidence: number = 0.85,
     ): Promise<void> => {
       const key = `persona:${persona}:${query.slice(0, 50)}`;

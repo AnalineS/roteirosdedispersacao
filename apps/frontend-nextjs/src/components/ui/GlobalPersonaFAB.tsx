@@ -107,7 +107,18 @@ export default function GlobalPersonaFAB({ className, style }: GlobalPersonaFABP
       await sendMessage(miniChatInput, bestPersona);
       setMiniChatInput('');
     } catch (error) {
-      console.error('Erro ao enviar mensagem:', error);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'global_persona_fab_send_error', {
+          event_category: 'medical_chat_interaction',
+          event_label: 'fab_message_send_failed',
+          custom_parameters: {
+            medical_context: 'global_persona_fab',
+            session_id: sessionId,
+            error_type: 'message_send_failure',
+            error_message: error instanceof Error ? error.message : String(error)
+          }
+        });
+      }
     }
   };
 

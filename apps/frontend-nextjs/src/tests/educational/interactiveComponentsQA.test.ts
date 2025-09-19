@@ -20,7 +20,7 @@ import EducationalQAFramework from '@/utils/educationalQAFramework';
 
 describe('Interactive Educational Components QA Suite', () => {
   let qaFramework: EducationalQAFramework;
-  let user: any;
+  let user: ReturnType<typeof userEvent.setup>;
   
   beforeEach(() => {
     qaFramework = EducationalQAFramework.getInstance();

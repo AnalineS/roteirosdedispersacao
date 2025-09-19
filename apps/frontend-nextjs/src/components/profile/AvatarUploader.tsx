@@ -40,17 +40,17 @@ export default function AvatarUploader({
     reset: resetUpload
   } = useImageUpload();
 
-  const handleUploadSuccess = (url: string) => {
+  const handleUploadSuccess = useCallback((url: string) => {
     success();
     onUploadComplete?.(url);
     setSelectedFile(null);
     setPreviewUrl(null);
-  };
+  }, [success, onUploadComplete, setSelectedFile, setPreviewUrl]);
 
-  const handleUploadError = (err: Error) => {
+  const handleUploadError = useCallback((err: Error) => {
     error();
     onUploadError?.(err.message);
-  };
+  }, [error, onUploadError]);
 
   const validateFile = useCallback((file: File): string | null => {
     // Verificar tipo

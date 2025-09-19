@@ -8,7 +8,7 @@ import { secureLogger } from './secureLogger';
 interface CloudLogEvent {
   level: 'debug' | 'info' | 'warning' | 'error' | 'critical';
   message: string;
-  context?: Record<string, any>;
+  context?: Record<string, string | number | boolean | null>;
   category?: 'personal_data' | 'analytics' | 'system' | 'audit';
   userId?: string;
   sessionId?: string;
@@ -57,10 +57,30 @@ class CloudLoggerClient {
 
       return await response.json();
     } catch (error) {
-      console.warn('Failed to send log to backend:', error);
+      // Cloud logger backend error - explicit stderr + tracking
+      const errorMessage = error instanceof Error ? error.message : String(error);
+
+      // Explicit error to stderr for system visibility
+      if (typeof process !== 'undefined' && process.stderr) {
+        process.stderr.write(`⚠️ AVISO - Falha ao enviar log para backend cloud:\n` +
+          `  Error: ${errorMessage}\n\n`);
+      }
+
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'cloud_logger_backend_error', {
+          event_category: 'logging_warning',
+          event_label: 'cloud_log_send_failed',
+          custom_parameters: {
+            logging_context: 'cloud_logger_backend',
+            error_type: 'backend_send_failure',
+            error_message: errorMessage
+          }
+        });
+      }
+
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: errorMessage
       };
     }
   }

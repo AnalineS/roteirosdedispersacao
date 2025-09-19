@@ -35,6 +35,13 @@ except ImportError:
     RAG_SERVICES_AVAILABLE = False
     MEDICAL_RAG_AVAILABLE = False
 
+# Import Supabase RAG System (PRIORIDADE MÁXIMA)
+try:
+    from services.rag.supabase_rag_system import SupabaseRAGSystem
+    SUPABASE_RAG_AVAILABLE = True
+except ImportError:
+    SUPABASE_RAG_AVAILABLE = False
+
 # Import novo sistema de embeddings (SPRINT 1.2)
 try:
     from services.embedding_rag_system import get_embedding_rag, get_rag_context
@@ -166,33 +173,58 @@ class DependencyInjector:
         """Cria serviço RAG unificado com chunking médico e embeddings"""
         class UnifiedRAGService:
             def __init__(self):
-                # SPRINT 1.2: Priorizar embeddings se disponível
+                # PRIORIDADE 1: Supabase RAG System (Vector + pgvector)
+                self.use_supabase_rag = SUPABASE_RAG_AVAILABLE and config.RAG_AVAILABLE
+                # PRIORIDADE 2: Embeddings RAG
                 self.use_embedding_rag = EMBEDDING_RAG_AVAILABLE and config.EMBEDDINGS_ENABLED
+                # PRIORIDADE 3: Medical RAG
                 self.use_medical_rag = MEDICAL_RAG_AVAILABLE and config.ADVANCED_FEATURES
+                # FALLBACK: Enhanced RAG
                 self.use_enhanced = config.ADVANCED_FEATURES
-                
-                # Inicializar embedding RAG se disponível
+
+                # Inicializar Supabase RAG se disponível (MÁXIMA PRIORIDADE)
+                self.supabase_rag = None
+                if self.use_supabase_rag:
+                    try:
+                        self.supabase_rag = SupabaseRAGSystem(config)
+                        logger.info("[OK] Supabase RAG System inicializado com sucesso")
+                    except Exception as e:
+                        logger.error(f"[ERROR] Falha ao inicializar Supabase RAG: {e}")
+                        self.use_supabase_rag = False
+
+                # Inicializar embedding RAG como fallback
                 self.embedding_rag = None
-                if self.use_embedding_rag:
+                if self.use_embedding_rag and not self.use_supabase_rag:
                     self.embedding_rag = get_embedding_rag()
             
             def get_context(self, query: str, max_chunks: int = 3, persona: Optional[str] = None) -> str:
-                """Interface unificada para RAG com embeddings e priorização médica"""
+                """Interface unificada RAG com PRIORIDADE SUPABASE"""
                 try:
-                    # SPRINT 1.2: Priorizar embeddings semânticos
+                    # PRIORIDADE 1: Supabase RAG System (Vector + pgvector)
+                    if self.use_supabase_rag and self.supabase_rag:
+                        response = self.supabase_rag.generate_response(query, persona or 'dr_gasnelio')
+                        if response and response.context and response.context.chunks:
+                            # Extrair contexto dos chunks
+                            context_text = "\n\n".join([chunk.content for chunk in response.context.chunks[:max_chunks]])
+                            logger.info(f"[SUPABASE RAG] Contexto gerado: {len(context_text)} chars, {len(response.context.chunks)} chunks")
+                            return context_text
+                        else:
+                            logger.warning("[SUPABASE RAG] Resposta vazia, usando fallback")
+
+                    # FALLBACK 1: Embeddings semânticos
                     if self.use_embedding_rag and self.embedding_rag:
                         return self.embedding_rag.get_context(query, max_chunks, persona)
-                    # Fallback para RAG médico
+                    # FALLBACK 2: RAG médico
                     elif self.use_medical_rag:
                         return get_medical_context(query, max_chunks)
-                    # Fallback para RAG enhanced
+                    # FALLBACK 3: RAG enhanced
                     elif self.use_enhanced:
                         return get_enhanced_context(query, max_chunks)
-                    # Fallback final para RAG básico
+                    # FALLBACK FINAL: RAG básico
                     else:
                         return generate_context_from_rag(query, max_chunks)
                 except Exception as e:
-                    logger.error(f"Erro no RAG: {e}")
+                    logger.error(f"[ERROR] Erro no sistema RAG: {e}")
                     return ""
             
             def get_stats(self) -> dict:

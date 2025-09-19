@@ -42,11 +42,6 @@ export default function ConnectedAccounts({
 
   const { success, error: hapticError, info } = useHapticFeedback();
 
-  // Carregar contas conectadas
-  useEffect(() => {
-    loadConnectedAccounts();
-  }, []);
-
   const loadConnectedAccounts = useCallback(async () => {
     try {
       setIsLoading(true);
@@ -68,13 +63,18 @@ export default function ConnectedAccounts({
         setError(data.error || 'Erro ao carregar contas conectadas');
         hapticError();
       }
-    } catch (err: any) {
+    } catch (err: Error | unknown) {
       setError('Erro de conexão');
       hapticError();
     } finally {
       setIsLoading(false);
     }
   }, [onAccountUpdate, hapticError]);
+
+  // Carregar contas conectadas na inicialização
+  useEffect(() => {
+    loadConnectedAccounts();
+  }, [loadConnectedAccounts]);
 
   // Conectar nova conta Google
   const connectGoogleAccount = useCallback(async () => {
@@ -106,7 +106,7 @@ export default function ConnectedAccounts({
         setError(data.error || 'Erro ao conectar conta Google');
         hapticError();
       }
-    } catch (err: any) {
+    } catch (err: Error | unknown) {
       setError('Erro ao conectar conta');
       hapticError();
     } finally {
@@ -148,7 +148,7 @@ export default function ConnectedAccounts({
         setError(data.error || 'Erro ao desconectar conta');
         hapticError();
       }
-    } catch (err: any) {
+    } catch (err: Error | unknown) {
       setError('Erro ao desconectar conta');
       hapticError();
     } finally {
@@ -187,7 +187,7 @@ export default function ConnectedAccounts({
         setError(data.error || 'Erro ao atualizar conta');
         hapticError();
       }
-    } catch (err: any) {
+    } catch (err: Error | unknown) {
       setError('Erro ao atualizar conta');
       hapticError();
     }

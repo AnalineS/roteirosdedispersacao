@@ -14,6 +14,22 @@ import { useSafeAuth } from '@/hooks/useSafeAuth';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { logEvent } from '@/services/analytics';
 
+export interface SystemHealth {
+  status: 'healthy' | 'degraded' | 'unhealthy';
+  services: {
+    chat: boolean;
+    personas: boolean;
+    analytics: boolean;
+    storage: boolean;
+  };
+  performance: {
+    averageResponseTime: number;
+    uptime: number;
+    errorRate: number;
+  };
+  lastChecked: string;
+}
+
 export interface UseChatServiceOptions {
   autoStart?: boolean;
   defaultPersona?: 'dr_gasnelio' | 'ga';
@@ -50,7 +66,7 @@ export interface UseChatServiceReturn {
   
   // Analytics e monitoramento
   analytics: ChatAnalytics;
-  systemHealth: any;
+  systemHealth: SystemHealth | null;
   refreshAnalytics: () => void;
   
   // Funcionalidades avançadas
@@ -81,7 +97,7 @@ export function useChatService(options: UseChatServiceOptions = {}): UseChatServ
   const [error, setError] = useState<string | null>(null);
   const [preferences, setPreferences] = useState<ChatPreferences | null>(null);
   const [analytics, setAnalytics] = useState<ChatAnalytics>(chatService.getAnalytics());
-  const [systemHealth, setSystemHealth] = useState<any>(null);
+  const [systemHealth, setSystemHealth] = useState<SystemHealth | null>(null);
 
   // Refs para evitar re-renderizações desnecessárias
   const sessionRef = useRef<ChatSession | null>(null);

@@ -32,7 +32,18 @@ export default function PersonaSelector() {
       saveProfile(profileWithPersona);
       router.push('/chat');
     } catch (error) {
-      console.error('Erro ao selecionar persona:', error);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'persona_selection_error', {
+          event_category: 'medical_persona_interaction',
+          event_label: 'persona_selection_failed',
+          custom_parameters: {
+            medical_context: 'persona_selector_interaction',
+            persona_id: personaId,
+            error_type: 'selection_failure',
+            error_message: error instanceof Error ? error.message : String(error)
+          }
+        });
+      }
       // Fallback: navegar sem salvar profile
       router.push('/chat');
     }

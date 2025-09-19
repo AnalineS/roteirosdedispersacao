@@ -13,6 +13,44 @@ import { PatientProfile, CalculationResult } from '@/types/medication';
 import { ClinicalCase } from '@/types/clinicalCases';
 import { Certificate } from '@/types/certification';
 
+interface SecurityInputData {
+  patientData?: Partial<PatientProfile>;
+  calculationParams?: Record<string, number | string>;
+  caseData?: Partial<ClinicalCase>;
+  userInput?: string | number | boolean;
+  formData?: Record<string, unknown>;
+  metadata?: Record<string, unknown>;
+}
+
+interface SecurityOutputData {
+  result?: CalculationResult;
+  processedData?: Record<string, unknown>;
+  validationResults?: ValidationResult[];
+  certificateData?: Partial<Certificate>;
+  exportData?: unknown[];
+  sanitizedData?: Record<string, unknown>;
+}
+
+interface FraudAlert {
+  type: 'unusual_pattern' | 'rate_limit_exceeded' | 'data_manipulation' | 'unauthorized_access';
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  details: string;
+  timestamp: Date;
+  userId?: string;
+  sessionId: string;
+  actionTaken: string;
+}
+
+interface SanitizedData {
+  originalType: string;
+  sanitizedValue: unknown;
+  sanitizationRules: string[];
+  wasModified: boolean;
+  riskScore: number;
+}
+
+type UserDataRecord = Record<string, unknown>;
+
 // ================== TIPOS DE SEGURANÇA ==================
 
 export interface SecurityAudit {
@@ -23,8 +61,8 @@ export interface SecurityAudit {
   component: SecurityComponent;
   riskLevel: RiskLevel;
   data: {
-    input?: any;
-    output?: any;
+    input?: SecurityInputData;
+    output?: SecurityOutputData;
     validation?: ValidationResult;
     errors?: string[];
     exportFormat?: string;
@@ -32,7 +70,7 @@ export interface SecurityAudit {
     recordCount?: number;
     certificateId?: string;
     securityLevel?: string;
-    fraudAlerts?: any;
+    fraudAlerts?: FraudAlert[];
     validationsPassed?: number;
     validationsTotal?: number;
   };
@@ -66,7 +104,7 @@ export interface ValidationResult {
   isValid: boolean;
   errors: string[];
   warnings: string[];
-  sanitized?: any;
+  sanitized?: SanitizedData;
   riskScore: number;
 }
 
@@ -300,7 +338,7 @@ export async function decryptSensitiveData(encryptedData: string): Promise<Recor
 /**
  * Anonimização de dados para analytics (LGPD)
  */
-export function anonymizeUserData(data: any): any {
+export function anonymizeUserData(data: UserDataRecord): UserDataRecord {
   const anonymized = { ...data };
   
   // Remove/mascara informações pessoais
@@ -403,7 +441,7 @@ class SecurityLogger {
     }
   }
 
-  private sanitizeLogData(data: any): any {
+  private sanitizeLogData(data: UserDataRecord): SanitizedData {
     if (!data || typeof data !== 'object') return data;
     
     const sanitized = { ...data };

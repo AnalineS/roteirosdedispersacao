@@ -2,6 +2,11 @@ import { useState, useCallback } from 'react';
 import { apiClient } from '@/services/api';
 import type { FeedbackData } from '@/types/feedback';
 
+// Interface para gtag analytics
+interface WindowWithGtag extends Window {
+  gtag?: (command: string, action: string, parameters?: Record<string, unknown>) => void;
+}
+
 export interface FeedbackResponse {
   message: string;
   request_id: string;
@@ -94,7 +99,7 @@ export function useFeedback(options: UseFeedbackOptions = {}) {
 
           return response;
 
-        } catch (attemptError: any) {
+        } catch (attemptError: Error | unknown) {
           lastError = attemptError;
           
           if (attempt < retryAttempts) {
@@ -108,14 +113,24 @@ export function useFeedback(options: UseFeedbackOptions = {}) {
       // Se chegou aqui, todos os attempts falharam
       throw lastError;
 
-    } catch (submitError: any) {
+    } catch (submitError: Error | unknown) {
       const errorMessage = submitError?.message || 'Erro ao enviar feedback';
       setError(errorMessage);
 
       // Adicionar à queue offline se habilitado
       if (enableOfflineQueue && !navigator.onLine) {
         addToOfflineQueue(feedbackData);
-        console.log('Feedback adicionado à queue offline');
+        // Feedback adicionado à queue offline
+        if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'feedback_offline_queued', {
+            event_category: 'medical_feedback',
+            event_label: 'offline_queue_add',
+            custom_parameters: {
+              feedback_context: 'offline_storage',
+              queue_action: 'add_to_queue'
+            }
+          });
+        }
       } else {
         onError?.(submitError);
       }
@@ -138,7 +153,20 @@ export function useFeedback(options: UseFeedbackOptions = {}) {
         try {
           localStorage.setItem('feedback_offline_queue', JSON.stringify(newQueue));
         } catch (e) {
-          console.warn('Erro ao salvar queue offline no localStorage:', e);
+          // Erro ao salvar queue offline no localStorage
+          if (typeof process !== 'undefined' && process.stderr) {
+            process.stderr.write(`⚠️ AVISO - Falha ao salvar queue offline no localStorage: ${e}\n`);
+          }
+          if (typeof window !== 'undefined' && window.gtag) {
+            window.gtag('event', 'feedback_offline_save_error', {
+              event_category: 'medical_feedback_error',
+              event_label: 'localStorage_save_failed',
+              custom_parameters: {
+                error_context: 'offline_queue_storage',
+                error_type: 'localStorage_write_failure'
+              }
+            });
+          }
         }
       }
       
@@ -158,9 +186,32 @@ export function useFeedback(options: UseFeedbackOptions = {}) {
     for (const feedbackData of queue) {
       try {
         await submitFeedback(feedbackData);
-        console.log('Feedback offline enviado com sucesso:', feedbackData.messageId);
+        // Feedback offline enviado com sucesso
+        if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'feedback_offline_sent', {
+            event_category: 'medical_feedback',
+            event_label: 'offline_queue_success',
+            custom_parameters: {
+              message_id: feedbackData.messageId,
+              feedback_context: 'offline_queue_processing'
+            }
+          });
+        }
       } catch (error) {
-        console.error('Erro ao enviar feedback offline:', error);
+        // Erro ao enviar feedback offline
+        if (typeof process !== 'undefined' && process.stderr) {
+          process.stderr.write(`❌ ERRO - Falha ao enviar feedback offline: ${error}\n`);
+        }
+        if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'feedback_offline_send_error', {
+            event_category: 'medical_feedback_error',
+            event_label: 'offline_send_failed',
+            custom_parameters: {
+              error_context: 'offline_queue_processing',
+              error_message: String(error)
+            }
+          });
+        }
         // Recolocar na queue se falhar
         addToOfflineQueue(feedbackData);
       }
@@ -171,7 +222,20 @@ export function useFeedback(options: UseFeedbackOptions = {}) {
       try {
         localStorage.removeItem('feedback_offline_queue');
       } catch (e) {
-        console.warn('Erro ao limpar queue offline do localStorage:', e);
+        // Erro ao limpar queue offline do localStorage
+        if (typeof process !== 'undefined' && process.stderr) {
+          process.stderr.write(`⚠️ AVISO - Falha ao limpar queue offline do localStorage: ${e}\n`);
+        }
+        if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'feedback_offline_clear_error', {
+            event_category: 'medical_feedback_error',
+            event_label: 'localStorage_clear_failed',
+            custom_parameters: {
+              error_context: 'offline_queue_cleanup',
+              error_type: 'localStorage_clear_failure'
+            }
+          });
+        }
       }
     }
   }, [offlineQueue, submitFeedback, addToOfflineQueue]);
@@ -187,7 +251,20 @@ export function useFeedback(options: UseFeedbackOptions = {}) {
         setOfflineQueue(queue);
       }
     } catch (e) {
-      console.warn('Erro ao carregar queue offline do localStorage:', e);
+      // Erro ao carregar queue offline do localStorage
+      if (typeof process !== 'undefined' && process.stderr) {
+        process.stderr.write(`⚠️ AVISO - Falha ao carregar queue offline do localStorage: ${e}\n`);
+      }
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'feedback_offline_load_error', {
+          event_category: 'medical_feedback_error',
+          event_label: 'localStorage_load_failed',
+          custom_parameters: {
+            error_context: 'offline_queue_initialization',
+            error_type: 'localStorage_read_failure'
+          }
+        });
+      }
     }
   }, []);
 
@@ -208,7 +285,20 @@ export function useFeedback(options: UseFeedbackOptions = {}) {
       return mockStats;
 
     } catch (error) {
-      console.error('Erro ao buscar estatísticas de feedback:', error);
+      // Erro ao buscar estatísticas de feedback
+      if (typeof process !== 'undefined' && process.stderr) {
+        process.stderr.write(`❌ ERRO - Falha ao buscar estatísticas de feedback: ${error}\n`);
+      }
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'feedback_stats_fetch_error', {
+          event_category: 'medical_feedback_error',
+          event_label: 'stats_fetch_failed',
+          custom_parameters: {
+            error_context: 'feedback_statistics',
+            error_message: String(error)
+          }
+        });
+      }
       return null;
     }
   }, []);
@@ -218,10 +308,10 @@ export function useFeedback(options: UseFeedbackOptions = {}) {
     feedbackData: FeedbackData, 
     response: FeedbackResponse
   ) => {
-    if (typeof window === 'undefined' || !(window as any).gtag) return;
+    if (typeof window === 'undefined' || !(window as WindowWithGtag).gtag) return;
 
     try {
-      (window as any).gtag('event', 'feedback_submitted', {
+      (window as WindowWithGtag).gtag!('event', 'feedback_submitted', {
         event_category: 'user_feedback',
         event_label: feedbackData.personaId,
         value: feedbackData.rating,
@@ -236,7 +326,7 @@ export function useFeedback(options: UseFeedbackOptions = {}) {
 
       // Evento específico para ratings baixos (para análise)
       if (feedbackData.rating <= 2) {
-        (window as any).gtag('event', 'low_rating_feedback', {
+        (window as WindowWithGtag).gtag!('event', 'low_rating_feedback', {
           event_category: 'quality_monitoring',
           event_label: feedbackData.personaId,
           value: feedbackData.rating,
@@ -248,7 +338,20 @@ export function useFeedback(options: UseFeedbackOptions = {}) {
       }
 
     } catch (analyticsError) {
-      console.warn('Erro no tracking de analytics:', analyticsError);
+      // Erro no tracking de analytics
+      if (typeof process !== 'undefined' && process.stderr) {
+        process.stderr.write(`⚠️ AVISO - Falha no tracking de analytics: ${analyticsError}\n`);
+      }
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'feedback_analytics_tracking_error', {
+          event_category: 'medical_feedback_error',
+          event_label: 'analytics_tracking_failed',
+          custom_parameters: {
+            error_context: 'analytics_tracking',
+            error_type: 'gtag_tracking_failure'
+          }
+        });
+      }
     }
   }, []);
 
@@ -325,9 +428,22 @@ export function useFeedbackStats() {
 
       setStats(mockStats);
 
-    } catch (fetchError: any) {
+    } catch (fetchError: Error | unknown) {
       setError(fetchError?.message || 'Erro ao buscar estatísticas');
-      console.error('Erro ao buscar stats de feedback:', fetchError);
+      // Erro ao buscar stats de feedback
+      if (typeof process !== 'undefined' && process.stderr) {
+        process.stderr.write(`❌ ERRO - Falha ao buscar stats de feedback: ${fetchError}\n`);
+      }
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'feedback_stats_error', {
+          event_category: 'medical_feedback_error',
+          event_label: 'stats_fetch_failed',
+          custom_parameters: {
+            error_context: 'feedback_stats_api',
+            error_message: String(fetchError)
+          }
+        });
+      }
     } finally {
       setLoading(false);
     }

@@ -31,7 +31,7 @@ export default function AdvancedCalculator({ onCalculationComplete }: AdvancedCa
         handleError(error as Error, 'low');
       }
     }
-  }, []);
+  }, [handleError]);
 
   // Salvar histórico no localStorage
   const saveToHistory = useCallback((result: CalculationResult, profile: PatientProfile) => {

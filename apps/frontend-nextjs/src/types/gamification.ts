@@ -85,6 +85,13 @@ export interface LearningProgress {
   lastActivity: string; // ISO date
   totalTimeSpent: number; // em minutos
   preferredPersona: 'ga' | 'dr-gasnelio';
+  // Additional properties for compatibility with simulador page
+  totalXP: number; // Alias for experiencePoints.total
+  completedCases: CompletedCase[]; // From caseStats
+  unlockedAchievements: Achievement[]; // Filtered from achievements where isUnlocked = true
+  streakDays: number; // Alias for streakData.currentStreak
+  progressPercentage: number; // Calculated progress percentage
+  nextLevelXP: number; // Alias for experiencePoints.nextLevelXP
 }
 
 export interface StreakData {
@@ -228,6 +235,7 @@ export interface CompletedCase {
   completedAt: string; // ISO date
   timeSpent: number; // em minutos
   diagnosticAccuracy: number; // 0-100
+  score: number; // Alias for diagnosticAccuracy for compatibility
   xpEarned: number;
   attempts: number;
   perfectScore: boolean;
@@ -301,7 +309,7 @@ export interface ModuleContent {
   xpValue: number;
   interactiveElements?: {
     type: 'persona_suggestion' | 'quiz_question' | 'drag_drop' | 'timeline';
-    data: any; // Específico para cada tipo
+    data: Record<string, unknown>; // Específico para cada tipo
   }[];
   medicalTerms?: string[]; // IDs de termos médicos para popup
   completed: boolean;

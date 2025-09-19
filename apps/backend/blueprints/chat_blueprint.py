@@ -248,7 +248,33 @@ def check_rate_limit(endpoint_type: str = 'default'):
                 elif threat_score > 30:
                     # Rate limiting mais rigoroso para IPs suspeitos
                     logger.info(f"Medium threat score {threat_score:.2f}, applying strict rate limiting")
-                    # TODO: Implementar contadores por IP/sessão com Redis
+
+                    # Implementar rate limiting rigoroso com SQLite
+                    try:
+                        from services.security.sqlite_rate_limiter import get_rate_limiter
+                        limiter = get_rate_limiter()
+
+                        # Rate limiting rigoroso: 5 req/5min para IPs suspeitos
+                        allowed, info = limiter.check_rate_limit(
+                            client_ip,
+                            f"suspicious_chat_{threat_score:.0f}",
+                            user_id=context.user_id if hasattr(context, 'user_id') else None,
+                            custom_limit={'requests': 5, 'window': 300}
+                        )
+
+                        if not allowed:
+                            logger.warning(f"Rate limit exceeded for suspicious IP {client_ip}")
+                            return jsonify({
+                                'error': 'Rate limit exceeded for suspicious activity',
+                                'error_code': 'SUSPICIOUS_RATE_LIMIT',
+                                'reset_time': info.get('reset_time'),
+                                'limit': info.get('limit'),
+                                'timestamp': datetime.now().isoformat()
+                            }), 429
+
+                    except Exception as e:
+                        logger.error(f"Erro no rate limiting rigoroso: {e}")
+                        # Continua sem bloquear em caso de erro
                 
                 # Atualizar score de ameaça da sessão
                 threat_detector.update_session_threat_score(context.session_id, threat_score, detected_threats)

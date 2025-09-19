@@ -11,6 +11,37 @@ import type {
 } from '@/types/auth';
 import { USER_LEVEL_BENEFITS } from '@/types/auth';
 
+interface GoogleLoginOptions {
+  prompt?: 'none' | 'consent' | 'select_account';
+  includeGrantedScopes?: boolean;
+  enableGranularConsent?: boolean;
+  loginHint?: string;
+  hd?: string;
+}
+
+interface RegistrationData {
+  email: string;
+  password: string;
+  displayName?: string;
+  type?: 'patient' | 'professional' | 'student';
+  acceptTerms: boolean;
+  acceptPrivacy: boolean;
+  optInMarketing?: boolean;
+}
+
+interface ProfileUpdates {
+  displayName?: string;
+  email?: string;
+  photoURL?: string;
+  type?: 'patient' | 'professional' | 'student' | 'admin';
+  focus?: 'general' | 'technical' | 'practical' | 'effects' | 'empathetic';
+  preferences?: {
+    language?: 'simple' | 'technical';
+    notifications?: boolean;
+    theme?: 'auto' | 'light' | 'dark';
+  };
+}
+
 // USER_LEVEL_BENEFITS imported from @/types/auth
 
 export function useAuth() {
@@ -24,7 +55,7 @@ export function useAuth() {
     if (authContext.isAdmin()) return 'admin';
     if (authContext.isAuthenticated) return 'registered';
     return 'visitor';
-  }, [authContext.isAuthenticated, authContext.isAdmin]);
+  }, [authContext]);
 
   const getUserBenefits = useCallback((): UserLevelBenefits => {
     return USER_LEVEL_BENEFITS[getUserRole()];
@@ -50,7 +81,7 @@ export function useAuth() {
       default:
         return true;
     }
-  }, [authContext.isFeatureAvailable]);
+  }, [authContext]);
 
   const hasRole = useCallback((role: UserRole) => {
     return getUserRole() === role;
@@ -67,7 +98,7 @@ export function useAuth() {
 
   const isAdmin = useCallback(() => {
     return authContext.isAdmin();
-  }, [authContext.isAdmin]);
+  }, [authContext]);
 
   // ============================================================================
   // USAGE LIMITS
@@ -115,7 +146,7 @@ export function useAuth() {
   // SIMPLIFIED METHODS
   // ============================================================================
 
-  const loginWithGoogle = useCallback(async (options?: any) => {
+  const loginWithGoogle = useCallback(async (options?: GoogleLoginOptions) => {
     const result = await authContext.loginWithSocial({
       providerId: 'google.com',
       preferredDisplayName: options?.displayName,
@@ -127,7 +158,7 @@ export function useAuth() {
     }
 
     return authContext.user;
-  }, [authContext.loginWithSocial, authContext.user]);
+  }, [authContext]);
 
   const loginWithEmail = useCallback(async (email: string, password: string) => {
     const result = await authContext.login({ email, password });
@@ -137,9 +168,9 @@ export function useAuth() {
     }
 
     return authContext.user;
-  }, [authContext.login, authContext.user]);
+  }, [authContext]);
 
-  const register = useCallback(async (data: any) => {
+  const register = useCallback(async (data: RegistrationData) => {
     const result = await authContext.register(data);
 
     if (!result.success) {
@@ -147,7 +178,7 @@ export function useAuth() {
     }
 
     return authContext.user;
-  }, [authContext.register, authContext.user]);
+  }, [authContext]);
 
   const logout = useCallback(async () => {
     const result = await authContext.logout();
@@ -155,24 +186,30 @@ export function useAuth() {
     if (!result.success) {
       throw new Error(result.error);
     }
-  }, [authContext.logout]);
+  }, [authContext]);
 
-  const updateProfile = useCallback(async (updates: any) => {
+  const updateProfile = useCallback(async (updates: ProfileUpdates) => {
     const result = await authContext.updateUserProfile(updates);
 
     if (!result.success) {
       throw new Error(result.error);
     }
-  }, [authContext.updateUserProfile]);
+  }, [authContext]);
 
   const upgradeRole = useCallback(async (newRole: UserRole) => {
     // Não implementado no novo sistema - usar upgrade de conta anônima
-    console.warn('upgradeRole não implementado no novo sistema JWT');
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'upgrade_role_not_implemented', {
+        event_category: 'auth',
+        event_label: 'jwt_system_limitation',
+        custom_parameters: { targetRole: newRole }
+      });
+    }
   }, []);
 
   const clearError = useCallback(() => {
     authContext.clearError();
-  }, [authContext.clearError]);
+  }, [authContext]);
 
   return {
     // State - Mapeamento do contexto para compatibilidade
@@ -224,7 +261,13 @@ export function useRequireAuth(requiredRole?: UserRole) {
   const auth = useAuth();
 
   if (!auth.isLoading && !auth.isAuthenticated && requiredRole && requiredRole !== 'visitor') {
-    console.warn(`Acesso negado: requer role ${requiredRole}`);
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'access_denied_role_required', {
+        event_category: 'auth',
+        event_label: 'role_check_failed',
+        custom_parameters: { requiredRole }
+      });
+    }
   }
 
   return auth;

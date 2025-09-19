@@ -2,9 +2,10 @@
 
 import EducationalLayout from '@/components/layout/EducationalLayout';
 import IntelligentDoseCalculator from '@/components/interactive/DoseCalculator/IntelligentDoseCalculator';
+import { DoseRecommendation } from '@/types/doseCalculator';
 
 export default function CalculatorPage() {
-  const handleRecommendationGenerated = (recommendation: any) => {
+  const handleRecommendationGenerated = (recommendation: DoseRecommendation) => {
     console.log('Dose recommendation generated:', recommendation);
   };
 

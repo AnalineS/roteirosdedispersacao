@@ -6,6 +6,42 @@ import { getUnbColors } from '@/config/modernTheme';
 import { useChatAccessibility } from '@/components/chat/accessibility/ChatAccessibilityProvider';
 import DOMPurify from 'dompurify';
 
+// Speech Recognition API type definitions
+interface SpeechRecognitionEvent extends Event {
+  results: SpeechRecognitionResultList;
+  resultIndex: number;
+}
+
+interface SpeechRecognitionErrorEvent extends Event {
+  error: string;
+  message: string;
+}
+
+interface SpeechRecognition extends EventTarget {
+  continuous: boolean;
+  grammars: SpeechGrammarList;
+  interimResults: boolean;
+  lang: string;
+  maxAlternatives: number;
+  serviceURI: string;
+  start(): void;
+  stop(): void;
+  abort(): void;
+  addEventListener(type: 'result', listener: (event: SpeechRecognitionEvent) => void): void;
+  addEventListener(type: 'error', listener: (event: SpeechRecognitionErrorEvent) => void): void;
+  addEventListener(type: 'end', listener: () => void): void;
+  addEventListener(type: string, listener: EventListener): void;
+  removeEventListener(type: string, listener: EventListener): void;
+}
+
+declare global {
+  interface Window {
+    webkitSpeechRecognition: new () => SpeechRecognition;
+    SpeechRecognition: new () => SpeechRecognition;
+    gtag?: (command: string, action: string, parameters?: Record<string, unknown>) => void;
+  }
+}
+
 // Re-export types from existing search system
 export type AudienceType = 'professional' | 'patient' | 'student' | 'general';
 export type ComplexityLevel = 'basic' | 'intermediate' | 'advanced' | 'technical';
@@ -265,7 +301,18 @@ export default function AccessibleSearchWithSuggestions({
         try {
           setRecentSearches(JSON.parse(saved));
         } catch (error) {
-          console.error('Error loading recent searches:', error);
+          if (typeof window !== 'undefined' && window.gtag) {
+            window.gtag('event', 'search_local_storage_error', {
+              event_category: 'medical_search_functionality',
+              event_label: 'recent_searches_load_failed',
+              custom_parameters: {
+                medical_context: 'accessible_search_storage',
+                storage_type: 'recent_searches',
+                error_type: 'json_parse_failure',
+                error_message: error instanceof Error ? error.message : String(error)
+              }
+            });
+          }
         }
       }
     }
@@ -506,7 +553,7 @@ export default function AccessibleSearchWithSuggestions({
       return;
     }
 
-    const recognition = new (window as any).webkitSpeechRecognition();
+    const recognition = new window.webkitSpeechRecognition();
     recognition.lang = 'pt-BR';
     recognition.continuous = false;
     recognition.interimResults = false;
@@ -516,14 +563,14 @@ export default function AccessibleSearchWithSuggestions({
       announceMessage('Escutando... Fale sua pergunta');
     };
 
-    recognition.onresult = (event: any) => {
+    recognition.onresult = (event: SpeechRecognitionEvent) => {
       const transcript = event.results[0][0].transcript;
       setQuery(transcript);
       setIsVoiceRecording(false);
       announceMessage(`Voz reconhecida: ${transcript}`);
     };
 
-    recognition.onerror = (event: any) => {
+    recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
       setIsVoiceRecording(false);
       announceSystemStatus('Erro no reconhecimento de voz', 'error');
     };

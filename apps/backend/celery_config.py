@@ -9,31 +9,38 @@ from celery import Celery
 import os
 from app_config import config
 
-# Configuração Redis para Celery (DBs separadas do cache)
-# Usar os secrets do GitHub Actions
-REDIS_PUBLIC_ENDPOINT = os.getenv('REDIS_PUBLIC_ENDPOINT', 'localhost:6379')
-REDIS_ACCOUNT_KEY = os.getenv('REDIS_ACCOUNT_KEY', '')
-REDIS_DATABASE_NAME = os.getenv('REDIS_DATABASE_NAME', '0')
+# Configuração Celery OTIMIZADA - SQLite + Cloud Storage
+# Não depende mais de Redis - usa SQLite para persistência
 
-# Construir URL do Redis baseado nos secrets disponíveis
-if REDIS_ACCOUNT_KEY:
+# Tentar usar Redis se disponível, senão usar SQLite + filesystem
+REDIS_PUBLIC_ENDPOINT = os.getenv('REDIS_PUBLIC_ENDPOINT')
+REDIS_ACCOUNT_KEY = os.getenv('REDIS_ACCOUNT_KEY')
+
+if REDIS_PUBLIC_ENDPOINT and REDIS_ACCOUNT_KEY:
     # Formato para Redis Cloud/Azure com auth
     REDIS_URL = f"redis://:{REDIS_ACCOUNT_KEY}@{REDIS_PUBLIC_ENDPOINT}"
+    CELERY_BROKER_URL = f"{REDIS_URL}/2"  # DB 2 para filas
+    CELERY_RESULT_BACKEND = f"{REDIS_URL}/3"  # DB 3 para resultados
+    BROKER_TYPE = "redis"
 else:
-    # Formato local sem auth
-    REDIS_URL = f"redis://{REDIS_PUBLIC_ENDPOINT}"
+    # Fallback para SQLite + filesystem (mais compatível)
+    CELERY_BROKER_URL = 'sqlalchemy+sqlite:///./data/celery_broker.db'
+    CELERY_RESULT_BACKEND = 'db+sqlite:///./data/celery_results.db'
+    BROKER_TYPE = "sqlite"
 
-# DBs separadas para não conflitar com cache
-CELERY_BROKER_URL = f"{REDIS_URL}/2"  # DB 2 para filas
-CELERY_RESULT_BACKEND = f"{REDIS_URL}/3"  # DB 3 para resultados
-
-# Criar instância Celery
+# Criar instância Celery OTIMIZADA
 celery_app = Celery(
-    'hanseniase_chat',
+    'roteiro_dispensacao_medical',
     broker=CELERY_BROKER_URL,
     backend=CELERY_RESULT_BACKEND,
-    include=['tasks.chat_tasks']  # Tasks serão criadas aqui
+    include=['tasks.chat_tasks', 'tasks.medical_tasks', 'tasks.analytics_tasks']  # Múltiplas tasks
 )
+
+# Log da configuração escolhida
+import logging
+logger = logging.getLogger(__name__)
+logger.info(f"[CELERY] Broker configurado: {BROKER_TYPE}")
+logger.info(f"[CELERY] Tasks disponíveis: chat, medical, analytics")
 
 # Configurações otimizadas para sistema médico
 celery_app.conf.update(
@@ -44,9 +51,9 @@ celery_app.conf.update(
     timezone='America/Sao_Paulo',
     enable_utc=True,
     
-    # Timeouts para sistema médico
-    task_time_limit=30,  # 30s máximo por task
-    task_soft_time_limit=25,  # Warning em 25s
+    # Timeouts para sistema médico OTIMIZADOS
+    task_time_limit=45,  # 45s máximo por task (RAG + AI pode demorar)
+    task_soft_time_limit=35,  # Warning em 35s
     
     # Retry policy para confiabilidade
     task_acks_late=True,
@@ -63,9 +70,12 @@ celery_app.conf.update(
     # Cleanup automático
     result_expires=3600,  # Resultados expiram em 1h
     
-    # Routing simples
+    # Routing EXPANDIDO para múltiplas funcionalidades
     task_routes={
         'tasks.chat_tasks.*': {'queue': 'medical_chat'},
+        'tasks.medical_tasks.*': {'queue': 'medical_processing'},
+        'tasks.analytics_tasks.*': {'queue': 'analytics'},
+        'tasks.email_tasks.*': {'queue': 'notifications'},
     },
     
     # Monitoring

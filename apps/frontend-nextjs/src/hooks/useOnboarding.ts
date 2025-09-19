@@ -11,7 +11,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useGoogleAnalytics } from '@/components/GoogleAnalytics';
+import { useGoogleAnalytics } from '@/components/analytics/GoogleAnalyticsSetup';
 
 interface UserRole {
   id: 'medical' | 'student' | 'patient';
@@ -77,7 +77,17 @@ export function useOnboarding() {
       
       setIsLoaded(true);
     } catch (error) {
-      console.error('Erro ao carregar estado do onboarding:', error);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'onboarding_load_error', {
+          event_category: 'medical_onboarding_system',
+          event_label: 'onboarding_state_load_failed',
+          custom_parameters: {
+            medical_context: 'onboarding_initialization',
+            error_type: 'localStorage_read_failure',
+            error_message: error instanceof Error ? error.message : 'unknown_error'
+          }
+        });
+      }
       setState(DEFAULT_STATE);
       setIsLoaded(true);
     }
@@ -111,7 +121,17 @@ export function useOnboarding() {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedState));
     } catch (error) {
-      console.error('Erro ao salvar estado do onboarding:', error);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'onboarding_save_error', {
+          event_category: 'medical_onboarding_system',
+          event_label: 'onboarding_state_save_failed',
+          custom_parameters: {
+            medical_context: 'onboarding_persistence',
+            error_type: 'localStorage_write_failure',
+            error_message: error instanceof Error ? error.message : 'unknown_error'
+          }
+        });
+      }
     }
   }, [state]);
 

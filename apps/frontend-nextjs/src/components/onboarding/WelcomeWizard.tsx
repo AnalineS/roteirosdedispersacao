@@ -15,7 +15,7 @@ import { useState, useCallback, useMemo, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
-import { useGoogleAnalytics } from '@/components/GoogleAnalytics';
+import { useGoogleAnalytics } from '@/components/analytics/GoogleAnalyticsSetup';
 import { getPersonaAvatar } from '@/constants/avatars';
 
 // Types para type safety e maintainability
@@ -534,13 +534,13 @@ export function WelcomeWizard({ onComplete }: {
   }, [currentStep, onComplete, trackUserInteraction]);
 
   // Handler para completar o questionário informativo (usuários logados)
-  const handleSurveyComplete = useCallback((surveyData: any) => {
+  const handleSurveyComplete = useCallback((surveyData: SurveyAnswers) => {
     trackUserInteraction('user_survey_completed', '', 'informative_survey', surveyData);
     setIsVisible(false);
     
     setTimeout(() => {
       // Para usuários logados, não passa papel específico
-      onComplete({ id: 'survey_completed', title: 'Questionário Completado' } as any);
+      onComplete({ id: 'medical', title: 'Questionário Completado', description: 'Survey completed', icon: '📝', benefits: [], recommendedPersona: 'dr-gasnelio' });
     }, 300);
   }, [onComplete, trackUserInteraction]);
 

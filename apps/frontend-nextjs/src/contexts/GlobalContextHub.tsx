@@ -92,7 +92,7 @@ export interface ChatMessage {
   role: "user" | "assistant";
   timestamp: number;
   persona?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, string | number | boolean | null>;
 }
 
 export interface PerformanceMetrics {
@@ -452,7 +452,26 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({
           }),
         );
       } catch (error) {
-        console.warn("Failed to save global state:", error);
+        // Global state save error - explicit stderr + tracking
+        const errorMessage = error instanceof Error ? error.message : String(error);
+
+        // Explicit error to stderr for system visibility
+        if (typeof process !== 'undefined' && process.stderr) {
+          process.stderr.write(`⚠️ AVISO - Falha ao salvar estado global:\n` +
+            `  Error: ${errorMessage}\n\n`);
+        }
+
+        if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'global_state_save_error', {
+            event_category: 'context_warning',
+            event_label: 'global_state_save_failed',
+            custom_parameters: {
+              context_type: 'global_state_management',
+              error_type: 'state_save_failure',
+              error_message: errorMessage
+            }
+          });
+        }
       }
     };
 
@@ -502,7 +521,26 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({
         }
       }
     } catch (error) {
-      console.warn("Failed to load global state:", error);
+      // Global state load error - explicit stderr + tracking
+      const errorMessage = error instanceof Error ? error.message : String(error);
+
+      // Explicit error to stderr for system visibility
+      if (typeof process !== 'undefined' && process.stderr) {
+        process.stderr.write(`⚠️ AVISO - Falha ao carregar estado global:\n` +
+          `  Error: ${errorMessage}\n\n`);
+      }
+
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'global_state_load_error', {
+          event_category: 'context_warning',
+          event_label: 'global_state_load_failed',
+          custom_parameters: {
+            context_type: 'global_state_management',
+            error_type: 'state_load_failure',
+            error_message: errorMessage
+          }
+        });
+      }
     }
   }, []);
 

@@ -281,6 +281,13 @@ export class ActiveTransformer<T, U> {
 // LOGGER UTILITY
 // ============================================
 
+interface ConsoleMethod {
+  debug: typeof console.log;
+  info: typeof console.info;
+  warn: typeof console.warn;
+  error: typeof console.error;
+}
+
 export class ActiveLogger {
   private logs: LogEntry[] = [];
   private logLevel: LogLevel;
@@ -311,7 +318,14 @@ export class ActiveLogger {
 
     // Console logging
     const consoleMethod = level === 'debug' ? 'log' : level;
-    (console as any)[consoleMethod](`[${level.toUpperCase()}] ${message}`, metadata || '');
+    const consoleMethods: ConsoleMethod = {
+      debug: console.log,
+      info: console.info,
+      warn: console.warn,
+      error: console.error
+    };
+    const method = consoleMethod === 'log' ? consoleMethods.debug : consoleMethods[consoleMethod as keyof ConsoleMethod];
+    method(`[${level.toUpperCase()}] ${message}`, metadata || '');
   }
 
   debug(message: string, metadata?: Record<string, unknown>): void {
@@ -529,7 +543,7 @@ export const useActiveUtilities = (config: UtilityConfig = {}) => {
   // ANALYTICS UTILITIES
   // ============================================
 
-  const performanceMonitor = useCallback(<T extends (...args: any[]) => any>(
+  const performanceMonitor = useCallback(<T extends (...args: unknown[]) => unknown>(
     fn: T,
     name?: string
   ): T => {

@@ -28,6 +28,28 @@ interface UXTrackingWrapperProps {
   enableInteractionTracking?: boolean;
 }
 
+interface InteractionMetadata {
+  tag?: string;
+  id?: string;
+  class?: string;
+  text?: string;
+  [key: string]: unknown;
+}
+
+interface WebVitalsMetrics {
+  lcp?: number;
+  fid?: number;
+  cls?: number;
+  fcp?: number;
+  ttfb?: number;
+}
+
+interface PerformanceEntryWithDetails extends PerformanceEntry {
+  processingStart?: number;
+  hadRecentInput?: boolean;
+  value?: number;
+}
+
 // Generate or get session ID
 const getSessionId = (): string => {
   if (typeof window === "undefined") return "";
@@ -97,16 +119,35 @@ const UXTrackingWrapper: React.FC<UXTrackingWrapperProps> = ({
       });
 
       if (!response.ok) {
-        console.debug("UX tracking failed:", response.statusText);
+        if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'ux_tracking_failed', {
+            event_category: 'ux_monitoring_error',
+            event_label: 'api_response_failed',
+            custom_parameters: {
+              medical_context: 'ux_tracking_system',
+              error_type: 'api_response',
+              status_text: response.statusText
+            }
+          });
+        }
       }
     } catch (error) {
-      console.debug("UX tracking error:", error);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'ux_tracking_error', {
+          event_category: 'ux_monitoring_error',
+          event_label: 'api_request_error',
+          custom_parameters: {
+            medical_context: 'ux_tracking_system',
+            error_type: 'network_request'
+          }
+        });
+      }
     }
   }, []);
 
   // Track user interactions
   const trackInteraction = useCallback(
-    async (action: string, element: string, metadata?: any) => {
+    async (action: string, element: string, metadata?: InteractionMetadata) => {
       if (!enableInteractionTracking || !userId.current || !sessionId.current)
         return;
 
@@ -131,7 +172,16 @@ const UXTrackingWrapper: React.FC<UXTrackingWrapperProps> = ({
           }),
         });
       } catch (error) {
-        console.debug("Interaction tracking error:", error);
+        if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'interaction_tracking_error', {
+            event_category: 'ux_monitoring_error',
+            event_label: 'interaction_capture_failed',
+            custom_parameters: {
+              medical_context: 'user_interaction_tracking',
+              error_type: 'interaction_api'
+            }
+          });
+        }
       }
     },
     [pathname, enableInteractionTracking],
@@ -162,7 +212,16 @@ const UXTrackingWrapper: React.FC<UXTrackingWrapperProps> = ({
           }),
         });
       } catch (trackingError) {
-        console.debug("Error tracking failed:", trackingError);
+        if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'error_tracking_failed', {
+            event_category: 'ux_monitoring_error',
+            event_label: 'error_capture_failed',
+            custom_parameters: {
+              medical_context: 'error_tracking_system',
+              error_type: 'tracking_api'
+            }
+          });
+        }
       }
     },
     [pathname, enableErrorTracking],
@@ -170,7 +229,7 @@ const UXTrackingWrapper: React.FC<UXTrackingWrapperProps> = ({
 
   // Track Web Vitals
   const trackWebVitals = useCallback(
-    async (metrics: any) => {
+    async (metrics: WebVitalsMetrics) => {
       if (!enableWebVitals || !userId.current) return;
 
       try {
@@ -193,7 +252,16 @@ const UXTrackingWrapper: React.FC<UXTrackingWrapperProps> = ({
           }),
         });
       } catch (error) {
-        console.debug("Web Vitals tracking error:", error);
+        if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'web_vitals_tracking_error', {
+          event_category: 'ux_monitoring_error',
+          event_label: 'vitals_measurement_failed',
+          custom_parameters: {
+            medical_context: 'performance_tracking',
+            error_type: 'vitals_api'
+          }
+        });
+      }
       }
     },
     [pathname, enableWebVitals],
@@ -239,7 +307,7 @@ const UXTrackingWrapper: React.FC<UXTrackingWrapperProps> = ({
   useEffect(() => {
     if (!enableWebVitals || typeof window === "undefined") return;
 
-    let webVitalsMetrics: any = {};
+    let webVitalsMetrics: WebVitalsMetrics = {};
 
     // Observe Web Vitals
     if ("PerformanceObserver" in window) {
@@ -256,13 +324,23 @@ const UXTrackingWrapper: React.FC<UXTrackingWrapperProps> = ({
       try {
         lcpObserver.observe({ entryTypes: ["largest-contentful-paint"] });
       } catch (e) {
-        console.debug("LCP observer not supported");
+        if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'lcp_observer_unsupported', {
+            event_category: 'ux_monitoring_warning',
+            event_label: 'browser_compatibility_issue',
+            custom_parameters: {
+              medical_context: 'performance_monitoring',
+              metric_type: 'largest_contentful_paint',
+              browser: navigator.userAgent
+            }
+          });
+        }
       }
 
       // FID (First Input Delay)
       const fidObserver = new PerformanceObserver((list) => {
         const entries = list.getEntries();
-        entries.forEach((entry: any) => {
+        entries.forEach((entry: PerformanceEntryWithDetails) => {
           webVitalsMetrics.fid = entry.processingStart - entry.startTime;
           trackWebVitals(webVitalsMetrics);
         });
@@ -271,15 +349,27 @@ const UXTrackingWrapper: React.FC<UXTrackingWrapperProps> = ({
       try {
         fidObserver.observe({ entryTypes: ["first-input"] });
       } catch (e) {
-        console.debug("FID observer not supported");
+        if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'fid_observer_unsupported', {
+            event_category: 'ux_monitoring_warning',
+            event_label: 'browser_compatibility_issue',
+            custom_parameters: {
+              medical_context: 'performance_monitoring',
+              metric_type: 'first_input_delay',
+              browser: navigator.userAgent
+            }
+          });
+        }
       }
 
       // CLS (Cumulative Layout Shift)
       let clsValue = 0;
       const clsObserver = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
-          if (!(entry as any).hadRecentInput) {
-            clsValue += (entry as any).value;
+          // Type assertion for LayoutShiftEntry (Web API)
+          const clsEntry = entry as PerformanceEntry & { hadRecentInput?: boolean; value: number };
+          if (!clsEntry.hadRecentInput) {
+            clsValue += clsEntry.value;
           }
         }
         webVitalsMetrics.cls = clsValue;
@@ -288,7 +378,17 @@ const UXTrackingWrapper: React.FC<UXTrackingWrapperProps> = ({
       try {
         clsObserver.observe({ entryTypes: ["layout-shift"] });
       } catch (e) {
-        console.debug("CLS observer not supported");
+        if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'cls_observer_unsupported', {
+            event_category: 'ux_monitoring_warning',
+            event_label: 'browser_compatibility_issue',
+            custom_parameters: {
+              medical_context: 'performance_monitoring',
+              metric_type: 'cumulative_layout_shift',
+              browser: navigator.userAgent
+            }
+          });
+        }
       }
 
       // FCP (First Contentful Paint)
@@ -302,7 +402,17 @@ const UXTrackingWrapper: React.FC<UXTrackingWrapperProps> = ({
       try {
         fcpObserver.observe({ entryTypes: ["paint"] });
       } catch (e) {
-        console.debug("FCP observer not supported");
+        if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'fcp_observer_unsupported', {
+            event_category: 'ux_monitoring_warning',
+            event_label: 'browser_compatibility_issue',
+            custom_parameters: {
+              medical_context: 'performance_monitoring',
+              metric_type: 'first_contentful_paint',
+              browser: navigator.userAgent
+            }
+          });
+        }
       }
 
       // Navigation timing for TTFB
@@ -370,7 +480,7 @@ const UXTrackingWrapper: React.FC<UXTrackingWrapperProps> = ({
     <div data-ux-tracking="enabled">
       {React.Children.map(children, (child) => {
         if (React.isValidElement(child)) {
-          return React.cloneElement(child as React.ReactElement<any>, {
+          return React.cloneElement(child as React.ReactElement<{ uxTracking?: typeof trackingContext }>, {
             uxTracking: trackingContext,
           });
         }

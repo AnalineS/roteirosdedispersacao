@@ -16,9 +16,9 @@ interface IntegratedTrackingContextType {
   userId: string;
   isInitialized: boolean;
   trackInteraction: (
-    type: any,
+    type: string,
     element: string,
-    metadata?: Record<string, any>,
+    metadata?: Record<string, unknown>,
   ) => void;
   trackPageView: (page: string, title?: string) => void;
   trackModuleProgress: (

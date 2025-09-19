@@ -42,15 +42,24 @@ export const useErrorHandler = (options?: UseErrorHandlerOptions) => {
     const componentErrorHandler = (error: Error) => {
       handleError(error, 'high');
     };
-    
+
+    // DOM event handler que aceita Event e converte para Error
+    const domErrorHandler = (event: Event) => {
+      if (event instanceof ErrorEvent) {
+        componentErrorHandler(new Error(event.message));
+      } else {
+        componentErrorHandler(new Error('Component DOM error occurred'));
+      }
+    };
+
     // Adicionar error boundary local se possível
     if (typeof window !== 'undefined' && options?.component) {
       // Marcar o componente para tracking
       const componentElement = document.querySelector(`[data-component="${options.component}"]`);
       if (componentElement) {
-        componentElement.addEventListener('error', componentErrorHandler as any);
+        componentElement.addEventListener('error', domErrorHandler);
         return () => {
-          componentElement.removeEventListener('error', componentErrorHandler as any);
+          componentElement.removeEventListener('error', domErrorHandler);
         };
       }
     }

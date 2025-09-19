@@ -24,4 +24,4 @@ Nenhum caso clínico identificado.
 - **Padrões Médicos**: ANVISA, CID-10, RENAME
 
 ---
-*Documentação gerada automaticamente em 07/09/2025, 22:59:38*
+*Documentação gerada automaticamente em 17/09/2025, 09:14:49*

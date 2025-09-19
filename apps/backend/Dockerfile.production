@@ -170,10 +170,16 @@ ENV ENVIRONMENT=production
 # === FEATURE FLAGS OTIMIZADOS ===
 # Por padrão, funcionalidades pesadas estão desabilitadas
 # Podem ser habilitadas via environment variables no Cloud Run
-ENV EMBEDDINGS_ENABLED=false
-ENV ADVANCED_FEATURES=false
-ENV RAG_AVAILABLE=false
-ENV ADVANCED_CACHE=false
+# TODAS AS FEATURES ENTERPRISE ATIVADAS
+ENV EMBEDDINGS_ENABLED=true
+ENV ADVANCED_FEATURES=true
+ENV RAG_AVAILABLE=true
+ENV ADVANCED_CACHE=true
+ENV SECURITY_MIDDLEWARE_ENABLED=true
+ENV EMAIL_ENABLED=true
+ENV MULTIMODAL_PROCESSING=true
+ENV CELERY_ENABLED=true
+ENV BACKGROUND_ANALYTICS=true
 
 # Expor porta padrão para Cloud Run
 EXPOSE 8080
@@ -209,7 +215,8 @@ CMD exec gunicorn \
 #    docker build -f Dockerfile.production -t roteiro-api:prod .
 #
 # 2. Teste local:
-#    docker run -p 8080:8080 -e EMBEDDINGS_ENABLED=false roteiro-api:prod
+#    docker run -p 8080:8080 -e EMBEDDINGS_ENABLED=true roteiro-api:prod
+#    Todas as features enterprise ativadas por padrão
 #
 # 3. Deploy Cloud Run:
 #    gcloud run deploy --image gcr.io/PROJECT/roteiro-api:prod

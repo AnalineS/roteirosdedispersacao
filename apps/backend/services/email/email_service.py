@@ -68,20 +68,21 @@ class EmailServiceConfig:
     """Configuração do serviço de email"""
     
     def __init__(self):
-        self.provider = os.getenv('EMAIL_PROVIDER', 'sendgrid')  # sendgrid ou smtp
-        self.from_email = os.getenv('EMAIL_FROM', 'noreply@roteirodispensacao.com.br')
+        self.provider = os.getenv('EMAIL_PROVIDER', 'smtp')  # Priorizar SMTP/Gmail
+        self.from_email = os.getenv('EMAIL_FROM', 'roteirosdedispensacaounb@gmail.com')
         self.from_name = os.getenv('EMAIL_FROM_NAME', 'Roteiro de Dispensação PQT-U')
-        self.reply_to = os.getenv('EMAIL_REPLY_TO', 'suporte@roteirodispensacao.com.br')
+        self.reply_to = os.getenv('EMAIL_REPLY_TO', 'roteirosdedispensacaounb@gmail.com')
         
         # SendGrid Config
         self.sendgrid_api_key = os.getenv('SENDGRID_API_KEY')
         
-        # SMTP Config
+        # Gmail SMTP Config (OTIMIZADO)
         self.smtp_host = os.getenv('SMTP_HOST', 'smtp.gmail.com')
         self.smtp_port = int(os.getenv('SMTP_PORT', '587'))
-        self.smtp_username = os.getenv('SMTP_USERNAME')
-        self.smtp_password = os.getenv('SMTP_PASSWORD')
+        self.smtp_username = os.getenv('SMTP_USERNAME', self.from_email)  # Usar from_email como fallback
+        self.smtp_password = os.getenv('SMTP_PASSWORD')  # Gmail App Password
         self.smtp_use_tls = os.getenv('SMTP_USE_TLS', 'true').lower() == 'true'
+        self.smtp_use_ssl = os.getenv('SMTP_USE_SSL', 'false').lower() == 'true'
         
         # Template Config
         self.template_dir = Path(__file__).parent / 'templates'

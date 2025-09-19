@@ -98,9 +98,24 @@ export type PrivacyRequestType =
   | 'rectification'              // Art. 16 - Direito de retificação
   | 'erasure'                    // Art. 17 - Direito ao esquecimento
   | 'portability'                // Art. 20 - Direito à portabilidade
-  | 'restrict_processing'         // Art. 18 - Direito à limitação
+  | 'restrict_processing'        // Art. 18 - Direito à limitação
   | 'object_processing'          // Art. 21 - Direito de oposição
   | 'withdraw_consent';          // Retirada de consentimento
+
+export interface ProcessingActivity {
+  purpose: ProcessingPurpose;
+  collectedAt: string;
+  retentionUntil: string;
+  legalBasis: LegalBasis;
+  categories: DataCategory[];
+}
+
+export interface UserDataAccess {
+  personalData: Record<string, string | number | boolean | null>;
+  processingActivities: ProcessingActivity[];
+  retentionPolicies: DataRetentionPolicy[];
+  legalBasis: DataProcessingPurpose[];
+}
 
 // ================== CONFIGURAÇÃO DE COMPLIANCE ==================
 
@@ -443,9 +458,9 @@ class PrivacyRequestProcessor {
   /**
    * Processar solicitação de acesso aos dados
    */
-  async processAccessRequest(subjectId: string): Promise<Record<string, unknown>> {
+  async processAccessRequest(subjectId: string): Promise<UserDataAccess> {
     const dataKeys = this.getDataKeysForSubject(subjectId);
-    const userData: Record<string, unknown> = {
+    const userData: UserDataAccess = {
       personalData: {},
       processingActivities: [],
       retentionPolicies: LGPD_CONFIG.retentionPolicies,
@@ -456,7 +471,7 @@ class PrivacyRequestProcessor {
       const stored = localStorage.getItem(key);
       if (stored) {
         const record = JSON.parse(stored);
-        (userData.processingActivities as any[]).push({
+        userData.processingActivities.push({
           purpose: record.purpose,
           collectedAt: record.collectedAt,
           retentionUntil: record.retentionUntil,
@@ -466,7 +481,8 @@ class PrivacyRequestProcessor {
         
         // Merge data (sem exposição de dados pseudonimizados)
         if (record.data && typeof record.data === 'object') {
-          Object.assign(userData.personalData as any, record.data);
+          const recordData = record.data as Record<string, string | number | boolean | null>;
+          Object.assign(userData.personalData, recordData);
         }
       }
     }

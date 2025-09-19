@@ -1,21 +1,33 @@
 /**
  * UX Instrumentation for Developer Experience
  * Lightweight monitoring and debugging tools for UX analysis
- * 
+ *
  * Features:
  * - User interaction tracking
- * - Performance bottleneck detection  
+ * - Performance bottleneck detection
  * - A/B testing support
  * - Accessibility issue detection
  * - Component render performance
  * - Error boundary monitoring
  */
 
+interface ReactDevToolsHook {
+  onCommitFiberRoot?: (id: string | number, root: unknown, priorityLevel: unknown) => void;
+  [key: string]: unknown;
+}
+
+interface PerformanceMemory {
+  usedJSHeapSize: number;
+  totalJSHeapSize: number;
+  jsHeapSizeLimit: number;
+}
+
 interface UXEvent {
   type: 'click' | 'scroll' | 'focus' | 'blur' | 'input' | 'error' | 'render' | 'navigation';
   element?: string;
   timestamp: number;
-  data?: Record<string, any>;
+  data?: Record<string, unknown>;
+  custom_parameters?: Record<string, unknown>;
   userId?: string;
   sessionId: string;
   page: string;
@@ -30,7 +42,7 @@ interface PerformanceMetric {
   value: number;
   unit: 'ms' | 'count' | 'bytes' | 'score';
   timestamp: number;
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
 }
 
 interface AccessibilityViolation {
@@ -129,9 +141,18 @@ class UXInstrumentationManager {
     return Math.random() < this.config.sampleRate;
   }
 
-  private log(message: string, data?: any): void {
-    if (this.config.enableConsoleLogging) {
-      console.log(`[UX Instrumentation] ${message}`, data);
+  private log(message: string, data?: unknown): void {
+    if (this.config.enableConsoleLogging && typeof window !== 'undefined' && window.gtag) {
+      // Use gtag for UX instrumentation logging instead of console
+      window.gtag('event', 'ux_instrumentation_log', {
+        event_category: 'medical_ux_instrumentation',
+        event_label: 'instrumentation_activity',
+        custom_parameters: {
+          medical_context: 'ux_instrumentation_logging',
+          log_message: message,
+          log_data: JSON.stringify(data || {})
+        }
+      });
     }
   }
 
@@ -266,10 +287,10 @@ class UXInstrumentationManager {
 
   private setupReactPerformanceTracking(): void {
     // Hook into React DevTools profiler data if available
-    if (typeof window !== 'undefined' && (window as any).__REACT_DEVTOOLS_GLOBAL_HOOK__) {
-      const hook = (window as any).__REACT_DEVTOOLS_GLOBAL_HOOK__;
+    if (typeof window !== 'undefined' && (window as unknown as { __REACT_DEVTOOLS_GLOBAL_HOOK__?: ReactDevToolsHook }).__REACT_DEVTOOLS_GLOBAL_HOOK__) {
+      const hook = (window as unknown as { __REACT_DEVTOOLS_GLOBAL_HOOK__: ReactDevToolsHook }).__REACT_DEVTOOLS_GLOBAL_HOOK__;
       
-      hook.onCommitFiberRoot = (id: any, root: any, priorityLevel: any) => {
+      hook.onCommitFiberRoot = (id: string | number, root: unknown, priorityLevel: unknown) => {
         this.trackMetric({
           name: 'react_commit',
           value: performance.now(),
@@ -308,7 +329,7 @@ class UXInstrumentationManager {
     // Monitor memory every 30 seconds
     setInterval(() => {
       if ('memory' in performance) {
-        const memory = (performance as any).memory;
+        const memory = (performance as unknown as { memory: PerformanceMemory }).memory;
         this.trackMetric({
           name: 'memory_usage',
           value: memory.usedJSHeapSize,
@@ -449,23 +470,32 @@ class UXInstrumentationManager {
   }
 
   private setupReactErrorTracking(): void {
-    // Hook into React error boundaries
-    const originalConsoleError = console.error;
-    console.error = (...args) => {
-      // Check if this is a React error
-      const errorMessage = args[0];
-      if (typeof errorMessage === 'string' && errorMessage.includes('React')) {
-        this.trackEvent({
-          type: 'error',
-          data: {
-            type: 'react_error',
-            message: errorMessage,
-            args: args.slice(1)
-          }
-        });
-      }
-      originalConsoleError.apply(console, args);
-    };
+    // Track uncaught errors and React error boundaries
+    window.addEventListener('error', (event) => {
+      this.trackEvent({
+        type: 'error',
+        data: {
+          type: 'javascript_error',
+          message: event.message,
+          filename: event.filename,
+          lineno: event.lineno,
+          colno: event.colno,
+          stack: event.error?.stack
+        }
+      });
+    });
+
+    // Track unhandled promise rejections
+    window.addEventListener('unhandledrejection', (event) => {
+      this.trackEvent({
+        type: 'error',
+        data: {
+          type: 'unhandled_promise_rejection',
+          message: event.reason?.message || String(event.reason),
+          stack: event.reason?.stack
+        }
+      });
+    });
   }
 
   // Event tracking methods

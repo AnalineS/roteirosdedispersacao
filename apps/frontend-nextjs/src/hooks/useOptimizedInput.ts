@@ -93,12 +93,12 @@ export function useOptimizedInput<T = string>({
     debounce((val: T) => {
       const validationResult = validateValue(val);
       setDebouncedValue(val);
-      
+
       if (onDebouncedChange) {
         onDebouncedChange(val, validationResult);
       }
     }, debounceMs),
-    [validateValue, onDebouncedChange, debounceMs]
+    [debounce, validateValue, onDebouncedChange, debounceMs]
   );
 
   // Handler para mudanças de valor

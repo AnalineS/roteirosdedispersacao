@@ -113,8 +113,18 @@ const AdminAnalyticsDashboard: React.FC<AdminDashboardProps> = ({
       setKpis(adminKPIs);
       
     } catch (error) {
-      console.error('Erro ao carregar dados do dashboard:', error);
-      
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'admin_dashboard_data_load_error', {
+          event_category: 'medical_admin_analytics',
+          event_label: 'dashboard_data_load_failed',
+          custom_parameters: {
+            medical_context: 'admin_analytics_dashboard',
+            error_type: 'data_load_failure',
+            error_message: error instanceof Error ? error.message : String(error)
+          }
+        });
+      }
+
       // Fallback com dados mock para demonstração
       setKpis(getMockKPIs());
       setMetrics(getMockMetrics());
@@ -136,7 +146,7 @@ const AdminAnalyticsDashboard: React.FC<AdminDashboardProps> = ({
         category: 'engagement',
         action: 'admin_dashboard_loaded',
         label: timeframe,
-        custom_dimensions: {
+        custom_parameters: {
           dashboard_type: 'admin_analytics',
           view_mode: selectedView
         }
@@ -243,7 +253,18 @@ const AdminAnalyticsDashboard: React.FC<AdminDashboardProps> = ({
       });
       
     } catch (error) {
-      console.error('Erro na exportação:', error);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'admin_dashboard_export_error', {
+          event_category: 'medical_admin_analytics',
+          event_label: 'report_export_failed',
+          custom_parameters: {
+            medical_context: 'admin_report_export',
+            export_format: 'report',
+            error_type: 'export_failure',
+            error_message: error instanceof Error ? error.message : String(error)
+          }
+        });
+      }
       alert('Erro ao exportar relatório');
     } finally {
       setIsExporting(false);

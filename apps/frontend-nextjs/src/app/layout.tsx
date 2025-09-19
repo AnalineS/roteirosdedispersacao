@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import UnifiedErrorSystem from '@/components/monitoring/UnifiedErrorSystem'
 import { FeedbackProvider } from '@/components/feedback/UnifiedFeedbackSystem'
 import OfflineIndicator from '@/components/OfflineIndicator'
-import GoogleAnalytics from '@/components/GoogleAnalytics'
+import { GoogleAnalyticsSetup } from '@/components/analytics/GoogleAnalyticsSetup'
 import { AnalyticsProvider } from '@/components/analytics/AnalyticsProvider'
 import { UXAnalyticsProvider } from '@/components/analytics/UXAnalyticsProvider'
 import AccessibilityValidator from '@/components/accessibility/AccessibilityValidator'
@@ -71,7 +71,7 @@ export default function RootLayout({
       <body>
         {/* No JavaScript fallback */}
         {/* Google Analytics */}
-        <GoogleAnalytics GA_MEASUREMENT_ID={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID} />
+        <GoogleAnalyticsSetup enableUXTracking={true} />
         
         <noscript>
           <div style={{
@@ -126,6 +126,9 @@ export default function RootLayout({
 
         {/* LGPD Mandatory Consent Banner */}
         <LGPDBanner />
+
+        {/* LGPD Full Compliance System */}
+        <LGPDCompliance context="general" />
         
         <UnifiedErrorSystem
           enableMonitoring={true}

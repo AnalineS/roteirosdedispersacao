@@ -230,7 +230,7 @@ export function useThrottledState<T>(
  */
 export function useAsyncState<T>(
   asyncFn: () => Promise<T>,
-  deps: any[] = [],
+  deps: React.DependencyList = [],
   cacheKey?: string
 ): {
   data: T | null;

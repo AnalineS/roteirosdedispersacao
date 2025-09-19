@@ -30,6 +30,22 @@ export interface LeaderboardCategory {
   period: 'all-time' | 'monthly' | 'weekly' | 'daily';
 }
 
+export interface UserRankResponse {
+  rank: number;
+  score: number;
+  total: number;
+}
+
+export interface ScoreMetadata {
+  source?: string;
+  activity_type?: string;
+  module_id?: string;
+  quiz_score?: number;
+  completion_time?: number;
+  difficulty?: 'easy' | 'medium' | 'hard';
+  [key: string]: unknown;
+}
+
 class LeaderboardService {
   private cache: { [key: string]: { data: LeaderboardEntry[]; timestamp: number } } = {};
   private cacheTimeout = 5 * 60 * 1000; // 5 minutes
@@ -76,7 +92,7 @@ class LeaderboardService {
     total: number;
   } | null> {
     try {
-      const response = await apiClient.get<any>(`/leaderboard/user/${uid}/rank?category=${category}`);
+      const response = await apiClient.get<UserRankResponse>(`/leaderboard/user/${uid}/rank?category=${category}`);
       return response;
     } catch (error) {
       console.error('Erro ao carregar rank do usuário:', error);
@@ -103,7 +119,7 @@ class LeaderboardService {
   async updateUserScore(uid: string, scoreUpdate: {
     category: string;
     points: number;
-    metadata?: any;
+    metadata?: ScoreMetadata;
   }): Promise<boolean> {
     try {
       await apiClient.post(`/leaderboard/user/${uid}/score`, scoreUpdate);
@@ -141,7 +157,7 @@ class LeaderboardService {
   async recordAchievement(uid: string, achievement: {
     type: string;
     value: number;
-    metadata?: any;
+    metadata?: ScoreMetadata;
   }): Promise<boolean> {
     try {
       await apiClient.post(`/leaderboard/user/${uid}/achievement`, achievement);

@@ -18,6 +18,14 @@ import type {
 // SERVICES PROVIDER CONTEXT
 // ============================================
 
+interface APIRequestData {
+  [key: string]: unknown;
+}
+
+interface AnalyticsProperties {
+  [key: string]: unknown;
+}
+
 interface ServicesContextType {
   // Hub de Serviços
   services: ReturnType<typeof useActiveServices>;
@@ -30,9 +38,9 @@ interface ServicesContextType {
   callAPI: <T>(
     endpoint: string,
     method?: "GET" | "POST" | "PUT" | "DELETE",
-    data?: any,
+    data?: APIRequestData,
   ) => Promise<ServiceResponse<T>>;
-  trackAnalytics: (event: string, properties?: Record<string, any>) => void;
+  trackAnalytics: (event: string, properties?: AnalyticsProperties) => void;
 
   // Status dos serviços
   servicesStatus: {
@@ -115,7 +123,7 @@ export function ServicesProvider({ children }: ServicesProviderProps) {
   const callAPI = async <T,>(
     endpoint: string,
     method: "GET" | "POST" | "PUT" | "DELETE" = "GET",
-    data?: any,
+    data?: APIRequestData,
   ): Promise<ServiceResponse<T>> => {
     const startTime = Date.now();
 
@@ -153,7 +161,7 @@ export function ServicesProvider({ children }: ServicesProviderProps) {
 
   const trackAnalytics = (
     event: string,
-    properties: Record<string, any> = {},
+    properties: AnalyticsProperties = {},
   ) => {
     // Track no GA4
     Analytics.event("USER", event, JSON.stringify(properties));
@@ -385,9 +393,9 @@ export function useAPI() {
 
   return {
     get: <T,>(endpoint: string) => callAPI<T>(endpoint, "GET"),
-    post: <T,>(endpoint: string, data: any) =>
+    post: <T,>(endpoint: string, data: APIRequestData) =>
       callAPI<T>(endpoint, "POST", data),
-    put: <T,>(endpoint: string, data: any) => callAPI<T>(endpoint, "PUT", data),
+    put: <T,>(endpoint: string, data: APIRequestData) => callAPI<T>(endpoint, "PUT", data),
     delete: <T,>(endpoint: string) => callAPI<T>(endpoint, "DELETE"),
   };
 }

@@ -77,7 +77,20 @@ export default function BasicCalculator({ onCalculationComplete }: BasicCalculat
     } catch (err) {
       error(); // Haptic feedback para erro de cálculo
       alert('Erro durante o cálculo. Tente novamente.');
-      console.error('Calculation error:', err);
+
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'dose_calculator_error', {
+          event_category: 'medical_calculation_tools',
+          event_label: 'dose_calculation_failed',
+          custom_parameters: {
+            medical_context: 'basic_dose_calculator',
+            patient_weight: profile.weight,
+            patient_age: profile.age,
+            error_type: 'calculation_failure',
+            error_message: err instanceof Error ? err.message : String(err)
+          }
+        });
+      }
     } finally {
       setIsCalculating(false);
     }

@@ -82,7 +82,7 @@ const useFormContext = () => {
 // Individual form field components
 interface FormFieldProps {
   field: FormField;
-  value: any;
+  value: FormValue;
   error?: string;
   touched?: boolean;
   onChange: (value: FormValue) => void;
@@ -136,7 +136,7 @@ const TextInput: React.FC<FormFieldProps> = ({
           id={field.name}
           name={field.name}
           type={inputType}
-          value={value || ''}
+          value={value instanceof Date ? value.toISOString().split('T')[0] : Array.isArray(value) ? value.join(',') : String(value || '')}
           onChange={(e) => onChange(e.target.value)}
           onFocus={handleFocus}
           onBlur={handleBlur}
@@ -230,7 +230,7 @@ const TextAreaInput: React.FC<FormFieldProps> = ({
           ref={textareaRef}
           id={field.name}
           name={field.name}
-          value={value || ''}
+          value={value instanceof Date ? value.toISOString().split('T')[0] : Array.isArray(value) ? value.join(',') : String(value || '')}
           onChange={(e) => onChange(e.target.value)}
           onFocus={handleFocus}
           onBlur={handleBlur}
@@ -409,7 +409,7 @@ const CheckboxInput: React.FC<FormFieldProps> = ({
           id={field.name}
           name={field.name}
           type="checkbox"
-          checked={value || false}
+          checked={Boolean(value)}
           onChange={(e) => onChange(e.target.checked)}
           onFocus={onFocus}
           disabled={disabled}
@@ -464,7 +464,7 @@ const OptimizedForm: React.FC<FormProps> = ({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [autoSaveTimeout, setAutoSaveTimeout] = useState<NodeJS.Timeout | null>(null);
+  const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Validate individual field
   const validateField = useCallback((name: string, value: FormValue = formData[name]): string | null => {
@@ -510,35 +510,36 @@ const OptimizedForm: React.FC<FormProps> = ({
   const updateField = useCallback((name: string, value: FormValue) => {
     setFormData(prev => {
       const newData = { ...prev, [name]: value };
-      
-      // Real-time validation if enabled
-      if (validationMode === 'onChange' && touched[name]) {
-        const error = validateField(name, value);
-        setErrors(prevErrors => ({
-          ...prevErrors,
-          [name]: error || ''
-        }));
-      }
+
+      // Real-time validation if enabled - usar functional update para touched
+      setTouched(currentTouched => {
+        if (validationMode === 'onChange' && currentTouched[name]) {
+          const error = validateField(name, value);
+          setErrors(prevErrors => ({
+            ...prevErrors,
+            [name]: error || ''
+          }));
+        }
+        return currentTouched;
+      });
 
       // Call external change handler
       onFieldChange?.(name, value, newData);
 
       // Auto-save if enabled
       if (autoSave) {
-        if (autoSaveTimeout) {
-          clearTimeout(autoSaveTimeout);
+        if (autoSaveTimeoutRef.current) {
+          clearTimeout(autoSaveTimeoutRef.current);
         }
-        setAutoSaveTimeout(
-          setTimeout(() => {
-            // Trigger auto-save logic here
-            console.log('Auto-saving...', newData);
-          }, autoSaveDelay)
-        );
+        autoSaveTimeoutRef.current = setTimeout(() => {
+          // Trigger auto-save logic here
+          // Auto-save triggered
+        }, autoSaveDelay);
       }
 
       return newData;
     });
-  }, [validationMode, touched, validateField, onFieldChange, autoSave, autoSaveTimeout, autoSaveDelay]);
+  }, [validationMode, validateField, onFieldChange, autoSave, autoSaveDelay]);
 
   // Set field as touched and validate if needed
   const setFieldTouched = useCallback((name: string) => {
@@ -611,7 +612,7 @@ const OptimizedForm: React.FC<FormProps> = ({
     try {
       await onSubmit(formData);
     } catch (error) {
-      console.error('Form submission error:', error);
+      // Form submission failed
     } finally {
       setIsSubmitting(false);
     }
@@ -730,7 +731,7 @@ const OptimizedForm: React.FC<FormProps> = ({
         </div>
 
         {/* Auto-save indicator */}
-        {autoSave && autoSaveTimeout && (
+        {autoSave && autoSaveTimeoutRef.current && (
           <div className="auto-save-indicator">
             <Info size={14} />
             Salvamento automático ativado...

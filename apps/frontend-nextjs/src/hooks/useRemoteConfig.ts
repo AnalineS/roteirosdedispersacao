@@ -6,9 +6,9 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { 
-  FeatureFlagsConfig, 
-  DEFAULT_FLAGS, 
+import {
+  FeatureFlagsConfig,
+  DEFAULT_FLAGS,
   STORAGE_KEYS,
   getEnvironmentFlags,
   trackFeatureFlagUsage,
@@ -16,6 +16,16 @@ import {
   debugFeatureFlags,
   isDevelopmentEnvironment
 } from '@/utils/featureFlags';
+
+// Interface para valores de remote config com método asBoolean
+interface RemoteConfigValue {
+  asBoolean(): boolean;
+}
+
+// Interface para o objeto de flags remotas
+interface RemoteFlagsObject {
+  [key: string]: RemoteConfigValue;
+}
 
 interface RemoteConfigState {
   flags: FeatureFlagsConfig;
@@ -47,13 +57,13 @@ const mockRemoteConfig = {
       }
     }
     
-    // Valores padrão para simulação
+    // Valores padrão para simulação - ATIVADOS
     const defaults: Record<string, boolean> = {
-      fast_access_bar: false,
-      new_footer: false,
-      urgency_badges: false,
-      personalization_system: false,
-      virtual_scrolling: false
+      fast_access_bar: true,
+      new_footer: true,
+      urgency_badges: true,
+      personalization_system: true,
+      virtual_scrolling: true
     };
     
     return { 
@@ -64,11 +74,11 @@ const mockRemoteConfig = {
   getAll() {
     const envFlags = getEnvironmentFlags();
     return {
-      fast_access_bar: { asBoolean: () => envFlags.fast_access_bar ?? false },
-      new_footer: { asBoolean: () => envFlags.new_footer ?? false },
-      urgency_badges: { asBoolean: () => envFlags.urgency_badges ?? false },
-      personalization_system: { asBoolean: () => envFlags.personalization_system ?? false },
-      virtual_scrolling: { asBoolean: () => envFlags.virtual_scrolling ?? false }
+      fast_access_bar: { asBoolean: () => envFlags.fast_access_bar ?? true },
+      new_footer: { asBoolean: () => envFlags.new_footer ?? true },
+      urgency_badges: { asBoolean: () => envFlags.urgency_badges ?? true },
+      personalization_system: { asBoolean: () => envFlags.personalization_system ?? true },
+      virtual_scrolling: { asBoolean: () => envFlags.virtual_scrolling ?? true }
     };
   }
 };
@@ -110,7 +120,20 @@ const loadSessionFlags = (): Partial<FeatureFlagsConfig> => {
     
     return flags;
   } catch (error) {
-    console.error('Erro ao carregar flags de sessão:', error);
+    // Erro ao carregar flags de sessão
+    if (typeof process !== 'undefined' && process.stderr) {
+      process.stderr.write(`❌ ERRO - Falha ao carregar flags de sessão: ${error}\n`);
+    }
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'remote_config_session_load_error', {
+        event_category: 'medical_config_error',
+        event_label: 'session_flags_load_failed',
+        custom_parameters: {
+          error_context: 'session_flags_loading',
+          error_message: String(error)
+        }
+      });
+    }
     return { ab_test_variant: generateABTestAssignment() };
   }
 };
@@ -123,7 +146,20 @@ const loadUserFlags = (): Partial<FeatureFlagsConfig> => {
     const saved = localStorage.getItem(STORAGE_KEYS.USER_FLAGS);
     return saved ? JSON.parse(saved) : {};
   } catch (error) {
-    console.error('Erro ao carregar flags do usuário:', error);
+    // Erro ao carregar flags do usuário
+    if (typeof process !== 'undefined' && process.stderr) {
+      process.stderr.write(`❌ ERRO - Falha ao carregar flags do usuário: ${error}\n`);
+    }
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'remote_config_user_load_error', {
+        event_category: 'medical_config_error',
+        event_label: 'user_flags_load_failed',
+        custom_parameters: {
+          error_context: 'user_flags_loading',
+          error_message: String(error)
+        }
+      });
+    }
     return {};
   }
 };
@@ -139,7 +175,20 @@ const saveSessionFlags = (flags: Partial<FeatureFlagsConfig>) => {
     };
     sessionStorage.setItem(STORAGE_KEYS.SESSION_FLAGS, JSON.stringify(sessionFlags));
   } catch (error) {
-    console.error('Erro ao salvar flags de sessão:', error);
+    // Erro ao salvar flags de sessão
+    if (typeof process !== 'undefined' && process.stderr) {
+      process.stderr.write(`❌ ERRO - Falha ao salvar flags de sessão: ${error}\n`);
+    }
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'remote_config_session_save_error', {
+        event_category: 'medical_config_error',
+        event_label: 'session_flags_save_failed',
+        custom_parameters: {
+          error_context: 'session_flags_saving',
+          error_message: String(error)
+        }
+      });
+    }
   }
 };
 
@@ -206,7 +255,7 @@ export const useRemoteConfig = (options: RemoteConfigOptions = {}) => {
         // Extrair flags globais
         Object.keys(remoteFlags).forEach(key => {
           if (key in DEFAULT_FLAGS) {
-            const remoteFlag = (remoteFlags as any)[key];
+            const remoteFlag = (remoteFlags as RemoteFlagsObject)[key];
             globalFlags[key as keyof FeatureFlagsConfig] = remoteFlag.asBoolean();
           }
         });
@@ -253,7 +302,20 @@ export const useRemoteConfig = (options: RemoteConfigOptions = {}) => {
       }
       
     } catch (error) {
-      console.error('Erro ao buscar API Backend Config:', error);
+      // Erro ao buscar API Backend Config
+      if (typeof process !== 'undefined' && process.stderr) {
+        process.stderr.write(`❌ ERRO - Falha ao buscar API Backend Config: ${error}\n`);
+      }
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'remote_config_backend_error', {
+          event_category: 'medical_config_error',
+          event_label: 'backend_config_fetch_failed',
+          custom_parameters: {
+            error_context: 'backend_config_fetching',
+            error_message: String(error)
+          }
+        });
+      }
       
       // Fallback para flags de ambiente + cache local
       const sessionFlags = loadSessionFlags();

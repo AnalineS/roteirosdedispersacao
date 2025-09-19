@@ -5,9 +5,85 @@
  */
 
 import { ragIntegrationService } from './ragIntegrationService';
+import type { IntegratedRAGResponse } from './ragIntegrationService';
 import { semanticSearchEngine } from './semanticSearchEngine';
+import type { EnhancedSearchResult } from './semanticSearchEngine';
 import { embeddingService } from './embeddingService';
 import { ragCache } from './simpleCache';
+import type { SearchResult as MedicalSearchResult } from './medicalKnowledgeBase';
+
+// Global gtag type declaration
+declare global {
+  interface Window {
+    gtag?: (
+      command: 'event',
+      eventName: string,
+      parameters?: {
+        event_category?: string;
+        event_label?: string;
+        value?: number;
+        custom_parameters?: Record<string, unknown>;
+      }
+    ) => void;
+  }
+}
+
+interface QueryOptions {
+  maxResults?: number;
+  threshold?: number;
+  filters?: Record<string, unknown>;
+  context?: string;
+  maxChunks?: number;
+  enhanceWithLLM?: boolean;
+  categories?: string[];
+}
+
+interface RAGQueryResult {
+  response: string;
+  sources: string[];
+  confidence: number;
+  processingTime: number;
+}
+
+interface SearchResult {
+  text: string;
+  score: number;
+  finalScore: number;
+  source: string;
+  metadata?: Record<string, unknown>;
+}
+
+interface QueueItem {
+  query: string;
+  persona: string;
+  resolve: (result: RAGQueryResult) => void;
+  reject: (error: Error) => void;
+  timestamp: number;
+}
+
+interface QueryAnalysis {
+  complexity: 'simple' | 'medium' | 'complex';
+  medicalTerms: string[];
+  categories: string[];
+  requiresContext: boolean;
+  confidence: number;
+  intent: 'dosage' | 'safety' | 'procedure' | 'general';
+  suggestedStrategy: 'direct' | 'enhanced' | 'fallback';
+}
+
+interface UsageAnalysis {
+  commonQueries: string[];
+  peakHours: number[];
+  avgQueryComplexity: number;
+  cacheEfficiency: number;
+}
+
+interface BottleneckItem {
+  component: string;
+  impact: 'low' | 'medium' | 'high';
+  description: string;
+  solution: string;
+}
 
 export interface PerformanceMetrics {
   avgQueryTime: number;
@@ -65,15 +141,9 @@ export class RAGPerformanceOptimizer {
     maxParallelQueries: 3
   };
 
-  private queryQueue: Array<{
-    query: string;
-    persona: string;
-    resolve: (result: any) => void;
-    reject: (error: any) => void;
-    timestamp: number;
-  }> = [];
+  private queryQueue: QueueItem[] = [];
 
-  private prefetchCache = new Map<string, any>();
+  private prefetchCache = new Map<string, RAGQueryResult>();
   private queryPatterns = new Map<string, number>();
   private processingQueue = new Set<string>();
   private batchTimer: NodeJS.Timeout | null = null;
@@ -95,8 +165,8 @@ export class RAGPerformanceOptimizer {
   async optimizedQuery(
     query: string,
     persona: 'dr_gasnelio' | 'ga' = 'dr_gasnelio',
-    options?: any
-  ): Promise<any> {
+    options?: QueryOptions
+  ): Promise<RAGQueryResult> {
     const startTime = Date.now();
 
     try {
@@ -122,8 +192,9 @@ export class RAGPerformanceOptimizer {
       }
 
       // 5. Processamento direto
-      const result = await ragIntegrationService.query(finalQuery, persona, options);
-      
+      const response = await ragIntegrationService.query(finalQuery, persona, options);
+      const result = this.convertToRAGQueryResult(response, Date.now() - startTime);
+
       // 6. Prefetch para queries relacionadas
       if (this.config.enablePrefetch && result) {
         await this.prefetchRelatedQueries(finalQuery, result);
@@ -143,31 +214,48 @@ export class RAGPerformanceOptimizer {
    */
   async optimizedSearch(
     query: string,
-    options?: any
-  ): Promise<any> {
+    options?: QueryOptions
+  ): Promise<SearchResult[]> {
     const cacheKey = `search:${this.hashQuery(query, options)}`;
     
     // Verificar cache primeiro
-    const cached = await ragCache.get(cacheKey);
-    if (cached) {
+    const cached = await ragCache.getCached(cacheKey);
+    if (cached && Array.isArray(cached)) {
       this.metrics.cacheHitRate += 0.1;
-      return cached;
+      return cached as SearchResult[];
     }
 
     // Otimizar query para busca
     const optimizedQuery = await this.optimizeSearchQuery(query);
     
     // Executar busca
-    const results = await semanticSearchEngine.search({
+    const searchResults: EnhancedSearchResult[] = await semanticSearchEngine.search({
       text: optimizedQuery,
       ...options
+    });
+
+    // Converter EnhancedSearchResult[] para SearchResult[] local
+    const results: SearchResult[] = searchResults.map((enhancedResult: EnhancedSearchResult) => {
+      // EnhancedSearchResult extends SearchResult from medicalKnowledgeBase
+      // que contém: document, chunk?, similarity, relevantSections, confidence
+      return {
+        text: enhancedResult.document?.content || '',
+        score: enhancedResult.similarity || 0,
+        finalScore: enhancedResult.finalScore,
+        source: enhancedResult.document?.source || 'unknown',
+        metadata: {
+          document: enhancedResult.document,
+          relevantSections: enhancedResult.relevantSections,
+          matchedTerms: enhancedResult.matchedTerms
+        }
+      };
     });
 
     // Cachear resultado se for de qualidade
     if (results.length > 0) {
       const avgScore = results.reduce((sum, r) => sum + r.finalScore, 0) / results.length;
       if (avgScore > 0.6) {
-        await ragCache.set(cacheKey, results, 30 * 60 * 1000); // 30 min
+        await ragCache.setCached(cacheKey, results, 30 * 60 * 1000); // 30 min
       }
     }
 
@@ -226,7 +314,14 @@ export class RAGPerformanceOptimizer {
     // Aplicar nova configuração
     this.config = newConfig;
 
-    console.log(`🚀 Auto-optimization completed: ${expectedImprovement}% improvement expected`);
+    // Medical tracking: Auto-optimization completed
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'rag_auto_optimization_completed', {
+        event_category: 'rag_performance',
+        event_label: 'optimization_improvement',
+        value: Math.round(expectedImprovement)
+      });
+    }
 
     return {
       previousConfig,
@@ -250,7 +345,7 @@ export class RAGPerformanceOptimizer {
     }>;
   } {
     const recommendations: string[] = [];
-    const bottlenecks: any[] = [];
+    const bottlenecks: BottleneckItem[] = [];
 
     // Analisar métricas e identificar problemas
     if (this.metrics.avgQueryTime > 2000) {
@@ -296,10 +391,58 @@ export class RAGPerformanceOptimizer {
    */
   configure(newConfig: Partial<OptimizationConfig>): void {
     this.config = { ...this.config, ...newConfig };
-    console.log('RAG Performance Optimizer configured:', this.config);
+    // Medical tracking: RAG Performance Optimizer configured
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'rag_optimizer_configured', {
+        event_category: 'rag_performance',
+        event_label: 'optimizer_setup',
+        custom_parameters: {
+          batching_enabled: this.config.enableBatching,
+          prefetch_enabled: this.config.enablePrefetch
+        }
+      });
+    }
   }
 
   // MÉTODOS PRIVADOS
+
+  /**
+   * Converte IntegratedRAGResponse para RAGQueryResult
+   */
+  private convertToRAGQueryResult(response: IntegratedRAGResponse, processingTime: number): RAGQueryResult {
+    return {
+      response: response.answer,
+      sources: response.sources,
+      confidence: response.qualityScore,
+      processingTime: processingTime || response.processingTimeMs || 0
+    };
+  }
+
+  /**
+   * Determina o intent baseado nos termos médicos e categorias
+   */
+  private determineIntent(medicalTerms: string[], categories: string[]): 'dosage' | 'safety' | 'procedure' | 'general' {
+    // Palavras-chave para dosagem
+    const dosageKeywords = ['dose', 'dosagem', 'mg', 'quantidade', 'administração'];
+    // Palavras-chave para segurança
+    const safetyKeywords = ['efeitos', 'colaterais', 'contraindicações', 'reações', 'adversas'];
+    // Palavras-chave para procedimentos
+    const procedureKeywords = ['como', 'protocolo', 'procedimento', 'tratamento', 'aplicar'];
+
+    const allTerms = [...medicalTerms, ...categories].join(' ').toLowerCase();
+
+    if (dosageKeywords.some(keyword => allTerms.includes(keyword))) {
+      return 'dosage';
+    }
+    if (safetyKeywords.some(keyword => allTerms.includes(keyword))) {
+      return 'safety';
+    }
+    if (procedureKeywords.some(keyword => allTerms.includes(keyword))) {
+      return 'procedure';
+    }
+
+    return 'general';
+  }
 
   private async optimizeQuery(query: string): Promise<QueryOptimization> {
     if (!this.config.enableQueryOptimization) {
@@ -312,8 +455,23 @@ export class RAGPerformanceOptimizer {
       };
     }
 
-    // Análise da query
-    const analysis = semanticSearchEngine.analyzeQuery(query);
+    // Análise da query - analyzeQuery retorna: { complexity, medicalTerms, categories, confidence }
+    const baseAnalysis: {
+      complexity: 'simple' | 'medium' | 'complex';
+      medicalTerms: string[];
+      categories: string[];
+      confidence: number;
+    } = semanticSearchEngine.analyzeQuery(query);
+
+    const analysis: QueryAnalysis = {
+      complexity: baseAnalysis.complexity,
+      medicalTerms: baseAnalysis.medicalTerms,
+      categories: baseAnalysis.categories,
+      requiresContext: baseAnalysis.categories.length > 1 || baseAnalysis.medicalTerms.length > 2,
+      confidence: baseAnalysis.confidence,
+      intent: this.determineIntent(baseAnalysis.medicalTerms, baseAnalysis.categories),
+      suggestedStrategy: 'direct'
+    };
     
     let optimizedQuery = query;
     let optimizationType: QueryOptimization['optimizationType'] = 'cached';
@@ -364,7 +522,7 @@ export class RAGPerformanceOptimizer {
     return query + medicalContext;
   }
 
-  private async rewriteQuery(query: string, analysis: any): Promise<string> {
+  private async rewriteQuery(query: string, analysis: QueryAnalysis): Promise<string> {
     // Reescrever query baseado no intent detectado
     if (analysis.intent === 'dosage') {
       return query + ' dose quantidade mg';
@@ -407,15 +565,15 @@ export class RAGPerformanceOptimizer {
       }
     });
 
-    return [...new Set(terms)];
+    return Array.from(new Set(terms));
   }
 
-  private checkPrefetchCache(query: string): any | null {
+  private checkPrefetchCache(query: string): RAGQueryResult | null {
     const cacheKey = this.hashQuery(query);
     return this.prefetchCache.get(cacheKey) || null;
   }
 
-  private async addToBatch(query: string, persona: string, options: any): Promise<any> {
+  private async addToBatch(query: string, persona: string, options?: QueryOptions): Promise<RAGQueryResult> {
     return new Promise((resolve, reject) => {
       this.queryQueue.push({
         query,
@@ -445,7 +603,8 @@ export class RAGPerformanceOptimizer {
     // Processar queries em paralelo
     const promises = batch.map(async (item) => {
       try {
-        const result = await ragIntegrationService.query(item.query, item.persona as any);
+        const response = await ragIntegrationService.query(item.query, item.persona as 'dr_gasnelio' | 'ga');
+        const result = this.convertToRAGQueryResult(response, 0);
         item.resolve(result);
       } catch (error) {
         item.reject(error);
@@ -455,7 +614,7 @@ export class RAGPerformanceOptimizer {
     await Promise.all(promises);
   }
 
-  private async processWithParallel(query: string, persona: string, options: any): Promise<any> {
+  private async processWithParallel(query: string, persona: string, options?: QueryOptions): Promise<RAGQueryResult> {
     const queryId = this.hashQuery(query);
     
     // Verificar se já está sendo processada
@@ -468,18 +627,19 @@ export class RAGPerformanceOptimizer {
     this.processingQueue.add(queryId);
 
     try {
-      const result = await ragIntegrationService.query(query, persona as 'dr_gasnelio' | 'ga', options);
-      
+      const response = await ragIntegrationService.query(query, persona as 'dr_gasnelio' | 'ga', options);
+      const result = this.convertToRAGQueryResult(response, 0);
+
       // Cachear resultado
       this.prefetchCache.set(queryId, result);
-      
+
       return result;
     } finally {
       this.processingQueue.delete(queryId);
     }
   }
 
-  private async waitForProcessing(queryId: string): Promise<any> {
+  private async waitForProcessing(queryId: string): Promise<RAGQueryResult | undefined> {
     return new Promise((resolve) => {
       const checkInterval = setInterval(() => {
         if (!this.processingQueue.has(queryId)) {
@@ -490,7 +650,7 @@ export class RAGPerformanceOptimizer {
     });
   }
 
-  private async prefetchRelatedQueries(originalQuery: string, result: any): Promise<void> {
+  private async prefetchRelatedQueries(originalQuery: string, result: RAGQueryResult): Promise<void> {
     if (!this.config.enablePrefetch) return;
 
     try {
@@ -502,7 +662,8 @@ export class RAGPerformanceOptimizer {
         const cacheKey = this.hashQuery(relatedQuery);
         if (!this.prefetchCache.has(cacheKey)) {
           try {
-            const prefetchResult = await ragIntegrationService.query(relatedQuery, 'dr_gasnelio');
+            const response = await ragIntegrationService.query(relatedQuery, 'dr_gasnelio');
+            const prefetchResult = this.convertToRAGQueryResult(response, 0);
             this.prefetchCache.set(cacheKey, prefetchResult);
           } catch (error) {
             // Ignore prefetch errors
@@ -511,11 +672,20 @@ export class RAGPerformanceOptimizer {
       }));
 
     } catch (error) {
-      console.debug('Error in prefetch:', error);
+      // Medical tracking: Prefetch error
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'rag_prefetch_error', {
+          event_category: 'rag_performance',
+          event_label: 'prefetch_failure',
+          custom_parameters: {
+            error_type: 'prefetch_error'
+          }
+        });
+      }
     }
   }
 
-  private generateRelatedQueries(originalQuery: string, result: any): string[] {
+  private generateRelatedQueries(originalQuery: string, result: RAGQueryResult): string[] {
     const related: string[] = [];
     
     // Baseado nas fontes do resultado
@@ -532,12 +702,7 @@ export class RAGPerformanceOptimizer {
     return related;
   }
 
-  private analyzeUsagePatterns(): {
-    commonQueries: string[];
-    peakHours: number[];
-    avgQueryComplexity: number;
-    cacheEfficiency: number;
-  } {
+  private analyzeUsagePatterns(): UsageAnalysis {
     return {
       commonQueries: Array.from(this.queryPatterns.keys()).slice(0, 10),
       peakHours: [9, 10, 14, 15], // Placeholder
@@ -546,7 +711,7 @@ export class RAGPerformanceOptimizer {
     };
   }
 
-  private generateOptimalConfig(analysis: any): OptimizationConfig {
+  private generateOptimalConfig(analysis: UsageAnalysis): OptimizationConfig {
     const newConfig = { ...this.config };
 
     // Ajustar baseado nos padrões de uso
@@ -628,7 +793,7 @@ export class RAGPerformanceOptimizer {
       (this.metrics.successRate * (currentQueries - 1) + (success ? 1 : 0)) / currentQueries;
   }
 
-  private hashQuery(query: string, options?: any): string {
+  private hashQuery(query: string, options?: QueryOptions): string {
     const combined = query + (options ? JSON.stringify(options) : '');
     let hash = 0;
     for (let i = 0; i < combined.length; i++) {
@@ -647,19 +812,24 @@ export const ragPerformanceOptimizer = RAGPerformanceOptimizer.getInstance();
 export async function optimizedRAGQuery(
   query: string,
   persona: 'dr_gasnelio' | 'ga' = 'dr_gasnelio',
-  options?: any
-): Promise<any> {
+  options?: QueryOptions
+): Promise<RAGQueryResult> {
   return ragPerformanceOptimizer.optimizedQuery(query, persona, options);
 }
 
 export async function optimizedSemanticSearch(
   query: string,
-  options?: any
-): Promise<any> {
+  options?: QueryOptions
+): Promise<SearchResult[]> {
   return ragPerformanceOptimizer.optimizedSearch(query, options);
 }
 
-export function getRAGPerformanceReport(): any {
+export function getRAGPerformanceReport(): {
+  metrics: PerformanceMetrics;
+  config: OptimizationConfig;
+  recommendations: string[];
+  bottlenecks: BottleneckItem[];
+} {
   return ragPerformanceOptimizer.getPerformanceReport();
 }
 

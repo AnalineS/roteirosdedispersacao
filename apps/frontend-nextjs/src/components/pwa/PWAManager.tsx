@@ -2,6 +2,18 @@
 
 import { useEffect, useState } from 'react';
 
+// Interface para navegador iOS com propriedade standalone
+interface ExtendedNavigator extends Navigator {
+  standalone?: boolean;
+}
+
+// Interface para evento de instalação PWA
+interface BeforeInstallPromptEvent extends Event {
+  readonly platforms: string[];
+  readonly userChoice: Promise<{outcome: 'accepted' | 'dismissed', platform: string}>;
+  prompt(): Promise<void>;
+}
+
 interface PWAManagerProps {
   enableServiceWorker?: boolean;
 }
@@ -10,7 +22,7 @@ export default function PWAManager({ enableServiceWorker = false }: PWAManagerPr
   const [isSupported, setIsSupported] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
   const [updateAvailable, setUpdateAvailable] = useState(false);
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
 
   useEffect(() => {
     // Verificar suporte a PWA
@@ -21,7 +33,7 @@ export default function PWAManager({ enableServiceWorker = false }: PWAManagerPr
       
       // Verificar se já está instalado
       const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-      const isInIOS = (window.navigator as any).standalone === true;
+      const isInIOS = (window.navigator as ExtendedNavigator).standalone === true;
       setIsInstalled(isStandalone || isInIOS);
     };
 
@@ -37,7 +49,20 @@ export default function PWAManager({ enableServiceWorker = false }: PWAManagerPr
     const handleAppInstalled = () => {
       setIsInstalled(true);
       setDeferredPrompt(null);
-      console.log('[PWA] App instalado com sucesso');
+      // PWA App instalado com sucesso
+      if (typeof process !== 'undefined' && process.stderr) {
+        process.stderr.write('✅ PWA - App instalado com sucesso\n');
+      }
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'pwa_app_installed', {
+          event_category: 'pwa_lifecycle',
+          event_label: 'app_installation_success',
+          custom_parameters: {
+            pwa_context: 'app_installed_event',
+            installation_method: 'native_prompt'
+          }
+        });
+      }
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -63,7 +88,20 @@ export default function PWAManager({ enableServiceWorker = false }: PWAManagerPr
         updateViaCache: 'none' // Força verificação de updates
       });
 
-      console.log('[PWA] Service Worker registrado:', registration.scope);
+      // PWA Service Worker registrado
+      if (typeof process !== 'undefined' && process.stderr) {
+        process.stderr.write(`✅ PWA - Service Worker registrado: ${registration.scope}\n`);
+      }
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'pwa_service_worker_registered', {
+          event_category: 'pwa_lifecycle',
+          event_label: 'service_worker_registration_success',
+          custom_parameters: {
+            pwa_context: 'service_worker_registration',
+            scope: registration.scope
+          }
+        });
+      }
 
       // Verificar updates
       registration.addEventListener('updatefound', () => {
@@ -72,7 +110,20 @@ export default function PWAManager({ enableServiceWorker = false }: PWAManagerPr
           newWorker.addEventListener('statechange', () => {
             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
               setUpdateAvailable(true);
-              console.log('[PWA] Nova versão disponível');
+              // PWA Nova versão disponível
+              if (typeof process !== 'undefined' && process.stderr) {
+                process.stderr.write('🔄 PWA - Nova versão disponível\n');
+              }
+              if (typeof window !== 'undefined' && window.gtag) {
+                window.gtag('event', 'pwa_update_available', {
+                  event_category: 'pwa_lifecycle',
+                  event_label: 'update_detected',
+                  custom_parameters: {
+                    pwa_context: 'service_worker_update',
+                    update_type: 'new_version_available'
+                  }
+                });
+              }
             }
           });
         }
@@ -84,7 +135,20 @@ export default function PWAManager({ enableServiceWorker = false }: PWAManagerPr
       }
 
     } catch (error) {
-      console.error('[PWA] Falha ao registrar Service Worker:', error);
+      // PWA Falha ao registrar Service Worker
+      if (typeof process !== 'undefined' && process.stderr) {
+        process.stderr.write(`❌ ERRO - Falha ao registrar Service Worker PWA: ${error}\n`);
+      }
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'pwa_service_worker_error', {
+          event_category: 'pwa_error',
+          event_label: 'service_worker_registration_failed',
+          custom_parameters: {
+            error_context: 'service_worker_registration',
+            error_message: String(error)
+          }
+        });
+      }
     }
   };
 
@@ -94,9 +158,35 @@ export default function PWAManager({ enableServiceWorker = false }: PWAManagerPr
       const { outcome } = await deferredPrompt.userChoice;
       
       if (outcome === 'accepted') {
-        console.log('[PWA] Usuário aceitou instalar');
+        // PWA Usuário aceitou instalar
+        if (typeof process !== 'undefined' && process.stderr) {
+          process.stderr.write('✅ PWA - Usuário aceitou instalar\n');
+        }
+        if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'pwa_install_accepted', {
+            event_category: 'pwa_lifecycle',
+            event_label: 'user_accepted_installation',
+            custom_parameters: {
+              pwa_context: 'install_prompt_interaction',
+              user_choice: 'accepted'
+            }
+          });
+        }
       } else {
-        console.log('[PWA] Usuário recusou instalar');
+        // PWA Usuário recusou instalar
+        if (typeof process !== 'undefined' && process.stderr) {
+          process.stderr.write('⚠️ PWA - Usuário recusou instalar\n');
+        }
+        if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'pwa_install_dismissed', {
+            event_category: 'pwa_lifecycle',
+            event_label: 'user_dismissed_installation',
+            custom_parameters: {
+              pwa_context: 'install_prompt_interaction',
+              user_choice: 'dismissed'
+            }
+          });
+        }
       }
       
       setDeferredPrompt(null);
@@ -227,7 +317,20 @@ export function usePWA() {
     if ('caches' in window) {
       const cacheNames = await caches.keys();
       await Promise.all(cacheNames.map(name => caches.delete(name)));
-      console.log('[PWA] Cache limpo');
+      // PWA Cache limpo
+      if (typeof process !== 'undefined' && process.stderr) {
+        process.stderr.write('🧹 PWA - Cache limpo\n');
+      }
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'pwa_cache_cleared', {
+          event_category: 'pwa_lifecycle',
+          event_label: 'cache_cleanup_success',
+          custom_parameters: {
+            pwa_context: 'cache_management',
+            cleanup_type: 'manual_cache_clear'
+          }
+        });
+      }
     }
   };
 

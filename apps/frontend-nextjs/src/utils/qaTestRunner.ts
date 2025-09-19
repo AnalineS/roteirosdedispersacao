@@ -13,6 +13,32 @@ import ContinuousImprovementSystem from './continuousImprovementSystem';
 import { ClinicalCase } from '@/types/clinicalCases';
 import { CLINICAL_CASES } from '@/data/clinicalCases';
 
+interface AggregatedMetrics {
+  totalTests: number;
+  passedTests: number;
+  failedTests: number;
+  warningTests: number;
+  averageScore: number;
+  minScore: number;
+  maxScore: number;
+  scoreDistribution: {
+    excellent: number; // 90-100
+    good: number; // 75-89
+    fair: number; // 60-74
+    poor: number; // <60
+  };
+  executionTime: {
+    total: number;
+    average: number;
+    min: number;
+    max: number;
+  };
+}
+
+interface OrganizedResults {
+  [testType: string]: QAValidationResult[];
+}
+
 // ===== INTERFACES =====
 
 export interface QATestSuite {
@@ -538,7 +564,7 @@ export class QATestRunner {
     return 'passed';
   }
   
-  private aggregateMetrics(results: QAValidationResult[]): any {
+  private aggregateMetrics(results: QAValidationResult[]): AggregatedMetrics {
     // Agregar métricas de múltiplos resultados
     return {
       clinicalAccuracy: { score: 92 },
@@ -549,8 +575,8 @@ export class QATestRunner {
     };
   }
   
-  private organizeResultsByType(results: QAValidationResult[]): any {
-    const organized: any = {};
+  private organizeResultsByType(results: QAValidationResult[]): OrganizedResults {
+    const organized: OrganizedResults = {};
     
     results.forEach(result => {
       const key = result.componentType.replace('_test', '');

@@ -8,6 +8,20 @@
 // Note: AI functionality moved to backend with OpenRouter integration
 // This service provides frontend interface for AI features
 
+interface UserProgressData {
+  completedModules?: unknown[];
+  streakData?: { currentStreak: number; };
+  experiencePoints?: { total: number; };
+  [key: string]: unknown;
+}
+
+interface LeaderboardEntry {
+  totalXP?: number;
+  currentStreak?: number;
+  achievementCount?: number;
+  [key: string]: unknown;
+}
+
 interface AIInsight {
   id: string;
   type: 'learning_suggestion' | 'progress_analysis' | 'content_recommendation';
@@ -45,10 +59,35 @@ class AIService {
   private async checkAIAvailability(): Promise<void> {
     try {
       this.isAvailable = true;
-      console.info('Backend AI service ready for integration');
+
+      // Medical AI service availability tracking
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'medical_ai_service_ready', {
+          event_category: 'medical_ai_tracking',
+          event_label: 'backend_ai_service_available',
+          custom_parameters: {
+            medical_context: 'ai_service_initialization',
+            service_status: 'available',
+            backend_integration: 'openrouter_ready'
+          }
+        });
+      }
     } catch (error) {
-      console.debug('Backend AI não disponível neste momento');
       this.isAvailable = false;
+
+      // Medical AI service unavailability tracking
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'medical_ai_service_unavailable', {
+          event_category: 'medical_ai_warning',
+          event_label: 'backend_ai_service_unavailable',
+          custom_parameters: {
+            medical_context: 'ai_service_initialization',
+            service_status: 'unavailable',
+            error_message: error instanceof Error ? error.message : String(error),
+            fallback_mode: 'manual_analysis_only'
+          }
+        });
+      }
     }
   }
 
@@ -58,7 +97,7 @@ class AIService {
    */
   async generateUserInsights(
     userId: string,
-    progressData: any
+    progressData: UserProgressData
   ): Promise<{ success: boolean; insights?: AIInsight[]; error?: string }> {
     try {
       if (!this.isAvailable) {
@@ -73,9 +112,32 @@ class AIService {
       // });
 
       return { success: false, error: 'Backend AI não disponível ainda' };
-    } catch (error: any) {
-      console.error('Erro ao gerar insights AI:', error);
-      return { success: false, error: error.message };
+    } catch (error: Error | unknown) {
+      // Medical AI insights generation error - explicit stderr + tracking
+      const errorMessage = error instanceof Error ? error.message : String(error);
+
+      // Explicit error to stderr for medical system visibility
+      if (typeof process !== 'undefined' && process.stderr) {
+        process.stderr.write(`❌ ERRO - Falha ao gerar insights AI médicos:\n` +
+          `  UserID: ${userId}\n` +
+          `  Error: ${errorMessage}\n\n`);
+      }
+
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'medical_ai_insights_generation_error', {
+          event_category: 'medical_error_critical',
+          event_label: 'ai_insights_generation_failed',
+          custom_parameters: {
+            medical_context: 'ai_insights_generation',
+            user_id: userId,
+            error_type: 'ai_insights_failure',
+            error_message: errorMessage,
+            ai_service_available: this.isAvailable
+          }
+        });
+      }
+
+      return { success: false, error: errorMessage };
     }
   }
 
@@ -84,7 +146,7 @@ class AIService {
    */
   private async generateManualInsights(
     userId: string,
-    progressData: any
+    progressData: UserProgressData
   ): Promise<{ success: boolean; insights?: AIInsight[] }> {
     const insights: AIInsight[] = [];
 
@@ -130,7 +192,7 @@ class AIService {
    * ✨ Preparado para integração com backend
    */
   async analyzeLeaderboardTrends(
-    leaderboardData: any[]
+    leaderboardData: LeaderboardEntry[]
   ): Promise<{ success: boolean; analysis?: LeaderboardAIAnalysis; error?: string }> {
     try {
       // Análise manual baseada em dados estatísticos
@@ -158,16 +220,39 @@ class AIService {
       };
 
       return { success: true, analysis };
-    } catch (error: any) {
-      console.error('Erro na análise de tendências:', error);
-      return { success: false, error: error.message };
+    } catch (error: Error | unknown) {
+      // Medical AI trends analysis error - explicit stderr + tracking
+      const errorMessage = error instanceof Error ? error.message : String(error);
+
+      // Explicit error to stderr for medical system visibility
+      if (typeof process !== 'undefined' && process.stderr) {
+        process.stderr.write(`❌ ERRO - Falha na análise de tendências AI médicas:\n` +
+          `  LeaderboardEntries: ${leaderboardData.length}\n` +
+          `  Error: ${errorMessage}\n\n`);
+      }
+
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'medical_ai_trends_analysis_error', {
+          event_category: 'medical_error_critical',
+          event_label: 'ai_trends_analysis_failed',
+          custom_parameters: {
+            medical_context: 'ai_trends_analysis',
+            leaderboard_entries_count: leaderboardData.length,
+            error_type: 'ai_trends_analysis_failure',
+            error_message: errorMessage,
+            ai_service_available: this.isAvailable
+          }
+        });
+      }
+
+      return { success: false, error: errorMessage };
     }
   }
 
   /**
    * Extrair padrões de aprendizagem dos top performers
    */
-  private extractLearningPatterns(topPerformers: any[]): string[] {
+  private extractLearningPatterns(topPerformers: LeaderboardEntry[]): string[] {
     const patterns: string[] = [];
     
     const avgStreak = topPerformers.reduce((sum, user) => sum + (user.currentStreak || 0), 0) / topPerformers.length;

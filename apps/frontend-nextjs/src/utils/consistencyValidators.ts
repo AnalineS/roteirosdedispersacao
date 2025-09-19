@@ -8,6 +8,46 @@
 
 import { ClinicalCase, CaseStep, StepResult } from '@/types/clinicalCases';
 
+interface ProfileObject {
+  [key: string]: number | string | string[];
+}
+
+interface Reference {
+  id?: string;
+  title: string;
+  source?: string;
+  type: 'protocolo_nacional' | 'tese_doutorado' | 'literatura_cientifica' | string;
+  url?: string;
+  year?: number;
+  author?: string;
+}
+
+interface ComponentData {
+  id: string;
+  type: 'button' | 'input' | 'card' | 'text' | string;
+  styles: {
+    color?: string;
+    backgroundColor?: string;
+    fontSize?: number;
+    fontFamily?: string;
+    fontWeight?: string | number;
+    padding?: string;
+    margin?: string;
+    borderRadius?: string;
+  };
+  interactions?: {
+    hover?: string;
+    focus?: string;
+    active?: string;
+  };
+}
+
+interface ValidationResult {
+  score: number;
+  violations?: unknown[];
+  inconsistencies?: unknown[];
+}
+
 // ===== INTERFACES DE VALIDAÇÃO =====
 
 export interface ConsistencyValidationResult {
@@ -306,7 +346,7 @@ export class PersonaConsistencyValidator {
     );
   }
   
-  private calculateProfileSimilarity(actual: any, expected: any): number {
+  private calculateProfileSimilarity(actual: ProfileObject, expected: ProfileObject): number {
     const keys = Object.keys(expected).filter(key => typeof expected[key] === 'number');
     let totalSimilarity = 0;
     
@@ -772,7 +812,7 @@ export class ReferenceConsistencyValidator {
   ]);
   
   public async validateReferences(
-    references: any[], 
+    references: Reference[],
     content: string
   ): Promise<ReferenceValidationResult> {
     const validReferences = await this.validateReferencesList(references);
@@ -796,7 +836,7 @@ export class ReferenceConsistencyValidator {
     };
   }
   
-  private async validateReferencesList(references: any[]): Promise<ValidatedReference[]> {
+  private async validateReferencesList(references: Reference[]): Promise<ValidatedReference[]> {
     const validated: ValidatedReference[] = [];
     
     for (const ref of references) {
@@ -820,7 +860,7 @@ export class ReferenceConsistencyValidator {
     return validated;
   }
   
-  private async checkReferenceAccessibility(reference: any): Promise<boolean> {
+  private async checkReferenceAccessibility(reference: Reference): Promise<boolean> {
     // Implementação simplificada - em produção usaria fetch
     if (reference.url) {
       try {
@@ -836,7 +876,7 @@ export class ReferenceConsistencyValidator {
     return true;
   }
   
-  private assessReferenceReliability(reference: any): number {
+  private assessReferenceReliability(reference: Reference): number {
     let score = 0.5; // Base score
     
     // Verificar fonte confiável
@@ -865,7 +905,7 @@ export class ReferenceConsistencyValidator {
     return Math.min(score, 1.0);
   }
   
-  private identifyInvalidReferences(references: any[]): InvalidReference[] {
+  private identifyInvalidReferences(references: Reference[]): InvalidReference[] {
     const invalid: InvalidReference[] = [];
     
     for (const ref of references) {
@@ -891,7 +931,7 @@ export class ReferenceConsistencyValidator {
     return invalid;
   }
   
-  private identifyMissingCitations(content: string, references: any[]): MissingCitation[] {
+  private identifyMissingCitations(content: string, references: Reference[]): MissingCitation[] {
     const missing: MissingCitation[] = [];
     
     // Identificar afirmações que precisam de citação
@@ -920,7 +960,7 @@ export class ReferenceConsistencyValidator {
     return missing;
   }
   
-  private identifyReferenceViolations(references: any[]): ReferenceViolation[] {
+  private identifyReferenceViolations(references: Reference[]): ReferenceViolation[] {
     const violations: ReferenceViolation[] = [];
     
     for (const ref of references) {
@@ -971,7 +1011,7 @@ export class ReferenceConsistencyValidator {
     );
   }
   
-  private hasNearbyReference(context: string, references: any[]): boolean {
+  private hasNearbyReference(context: string, references: Reference[]): boolean {
     // Verificar se há referência no contexto (implementação simplificada)
     const referenceIndicators = ['(', '[', 'ref', 'fonte'];
     return referenceIndicators.some(indicator => 
@@ -1069,7 +1109,7 @@ interface ComponentAnalysis {
 
 interface ComponentStyleAnalysis {
   variations: number;
-  standardStyle: any;
+  standardStyle: Record<string, unknown>;
   deviations: StyleDeviation[];
 }
 
@@ -1145,7 +1185,7 @@ export class UIUXConsistencyValidator {
     }
   };
   
-  public validateUIUXConsistency(componentData: any[]): UIUXValidationResult {
+  public validateUIUXConsistency(componentData: ComponentData[]): UIUXValidationResult {
     const colorAnalysis = this.analyzeColorConsistency(componentData);
     const typographyAnalysis = this.analyzeTypographyConsistency(componentData);
     const componentAnalysis = this.analyzeComponentConsistency(componentData);
@@ -1172,7 +1212,7 @@ export class UIUXConsistencyValidator {
   }
   
   // Implementações simplificadas dos métodos de análise
-  private analyzeColorConsistency(componentData: any[]): ColorSchemeAnalysis {
+  private analyzeColorConsistency(componentData: ComponentData[]): ColorSchemeAnalysis {
     return {
       primaryColors: Object.values(this.DESIGN_STANDARDS.colors),
       secondaryColors: [],
@@ -1181,7 +1221,7 @@ export class UIUXConsistencyValidator {
     };
   }
   
-  private analyzeTypographyConsistency(componentData: any[]): TypographyAnalysis {
+  private analyzeTypographyConsistency(componentData: ComponentData[]): TypographyAnalysis {
     return {
       fontFamilies: this.DESIGN_STANDARDS.typography.fontFamily,
       fontSizes: Object.values(this.DESIGN_STANDARDS.typography.fontSize),
@@ -1189,7 +1229,7 @@ export class UIUXConsistencyValidator {
     };
   }
   
-  private analyzeComponentConsistency(componentData: any[]): ComponentAnalysis {
+  private analyzeComponentConsistency(componentData: ComponentData[]): ComponentAnalysis {
     return {
       buttonStyles: { variations: 1, standardStyle: {}, deviations: [] },
       inputStyles: { variations: 1, standardStyle: {}, deviations: [] },
@@ -1198,7 +1238,7 @@ export class UIUXConsistencyValidator {
     };
   }
   
-  private analyzeInteractionConsistency(componentData: any[]): InteractionAnalysis {
+  private analyzeInteractionConsistency(componentData: ComponentData[]): InteractionAnalysis {
     return {
       hoverStates: { consistent: true, variations: 1, standardBehavior: 'subtle highlight' },
       focusStates: { consistent: true, variations: 1, standardBehavior: 'blue outline' },
@@ -1207,7 +1247,7 @@ export class UIUXConsistencyValidator {
     };
   }
   
-  private identifyUIUXViolations(inconsistencies: any[]): UIUXViolation[] {
+  private identifyUIUXViolations(inconsistencies: unknown[]): UIUXViolation[] {
     // Converter inconsistências para violações padronizadas
     return [];
   }
@@ -1302,7 +1342,7 @@ export class ConsistencyValidationSystem {
     return content;
   }
   
-  private consolidateViolations(validationResults: any[]): ConsistencyViolation[] {
+  private consolidateViolations(validationResults: ValidationResult[]): ConsistencyViolation[] {
     const violations: ConsistencyViolation[] = [];
     
     // Converter violações específicas para formato padrão

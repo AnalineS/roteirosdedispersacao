@@ -4,6 +4,15 @@ import { Persona } from '@/services/api';
 import { modernChatTheme, getPersonaColors } from '@/config/modernTheme';
 import PersonaAvatar from '../PersonaAvatar';
 
+interface KnowledgeStats {
+  documentsFound?: number;
+  searchTime?: number;
+  relevanceScore?: number;
+  sources?: string[];
+  confidence?: number;
+  [key: string]: unknown;
+}
+
 interface SmartIndicatorsProps {
   sentiment?: {
     category: string;
@@ -12,7 +21,7 @@ interface SmartIndicatorsProps {
   } | null;
   knowledge?: {
     isSearching: boolean;
-    stats?: any;
+    stats?: KnowledgeStats;
   };
   fallback?: {
     isActive: boolean;
@@ -165,7 +174,7 @@ const SentimentIndicator = ({ sentiment, confidence }: { sentiment: string; conf
   );
 };
 
-const KnowledgeIndicator = ({ isSearching, stats }: { isSearching: boolean; stats?: any }) => {
+const KnowledgeIndicator = ({ isSearching, stats }: { isSearching: boolean; stats?: KnowledgeStats }) => {
   if (!isSearching && !stats) return null;
 
   return (
