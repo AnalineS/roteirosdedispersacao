@@ -331,7 +331,7 @@ class AstraDBVectorStore:
                 document.chunk_type,
                 document.priority,
                 document.source_file,
-                {k: str(v) for k, v in document.metadata.items()},  # MAP format
+                metadata_json,  # Use prepared JSON string
                 document.created_at or datetime.now(),
                 datetime.now()
             ))
