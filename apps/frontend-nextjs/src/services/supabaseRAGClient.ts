@@ -4,6 +4,7 @@
  */
 
 import { ragCache } from './simpleCache';
+import { secureLogger } from '@/utils/secureLogger';
 
 export interface RAGQuery {
   query: string;
@@ -64,6 +65,7 @@ export interface RAGStats {
     searchEngine: boolean;
     openrouter: boolean;
   };
+  [key: string]: unknown;
 }
 
 export class SupabaseRAGClient {
@@ -135,7 +137,7 @@ export class SupabaseRAGClient {
       return null;
 
     } catch (error) {
-      console.error('Error in RAG query:', error);
+      secureLogger.error('Error in RAG query', error instanceof Error ? error : new Error(String(error)));
       const errorObj = error instanceof Error ? error : new Error(String(error));
       return this.generateFallbackResponse(ragQuery, errorObj);
     }
@@ -160,7 +162,7 @@ export class SupabaseRAGClient {
       return response?.context || null;
 
     } catch (error) {
-      console.error('Error in RAG search:', error);
+      secureLogger.error('Error in RAG search', error instanceof Error ? error : new Error(String(error)));
       return null;
     }
   }
@@ -182,7 +184,7 @@ export class SupabaseRAGClient {
       return response || { inScope: false, category: 'unknown', confidence: 0.0 };
 
     } catch (error) {
-      console.error('Error checking scope:', error);
+      secureLogger.error('Error checking scope', error instanceof Error ? error : new Error(String(error)));
       return { inScope: false, category: 'unknown', confidence: 0.0 };
     }
   }
@@ -211,7 +213,7 @@ export class SupabaseRAGClient {
       } as RAGStats;
 
     } catch (error) {
-      console.error('Error getting RAG stats:', error);
+      secureLogger.error('Error getting RAG stats', error instanceof Error ? error : new Error(String(error)));
       return null;
     }
   }
@@ -231,7 +233,7 @@ export class SupabaseRAGClient {
       return true;
 
     } catch (error) {
-      console.error('Error clearing RAG cache:', error);
+      secureLogger.error('Error clearing RAG cache', error instanceof Error ? error : new Error(String(error)));
       return false;
     }
   }

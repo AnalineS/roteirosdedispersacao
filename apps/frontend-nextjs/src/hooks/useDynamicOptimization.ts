@@ -178,7 +178,7 @@ export const useDynamicOptimization = (config: OptimizationConfig = {}) => {
   // ============================================
 
   // Helper para criar debounced functions
-  const createDebouncedFunction = useCallback(<T extends (...args: any[]) => any>(
+  const createDebouncedFunction = useCallback(<T extends (...args: never[]) => unknown>(
     fn: T,
     delay: number = debounceMs
   ): ((...args: Parameters<T>) => void) => {

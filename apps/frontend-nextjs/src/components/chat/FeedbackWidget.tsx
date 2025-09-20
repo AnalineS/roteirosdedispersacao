@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
+import { useOptimizedEffect, useSmartInterval } from '@/hooks/useEffectOptimizer';
 import { modernChatTheme } from '@/config/modernTheme';
 import { validateFeedbackData, feedbackRateLimiter, generateSessionId } from '@/utils/securityUtils';
 import { useGoogleAnalytics } from '@/components/analytics/GoogleAnalyticsSetup';
@@ -93,8 +94,8 @@ export default function FeedbackWidget({
   const { trackFeedback, trackUserInteraction, trackError } = useGoogleAnalytics();
   const sessionId = useMemo(() => generateSessionId(), []);
 
-  // Load persona data on component mount
-  useEffect(() => {
+  // Load persona data on component mount - otimizado
+  useOptimizedEffect(() => {
     const loadPersonaData = async () => {
       try {
         const response = await fetch('/api/personas');

@@ -6,7 +6,7 @@
 
 'use client';
 
-import { useEffect } from 'react';
+import { useAsyncEffect, useOptimizedEffect } from '@/hooks/useEffectOptimizer';
 import Script from 'next/script';
 import { WindowWithGtag, OnboardingEventData } from '@/types/analytics';
 
@@ -87,8 +87,8 @@ export function GoogleAnalyticsSetup({
 }: GoogleAnalyticsSetupProps) {
   const measurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
   
-  useEffect(() => {
-    // Aguardar GA carregar e então iniciar UX tracking
+  useAsyncEffect(async () => {
+    // Aguardar GA carregar e então iniciar UX tracking - otimizado
     if (enableUXTracking && typeof window !== 'undefined') {
       const checkGtag = () => {
         const windowWithGtag = getWindowWithGtag();
@@ -408,7 +408,7 @@ export function useGoogleAnalytics() {
 }
 
 export function useGoogleAnalyticsUX() {
-  useEffect(() => {
+  useOptimizedEffect(() => {
     // Verificar se GA está disponível
     const windowWithGtag = getWindowWithGtag();
     if (windowWithGtag?.gtag) {

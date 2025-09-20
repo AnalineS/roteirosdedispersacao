@@ -4,6 +4,15 @@ import React, { useState } from 'react';
 import { TREATMENT_TIMELINE_TEMPLATES, TimelineMilestone } from '@/types/timeline';
 import { modernChatTheme } from '@/config/modernTheme';
 
+interface TemplateMilestone {
+  doseNumber?: number | null;
+  title: string;
+  description: string;
+  day: number;
+  type: 'start' | 'monthly_visit' | 'mid_treatment' | 'completion' | 'follow_up';
+  objectives?: string[];
+}
+
 interface StaticTimelineProps {
   protocol?: 'adulto' | 'pediatrico';
   showEducationalInfo?: boolean;
@@ -20,7 +29,7 @@ export default function StaticTimeline({
   const totalDays = template.duration;
 
   // Convert template milestones to TimelineMilestone format
-  const convertToTimelineMilestones = (templateMilestones: any[]): (TimelineMilestone & { day: number })[] => {
+  const convertToTimelineMilestones = (templateMilestones: TemplateMilestone[]): (TimelineMilestone & { day: number })[] => {
     return templateMilestones.map((milestone, index) => {
       const baseDate = new Date();
       const scheduledDate = new Date(baseDate.getTime() + milestone.day * 24 * 60 * 60 * 1000);
@@ -32,7 +41,7 @@ export default function StaticTimeline({
         description: milestone.description,
         scheduledDate,
         status: index < 2 ? 'completed' : 'pending' as 'pending' | 'completed' | 'missed' | 'rescheduled',
-        doseNumber: milestone.doseNumber,
+        doseNumber: milestone.doseNumber || undefined,
         objectives: milestone.objectives || [],
         completed: index < 2,
         day: milestone.day || 0

@@ -74,7 +74,7 @@ export default function EmailPreferences({
       id: 'weekly_progress',
       title: 'Relatório Semanal de Progresso',
       description: 'Resumo semanal do seu progresso e atividades',
-      enabled: false,
+      enabled: true,
       frequency: 'weekly',
       category: 'educational'
     },
@@ -82,7 +82,7 @@ export default function EmailPreferences({
       id: 'streak_reminders',
       title: 'Lembretes de Sequência',
       description: 'Lembretes para manter sua sequência de dias ativos',
-      enabled: false,
+      enabled: true,
       frequency: 'daily',
       category: 'social'
     },
@@ -90,7 +90,7 @@ export default function EmailPreferences({
       id: 'new_content',
       title: 'Novos Conteúdos',
       description: 'Notificações sobre novos módulos e recursos disponíveis',
-      enabled: false,
+      enabled: true,
       frequency: 'weekly',
       category: 'educational'
     },
@@ -98,7 +98,7 @@ export default function EmailPreferences({
       id: 'platform_updates',
       title: 'Atualizações da Plataforma',
       description: 'Novidades e melhorias na plataforma educacional',
-      enabled: false,
+      enabled: true,
       frequency: 'monthly',
       category: 'promotional'
     }

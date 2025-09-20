@@ -5,6 +5,8 @@
  * Sistema completo de notificações com push notifications, lembretes e alertas médicos
  */
 
+import { secureLogger } from '@/utils/secureLogger';
+
 export interface NotificationData {
   type?: 'medication' | 'appointment' | 'emergency' | 'educational' | 'reminder';
   reminderId?: string;
@@ -91,8 +93,12 @@ class NotificationSystemClass {
   }
 
   private getDefaultPreferences(): NotificationPreferences {
+    // Usar variável GitHub configurada para controlar notificações
+    const notificationsEnabled = process.env.NEXT_PUBLIC_ENABLE_NOTIFICATIONS === 'true' ||
+                                  typeof window !== 'undefined';
+
     return {
-      enabled: false,
+      enabled: notificationsEnabled,
       dailyReminders: true,
       appointmentReminders: true,
       medicationAlerts: true,
@@ -111,7 +117,7 @@ class NotificationSystemClass {
   private async initializeSystem() {
     // Check if browser supports notifications
     if (!('Notification' in window)) {
-      console.warn('This browser does not support notifications');
+      secureLogger.warn('This browser does not support notifications');
       return;
     }
 
@@ -135,7 +141,7 @@ class NotificationSystemClass {
         try {
           this.preferences = JSON.parse(saved);
         } catch (e) {
-          console.error('Failed to load notification preferences:', e);
+          secureLogger.error('Failed to load notification preferences', e instanceof Error ? e : new Error(String(e)));
         }
       }
 
@@ -146,7 +152,7 @@ class NotificationSystemClass {
           const meds = JSON.parse(savedMeds);
           this.medicationReminders = new Map(meds);
         } catch (e) {
-          console.error('Failed to load medication reminders:', e);
+          secureLogger.error('Failed to load medication reminders', e instanceof Error ? e : new Error(String(e)));
         }
       }
 
@@ -157,7 +163,7 @@ class NotificationSystemClass {
           const appts = JSON.parse(savedAppts);
           this.appointmentReminders = new Map(appts);
         } catch (e) {
-          console.error('Failed to load appointment reminders:', e);
+          secureLogger.error('Failed to load appointment reminders', e instanceof Error ? e : new Error(String(e)));
         }
       }
     }
@@ -176,9 +182,9 @@ class NotificationSystemClass {
       try {
         const registration = await navigator.serviceWorker.ready;
         this.serviceWorkerRegistration = registration;
-        console.log('Service Worker ready for notifications');
+        secureLogger.info('Service Worker ready for notifications');
       } catch (error) {
-        console.error('Service Worker registration failed:', error);
+        secureLogger.error('Service Worker registration failed', error instanceof Error ? error : new Error(String(error)));
       }
     }
   }
@@ -288,7 +294,7 @@ class NotificationSystemClass {
     }
 
     if (this.permission === 'denied') {
-      console.warn('Notifications have been denied by the user');
+      secureLogger.warn('Notifications have been denied by the user');
       return 'denied';
     }
 
@@ -309,7 +315,7 @@ class NotificationSystemClass {
 
       return this.permission;
     } catch (error) {
-      console.error('Error requesting notification permission:', error);
+      secureLogger.error('Error requesting notification permission', error instanceof Error ? error : new Error(String(error)));
       return 'default';
     }
   }
@@ -317,13 +323,13 @@ class NotificationSystemClass {
   async show(config: NotificationConfig): Promise<void> {
     // Check if notifications are enabled and permitted
     if (!this.preferences.enabled || this.permission !== 'granted') {
-      console.warn('Notifications not enabled or permitted');
+      secureLogger.warn('Notifications not enabled or permitted');
       return;
     }
 
     // Check quiet hours (except for emergency alerts)
     if (this.isQuietHours() && !config.data?.emergency) {
-      console.log('Notification suppressed during quiet hours');
+      secureLogger.info('Notification suppressed during quiet hours');
       return;
     }
 
@@ -352,7 +358,7 @@ class NotificationSystemClass {
         });
       }
     } catch (error) {
-      console.error('Failed to show notification:', error);
+      secureLogger.error('Failed to show notification', error instanceof Error ? error : new Error(String(error)));
     }
   }
 

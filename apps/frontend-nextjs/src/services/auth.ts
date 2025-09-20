@@ -11,7 +11,7 @@ const jwtClient = {
   initiateGoogleAuth: async () => ({ state: 'mock', authUrl: 'mock' }),
   loginWithEmail: async (email: string, password: string) => ({ user: { id: '1', email, name: null, verified: false, provider: 'email' } }),
   logout: async () => {},
-  updateProfile: async (data: any) => {},
+  updateProfile: async (data: ProfileUpdateData) => {},
   completeGoogleAuth: async (code: string, state: string) => ({ user: { id: '1', email: 'test@test.com', name: 'Test', verified: true, provider: 'google' } })
 };
 
@@ -30,6 +30,23 @@ interface AuthUser {
   verified?: boolean;
   lastLoginAt?: string;
   permissions?: Record<string, boolean>;
+}
+
+interface ProfileUpdateData {
+  displayName?: string;
+  photoURL?: string;
+  email?: string;
+  role?: UserRole;
+  history?: {
+    totalSessions?: number;
+    lastPersona?: string;
+    completedModules?: string[];
+  };
+  stats?: {
+    messageCount?: number;
+    lastActiveAt?: string;
+    averageSessionDuration?: number;
+  };
 }
 
 interface UserProfile {
@@ -456,8 +473,8 @@ export class AuthService {
       if (this.currentAuthState.user && !this.currentAuthState.user.isAnonymous) {
         try {
           await jwtClient.updateProfile({
-            name: updates.displayName || undefined,
-            picture: undefined
+            displayName: updates.displayName || undefined,
+            photoURL: undefined
           });
         } catch (backendError) {
           // Erro ao atualizar perfil no backend

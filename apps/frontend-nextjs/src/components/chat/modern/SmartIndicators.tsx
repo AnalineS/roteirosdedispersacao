@@ -4,7 +4,7 @@ import { Persona } from '@/services/api';
 import { modernChatTheme, getPersonaColors } from '@/config/modernTheme';
 import PersonaAvatar from '../PersonaAvatar';
 
-interface KnowledgeStats {
+export interface KnowledgeStats {
   documentsFound?: number;
   searchTime?: number;
   relevanceScore?: number;

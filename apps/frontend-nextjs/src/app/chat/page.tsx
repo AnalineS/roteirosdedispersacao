@@ -1084,7 +1084,7 @@ export default function ChatPage() {
           isLoading={chatLoading}
           isMobile={isMobile}
           currentSentiment={currentSentiment}
-          knowledgeStats={knowledgeStats}
+          knowledgeStats={undefined}
           isSearchingKnowledge={isSearchingKnowledge}
           fallbackState={fallbackState}
           onHistoryToggle={() => setShowHistory(!showHistory)}

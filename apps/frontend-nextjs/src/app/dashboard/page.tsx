@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import EducationalLayout from '@/components/layout/EducationalLayout';
 import { usePersonas } from '@/hooks/usePersonas';
 import EducationalDashboard from '@/components/educational/EducationalDashboard';
+import ProgressDashboard from '@/components/gamification/ProgressDashboard';
+import GamificationWidget from '@/components/gamification/GamificationWidget';
 
 export default function DashboardPage() {
   const { personas, loading: personasLoading } = usePersonas();
@@ -36,6 +38,25 @@ export default function DashboardPage() {
 
   return (
     <EducationalLayout currentPersona={currentPersona?.name}>
+      {/* Gamification Overview */}
+      <div style={{ marginBottom: '2rem' }}>
+        <GamificationWidget
+          compact={false}
+          className="max-w-6xl mx-auto"
+          showDetailedProgress={true}
+        />
+      </div>
+
+      {/* Progress Dashboard */}
+      <div style={{ marginBottom: '2rem' }}>
+        <ProgressDashboard
+          userId="user-session-id" // ID único do usuário real, não da persona IA
+          showAchievements={true}
+          showLeaderboard={true}
+        />
+      </div>
+
+      {/* Educational Dashboard */}
       <EducationalDashboard currentPersona={currentPersona?.name} />
     </EducationalLayout>
   );

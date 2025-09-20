@@ -3,6 +3,7 @@
 import React, { memo, useRef, useState, useEffect } from 'react';
 import { type ChatMessage } from '@/types/api';
 import { type Persona } from '@/services/api';
+import { type RAGStats } from '@/services/supabaseRAGClient';
 import { modernChatTheme, getCSSVariables } from '@/config/modernTheme';
 
 // OTIMIZAÇÃO CRÍTICA: Componentes especializados para reduzir complexidade
@@ -16,6 +17,7 @@ import SmartIndicators from './SmartIndicators';
 import AccessibleChatInput from '../accessibility/AccessibleChatInput';
 import AccessibleMessageBubble from '../accessibility/AccessibleMessageBubble';
 import { useChatAccessibility } from '../accessibility/ChatAccessibilityProvider';
+import { type KnowledgeStats } from './SmartIndicators';
 
 interface ModernChatContainerProps {
   // Personas e seleção
@@ -39,7 +41,7 @@ interface ModernChatContainerProps {
     confidence: number;
     score: number;
   } | null;
-  knowledgeStats?: any;
+  knowledgeStats?: KnowledgeStats | RAGStats;
   isSearchingKnowledge?: boolean;
   fallbackState?: {
     isActive: boolean;
@@ -233,7 +235,7 @@ const ModernChatContainer = memo(function ModernChatContainer({
           sentiment={currentSentiment}
           knowledge={{
             isSearching: isSearchingKnowledge || false,
-            stats: knowledgeStats
+            stats: knowledgeStats as KnowledgeStats
           }}
           fallback={fallbackState}
           currentPersona={currentPersona}

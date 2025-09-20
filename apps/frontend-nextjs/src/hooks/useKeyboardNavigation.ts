@@ -8,6 +8,9 @@ interface KeyboardNavigationOptions {
   onEnter?: (element: HTMLElement) => void;
   trapFocus?: boolean;
   enableArrowKeys?: boolean;
+  enableNumericNavigation?: boolean;
+  enableGlobalShortcuts?: boolean;
+  enableFocusTrapping?: boolean;
 }
 
 export function useKeyboardNavigation(options: KeyboardNavigationOptions = {}) {
@@ -16,7 +19,10 @@ export function useKeyboardNavigation(options: KeyboardNavigationOptions = {}) {
     onEscape,
     onEnter,
     trapFocus = false,
-    enableArrowKeys = false
+    enableArrowKeys = false,
+    enableNumericNavigation = false,
+    enableGlobalShortcuts = false,
+    enableFocusTrapping = false
   } = options;
 
   // Seletores para elementos focáveis
@@ -61,13 +67,24 @@ export function useKeyboardNavigation(options: KeyboardNavigationOptions = {}) {
   const handleKeyDown = useCallback((event: Event) => {
     const keyboardEvent = event as KeyboardEvent;
     const target = keyboardEvent.target as HTMLElement;
-    
+
+    // Numeric navigation (1-9 keys)
+    if (enableNumericNavigation && /^[1-9]$/.test(keyboardEvent.key)) {
+      const elements = getFocusableElements();
+      const index = parseInt(keyboardEvent.key) - 1;
+      if (elements[index]) {
+        keyboardEvent.preventDefault();
+        elements[index].focus();
+      }
+      return;
+    }
+
     switch (keyboardEvent.key) {
       case 'Escape':
         keyboardEvent.preventDefault();
         onEscape?.();
         break;
-        
+
       case 'Enter':
       case ' ': // Space
         // Only handle Enter/Space for elements that don't naturally handle them
@@ -80,15 +97,15 @@ export function useKeyboardNavigation(options: KeyboardNavigationOptions = {}) {
           }
         }
         break;
-        
+
       case 'Tab':
-        if (trapFocus) {
+        if (trapFocus || enableFocusTrapping) {
           keyboardEvent.preventDefault();
           const nextElement = getNextFocusableElement(target, keyboardEvent.shiftKey ? 'prev' : 'next');
           nextElement?.focus();
         }
         break;
-        
+
       case 'ArrowDown':
       case 'ArrowUp':
         if (enableArrowKeys) {
@@ -98,7 +115,7 @@ export function useKeyboardNavigation(options: KeyboardNavigationOptions = {}) {
           nextElement?.focus();
         }
         break;
-        
+
       case 'ArrowLeft':
       case 'ArrowRight':
         if (enableArrowKeys) {
@@ -108,7 +125,7 @@ export function useKeyboardNavigation(options: KeyboardNavigationOptions = {}) {
           nextElement?.focus();
         }
         break;
-        
+
       case 'Home':
         if (enableArrowKeys) {
           keyboardEvent.preventDefault();
@@ -116,7 +133,7 @@ export function useKeyboardNavigation(options: KeyboardNavigationOptions = {}) {
           elements[0]?.focus();
         }
         break;
-        
+
       case 'End':
         if (enableArrowKeys) {
           keyboardEvent.preventDefault();
@@ -125,7 +142,7 @@ export function useKeyboardNavigation(options: KeyboardNavigationOptions = {}) {
         }
         break;
     }
-  }, [onEscape, onEnter, getNextFocusableElement, trapFocus, enableArrowKeys, getFocusableElements]);
+  }, [onEscape, onEnter, getNextFocusableElement, trapFocus, enableArrowKeys, enableNumericNavigation, enableFocusTrapping, getFocusableElements]);
 
   useEffect(() => {
     const container = containerRef?.current || document;

@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
+import { useOptimizedEffect, useAutoCleanup } from '@/hooks/useEffectOptimizer';
 import { useRouter } from 'next/navigation';
 import { getUnbColors } from '@/config/modernTheme';
 import { useChatAccessibility } from '@/components/chat/accessibility/ChatAccessibilityProvider';
@@ -311,8 +312,8 @@ export default function AccessibleSearchWithSuggestions({
   const unbColors = getUnbColors();
   const { announceMessage, announceSystemStatus } = useChatAccessibility();
 
-  // Load recent searches from localStorage
-  useEffect(() => {
+  // Load recent searches from localStorage - otimizado
+  useOptimizedEffect(() => {
     if (showRecentSearches && typeof window !== 'undefined') {
       const saved = localStorage.getItem('recentSearches');
       if (saved) {

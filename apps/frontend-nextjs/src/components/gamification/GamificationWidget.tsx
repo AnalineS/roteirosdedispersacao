@@ -17,12 +17,14 @@ interface GamificationWidgetProps {
   compact?: boolean;
   showOnlyOverview?: boolean;
   className?: string;
+  showDetailedProgress?: boolean;
 }
 
 export default function GamificationWidget({
   compact = false,
   showOnlyOverview = false,
   className = "",
+  showDetailedProgress = false,
 }: GamificationWidgetProps) {
   const { callAPI } = useServices();
   const analytics = useAnalytics();

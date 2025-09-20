@@ -59,14 +59,17 @@ interface WCAGViolation {
 }
 
 interface AccessibilityUXEvent {
-  type: string;
-  category: 'accessibility';
-  details: {
+  action: string;
+  category: 'engagement';
+  label?: string;
+  value?: number;
+  custom_parameters?: {
     test_id?: string;
     element?: string;
     status?: string;
     score?: number;
     violations_count?: number;
+    accessibility_context?: string;
     [key: string]: unknown;
   };
 }
@@ -122,7 +125,7 @@ const AccessibilityValidator: React.FC<AccessibilityValidatorProps> = ({
 
   const trackEvent = useMemo(() => {
     if (uxContext?.trackEvent) {
-      return (event: any) => {
+      return (event: AccessibilityUXEvent) => {
         try {
           uxContext.trackEvent(event);
         } catch (error) {
@@ -146,8 +149,8 @@ const AccessibilityValidator: React.FC<AccessibilityValidatorProps> = ({
       if (typeof window !== 'undefined' && window.gtag) {
         window.gtag('event', 'ux_event_fallback', {
           event_category: 'accessibility',
-          event_label: event.type,
-          custom_parameters: event.details
+          event_label: event.action,
+          custom_parameters: event.custom_parameters
         });
       }
     };
@@ -605,9 +608,9 @@ const AccessibilityValidator: React.FC<AccessibilityValidatorProps> = ({
     // Track validation results
     if (uxInitialized && trackEvent) {
       const accessibilityEvent: AccessibilityUXEvent = {
-        type: 'accessibility_validation_completed',
-        category: 'accessibility',
-        details: {
+        action: 'accessibility_validation_completed',
+        category: 'engagement',
+        custom_parameters: {
           test_id: 'validation_suite',
           score: score.overall,
           status: errors.length === 0 ? 'passed' : 'failed',
@@ -904,7 +907,10 @@ const AccessibilityValidator: React.FC<AccessibilityValidatorProps> = ({
                   // Atualizar UI
                   const mapToAccessibilityTest = (test: any): AccessibilityTest => {
                     const { lastRun, ...accessibilityTest } = test;
-                    return accessibilityTest;
+                    return {
+                      ...accessibilityTest,
+                      status: test.status as 'pass' | 'warning' | 'error'
+                    };
                   };
 
                   const passed = results.filter(test => test.status === 'pass').map(mapToAccessibilityTest);

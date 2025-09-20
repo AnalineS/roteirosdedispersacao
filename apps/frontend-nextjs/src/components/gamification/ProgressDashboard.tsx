@@ -18,13 +18,16 @@ import BadgeCard, { BadgeCollection } from './BadgeCard';
 import ProgressRing, { ProgressBar, LevelBadge } from './ProgressRing';
 
 interface ProgressDashboardProps {
-  progress: LearningProgress;
-  availableAchievements: Achievement[];
-  notifications: GamificationNotification[];
+  progress?: LearningProgress;
+  availableAchievements?: Achievement[];
+  notifications?: GamificationNotification[];
   leaderboard?: LeaderboardEntry[];
   onAchievementClick?: (achievement: Achievement) => void;
   onStartTutorial?: () => void;
   className?: string;
+  userId?: string;
+  showAchievements?: boolean;
+  showLeaderboard?: boolean;
 }
 
 interface DashboardTab {
@@ -49,30 +52,30 @@ export default function ProgressDashboard({
   // DATA PROCESSING
   // ============================================================================
 
-  const unlockedAchievements = availableAchievements.filter(a => a.isUnlocked);
+  const unlockedAchievements = availableAchievements?.filter(a => a.isUnlocked) || [];
   const nextAchievements = availableAchievements
-    .filter(a => !a.isUnlocked)
-    .slice(0, 3); // Próximas 3 conquistas
+    ?.filter(a => !a.isUnlocked)
+    .slice(0, 3) || []; // Próximas 3 conquistas
 
-  const unreadNotifications = notifications.filter(n => !n.isRead);
-  
-  const streakDays = progress.streakData.currentStreak;
-  const longestStreak = progress.streakData.longestStreak;
-  
-  const completedModules = progress.moduleProgress.filter(m => m.status === 'completed').length;
-  const totalModules = progress.moduleProgress.length;
+  const unreadNotifications = notifications?.filter(n => !n.isRead) || [];
 
-  const averageQuizScore = progress.quizStats.averageScore || 0;
-  const totalQuizzes = progress.quizStats.totalQuizzes || 0;
+  const streakDays = progress?.streakData.currentStreak || 0;
+  const longestStreak = progress?.streakData.longestStreak || 0;
+
+  const completedModules = progress?.moduleProgress.filter(m => m.status === 'completed').length || 0;
+  const totalModules = progress?.moduleProgress.length || 0;
+
+  const averageQuizScore = progress?.quizStats.averageScore || 0;
+  const totalQuizzes = progress?.quizStats.totalQuizzes || 0;
 
   // Clinical Case Statistics
-  const completedCases = progress.caseStats.completedCases || 0;
-  const totalCases = progress.caseStats.totalCases || 0;
-  const averageCaseScore = progress.caseStats.averageScore || 0;
-  const caseTimeSpent = progress.caseStats.timeSpentCases || 0;
+  const completedCases = progress?.caseStats.completedCases || 0;
+  const totalCases = progress?.caseStats.totalCases || 0;
+  const averageCaseScore = progress?.caseStats.averageScore || 0;
+  const caseTimeSpent = progress?.caseStats.timeSpentCases || 0;
 
   // Calcular posição no leaderboard
-  const userRank = leaderboard.findIndex(entry => entry.userId === progress.userId) + 1;
+  const userRank = leaderboard.findIndex(entry => entry.userId === progress?.userId) + 1;
 
   // ============================================================================
   // TABS CONFIGURATION
@@ -96,17 +99,17 @@ export default function ProgressDashboard({
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold mb-2">
-              Olá, {progress.currentLevel === 'paciente' ? 'Estudante' : 
-                     progress.currentLevel === 'estudante' ? 'Estudante' :
-                     progress.currentLevel === 'profissional' ? 'Profissional' : 'Especialista'}!
+              Olá, {progress?.currentLevel === 'paciente' ? 'Estudante' :
+                     progress?.currentLevel === 'estudante' ? 'Estudante' :
+                     progress?.currentLevel === 'profissional' ? 'Profissional' : 'Especialista'}!
             </h2>
             <p className="text-blue-100">
               Continue sua jornada de aprendizado em hanseníase
             </p>
           </div>
-          <LevelBadge 
-            level={progress.experiencePoints.level} 
-            userLevel={progress.currentLevel}
+          <LevelBadge
+            level={progress?.experiencePoints.level || 1}
+            userLevel={progress?.currentLevel || 'paciente'}
             size="lg"
           />
         </div>
@@ -123,7 +126,7 @@ export default function ProgressDashboard({
               Dias consecutivos
             </div>
             <div className="text-xs text-gray-500 mt-1">
-              🔥 {progress.streakData.isActiveToday ? 'Ativo hoje' : 'Faça login hoje!'}
+              🔥 {progress?.streakData.isActiveToday ? 'Ativo hoje' : 'Faça login hoje!'}
             </div>
           </div>
         </div>
@@ -137,7 +140,7 @@ export default function ProgressDashboard({
               Conquistas
             </div>
             <div className="text-xs text-gray-500 mt-1">
-              📈 de {availableAchievements.length} totais
+              📈 de {availableAchievements?.length || 0} totais
             </div>
           </div>
         </div>
@@ -188,8 +191,20 @@ export default function ProgressDashboard({
       {/* Progress Section */}
       <div className="grid md:grid-cols-2 gap-6">
         <ProgressRing
-          experiencePoints={progress.experiencePoints}
-          userLevel={progress.currentLevel}
+          experiencePoints={progress?.experiencePoints || {
+            total: 0,
+            level: 1,
+            nextLevelXP: 100,
+            byCategory: {
+              chat_interactions: 0,
+              quiz_completion: 0,
+              module_completion: 0,
+              case_completion: 0,
+              streak_bonus: 0,
+              achievement_bonus: 0
+            }
+          }}
+          userLevel={progress?.currentLevel || 'paciente'}
           size="lg"
           variant="dashboard"
         />
@@ -281,12 +296,12 @@ export default function ProgressDashboard({
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-bold">Suas Conquistas</h2>
         <div className="text-sm text-gray-600">
-          {unlockedAchievements.length} de {availableAchievements.length} desbloqueadas
+          {unlockedAchievements.length} de {availableAchievements?.length || 0} desbloqueadas
         </div>
       </div>
 
       <BadgeCollection
-        achievements={availableAchievements}
+        achievements={availableAchievements || []}
         title=""
         size="md"
         showLocked={true}
@@ -315,7 +330,7 @@ export default function ProgressDashboard({
             <div 
               key={entry.userId}
               className={`p-4 flex items-center justify-between ${
-                entry.userId === progress.userId ? 'bg-blue-50' : ''
+                entry.userId === progress?.userId ? 'bg-blue-50' : ''
               }`}
             >
               <div className="flex items-center space-x-4">
@@ -332,7 +347,7 @@ export default function ProgressDashboard({
                 <div>
                   <div className="font-medium">
                     {entry.displayName}
-                    {entry.userId === progress.userId && (
+                    {entry.userId === progress?.userId && (
                       <span className="ml-2 text-xs bg-blue-500 text-white px-2 py-1 rounded-full">
                         Você
                       </span>
@@ -381,7 +396,7 @@ export default function ProgressDashboard({
             <div className="flex justify-between">
               <span className="text-gray-600">Tempo total de estudo:</span>
               <span className="font-medium">
-                {Math.round(progress.totalTimeSpent / 60)}h {progress.totalTimeSpent % 60}m
+                {Math.round((progress?.totalTimeSpent || 0) / 60)}h {(progress?.totalTimeSpent || 0) % 60}m
               </span>
             </div>
             <div className="flex justify-between">
@@ -414,15 +429,15 @@ export default function ProgressDashboard({
             <div className="flex justify-between">
               <span className="text-gray-600">Última atividade:</span>
               <span className="font-medium">
-                {new Date(progress.lastActivity).toLocaleDateString('pt-BR')}
+                {progress?.lastActivity ? new Date(progress.lastActivity).toLocaleDateString('pt-BR') : 'N/A'}
               </span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">Status hoje:</span>
               <span className={`font-medium ${
-                progress.streakData.isActiveToday ? 'text-green-600' : 'text-red-600'
+                progress?.streakData.isActiveToday ? 'text-green-600' : 'text-red-600'
               }`}>
-                {progress.streakData.isActiveToday ? '✅ Ativo' : '❌ Inativo'}
+                {progress?.streakData.isActiveToday ? '✅ Ativo' : '❌ Inativo'}
               </span>
             </div>
           </div>
@@ -434,37 +449,37 @@ export default function ProgressDashboard({
           <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
             <div className="text-center">
               <div className="text-2xl font-bold text-blue-600">
-                {progress.experiencePoints.byCategory.chat_interactions}
+                {progress?.experiencePoints.byCategory.chat_interactions || 0}
               </div>
               <div className="text-sm text-gray-600">Chat</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-green-600">
-                {progress.experiencePoints.byCategory.quiz_completion}
+                {progress?.experiencePoints.byCategory.quiz_completion || 0}
               </div>
               <div className="text-sm text-gray-600">Quiz</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-purple-600">
-                {progress.experiencePoints.byCategory.module_completion}
+                {progress?.experiencePoints.byCategory.module_completion || 0}
               </div>
               <div className="text-sm text-gray-600">Módulos</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-orange-600">
-                {progress.experiencePoints.byCategory.streak_bonus}
+                {progress?.experiencePoints.byCategory.streak_bonus || 0}
               </div>
               <div className="text-sm text-gray-600">Streak</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-yellow-600">
-                {progress.experiencePoints.byCategory.achievement_bonus}
+                {progress?.experiencePoints.byCategory.achievement_bonus || 0}
               </div>
               <div className="text-sm text-gray-600">Conquistas</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-teal-600">
-                {progress.experiencePoints.byCategory.case_completion}
+                {progress?.experiencePoints.byCategory.case_completion || 0}
               </div>
               <div className="text-sm text-gray-600">Casos</div>
             </div>
