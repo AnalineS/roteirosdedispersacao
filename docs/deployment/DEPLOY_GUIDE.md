@@ -1,31 +1,38 @@
-# [START] Guia de Deploy - Google Cloud + Firebase
+# [ATUALIZADO] Guia de Deploy - Google Cloud Run Full Stack
 
-## [LIST] **Resumo da Migração**
+## [LIST] **Arquitetura Atual 2025**
 
-Este documento descreve como fazer o deploy completo da aplicação **Roteiro de Dispensação** usando Google Cloud Run para o backend e Firebase Hosting para o frontend.
+Este documento descreve como fazer o deploy completo da aplicação **Roteiro de Dispensação** usando Google Cloud Run para AMBOS frontend (Next.js) e backend (Flask).
+
+**IMPORTANTE**: Não usamos mais Firebase Hosting. Toda a aplicação roda em Google Cloud Run.
 
 ## 🏗️ **Arquitetura Implementada**
 
 ```
-┌─────────────────────┐     ┌──────────────────┐
-│  Firebase Hosting   │────▶│  Cloud Run       │
-│  (Frontend React)   │     │  (Backend Flask) │
-└─────────────────────┘     └──────────────────┘
-         │                           │
-         ▼                           ▼
-roteiros-de-dispensacao.web.app  [URL_DO_CLOUD_RUN]
+┌───────────────────────┐     ┌───────────────────────┐
+│   Cloud Run Frontend   │────▶│   Cloud Run Backend   │
+│   (Next.js 14)        │     │   (Flask 3.1)        │
+└───────────────────────┘     └───────────────────────┘
+         │                                 │
+         ▼                                 ▼
+frontend-url.run.app              backend-url.run.app
+         │                                 │
+         └─────────┌──────────────────────┘
+                   │ roteirosdedispensacao.com │
+                   └───────────────────────┘
 ```
 
 ## [OK] **Status Atual**
 
 ### **Concluído:**
-- [OK] Backend preparado para Cloud Run
-- [OK] Frontend configurado para múltiplos backends
-- [OK] Firebase Hosting atualizado
-- [OK] CORS configurado
-- [OK] Build otimizado
-- [OK] Deploy do backend no Cloud Run
-- [OK] Frontend atualizado com URL do Cloud Run
+- [OK] Backend Flask 3.1 no Cloud Run
+- [OK] Frontend Next.js 14 no Cloud Run
+- [OK] SQLite + Google Cloud Storage
+- [OK] Supabase PostgreSQL com pgvector
+- [OK] JWT Authentication próprio
+- [OK] Sistema de cache híbrido
+- [OK] 15 tipos de testes funcionando
+- [OK] CI/CD via GitHub Actions
 
 ### **Pendente:**
 - ⏳ Configuração de domínio personalizado
@@ -33,16 +40,18 @@ roteiros-de-dispensacao.web.app  [URL_DO_CLOUD_RUN]
 
 ## [FIX] **Arquivos Criados/Modificados**
 
-### **Backend (src/backend/)**
-- `Dockerfile` - Container otimizado para Cloud Run
-- `.dockerignore` - Exclusões para build eficiente
-- `main.py` - CORS configurado para Firebase + Cloud Run
-- `requirements.txt` - Adicionado gunicorn para produção
+### **Backend (apps/backend/)**
+- `Dockerfile.production` - Container otimizado para Cloud Run
+- `requirements.txt` - Dependências com security updates
+- `app_config.py` - Configuração centralizada via env vars
+- `services/storage/sqlite_manager.py` - Storage híbrido
+- `services/integrations/supabase_vector_store.py` - RAG system
 
-### **Frontend (src/frontend/)**
-- `.env.production` - Variáveis de ambiente para produção
-- `src/services/api.ts` - API configurada para múltiplos backends
-- `firebase.json` - Headers e CSP atualizados
+### **Frontend (apps/frontend-nextjs/)**
+- `next.config.js` - Output standalone para Cloud Run
+- `Dockerfile` - Container Next.js otimizado
+- `src/services/api.ts` - API client com retry logic
+- `tests/` - 15 tipos de testes implementados
 
 ### **Scripts de Automação**
 - `scripts/install-gcloud.ps1` - Instalação do Google Cloud CLI
@@ -72,11 +81,11 @@ roteiros-de-dispensacao.web.app  [URL_DO_CLOUD_RUN]
    gcloud services enable artifactregistry.googleapis.com
    ```
 
-### **Deploy do Backend:**
+### **Deploy do Backend (Flask):**
 
 1. **Navegar para o diretório do backend**
    ```bash
-   cd src/backend
+   cd apps/backend
    ```
 
 2. **Deploy no Cloud Run**
@@ -86,13 +95,38 @@ roteiros-de-dispensacao.web.app  [URL_DO_CLOUD_RUN]
      --platform managed \
      --region us-central1 \
      --allow-unauthenticated \
-     --set-env-vars "FLASK_ENV=production" \
-     --set-env-vars "OPENROUTER_API_KEY=SUA_CHAVE" \
-     --set-env-vars "HUGGINGFACE_API_KEY=SUA_CHAVE" \
+     --port 8080 \
+     --set-env-vars "SECRET_KEY=sua-secret-key" \
+     --set-env-vars "OPENROUTER_API_KEY=sua-chave" \
+     --set-env-vars "SUPABASE_URL=https://seu-projeto.supabase.co" \
+     --set-env-vars "SUPABASE_SERVICE_KEY=sua-service-key" \
+     --set-env-vars "CLOUD_STORAGE_BUCKET=seu-bucket" \
+     --memory 1Gi \
+     --cpu 1 \
+     --timeout 300 \
+     --max-instances 50
+   ```
+
+### **Deploy do Frontend (Next.js):**
+
+1. **Navegar para o diretório do frontend**
+   ```bash
+   cd apps/frontend-nextjs
+   ```
+
+2. **Deploy no Cloud Run**
+   ```bash
+   gcloud run deploy roteiro-dispensacao-frontend \
+     --source . \
+     --platform managed \
+     --region us-central1 \
+     --allow-unauthenticated \
+     --port 3000 \
+     --set-env-vars "NEXT_PUBLIC_API_URL=https://backend-url.run.app" \
      --memory 512Mi \
      --cpu 1 \
      --timeout 300 \
-     --max-instances 10
+     --max-instances 100
    ```
 
 3. **Anotar a URL do serviço**

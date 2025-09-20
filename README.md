@@ -10,7 +10,7 @@ Sistema moderno de apoio à dispensação farmacêutica para hanseníase, desenv
 roteiro-dispensacao/
 ├── 📱 apps/              # Aplicações principais
 │   ├── backend/          # API Flask + Python
-│   └── frontend/         # React + TypeScript
+│   └── frontend-nextjs/  # Next.js 14 + TypeScript (aplicação principal)
 ├── [REPORT] data/              # Base de conhecimento
 ├── 📚 docs/              # Documentação
 ├── 🛠️  scripts/          # Scripts de deploy e setup
@@ -21,82 +21,88 @@ roteiro-dispensacao/
 ## [START] Tecnologias
 
 ### Frontend
-- **React 18** + **TypeScript**
-- **Vite** para build otimizado
+- **Next.js 14** + **React 19** + **TypeScript**
+- **App Router** para SSR otimizado
 - **TailwindCSS** para estilização
 - **PWA** com Service Worker
-- **React Query** para gerenciamento de estado
+- **Testes extensivos** (15 tipos diferentes)
 
 ### Backend
-- **Flask 3.0** + **Python**
-- **OpenAI API** para IA conversacional
-- **Sistema RAG** avançado
-- **Redis** para cache
+- **Flask 3.1** + **Python**
+- **OpenRouter API** para IA conversacional
+- **Sistema RAG** com ChromaDB e OpenAI embeddings
+- **Google Cloud Storage + SQLite** para persistência híbrida
+- **Supabase** para vector store (pgvector)
+- **OCR/OpenCV** para processamento multimodal
 - **Pydantic** para validação
 
 ## 📁 Estrutura do Projeto
 
 ```
-├── src/
-│   ├── frontend/          # React App moderna
+├── apps/
+│   ├── frontend-nextjs/   # Next.js 14 App Router
 │   │   ├── src/
+│   │   │   ├── app/           # App Router pages
 │   │   │   ├── components/    # Componentes React
-│   │   │   ├── pages/         # Páginas da aplicação
 │   │   │   ├── hooks/         # Hooks customizados
 │   │   │   ├── services/      # APIs e serviços
-│   │   │   └── styles/        # Estilos CSS
-│   │   └── public/        # Assets estáticos
+│   │   │   ├── types/         # TypeScript types
+│   │   │   └── utils/         # Utilitários
+│   │   └── tests/         # Testes (15 tipos)
 │   └── backend/           # API Flask avançada
-│       ├── core/          # Funcionalidades principais
-│       ├── services/      # Serviços de negócio
-│       └── config/        # Configurações
+│       ├── blueprints/    # Blueprints modulares
+│       ├── services/      # Serviços especializados
+│       ├── core/          # Funcionalidades centrais
+│       └── tasks/         # Tasks background
 ├── data/                  # Base de conhecimento
 ├── docs/                  # Documentação
-└── firebase.json          # Configuração de deploy
+└── supabase/              # Configuração Supabase
 ```
 
 ## 🛠️ Desenvolvimento
 
-### Frontend
+### Frontend (Next.js)
 ```bash
-cd src/frontend
+cd apps/frontend-nextjs
 npm install
-npm run dev          # Desenvolvimento
+npm run dev          # Desenvolvimento (porta 3000)
 npm run build        # Build para produção
-npm run type-check   # Verificação de tipos
-npm run lint         # Linting
+npm run type-check   # Verificação TypeScript
+npm run lint         # ESLint + fixes
+npm run test         # Testes (15 tipos)
 ```
 
-### Backend
+### Backend (Flask)
 ```bash
-cd src/backend
+cd apps/backend
 pip install -r requirements.txt
-python main.py       # Servidor desenvolvimento
+python main.py       # Servidor desenvolvimento (porta 8080)
 ```
 
 ## [START] Deploy
 
-### Firebase Hosting (Frontend)
+### Google Cloud Run (Frontend + Backend)
 ```bash
-cd src/frontend
+# Frontend Next.js
+cd apps/frontend-nextjs
 npm run build
-firebase deploy
-```
+# Deploy automático via GitHub Actions
 
-### Cloud Run (Backend)
-```bash
-cd src/backend
-docker build -t roteiro-backend .
-# Deploy via Google Cloud Console
+# Backend Flask
+cd apps/backend
+# Deploy automático via Docker + Cloud Run
 ```
 
 ## 🔒 Segurança
 
 - **CSP Headers** configurados
-- **Rate Limiting** implementado
-- **Input Validation** com Pydantic
+- **Rate Limiting** com SQLite backend
+- **Input Validation** com Pydantic + bleach
 - **CORS** configurado adequadamente
-- Ver `POLITICAS_SEGURANCA_GLOBAL.md` para detalhes
+- **JWT Authentication** próprio (sem Firebase Auth)
+- **Sanitização automática** de inputs
+- **Bloqueio automático** após ataques
+- Ver `docs/security/` para detalhes
 
 ## 📁 Estrutura do Repositório
 

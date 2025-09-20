@@ -43,13 +43,15 @@ npm run type-check            # TypeScript validation
 ## Architecture Overview
 
 ### Backend Architecture
-- **Flask API** with comprehensive security measures
-- **Dual AI Integration**: OpenRouter (primary) with Llama 3.2 and Kimie K2 models
-- **RAG System**: Enhanced retrieval-augmented generation for knowledge base queries
+- **Flask 3.1 API** with comprehensive security measures
+- **OpenRouter Integration**: Llama 3.2 and Kimie K2 models (free tier)
+- **RAG System**: ChromaDB + OpenAI embeddings for knowledge retrieval
 - **Persona System**: Two specialized AI assistants with distinct personalities
-- **Advanced Caching**: LRU cache with TTL for performance optimization
-- **Security Framework**: Rate limiting, input sanitization, CORS protection
-- **Scope Detection**: Intelligent question categorization and limitation handling
+- **Hybrid Storage**: Google Cloud Storage + SQLite for performance
+- **Vector Database**: Supabase with pgvector extension
+- **Multimodal Processing**: OCR with OpenCV + Tesseract
+- **Security Framework**: JWT auth, SQLite rate limiting, input sanitization
+- **Cache System**: Unified cache manager (memory + cloud + API)
 
 ### Frontend Architecture (Next.js)
 - **App Router**: Modern Next.js 14+ structure with server-side rendering
@@ -61,10 +63,12 @@ npm run type-check            # TypeScript validation
   - `services/`: API integration and business logic
 
 ### Key Technologies
-- **Backend**: Flask 3.0, OpenAI/OpenRouter APIs, Redis cache, Pydantic validation
-- **Frontend**: Next.js 14, React 18, TypeScript, TailwindCSS (inferred from structure)
+- **Backend**: Flask 3.1, OpenRouter APIs, ChromaDB, Google Cloud Storage, SQLite, Pydantic validation
+- **Frontend**: Next.js 14, React 19, TypeScript, 15 types of tests
+- **Vector Store**: Supabase PostgreSQL with pgvector extension
 - **AI Models**: Meta Llama 3.2-3B, Kimie K2 Chat (both free tier)
-- **Data**: Structured JSON knowledge base + Markdown documents
+- **Multimodal**: OpenCV, Tesseract OCR, PIL for image processing
+- **Data**: Structured JSON knowledge base + Markdown documents + vector embeddings
 
 ## Personas System
 
@@ -122,8 +126,13 @@ The application implements enterprise-grade security:
 
 ### Available Test Scripts
 ```bash
-# Frontend Next.js
-npm run lint                    # Code quality
+# Frontend Next.js (15 types of tests)
+npm run test                   # All test suites
+npm run test:unit              # Unit tests
+npm run test:integration       # Integration tests
+npm run test:a11y              # Accessibility tests
+npm run test:performance       # Performance tests
+npm run lint                   # Code quality
 npm run type-check             # TypeScript validation
 
 # Backend validation through API
@@ -139,20 +148,23 @@ curl /api/test                 # CORS and connectivity test
 ## Deployment Architecture
 
 ### Current Setup
-- **Frontend**: Firebase Hosting (roteiros-de-dispensacao.web.app)
-- **Backend**: Google Cloud Run (containerized deployment)
+- **Frontend**: Google Cloud Run (Next.js containerized)
+- **Backend**: Google Cloud Run (Flask containerized)
+- **Storage**: Google Cloud Storage for static assets and backups
+- **Vector Database**: Supabase PostgreSQL with pgvector
 - **Domain**: roteirosdedispensacao.com
 
 ### Build Process
 ```bash
-# Frontend deployment
+# Frontend deployment (automated via GitHub Actions)
 cd apps/frontend-nextjs
 npm run build
-firebase deploy
+# Containerized deployment to Cloud Run
 
 # Backend deployment (automated via Docker)
 cd apps/backend
 # Deployment handled by Cloud Run from repository
+# Uses requirements.txt with security updates
 ```
 
 ## Development Guidelines and Code Review
