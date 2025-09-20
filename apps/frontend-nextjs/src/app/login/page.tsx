@@ -12,12 +12,12 @@ import {
   AlertCircle,
   Loader2
 } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useSafeAuth as useAuth } from '@/hooks/useSafeAuth';
 import { SocialAuthButtons } from '@/components/auth';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, isAuthenticated, loading: authLoading } = useAuth();
+  const { login, isAuthenticated, loading: _authLoading } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -47,6 +47,7 @@ export default function LoginPage() {
         setError(result.error || 'Erro durante o login. Tente novamente.');
       }
     } catch (err) {
+      console.error('Erro durante login:', err);
       setError('Erro inesperado. Tente novamente.');
     } finally {
       setIsLoading(false);
@@ -157,13 +158,13 @@ export default function LoginPage() {
 
               <button
                 type="submit"
-                disabled={isLoading}
+                disabled={isLoading || _authLoading}
                 className="submit-button"
               >
-                {isLoading ? (
+                {(isLoading || _authLoading) ? (
                   <>
                     <Loader2 className="spinner" size={20} />
-                    Entrando...
+                    {_authLoading ? 'Autenticando...' : 'Entrando...'}
                   </>
                 ) : (
                   <>

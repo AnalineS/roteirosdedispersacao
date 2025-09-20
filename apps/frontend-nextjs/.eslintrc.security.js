@@ -88,15 +88,18 @@ module.exports = {
     },
     
     {
-      // Regras menos rigorosas para testes
+      // Regras menos rigorosas para testes e scripts
       files: [
         '**/__tests__/**/*.{ts,tsx,js,jsx}',
         '**/*.test.{ts,tsx,js,jsx}',
-        '**/*.spec.{ts,tsx,js,jsx}'
+        '**/*.spec.{ts,tsx,js,jsx}',
+        '**/scripts/**/*.{ts,js}',
+        '**/test/**/*.{ts,js}'
       ],
       rules: {
         '@typescript-eslint/no-explicit-any': 'off',
-        'no-console': 'off'
+        'no-console': 'off',
+        'no-restricted-syntax': 'off'
       }
     }
   ]

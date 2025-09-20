@@ -169,7 +169,8 @@ CREATE TRIGGER update_knowledge_base_migration_updated_at
     EXECUTE FUNCTION update_updated_at_column();
 
 -- 11. Views para analytics e monitoramento
-CREATE OR REPLACE VIEW embedding_stats AS
+CREATE OR REPLACE VIEW embedding_stats
+AS
 SELECT 
     chunk_type,
     COUNT(*) as document_count,
@@ -179,7 +180,11 @@ FROM medical_embeddings
 GROUP BY chunk_type
 ORDER BY document_count DESC;
 
-CREATE OR REPLACE VIEW daily_search_stats AS
+-- Definir explicitamente como SECURITY INVOKER
+ALTER VIEW embedding_stats SET (security_invoker = on);
+
+CREATE OR REPLACE VIEW daily_search_stats
+AS
 SELECT 
     DATE(created_at) as search_date,
     COUNT(*) as search_count,
@@ -190,9 +195,29 @@ WHERE created_at >= NOW() - INTERVAL '30 days'
 GROUP BY DATE(created_at)
 ORDER BY search_date DESC;
 
--- 12. RLS (Row Level Security) - Configurar se necessário
--- ALTER TABLE medical_embeddings ENABLE ROW LEVEL SECURITY;
--- ALTER TABLE search_cache ENABLE ROW LEVEL SECURITY;
+-- Definir explicitamente como SECURITY INVOKER
+ALTER VIEW daily_search_stats SET (security_invoker = on);
+
+-- 12. RLS (Row Level Security) - Habilitar para segurança
+ALTER TABLE medical_embeddings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE search_cache ENABLE ROW LEVEL SECURITY;
+ALTER TABLE embeddings_metadata ENABLE ROW LEVEL SECURITY;
+ALTER TABLE rag_context ENABLE ROW LEVEL SECURITY;
+ALTER TABLE knowledge_base_migration ENABLE ROW LEVEL SECURITY;
+
+-- Políticas RLS básicas para leitura pública (ajustar conforme necessário)
+CREATE POLICY "Enable read access for all users" ON medical_embeddings FOR SELECT USING (true);
+CREATE POLICY "Enable read access for all users" ON search_cache FOR SELECT USING (true);
+CREATE POLICY "Enable read access for all users" ON embeddings_metadata FOR SELECT USING (true);
+CREATE POLICY "Enable read access for all users" ON rag_context FOR SELECT USING (true);
+CREATE POLICY "Enable read access for all users" ON knowledge_base_migration FOR SELECT USING (true);
+
+-- Políticas para operações de escrita (restritivas por padrão)
+CREATE POLICY "Enable insert for authenticated users" ON medical_embeddings FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+CREATE POLICY "Enable insert for authenticated users" ON search_cache FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+CREATE POLICY "Enable insert for authenticated users" ON embeddings_metadata FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+CREATE POLICY "Enable insert for authenticated users" ON rag_context FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+CREATE POLICY "Enable insert for authenticated users" ON knowledge_base_migration FOR INSERT WITH CHECK (auth.role() = 'authenticated');
 
 -- 13. Inserir dados de teste para validação
 INSERT INTO embeddings_metadata (operation, document_count, processing_time_ms)

@@ -49,7 +49,7 @@ export default function CaseSelector({
     return categoryMatch && difficultyMatch;
   });
 
-  const getCategoryIcon = (category: string) => {
+  const getCategoryIcon = (category: string): React.ComponentType<{ size: number; color: string }> => {
     switch (category) {
       case 'pediatrico': return BabyIcon;
       case 'adulto': return UserIcon;
@@ -60,7 +60,7 @@ export default function CaseSelector({
     }
   };
 
-  const getCategoryName = (category: string) => {
+  const getCategoryName = (category: string): string => {
     switch (category) {
       case 'pediatrico': return 'Pediátrico';
       case 'adulto': return 'Adulto';
@@ -274,7 +274,7 @@ export default function CaseSelector({
         gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
         gap: modernChatTheme.spacing.lg
       }}>
-        {filteredCases.map((case_, index) => {
+        {filteredCases.map((case_) => {
           const available = isAvailable(case_);
           const completed = isCompleted(case_.id);
           
@@ -787,8 +787,8 @@ function CasePreviewModal({
               color: modernChatTheme.colors.neutral.text,
               lineHeight: '1.5'
             }}>
-              {case_.learningObjectives.map((objective, index) => (
-                <li key={index} style={{ marginBottom: modernChatTheme.spacing.sm }}>
+              {case_.learningObjectives.map((objective, objIndex) => (
+                <li key={objIndex} style={{ marginBottom: modernChatTheme.spacing.sm }}>
                   {objective}
                 </li>
               ))}
@@ -809,7 +809,7 @@ function CasePreviewModal({
               </h3>
             </div>
             <div style={{ display: 'grid', gap: modernChatTheme.spacing.sm }}>
-              {case_.steps.map((step, index) => (
+              {case_.steps.map((step) => (
                 <div
                   key={step.id}
                   style={{

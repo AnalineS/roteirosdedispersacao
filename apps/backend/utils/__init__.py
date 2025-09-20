@@ -1,2 +1,1 @@
-# -*- coding: utf-8 -*-
-# Utility functions
+"""Utils package for backend utilities"""

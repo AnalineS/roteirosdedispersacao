@@ -208,6 +208,20 @@ export default function HanseníaseModulePage() {
               alignItems: 'center',
               gap: '10px'
             }}>
+              <span style={{ 
+                background: '#1976d2',
+                color: 'white',
+                borderRadius: '50%',
+                width: '24px',
+                height: '24px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '0.8rem',
+                fontWeight: 'bold'
+              }}>
+                {index + 1}
+              </span>
               {section.title}
             </h2>
             

@@ -1,14 +1,27 @@
 import type { Metadata, Viewport } from 'next'
-import ErrorBoundary from '@/components/ErrorBoundary'
+import UnifiedErrorSystem from '@/components/monitoring/UnifiedErrorSystem'
+import { FeedbackProvider } from '@/components/feedback/UnifiedFeedbackSystem'
 import OfflineIndicator from '@/components/OfflineIndicator'
-import GoogleAnalytics from '@/components/GoogleAnalytics'
+import { GoogleAnalyticsSetup } from '@/components/analytics/GoogleAnalyticsSetup'
 import { AnalyticsProvider } from '@/components/analytics/AnalyticsProvider'
+import { UXAnalyticsProvider } from '@/components/analytics/UXAnalyticsProvider'
+import AccessibilityValidator from '@/components/accessibility/AccessibilityValidator'
+import AccessibilityPanel from '@/components/accessibility/AccessibilityPanel'
+import IntegratedTrackingProvider from '@/components/tracking/IntegratedTrackingProvider'
 import PWAManager from '@/components/pwa/PWAManager'
 import AuthProviderWrapper from '@/components/auth/AuthProviderWrapper'
-import { ThemeProvider } from '@/contexts/ThemeContext'
-import { AccessibilityProvider } from '@/contexts/AccessibilityContext'
+import { GlobalContextProvider } from '@/contexts/GlobalContextHub'
 import { GlobalNavigationProvider } from '@/components/navigation/GlobalNavigationProvider'
+import { PersonaProvider } from '@/contexts/PersonaContext'
+import PersonaAccessibilityProvider from '@/components/accessibility/PersonaAccessibilityProvider'
+import { WCAGComplianceProvider } from '@/components/accessibility/WCAGComplianceSystem'
 import EnhancedCoreWebVitals from '@/components/analytics/EnhancedCoreWebVitals'
+import NumericNavigationWrapper from '@/components/navigation/NumericNavigationWrapper'
+import { SmartNavigationProvider } from '@/components/navigation/SmartNavigationSystem'
+import MobileFirstFramework from '@/components/mobile/MobileFirstFramework'
+import { ServicesProvider } from '@/providers/ServicesProvider'
+import LGPDCompliance from '@/components/privacy/LGPDCompliance'
+import LGPDBanner from '@/components/privacy/LGPDBanner'
 import SITE_CONFIG from '@/lib/config'
 import '@/styles/globals.css'
 import '@/styles/fluid-typography.css'
@@ -58,7 +71,7 @@ export default function RootLayout({
       <body>
         {/* No JavaScript fallback */}
         {/* Google Analytics */}
-        <GoogleAnalytics GA_MEASUREMENT_ID={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID} />
+        <GoogleAnalyticsSetup enableUXTracking={true} />
         
         <noscript>
           <div style={{
@@ -110,25 +123,75 @@ export default function RootLayout({
         
         <OfflineIndicator />
         <EnhancedCoreWebVitals />
+
+        {/* LGPD Mandatory Consent Banner */}
+        <LGPDBanner />
+
+        {/* LGPD Full Compliance System */}
+        <LGPDCompliance context="general" />
         
-        <main id="main-content">
-          <AccessibilityProvider>
-            <ThemeProvider>
-              <GlobalNavigationProvider>
-                <AuthProviderWrapper>
-                  <AnalyticsProvider>
-                    <ErrorBoundary>
-                      {children}
-                    </ErrorBoundary>
-                  </AnalyticsProvider>
-                </AuthProviderWrapper>
-              </GlobalNavigationProvider>
-            </ThemeProvider>
-          </AccessibilityProvider>
-        </main>
-        
-        {/* PWA Manager - Service Worker desabilitado conforme solicitado */}
-        <PWAManager enableServiceWorker={false} />
+        <UnifiedErrorSystem
+          enableMonitoring={true}
+          enableToasts={true}
+          maxToasts={5}
+          autoCloseDuration={5000}
+          toastPosition="top-right"
+        >
+          <GlobalContextProvider>
+            <ServicesProvider>
+              <SmartNavigationProvider>
+                <FeedbackProvider>
+                  <main id="main-content">
+                    <MobileFirstFramework
+                      touchTargetSize="medium"
+                      enableSwipeGestures={true}
+                      className="mobile-safe-area"
+                    >
+                      <IntegratedTrackingProvider>
+                        <WCAGComplianceProvider>
+                          <PersonaProvider>
+                            <PersonaAccessibilityProvider>
+                            <GlobalNavigationProvider>
+                              <AuthProviderWrapper>
+                                  <AnalyticsProvider>
+                                    <UXAnalyticsProvider enableTracking={true}>
+                                      {children}
+                                    </UXAnalyticsProvider>
+                                  </AnalyticsProvider>
+                              </AuthProviderWrapper>
+                            </GlobalNavigationProvider>
+                            </PersonaAccessibilityProvider>
+                          </PersonaProvider>
+                        </WCAGComplianceProvider>
+                    </IntegratedTrackingProvider>
+
+                    {/* WCAG Accessibility Validator - Inside provider hierarchy */}
+                    <AccessibilityValidator
+                      autoValidate={true}
+                      validationInterval={15000}
+                      showLiveResults={true}
+                      educationalMode={true}
+                    />
+                    </MobileFirstFramework>
+
+              {/* Numeric Navigation System - PR #172 */}
+              <NumericNavigationWrapper
+                enabled={true}
+                showHint={true}
+                hintPosition="bottom-right"
+              />
+            </main>
+
+            {/* Accessibility Panel - Floating */}
+            <AccessibilityPanel floating={true} />
+                </FeedbackProvider>
+              </SmartNavigationProvider>
+            </ServicesProvider>
+          </GlobalContextProvider>
+        </UnifiedErrorSystem>
+
+        {/* PWA Manager - Service Worker ativado para funcionalidade PWA completa */}
+        <PWAManager enableServiceWorker={true} />
         
         {/* Loading screen removal script */}
         <script

@@ -1,7 +1,9 @@
 /**
- * Sistema de Feature Flags baseado em Firebase Remote Config
+ * Sistema de Feature Flags baseado em API backend
  * Permite controle centralizado de funcionalidades com rollback instantâneo
  */
+
+import { secureLogger } from '@/utils/secureLogger';
 
 export interface FeatureFlag {
   key: string;
@@ -22,7 +24,7 @@ export interface FeatureFlagsConfig {
   ab_test_variant: 'A' | 'B';
   debug_mode: boolean;
   
-  // User flags (Firestore preferences)
+  // User flags (API backend preferences)
   custom_shortcuts: boolean;
   advanced_analytics: boolean;
 }
@@ -32,31 +34,31 @@ export const FEATURE_FLAGS: Record<keyof FeatureFlagsConfig, FeatureFlag> = {
   // Global flags via Remote Config
   new_footer: {
     key: 'new_footer',
-    defaultValue: false,
+    defaultValue: true,
     description: 'Novo footer com 3 seções e tabs otimizadas',
     scope: 'global'
   },
   fast_access_bar: {
     key: 'fast_access_bar',
-    defaultValue: false,
+    defaultValue: true,
     description: 'Barra de acesso rápido para emergências médicas',
     scope: 'global'
   },
   urgency_badges: {
     key: 'urgency_badges',
-    defaultValue: false,
+    defaultValue: true,
     description: 'Badges de urgência médica na navegação',
     scope: 'global'
   },
   personalization_system: {
     key: 'personalization_system',
-    defaultValue: false,
+    defaultValue: true,
     description: 'Sistema de personalização por perfil médico',
     scope: 'global'
   },
   virtual_scrolling: {
     key: 'virtual_scrolling',
-    defaultValue: false,
+    defaultValue: true,
     description: 'Virtual scrolling para listas longas (>50 items)',
     scope: 'global'
   },
@@ -75,16 +77,16 @@ export const FEATURE_FLAGS: Record<keyof FeatureFlagsConfig, FeatureFlag> = {
     scope: 'session'
   },
   
-  // User flags via Firestore
+  // User flags via API backend
   custom_shortcuts: {
     key: 'custom_shortcuts',
-    defaultValue: false,
+    defaultValue: true,
     description: 'Atalhos customizáveis pelo usuário',
     scope: 'user'
   },
   advanced_analytics: {
     key: 'advanced_analytics',
-    defaultValue: false,
+    defaultValue: true,
     description: 'Analytics avançado e tracking detalhado',
     scope: 'user'
   }
@@ -92,20 +94,20 @@ export const FEATURE_FLAGS: Record<keyof FeatureFlagsConfig, FeatureFlag> = {
 
 // Valores padrão para fallback
 export const DEFAULT_FLAGS: FeatureFlagsConfig = {
-  new_footer: false,
-  fast_access_bar: false,
-  urgency_badges: false,
-  personalization_system: false,
-  virtual_scrolling: false,
+  new_footer: true,
+  fast_access_bar: true,
+  urgency_badges: true,
+  personalization_system: true,
+  virtual_scrolling: true,
   ab_test_variant: 'A' as 'A',
   debug_mode: false,
-  custom_shortcuts: false,
-  advanced_analytics: false
+  custom_shortcuts: true,
+  advanced_analytics: true
 };
 
 // Storage keys
 export const STORAGE_KEYS = {
-  REMOTE_CONFIG_CACHE: 'firebase_remote_config_cache',
+  REMOTE_CONFIG_CACHE: 'api_remote_config_cache',
   SESSION_FLAGS: 'session_feature_flags',
   USER_FLAGS: 'user_feature_flags',
   AB_TEST_ASSIGNMENT: 'ab_test_assignment'
@@ -124,7 +126,7 @@ export const FLAG_ENVIRONMENTS = {
     urgency_badges: true
   },
   production: {
-    // Controlado via Remote Config
+    // Controlado via API backend
   }
 } as const;
 
@@ -154,7 +156,7 @@ export const trackFeatureFlagUsage = (flagKey: string, value: boolean, source: s
     window.gtag('event', 'feature_flag_usage', {
       event_category: 'feature_flags',
       event_label: flagKey,
-      custom_dimensions: {
+      custom_parameters: {
         flag_value: value,
         flag_source: source,
         environment: process.env.NODE_ENV
@@ -170,19 +172,24 @@ export const validateFlagsConfig = (config: Partial<FeatureFlagsConfig>): boolea
     Object.entries(config).forEach(([key, value]) => {
       const flagDef = FEATURE_FLAGS[key as keyof FeatureFlagsConfig];
       if (!flagDef) {
-        console.warn(`Feature flag desconhecida: ${key}`);
+        secureLogger.warn('Feature flag desconhecida', { key, component: 'FeatureFlags' });
         return;
       }
       
       // Validar tipo específico para ab_test_variant
       if (key === 'ab_test_variant' && !['A', 'B'].includes(value as string)) {
-        console.error(`Valor inválido para ab_test_variant: ${value}`);
+        secureLogger.error('Valor inválido para ab_test_variant', undefined, { value, component: 'FeatureFlags' });
         return false;
       }
       
       // Validar tipos boolean
       if (typeof value !== 'boolean' && key !== 'ab_test_variant') {
-        console.error(`Tipo inválido para ${key}: esperado boolean, recebido ${typeof value}`);
+        secureLogger.error('Tipo inválido para feature flag', undefined, { 
+          key, 
+          expectedType: 'boolean', 
+          receivedType: typeof value,
+          component: 'FeatureFlags'
+        });
         return false;
       }
     });

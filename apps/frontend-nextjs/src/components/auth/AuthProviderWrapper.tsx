@@ -8,7 +8,13 @@
 
 import React, { ReactNode, useEffect, useState } from 'react';
 import { AuthProvider } from '@/contexts/AuthContext';
-import { FEATURES } from '@/lib/firebase/config';
+
+// Features configuration - moved from Firebase config
+const FEATURES = {
+  AUTH_ENABLED: true,
+  FIRESTORE_ENABLED: false, // Disabled since we use local storage
+  OFFLINE_MODE: false,
+};
 
 interface AuthProviderWrapperProps {
   children: ReactNode;
@@ -97,13 +103,23 @@ export function AuthProviderWrapper({ children }: AuthProviderWrapperProps) {
           error: null 
         }));
 
-      } catch (error: any) {
-        console.error('Erro na inicialização da autenticação:', error);
-        
+      } catch (error: unknown) {
+        if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'auth_initialization_error', {
+            event_category: 'medical_authentication',
+            event_label: 'auth_init_failed',
+            custom_parameters: {
+              medical_context: 'auth_provider_initialization',
+              error_type: 'initialization_failure',
+              error_message: error instanceof Error ? error.message : String(error)
+            }
+          });
+        }
+
         setInitializationState(prev => ({ 
           ...prev, 
           isLoading: false,
-          error: error.message || 'Erro desconhecido',
+          error: (error as Error)?.message || 'Erro desconhecido',
           retryCount: prev.retryCount + 1
         }));
       }

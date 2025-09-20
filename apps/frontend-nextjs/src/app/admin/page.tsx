@@ -3,14 +3,14 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useAuth } from '@/contexts/AuthContext';
+import { useSafeAuth as useAuth } from '@/hooks/useSafeAuth';
 import { Shield, Users, BarChart3, Settings, Database, Activity, Lock, AlertCircle } from 'lucide-react';
 
 // Emails de administradores autorizados
 const ADMIN_EMAILS = [
   'neeliogomes@hotmail.com',
   'sousa.analine@gmail.com',
-  'roteirosdedispensacao@gmail.com',
+  'roteirosdedispensacaounb@gmail.com',
   'neliogmoura@gmail.com',
 ];
 

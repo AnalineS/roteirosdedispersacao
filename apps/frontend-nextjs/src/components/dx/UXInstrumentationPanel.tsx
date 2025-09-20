@@ -198,7 +198,7 @@ export default function UXInstrumentationPanel({ isOpen, onClose }: UXInstrument
                     <div className="top-events-section">
                       <h3>📈 Top Eventos da Sessão</h3>
                       <div className="events-chart">
-                        {instrumentationData.summary.topEvents.map((event: any, index: number) => (
+                        {instrumentationData.summary.topEvents.map((event: { type: string; count: number; [key: string]: unknown }, index: number) => (
                           <div key={event.type} className="event-bar">
                             <div className="event-info">
                               <span className="event-icon">{getEventIcon(event.type)}</span>

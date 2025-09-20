@@ -4,16 +4,25 @@
  * FASE 4.2 - Chatbot Multimodal
  */
 
+/**
+ * @deprecated Este componente foi unificado no ModernChatInput
+ * Use ModernChatInput com a prop multimodal=true ao invés deste componente
+ * 
+ * Planejado para remoção na próxima versão
+ */
 'use client';
 
 import React, { useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useMultimodal, useMultimodalHealth } from '@/hooks/useMultimodal';
+import { useMultimodal, useMultimodalHealth, AnalysisResult } from '@/hooks/useMultimodal';
 import ImageUploader from '@/components/multimodal/ImageUploader';
 
+// DEPRECADO: Usar ChatAttachment de @/types/chat
+import type { ChatAttachment } from '@/types/chat';
+
 interface MultimodalChatInputProps {
-  onSendMessage: (message: string, attachments?: any[]) => void;
-  onImageAnalysis?: (result: any) => void;
+  onSendMessage: (message: string, attachments?: ChatAttachment[]) => void;
+  onImageAnalysis?: (result: AnalysisResult) => void;
   disabled?: boolean;
   placeholder?: string;
   className?: string;
@@ -28,7 +37,7 @@ export default function MultimodalChatInput({
 }: MultimodalChatInputProps) {
   const [message, setMessage] = useState('');
   const [showImageUploader, setShowImageUploader] = useState(false);
-  const [attachedImages, setAttachedImages] = useState<any[]>([]);
+  const [attachedImages, setAttachedImages] = useState<ChatAttachment[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const { analysisResult, clearResults } = useMultimodal();
@@ -77,16 +86,18 @@ export default function MultimodalChatInput({
   }, [handleSendMessage]);
 
   // Handler para resultado da análise
-  const handleAnalysisComplete = useCallback((result: any) => {
+  const handleAnalysisComplete = useCallback((result: AnalysisResult) => {
     onImageAnalysis?.(result);
     
     // Adicionar resultado como anexo
     setAttachedImages(prev => [...prev, {
-      type: 'image_analysis',
-      result: result,
-      file_id: result.file_id,
+      id: result.file_id,
+      type: 'image_analysis' as const,
+      name: `Análise: ${result.extracted_text.slice(0, 50)}...`,
+      url: result.file_id,
       confidence: result.confidence_score,
-      extracted_text: result.extracted_text
+      extracted_text: result.extracted_text,
+      result: result
     }]);
 
     // Sugerir mensagem baseada no resultado
@@ -101,7 +112,18 @@ export default function MultimodalChatInput({
 
   // Handler para upload bem-sucedido
   const handleUploadSuccess = useCallback((fileId: string) => {
-    console.log('Upload successful:', fileId);
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'multimodal_chat_upload_success', {
+        event_category: 'medical_chat_multimodal',
+        event_label: 'file_upload_completed',
+        custom_parameters: {
+          medical_context: 'multimodal_chat_system',
+          file_id: fileId,
+          upload_type: 'chat_attachment',
+          component: 'MultimodalChatInput'
+        }
+      });
+    }
   }, []);
 
   // Remover anexo
@@ -133,7 +155,10 @@ export default function MultimodalChatInput({
                     Imagem analisada
                   </div>
                   <div className="text-xs text-blue-600">
-                    Confiança: {Math.round(attachment.confidence * 100)}%
+                    {attachment.type === 'image_analysis' && attachment.confidence 
+                      ? `Confiança: ${Math.round(attachment.confidence * 100)}%`
+                      : attachment.name
+                    }
                   </div>
                 </div>
                 <button
@@ -276,7 +301,7 @@ export default function MultimodalChatInput({
       </div>
 
       {/* Preview do Resultado da Análise */}
-      {analysisResult && !attachedImages.some(a => a.file_id === analysisResult.file_id) && (
+      {analysisResult && !attachedImages.some(a => a.id === analysisResult.file_id) && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -325,39 +350,5 @@ export default function MultimodalChatInput({
   );
 }
 
-// Componente auxiliar para exibir anexos no chat
-export function ChatMessageAttachment({ attachment }: { attachment: any }) {
-  if (attachment.type === 'image_analysis') {
-    return (
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-2">
-        <div className="flex items-center space-x-2 mb-2">
-          <div className="text-blue-600">
-            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
-            </svg>
-          </div>
-          <span className="text-sm font-medium text-blue-800">
-            Análise de Imagem
-          </span>
-          <span className="text-xs text-blue-600">
-            {Math.round(attachment.confidence * 100)}% confiança
-          </span>
-        </div>
-        
-        {attachment.extracted_text && (
-          <div className="text-sm text-blue-700 mb-2">
-            <strong>Texto extraído:</strong> {attachment.extracted_text}
-          </div>
-        )}
-        
-        {attachment.result?.medical_indicators?.length > 0 && (
-          <div className="text-sm text-blue-700">
-            <strong>Indicadores médicos:</strong> {attachment.result.medical_indicators.join(', ')}
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  return null;
-}
+// REMOVIDO: ChatMessageAttachment movido para @/types/chat
+// Use: import { ChatMessageAttachment } from '@/types/chat';

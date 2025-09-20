@@ -55,12 +55,12 @@ class CloudNativeCache:
         self.storage_client = None
         self.supabase_client = None
         
-        # Configuração de cache levels
+        # Configuração de cache levels - CLOUD STORAGE PRIORIZADO
         self.cache_enabled = {
             'memory': True,
-            'firestore': getattr(config, 'NEXT_PUBLIC_FIRESTORE_CACHE_ENABLED', False),
-            'supabase': getattr(config, 'EMBEDDINGS_CLOUD_CACHE', False),
-            'cloud_storage': bool(getattr(config, 'CLOUD_STORAGE_BUCKET', None))
+            'firestore': False,  # Removido - usando apenas Cloud Storage + SQLite
+            'supabase': getattr(config, 'EMBEDDINGS_CLOUD_CACHE', True),  # Para embeddings
+            'cloud_storage': bool(getattr(config, 'CLOUD_STORAGE_BUCKET', None)) or True  # Ativado por padrão
         }
         
         self._init_cloud_clients()
@@ -76,22 +76,29 @@ class CloudNativeCache:
             'total_requests': 0
         }
         
-        logger.info(f"[START] CloudNativeCache inicializado - Levels ativos: {[k for k, v in self.cache_enabled.items() if v]}")
+        logger.info(f"[START] CloudNativeCache OTIMIZADO inicializado")
+        logger.info(f"   - Levels ativos: {[k for k, v in self.cache_enabled.items() if v]}")
+        logger.info(f"   - Cloud Storage: {'✅ ATIVO' if self.storage_client else '⚠️ FALLBACK LOCAL'}")
+        logger.info(f"   - Supabase Cache: {'✅ ATIVO' if self.cache_enabled['supabase'] else '❌ INATIVO'}")
+        logger.info(f"   - Memory Cache: ✅ ATIVO ({self.max_memory_items} items max)")
     
     def _init_cloud_clients(self):
         """Inicializa clientes cloud com fallback gracioso"""
         try:
-            # Firebase Firestore
-            if self.cache_enabled['firestore'] and FIREBASE_AVAILABLE:
-                self.firestore_client = firestore.client()
-                logger.info("[OK] Firestore cache client conectado")
-            
-            # Firebase Cloud Storage
-            if self.cache_enabled['cloud_storage'] and FIREBASE_AVAILABLE:
-                bucket_name = self.config.CLOUD_STORAGE_BUCKET
-                if bucket_name:
-                    self.storage_client = storage.bucket(bucket_name)
-                    logger.info(f"[OK] Cloud Storage cache conectado: {bucket_name}")
+            # Google Cloud Storage (PRIORIDADE MÁXIMA)
+            if self.cache_enabled['cloud_storage']:
+                bucket_name = getattr(self.config, 'CLOUD_STORAGE_BUCKET', None)
+                if bucket_name and FIREBASE_AVAILABLE:
+                    try:
+                        self.storage_client = storage.bucket(bucket_name)
+                        logger.info(f"[OK] Cloud Storage cache conectado: {bucket_name}")
+                    except Exception as e:
+                        logger.warning(f"[WARNING] Cloud Storage conexão falhou: {e}")
+                        # Fallback para cache local
+                        self._setup_local_storage_fallback()
+                else:
+                    logger.info("[INFO] Cloud Storage bucket não configurado, usando fallback local")
+                    self._setup_local_storage_fallback()
             
             # Supabase (para cache de metadados)
             if self.cache_enabled['supabase'] and SUPABASE_CACHE_AVAILABLE:
@@ -104,7 +111,13 @@ class CloudNativeCache:
                 
         except Exception as e:
             logger.warning(f"[WARNING] Erro ao inicializar clientes cloud: {e}")
-    
+
+    def _setup_local_storage_fallback(self):
+        """Configura fallback local para Cloud Storage"""
+        self.local_cache_dir = Path('./cache/cloud_storage_fallback')
+        self.local_cache_dir.mkdir(parents=True, exist_ok=True)
+        logger.info(f"[OK] Fallback local configurado: {self.local_cache_dir}")
+
     def _generate_cache_key(self, key_data: Any) -> str:
         """Gera chave de cache determinística"""
         if isinstance(key_data, str):
@@ -127,16 +140,16 @@ class CloudNativeCache:
         if result is not None:
             self.stats['memory_hits'] += 1
             return result
-        
-        # Level 2: Firestore cache
-        if self.cache_enabled['firestore']:
-            result = self._get_from_firestore(cache_key)
+
+        # Level 2: Cloud Storage cache (NOVO PRIORIZADO)
+        if self.cache_enabled['cloud_storage']:
+            result = self._get_from_cloud_storage(cache_key)
             if result is not None:
-                self.stats['firestore_hits'] += 1
+                self.stats['cloud_storage_hits'] += 1
                 # Promover para memory cache
                 self._set_to_memory(cache_key, result)
                 return result
-        
+
         # Level 3: Supabase cache (para dados estruturados)
         if self.cache_enabled['supabase']:
             result = self._get_from_supabase(cache_key)
@@ -345,10 +358,21 @@ class CloudNativeCache:
             return False
     
     def _get_from_cloud_storage(self, cache_key: str) -> Any:
-        """Busca no Cloud Storage (fallback final)"""
+        """Busca no Cloud Storage com fallback local"""
         try:
-            if not self.storage_client:
-                return None
+            # Prioridade 1: Cloud Storage
+            if self.storage_client:
+                return self._get_from_gcs_bucket(cache_key)
+            # Fallback: Storage local
+            else:
+                return self._get_from_local_storage(cache_key)
+        except Exception as e:
+            logger.debug(f"Erro no Cloud Storage cache: {e}")
+            return None
+
+    def _get_from_gcs_bucket(self, cache_key: str) -> Any:
+        """Busca no Google Cloud Storage bucket"""
+        try:
             
             blob_name = f"embeddings_cache/{cache_key}.json"
             blob = self.storage_client.blob(blob_name)
@@ -374,10 +398,21 @@ class CloudNativeCache:
             return None
     
     def _set_to_cloud_storage(self, cache_key: str, value: Any, ttl: Optional[timedelta] = None) -> bool:
-        """Salva no Cloud Storage"""
+        """Salva no Cloud Storage com fallback local"""
         try:
-            if not self.storage_client:
-                return False
+            # Prioridade 1: Cloud Storage
+            if self.storage_client:
+                return self._set_to_gcs_bucket(cache_key, value, ttl)
+            # Fallback: Storage local
+            else:
+                return self._set_to_local_storage(cache_key, value, ttl)
+        except Exception as e:
+            logger.debug(f"Erro ao salvar no Cloud Storage: {e}")
+            return False
+
+    def _set_to_gcs_bucket(self, cache_key: str, value: Any, ttl: Optional[timedelta] = None) -> bool:
+        """Salva no Google Cloud Storage bucket"""
+        try:
             
             # Preparar dados
             cache_data = {
@@ -443,6 +478,60 @@ class CloudNativeCache:
             },
             'stats': self.stats.copy()
         }
+
+    def _get_from_local_storage(self, cache_key: str) -> Any:
+        """Fallback local para Cloud Storage"""
+        try:
+            if not hasattr(self, 'local_cache_dir'):
+                return None
+
+            cache_file = self.local_cache_dir / f"{cache_key}.json"
+            if cache_file.exists():
+                with open(cache_file, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+
+                expires_at = datetime.fromisoformat(data.get('expires_at', '1970-01-01T00:00:00'))
+                if datetime.now() < expires_at:
+                    value = data.get('value')
+                    # Deserializar numpy arrays
+                    if data.get('type') == 'numpy_array':
+                        return np.array(value)
+                    return value
+                else:
+                    # Expirado - remover
+                    cache_file.unlink()
+            return None
+        except Exception as e:
+            logger.debug(f"Erro no local storage cache: {e}")
+            return None
+
+    def _set_to_local_storage(self, cache_key: str, value: Any, ttl: Optional[timedelta] = None) -> bool:
+        """Fallback local para Cloud Storage"""
+        try:
+            if not hasattr(self, 'local_cache_dir'):
+                self._setup_local_storage_fallback()
+
+            # Preparar dados
+            cache_data = {
+                'value': value,
+                'type': 'standard',
+                'created_at': datetime.now().isoformat(),
+                'expires_at': (datetime.now() + (ttl or self.default_ttl)).isoformat()
+            }
+
+            # Serializar numpy arrays
+            if isinstance(value, np.ndarray):
+                cache_data['value'] = value.tolist()
+                cache_data['type'] = 'numpy_array'
+
+            cache_file = self.local_cache_dir / f"{cache_key}.json"
+            with open(cache_file, 'w', encoding='utf-8') as f:
+                json.dump(cache_data, f, ensure_ascii=False, indent=2)
+
+            return True
+        except Exception as e:
+            logger.debug(f"Erro ao salvar no local storage: {e}")
+            return False
 
 # Instância global
 _cloud_cache: Optional[CloudNativeCache] = None

@@ -8,11 +8,12 @@
 
 import React, { useState, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useMultimodal, useMultimodalHealth } from '@/hooks/useMultimodal';
+import { useMultimodal, useMultimodalHealth, AnalysisResult } from '@/hooks/useMultimodal';
 
 interface ImageUploaderProps {
-  onAnalysisComplete?: (result: any) => void;
+  onAnalysisComplete?: (result: AnalysisResult) => void;
   onUploadSuccess?: (fileId: string) => void;
+  onClose?: () => void;
   className?: string;
   disabled?: boolean;
 }
@@ -20,6 +21,7 @@ interface ImageUploaderProps {
 export default function ImageUploader({
   onAnalysisComplete,
   onUploadSuccess,
+  onClose,
   className = '',
   disabled = false
 }: ImageUploaderProps) {
@@ -97,7 +99,18 @@ export default function ImageUploader({
         onUploadSuccess?.(result.file_id);
       }
     } catch (error) {
-      console.error('Erro no upload:', error);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'image_upload_error', {
+          event_category: 'medical_file_upload',
+          event_label: 'upload_failed',
+          custom_parameters: {
+            medical_context: 'multimodal_image_upload',
+            file_type: selectedImageType,
+            error_type: 'upload_failure',
+            error_message: error instanceof Error ? error.message : String(error)
+          }
+        });
+      }
     }
   }, [selectedFile, selectedImageType, uploadImage, onUploadSuccess]);
 
@@ -111,7 +124,18 @@ export default function ImageUploader({
         onUploadSuccess?.(result.file_id);
       }
     } catch (error) {
-      console.error('Erro no retry:', error);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'image_upload_retry_error', {
+          event_category: 'medical_file_upload',
+          event_label: 'retry_upload_failed',
+          custom_parameters: {
+            medical_context: 'multimodal_retry_upload',
+            file_type: selectedImageType,
+            error_type: 'retry_failure',
+            error_message: error instanceof Error ? error.message : String(error)
+          }
+        });
+      }
     }
   }, [selectedFile, selectedImageType, retryUpload, onUploadSuccess]);
 
@@ -123,7 +147,18 @@ export default function ImageUploader({
       const result = await processImage(uploadResult.file_id);
       onAnalysisComplete?.(result);
     } catch (error) {
-      console.error('Erro no processamento:', error);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'image_processing_error', {
+          event_category: 'medical_file_processing',
+          event_label: 'image_analysis_failed',
+          custom_parameters: {
+            medical_context: 'multimodal_image_processing',
+            file_id: uploadResult?.file_id || 'unknown',
+            error_type: 'processing_failure',
+            error_message: error instanceof Error ? error.message : String(error)
+          }
+        });
+      }
     }
   }, [uploadResult, processImage, onAnalysisComplete]);
 
@@ -417,7 +452,7 @@ export default function ImageUploader({
 }
 
 // Componente para exibir resultado da análise
-function AnalysisResultDisplay({ result }: { result: any }) {
+function AnalysisResultDisplay({ result }: { result: AnalysisResult }) {
   const [showDetails, setShowDetails] = useState(false);
 
   const getConfidenceColor = (level: string) => {

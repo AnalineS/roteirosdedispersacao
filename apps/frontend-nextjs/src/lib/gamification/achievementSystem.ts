@@ -4,15 +4,16 @@
  * Conquistas paralelas com celebrações visuais para marcos importantes
  */
 
-import type { 
-  Achievement, 
-  AchievementRequirement, 
-  LearningProgress, 
+import type {
+  Achievement,
+  AchievementRequirement,
+  LearningProgress,
   ExperiencePoints,
   StreakData,
   QuizStatistics,
   GamificationNotification,
-  ExtendedUserProfile
+  ExtendedUserProfile,
+  ModuleProgress
 } from '../../types/gamification';
 import {
   XP_RATES,
@@ -20,6 +21,34 @@ import {
   DEFAULT_ACHIEVEMENTS
 } from '../../types/gamification';
 import type { UserLevel } from '../../types/disclosure';
+
+interface ModuleProgressItem {
+  id: string;
+  status: 'not_started' | 'in_progress' | 'completed';
+  score?: number;
+  completedAt?: string;
+  timeSpent?: number;
+  [key: string]: unknown;
+}
+
+// Helper function to convert ModuleProgressItem to ModuleProgress
+function convertToModuleProgress(items: ModuleProgressItem[]): ModuleProgress[] {
+  return items.map(item => ({
+    moduleId: item.id,
+    title: item.id, // Fallback, should be enriched with actual title
+    userLevel: ['paciente'] as UserLevel[], // Default level
+    status: item.status === 'not_started' ? 'locked' :
+            item.status === 'in_progress' ? 'in_progress' :
+            item.status === 'completed' ? 'completed' : 'available',
+    progress: item.status === 'completed' ? 100 : item.status === 'in_progress' ? 50 : 0,
+    completedAt: item.completedAt,
+    timeSpent: item.timeSpent || 0,
+    xpEarned: item.score ? item.score * 10 : 0, // Convert score to XP
+    quizScores: item.score ? [item.score] : [],
+    estimatedTimeMinutes: 30, // Default estimate
+    prerequisites: []
+  }));
+}
 
 export class AchievementSystem {
   private static instance: AchievementSystem;
@@ -45,14 +74,16 @@ export class AchievementSystem {
     quizCorrect: number,
     quizIncorrect: number,
     modulesCompleted: number,
+    casesCompleted: number,
     streakDays: number,
     achievementsCount: number
   ): ExperiencePoints {
     const byCategory = {
       chat_interactions: chatMessages * XP_RATES.CHAT_MESSAGE,
-      quiz_completion: (quizCorrect * XP_RATES.QUIZ_QUESTION_CORRECT) + 
+      quiz_completion: (quizCorrect * XP_RATES.QUIZ_QUESTION_CORRECT) +
                       (quizIncorrect * XP_RATES.QUIZ_QUESTION_INCORRECT),
       module_completion: modulesCompleted * XP_RATES.MODULE_COMPLETION,
+      case_completion: casesCompleted * XP_RATES.CASE_COMPLETION_BASIC, // Simplified for now
       streak_bonus: this.calculateStreakBonus(streakDays),
       achievement_bonus: achievementsCount * XP_RATES.ACHIEVEMENT_BONUS
     };
@@ -559,7 +590,7 @@ export class AchievementSystem {
     currentProfile: ExtendedUserProfile,
     chatMessages: number,
     quizStats: QuizStatistics,
-    moduleProgress: any[],
+    moduleProgress: ModuleProgressItem[],
     hasActivityToday: boolean
   ): {
     updatedProgress: LearningProgress,
@@ -584,6 +615,7 @@ export class AchievementSystem {
       quizStats.completedQuizzes || 0,
       0, // Quiz incorretos - implementar depois
       moduleProgress.filter(m => m.status === 'completed').length,
+      currentProfile.gamification?.caseStats?.completedCases || 0, // Cases completed
       updatedStreak.currentStreak,
       currentProfile.gamification?.achievements?.length || 0
     );
@@ -595,11 +627,46 @@ export class AchievementSystem {
       experiencePoints,
       achievements: currentProfile.gamification?.achievements || [],
       streakData: updatedStreak,
-      moduleProgress: moduleProgress || [],
+      moduleProgress: moduleProgress ? convertToModuleProgress(moduleProgress) : [],
       quizStats,
+      caseStats: currentProfile.gamification?.caseStats || {
+        totalCases: 0,
+        completedCases: 0,
+        averageScore: 0,
+        totalXPFromCases: 0,
+        casesPassedFirstAttempt: 0,
+        bestDiagnosticStreak: 0,
+        currentDiagnosticStreak: 0,
+        categoriesCompleted: {
+          pediatrico: 0,
+          adulto: 0,
+          gravidez: 0,
+          complicacoes: 0,
+          interacoes: 0
+        },
+        difficultyCompleted: {
+          basico: 0,
+          intermediario: 0,
+          avancado: 0,
+          complexo: 0
+        },
+        averageTimePerCase: 0,
+        fastestCompletion: 0,
+        timeSpentCases: 0,
+        favoriteCategories: [],
+        strongestSkills: [],
+        areasForImprovement: []
+      },
       lastActivity: new Date().toISOString(),
       totalTimeSpent: currentProfile.gamification?.totalTimeSpent || 0,
-      preferredPersona: (currentProfile.selectedPersona as 'ga' | 'dr-gasnelio') || 'ga'
+      preferredPersona: (currentProfile.selectedPersona as 'ga' | 'dr-gasnelio') || 'ga',
+      // Additional properties for compatibility
+      totalXP: experiencePoints.total,
+      completedCases: [], // TODO: Extract from caseStats when available
+      unlockedAchievements: (currentProfile.gamification?.achievements || []).filter((achievement: Achievement) => achievement.isUnlocked),
+      streakDays: updatedStreak.currentStreak,
+      progressPercentage: Math.min((experiencePoints.total / experiencePoints.nextLevelXP) * 100, 100),
+      nextLevelXP: experiencePoints.nextLevelXP
     };
 
     // Verificar novas conquistas

@@ -23,12 +23,15 @@ class SecurityOptimizer:
     def __init__(self, app: Optional[Flask] = None):
         self.app = app
         
-        # Rate limiting avançado
+        # Rate limiting otimizado para SISTEMA MÉDICO
         self.rate_limits = {
-            'chat': {'requests': 30, 'window': 3600},      # 30 req/hora para chat
-            'personas': {'requests': 60, 'window': 3600},   # 60 req/hora para personas  
-            'health': {'requests': 300, 'window': 3600},    # 300 req/hora para health
-            'scope': {'requests': 100, 'window': 3600},     # 100 req/hora para scope
+            'chat': {'requests': 30, 'window': 3600},      # 30 req/hora para chat médico
+            'personas': {'requests': 60, 'window': 3600},   # 60 req/hora para personas (Dr. Gasnelio/Gá)
+            'health': {'requests': 300, 'window': 3600},    # 300 req/hora para health checks
+            'scope': {'requests': 100, 'window': 3600},     # 100 req/hora para scope médico
+            'multimodal': {'requests': 20, 'window': 3600}, # 20 req/hora para OCR/upload documentos
+            'email': {'requests': 10, 'window': 3600},      # 10 req/hora para emails
+            'medical_data': {'requests': 50, 'window': 3600}, # 50 req/hora para dados médicos
             'default': {'requests': 200, 'window': 3600}    # 200 req/hora default
         }
         
@@ -65,6 +68,13 @@ class SecurityOptimizer:
                 r"%2e%2e%5c",
                 r"\.\.%2f",
                 r"\.\.%5c",
+            ],
+            'medical_data_exposure': [
+                r"\b(cpf|rg|cns|cid|crm)\s*[:=]\s*[0-9]+",
+                r"\b[0-9]{3}\.?[0-9]{3}\.?[0-9]{3}\-?[0-9]{2}\b",  # CPF pattern
+                r"\b[0-9]{15}\b",  # CNS pattern
+                r"password|senha|secret|token",
+                r"api[_-]?key|access[_-]?token",
             ]
         }
         

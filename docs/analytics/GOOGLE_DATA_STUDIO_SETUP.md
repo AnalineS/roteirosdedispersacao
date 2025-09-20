@@ -27,7 +27,7 @@ Login: Use a mesma conta do Google Analytics
 ```json
 {
   "fonte": "Google Analytics 4",
-  "propriedade": "Roteiros de Dispensação - Hanseníase",
+  "propriedade": "[CONFIGURAR_VIA_GITHUB_SECRETS]",
   "view": "Todos os dados do site",
   "configurações": {
     "atualização_automática": true,

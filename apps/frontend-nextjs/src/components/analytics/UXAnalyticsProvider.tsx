@@ -18,7 +18,7 @@ interface UXAnalyticsContextType {
   isInitialized: boolean;
 }
 
-const UXAnalyticsContext = createContext<UXAnalyticsContextType | null>(null);
+export const UXAnalyticsContext = createContext<UXAnalyticsContextType | null>(null);
 
 interface UXAnalyticsProviderProps {
   children: React.ReactNode;
@@ -42,7 +42,7 @@ export function UXAnalyticsProvider({
       category: 'engagement',
       action: 'page_view',
       label: window.location.pathname,
-      custom_dimensions: {
+      custom_parameters: {
         page_title: document.title,
         timestamp: Date.now()
       }
@@ -53,7 +53,7 @@ export function UXAnalyticsProvider({
       uxAnalytics.trackEvent({
         category: 'engagement',
         action: 'session_end',
-        custom_dimensions: {
+        custom_parameters: {
           session_duration: Date.now(),
           final_page: window.location.pathname
         }
@@ -78,7 +78,7 @@ export function UXAnalyticsProvider({
       action: 'measurement',
       value: score,
       label: context,
-      custom_dimensions: {
+      custom_parameters: {
         page_url: window.location.pathname,
         cognitive_load_score: score
       }
@@ -91,7 +91,7 @@ export function UXAnalyticsProvider({
       action: 'issue_detected',
       label: issue,
       value: severity,
-      custom_dimensions: {
+      custom_parameters: {
         device_type: window.innerWidth < 768 ? 'mobile' : 'desktop',
         screen_size: `${window.innerWidth}x${window.innerHeight}`
       }
@@ -240,7 +240,7 @@ export function useOnboardingTracking(currentStep: number, totalSteps: number) {
       category: 'onboarding',
       action: 'completed',
       value: totalSteps,
-      custom_dimensions: {
+      custom_parameters: {
         completion_rate: 100,
         total_steps: totalSteps
       }

@@ -134,7 +134,7 @@ export default function Glossary({
       { id: 'exame', label: 'Exames', icon: '🧪' },
       { id: 'sintoma', label: 'Sintomas', icon: '⚠️' },
       { id: 'tratamento', label: 'Tratamentos', icon: '🏥' }
-    ].filter(cat => cat.id === 'todas' || cats.includes(cat.id as any));
+    ].filter(cat => cat.id === 'todas' || cats.includes(cat.id as GlossaryTerm['category']));
   }, [terms]);
 
   const getDifficultyColor = (difficulty: string) => {

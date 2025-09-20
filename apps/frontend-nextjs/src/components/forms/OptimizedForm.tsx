@@ -15,12 +15,14 @@ import {
 } from 'lucide-react';
 
 // Types
+type FormValue = string | number | boolean | string[] | Date;
+
 interface ValidationRule {
   required?: boolean;
   min?: number;
   max?: number;
   pattern?: RegExp;
-  custom?: (value: any) => string | null;
+  custom?: (value: FormValue) => string | null;
   message?: string;
 }
 
@@ -37,14 +39,14 @@ interface FormField {
   icon?: React.ReactNode;
   showCharacterCount?: boolean;
   dependencies?: string[]; // Fields this depends on
-  conditional?: (formData: Record<string, any>) => boolean;
+  conditional?: (formData: Record<string, FormValue>) => boolean;
 }
 
 interface FormProps {
   fields: FormField[];
-  initialData?: Record<string, any>;
-  onSubmit: (data: Record<string, any>) => Promise<void> | void;
-  onFieldChange?: (field: string, value: any, allData: Record<string, any>) => void;
+  initialData?: Record<string, FormValue>;
+  onSubmit: (data: Record<string, FormValue>) => Promise<void> | void;
+  onFieldChange?: (field: string, value: FormValue, allData: Record<string, FormValue>) => void;
   submitLabel?: string;
   cancelLabel?: string;
   onCancel?: () => void;
@@ -62,7 +64,7 @@ interface FormContextType {
   errors: Record<string, string>;
   touched: Record<string, boolean>;
   isSubmitting: boolean;
-  updateField: (name: string, value: any) => void;
+  updateField: (name: string, value: FormValue) => void;
   validateField: (name: string) => void;
   setFieldTouched: (name: string) => void;
 }
@@ -80,10 +82,10 @@ const useFormContext = () => {
 // Individual form field components
 interface FormFieldProps {
   field: FormField;
-  value: any;
+  value: FormValue;
   error?: string;
   touched?: boolean;
-  onChange: (value: any) => void;
+  onChange: (value: FormValue) => void;
   onBlur: () => void;
   onFocus: () => void;
   disabled?: boolean;
@@ -134,7 +136,7 @@ const TextInput: React.FC<FormFieldProps> = ({
           id={field.name}
           name={field.name}
           type={inputType}
-          value={value || ''}
+          value={value instanceof Date ? value.toISOString().split('T')[0] : Array.isArray(value) ? value.join(',') : String(value || '')}
           onChange={(e) => onChange(e.target.value)}
           onFocus={handleFocus}
           onBlur={handleBlur}
@@ -228,7 +230,7 @@ const TextAreaInput: React.FC<FormFieldProps> = ({
           ref={textareaRef}
           id={field.name}
           name={field.name}
-          value={value || ''}
+          value={value instanceof Date ? value.toISOString().split('T')[0] : Array.isArray(value) ? value.join(',') : String(value || '')}
           onChange={(e) => onChange(e.target.value)}
           onFocus={handleFocus}
           onBlur={handleBlur}
@@ -407,7 +409,7 @@ const CheckboxInput: React.FC<FormFieldProps> = ({
           id={field.name}
           name={field.name}
           type="checkbox"
-          checked={value || false}
+          checked={Boolean(value)}
           onChange={(e) => onChange(e.target.checked)}
           onFocus={onFocus}
           disabled={disabled}
@@ -462,10 +464,10 @@ const OptimizedForm: React.FC<FormProps> = ({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [autoSaveTimeout, setAutoSaveTimeout] = useState<NodeJS.Timeout | null>(null);
+  const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Validate individual field
-  const validateField = useCallback((name: string, value: any = formData[name]): string | null => {
+  const validateField = useCallback((name: string, value: FormValue = formData[name]): string | null => {
     const field = fields.find(f => f.name === name);
     if (!field?.validation) return null;
 
@@ -505,38 +507,39 @@ const OptimizedForm: React.FC<FormProps> = ({
   }, [fields, formData]);
 
   // Update field value
-  const updateField = useCallback((name: string, value: any) => {
+  const updateField = useCallback((name: string, value: FormValue) => {
     setFormData(prev => {
       const newData = { ...prev, [name]: value };
-      
-      // Real-time validation if enabled
-      if (validationMode === 'onChange' && touched[name]) {
-        const error = validateField(name, value);
-        setErrors(prevErrors => ({
-          ...prevErrors,
-          [name]: error || ''
-        }));
-      }
+
+      // Real-time validation if enabled - usar functional update para touched
+      setTouched(currentTouched => {
+        if (validationMode === 'onChange' && currentTouched[name]) {
+          const error = validateField(name, value);
+          setErrors(prevErrors => ({
+            ...prevErrors,
+            [name]: error || ''
+          }));
+        }
+        return currentTouched;
+      });
 
       // Call external change handler
       onFieldChange?.(name, value, newData);
 
       // Auto-save if enabled
       if (autoSave) {
-        if (autoSaveTimeout) {
-          clearTimeout(autoSaveTimeout);
+        if (autoSaveTimeoutRef.current) {
+          clearTimeout(autoSaveTimeoutRef.current);
         }
-        setAutoSaveTimeout(
-          setTimeout(() => {
-            // Trigger auto-save logic here
-            console.log('Auto-saving...', newData);
-          }, autoSaveDelay)
-        );
+        autoSaveTimeoutRef.current = setTimeout(() => {
+          // Trigger auto-save logic here
+          // Auto-save triggered
+        }, autoSaveDelay);
       }
 
       return newData;
     });
-  }, [validationMode, touched, validateField, onFieldChange, autoSave, autoSaveTimeout, autoSaveDelay]);
+  }, [validationMode, validateField, onFieldChange, autoSave, autoSaveDelay]);
 
   // Set field as touched and validate if needed
   const setFieldTouched = useCallback((name: string) => {
@@ -609,7 +612,7 @@ const OptimizedForm: React.FC<FormProps> = ({
     try {
       await onSubmit(formData);
     } catch (error) {
-      console.error('Form submission error:', error);
+      // Form submission failed
     } finally {
       setIsSubmitting(false);
     }
@@ -728,7 +731,7 @@ const OptimizedForm: React.FC<FormProps> = ({
         </div>
 
         {/* Auto-save indicator */}
-        {autoSave && autoSaveTimeout && (
+        {autoSave && autoSaveTimeoutRef.current && (
           <div className="auto-save-indicator">
             <Info size={14} />
             Salvamento automático ativado...

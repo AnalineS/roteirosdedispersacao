@@ -23,7 +23,7 @@ export interface ValidatedIconProps {
   dataTestId?: string;
 }
 
-export function validateIconProps(props: any): ValidatedIconProps {
+export function validateIconProps(props: Partial<ValidatedIconProps> & Record<string, unknown>): ValidatedIconProps {
   try {
     // Simple validation - return props as-is with defaults
     return {

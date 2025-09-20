@@ -221,7 +221,7 @@ export default function AdminFeaturesPage() {
         window.gtag('event', 'feature_flag_admin_toggle', {
           event_category: 'admin_actions',
           event_label: key,
-          custom_dimensions: {
+          custom_parameters: {
             flag_value: value,
             admin_interface: true
           }

@@ -13,7 +13,7 @@ export interface CertificationCriteria {
   retryLimit?: number; // Número máximo de tentativas por caso
 }
 
-export interface UserProgress {
+export interface CertificationProgress {
   userId: string;
   userName: string;
   email?: string;
@@ -322,13 +322,13 @@ Pontuação obtida: {overallScore}% | Casos concluídos: {casesCompleted}/{total
 };
 
 // Utility functions
-export const calculateOverallProgress = (progress: UserProgress): number => {
+export const calculateOverallProgress = (progress: CertificationProgress): number => {
   if (progress.casesCompleted.length === 0) return 0;
   return Math.round(progress.totalScore / progress.casesCompleted.length);
 };
 
 export const checkCertificationEligibility = (
-  progress: UserProgress, 
+  progress: CertificationProgress, 
   criteria: CertificationCriteria
 ): { eligible: boolean; missing: string[] } => {
   const missing: string[] = [];

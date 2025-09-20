@@ -4,12 +4,77 @@
  * Provides comprehensive audit for Progressive Web App compliance
  */
 
+interface PWAManifest {
+  name?: string;
+  short_name?: string;
+  description?: string;
+  start_url?: string;
+  display?: 'fullscreen' | 'standalone' | 'minimal-ui' | 'browser';
+  background_color?: string;
+  theme_color?: string;
+  icons?: PWAIcon[];
+  categories?: string[];
+  lang?: string;
+  dir?: 'ltr' | 'rtl' | 'auto';
+  orientation?: 'any' | 'natural' | 'landscape' | 'portrait';
+  scope?: string;
+  shortcuts?: PWAShortcut[];
+  screenshots?: PWAScreenshot[];
+  // Index signature for dynamic property access
+  [key: string]: unknown;
+}
+
+interface PWAIcon {
+  src: string;
+  sizes?: string;
+  type?: string;
+  purpose?: 'any' | 'maskable' | 'monochrome';
+  density?: number;
+}
+
+interface PWAShortcut {
+  name: string;
+  url: string;
+  short_name?: string;
+  description?: string;
+  icons?: PWAIcon[];
+}
+
+interface PWAScreenshot {
+  src: string;
+  sizes?: string;
+  type?: string;
+  form_factor?: 'narrow' | 'wide';
+  label?: string;
+}
+
+interface InstallabilityInfo {
+  isInstallable: boolean;
+  criteria: {
+    hasManifest: boolean;
+    hasServiceWorker: boolean;
+    hasValidIcons: boolean;
+    hasStartUrl: boolean;
+    isServedOverHttps: boolean;
+  };
+}
+
+interface PerformanceInfo {
+  cacheStatus: {
+    totalCaches: number;
+    totalEntries: number;
+    estimatedSize: string;
+  };
+  networkFirst: boolean;
+  offlineCapable: boolean;
+}
+
 interface PWAManifestValidation {
   isValid: boolean;
   errors: string[];
   warnings: string[];
   score: number;
-  manifest?: any;
+  manifest?: PWAManifest;
 }
 
 interface ServiceWorkerValidation {
@@ -55,7 +120,7 @@ export class PWAValidator {
   public static async validateManifest(): Promise<PWAManifestValidation> {
     const errors: string[] = [];
     const warnings: string[] = [];
-    let manifest: any = null;
+    let manifest: PWAManifest | null = null;
     let score = 100;
 
     try {
@@ -85,7 +150,7 @@ export class PWAValidator {
       ];
 
       for (const { field, message } of requiredFields) {
-        if (!manifest || !manifest[field]) {
+        if (!manifest || !(field in manifest) || !manifest[field as keyof PWAManifest]) {
           errors.push(message);
           score -= 15;
         }
@@ -94,7 +159,7 @@ export class PWAValidator {
       if (manifest) {
         // Validate icons
         if (manifest.icons && Array.isArray(manifest.icons)) {
-          const hasRequiredSizes = manifest.icons.some((icon: any) => 
+          const hasRequiredSizes = manifest.icons.some((icon: PWAIcon) => 
             icon.sizes && (icon.sizes.includes('192x192') || icon.sizes.includes('512x512'))
           );
           
@@ -104,7 +169,7 @@ export class PWAValidator {
           }
 
           // Check for maskable icons
-          const hasMaskableIcon = manifest.icons.some((icon: any) => 
+          const hasMaskableIcon = manifest.icons.some((icon: PWAIcon) => 
             icon.purpose && icon.purpose.includes('maskable')
           );
           
@@ -151,7 +216,9 @@ export class PWAValidator {
           'categories', 'lang', 'screenshots'
         ];
         
-        const missingRecommended = recommendedFields.filter(field => !manifest[field]);
+        const missingRecommended = recommendedFields.filter(field =>
+          !manifest || !(field in manifest) || !manifest[field as keyof PWAManifest]
+        );
         if (missingRecommended.length > 0) {
           warnings.push(`Consider adding: ${missingRecommended.join(', ')}`);
           score -= missingRecommended.length * 2;
@@ -178,7 +245,7 @@ export class PWAValidator {
       errors,
       warnings,
       score: Math.max(0, score),
-      manifest
+      manifest: manifest || undefined
     };
   }
 
@@ -288,11 +355,26 @@ export class PWAValidator {
         
         criteria.hasStartUrl = !!manifest.start_url;
         criteria.hasValidIcons = manifest.icons && 
-          manifest.icons.some((icon: any) => 
+          manifest.icons.some((icon: PWAIcon) => 
             icon.sizes && icon.sizes.includes('192x192')
           );
       } catch (error) {
-        console.warn('Error checking manifest for installability:', error);
+        // Medical system PWA validation warning - stderr + gtag
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        if (typeof process !== 'undefined' && process.stderr) {
+          process.stderr.write(`⚠️ PWA VALIDATION - Erro ao verificar installability do manifest: ${errorMessage}\n`);
+        }
+        if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'medical_pwa_manifest_installability_error', {
+            event_category: 'medical_pwa_validation',
+            event_label: 'manifest_installability_check_failed',
+            custom_parameters: {
+              medical_context: 'pwa_manifest_validation',
+              error_type: 'installability_check_failure',
+              error_message: errorMessage
+            }
+          });
+        }
       }
     }
 
@@ -346,7 +428,22 @@ export class PWAValidator {
         );
 
       } catch (error) {
-        console.warn('Error analyzing cache performance:', error);
+        // Medical system PWA performance warning - stderr + gtag
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        if (typeof process !== 'undefined' && process.stderr) {
+          process.stderr.write(`⚠️ PWA PERFORMANCE - Erro ao analisar performance de cache: ${errorMessage}\n`);
+        }
+        if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'medical_pwa_cache_performance_error', {
+            event_category: 'medical_pwa_validation',
+            event_label: 'cache_performance_analysis_failed',
+            custom_parameters: {
+              medical_context: 'pwa_cache_performance',
+              error_type: 'cache_analysis_failure',
+              error_message: errorMessage
+            }
+          });
+        }
       }
     }
 
@@ -397,8 +494,8 @@ export class PWAValidator {
   private static generateRecommendations(
     manifest: PWAManifestValidation,
     serviceWorker: ServiceWorkerValidation,
-    installability: any,
-    performance: any
+    installability: InstallabilityInfo,
+    performance: PerformanceInfo
   ): string[] {
     const recommendations: string[] = [];
 
@@ -523,7 +620,22 @@ export class PWAValidator {
         }
 
       } catch (error) {
-        console.warn('Error testing offline capability:', error);
+        // Medical system PWA offline warning - stderr + gtag
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        if (typeof process !== 'undefined' && process.stderr) {
+          process.stderr.write(`⚠️ PWA OFFLINE - Erro ao testar capacidade offline: ${errorMessage}\n`);
+        }
+        if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'medical_pwa_offline_test_error', {
+            event_category: 'medical_pwa_validation',
+            event_label: 'offline_capability_test_failed',
+            custom_parameters: {
+              medical_context: 'pwa_offline_testing',
+              error_type: 'offline_test_failure',
+              error_message: errorMessage
+            }
+          });
+        }
       }
     }
 

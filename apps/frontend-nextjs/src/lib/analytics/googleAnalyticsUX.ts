@@ -1,8 +1,49 @@
 /**
- * Google Analytics UX Integration
+ * Google Analytics UX Integration + GA4 Data Fetcher
  * Integra com sua configuração existente do GA
  * Adiciona tracking específico para auditoria UX (Score 74→90+)
+ * Inclui funcionalidades de fetch de métricas GA4
  */
+
+// Interface para métricas consolidadas GA4
+export interface GA4Metrics {
+  users: {
+    totalUsers: number;
+    newUsers: number;
+    returningUsers: number;
+    activeUsers24h: number;
+  };
+  sessions: {
+    totalSessions: number;
+    sessionsToday: number;
+    avgSessionDuration: number;
+    bounceRate: number;
+  };
+  pages: {
+    pageViews: number;
+    uniquePageViews: number;
+    avgTimeOnPage: number;
+    exitRate: number;
+  };
+  educational: {
+    moduleCompletions: number;
+    certificatesGenerated: number;
+    averageScore: number;
+    completionRate: number;
+  };
+  technical: {
+    pageLoadTime: number;
+    serverResponseTime: number;
+    errorRate: number;
+    mobileTrafficPercent: number;
+  };
+  engagement: {
+    scrollDepth: number;
+    clickThroughRate: number;
+    timeOnSite: number;
+    returnVisitorRate: number;
+  };
+}
 
 // Tipos para eventos UX customizados no GA
 export interface GAUXEvent {
@@ -13,6 +54,9 @@ export interface GAUXEvent {
   page_location?: string;
   custom_parameters?: Record<string, string | number>;
 }
+
+// Import unified analytics types
+import '@/types/analytics';
 
 // Enhanced Google Analytics para UX
 class GoogleAnalyticsUX {
@@ -28,14 +72,14 @@ class GoogleAnalyticsUX {
     if (typeof window === 'undefined' || !this.gaId) return;
 
     // Verificar se gtag já está carregado (sua configuração existente)
-    if ((window as any).gtag) {
+    if (window.gtag) {
       this.isInitialized = true;
       this.setupCustomDimensions();
       this.startUXMonitoring();
     } else {
       // Aguardar GA carregar
       const checkGtag = () => {
-        if ((window as any).gtag) {
+        if (window.gtag) {
           this.isInitialized = true;
           this.setupCustomDimensions();
           this.startUXMonitoring();
@@ -51,7 +95,7 @@ class GoogleAnalyticsUX {
     if (!this.isInitialized) return;
 
     // Configurar dimensões customizadas para UX
-    (window as any).gtag('config', this.gaId, {
+    window.gtag?.('config', this.gaId!, {
       // Dimensões customizadas para UX (configurar no GA)
       custom_map: {
         'custom_parameter_1': 'cognitive_load_score',
@@ -62,7 +106,6 @@ class GoogleAnalyticsUX {
       }
     });
 
-    console.log('🔍 Google Analytics UX tracking configurado');
   }
 
   private startUXMonitoring() {
@@ -229,7 +272,7 @@ class GoogleAnalyticsUX {
     return issues;
   }
 
-  private calculateMobileExperienceScore(issues: any[]): number {
+  private calculateMobileExperienceScore(issues: { severity: number; [key: string]: unknown }[]): number {
     const maxScore = 100;
     let deductions = 0;
 
@@ -355,9 +398,9 @@ class GoogleAnalyticsUX {
   // =============================================
 
   private trackUXEvent(event: GAUXEvent) {
-    if (!this.isInitialized || !(window as any).gtag) return;
+    if (!this.isInitialized || !window.gtag) return;
 
-    (window as any).gtag('event', event.event_name, {
+    window.gtag('event', event.event_name, {
       event_category: event.event_category,
       event_label: event.ux_metric_type,
       value: event.ux_score,
@@ -369,10 +412,6 @@ class GoogleAnalyticsUX {
       }
     });
 
-    // Log para desenvolvimento
-    if (process.env.NODE_ENV === 'development') {
-      console.log('🔍 UX Event tracked:', event);
-    }
   }
 
   private getPageType(): string {
@@ -417,7 +456,6 @@ class GoogleAnalyticsUX {
   }
 
   public startUXAudit() {
-    console.log('🔍 Iniciando auditoria UX com Google Analytics...');
     this.monitorCognitiveLoad();
     this.monitorMobileExperience();
     this.monitorUserBehavior();

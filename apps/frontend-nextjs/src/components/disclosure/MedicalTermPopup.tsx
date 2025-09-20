@@ -119,7 +119,11 @@ export function MedicalTermPopup({ term, children, className = '' }: MedicalTerm
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
-            handleTermClick(e as any);
+            if (isActive) {
+              hidePopup();
+            } else {
+              showPopup(term.term);
+            }
           }
         }}
       >

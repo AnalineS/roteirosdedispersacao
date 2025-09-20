@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { ChatMessage, Persona } from '@/services/api';
+import { type ChatMessage } from '@/types/api';
+import { type Persona } from '@/services/api';
 import { modernChatTheme, getPersonaColors } from '@/config/modernTheme';
 import { useChatAccessibility } from './ChatAccessibilityProvider';
 import PersonaAvatar from '../PersonaAvatar';
@@ -75,7 +76,7 @@ const AccessibleMessageBubble: React.FC<AccessibleMessageBubbleProps> = ({
     const parts = [
       `Mensagem ${messageIndex + 1} de ${totalMessages}`,
       `de ${speakerName}`,
-      `enviada ${formatTimestamp(message.timestamp)}`
+      `enviada ${formatTimestamp(typeof message.timestamp === 'string' ? parseInt(message.timestamp) : message.timestamp)}`
     ];
     
     if (message.metadata?.confidence) {
@@ -230,7 +231,7 @@ const AccessibleMessageBubble: React.FC<AccessibleMessageBubbleProps> = ({
             <time 
               className="timestamp"
               dateTime={new Date(message.timestamp).toISOString()}
-              aria-label={`Enviada ${formatTimestamp(message.timestamp)}`}
+              aria-label={`Enviada ${formatTimestamp(typeof message.timestamp === 'string' ? parseInt(message.timestamp) : message.timestamp)}`}
             >
               {new Date(message.timestamp).toLocaleTimeString('pt-BR', { 
                 hour: '2-digit', 

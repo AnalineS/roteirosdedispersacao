@@ -1,6 +1,54 @@
 import { useCallback, useRef, useEffect } from 'react';
 import Analytics from '@/services/analytics';
 
+interface AnalyticsEventData {
+  userId?: string;
+  sessionId?: string;
+  timestamp?: number;
+  metadata?: Record<string, unknown>;
+  value?: string | number;
+  category?: string;
+  duration?: number;
+  [key: string]: unknown;
+}
+
+// Hook principal de analytics
+export const useAnalytics = () => {
+  const trackEvent = useCallback(async (eventName: string, data: AnalyticsEventData) => {
+    try {
+      Analytics.event('USER', eventName, data.category || 'user_action', data.value as number, false);
+    } catch (error) {
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'analytics_tracking_error', {
+          event_category: 'medical_analytics',
+          event_label: 'track_event_failed',
+          custom_parameters: {
+            error_details: error instanceof Error ? error.message : String(error)
+          }
+        });
+      }
+    }
+  }, []);
+
+  const trackPageView = useCallback((page: string) => {
+    try {
+      Analytics.pageView(page);
+    } catch (error) {
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'analytics_pageview_error', {
+          event_category: 'medical_analytics',
+          event_label: 'pageview_tracking_failed',
+          custom_parameters: {
+            error_details: error instanceof Error ? error.message : String(error)
+          }
+        });
+      }
+    }
+  }, []);
+
+  return { trackEvent, trackPageView };
+};
+
 // Hook for tracking chat interactions
 export const useChatAnalytics = (persona: 'dr_gasnelio' | 'ga') => {
   const sessionStartRef = useRef<number>(Date.now());
@@ -178,14 +226,3 @@ export const useComplianceAnalytics = () => {
   };
 };
 
-// Main analytics hook that combines all
-export const useAnalytics = () => {
-  return {
-    chat: useChatAnalytics,
-    education: useEducationAnalytics(),
-    auth: useAuthAnalytics(),
-    admin: useAdminAnalytics(),
-    performance: usePerformanceAnalytics(),
-    compliance: useComplianceAnalytics(),
-  };
-};

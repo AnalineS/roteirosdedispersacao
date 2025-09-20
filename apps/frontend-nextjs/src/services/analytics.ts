@@ -1,7 +1,8 @@
 import ReactGA from 'react-ga4';
+// Analytics simples baseado em localStorage e API backend
 
-// Google Analytics Measurement ID - Replace with your actual ID
-const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || 'G-XXXXXXXXXX';
+// Google Analytics Measurement ID - Configured via GitHub secrets
+const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || '';
 
 // Analytics Categories
 export const AnalyticsCategory = {
@@ -76,7 +77,7 @@ interface CustomMetrics {
 
 // Initialize GA4
 export const initGA = () => {
-  if (typeof window !== 'undefined' && GA_MEASUREMENT_ID !== 'G-XXXXXXXXXX') {
+  if (typeof window !== 'undefined' && GA_MEASUREMENT_ID) {
     ReactGA.initialize(GA_MEASUREMENT_ID, {
       gaOptions: {
         anonymizeIp: true, // LGPD compliance
@@ -123,6 +124,19 @@ export const logCustomMetrics = (metrics: Partial<CustomMetrics>) => {
     ReactGA.gtag('event', 'custom_metrics', {
       custom_parameter: metrics,
     });
+
+    // Salvar métricas localmente
+    const sessionId = getCurrentSessionId();
+    try {
+      localStorage.setItem(`metrics_${Date.now()}`, JSON.stringify({
+        sessionId,
+        timestamp: new Date().toISOString(),
+        category: 'performance',
+        metrics
+      }));
+    } catch (error) {
+      console.warn('Failed to save metrics locally:', error);
+    }
   }
 };
 
@@ -255,6 +269,34 @@ export const trackAdminAction = (
   logEvent('ADMIN', action, details);
 };
 
+// Session Management para Firestore Integration
+let currentSessionId: string | null = null;
+
+const getCurrentSessionId = (): string => {
+  if (!currentSessionId) {
+    currentSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    // Iniciar sessão localmente
+    try {
+      localStorage.setItem(`session_${currentSessionId}`, JSON.stringify({
+        id: currentSessionId,
+        startTime: new Date().toISOString(),
+        deviceType: getDeviceType()
+      }));
+    } catch (error) {
+      console.warn('Failed to start analytics session:', error);
+    }
+  }
+  return currentSessionId;
+};
+
+const getDeviceType = (): 'mobile' | 'tablet' | 'desktop' => {
+  if (typeof window === 'undefined') return 'desktop';
+  const width = window.innerWidth;
+  if (width < 768) return 'mobile';
+  if (width < 1024) return 'tablet';
+  return 'desktop';
+};
+
 // Export all tracking functions
 export const Analytics = {
   init: initGA,
@@ -272,6 +314,23 @@ export const Analytics = {
   education: trackEducationalProgress,
   compliance: trackCompliance,
   admin: trackAdminAction,
+  // Analytics local simples
+  local: {
+    getMetrics: () => {
+      const keys = Object.keys(localStorage).filter(key => key.startsWith('metrics_'));
+      return keys.map(key => JSON.parse(localStorage.getItem(key) || '{}'));
+    },
+    getSessions: () => {
+      const keys = Object.keys(localStorage).filter(key => key.startsWith('session_'));
+      return keys.map(key => JSON.parse(localStorage.getItem(key) || '{}'));
+    },
+    cleanup: () => {
+      const keys = Object.keys(localStorage).filter(key =>
+        key.startsWith('metrics_') || key.startsWith('session_')
+      );
+      keys.forEach(key => localStorage.removeItem(key));
+    }
+  }
 };
 
 export default Analytics;

@@ -25,8 +25,9 @@ import Tooltip from '@/components/common/Tooltip';
 import MobileNavigation from './MobileNavigation';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import IntelligentSearchSystem from '@/components/search/IntelligentSearchSystem';
+import SearchBar from '@/components/search/SearchBar';
 import { AuthButton } from '@/components/auth';
-import { useAuth } from '@/contexts/AuthContext';
+import { useSafeAuth } from '@/hooks/useSafeAuth';
 import { SkipToContent, HighContrastToggle } from '@/components/accessibility';
 // Interfaces de navegação (movidas do Sidebar removido)
 export interface NavigationItem {
@@ -62,7 +63,7 @@ interface DropdownState {
 export default function NavigationHeader({ currentPersona, className = '' }: NavigationHeaderProps) {
   const pathname = usePathname();
   const { personas } = usePersonas();
-  const { isAdmin } = useAuth();
+  const { isAdmin, isAuthenticated } = useSafeAuth();
   const headerRef = useRef<HTMLElement>(null);
   const unbColors = getUnbColors();
   const shouldShowHeader = useNavigationVisibility('main-header');
@@ -100,13 +101,13 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
     }
   });
 
-  // Estrutura de navegação (mesma do sidebar)
+  // Estrutura de navegação atualizada conforme especificações
   const navigationCategories: NavigationCategory[] = [
     {
-      id: 'learning',
-      label: 'Aprendizagem',
-      icon: '📚',
-      description: 'Módulos educacionais estruturados',
+      id: 'home',
+      label: 'Início',
+      icon: '🏠',
+      description: 'Página inicial',
       items: [
         {
           id: 'home',
@@ -117,7 +118,15 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
           category: 'learning',
           level: 'beginner',
           estimatedTime: '2 min'
-        },
+        }
+      ]
+    },
+    {
+      id: 'educational',
+      label: 'Educacional',
+      icon: '📚',
+      description: 'Módulos educacionais e recursos de aprendizagem',
+      items: [
         {
           id: 'modules',
           label: 'Módulos',
@@ -157,83 +166,79 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
               category: 'learning',
               level: 'advanced',
               estimatedTime: '20 min'
+            },
+            {
+              id: 'vida-com-doenca',
+              label: 'Vida com a Doença',
+              href: '/modules/vida-com-doenca',
+              icon: '🤝',
+              description: 'Apoio e qualidade de vida',
+              category: 'learning',
+              level: 'intermediate',
+              estimatedTime: '15 min'
+            },
+            {
+              id: 'roteiro-dispensacao',
+              label: 'Roteiro de Dispensação',
+              href: '/modules/roteiro-dispensacao',
+              icon: '📋',
+              description: 'Protocolo completo de dispensação',
+              category: 'learning',
+              level: 'advanced',
+              estimatedTime: '20 min'
             }
           ]
         },
         {
           id: 'dashboard',
-          label: 'Dashboard Educacional',
+          label: 'Dashboard',
           href: '/dashboard',
           icon: '📊',
           description: 'Visão geral do progresso',
           category: 'learning',
           level: 'beginner',
           estimatedTime: '5 min'
-        }
-      ]
-    },
-    {
-      id: 'interaction',
-      label: 'Chat',
-      icon: '💬',
-      description: 'Comunicação com assistentes',
-      items: [
+        },
         {
-          id: 'chat',
-          label: 'Conversar',
-          href: '/chat',
-          icon: '🤖',
-          description: 'Chat com Dr. Gasnelio e Gá',
-          category: 'interaction',
-          estimatedTime: 'Ilimitado'
-        }
-      ]
-    },
-    {
-      id: 'tools',
-      label: 'Ferramentas',
-      icon: '🛠️',
-      description: 'Recursos práticos e calculadoras',
-      items: [
+          id: 'progress',
+          label: 'Progresso',
+          href: '/progress',
+          icon: '📈',
+          description: 'Acompanhe seu aprendizado',
+          category: 'learning',
+          completionRate: 65
+        },
         {
           id: 'resources',
-          label: 'Recursos Práticos',
+          label: 'Recursos',
           href: '/resources',
           icon: '🎯',
-          description: 'Calculadoras e checklists',
-          category: 'tools',
+          description: 'Ferramentas práticas',
+          category: 'learning',
           subItems: [
             {
               id: 'dose-calculator',
-              label: 'Calculadora de Doses',
+              label: 'Calculadora',
               href: '/resources/calculator',
               icon: '🧮',
               description: 'Cálculo automático PQT-U',
-              category: 'tools'
-            },
-            {
-              id: 'interaction-checker',
-              label: 'Verificador de Interações',
-              href: '/resources/interactions',
-              icon: '⚠️',
-              description: 'Análise de incompatibilidades medicamentosas',
-              category: 'tools'
+              category: 'learning'
             },
             {
               id: 'checklist',
-              label: 'Checklist Dispensação',
+              label: 'Checklist',
               href: '/resources/checklist',
               icon: '✅',
               description: 'Lista de verificação procedural',
-              category: 'tools'
+              category: 'learning'
             },
             {
               id: 'glossario',
-              label: 'Glossário Médico',
+              label: 'Glossário',
               href: '/glossario',
               icon: '📋',
               description: 'Terminologia técnica de hanseníase',
-              category: 'tools'
+              category: 'learning'
             },
             {
               id: 'downloads',
@@ -241,6 +246,14 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
               href: '/downloads',
               icon: '📄',
               description: 'Materiais complementares',
+              category: 'learning'
+            },
+            {
+              id: 'sitemap',
+              label: 'Mapa do Site',
+              href: '/sitemap',
+              icon: '🗺️',
+              description: 'Navegação completa do sistema educacional',
               category: 'tools'
             }
           ]
@@ -248,61 +261,51 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
       ]
     },
     {
-      id: 'progress',
-      label: 'Progresso',
-      icon: '📈',
-      description: 'Acompanhamento de aprendizagem',
-      items: [
-        {
-          id: 'progress',
-          label: 'Meu Progresso',
-          href: '/progress',
-          icon: '📊',
-          description: 'Acompanhe seu aprendizado',
-          category: 'progress',
-          completionRate: 65
-        }
-      ]
-    },
-    {
-      id: 'institutional',
-      label: 'Institucional',
+      id: 'project',
+      label: 'Conheça o Projeto',
       icon: '🎓',
       description: 'Informações sobre a plataforma e pesquisa',
       items: [
         {
-          id: 'institucional-info',
-          label: 'Informações Institucionais',
+          id: 'sobre-a-tese',
+          label: 'Sobre a Tese',
+          href: '/sobre-a-tese',
+          icon: '📚',
+          description: 'Metodologia, objetivos e contribuições da pesquisa',
+          category: 'institutional'
+        },
+        {
+          id: 'sobre-equipe',
+          label: 'Conheça a Equipe',
           href: '/sobre',
-          icon: '🏦',
-          description: 'Sobre a plataforma e instituições',
-          category: 'institutional',
-          subItems: [
-            {
-              id: 'sobre-a-tese',
-              label: 'Sobre a Tese',
-              href: '/sobre-a-tese',
-              icon: '📚',
-              description: 'Metodologia, objetivos e contribuições da pesquisa',
-              category: 'institutional'
-            },
-            {
-              id: 'sobre-sistema',
-              label: 'Sobre o Sistema',
-              href: '/sobre',
-              icon: '💻',
-              description: 'Informações sobre a plataforma educacional',
-              category: 'institutional'
-            },
-            {
-              id: 'metodologia',
-              label: 'Metodologia',
-              href: '/metodologia',
-              icon: '🔬',
-              description: 'Métodos científicos e fundamentação teórica',
-              category: 'institutional'
-            }
-          ]
+          icon: '👥',
+          description: 'Equipe responsável pelo projeto',
+          category: 'institutional'
+        },
+        {
+          id: 'metodologia',
+          label: 'Metodologia',
+          href: '/metodologia',
+          icon: '🔬',
+          description: 'Métodos científicos e fundamentação teórica',
+          category: 'institutional'
+        }
+      ]
+    },
+    {
+      id: 'chat',
+      label: 'Chat',
+      icon: '💬',
+      description: 'Conversar com assistentes virtuais',
+      items: [
+        {
+          id: 'chat',
+          label: 'Chat',
+          href: '/chat',
+          icon: '💬',
+          description: 'Chat com Dr. Gasnelio e Gá',
+          category: 'interaction',
+          estimatedTime: 'Ilimitado'
         }
       ]
     }
@@ -340,6 +343,56 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
     }
   };
 
+  // Adicionar categorias de autenticação dinamicamente
+  const authCategories: NavigationCategory[] = isAuthenticated ? [
+    {
+      id: 'profile',
+      label: 'Perfil',
+      icon: '👤',
+      description: 'Gerenciar seu perfil',
+      items: [{
+        id: 'profile',
+        label: 'Perfil',
+        href: '/profile',
+        icon: '👤',
+        description: 'Gerenciar seu perfil',
+        category: 'institutional'
+      }]
+    }
+  ] : [
+    {
+      id: 'cadastro',
+      label: 'Cadastro',
+      icon: '📝',
+      description: 'Criar uma conta',
+      items: [{
+        id: 'cadastro',
+        label: 'Cadastro',
+        href: '/cadastro',
+        icon: '📝',
+        description: 'Criar uma conta',
+        category: 'institutional'
+      }]
+    },
+    {
+      id: 'login',
+      label: 'Login',
+      icon: '🔐',
+      description: 'Acessar sua conta',
+      items: [{
+        id: 'login',
+        label: 'Login',
+        href: '/login',
+        icon: '🔐',
+        description: 'Acessar sua conta',
+        category: 'institutional'
+      }]
+    }
+  ];
+
+  // Combinar categorias principais com autenticação
+  const allCategories = [...navigationCategories, ...authCategories];
+
   // Obter persona atual
   const currentPersonaData = currentPersona && personas[currentPersona] ? personas[currentPersona] : null;
 
@@ -349,7 +402,7 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
   }
 
   // Filtrar categorias baseado no limite do sistema inteligente
-  const visibleCategories = navigationCategories.slice(0, Math.min(maxVisibleItems || 8, navigationCategories.length));
+  const visibleCategories = allCategories;
 
   return (
     <>
@@ -365,21 +418,23 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
         left: 0,
         right: 0,
         width: '100%',
-        height: '80px',
         background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.98) 100%)',
         backdropFilter: 'blur(10px)',
         borderBottom: '1px solid rgba(226, 232, 240, 0.8)',
         boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
-        zIndex: 1000,
+        zIndex: 1000
+      }}
+    >
+      {/* Primeira linha - Navegação principal */}
+      <div style={{
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: isWideScreen ? '0 clamp(1rem, 2vw, 2rem)' : '0 clamp(1rem, 2vw, 1.5rem)',
-        gap: '1rem',
-        minHeight: '80px',
+        padding: isMobile ? '0 1rem' : isTablet ? '0 clamp(1.5rem, 2vw, 2rem)' : '0 clamp(2rem, 3vw, 4rem)',
+        gap: isMobile ? '0.5rem' : isTablet ? '1rem' : '1.5rem',
+        height: '80px',
         boxSizing: 'border-box'
-      }}
-    >
+      }}>
       {/* Logo e Título - Esquerda */}
       <div className="nav-logo-section">
         <Tooltip content="Roteiros de Dispensação - Sistema Inteligente de Orientação" position="bottom">
@@ -783,7 +838,7 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
             </>
           )}
           
-          {isAdmin() && !isMobile && (
+          {isAdmin && !isMobile && (
             <Link 
               href="/admin"
               style={{
@@ -828,8 +883,19 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
         {isMobile && (
           <button
             onClick={() => {
-              // TODO: Implement mobile search modal
-              console.log('Mobile search modal not implemented yet');
+              // Implementar busca mobile via redirecionamento para glossário
+              window.location.href = '/glossario';
+
+              // Log busca mobile via analytics
+              if (typeof window !== 'undefined' && window.gtag) {
+                window.gtag('event', 'mobile_search_accessed', {
+                  event_category: 'navigation',
+                  event_label: 'search_button',
+                  custom_parameters: {
+                    transport_type: 'beacon'
+                  }
+                });
+              }
             }}
             style={{
               background: 'none',
@@ -906,6 +972,20 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
           </button>
         )}
       </div>
+      </div> {/* Fim da primeira linha */}
+
+      {/* Segunda linha - Barra de pesquisa */}
+      {!isMobile && (
+        <div style={{
+          padding: '0 clamp(2rem, 3vw, 4rem) 1rem',
+          background: 'linear-gradient(180deg, rgba(248, 250, 252, 0.5) 0%, rgba(248, 250, 252, 0) 100%)'
+        }}>
+          <SearchBar 
+            placeholder="🔍 Buscar no site..." 
+            className="nav-search-bar"
+          />
+        </div>
+      )}
 
       {/* Overlay para fechar dropdowns */}
       {Object.values(dropdownsOpen).some(Boolean) && (
@@ -927,7 +1007,7 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
         isOpen={isMobileMenuOpen}
         onClose={() => setIsMobileMenuOpen(false)}
         categories={navigationCategories}
-        currentPersona={currentPersonaData}
+        currentPersona={currentPersonaData || undefined}
         isActive={isActive}
       />
 

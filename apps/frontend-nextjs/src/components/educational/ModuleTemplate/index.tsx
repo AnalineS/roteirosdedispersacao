@@ -11,7 +11,7 @@ export interface ModuleSection {
   keyPoints?: string[];
   interactive?: {
     type: 'quiz' | 'checklist' | 'calculator' | 'timeline';
-    data: any;
+    data: unknown;
   };
   media?: {
     type: 'image' | 'video' | 'infographic';

@@ -1,0 +1,560 @@
+  149:14  warning  '_err' is defined but never used  @typescript-eslint/no-unused-vars
+  165:14  warning  '_err' is defined but never used  @typescript-eslint/no-unused-vars
+   35:47  warning  '_personaLoading' is assigned a value but never used                @typescript-eslint/no-unused-vars
+   79:20  warning  '_profile' is assigned a value but never used                       @typescript-eslint/no-unused-vars
+   79:45  warning  '_updateProfile' is assigned a value but never used                 @typescript-eslint/no-unused-vars
+   79:84  warning  '_getRecommendedPersona' is assigned a value but never used         @typescript-eslint/no-unused-vars
+   82:12  warning  '_chatError' is assigned a value but never used                     @typescript-eslint/no-unused-vars
+   85:30  warning  '_personaSwitchSuggestion' is assigned a value but never used       @typescript-eslint/no-unused-vars
+   87:23  warning  '_lastSearchResult' is assigned a value but never used              @typescript-eslint/no-unused-vars
+   90:20  warning  '_resetFallback' is assigned a value but never used                 @typescript-eslint/no-unused-vars
+   91:26  warning  '_resetSystemFailures' is assigned a value but never used           @typescript-eslint/no-unused-vars
+  145:28  warning  '_navigationState' is assigned a value but never used               @typescript-eslint/no-unused-vars
+  149:22  warning  '_currentAnalysis' is assigned a value but never used               @typescript-eslint/no-unused-vars
+  150:18  warning  '_isAnalyzing' is assigned a value but never used                   @typescript-eslint/no-unused-vars
+  151:24  warning  '_shouldShowRouting' is assigned a value but never used             @typescript-eslint/no-unused-vars
+  152:28  warning  '_getRoutingRecommendedPersona' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  289:11  warning  '_conversationId' is assigned a value but never used                @typescript-eslint/no-unused-vars
+  311:9   warning  '_handleAcceptRouting' is assigned a value but never used           @typescript-eslint/no-unused-vars
+  316:9   warning  '_handleRejectRouting' is assigned a value but never used           @typescript-eslint/no-unused-vars
+  320:9   warning  '_handleShowExplanation' is assigned a value but never used         @typescript-eslint/no-unused-vars
+  29:14  warning  '_error' is defined but never used  @typescript-eslint/no-unused-vars
+  20:44  warning  '_authLoading' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  49:14  warning  '_err' is defined but never used                   @typescript-eslint/no-unused-vars
+  476:47  warning  'index' is defined but never used  @typescript-eslint/no-unused-vars
+  195:47  warning  'index' is defined but never used  @typescript-eslint/no-unused-vars
+  661:47  warning  'index' is defined but never used  @typescript-eslint/no-unused-vars
+  677:47  warning  'index' is defined but never used  @typescript-eslint/no-unused-vars
+  875:47  warning  'index' is defined but never used  @typescript-eslint/no-unused-vars
+   2:8  warning  'Image' is defined but never used            @typescript-eslint/no-unused-vars
+   5:8  warning  'FeaturesSection' is defined but never used  @typescript-eslint/no-unused-vars
+  20:3  warning  'CheckIcon' is defined but never used        @typescript-eslint/no-unused-vars
+  23:3  warning  'SupportIcon' is defined but never used      @typescript-eslint/no-unused-vars
+  24:3  warning  'TargetIcon' is defined but never used       @typescript-eslint/no-unused-vars
+  25:3  warning  'DoctorIcon' is defined but never used       @typescript-eslint/no-unused-vars
+  26:3  warning  'QuestionIcon' is defined but never used     @typescript-eslint/no-unused-vars
+  30:3  warning  'AlertIcon' is defined but never used        @typescript-eslint/no-unused-vars
+  31:3  warning  'BulbIcon' is defined but never used         @typescript-eslint/no-unused-vars
+  32:3  warning  'HeartIcon' is defined but never used        @typescript-eslint/no-unused-vars
+  33:3  warning  'FamilyIcon' is defined but never used       @typescript-eslint/no-unused-vars
+  36:3  warning  'PillIcon' is defined but never used         @typescript-eslint/no-unused-vars
+    7:3   warning  'Mail' is defined but never used                        @typescript-eslint/no-unused-vars
+   14:3   warning  'Camera' is defined but never used                      @typescript-eslint/no-unused-vars
+   43:5   warning  'linkSocialAccount' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  108:14  warning  'error' is defined but never used                       @typescript-eslint/no-unused-vars
+  154:14  warning  'error' is defined but never used                       @typescript-eslint/no-unused-vars
+   48:24  warning  'setProgressData' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  154:9   warning  'currentPersona' is assigned a value but never used   @typescript-eslint/no-unused-vars
+  321:55  warning  'index' is defined but never used                     @typescript-eslint/no-unused-vars
+  13:10  warning  'ProgressiveCard' is defined but never used   @typescript-eslint/no-unused-vars
+  14:10  warning  'MedicalTermPopup' is defined but never used  @typescript-eslint/no-unused-vars
+  3:20  warning  'useEffect' is defined but never used  @typescript-eslint/no-unused-vars
+  10:28  warning  'setSelectedAudience' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  19:7  warning  'ChatIcon' is assigned a value but never used  @typescript-eslint/no-unused-vars
+    8:7  warning  'MedIcon' is assigned a value but never used       @typescript-eslint/no-unused-vars
+  218:7  warning  'BuildingIcon' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  224:7  warning  'PrintIcon' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  230:7  warning  'MoneyIcon' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  18:3  warning  'LightbulbIcon' is defined but never used  @typescript-eslint/no-unused-vars
+  11:3  warning  'ClipboardListIcon' is defined but never used  @typescript-eslint/no-unused-vars
+  342:53  warning  'index' is defined but never used  @typescript-eslint/no-unused-vars
+   14:27  warning  'useEffect' is defined but never used          @typescript-eslint/no-unused-vars
+   14:38  warning  'useRef' is defined but never used             @typescript-eslint/no-unused-vars
+  162:13  warning  'tabindex' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   14:27  warning  'useEffect' is defined but never used                  @typescript-eslint/no-unused-vars
+   14:38  warning  'useRef' is defined but never used                     @typescript-eslint/no-unused-vars
+   69:9   warning  'hexToRgb' is assigned a value but never used          @typescript-eslint/no-unused-vars
+  389:9   warning  'getContrastColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  43:9  warning  'getWcagColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  54:9  warning  'getWcagIcon' is assigned a value but never used   @typescript-eslint/no-unused-vars
+  65:9  warning  'formatRatio' is assigned a value but never used   @typescript-eslint/no-unused-vars
+  324:9  warning  'isKeyboardNav' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   14:27  warning  'useEffect' is defined but never used                               @typescript-eslint/no-unused-vars
+   14:38  warning  'useRef' is defined but never used                                  @typescript-eslint/no-unused-vars
+  359:9   warning  'elementsWithoutAccessibleName' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  360:9   warning  'elementsWithPositiveTabIndex' is assigned a value but never used   @typescript-eslint/no-unused-vars
+   14:27  warning  'useEffect' is defined but never used                @typescript-eslint/no-unused-vars
+   14:38  warning  'useRef' is defined but never used                   @typescript-eslint/no-unused-vars
+  475:9   warning  'getImpactColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  46:9  warning  'getSeverityColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  15:44  warning  'ABVariant' is defined but never used                 @typescript-eslint/no-unused-vars
+  23:3   warning  'allowManagement' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   19:3   warning  'LearningAnalytics' is defined but never used  @typescript-eslint/no-unused-vars
+  133:71  warning  'period' is defined but never used             @typescript-eslint/no-unused-vars
+  403:11  warning  'trackCognitiveLoad' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   62:69  warning  'value' is defined but never used                                          @typescript-eslint/no-unused-vars
+  193:11  warning  'thumbReachZone' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  268:16  warning  'error' is defined but never used                    @typescript-eslint/no-unused-vars
+  27:47  warning  'isLoading' is assigned a value but never used         @typescript-eslint/no-unused-vars
+  85:9   warning  'getProviderName' is assigned a value but never used   @typescript-eslint/no-unused-vars
+  90:9   warning  'getProviderColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  189:9  warning  'benefits' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  26:9  warning  'userProfile' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  92:13  warning  'conversationText' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   9:7   warning  'SIDEBAR_WIDTH' is assigned a value but never used         @typescript-eslint/no-unused-vars
+  10:7   warning  'MOBILE_SIDEBAR_WIDTH' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  48:10  warning  'loading' is assigned a value but never used               @typescript-eslint/no-unused-vars
+  48:19  warning  'setLoading' is assigned a value but never used            @typescript-eslint/no-unused-vars
+   95:3   warning  'isVisible' is assigned a value but never used             @typescript-eslint/no-unused-vars
+  101:10  warning  'hasSubmittedFeedback' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  10:7  warning  'isValidImageUrl' is assigned a value but never used                       @typescript-eslint/no-unused-vars
+  13:8  warning  'SuggestionContext' is defined but never used  @typescript-eslint/no-unused-vars
+  49:9  warning  'handleReject' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  197:66  warning  'index' is defined but never used  @typescript-eslint/no-unused-vars
+  217:35  warning  'e' is defined but never used      @typescript-eslint/no-unused-vars
+  105:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  27:43  warning  'index' is defined but never used  @typescript-eslint/no-unused-vars
+   11:8   warning  'ModernChatInput' is defined but never used                @typescript-eslint/no-unused-vars
+   13:8   warning  'MessageBubble' is defined but never used                  @typescript-eslint/no-unused-vars
+   88:11  warning  'announceNewMessage' is assigned a value but never used    @typescript-eslint/no-unused-vars
+   88:31  warning  'announceSystemStatus' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   88:53  warning  'focusLastMessage' is assigned a value but never used      @typescript-eslint/no-unused-vars
+  104:9   warning  'MessagesArea' is assigned a value but never used          @typescript-eslint/no-unused-vars
+   12:3  warning  'MenuIcon' is defined but never used                @typescript-eslint/no-unused-vars
+   14:3  warning  'InfoIcon' is defined but never used                @typescript-eslint/no-unused-vars
+   67:7  warning  'HistoryToggle' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  225:3  warning  'onHistoryToggle' is defined but never used         @typescript-eslint/no-unused-vars
+  227:3  warning  'showHistory' is assigned a value but never used    @typescript-eslint/no-unused-vars
+   6:27  warning  'getPersonaColors' is defined but never used     @typescript-eslint/no-unused-vars
+   7:10  warning  'ToggleIcon' is defined but never used           @typescript-eslint/no-unused-vars
+  26:9   warning  'personaIds' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  259:3   warning  'isMobile' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   17:10  warning  'focusedIndex' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  178:79  warning  'categoryIndex' is defined but never used          @typescript-eslint/no-unused-vars
+   75:9   warning  'generateSrcSet' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  124:3   warning  'layout' is defined but never used              @typescript-eslint/no-unused-vars
+  126:9   warning  'unbColors' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  412:39  warning  'index' is defined but never used               @typescript-eslint/no-unused-vars
+  39:9  warning  'unbColors' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   44:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+   65:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+   79:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  368:12  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  44:5  warning  'toggleSection' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  50:9  warning  'isExpanded' is assigned a value but never used     @typescript-eslint/no-unused-vars
+   35:5   warning  'currentLevel' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  186:3   warning  'index' is defined but never used                     @typescript-eslint/no-unused-vars
+  285:3   warning  'sectionId' is defined but never used                 @typescript-eslint/no-unused-vars
+  294:31  warning  'index' is defined but never used                     @typescript-eslint/no-unused-vars
+  375:7   warning  'accordionStyles' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  3:20  warning  'useEffect' is defined but never used          @typescript-eslint/no-unused-vars
+  5:8   warning  'ProgressIndicator' is defined but never used  @typescript-eslint/no-unused-vars
+  6:10  warning  'ProgressData' is defined but never used       @typescript-eslint/no-unused-vars
+  110:10  warning  'selectedTerm' is assigned a value but never used  @typescript-eslint/no-unused-vars
+    3:20  warning  'ReactNode' is defined but never used             @typescript-eslint/no-unused-vars
+    5:10  warning  'theme' is defined but never used                 @typescript-eslint/no-unused-vars
+   42:3   warning  'interactive' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  331:44  warning  'props' is defined but never used                 @typescript-eslint/no-unused-vars
+   58:3  warning  'context' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  292:3  warning  'context' is defined but never used           @typescript-eslint/no-unused-vars
+   57:18  warning  'findTerm' is assigned a value but never used       @typescript-eslint/no-unused-vars
+   57:28  warning  'getDefinition' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  399:9   warning  'sanitizeUrl' is assigned a value but never used    @typescript-eslint/no-unused-vars
+  455:9   warning  'getTypeIcon' is assigned a value but never used    @typescript-eslint/no-unused-vars
+  507:51  warning  'index' is defined but never used                   @typescript-eslint/no-unused-vars
+  146:3  warning  'variant' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   14:3   warning  'Calendar' is defined but never used                 @typescript-eslint/no-unused-vars
+   72:7   warning  'useFormContext' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  48:11  warning  'baseColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   15:3   warning  'GamificationNotification' is defined but never used  @typescript-eslint/no-unused-vars
+  174:29  warning  'isTimeout' is assigned a value but never used        @typescript-eslint/no-unused-vars
+  16:10  warning  'UserLevel' is defined but never used  @typescript-eslint/no-unused-vars
+   47:9   warning  'remainingText' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  118:9  warning  'unbColors' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  254:9   warning  'hoverStyles' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  320:29  warning  'color1' is defined but never used                @typescript-eslint/no-unused-vars
+  320:45  warning  'color2' is defined but never used                @typescript-eslint/no-unused-vars
+  13:37  warning  'JSX' is defined but never used  @typescript-eslint/no-unused-vars
+  5:8  warning  'Image' is defined but never used  @typescript-eslint/no-unused-vars
+   8:10  warning  'getPersonaAvatar' is defined but never used                @typescript-eslint/no-unused-vars
+  22:11  warning  'personas' is assigned a value but never used               @typescript-eslint/no-unused-vars
+  22:26  warning  'loading' is assigned a value but never used                @typescript-eslint/no-unused-vars
+  22:43  warning  'error' is assigned a value but never used                  @typescript-eslint/no-unused-vars
+  22:57  warning  'getValidPersonasCount' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  262:3  warning  'variant' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   4:23  warning  'CertificateTemplate' is defined but never used       @typescript-eslint/no-unused-vars
+  16:3   warning  'ClockIcon' is defined but never used                 @typescript-eslint/no-unused-vars
+  37:24  warning  'setEmailAddress' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  277:36  warning  'index' is defined but never used  @typescript-eslint/no-unused-vars
+  812:39  warning  'index' is defined but never used  @typescript-eslint/no-unused-vars
+  7:3  warning  'ChecklistProgress' is defined but never used  @typescript-eslint/no-unused-vars
+  9:3  warning  'QualityMetrics' is defined but never used     @typescript-eslint/no-unused-vars
+    4:25  warning  'ChecklistProgress' is defined but never used          @typescript-eslint/no-unused-vars
+   37:9   warning  'getSeverityColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  101:29  warning  'index' is defined but never used                      @typescript-eslint/no-unused-vars
+  350:58  warning  'index' is defined but never used                      @typescript-eslint/no-unused-vars
+  105:9  warning  'buttonClasses' is assigned a value but never used  @typescript-eslint/no-unused-vars
+    4:10  warning  'calculatePQTUDoses' is defined but never used   @typescript-eslint/no-unused-vars
+    4:30  warning  'validateCalculation' is defined but never used  @typescript-eslint/no-unused-vars
+  211:19  warning  'setProfile' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  411:24  warning  'result' is defined but never used               @typescript-eslint/no-unused-vars
+   37:10   warning  'newNote' is assigned a value but never used       @typescript-eslint/no-unused-vars
+   37:19   warning  'setNewNote' is assigned a value but never used    @typescript-eslint/no-unused-vars
+  710:26   warning  'timeline' is defined but never used               @typescript-eslint/no-unused-vars
+  710:36   warning  'config' is defined but never used                 @typescript-eslint/no-unused-vars
+  710:44   warning  'onMilestoneToggle' is defined but never used      @typescript-eslint/no-unused-vars
+  710:63   warning  'onMilestoneNote' is defined but never used        @typescript-eslint/no-unused-vars
+  710:80   warning  'selectedMilestone' is defined but never used      @typescript-eslint/no-unused-vars
+  710:99   warning  'onMilestoneSelect' is defined but never used      @typescript-eslint/no-unused-vars
+  727:25   warning  'timeline' is defined but never used               @typescript-eslint/no-unused-vars
+  727:35   warning  'config' is defined but never used                 @typescript-eslint/no-unused-vars
+  727:43   warning  'onAdherenceRecord' is defined but never used      @typescript-eslint/no-unused-vars
+  744:28   warning  'timeline' is defined but never used               @typescript-eslint/no-unused-vars
+  744:38   warning  'config' is defined but never used                 @typescript-eslint/no-unused-vars
+  744:46   warning  'onAppointmentSchedule' is defined but never used  @typescript-eslint/no-unused-vars
+  761:26   warning  'timeline' is defined but never used               @typescript-eslint/no-unused-vars
+  761:45   warning  'onUpdate' is defined but never used               @typescript-eslint/no-unused-vars
+  28:10  warning  'demoMode' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  28:20  warning  'setDemoMode' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  7:8  warning  'LanguageToggle' is defined but never used  @typescript-eslint/no-unused-vars
+  21:22  warning  'screenSize' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  94:3  warning  'requiresAuth' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  46:9  warning  'unbColors' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  163:11  warning  'isMobile' is assigned a value but never used                              @typescript-eslint/no-unused-vars
+  163:21  warning  'isTablet' is assigned a value but never used                              @typescript-eslint/no-unused-vars
+  163:45  warning  'orientation' is assigned a value but never used                           @typescript-eslint/no-unused-vars
+   32:5   warning  'capabilities' is assigned a value but never used  @typescript-eslint/no-unused-vars
+    5:8   warning  'Link' is defined but never used               @typescript-eslint/no-unused-vars
+   30:9   warning  'pathname' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  11:3   warning  'SystemLogoIcon' is defined but never used     @typescript-eslint/no-unused-vars
+  13:3   warning  'ModulesIcon' is defined but never used        @typescript-eslint/no-unused-vars
+  14:3   warning  'DashboardIcon' is defined but never used      @typescript-eslint/no-unused-vars
+  15:3   warning  'ChatBotIcon' is defined but never used        @typescript-eslint/no-unused-vars
+  16:3   warning  'ResourcesIcon' is defined but never used      @typescript-eslint/no-unused-vars
+  17:3   warning  'ProgressIcon' is defined but never used       @typescript-eslint/no-unused-vars
+  18:3   warning  'InstitutionalIcon' is defined but never used  @typescript-eslint/no-unused-vars
+  28:3   warning  'emojiToIcon' is defined but never used        @typescript-eslint/no-unused-vars
+  29:3   warning  'useMedicalIcons' is defined but never used    @typescript-eslint/no-unused-vars
+  32:11  warning  'FooterSection' is defined but never used      @typescript-eslint/no-unused-vars
+   25:10  warning  'getUrgencyFromKeywords' is defined but never used    @typescript-eslint/no-unused-vars
+   52:10  warning  'isScrollingDown' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  226:37  warning  'index' is defined but never used                     @typescript-eslint/no-unused-vars
+   30:10  warning  'screenSize' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   72:70  warning  'size' is defined but never used                 @typescript-eslint/no-unused-vars
+    9:3   warning  'getIconByEmoji' is defined but never used          @typescript-eslint/no-unused-vars
+   38:11  warning  'isMobile' is assigned a value but never used       @typescript-eslint/no-unused-vars
+   38:21  warning  'touchSupport' is assigned a value but never used   @typescript-eslint/no-unused-vars
+   45:9   warning  'swipeHandlers' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  257:33  warning  'shortcut' is defined but never used                @typescript-eslint/no-unused-vars
+  11:3   warning  'SystemLogoIcon' is defined but never used            @typescript-eslint/no-unused-vars
+  26:10  warning  'ThemeToggle' is defined but never used               @typescript-eslint/no-unused-vars
+  27:8   warning  'IntelligentSearchSystem' is defined but never used   @typescript-eslint/no-unused-vars
+  70:30  warning  'maxVisibleItems' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  70:47  warning  'deviceType' is assigned a value but never used       @typescript-eslint/no-unused-vars
+  77:10  warning  'isWideScreen' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  13:30  warning  'NavigationItem' is defined but never used  @typescript-eslint/no-unused-vars
+  28:9  warning  'formatTimeSpent' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  54:3  warning  'children' is defined but never used  @typescript-eslint/no-unused-vars
+   5:68  warning  'TargetIcon' is defined but never used       @typescript-eslint/no-unused-vars
+  28:9   warning  'router' is assigned a value but never used  @typescript-eslint/no-unused-vars
+    5:32  warning  'MessageCircle' is defined but never used  @typescript-eslint/no-unused-vars
+  193:43  warning  'index' is defined but never used          @typescript-eslint/no-unused-vars
+  443:9   warning  'router' is assigned a value but never used   @typescript-eslint/no-unused-vars
+  547:28  warning  'skipped' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  559:16  warning  'error' is defined but never used             @typescript-eslint/no-unused-vars
+   34:35  warning  'error' is defined but never used                                          @typescript-eslint/no-unused-vars
+  31:10  warning  'showOnboardingModal' is assigned a value but never used       @typescript-eslint/no-unused-vars
+  55:9   warning  'handleOnboardingComplete' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  60:9   warning  'handleOnboardingSkip' is assigned a value but never used      @typescript-eslint/no-unused-vars
+  154:56  warning  'index' is defined but never used  @typescript-eslint/no-unused-vars
+    3:25  warning  'JSX' is defined but never used           @typescript-eslint/no-unused-vars
+    7:10  warning  'theme' is defined but never used         @typescript-eslint/no-unused-vars
+  397:16  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+   34:3   warning  'currentPersona' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  268:83  warning  'messageCount' is defined but never used             @typescript-eslint/no-unused-vars
+  536:48  warning  'index' is defined but never used                    @typescript-eslint/no-unused-vars
+   15:3   warning  'MistakePattern' is defined but never used                @typescript-eslint/no-unused-vars
+   26:3   warning  'showDetailedMetrics' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  102:9   warning  'warningAlerts' is assigned a value but never used        @typescript-eslint/no-unused-vars
+  339:69  warning  'index' is defined but never used                         @typescript-eslint/no-unused-vars
+  526:28  warning  'event' is defined but never used         @typescript-eslint/no-unused-vars
+  141:3  warning  'showFilters' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  67:9  warning  'pathname' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  116:17  warning  'e' is defined but never used             @typescript-eslint/no-unused-vars
+  205:5   warning  'ref' is defined but never used           @typescript-eslint/no-unused-vars
+  100:9  warning  'structuredData' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  196:3  warning  'duration' is defined but never used                 @typescript-eslint/no-unused-vars
+   42:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  211:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  116:9   warning  'triggerSendFeedback' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  147:9   warning  'triggerReceiveFeedback' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  166:9   warning  'triggerErrorFeedback' is assigned a value but never used    @typescript-eslint/no-unused-vars
+  22:9   warning  'pathname' is assigned a value but never used          @typescript-eslint/no-unused-vars
+  35:11  warning  'optimalPosition' is assigned a value but never used   @typescript-eslint/no-unused-vars
+  35:28  warning  'updateVisibility' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  43:43  warning  'sessionId' is assigned a value but never used         @typescript-eslint/no-unused-vars
+  44:11  warning  'isAuthenticated' is assigned a value but never used   @typescript-eslint/no-unused-vars
+  44:28  warning  'user' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  77:14  warning  'error' is defined but never used                      @typescript-eslint/no-unused-vars
+  13:3  warning  'Heart' is defined but never used  @typescript-eslint/no-unused-vars
+  256:9  warning  'persona' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  320:3   warning  'includeCustom' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   27:3   warning  'getRedirectResult' is defined but never used                 @typescript-eslint/no-unused-vars
+   30:43  warning  'googleProvider' is defined but never used                    @typescript-eslint/no-unused-vars
+  206:14  warning  'error' is defined but never used                             @typescript-eslint/no-unused-vars
+  353:14  warning  'error' is defined but never used                             @typescript-eslint/no-unused-vars
+  509:14  warning  'error' is defined but never used                             @typescript-eslint/no-unused-vars
+  522:9   warning  'updateUserProfileSecond' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  567:9   warning  'deleteAccountSecond' is assigned a value but never used      @typescript-eslint/no-unused-vars
+   53:12  warning  'personaStats' is assigned a value but never used                          @typescript-eslint/no-unused-vars
+  280:11  warning  'startTime' is assigned a value but never used                             @typescript-eslint/no-unused-vars
+    3:68  warning  'useMemo' is defined but never used                                        @typescript-eslint/no-unused-vars
+  62:31  warning  'mode' is defined but never used  @typescript-eslint/no-unused-vars
+   91:16  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  114:16  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+    9:43  warning  'useABTestCore' is defined but never used  @typescript-eslint/no-unused-vars
+  188:11  warning  'usage' is assigned a value but never used                                 @typescript-eslint/no-unused-vars
+    9:38  warning  'adjustResponseTone' is defined but never used                             @typescript-eslint/no-unused-vars
+   92:5   warning  'addMessages' is assigned a value but never used                           @typescript-eslint/no-unused-vars
+   94:5   warning  'removeMessage' is assigned a value but never used                         @typescript-eslint/no-unused-vars
+   95:5   warning  'updateMessage' is assigned a value but never used                         @typescript-eslint/no-unused-vars
+   96:12  warning  'messageStats' is assigned a value but never used                          @typescript-eslint/no-unused-vars
+  107:5   warning  'isOnline' is assigned a value but never used                              @typescript-eslint/no-unused-vars
+  108:5   warning  'retryCount' is assigned a value but never used                            @typescript-eslint/no-unused-vars
+  109:5   warning  'canRetry' is assigned a value but never used                              @typescript-eslint/no-unused-vars
+  110:5   warning  'shouldShowError' is assigned a value but never used                       @typescript-eslint/no-unused-vars
+  114:5   warning  'setOnlineStatus' is assigned a value but never used                       @typescript-eslint/no-unused-vars
+  115:5   warning  'incrementRetry' is assigned a value but never used                        @typescript-eslint/no-unused-vars
+  116:5   warning  'resetRetry' is assigned a value but never used                            @typescript-eslint/no-unused-vars
+  136:5   warning  'enrichMessage' is assigned a value but never used                         @typescript-eslint/no-unused-vars
+  148:5   warning  'shouldUseFallback' is assigned a value but never used                     @typescript-eslint/no-unused-vars
+   11:33  warning  'FirestoreMessage' is defined but never used                                                                         @typescript-eslint/no-unused-vars
+   16:3   warning  'FeedbackRepository' is defined but never used  @typescript-eslint/no-unused-vars
+   22:3   warning  'SyncStatus' is defined but never used          @typescript-eslint/no-unused-vars
+   23:3   warning  'DataMigration' is defined but never used       @typescript-eslint/no-unused-vars
+   56:7   warning  'CACHE_DURATION' is assigned a value but never used    @typescript-eslint/no-unused-vars
+   74:10  warning  'lastSync' is assigned a value but never used          @typescript-eslint/no-unused-vars
+  598:13  warning  'completedModules' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  599:47  warning  'newAchievements' is assigned a value but never used   @typescript-eslint/no-unused-vars
+  643:47  warning  'newAchievements' is assigned a value but never used   @typescript-eslint/no-unused-vars
+  33:5  warning  'cacheTimeout' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  129:11  warning  'sessionId' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  521:14  warning  'error' is defined but never used               @typescript-eslint/no-unused-vars
+  65:5  warning  'defaultPersona' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   14:3   warning  'ExperienceLevel' is defined but never used  @typescript-eslint/no-unused-vars
+  210:44  warning  'persona' is defined but never used                                                                            @typescript-eslint/no-unused-vars
+   33:9   warning  'router' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  150:5   warning  'enableABTesting' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  207:16  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  20:43  warning  'credentials' is defined but never used          @typescript-eslint/no-unused-vars
+  38:49  warning  'credentials' is defined but never used          @typescript-eslint/no-unused-vars
+  42:51  warning  'data' is defined but never used                 @typescript-eslint/no-unused-vars
+  61:15  warning  'authModule' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  77:16  warning  'error' is defined but never used                @typescript-eslint/no-unused-vars
+  96:40  warning  'permission' is defined but never used           @typescript-eslint/no-unused-vars
+  56:5  warning  'defaultPersona' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  104:15  warning  'rect' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   36:5  warning  'autoAnalyze' is assigned a value but never used                @typescript-eslint/no-unused-vars
+  111:9  warning  'analyzeSentimentDebounced' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   10:10  warning  'ConflictResolutionManager' is defined but never used                      @typescript-eslint/no-unused-vars
+  302:9    warning  'rapidBackNavigation' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  328:9    warning  'timeOnPage' is assigned a value but never used           @typescript-eslint/no-unused-vars
+  339:9   warning  'scrollEvents' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  84:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  93:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+   19:3   warning  'startAfter' is defined but never used                                     @typescript-eslint/no-unused-vars
+   23:3   warning  'enableNetwork' is defined but never used                                  @typescript-eslint/no-unused-vars
+   24:3   warning  'disableNetwork' is defined but never used                                 @typescript-eslint/no-unused-vars
+   25:3   warning  'DocumentSnapshot' is defined but never used                               @typescript-eslint/no-unused-vars
+   26:3   warning  'QuerySnapshot' is defined but never used                                  @typescript-eslint/no-unused-vars
+   27:3   warning  'DocumentReference' is defined but never used                              @typescript-eslint/no-unused-vars
+   35:3   warning  'SessionData' is defined but never used                                    @typescript-eslint/no-unused-vars
+   36:3   warning  'LearningProgress' is defined but never used                               @typescript-eslint/no-unused-vars
+   37:3   warning  'SyncStatus' is defined but never used                                     @typescript-eslint/no-unused-vars
+   38:3   warning  'DataMigration' is defined but never used                                  @typescript-eslint/no-unused-vars
+   42:3   warning  'QueryFilters' is defined but never used                                   @typescript-eslint/no-unused-vars
+  714:7   warning  'WriteDebouncer' is defined but never used                                 @typescript-eslint/no-unused-vars
+  918:18  warning  'error' is defined but never used                                          @typescript-eslint/no-unused-vars
+    7:10  warning  'Timestamp' is defined but never used     @typescript-eslint/no-unused-vars
+  113:5   warning  'context' is defined but never used       @typescript-eslint/no-unused-vars
+  241:5   warning  'context' is defined but never used       @typescript-eslint/no-unused-vars
+  269:5   warning  'context' is defined but never used       @typescript-eslint/no-unused-vars
+  392:5   warning  'context' is defined but never used       @typescript-eslint/no-unused-vars
+  447:5   warning  'context' is defined but never used       @typescript-eslint/no-unused-vars
+  468:5   warning  'context' is defined but never used       @typescript-eslint/no-unused-vars
+    9:3    warning  'ConflictResolutionResult' is defined but never used                       @typescript-eslint/no-unused-vars
+   15:3    warning  'RealtimeSubscriptions' is defined but never used                          @typescript-eslint/no-unused-vars
+   20:3    warning  'SyncStatus' is defined but never used                                     @typescript-eslint/no-unused-vars
+   22:15  warning  'UserLevel' is defined but never used     @typescript-eslint/no-unused-vars
+   37:12  warning  'error' is defined but never used                     @typescript-eslint/no-unused-vars
+  101:3   warning  'backgroundColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  133:7   warning  'lastCallTime' is assigned a value but never used                          @typescript-eslint/no-unused-vars
+  178:11  warning  'now' is assigned a value but never used                                   @typescript-eslint/no-unused-vars
+   30:3   warning  'fallback' is defined but never used                                       @typescript-eslint/no-unused-vars
+  150:5   warning  'compress' is assigned a value but never used                              @typescript-eslint/no-unused-vars
+  396:8   warning  'React' is defined but never used                                          @typescript-eslint/no-unused-vars
+    6:10  warning  'SentimentResult' is defined but never used  @typescript-eslint/no-unused-vars
+  251:31  warning  'query' is defined but never used            @typescript-eslint/no-unused-vars
+   25:20  warning  'FEATURES' is defined but never used          @typescript-eslint/no-unused-vars
+   33:3   warning  'AUTH_EVENTS' is defined but never used       @typescript-eslint/no-unused-vars
+  246:25  warning  'options' is assigned a value but never used  @typescript-eslint/no-unused-vars
+    7:10  warning  'AstraResponse' is defined but never used                      @typescript-eslint/no-unused-vars
+   58:7   warning  'useLocalKnowledge' is assigned a value but never used         @typescript-eslint/no-unused-vars
+   59:7   warning  'includeEmergencyContacts' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   60:7   warning  'adaptToSentiment' is assigned a value but never used          @typescript-eslint/no-unused-vars
+   61:7   warning  'maxRetries' is assigned a value but never used                @typescript-eslint/no-unused-vars
+   62:7   warning  'timeoutMs' is assigned a value but never used                 @typescript-eslint/no-unused-vars
+   91:5   warning  'options' is assigned a value but never used                   @typescript-eslint/no-unused-vars
+  156:5   warning  'options' is assigned a value but never used                   @typescript-eslint/no-unused-vars
+  179:5   warning  'options' is assigned a value but never used                   @typescript-eslint/no-unused-vars
+  202:5   warning  'options' is assigned a value but never used                   @typescript-eslint/no-unused-vars
+   18:3   warning  'increment' is defined but never used             @typescript-eslint/no-unused-vars
+   40:10  warning  'isFirestoreAvailable' is defined but never used  @typescript-eslint/no-unused-vars
+   13:3   warning  'ModuleProgress' is defined but never used  @typescript-eslint/no-unused-vars
+  488:14  warning  'error' is defined but never used           @typescript-eslint/no-unused-vars
+    8:26  warning  'FirestoreCacheUtils' is defined but never used                            @typescript-eslint/no-unused-vars
+  504:20  warning  'parseError' is defined but never used                                     @typescript-eslint/no-unused-vars
+  534:14  warning  'error' is defined but never used                                          @typescript-eslint/no-unused-vars
+   77:17  warning  'category' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  235:3   warning  'sentiment' is defined but never used          @typescript-eslint/no-unused-vars
+  339:15  warning  'requiredRatio' is assigned a value but never used                         @typescript-eslint/no-unused-vars
+    7:26  warning  'fireEvent' is defined but never used                            @typescript-eslint/no-unused-vars
+  123:7   warning  'MockPersonaSelectorUnified' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   11:10  warning  'ClinicalCase' is defined but never used         @typescript-eslint/no-unused-vars
+   11:24  warning  'CaseStep' is defined but never used             @typescript-eslint/no-unused-vars
+   11:34  warning  'StepInteraction' is defined but never used      @typescript-eslint/no-unused-vars
+  264:13  warning  'adultCases' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   9:46  warning  'afterEach' is defined but never used             @typescript-eslint/no-unused-vars
+  10:10  warning  'render' is defined but never used                @typescript-eslint/no-unused-vars
+  10:18  warning  'screen' is defined but never used                @typescript-eslint/no-unused-vars
+  10:26  warning  'fireEvent' is defined but never used             @typescript-eslint/no-unused-vars
+  10:37  warning  'waitFor' is defined but never used               @typescript-eslint/no-unused-vars
+  22:7   warning  'qaFramework' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  23:7   warning  'user' is assigned a value but never used         @typescript-eslint/no-unused-vars
+  586:9  warning  'completedStages' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  678:26   warning  'userId' is defined but never used        @typescript-eslint/no-unused-vars
+  678:42   warning  'sessionId' is defined but never used     @typescript-eslint/no-unused-vars
+  260:41  warning  'passes' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  433:11  warning  'totalIssues' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   84:15  warning  'hybridKey' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  115:11  warning  'key' is assigned a value but never used        @typescript-eslint/no-unused-vars
+  172:11  warning  'key' is assigned a value but never used        @typescript-eslint/no-unused-vars
+   14:23  warning  'CertificateTemplate' is defined but never used  @typescript-eslint/no-unused-vars
+  532:33  warning  'certificate' is defined but never used          @typescript-eslint/no-unused-vars
+  575:34  warning  'certificate' is defined but never used          @typescript-eslint/no-unused-vars
+     9:24  warning  'CaseStep' is defined but never used                                       @typescript-eslint/no-unused-vars
+     9:34  warning  'StepResult' is defined but never used                                     @typescript-eslint/no-unused-vars
+   322:42  warning  'content' is defined but never used                                        @typescript-eslint/no-unused-vars
+   815:16  warning  'error' is defined but never used                                          @typescript-eslint/no-unused-vars
+   974:47  warning  'references' is defined but never used                                     @typescript-eslint/no-unused-vars
+  1175:35  warning  'componentData' is defined but never used                                  @typescript-eslint/no-unused-vars
+  1184:40  warning  'componentData' is defined but never used                                  @typescript-eslint/no-unused-vars
+  1192:39  warning  'componentData' is defined but never used                                  @typescript-eslint/no-unused-vars
+  1201:41  warning  'componentData' is defined but never used                                  @typescript-eslint/no-unused-vars
+  1210:34  warning  'inconsistencies' is defined but never used                                @typescript-eslint/no-unused-vars
+  1305:33  warning  'validationResults' is defined but never used                              @typescript-eslint/no-unused-vars
+  1314:35  warning  'violations' is defined but never used                                     @typescript-eslint/no-unused-vars
+    9:10  warning  'ClinicalCase' is defined but never used                                   @typescript-eslint/no-unused-vars
+    9:24  warning  'CaseSession' is defined but never used                                    @typescript-eslint/no-unused-vars
+    9:37  warning  'StepResult' is defined but never used                                     @typescript-eslint/no-unused-vars
+   10:10  warning  'LearningAnalytics' is defined but never used                              @typescript-eslint/no-unused-vars
+  493:11  warning  'recommendations' is assigned a value but never used                       @typescript-eslint/no-unused-vars
+  575:11  warning  'implementationPlan' is assigned a value but never used                    @typescript-eslint/no-unused-vars
+  707:31  warning  'timeframe' is defined but never used                                      @typescript-eslint/no-unused-vars
+  708:35  warning  'feedback' is defined but never used                                       @typescript-eslint/no-unused-vars
+  709:25  warning  'feedback' is defined but never used                                       @typescript-eslint/no-unused-vars
+  710:27  warning  'feedback' is defined but never used                                       @typescript-eslint/no-unused-vars
+  711:31  warning  'textFeedback' is defined but never used                                   @typescript-eslint/no-unused-vars
+  712:28  warning  'textFeedback' is defined but never used                                   @typescript-eslint/no-unused-vars
+  713:34  warning  'feedback' is defined but never used                                       @typescript-eslint/no-unused-vars
+  714:31  warning  'feedback' is defined but never used                                       @typescript-eslint/no-unused-vars
+  715:34  warning  'feedback' is defined but never used                                       @typescript-eslint/no-unused-vars
+  716:32  warning  'feedback' is defined but never used                                       @typescript-eslint/no-unused-vars
+  717:44  warning  'feedback' is defined but never used                                       @typescript-eslint/no-unused-vars
+  719:38  warning  'issues' is defined but never used                                         @typescript-eslint/no-unused-vars
+  720:44  warning  'opportunities' is defined but never used                                  @typescript-eslint/no-unused-vars
+  721:37  warning  'issues' is defined but never used                                         @typescript-eslint/no-unused-vars
+  721:52  warning  'feedback' is defined but never used                                       @typescript-eslint/no-unused-vars
+  722:32  warning  'feedback' is defined but never used                                       @typescript-eslint/no-unused-vars
+  724:35  warning  'interactions' is defined but never used                                   @typescript-eslint/no-unused-vars
+  727:32  warning  'config' is defined but never used                                         @typescript-eslint/no-unused-vars
+  728:29  warning  'testId' is defined but never used                                         @typescript-eslint/no-unused-vars
+  729:38  warning  'feedback' is defined but never used                                       @typescript-eslint/no-unused-vars
+  729:53  warning  'variants' is defined but never used                                       @typescript-eslint/no-unused-vars
+  730:37  warning  'feedback' is defined but never used                                       @typescript-eslint/no-unused-vars
+  730:52  warning  'variants' is defined but never used                                       @typescript-eslint/no-unused-vars
+  731:27  warning  'variantResults' is defined but never used                                 @typescript-eslint/no-unused-vars
+  732:34  warning  'feedback' is defined but never used                                       @typescript-eslint/no-unused-vars
+  732:49  warning  'results' is defined but never used                                        @typescript-eslint/no-unused-vars
+  735:36  warning  'recommendation' is defined but never used                                 @typescript-eslint/no-unused-vars
+  736:33  warning  'recommendation' is defined but never used                                 @typescript-eslint/no-unused-vars
+  737:30  warning  'recommendation' is defined but never used                                 @typescript-eslint/no-unused-vars
+  737:73  warning  'timeframe' is defined but never used                                      @typescript-eslint/no-unused-vars
+  738:29  warning  'recommendation' is defined but never used                                 @typescript-eslint/no-unused-vars
+  738:72  warning  'timeframe' is defined but never used                                      @typescript-eslint/no-unused-vars
+  742:26  warning  'metric' is defined but never used                                         @typescript-eslint/no-unused-vars
+  742:42  warning  'recommendation' is defined but never used                                 @typescript-eslint/no-unused-vars
+   35:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  147:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  14:3  warning  'TREATMENT_DURATION' is defined but never used  @typescript-eslint/no-unused-vars
+    9:10  warning  'ClinicalCase' is defined but never used                                   @typescript-eslint/no-unused-vars
+  545:38  warning  'event' is defined but never used                                          @typescript-eslint/no-unused-vars
+  551:36  warning  'session' is defined but never used                                        @typescript-eslint/no-unused-vars
+  552:44  warning  'session' is defined but never used                                        @typescript-eslint/no-unused-vars
+  553:34  warning  'metrics' is defined but never used                                        @typescript-eslint/no-unused-vars
+  554:27  warning  'result' is defined but never used                                         @typescript-eslint/no-unused-vars
+  555:42  warning  'result' is defined but never used                                         @typescript-eslint/no-unused-vars
+  556:33  warning  'result' is defined but never used                                         @typescript-eslint/no-unused-vars
+  557:27  warning  'duration' is defined but never used                                       @typescript-eslint/no-unused-vars
+  563:31  warning  'alert' is defined but never used                                          @typescript-eslint/no-unused-vars
+  564:31  warning  'category' is defined but never used                                       @typescript-eslint/no-unused-vars
+  564:49  warning  'severity' is defined but never used                                       @typescript-eslint/no-unused-vars
+  565:31  warning  'category' is defined but never used                                       @typescript-eslint/no-unused-vars
+  566:30  warning  'category' is defined but never used                                       @typescript-eslint/no-unused-vars
+  569:33  warning  'analytics' is defined but never used                                      @typescript-eslint/no-unused-vars
+  570:35  warning  'analytics' is defined but never used                                      @typescript-eslint/no-unused-vars
+  571:37  warning  'analytics' is defined but never used                                      @typescript-eslint/no-unused-vars
+  572:33  warning  'analytics' is defined but never used                                      @typescript-eslint/no-unused-vars
+  573:35  warning  'analytics' is defined but never used                                      @typescript-eslint/no-unused-vars
+  574:35  warning  'analytics' is defined but never used                                      @typescript-eslint/no-unused-vars
+  575:44  warning  'analytics' is defined but never used                                      @typescript-eslint/no-unused-vars
+  576:35  warning  'analytics' is defined but never used                                      @typescript-eslint/no-unused-vars
+   12:24  warning  'CaseStep' is defined but never used      @typescript-eslint/no-unused-vars
+   12:34  warning  'StepResult' is defined but never used    @typescript-eslint/no-unused-vars
+   13:45  warning  'SafetyAlert' is defined but never used   @typescript-eslint/no-unused-vars
+  452:40  warning  'clinicalCase' is defined but never used  @typescript-eslint/no-unused-vars
+  453:38  warning  'clinicalCase' is defined but never used  @typescript-eslint/no-unused-vars
+  454:32  warning  'clinicalCase' is defined but never used  @typescript-eslint/no-unused-vars
+  455:46  warning  'clinicalCase' is defined but never used  @typescript-eslint/no-unused-vars
+  456:42  warning  'accuracy' is defined but never used      @typescript-eslint/no-unused-vars
+  457:37  warning  'clinicalCase' is defined but never used  @typescript-eslint/no-unused-vars
+  458:33  warning  'clinicalCase' is defined but never used  @typescript-eslint/no-unused-vars
+  459:41  warning  'clinicalCase' is defined but never used  @typescript-eslint/no-unused-vars
+  460:33  warning  'clinicalCase' is defined but never used  @typescript-eslint/no-unused-vars
+  461:37  warning  'educational' is defined but never used   @typescript-eslint/no-unused-vars
+  462:31  warning  'clinicalCase' is defined but never used  @typescript-eslint/no-unused-vars
+  462:59  warning  'result' is defined but never used        @typescript-eslint/no-unused-vars
+  463:38  warning  'result' is defined but never used        @typescript-eslint/no-unused-vars
+  464:34  warning  'weight' is defined but never used        @typescript-eslint/no-unused-vars
+  465:24  warning  'expected' is defined but never used      @typescript-eslint/no-unused-vars
+  465:50  warning  'calculated' is defined but never used    @typescript-eslint/no-unused-vars
+  466:37  warning  'result' is defined but never used        @typescript-eslint/no-unused-vars
+  466:64  warning  'validation' is defined but never used    @typescript-eslint/no-unused-vars
+  471:35  warning  'message' is defined but never used       @typescript-eslint/no-unused-vars
+  472:32  warning  'message' is defined but never used       @typescript-eslint/no-unused-vars
+  484:18  warning  'component' is defined but never used     @typescript-eslint/no-unused-vars
+  489:18  warning  'component' is defined but never used     @typescript-eslint/no-unused-vars
+  494:18  warning  'component' is defined but never used     @typescript-eslint/no-unused-vars
+  499:18  warning  'component' is defined but never used     @typescript-eslint/no-unused-vars
+  504:18  warning  'component' is defined but never used     @typescript-eslint/no-unused-vars
+  509:18  warning  'component' is defined but never used     @typescript-eslint/no-unused-vars
+  514:18  warning  'component' is defined but never used     @typescript-eslint/no-unused-vars
+   12:26   warning  'CalculationResult' is defined but never used  @typescript-eslint/no-unused-vars
+   13:10   warning  'ClinicalCase' is defined but never used       @typescript-eslint/no-unused-vars
+   14:10   warning  'Certificate' is defined but never used        @typescript-eslint/no-unused-vars
+  295:12   warning  'error' is defined but never used              @typescript-eslint/no-unused-vars
+   27:11  warning  'MedicalUXMetrics' is defined but never used         @typescript-eslint/no-unused-vars
+  234:69  warning  'source' is defined but never used                   @typescript-eslint/no-unused-vars
+  286:11  warning  'completionRate' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  374:52  warning  'event' is defined but never used                    @typescript-eslint/no-unused-vars
+   13:10  warning  'ClinicalCase' is defined but never used                                   @typescript-eslint/no-unused-vars
+  225:11  warning  'allPassed' is assigned a value but never used                             @typescript-eslint/no-unused-vars
+  244:42  warning  'componentIds' is defined but never used                                   @typescript-eslint/no-unused-vars
+  286:37  warning  'componentIds' is defined but never used                                   @typescript-eslint/no-unused-vars
+  302:39  warning  'componentIds' is defined but never used                                   @typescript-eslint/no-unused-vars
+  541:28  warning  'results' is defined but never used                                        @typescript-eslint/no-unused-vars
+   15:10  warning  'FraudAlert' is defined but never used                                     @typescript-eslint/no-unused-vars
+  284:32  warning  'component' is defined but never used                                      @typescript-eslint/no-unused-vars
+   84:16  warning  'error' is defined but never used           @typescript-eslint/no-unused-vars
+  368:11  warning  'infos' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  424:63  warning  'ratio' is assigned a value but never used  @typescript-eslint/no-unused-vars

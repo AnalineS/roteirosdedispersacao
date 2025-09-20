@@ -194,7 +194,7 @@ const AccessibleChatInput: React.FC<AccessibleChatInputProps> = ({
   }, [value, hasExceededLimit, isLoading, maxLength, onSubmit, announceSystemStatus]);
 
   // Handle suggestion click
-  const handleSuggestionClick = useCallback((suggestion: string, index: number) => {
+  const handleSuggestionClick = useCallback((suggestion: string) => {
     if (onSuggestionClick) {
       onSuggestionClick(suggestion);
       announceMessage(`Sugestão aplicada: ${suggestion}`);
@@ -308,7 +308,7 @@ const AccessibleChatInput: React.FC<AccessibleChatInputProps> = ({
               key={index}
               id={`suggestion-${index}`}
               className={`suggestion-item ${index === selectedSuggestionIndex ? 'selected' : ''}`}
-              onClick={() => handleSuggestionClick(suggestion, index)}
+              onClick={() => handleSuggestionClick(suggestion)}
               role="option"
               aria-selected={index === selectedSuggestionIndex}
               tabIndex={index === selectedSuggestionIndex ? 0 : -1}

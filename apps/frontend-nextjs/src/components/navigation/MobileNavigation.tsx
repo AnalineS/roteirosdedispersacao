@@ -20,7 +20,7 @@ interface MobileNavigationProps {
   isOpen: boolean;
   onClose: () => void;
   categories: NavigationCategory[];
-  currentPersona?: any;
+  currentPersona?: import('@/services/api').Persona;
   isActive: (href: string) => boolean;
 }
 

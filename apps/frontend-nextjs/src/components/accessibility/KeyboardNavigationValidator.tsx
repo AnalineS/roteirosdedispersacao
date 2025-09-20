@@ -814,3 +814,68 @@ export const KeyboardNavigationReport: React.FC<{
     </div>
   );
 };
+
+// Componente principal do validador
+const KeyboardNavigationValidator: React.FC = () => {
+  const { result, isValidating, runFullValidation, testTabNavigation, currentFocusIndex } = useKeyboardNavigationValidator();
+
+  return (
+    <div>
+      {!result && !isValidating && (
+        <div style={{
+          textAlign: 'center',
+          padding: '40px',
+          background: '#f8fafc',
+          borderRadius: '12px',
+          border: '1px solid #e2e8f0'
+        }}>
+          <h3 style={{ marginBottom: '16px', color: '#1e293b' }}>
+            Iniciar Validação de Navegação por Teclado
+          </h3>
+          <button
+            onClick={runFullValidation}
+            style={{
+              background: '#3b82f6',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '12px 24px',
+              fontSize: '1rem',
+              fontWeight: '600',
+              cursor: 'pointer'
+            }}
+          >
+            🔍 Validar Navegação por Teclado
+          </button>
+        </div>
+      )}
+
+      {isValidating && (
+        <div style={{
+          textAlign: 'center',
+          padding: '40px',
+          background: '#f0f9ff',
+          borderRadius: '12px',
+          border: '1px solid #0ea5e9'
+        }}>
+          <div style={{ marginBottom: '16px', fontSize: '1.5rem' }}>⌨️</div>
+          <h3 style={{ color: '#0369a1' }}>Analisando navegação por teclado...</h3>
+          <p style={{ color: '#0284c7', margin: '8px 0 0' }}>
+            Verificando elementos focáveis, skip links e compliance WCAG 2.1 AA
+          </p>
+        </div>
+      )}
+
+      {result && (
+        <KeyboardNavigationReport
+          result={result}
+          onRevalidate={runFullValidation}
+          onTestNavigation={testTabNavigation}
+          currentFocusIndex={currentFocusIndex}
+        />
+      )}
+    </div>
+  );
+};
+
+export default KeyboardNavigationValidator;

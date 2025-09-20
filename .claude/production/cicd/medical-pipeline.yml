@@ -1,0 +1,356 @@
+# CI/CD Pipeline Médico para Plataforma de Hanseníase
+# Pipeline específico para ambiente médico com validações LGPD
+
+name: Medical CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Builds automatizados diários para ambiente médico
+    - cron: '0 2 * * *'
+
+env:
+  NODE_VERSION: '20'
+  MEDICAL_MODE: 'true'
+  LGPD_COMPLIANCE: 'required'
+  SLA_TARGET: '99.9'
+
+jobs:
+  # Verificações de Compliance Médico
+  medical-compliance-check:
+    name: 🏥 Medical Compliance Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: LGPD Compliance Check
+        run: |
+          echo "🔒 Verificando compliance LGPD..."
+          npm run compliance:lgpd
+      
+      - name: Medical Protocol Validation
+        run: |
+          echo "🩺 Validando protocolos médicos..."
+          npm run validate:medical-protocols
+      
+      - name: Security Scan
+        run: |
+          echo "🛡️ Executando scan de segurança médica..."
+          npm audit --audit-level=moderate
+          npm run security:scan
+      
+      - name: Data Encryption Check
+        run: |
+          echo "🔐 Verificando criptografia de dados médicos..."
+          npm run validate:encryption
+
+  # Testes Médicos Específicos
+  medical-tests:
+    name: 🧪 Medical Tests
+    runs-on: ubuntu-latest
+    needs: medical-compliance-check
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: hanseniase_test
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run Medical Unit Tests
+        run: |
+          echo "🧬 Executando testes de unidade médicos..."
+          npm run test:medical:unit
+      
+      - name: Run Protocol Tests
+        run: |
+          echo "📋 Testando protocolos médicos..."
+          npm run test:protocols
+      
+      - name: Run Calculation Tests
+        run: |
+          echo "🧮 Testando calculadoras médicas..."
+          npm run test:calculations
+      
+      - name: Run Dr. Gasnelio Tests
+        run: |
+          echo "👨‍⚕️ Testando persona Dr. Gasnelio..."
+          npm run test:gasnelio
+      
+      - name: Run Integration Tests
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/hanseniase_test
+          REDIS_URL: redis://localhost:6379
+        run: |
+          echo "🔗 Executando testes de integração médica..."
+          npm run test:medical:integration
+      
+      - name: Generate Test Report
+        run: |
+          echo "📊 Gerando relatório de testes médicos..."
+          npm run test:report
+      
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: medical-test-results
+          path: test-results/
+
+  # Performance Tests para SLA 99.9%
+  performance-tests:
+    name: ⚡ Performance Tests
+    runs-on: ubuntu-latest
+    needs: medical-tests
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Medical Response Time Test
+        run: |
+          echo "⏱️ Testando tempos de resposta médicos..."
+          npm run perf:response-time
+      
+      - name: Load Test Medical Endpoints
+        run: |
+          echo "🚀 Teste de carga em endpoints médicos..."
+          npm run perf:load-test
+      
+      - name: Memory Leak Detection
+        run: |
+          echo "🧠 Detectando vazamentos de memória..."
+          npm run perf:memory-leak
+      
+      - name: SLA Validation
+        run: |
+          echo "📊 Validando SLA de 99.9%..."
+          npm run validate:sla
+
+  # Build e Containerização
+  build-medical:
+    name: 🏗️ Build Medical Application
+    runs-on: ubuntu-latest
+    needs: [medical-compliance-check, medical-tests, performance-tests]
+    outputs:
+      image-tag: ${{ steps.meta.outputs.tags }}
+      image-digest: ${{ steps.build.outputs.digest }}
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Login to Docker Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.DOCKER_REGISTRY }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ secrets.DOCKER_REGISTRY }}/hanseniase/app
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix={{branch}}-
+            type=raw,value=medical-{{date 'YYYYMMDD-HHmmss'}}
+      
+      - name: Build and push medical image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile.medical
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            MEDICAL_MODE=true
+            LGPD_COMPLIANCE=true
+            NODE_ENV=production
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      
+      - name: Medical Image Security Scan
+        run: |
+          echo "🔍 Executando scan de segurança na imagem médica..."
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+            aquasec/trivy image ${{ steps.meta.outputs.tags }}
+
+  # Deploy para Staging Médico
+  deploy-staging:
+    name: 🚀 Deploy to Medical Staging
+    runs-on: ubuntu-latest
+    needs: build-medical
+    environment: medical-staging
+    if: github.ref == 'refs/heads/develop'
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Deploy to Medical Staging
+        env:
+          KUBECONFIG: ${{ secrets.KUBECONFIG_STAGING }}
+          IMAGE_TAG: ${{ needs.build-medical.outputs.image-tag }}
+        run: |
+          echo "🏥 Iniciando deploy para staging médico..."
+          
+          # Atualizar manifests Kubernetes
+          sed -i "s|hanseniase/app:.*|$IMAGE_TAG|g" k8s/staging/*.yaml
+          
+          # Aplicar configurações médicas
+          kubectl apply -f k8s/staging/
+          
+          # Aguardar rollout
+          kubectl rollout status deployment/hanseniase-app -n medical-staging
+      
+      - name: Medical Staging Health Check
+        run: |
+          echo "🩺 Verificando saúde do staging médico..."
+          curl -f https://staging-medical.hanseniase.edu.br/api/health
+          curl -f https://staging-medical.hanseniase.edu.br/api/medical/protocols/health
+      
+      - name: Run Smoke Tests
+        run: |
+          echo "💨 Executando smoke tests médicos..."
+          npm run test:smoke:medical -- --env=staging
+
+  # Deploy para Produção Médica
+  deploy-production:
+    name: 🏥 Deploy to Medical Production
+    runs-on: ubuntu-latest
+    needs: [build-medical, deploy-staging]
+    environment: medical-production
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Medical Pre-deployment Checks
+        run: |
+          echo "🔍 Executando verificações pré-deploy médico..."
+          npm run pre-deploy:medical
+      
+      - name: Create Medical Backup
+        env:
+          KUBECONFIG: ${{ secrets.KUBECONFIG_PRODUCTION }}
+        run: |
+          echo "💾 Criando backup médico pré-deploy..."
+          kubectl exec -n medical-production deployment/hanseniase-db -- \
+            pg_dump hanseniase_medical > backup-pre-deploy-$(date +%Y%m%d-%H%M%S).sql
+      
+      - name: Deploy to Medical Production
+        env:
+          KUBECONFIG: ${{ secrets.KUBECONFIG_PRODUCTION }}
+          IMAGE_TAG: ${{ needs.build-medical.outputs.image-tag }}
+        run: |
+          echo "🚀 Iniciando deploy médico zero-downtime..."
+          
+          # Blue-Green Deployment
+          sed -i "s|hanseniase/app:.*|$IMAGE_TAG|g" k8s/production/*.yaml
+          
+          kubectl apply -f k8s/production/
+          kubectl rollout status deployment/hanseniase-app -n medical-production --timeout=600s
+      
+      - name: Medical Production Validation
+        run: |
+          echo "✅ Validando produção médica..."
+          
+          # Health checks críticos
+          curl -f https://hanseniase.edu.br/api/health
+          curl -f https://hanseniase.edu.br/api/medical/protocols/health
+          curl -f https://hanseniase.edu.br/api/gasnelio/health
+          curl -f https://hanseniase.edu.br/api/patient/data-protection/health
+          
+          # Validação LGPD
+          curl -f https://hanseniase.edu.br/api/audit/lgpd-status
+      
+      - name: Run Production Medical Tests
+        run: |
+          echo "🧪 Executando testes médicos em produção..."
+          npm run test:production:medical
+      
+      - name: Update Medical Monitoring
+        env:
+          MONITORING_WEBHOOK: ${{ secrets.MEDICAL_MONITORING_WEBHOOK }}
+        run: |
+          echo "📊 Atualizando monitoramento médico..."
+          curl -X POST $MONITORING_WEBHOOK \
+            -H "Content-Type: application/json" \
+            -d '{"event": "deployment_completed", "version": "${{ needs.build-medical.outputs.image-tag }}", "medical": true}'
+
+  # Notificações Médicas
+  notify-medical-team:
+    name: 📱 Notify Medical Team
+    runs-on: ubuntu-latest
+    needs: [deploy-production]
+    if: always()
+    steps:
+      - name: Send Medical Deployment Notification
+        env:
+          SLACK_WEBHOOK: ${{ secrets.MEDICAL_SLACK_WEBHOOK }}
+          DEPLOYMENT_STATUS: ${{ needs.deploy-production.result }}
+        run: |
+          if [ "$DEPLOYMENT_STATUS" = "success" ]; then
+            MESSAGE="✅ 🏥 Deploy médico concluído com sucesso!\n\nSLA 99.9% mantido\nCompliance LGPD validado\nTodos os sistemas médicos operacionais"
+            COLOR="good"
+          else
+            MESSAGE="❌ 🚨 Falha no deploy médico!\n\nIntervenção necessária\nEquipe médica deve ser notificada\nRollback pode ser necessário"
+            COLOR="danger"
+          fi
+          
+          curl -X POST $SLACK_WEBHOOK \
+            -H "Content-Type: application/json" \
+            -d "{\"text\": \"$MESSAGE\", \"color\": \"$COLOR\", \"channel\": \"#medical-alerts\"}"
+      
+      - name: Send Email to Medical Team
+        if: failure()
+        env:
+          MEDICAL_EMAIL_LIST: ${{ secrets.MEDICAL_EMAIL_LIST }}
+        run: |
+          echo "📧 Enviando notificação por email para equipe médica..."
+          # Implementar envio de email crítico

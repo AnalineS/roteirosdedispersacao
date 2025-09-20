@@ -1,43 +1,61 @@
--- Script de Correção Específica para embeddings_metadata
--- Execute este script para corrigir o problema
+-- =============================================================================
+-- CORREÇÃO TABELA EMBEDDINGS_METADATA
+-- Execute este script se encontrar erro "column operation does not exist"
+-- =============================================================================
 
--- Primeiro, vamos ver o que existe
-SELECT column_name FROM information_schema.columns 
-WHERE table_name = 'embeddings_metadata' AND table_schema = 'public';
+-- Verificar se a tabela existe e sua estrutura
+SELECT column_name, data_type, is_nullable 
+FROM information_schema.columns 
+WHERE table_name = 'embeddings_metadata' 
+ORDER BY ordinal_position;
 
--- Se a tabela existe mas está incorreta, vamos recriá-la
-DROP TABLE IF EXISTS public.embeddings_metadata CASCADE;
+-- Se a tabela existe mas não tem a estrutura correta, recriar
+DROP TABLE IF EXISTS embeddings_metadata CASCADE;
 
--- Recriar a tabela corretamente
-CREATE TABLE public.embeddings_metadata (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    embedding_id UUID,
-    key VARCHAR(100) NOT NULL,
-    value TEXT,
+-- Recriar tabela com estrutura completa
+CREATE TABLE embeddings_metadata (
+    id SERIAL PRIMARY KEY,
+    operation TEXT NOT NULL,
+    document_count INTEGER DEFAULT 0,
+    avg_similarity REAL DEFAULT 0.0,
+    processing_time_ms INTEGER DEFAULT 0,
+    success_rate REAL DEFAULT 0.0,
+    error_message TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Verificar se a tabela medical_embeddings existe
-DO $$
-BEGIN
-    IF EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'medical_embeddings') THEN
-        -- Adicionar constraint se a tabela medical_embeddings existe
-        ALTER TABLE public.embeddings_metadata 
-        ADD CONSTRAINT fk_embeddings_metadata_embedding_id 
-        FOREIGN KEY (embedding_id) REFERENCES public.medical_embeddings(id) ON DELETE CASCADE;
-        
-        RAISE NOTICE '[OK] Foreign key constraint criada com sucesso';
-    ELSE
-        RAISE NOTICE '[WARNING] Tabela medical_embeddings não existe - constraint não criada';
-    END IF;
-END $$;
+-- Recriar índices
+CREATE INDEX IF NOT EXISTS embeddings_metadata_operation_idx ON embeddings_metadata(operation);
+CREATE INDEX IF NOT EXISTS embeddings_metadata_created_idx ON embeddings_metadata(created_at DESC);
 
--- Criar índice
-CREATE INDEX embeddings_metadata_embedding_id_idx 
-ON public.embeddings_metadata (embedding_id);
+-- Habilitar RLS para segurança
+ALTER TABLE embeddings_metadata ENABLE ROW LEVEL SECURITY;
 
--- Verificar resultado
-SELECT 'Tabela embeddings_metadata recriada com sucesso' as status;
-SELECT column_name, data_type FROM information_schema.columns 
-WHERE table_name = 'embeddings_metadata' AND table_schema = 'public'
+-- Políticas RLS
+DROP POLICY IF EXISTS "Enable read access for all users" ON embeddings_metadata;
+DROP POLICY IF EXISTS "Enable insert for authenticated users" ON embeddings_metadata;
+
+CREATE POLICY "Enable read access for all users" ON embeddings_metadata FOR SELECT USING (true);
+CREATE POLICY "Enable insert for authenticated users" ON embeddings_metadata FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+
+-- Inserir dados de teste para validação
+INSERT INTO embeddings_metadata (operation, document_count, processing_time_ms)
+VALUES ('table_fix_applied', 0, 0);
+
+-- Verificar estrutura final
+SELECT column_name, data_type, is_nullable 
+FROM information_schema.columns 
+WHERE table_name = 'embeddings_metadata' 
 ORDER BY ordinal_position;
+
+-- =============================================================================
+-- TESTE DA FUNÇÃO cleanup_expired_cache
+-- =============================================================================
+
+-- Testar se a função funciona agora
+SELECT cleanup_expired_cache();
+
+-- Verificar se o log foi inserido
+SELECT * FROM embeddings_metadata WHERE operation LIKE '%cleanup%' ORDER BY created_at DESC LIMIT 3;
+
+COMMENT ON TABLE embeddings_metadata IS 'Tabela corrigida - colunas verificadas e função testada';

@@ -234,7 +234,7 @@ export const SHORTCUT_CATEGORIES: ShortcutCategory[] = [
 
 // Configuração padrão da Fast Access Bar
 export const DEFAULT_FAST_ACCESS_CONFIG: FastAccessBarConfig = {
-  isEnabled: false, // Controlado via feature flag
+  isEnabled: true, // Ativado para uso em produção
   position: 'top',
   behavior: 'smart-hide',
   maxShortcuts: 7, // 5 fixos + 2 customizáveis
@@ -314,6 +314,11 @@ export const ACCESS_KEYS = {
   adverse_reactions: 'r'
 } as const;
 
+// Helper function para verificação type-safe de IDs
+const isRecommendedShortcut = (shortcutId: string, recommendedIds: readonly string[]): boolean => {
+  return recommendedIds.some(id => id === shortcutId);
+};
+
 // Função para obter atalhos por perfil
 export const getShortcutsByProfile = (
   specialty: keyof typeof SPECIALTY_RECOMMENDATIONS,
@@ -321,9 +326,9 @@ export const getShortcutsByProfile = (
 ): EmergencyShortcut[] => {
   const recommendedIds = SPECIALTY_RECOMMENDATIONS[specialty];
   const allShortcuts = [...CRITICAL_MEDICAL_SHORTCUTS, ...IMPORTANT_MEDICAL_SHORTCUTS];
-  
-  return allShortcuts.filter(shortcut => 
-    [...recommendedIds].includes(shortcut.id as any) ||
+
+  return allShortcuts.filter(shortcut =>
+    isRecommendedShortcut(shortcut.id, recommendedIds) ||
     shortcut.requiredRole?.includes(specialty)
   );
 };

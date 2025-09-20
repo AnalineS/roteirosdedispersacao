@@ -3,6 +3,8 @@
  * Implementa sanitização, validação e proteção de dados sensíveis
  */
 
+import type { FeedbackData } from '@/types/feedback';
+
 // Padrões de dados médicos sensíveis para detecção
 const MEDICAL_SENSITIVE_PATTERNS = [
   // CPF/CNPJ
@@ -109,87 +111,84 @@ export function validateRating(rating: unknown): { isValid: boolean; sanitizedRa
   return { isValid: true, sanitizedRating: numRating };
 }
 
+
+/**
+ * Resultado da validação de feedback
+ */
+interface FeedbackValidationResult {
+  isValid: boolean;
+  sanitizedData: FeedbackData;
+  errors: string[];
+  warnings: string[];
+}
+
 /**
  * Valida dados completos do feedback antes de envio
  */
-export function validateFeedbackData(data: any): {
-  isValid: boolean;
-  sanitizedData: any;
-  errors: string[];
-  warnings: string[];
-} {
+export function validateFeedbackData(data: unknown): FeedbackValidationResult {
   const errors: string[] = [];
   const warnings: string[] = [];
 
   if (!data || typeof data !== 'object') {
     return {
       isValid: false,
-      sanitizedData: null,
+      sanitizedData: {} as FeedbackData,
       errors: ['Dados de feedback inválidos'],
       warnings: []
     };
   }
 
-  // Validar campos obrigatórios
-  if (!data.messageId || typeof data.messageId !== 'string') {
-    errors.push('ID da mensagem é obrigatório');
+  const feedbackData = data as Record<string, unknown>;
+  const sanitizedData = {} as FeedbackData;
+
+  // Validar e sanitizar campos opcionais
+  if (feedbackData.rating !== undefined) {
+    const { isValid: ratingValid, sanitizedRating } = validateRating(feedbackData.rating);
+    if (ratingValid && sanitizedRating !== undefined) {
+      sanitizedData.rating = sanitizedRating;
+    } else {
+      warnings.push('Rating inválido, removido dos dados');
+    }
   }
 
-  if (!data.personaId || typeof data.personaId !== 'string') {
-    errors.push('ID da persona é obrigatório');
+  if (feedbackData.comment && typeof feedbackData.comment === 'string') {
+    sanitizedData.comment = feedbackData.comment.trim().substring(0, 1000);
   }
 
-  if (!data.question || typeof data.question !== 'string') {
-    errors.push('Pergunta é obrigatória');
+  if (feedbackData.userId && typeof feedbackData.userId === 'string') {
+    sanitizedData.userId = feedbackData.userId;
   }
 
-  if (!data.response || typeof data.response !== 'string') {
-    errors.push('Resposta é obrigatória');
+  if (feedbackData.sessionId && typeof feedbackData.sessionId === 'string') {
+    sanitizedData.sessionId = feedbackData.sessionId;
   }
 
-  // Validar rating
-  const { isValid: ratingValid, sanitizedRating } = validateRating(data.rating);
-  if (!ratingValid) {
-    errors.push('Rating deve ser um número entre 1 e 5');
+  if (feedbackData.timestamp) {
+    if (typeof feedbackData.timestamp === 'string') {
+      sanitizedData.timestamp = new Date(feedbackData.timestamp).getTime();
+    } else if (typeof feedbackData.timestamp === 'number') {
+      sanitizedData.timestamp = feedbackData.timestamp;
+    }
   }
 
-  // Sanitizar comentários se existirem
-  let sanitizedComments = '';
-  let hasSensitiveData = false;
-  
-  if (data.comments && typeof data.comments === 'string') {
-    const commentSanitization = sanitizeMedicalInput(data.comments);
-    sanitizedComments = commentSanitization.sanitized;
-    hasSensitiveData = commentSanitization.hasSensitiveData;
+  if (feedbackData.metadata && typeof feedbackData.metadata === 'object' && feedbackData.metadata !== null) {
+    sanitizedData.metadata = {
+      ...feedbackData.metadata as Record<string, unknown>,
+      hasSensitiveData: false,
+      sanitizationApplied: true,
+      clientTimestamp: Date.now()
+    };
+  }
+
+  // Sanitizar comentários se existirem usando sanitizeMedicalInput
+  if (sanitizedData.comment) {
+    const commentSanitization = sanitizeMedicalInput(sanitizedData.comment);
+    sanitizedData.comment = commentSanitization.sanitized;
     
-    if (hasSensitiveData) {
+    if (commentSanitization.hasSensitiveData) {
       warnings.push('Dados pessoais foram removidos do comentário por motivos de privacidade');
     }
   }
-
-  // Sanitizar question e response também
-  const questionSanitization = sanitizeMedicalInput(data.question);
-  const responseSanitization = sanitizeMedicalInput(data.response);
-
-  if (questionSanitization.hasSensitiveData || responseSanitization.hasSensitiveData) {
-    warnings.push('Dados sensíveis foram identificados e tratados adequadamente');
-  }
-
-  const sanitizedData = {
-    messageId: String(data.messageId).substring(0, 100),
-    personaId: String(data.personaId).substring(0, 50),
-    question: questionSanitization.sanitized,
-    response: responseSanitization.sanitized,
-    rating: sanitizedRating,
-    comments: sanitizedComments || undefined,
-    timestamp: Date.now(),
-    // Metadados para auditoria (sem dados sensíveis)
-    metadata: {
-      hasSensitiveData,
-      sanitizationApplied: true,
-      clientTimestamp: data.timestamp || Date.now()
-    }
-  };
 
   return {
     isValid: errors.length === 0,

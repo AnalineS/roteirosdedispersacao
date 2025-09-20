@@ -8,6 +8,8 @@
 
 import { ClinicalCase, CaseSession, StepResult } from '@/types/clinicalCases';
 import { CalculationResult } from '@/types/medication';
+import { AnalyticsFirestoreCache } from '@/services/analyticsFirestoreCache';
+import { secureLogger } from '@/utils/secureLogger';
 
 // ===== INTERFACES DE ANALYTICS =====
 
@@ -93,18 +95,34 @@ export interface LearningAnalytics {
   // Feedback do usuário
   feedback: {
     qualityRating: number; // 1-5
-    difficultyRating: number; // 1-5  
+    difficultyRating: number; // 1-5
     recommendationScore: number; // 0-10 NPS
     comments: string;
     reportedIssues: string[];
   };
 }
 
+export interface InteractionData {
+  componentId?: string;
+  value?: string | number;
+  target?: string;
+  position?: { x: number; y: number; };
+  exit?: boolean;
+  context?: Record<string, unknown>;
+}
+
+export interface CalculatorMetrics {
+  inputWeight: number;
+  calculationTime: number;
+  errorsEncountered: number;
+  accuracyScore: number;
+}
+
 export interface InteractionEvent {
   timestamp: Date;
   type: 'click' | 'input' | 'navigation' | 'completion' | 'error' | 'help_request';
   componentId: string;
-  data: any;
+  data: InteractionData;
   duration?: number; // ms
 }
 
@@ -164,7 +182,10 @@ export class EducationalMonitoringSystem {
     if (this.isMonitoring) return;
     
     this.isMonitoring = true;
-    console.log('🚀 Educational Quality Monitoring Started');
+    secureLogger.debug('Educational Quality Monitoring Started', {
+      component: 'EducationalAnalytics',
+      operation: 'startRealTimeMonitoring'
+    });
     
     // Monitoramento a cada 30 segundos
     this.monitoringInterval = setInterval(() => {
@@ -191,7 +212,10 @@ export class EducationalMonitoringSystem {
       this.monitoringInterval = null;
     }
     
-    console.log('🛑 Educational Quality Monitoring Stopped');
+    secureLogger.debug('Educational Quality Monitoring Stopped', {
+      component: 'EducationalAnalytics',
+      operation: 'stopRealTimeMonitoring'
+    });
   }
   
   private async performQualityCheck(): Promise<void> {
@@ -212,7 +236,10 @@ export class EducationalMonitoringSystem {
       await this.generateQualityAlerts();
       
     } catch (error) {
-      console.error('Error in quality check:', error);
+      secureLogger.error('Quality check failed', error as Error, {
+        component: 'EducationalAnalytics',
+        operation: 'performQualityCheck'
+      });
       this.createAlert('error', 'technical', 'Quality Check Failed', 
         'Sistema de monitoramento encontrou erro interno');
     }
@@ -257,6 +284,43 @@ export class EducationalMonitoringSystem {
     
     // Verificar se merece certificação
     this.evaluateCertificationEligibility(caseSession);
+
+    // Salvar no Firestore para persistência
+    AnalyticsFirestoreCache.saveAnalyticsEvent({
+      id: `case_completion_${caseSession.id}_${Date.now()}`,
+      sessionId: caseSession.id,
+      timestamp: new Date().toISOString(),
+      type: 'case_completion',
+      category: 'education',
+      value: caseSession.totalScore,
+      customDimensions: {
+        caseType: caseSession.caseId,
+        timeSpent: caseSession.timeSpent,
+        stepsCompleted: caseSession.stepResults.length,
+        successRate: caseSession.totalScore
+      }
+    }).catch((error: unknown) => {
+      secureLogger.error('Case completion save failed', error as Error, {
+        component: 'EducationalAnalytics',
+        operation: 'trackCaseCompletion'
+      });
+    });
+
+    // Track como métrica médica
+    AnalyticsFirestoreCache.trackMedicalMetric({
+      type: 'treatment_outcome',
+      value: caseSession.totalScore,
+      context: {
+        caseId: caseSession.caseId,
+        timeSpent: caseSession.timeSpent,
+        errorCount: caseSession.stepResults.filter(s => !s.isCorrect).length
+      }
+    }).catch((error: unknown) => {
+      secureLogger.error('Medical metric tracking failed', error as Error, {
+        component: 'EducationalAnalytics',
+        operation: 'trackMedicalMetric'
+      });
+    });
   }
   
   public trackCalculatorUsage(
@@ -403,7 +467,12 @@ export class EducationalMonitoringSystem {
       this.notifyCriticalAlert(alert);
     }
     
-    console.log(`🚨 Quality Alert [${severity.toUpperCase()}]: ${title}`);
+    secureLogger.warn('Quality Alert', {
+      severity: severity.toUpperCase(),
+      title,
+      component: 'EducationalAnalytics',
+      operation: 'createAlert'
+    });
   }
   
   // ===== MÉTRICAS DE PERFORMANCE =====
@@ -424,8 +493,8 @@ export class EducationalMonitoringSystem {
     
     // Monitorar uso de memória
     setInterval(() => {
-      if (typeof window !== 'undefined' && (window as any).performance?.memory) {
-        const memory = (window as any).performance.memory;
+      if (typeof window !== 'undefined' && 'performance' in window && 'memory' in (window.performance as unknown as { memory: unknown })) {
+        const memory = (window.performance as unknown as { memory: { usedJSHeapSize: number; totalJSHeapSize: number; jsHeapSizeLimit: number } }).memory;
         this.metrics.performance.resourceUsage.memoryPeak = 
           Math.max(this.metrics.performance.resourceUsage.memoryPeak,
                    memory.usedJSHeapSize / 1024 / 1024); // MB
@@ -550,7 +619,7 @@ export class EducationalMonitoringSystem {
   }
   private assessLearningExperience(session: CaseSession): void {}
   private evaluateCertificationEligibility(session: CaseSession): void {}
-  private analyzeCalculatorUsage(metrics: any): void {}
+  private analyzeCalculatorUsage(metrics: CalculatorMetrics): void {}
   private classifyMistake(result: StepResult): string { return 'calculation_error'; }
   private generateImprovementSuggestions(result: StepResult): string[] { return ['Review calculation method']; }
   private assessMistakeSeverity(result: StepResult): MistakePattern['severity'] { return 'medium'; }
@@ -597,6 +666,33 @@ export class EducationalMonitoringSystem {
     if (alert) {
       alert.status = 'resolved';
     }
+  }
+
+  // Métodos necessários para integração global
+  public trackModuleAccess(data: { module_path: string; timestamp: string }): void {
+    secureLogger.debug('Educational module access tracked', {
+      module_path: data.module_path,
+      timestamp: data.timestamp,
+      component: 'EducationalAnalytics'
+    });
+    // Track module access
+    this.metrics.engagement.componentInteractions++;
+  }
+
+  public startMonitoring(): void {
+    this.isMonitoring = true;
+    secureLogger.debug('Educational monitoring session started', {
+      component: 'EducationalAnalytics',
+      timestamp: new Date().toISOString()
+    });
+  }
+
+  public stopMonitoring(): void {
+    this.isMonitoring = false;
+    secureLogger.debug('Educational monitoring session stopped', {
+      component: 'EducationalAnalytics',
+      timestamp: new Date().toISOString()
+    });
   }
 }
 

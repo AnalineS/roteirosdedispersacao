@@ -29,11 +29,22 @@ interface MobileUXIssue {
   element?: HTMLElement;
 }
 
+interface DeviceInfo {
+  userAgent: string;
+  screenWidth: number;
+  screenHeight: number;
+  viewportWidth: number;
+  viewportHeight: number;
+  devicePixelRatio: number;
+  orientation: string;
+  touchSupport: boolean;
+}
+
 export function MobileUXAuditor() {
   const [metrics, setMetrics] = useState<MobileUXMetrics | null>(null);
   const [issues, setIssues] = useState<MobileUXIssue[]>([]);
   const [isAuditing, setIsAuditing] = useState(false);
-  const [deviceInfo, setDeviceInfo] = useState<any>(null);
+  const [deviceInfo, setDeviceInfo] = useState<DeviceInfo | null>(null);
   const { trackCustomUXEvent } = useGoogleAnalyticsUX();
   const auditRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -123,7 +134,26 @@ export function MobileUXAuditor() {
       });
 
     } catch (error) {
-      console.error('Erro na auditoria móvel:', error);
+      // Mobile UX audit error - explicit stderr + tracking
+      const errorMessage = error instanceof Error ? error.message : String(error);
+
+      // Explicit error to stderr for system visibility
+      if (typeof process !== 'undefined' && process.stderr) {
+        process.stderr.write(`❌ ERRO - Falha na auditoria UX móvel:\n` +
+          `  Error: ${errorMessage}\n\n`);
+      }
+
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'mobile_ux_audit_error', {
+          event_category: 'ux_error_critical',
+          event_label: 'mobile_audit_failed',
+          custom_parameters: {
+            ux_context: 'mobile_audit_system',
+            error_type: 'mobile_audit_failure',
+            error_message: errorMessage
+          }
+        });
+      }
     } finally {
       setIsAuditing(false);
     }
@@ -266,7 +296,18 @@ export function MobileUXAuditor() {
         setTimeout(() => lcpObserver.disconnect(), 5000);
         
       } catch (error) {
-        console.log('Performance Observer não disponível');
+        // Performance Observer unavailable tracking
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'mobile_ux_performance_observer_unavailable', {
+          event_category: 'ux_warning',
+          event_label: 'performance_observer_not_available',
+          custom_parameters: {
+            ux_context: 'mobile_performance_monitoring',
+            warning_type: 'performance_observer_unavailable',
+            fallback_used: true
+          }
+        });
+      }
       }
     }
 

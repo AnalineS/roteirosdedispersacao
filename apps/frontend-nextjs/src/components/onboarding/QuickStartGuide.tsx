@@ -190,7 +190,7 @@ export default function QuickStartGuide({
 
             {/* Steps */}
             <div className="quick-start-steps">
-              {quickStartSteps.map((step, index) => {
+              {quickStartSteps.map((step) => {
                 const isCompleted = completedSteps.has(step.id);
                 
                 return (

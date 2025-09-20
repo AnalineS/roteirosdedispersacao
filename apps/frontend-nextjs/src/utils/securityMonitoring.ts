@@ -525,6 +525,37 @@ class ThreatDetector {
 
 // ================== GERENCIADOR DE ALERTAS ==================
 
+interface SecurityAlertMetadata {
+  threat?: ThreatIntelligence;
+  indicators?: ThreatIndicator[];
+  metrics?: Record<RiskLevel, number>;
+  responseTime?: number;
+  errorRate?: number;
+  error?: string;
+  [key: string]: unknown;
+}
+
+interface SecurityDashboard {
+  timestamp: Date;
+  systemStatus: {
+    threatLevel: ThreatLevel;
+    systemHealth: HealthStatus;
+    activeIncidents: number;
+    activeAlerts: number;
+  };
+  metrics: SecurityMetrics;
+  alerts: {
+    active: SecurityAlert[];
+    bySeverity: {
+      critical: number;
+      high: number;
+      medium: number;
+      low: number;
+    };
+  };
+  recommendations: string[];
+}
+
 interface SecurityAlert {
   alertId: string;
   title: string;
@@ -536,7 +567,7 @@ interface SecurityAlert {
   isAcknowledged: boolean;
   acknowledgedBy?: string;
   acknowledgedAt?: Date;
-  metadata: Record<string, any>;
+  metadata: SecurityAlertMetadata;
 }
 
 class AlertManager {
@@ -552,7 +583,7 @@ class AlertManager {
     severity: ThreatSeverity,
     category: SecurityAlert['category'],
     source: string,
-    metadata: Record<string, any> = {}
+    metadata: SecurityAlertMetadata = {}
   ): SecurityAlert {
     const alert: SecurityAlert = {
       alertId: `alert_${Date.now()}_${Math.random().toString(36).substring(7)}`,
@@ -834,7 +865,7 @@ class SecurityMonitoringSystem {
   /**
    * Obter dashboard de segurança
    */
-  getSecurityDashboard(): any {
+  getSecurityDashboard(): SecurityDashboard {
     const metrics = this.metricsCollector.collectCurrentMetrics();
     const activeAlerts = this.alertManager.getActiveAlerts();
     

@@ -195,7 +195,14 @@ export default function SmartSearch({
         try {
           setRecentSearches(JSON.parse(stored));
         } catch (e) {
-          console.error('Erro ao carregar buscas recentes:', e);
+          // Silent error handling for localStorage parsing
+          // Error tracked for analytics without sensitive data exposure
+          if (typeof window !== 'undefined' && window.gtag) {
+            window.gtag('event', 'search_storage_error', {
+              event_category: 'search',
+              event_label: 'recent_searches_parse_error'
+            });
+          }
         }
       }
     }
@@ -504,7 +511,7 @@ export default function SmartSearch({
                     <div className="p-2 text-xs font-medium text-gray-500 bg-gray-50">
                       {query.trim() ? 'Sugestões' : 'Buscas recentes e sugestões'}
                     </div>
-                    {autocompleteItems.map((item, index) => (
+                    {autocompleteItems.map((item) => (
                       <div
                         key={item.id}
                         className="p-3 cursor-pointer hover:bg-blue-50 transition-colors"

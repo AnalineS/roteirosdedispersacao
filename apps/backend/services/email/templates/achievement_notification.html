@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nova Conquista - {{ achievement_name }}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 0;
+            background-color: #f8fafc;
+        }
+        .container {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        .badge-container {
+            text-align: center;
+            padding: 30px 20px;
+            background: #f8fafc;
+        }
+        .badge {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            box-shadow: 0 8px 16px rgba(255, 215, 0, 0.3);
+            margin-bottom: 20px;
+        }
+        .badge img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+        }
+        .achievement-name {
+            font-size: 24px;
+            font-weight: 600;
+            color: #2d3748;
+            margin: 10px 0;
+        }
+        .achievement-description {
+            font-size: 16px;
+            color: #4a5568;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        .content {
+            padding: 30px;
+        }
+        .congratulations {
+            background: #e6fffa;
+            border-left: 4px solid #38b2ac;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        .congratulations h2 {
+            color: #2d3748;
+            margin: 0 0 10px 0;
+            font-size: 20px;
+        }
+        .congratulations p {
+            margin: 0;
+            color: #4a5568;
+        }
+        .stats-container {
+            display: flex;
+            justify-content: space-around;
+            margin: 30px 0;
+            padding: 20px;
+            background: #f7fafc;
+            border-radius: 8px;
+        }
+        .stat {
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 24px;
+            font-weight: 700;
+            color: #667eea;
+        }
+        .stat-label {
+            font-size: 14px;
+            color: #718096;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-weight: 600;
+            margin: 20px 0;
+            transition: transform 0.2s;
+        }
+        .cta-button:hover {
+            transform: translateY(-2px);
+        }
+        .footer {
+            background: #2d3748;
+            color: #a0aec0;
+            padding: 30px;
+            text-align: center;
+        }
+        .footer h3 {
+            color: white;
+            margin: 0 0 15px 0;
+        }
+        .footer p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+        .social-links {
+            margin: 20px 0;
+        }
+        .social-links a {
+            display: inline-block;
+            margin: 0 10px;
+            color: #667eea;
+            text-decoration: none;
+        }
+        @media (max-width: 480px) {
+            .container {
+                margin: 10px;
+            }
+            .header h1 {
+                font-size: 24px;
+            }
+            .achievement-name {
+                font-size: 20px;
+            }
+            .stats-container {
+                flex-direction: column;
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏆 Nova Conquista Desbloqueada!</h1>
+        </div>
+        
+        <div class="badge-container">
+            <div class="badge">
+                {% if badge_url %}
+                    <img src="{{ badge_url }}" alt="{{ achievement_name }}" />
+                {% else %}
+                    🏆
+                {% endif %}
+            </div>
+            <div class="achievement-name">{{ achievement_name }}</div>
+            <div class="achievement-description">{{ achievement_description }}</div>
+        </div>
+        
+        <div class="content">
+            <div class="congratulations">
+                <h2>Parabéns, {{ user_name }}! 🎉</h2>
+                <p>Você acaba de desbloquear uma nova conquista em seu aprendizado sobre hanseníase e o protocolo PQT-U. Continue assim!</p>
+            </div>
+            
+            <div class="stats-container">
+                <div class="stat">
+                    <div class="stat-number">+50</div>
+                    <div class="stat-label">XP Ganho</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">🥇</div>
+                    <div class="stat-label">Nível Atual</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">📈</div>
+                    <div class="stat-label">Progresso</div>
+                </div>
+            </div>
+            
+            <p>Esta conquista demonstra seu comprometimento com o aprendizado contínuo sobre hanseníase e o protocolo PQT-U. Cada passo que você dá contribui para melhorar o cuidado e tratamento desta condição.</p>
+            
+            <center>
+                <a href="{{ site_url }}/profile" class="cta-button">Ver Todas as Conquistas</a>
+            </center>
+            
+            <p><strong>Continue explorando:</strong></p>
+            <ul>
+                <li>Módulos educativos interativos</li>
+                <li>Calculadora de doses PQT-U</li>
+                <li>Casos clínicos práticos</li>
+                <li>Chat com Dr. Gasnelio</li>
+            </ul>
+        </div>
+        
+        <div class="footer">
+            <h3>Roteiro de Dispensação PQT-U</h3>
+            <p>Educação médica especializada em hanseníase</p>
+            <p>{{ date }} • <a href="{{ site_url }}" style="color: #667eea;">{{ site_url }}</a></p>
+            
+            <div class="social-links">
+                <a href="{{ site_url }}/sobre">Sobre o Projeto</a> •
+                <a href="{{ site_url }}/contato">Contato</a> •
+                <a href="{{ site_url }}/privacidade">Privacidade</a>
+            </div>
+            
+            <p style="font-size: 12px; margin-top: 20px;">
+                Este email foi enviado porque você tem notificações de conquistas ativadas.<br>
+                <a href="{{ site_url }}/preferences" style="color: #667eea;">Gerenciar preferências</a> • 
+                <a href="{{ site_url }}/unsubscribe" style="color: #667eea;">Cancelar inscrição</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

@@ -107,7 +107,7 @@ export function usePersonalization() {
         }));
         
       } catch (error) {
-        console.error('Erro ao carregar personalização:', error);
+        // Erro silencioso para não quebrar o carregamento
       } finally {
         setIsLoading(false);
       }
@@ -126,13 +126,13 @@ export function usePersonalization() {
       medicalAnalytics.trackEvent({
         event: 'personalization_updated',
         event_category: 'user_preferences',
-        custom_dimensions: {
-          user_role: newPersonalization.medicalRole as any,
+        custom_parameters: {
+          user_role: newPersonalization.medicalRole,
           clinical_context: newPersonalization.fastAccessPriority === 'emergency' ? 'emergency' : 'routine'
         }
       });
     } catch (error) {
-      console.error('Erro ao salvar personalização:', error);
+      // Erro silencioso para não quebrar o salvamento
     }
   }, [context]);
 
@@ -159,15 +159,15 @@ export function usePersonalization() {
         event: 'role_preset_applied',
         event_category: 'personalization',
         event_label: role,
-        custom_dimensions: {
-          user_role: role as any
+        custom_parameters: {
+          user_role: role
         }
       });
     }
   }, [updatePersonalization]);
 
   // Rastrear comportamento do usuário
-  const trackUserBehavior = useCallback((action: string, actionContext: any = {}) => {
+  const trackUserBehavior = useCallback((action: string, actionContext: Record<string, unknown> = {}) => {
     setContext(prev => ({
       ...prev,
       currentSession: {
@@ -196,11 +196,11 @@ export function usePersonalization() {
       medicalAnalytics.trackCriticalMedicalAction({
         type: action.includes('drug') ? 'drug_interaction' : 'protocol_access',
         success: !actionContext.error,
-        timeToComplete: actionContext.duration || 0,
+        timeToComplete: typeof actionContext.duration === 'number' ? actionContext.duration : 0,
         urgencyLevel: 'critical'
       });
     }
-  }, [context.currentSession.startTime]);
+  }, [context.currentSession]);
 
   // Gerar recomendações personalizadas
   const generateRecommendations = useCallback((): ContentRecommendation[] => {
@@ -327,7 +327,6 @@ export function usePersonalization() {
       }
       return false;
     } catch (error) {
-      console.error('Erro ao importar dados de personalização:', error);
       return false;
     }
   }, [updatePersonalization]);

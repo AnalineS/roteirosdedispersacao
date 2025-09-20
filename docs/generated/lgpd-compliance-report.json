@@ -1,0 +1,13 @@
+{
+  "timestamp": "2025-09-17T12:14:49.676Z",
+  "version": "3.0.0",
+  "complianceScore": 87,
+  "status": "GOOD",
+  "environment": "development",
+  "platform": "Medical Education - Hanseníase",
+  "summary": {
+    "totalViolations": 0,
+    "medicalDataOccurrences": 0,
+    "lastCheck": "2025-09-17T12:14:49.676Z"
+  }
+}

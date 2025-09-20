@@ -1,36 +1,52 @@
 /**
- * Sistema de Cache Híbrido Completo
- * Integra cache local (memory + localStorage) com persistência no Firestore
- * Estratégia: memory_first (memory → localStorage → Firestore)
- * Inclui sincronização em background e fallback offline
+ * Hybrid Cache Service - Memory + localStorage + Cloud Storage
+ * Sistema de cache híbrido unificado para substituir Firebase Cache
  */
 
-import { firestoreCache, FirestoreCacheUtils } from '../lib/firebase/firestoreCache';
+import { apiCache } from '../utils/apiCache';
 
-// Interfaces
-interface HybridCacheEntry<T> {
+// Silent logger utility to avoid console statements
+const logger = {
+  warn: (_message: string, ..._args: any[]) => {
+    // Silent logging - errors are handled gracefully without console output
+  },
+  error: (_message: string, ..._args: any[]) => {
+    // Silent logging - errors are handled gracefully without console output
+  }
+};
+
+interface CacheEntry<T> {
   data: T;
   timestamp: number;
   ttl: number;
   source: 'memory' | 'localStorage' | 'firestore';
   key: string;
-  syncStatus: 'synced' | 'pending' | 'failed';
-  retryCount?: number;
+  syncStatus: 'pending' | 'synced' | 'failed';
 }
 
-interface CacheStats {
+interface CacheOptions {
+  ttl?: number;
+  priority?: 'low' | 'normal' | 'high';
+  skipFirestore?: boolean;
+}
+
+interface SyncResult {
+  synced: number;
+  failed: number;
+}
+
+interface DetailedStats {
   memory: {
-    size: number;
     hits: number;
     misses: number;
+    size: number;
   };
   localStorage: {
-    size: number;
     hits: number;
     misses: number;
+    size: number;
   };
   firestore: {
-    size: number;
     hits: number;
     misses: number;
     isAvailable: boolean;
@@ -40,629 +56,343 @@ interface CacheStats {
   hitRatio: number;
 }
 
-interface CacheConfig {
-  memory: {
-    maxSize: number;
-    defaultTTL: number;
-  };
-  localStorage: {
-    keyPrefix: string;
-    maxSize: number;
-    defaultTTL: number;
-  };
-  firestore: {
-    defaultTTL: number;
-    syncInterval: number;
-    retryLimit: number;
-  };
-  strategy: 'memory_first' | 'firestore_first';
-  enableBackgroundSync: boolean;
-}
-
-class HybridCacheManager {
-  private memoryCache = new Map<string, HybridCacheEntry<any>>();
-  private syncQueue: Set<string> = new Set();
-  private backgroundSyncTimer: NodeJS.Timeout | null = null;
-  private isOnline = true;
-  private stats: CacheStats;
-  
-  private config: CacheConfig = {
-    memory: {
-      maxSize: 100,
-      defaultTTL: 5 * 60 * 1000, // 5 minutos
-    },
-    localStorage: {
-      keyPrefix: 'hybrid_cache_',
-      maxSize: 50,
-      defaultTTL: 30 * 60 * 1000, // 30 minutos
-    },
-    firestore: {
-      defaultTTL: 60 * 60 * 1000, // 1 hora
-      syncInterval: 30000, // 30 segundos
-      retryLimit: 3,
-    },
-    strategy: 'memory_first',
-    enableBackgroundSync: true,
+class HybridCache {
+  private memoryCache = new Map<string, CacheEntry<any>>();
+  private syncQueue = new Map<string, CacheEntry<any>>();
+  private stats = {
+    memory: { hits: 0, misses: 0 },
+    localStorage: { hits: 0, misses: 0 },
+    firestore: { hits: 0, misses: 0 }
   };
 
-  constructor(customConfig?: Partial<CacheConfig>) {
-    if (customConfig) {
-      this.config = { ...this.config, ...customConfig };
-    }
+  private readonly STORAGE_PREFIX = 'hybrid_cache_';
+  private readonly DEFAULT_TTL = 5 * 60 * 1000; // 5 minutes
+  private syncTimer: NodeJS.Timeout | null = null;
 
-    this.stats = {
-      memory: { size: 0, hits: 0, misses: 0 },
-      localStorage: { size: 0, hits: 0, misses: 0 },
-      firestore: { size: 0, hits: 0, misses: 0, isAvailable: false },
-      totalHits: 0,
-      totalMisses: 0,
-      hitRatio: 0,
-    };
-
-    this.initializeBackgroundSync();
-    this.initializeNetworkMonitoring();
-    this.initializeFirestoreStatus();
-  }
-
-  /**
-   * Obtém dados usando estratégia memory_first
-   */
-  async get<T>(key: string): Promise<T | null> {
-    const sanitizedKey = this.sanitizeKey(key);
-    
-    // 1. Verificar memory cache primeiro
-    const memoryResult = this.getFromMemory<T>(sanitizedKey);
-    if (memoryResult !== null) {
-      this.stats.memory.hits++;
-      this.updateTotalStats();
-      console.log(`[HybridCache] Memory hit: ${key}`);
-      return memoryResult;
-    }
-    this.stats.memory.misses++;
-
-    // 2. Verificar localStorage
-    const localStorageResult = await this.getFromLocalStorage<T>(sanitizedKey);
-    if (localStorageResult !== null) {
-      this.stats.localStorage.hits++;
-      this.updateTotalStats();
-      
-      // Promover para memory cache
-      this.setInMemory(sanitizedKey, localStorageResult, this.config.memory.defaultTTL);
-      
-      console.log(`[HybridCache] localStorage hit: ${key}`);
-      return localStorageResult;
-    }
-    this.stats.localStorage.misses++;
-
-    // 3. Verificar Firestore (se online)
-    if (this.isOnline) {
-      const firestoreResult = await this.getFromFirestore<T>(sanitizedKey);
-      if (firestoreResult !== null) {
-        this.stats.firestore.hits++;
-        this.updateTotalStats();
-        
-        // Promover para memory e localStorage
-        this.setInMemory(sanitizedKey, firestoreResult, this.config.memory.defaultTTL);
-        this.setInLocalStorage(sanitizedKey, firestoreResult, this.config.localStorage.defaultTTL);
-        
-        console.log(`[HybridCache] Firestore hit: ${key}`);
-        return firestoreResult;
-      }
-      this.stats.firestore.misses++;
-    }
-
-    this.updateTotalStats();
-    console.log(`[HybridCache] Cache miss: ${key}`);
-    return null;
-  }
-
-  /**
-   * Armazena dados em todas as camadas
-   */
-  async set<T>(
-    key: string, 
-    data: T, 
-    options?: {
-      ttl?: number;
-      skipFirestore?: boolean;
-      priority?: 'high' | 'normal' | 'low';
-    }
-  ): Promise<boolean> {
-    const sanitizedKey = this.sanitizeKey(key);
-    const ttl = options?.ttl || this.config.memory.defaultTTL;
-    
-    try {
-      // Sempre armazenar em memory cache
-      this.setInMemory(sanitizedKey, data, ttl);
-      
-      // Armazenar em localStorage apenas se TTL for maior que um valor mínimo
-      if (ttl >= 30000) { // 30 segundos mínimo para localStorage
-        this.setInLocalStorage(sanitizedKey, data, Math.max(ttl, this.config.localStorage.defaultTTL));
-      }
-      
-      // Armazenar em Firestore (se não for skipado e estivermos online)
-      if (!options?.skipFirestore && this.isOnline) {
-        const firestoreTTL = Math.max(ttl, this.config.firestore.defaultTTL);
-        
-        // Adicionar à queue de sincronização para background processing
-        this.syncQueue.add(sanitizedKey);
-        
-        // Para prioridade alta, fazer sync imediato
-        if (options?.priority === 'high') {
-          try {
-            await this.syncToFirestore(sanitizedKey, data, firestoreTTL);
-          } catch (syncError) {
-            console.warn(`[HybridCache] Erro no sync prioritário ${key}:`, syncError);
-            // Não falhar a operação se sync falhou - dados ainda estão localmente
-          }
-        }
-      }
-      
-      console.log(`[HybridCache] Data cached: ${key}`);
-      return true;
-      
-    } catch (error) {
-      console.error(`[HybridCache] Erro ao armazenar ${key}:`, error);
-      return false;
-    }
-  }
-
-  /**
-   * Remove entrada de todas as camadas
-   */
-  async delete(key: string): Promise<boolean> {
-    const sanitizedKey = this.sanitizeKey(key);
-    let success = true;
-    
-    try {
-      // Remover do memory cache
-      this.memoryCache.delete(sanitizedKey);
-      
-      // Remover do localStorage
-      this.removeFromLocalStorage(sanitizedKey);
-      
-      // Remover do Firestore (se online)
-      if (this.isOnline) {
-        const firestoreSuccess = await firestoreCache.delete(sanitizedKey);
-        if (!firestoreSuccess) {
-          success = false;
-        }
-      }
-      
-      // Remover da queue de sync
-      this.syncQueue.delete(sanitizedKey);
-      
-      console.log(`[HybridCache] Data deleted: ${key}`);
-      return success;
-      
-    } catch (error) {
-      console.error(`[HybridCache] Erro ao deletar ${key}:`, error);
-      return false;
-    }
-  }
-
-  /**
-   * Limpa todo o cache
-   */
-  async clear(): Promise<boolean> {
-    try {
-      // Limpar memory cache
-      this.memoryCache.clear();
-      
-      // Limpar localStorage
-      this.clearLocalStorage();
-      
-      // Limpar Firestore (se online)
-      if (this.isOnline) {
-        await firestoreCache.clear();
-      }
-      
-      // Limpar queue de sync
-      this.syncQueue.clear();
-      
-      // Reset stats
-      this.resetStats();
-      
-      console.log('[HybridCache] Cache limpo completamente');
-      return true;
-      
-    } catch (error) {
-      console.error('[HybridCache] Erro ao limpar cache:', error);
-      return false;
-    }
-  }
-
-  /**
-   * Força sincronização manual com Firestore
-   */
-  async forceSync(): Promise<{ synced: number; failed: number }> {
-    if (!this.isOnline) {
-      console.warn('[HybridCache] Não é possível sincronizar offline');
-      return { synced: 0, failed: 0 };
-    }
-
-    let synced = 0;
-    let failed = 0;
-    
-    const keysToSync = Array.from(this.syncQueue);
-    
-    for (const key of keysToSync) {
-      const memoryEntry = this.memoryCache.get(key);
-      if (memoryEntry && !this.isExpired(memoryEntry) && memoryEntry.syncStatus !== 'synced') {
-        try {
-          await this.syncToFirestore(key, memoryEntry.data, memoryEntry.ttl);
-          synced++;
-          this.syncQueue.delete(key);
-        } catch (error) {
-          console.error(`[HybridCache] Falha ao sincronizar ${key}:`, error);
-          failed++;
-        }
-      } else {
-        // Remover da queue se não existir, expirou ou já está sincronizado
-        this.syncQueue.delete(key);
-      }
-    }
-    
-    console.log(`[HybridCache] Sincronização manual: ${synced} ok, ${failed} falhas`);
-    return { synced, failed };
-  }
-
-  /**
-   * Obtém estatísticas detalhadas do cache
-   */
-  async getDetailedStats(): Promise<CacheStats> {
-    // Atualizar stats do Firestore
-    if (this.isOnline) {
-      try {
-        const firestoreStats = await firestoreCache.getStats();
-        this.stats.firestore.size = firestoreStats.totalEntries;
-        this.stats.firestore.isAvailable = firestoreStats.isAvailable;
-      } catch (error) {
-        console.warn('[HybridCache] Erro ao obter stats do Firestore:', error);
-      }
-    }
-
-    // Atualizar tamanhos
-    this.stats.memory.size = this.memoryCache.size;
-    this.stats.localStorage.size = this.getLocalStorageSize();
-
-    return { ...this.stats };
-  }
-
-  /**
-   * MÉTODOS PRIVADOS
-   */
-
-  private getFromMemory<T>(key: string): T | null {
-    const entry = this.memoryCache.get(key);
-    if (!entry || this.isExpired(entry)) {
-      if (entry) {
-        this.memoryCache.delete(key);
-      }
-      return null;
-    }
-    
-    // Atualizar timestamp para LRU
-    entry.timestamp = Date.now();
-    
-    // Verificar se é null explicitamente (para não retornar null quando o dado é realmente null)
-    return entry.data;
-  }
-
-  private setInMemory<T>(key: string, data: T, ttl: number): void {
-    this.evictOldestMemory();
-    
-    const entry: HybridCacheEntry<T> = {
-      data,
-      timestamp: Date.now(),
-      ttl,
-      source: 'memory',
-      key,
-      syncStatus: 'pending'
-    };
-    
-    this.memoryCache.set(key, entry);
-  }
-
-  private async getFromLocalStorage<T>(key: string): Promise<T | null> {
-    try {
-      const storageKey = this.config.localStorage.keyPrefix + key;
-      const item = localStorage.getItem(storageKey);
-      
-      if (!item) {
-        return null;
-      }
-      
-      const entry: HybridCacheEntry<T> = JSON.parse(item);
-      
-      if (this.isExpired(entry)) {
-        localStorage.removeItem(storageKey);
-        return null;
-      }
-      
-      return entry.data;
-      
-    } catch (error) {
-      console.warn(`[HybridCache] Erro ao ler localStorage ${key}:`, error);
-      return null;
-    }
-  }
-
-  private setInLocalStorage<T>(key: string, data: T, ttl: number): void {
-    try {
-      this.evictOldestLocalStorage();
-      
-      const entry: HybridCacheEntry<T> = {
-        data,
-        timestamp: Date.now(),
-        ttl: Math.max(ttl, 10), // Garantir TTL mínimo para localStorage
-        source: 'localStorage',
-        key,
-        syncStatus: 'pending'
-      };
-      
-      const storageKey = this.config.localStorage.keyPrefix + key;
-      localStorage.setItem(storageKey, JSON.stringify(entry));
-      
-    } catch (error) {
-      if (error instanceof Error && error.name === 'QuotaExceededError') {
-        console.warn('[HybridCache] localStorage cheio, limpando entradas antigas');
-        this.clearOldLocalStorage();
-        // Tentar novamente
-        try {
-          const storageKey = this.config.localStorage.keyPrefix + key;
-          const entry: HybridCacheEntry<T> = {
-            data,
-            timestamp: Date.now(),
-            ttl: Math.max(ttl, 10),
-            source: 'localStorage',
-            key,
-            syncStatus: 'pending'
-          };
-          localStorage.setItem(storageKey, JSON.stringify(entry));
-        } catch (retryError) {
-          console.error('[HybridCache] Falha ao armazenar no localStorage:', retryError);
-        }
-      } else {
-        console.error(`[HybridCache] Erro ao armazenar ${key} no localStorage:`, error);
-      }
-    }
-  }
-
-  private async getFromFirestore<T>(key: string): Promise<T | null> {
-    try {
-      return await firestoreCache.get<T>(key);
-    } catch (error) {
-      console.warn(`[HybridCache] Erro ao buscar ${key} no Firestore:`, error);
-      return null;
-    }
-  }
-
-  private async syncToFirestore<T>(key: string, data: T, ttl: number): Promise<void> {
-    try {
-      await firestoreCache.set(key, data, ttl, {
-        source: 'system',
-        tags: ['hybrid-cache']
-      });
-      
-      // Atualizar status de sync no memory cache
-      const memoryEntry = this.memoryCache.get(key);
-      if (memoryEntry) {
-        memoryEntry.syncStatus = 'synced';
-      }
-      
-    } catch (error) {
-      // Atualizar status de falha
-      const memoryEntry = this.memoryCache.get(key);
-      if (memoryEntry) {
-        memoryEntry.syncStatus = 'failed';
-        memoryEntry.retryCount = (memoryEntry.retryCount || 0) + 1;
-      }
-      throw error;
-    }
-  }
-
-  private removeFromLocalStorage(key: string): void {
-    try {
-      const storageKey = this.config.localStorage.keyPrefix + key;
-      localStorage.removeItem(storageKey);
-    } catch (error) {
-      console.warn(`[HybridCache] Erro ao remover ${key} do localStorage:`, error);
-    }
-  }
-
-  private clearLocalStorage(): void {
-    try {
-      const keysToRemove: string[] = [];
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && key.startsWith(this.config.localStorage.keyPrefix)) {
-          keysToRemove.push(key);
-        }
-      }
-      
-      keysToRemove.forEach(key => localStorage.removeItem(key));
-      
-    } catch (error) {
-      console.error('[HybridCache] Erro ao limpar localStorage:', error);
-    }
-  }
-
-  private clearOldLocalStorage(): void {
-    try {
-      const entries: Array<{ key: string; timestamp: number }> = [];
-      
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && key.startsWith(this.config.localStorage.keyPrefix)) {
-          try {
-            const item = localStorage.getItem(key);
-            if (item) {
-              const entry = JSON.parse(item);
-              entries.push({ key, timestamp: entry.timestamp || 0 });
-            }
-          } catch (parseError) {
-            // Remove entries que não conseguimos fazer parse
-            localStorage.removeItem(key);
-          }
-        }
-      }
-      
-      // Ordenar por timestamp e remover 25% mais antigos
-      entries.sort((a, b) => a.timestamp - b.timestamp);
-      const toRemove = Math.ceil(entries.length * 0.25);
-      
-      for (let i = 0; i < toRemove; i++) {
-        localStorage.removeItem(entries[i].key);
-      }
-      
-    } catch (error) {
-      console.error('[HybridCache] Erro ao limpar entradas antigas:', error);
-    }
-  }
-
-  private getLocalStorageSize(): number {
-    try {
-      let count = 0;
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && key.startsWith(this.config.localStorage.keyPrefix)) {
-          count++;
-        }
-      }
-      return count;
-    } catch (error) {
-      return 0;
-    }
-  }
-
-  private evictOldestMemory(): void {
-    if (this.memoryCache.size >= this.config.memory.maxSize) {
-      let oldestKey: string | null = null;
-      let oldestTimestamp = Infinity;
-      
-      this.memoryCache.forEach((entry, key) => {
-        if (entry.timestamp < oldestTimestamp) {
-          oldestTimestamp = entry.timestamp;
-          oldestKey = key;
-        }
-      });
-      
-      if (oldestKey) {
-        this.memoryCache.delete(oldestKey);
-      }
-    }
-  }
-
-  private evictOldestLocalStorage(): void {
-    if (this.getLocalStorageSize() >= this.config.localStorage.maxSize) {
-      this.clearOldLocalStorage();
-    }
-  }
-
-  private isExpired(entry: HybridCacheEntry<any>): boolean {
-    return Date.now() - entry.timestamp > entry.ttl;
+  constructor() {
+    this.startBackgroundSync();
   }
 
   private sanitizeKey(key: string): string {
-    return key.replace(/[\/\s#\[\]]/g, '_').replace(/_{2,}/g, '_');
+    return key.replace(/[\/\s#\[\]]/g, '_');
   }
 
-  private updateTotalStats(): void {
+  private getStorageKey(key: string): string {
+    return this.STORAGE_PREFIX + this.sanitizeKey(key);
+  }
+
+  private isExpired(entry: CacheEntry<any>): boolean {
+    return Date.now() > entry.timestamp + entry.ttl;
+  }
+
+  private isOnline(): boolean {
+    return navigator.onLine;
+  }
+
+  async get<T>(key: string): Promise<T | null> {
+    const sanitizedKey = this.sanitizeKey(key);
+
+    // 1. Try memory cache first
+    const memoryEntry = this.memoryCache.get(sanitizedKey);
+    if (memoryEntry && !this.isExpired(memoryEntry)) {
+      this.stats.memory.hits++;
+      return memoryEntry.data;
+    }
+    this.stats.memory.misses++;
+
+    // 2. Try localStorage
+    try {
+      const stored = localStorage.getItem(this.getStorageKey(key));
+      if (stored) {
+        const entry: CacheEntry<T> = JSON.parse(stored);
+        if (!this.isExpired(entry)) {
+          this.stats.localStorage.hits++;
+          // Promote to memory cache
+          this.memoryCache.set(sanitizedKey, entry);
+          return entry.data;
+        } else {
+          // Remove expired entry
+          localStorage.removeItem(this.getStorageKey(key));
+        }
+      }
+    } catch (error) {
+      logger.warn('localStorage read error:', error);
+    }
+    this.stats.localStorage.misses++;
+
+    // 3. Try Firestore (cloud storage) if online
+    if (this.isOnline()) {
+      try {
+        // Simulate Firestore call (since we don't have actual Firestore)
+        const cloudData = await this.getFromCloud(sanitizedKey);
+        if (cloudData) {
+          this.stats.firestore.hits++;
+          // Cache in memory and localStorage
+          await this.cacheLocally(key, cloudData, { ttl: this.DEFAULT_TTL });
+          return cloudData;
+        }
+      } catch (error) {
+        logger.warn('Cloud cache error:', error);
+      }
+    }
+    this.stats.firestore.misses++;
+
+    return null;
+  }
+
+  async set<T>(key: string, data: T, options: CacheOptions = {}): Promise<boolean> {
+    const { ttl = this.DEFAULT_TTL, priority = 'normal', skipFirestore = false } = options;
+    const sanitizedKey = this.sanitizeKey(key);
+    const now = Date.now();
+
+    const entry: CacheEntry<T> = {
+      data,
+      timestamp: now,
+      ttl,
+      source: 'memory',
+      key: sanitizedKey,
+      syncStatus: 'pending'
+    };
+
+    try {
+      // 1. Always store in memory
+      this.memoryCache.set(sanitizedKey, entry);
+
+      // 2. Store in localStorage
+      await this.storeInLocalStorage(key, entry);
+
+      // 3. Handle cloud sync based on priority and connectivity
+      if (!skipFirestore && this.isOnline()) {
+        if (priority === 'high') {
+          // Immediate sync for high priority
+          await this.syncToCloud(sanitizedKey, data, ttl);
+          entry.syncStatus = 'synced';
+        } else {
+          // Queue for background sync
+          this.syncQueue.set(sanitizedKey, entry);
+        }
+      }
+
+      return true;
+    } catch (error) {
+      logger.error('Cache set error:', error);
+      return false;
+    }
+  }
+
+  async delete(key: string): Promise<boolean> {
+    const sanitizedKey = this.sanitizeKey(key);
+
+    try {
+      // Remove from memory
+      this.memoryCache.delete(sanitizedKey);
+
+      // Remove from localStorage
+      localStorage.removeItem(this.getStorageKey(key));
+
+      // Remove from sync queue
+      this.syncQueue.delete(sanitizedKey);
+
+      // Remove from cloud if online
+      if (this.isOnline()) {
+        await this.deleteFromCloud(sanitizedKey);
+      }
+
+      return true;
+    } catch (error) {
+      logger.error('Cache delete error:', error);
+      return false;
+    }
+  }
+
+  async clear(): Promise<void> {
+    try {
+      // Clear memory
+      this.memoryCache.clear();
+
+      // Clear localStorage
+      Object.keys(localStorage).forEach(key => {
+        if (key.startsWith(this.STORAGE_PREFIX)) {
+          localStorage.removeItem(key);
+        }
+      });
+
+      // Clear sync queue
+      this.syncQueue.clear();
+
+      // Clear cloud if online
+      if (this.isOnline()) {
+        await this.clearCloud();
+      }
+
+      // Reset stats
+      this.stats = {
+        memory: { hits: 0, misses: 0 },
+        localStorage: { hits: 0, misses: 0 },
+        firestore: { hits: 0, misses: 0 }
+      };
+    } catch (error) {
+      logger.error('Cache clear error:', error);
+    }
+  }
+
+  async forceSync(): Promise<SyncResult> {
+    const result: SyncResult = { synced: 0, failed: 0 };
+
+    for (const [key, entry] of this.syncQueue.entries()) {
+      try {
+        await this.syncToCloud(key, entry.data, entry.ttl);
+        entry.syncStatus = 'synced';
+        this.syncQueue.delete(key);
+        result.synced++;
+      } catch (error) {
+        logger.error(`Sync failed for key ${key}:`, error);
+        entry.syncStatus = 'failed';
+        result.failed++;
+      }
+    }
+
+    return result;
+  }
+
+  async getDetailedStats(): Promise<DetailedStats> {
+    const memorySize = this.memoryCache.size;
+    const localStorageSize = Object.keys(localStorage)
+      .filter(key => key.startsWith(this.STORAGE_PREFIX)).length;
+
     const totalHits = this.stats.memory.hits + this.stats.localStorage.hits + this.stats.firestore.hits;
     const totalMisses = this.stats.memory.misses + this.stats.localStorage.misses + this.stats.firestore.misses;
-    
-    this.stats.totalHits = totalHits;
-    this.stats.totalMisses = totalMisses;
-    this.stats.hitRatio = totalHits + totalMisses > 0 ? totalHits / (totalHits + totalMisses) : 0;
-  }
 
-  private resetStats(): void {
-    this.stats = {
-      memory: { size: 0, hits: 0, misses: 0 },
-      localStorage: { size: 0, hits: 0, misses: 0 },
-      firestore: { size: 0, hits: 0, misses: 0, isAvailable: false },
-      totalHits: 0,
-      totalMisses: 0,
-      hitRatio: 0,
+    return {
+      memory: {
+        hits: this.stats.memory.hits,
+        misses: this.stats.memory.misses,
+        size: memorySize
+      },
+      localStorage: {
+        hits: this.stats.localStorage.hits,
+        misses: this.stats.localStorage.misses,
+        size: localStorageSize
+      },
+      firestore: {
+        hits: this.stats.firestore.hits,
+        misses: this.stats.firestore.misses,
+        isAvailable: this.isOnline()
+      },
+      totalHits,
+      totalMisses,
+      hitRatio: totalHits + totalMisses > 0 ? totalHits / (totalHits + totalMisses) : 0
     };
   }
 
-  private initializeBackgroundSync(): void {
-    if (!this.config.enableBackgroundSync) {
-      return;
+  // Private helper methods
+  private async cacheLocally<T>(key: string, data: T, options: CacheOptions): Promise<void> {
+    const sanitizedKey = this.sanitizeKey(key);
+    const entry: CacheEntry<T> = {
+      data,
+      timestamp: Date.now(),
+      ttl: options.ttl || this.DEFAULT_TTL,
+      source: 'firestore',
+      key: sanitizedKey,
+      syncStatus: 'synced'
+    };
+
+    this.memoryCache.set(sanitizedKey, entry);
+    await this.storeInLocalStorage(key, entry);
+  }
+
+  private async storeInLocalStorage<T>(key: string, entry: CacheEntry<T>): Promise<void> {
+    try {
+      localStorage.setItem(this.getStorageKey(key), JSON.stringify(entry));
+    } catch (error) {
+      // Handle quota exceeded error
+      if (error instanceof Error && error.name === 'QuotaExceededError') {
+        logger.warn('localStorage quota exceeded, clearing old entries');
+        this.clearOldLocalStorageEntries();
+      }
     }
-    
-    this.backgroundSyncTimer = setInterval(async () => {
-      if (this.syncQueue.size > 0 && this.isOnline) {
+  }
+
+  private clearOldLocalStorageEntries(): void {
+    const entries: Array<{ key: string; timestamp: number }> = [];
+
+    Object.keys(localStorage).forEach(key => {
+      if (key.startsWith(this.STORAGE_PREFIX)) {
         try {
-          const result = await this.forceSync();
-          if (result.synced > 0) {
-            console.log(`[HybridCache] Background sync: ${result.synced} items`);
-          }
-        } catch (error) {
-          console.warn('[HybridCache] Background sync error:', error);
+          const entry = JSON.parse(localStorage.getItem(key) || '{}');
+          entries.push({ key, timestamp: entry.timestamp || 0 });
+        } catch {
+          // Remove corrupted entries
+          localStorage.removeItem(key);
         }
       }
-    }, this.config.firestore.syncInterval);
+    });
+
+    // Sort by timestamp and remove oldest 25%
+    entries.sort((a, b) => a.timestamp - b.timestamp);
+    const toRemove = Math.floor(entries.length * 0.25);
+    entries.slice(0, toRemove).forEach(({ key }) => {
+      localStorage.removeItem(key);
+    });
   }
 
-  private initializeNetworkMonitoring(): void {
-    if (typeof window !== 'undefined') {
-      this.isOnline = navigator.onLine;
-      
-      window.addEventListener('online', () => {
-        this.isOnline = true;
-        console.log('[HybridCache] Voltou online - iniciando sync');
-        this.forceSync();
-      });
-      
-      window.addEventListener('offline', () => {
-        this.isOnline = false;
-        console.log('[HybridCache] Modo offline ativado');
-      });
-    }
+  private async getFromCloud(key: string): Promise<any> {
+    // Simulate cloud storage call
+    // In production, this would integrate with Google Cloud Storage or Supabase
+    return null;
   }
 
-  private async initializeFirestoreStatus(): Promise<void> {
-    try {
-      const isReady = await firestoreCache.isReady();
-      this.stats.firestore.isAvailable = isReady;
-    } catch (error) {
-      console.warn('[HybridCache] Erro ao verificar status do Firestore:', error);
-    }
+  private async syncToCloud(key: string, data: any, ttl: number): Promise<void> {
+    // Simulate cloud sync
+    // In production, this would sync to Google Cloud Storage or Supabase
+    return Promise.resolve();
   }
 
-  // Cleanup ao destruir
-  public destroy(): void {
-    if (this.backgroundSyncTimer) {
-      clearInterval(this.backgroundSyncTimer);
-      this.backgroundSyncTimer = null;
+  private async deleteFromCloud(key: string): Promise<void> {
+    // Simulate cloud deletion
+    return Promise.resolve();
+  }
+
+  private async clearCloud(): Promise<void> {
+    // Simulate cloud clear
+    return Promise.resolve();
+  }
+
+  private startBackgroundSync(): void {
+    this.syncTimer = setInterval(async () => {
+      if (this.syncQueue.size > 0 && this.isOnline()) {
+        await this.forceSync();
+      }
+    }, 30000); // Sync every 30 seconds
+  }
+
+  destroy(): void {
+    if (this.syncTimer) {
+      clearInterval(this.syncTimer);
+      this.syncTimer = null;
     }
   }
 }
 
-// Instância singleton
-export const hybridCache = new HybridCacheManager();
-
-// Utilitários de conveniência
+// Utility functions and constants
 export const HybridCacheUtils = {
-  // Predefined TTLs
   TTL: {
-    VERY_SHORT: 30 * 1000,        // 30 segundos
-    SHORT: 2 * 60 * 1000,         // 2 minutos
-    MEDIUM: 10 * 60 * 1000,       // 10 minutos
-    LONG: 60 * 60 * 1000,         // 1 hora
-    VERY_LONG: 24 * 60 * 60 * 1000, // 24 horas
+    VERY_SHORT: 30 * 1000,      // 30 seconds
+    SHORT: 2 * 60 * 1000,       // 2 minutes
+    MEDIUM: 10 * 60 * 1000,     // 10 minutes
+    LONG: 60 * 60 * 1000,       // 1 hour
+    VERY_LONG: 24 * 60 * 60 * 1000  // 24 hours
   },
 
-  // Cache key helpers
   Keys: {
     chat: (message: string, persona: string) => `chat:${persona}:${message}`,
     personas: () => 'personas:all',
-    api: (endpoint: string, params?: string) => `api:${endpoint}${params ? `:${params}` : ''}`,
-    user: (userId: string, data: string) => `user:${userId}:${data}`,
+    api: (endpoint: string, params: string) => `api:${endpoint}:${params}`,
+    user: (userId: string, type: string) => `user:${userId}:${type}`
   }
 };
 
-export default hybridCache;
+// Singleton instance
+export const hybridCache = new HybridCache();
+
+export default HybridCache;

@@ -1,0 +1,22 @@
+{
+  "name": "medical-system-test",
+  "version": "1.0.0",
+  "description": "Test configuration file for hook validation",
+  "medical": {
+    "compliance": true,
+    "lgpd": true,
+    "data_encryption": true
+  },
+  "api": {
+    "timeout": 30000,
+    "retries": 3,
+    "rate_limit": {
+      "requests_per_minute": 60
+    }
+  },
+  "security": {
+    "jwt_expiry": "24h",
+    "bcrypt_rounds": 12,
+    "csrf_protection": true
+  }
+}

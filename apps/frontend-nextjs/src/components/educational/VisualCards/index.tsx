@@ -24,7 +24,7 @@ interface InfographicData {
 interface VisualCardProps {
   type: 'infographic' | 'checklist' | 'timeline' | 'comparison';
   title: string;
-  data: any;
+  data: unknown;
   variant?: 'default' | 'compact' | 'detailed';
   interactive?: boolean;
   className?: string;
@@ -148,7 +148,7 @@ export default function VisualCard({
   className = '' 
 }: VisualCardProps) {
   const [checklistState, setChecklistState] = useState<ChecklistItem[]>(
-    type === 'checklist' ? data : []
+    type === 'checklist' ? (data as ChecklistItem[]) : []
   );
 
   const toggleChecklistItem = (id: string) => {

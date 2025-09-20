@@ -4,7 +4,7 @@
  */
 
 import { useState, useCallback, useRef, useMemo } from 'react';
-import { ChatMessage } from '@/services/api';
+import { type ChatMessage } from '@/types/api';
 
 interface UseChatMessagesOptions {
   persistToLocalStorage?: boolean;
@@ -27,7 +27,23 @@ export function useChatMessages(options: UseChatMessagesOptions = {}) {
       const stored = localStorage.getItem(storageKey);
       return stored ? JSON.parse(stored) : [];
     } catch (error) {
-      console.error('Erro ao carregar histórico do chat:', error);
+      // Medical system error - explicit stderr + tracking
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      if (typeof process !== 'undefined' && process.stderr) {
+        process.stderr.write(`❌ ERRO - Falha ao carregar histórico do chat médico:\n  Error: ${errorMessage}\n\n`);
+      }
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'medical_chat_history_load_error', {
+          event_category: 'medical_error_critical',
+          event_label: 'chat_history_load_failed',
+          custom_parameters: {
+            medical_context: 'chat_history_loading',
+            storage_key: storageKey,
+            error_type: 'localStorage_load_failure',
+            error_message: errorMessage
+          }
+        });
+      }
       return [];
     }
   }, [persistToLocalStorage, storageKey]);
@@ -44,7 +60,24 @@ export function useChatMessages(options: UseChatMessagesOptions = {}) {
       const messagesToSave = newMessages.slice(-maxMessages);
       localStorage.setItem(storageKey, JSON.stringify(messagesToSave));
     } catch (error) {
-      console.error('Erro ao salvar histórico do chat:', error);
+      // Medical system error - explicit stderr + tracking
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      if (typeof process !== 'undefined' && process.stderr) {
+        process.stderr.write(`❌ ERRO - Falha ao salvar histórico do chat médico:\n  Error: ${errorMessage}\n\n`);
+      }
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'medical_chat_history_save_error', {
+          event_category: 'medical_error_critical',
+          event_label: 'chat_history_save_failed',
+          custom_parameters: {
+            medical_context: 'chat_history_saving',
+            storage_key: storageKey,
+            messages_count: newMessages.length,
+            error_type: 'localStorage_save_failure',
+            error_message: errorMessage
+          }
+        });
+      }
     }
   }, [persistToLocalStorage, storageKey, maxMessages]);
 

@@ -20,7 +20,7 @@ def test_context_analyzer():
     print("[TEST] Context Analyzer...")
     
     try:
-        from services.predictive_system import ContextAnalyzer
+        from services.integrations.predictive_system import ContextAnalyzer
         
         analyzer = ContextAnalyzer()
         
@@ -41,7 +41,10 @@ def test_context_analyzer():
         return True
         
     except Exception as e:
+        import traceback
         print(f"  [ERROR] Context Analyzer falhou: {e}")
+        if str(e).strip() == "":
+            print(f"  [DEBUG] Traceback: {traceback.format_exc()}")
         return False
 
 def test_predictive_cache():
@@ -49,7 +52,7 @@ def test_predictive_cache():
     print("[TEST] Predictive Cache...")
     
     try:
-        from services.predictive_system import PredictiveCache, Suggestion
+        from services.integrations.predictive_system import PredictiveCache, Suggestion
         
         cache = PredictiveCache(max_size=5)
         
@@ -85,7 +88,7 @@ def test_interaction_tracker():
     temp_dir = tempfile.mkdtemp()
     
     try:
-        from services.predictive_system import InteractionTracker, Suggestion
+        from services.integrations.predictive_system import InteractionTracker, Suggestion
         
         tracker = InteractionTracker(temp_dir)
         
@@ -140,11 +143,11 @@ def test_predictive_engine():
             VECTOR_DB_PATH = temp_dir
         
         # Substituir configuração
-        import services.predictive_system
-        original_config = services.predictive_system.config
-        services.predictive_system.config = MockConfig()
+        import services.integrations.predictive_system
+        original_config = services.integrations.predictive_system.config
+        services.integrations.predictive_system.config = MockConfig()
         
-        from services.predictive_system import PredictiveEngine
+        from services.integrations.predictive_system import PredictiveEngine
         
         engine = PredictiveEngine()
         
@@ -174,7 +177,7 @@ def test_predictive_engine():
         assert 'cache_performance' in analytics
         
         # Restaurar configuração
-        services.predictive_system.config = original_config
+        services.integrations.predictive_system.config = original_config
         
         print("  [OK] Predictive Engine funcionando")
         return True
@@ -191,7 +194,7 @@ def test_system_integration():
     print("[TEST] System Integration...")
     
     try:
-        from services.predictive_system import get_predictive_engine, is_predictive_system_available
+        from services.integrations.predictive_system import get_predictive_engine, is_predictive_system_available
         
         # Testar disponibilidade
         available = is_predictive_system_available()

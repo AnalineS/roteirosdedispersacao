@@ -100,10 +100,6 @@ notifications:
     enabled: false
     recipients: []
   
-  # Slack integration
-  slack:
-    enabled: false
-    webhook-url: ""
 
 # Configurações de CI/CD
 ci-cd:

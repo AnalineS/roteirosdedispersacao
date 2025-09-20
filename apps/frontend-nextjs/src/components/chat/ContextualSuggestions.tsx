@@ -124,7 +124,19 @@ export default function ContextualSuggestions({
         }
         setSelectedIndex(-1);
       } catch (error) {
-        console.error('Erro ao detectar contexto:', error);
+        if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'contextual_suggestions_context_detection_error', {
+            event_category: 'medical_chat_interaction',
+            event_label: 'context_detection_failed',
+            custom_parameters: {
+              medical_context: 'contextual_suggestions_system',
+              persona_id: personaId,
+              input_length: currentInput.length,
+              error_type: 'context_detection',
+              error_message: error instanceof Error ? error.message : String(error)
+            }
+          });
+        }
         setSuggestions([]);
         setShowSuggestions(false);
       } finally {
@@ -163,7 +175,19 @@ export default function ContextualSuggestions({
     try {
       onSuggestionClick(suggestion);
     } catch (error) {
-      console.error('Erro ao aplicar sugestão:', error);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'contextual_suggestions_apply_error', {
+          event_category: 'medical_chat_interaction',
+          event_label: 'suggestion_application_failed',
+          custom_parameters: {
+            medical_context: 'contextual_suggestions_click',
+            persona_id: personaId,
+            suggestion_text: suggestion.substring(0, 50),
+            error_type: 'suggestion_application',
+            error_message: error instanceof Error ? error.message : String(error)
+          }
+        });
+      }
     }
   }, [onSuggestionClick]);
 

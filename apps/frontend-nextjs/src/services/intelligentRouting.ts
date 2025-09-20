@@ -25,6 +25,14 @@ export interface PersonaExpertise {
   specialties: string[];
 }
 
+export interface BackendAnalysis {
+  recommended_persona?: string;
+  confidence?: number;
+  reasoning?: string;
+  scope?: string;
+  [key: string]: unknown;
+}
+
 // Mapeamento de expertise das personas
 const PERSONAS_EXPERTISE: Record<string, PersonaExpertise> = {
   dr_gasnelio: {
@@ -124,7 +132,7 @@ export async function analyzeQuestionRouting(
     const localAnalysis = analyzeLocalKeywords(question, availablePersonas);
     
     // Análise do backend (se disponível)
-    let backendAnalysis: any = null;
+    let backendAnalysis: BackendAnalysis | null = null;
     try {
       backendAnalysis = await detectQuestionScope(question);
     } catch (error) {
@@ -254,7 +262,7 @@ function determineScope(question: string): string {
  */
 function combineAnalyses(
   localAnalysis: RoutingAnalysis,
-  backendAnalysis: any,
+  backendAnalysis: BackendAnalysis | null,
   availablePersonas: Record<string, Persona>
 ): RoutingAnalysis {
   if (!backendAnalysis || !backendAnalysis.recommended_persona) {

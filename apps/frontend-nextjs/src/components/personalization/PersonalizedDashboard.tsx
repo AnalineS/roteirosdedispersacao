@@ -151,7 +151,7 @@ export default function PersonalizedDashboard({ className }: PersonalizedDashboa
         gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
         gap: '1rem'
       }}>
-        {personalizedNavigation.slice(0, 6).map((item, index) => (
+        {personalizedNavigation.slice(0, 6).map((item) => (
           <Link
             key={item.href}
             href={item.href}

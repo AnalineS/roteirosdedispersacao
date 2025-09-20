@@ -7,11 +7,38 @@
 'use client';
 
 import React, { useState, useEffect, createContext, useContext } from 'react';
-import type { 
-  GamificationNotification, 
-  Achievement 
+import type {
+  GamificationNotification,
+  Achievement
 } from '@/types/gamification';
 import BadgeCard from './BadgeCard';
+
+// Interface para dados de notificação nativa
+interface NotificationData {
+  notificationId?: string;
+  navigateToGamification?: boolean;
+  [key: string]: unknown;
+}
+
+// Interface WindowWithGtag para gtag tracking
+interface WindowWithGtag extends Window {
+  gtag?: (
+    command: 'event' | 'config',
+    eventNameOrId: string,
+    parameters?: {
+      event_category?: string;
+      event_label?: string;
+      value?: number;
+      custom_parameters?: Record<string, unknown>;
+      [key: string]: unknown;
+    }
+  ) => void;
+}
+
+// Helper para acessar gtag de forma type-safe
+function getWindowWithGtag(): WindowWithGtag | null {
+  return typeof window !== 'undefined' ? (window as WindowWithGtag) : null;
+}
 
 interface NotificationContextType {
   showNotification: (notification: GamificationNotification) => void;
@@ -258,7 +285,16 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
 
   const requestNotificationPermission = async (): Promise<boolean> => {
     if (!('Notification' in window)) {
-      console.warn('Este navegador não suporta notificações');
+      const windowWithGtag = getWindowWithGtag();
+      if (windowWithGtag?.gtag) {
+        windowWithGtag.gtag('event', 'notification_unsupported', {
+          event_category: 'gamification',
+          event_label: 'browser_compatibility_issue',
+          custom_parameters: {
+            browser: navigator.userAgent
+          }
+        });
+      }
       return false;
     }
 
@@ -278,16 +314,25 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
       
       return isEnabled;
     } catch (error) {
-      console.error('Erro ao solicitar permissão de notificação:', error);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'notification_permission_error', {
+          event_category: 'gamification_error',
+          event_label: 'permission_request_failed',
+          custom_parameters: {
+            medical_context: 'notification_system',
+            error_type: 'permission_api'
+          }
+        });
+      }
       return false;
     }
   };
 
   const showNativeNotification = (
-    title: string, 
-    body: string, 
+    title: string,
+    body: string,
     icon?: string,
-    data?: any
+    data?: NotificationData
   ) => {
     if (!isNotificationEnabled) return;
 
@@ -317,7 +362,17 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
         }
       };
     } catch (error) {
-      console.error('Erro ao mostrar notificação nativa:', error);
+      const windowWithGtag = getWindowWithGtag();
+      if (windowWithGtag?.gtag) {
+        windowWithGtag.gtag('event', 'notification_display_error', {
+          event_category: 'gamification_error',
+          event_label: 'native_notification_failed',
+          custom_parameters: {
+            medical_context: 'notification_system',
+            error_type: 'display_api'
+          }
+        });
+      }
     }
   };
 

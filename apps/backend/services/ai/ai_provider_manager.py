@@ -73,7 +73,7 @@ class AIProviderManager:
         
         self._initialize_models()
         
-        logger.info("🤖 AI Provider Manager inicializado com GitHub config")
+        logger.info("AI Provider Manager inicializado com GitHub config")
     
     def _initialize_models(self):
         """Inicializa modelos baseado nas chaves disponíveis"""

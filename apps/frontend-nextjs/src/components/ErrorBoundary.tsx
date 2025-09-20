@@ -24,8 +24,19 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('ErrorBoundary caught an error:', error, errorInfo);
-    
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'error_boundary_caught_error', {
+        event_category: 'medical_error_critical',
+        event_label: 'react_error_caught',
+        custom_parameters: {
+          medical_context: 'error_boundary_simple',
+          error_name: error.name,
+          error_message: error.message.substring(0, 100),
+          component_stack: errorInfo.componentStack?.substring(0, 200) || 'not_available'
+        }
+      });
+    }
+
     this.setState({
       error,
       errorInfo

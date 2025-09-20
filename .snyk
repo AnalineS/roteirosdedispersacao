@@ -52,7 +52,7 @@ failOnIssues:
   lowSeverity: false
 
 # Organization settings
-org: roteiros-de-dispensacao-hml
+org: sousa.analine
 
 # Project settings for different components
 projects:

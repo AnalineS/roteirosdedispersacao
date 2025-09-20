@@ -3,8 +3,8 @@ export const SITE_CONFIG = {
   // Domínios suportados
   DOMAINS: {
     PRODUCTION: 'roteirosdedispensacao.com',
-    FIREBASE_WEB: 'roteiros-de-dispensacao.web.app',
-    FIREBASE_APP: 'roteiros-de-dispensacao.firebaseapp.com'
+    CLOUD_RUN_WEB: 'roteiro-dispensacao-frontend-339202208157.us-central1.run.app',
+    CLOUD_RUN_APP: 'roteiro-dispensacao-frontend-339202208157.us-central1.run.app'
   },
   
   // Detecta o domínio atual

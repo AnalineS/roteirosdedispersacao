@@ -3,27 +3,39 @@
 import React, { useState } from 'react';
 import { CalculationResult } from '@/types/medication';
 import { modernChatTheme } from '@/config/modernTheme';
+import { useHapticFeedback } from '@/utils/hapticFeedback';
+import { ExportLoadingState } from '@/components/ui/LoadingStates';
 
 interface ExportOptionsProps {
   result: CalculationResult | null;
   isAvailable: boolean;
 }
 
-export default function ExportOptions({ result, isAvailable }: ExportOptionsProps) {
+export default function ExportOptions({ result, isAvailable }: ExportOptionsProps): React.JSX.Element {
   const [emailAddress, setEmailAddress] = useState('');
   const [includeEducational, setIncludeEducational] = useState(true);
   const [additionalNotes, setAdditionalNotes] = useState('');
   const [isExporting, setIsExporting] = useState(false);
   const [exportStatus, setExportStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [exportProgress, setExportProgress] = useState(0);
+  const [currentFormat, setCurrentFormat] = useState<'pdf' | 'email' | null>(null);
+  const { success, error, info } = useHapticFeedback();
 
-  const handlePDFExport = async () => {
+  const handlePDFExport = async (): Promise<void> => {
     if (!result) return;
     
+    // Haptic feedback para início da exportação
+    info();
     setIsExporting(true);
+    setCurrentFormat('pdf');
+    setExportProgress(0);
     
-    // Simular geração de PDF
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Simular progresso de geração
+      for (let i = 0; i <= 100; i += 20) {
+        setExportProgress(i);
+        await new Promise(resolve => setTimeout(resolve, 300));
+      }
       
       // TODO: Implementar geração real de PDF
       const pdfContent = generatePDFContent(result, includeEducational, additionalNotes);
@@ -40,39 +52,83 @@ export default function ExportOptions({ result, isAvailable }: ExportOptionsProp
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
       
+      // Success haptic feedback
+      success();
       setExportStatus('success');
       setTimeout(() => setExportStatus('idle'), 3000);
-    } catch (error) {
-      console.error('Erro ao exportar PDF:', error);
+    } catch (exportError) {
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'dose_calculator_pdf_export_error', {
+          event_category: 'medical_export_tools',
+          event_label: 'pdf_export_failed',
+          custom_parameters: {
+            medical_context: 'dose_calculator_pdf_export',
+            error_type: 'pdf_export_failure',
+            error_message: exportError instanceof Error ? exportError.message : String(exportError)
+          }
+        });
+      }
+      // Error haptic feedback
+      error();
       setExportStatus('error');
       setTimeout(() => setExportStatus('idle'), 3000);
+    } finally {
+      setIsExporting(false);
+      setCurrentFormat(null);
+      setExportProgress(0);
     }
-    
-    setIsExporting(false);
   };
 
-  const handleEmailSend = async () => {
+  const handleEmailSend = async (): Promise<void> => {
     if (!result || !emailAddress) return;
     
+    // Haptic feedback para início do envio
+    info();
     setIsExporting(true);
+    setCurrentFormat('email');
+    setExportProgress(0);
     
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Simular progresso do envio
+      const stages = ['Preparando conteúdo...', 'Conectando servidor...', 'Enviando email...'];
+      
+      for (let i = 0; i < stages.length; i++) {
+        setExportProgress((i + 1) * 33);
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+      
+      setExportProgress(100);
+      await new Promise(resolve => setTimeout(resolve, 300));
       
       // TODO: Implementar EmailJS
-      console.log('Enviando email para:', emailAddress);
-      console.log('Conteúdo:', generatePDFContent(result, includeEducational, additionalNotes));
-      
+
+      // Success haptic feedback
+      success();
       setExportStatus('success');
       setTimeout(() => setExportStatus('idle'), 3000);
       setEmailAddress('');
-    } catch (error) {
-      console.error('Erro ao enviar email:', error);
+    } catch (emailError) {
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'dose_calculator_email_export_error', {
+          event_category: 'medical_export_tools',
+          event_label: 'email_export_failed',
+          custom_parameters: {
+            medical_context: 'dose_calculator_email_export',
+            email_address: emailAddress,
+            error_type: 'email_export_failure',
+            error_message: emailError instanceof Error ? emailError.message : String(emailError)
+          }
+        });
+      }
+      // Error haptic feedback
+      error();
       setExportStatus('error');
       setTimeout(() => setExportStatus('idle'), 3000);
+    } finally {
+      setIsExporting(false);
+      setCurrentFormat(null);
+      setExportProgress(0);
     }
-    
-    setIsExporting(false);
   };
 
   if (!isAvailable) {
@@ -258,7 +314,13 @@ export default function ExportOptions({ result, isAvailable }: ExportOptionsProp
               opacity: isExporting ? 0.7 : 1
             }}
           >
-            {isExporting ? '⏳ Gerando PDF...' : '📄 Baixar PDF'}
+            {isExporting && currentFormat === 'pdf' ? (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                <span>⏳</span> Gerando PDF... {exportProgress}%
+              </div>
+            ) : (
+              '📄 Baixar PDF'
+            )}
           </button>
         </div>
 
@@ -341,7 +403,13 @@ export default function ExportOptions({ result, isAvailable }: ExportOptionsProp
               opacity: isExporting ? 0.7 : 1
             }}
           >
-            {isExporting ? '📤 Enviando...' : '📧 Enviar por Email'}
+            {isExporting && currentFormat === 'email' ? (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                <span>📤</span> Enviando... {exportProgress}%
+              </div>
+            ) : (
+              '📧 Enviar por Email'
+            )}
           </button>
         </div>
       </div>

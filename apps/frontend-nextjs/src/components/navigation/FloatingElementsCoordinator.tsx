@@ -216,7 +216,7 @@ export function useFloatingElement(
 
     // Calcular posição ótima
     const optimal = getOptimalPosition(preferredPosition, size);
-    setOptimalPosition(optimal as any);
+    setOptimalPosition(optimal as 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right');
 
     return () => {
       unregisterElement(id);

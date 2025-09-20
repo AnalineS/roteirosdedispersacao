@@ -16,11 +16,10 @@ const HomeIcon = () => (
   </svg>
 );
 
-const ChatIcon = () => (
-  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-    <path fillRule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clipRule="evenodd" />
-  </svg>
-);
+// Importar sistema de ícones ativo
+import { ActiveIcon, useActiveIcons } from '@/components/icons/ActiveIconSystem';
+
+const ChatIcon = () => <ActiveIcon name="ChatIcon" size={20} />;
 
 const BookIcon = () => (
   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -88,6 +87,18 @@ export default function SiteMapPage() {
       ]
     },
     {
+      title: 'Assistentes Virtuais',
+      icon: ChatIcon,
+      color: 'bg-emerald-50 border-emerald-200 text-emerald-800',
+      pages: [
+        {
+          title: 'Chat Inteligente',
+          href: '/chat',
+          description: 'Converse com Dr. Gasnelio e Gá sobre hanseníase'
+        }
+      ]
+    },
+    {
       title: 'Conteúdo Educacional',
       icon: BookIcon,
       color: 'bg-green-50 border-green-200 text-green-800',
@@ -118,9 +129,14 @@ export default function SiteMapPage() {
           description: 'Protocolo completo para farmacêuticos'
         },
         {
+          title: 'Vida com a Doença',
+          href: '/modules/vida-com-doenca',
+          description: 'Qualidade de vida e orientações para pacientes'
+        },
+        {
           title: 'Vida com Hanseníase',
           href: '/vida-com-hanseniase',
-          description: 'Qualidade de vida e direitos (acesso público)',
+          description: 'Apoio e orientações - acesso público (link de suporte)',
           isPublic: true
         }
       ]
@@ -139,11 +155,6 @@ export default function SiteMapPage() {
           title: 'Calculadora de Doses PQT-U',
           href: '/resources/calculator',
           description: 'Cálculo automático de doses medicamentosas'
-        },
-        {
-          title: 'Verificador de Interações',
-          href: '/resources/interactions',
-          description: 'Análise de incompatibilidades medicamentosas'
         },
         {
           title: 'Checklist de Dispensação',
@@ -173,14 +184,24 @@ export default function SiteMapPage() {
           description: 'Pesquisa de doutorado em Ciências Farmacêuticas'
         },
         {
-          title: 'Sobre o Sistema',
+          title: 'Conheça a Equipe',
           href: '/sobre',
-          description: 'Informações sobre a plataforma educacional'
+          description: 'Pesquisadores e equipe multidisciplinar do projeto'
         },
         {
           title: 'Metodologia',
           href: '/metodologia',
           description: 'Métodos científicos e fundamentação teórica'
+        },
+        {
+          title: 'Metodologia Detalhada',
+          href: '/metodologia/detalhada',
+          description: 'Procedimentos científicos completos da pesquisa'
+        },
+        {
+          title: 'Referências Bibliográficas',
+          href: '/referencias',
+          description: 'Base científica e referencial teórico utilizado'
         }
       ]
     },
@@ -222,14 +243,24 @@ export default function SiteMapPage() {
       ]
     },
     {
-      title: 'Área Administrativa',
+      title: 'Conta e Administração',
       icon: ToolIcon,
       color: 'bg-orange-50 border-orange-200 text-orange-800',
       pages: [
         {
-          title: 'Configurações',
-          href: '/settings',
-          description: 'Preferências pessoais e personalização'
+          title: 'Perfil do Usuário',
+          href: '/profile',
+          description: 'Gerenciamento de perfil e configurações pessoais'
+        },
+        {
+          title: 'Login',
+          href: '/login',
+          description: 'Acesso à conta do usuário'
+        },
+        {
+          title: 'Cadastro',
+          href: '/cadastro',
+          description: 'Criar nova conta no sistema'
         },
         {
           title: 'Feedback',
@@ -249,6 +280,29 @@ export default function SiteMapPage() {
       ]
     }
   ];
+
+  // Sistema de ícones ativo - mapeamento de páginas para ícones
+  const icons = {
+    '/': '🏠',
+    '/chat': '🤖',
+    '/modules': '📚',
+    '/simulador': '🩺',
+    '/resources': '🛠️',
+    '/resources/calculator': '🧮',
+    '/resources/interactions': '⚠️',
+    '/resources/emergency': '🚨',
+    '/certificacao': '🎓',
+    '/profile': '👤',
+    '/progress': '📊',
+    '/sobre-a-tese': '📖',
+    '/glossario': '📝',
+    '/sitemap': '🗺️',
+    '/admin': '⚙️'
+  };
+
+  const getIcon = (href: string) => {
+    return icons[href as keyof typeof icons] || '📄';
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
@@ -307,9 +361,17 @@ export default function SiteMapPage() {
                     >
                       <div className="space-y-3">
                         <div className="flex items-start justify-between">
-                          <h3 className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
-                            {page.title}
-                          </h3>
+                          <div className="flex items-center gap-2">
+                            {/* Sistema de ícones ativo - icons e getIcon */}
+                            {getIcon && (
+                              <span className="text-lg opacity-70 group-hover:opacity-100 transition-opacity">
+                                {getIcon(page.href) || '📝'}
+                              </span>
+                            )}
+                            <h3 className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                              {page.title}
+                            </h3>
+                          </div>
                           {page.isPublic && (
                             <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full shrink-0 ml-2">
                               Público

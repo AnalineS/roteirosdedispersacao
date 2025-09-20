@@ -13,6 +13,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { getUnbColors } from '@/config/modernTheme';
+import { useHapticFeedback } from '@/utils/hapticFeedback';
 
 // Interfaces para loading states
 interface LoadingStateProps {
@@ -526,11 +527,31 @@ export const OptimisticLoadingState: React.FC<{
   );
 };
 
-// Context-aware Loading Messages
+// Context-aware Loading Messages com Haptic Feedback
 export const ContextualLoadingMessage: React.FC<{
-  context: 'chat' | 'dosage' | 'search' | 'calculation' | 'save';
+  context: 'chat' | 'dosage' | 'search' | 'calculation' | 'save' | 'auth' | 'export';
   persona?: 'gasnelio' | 'ga';
-}> = ({ context, persona }) => {
+  withHaptic?: boolean;
+}> = ({ context, persona, withHaptic = false }) => {
+  const { medical, calculation, info } = useHapticFeedback();
+  
+  useEffect(() => {
+    if (withHaptic) {
+      // Trigger haptic feedback baseado no contexto
+      switch (context) {
+        case 'dosage':
+        case 'calculation':
+          calculation();
+          break;
+        case 'chat':
+          medical();
+          break;
+        default:
+          info();
+      }
+    }
+  }, [context, withHaptic, medical, calculation, info]);
+
   const getContextMessage = () => {
     const messages = {
       chat: {
@@ -552,6 +573,14 @@ export const ContextualLoadingMessage: React.FC<{
       save: {
         gasnelio: 'Salvando dados com segurança médica...',
         ga: 'Guardando suas informações com carinho...'
+      },
+      auth: {
+        gasnelio: 'Verificando credenciais com segurança...',
+        ga: 'Processando seu acesso com cuidado...'
+      },
+      export: {
+        gasnelio: 'Gerando documento com dados médicos...',
+        ga: 'Preparando seus materiais com atenção...'
       }
     };
 
@@ -627,4 +656,572 @@ export const LoadingSkeletonGrid: React.FC<{
   };
 
   return <div>{renderSkeleton()}</div>;
+};
+
+// Skeleton Screen para Dashboard Médico
+export const DashboardSkeleton: React.FC<{
+  showPatientCard?: boolean;
+  showProgressCharts?: boolean;
+  showRecentActivity?: boolean;
+}> = ({ showPatientCard = true, showProgressCharts = true, showRecentActivity = true }) => {
+  return (
+    <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      {/* Header Skeleton */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <Skeleton width="200px" height="2rem" />
+          <div style={{ marginTop: '8px' }}>
+            <Skeleton width="300px" height="1rem" />
+          </div>
+        </div>
+        <Skeleton width="120px" height="40px" borderRadius="8px" />
+      </div>
+
+      {/* Cards Grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px' }}>
+        {/* Estatísticas Cards */}
+        {[...Array(4)].map((_, i) => (
+          <div key={i} style={{
+            background: 'white',
+            padding: '20px',
+            borderRadius: '12px',
+            border: '1px solid #e2e8f0'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <div>
+                <Skeleton width="100px" height="0.875rem" />
+                <div style={{ marginTop: '12px' }}>
+                  <Skeleton width="60px" height="2rem" />
+                </div>
+              </div>
+              <Skeleton width="40px" height="40px" borderRadius="50%" />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Main Content Area */}
+      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px' }}>
+        {/* Chart Area */}
+        {showProgressCharts && (
+          <div style={{
+            background: 'white',
+            padding: '24px',
+            borderRadius: '12px',
+            border: '1px solid #e2e8f0'
+          }}>
+            <div style={{ marginBottom: '20px' }}>
+              <Skeleton width="180px" height="1.5rem" />
+              <div style={{ marginTop: '8px' }}>
+                <Skeleton width="250px" height="1rem" />
+              </div>
+            </div>
+            <Skeleton width="100%" height="200px" borderRadius="8px" />
+          </div>
+        )}
+
+        {/* Sidebar */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {/* Patient Card */}
+          {showPatientCard && (
+            <div style={{
+              background: 'white',
+              padding: '20px',
+              borderRadius: '12px',
+              border: '1px solid #e2e8f0'
+            }}>
+              <div style={{ marginBottom: '16px' }}>
+                <Skeleton width="120px" height="1.25rem" />
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                <Skeleton width="60px" height="60px" borderRadius="50%" />
+                <div>
+                  <Skeleton width="140px" height="1rem" />
+                  <div style={{ marginTop: '4px' }}>
+                    <Skeleton width="100px" height="0.875rem" />
+                  </div>
+                </div>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <Skeleton width="100%" height="0.875rem" />
+                <Skeleton width="80%" height="0.875rem" />
+                <Skeleton width="90%" height="0.875rem" />
+              </div>
+            </div>
+          )}
+
+          {/* Recent Activity */}
+          {showRecentActivity && (
+            <div style={{
+              background: 'white',
+              padding: '20px',
+              borderRadius: '12px',
+              border: '1px solid #e2e8f0'
+            }}>
+              <div style={{ marginBottom: '16px' }}>
+                <Skeleton width="140px" height="1.25rem" />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <Skeleton width="32px" height="32px" borderRadius="50%" />
+                    <div style={{ flex: 1 }}>
+                      <Skeleton width="100%" height="0.875rem" />
+                      <div style={{ marginTop: '4px' }}>
+                        <Skeleton width="60%" height="0.75rem" />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Skeleton Screen para Chat Interface
+export const ChatInterfaceSkeleton: React.FC<{
+  messagesCount?: number;
+  showTypingIndicator?: boolean;
+}> = ({ messagesCount = 5, showTypingIndicator = true }) => {
+  return (
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      height: '600px',
+      background: 'white',
+      borderRadius: '12px',
+      border: '1px solid #e2e8f0',
+      overflow: 'hidden'
+    }}>
+      {/* Chat Header */}
+      <div style={{
+        padding: '16px 20px',
+        borderBottom: '1px solid #e2e8f0',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '12px'
+      }}>
+        <Skeleton width="40px" height="40px" borderRadius="50%" />
+        <div>
+          <Skeleton width="120px" height="1rem" />
+          <div style={{ marginTop: '4px' }}>
+            <Skeleton width="80px" height="0.75rem" />
+          </div>
+        </div>
+      </div>
+
+      {/* Messages Area */}
+      <div style={{
+        flex: 1,
+        padding: '16px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '16px',
+        overflowY: 'auto'
+      }}>
+        {[...Array(messagesCount)].map((_, i) => {
+          const isUser = i % 2 === 0;
+          return (
+            <div key={i} style={{
+              display: 'flex',
+              justifyContent: isUser ? 'flex-end' : 'flex-start'
+            }}>
+              <div style={{
+                maxWidth: '70%',
+                padding: '12px 16px',
+                borderRadius: '12px',
+                background: isUser ? '#f1f5f9' : '#e0f2fe'
+              }}>
+                <Skeleton width="100%" height="1rem" />
+                <div style={{ marginTop: '4px' }}>
+                  <Skeleton width={`${Math.random() * 40 + 40}%`} height="1rem" />
+                </div>
+              </div>
+            </div>
+          );
+        })}
+
+        {/* Typing Indicator */}
+        {showTypingIndicator && (
+          <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+            <div style={{
+              padding: '12px 16px',
+              borderRadius: '12px',
+              background: '#e0f2fe',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px'
+            }}>
+              <div style={{
+                width: '8px',
+                height: '8px',
+                borderRadius: '50%',
+                background: '#64748b',
+                animation: 'bounce 1.4s ease-in-out infinite both'
+              }} />
+              <div style={{
+                width: '8px',
+                height: '8px',
+                borderRadius: '50%',
+                background: '#64748b',
+                animation: 'bounce 1.4s ease-in-out 0.16s infinite both'
+              }} />
+              <div style={{
+                width: '8px',
+                height: '8px',
+                borderRadius: '50%',
+                background: '#64748b',
+                animation: 'bounce 1.4s ease-in-out 0.32s infinite both'
+              }} />
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Input Area */}
+      <div style={{
+        padding: '16px',
+        borderTop: '1px solid #e2e8f0',
+        display: 'flex',
+        gap: '12px',
+        alignItems: 'flex-end'
+      }}>
+        <Skeleton width="100%" height="40px" borderRadius="20px" />
+        <Skeleton width="40px" height="40px" borderRadius="50%" />
+      </div>
+
+      <style jsx>{`
+        @keyframes bounce {
+          0%, 80%, 100% { transform: scale(0); }
+          40% { transform: scale(1); }
+        }
+      `}</style>
+    </div>
+  );
+};
+
+// Skeleton Screen para Lista de Módulos/Recursos
+export const ModuleListSkeleton: React.FC<{
+  itemsCount?: number;
+  showFilters?: boolean;
+  layout?: 'grid' | 'list';
+}> = ({ itemsCount = 6, showFilters = true, layout = 'grid' }) => {
+  return (
+    <div style={{ padding: '24px' }}>
+      {/* Header com filtros */}
+      {showFilters && (
+        <div style={{
+          marginBottom: '24px',
+          padding: '20px',
+          background: 'white',
+          borderRadius: '12px',
+          border: '1px solid #e2e8f0'
+        }}>
+          <div style={{ marginBottom: '16px' }}>
+            <Skeleton width="180px" height="1.5rem" />
+          </div>
+          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+            <Skeleton width="120px" height="36px" borderRadius="18px" />
+            <Skeleton width="100px" height="36px" borderRadius="18px" />
+            <Skeleton width="140px" height="36px" borderRadius="18px" />
+            <Skeleton width="90px" height="36px" borderRadius="18px" />
+          </div>
+        </div>
+      )}
+
+      {/* Grid ou Lista */}
+      <div style={{
+        display: layout === 'grid' ? 'grid' : 'flex',
+        gridTemplateColumns: layout === 'grid' ? 'repeat(auto-fill, minmax(300px, 1fr))' : undefined,
+        flexDirection: layout === 'list' ? 'column' : undefined,
+        gap: '16px'
+      }}>
+        {[...Array(itemsCount)].map((_, i) => (
+          <div key={i} style={{
+            background: 'white',
+            border: '1px solid #e2e8f0',
+            borderRadius: '12px',
+            padding: '20px',
+            display: 'flex',
+            flexDirection: layout === 'grid' ? 'column' : 'row',
+            gap: '16px'
+          }}>
+            {/* Ícone/Imagem */}
+            <Skeleton 
+              width={layout === 'grid' ? '60px' : '80px'} 
+              height={layout === 'grid' ? '60px' : '80px'} 
+              borderRadius="12px" 
+            />
+            
+            {/* Conteúdo */}
+            <div style={{ flex: 1 }}>
+              <Skeleton width="100%" height="1.25rem" />
+              <div style={{ marginTop: '8px' }}>
+                <Skeleton width="100%" height="0.875rem" />
+              </div>
+              <div style={{ marginTop: '4px' }}>
+                <Skeleton width="80%" height="0.875rem" />
+              </div>
+              
+              {/* Tags */}
+              <div style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
+                <Skeleton width="60px" height="20px" borderRadius="10px" />
+                <Skeleton width="80px" height="20px" borderRadius="10px" />
+              </div>
+              
+              {/* Progress bar para módulos */}
+              {layout === 'grid' && (
+                <div style={{ marginTop: '12px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                    <Skeleton width="80px" height="0.75rem" />
+                    <Skeleton width="40px" height="0.75rem" />
+                  </div>
+                  <Skeleton width="100%" height="6px" borderRadius="3px" />
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// Loading State para Autenticação/Login
+export const AuthLoadingState: React.FC<{
+  type: 'login' | 'register' | 'reset' | 'verify';
+  message?: string;
+  withHaptic?: boolean;
+}> = ({ type, message, withHaptic = true }) => {
+  const { info } = useHapticFeedback();
+  
+  useEffect(() => {
+    if (withHaptic) {
+      info();
+    }
+  }, [withHaptic, info]);
+
+  const getAuthMessage = () => {
+    if (message) return message;
+    
+    switch (type) {
+      case 'login':
+        return 'Verificando suas credenciais...';
+      case 'register':
+        return 'Criando sua conta com segurança...';
+      case 'reset':
+        return 'Enviando instruções para recuperação...';
+      case 'verify':
+        return 'Verificando seu email...';
+      default:
+        return 'Processando autenticação...';
+    }
+  };
+
+  const getIcon = () => {
+    switch (type) {
+      case 'login': return '🔐';
+      case 'register': return '👤';
+      case 'reset': return '🔄';
+      case 'verify': return '✉️';
+      default: return '🔒';
+    }
+  };
+
+  return (
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      padding: '32px',
+      textAlign: 'center',
+      background: 'rgba(59, 130, 246, 0.05)',
+      borderRadius: '12px',
+      border: '1px solid rgba(59, 130, 246, 0.1)'
+    }}>
+      <div style={{
+        fontSize: '2rem',
+        marginBottom: '16px',
+        animation: 'pulse 2s infinite'
+      }}>
+        {getIcon()}
+      </div>
+      
+      <MedicalLoadingSpinner size="medium" variant="default" />
+      
+      <div style={{
+        marginTop: '16px',
+        fontSize: '0.875rem',
+        color: '#64748b',
+        fontWeight: '500'
+      }}>
+        {getAuthMessage()}
+      </div>
+
+      <style jsx>{`
+        @keyframes pulse {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.1); }
+        }
+      `}</style>
+    </div>
+  );
+};
+
+// Loading State para Busca Inteligente
+export const SearchLoadingState: React.FC<{
+  query?: string;
+  withHaptic?: boolean;
+}> = ({ query, withHaptic = false }) => {
+  const { info } = useHapticFeedback();
+  
+  useEffect(() => {
+    if (withHaptic) {
+      info();
+    }
+  }, [withHaptic, info]);
+
+  return (
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      gap: '12px',
+      padding: '16px',
+      background: 'rgba(34, 197, 94, 0.05)',
+      borderRadius: '8px',
+      border: '1px solid rgba(34, 197, 94, 0.1)'
+    }}>
+      <div style={{
+        width: '20px',
+        height: '20px',
+        borderRadius: '50%',
+        border: '2px solid rgba(34, 197, 94, 0.3)',
+        borderTopColor: '#22c55e',
+        animation: 'spin 1s linear infinite'
+      }} />
+      
+      <div style={{
+        fontSize: '0.875rem',
+        color: '#059669'
+      }}>
+        {query ? `Buscando por "${query}"...` : 'Processando busca...'}
+      </div>
+
+      <style jsx>{`
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
+    </div>
+  );
+};
+
+// Loading State para Export/Download
+export const ExportLoadingState: React.FC<{
+  format: 'pdf' | 'excel' | 'word' | 'email';
+  progress?: number;
+  stage?: string;
+  withHaptic?: boolean;
+}> = ({ format, progress = 0, stage, withHaptic = true }) => {
+  const { calculation } = useHapticFeedback();
+  
+  useEffect(() => {
+    if (withHaptic && progress === 0) {
+      calculation();
+    }
+  }, [withHaptic, progress, calculation]);
+
+  const getFormatInfo = () => {
+    switch (format) {
+      case 'pdf':
+        return { icon: '📄', name: 'PDF', color: '#dc2626' };
+      case 'excel':
+        return { icon: '📊', name: 'Excel', color: '#059669' };
+      case 'word':
+        return { icon: '📝', name: 'Word', color: '#2563eb' };
+      case 'email':
+        return { icon: '📧', name: 'Email', color: '#7c3aed' };
+      default:
+        return { icon: '📋', name: 'Arquivo', color: '#64748b' };
+    }
+  };
+
+  const formatInfo = getFormatInfo();
+
+  return (
+    <div style={{
+      padding: '24px',
+      textAlign: 'center',
+      background: 'white',
+      borderRadius: '12px',
+      border: '1px solid #e2e8f0',
+      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
+    }}>
+      <div style={{
+        fontSize: '3rem',
+        marginBottom: '16px',
+        animation: 'bounce 2s infinite'
+      }}>
+        {formatInfo.icon}
+      </div>
+      
+      <div style={{
+        fontSize: '1rem',
+        fontWeight: '600',
+        color: formatInfo.color,
+        marginBottom: '12px'
+      }}>
+        Gerando {formatInfo.name}...
+      </div>
+      
+      {stage && (
+        <div style={{
+          fontSize: '0.75rem',
+          color: '#64748b',
+          marginBottom: '16px'
+        }}>
+          {stage}
+        </div>
+      )}
+      
+      {/* Barra de Progresso */}
+      {progress > 0 && (
+        <div style={{
+          background: '#f1f5f9',
+          borderRadius: '8px',
+          height: '8px',
+          overflow: 'hidden',
+          marginBottom: '12px'
+        }}>
+          <div style={{
+            background: formatInfo.color,
+            height: '100%',
+            width: `${Math.min(progress, 100)}%`,
+            borderRadius: '8px',
+            transition: 'width 0.3s ease',
+            boxShadow: `0 0 8px ${formatInfo.color}40`
+          }} />
+        </div>
+      )}
+      
+      <div style={{
+        fontSize: '0.875rem',
+        color: '#64748b'
+      }}>
+        {progress > 0 ? `${Math.round(progress)}% concluído` : 'Preparando documento...'}
+      </div>
+
+      <style jsx>{`
+        @keyframes bounce {
+          0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+          40% { transform: translateY(-10px); }
+          60% { transform: translateY(-5px); }
+        }
+      `}</style>
+    </div>
+  );
 };

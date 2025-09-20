@@ -88,9 +88,9 @@ export interface PersonalizationEngine {
   getUserPersonalization(): UserPersonalization;
   updatePersonalization(updates: Partial<UserPersonalization>): void;
   getRecommendations(limit?: number): ContentRecommendation[];
-  getPersonalizedNavigation(): any[];
-  trackUserBehavior(action: string, context: any): void;
-  generatePersonalizedDashboard(): any;
+  getPersonalizedNavigation(): Array<{ id: string; label: string; path: string; priority: number }>;
+  trackUserBehavior(action: string, context: Record<string, string | number | boolean>): void;
+  generatePersonalizedDashboard(): { widgets: Array<{ type: string; config: Record<string, unknown> }>; layout: string };
   exportPersonalizationData(): string;
   importPersonalizationData(data: string): boolean;
 }

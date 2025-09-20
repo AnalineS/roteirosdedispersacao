@@ -1,9 +1,39 @@
-# [REPORT] Relatório de Setup Astra DB - Hanseníase RAG
+# [DEPRECATED] Relatório de Setup Astra DB - Hanseníase RAG
+
+**IMPORTANTE**: Este documento está OBSOLETO. O projeto migrou para:
+- **Supabase PostgreSQL** com pgvector (ao invés de AstraDB)
+- **ChromaDB** para vector store local
+- **Google Cloud Storage** para persistência
 
 **Data:** 2025-08-17
-**Keyspace:** hanseniase_rag
-**Ambiente:** Desenvolvimento/Produção
-**Status:** FASE 3.1 CONCLUÍDA
+**Status:** MIGRADO PARA SUPABASE
+
+---
+
+# ARQUITETURA ATUAL
+
+## Vector Store
+- **Supabase PostgreSQL** com extensão pgvector
+- **ChromaDB** para desenvolvimento local
+- **OpenAI embeddings** para vectorização
+
+## Configuração Atual
+```bash
+# Variáveis Supabase (GitHub Secrets)
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_KEY=your-service-key
+SUPABASE_JWT_SECRET=your-jwt-secret
+```
+
+## Arquivos Relevantes
+- `apps/backend/services/integrations/supabase_vector_store.py`
+- `apps/backend/services/rag/supabase_rag_system.py`
+- `supabase/config.toml`
+
+---
+
+# [LEGACY] AstraDB Setup (OBSOLETO)
 
 ## [FIX] Scripts Criados
 
@@ -30,15 +60,16 @@
 
 ## [AUTH] Configuração de Variáveis de Ambiente
 
-### GitHub Secrets Configuradas [OK]
+### GitHub Secrets Atuais [OK]
 As seguintes variáveis estão configuradas nos GitHub Secrets:
 
-- `ASTRA_DB_URL` - URL de conexão do Astra DB
-- `ASTRA_DB_TOKEN` - Token de autenticação AstraCS:...
-- `ASTRA_DB_KEYSPACE` - hanseniase_rag
-- `ASTRA_DB_ENABLED` - true
+- `SUPABASE_URL` - URL do projeto Supabase
+- `SUPABASE_ANON_KEY` - Chave anônima do Supabase
+- `SUPABASE_SERVICE_KEY` - Chave de serviço do Supabase
+- `SUPABASE_JWT_SECRET` - Secret JWT do Supabase
 - `SECRET_KEY` - Chave secreta da aplicação
 - `OPENROUTER_API_KEY` - API Key para modelos de IA
+- `CLOUD_STORAGE_BUCKET` - Bucket do Google Cloud Storage
 
 ### Variáveis Adicionais no app_config.py
 ```python
@@ -203,22 +234,22 @@ astra.log_analytics({
 })
 ```
 
-## [START] Próximos Passos - FASE 3.2
+## [ATUAL] Status da Migração
 
-1. **Migração de Dados Estruturados**
-   - Carregar JSONs do conhecimento médico
-   - Gerar embeddings para cada chunk
-   - Popular tabela embeddings
+1. **Supabase PostgreSQL + pgvector** ✓ IMPLEMENTADO
+   - Tabelas otimizadas para embeddings médicos
+   - Índices vetoriais configurados
+   - Sistema de cache integrado
 
-2. **Otimização de Índices**
-   - Configurar índices customizados
-   - Ajustar políticas de consistência
-   - Implementar cache de queries frequentes
+2. **ChromaDB Local** ✓ IMPLEMENTADO
+   - Fallback local para desenvolvimento
+   - Performance otimizada
+   - Sistema de backup automático
 
-3. **Integração com RAG**
-   - Conectar sistema de busca semântica
-   - Implementar ranking por relevância médica
-   - Configurar fallbacks para casos edge
+3. **RAG Integrado** ✓ IMPLEMENTADO
+   - Busca semântica funcionando
+   - Ranking por relevância médica
+   - Fallbacks inteligentes implementados
 
 ## [OK] Status da FASE 3.1
 

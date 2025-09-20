@@ -41,6 +41,25 @@ interface MobileOptimizedProps {
   fullscreen?: boolean;
 }
 
+interface MobileAlertProps extends React.HTMLAttributes<HTMLDivElement> {
+  children: React.ReactNode;
+  className?: string;
+  variant?: 'default' | 'medical' | 'prescription' | 'emergency';
+}
+
+interface MobileButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  children: React.ReactNode;
+  className?: string;
+  size?: 'small' | 'medium' | 'large';
+  variant?: 'primary' | 'secondary' | 'emergency';
+}
+
+interface MobileGridProps extends React.HTMLAttributes<HTMLDivElement> {
+  children: React.ReactNode;
+  columns?: '1' | '2' | 'auto';
+  className?: string;
+}
+
 // Configurações do framework
 const MOBILE_CONFIG = {
   touchTargets: {
@@ -168,7 +187,16 @@ export default function MobileFirstFramework({
     direction: 'left',
     threshold: MOBILE_CONFIG.gestures.swipeThreshold,
     onSwipe: (direction) => {
-      console.log(`Swipe detected: ${direction}`);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'mobile_swipe_detected', {
+          event_category: 'mobile_interaction',
+          event_label: 'gesture_navigation',
+          custom_parameters: {
+            swipe_direction: direction,
+            interaction_type: 'touch_gesture'
+          }
+        });
+      }
       // Custom swipe logic can be implemented here
     }
   });
@@ -555,7 +583,6 @@ export const MobileCard = ({
   children: React.ReactNode; 
   className?: string;
   variant?: 'default' | 'medical' | 'prescription' | 'emergency';
-  [key: string]: any;
 }) => {
   const getVariantClass = () => {
     switch (variant) {
@@ -584,7 +611,6 @@ export const MobileButton = ({
   className?: string;
   size?: 'small' | 'medium' | 'large';
   variant?: 'primary' | 'secondary' | 'emergency';
-  [key: string]: any;
 }) => {
   const unbColors = getUnbColors();
   const sizeConfig = MOBILE_CONFIG.touchTargets[size];
@@ -643,7 +669,6 @@ export const MobileGrid = ({
   children: React.ReactNode; 
   columns?: '1' | '2' | 'auto';
   className?: string;
-  [key: string]: any;
 }) => {
   return (
     <div className={`mobile-grid mobile-grid-${columns} ${className}`} {...props}>

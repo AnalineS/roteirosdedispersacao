@@ -237,11 +237,10 @@ export const CLINICAL_CASES: ClinicalCase[] = [
               }
             ],
             expectedResult: {
-              rifampicina_dose: 250,
-              clofazimina_monthly: 150,
-              dapsona_monthly: 50,
-              clofazimina_daily: 25,
-              dapsona_daily: 50
+              dose: 250,
+              frequency: 'daily',
+              tablets: 10,
+              weight_based: true
             },
             tolerance: 10
           }
@@ -249,11 +248,14 @@ export const CLINICAL_CASES: ClinicalCase[] = [
         
         validation: {
           correctAnswer: {
-            rifampicina_dose: 250,
-            clofazimina_monthly: 150, 
-            dapsona_monthly: 50,
-            clofazimina_daily: 25,
-            dapsona_daily: 50
+            text: 'Rifampicina 250mg, Clofazimina 150mg mensal + 25mg diária, Dapsona 50mg',
+            value: 250,
+            calculation_result: {
+              dose: 250,
+              frequency: 'daily',
+              tablets: 10,
+              weight_based: true
+            }
           },
           points: 100,
           passingScore: 80,

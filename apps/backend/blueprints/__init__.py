@@ -9,36 +9,27 @@ from .personas_blueprint import personas_bp
 from .feedback_blueprint import feedback_bp
 from .health_blueprint import health_bp
 from .monitoring_blueprint import monitoring_bp
+from .ux_tracking_blueprint import ux_tracking_bp
 from .metrics_blueprint import metrics_bp
 from .docs_blueprint import docs_bp
 from .analytics_blueprint import analytics_bp
 from .predictions_blueprint import predictions_bp
 from .multimodal_blueprint import multimodal_bp
 from .observability import observability_bp
+from .notifications_blueprint import notifications_bp
+from .validation_blueprint import validation_bp
+from .logging_blueprint import logging_bp
+from .alerts_blueprint import alerts_bp
+from .ga4_integration_blueprint import ga4_integration_bp
+from .advanced_systems_blueprint import advanced_systems_bp  # Sistema de gestão avançada
 
-# Import cache blueprint
-try:
-    from .cache_blueprint import cache_blueprint
-    CACHE_BP_AVAILABLE = True
-except ImportError:
-    CACHE_BP_AVAILABLE = False
-    cache_blueprint = None
-
-# Import user blueprint (com fallback)
-try:
-    from .user_blueprint import user_bp
-    USER_BP_AVAILABLE = True
-except ImportError:
-    USER_BP_AVAILABLE = False
-    user_bp = None
-
-# Importar swagger ui blueprint
-try:
-    from core.openapi.spec import swagger_ui_blueprint
-    SWAGGER_AVAILABLE = True
-except ImportError:
-    SWAGGER_AVAILABLE = False
-    swagger_ui_blueprint = None
+# Import blueprints obrigatórios
+from .cache_blueprint import cache_blueprint
+from .user_blueprint import user_bp
+from .auth_blueprint import auth_bp  # Novo sistema de autenticação JWT
+from .email_blueprint import email_bp  # Sistema de email médico
+from .internal_blueprint import internal_bp  # APIs administrativas
+from core.openapi.spec import swagger_ui_blueprint
 
 # Lista de todos os blueprints para registro
 ALL_BLUEPRINTS = [
@@ -47,25 +38,26 @@ ALL_BLUEPRINTS = [
     feedback_bp,
     health_bp,
     monitoring_bp,
+    ux_tracking_bp,  # UX Monitoring integration
     metrics_bp,
     docs_bp,
     analytics_bp,
     predictions_bp,
     multimodal_bp,
-    observability_bp
+    observability_bp,
+    notifications_bp,  # PR #175 - Social features
+    validation_bp,  # Educational validation system
+    logging_bp,  # Cloud logging and LGPD compliance
+    alerts_bp,  # Email + Telegram + Webhook alert system
+    ga4_integration_bp,  # GA4 analytics integration
+    advanced_systems_bp,  # Sistema de gestão de sistemas avançados
+    cache_blueprint,
+    user_bp,
+    auth_bp,  # Novo sistema de autenticação JWT
+    email_bp,  # Sistema de email médico ATIVADO
+    internal_bp,  # APIs administrativas ATIVADAS
+    swagger_ui_blueprint
 ]
-
-# Adicionar cache blueprint se disponível
-if CACHE_BP_AVAILABLE and cache_blueprint:
-    ALL_BLUEPRINTS.append(cache_blueprint)
-
-# Adicionar user blueprint se disponível
-if USER_BP_AVAILABLE and user_bp:
-    ALL_BLUEPRINTS.append(user_bp)
-
-# Adicionar swagger ui se disponível
-if SWAGGER_AVAILABLE and swagger_ui_blueprint:
-    ALL_BLUEPRINTS.append(swagger_ui_blueprint)
 
 __all__ = [
     'chat_bp',
@@ -73,14 +65,24 @@ __all__ = [
     'feedback_bp',
     'health_bp',
     'monitoring_bp',
+    'ux_tracking_bp',  # UX Monitoring
     'metrics_bp',
     'docs_bp',
     'analytics_bp',
     'predictions_bp',
     'multimodal_bp',
     'observability_bp',
+    'notifications_bp',  # PR #175
+    'validation_bp',  # Educational validation
+    'logging_bp',  # Cloud logging
+    'alerts_bp',  # Email + Telegram + Webhook alerts
+    'ga4_integration_bp',  # GA4 analytics integration
+    'advanced_systems_bp',  # Sistema de gestão avançada
     'cache_blueprint',
     'user_bp',
+    'auth_bp',  # Novo sistema de autenticação JWT
+    'email_bp',  # Sistema de email médico
+    'internal_bp',  # APIs administrativas
     'swagger_ui_blueprint',
     'ALL_BLUEPRINTS'
 ]

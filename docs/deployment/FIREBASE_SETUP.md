@@ -1,4 +1,33 @@
-# [AUTH] Configuração do Firebase Authentication
+# [DEPRECATED] Configuração do Firebase Authentication
+
+**IMPORTANTE**: Este documento está OBSOLETO. O projeto atual usa:
+- **JWT Authentication próprio** (sem Firebase Auth)
+- **Google Cloud Storage** (ao invés de Firestore)
+- **SQLite + Supabase** (ao invés de Firebase Database)
+
+---
+
+# ARQUITETURA ATUAL
+
+O sistema agora utiliza:
+
+## Autenticação
+- **JWT próprio** via `apps/backend/services/auth/jwt_auth_manager.py`
+- **Sem dependência** do Firebase Authentication
+- **Rate limiting** via SQLite
+
+## Banco de Dados
+- **SQLite local** com backup automático no Google Cloud Storage
+- **Supabase PostgreSQL** com pgvector para embeddings
+- **ChromaDB** para vector store local
+
+## Storage
+- **Google Cloud Storage** para assets estáticos e backups
+- **Cache híbrido** (memória + cloud)
+
+---
+
+# [LEGACY] Configuração do Firebase Authentication (OBSOLETA)
 
 ## Secrets já configurados [OK]
 
@@ -112,19 +141,19 @@ interface UserProfile {
 
 ## Funcionalidades disponíveis
 
-### [OK] **Com autenticação habilitada:**
-- Login com email/senha
-- Login social (Google, Facebook, Apple)
-- Perfis de usuário personalizados
-- Histórico de conversas
-- Sincronização entre dispositivos
-- Preferências salvas na nuvem
+### [ATUAL] **Com JWT Authentication:**
+- Login com email/senha via API própria
+- Perfis de usuário em SQLite
+- Histórico de conversas em Supabase
+- Cache híbrido (local + cloud)
+- Rate limiting automático
+- Sem dependências Firebase
 
-### [WARNING] **Modo degradado (auth desabilitada):**
-- Acesso como convidado
-- Perfis apenas locais
-- Sem sincronização
-- Experiência básica completa
+### [ATUAL] **Modo convidado:**
+- Acesso sem cadastro
+- Sessões temporárias
+- Funcionalidade completa de chat
+- Experiência educacional completa
 
 ## Testando a configuração
 

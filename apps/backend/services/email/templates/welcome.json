@@ -1,0 +1,12 @@
+{
+  "subject": "Bem-vindo ao Roteiro de Dispensação PQT-U, {{ user_name }}! 🎯",
+  "html_template": "welcome.html",
+  "text_template": "welcome.txt",
+  "variables": {
+    "user_name": "string",
+    "profile_type": "string",
+    "date": "string",
+    "site_url": "string",
+    "getting_started_url": "string"
+  }
+}

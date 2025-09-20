@@ -79,7 +79,17 @@ export default function StandardizedButton({
       try {
         await onClick(e);
       } catch (error) {
-        console.error('Erro ao executar ação do botão:', error);
+        if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'standardized_button_action_error', {
+            event_category: 'medical_ui_components',
+            event_label: 'button_action_failed',
+            custom_parameters: {
+              medical_context: 'standardized_button_action',
+              error_type: 'button_action_failure',
+              error_message: error instanceof Error ? error.message : String(error)
+            }
+          });
+        }
       } finally {
         if (preventDoubleClick) {
           setIsClicked(false);
@@ -292,7 +302,18 @@ export function useButtonLoading() {
       setLoading(buttonId, true);
       await action();
     } catch (error) {
-      console.error(`Erro na ação do botão ${buttonId}:`, error);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'standardized_button_with_loading_error', {
+          event_category: 'medical_ui_components',
+          event_label: 'button_with_loading_failed',
+          custom_parameters: {
+            medical_context: 'standardized_button_with_loading',
+            button_id: buttonId,
+            error_type: 'loading_action_failure',
+            error_message: error instanceof Error ? error.message : String(error)
+          }
+        });
+      }
       throw error;
     } finally {
       setLoading(buttonId, false);
