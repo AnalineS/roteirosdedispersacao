@@ -20,8 +20,8 @@ on:
           - production
 
 env:
-  PROJECT_ID: ${{ secrets.GOOGLE_CLOUD_PROJECT_ID }}
-  REGION: ${{ secrets.GOOGLE_CLOUD_REGION || 'us-central1' }}
+  PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+  REGION: ${{ vars.GCP_REGION }}
 
 jobs:
   test-compliance:
@@ -85,7 +85,7 @@ jobs:
           safety check --json --output safety-report.json || true
 
       - name: 📤 Upload test artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: test-reports
@@ -98,7 +98,7 @@ jobs:
     name: 🌐 Deploy Cloud Functions
     needs: test-compliance
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/hml' || github.event_name == 'workflow_dispatch'
 
     steps:
       - name: 📥 Checkout code
@@ -112,7 +112,7 @@ jobs:
       - name: ☁️ Setup Google Cloud SDK
         uses: google-github-actions/setup-gcloud@v1
         with:
-          project_id: ${{ secrets.GOOGLE_CLOUD_PROJECT_ID }}
+          project_id: ${{ vars.GCP_PROJECT_ID }}
 
       - name: 🐍 Setup Python
         uses: actions/setup-python@v4
@@ -196,14 +196,17 @@ jobs:
         run: |
           cd apps/backend/deploy/cloud-functions
 
+          # Definir prefixo do ambiente
+          ENV_PREFIX=${{ github.ref == 'refs/heads/main' && 'prod' || 'hml' }}
+
           # Deploy função de limpeza LGPD
-          gcloud functions deploy lgpd-cleanup-trigger \
+          gcloud functions deploy ${ENV_PREFIX}-lgpd-cleanup-trigger \
             --runtime python311 \
             --trigger-topic lgpd-cleanup \
             --entry-point lgpd_cleanup_trigger \
             --memory 256MB \
             --timeout 300s \
-            --set-env-vars GOOGLE_CLOUD_PROJECT_ID=${{ secrets.GOOGLE_CLOUD_PROJECT_ID }} \
+            --set-env-vars GOOGLE_CLOUD_PROJECT_ID=${{ vars.GCP_PROJECT_ID }} \
             --set-env-vars HASH_SALT=${{ secrets.HASH_SALT }} \
             --set-env-vars TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }} \
             --set-env-vars TELEGRAM_CHAT_ID=${{ secrets.TELEGRAM_CHAT_ID }} \
@@ -214,13 +217,13 @@ jobs:
             --region ${{ env.REGION }}
 
           # Deploy função de alertas LGPD
-          gcloud functions deploy lgpd-violation-alert \
+          gcloud functions deploy ${ENV_PREFIX}-lgpd-violation-alert \
             --runtime python311 \
             --trigger-topic lgpd-violations \
             --entry-point lgpd_violation_alert \
             --memory 256MB \
             --timeout 180s \
-            --set-env-vars GOOGLE_CLOUD_PROJECT_ID=${{ secrets.GOOGLE_CLOUD_PROJECT_ID }} \
+            --set-env-vars GOOGLE_CLOUD_PROJECT_ID=${{ vars.GCP_PROJECT_ID }} \
             --set-env-vars HASH_SALT=${{ secrets.HASH_SALT }} \
             --set-env-vars TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }} \
             --set-env-vars TELEGRAM_CHAT_ID=${{ secrets.TELEGRAM_CHAT_ID }} \
@@ -234,7 +237,7 @@ jobs:
     name: ⚙️ Setup Logging Retention Policies
     needs: [test-compliance, deploy-cloud-functions]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/hml' || github.event_name == 'workflow_dispatch'
 
     steps:
       - name: 📥 Checkout code
@@ -248,53 +251,59 @@ jobs:
       - name: ☁️ Setup Google Cloud SDK
         uses: google-github-actions/setup-gcloud@v1
         with:
-          project_id: ${{ secrets.GOOGLE_CLOUD_PROJECT_ID }}
+          project_id: ${{ vars.GCP_PROJECT_ID }}
 
       - name: 🗂️ Create log sinks with retention
         run: |
+          # Definir prefixo do ambiente
+          ENV_PREFIX=${{ github.ref == 'refs/heads/main' && 'prod' || 'hml' }}
+
           # Criar sink para dados pessoais (7 dias)
-          gcloud logging sinks create personal-data-sink \
-            bigquery.googleapis.com/projects/${{ secrets.GOOGLE_CLOUD_PROJECT_ID }}/datasets/lgpd_personal_data \
-            --log-filter='logName:"projects/${{ secrets.GOOGLE_CLOUD_PROJECT_ID }}/logs/roteiro-dispensacao-personal_data"' \
-            --project=${{ secrets.GOOGLE_CLOUD_PROJECT_ID }} || true
+          gcloud logging sinks create ${ENV_PREFIX}-personal-data-sink \
+            bigquery.googleapis.com/projects/${{ vars.GCP_PROJECT_ID }}/datasets/${ENV_PREFIX}_lgpd_personal_data \
+            --log-filter='logName:"projects/${{ vars.GCP_PROJECT_ID }}/logs/roteiro-dispensacao-personal_data"' \
+            --project=${{ vars.GCP_PROJECT_ID }} || true
 
           # Criar sink para analytics (30 dias)
-          gcloud logging sinks create analytics-sink \
-            bigquery.googleapis.com/projects/${{ secrets.GOOGLE_CLOUD_PROJECT_ID }}/datasets/lgpd_analytics \
-            --log-filter='logName:"projects/${{ secrets.GOOGLE_CLOUD_PROJECT_ID }}/logs/roteiro-dispensacao-analytics"' \
-            --project=${{ secrets.GOOGLE_CLOUD_PROJECT_ID }} || true
+          gcloud logging sinks create ${ENV_PREFIX}-analytics-sink \
+            bigquery.googleapis.com/projects/${{ vars.GCP_PROJECT_ID }}/datasets/${ENV_PREFIX}_lgpd_analytics \
+            --log-filter='logName:"projects/${{ vars.GCP_PROJECT_ID }}/logs/roteiro-dispensacao-analytics"' \
+            --project=${{ vars.GCP_PROJECT_ID }} || true
 
           # Criar sink para auditoria (365 dias)
-          gcloud logging sinks create audit-sink \
-            bigquery.googleapis.com/projects/${{ secrets.GOOGLE_CLOUD_PROJECT_ID }}/datasets/lgpd_audit \
-            --log-filter='logName:"projects/${{ secrets.GOOGLE_CLOUD_PROJECT_ID }}/logs/roteiro-dispensacao-audit"' \
-            --project=${{ secrets.GOOGLE_CLOUD_PROJECT_ID }} || true
+          gcloud logging sinks create ${ENV_PREFIX}-audit-sink \
+            bigquery.googleapis.com/projects/${{ vars.GCP_PROJECT_ID }}/datasets/${ENV_PREFIX}_lgpd_audit \
+            --log-filter='logName:"projects/${{ vars.GCP_PROJECT_ID }}/logs/roteiro-dispensacao-audit"' \
+            --project=${{ vars.GCP_PROJECT_ID }} || true
 
       - name: 📊 Create BigQuery datasets with retention
         run: |
+          # Definir prefixo do ambiente
+          ENV_PREFIX=${{ github.ref == 'refs/heads/main' && 'prod' || 'hml' }}
+
           # Dataset para dados pessoais (7 dias)
           bq mk --dataset \
             --default_table_expiration=604800 \
             --description="LGPD Personal Data - 7 days retention" \
-            ${{ secrets.GOOGLE_CLOUD_PROJECT_ID }}:lgpd_personal_data || true
+            ${{ vars.GCP_PROJECT_ID }}:${ENV_PREFIX}_lgpd_personal_data || true
 
           # Dataset para analytics (30 dias)
           bq mk --dataset \
             --default_table_expiration=2592000 \
             --description="LGPD Analytics Data - 30 days retention" \
-            ${{ secrets.GOOGLE_CLOUD_PROJECT_ID }}:lgpd_analytics || true
+            ${{ vars.GCP_PROJECT_ID }}:${ENV_PREFIX}_lgpd_analytics || true
 
           # Dataset para auditoria (365 dias)
           bq mk --dataset \
             --default_table_expiration=31536000 \
             --description="LGPD Audit Data - 365 days retention" \
-            ${{ secrets.GOOGLE_CLOUD_PROJECT_ID }}:lgpd_audit || true
+            ${{ vars.GCP_PROJECT_ID }}:${ENV_PREFIX}_lgpd_audit || true
 
   setup-alerting:
     name: 🚨 Setup Cloud Monitoring Alerts
     needs: setup-logging-retention
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/hml' || github.event_name == 'workflow_dispatch'
 
     steps:
       - name: 📥 Checkout code
@@ -315,7 +324,7 @@ jobs:
             --display-name="LGPD Alerts Email" \
             --type=email \
             --channel-labels=email_address=${{ secrets.ALERT_EMAIL_TO }} \
-            --project=${{ secrets.GOOGLE_CLOUD_PROJECT_ID }} || true
+            --project=${{ vars.GCP_PROJECT_ID }} || true
 
       - name: 🚨 Create alerting policies
         run: |
@@ -340,13 +349,13 @@ jobs:
 
           # Criar política
           gcloud alpha monitoring policies create lgpd-critical-alert-policy.yaml \
-            --project=${{ secrets.GOOGLE_CLOUD_PROJECT_ID }} || true
+            --project=${{ vars.GCP_PROJECT_ID }} || true
 
   test-alerting:
     name: 🧪 Test Alert System
     needs: setup-alerting
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/hml' || github.event_name == 'workflow_dispatch'
 
     steps:
       - name: 📥 Checkout code
@@ -368,7 +377,7 @@ jobs:
 
       - name: 🧪 Test alert system
         env:
-          GOOGLE_CLOUD_PROJECT_ID: ${{ secrets.GOOGLE_CLOUD_PROJECT_ID }}
+          GOOGLE_CLOUD_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           ALERT_EMAIL_SMTP_HOST: ${{ secrets.ALERT_EMAIL_SMTP_HOST }}
@@ -433,7 +442,7 @@ jobs:
           - 🧪 Alert System Test: ${{ needs.test-alerting.result }}
 
           ## 📋 Configuration:
-          - **Project ID**: ${{ secrets.GOOGLE_CLOUD_PROJECT_ID }}
+          - **Project ID**: ${{ vars.GCP_PROJECT_ID }}
           - **Region**: ${{ env.REGION }}
           - **Environment**: ${{ github.ref == 'refs/heads/main' && 'Production' || 'Staging' }}
 
@@ -445,8 +454,8 @@ jobs:
           - ✅ Violation alerts: Email + Telegram
 
           ## 🔗 Resources Created:
-          - Cloud Functions: lgpd-cleanup-trigger, lgpd-violation-alert
-          - BigQuery Datasets: lgpd_personal_data, lgpd_analytics, lgpd_audit
+          - Cloud Functions: ${{ github.ref == 'refs/heads/main' && 'prod' || 'hml' }}-lgpd-cleanup-trigger, ${{ github.ref == 'refs/heads/main' && 'prod' || 'hml' }}-lgpd-violation-alert
+          - BigQuery Datasets: ${{ github.ref == 'refs/heads/main' && 'prod' || 'hml' }}_lgpd_personal_data, ${{ github.ref == 'refs/heads/main' && 'prod' || 'hml' }}_lgpd_analytics, ${{ github.ref == 'refs/heads/main' && 'prod' || 'hml' }}_lgpd_audit
           - Pub/Sub Topics: lgpd-cleanup, lgpd-violations
           - Monitoring Alerts: LGPD Critical Violations
 
