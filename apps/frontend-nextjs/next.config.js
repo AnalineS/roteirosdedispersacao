@@ -20,7 +20,7 @@ const nextConfig = {
 
   // Enable compiler optimizations
   compiler: {
-    // Remove console.log in production builds
+    // Remove logging statements in production builds
     removeConsole:
       process.env.NODE_ENV === "production"
         ? {
@@ -169,10 +169,8 @@ const nextConfig = {
     return config;
   },
 
-  // Configurações de servidor para respeitar PORT environment variable
-  serverRuntimeConfig: {
-    port: process.env.PORT || 3000,
-  },
+  // Configurações de servidor são automáticas com output: "standalone"
+  // O server.js gerado respeitará a variável PORT automaticamente
 
   // SWC minification is enabled by default in Next.js 15
 

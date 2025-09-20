@@ -76,7 +76,7 @@ export function usePersonasEnhanced(options: UsePersonasEnhancedOptions = {}): U
 
       if (fromCache && useCache) {
         // Verificar cache primeiro
-        const cachedPersonas = await PersonasCache.get('personas');
+        const cachedPersonas = await PersonasCache.get();
         if (cachedPersonas) {
           personasData = cachedPersonas as Record<string, PersonaConfig>;
           setPersonas(personasData);
@@ -100,7 +100,7 @@ export function usePersonasEnhanced(options: UsePersonasEnhancedOptions = {}): U
           
           // Salvar no cache
           if (useCache) {
-            await PersonasCache.set('personas', validPersonas);
+            await PersonasCache.set(validPersonas);
           }
           
           personasData = validPersonas;

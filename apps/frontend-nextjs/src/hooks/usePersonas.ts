@@ -21,20 +21,20 @@ export function usePersonas() {
         setError(null);
         
         // Verificar cache primeiro
-        const cachedPersonas = await PersonasCache.get('personas');
+        const cachedPersonas = await PersonasCache.get();
         if (cachedPersonas) {
           setPersonas(cachedPersonas as Record<string, PersonaConfig>);
           setLoading(false);
           return;
         }
-        
+
         // Buscar do servidor se não há cache
         const personasData = await getPersonaConfigs();
         // Filtrar apenas personas com avatares configurados
         const validPersonas = filterValidPersonas(personasData);
-        
+
         // Salvar no cache
-        await PersonasCache.set('personas', validPersonas);
+        await PersonasCache.set(validPersonas);
         setPersonas(validPersonas);
       } catch (err) {
         // Medical system error - explicit stderr + tracking

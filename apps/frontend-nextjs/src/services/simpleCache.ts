@@ -3,7 +3,7 @@
  * Substitui completamente Firebase/Firestore (removido da arquitetura)
  */
 
-import SimpleCache from '@/utils/apiCache';
+import LRUCache from '@/utils/apiCache';
 
 // Interfaces específicas para Analytics
 interface AnalyticsEvent {
@@ -56,9 +56,29 @@ interface RealtimeAnalytics {
 }
 
 // Cache simples para substituir Firestore Cache
-export class FirestoreCache<T> extends SimpleCache<T> {
+export class FirestoreCache<T> {
+  private cache: LRUCache;
+  private collection: string;
+
   constructor(collection: string, ttl?: number) {
-    super(`analytics:${collection}`, ttl);
+    this.cache = new LRUCache(1000, ttl || 5 * 60 * 1000);
+    this.collection = collection;
+  }
+
+  async get(key: string): Promise<T | null> {
+    return this.cache.get<T>(`${this.collection}:${key}`);
+  }
+
+  async set(key: string, data: T, ttl?: number): Promise<void> {
+    this.cache.set(`${this.collection}:${key}`, data, undefined, ttl);
+  }
+
+  async clear(key?: string): Promise<void> {
+    if (key) {
+      this.cache.delete(`${this.collection}:${key}`);
+    } else {
+      this.cache.clear();
+    }
   }
 
   // Métodos compatíveis com o Firebase Cache anterior
@@ -149,7 +169,7 @@ export class FirestoreCache<T> extends SimpleCache<T> {
 
   async cleanupOldAnalytics(olderThan: Date): Promise<void> {
     // Implementação simplificada - localStorage não suporta cleanup automático
-    console.log(`Cleanup requested for data older than ${olderThan.toISOString()}`);
+    // Cleanup silencioso - dados serão limpos automaticamente por TTL
   }
 }
 
