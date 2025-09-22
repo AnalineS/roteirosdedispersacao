@@ -57,17 +57,7 @@ export default function ExportOptions({ result, isAvailable }: ExportOptionsProp
       setExportStatus('success');
       setTimeout(() => setExportStatus('idle'), 3000);
     } catch (exportError) {
-      if (typeof window !== 'undefined' && window.gtag) {
-        window.gtag('event', 'dose_calculator_pdf_export_error', {
-          event_category: 'medical_export_tools',
-          event_label: 'pdf_export_failed',
-          custom_parameters: {
-            medical_context: 'dose_calculator_pdf_export',
-            error_type: 'pdf_export_failure',
-            error_message: exportError instanceof Error ? exportError.message : String(exportError)
-          }
-        });
-      }
+      console.error('Erro ao exportar PDF:', exportError);
       // Error haptic feedback
       error();
       setExportStatus('error');
@@ -101,25 +91,16 @@ export default function ExportOptions({ result, isAvailable }: ExportOptionsProp
       await new Promise(resolve => setTimeout(resolve, 300));
       
       // TODO: Implementar EmailJS
-
+      console.log('Enviando email para:', emailAddress);
+      console.log('Conteúdo:', generatePDFContent(result, includeEducational, additionalNotes));
+      
       // Success haptic feedback
       success();
       setExportStatus('success');
       setTimeout(() => setExportStatus('idle'), 3000);
       setEmailAddress('');
     } catch (emailError) {
-      if (typeof window !== 'undefined' && window.gtag) {
-        window.gtag('event', 'dose_calculator_email_export_error', {
-          event_category: 'medical_export_tools',
-          event_label: 'email_export_failed',
-          custom_parameters: {
-            medical_context: 'dose_calculator_email_export',
-            email_address: emailAddress,
-            error_type: 'email_export_failure',
-            error_message: emailError instanceof Error ? emailError.message : String(emailError)
-          }
-        });
-      }
+      console.error('Erro ao enviar email:', emailError);
       // Error haptic feedback
       error();
       setExportStatus('error');

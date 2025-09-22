@@ -30,10 +30,6 @@ from app_config import config, EnvironmentConfig
 # Import obrigatório do sistema de dependências
 from core.dependencies import dependency_injector
 
-# Import dos novos sistemas
-from services.storage.sqlite_manager import init_database
-from services.auth.jwt_auth_manager import get_auth_manager
-
 # Configurar logging ANTES de usar logger
 logging.basicConfig(
     level=getattr(logging, config.LOG_LEVEL),
@@ -170,17 +166,9 @@ def create_app():
     elif cloud_run_env:
         logger.info("☁️ Cloud Run detectado - otimizações carregadas sob demanda")
     
-    # Inicializar novo sistema de dados
-    try:
-        init_database(app)
-        get_auth_manager()  # Inicializar auth manager
-        logger.info("[DATABASE] SQLite + Cloud Storage inicializado")
-    except Exception as e:
-        logger.error(f"[ERROR] Falha ao inicializar database: {e}")
-
     # Registrar blueprints
     register_blueprints(app)
-
+    
     # Injetar dependências nos blueprints
     inject_dependencies_into_blueprints()
     
@@ -535,26 +523,16 @@ def setup_root_routes(app):
         """Health check básico para Google App Engine"""
         return jsonify({"status": "healthy", "timestamp": datetime.now().isoformat()}), 200
 
-# Rate limiting real com SQLite
-def check_rate_limit(endpoint_type: str = 'default', max_requests: int = None, window_seconds: int = None):
-    """Rate limiting real usando SQLite backend"""
-    from services.security.sqlite_rate_limiter import rate_limit
-
-    # Mapeamento de tipos para limites padrão
-    default_limits = {
-        'chat': {'max_requests': 30, 'window_seconds': 60},      # 30 req/min
-        'auth': {'max_requests': 5, 'window_seconds': 300},      # 5 req/5min
-        'feedback': {'max_requests': 10, 'window_seconds': 300}, # 10 req/5min
-        'general': {'max_requests': 100, 'window_seconds': 60}   # 100 req/min
-    }
-
-    # Usar limites específicos ou padrão do tipo
-    if max_requests is None or window_seconds is None:
-        limits = default_limits.get(endpoint_type, default_limits['general'])
-        max_requests = limits['max_requests']
-        window_seconds = limits['window_seconds']
-
-    return rate_limit(endpoint_type, max_requests, window_seconds)
+# Rate limiting placeholder (será implementado com Redis)
+def check_rate_limit(endpoint_type: str = 'default'):
+    """Decorator temporário para rate limiting"""
+    def decorator(f):
+        def wrapper(*args, **kwargs):
+            # TODO: Implementar rate limiting real com Redis
+            return f(*args, **kwargs)
+        wrapper.__name__ = f.__name__
+        return wrapper
+    return decorator
 
 # Criar aplicação
 app = create_app()

@@ -10,7 +10,6 @@ const nextConfig = {
 
   // Standalone output para Cloud Run
   output: "standalone",
-
   // Ensure trailingSlash is consistent with Firebase Hosting configuration
   trailingSlash: false,
 
@@ -76,7 +75,6 @@ const nextConfig = {
 
   // Server external packages (moved from experimental)
   serverExternalPackages: [],
-
   // ESLint configuração para build
   eslint: {
     // IMPORTANTE: Só ignorar warnings em build, não em desenvolvimento

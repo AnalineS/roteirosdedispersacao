@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Blueprint para gerenciamento de cache híbrido
-Suporte para Google Cloud Storage e cache local SQLite
+Blueprint para gerenciamento de cache Firestore
+Substitui Redis usando Google Cloud Firestore como backend de cache
 Mantém compatibilidade com API anterior para transição suave
 """
 
@@ -13,110 +13,74 @@ from datetime import datetime, timedelta
 import logging
 from typing import Optional, Dict, Any
 
-# Google Cloud imports
+# Firestore imports
 try:
-    from google.cloud import storage
-    from google.cloud.storage import Client as StorageClient
+    from google.cloud import firestore
+    from google.cloud.firestore import Client as FirestoreClient
     from google.oauth2 import service_account
-    GCS_AVAILABLE = True
+    FIRESTORE_AVAILABLE = True
 except ImportError:
-    GCS_AVAILABLE = False
-    StorageClient = None
-
-# Fallback para SQLite local
-import sqlite3
-import pickle
+    FIRESTORE_AVAILABLE = False
+    FirestoreClient = None
 
 logger = logging.getLogger(__name__)
 
 # Criar o blueprint
 cache_blueprint = Blueprint('cache', __name__, url_prefix='/api/cache')
 
-# Clientes de cache (será inicializado com a aplicação)
-storage_client: Optional[StorageClient] = None
-cache_bucket = None
-local_cache_db = None
+# Cliente Firestore (será inicializado com a aplicação)
+firestore_client: Optional[FirestoreClient] = None
 
 # Configurações do cache
 CACHE_CONFIG = {
-    'GCS_BUCKET_NAME': os.environ.get('GCS_CACHE_BUCKET', 'roteiros-cache'),
-    'SQLITE_DB_PATH': 'data/cache/local_cache.db',
+    'COLLECTION_NAME': 'backend_cache',
     'DEFAULT_TTL_SECONDS': 3600,  # 1 hora padrão
     'MAX_KEY_LENGTH': 256,
-    'STATS_TABLE': 'cache_stats',
+    'STATS_COLLECTION': 'cache_stats',
     'CLEANUP_BATCH_SIZE': 500,
 }
 
-def init_cache_system():
-    """Inicializa sistema de cache híbrido (GCS + SQLite)"""
-    global storage_client, cache_bucket, local_cache_db
-
-    # Tentar inicializar Google Cloud Storage
-    if GCS_AVAILABLE:
-        try:
-            # Tentar credenciais do arquivo de serviço primeiro
-            service_account_path = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
-            if service_account_path and os.path.exists(service_account_path):
-                credentials = service_account.Credentials.from_service_account_file(service_account_path)
-                storage_client = storage.Client(credentials=credentials)
-            else:
-                # Usar Application Default Credentials (para Cloud Run)
-                storage_client = storage.Client()
-
-            # Obter ou criar bucket
-            bucket_name = CACHE_CONFIG['GCS_BUCKET_NAME']
-            try:
-                cache_bucket = storage_client.bucket(bucket_name)
-                if not cache_bucket.exists():
-                    cache_bucket = storage_client.create_bucket(bucket_name, location='US')
-            except:
-                # Se não conseguir criar, usar bucket existente
-                cache_bucket = storage_client.bucket(bucket_name)
-
-            logger.info(f"[OK] Google Cloud Storage cache conectado: {bucket_name}")
-        except Exception as e:
-            logger.warning(f"[WARNING] GCS não disponível: {e}. Usando cache local.")
-
-    # Sempre inicializar SQLite como fallback
+def init_firestore_client():
+    """Inicializa cliente Firestore usando credenciais do ambiente"""
+    global firestore_client
+    
+    if not FIRESTORE_AVAILABLE:
+        logger.warning("Firestore não disponível - cache desabilitado")
+        return None
+    
     try:
-        os.makedirs(os.path.dirname(CACHE_CONFIG['SQLITE_DB_PATH']), exist_ok=True)
-        local_cache_db = sqlite3.connect(CACHE_CONFIG['SQLITE_DB_PATH'], check_same_thread=False)
-
-        # Criar tabela de cache se não existir
-        local_cache_db.execute('''
-            CREATE TABLE IF NOT EXISTS cache_entries (
-                key TEXT PRIMARY KEY,
-                value BLOB,
-                expires_at TIMESTAMP,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        ''')
-        local_cache_db.execute('''
-            CREATE INDEX IF NOT EXISTS idx_expires ON cache_entries(expires_at)
-        ''')
-        local_cache_db.commit()
-
-        logger.info("[OK] SQLite cache local inicializado")
-        return True
-
+        # Tentar credenciais do arquivo de serviço primeiro
+        service_account_path = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
+        if service_account_path and os.path.exists(service_account_path):
+            credentials = service_account.Credentials.from_service_account_file(service_account_path)
+            firestore_client = firestore.Client(credentials=credentials)
+        else:
+            # Usar Application Default Credentials (para Cloud Run)
+            firestore_client = firestore.Client()
+        
+        # Testar conexão com uma operação simples
+        test_doc = firestore_client.collection('_test').document('health_check')
+        test_doc.set({'timestamp': firestore.SERVER_TIMESTAMP, 'status': 'healthy'})
+        
+        logger.info("[OK] Firestore Cache conectado com sucesso")
+        return firestore_client
+        
     except Exception as e:
-        logger.error(f"[ERROR] Erro ao inicializar sistema de cache: {e}")
-        return False
+        logger.error(f"[ERROR] Erro ao conectar ao Firestore: {e}")
+        firestore_client = None
+        return None
 
-# Inicialização sob demanda - compatível com Flask 2.2+
+@cache_blueprint.before_app_first_request
 def initialize():
-    """Inicializa o sistema de cache híbrido sob demanda"""
-    return init_cache_system()
-
-# Chamar inicialização ao importar
-initialize()
+    """Inicializa o Firestore antes da primeira requisição"""
+    init_firestore_client()
 
 def sanitize_key(key: str) -> str:
-    """Sanitiza chave para cache (GCS object name ou SQLite key)"""
+    """Sanitiza chave para Firestore document ID"""
     if not key:
         return 'empty_key'
-
-    # Caracteres seguros para GCS e SQLite
+    
+    # Firestore document IDs não podem conter certos caracteres
     # Substituir caracteres problemáticos por underscore
     safe_chars = []
     for char in key:
@@ -124,15 +88,15 @@ def sanitize_key(key: str) -> str:
             safe_chars.append(char)
         else:
             safe_chars.append('_')
-
+    
     safe_key = ''.join(safe_chars)
-
-    # Limitar tamanho para compatibilidade
+    
+    # Limitar tamanho (Firestore tem limite de 1500 bytes para document ID)
     if len(safe_key) > CACHE_CONFIG['MAX_KEY_LENGTH']:
         # Usar hash para chaves muito longas
         key_hash = hashlib.sha256(key.encode()).hexdigest()[:32]
         safe_key = f"{safe_key[:100]}_{key_hash}"
-
+    
     return safe_key
 
 def get_cache_document(key: str) -> Optional[Dict[str, Any]]:

@@ -1,19 +1,16 @@
 /**
  * Hook para gerenciar histórico de conversas por persona
  * Permite múltiplas conversas simultâneas e navegação entre elas
- * Suporta persistência local com localStorage
+ * Suporta sincronização automática com Firestore quando autenticado
  */
 
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { type ChatMessage } from '@/types/api';
+import { ChatMessage } from '@/services/api';
 import { useSafeAuth as useAuth } from '@/hooks/useSafeAuth';
+import { ConversationRepository } from '@/lib/firebase/firestore';
+import { FirestoreConversation, FirestoreMessage } from '@/lib/firebase/types';
+import { FEATURES } from '@/lib/firebase/config';
 import { generateSecureId } from '@/utils/cryptoUtils';
-
-// Features configuration
-const FEATURES = {
-  FIRESTORE_ENABLED: false, // Disabled - using local storage only
-  AUTH_ENABLED: true,
-};
 
 // Constantes
 const MAX_CONVERSATIONS = 50;
@@ -50,10 +47,10 @@ export function useConversationHistory() {
   const syncTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
   // Flags para controlar o tipo de persistência
-  const useFirestore = false; // Disabled
-  const useLocalStorage = true; // Always use localStorage
+  const useFirestore = auth.isAuthenticated && FEATURES.FIRESTORE_ENABLED;
+  const useLocalStorage = !useFirestore || FEATURES.AUTH_ENABLED;
 
-  // Carregar conversas (localStorage apenas)
+  // Carregar conversas (localStorage ou Firestore)
   useEffect(() => {
     if (typeof window === 'undefined') return;
     
@@ -62,20 +59,29 @@ export function useConversationHistory() {
         setLoading(true);
         setError(null);
 
-        // Carregar do localStorage
-        loadFromLocalStorage();
+        if (useFirestore && auth.user) {
+          // Carregar do Firestore
+          await loadFromFirestore();
+        } else if (useLocalStorage) {
+          // Carregar do localStorage
+          loadFromLocalStorage();
+        }
       } catch (error) {
+        console.error('Erro ao carregar conversas:', error);
         setError('Erro ao carregar histórico de conversas');
-
-        // Sempre usar localStorage
-        loadFromLocalStorage();
+        
+        // Fallback para localStorage em caso de erro do Firestore
+        if (useFirestore) {
+          loadFromLocalStorage();
+        }
       } finally {
         setLoading(false);
       }
     };
 
     loadConversations();
-  }, [auth.user, auth.isAuthenticated]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auth.user, auth.isAuthenticated, useFirestore, useLocalStorage]);
 
   // ============================================
   // FUNÇÕES DE CARREGAMENTO
@@ -83,25 +89,8 @@ export function useConversationHistory() {
 
   const loadFromLocalStorage = useCallback(async () => {
     try {
-      // Sistema de cache de conversas ativado - múltiplas camadas
-      const cacheKey = `${STORAGE_KEY}_cache`;
-      const cacheTimestamp = `${STORAGE_KEY}_timestamp`;
-      const CACHE_DURATION = 5 * 60 * 1000; // 5 minutos
-
-      // Verificar cache em memória primeiro
-      const cached = sessionStorage.getItem(cacheKey);
-      const cacheTime = sessionStorage.getItem(cacheTimestamp);
-
-      if (cached && cacheTime) {
-        const timeDiff = Date.now() - parseInt(cacheTime);
-        if (timeDiff < CACHE_DURATION) {
-          // Carregando conversas do cache em memória
-          const cachedConversations = JSON.parse(cached);
-          setConversations(cachedConversations);
-          return;
-        }
-      }
-
+      // TODO: Implementar cache de conversas com Firestore Cache Service futuramente
+      
       // Carregar do localStorage
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
@@ -111,21 +100,62 @@ export function useConversationHistory() {
             .filter(conv => conv && typeof conv === 'object' && conv.id && conv.personaId)
             .slice(0, MAX_CONVERSATIONS);
           setConversations(validConversations);
-
-          // Salvar no cache em memória para próximas consultas
+          
+          // Salvar no Redis para próxima vez (com tratamento de erro)
           if (validConversations.length > 0) {
-            sessionStorage.setItem(cacheKey, JSON.stringify(validConversations));
-            sessionStorage.setItem(cacheTimestamp, Date.now().toString());
-            // Cache de conversas atualizado
+            // TODO: Integrar com firestoreCache para cache de conversas
           }
         }
       }
     } catch (error) {
+      console.error('Erro ao carregar do localStorage:', error);
       throw error;
     }
   }, []);
 
-  // Firestore loading disabled - using localStorage only
+  const loadFromFirestore = useCallback(async () => {
+    if (!auth.user) return;
+
+    try {
+      setSyncStatus('syncing');
+      const result = await ConversationRepository.getUserConversations(auth.user.uid, {
+        limit: MAX_CONVERSATIONS
+      });
+
+      if (result.success && result.data) {
+        // Converter FirestoreConversation para Conversation local
+        const localConversations: Conversation[] = result.data.map(firestoreConv => ({
+          id: firestoreConv.id,
+          personaId: firestoreConv.personaId,
+          title: firestoreConv.title,
+          messages: firestoreConv.messages.map(msg => ({
+            id: msg.id,
+            content: msg.content,
+            role: msg.role,
+            timestamp: msg.timestamp.toDate().getTime(),
+            persona: msg.persona
+          })),
+          lastActivity: firestoreConv.lastActivity.toDate().getTime(),
+          createdAt: firestoreConv.createdAt.toDate().getTime()
+        }));
+
+        setConversations(localConversations);
+        setSyncStatus('idle');
+
+        // Também salvar no localStorage como backup
+        if (useLocalStorage) {
+          saveToLocalStorageOnly(localConversations);
+        }
+      } else {
+        throw new Error(result.error || 'Erro ao carregar do Firestore');
+      }
+    } catch (error) {
+      setSyncStatus('error');
+      console.error('Erro ao carregar do Firestore:', error);
+      throw error;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auth.user, useLocalStorage]);
 
   // ============================================
   // FUNÇÕES DE SALVAMENTO
@@ -144,7 +174,7 @@ export function useConversationHistory() {
         
       const dataString = JSON.stringify(limitedConversations);
       
-      // Cache via localStorage já implementado
+      // TODO: Integrar com firestoreCache
       
       if (dataString.length > 4.5 * 1024 * 1024) {
         const reducedConversations = limitedConversations.slice(0, Math.floor(MAX_CONVERSATIONS / 2));
@@ -153,18 +183,56 @@ export function useConversationHistory() {
         localStorage.setItem(STORAGE_KEY, dataString);
       }
     } catch (error) {
-      // Erro silencioso para não quebrar o fluxo
+      console.error('Erro ao salvar no localStorage:', error);
     }
-  }, []);
+  }, [auth.user?.uid]);
 
-  // Firestore saving disabled - localStorage only
+  const saveToFirestore = useCallback(async (conversation: Conversation) => {
+    if (!auth.user || !useFirestore) return;
 
-  // Salvar conversas (localStorage apenas)
+    try {
+      setSyncStatus('syncing');
+      
+      // Converter Conversation local para FirestoreConversation
+      const firestoreConv: Partial<FirestoreConversation> = {
+        id: conversation.id,
+        userId: auth.user.uid,
+        personaId: conversation.personaId,
+        title: conversation.title,
+        messages: conversation.messages.map((msg, index) => ({
+          id: generateSecureId(`msg_${index}_`, 12),
+          content: msg.content,
+          role: msg.role,
+          timestamp: new Date(msg.timestamp) as any, // Will be converted to Timestamp
+          persona: msg.persona
+        })),
+        lastActivity: new Date(conversation.lastActivity) as any,
+        createdAt: new Date(conversation.createdAt) as any,
+        messageCount: conversation.messages.length,
+        isArchived: false,
+        syncStatus: 'synced'
+      };
+
+      const result = await ConversationRepository.saveConversation(firestoreConv as FirestoreConversation);
+      
+      if (result.success) {
+        setSyncStatus('idle');
+      } else {
+        setSyncStatus('error');
+        console.error('Erro ao salvar no Firestore:', result.error);
+      }
+    } catch (error) {
+      setSyncStatus('error');
+      console.error('Erro ao salvar no Firestore:', error);
+    }
+  }, [auth.user, useFirestore]);
+
+  // Salvar conversas (Redis + localStorage + Firestore se disponível)
   const saveToStorage = useCallback((newConversations: Conversation[]) => {
     if (typeof window === 'undefined') return;
     
     // Salvar no Redis imediatamente (com tratamento de erro robusto)
-    // Conversas cache via localStorage já implementado
+    // TODO: Integrar com firestoreCache para conversas
     
     // Limpar timeout anterior
     if (saveTimeoutRef.current) {
@@ -180,6 +248,7 @@ export function useConversationHistory() {
         }
         setError(null);
       } catch (error) {
+        console.error('Erro ao salvar histórico de conversas:', error);
         setError('Erro ao salvar histórico de conversas');
       }
     }, DEBOUNCE_DELAY);
@@ -216,8 +285,18 @@ export function useConversationHistory() {
       }, DEBOUNCE_DELAY);
     }
 
-    // Firestore saving disabled
-  }, [useLocalStorage, saveToLocalStorageOnly]);
+    // Salvar no Firestore (sem debounce para melhor experiência)
+    if (useFirestore) {
+      // Debounce para Firestore também, mas menor delay
+      if (syncTimeoutRef.current) {
+        clearTimeout(syncTimeoutRef.current);
+      }
+      
+      syncTimeoutRef.current = setTimeout(() => {
+        saveToFirestore(conversation);
+      }, 1000); // 1 segundo de debounce para Firestore
+    }
+  }, [useLocalStorage, useFirestore, saveToLocalStorageOnly, saveToFirestore]);
 
   // Gerar título automático para conversa baseado na primeira mensagem
   const generateConversationTitle = useCallback((firstMessage: string): string => {
@@ -240,6 +319,7 @@ export function useConversationHistory() {
       
       return title;
     } catch (error) {
+      console.error('Erro ao gerar título da conversa:', error);
       return 'Nova conversa';
     }
   }, []);
@@ -271,6 +351,7 @@ export function useConversationHistory() {
       
       return conversationId;
     } catch (error) {
+      console.error('Erro ao criar conversa:', error);
       setError('Erro ao criar nova conversa');
       return '';
     }
@@ -314,6 +395,7 @@ export function useConversationHistory() {
       await saveConversationWithSync(updatedConv);
       setError(null);
     } catch (error) {
+      console.error('Erro ao adicionar mensagem:', error);
       setError('Erro ao adicionar mensagem à conversa');
     }
   }, [currentConversationId, conversations, saveConversationWithSync, generateConversationTitle]);
@@ -349,7 +431,15 @@ export function useConversationHistory() {
   // Excluir conversa
   const deleteConversation = useCallback(async (conversationId: string) => {
     try {
-      // Firestore deletion disabled
+      // Deletar do Firestore se disponível
+      if (useFirestore) {
+        setSyncStatus('syncing');
+        const result = await ConversationRepository.deleteConversation(conversationId);
+        if (!result.success) {
+          console.error('Erro ao deletar do Firestore:', result.error);
+        }
+        setSyncStatus('idle');
+      }
 
       // Atualizar estado local
       const updatedConversations = conversations.filter(conv => conv.id !== conversationId);
@@ -367,9 +457,10 @@ export function useConversationHistory() {
       
       setError(null);
     } catch (error) {
+      console.error('Erro ao deletar conversa:', error);
       setError('Erro ao deletar conversa');
     }
-  }, [conversations, currentConversationId, saveToStorage, useLocalStorage]);
+  }, [conversations, currentConversationId, saveToStorage, useFirestore, useLocalStorage]);
 
   // Renomear conversa
   const renameConversation = useCallback(async (conversationId: string, newTitle: string) => {
@@ -389,6 +480,7 @@ export function useConversationHistory() {
       await saveConversationWithSync(updatedConv);
       setError(null);
     } catch (error) {
+      console.error('Erro ao renomear conversa:', error);
       setError('Erro ao renomear conversa');
     }
   }, [conversations, saveConversationWithSync]);
@@ -420,15 +512,12 @@ export function useConversationHistory() {
 
   // Cleanup dos timeouts ao desmontar
   useEffect(() => {
-    const saveTimeoutToClean = saveTimeoutRef.current;
-    const syncTimeoutToClean = syncTimeoutRef.current;
-
     return () => {
-      if (saveTimeoutToClean) {
-        clearTimeout(saveTimeoutToClean);
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
       }
-      if (syncTimeoutToClean) {
-        clearTimeout(syncTimeoutToClean);
+      if (syncTimeoutRef.current) {
+        clearTimeout(syncTimeoutRef.current);
       }
     };
   }, []);
@@ -442,7 +531,7 @@ export function useConversationHistory() {
     syncStatus,
     
     // Flags de funcionalidade
-    isUsingFirestore: false,
+    isUsingFirestore: useFirestore,
     isUsingLocalStorage: useLocalStorage,
     
     // Conversa atual
@@ -465,7 +554,9 @@ export function useConversationHistory() {
     
     // Sincronização manual
     forceSync: () => {
-      // Firestore sync disabled
+      if (useFirestore && auth.user) {
+        loadFromFirestore();
+      }
     },
     
     // Controle de erro

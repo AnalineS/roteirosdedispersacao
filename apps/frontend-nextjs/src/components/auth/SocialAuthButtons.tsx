@@ -2,17 +2,8 @@
 
 import React, { useState } from 'react';
 import { useSafeAuth } from '@/hooks/useSafeAuth';
-import type { SocialAuthCredentials } from '@/types/auth';
-
-// Available providers configuration
-const AVAILABLE_PROVIDERS = {
-  google: {
-    enabled: true,
-    name: 'Google',
-    icon: '🔍',
-    color: 'bg-red-500 hover:bg-red-600'
-  }
-};
+import { AVAILABLE_PROVIDERS } from '@/lib/firebase/config';
+import type { SocialAuthCredentials } from '@/lib/firebase/types';
 
 interface SocialAuthButtonsProps {
   mode?: 'login' | 'register' | 'link';
@@ -42,24 +33,11 @@ export default function SocialAuthButtons({
 
       let result;
       if (mode === 'link') {
-        // Only Google provider is supported for linking
-        if (providerId !== 'google') {
-          throw new Error(`Invalid provider: ${providerId}. Only Google is supported`);
-        }
-        const socialCredentials = {
-          provider: 'google' as const
-        };
-        result = await linkSocialAccount(socialCredentials);
+        result = await linkSocialAccount(providerId);
       } else {
-        // Only Google provider is supported
-        if (providerId !== 'google') {
-          throw new Error(`Invalid provider: ${providerId}. Only Google is supported`);
-        }
-
-        const credentials: SocialAuthCredentials & { provider: 'google' } = {
-          providerId: 'google.com',
-          preferredProfileType,
-          provider: 'google'
+        const credentials: SocialAuthCredentials = {
+          providerId: providerId as any,
+          preferredProfileType
         };
         result = await loginWithSocial(credentials);
       }
@@ -69,8 +47,8 @@ export default function SocialAuthButtons({
       } else {
         onError?.(result.error || 'Erro desconhecido');
       }
-    } catch (error: Error | unknown) {
-      onError?.((error instanceof Error ? error.message : String(error)) || 'Erro durante autenticação social');
+    } catch (error: any) {
+      onError?.(error.message || 'Erro durante autenticação social');
     } finally {
       setLoadingProvider(null);
     }
@@ -78,7 +56,6 @@ export default function SocialAuthButtons({
 
   const getProviderIcon = (providerId: string) => {
     switch (providerId) {
-      case 'google':
       case 'google.com':
         return (
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
@@ -94,11 +71,13 @@ export default function SocialAuthButtons({
   };
 
   const getProviderName = (providerId: string) => {
-    return AVAILABLE_PROVIDERS.google?.name || providerId;
+    const provider = AVAILABLE_PROVIDERS.find(p => p.id === providerId);
+    return provider?.name || providerId;
   };
 
   const getProviderColor = (providerId: string) => {
-    return AVAILABLE_PROVIDERS.google?.color || '#666';
+    const provider = AVAILABLE_PROVIDERS.find(p => p.id === providerId);
+    return provider?.color || '#666';
   };
 
   const getModeText = () => {
@@ -112,9 +91,7 @@ export default function SocialAuthButtons({
     }
   };
 
-  const enabledProviders = Object.entries(AVAILABLE_PROVIDERS)
-    .filter(([_, config]) => config.enabled)
-    .map(([id, config]) => ({ id, ...config }));
+  const enabledProviders = AVAILABLE_PROVIDERS.filter(provider => provider.enabled);
 
   if (enabledProviders.length === 0) {
     return null;

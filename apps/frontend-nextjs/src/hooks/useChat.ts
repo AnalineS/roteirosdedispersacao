@@ -4,8 +4,7 @@
  */
 
 import { useCallback, useRef, useEffect, useMemo } from 'react';
-import { sendChatMessage, type ChatRequest, type ChatResponse } from '@/services/api';
-import { type ChatMessage } from '@/types/api';
+import { sendChatMessage, type ChatMessage, type ChatRequest, type ChatResponse } from '@/services/api';
 import { PersonaRAGIntegration, type PersonaResponse } from '@/services/personaRAGIntegration';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { useSentimentAnalysis } from '@/hooks/useSentimentAnalysis';
@@ -16,12 +15,10 @@ import { FallbackResult } from '@/services/fallbackSystem';
 import { useSafeAuth } from '@/hooks/useSafeAuth';
 import { generateTempUserId } from '@/utils/cryptoUtils';
 import { useIntelligentRouting } from '@/hooks/useIntelligentRouting';
-import { type PersonaConfig } from '@/types/personas';
 
 // OTIMIZAÇÃO CRÍTICA: Hooks especializados para reduzir complexidade
 import { useChatMessages } from '@/hooks/useChatMessages';
 import { useChatState } from '@/hooks/useChatState';
-
 
 interface UseChatOptions {
   persistToLocalStorage?: boolean;
@@ -29,12 +26,12 @@ interface UseChatOptions {
   enableSentimentAnalysis?: boolean;
   enableKnowledgeEnrichment?: boolean;
   enableIntelligentRouting?: boolean;
-  availablePersonas?: Record<string, PersonaConfig>;
+  availablePersonas?: Record<string, any>;
   onMessageReceived?: (message: ChatMessage) => void;
 }
 
 export function useChat(options: UseChatOptions = {}) {
-  const { handleError } = useErrorHandler();
+  const { captureError } = useErrorHandler();
   const { 
     persistToLocalStorage = true, 
     storageKey = 'chat-history',
@@ -86,16 +83,7 @@ export function useChat(options: UseChatOptions = {}) {
         // Remover sessionId temporário
         localStorage.removeItem('temp_session_id');
         
-        if (typeof window !== 'undefined' && window.gtag) {
-          window.gtag('event', 'chat_session_migration', {
-            event_category: 'medical_chat',
-            event_label: 'session_migrated',
-            custom_parameters: {
-              medical_context: 'chat_session_management',
-              migration_type: 'temporary_to_authenticated'
-            }
-          });
-        }
+        console.log('🔄 Migração de sessão:', tempSessionId, '→', user.uid);
       }
     }
   }, [isAuthenticated, user?.uid]);
@@ -214,16 +202,7 @@ export function useChat(options: UseChatOptions = {}) {
       try {
         await intelligentRouting.analyzeQuestion(message);
       } catch (error) {
-        if (typeof window !== 'undefined' && window.gtag) {
-          window.gtag('event', 'intelligent_routing_error', {
-            event_category: 'medical_chat',
-            event_label: 'routing_analysis_failed',
-            custom_parameters: {
-              medical_context: 'intelligent_routing',
-              error_type: 'analysis_failure'
-            }
-          });
-        }
+        console.warn('Erro na análise de roteamento:', error);
         // Continua normalmente mesmo se a análise falhar
       }
     }
@@ -237,16 +216,7 @@ export function useChat(options: UseChatOptions = {}) {
       try {
         sentiment = await analyzeSentiment(message);
       } catch (error) {
-        if (typeof window !== 'undefined' && window.gtag) {
-          window.gtag('event', 'sentiment_analysis_error', {
-            event_category: 'medical_chat',
-            event_label: 'sentiment_analysis_failed',
-            custom_parameters: {
-              medical_context: 'sentiment_analysis',
-              error_type: 'analysis_failure'
-            }
-          });
-        }
+        console.error('Erro na análise de sentimento:', error);
       }
     }
     
@@ -261,20 +231,11 @@ export function useChat(options: UseChatOptions = {}) {
           knowledgeContext = {
             context: contextResult.combined_context,
             confidence: contextResult.confidence,
-            sources: contextResult.chunks.map((chunk: { section: string }) => chunk.section)
+            sources: contextResult.chunks.map((chunk: any) => chunk.section)
           };
         }
       } catch (error) {
-        if (typeof window !== 'undefined' && window.gtag) {
-          window.gtag('event', 'knowledge_context_error', {
-            event_category: 'medical_chat',
-            event_label: 'knowledge_search_failed',
-            custom_parameters: {
-              medical_context: 'knowledge_enrichment',
-              error_type: 'context_search_failure'
-            }
-          });
-        }
+        console.error('Erro ao buscar contexto:', error);
       }
     }
     
@@ -328,18 +289,8 @@ export function useChat(options: UseChatOptions = {}) {
       setLoading(false);
 
     } catch (err) {
-      if (typeof window !== 'undefined' && window.gtag) {
-        window.gtag('event', 'chat_message_send_error', {
-          event_category: 'medical_chat',
-          event_label: 'message_send_failed',
-          custom_parameters: {
-            medical_context: 'chat_communication',
-            retry_attempt: (retryCount + 1).toString(),
-            error_type: 'send_failure'
-          }
-        });
-      }
-      handleError(err as Error, 'medium');
+      console.error(`Erro ao enviar mensagem (tentativa ${retryCount + 1}):`, err);
+      captureError(err as string | Error, { component: 'useChat', action: 'sendMessage', metadata: { retryCount, personaId } });
       
       if (retryCount < maxRetries) {
         // Retry with exponential backoff
@@ -384,16 +335,7 @@ export function useChat(options: UseChatOptions = {}) {
             return;
           }
         } catch (fallbackErr) {
-          if (typeof window !== 'undefined' && window.gtag) {
-          window.gtag('event', 'chat_fallback_error', {
-            event_category: 'medical_chat',
-            event_label: 'fallback_mechanism_failed',
-            custom_parameters: {
-              medical_context: 'chat_fallback_system',
-              error_type: 'complete_failure'
-            }
-          });
-        }
+          console.error('Fallback também falhou:', fallbackErr);
         }
         
         const errorMessage = err instanceof Error ? err.message : 'Erro ao enviar mensagem';
@@ -406,7 +348,7 @@ export function useChat(options: UseChatOptions = {}) {
     if (retryCount >= maxRetries) {
       setLoading(false);
     }
-  }, [personaRAG, sessionId, messagesRef, addMessage, onMessageReceived, setError, setLastApiCall, setLoading, withFallback, handleError, analyzeSentiment, enableSentimentAnalysis, enableIntelligentRouting, enableKnowledgeEnrichment, intelligentRouting, searchKnowledge]);
+  }, [personaRAG, sessionId, messagesRef, addMessage, onMessageReceived, setError, setLastApiCall, setLoading, withFallback, captureError, analyzeSentiment, enableSentimentAnalysis]);
 
   const handleClearMessages = useCallback(() => {
     clearMessages();
@@ -474,19 +416,6 @@ export function useChat(options: UseChatOptions = {}) {
     // PersonaRAG Integration - Novos recursos
     personaRAGStats: () => personaRAG.getPersonaStats(),
     getPersonaRecommendation: (query: string) => personaRAG.recommendPersona(query),
-    configurePersona: (personaId: string, config: PersonaConfig) => {
-      // Transform PersonaConfig responseStyle to PersonaRAG format
-      const ragConfig = {
-        ...config,
-        responseStyle: {
-          formality: config.tone === 'professional' ? 'formal' as const : 'casual' as const,
-          technicality: config.tone === 'professional' ? 'high' as const : 'medium' as const,
-          empathy: config.tone === 'empathetic' ? 'high' as const : 'medium' as const,
-          examples: true,
-          citations: config.tone === 'professional'
-        }
-      };
-      return personaRAG.configurePersona(personaId, ragConfig);
-    }
+    configurePersona: (personaId: string, config: any) => personaRAG.configurePersona(personaId, config)
   };
 }

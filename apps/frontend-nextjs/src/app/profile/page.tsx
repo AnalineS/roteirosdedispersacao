@@ -4,26 +4,26 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
   User, 
+  Mail, 
   Shield, 
   Settings, 
   Save,
   Loader2,
   AlertCircle,
   CheckCircle,
+  Camera,
   Link as LinkIcon,
   Trash2
 } from 'lucide-react';
 import { useSafeAuth as useAuth } from '@/hooks/useSafeAuth';
 import { SocialAuthButtons } from '@/components/auth';
-import type { UserProfile } from '@/types/auth';
-
-type UserFocus = UserProfile['focus'];
+import type { UserFocus } from '@/lib/firebase/types';
 import { SocialProfile, AvatarUploader, EmailPreferences, ConnectedAccounts } from '@/components/profile';
 
 interface ProfileFormData {
   displayName: string;
   email: string;
-  profileType: 'admin' | 'professional' | 'student' | 'patient';
+  profileType: 'admin' | 'professional' | 'student' | 'patient' | 'caregiver';
   focus: UserFocus;
   preferences: {
     language: 'simple' | 'technical';
@@ -76,17 +76,13 @@ export default function ProfilePage() {
       setFormData({
         displayName: user.displayName || profile.displayName || '',
         email: user.email || profile.email || '',
-        profileType: (profile.type === 'caregiver' ? 'patient' : profile.type) || 'patient',
+        profileType: profile.type || 'patient',
         focus: profile.focus || 'general',
         preferences: {
           language: profile.preferences?.language || 'simple',
           notifications: profile.preferences?.notifications ?? true,
           theme: profile.preferences?.theme || 'auto',
-          emailUpdates: (() => {
-            const prefs = profile.preferences as Record<string, unknown> | undefined;
-            return prefs && 'emailUpdates' in prefs && typeof prefs.emailUpdates === 'boolean'
-              ? prefs.emailUpdates : true;
-          })()
+          emailUpdates: profile.preferences?.emailUpdates ?? true
         }
       });
     }
@@ -110,21 +106,21 @@ export default function ProfilePage() {
       } else {
         setMessage({ type: 'error', text: result.error || 'Erro ao atualizar perfil' });
       }
-    } catch (_error) {
+    } catch (error) {
       setMessage({ type: 'error', text: 'Erro inesperado ao atualizar perfil' });
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleInputChange = <K extends keyof ProfileFormData>(field: K, value: ProfileFormData[K]) => {
+  const handleInputChange = (field: keyof ProfileFormData, value: any) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
     }));
   };
 
-  const handlePreferenceChange = <K extends keyof ProfileFormData['preferences']>(field: K, value: ProfileFormData['preferences'][K]) => {
+  const handlePreferenceChange = (field: keyof ProfileFormData['preferences'], value: any) => {
     setFormData(prev => ({
       ...prev,
       preferences: {
@@ -142,26 +138,6 @@ export default function ProfilePage() {
     setMessage({ type: 'success', text: 'Conta vinculada com sucesso!' });
   };
 
-  // Wrapper para vincular conta social com tracking
-  const handleLinkSocialAccount = async (provider: string) => {
-    try {
-      const socialCredentials = {
-        provider: provider as 'google' | 'facebook' | 'apple'
-      };
-      const result = await linkSocialAccount(socialCredentials);
-      if (result.success) {
-        handleSocialSuccess();
-      } else {
-        handleSocialLink(result.error || 'Erro ao vincular conta');
-      }
-      return result;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-      handleSocialLink(errorMessage);
-      return { success: false, error: errorMessage };
-    }
-  };
-
   const handleDeleteAccount = async () => {
     if (!showDeleteConfirm) {
       setShowDeleteConfirm(true);
@@ -176,7 +152,7 @@ export default function ProfilePage() {
       } else {
         setMessage({ type: 'error', text: result.error || 'Erro ao excluir conta' });
       }
-    } catch (_error) {
+    } catch (error) {
       setMessage({ type: 'error', text: 'Erro inesperado ao excluir conta' });
     } finally {
       setIsLoading(false);
@@ -197,7 +173,7 @@ export default function ProfilePage() {
     return null; // Will redirect
   }
 
-  const connectedProviders = user?.provider ? [user.provider] : [];
+  const connectedProviders = user?.providerData?.map((p: any) => p.providerId) || [];
 
   return (
     <div className="profile-container">
@@ -302,7 +278,7 @@ export default function ProfilePage() {
                   <select
                     id="profileType"
                     value={formData.profileType}
-                    onChange={(e) => handleInputChange('profileType', e.target.value as ProfileFormData['profileType'])}
+                    onChange={(e) => handleInputChange('profileType', e.target.value)}
                     className="form-select"
                   >
                     <option value="professional">Profissional de Saúde</option>
@@ -319,7 +295,7 @@ export default function ProfilePage() {
                   <select
                     id="focus"
                     value={formData.focus}
-                    onChange={(e) => handleInputChange('focus', e.target.value as UserFocus)}
+                    onChange={(e) => handleInputChange('focus', e.target.value)}
                     className="form-select"
                   >
                     <option value="general">Geral</option>
@@ -339,7 +315,7 @@ export default function ProfilePage() {
                   <select
                     id="language"
                     value={formData.preferences.language}
-                    onChange={(e) => handlePreferenceChange('language', e.target.value as 'simple' | 'technical')}
+                    onChange={(e) => handlePreferenceChange('language', e.target.value)}
                     className="form-select"
                   >
                     <option value="simple">Linguagem simples</option>
@@ -354,7 +330,7 @@ export default function ProfilePage() {
                   <select
                     id="theme"
                     value={formData.preferences.theme}
-                    onChange={(e) => handlePreferenceChange('theme', e.target.value as 'light' | 'dark' | 'auto')}
+                    onChange={(e) => handlePreferenceChange('theme', e.target.value)}
                     className="form-select"
                   >
                     <option value="light">Claro</option>
@@ -419,7 +395,7 @@ export default function ProfilePage() {
                 <div className="connected-accounts">
                   {connectedProviders.length > 0 ? (
                     <div className="account-list">
-                      {connectedProviders.map((provider: string) => (
+                      {connectedProviders.map((provider: any) => (
                         <div key={provider} className="account-item connected">
                           <div className="account-info">
                             <LinkIcon size={20} />
@@ -527,180 +503,23 @@ export default function ProfilePage() {
               {/* Avatar Uploader - PR #175 */}
               <div className="form-section">
                 <h3 className="section-title">Avatar do Perfil</h3>
-                <AvatarUploader
+                <AvatarUploader 
                   userId={user?.uid || ''}
                   currentAvatarUrl={user?.photoURL || ''}
-                  onUploadComplete={(url) => {
-                    // Log upload success via proper analytics
-                    if (typeof window !== 'undefined' && window.gtag) {
-                      window.gtag('event', 'avatar_upload_complete', {
-                        event_category: 'profile',
-                        event_label: 'avatar_change',
-                        custom_parameters: {
-                          user_id: user?.uid
-                        }
-                      });
-                    }
-                  }}
+                  onUploadComplete={(url) => console.log('Avatar uploaded:', url)}
                 />
               </div>
 
               {/* Email Preferences - PR #175 */}
               <div className="form-section">
                 <h3 className="section-title">Preferências de Email</h3>
-                <EmailPreferences />
-              </div>
-
-              {/* Vincular Novas Contas - handleLinkSocialAccount ativado */}
-              <div className="form-section">
-                <h3 className="section-title">Vincular Conta Social</h3>
-                <p style={{ color: '#64748b', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
-                  Conecte suas contas sociais para facilitar o acesso e sincronizar dados
-                </p>
-
-                <div style={{
-                  display: 'grid',
-                  gap: '1rem',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))'
-                }}>
-                  {/* Google Account */}
-                  <button
-                    onClick={() => handleLinkSocialAccount('google')}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.75rem',
-                      padding: '1rem',
-                      background: '#fff',
-                      border: '2px solid #e5e7eb',
-                      borderRadius: '8px',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease',
-                      fontSize: '0.9rem',
-                      fontWeight: '500'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.borderColor = '#4285f4';
-                      e.currentTarget.style.background = '#f8faff';
-                      e.currentTarget.style.transform = 'translateY(-1px)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.borderColor = '#e5e7eb';
-                      e.currentTarget.style.background = '#fff';
-                      e.currentTarget.style.transform = 'translateY(0)';
-                    }}
-                  >
-                    <div style={{
-                      width: '24px',
-                      height: '24px',
-                      background: 'url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTIyLjU2IDEyLjI1QzIyLjU2IDExLjQ3IDIyLjQ5IDEwLjcyIDIyLjM2IDEwSDEyVjE0LjI2SDE3Ljk2QzE3LjY2IDE1Ljg5IDE2Ljc4IDE3LjI2IDE1LjQ0IDE4LjE2VjIxSDEzSDIwSDIyLjI4QzIxLjM4IDE5LjU5IDIwLjUgMTcuODcgMjAuNSAxNUMyMC41IDEzLjU2IDIxLjc3IDEyLjI1IDIyLjU2IDEyLjI1WiIgZmlsbD0iIzQyODVGNCIvPgo8cGF0aCBkPSJNMjEgNS4xOEwyMC41IDUuMTJMMTkuNzcgNC42OUMxOC41NyAzLjcyIDExLjY5IDMuNzIgMTAuNDkgNC42OUwxMCA1VjVIOEwtMy41IDlIMy41TDQuNSA0SDEyVjEwSDIyLjM2QzIyLjQ5IDEwLjcyIDIyLjU2IDExLjQ3IDIyLjU2IDEyLjI1WiIgZmlsbD0iI0VBNDMzNSIvPgo8L3N2Zz4K) center/contain no-repeat'
-                    }} />
-                    <div>
-                      <div style={{ color: '#1f2937' }}>Google</div>
-                      <div style={{ color: '#6b7280', fontSize: '0.8rem' }}>Acesso rápido e seguro</div>
-                    </div>
-                  </button>
-
-                  {/* GitHub Account */}
-                  <button
-                    onClick={() => handleLinkSocialAccount('github')}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.75rem',
-                      padding: '1rem',
-                      background: '#fff',
-                      border: '2px solid #e5e7eb',
-                      borderRadius: '8px',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease',
-                      fontSize: '0.9rem',
-                      fontWeight: '500'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.borderColor = '#24292e';
-                      e.currentTarget.style.background = '#f6f8fa';
-                      e.currentTarget.style.transform = 'translateY(-1px)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.borderColor = '#e5e7eb';
-                      e.currentTarget.style.background = '#fff';
-                      e.currentTarget.style.transform = 'translateY(0)';
-                    }}
-                  >
-                    <div style={{
-                      width: '24px',
-                      height: '24px',
-                      background: '#24292e',
-                      borderRadius: '50%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: 'white',
-                      fontSize: '12px',
-                      fontWeight: 'bold'
-                    }}>
-                      GH
-                    </div>
-                    <div>
-                      <div style={{ color: '#1f2937' }}>GitHub</div>
-                      <div style={{ color: '#6b7280', fontSize: '0.8rem' }}>Para desenvolvedores</div>
-                    </div>
-                  </button>
-
-                  {/* Microsoft Account */}
-                  <button
-                    onClick={() => handleLinkSocialAccount('microsoft')}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.75rem',
-                      padding: '1rem',
-                      background: '#fff',
-                      border: '2px solid #e5e7eb',
-                      borderRadius: '8px',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease',
-                      fontSize: '0.9rem',
-                      fontWeight: '500'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.borderColor = '#0078d4';
-                      e.currentTarget.style.background = '#f3f9fd';
-                      e.currentTarget.style.transform = 'translateY(-1px)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.borderColor = '#e5e7eb';
-                      e.currentTarget.style.background = '#fff';
-                      e.currentTarget.style.transform = 'translateY(0)';
-                    }}
-                  >
-                    <div style={{
-                      width: '24px',
-                      height: '24px',
-                      background: 'linear-gradient(45deg, #f25022 25%, #7fba00 25%, #7fba00 50%, #00a4ef 50%, #00a4ef 75%, #ffb900 75%)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }} />
-                    <div>
-                      <div style={{ color: '#1f2937' }}>Microsoft</div>
-                      <div style={{ color: '#6b7280', fontSize: '0.8rem' }}>Office e Azure</div>
-                    </div>
-                  </button>
-                </div>
-
-                <div style={{
-                  marginTop: '1rem',
-                  padding: '0.75rem',
-                  background: '#f8f9fa',
-                  borderRadius: '6px',
-                  fontSize: '0.8rem',
-                  color: '#6b7280',
-                  border: '1px solid #e9ecef'
-                }}>
-                  🔒 Suas informações serão mantidas seguras e não serão compartilhadas com terceiros
-                </div>
+                <EmailPreferences 
+                  userId={user?.uid || ''}
+                  onPreferencesChange={async (prefs) => {
+                    console.log('Email preferences updated:', prefs);
+                    return true;
+                  }}
+                />
               </div>
 
               {/* Connected Accounts - PR #175 */}

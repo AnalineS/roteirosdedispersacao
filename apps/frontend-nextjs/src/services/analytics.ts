@@ -1,5 +1,5 @@
 import ReactGA from 'react-ga4';
-// Analytics simples baseado em localStorage e API backend
+import { AnalyticsFirestoreCache } from './analyticsFirestoreCache';
 
 // Google Analytics Measurement ID - Configured via GitHub secrets
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || '';
@@ -125,18 +125,18 @@ export const logCustomMetrics = (metrics: Partial<CustomMetrics>) => {
       custom_parameter: metrics,
     });
 
-    // Salvar métricas localmente
+    // Também salvar no Firestore para analytics avançado
     const sessionId = getCurrentSessionId();
-    try {
-      localStorage.setItem(`metrics_${Date.now()}`, JSON.stringify({
-        sessionId,
-        timestamp: new Date().toISOString(),
-        category: 'performance',
-        metrics
-      }));
-    } catch (error) {
-      console.warn('Failed to save metrics locally:', error);
-    }
+    AnalyticsFirestoreCache.saveAnalyticsEvent({
+      id: `metrics_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      sessionId,
+      timestamp: Date.now(),
+      event: 'custom_metrics',
+      category: 'performance',
+      customDimensions: metrics
+    }).catch(error => {
+      console.warn('Failed to save metrics to Firestore:', error);
+    });
   }
 };
 
@@ -275,16 +275,13 @@ let currentSessionId: string | null = null;
 const getCurrentSessionId = (): string => {
   if (!currentSessionId) {
     currentSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    // Iniciar sessão localmente
-    try {
-      localStorage.setItem(`session_${currentSessionId}`, JSON.stringify({
-        id: currentSessionId,
-        startTime: new Date().toISOString(),
-        deviceType: getDeviceType()
-      }));
-    } catch (error) {
-      console.warn('Failed to start analytics session:', error);
-    }
+    // Iniciar sessão no Firestore
+    AnalyticsFirestoreCache.startAnalyticsSession({
+      id: currentSessionId,
+      deviceType: getDeviceType(),
+    }).catch(error => {
+      console.warn('Failed to start Firestore analytics session:', error);
+    });
   }
   return currentSessionId;
 };
@@ -314,22 +311,15 @@ export const Analytics = {
   education: trackEducationalProgress,
   compliance: trackCompliance,
   admin: trackAdminAction,
-  // Analytics local simples
-  local: {
-    getMetrics: () => {
-      const keys = Object.keys(localStorage).filter(key => key.startsWith('metrics_'));
-      return keys.map(key => JSON.parse(localStorage.getItem(key) || '{}'));
-    },
-    getSessions: () => {
-      const keys = Object.keys(localStorage).filter(key => key.startsWith('session_'));
-      return keys.map(key => JSON.parse(localStorage.getItem(key) || '{}'));
-    },
-    cleanup: () => {
-      const keys = Object.keys(localStorage).filter(key =>
-        key.startsWith('metrics_') || key.startsWith('session_')
-      );
-      keys.forEach(key => localStorage.removeItem(key));
-    }
+  // Firestore integration
+  firestore: {
+    startSession: (sessionData?: any) => AnalyticsFirestoreCache.startAnalyticsSession(sessionData),
+    endSession: (sessionId: string) => AnalyticsFirestoreCache.endAnalyticsSession(sessionId),
+    getSession: (sessionId: string) => AnalyticsFirestoreCache.getAnalyticsSession(sessionId),
+    trackMedical: (sessionId: string, metric: any) => AnalyticsFirestoreCache.trackMedicalMetric(sessionId, metric),
+    getAggregated: (timeframe: any, start: number, end: number) => AnalyticsFirestoreCache.getAggregatedAnalytics(timeframe, start, end),
+    getRealtime: () => AnalyticsFirestoreCache.getRealtimeAnalytics(),
+    cleanup: (olderThanMs?: number) => AnalyticsFirestoreCache.cleanupOldAnalytics(olderThanMs)
   }
 };
 

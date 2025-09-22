@@ -15,7 +15,7 @@ interface AdvancedCalculatorProps {
 }
 
 export default function AdvancedCalculator({ onCalculationComplete }: AdvancedCalculatorProps): React.JSX.Element {
-  const { handleError } = useErrorHandler();
+  const { captureError } = useErrorHandler();
   const [activeTab, setActiveTab] = useState<'calculator' | 'history' | 'export'>('calculator');
   const [currentResult, setCurrentResult] = useState<CalculationResult | null>(null);
   const [history, setHistory] = useState<CalculationHistory[]>([]);
@@ -28,10 +28,15 @@ export default function AdvancedCalculator({ onCalculationComplete }: AdvancedCa
       try {
         setHistory(JSON.parse(savedHistory));
       } catch (error) {
-        handleError(error as Error, 'low');
+        captureError(error as Error, {
+          severity: 'low',
+          component: 'AdvancedCalculator',
+          action: 'load_calculation_history',
+          metadata: { storage_key: 'pqtu_calculation_history' }
+        });
       }
     }
-  }, [handleError]);
+  }, []);
 
   // Salvar histórico no localStorage
   const saveToHistory = useCallback((result: CalculationResult, profile: PatientProfile) => {

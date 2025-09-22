@@ -26,8 +26,7 @@ export default function EsqueciSenhaPage() {
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       setIsSuccess(true);
-    } catch (error) {
-      console.error('Erro ao resetar senha:', error);
+    } catch (_error) {
       setError('Erro ao enviar email de recuperação. Tente novamente.');
     } finally {
       setIsLoading(false);

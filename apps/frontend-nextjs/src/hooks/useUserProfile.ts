@@ -2,38 +2,23 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useSafeAuth as useAuth } from '@/hooks/useSafeAuth';
-import type { UserProfile as BaseUserProfile } from '@/types/auth';
+import { UserProfileRepository } from '@/lib/firebase/firestore';
+import { FirestoreUserProfile } from '@/lib/firebase/types';
+import { FEATURES } from '@/lib/firebase/config';
 
-// Features configuration
-const FEATURES = {
-  AUTH_ENABLED: true,
-  FIRESTORE_ENABLED: false, // Disabled - using local storage
-  OFFLINE_MODE: false,
-};
-
-// Use the central UserProfile type
-export type { UserProfile } from '@/types/auth';
-
-// Local UserProfile interface for hook compatibility
-interface LocalUserProfile {
+export interface UserProfile {
   type: 'admin' | 'professional' | 'student' | 'patient' | 'caregiver';
   focus: 'technical' | 'practical' | 'effects' | 'general' | 'empathetic';
   confidence: number;
   explanation: string;
   selectedPersona?: string;
-  name?: string;
-  professional?: boolean;
-  sessionCount?: number;
   preferences?: {
     language: 'simple' | 'technical';
     notifications: boolean;
     theme: 'light' | 'dark' | 'auto';
-    emailUpdates: boolean;
-    dataCollection: boolean;
-    lgpdConsent: boolean;
   };
   history?: {
-    lastPersona: 'ga' | 'dr_gasnelio';
+    lastPersona: string;
     conversationCount: number;
     lastAccess: string;
     preferredTopics: string[];
@@ -41,11 +26,11 @@ interface LocalUserProfile {
 }
 
 interface UserProfileHook {
-  profile: LocalUserProfile | null;
+  profile: UserProfile | null;
   isLoading: boolean;
   syncStatus: 'idle' | 'syncing' | 'error';
-  saveProfile: (profile: LocalUserProfile) => Promise<void>;
-  updateProfile: (updates: Partial<LocalUserProfile>) => Promise<void>;
+  saveProfile: (profile: UserProfile) => Promise<void>;
+  updateProfile: (updates: Partial<UserProfile>) => Promise<void>;
   clearProfile: () => Promise<void>;
   getRecommendedPersona: () => string;
   hasProfile: boolean;
@@ -59,15 +44,12 @@ const STORAGE_VERSION = '1.0';
 const defaultPreferences = {
   language: 'simple' as const,
   notifications: true,
-  theme: 'auto' as const,
-  emailUpdates: false,
-  dataCollection: false,
-  lgpdConsent: false
+  theme: 'auto' as const
 };
 
 export function useUserProfile(): UserProfileHook {
   const auth = useAuth();
-  const [profile, setProfile] = useState<LocalUserProfile | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'error'>('idle');
   
@@ -89,12 +71,7 @@ export function useUserProfile(): UserProfileHook {
           loadFromLocalStorage();
         }
       } catch (error) {
-        if (typeof window !== 'undefined' && window.gtag) {
-        window.gtag('event', 'profile_load_error', {
-          event_category: 'user_profile',
-          event_label: 'load_failed'
-        });
-      }
+        console.error('Erro ao carregar perfil:', error);
         
         // Fallback para localStorage em caso de erro do Firestore
         if (useFirestore) {
@@ -123,79 +100,89 @@ export function useUserProfile(): UserProfileHook {
           setProfile(data.profile);
         } else {
           // Migração de versão se necessário
-          if (typeof window !== 'undefined' && window.gtag) {
-          window.gtag('event', 'profile_migration', {
-            event_category: 'user_profile',
-            event_label: 'version_upgrade'
-          });
-        }
+          console.log('Migrando perfil para nova versão');
           localStorage.removeItem(STORAGE_KEY);
         }
       }
     } catch (error) {
-      if (typeof window !== 'undefined' && window.gtag) {
-        window.gtag('event', 'local_storage_load_error', {
-          event_category: 'user_profile',
-          event_label: 'localStorage_failed'
-        });
-      }
+      console.error('Erro ao carregar do localStorage:', error);
       localStorage.removeItem(STORAGE_KEY);
       throw error;
     }
   }, []);
 
   const loadFromFirestore = useCallback(async () => {
-    // Firestore disabled - only use localStorage
-    if (useLocalStorage) {
-      loadFromLocalStorage();
+    if (!auth.user) return;
+
+    try {
+      setSyncStatus('syncing');
+      
+      // Primeiro verificar se há perfil no contexto de auth
+      if (auth.profile) {
+        const localProfile = convertFirestoreToLocal(auth.profile);
+        setProfile(localProfile);
+        setSyncStatus('idle');
+        return;
+      }
+
+      // Se não, carregar diretamente do Firestore
+      const result = await UserProfileRepository.getProfile(auth.user.uid);
+      
+      if (result.success && result.data) {
+        const localProfile = convertFirestoreToLocal(result.data);
+        setProfile(localProfile);
+        setSyncStatus('idle');
+
+        // Também salvar no localStorage como backup
+        if (useLocalStorage) {
+          saveToLocalStorageOnly(localProfile);
+        }
+      } else {
+        // Perfil não existe no Firestore - usar localStorage se disponível
+        if (useLocalStorage) {
+          loadFromLocalStorage();
+        }
+        setSyncStatus('idle');
+      }
+    } catch (error) {
+      setSyncStatus('error');
+      console.error('Erro ao carregar do Firestore:', error);
+      throw error;
     }
-    setSyncStatus('idle');
-  }, [useLocalStorage, loadFromLocalStorage]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auth.user, auth.profile, useLocalStorage]);
 
   // ============================================
   // FUNÇÕES DE CONVERSÃO
   // ============================================
 
-  // Conversion functions simplified for local storage only
-  const convertFirestoreToLocal = useCallback((profile: BaseUserProfile): LocalUserProfile => {
+  const convertFirestoreToLocal = useCallback((firestoreProfile: FirestoreUserProfile): UserProfile => {
     return {
-      type: profile.type as LocalUserProfile['type'],
-      focus: profile.focus as LocalUserProfile['focus'],
-      confidence: profile.confidence,
-      explanation: profile.explanation,
-      selectedPersona: profile.history?.lastPersona || 'ga',
-      preferences: {
-        language: profile.preferences?.language || 'simple',
-        notifications: profile.preferences?.notifications || true,
-        theme: profile.preferences?.theme || 'auto',
-        emailUpdates: profile.preferences?.emailUpdates || false,
-        dataCollection: profile.preferences?.dataCollection || false,
-        lgpdConsent: profile.preferences?.lgpdConsent || false,
-      },
-      history: profile.history
+      type: firestoreProfile.type,
+      focus: firestoreProfile.focus,
+      confidence: firestoreProfile.confidence,
+      explanation: firestoreProfile.explanation,
+      selectedPersona: firestoreProfile.selectedPersona,
+      preferences: firestoreProfile.preferences,
+      history: firestoreProfile.history
     };
   }, []);
 
-  const convertLocalToFirestore = useCallback((localProfile: LocalUserProfile): BaseUserProfile => {
+  const convertLocalToFirestore = useCallback((localProfile: UserProfile): Partial<FirestoreUserProfile> => {
     if (!auth.user) throw new Error('Usuário não autenticado');
 
     return {
       uid: auth.user.uid,
       email: auth.user.email || undefined,
       displayName: auth.user.displayName || undefined,
-      type: (localProfile.type === 'caregiver' ? 'patient' : localProfile.type) as 'patient' | 'professional' | 'student' | 'admin',
+      type: localProfile.type,
       focus: localProfile.focus,
       confidence: localProfile.confidence,
       explanation: localProfile.explanation,
-      preferences: {
-        ...defaultPreferences,
-        ...localProfile.preferences,
-        emailUpdates: localProfile.preferences?.emailUpdates ?? defaultPreferences.emailUpdates,
-        dataCollection: localProfile.preferences?.dataCollection ?? defaultPreferences.dataCollection,
-        lgpdConsent: localProfile.preferences?.lgpdConsent ?? defaultPreferences.lgpdConsent
-      },
+      selectedPersona: localProfile.selectedPersona,
+      preferences: { ...defaultPreferences, ...localProfile.preferences },
       history: {
-        lastPersona: (localProfile.history?.lastPersona || localProfile.selectedPersona || 'ga') as 'dr_gasnelio' | 'ga',
+        lastPersona: localProfile.history?.lastPersona || localProfile.selectedPersona || 'ga',
         conversationCount: localProfile.history?.conversationCount || 0,
         lastAccess: new Date().toISOString(),
         preferredTopics: localProfile.history?.preferredTopics || [],
@@ -204,32 +191,22 @@ export function useUserProfile(): UserProfileHook {
         completedModules: [],
         achievements: []
       },
-      stats: {
-        joinedAt: new Date().toISOString(),
-        lastActiveAt: new Date().toISOString(),
-        sessionCount: localProfile.history?.conversationCount || 0,
-        messageCount: 0,
-        averageSessionDuration: 0,
-        favoritePersona: (localProfile.selectedPersona as 'dr_gasnelio' | 'ga') || 'ga',
-        completionRate: 0,
-      },
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      isAnonymous: auth.isAnonymous,
       version: '2.0'
     };
-  }, [auth.user]);
+  }, [auth.user, auth.isAnonymous]);
 
   // ============================================
   // FUNÇÕES DE SALVAMENTO
   // ============================================
 
-  const saveToLocalStorageOnly = useCallback((profileToSave: LocalUserProfile): void => {
+  const saveToLocalStorageOnly = useCallback((profileToSave: UserProfile) => {
     try {
-      const enrichedProfile: LocalUserProfile = {
+      const enrichedProfile: UserProfile = {
         ...profileToSave,
         preferences: { ...defaultPreferences, ...profileToSave.preferences },
         history: {
-          lastPersona: (profileToSave.selectedPersona as 'ga' | 'dr_gasnelio') || 'ga',
+          lastPersona: profileToSave.selectedPersona || 'ga',
           conversationCount: (profile?.history?.conversationCount || 0) + 1,
           lastAccess: new Date().toISOString(),
           preferredTopics: profile?.history?.preferredTopics || []
@@ -244,26 +221,21 @@ export function useUserProfile(): UserProfileHook {
 
       localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
     } catch (error) {
-      if (typeof window !== 'undefined' && window.gtag) {
-        window.gtag('event', 'local_storage_save_error', {
-          event_category: 'user_profile',
-          event_label: 'localStorage_save_failed'
-        });
-      }
+      console.error('Erro ao salvar no localStorage:', error);
       throw error;
     }
   }, [profile]);
 
-  const saveProfile = async (newProfile: LocalUserProfile): Promise<void> => {
+  const saveProfile = async (newProfile: UserProfile): Promise<void> => {
     try {
       setSyncStatus('syncing');
 
       // Atualizar estado local imediatamente
-      const enrichedProfile: LocalUserProfile = {
+      const enrichedProfile: UserProfile = {
         ...newProfile,
         preferences: { ...defaultPreferences, ...newProfile.preferences },
         history: {
-          lastPersona: (newProfile.selectedPersona as 'ga' | 'dr_gasnelio') || 'ga',
+          lastPersona: newProfile.selectedPersona || 'ga',
           conversationCount: (profile?.history?.conversationCount || 0) + 1,
           lastAccess: new Date().toISOString(),
           preferredTopics: profile?.history?.preferredTopics || []
@@ -277,36 +249,27 @@ export function useUserProfile(): UserProfileHook {
         saveToLocalStorageOnly(enrichedProfile);
       }
 
-      // Save to auth service for JWT backend integration
-      if (auth.user && auth.updateUserProfile) {
-        try {
-          const backendProfile = convertLocalToFirestore(enrichedProfile);
-          await auth.updateUserProfile(backendProfile);
-        } catch (error) {
-          if (typeof window !== 'undefined' && window.gtag) {
-        window.gtag('event', 'backend_sync_error', {
-          event_category: 'user_profile',
-          event_label: 'sync_warning'
-        });
-      }
-          // Continue with local storage only
+      // Salvar no Firestore se disponível
+      if (useFirestore && auth.user) {
+        const firestoreProfile = convertLocalToFirestore(enrichedProfile);
+        const result = await auth.updateUserProfile(firestoreProfile as FirestoreUserProfile);
+        
+        if (!result.success) {
+          console.error('Erro ao salvar no Firestore:', result.error);
+          setSyncStatus('error');
+          return;
         }
       }
 
       setSyncStatus('idle');
     } catch (error) {
-      if (typeof window !== 'undefined' && window.gtag) {
-      window.gtag('event', 'user_profile_save_error', {
-        event_category: 'user_profile',
-        event_label: 'save_failed'
-      });
-    }
+      console.error('Erro ao salvar perfil do usuário:', error);
       setSyncStatus('error');
       throw error;
     }
   };
 
-  const updateProfile = async (updates: Partial<LocalUserProfile>): Promise<void> => {
+  const updateProfile = async (updates: Partial<UserProfile>): Promise<void> => {
     if (!profile) {
       throw new Error('Nenhum perfil para atualizar');
     }
@@ -315,7 +278,7 @@ export function useUserProfile(): UserProfileHook {
       ...profile,
       ...updates,
       history: {
-        lastPersona: (updates.selectedPersona || profile.history?.lastPersona || 'ga') as 'dr_gasnelio' | 'ga',
+        lastPersona: updates.selectedPersona || profile.history?.lastPersona || 'ga',
         conversationCount: profile.history?.conversationCount || 0,
         lastAccess: new Date().toISOString(),
         preferredTopics: profile.history?.preferredTopics || []
@@ -329,14 +292,12 @@ export function useUserProfile(): UserProfileHook {
     try {
       setSyncStatus('syncing');
 
-        // Clear from backend if available
-      if (auth.user) {
-        if (typeof window !== 'undefined' && window.gtag) {
-        window.gtag('event', 'backend_clear_not_implemented', {
-          event_category: 'user_profile',
-          event_label: 'feature_not_available'
-        });
-      }
+      // Limpar do Firestore se disponível
+      if (useFirestore && auth.user) {
+        const result = await UserProfileRepository.deleteProfile(auth.user.uid);
+        if (!result.success) {
+          console.error('Erro ao deletar do Firestore:', result.error);
+        }
       }
 
       // Limpar localStorage
@@ -347,12 +308,7 @@ export function useUserProfile(): UserProfileHook {
       setProfile(null);
       setSyncStatus('idle');
     } catch (error) {
-      if (typeof window !== 'undefined' && window.gtag) {
-      window.gtag('event', 'user_profile_clear_error', {
-        event_category: 'user_profile',
-        event_label: 'clear_failed'
-      });
-    }
+      console.error('Erro ao limpar perfil do usuário:', error);
       setSyncStatus('error');
       throw error;
     }
@@ -468,7 +424,7 @@ export function useProfileDetection() {
 
 // Utility functions
 export const profileUtils = {
-  getProfileTypeLabel: (type: LocalUserProfile['type']): string => {
+  getProfileTypeLabel: (type: UserProfile['type']): string => {
     const labels = {
       admin: 'Administrador',
       professional: 'Profissional de Saúde',
@@ -479,7 +435,7 @@ export const profileUtils = {
     return labels[type];
   },
 
-  getFocusLabel: (focus: LocalUserProfile['focus']): string => {
+  getFocusLabel: (focus: UserProfile['focus']): string => {
     const labels = {
       technical: 'Informações Técnicas',
       practical: 'Orientações Práticas',
@@ -490,9 +446,9 @@ export const profileUtils = {
     return labels[focus];
   },
 
-  getPersonaCompatibility: (profile: LocalUserProfile, personaId: string): number => {
+  getPersonaCompatibility: (profile: UserProfile, personaId: string): number => {
     const { type, focus } = profile;
-
+    
     if (personaId === 'dr_gasnelio') {
       if (type === 'professional' || type === 'student') {
         return focus === 'technical' ? 0.9 : 0.7;

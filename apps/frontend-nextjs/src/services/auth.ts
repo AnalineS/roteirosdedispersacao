@@ -1,185 +1,47 @@
 /**
- * Serviço de Autenticação JWT
- * Substitui Firebase Auth por sistema JWT próprio
- * Mantém compatibilidade com interface anterior
+ * Serviço de Autenticação 3 Níveis
+ * Implementa login opcional com benefícios progressivos
  */
 
-// Mock jwt-client para evitar erros de import
-const jwtClient = {
-  isAuthenticated: () => false,
-  getCurrentUser: async () => null,
-  initiateGoogleAuth: async () => ({ state: 'mock', authUrl: 'mock' }),
-  loginWithEmail: async (email: string, password: string) => ({ user: { id: '1', email, name: null, verified: false, provider: 'email' } }),
-  logout: async () => {},
-  updateProfile: async (data: ProfileUpdateData) => {},
-  completeGoogleAuth: async (code: string, state: string) => ({ user: { id: '1', email: 'test@test.com', name: 'Test', verified: true, provider: 'google' } })
-};
+import {
+  signInWithPopup,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged,
+  GoogleAuthProvider,
+  User,
+  AuthError,
+  updateProfile,
+} from 'firebase/auth';
+import {
+  doc,
+  setDoc,
+  getDoc,
+  updateDoc,
+  serverTimestamp,
+  increment,
+} from 'firebase/firestore';
+import { auth, db, FEATURES } from '@/lib/firebase/config';
+import {
+  UserProfile,
+  UserRole,
+  AuthState,
+  LoginOptions,
+  RegistrationData,
+  USER_LEVEL_CONFIG,
+  AUTH_EVENTS,
+} from '@/types/auth';
+import Analytics from './analytics';
 
-// Types definition
-type UserRole = 'visitor' | 'registered' | 'admin';
-
-interface AuthUser {
-  uid: string;
-  email: string | null;
-  displayName: string | null;
-  emailVerified: boolean;
-  isAnonymous: boolean;
-  photoURL?: string;
-  provider: 'google' | 'email' | 'anonymous';
-  role?: UserRole;
-  verified?: boolean;
-  lastLoginAt?: string;
-  permissions?: Record<string, boolean>;
-}
-
-interface ProfileUpdateData {
-  displayName?: string;
-  photoURL?: string;
-  email?: string;
-  role?: UserRole;
-  history?: {
-    totalSessions?: number;
-    lastPersona?: string;
-    completedModules?: string[];
-  };
-  stats?: {
-    messageCount?: number;
-    lastActiveAt?: string;
-    averageSessionDuration?: number;
-  };
-}
-
-interface UserProfile {
-  uid?: string;
-  email?: string;
-  displayName?: string;
-  history?: {
-    totalSessions?: number;
-    lastPersona?: string;
-    completedModules?: string[];
-  };
-  stats?: {
-    messageCount?: number;
-    lastActiveAt?: string;
-    averageSessionDuration?: number;
-  };
-  updatedAt?: string;
-  role?: UserRole;
-}
-
-interface AuthUserProfile extends AuthUser {
-  usage: {
-    totalSessions: number;
-    totalMessages: number;
-    totalModulesCompleted: number;
-    totalCertificatesEarned: number;
-    lastActivity: string;
-    currentStreak: number;
-    longestStreak: number;
-    favoritePersona: string;
-    averageSessionDuration: number;
-  };
-}
-
-interface AuthenticationState {
-  user: AuthUserProfile | null;
-  loading: boolean;
-  isLoading: boolean;
-  isAuthenticated: boolean;
-  isAnonymous: boolean;
-  error: string | null;
-}
-
-interface LoginOptions {
-  redirectUrl?: string;
-  rememberMe?: boolean;
-}
-
-interface RegistrationData {
-  email: string;
-  password: string;
-  displayName?: string;
-}
-
-// Constants
-const USER_LEVEL_CONFIG: Record<UserRole, Record<string, boolean>> = {
-  visitor: {
-    canAccessDashboard: false,
-    canAccessAdmin: false,
-    canExportCertificates: false,
-    canAccessAdvancedModules: false,
-    canViewAnalytics: false
-  },
-  registered: {
-    canAccessDashboard: true,
-    canAccessAdmin: false,
-    canExportCertificates: true,
-    canAccessAdvancedModules: true,
-    canViewAnalytics: false
-  },
-  admin: {
-    canAccessDashboard: true,
-    canAccessAdmin: true,
-    canExportCertificates: true,
-    canAccessAdvancedModules: true,
-    canViewAnalytics: true
-  }
-};
-
-const AUTH_EVENTS = {
-  LOGIN_SUCCESS: 'login_success',
-  LOGIN_FAILURE: 'login_failure',
-  LOGOUT: 'logout',
-  PROFILE_UPDATE: 'profile_update',
-  ROLE_UPGRADE: 'role_upgrade'
-};
-
-// Import unified analytics types
-import '@/types/analytics';
-
-interface JWTUser {
-  id: string;
-  email: string;
-  name?: string | null;
-  verified: boolean;
-  picture?: string;
-  provider: string;
-  roles?: string[];
-  permissions?: string[];
-}
-
-interface AuthError {
-  message: string;
-  code?: string;
-  status?: number;
-  details?: string;
-}
-
-interface AuthEventData {
-  event?: string;
-  userId?: string;
-  email?: string;
-  method?: string;
-  provider?: string;
-  success?: boolean;
-  timestamp?: string;
-  metadata?: Record<string, unknown>;
-  updates?: string[];
-  newRole?: UserRole;
-  error?: string;
-}
+// Provider do Google
+const googleProvider = new GoogleAuthProvider();
+googleProvider.addScope('email');
+googleProvider.addScope('profile');
 
 export class AuthService {
   private static instance: AuthService;
-  private authStateCallbacks: ((authState: AuthenticationState) => void)[] = [];
-  private currentAuthState: AuthenticationState = {
-    user: null,
-    loading: true,
-    isLoading: true,
-    isAuthenticated: false,
-    isAnonymous: false,
-    error: null,
-  };
+  private authStateCallbacks: ((authState: AuthState) => void)[] = [];
 
   static getInstance(): AuthService {
     if (!AuthService.instance) {
@@ -189,518 +51,386 @@ export class AuthService {
   }
 
   constructor() {
-    this.initializeAuth();
-  }
-
-  private async initializeAuth() {
-    try {
-      // Verificar se há token válido
-      if (jwtClient.isAuthenticated()) {
-        const user = await jwtClient.getCurrentUser();
-        if (user) {
-          const authUser = this.convertToAuthUser(user);
-          const profile = await this.loadUserProfile(authUser.uid);
-          const extendedUser = this.extendUserWithProfile(authUser, profile);
-
-          this.updateAuthState({
-            user: extendedUser as AuthUserProfile,
-            loading: false,
-            isLoading: false,
-            isAuthenticated: true,
-            isAnonymous: extendedUser.isAnonymous,
-            error: null,
-          });
-          return;
-        }
-      }
-
-      // Sem usuário autenticado
-      this.updateAuthState({
-        user: null,
-        loading: false,
-        isLoading: false,
-        isAuthenticated: false,
-        isAnonymous: false,
-        error: null,
-      });
-    } catch (error) {
-      // Erro na inicialização da auth
-      if (typeof process !== 'undefined' && process.stderr) {
-        process.stderr.write(`❌ ERRO - Falha na inicialização da autenticação: ${error}\n`);
-      }
-      if (typeof window !== 'undefined' && window.gtag) {
-        window.gtag('event', 'auth_initialization_error', {
-          event_category: 'medical_auth_error',
-          event_label: 'auth_init_failed',
-          custom_parameters: {
-            error_context: 'auth_service_initialization',
-            error_message: String(error)
-          }
-        });
-      }
-      this.updateAuthState({
-        user: null,
-        loading: false,
-        isLoading: false,
-        isAuthenticated: false,
-        isAnonymous: false,
-        error: 'Erro na inicialização da autenticação',
-      });
-    }
-  }
-
-  private convertToAuthUser(jwtUser: JWTUser): AuthUser {
-    return {
-      uid: jwtUser.id,
-      email: jwtUser.email,
-      displayName: jwtUser.name ?? null,
-      emailVerified: jwtUser.verified,
-      isAnonymous: false,
-      photoURL: jwtUser.picture,
-      provider: (jwtUser.provider as 'google' | 'email' | 'anonymous') || 'email',
-    };
-  }
-
-  private async loadUserProfile(userId: string): Promise<UserProfile | null> {
-    try {
-      const stored = localStorage.getItem(`user-profile-${userId}`);
-      if (stored) {
-        return JSON.parse(stored);
-      }
-    } catch (error) {
-      // Erro ao carregar perfil
-      if (typeof process !== 'undefined' && process.stderr) {
-        process.stderr.write(`❌ ERRO - Falha ao carregar perfil do usuário: ${error}\n`);
-      }
-      if (typeof window !== 'undefined' && window.gtag) {
-        window.gtag('event', 'auth_profile_load_error', {
-          event_category: 'medical_auth_error',
-          event_label: 'profile_load_failed',
-          custom_parameters: {
-            error_context: 'user_profile_loading',
-            error_message: String(error)
-          }
-        });
-      }
-    }
-    return null;
-  }
-
-  private extendUserWithProfile(authUser: AuthUser, profile: UserProfile | null): AuthUser {
-    const role = this.getUserRole(authUser);
-    const permissions = USER_LEVEL_CONFIG[role];
-
-    return {
-      ...authUser,
-      ...(profile || {}),
-      // AuthUser properties
-      emailVerified: authUser.emailVerified,
-      isAnonymous: authUser.isAnonymous,
-      provider: authUser.provider,
-      // Extended properties
-      role,
-      verified: authUser.emailVerified,
-      lastLoginAt: new Date().toISOString(),
-      permissions,
-      usage: {
-        totalSessions: profile?.history?.totalSessions || 0,
-        totalMessages: profile?.stats?.messageCount || 0,
-        totalModulesCompleted: profile?.history?.completedModules?.length || 0,
-        totalCertificatesEarned: 0,
-        lastActivity: profile?.stats?.lastActiveAt || new Date().toISOString(),
-        currentStreak: 0,
-        longestStreak: 0,
-        favoritePersona: profile?.history?.lastPersona || 'ga',
-        averageSessionDuration: profile?.stats?.averageSessionDuration || 0,
-      },
-    } as AuthUserProfile;
-  }
-
-  private getUserRole(user: AuthUser): UserRole {
-    if (!user || user.isAnonymous) return 'visitor';
-
-    const adminEmails = [
-      'neeliogomes@hotmail.com',
-      'sousa.analine@gmail.com',
-      'roteirosdedispensacaounb@gmail.com',
-      'neliogmoura@gmail.com',
-    ];
-
-    if (user.email && adminEmails.includes(user.email.toLowerCase())) {
-      return 'admin';
-    }
-
-    return 'registered';
-  }
-
-  private updateAuthState(newState: Partial<AuthenticationState>) {
-    this.currentAuthState = { ...this.currentAuthState, ...newState };
-    this.authStateCallbacks.forEach(callback => {
-      try {
-        callback(this.currentAuthState);
-      } catch (error) {
-        // Erro no callback de auth state
-        if (typeof process !== 'undefined' && process.stderr) {
-          process.stderr.write(`❌ ERRO - Falha no callback de autenticação: ${error}\n`);
-        }
-        if (typeof window !== 'undefined' && window.gtag) {
-          window.gtag('event', 'auth_callback_error', {
-            event_category: 'medical_auth_error',
-            event_label: 'auth_state_callback_failed',
-            custom_parameters: {
-              error_context: 'auth_state_callback',
-              error_message: String(error)
-            }
-          });
-        }
-      }
-    });
-  }
-
-  // ============================================================================
-  // PUBLIC AUTHENTICATION METHODS
-  // ============================================================================
-
-  async loginWithGoogle(options?: LoginOptions): Promise<AuthUserProfile> {
-    try {
-      this.updateAuthState({ loading: true, isLoading: true, error: null });
-
-      // Iniciar fluxo OAuth Google via jwtClient
-      const result = await jwtClient.initiateGoogleAuth();
-
-      // Armazenar state para verificação
-      sessionStorage.setItem('oauth_state', result.state);
-
-      // Redirecionar para Google OAuth
-      window.location.href = result.authUrl;
-
-      // O resto será processado no callback OAuth
-      throw new Error('Redirecting to Google OAuth');
-    } catch (error: AuthError | Error | unknown) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      this.updateAuthState({
-        loading: false,
-        isLoading: false,
-        error: errorMessage || 'Erro no login com Google',
-      });
-      throw new Error(errorMessage);
-    }
-  }
-
-  async loginWithEmail(email: string, password: string): Promise<AuthUserProfile> {
-    try {
-      this.updateAuthState({ loading: true, isLoading: true, error: null });
-
-      const response = await jwtClient.loginWithEmail(email, password);
-      const authUser = this.convertToAuthUser(response.user);
-      const profile = await this.loadUserProfile(authUser.uid);
-      const extendedUser = this.extendUserWithProfile(authUser, profile);
-
-      this.updateAuthState({
-        user: extendedUser as AuthUserProfile,
-        loading: false,
-        isLoading: false,
-        isAuthenticated: true,
-        isAnonymous: extendedUser.isAnonymous,
-        error: null,
-      });
-
-      this.trackAuthEvent(AUTH_EVENTS.LOGIN_SUCCESS, {
-        provider: 'email',
-        userId: extendedUser.uid,
-      });
-
-      return extendedUser as AuthUserProfile;
-    } catch (error: AuthError | Error | unknown) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-
-      this.updateAuthState({
-        loading: false,
-        isLoading: false,
-        error: errorMessage || 'Erro no login com email',
-      });
-
-      this.trackAuthEvent(AUTH_EVENTS.LOGIN_FAILURE, {
-        provider: 'email',
-        error: errorMessage,
-      });
-
-      throw new Error(errorMessage);
-    }
-  }
-
-  async registerWithEmail(data: RegistrationData): Promise<AuthUserProfile> {
-    // Email registration não implementado ainda no backend
-    throw new Error('Registro com email ainda não implementado. Use login com Google.');
-  }
-
-  async logout(): Promise<void> {
-    try {
-      this.updateAuthState({ loading: true, isLoading: true, error: null });
-
-      await jwtClient.logout();
-
-      this.updateAuthState({
-        user: null,
-        loading: false,
-        isLoading: false,
-        isAuthenticated: false,
-        isAnonymous: false,
-        error: null,
-      });
-
-      this.trackAuthEvent(AUTH_EVENTS.LOGOUT, {
-        userId: this.currentAuthState.user?.uid,
-      });
-    } catch (error: AuthError | Error | unknown) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      this.updateAuthState({
-        loading: false,
-        isLoading: false,
-        error: errorMessage || 'Erro no logout',
-      });
-      throw new Error(errorMessage);
-    }
-  }
-
-  // ============================================================================
-  // USER PROFILE MANAGEMENT
-  // ============================================================================
-
-  async updateAuthUserProfile(userId: string, updates: Partial<AuthUser>): Promise<void> {
-    try {
-      // Atualizar no backend se usuário está autenticado
-      if (this.currentAuthState.user && !this.currentAuthState.user.isAnonymous) {
-        try {
-          await jwtClient.updateProfile({
-            displayName: updates.displayName || undefined,
-            photoURL: undefined
-          });
-        } catch (backendError) {
-          // Erro ao atualizar perfil no backend
-          if (typeof process !== 'undefined' && process.stderr) {
-            process.stderr.write(`⚠️ AVISO - Falha ao atualizar perfil no backend: ${backendError}\n`);
-          }
-          if (typeof window !== 'undefined' && window.gtag) {
-            window.gtag('event', 'auth_profile_backend_error', {
-              event_category: 'medical_auth_error',
-              event_label: 'profile_backend_update_failed',
-              custom_parameters: {
-                error_context: 'profile_backend_sync',
-                error_message: String(backendError)
-              }
-            });
-          }
-        }
-      }
-
-      // Atualizar localmente
-      const currentProfile = await this.loadUserProfile(userId);
-      const updatedProfile = {
-        ...currentProfile,
-        ...updates,
-        updatedAt: new Date().toISOString(),
-      };
-
-      localStorage.setItem(`user-profile-${userId}`, JSON.stringify(updatedProfile));
-
-      // Atualizar auth state se for o usuário atual
-      if (this.currentAuthState.user?.uid === userId && this.currentAuthState.user) {
-        const extendedUser = this.extendUserWithProfile(
-          this.currentAuthState.user,
-          updatedProfile as UserProfile
-        );
-
-        this.updateAuthState({
-          user: extendedUser as AuthUserProfile,
-        });
-      }
-
-      this.trackAuthEvent(AUTH_EVENTS.PROFILE_UPDATE, {
-        userId,
-        updates: Object.keys(updates),
-      });
-    } catch (error: AuthError | Error | unknown) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      throw new Error(errorMessage || 'Erro ao atualizar perfil');
-    }
-  }
-
-  async upgradeUserRole(userId: string, newRole: UserRole): Promise<void> {
-    try {
-      if (!this.currentAuthState.user || this.currentAuthState.user.uid !== userId) {
-        throw new Error('Usuário não autenticado');
-      }
-
-      const currentProfile = await this.loadUserProfile(userId);
-      const updatedProfile = {
-        ...currentProfile,
-        role: newRole,
-        updatedAt: new Date().toISOString(),
-      };
-
-      localStorage.setItem(`user-profile-${userId}`, JSON.stringify(updatedProfile));
-
-      if (!this.currentAuthState.user) {
-        throw new Error('User not authenticated');
-      }
-
-      const extendedUser = this.extendUserWithProfile(
-        this.currentAuthState.user,
-        updatedProfile as UserProfile
-      ) as AuthUserProfile;
-      extendedUser.role = newRole;
-      extendedUser.permissions = USER_LEVEL_CONFIG[newRole];
-
-      this.updateAuthState({
-        user: extendedUser,
-      });
-
-      this.trackAuthEvent(AUTH_EVENTS.ROLE_UPGRADE, {
-        userId,
-        newRole,
-      });
-    } catch (error: AuthError | Error | unknown) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      throw new Error(errorMessage || 'Erro ao fazer upgrade de role');
-    }
-  }
-
-  // ============================================================================
-  // PERMISSION HELPERS
-  // ============================================================================
-
-  hasPermission(user: AuthUser | null, permission: keyof NonNullable<AuthUser['permissions']>): boolean {
-    if (!user || !user.permissions) return false;
-    return Boolean(user.permissions[permission]);
-  }
-
-  canAccessFeature(user: AuthUser | null, feature: string): boolean {
-    if (!user) return false;
-
-    switch (feature) {
-      case 'dashboard':
-        return user.permissions?.canAccessDashboard || false;
-      case 'admin':
-        return user.permissions?.canAccessAdmin || false;
-      case 'certificates':
-        return user.permissions?.canExportCertificates || false;
-      case 'advanced_modules':
-        return user.permissions?.canAccessAdvancedModules || false;
-      case 'analytics':
-        return user.permissions?.canViewAnalytics || false;
-      default:
-        return true;
-    }
+    this.setupAuthListener();
   }
 
   // ============================================================================
   // AUTH STATE MANAGEMENT
   // ============================================================================
 
-  onAuthStateChange(callback: (authState: AuthenticationState) => void): () => void {
-    this.authStateCallbacks.push(callback);
+  private setupAuthListener() {
+    if (!auth) return;
 
-    // Chamar imediatamente com o estado atual
-    callback(this.currentAuthState);
-
-    // Retornar função de cleanup
-    return () => {
-      const index = this.authStateCallbacks.indexOf(callback);
-      if (index > -1) {
-        this.authStateCallbacks.splice(index, 1);
+    onAuthStateChanged(auth, async (firebaseUser) => {
+      try {
+        if (firebaseUser) {
+          const userProfile = await this.loadUserProfile(firebaseUser);
+          this.notifyAuthStateChange({
+            user: userProfile,
+            isLoading: false,
+            isAuthenticated: true,
+            error: null,
+          });
+        } else {
+          this.notifyAuthStateChange({
+            user: null,
+            isLoading: false,
+            isAuthenticated: false,
+            error: null,
+          });
+        }
+      } catch (error) {
+        console.error('[Auth] Error in auth state change:', error);
+        
+        // Capturar erro no sistema centralizado
+        if (typeof window !== 'undefined') {
+          const event = new CustomEvent('show-error-toast', {
+            detail: {
+              errorId: `auth_state_${Date.now()}`,
+              severity: 'high',
+              message: 'Erro na autenticação. Tente fazer login novamente.'
+            }
+          });
+          window.dispatchEvent(event);
+        }
+        
+        this.notifyAuthStateChange({
+          user: null,
+          isLoading: false,
+          isAuthenticated: false,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        });
       }
+    });
+  }
+
+  onAuthStateChange(callback: (authState: AuthState) => void) {
+    this.authStateCallbacks.push(callback);
+    return () => {
+      this.authStateCallbacks = this.authStateCallbacks.filter(cb => cb !== callback);
     };
   }
 
-  getCurrentAuthState(): AuthenticationState {
-    return this.currentAuthState;
+  private notifyAuthStateChange(authState: AuthState) {
+    this.authStateCallbacks.forEach(callback => callback(authState));
   }
 
   // ============================================================================
-  // ANALYTICS
+  // USER PROFILE MANAGEMENT
   // ============================================================================
 
-  private trackAuthEvent(event: string, data?: AuthEventData) {
+  private async loadUserProfile(firebaseUser: User): Promise<UserProfile> {
+    if (!db) {
+      throw new Error('Firestore não disponível');
+    }
+
+    const userDocRef = doc(db, 'users', firebaseUser.uid);
+    const userDoc = await getDoc(userDocRef);
+
+    if (userDoc.exists()) {
+      const data = userDoc.data();
+      
+      // Atualizar última atividade
+      await updateDoc(userDocRef, {
+        lastLoginAt: serverTimestamp(),
+        'usage.totalSessions': increment(1),
+      });
+
+      return this.mapFirestoreToUserProfile(firebaseUser.uid, data);
+    } else {
+      // Criar perfil inicial para novo usuário
+      return await this.createUserProfile(firebaseUser);
+    }
+  }
+
+  private async createUserProfile(firebaseUser: User): Promise<UserProfile> {
+    if (!db) {
+      throw new Error('Firestore não disponível');
+    }
+
+    // Determinar role inicial
+    const role: UserRole = this.determineInitialRole(firebaseUser.email);
+
+    const userProfile: UserProfile = {
+      uid: firebaseUser.uid,
+      role,
+      email: firebaseUser.email || undefined,
+      displayName: firebaseUser.displayName || undefined,
+      photoURL: firebaseUser.photoURL || undefined,
+      verified: firebaseUser.emailVerified,
+      createdAt: new Date(),
+      lastLoginAt: new Date(),
+      preferences: this.getDefaultPreferences(),
+      permissions: USER_LEVEL_CONFIG[role],
+      usage: this.getDefaultUsage(),
+    };
+
+    // Salvar no Firestore
+    const userDocRef = doc(db, 'users', firebaseUser.uid);
+    await setDoc(userDocRef, {
+      ...userProfile,
+      createdAt: serverTimestamp(),
+      lastLoginAt: serverTimestamp(),
+    });
+
+    // Track analytics
+    Analytics.event('USER', 'signup', 'google');
+    Analytics.user({
+      userType: role as 'visitor' | 'registered' | 'admin',
+      institution: userProfile.institution,
+    });
+
+    return userProfile;
+  }
+
+  private determineInitialRole(email?: string | null): UserRole {
+    if (!email) return 'registered';
+
+    // Emails de admin predefinidos
+    const adminEmails = [
+      'neeliogomes@hotmail.com',
+      'sousa.analine@gmail.com',
+      'roteirosdedispensacao@gmail.com',
+      'neliogmoura@gmail.com',
+      // Adicionar mais emails de admin conforme necessário
+    ];
+
+    if (adminEmails.includes(email.toLowerCase())) {
+      return 'admin';
+    }
+
+    return 'registered';
+  }
+
+  private getDefaultPreferences() {
+    return {
+      preferredPersona: null,
+      language: 'pt-BR' as const,
+      theme: 'auto' as const,
+      notifications: {
+        email: true,
+        push: false,
+        updates: true,
+        certificates: true,
+      },
+      privacy: {
+        analytics: true,
+        shareProgress: false,
+        publicProfile: false,
+      },
+    };
+  }
+
+  private getDefaultUsage() {
+    return {
+      totalSessions: 0,
+      totalMessages: 0,
+      totalModulesCompleted: 0,
+      totalCertificatesEarned: 0,
+      lastActivity: new Date(),
+      currentStreak: 0,
+      longestStreak: 0,
+      averageSessionDuration: 0,
+    };
+  }
+
+  private mapFirestoreToUserProfile(uid: string, data: any): UserProfile {
+    return {
+      uid,
+      role: data.role || 'registered',
+      email: data.email,
+      displayName: data.displayName,
+      photoURL: data.photoURL,
+      institution: data.institution,
+      specialization: data.specialization,
+      verified: data.verified || false,
+      createdAt: data.createdAt?.toDate() || new Date(),
+      lastLoginAt: data.lastLoginAt?.toDate() || new Date(),
+      preferences: { ...this.getDefaultPreferences(), ...data.preferences },
+      permissions: { ...USER_LEVEL_CONFIG[data.role as UserRole || 'registered'], ...data.permissions },
+      usage: { ...this.getDefaultUsage(), ...data.usage },
+    };
+  }
+
+  // ============================================================================
+  // AUTHENTICATION METHODS
+  // ============================================================================
+
+  async loginWithGoogle(options: LoginOptions = { provider: 'google' }): Promise<UserProfile> {
+    if (!auth) {
+      throw new Error('Firebase Auth não disponível');
+    }
+
     try {
-      // Auth Event tracking
-      if (typeof window !== 'undefined' && window.gtag) {
-        window.gtag('event', 'auth_event_tracked', {
-          event_category: 'medical_auth_tracking',
-          event_label: event,
-          custom_parameters: {
-            auth_context: 'event_tracking',
-            event_type: event,
-            event_data: JSON.stringify(data)
-          }
-        });
-      }
-      // Implementar analytics se necessário
+      Analytics.event('USER', 'login', 'google');
+      
+      const result = await signInWithPopup(auth, googleProvider);
+      const userProfile = await this.loadUserProfile(result.user);
+
+      return userProfile;
     } catch (error) {
-      // Erro ao rastrear evento de auth
-      if (typeof process !== 'undefined' && process.stderr) {
-        process.stderr.write(`❌ ERRO - Falha ao rastrear evento de autenticação: ${error}\n`);
-      }
-      if (typeof window !== 'undefined' && window.gtag) {
-        window.gtag('event', 'auth_tracking_error', {
-          event_category: 'medical_auth_error',
-          event_label: 'auth_event_tracking_failed',
-          custom_parameters: {
-            error_context: 'auth_event_tracking',
-            error_message: String(error)
-          }
+      const authError = error as AuthError;
+      
+      Analytics.exception(`Login Google falhou: ${authError.code}`, false);
+      
+      throw new Error(this.getAuthErrorMessage(authError.code));
+    }
+  }
+
+  async loginWithEmail(email: string, password: string): Promise<UserProfile> {
+    if (!auth) {
+      throw new Error('Firebase Auth não disponível');
+    }
+
+    try {
+      Analytics.event('USER', 'login', 'email');
+      
+      const result = await signInWithEmailAndPassword(auth, email, password);
+      const userProfile = await this.loadUserProfile(result.user);
+
+      return userProfile;
+    } catch (error) {
+      const authError = error as AuthError;
+      
+      Analytics.exception(`Login email falhou: ${authError.code}`, false);
+      
+      throw new Error(this.getAuthErrorMessage(authError.code));
+    }
+  }
+
+  async registerWithEmail(data: RegistrationData): Promise<UserProfile> {
+    if (!auth || !data.password) {
+      throw new Error('Firebase Auth não disponível ou senha ausente');
+    }
+
+    try {
+      // Criar conta
+      const result = await createUserWithEmailAndPassword(auth, data.email, data.password);
+      
+      // Atualizar perfil Firebase
+      await updateProfile(result.user, {
+        displayName: data.displayName,
+      });
+
+      // Criar perfil personalizado
+      const userProfile = await this.createUserProfile(result.user);
+      
+      // Atualizar com dados adicionais
+      if (data.institution || data.specialization) {
+        await this.updateUserProfile(userProfile.uid, {
+          institution: data.institution,
+          specialization: data.specialization,
         });
       }
+
+      Analytics.event('USER', 'signup', 'email');
+      
+      return userProfile;
+    } catch (error) {
+      const authError = error as AuthError;
+      
+      Analytics.exception(`Registro falhou: ${authError.code}`, false);
+      
+      throw new Error(this.getAuthErrorMessage(authError.code));
+    }
+  }
+
+  async logout(): Promise<void> {
+    if (!auth) {
+      throw new Error('Firebase Auth não disponível');
+    }
+
+    try {
+      Analytics.event('USER', 'logout');
+      await signOut(auth);
+    } catch (error) {
+      console.error('[Auth] Logout error:', error);
+      throw new Error('Erro ao fazer logout');
     }
   }
 
   // ============================================================================
-  // OAUTH CALLBACK HANDLING
+  // USER MANAGEMENT
   // ============================================================================
 
-  async handleOAuthCallback(code: string, state: string): Promise<AuthUserProfile> {
-    try {
-      this.updateAuthState({ loading: true, isLoading: true, error: null });
+  async updateUserProfile(uid: string, updates: Partial<UserProfile>): Promise<void> {
+    if (!db) {
+      throw new Error('Firestore não disponível');
+    }
 
-      const response = await jwtClient.completeGoogleAuth(code, state);
-      const authUser = this.convertToAuthUser(response.user);
-      const profile = await this.loadUserProfile(authUser.uid);
-      const extendedUser = this.extendUserWithProfile(authUser, profile);
+    const userDocRef = doc(db, 'users', uid);
+    await updateDoc(userDocRef, {
+      ...updates,
+      lastUpdated: serverTimestamp(),
+    });
 
-      this.updateAuthState({
-        user: extendedUser as AuthUserProfile,
-        loading: false,
-        isLoading: false,
-        isAuthenticated: true,
-        isAnonymous: extendedUser.isAnonymous,
-        error: null,
-      });
+    Analytics.event('USER', 'profile_update');
+  }
 
-      this.trackAuthEvent(AUTH_EVENTS.LOGIN_SUCCESS, {
-        provider: 'google',
-        userId: extendedUser.uid,
-      });
+  async upgradeUserRole(uid: string, newRole: UserRole): Promise<void> {
+    if (!db) {
+      throw new Error('Firestore não disponível');
+    }
 
-      return extendedUser as AuthUserProfile;
-    } catch (error: AuthError | Error | unknown) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+    const userDocRef = doc(db, 'users', uid);
+    await updateDoc(userDocRef, {
+      role: newRole,
+      permissions: USER_LEVEL_CONFIG[newRole],
+      lastUpdated: serverTimestamp(),
+    });
 
-      this.updateAuthState({
-        loading: false,
-        isLoading: false,
-        error: errorMessage || 'Erro no callback OAuth',
-      });
+    Analytics.event('USER', 'role_upgrade', newRole);
+  }
 
-      this.trackAuthEvent(AUTH_EVENTS.LOGIN_FAILURE, {
-        provider: 'google',
-        error: errorMessage,
-      });
+  // ============================================================================
+  // UTILITY METHODS
+  // ============================================================================
 
-      throw new Error(errorMessage);
+  getCurrentUser(): User | null {
+    return auth?.currentUser || null;
+  }
+
+  isAuthenticated(): boolean {
+    return !!auth?.currentUser;
+  }
+
+  hasPermission(user: UserProfile | null, permission: keyof UserProfile['permissions']): boolean {
+    if (!user) return false;
+    return user.permissions[permission] as boolean;
+  }
+
+  canAccessFeature(user: UserProfile | null, feature: string): boolean {
+    if (!user) {
+      // Visitantes têm acesso básico
+      const basicFeatures = ['chat', 'modules', 'faq', 'calculator'];
+      return basicFeatures.includes(feature);
+    }
+
+    return true; // Usuários autenticados têm acesso a tudo (baseado em permissions)
+  }
+
+  private getAuthErrorMessage(errorCode: string): string {
+    switch (errorCode) {
+      case 'auth/user-not-found':
+        return 'Usuário não encontrado';
+      case 'auth/wrong-password':
+        return 'Senha incorreta';
+      case 'auth/email-already-in-use':
+        return 'Email já está em uso';
+      case 'auth/weak-password':
+        return 'Senha muito fraca';
+      case 'auth/invalid-email':
+        return 'Email inválido';
+      case 'auth/popup-closed-by-user':
+        return 'Login cancelado pelo usuário';
+      case 'auth/network-request-failed':
+        return 'Erro de conexão';
+      default:
+        return 'Erro de autenticação';
     }
   }
 }
 
-// Singleton instance
+// Instância singleton
 export const authService = AuthService.getInstance();
 export default authService;
