@@ -135,7 +135,7 @@ def setup_project_secrets(secrets_manager: SecretsManager):
                     encrypt=True,
                     is_critical=config['critical']
                 )
-                logging.getLogger('security.integration').info(f"Secret configurado: {secret_name}")
+                logging.getLogger('security.integration').info("Secret configurado com sucesso")
 
 
 def setup_custom_metrics_collection(app: Flask, security_framework: SecurityFramework):
