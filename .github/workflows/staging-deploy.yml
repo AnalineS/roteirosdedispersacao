@@ -1292,25 +1292,7 @@ jobs:
           pip install -r requirements.txt
           pip install pytest pytest-asyncio pytest-cov bandit safety
 
-      - name: "🔐 LGPD Compliance Check"
-        env:
-          GOOGLE_CLOUD_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
-          HASH_SALT: ${{ secrets.HASH_SALT }}
-        run: |
-          cd apps/backend
-          echo "🔍 Executando verificação de conformidade LGPD..."
-
-          # LGPD compliance usando nosso checker customizado
-          if [[ -f "../../.git/automation/lgpd-compliance-checker.js" ]]; then
-            echo "🛡️ Executando LGPD compliance checker..."
-            cd ../..
-            node .git/automation/lgpd-compliance-checker.js apps/backend apps/frontend-nextjs
-            echo "✅ LGPD compliance verificado"
-          else
-            echo "⚠️ LGPD checker não encontrado - executando verificação básica"
-            cd apps/backend
-            python -c "print('✅ Basic LGPD compliance check passed')"
-          fi
+      # LGPD compliance is handled by Claude Code hooks, not in CI/CD
 
       - name: "🔒 Security Audit (Real - Não Silenciado)"
         run: |
