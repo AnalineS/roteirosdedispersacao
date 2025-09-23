@@ -64,7 +64,7 @@ frontend-url.run.app              backend-url.run.app
    ```bash
    # Windows
    .\scripts\install-gcloud.ps1
-   
+
    # Ou baixar de: https://cloud.google.com/sdk/docs/install
    ```
 
@@ -257,7 +257,7 @@ on:
 jobs:
   deploy-backend:
     # Deploy Cloud Run
-  
+
   deploy-frontend:
     # Deploy Firebase
 ```
@@ -278,6 +278,6 @@ Em caso de problemas:
 
 ---
 
-**Última atualização:** Janeiro 2025  
-**Versão:** 1.0.0  
+**Última atualização:** Janeiro 2025
+**Versão:** 1.0.0
 **Status:** [OK] Deploy completo - Frontend + Backend funcionando

@@ -1,0 +1,154 @@
+# 🏷️ Configuração do Sistema de Labels Automáticos v5
+# actions/labeler@v5 - Sintaxe atualizada
+
+# ==============================================================================
+# 📁 LABELS POR ÁREA/COMPONENTE
+# ==============================================================================
+
+"área: backend":
+  - changed-files:
+    - any-glob-to-any-file: "apps/backend/**/*"
+
+"área: frontend":
+  - changed-files:
+    - any-glob-to-any-file: "apps/frontend-nextjs/**/*"
+
+"área: ci-cd":
+  - changed-files:
+    - any-glob-to-any-file:
+      - ".github/workflows/**/*"
+      - ".github/dependabot.yml"
+      - "docker*"
+      - "**/Dockerfile*"
+
+"área: documentação":
+  - changed-files:
+    - any-glob-to-any-file:
+      - "**/*.md"
+      - "docs/**/*"
+      - "README*"
+      - "CHANGELOG*"
+
+"área: configuração":
+  - changed-files:
+    - any-glob-to-any-file:
+      - "*.json"
+      - "*.yml"
+      - "*.yaml"
+      - "*.toml"
+      - "*.env*"
+      - ".gitignore"
+
+# ==============================================================================
+# 📏 LABELS POR TAMANHO DO PR
+# ==============================================================================
+
+# Tamanho baseado em arquivos - removido pois count-changed-files não é suportado no v5
+
+# ==============================================================================
+# 🚦 LABELS POR TIPO DE MUDANÇA (baseado em arquivos)
+# ==============================================================================
+
+"tipo: funcionalidade":
+  - changed-files:
+    - any-glob-to-any-file:
+      - "apps/backend/src/routes/**/*"
+      - "apps/backend/src/controllers/**/*"
+      - "apps/frontend-nextjs/src/pages/**/*"
+      - "apps/frontend-nextjs/src/components/**/*"
+
+"tipo: correção":
+  - changed-files:
+    - any-glob-to-any-file:
+      - "**/*fix*"
+      - "**/*bug*"
+      - "apps/backend/src/middleware/**/*"
+
+"tipo: testes":
+  - changed-files:
+    - any-glob-to-any-file:
+      - "**/test*/**/*"
+      - "**/tests/**/*"
+      - "**/*.test.*"
+      - "**/*.spec.*"
+      - "**/cypress/**/*"
+      - "**/playwright/**/*"
+
+"tipo: segurança":
+  - changed-files:
+    - any-glob-to-any-file:
+      - "**/security/**/*"
+      - "**/*auth*/**/*"
+      - "**/*security*"
+      - ".github/queries/**/*"
+
+"tipo: performance":
+  - changed-files:
+    - any-glob-to-any-file:
+      - "**/cache/**/*"
+      - "**/*performance*"
+      - "**/*optimization*"
+      - "**/monitoring/**/*"
+
+"tipo: dependências":
+  - changed-files:
+    - any-glob-to-any-file:
+      - "package*.json"
+      - "requirements*.txt"
+      - "poetry.lock"
+      - "Pipfile*"
+      - "yarn.lock"
+
+# Branch-based labeling removido - não totalmente suportado no v5
+# Usar apenas file-based labeling que é mais confiável
+
+# ==============================================================================
+# ⚡ LABELS POR PRIORIDADE AUTOMÁTICA
+# ==============================================================================
+
+"prioridade: crítica":
+  - changed-files:
+    - any-glob-to-any-file:
+      - "**/*security*"
+      - "**/*auth*"
+      - "apps/backend/src/middleware/**/*"
+
+"prioridade: alta":
+  - changed-files:
+    - any-glob-to-any-file:
+      - "apps/backend/src/routes/**/*"
+      - ".github/workflows/**/*"
+
+"prioridade: baixa":
+  - changed-files:
+    - any-glob-to-any-file:
+      - "**/*.md"
+      - "docs/**/*"
+      - "**/test*/**/*"
+
+# ==============================================================================
+# 💥 LABELS ESPECIAIS
+# ==============================================================================
+
+"breaking-change":
+  - changed-files:
+    - any-glob-to-any-file:
+      - "apps/backend/src/models/**/*"
+      - "apps/backend/migrations/**/*"
+      - "apps/frontend-nextjs/src/types/**/*"
+
+"dependabot":
+  - author: "dependabot[bot]"
+
+"automação":
+  - changed-files:
+    - any-glob-to-any-file:
+      - ".github/workflows/**/*"
+      - "scripts/**/*"
+      - "**/*automation*"
+
+"documentação-necessária":
+  - changed-files:
+    - any-glob-to-any-file:
+      - "apps/backend/src/routes/**/*"
+      - "apps/frontend-nextjs/src/pages/**/*"
