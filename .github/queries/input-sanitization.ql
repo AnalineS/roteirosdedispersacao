@@ -113,15 +113,15 @@ class MedicalInputSanitizationConfig extends TaintTracking::Configuration {
   MedicalInputSanitizationConfig() {
     this = "MedicalInputSanitization"
   }
-
+  
   override predicate isSource(DataFlow::Node source) {
     source instanceof MedicalUserInputSource
   }
-
+  
   override predicate isSink(DataFlow::Node sink) {
     sink instanceof MedicalProcessingSink
   }
-
+  
   override predicate isSanitizer(DataFlow::Node node) {
     node instanceof SanitizationBarrier
   }
@@ -132,5 +132,5 @@ class MedicalInputSanitizationConfig extends TaintTracking::Configuration {
  */
 from MedicalInputSanitizationConfig config, DataFlow::PathNode source, DataFlow::PathNode sink
 where config.hasFlowPath(source, sink)
-select sink.getNode(), source, sink,
+select sink.getNode(), source, sink, 
   "Unsanitized user input reaches medical processing function. This could affect medical calculations or expose the system to injection attacks."

@@ -14,7 +14,7 @@ queries:
   # Consultas de segurança padrão
   - uses: security-extended
   - uses: security-and-quality
-
+  
   # Consultas customizadas (se disponíveis)
   - name: Medical data validation
     uses: ./.github/queries/medical-validation.ql
@@ -25,7 +25,7 @@ queries:
 paths-ignore:
   # Ignorar arquivos de teste e temporários
   - "**/*test*"
-  - "**/*spec*"
+  - "**/*spec*" 
   - "**/tests/**"
   - "**/node_modules/**"
   - "**/venv/**"
@@ -37,7 +37,7 @@ paths-ignore:
   - "**/coverage/**"
   - "**/logs/**"
   - "**/temp/**"
-
+  
 paths:
   # Focar em código de produção crítico
   - "apps/backend/main.py"
@@ -51,7 +51,7 @@ python:
   # Bibliotecas essenciais para análise médica
   setup-python-dependencies: true
   python-executable: python3
-
+  
   # Dependências críticas para análise
   dependencies:
     - flask
@@ -60,15 +60,15 @@ python:
     - bleach
     - openai
     - requests
-
-# Configurações específicas para JavaScript/TypeScript
+    
+# Configurações específicas para JavaScript/TypeScript  
 javascript:
   # Incluir TypeScript
   typescript: true
-
+  
   # Configuração do Node.js
   node-version: "18"
-
+  
   # Dependências essenciais
   setup-javascript-dependencies: true
 
@@ -76,10 +76,10 @@ javascript:
 compilation-options:
   # Análise mais profunda para sistemas médicos
   enable-deep-analysis: true
-
+  
   # Timeout estendido para análise completa
   timeout: 30m
-
+  
   # Threads para análise paralela
   threads: 4
 
@@ -87,10 +87,10 @@ compilation-options:
 reporting:
   # Incluir contexto adicional nos alerts
   include-source-context: true
-
+  
   # Agrupar por categoria de segurança
   group-by-severity: true
-
+  
   # Focar em vulnerabilidades de alta severidade
   minimum-severity: medium
 
@@ -101,11 +101,11 @@ filters:
     - "Test files should not be analyzed"
     - "Development configuration detected"
     - "Debug mode enabled in development"
-
-  # Priorizar problemas médicos críticos
+    
+  # Priorizar problemas médicos críticos  
   include:
     - "SQL injection vulnerability"
-    - "Cross-site scripting vulnerability"
+    - "Cross-site scripting vulnerability" 
     - "Improper input validation"
     - "Information disclosure"
     - "Authentication bypass"
@@ -119,10 +119,10 @@ filters:
 performance:
   # Cache para análises incrementais
   enable-cache: true
-
+  
   # Análise incremental quando possível
   incremental-analysis: true
-
+  
   # Otimização para repositórios médicos
   medical-platform-optimizations: true
 
@@ -133,21 +133,21 @@ compliance:
     - "LGPD" # Lei Geral de Proteção de Dados
     - "CFM-2314-2022" # Resolução CFM sobre Telemedicina
     - "ANVISA-RDC-4-2009" # Farmacovigilância
-
+    
   # Verificações de segurança médica
   medical-security-checks:
     - patient-data-protection
     - medication-calculation-validation
     - clinical-data-sanitization
     - medical-disclaimer-compliance
-
+    
 # Configurações de notificação
 notifications:
   # Notificar sobre vulnerabilidades críticas
   critical-vulnerabilities: true
-
+  
   # Relatório semanal de segurança
   weekly-security-report: true
-
+  
   # Alertas para compliance médico
   medical-compliance-alerts: true
