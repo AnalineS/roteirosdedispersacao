@@ -1,0 +1,19 @@
+{
+  "timestamp": "2025-09-23T02:41:17.664Z",
+  "duration": 18,
+  "blocked": true,
+  "errors": [
+    "TypeScript Compilation (OBRIGATÓRIO) falhou: Command failed: npm run type-check"
+  ],
+  "warnings": [
+    "ESLint Critical Errors Check falhou: Command failed: npm run lint",
+    "Production Build Validation falhou: Command failed: npm run build\nFailed to compile.\n\n./src/components/auth/SocialAuthButtons.tsx\nModule not found: Can't resolve '@/lib/firebase/config'\n\nhttps://nextjs.org/docs/messages/module-not-found\n\nImport trace for requested module:\n./src/components/auth/index.ts\n./src/app/login/page.tsx\n\n./src/hooks/useConversationHistory.ts\nModule not found: Can't resolve '@/lib/firebase/firestore'\n\nhttps://nextjs.org/docs/messages/module-not-found\n\nImport trace for requested module:\n./src/app/chat/page.tsx\n\n./src/hooks/useConversationHistory.ts\nModule not found: Can't resolve '@/lib/firebase/config'\n\nhttps://nextjs.org/docs/messages/module-not-found\n\nImport trace for requested module:\n./src/app/chat/page.tsx\n\n./src/hooks/useGamification.ts\nModule not found: Can't resolve '@/services/firebaseLeaderboard'\n\nhttps://nextjs.org/docs/messages/module-not-found\n\nImport trace for requested module:\n./src/app/gamification-demo/page.tsx\n\n./src/hooks/useUserProfile.ts\nModule not found: Can't resolve '@/lib/firebase/firestore'\n\nhttps://nextjs.org/docs/messages/module-not-found\n\nImport trace for requested module:\n./src/app/chat/page.tsx\n\n\n> Build failed because of webpack errors\n",
+    "LGPD Compliance Check falhou: Command failed: node \"C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\.claude\\automation\\lgpd-compliance-checker.js\" --quick-check"
+  ],
+  "status": "BLOCKED",
+  "medical_compliance": {
+    "typescript_ready": false,
+    "data_safe": true,
+    "quality_adequate": false
+  }
+}
