@@ -1,9 +1,9 @@
 name: "🧪 Staging Deploy - Homologação"
 
 on:
-  # Disabled - keeping only Dependabot workflows active
-  # push:
-  #   branches: [hml]
+  # Reativado para deploy automático no HML
+  push:
+    branches: [hml]
   workflow_dispatch:
     inputs:
       skip_tests:
