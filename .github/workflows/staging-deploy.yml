@@ -1,8 +1,9 @@
 name: "🧪 Staging Deploy - Homologação"
 
 on:
-  push:
-    branches: [hml]
+  # Temporarily disabled - Git exit code 128 issues
+  # push:
+  #   branches: [hml]
   workflow_dispatch:
     inputs:
       skip_tests:

@@ -1,8 +1,9 @@
 name: "🚀 Production Deploy - Produção"
 
 on:
-  push:
-    branches: [main]
+  # Temporarily disabled - Git exit code 128 issues
+  # push:
+  #   branches: [main]
   workflow_dispatch:
     inputs:
       skip_tests:
