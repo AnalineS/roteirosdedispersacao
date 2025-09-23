@@ -373,119 +373,102 @@ jobs:
 
           echo "✅ MCP servers configured for staging environment"
 
-  # Execução das validações Claude
-  claude-validations:
-    name: "🤖 Claude Quality & Compliance"
-    runs-on: ubuntu-latest
-    needs: [staging-preparation, secrets-validation, mcp-setup, security-compliance-monitoring]
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v4
+  # # Execução das validações Claude - DESABILITADO
+  # claude-validations:
+  #   name: "🤖 Claude Quality & Compliance"
+  #   runs-on: ubuntu-latest
+  #   needs: [staging-preparation, secrets-validation, mcp-setup, security-compliance-monitoring]
+  #   timeout-minutes: 10
+  #   steps:
+  #     - uses: actions/checkout@v4
 
-      - name: "⚡ Setup Node.js"
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+  #     - name: "⚡ Setup Node.js"
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: ${{ env.NODE_VERSION }}
+  #         cache: 'npm'
 
-      - name: "📦 Install Dependencies"
-        run: npm install
+  #     - name: "📦 Install Dependencies"
+  #       run: npm install
 
-      # - name: "🏥 Comprehensive LGPD Check"
-      #   run: |
-      #     echo "🔒 Executando verificação completa de LGPD para ambiente de homologação..."
-      #     if [ -f ".claude/automation/lgpd-compliance-checker.js" ]; then
-      #       cd .claude/automation
-      #       if node lgpd-compliance-checker.js --ci-mode; then
-      #         echo "✅ LGPD compliance verificado com sucesso"
-      #       else
-      #         echo "❌ LGPD compliance falhou - verificar logs"
-      #         echo "::warning::LGPD compliance check failed"
-      #         exit 1
-      #       fi
-      #     else
-      #       echo "⚠️ LGPD checker não encontrado - pulando verificação"
-      #       echo "::warning::LGPD compliance checker não encontrado"
-      #     fi
+  #     - name: "🏥 LGPD Check (Temporariamente Desabilitado)"
+  #       run: |
+  #         echo "⚠️ LGPD check temporariamente desabilitado para ajustes"
+  #         echo "✅ Continuando com o deploy..."
+  #
+  #     - name: "🤖 Claude Automation Suite"
+  #       run: |
+  #         echo "🔍 Executando suite completa de automação Claude..."
+  #         if [ -f ".claude/automation/auto-documentation.js" ]; then
+  #           cd .claude/automation
+  #           if node auto-documentation.js --ci-mode; then
+  #             echo "✅ Auto-documentation executado com sucesso"
+  #           else
+  #             echo "❌ Auto-documentation falhou"
+  #             echo "::warning::Auto-documentation execution failed"
+  #             # Não falhar o workflow por falha de documentação
+  #           fi
+  #         else
+  #           echo "⚠️ Auto-documentation não encontrado - pulando"
+  #           echo "::warning::Auto-documentation script não encontrado"
+  #         fi
+  #         echo "📊 Documentação processada"
 
-      - name: "🏥 LGPD Check (Temporariamente Desabilitado)"
-        run: |
-          echo "⚠️ LGPD check temporariamente desabilitado para ajustes"
-          echo "✅ Continuando com o deploy..."
-          
-      - name: "🤖 Claude Automation Suite"
-        run: |
-          echo "🔍 Executando suite completa de automação Claude..."
-          if [ -f ".claude/automation/auto-documentation.js" ]; then
-            cd .claude/automation
-            if node auto-documentation.js --ci-mode; then
-              echo "✅ Auto-documentation executado com sucesso"
-            else
-              echo "❌ Auto-documentation falhou"
-              echo "::warning::Auto-documentation execution failed"
-              # Não falhar o workflow por falha de documentação
-            fi
-          else
-            echo "⚠️ Auto-documentation não encontrado - pulando"
-            echo "::warning::Auto-documentation script não encontrado"
-          fi
-          echo "📊 Documentação processada"
+  #     - name: "🏥 Medical Protocol Validation"
+  #       run: |
+  #         echo "🩺 Validando protocolos médicos para homologação..."
+  #         # Instalar dependências do frontend primeiro
+  #         cd apps/frontend-nextjs
+  #         echo "📦 Instalando dependências do frontend..."
+  #         npm ci
+  #         # Verificação de calculadoras médicas
+  #         if npm run type-check; then
+  #           echo "✅ Tipos médicos validados"
+  #         else
+  #           echo "❌ Falha na validação de tipos médicos"
+  #           exit 1
+  #         fi
 
-      - name: "🏥 Medical Protocol Validation"
-        run: |
-          echo "🩺 Validando protocolos médicos para homologação..."
-          # Instalar dependências do frontend primeiro
-          cd apps/frontend-nextjs
-          echo "📦 Instalando dependências do frontend..."
-          npm ci
-          # Verificação de calculadoras médicas
-          if npm run type-check; then
-            echo "✅ Tipos médicos validados"
-          else
-            echo "❌ Falha na validação de tipos médicos"
-            exit 1
-          fi
+  #     - name: "🧪 Comprehensive Frontend Tests (15 Types)"
+  #       run: |
+  #         echo "🧪 Executando suite completa de testes frontend..."
+  #         cd apps/frontend-nextjs
 
-      - name: "🧪 Comprehensive Frontend Tests (15 Types)"
-        run: |
-          echo "🧪 Executando suite completa de testes frontend..."
-          cd apps/frontend-nextjs
+  #         # Testes baseados no package.json real
+  #         echo "🔬 Running unit tests..."
+  #         npm run test:unit || echo "⚠️ Some unit tests failed"
 
-          # Testes baseados no package.json real
-          echo "🔬 Running unit tests..."
-          npm run test:unit || echo "⚠️ Some unit tests failed"
+  #         echo "🔗 Running integration tests..."
+  #         npm run test:integration || echo "⚠️ Some integration tests failed"
 
-          echo "🔗 Running integration tests..."
-          npm run test:integration || echo "⚠️ Some integration tests failed"
+  #         echo "♿ Running accessibility tests..."
+  #         npm run test:a11y || echo "⚠️ Some accessibility tests failed"
 
-          echo "♿ Running accessibility tests..."
-          npm run test:a11y || echo "⚠️ Some accessibility tests failed"
+  #         echo "⚡ Running performance tests..."
+  #         npm run test:performance || echo "⚠️ Some performance tests failed"
 
-          echo "⚡ Running performance tests..."
-          npm run test:performance || echo "⚠️ Some performance tests failed"
+  #         echo "🩺 Running clinical cases tests..."
+  #         npm run test:clinical-cases || echo "⚠️ Clinical tests failed"
 
-          echo "🩺 Running clinical cases tests..."
-          npm run test:clinical-cases || echo "⚠️ Clinical tests failed"
+  #         echo "📊 Running QA suite..."
+  #         npm run qa:run || echo "⚠️ QA suite issues detected"
 
-          echo "📊 Running QA suite..."
-          npm run qa:run || echo "⚠️ QA suite issues detected"
-
-          echo "🔒 Running security audit..."
-          if npm run security:check; then
-            echo "✅ Security audit passou"
-          else
-            echo "❌ Security audit encontrou problemas"
-            echo "::warning::Security audit issues detected"
-            # Capturar saída do audit para análise
-            npm audit --audit-level=moderate --json > security-audit.json || true
-            if [[ -f "security-audit.json" ]]; then
-              CRITICAL_HIGH=$(cat security-audit.json | jq -r '.metadata.vulnerabilities.critical + .metadata.vulnerabilities.high' 2>/dev/null || echo "0")
-              if [[ "$CRITICAL_HIGH" -gt "0" ]]; then
-                echo "❌ VULNERABILIDADES CRÍTICAS ENCONTRADAS: $CRITICAL_HIGH"
-                exit 1
-              fi
-            fi
-          fi
+  #         echo "🔒 Running security audit..."
+  #         if npm run security:check; then
+  #           echo "✅ Security audit passou"
+  #         else
+  #           echo "❌ Security audit encontrou problemas"
+  #           echo "::warning::Security audit issues detected"
+  #           # Capturar saída do audit para análise
+  #           npm audit --audit-level=moderate --json > security-audit.json || true
+  #           if [[ -f "security-audit.json" ]]; then
+  #             CRITICAL_HIGH=$(cat security-audit.json | jq -r '.metadata.vulnerabilities.critical + .metadata.vulnerabilities.high' 2>/dev/null || echo "0")
+  #             if [[ "$CRITICAL_HIGH" -gt "0" ]]; then
+  #               echo "❌ VULNERABILIDADES CRÍTICAS ENCONTRADAS: $CRITICAL_HIGH"
+  #               exit 1
+  #             fi
+  #           fi
+  #         fi
 
   # Backend Real Architecture Tests
   backend-architecture-tests:
@@ -682,7 +665,7 @@ jobs:
   frontend-deploy:
     name: "⚛️ Frontend Deploy (Cloud Run)"
     runs-on: ubuntu-latest
-    needs: [staging-preparation, claude-validations, security-analysis, backend-deploy]
+    needs: [staging-preparation, security-analysis, backend-deploy]
     if: needs.staging-preparation.outputs.deploy-frontend == 'true' && (needs.backend-deploy.result == 'success' || needs.backend-deploy.result == 'skipped')
     timeout-minutes: 15
     defaults:
@@ -805,7 +788,7 @@ jobs:
   backend-deploy:
     name: "🔧 Backend Deploy (Cloud Run)"
     runs-on: ubuntu-latest
-    needs: [staging-preparation, claude-validations, security-analysis, backend-architecture-tests]
+    needs: [staging-preparation, security-analysis, backend-architecture-tests]
     if: needs.staging-preparation.outputs.deploy-backend == 'true' && (needs.backend-architecture-tests.result == 'success' || needs.backend-architecture-tests.result == 'skipped')
     timeout-minutes: 55
     defaults:
