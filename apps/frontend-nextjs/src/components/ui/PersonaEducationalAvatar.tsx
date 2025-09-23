@@ -106,7 +106,8 @@ export const PersonaEducationalAvatar: React.FC<PersonaEducationalAvatarProps> =
               // Fallback para ícone se avatar não encontrado
               const target = e.target as HTMLImageElement;
               target.style.display = 'none';
-              target.parentElement!.innerHTML = personaId === 'dr-gasnelio' ? '👨‍⚕️' : '👩‍🎓';
+              // Use textContent instead of innerHTML for safety
+              target.parentElement!.textContent = personaId === 'dr-gasnelio' ? '👨‍⚕️' : '👩‍🎓';
               target.parentElement!.style.fontSize = `${avatarSize * 0.5}px`;
             }}
           />

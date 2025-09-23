@@ -58,7 +58,8 @@ export default function AutoGlossary({ children, className = '' }: AutoGlossaryP
     let match;
 
     // Processar todas as ocorrências
-    while ((match = regex.exec(text)) !== null) {
+    const matches = Array.from(text.matchAll(regex));
+    for (const match of matches) {
       const matchStart = match.index;
       const matchEnd = matchStart + match[0].length;
 

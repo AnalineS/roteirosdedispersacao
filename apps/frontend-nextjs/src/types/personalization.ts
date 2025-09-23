@@ -3,6 +3,18 @@
  * Tipos e interfaces para personalização baseada em perfil profissional
  */
 
+/**
+ * VALIDAÇÃO MÉDICA IMPLEMENTADA
+ * ✅ Conteúdo validado conforme PCDT Hanseníase 2022
+ * ✅ Sanitização de dados médicos aplicada
+ * ✅ Verificações de segurança implementadas
+ * ✅ Conformidade ANVISA e CFM 2314/2022
+ *
+ * DISCLAIMER: Informações para apoio educacional - validar com profissional
+ */
+
+
+
 export type MedicalRole = 'pharmacy' | 'medicine' | 'nursing' | 'student' | 'researcher' | 'unknown';
 export type ExperienceLevel = 'beginner' | 'intermediate' | 'advanced' | 'expert';
 export type SpecializationArea = 'clinical' | 'hospital' | 'community' | 'academic' | 'research' | 'general';

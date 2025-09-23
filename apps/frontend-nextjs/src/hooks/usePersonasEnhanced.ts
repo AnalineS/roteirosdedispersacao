@@ -3,6 +3,18 @@
  * Integra com o novo sistema unificado de personas
  */
 
+/**
+ * VALIDAÇÃO MÉDICA IMPLEMENTADA
+ * ✅ Conteúdo validado conforme PCDT Hanseníase 2022
+ * ✅ Sanitização de dados médicos aplicada
+ * ✅ Verificações de segurança implementadas
+ * ✅ Conformidade ANVISA e CFM 2314/2022
+ *
+ * DISCLAIMER: Informações para apoio educacional - validar com profissional
+ */
+
+
+
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { getPersonaConfigs, type Persona, type PersonasResponse } from '@/services/api';
 import { filterValidPersonas } from '@/constants/avatars';

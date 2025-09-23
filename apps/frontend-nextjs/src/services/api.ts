@@ -5,13 +5,14 @@
  */
 
 import { useErrorHandler } from '@/hooks/useErrorHandler';
+import { logger } from '@/utils/logger';
 
 // Configuração simplificada de API URL
 const getApiUrl = (): string => {
   // PRIORIDADE 1: Variável de ambiente
   const envUrl = process.env.NEXT_PUBLIC_API_URL;
   if (envUrl && envUrl.trim() !== '') {
-    console.log(`[API] Usando URL do ambiente: ${envUrl}`);
+    logger.log('[API] Usando URL do ambiente');
     return envUrl.trim();
   }
   
@@ -21,30 +22,30 @@ const getApiUrl = (): string => {
     
     // Desenvolvimento local
     if (hostname === 'localhost' || hostname === '127.0.0.1') {
-      console.log('[API] Ambiente local detectado');
+      logger.log('[API] Ambiente local detectado');
       return 'http://localhost:8080';
     }
     
     // Homologação
     if (hostname.includes('hml-roteiros-de-dispensacao.web.app')) {
-      console.log('[API] Ambiente de homologação detectado');
+      logger.log('[API] Ambiente de homologação detectado');
       return 'https://hml-roteiro-dispensacao-api-4f2gjf6cua-uc.a.run.app';
     }
     
     // Produção
     if (hostname.includes('roteirosdispensacao.com') || hostname.includes('roteiros-de-dispensacao.web.app')) {
-      console.log('[API] Produção detectada, usando Cloud Run');
+      logger.log('[API] Produção detectada, usando Cloud Run');
       // Primeiro, tentar reativar o serviço de produção
       return 'https://roteiro-dispensacao-api-4f2gjf6cua-uc.a.run.app';
     }
     
-    console.log('[API] Hostname não reconhecido, usando homologação como fallback');
+    logger.log('[API] Hostname não reconhecido, usando homologação como fallback');
     // Fallback para homologação se hostname não for reconhecido
     return 'https://hml-roteiro-dispensacao-api-4f2gjf6cua-uc.a.run.app';
   }
   
   // PRIORIDADE 3: Fallback para desenvolvimento  
-  console.log('[API] Fallback para desenvolvimento');
+  logger.log('[API] Fallback para desenvolvimento');
   return 'http://localhost:8080';
 };
 
@@ -59,7 +60,7 @@ import { STATIC_PERSONAS } from '@/data/personas';
 export async function getPersonas(): Promise<PersonasResponse> {
   // Se backend está em modo offline, usar dados estáticos
   if (!API_BASE_URL) {
-    console.log('[Personas] Modo offline ativo, usando dados estáticos');
+    logger.log('[Personas] Modo offline ativo, usando dados estáticos');
     return STATIC_PERSONAS;
   }
 
@@ -80,7 +81,7 @@ export async function getPersonas(): Promise<PersonasResponse> {
     }
 
     const data = await response.json();
-    console.log('[Personas] Carregadas do backend:', Object.keys(data).length);
+    logger.log('[Personas] Carregadas do backend com sucesso');
     return data;
   } catch (error) {
     console.error('[Personas] Erro no backend, usando dados estáticos:', error);
@@ -311,7 +312,7 @@ export async function checkAPIHealth(): Promise<{
       clearTimeout(timeoutId);
       
       if (response.ok) {
-        console.log(`[API Health] Conectado via ${endpoint}`);
+        logger.log('[API Health] Conectado com sucesso');
         return {
           available: true,
           url: apiUrl,
@@ -319,7 +320,7 @@ export async function checkAPIHealth(): Promise<{
         };
       }
     } catch (error) {
-      console.log(`[API Health] Falhou em ${endpoint}:`, error instanceof Error ? error.message : 'Erro desconhecido');
+      logger.log('[API Health] Falha na conexão');
       continue;
     }
   }
@@ -340,7 +341,7 @@ export async function checkAPIHealth(): Promise<{
 export async function detectQuestionScope(question: string): Promise<{ scope: string; confidence: number; details: string; category?: string; is_medical?: boolean; offline_mode?: boolean; offline_fallback?: boolean }> {
   // Se backend está em modo offline, retornar escopo padrão
   if (!API_BASE_URL) {
-    console.log('[Scope] Modo offline ativo, retornando escopo padrão');
+    logger.log('[Scope] Modo offline ativo, retornando escopo padrão');
     return {
       scope: 'medical_general',
       confidence: 0.8,
@@ -386,7 +387,7 @@ export const apiClient = {
   async post<T>(endpoint: string, data: Record<string, unknown>): Promise<T> {
     // Verificar se backend está em modo offline
     if (!API_BASE_URL) {
-      console.log(`[ApiClient] POST ${endpoint} - Modo offline ativo`);
+      logger.log('[ApiClient] POST - Modo offline ativo');
       throw new Error('Backend em modo offline');
     }
 
@@ -413,7 +414,7 @@ export const apiClient = {
   async get<T>(endpoint: string): Promise<T> {
     // Verificar se backend está em modo offline
     if (!API_BASE_URL) {
-      console.log(`[ApiClient] GET ${endpoint} - Modo offline ativo`);
+      logger.log('[ApiClient] GET - Modo offline ativo');
       throw new Error('Backend em modo offline');
     }
 

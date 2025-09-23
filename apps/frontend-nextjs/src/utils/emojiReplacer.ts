@@ -17,9 +17,10 @@ export function replaceEmojiWithIcon(text: string, size = 16, className = ''): R
   const emojiRegex = /[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{27BF}]|[\u{E000}-\u{F8FF}]/gu;
   let match;
 
-  while ((match = emojiRegex.exec(text)) !== null) {
+  const matches = Array.from(text.matchAll(emojiRegex));
+  for (const match of matches) {
     // Adicionar texto antes do emoji
-    if (match.index > lastIndex) {
+    if (match.index! > lastIndex) {
       parts.push(text.slice(lastIndex, match.index));
     }
 
@@ -40,7 +41,7 @@ export function replaceEmojiWithIcon(text: string, size = 16, className = ''): R
       parts.push(match[0]);
     }
 
-    lastIndex = emojiRegex.lastIndex;
+    lastIndex = (match.index! + match[0].length);
   }
 
   // Adicionar texto restante

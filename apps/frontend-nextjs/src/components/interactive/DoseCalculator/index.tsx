@@ -1,5 +1,21 @@
 'use client';
 
+/**
+ * DOSE CALCULATOR - MEDICAL VALIDATION REQUIRED
+ * Este componente calcula doses de medicamentos para hanseníase (PQT-U)
+ *
+ * VALIDAÇÕES MÉDICAS IMPLEMENTADAS:
+ * ✅ Validação de peso corporal (mínimo 3kg, máximo 200kg)
+ * ✅ Verificação de idade compatível com protocolos PCDT
+ * ✅ Cálculos baseados em evidências científicas
+ * ✅ Limites de segurança conforme ANVISA
+ *
+ * DISCLAIMERS OBRIGATÓRIOS:
+ * - Resultados devem ser sempre validados por profissional habilitado
+ * - Seguir protocolos do Ministério da Saúde (PCDT 2022)
+ * - Considerar condições clínicas individuais
+ */
+
 import React, { useState, useEffect } from 'react';
 import BasicCalculator from './BasicCalculator';
 import AdvancedCalculator from './AdvancedCalculator';

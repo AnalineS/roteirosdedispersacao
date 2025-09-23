@@ -6,6 +6,7 @@
  */
 
 import { firestoreCache, FirestoreCacheUtils } from '../lib/firebase/firestoreCache';
+import { logger } from '@/utils/logger';
 
 // Interfaces
 interface HybridCacheEntry<T> {
@@ -17,6 +18,46 @@ interface HybridCacheEntry<T> {
   syncStatus: 'synced' | 'pending' | 'failed';
   retryCount?: number;
 }
+
+// Tipos específicos para cache
+interface ChatMessage {
+  id?: string;
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: number;
+  persona?: string;
+}
+
+interface PersonaResponse {
+  response: string;
+  confidence: number;
+  timestamp: number;
+  persona: string;
+  query: string;
+}
+
+interface ConversationData {
+  messages: ChatMessage[];
+  lastUpdated: number;
+  participantCount?: number;
+}
+
+interface BatchCacheEntry {
+  key: string;
+  data: unknown;
+  ttl?: number;
+}
+
+// Union type para todos os tipos de dados que podem ser armazenados no cache
+type CacheableData =
+  | ChatMessage[]
+  | ConversationData
+  | PersonaResponse
+  | string
+  | number
+  | boolean
+  | Record<string, unknown>
+  | unknown[];
 
 interface CacheStats {
   memory: {
@@ -60,7 +101,7 @@ interface CacheConfig {
 }
 
 class HybridCacheManager {
-  private memoryCache = new Map<string, HybridCacheEntry<any>>();
+  private memoryCache = new Map<string, HybridCacheEntry<CacheableData>>();
   private syncQueue: Set<string> = new Set();
   private backgroundSyncTimer: NodeJS.Timeout | null = null;
   private isOnline = true;
@@ -115,7 +156,7 @@ class HybridCacheManager {
     if (memoryResult !== null) {
       this.stats.memory.hits++;
       this.updateTotalStats();
-      console.log(`[HybridCache] Memory hit: ${key}`);
+      logger.log('[HybridCache] Memory cache hit');
       return memoryResult;
     }
     this.stats.memory.misses++;
@@ -129,7 +170,7 @@ class HybridCacheManager {
       // Promover para memory cache
       this.setInMemory(sanitizedKey, localStorageResult, this.config.memory.defaultTTL);
       
-      console.log(`[HybridCache] localStorage hit: ${key}`);
+      logger.log('[HybridCache] localStorage cache hit');
       return localStorageResult;
     }
     this.stats.localStorage.misses++;
@@ -145,14 +186,14 @@ class HybridCacheManager {
         this.setInMemory(sanitizedKey, firestoreResult, this.config.memory.defaultTTL);
         this.setInLocalStorage(sanitizedKey, firestoreResult, this.config.localStorage.defaultTTL);
         
-        console.log(`[HybridCache] Firestore hit: ${key}`);
+        logger.log('[HybridCache] Firestore cache hit');
         return firestoreResult;
       }
       this.stats.firestore.misses++;
     }
 
     this.updateTotalStats();
-    console.log(`[HybridCache] Cache miss: ${key}`);
+    logger.log('[HybridCache] Cache miss');
     return null;
   }
 
@@ -198,7 +239,7 @@ class HybridCacheManager {
         }
       }
       
-      console.log(`[HybridCache] Data cached: ${key}`);
+      logger.log('[HybridCache] Data cached successfully');
       return true;
       
     } catch (error) {
@@ -232,7 +273,7 @@ class HybridCacheManager {
       // Remover da queue de sync
       this.syncQueue.delete(sanitizedKey);
       
-      console.log(`[HybridCache] Data deleted: ${key}`);
+      logger.log('[HybridCache] Data deleted successfully');
       return success;
       
     } catch (error) {
@@ -263,7 +304,7 @@ class HybridCacheManager {
       // Reset stats
       this.resetStats();
       
-      console.log('[HybridCache] Cache limpo completamente');
+      logger.log('[HybridCache] Cache limpo completamente');
       return true;
       
     } catch (error) {
@@ -277,7 +318,7 @@ class HybridCacheManager {
    */
   async forceSync(): Promise<{ synced: number; failed: number }> {
     if (!this.isOnline) {
-      console.warn('[HybridCache] Não é possível sincronizar offline');
+      logger.warn('[HybridCache] Não é possível sincronizar offline');
       return { synced: 0, failed: 0 };
     }
 
@@ -303,7 +344,7 @@ class HybridCacheManager {
       }
     }
     
-    console.log(`[HybridCache] Sincronização manual: ${synced} ok, ${failed} falhas`);
+    logger.log(`[HybridCache] Sincronização manual: ${synced} ok, ${failed} falhas`);
     return { synced, failed };
   }
 
@@ -318,7 +359,7 @@ class HybridCacheManager {
         this.stats.firestore.size = firestoreStats.totalEntries;
         this.stats.firestore.isAvailable = firestoreStats.isAvailable;
       } catch (error) {
-        console.warn('[HybridCache] Erro ao obter stats do Firestore:', error);
+        logger.warn('[HybridCache] Erro ao obter stats do Firestore:', error);
       }
     }
 
@@ -383,7 +424,7 @@ class HybridCacheManager {
       return entry.data;
       
     } catch (error) {
-      console.warn(`[HybridCache] Erro ao ler localStorage ${key}:`, error);
+      logger.warn(`[HybridCache] Erro ao ler localStorage ${key}:`, error);
       return null;
     }
   }
@@ -406,7 +447,7 @@ class HybridCacheManager {
       
     } catch (error) {
       if (error instanceof Error && error.name === 'QuotaExceededError') {
-        console.warn('[HybridCache] localStorage cheio, limpando entradas antigas');
+        logger.warn('[HybridCache] localStorage cheio, limpando entradas antigas');
         this.clearOldLocalStorage();
         // Tentar novamente
         try {
@@ -421,10 +462,10 @@ class HybridCacheManager {
           };
           localStorage.setItem(storageKey, JSON.stringify(entry));
         } catch (retryError) {
-          console.error('[HybridCache] Falha ao armazenar no localStorage:', retryError);
+          logger.error('[HybridCache] Falha ao armazenar no localStorage:', retryError);
         }
       } else {
-        console.error(`[HybridCache] Erro ao armazenar ${key} no localStorage:`, error);
+        logger.error(`[HybridCache] Erro ao armazenar ${key} no localStorage:`, error);
       }
     }
   }
@@ -433,7 +474,7 @@ class HybridCacheManager {
     try {
       return await firestoreCache.get<T>(key);
     } catch (error) {
-      console.warn(`[HybridCache] Erro ao buscar ${key} no Firestore:`, error);
+      logger.warn(`[HybridCache] Erro ao buscar ${key} no Firestore:`, error);
       return null;
     }
   }
@@ -467,7 +508,7 @@ class HybridCacheManager {
       const storageKey = this.config.localStorage.keyPrefix + key;
       localStorage.removeItem(storageKey);
     } catch (error) {
-      console.warn(`[HybridCache] Erro ao remover ${key} do localStorage:`, error);
+      logger.warn(`[HybridCache] Erro ao remover ${key} do localStorage:`, error);
     }
   }
 
@@ -484,7 +525,7 @@ class HybridCacheManager {
       keysToRemove.forEach(key => localStorage.removeItem(key));
       
     } catch (error) {
-      console.error('[HybridCache] Erro ao limpar localStorage:', error);
+      logger.error('[HybridCache] Erro ao limpar localStorage:', error);
     }
   }
 
@@ -517,7 +558,7 @@ class HybridCacheManager {
       }
       
     } catch (error) {
-      console.error('[HybridCache] Erro ao limpar entradas antigas:', error);
+      logger.error('[HybridCache] Erro ao limpar entradas antigas:', error);
     }
   }
 
@@ -598,10 +639,10 @@ class HybridCacheManager {
         try {
           const result = await this.forceSync();
           if (result.synced > 0) {
-            console.log(`[HybridCache] Background sync: ${result.synced} items`);
+            logger.log(`[HybridCache] Background sync: ${result.synced} items`);
           }
         } catch (error) {
-          console.warn('[HybridCache] Background sync error:', error);
+          logger.warn('[HybridCache] Background sync error:', error);
         }
       }
     }, this.config.firestore.syncInterval);
@@ -613,13 +654,13 @@ class HybridCacheManager {
       
       window.addEventListener('online', () => {
         this.isOnline = true;
-        console.log('[HybridCache] Voltou online - iniciando sync');
+        logger.log('[HybridCache] Voltou online - iniciando sync');
         this.forceSync();
       });
       
       window.addEventListener('offline', () => {
         this.isOnline = false;
-        console.log('[HybridCache] Modo offline ativado');
+        logger.log('[HybridCache] Modo offline ativado');
       });
     }
   }
@@ -629,7 +670,7 @@ class HybridCacheManager {
       const isReady = await firestoreCache.isReady();
       this.stats.firestore.isAvailable = isReady;
     } catch (error) {
-      console.warn('[HybridCache] Erro ao verificar status do Firestore:', error);
+      logger.warn('[HybridCache] Erro ao verificar status do Firestore:', error);
     }
   }
 
@@ -674,8 +715,8 @@ export const HybridCacheUtils = {
   Specialized: {
     // Cache conversations with automatic expiration
     cacheConversation: async (
-      conversationId: string, 
-      messages: any[], 
+      conversationId: string,
+      messages: ChatMessage[],
       ttl: number = 30 * 60 * 1000 // 30 minutes default
     ): Promise<boolean> => {
       const key = HybridCacheUtils.Keys.conversation(conversationId);
@@ -683,16 +724,16 @@ export const HybridCacheUtils = {
     },
 
     // Get conversation from cache
-    getConversation: async (conversationId: string): Promise<any[] | null> => {
+    getConversation: async (conversationId: string): Promise<ChatMessage[] | null> => {
       const key = HybridCacheUtils.Keys.conversation(conversationId);
-      return hybridCache.get<any[]>(key);
+      return hybridCache.get<ChatMessage[]>(key);
     },
 
     // Cache persona responses with confidence scoring
     cachePersonaResponse: async (
       persona: string,
       query: string,
-      response: any,
+      response: string,
       confidence: number = 0.85
     ): Promise<boolean> => {
       const key = HybridCacheUtils.Keys.personaResponse(persona, query);
@@ -713,9 +754,9 @@ export const HybridCacheUtils = {
     getPersonaResponse: async (
       persona: string,
       query: string
-    ): Promise<{ response: any; confidence: number } | null> => {
+    ): Promise<{ response: string; confidence: number } | null> => {
       const key = HybridCacheUtils.Keys.personaResponse(persona, query);
-      const cached = await hybridCache.get<any>(key);
+      const cached = await hybridCache.get<PersonaResponse>(key);
       
       if (cached && cached.response && cached.confidence) {
         return {
@@ -729,8 +770,8 @@ export const HybridCacheUtils = {
 
     // Cache user conversations list
     cacheUserConversations: async (
-      userId: string, 
-      conversations: any[], 
+      userId: string,
+      conversations: ConversationData[],
       ttl: number = 30 * 60 * 1000
     ): Promise<boolean> => {
       const key = HybridCacheUtils.Keys.conversations(userId);
@@ -738,15 +779,15 @@ export const HybridCacheUtils = {
     },
 
     // Get user conversations from cache
-    getUserConversations: async (userId: string): Promise<any[] | null> => {
+    getUserConversations: async (userId: string): Promise<ConversationData[] | null> => {
       const key = HybridCacheUtils.Keys.conversations(userId);
-      return hybridCache.get<any[]>(key);
+      return hybridCache.get<ConversationData[]>(key);
     },
 
     // Cache fallback responses
     cacheFallbackResponse: async (
       query: string,
-      response: any,
+      response: string,
       ttl: number = 5 * 60 * 1000 // 5 minutes for fallbacks
     ): Promise<boolean> => {
       const key = HybridCacheUtils.Keys.fallback(query);
@@ -754,14 +795,14 @@ export const HybridCacheUtils = {
     },
 
     // Get fallback response
-    getFallbackResponse: async (query: string): Promise<any | null> => {
+    getFallbackResponse: async (query: string): Promise<string | null> => {
       const key = HybridCacheUtils.Keys.fallback(query);
-      return hybridCache.get<any>(key);
+      return hybridCache.get<string>(key);
     },
 
     // Warmup cache with common topics
     warmupCache: async (topics: string[]): Promise<void> => {
-      console.log('🔥 Warming up hybrid cache...');
+      logger.log('🔥 Warming up hybrid cache...');
       
       const promises = topics.map(async (topic) => {
         const key = HybridCacheUtils.Keys.warmup(topic);
@@ -783,7 +824,7 @@ export const HybridCacheUtils = {
       });
       
       await Promise.all(promises);
-      console.log('✅ Hybrid cache warmup completed');
+      logger.log('✅ Hybrid cache warmup completed');
     },
 
     // Get cache statistics that replace Redis stats
@@ -814,7 +855,7 @@ export const HybridCacheUtils = {
     },
 
     // Batch operations for performance
-    batchSet: async (entries: Array<{ key: string; data: any; ttl?: number }>): Promise<number> => {
+    batchSet: async (entries: BatchCacheEntry[]): Promise<number> => {
       let successful = 0;
       
       const promises = entries.map(async (entry) => {
@@ -836,7 +877,7 @@ export const HybridCacheUtils = {
     clearNamespace: async (namespace: string): Promise<boolean> => {
       // This is a simplified version - in a full implementation,
       // we'd need to track keys by namespace
-      console.log(`[HybridCache] Clearing namespace: ${namespace}`);
+      logger.log(`[HybridCache] Clearing namespace: ${namespace}`);
       
       // For now, we'll clear based on key patterns
       // Future improvement: implement proper namespace tracking

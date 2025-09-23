@@ -62,15 +62,28 @@ export function useNumericNavigation({
       max-width: 300px;
     `;
 
-    toast.innerHTML = `
-      <div style="display: flex; align-items: center; gap: 8px;">
-        <span style="background: #3b82f6; color: white; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;">${route.key}</span>
-        <div>
-          <div style="font-weight: 600;">${route.title}</div>
-          <div style="font-size: 12px; opacity: 0.8;">${route.description}</div>
-        </div>
-      </div>
-    `;
+    // Use safer DOM creation instead of innerHTML
+    const content = document.createElement('div');
+    content.style.cssText = 'display: flex; align-items: center; gap: 8px;';
+
+    const badge = document.createElement('span');
+    badge.style.cssText = 'background: #3b82f6; color: white; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;';
+    badge.textContent = route.key;
+
+    const textContainer = document.createElement('div');
+    const title = document.createElement('div');
+    title.style.fontWeight = '600';
+    title.textContent = route.title;
+
+    const description = document.createElement('div');
+    description.style.cssText = 'font-size: 12px; opacity: 0.8;';
+    description.textContent = route.description;
+
+    textContainer.appendChild(title);
+    textContainer.appendChild(description);
+    content.appendChild(badge);
+    content.appendChild(textContainer);
+    toast.appendChild(content);
 
     // Adicionar CSS de animação
     if (!document.querySelector('#numeric-nav-styles')) {

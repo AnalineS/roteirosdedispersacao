@@ -24,7 +24,6 @@ export const getPersonaAvatar = (personaId: string): string => {
   // Buscar primeira correspondência exata
   const directMatch = PERSONA_AVATARS[personaId as keyof typeof PERSONA_AVATARS];
   if (directMatch) {
-    console.log(`[getPersonaAvatar] personaId: "${personaId}" found directly:`, directMatch);
     return directMatch;
   }
   
@@ -35,7 +34,6 @@ export const getPersonaAvatar = (personaId: string): string => {
   );
   
   const result = match?.[1] || '';
-  console.log(`[getPersonaAvatar] personaId: "${personaId}", normalized: "${normalizedId}", available keys:`, Object.keys(PERSONA_AVATARS), 'result:', result);
   return result;
 };
 
@@ -61,7 +59,6 @@ export const hasPersonaAvatar = (personaId: string): boolean => {
     key.toLowerCase().replace(/[-_\s]/g, '') === normalizedId
   );
   
-  console.log(`[hasPersonaAvatar] personaId: "${personaId}", normalized: "${normalizedId}", found:`, !!match);
   return !!match;
 };
 

@@ -1,7 +1,7 @@
 name: "🧪 Staging Deploy - Homologação"
 
 on:
-  # Temporarily disabled - Git exit code 128 issues
+  # Disabled - keeping only Dependabot workflows active
   # push:
   #   branches: [hml]
   workflow_dispatch:
