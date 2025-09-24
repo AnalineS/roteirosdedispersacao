@@ -14,9 +14,96 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useSafeAuth as useAuth } from '@/hooks/useSafeAuth';
-import { UserProfileRepository } from '@/lib/firebase/firestore';
-import { FirestoreUserProfile } from '@/lib/firebase/types';
-import { FEATURES } from '@/lib/firebase/config';
+import { BackendUserProfile } from '@/types/api';
+
+// Firebase features replaced with backend API
+const FEATURES = {
+  FIRESTORE_ENABLED: false,
+  AUTH_ENABLED: true,
+  REALTIME_ENABLED: false
+};
+
+// Backend API repository - real implementation
+const UserProfileRepository = {
+  getProfile: async (userId: string) => {
+    try {
+      const response = await fetch(`/api/user-profiles/${userId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          return {
+            success: false,
+            error: 'Profile not found',
+            data: null
+          };
+        }
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to fetch profile',
+        data: null
+      };
+    }
+  },
+  saveProfile: async (profile: BackendUserProfile) => {
+    try {
+      const response = await fetch(`/api/user-profiles/${profile.uid}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(profile),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Error saving profile:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to save profile'
+      };
+    }
+  },
+  deleteProfile: async (userId: string) => {
+    try {
+      const response = await fetch(`/api/user-profiles/${userId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Error deleting profile:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to delete profile'
+      };
+    }
+  }
+};
 
 export interface UserProfile {
   type: 'admin' | 'professional' | 'student' | 'patient' | 'caregiver';
@@ -76,8 +163,8 @@ export function useUserProfile(): UserProfileHook {
         setIsLoading(true);
 
         if (useFirestore && auth.user) {
-          // Carregar do Firestore
-          await loadFromFirestore();
+          // Carregar do Backend
+          await loadFromBackend();
         } else if (useLocalStorage) {
           // Carregar do localStorage
           loadFromLocalStorage();
@@ -85,7 +172,7 @@ export function useUserProfile(): UserProfileHook {
       } catch (error) {
         console.error('Erro ao carregar perfil:', error);
         
-        // Fallback para localStorage em caso de erro do Firestore
+        // Fallback para localStorage em caso de erro do Backend
         if (useFirestore) {
           loadFromLocalStorage();
         }
@@ -123,7 +210,7 @@ export function useUserProfile(): UserProfileHook {
     }
   }, []);
 
-  const loadFromFirestore = useCallback(async () => {
+  const loadFromBackend = useCallback(async () => {
     if (!auth.user) return;
 
     try {
@@ -131,17 +218,17 @@ export function useUserProfile(): UserProfileHook {
       
       // Primeiro verificar se há perfil no contexto de auth
       if (auth.profile) {
-        const localProfile = convertFirestoreToLocal(auth.profile);
+        const localProfile = convertBackendToLocal(auth.profile);
         setProfile(localProfile);
         setSyncStatus('idle');
         return;
       }
 
-      // Se não, carregar diretamente do Firestore
+      // Se não, carregar diretamente da API backend
       const result = await UserProfileRepository.getProfile(auth.user.uid);
-      
+
       if (result.success && result.data) {
-        const localProfile = convertFirestoreToLocal(result.data);
+        const localProfile = convertBackendToLocal(result.data);
         setProfile(localProfile);
         setSyncStatus('idle');
 
@@ -150,7 +237,7 @@ export function useUserProfile(): UserProfileHook {
           saveToLocalStorageOnly(localProfile);
         }
       } else {
-        // Perfil não existe no Firestore - usar localStorage se disponível
+        // Perfil não existe na API - usar localStorage se disponível
         if (useLocalStorage) {
           loadFromLocalStorage();
         }
@@ -158,7 +245,7 @@ export function useUserProfile(): UserProfileHook {
       }
     } catch (error) {
       setSyncStatus('error');
-      console.error('Erro ao carregar do Firestore:', error);
+      console.error('Erro ao carregar do backend:', error);
       throw error;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -168,19 +255,19 @@ export function useUserProfile(): UserProfileHook {
   // FUNÇÕES DE CONVERSÃO
   // ============================================
 
-  const convertFirestoreToLocal = useCallback((firestoreProfile: FirestoreUserProfile): UserProfile => {
+  const convertBackendToLocal = useCallback((backendProfile: BackendUserProfile): UserProfile => {
     return {
-      type: firestoreProfile.type,
-      focus: firestoreProfile.focus,
-      confidence: firestoreProfile.confidence,
-      explanation: firestoreProfile.explanation,
-      selectedPersona: firestoreProfile.selectedPersona,
-      preferences: firestoreProfile.preferences,
-      history: firestoreProfile.history
+      type: backendProfile.type,
+      focus: backendProfile.focus,
+      confidence: backendProfile.confidence,
+      explanation: backendProfile.explanation,
+      selectedPersona: backendProfile.selectedPersona,
+      preferences: backendProfile.preferences,
+      history: backendProfile.history
     };
   }, []);
 
-  const convertLocalToFirestore = useCallback((localProfile: UserProfile): Partial<FirestoreUserProfile> => {
+  const convertLocalToBackend = useCallback((localProfile: UserProfile): BackendUserProfile => {
     if (!auth.user) throw new Error('Usuário não autenticado');
 
     return {
@@ -203,8 +290,19 @@ export function useUserProfile(): UserProfileHook {
         completedModules: [],
         achievements: []
       },
-      isAnonymous: auth.isAnonymous,
-      version: '2.0'
+      stats: {
+        joinedAt: new Date().toISOString(),
+        lastActiveAt: new Date().toISOString(),
+        sessionCount: 0,
+        messageCount: 0,
+        averageSessionDuration: 0,
+        favoritePersona: localProfile.selectedPersona || 'ga',
+        completionRate: 0
+      },
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      version: '2.0',
+      isAnonymous: auth.isAnonymous || false
     };
   }, [auth.user, auth.isAnonymous]);
 
@@ -261,13 +359,13 @@ export function useUserProfile(): UserProfileHook {
         saveToLocalStorageOnly(enrichedProfile);
       }
 
-      // Salvar no Firestore se disponível
+      // Salvar na API backend se disponível
       if (useFirestore && auth.user) {
-        const firestoreProfile = convertLocalToFirestore(enrichedProfile);
-        const result = await auth.updateUserProfile(firestoreProfile as FirestoreUserProfile);
-        
+        const backendProfile = convertLocalToBackend(enrichedProfile);
+        const result = await UserProfileRepository.saveProfile(backendProfile);
+
         if (!result.success) {
-          console.error('Erro ao salvar no Firestore:', result.error);
+          console.error('Erro ao salvar na API backend:', result.error);
           setSyncStatus('error');
           return;
         }
@@ -304,11 +402,11 @@ export function useUserProfile(): UserProfileHook {
     try {
       setSyncStatus('syncing');
 
-      // Limpar do Firestore se disponível
+      // Limpar da API backend se disponível
       if (useFirestore && auth.user) {
         const result = await UserProfileRepository.deleteProfile(auth.user.uid);
         if (!result.success) {
-          console.error('Erro ao deletar do Firestore:', result.error);
+          console.error('Erro ao deletar da API backend:', result.error);
         }
       }
 
@@ -358,7 +456,7 @@ export function useUserProfile(): UserProfileHook {
   // Função de sincronização manual
   const forceSync = async (): Promise<void> => {
     if (useFirestore && auth.user) {
-      await loadFromFirestore();
+      await loadFromBackend();
     }
   };
 

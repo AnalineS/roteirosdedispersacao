@@ -15,7 +15,7 @@ import { useState, useCallback, useMemo, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
-import { useGoogleAnalytics } from '@/components/analytics/GoogleAnalyticsSetup';
+import { useGoogleAnalyticsUX } from '@/components/analytics/GoogleAnalyticsSetup';
 import { getPersonaAvatar } from '@/constants/avatars';
 
 // Types para type safety e maintainability

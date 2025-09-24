@@ -24,6 +24,9 @@ interface UserProfile {
     language: 'simple' | 'technical';
     notifications: boolean;
     theme: 'auto' | 'light' | 'dark';
+    emailUpdates: boolean;
+    dataCollection: boolean;
+    lgpdConsent: boolean;
   };
   history: {
     lastPersona: 'dr_gasnelio' | 'ga';

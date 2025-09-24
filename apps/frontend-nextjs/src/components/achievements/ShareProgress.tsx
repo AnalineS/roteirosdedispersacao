@@ -111,17 +111,17 @@ export default function ShareProgress({
         // Compartilhar progresso geral - convert to ProgressData
         const progressData: ProgressData = {
           userId: user?.uid || 'anonymous',
-          totalPoints: progress.totalPoints,
-          completedModules: progress.completedModules || 0,
-          certificatesEarned: progress.certificates?.length || 0,
-          streakDays: progress.streak,
-          achievements: progress.achievements?.map(achievement => ({
+          totalPoints: progress.experiencePoints.total,
+          completedModules: progress.moduleProgress.filter(m => m.status === 'completed').length,
+          certificatesEarned: progress.achievements.filter(a => a.isUnlocked).length,
+          streakDays: progress.streakData.currentStreak,
+          achievements: progress.achievements.filter(a => a.isUnlocked).map(achievement => ({
             id: achievement.id,
-            name: achievement.name || achievement.title,
-            earnedAt: achievement.earnedAt || achievement.unlockedAt || new Date().toISOString(),
+            name: achievement.title,
+            earnedAt: achievement.unlockedAt || new Date().toISOString(),
             description: achievement.description
           })) || [],
-          recentActivity: progress.recentActivity || []
+          recentActivity: []
         };
         result = await shareProgress(progressData);
       }
@@ -226,7 +226,7 @@ export default function ShareProgress({
     }
 
     if (progress) {
-      return `Estou no nível ${progress.level} com ${progress.totalPoints} pontos no Sistema de Dispensação de Hanseníase! 🚀`;
+      return `Estou no nível ${progress.experiencePoints.level} com ${progress.experiencePoints.total} pontos no Sistema de Dispensação de Hanseníase! 🚀`;
     }
 
     return 'Confira meu progresso no Sistema de Dispensação de Hanseníase!';
@@ -284,10 +284,10 @@ export default function ShareProgress({
         {progress && (
           <div className="mt-3 flex flex-wrap gap-2">
             <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
-              Nível {progress.level}
+              Nível {progress.experiencePoints.level}
             </span>
             <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
-              {progress.totalPoints} pontos
+              {progress.experiencePoints.total} pontos
             </span>
             <span className="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full">
               {progress.achievements.length} conquistas

@@ -5,11 +5,37 @@
  */
 
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { ChatMessage } from '@/services/api';
+import { ChatMessage, BackendConversation, BackendMessage } from '@/types/api';
 import { useSafeAuth as useAuth } from '@/hooks/useSafeAuth';
-import { ConversationRepository } from '@/lib/firebase/firestore';
-import { FirestoreConversation, FirestoreMessage } from '@/lib/firebase/types';
-import { FEATURES } from '@/lib/firebase/config';
+// Firebase features replaced with backend API
+const FEATURES = {
+  FIRESTORE_ENABLED: false, // Migrated to backend storage
+  AUTH_ENABLED: true,       // Backend authentication enabled
+  REALTIME_ENABLED: false   // No real-time features for now
+};
+
+// Mock repository - backend API implementation
+const ConversationRepository = {
+  getUserConversations: async (userId: string, options?: { limit?: number }) => {
+    return {
+      success: false,
+      error: 'Not implemented - use localStorage for now',
+      data: null
+    };
+  },
+  saveConversation: async (conversation: BackendConversation) => {
+    return {
+      success: false,
+      error: 'Not implemented - use localStorage for now'
+    };
+  },
+  deleteConversation: async (conversationId: string) => {
+    return {
+      success: false,
+      error: 'Not implemented - use localStorage for now'
+    };
+  }
+};
 import { generateSecureId } from '@/utils/cryptoUtils';
 
 // Constantes

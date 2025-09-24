@@ -346,7 +346,7 @@ export default function ChecklistPage() {
 
           const label = doc.createElement('label');
           label.setAttribute('for', `print-${category}-${index}`);
-          label.textContent = item.title;
+          label.textContent = item.text;
 
           if (item.description) {
             const desc = doc.createElement('div');

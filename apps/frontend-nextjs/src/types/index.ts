@@ -11,7 +11,7 @@ export * from './contexts';
 export * from './utils';
 
 // Import types needed for utility functions
-import type { ApiResponse, ApiError } from './api';
+import type { APIResponse, ApiError } from './api';
 import type { ValidationRule } from './forms';
 
 // Common type guards
@@ -140,7 +140,7 @@ export type ActivatableEntity = Entity & Activatable;
 export type DeletableEntity = Entity & Deletable;
 
 // API response utilities
-export function createSuccessResponse<T>(data: T, message = 'Success'): ApiResponse<T> {
+export function createSuccessResponse<T>(data: T, message = 'Success'): APIResponse<T> {
   return {
     data,
     status: 200,

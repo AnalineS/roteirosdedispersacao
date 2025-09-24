@@ -23,7 +23,7 @@ import { useIntelligentRouting } from '@/hooks/useIntelligentRouting';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { theme } from '@/config/theme';
 import { SidebarLoader } from '@/components/LoadingSpinner';
-import { type ChatMessage } from '@/services/api';
+import { type ChatMessage } from '@/types/api';
 import { isValidPersonaId, type ValidPersonaId } from '@/types/personas';
 
 export default function ChatPage() {
@@ -214,9 +214,10 @@ export default function ChatPage() {
   // Função wrapper para enviar mensagens e adicionar ao histórico
   const sendMessageWithHistory = useCallback(async (messageText: string, personaId: string) => {
     const userMessage = {
+      id: `user-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       role: 'user' as const,
       content: messageText,
-      timestamp: Date.now(),
+      timestamp: new Date().toISOString(),
       persona: personaId
     };
     
@@ -458,7 +459,7 @@ export default function ChatPage() {
           isLoading={chatLoading}
           isMobile={isMobile}
           currentSentiment={currentSentiment}
-          knowledgeStats={knowledgeStats}
+          knowledgeStats={knowledgeStats || undefined}
           isSearchingKnowledge={isSearchingKnowledge}
           fallbackState={fallbackState}
           onHistoryToggle={() => setShowHistory(!showHistory)}

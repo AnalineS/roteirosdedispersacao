@@ -5,7 +5,7 @@
 
 import { apiClient } from '@/services/api';
 import type { ChatMessage } from '@/types/api';
-import type { ChatSession } from '@/services/api';
+import type { ChatSession } from '@/types/api';
 
 interface CachedConversation {
   id: string;
@@ -111,7 +111,7 @@ class ConversationCacheService {
       this.syncInProgress = true;
 
       // Obter conversas do backend
-      const backendSessions = await apiClient.getSessions();
+      const backendSessions = await apiClient.get<any[]>('/api/sessions');
 
       // Converter para formato de cache
       const backendConversations: { [key: string]: CachedConversation } = {};
@@ -189,9 +189,9 @@ class ConversationCacheService {
   async archiveConversation(id: string): Promise<boolean> {
     try {
       // Arquivar no backend
-      const success = await apiClient.archiveSession(id);
+      const success = await apiClient.post<{success: boolean}>(`/api/sessions/${id}/archive`, {});
 
-      if (success) {
+      if (success.success) {
         // Atualizar cache local
         const conversation = await this.getConversationById(id);
         if (conversation) {
@@ -200,7 +200,7 @@ class ConversationCacheService {
         }
       }
 
-      return success;
+      return success.success;
     } catch (error) {
       // Medical system error - explicit stderr + tracking
       const errorMessage = error instanceof Error ? error.message : String(error);

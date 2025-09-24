@@ -70,8 +70,8 @@ export default function AnalyticsDashboard() {
             startDate: dateRange.start.toISOString(),
             endDate: dateRange.end.toISOString(),
           }),
-          Analytics.local.getMetrics(),
-          Analytics.local.getSessions(),
+          Analytics.firestore.getAggregated('daily', dateRange.start.getTime(), dateRange.end.getTime()),
+          Analytics.firestore.getRealtime(),
         ],
       );
 

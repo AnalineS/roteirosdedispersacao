@@ -9,8 +9,8 @@ from typing import List, Dict, Optional, Tuple, Any
 from datetime import datetime
 import os
 
-from services.semantic_search import get_semantic_search, SearchResult
-from services.medical_chunking import MedicalChunk, MedicalChunker
+from services.rag.semantic_search import get_semantic_search, SearchResult
+from services.rag.medical_chunking import MedicalChunk, MedicalChunker
 
 # Import RAG existente como fallback
 try:

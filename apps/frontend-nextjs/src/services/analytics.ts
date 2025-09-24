@@ -130,7 +130,7 @@ export const logCustomMetrics = (metrics: Partial<CustomMetrics>) => {
     AnalyticsFirestoreCache.saveAnalyticsEvent({
       id: `metrics_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       sessionId,
-      timestamp: Date.now(),
+      timestamp: new Date().toISOString(),
       event: 'custom_metrics',
       category: 'performance',
       customDimensions: metrics
@@ -278,7 +278,12 @@ const getCurrentSessionId = (): string => {
     // Iniciar sessão no Firestore
     AnalyticsFirestoreCache.startAnalyticsSession({
       id: currentSessionId,
-      deviceType: getDeviceType(),
+      startTime: new Date().toISOString(),
+      status: 'active' as const,
+      events: [],
+      metadata: {
+        deviceType: getDeviceType()
+      }
     }).catch(error => {
       console.warn('Failed to start Firestore analytics session:', error);
     });

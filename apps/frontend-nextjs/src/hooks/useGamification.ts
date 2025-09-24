@@ -1,7 +1,7 @@
 /**
  * useGamification - Hook para sistema completo de gamificação
  * Integra tracking educacional, achievements e progresso
- * Sincronização automática dependente de autenticação Firebase
+ * Sincronização automática dependente de autenticação backend
  */
 
 'use client';
@@ -21,7 +21,7 @@ import { UserLevel } from '@/types/disclosure';
 import { achievementSystem } from '@/lib/gamification/achievementSystem';
 import { hanseniaseQuizzes } from '@/data/quiz/hanseniaseQuestions';
 import { gamificationAPI } from '@/services/gamificationAPI';
-import { firebaseLeaderboard } from '@/services/firebaseLeaderboard';
+import { backendLeaderboard } from '@/services/backendLeaderboard';
 import { useNotifications } from '@/components/gamification/NotificationSystem';
 
 interface GamificationHook {
@@ -74,8 +74,8 @@ export function useGamification(): GamificationHook {
   const [lastSync, setLastSync] = useState<number>(0);
 
   // Flags de configuração baseados em autenticação
-  const useFirebaseSync = auth.isAuthenticated;
-  const useLocalStorage = !useFirebaseSync;
+  const usebackendSync = auth.isAuthenticated;
+  const useLocalStorage = !usebackendSync;
 
   // ============================================================================
   // INITIALIZATION
@@ -132,8 +132,8 @@ export function useGamification(): GamificationHook {
       setIsLoading(true);
       setSyncStatus('syncing');
 
-      if (useFirebaseSync && auth.user) {
-        await loadFromFirebase();
+      if (usebackendSync && auth.user) {
+        await loadFrombackend();
       } else if (useLocalStorage) {
         loadFromLocalStorage();
       }
@@ -145,8 +145,8 @@ export function useGamification(): GamificationHook {
       console.error('Erro ao inicializar gamificação:', error);
       setSyncStatus('error');
       
-      // Fallback para localStorage se Firebase falhar
-      if (useFirebaseSync) {
+      // Fallback para localStorage se backend falhar
+      if (usebackendSync) {
         loadFromLocalStorage();
       }
     } finally {
@@ -186,7 +186,7 @@ export function useGamification(): GamificationHook {
     }
   }, [initializeDefaultProgress]);
 
-  const loadFromFirebase = async () => {
+  const loadFrombackend = async () => {
     if (!auth.user) return;
 
     try {
@@ -217,7 +217,7 @@ export function useGamification(): GamificationHook {
       loadFromLocalStorage();
       
     } catch (error) {
-      console.error('Erro ao carregar do Firebase:', error);
+      console.error('Erro ao carregar do backend:', error);
       setSyncStatus('error');
       loadFromLocalStorage();
     }
@@ -225,13 +225,13 @@ export function useGamification(): GamificationHook {
 
   const loadLeaderboard = async () => {
     try {
-      // Prioridade 1: Firebase Leaderboard (real-time)
-      if (useFirebaseSync && auth.user) {
-        const firebaseResult = await firebaseLeaderboard.getLeaderboard('all_time', 10);
+      // Prioridade 1: backend Leaderboard (real-time)
+      if (usebackendSync && auth.user) {
+        const backendResult = await backendLeaderboard.getLeaderboard('all_time', 10);
         
-        if (firebaseResult.success && firebaseResult.data) {
-          // Converter dados do Firebase para formato do componente
-          const convertedData: LeaderboardEntry[] = firebaseResult.data.map((entry, index) => ({
+        if (backendResult.success && backendResult.data) {
+          // Converter dados do backend para formato do componente
+          const convertedData: LeaderboardEntry[] = backendResult.data.map((entry, index) => ({
             userId: entry.userId,
             displayName: entry.displayName,
             totalXP: entry.totalXP,
@@ -259,42 +259,9 @@ export function useGamification(): GamificationHook {
         }
       }
       
-      // Fallback para dados mock se nada estiver disponível
-      console.warn('Usando dados mock do leaderboard');
-      const mockLeaderboard: LeaderboardEntry[] = [
-        {
-          userId: 'user1',
-          displayName: 'Dr. Silva',
-          totalXP: 2500,
-          level: 8,
-          achievementCount: 15,
-          currentStreak: 12,
-          rank: 1,
-          badgeHighlight: achievementSystem.getAllAchievements()[0]
-        },
-        {
-          userId: 'user2', 
-          displayName: 'Enfermeira Ana',
-          totalXP: 2200,
-          level: 7,
-          achievementCount: 12,
-          currentStreak: 8,
-          rank: 2,
-          badgeHighlight: achievementSystem.getAllAchievements()[1]
-        },
-        {
-          userId: 'user3',
-          displayName: 'Estudante João',
-          totalXP: 1800,
-          level: 6,
-          achievementCount: 10,
-          currentStreak: 5,
-          rank: 3,
-          badgeHighlight: achievementSystem.getAllAchievements()[2]
-        }
-      ];
-
-      setLeaderboard(mockLeaderboard);
+      // Se nenhuma fonte de dados real estiver disponível, usar leaderboard vazio
+      console.warn('Nenhuma fonte de dados real disponível - leaderboard vazio');
+      setLeaderboard([]);
     } catch (error) {
       console.error('Erro ao carregar leaderboard:', error);
     }
@@ -386,25 +353,25 @@ export function useGamification(): GamificationHook {
       // Sempre salvar no localStorage primeiro (backup)
       saveToLocalStorageOnly(newProgress, newNotifications);
 
-      // Sincronizar com Firebase Leaderboard se autenticado
-      if (useFirebaseSync && auth.user) {
+      // Sincronizar com backend Leaderboard se autenticado
+      if (usebackendSync && auth.user) {
         const displayName = auth.user.displayName || auth.user.email || 'Usuário Anônimo';
         
-        const syncResult = await firebaseLeaderboard.syncUserProgress(
+        const syncResult = await backendLeaderboard.syncUserProgress(
           auth.user.uid,
           newProgress,
           displayName
         );
         
         if (syncResult.success) {
-          console.log('Leaderboard sincronizado com Firebase');
+          console.log('Leaderboard sincronizado com backend');
         } else {
           console.warn('Erro ao sincronizar leaderboard:', syncResult.error);
         }
       }
 
       // Tentar salvar no backend se online
-      if (useFirebaseSync && auth.user) {
+      if (usebackendSync && auth.user) {
         const isBackendOnline = await gamificationAPI.healthCheck();
         
         if (isBackendOnline) {
@@ -471,10 +438,10 @@ export function useGamification(): GamificationHook {
       }
       
       // Atualizar leaderboard em tempo real se há conquistas
-      if (newAchievements.length > 0 && useFirebaseSync && auth.user) {
+      if (newAchievements.length > 0 && usebackendSync && auth.user) {
         const displayName = auth.user.displayName || auth.user.email || 'Usuário Anônimo';
         
-        await firebaseLeaderboard.updateUserEntry(auth.user.uid, {
+        await backendLeaderboard.updateUserEntry(auth.user.uid, {
           userId: auth.user.uid,
           displayName,
           totalXP: finalProgress.experiencePoints.total,
@@ -547,10 +514,10 @@ export function useGamification(): GamificationHook {
       setNotifications(prev => [...prev, ...newNotifications]);
       
       // Atualizar leaderboard em tempo real para quiz bem-sucedido
-      if (attempt.isPassed && useFirebaseSync && auth.user) {
+      if (attempt.isPassed && usebackendSync && auth.user) {
         const displayName = auth.user.displayName || auth.user.email || 'Usuário Anônimo';
         
-        await firebaseLeaderboard.updateUserEntry(auth.user.uid, {
+        await backendLeaderboard.updateUserEntry(auth.user.uid, {
           userId: auth.user.uid,
           displayName,
           totalXP: finalProgress.experiencePoints.total,
@@ -762,8 +729,8 @@ export function useGamification(): GamificationHook {
   // ============================================================================
 
   const forceSync = async () => {
-    if (useFirebaseSync && auth.user) {
-      await loadFromFirebase();
+    if (usebackendSync && auth.user) {
+      await loadFrombackend();
     }
     await loadLeaderboard();
   };
@@ -773,21 +740,21 @@ export function useGamification(): GamificationHook {
       localStorage.removeItem(STORAGE_KEY);
     }
     
-    // Firebase reset would go here
+    // backend reset would go here
     
     initializeDefaultProgress();
     setNotifications([]);
   };
 
   const subscribeToRealTimeLeaderboard = (): (() => void) | null => {
-    if (!useFirebaseSync || !auth.user) {
+    if (!usebackendSync || !auth.user) {
       return null;
     }
 
     try {
-      const unsubscribe = firebaseLeaderboard.subscribeToLeaderboard(
+      const unsubscribe = backendLeaderboard.subscribeToLeaderboard(
         (entries) => {
-          // Converter dados do Firebase para formato do componente
+          // Converter dados do backend para formato do componente
           const convertedData: LeaderboardEntry[] = entries.map((entry, index) => ({
             userId: entry.userId,
             displayName: entry.displayName,

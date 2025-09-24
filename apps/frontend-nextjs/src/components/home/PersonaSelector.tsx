@@ -4,7 +4,7 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import { usePersonas } from '@/hooks/usePersonas';
 import { useUserProfile } from '@/hooks/useUserProfile';
-import type { UserProfile } from '@/hooks/useUserProfile';
+import type { UserProfile } from '@/types/auth';
 import { getPersonaAvatar } from '@/constants/avatars';
 import { ChatBotIcon } from '@/components/icons/NavigationIcons';
 

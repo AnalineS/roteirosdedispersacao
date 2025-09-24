@@ -475,8 +475,13 @@ export class MedicalAnalytics {
       // Iniciar sessão médica no Firestore
       AnalyticsFirestoreCache.startAnalyticsSession({
         id: this.currentSessionId,
-        deviceType: this.getDeviceType(),
-        userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'server'
+        startTime: new Date().toISOString(),
+        status: 'active' as const,
+        events: [],
+        metadata: {
+          deviceType: this.getDeviceType(),
+          userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'server'
+        }
       }).catch(error => {
         console.warn('Failed to start medical analytics session:', error);
       });

@@ -24,151 +24,61 @@ export default function CertificacaoPage() {
   const [showCertificate, setShowCertificate] = useState(false);
 
   useEffect(() => {
-    // Simular carregamento de dados do usuário
     const loadCertificationData = async () => {
       setIsLoading(true);
 
-      // Simular delay de API
-      await new Promise(resolve => setTimeout(resolve, 1500));
-
-      // Dados mockados para demonstração
-      const mockProgress: CertificationProgress = {
-        userId: 'user-demo-001',
-        userName: 'Usuário Demonstração',
-        email: 'usuario@exemplo.com',
-        startDate: new Date('2024-01-15'),
-        lastActivity: new Date(),
-        casesCompleted: [
-          {
-            caseId: 'caso-pediatrico-001',
-            caseTitle: 'Dispensação PQT-U Pediátrica',
-            category: 'pediatrico',
-            difficulty: 'intermediario',
-            score: 85,
-            maxScore: 100,
-            percentage: 85,
-            timeSpent: 45,
-            completionDate: new Date('2024-01-20'),
-            attemptNumber: 1,
-            stepResults: [
-              { stepId: 'step1', stepTitle: 'Identificação do caso', score: 10, maxScore: 10, correct: true },
-              { stepId: 'step2', stepTitle: 'Cálculo da dose', score: 8, maxScore: 10, correct: true }
-            ],
-            competencyScores: [
-              { competency: 'Dosagem pediátrica', score: 85, maxScore: 100 }
-            ]
+      // Conectar com backend real de gamificação/certificação
+      try {
+        const response = await fetch('/api/v1/gamification/certification-progress', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
           },
-          {
-            caseId: 'caso-adulto-001',
-            caseTitle: 'Caso Clínico Adulto Padrão',
-            category: 'adulto',
-            difficulty: 'intermediario',
-            score: 92,
-            maxScore: 100,
-            percentage: 92,
-            timeSpent: 38,
-            completionDate: new Date('2024-01-25'),
-            attemptNumber: 1,
-            stepResults: [
-              { stepId: 'step1', stepTitle: 'Avaliação inicial', score: 10, maxScore: 10, correct: true },
-              { stepId: 'step2', stepTitle: 'Orientação farmacêutica', score: 9, maxScore: 10, correct: true }
-            ],
-            competencyScores: [
-              { competency: 'Orientação farmacêutica', score: 92, maxScore: 100 }
-            ]
-          },
-          {
-            caseId: 'caso-gravidez-001',
-            caseTitle: 'Hanseníase na Gestação',
-            category: 'gravidez',
-            difficulty: 'avancado',
-            score: 88,
-            maxScore: 100,
-            percentage: 88,
-            timeSpent: 52,
-            completionDate: new Date('2024-02-01'),
-            attemptNumber: 2,
-            stepResults: [
-              { stepId: 'step1', stepTitle: 'Avaliação de risco', score: 8, maxScore: 10, correct: true },
-              { stepId: 'step2', stepTitle: 'Segurança gestacional', score: 9, maxScore: 10, correct: true }
-            ],
-            competencyScores: [
-              { competency: 'Segurança gestacional', score: 88, maxScore: 100 }
-            ]
-          },
-          {
-            caseId: 'caso-reacoes-001',
-            caseTitle: 'Manejo de Reações Adversas',
-            category: 'reacoes',
-            difficulty: 'avancado',
-            score: 90,
-            maxScore: 100,
-            percentage: 90,
-            timeSpent: 41,
-            completionDate: new Date('2024-02-05'),
-            attemptNumber: 1,
-            stepResults: [
-              { stepId: 'step1', stepTitle: 'Identificação de reações', score: 10, maxScore: 10, correct: true },
-              { stepId: 'step2', stepTitle: 'Manejo clínico', score: 8, maxScore: 10, correct: true }
-            ],
-            competencyScores: [
-              { competency: 'Manejo de reações adversas', score: 90, maxScore: 100 }
-            ]
-          }
-        ],
-        totalScore: 355,
-        averageScore: 88.75,
-        totalTimeSpent: 176, // minutos
-        certificationStatus: 'eligible',
-        strengthAreas: [
-          'Protocolos de dispensação',
-          'Orientação farmacêutica',
-          'Identificação de reações adversas'
-        ],
-        improvementAreas: [
-          'Casos complexos',
-          'Interações medicamentosas'
-        ],
-        recommendedCases: [
-          'Caso de polifarmácia complexa'
-        ]
-      };
+        });
 
-      setProgress(mockProgress);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
 
-      // Se elegível para certificação, gerar certificado
-      if (mockProgress.certificationStatus === 'eligible') {
-        const mockCertificate: Certificate = {
-          id: `cert-${Date.now()}`,
-          userId: mockProgress.userId,
-          recipientName: mockProgress.userName,
-          recipientEmail: mockProgress.email,
-          issueDate: new Date(),
-          programTitle: DEFAULT_CERTIFICATION_CONFIG.programInfo.title,
-          programDescription: DEFAULT_CERTIFICATION_CONFIG.programInfo.description,
-          totalHours: DEFAULT_CERTIFICATION_CONFIG.criteria.totalHours,
-          supervisorName: DEFAULT_CERTIFICATION_CONFIG.supervision.supervisorName,
-          institution: DEFAULT_CERTIFICATION_CONFIG.institution.name,
-          researchTitle: 'Tese de Doutorado em Ciências Farmacêuticas - Roteiros de Dispensação',
-          overallScore: Math.round(mockProgress.averageScore),
-          casesCompleted: mockProgress.casesCompleted.length,
-          totalCases: 5,
-          competenciesAchieved: [
-            'Dispensação farmacêutica especializada em hanseníase',
-            'Orientação sobre esquema PQT-U',
-            'Identificação e manejo de reações adversas',
-            'Protocolos de seguimento farmacoterapêutico',
-            'Comunicação farmacêutico-paciente'
-          ],
-          verificationCode: `VERIFY-${Date.now().toString(36).toUpperCase()}`,
-          qrCodeData: `https://roteirosdedispensacao.com/verify/cert-${Date.now()}`,
-          template: {
-            type: 'completion',
-            layout: 'academic',
-            backgroundColor: '#ffffff',
-            accentColor: unbColors.primary,
-            headerText: 'CERTIFICADO DE CONCLUSÃO',
-            bodyTemplate: `concluiu com êxito o programa "{programTitle}", com carga horária de {totalHours} horas, obtendo aproveitamento de {overallScore}% na avaliação final.
+        const data = await response.json();
+
+        if (data.success && data.data) {
+          const realProgress: CertificationProgress = data.data;
+          setProgress(realProgress);
+
+          // Se elegível para certificação, gerar certificado
+          if (realProgress.certificationStatus === 'eligible') {
+            const realCertificate: Certificate = {
+              id: `cert-${Date.now()}`,
+              userId: realProgress.userId,
+              recipientName: realProgress.userName,
+              recipientEmail: realProgress.email,
+              issueDate: new Date(),
+              programTitle: DEFAULT_CERTIFICATION_CONFIG.programInfo.title,
+              programDescription: DEFAULT_CERTIFICATION_CONFIG.programInfo.description,
+              totalHours: DEFAULT_CERTIFICATION_CONFIG.criteria.totalHours,
+              supervisorName: DEFAULT_CERTIFICATION_CONFIG.supervision.supervisorName,
+              institution: DEFAULT_CERTIFICATION_CONFIG.institution.name,
+              researchTitle: 'Tese de Doutorado em Ciências Farmacêuticas - Roteiros de Dispensação',
+              overallScore: Math.round(realProgress.averageScore),
+              casesCompleted: realProgress.casesCompleted.length,
+              totalCases: 5,
+              competenciesAchieved: [
+                'Dispensação farmacêutica especializada em hanseníase',
+                'Orientação sobre esquema PQT-U',
+                'Identificação e manejo de reações adversas',
+                'Protocolos de seguimento farmacoterapêutico',
+                'Comunicação farmacêutico-paciente'
+              ],
+              verificationCode: `VERIFY-${Date.now().toString(36).toUpperCase()}`,
+              qrCodeData: `https://roteirosdedispensacao.com/verify/cert-${Date.now()}`,
+              template: {
+                type: 'completion',
+                layout: 'academic',
+                backgroundColor: '#ffffff',
+                accentColor: unbColors.primary,
+                headerText: 'CERTIFICADO DE CONCLUSÃO',
+                bodyTemplate: `concluiu com êxito o programa "{programTitle}", com carga horária de {totalHours} horas, obtendo aproveitamento de {overallScore}% na avaliação final.
 
 O programa foi desenvolvido com base na tese de doutorado "{researchTitle}", sob supervisão de {supervisorName}, no {institutionName}.
 
@@ -180,28 +90,55 @@ Durante o programa, o participante demonstrou competência em:
 • Seguimento farmacoterapêutico especializado
 
 Conclusão realizada em {issueDate}, com {casesCompleted} casos clínicos resolvidos de um total de {totalCases} disponíveis.`,
-            footerText: 'Este certificado atesta a conclusão do programa educacional baseado em evidências científicas e protocolos do Ministério da Saúde.',
-            includeGrade: true,
-            includeHours: true,
-            includeCompetencies: true,
-            includeVerification: true
-          },
-          customization: {
-            includePhoto: false,
-            includeSupervisorSignature: true,
-            includeInstitutionSeal: true,
-            includeQRCode: true,
-            language: 'pt-BR',
-            format: 'A4',
-            orientation: 'portrait',
-            formats: ['pdf', 'png'],
-            resolution: 'high'
-          }
-        };
+                footerText: 'Este certificado atesta a conclusão do programa educacional baseado em evidências científicas e protocolos do Ministério da Saúde.',
+                includeGrade: true,
+                includeHours: true,
+                includeCompetencies: true,
+                includeVerification: true
+              },
+              customization: {
+                includePhoto: false,
+                includeSupervisorSignature: true,
+                includeInstitutionSeal: true,
+                includeQRCode: true,
+                language: 'pt-BR',
+                format: 'A4',
+                orientation: 'portrait',
+                formats: ['pdf', 'png'],
+                resolution: 'high'
+              }
+            };
 
-        setCertificate(mockCertificate);
+            setCertificate(realCertificate);
+          }
+
+          setIsLoading(false);
+          return;
+        } else {
+          throw new Error(data.error || 'Failed to fetch certification progress');
+        }
+      } catch (error) {
+        console.error('Erro ao buscar progresso de certificação:', error);
+        // Backend indisponível - usar dados vazios ao invés de mock
       }
 
+      // Fallback para dados vazios se backend indisponível
+      const emptyProgress: CertificationProgress = {
+        userId: 'unknown',
+        userName: 'Usuário',
+        email: '',
+        startDate: new Date(),
+        lastActivity: new Date(),
+        casesCompleted: [],
+        averageScore: 0,
+        totalTimeSpent: 0,
+        certificationStatus: 'not_started',
+        strengthAreas: [],
+        improvementAreas: [],
+        recommendedCases: []
+      };
+
+      setProgress(emptyProgress);
       setIsLoading(false);
     };
 

@@ -3,12 +3,7 @@
 import Script from 'next/script';
 import { useEffect } from 'react';
 
-declare global {
-  interface Window {
-    gtag?: (...args: unknown[]) => void;
-    dataLayer?: unknown[];
-  }
-}
+// Window types are now centralized in types/analytics.ts
 
 interface GoogleAnalyticsProps {
   GA_MEASUREMENT_ID?: string;
@@ -33,7 +28,8 @@ export default function GoogleAnalytics({
 
     // Configuração inicial quando o script carregar
     if (typeof window !== 'undefined' && GA_MEASUREMENT_ID && window.gtag) {
-      window.gtag('js', new Date());
+      // Inicializar dataLayer com timestamp
+      window.dataLayer?.push(['js', new Date()]);
       window.gtag('config', GA_MEASUREMENT_ID, {
         page_title: document.title,
         page_location: window.location.href,
@@ -132,7 +128,7 @@ export function useGoogleAnalytics() {
 
   const trackPageView = (page_title: string, page_location?: string) => {
     if (typeof window !== 'undefined' && window.gtag) {
-      window.gtag('config', process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID, {
+      window.gtag('config', process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || '', {
         page_title,
         page_location: page_location || window.location.href,
       });

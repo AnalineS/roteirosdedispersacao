@@ -2,8 +2,17 @@
 
 import React, { useState } from 'react';
 import { useSafeAuth } from '@/hooks/useSafeAuth';
-import { AVAILABLE_PROVIDERS } from '@/lib/firebase/config';
-import type { SocialAuthCredentials } from '@/lib/firebase/types';
+import type { SocialCredentials } from '@/hooks/useIsomorphicAuth';
+
+// Available social auth providers (backend will handle authentication)
+const AVAILABLE_PROVIDERS = [
+  {
+    id: 'google.com',
+    name: 'Google',
+    enabled: false, // Disabled for now - will be handled by backend
+    color: '#4285F4'
+  }
+];
 
 interface SocialAuthButtonsProps {
   mode?: 'login' | 'register' | 'link';
@@ -33,11 +42,19 @@ export default function SocialAuthButtons({
 
       let result;
       if (mode === 'link') {
-        result = await linkSocialAccount(providerId);
+        const linkCredentials: SocialCredentials = {
+          provider: providerId as 'google',
+          token: '',
+          email: undefined,
+          name: undefined
+        };
+        result = await linkSocialAccount(linkCredentials);
       } else {
-        const credentials: SocialAuthCredentials = {
-          providerId: providerId as any,
-          preferredProfileType
+        const credentials: SocialCredentials = {
+          provider: providerId as 'google',
+          token: '',
+          email: undefined,
+          name: undefined
         };
         result = await loginWithSocial(credentials);
       }

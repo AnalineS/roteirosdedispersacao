@@ -68,7 +68,8 @@ export const useErrorHandler = (options?: UseErrorHandlerOptions) => {
   return {
     handleError,
     handleAsyncError,
-    logError: (message: string, severity?: 'low' | 'medium' | 'high' | 'critical') => 
+    captureError: handleError, // Alias for handleError
+    logError: (message: string, severity?: 'low' | 'medium' | 'high' | 'critical') =>
       handleError(message, severity),
     logWarning: (message: string) => handleError(message, 'low'),
     logCritical: (message: string) => handleError(message, 'critical')

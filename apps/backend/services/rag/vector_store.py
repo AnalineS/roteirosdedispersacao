@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 # Import da nova SupabaseVectorStore - FASE 3 RAG
 SUPABASE_VECTOR_AVAILABLE = False
 try:
-    from services.supabase_vector_store import SupabaseVectorStore, SUPABASE_AVAILABLE
+    from services.integrations.supabase_vector_store import SupabaseVectorStore, SUPABASE_AVAILABLE
     SUPABASE_VECTOR_AVAILABLE = True
     logger.info("[OK] SupabaseVectorStore disponível - FASE 3 RAG")
 except ImportError as e:

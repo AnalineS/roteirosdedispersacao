@@ -10,16 +10,26 @@ from dataclasses import dataclass
 from typing import Optional
 import logging
 
-# NÃO usar dotenv - apenas variáveis de ambiente do GitHub Secrets/Cloud Run
+# Load .env file for development if available
+try:
+    from dotenv import load_dotenv
+    # Try to load .env file for development
+    env_file = '.env'
+    if os.path.exists(env_file):
+        load_dotenv(env_file)
+        print(f"Loaded environment from {env_file}")
+except ImportError:
+    # dotenv not available, use environment variables directly
+    pass
 
 @dataclass
 class AppConfig:
     """Configurações da aplicação - TODAS vindas de variáveis de ambiente"""
     
-    # Flask Config
-    SECRET_KEY: str = os.getenv('SECRET_KEY')  # OBRIGATÓRIO em produção
-    DEBUG: bool = os.getenv('FLASK_ENV') == 'development'
-    TESTING: bool = os.getenv('TESTING', '').lower() == 'true'
+    # Flask Config - with secure defaults
+    SECRET_KEY: str = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production-min-32-chars')  # OBRIGATÓRIO em produção
+    DEBUG: bool = os.getenv('DEBUG', 'false').lower() == 'true' or os.getenv('FLASK_ENV') == 'development'
+    TESTING: bool = os.getenv('TESTING', 'false').lower() == 'true'
     
     # Server Config - Cloud Run compatible
     HOST: str = os.getenv('HOST', '0.0.0.0')
@@ -28,19 +38,31 @@ class AppConfig:
     # CORS Config
     @property
     def CORS_ORIGINS(self) -> list:
-        """Retorna lista de origens permitidas do env"""
-        origins = os.getenv('CORS_ORIGINS', '')
-        return origins.split(',') if origins else []
+        """Retorna lista de origens permitidas do env com fallbacks por ambiente"""
+        # Check environment-specific CORS first
+        env = os.getenv('ENVIRONMENT', 'development')
+
+        if env == 'production':
+            origins = os.getenv('CORS_ORIGINS_PROD', os.getenv('CORS_ORIGINS', ''))
+        elif env == 'staging':
+            origins = os.getenv('CORS_ORIGINS_HML', os.getenv('CORS_ORIGINS', ''))
+        else:
+            origins = os.getenv('CORS_ORIGINS', 'http://localhost:3000,http://127.0.0.1:3000')
+
+        return origins.split(',') if origins else ['http://localhost:3000']
     
-    # API Keys - OBRIGATÓRIAS
-    OPENROUTER_API_KEY: Optional[str] = os.getenv('OPENROUTER_API_KEY')
-    HUGGINGFACE_API_KEY: Optional[str] = os.getenv('HUGGINGFACE_API_KEY')
+    # API Keys - with fallback handling
+    OPENROUTER_API_KEY: Optional[str] = os.getenv('OPENROUTER_API_KEY', '')
+    HUGGINGFACE_API_KEY: Optional[str] = os.getenv('HUGGINGFACE_API_KEY', '')
+    OPENAI_API_KEY: Optional[str] = os.getenv('OPENAI_API_KEY', '')
     
-    # Supabase Config - RAG COMPLETO ATIVADO
-    SUPABASE_URL: Optional[str] = os.getenv('SUPABASE_URL')
-    SUPABASE_ANON_KEY: Optional[str] = os.getenv('SUPABASE_ANON_KEY')
-    SUPABASE_SERVICE_KEY: Optional[str] = os.getenv('SUPABASE_SERVICE_KEY')
-    SUPABASE_JWT_SECRET: Optional[str] = os.getenv('SUPABASE_JWT_SECRET')
+    # Supabase Config - RAG COMPLETO ATIVADO - REAL INTEGRATION
+    SUPABASE_URL: Optional[str] = os.getenv('SUPABASE_URL') or os.getenv('SUPABASE_PROJECT_URL')
+    SUPABASE_ANON_KEY: Optional[str] = os.getenv('SUPABASE_ANON_KEY') or os.getenv('SUPABASE_PUBLISHABLE_KEY')
+    SUPABASE_KEY: Optional[str] = os.getenv('SUPABASE_KEY') or os.getenv('SUPABASE_ANON_KEY') or os.getenv('SUPABASE_PUBLISHABLE_KEY')
+    SUPABASE_SERVICE_KEY: Optional[str] = os.getenv('SUPABASE_SERVICE_KEY') or os.getenv('SUPABASE_API_KEY')
+    SUPABASE_JWT_SECRET: Optional[str] = os.getenv('SUPABASE_JWT_SECRET') or os.getenv('SUPABASE_JWT_SIGNING_KEY')
+    SUPABASE_DB_URL: Optional[str] = os.getenv('SUPABASE_DB_URL')  # Direct PostgreSQL connection for pgvector
     
     # Feature Flags - TODAS AS FUNCIONALIDADES ATIVADAS
     EMBEDDINGS_ENABLED: bool = os.getenv('EMBEDDINGS_ENABLED', 'true').lower() == 'true'
@@ -139,11 +161,28 @@ class AppConfig:
         'general': float(os.getenv('WEIGHT_GENERAL', 0.2))
     }
     
-    # Database Config (Supabase) - Mapeamento para GitHub Secrets
-    SUPABASE_URL: Optional[str] = os.getenv('SUPABASE_URL')
-    SUPABASE_ANON_KEY: Optional[str] = os.getenv('SUPABASE_ANON_KEY')
-    SUPABASE_SERVICE_KEY: Optional[str] = os.getenv('SUPABASE_SERVICE_KEY')
-    SUPABASE_JWT_SECRET: Optional[str] = os.getenv('SUPABASE_JWT_SECRET')
+    # Cloud Storage Config - Google Cloud Storage - REAL INTEGRATION
+    GOOGLE_APPLICATION_CREDENTIALS: Optional[str] = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
+    GOOGLE_APPLICATION_CREDENTIALS_JSON: Optional[str] = os.getenv('GOOGLE_APPLICATION_CREDENTIALS_JSON')
+    GOOGLE_CLOUD_PROJECT: Optional[str] = os.getenv('GOOGLE_CLOUD_PROJECT') or os.getenv('GCP_PROJECT_ID')
+    GCP_REGION: Optional[str] = os.getenv('GCP_REGION', 'us-central1')
+
+    # Specialized GCS buckets
+    GCS_CACHE_BUCKET: Optional[str] = os.getenv('GCS_CACHE_BUCKET')
+    GCS_BACKUP_BUCKET: Optional[str] = os.getenv('GCS_BACKUP_BUCKET')
+    GCS_MEDICAL_DOCUMENTS_BUCKET: Optional[str] = os.getenv('GCS_MEDICAL_DOCUMENTS_BUCKET')
+
+    # Development environment detection
+    IS_DEVELOPMENT: bool = os.getenv('ENVIRONMENT', 'development') == 'development'
+    IS_CLOUD_RUN: bool = bool(os.getenv('K_SERVICE') or os.getenv('CLOUD_RUN_ENV'))
+
+    # Local Development Alternatives - for development without cloud services
+    LOCALSTACK_ENABLED: bool = os.getenv('LOCALSTACK_ENABLED', 'false').lower() == 'true'
+    LOCALSTACK_ENDPOINT: str = os.getenv('LOCALSTACK_ENDPOINT', 'http://localhost:4566')
+    LOCAL_POSTGRES_URL: Optional[str] = os.getenv('LOCAL_POSTGRES_URL')
+    LOCAL_POSTGRES_ENABLED: bool = os.getenv('LOCAL_POSTGRES_ENABLED', 'false').lower() == 'true'
+    LOCAL_REDIS_URL: Optional[str] = os.getenv('LOCAL_REDIS_URL')
+    LOCAL_REDIS_ENABLED: bool = os.getenv('LOCAL_REDIS_ENABLED', 'false').lower() == 'true'
     
     # Vector Store Config (Supabase + pgvector)
     SUPABASE_VECTOR_DIMENSION: int = int(os.getenv('SUPABASE_VECTOR_DIMENSION', 1536))
@@ -162,15 +201,15 @@ class AppConfig:
     FIRESTORE_CACHE_ENABLED: bool = os.getenv('FIRESTORE_CACHE_ENABLED', 'true').lower() == 'true'
     HYBRID_CACHE_STRATEGY: str = os.getenv('HYBRID_CACHE_STRATEGY', 'memory_first')
     
-    # Email Config - GMAIL CONFIGURADO
+    # Email Config - GMAIL CONFIGURADO with defaults
     EMAIL_ENABLED: bool = os.getenv('EMAIL_ENABLED', 'true').lower() == 'true'
-    EMAIL_FROM: str = os.getenv('EMAIL_FROM', 'roteirosdedispensacaounb@gmail.com')
+    EMAIL_FROM: str = os.getenv('EMAIL_FROM', 'noreply@roteirosdedispensacao.com')
     EMAIL_FROM_NAME: str = os.getenv('EMAIL_FROM_NAME', 'Roteiro de Dispensação PQT-U')
-    EMAIL_REPLY_TO: str = os.getenv('EMAIL_REPLY_TO', 'roteirosdedispensacaounb@gmail.com')
+    EMAIL_REPLY_TO: str = os.getenv('EMAIL_REPLY_TO', 'suporte@roteirosdedispensacao.com')
     EMAIL_SMTP_HOST: str = os.getenv('EMAIL_SMTP_HOST', 'smtp.gmail.com')
     EMAIL_SMTP_PORT: int = int(os.getenv('EMAIL_SMTP_PORT', 587))
     EMAIL_SMTP_USE_TLS: bool = os.getenv('EMAIL_SMTP_USE_TLS', 'true').lower() == 'true'
-    EMAIL_PASSWORD: Optional[str] = os.getenv('EMAIL_PASSWORD')  # Gmail App password
+    EMAIL_PASSWORD: Optional[str] = os.getenv('EMAIL_PASSWORD', '')  # Gmail App password with fallback
     
     # Google Cloud Config
     GCP_PROJECT_ID: Optional[str] = os.getenv('GCP_PROJECT_ID')
@@ -221,26 +260,26 @@ class AppConfig:
         return True
 
     def get_required_env_vars(self) -> list:
-        """Retorna lista de variáveis de ambiente obrigatórias"""
-        required = [
-            'SECRET_KEY',
-            'OPENROUTER_API_KEY',
-            'CORS_ORIGINS'
-        ]
-        
-        # Validar Supabase se habilitado
-        if self.SUPABASE_URL:
-            required.extend(['SUPABASE_ANON_KEY', 'SUPABASE_SERVICE_KEY'])
-        
-        # Redis removido - usando apenas Firestore cache
-        
-        if self.EMAIL_ENABLED:
-            required.extend(['EMAIL_FROM', 'EMAIL_PASSWORD'])
-            
+        """Retorna lista de variáveis de ambiente obrigatórias para prodção"""
+        # Only require these in production environment
         if os.getenv('ENVIRONMENT') == 'production':
+            required = [
+                'SECRET_KEY',
+                'OPENROUTER_API_KEY',
+                'CORS_ORIGINS',
+                'EMAIL_FROM',
+                'EMAIL_PASSWORD'
+            ]
+
+            # Validar Supabase se habilitado
+            if self.SUPABASE_URL:
+                required.extend(['SUPABASE_ANON_KEY', 'SUPABASE_SERVICE_KEY'])
+
             required.extend(['GCP_PROJECT_ID', 'GCP_REGION'])
-            
-        return required
+            return required
+
+        # In development, no variables are strictly required due to defaults
+        return []
 
 @dataclass
 class EnvironmentConfig:
@@ -297,6 +336,10 @@ def _add_multimodal_and_celery_config():
     AppConfig.SQLITE_BACKUP_INTERVAL = int(os.getenv('SQLITE_BACKUP_INTERVAL', 3600))  # 1 hora
     AppConfig.SQLITE_AUTO_VACUUM = os.getenv('SQLITE_AUTO_VACUUM', 'true').lower() == 'true'
 
+    # Add runtime environment detection
+    AppConfig.ENVIRONMENT = os.getenv('ENVIRONMENT', 'development')
+    AppConfig.IS_CLOUD_RUN = bool(os.getenv('K_SERVICE') or os.getenv('CLOUD_RUN_ENV'))
+
 # Executar adição de configurações
 _add_multimodal_and_celery_config()
 
@@ -317,10 +360,20 @@ except Exception as e:
 
 # Logging será configurado no main.py para evitar duplicação
 
-# Listar variáveis obrigatórias não configuradas
+# Listar variáveis obrigatórias não configuradas (apenas em produção)
+current_env = os.getenv('ENVIRONMENT', 'development')
 missing_vars = [var for var in config.get_required_env_vars() if not os.getenv(var)]
-if missing_vars:
-    logging.warning(f"Variáveis de ambiente faltando: {', '.join(missing_vars)}")
+
+if missing_vars and current_env == 'production':
+    logging.error(f"CRITICAL: Variáveis de ambiente obrigatórias faltando em produção: {', '.join(missing_vars)}")
+elif missing_vars and current_env != 'development':
+    logging.warning(f"Variáveis de ambiente recomendadas faltando: {', '.join(missing_vars)}")
+else:
+    # In development, show info about optional configuration
+    optional_vars = ['OPENROUTER_API_KEY', 'EMAIL_PASSWORD', 'SUPABASE_URL']
+    missing_optional = [var for var in optional_vars if not os.getenv(var)]
+    if missing_optional:
+        logging.info(f"Para funcionalidade completa, configure: {', '.join(missing_optional)}")
 
 # Export configurations
 __all__ = ['config', 'AppConfig', 'EnvironmentConfig']

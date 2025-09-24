@@ -1,0 +1,609 @@
+name: "📊 Performance Monitoring & Alerts"
+
+on:
+  schedule:
+    # Run every 4 hours during business days
+    - cron: '0 */4 * * 1-5'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to monitor'
+        required: true
+        default: 'both'
+        type: choice
+        options:
+          - 'staging'
+          - 'production'
+          - 'both'
+      load_test:
+        description: 'Run load testing'
+        type: boolean
+        default: false
+      deep_analysis:
+        description: 'Run deep performance analysis'
+        type: boolean
+        default: false
+
+env:
+  NODE_VERSION: '20'
+  PYTHON_VERSION: '3.11'
+
+permissions:
+  contents: read
+  actions: read
+  issues: write
+
+jobs:
+  # ============================================================================
+  # PERFORMANCE BASELINE MONITORING
+  # ============================================================================
+  performance-baseline:
+    name: "⚡ Performance Baseline Check"
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    outputs:
+      staging-performance: ${{ steps.perf-check.outputs.staging-performance }}
+      production-performance: ${{ steps.perf-check.outputs.production-performance }}
+      performance-score: ${{ steps.perf-check.outputs.performance-score }}
+      alerts-needed: ${{ steps.perf-check.outputs.alerts-needed }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "🔑 Google Cloud Auth"
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+
+      - name: "⚡ Setup Cloud SDK"
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+
+      - name: "📦 Install Performance Tools"
+        run: |
+          # Install performance testing tools
+          npm install -g lighthouse artillery autocannon
+          pip install requests matplotlib numpy
+
+      - name: "⚡ Performance Monitoring"
+        id: perf-check
+        run: |
+          echo "⚡ Starting performance monitoring..."
+
+          # Performance thresholds
+          RESPONSE_TIME_THRESHOLD=2000  # 2 seconds
+          LOAD_TIME_THRESHOLD=3000      # 3 seconds
+          MEMORY_THRESHOLD=500          # 500MB
+
+          STAGING_PERFORMANCE="unknown"
+          PRODUCTION_PERFORMANCE="unknown"
+          PERFORMANCE_ISSUES=()
+          TOTAL_SCORE=0
+          TESTS_COUNT=0
+
+          # Function to test endpoint performance
+          test_endpoint_performance() {
+              local url=$1
+              local service_name=$2
+              local environment=$3
+
+              echo "⚡ Testing $service_name ($environment): $url"
+
+              # Response time test (5 requests)
+              echo "📊 Measuring response times..."
+              local total_time=0
+              local successful_requests=0
+              local failed_requests=0
+
+              for i in {1..5}; do
+                  local start_time=$(date +%s%3N)
+                  if curl -f -s --max-time 10 "$url" > /dev/null; then
+                      local end_time=$(date +%s%3N)
+                      local duration=$((end_time - start_time))
+                      total_time=$((total_time + duration))
+                      successful_requests=$((successful_requests + 1))
+                      echo "  Request $i: ${duration}ms"
+                  else
+                      failed_requests=$((failed_requests + 1))
+                      echo "  Request $i: FAILED"
+                  fi
+                  sleep 1
+              done
+
+              # Calculate average response time
+              local avg_response_time=0
+              if [[ $successful_requests -gt 0 ]]; then
+                  avg_response_time=$((total_time / successful_requests))
+              fi
+
+              echo "📈 $service_name ($environment) Results:"
+              echo "  - Average Response Time: ${avg_response_time}ms"
+              echo "  - Success Rate: ${successful_requests}/5 ($(($successful_requests * 20))%)"
+
+              # Evaluate performance
+              local performance_score=100
+
+              # Response time scoring
+              if [[ $avg_response_time -gt $RESPONSE_TIME_THRESHOLD ]]; then
+                  performance_score=$((performance_score - 30))
+                  PERFORMANCE_ISSUES+=("$service_name ($environment): High response time ${avg_response_time}ms > ${RESPONSE_TIME_THRESHOLD}ms")
+              fi
+
+              # Success rate scoring
+              if [[ $successful_requests -lt 5 ]]; then
+                  performance_score=$((performance_score - 40))
+                  PERFORMANCE_ISSUES+=("$service_name ($environment): Low success rate ${successful_requests}/5")
+              fi
+
+              # Determine status
+              local status="excellent"
+              if [[ $performance_score -lt 60 ]]; then
+                  status="poor"
+              elif [[ $performance_score -lt 80 ]]; then
+                  status="degraded"
+              elif [[ $performance_score -lt 95 ]]; then
+                  status="good"
+              fi
+
+              echo "🎯 $service_name ($environment) Performance: $status (${performance_score}/100)"
+
+              # Update environment status
+              if [[ "$environment" == "staging" ]]; then
+                  STAGING_PERFORMANCE="$status"
+              elif [[ "$environment" == "production" ]]; then
+                  PRODUCTION_PERFORMANCE="$status"
+              fi
+
+              TOTAL_SCORE=$((TOTAL_SCORE + performance_score))
+              TESTS_COUNT=$((TESTS_COUNT + 1))
+
+              return $performance_score
+          }
+
+          # Test staging environment
+          if [[ "${{ github.event.inputs.environment }}" == "staging" || "${{ github.event.inputs.environment }}" == "both" || -z "${{ github.event.inputs.environment }}" ]]; then
+              echo "🧪 === STAGING PERFORMANCE MONITORING ==="
+
+              # Get staging URLs
+              STAGING_FRONTEND_URL=$(gcloud run services describe hml-roteiro-dispensacao-frontend --region=${{ vars.GCP_REGION }} --format='value(status.url)' 2>/dev/null || echo "")
+              STAGING_BACKEND_URL=$(gcloud run services describe hml-roteiro-dispensacao-backend --region=${{ vars.GCP_REGION }} --format='value(status.url)' 2>/dev/null || echo "")
+
+              if [[ -n "$STAGING_FRONTEND_URL" ]]; then
+                  test_endpoint_performance "$STAGING_FRONTEND_URL" "Frontend" "staging"
+              fi
+
+              if [[ -n "$STAGING_BACKEND_URL" ]]; then
+                  test_endpoint_performance "$STAGING_BACKEND_URL/api/v1/health" "Backend API" "staging"
+              fi
+          fi
+
+          # Test production environment
+          if [[ "${{ github.event.inputs.environment }}" == "production" || "${{ github.event.inputs.environment }}" == "both" || -z "${{ github.event.inputs.environment }}" ]]; then
+              echo "🚀 === PRODUCTION PERFORMANCE MONITORING ==="
+
+              # Get production URLs
+              PRODUCTION_FRONTEND_URL=$(gcloud run services describe roteiro-dispensacao-frontend --region=${{ vars.GCP_REGION }} --format='value(status.url)' 2>/dev/null || echo "")
+              PRODUCTION_BACKEND_URL=$(gcloud run services describe roteiro-dispensacao-backend --region=${{ vars.GCP_REGION }} --format='value(status.url)' 2>/dev/null || echo "")
+
+              if [[ -n "$PRODUCTION_FRONTEND_URL" ]]; then
+                  test_endpoint_performance "$PRODUCTION_FRONTEND_URL" "Frontend" "production"
+              fi
+
+              if [[ -n "$PRODUCTION_BACKEND_URL" ]]; then
+                  test_endpoint_performance "$PRODUCTION_BACKEND_URL/api/v1/health" "Backend API" "production"
+              fi
+          fi
+
+          # Calculate overall performance score
+          OVERALL_SCORE=0
+          if [[ $TESTS_COUNT -gt 0 ]]; then
+              OVERALL_SCORE=$((TOTAL_SCORE / TESTS_COUNT))
+          fi
+
+          echo "📊 Overall Performance Score: $OVERALL_SCORE/100"
+
+          # Determine if alerts are needed
+          ALERTS_NEEDED="false"
+          if [[ $OVERALL_SCORE -lt 70 ]] || [[ ${#PERFORMANCE_ISSUES[@]} -gt 0 ]]; then
+              ALERTS_NEEDED="true"
+          fi
+
+          # Set outputs
+          echo "staging-performance=$STAGING_PERFORMANCE" >> $GITHUB_OUTPUT
+          echo "production-performance=$PRODUCTION_PERFORMANCE" >> $GITHUB_OUTPUT
+          echo "performance-score=$OVERALL_SCORE" >> $GITHUB_OUTPUT
+          echo "alerts-needed=$ALERTS_NEEDED" >> $GITHUB_OUTPUT
+
+          # Log performance issues
+          if [[ ${#PERFORMANCE_ISSUES[@]} -gt 0 ]]; then
+              echo "⚠️ Performance Issues Detected:"
+              printf '  - %s\n' "${PERFORMANCE_ISSUES[@]}"
+          fi
+
+  # ============================================================================
+  # LIGHTHOUSE PERFORMANCE AUDIT
+  # ============================================================================
+  lighthouse-audit:
+    name: "🔍 Lighthouse Performance Audit"
+    runs-on: ubuntu-latest
+    needs: performance-baseline
+    if: github.event.inputs.deep_analysis == 'true' || needs.performance-baseline.outputs.alerts-needed == 'true'
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "⚡ Setup Node.js"
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: "🔍 Install Lighthouse"
+        run: |
+          npm install -g lighthouse lighthouse-cli
+
+      - name: "🔑 Google Cloud Auth"
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+
+      - name: "⚡ Setup Cloud SDK"
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+
+      - name: "🔍 Run Lighthouse Audits"
+        run: |
+          echo "🔍 Running Lighthouse performance audits..."
+
+          # Function to run lighthouse audit
+          run_lighthouse_audit() {
+              local url=$1
+              local service_name=$2
+              local output_file=$3
+
+              echo "🔍 Lighthouse audit for $service_name: $url"
+
+              # Run lighthouse with performance focus
+              lighthouse "$url" \
+                  --output=json \
+                  --output-path="$output_file" \
+                  --only-categories=performance \
+                  --chrome-flags="--headless --no-sandbox --disable-dev-shm-usage" \
+                  --max-wait-for-fcp=15000 \
+                  --max-wait-for-load=35000
+
+              if [[ -f "$output_file" ]]; then
+                  # Extract key metrics
+                  local performance_score=$(cat "$output_file" | jq -r '.categories.performance.score * 100')
+                  local fcp=$(cat "$output_file" | jq -r '.audits["first-contentful-paint"].displayValue')
+                  local lcp=$(cat "$output_file" | jq -r '.audits["largest-contentful-paint"].displayValue')
+                  local cls=$(cat "$output_file" | jq -r '.audits["cumulative-layout-shift"].displayValue')
+                  local fid=$(cat "$output_file" | jq -r '.audits["max-potential-fid"].displayValue')
+
+                  echo "📊 $service_name Lighthouse Results:"
+                  echo "  - Performance Score: ${performance_score}/100"
+                  echo "  - First Contentful Paint: $fcp"
+                  echo "  - Largest Contentful Paint: $lcp"
+                  echo "  - Cumulative Layout Shift: $cls"
+                  echo "  - First Input Delay: $fid"
+
+                  # Generate recommendations if score is low
+                  if [[ $(echo "$performance_score < 80" | bc -l 2>/dev/null || echo "1") == "1" ]]; then
+                      echo "⚠️ $service_name performance below 80/100"
+                      echo "::warning::$service_name Lighthouse performance score: $performance_score/100"
+                  fi
+              else
+                  echo "❌ Lighthouse audit failed for $service_name"
+              fi
+          }
+
+          # Get service URLs and run audits
+          STAGING_FRONTEND_URL=$(gcloud run services describe hml-roteiro-dispensacao-frontend --region=${{ vars.GCP_REGION }} --format='value(status.url)' 2>/dev/null || echo "")
+          PRODUCTION_FRONTEND_URL=$(gcloud run services describe roteiro-dispensacao-frontend --region=${{ vars.GCP_REGION }} --format='value(status.url)' 2>/dev/null || echo "")
+
+          if [[ -n "$STAGING_FRONTEND_URL" ]]; then
+              run_lighthouse_audit "$STAGING_FRONTEND_URL" "Staging Frontend" "staging-lighthouse.json"
+          fi
+
+          if [[ -n "$PRODUCTION_FRONTEND_URL" ]]; then
+              run_lighthouse_audit "$PRODUCTION_FRONTEND_URL" "Production Frontend" "production-lighthouse.json"
+          fi
+
+      - name: "📊 Store Lighthouse Results"
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-reports
+          path: "*-lighthouse.json"
+          retention-days: 30
+
+  # ============================================================================
+  # LOAD TESTING (Optional)
+  # ============================================================================
+  load-testing:
+    name: "🔄 Load Testing"
+    runs-on: ubuntu-latest
+    needs: performance-baseline
+    if: github.event.inputs.load_test == 'true'
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "⚡ Setup Node.js"
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: "📦 Install Load Testing Tools"
+        run: |
+          npm install -g artillery autocannon
+
+      - name: "🔑 Google Cloud Auth"
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+
+      - name: "⚡ Setup Cloud SDK"
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+
+      - name: "🔄 Run Load Tests"
+        run: |
+          echo "🔄 Starting load testing..."
+
+          # Get backend URL for load testing
+          BACKEND_URL=$(gcloud run services describe hml-roteiro-dispensacao-backend --region=${{ vars.GCP_REGION }} --format='value(status.url)' 2>/dev/null || echo "")
+
+          if [[ -n "$BACKEND_URL" ]]; then
+              echo "🎯 Load testing backend: $BACKEND_URL"
+
+              # Create Artillery configuration
+              cat > load-test-config.yml << EOF
+          config:
+            target: '${BACKEND_URL}'
+            phases:
+              - duration: 60
+                arrivalRate: 5
+                name: "Warm up"
+              - duration: 120
+                arrivalRate: 10
+                name: "Load test"
+              - duration: 60
+                arrivalRate: 2
+                name: "Cool down"
+            defaults:
+              headers:
+                User-Agent: "Performance Test Bot"
+          scenarios:
+            - name: "Health check load test"
+              weight: 100
+              flow:
+                - get:
+                    url: "/api/v1/health"
+                - think: 1
+          EOF
+
+              # Run Artillery load test
+              echo "🚀 Running Artillery load test..."
+              artillery run load-test-config.yml --output load-test-results.json
+
+              # Run autocannon burst test
+              echo "⚡ Running autocannon burst test..."
+              autocannon -c 10 -d 30 -p 10 "$BACKEND_URL/api/v1/health" > autocannon-results.txt
+
+              # Analyze results
+              echo "📊 Load test results:"
+              if [[ -f "autocannon-results.txt" ]]; then
+                  echo "=== Autocannon Results ==="
+                  grep -E "(Latency|Req/Sec|Bytes/Sec)" autocannon-results.txt || cat autocannon-results.txt
+              fi
+
+              if [[ -f "load-test-results.json" ]]; then
+                  echo "=== Artillery Results ==="
+                  echo "See detailed results in artifacts"
+              fi
+
+          else
+              echo "⚠️ No backend URL found for load testing"
+          fi
+
+      - name: "📊 Store Load Test Results"
+        uses: actions/upload-artifact@v4
+        with:
+          name: load-test-results
+          path: |
+            load-test-results.json
+            autocannon-results.txt
+            load-test-config.yml
+          retention-days: 30
+
+  # ============================================================================
+  # RESOURCE MONITORING
+  # ============================================================================
+  resource-monitoring:
+    name: "📈 Resource Monitoring"
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "🔑 Google Cloud Auth"
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+
+      - name: "⚡ Setup Cloud SDK"
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+
+      - name: "📈 Monitor Cloud Run Resources"
+        run: |
+          echo "📈 Monitoring Cloud Run resource usage..."
+
+          # Function to get service metrics
+          get_service_metrics() {
+              local service_name=$1
+              local region=$2
+
+              echo "📊 Metrics for $service_name:"
+
+              # Get current resource allocation
+              local memory=$(gcloud run services describe "$service_name" --region="$region" --format='value(spec.template.spec.template.spec.containers[0].resources.limits.memory)' 2>/dev/null || echo "N/A")
+              local cpu=$(gcloud run services describe "$service_name" --region="$region" --format='value(spec.template.spec.template.spec.containers[0].resources.limits.cpu)' 2>/dev/null || echo "N/A")
+              local max_instances=$(gcloud run services describe "$service_name" --region="$region" --format='value(spec.template.metadata.annotations["run.googleapis.com/execution-environment"])' 2>/dev/null || echo "N/A")
+
+              echo "  - Memory Limit: $memory"
+              echo "  - CPU Limit: $cpu"
+              echo "  - Max Instances: $max_instances"
+
+              # Get service URL for testing
+              local service_url=$(gcloud run services describe "$service_name" --region="$region" --format='value(status.url)' 2>/dev/null || echo "")
+
+              if [[ -n "$service_url" ]]; then
+                  echo "  - Service URL: $service_url"
+                  echo "  - Status: $(curl -s -o /dev/null -w "%{http_code}" "$service_url" || echo "UNREACHABLE")"
+              else
+                  echo "  - Status: SERVICE NOT FOUND"
+              fi
+
+              echo ""
+          }
+
+          # Monitor all services
+          echo "🔍 Monitoring all Cloud Run services..."
+
+          # Staging services
+          get_service_metrics "hml-roteiro-dispensacao-frontend" "${{ vars.GCP_REGION }}"
+          get_service_metrics "hml-roteiro-dispensacao-backend" "${{ vars.GCP_REGION }}"
+
+          # Production services
+          get_service_metrics "roteiro-dispensacao-frontend" "${{ vars.GCP_REGION }}"
+          get_service_metrics "roteiro-dispensacao-backend" "${{ vars.GCP_REGION }}"
+
+          # Check for any failed services
+          echo "🔍 Checking for failed revisions..."
+          gcloud run revisions list --filter="status.conditions[0].status:False" --format="table(metadata.name,status.conditions[0].message)" || echo "No failed revisions found"
+
+  # ============================================================================
+  # PERFORMANCE REPORT & ALERTS
+  # ============================================================================
+  performance-report:
+    name: "📊 Performance Report & Alerts"
+    runs-on: ubuntu-latest
+    needs: [performance-baseline, lighthouse-audit, resource-monitoring]
+    if: always()
+    steps:
+      - name: "📊 Generate Performance Report"
+        run: |
+          echo "## 📊 Performance Monitoring Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Timestamp**: $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Performance scores
+          PERFORMANCE_SCORE="${{ needs.performance-baseline.outputs.performance-score }}"
+          STAGING_PERF="${{ needs.performance-baseline.outputs.staging-performance }}"
+          PRODUCTION_PERF="${{ needs.performance-baseline.outputs.production-performance }}"
+
+          echo "### ⚡ Performance Status" >> $GITHUB_STEP_SUMMARY
+          echo "| Environment | Status | Score |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------------|--------|-------|" >> $GITHUB_STEP_SUMMARY
+
+          # Status icons
+          case "$STAGING_PERF" in
+              "excellent") STAGING_ICON="🟢" ;;
+              "good") STAGING_ICON="🟡" ;;
+              "degraded") STAGING_ICON="🟠" ;;
+              "poor") STAGING_ICON="🔴" ;;
+              *) STAGING_ICON="❓" ;;
+          esac
+
+          case "$PRODUCTION_PERF" in
+              "excellent") PRODUCTION_ICON="🟢" ;;
+              "good") PRODUCTION_ICON="🟡" ;;
+              "degraded") PRODUCTION_ICON="🟠" ;;
+              "poor") PRODUCTION_ICON="🔴" ;;
+              *) PRODUCTION_ICON="❓" ;;
+          esac
+
+          echo "| Staging | $STAGING_ICON $STAGING_PERF | $PERFORMANCE_SCORE/100 |" >> $GITHUB_STEP_SUMMARY
+          echo "| Production | $PRODUCTION_ICON $PRODUCTION_PERF | $PERFORMANCE_SCORE/100 |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Additional tests
+          echo "### 🔍 Additional Analysis" >> $GITHUB_STEP_SUMMARY
+          if [[ "${{ needs.lighthouse-audit.result }}" == "success" ]]; then
+              echo "- ✅ Lighthouse performance audit completed" >> $GITHUB_STEP_SUMMARY
+          elif [[ "${{ needs.lighthouse-audit.result }}" == "skipped" ]]; then
+              echo "- ⏭️ Lighthouse audit skipped" >> $GITHUB_STEP_SUMMARY
+          else
+              echo "- ❌ Lighthouse audit failed" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [[ "${{ needs.load-testing.result }}" == "success" ]]; then
+              echo "- ✅ Load testing completed" >> $GITHUB_STEP_SUMMARY
+          elif [[ "${{ needs.load-testing.result }}" == "skipped" ]]; then
+              echo "- ⏭️ Load testing skipped" >> $GITHUB_STEP_SUMMARY
+          else
+              echo "- ❌ Load testing failed" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "- ✅ Resource monitoring completed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Recommendations
+          echo "### 💡 Performance Recommendations" >> $GITHUB_STEP_SUMMARY
+          if [[ "$PERFORMANCE_SCORE" -lt "70" ]]; then
+              echo "- 🚨 **URGENT**: Performance is below acceptable levels" >> $GITHUB_STEP_SUMMARY
+              echo "- 🔧 Investigate slow response times and optimize critical paths" >> $GITHUB_STEP_SUMMARY
+          elif [[ "$PERFORMANCE_SCORE" -lt "85" ]]; then
+              echo "- ⚠️ Performance could be improved" >> $GITHUB_STEP_SUMMARY
+              echo "- 🔧 Review and optimize slower endpoints" >> $GITHUB_STEP_SUMMARY
+          else
+              echo "- ✅ Performance is within acceptable ranges" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "- 📈 Next monitoring: In 4 hours" >> $GITHUB_STEP_SUMMARY
+          echo "- 📊 Historical data available in workflow artifacts" >> $GITHUB_STEP_SUMMARY
+
+      - name: "🚨 Send Performance Alerts"
+        if: needs.performance-baseline.outputs.alerts-needed == 'true'
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          PERFORMANCE_SCORE: ${{ needs.performance-baseline.outputs.performance-score }}
+        run: |
+          if [[ -n "$TELEGRAM_TOKEN" && -n "$TELEGRAM_CHAT_ID" ]]; then
+              echo "🚨 Sending performance alert..."
+
+              # Determine alert severity
+              if [[ "$PERFORMANCE_SCORE" -lt "50" ]]; then
+                  ALERT_LEVEL="🔴 CRÍTICO"
+              elif [[ "$PERFORMANCE_SCORE" -lt "70" ]]; then
+                  ALERT_LEVEL="🟠 ALERTA"
+              else
+                  ALERT_LEVEL="🟡 AVISO"
+              fi
+
+              MESSAGE="$ALERT_LEVEL <b>Performance Alert</b>%0A"
+              MESSAGE="${MESSAGE}%0A📊 <b>Performance Score:</b> ${PERFORMANCE_SCORE}/100"
+              MESSAGE="${MESSAGE}%0A🧪 <b>Staging:</b> ${{ needs.performance-baseline.outputs.staging-performance }}"
+              MESSAGE="${MESSAGE}%0A🚀 <b>Production:</b> ${{ needs.performance-baseline.outputs.production-performance }}"
+              MESSAGE="${MESSAGE}%0A⏰ <b>Time:</b> $(date '+%H:%M - %d/%m/%Y')"
+              MESSAGE="${MESSAGE}%0A%0A🔗 <b>Details:</b> <a href=\"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\">View Report</a>"
+
+              curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_TOKEN/sendMessage" \
+                -d chat_id="$TELEGRAM_CHAT_ID" \
+                -d text="$MESSAGE" \
+                -d parse_mode="HTML" \
+                -d disable_web_page_preview="true" >/dev/null
+
+              echo "✅ Performance alert sent"
+          else
+              echo "⚠️ Telegram alerts not configured"
+          fi

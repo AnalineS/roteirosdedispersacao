@@ -56,7 +56,7 @@ def _lazy_import_vector_store():
     try:
         # FASE 3: Priorizar Supabase Vector Store
         from services.vector_store import get_vector_store, get_supabase_vector_store
-        from services.supabase_vector_store import VectorDocument
+        from services.integrations.supabase_vector_store import VectorDocument
         return get_vector_store, VectorDocument, get_supabase_vector_store
     except ImportError as e:
         logger.warning(f"[WARNING] Vector store não disponível: {e}")
@@ -94,7 +94,7 @@ class SemanticSearchEngine:
         
         # Lazy loading dos serviços
         get_embedding_service_func, embed_text_func, is_embeddings_available_func = _lazy_import_embedding_service()
-        get_vector_store_func, VectorDocument = _lazy_import_vector_store()
+        get_vector_store_func, VectorDocument, get_supabase_vector_store_func = _lazy_import_vector_store()
         
         self.embedding_service = get_embedding_service_func() if get_embedding_service_func else None
         self.vector_store = get_vector_store_func() if get_vector_store_func else None

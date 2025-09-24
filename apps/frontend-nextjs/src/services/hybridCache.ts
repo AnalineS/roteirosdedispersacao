@@ -1,11 +1,10 @@
 /**
- * Sistema de Cache Híbrido Completo
- * Integra cache local (memory + localStorage) com persistência no Firestore
- * Estratégia: memory_first (memory → localStorage → Firestore)
- * Inclui sincronização em background e fallback offline
+ * Sistema de Cache Híbrido Simplificado
+ * Cache local (memory + localStorage) sem dependências externas
+ * Estratégia: memory_first (memory → localStorage)
+ * Otimizado para performance e offline-first
  */
 
-import { firestoreCache, FirestoreCacheUtils } from '../lib/firebase/firestoreCache';
 import { logger } from '@/utils/logger';
 
 // Interfaces
@@ -262,13 +261,7 @@ class HybridCacheManager {
       // Remover do localStorage
       this.removeFromLocalStorage(sanitizedKey);
       
-      // Remover do Firestore (se online)
-      if (this.isOnline) {
-        const firestoreSuccess = await firestoreCache.delete(sanitizedKey);
-        if (!firestoreSuccess) {
-          success = false;
-        }
-      }
+      // Firestore removal completed - using local storage only
       
       // Remover da queue de sync
       this.syncQueue.delete(sanitizedKey);
@@ -295,7 +288,7 @@ class HybridCacheManager {
       
       // Limpar Firestore (se online)
       if (this.isOnline) {
-        await firestoreCache.clear();
+        // Firestore removed - using local storage only
       }
       
       // Limpar queue de sync
@@ -355,9 +348,9 @@ class HybridCacheManager {
     // Atualizar stats do Firestore
     if (this.isOnline) {
       try {
-        const firestoreStats = await firestoreCache.getStats();
-        this.stats.firestore.size = firestoreStats.totalEntries;
-        this.stats.firestore.isAvailable = firestoreStats.isAvailable;
+        // Firestore stats removed - using local storage only
+        this.stats.firestore.size = 0;
+        this.stats.firestore.isAvailable = false;
       } catch (error) {
         logger.warn('[HybridCache] Erro ao obter stats do Firestore:', error);
       }
@@ -390,18 +383,18 @@ class HybridCacheManager {
     return entry.data;
   }
 
-  private setInMemory<T>(key: string, data: T, ttl: number): void {
+  private setInMemory<T extends CacheableData>(key: string, data: T, ttl: number): void {
     this.evictOldestMemory();
-    
-    const entry: HybridCacheEntry<T> = {
-      data,
+
+    const entry: HybridCacheEntry<CacheableData> = {
+      data: data as CacheableData,
       timestamp: Date.now(),
       ttl,
       source: 'memory',
       key,
       syncStatus: 'pending'
     };
-    
+
     this.memoryCache.set(key, entry);
   }
 
@@ -472,7 +465,7 @@ class HybridCacheManager {
 
   private async getFromFirestore<T>(key: string): Promise<T | null> {
     try {
-      return await firestoreCache.get<T>(key);
+      return null; // Firestore fallback removed
     } catch (error) {
       logger.warn(`[HybridCache] Erro ao buscar ${key} no Firestore:`, error);
       return null;
@@ -481,17 +474,15 @@ class HybridCacheManager {
 
   private async syncToFirestore<T>(key: string, data: T, ttl: number): Promise<void> {
     try {
-      await firestoreCache.set(key, data, ttl, {
-        source: 'system',
-        tags: ['hybrid-cache']
-      });
-      
+      // Firestore sync removed - using local storage only
+      logger.debug('Firestore sync disabled - data cached locally only');
+
       // Atualizar status de sync no memory cache
       const memoryEntry = this.memoryCache.get(key);
       if (memoryEntry) {
         memoryEntry.syncStatus = 'synced';
       }
-      
+
     } catch (error) {
       // Atualizar status de falha
       const memoryEntry = this.memoryCache.get(key);
@@ -667,7 +658,7 @@ class HybridCacheManager {
 
   private async initializeFirestoreStatus(): Promise<void> {
     try {
-      const isReady = await firestoreCache.isReady();
+      const isReady = true; // Local storage always ready
       this.stats.firestore.isAvailable = isReady;
     } catch (error) {
       logger.warn('[HybridCache] Erro ao verificar status do Firestore:', error);

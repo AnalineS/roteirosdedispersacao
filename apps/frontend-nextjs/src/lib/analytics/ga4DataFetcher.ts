@@ -118,37 +118,24 @@ class GA4DataFetcher {
     }
 
     try {
-      // Para desenvolvimento, usar dados simulados baseados em padrões reais
-      const mockMetrics = this.generateRealisticMockData(dateRange);
+      // Sistema de Integração GA4 Real - APENAS dados reais
+      let finalMetrics: GA4Metrics | null = null;
 
-      // Sistema de Integração GA4 Real ativado
-      let finalMetrics = mockMetrics;
+      // Tentar conectar com GA4 Reporting API
+      const convertedDateRange = this.convertDateRange(dateRange);
+      const realMetrics = await this.fetchFromGA4APIHelper(convertedDateRange);
 
-      try {
-        // Tentar conectar com GA4 Reporting API
-        const convertedDateRange = this.convertDateRange(dateRange);
-        const realMetrics = await this.fetchFromGA4APIHelper(convertedDateRange);
-        if (realMetrics && Object.keys(realMetrics).length > 0) {
-          // Mesclar dados reais com mock para dados mais precisos
-          finalMetrics = this.mergeMetricsDataHelper(realMetrics as Record<string, unknown>, mockMetrics);
-          logger.log('📊 Dados GA4 reais integrados com sucesso');
-        }
-      } catch (ga4Error) {
-        // Preservar tracking médico essencial + gtag
-        if (typeof window !== 'undefined' && window.gtag) {
-          window.gtag('event', 'medical_ga4_api_fallback', {
-            event_category: 'medical_analytics_critical',
-            event_label: 'ga4_api_unavailable_fallback_to_mock',
-            custom_parameters: {
-              medical_context: 'ga4_medical_analytics',
-              fallback_type: 'mock_data',
-              error_type: 'ga4_api_unavailable',
-              error_message: ga4Error instanceof Error ? ga4Error.message : String(ga4Error)
-            }
-          });
-        }
-        logger.warn('⚠️ GA4 API indisponível, usando dados mock:', ga4Error);
-        // Continuar com dados mock se GA4 falhar
+      if (realMetrics && Object.keys(realMetrics).length > 0) {
+        finalMetrics = realMetrics as GA4Metrics;
+        logger.log('📊 Dados GA4 reais carregados com sucesso');
+      } else {
+        // Se API não retornar dados, usar métricas básicas de gtag
+        finalMetrics = await this.getGtagBasedMetrics();
+        logger.log('📊 Usando métricas básicas do gtag');
+      }
+
+      if (!finalMetrics) {
+        throw new Error('Nenhuma fonte de dados GA4 disponível');
       }
 
       this.cache = finalMetrics;
@@ -172,8 +159,14 @@ class GA4DataFetcher {
       }
       logger.error('❌ Error fetching GA4 metrics:', error);
 
-      // Fallback para dados básicos do gtag (se disponível)
-      return this.getFallbackMetrics();
+      // Tentar métricas básicas do gtag como último recurso
+      const gtagMetrics = await this.getGtagBasedMetrics();
+      if (gtagMetrics) {
+        return gtagMetrics;
+      }
+
+      // Se não há dados disponíveis, retornar erro
+      throw new Error('GA4 e gtag indisponíveis - não é possível obter métricas');
     }
   }
 
@@ -222,57 +215,6 @@ class GA4DataFetcher {
     }
   }
 
-  /**
-   * Gerar dados simulados baseados em padrões reais de educação médica
-   */
-  private generateRealisticMockData(dateRange: string): GA4Metrics {
-    const daysCount = dateRange === '7d' ? 7 : dateRange === '30d' ? 30 : 90;
-    const baseMultiplier = daysCount / 7; // Escalar baseado no período
-    
-    return {
-      users: {
-        totalUsers: Math.floor(450 * baseMultiplier),
-        newUsers: Math.floor(120 * baseMultiplier),
-        returningUsers: Math.floor(330 * baseMultiplier),
-        activeUsers24h: Math.floor(45 + Math.random() * 20)
-      },
-      
-      sessions: {
-        totalSessions: Math.floor(680 * baseMultiplier),
-        sessionsToday: Math.floor(85 + Math.random() * 30),
-        avgSessionDuration: 280 + Math.floor(Math.random() * 120), // 4-6 minutos típico para educação
-        bounceRate: 20.5 + Math.random() * 10 // Baixa para conteúdo educacional
-      },
-      
-      pages: {
-        pageViews: Math.floor(2400 * baseMultiplier),
-        uniquePageViews: Math.floor(1800 * baseMultiplier),
-        avgTimeOnPage: 195 + Math.floor(Math.random() * 90), // 3-4 minutos
-        exitRate: 15.2 + Math.random() * 8
-      },
-      
-      educational: {
-        moduleCompletions: Math.floor(180 * baseMultiplier),
-        certificatesGenerated: Math.floor(45 * baseMultiplier),
-        averageScore: 7.8 + Math.random() * 1.5, // Notas típicas 8-9
-        completionRate: 72.5 + Math.random() * 15 // 70-85% típico
-      },
-      
-      technical: {
-        pageLoadTime: 1.2 + Math.random() * 0.8, // 1.2-2.0s
-        serverResponseTime: 145 + Math.random() * 100, // 145-245ms
-        errorRate: 0.1 + Math.random() * 0.4, // 0.1-0.5%
-        mobileTrafficPercent: 55 + Math.random() * 20 // 55-75% mobile
-      },
-      
-      engagement: {
-        scrollDepth: 68 + Math.random() * 25, // 70-90% scroll
-        clickThroughRate: 12.5 + Math.random() * 8,
-        timeOnSite: 420 + Math.random() * 180, // 7-10 minutos
-        returnVisitorRate: 65 + Math.random() * 15 // 65-80%
-      }
-    };
-  }
 
   /**
    * Buscar usuários ativos do gtag (se disponível no client)
@@ -300,16 +242,61 @@ class GA4DataFetcher {
   }
 
   /**
-   * Métricas de fallback em caso de erro
+   * Obter métricas básicas usando dados do gtag (limitadas mas reais)
    */
-  private getFallbackMetrics(): GA4Metrics {
+  private async getGtagBasedMetrics(): Promise<GA4Metrics | null> {
+    if (typeof window === 'undefined' || !window.gtag) {
+      return null;
+    }
+
+    // Implementar coleta de dados básicos via gtag
+    // Nota: gtag não fornece métricas agregadas diretamente
+    // Precisaríamos implementar um sistema de coleta customizado
+
+    const activeUsers = this.getActiveUsersFromGtag();
+    const pageViews = this.getTodayPageViewsFromGtag();
+
+    if (activeUsers === 0 && pageViews === 0) {
+      return null;
+    }
+
     return {
-      users: { totalUsers: 0, newUsers: 0, returningUsers: 0, activeUsers24h: 0 },
-      sessions: { totalSessions: 0, sessionsToday: 0, avgSessionDuration: 0, bounceRate: 0 },
-      pages: { pageViews: 0, uniquePageViews: 0, avgTimeOnPage: 0, exitRate: 0 },
-      educational: { moduleCompletions: 0, certificatesGenerated: 0, averageScore: 0, completionRate: 0 },
-      technical: { pageLoadTime: 0, serverResponseTime: 0, errorRate: 0, mobileTrafficPercent: 0 },
-      engagement: { scrollDepth: 0, clickThroughRate: 0, timeOnSite: 0, returnVisitorRate: 0 }
+      users: {
+        totalUsers: 0, // Não disponível via gtag
+        newUsers: 0,   // Não disponível via gtag
+        returningUsers: 0, // Não disponível via gtag
+        activeUsers24h: activeUsers
+      },
+      sessions: {
+        totalSessions: 0, // Não disponível via gtag
+        sessionsToday: 0, // Não disponível via gtag
+        avgSessionDuration: 0, // Não disponível via gtag
+        bounceRate: 0 // Não disponível via gtag
+      },
+      pages: {
+        pageViews: pageViews,
+        uniquePageViews: 0, // Não disponível via gtag
+        avgTimeOnPage: 0, // Não disponível via gtag
+        exitRate: 0 // Não disponível via gtag
+      },
+      educational: {
+        moduleCompletions: 0, // Precisaria de tracking customizado
+        certificatesGenerated: 0, // Precisaria de tracking customizado
+        averageScore: 0, // Precisaria de tracking customizado
+        completionRate: 0 // Precisaria de tracking customizado
+      },
+      technical: {
+        pageLoadTime: 0, // Não disponível via gtag básico
+        serverResponseTime: 0, // Não disponível via gtag
+        errorRate: 0, // Não disponível via gtag
+        mobileTrafficPercent: 0 // Não disponível via gtag
+      },
+      engagement: {
+        scrollDepth: 0, // Não disponível via gtag básico
+        clickThroughRate: 0, // Não disponível via gtag
+        timeOnSite: 0, // Não disponível via gtag
+        returnVisitorRate: 0 // Não disponível via gtag
+      }
     };
   }
 
@@ -377,13 +364,6 @@ class GA4DataFetcher {
     return {};
   }
 
-  private mergeMetricsDataHelper(realData: Record<string, unknown>, mockData: GA4Metrics): GA4Metrics {
-    // Merge logic - prefer real data, fallback to mock
-    return {
-      ...mockData,
-      ...realData
-    } as GA4Metrics;
-  }
 }
 
 // Export singleton instance

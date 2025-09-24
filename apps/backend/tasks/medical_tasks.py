@@ -332,11 +332,56 @@ def _save_document_analysis(analysis: Dict[str, Any]) -> None:
         logger.error(f"Erro ao salvar análise: {e}")
 
 def _upload_backup_to_cloud(backup_path: Path) -> str:
-    """Upload de backup para Cloud Storage"""
-    # Por enquanto simular - integraria com Cloud Storage real
-    cloud_path = f"gs://roteiros-backups/{backup_path.name}"
-    logger.info(f"[SIMULATED] Upload para: {cloud_path}")
-    return cloud_path
+    """Upload de backup para Google Cloud Storage - REAL"""
+    import os
+
+    # Verificar se GCS está disponível
+    try:
+        from google.cloud import storage
+
+        # Configurar credenciais do GitHub Secrets
+        gcp_service_account = os.getenv('GCP_SERVICE_ACCOUNT_KEY')
+        if gcp_service_account:
+            import json
+            from google.oauth2 import service_account
+            credentials_info = json.loads(gcp_service_account)
+            credentials = service_account.Credentials.from_service_account_info(credentials_info)
+            client = storage.Client(credentials=credentials)
+        else:
+            # Usar credenciais padrão do Cloud Run
+            client = storage.Client()
+
+        # Nome do bucket configurado no GitHub Variables
+        bucket_name = os.getenv('GCS_BACKUP_BUCKET', 'red-truck-468923-s4-backups')
+        bucket = client.bucket(bucket_name)
+
+        # Nome do blob no GCS
+        blob_name = f"medical-backups/{backup_path.name}"
+        blob = bucket.blob(blob_name)
+
+        # Upload real do arquivo
+        blob.upload_from_filename(str(backup_path))
+
+        cloud_path = f"gs://{bucket_name}/{blob_name}"
+        logger.info(f"✅ Upload realizado com sucesso para: {cloud_path}")
+
+        # Configurar metadados do arquivo
+        blob.metadata = {
+            'upload_date': datetime.now().isoformat(),
+            'file_type': 'medical_backup',
+            'source': 'roteiros_dispensacao'
+        }
+        blob.patch()
+
+        return cloud_path
+
+    except ImportError:
+        logger.warning("Google Cloud Storage não disponível - salvando localmente")
+        return str(backup_path)
+    except Exception as e:
+        logger.error(f"Erro ao fazer upload para GCS: {e}")
+        # Fallback: retornar caminho local
+        return str(backup_path)
 
 def _collect_medical_analytics(date_range: int) -> Dict[str, Any]:
     """Coleta dados para analytics"""

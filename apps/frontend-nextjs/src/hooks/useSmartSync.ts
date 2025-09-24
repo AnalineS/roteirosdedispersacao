@@ -6,9 +6,10 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSafeAuth as useAuth } from '@/hooks/useSafeAuth';
-import { SmartSyncManager } from '@/lib/firebase/sync/smartSyncManager';
-import { ConflictResolutionManager } from '@/lib/firebase/sync/conflictResolution';
-import { FEATURES } from '@/lib/firebase/config';
+// Firebase integrations removed - using local storage only
+// import { SmartSyncManager } from '@/lib/firebase/sync/smartSyncManager';
+// import { ConflictResolutionManager } from '@/lib/firebase/sync/conflictResolution';
+// import { FEATURES } from '@/lib/firebase/config';
 
 // ============================================
 // TYPES
@@ -300,7 +301,7 @@ export function useSmartSync(): SmartSyncState & SmartSyncControls {
 
     const rawConflicts = syncManagerRef.current.getPendingConflicts();
     
-    return rawConflicts.map(conflict => ({
+    return rawConflicts.map((conflict: any) => ({
       id: conflict.id,
       type: conflict.type as 'conversation' | 'profile',
       title: generateConflictTitle(conflict),

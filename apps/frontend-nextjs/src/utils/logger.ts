@@ -17,7 +17,6 @@ class ConditionalLogger implements LogLevel {
     // Verificar se está em desenvolvimento
     this.isDevelopment =
       process.env.NODE_ENV === 'development' ||
-      process.env.NODE_ENV === 'dev' ||
       typeof window !== 'undefined' && window.location.hostname === 'localhost';
   }
 

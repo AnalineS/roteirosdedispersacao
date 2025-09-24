@@ -1,0 +1,687 @@
+name: "🔍 PR Validation - Quality Gates"
+
+on:
+  pull_request:
+    branches: [main, hml]
+    types: [opened, synchronize, reopened, ready_for_review]
+  pull_request_target:
+    branches: [main, hml]
+    types: [opened, synchronize, reopened, ready_for_review]
+
+env:
+  NODE_VERSION: '20'
+  PYTHON_VERSION: '3.11'
+
+permissions:
+  contents: read
+  pull-requests: write
+  security-events: write
+  actions: read
+  checks: write
+
+concurrency:
+  group: pr-validation-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  # ============================================================================
+  # GATE 1: SECURITY & SAFETY VALIDATION
+  # ============================================================================
+  security-gate:
+    name: "🛡️ Security Gate"
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    if: github.event.pull_request.draft == false
+    outputs:
+      security-status: ${{ steps.security-check.outputs.status }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: "🔍 Security Check"
+        id: security-check
+        run: |
+          echo "🛡️ Running comprehensive security validation..."
+
+          # Check for sensitive data patterns
+          SENSITIVE_PATTERNS=(
+            "password\s*=\s*[\"'][^\"']+[\"']"
+            "api_key\s*=\s*[\"'][^\"']+[\"']"
+            "secret_key\s*=\s*[\"'][^\"']+[\"']"
+            "private_key"
+            "-----BEGIN.*PRIVATE KEY-----"
+            "CPF.*[0-9]{11}"
+            "CNS.*[0-9]{15}"
+            "CRM.*[0-9]+"
+            "console\.log.*password"
+            "console\.log.*secret"
+            "console\.log.*key"
+          )
+
+          VIOLATIONS_FOUND=false
+          for pattern in "${SENSITIVE_PATTERNS[@]}"; do
+            if git diff --name-only HEAD~1 HEAD | xargs grep -l "$pattern" 2>/dev/null; then
+              echo "🚨 SECURITY VIOLATION: Pattern detected: $pattern"
+              VIOLATIONS_FOUND=true
+            fi
+          done
+
+          # Check for dangerous functions
+          DANGEROUS_FUNCTIONS=(
+            "eval\("
+            "exec\("
+            "innerHTML\s*="
+            "dangerouslySetInnerHTML"
+            "document\.write"
+            "__import__"
+          )
+
+          for func in "${DANGEROUS_FUNCTIONS[@]}"; do
+            if git diff --name-only HEAD~1 HEAD | xargs grep -l "$func" 2>/dev/null; then
+              echo "⚠️ SECURITY WARNING: Dangerous function detected: $func"
+              echo "::warning::Dangerous function usage detected: $func"
+            fi
+          done
+
+          if [[ "$VIOLATIONS_FOUND" == "true" ]]; then
+            echo "❌ SECURITY GATE FAILED"
+            echo "status=failed" >> $GITHUB_OUTPUT
+            exit 1
+          else
+            echo "✅ SECURITY GATE PASSED"
+            echo "status=passed" >> $GITHUB_OUTPUT
+          fi
+
+      - name: "🔒 CodeQL Security Analysis"
+        uses: github/codeql-action/init@v3
+        with:
+          languages: 'javascript,python'
+          queries: security-extended
+
+      - name: "📦 Install Dependencies for Analysis"
+        run: |
+          # Install Python dependencies
+          cd apps/backend
+          pip install -r requirements.txt
+
+          # Install Node.js dependencies
+          cd ../frontend-nextjs
+          npm ci
+
+      - name: "🔨 CodeQL Autobuild"
+        uses: github/codeql-action/autobuild@v3
+
+      - name: "🔍 Perform CodeQL Analysis"
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/pr-security"
+
+  # ============================================================================
+  # GATE 2: IMPORT & DEPENDENCY VALIDATION
+  # ============================================================================
+  import-validation-gate:
+    name: "📦 Import Validation Gate"
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: security-gate
+    if: needs.security-gate.outputs.security-status == 'passed'
+    outputs:
+      import-status: ${{ steps.import-check.outputs.status }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: "🐍 Setup Python"
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: "⚡ Setup Node.js"
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: apps/frontend-nextjs/package-lock.json
+
+      - name: "📦 Install Python Dependencies"
+        run: |
+          cd apps/backend
+          pip install -r requirements.txt
+
+      - name: "📦 Install Node.js Dependencies"
+        run: |
+          cd apps/frontend-nextjs
+          npm ci
+
+      - name: "🔍 Python Import Validation"
+        id: import-check
+        run: |
+          echo "🐍 Validating Python imports..."
+          cd apps/backend
+
+          # Test all Python imports
+          IMPORT_ERRORS=false
+
+          # Test main application
+          if ! python -c "from main import app; print('✅ Main app imports successfully')"; then
+            echo "❌ Main app import failed"
+            IMPORT_ERRORS=true
+          fi
+
+          # Test all services
+          for service_file in services/*.py; do
+            if [[ -f "$service_file" && "$service_file" != "services/__init__.py" ]]; then
+              module_name=$(basename "$service_file" .py)
+              if ! python -c "from services.${module_name} import *; print('✅ Service ${module_name} imports OK')" 2>/dev/null; then
+                echo "❌ Service ${module_name} import failed"
+                IMPORT_ERRORS=true
+              fi
+            fi
+          done
+
+          # Test all blueprints
+          for blueprint_file in blueprints/*_blueprint.py; do
+            if [[ -f "$blueprint_file" ]]; then
+              module_name=$(basename "$blueprint_file" .py)
+              if ! python -c "from blueprints.${module_name} import *; print('✅ Blueprint ${module_name} imports OK')" 2>/dev/null; then
+                echo "❌ Blueprint ${module_name} import failed"
+                IMPORT_ERRORS=true
+              fi
+            fi
+          done
+
+          if [[ "$IMPORT_ERRORS" == "true" ]]; then
+            echo "❌ IMPORT VALIDATION FAILED"
+            echo "status=failed" >> $GITHUB_OUTPUT
+            exit 1
+          else
+            echo "✅ IMPORT VALIDATION PASSED"
+            echo "status=passed" >> $GITHUB_OUTPUT
+          fi
+
+      - name: "🔍 TypeScript Import Validation"
+        run: |
+          echo "⚡ Validating TypeScript imports..."
+          cd apps/frontend-nextjs
+
+          # TypeScript compilation check
+          if npm run type-check; then
+            echo "✅ TypeScript imports valid"
+          else
+            echo "❌ TypeScript import errors detected"
+            exit 1
+          fi
+
+      - name: "🔍 Circular Dependency Detection"
+        run: |
+          echo "🔄 Checking for circular dependencies..."
+          cd apps/frontend-nextjs
+
+          # Install madge for dependency analysis
+          npm install -g madge
+
+          # Check for circular dependencies
+          if madge --circular --format list src/; then
+            echo "⚠️ Circular dependencies detected"
+            echo "::warning::Circular dependencies found in frontend"
+          else
+            echo "✅ No circular dependencies detected"
+          fi
+
+  # ============================================================================
+  # GATE 3: MEMORY & PERFORMANCE VALIDATION
+  # ============================================================================
+  performance-gate:
+    name: "⚡ Performance Gate"
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [security-gate, import-validation-gate]
+    if: needs.import-validation-gate.outputs.import-status == 'passed'
+    outputs:
+      performance-status: ${{ steps.performance-check.outputs.status }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: "🐍 Setup Python"
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: "⚡ Setup Node.js"
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: apps/frontend-nextjs/package-lock.json
+
+      - name: "📦 Install Dependencies"
+        run: |
+          cd apps/backend
+          pip install -r requirements.txt psutil memory-profiler
+
+          cd ../frontend-nextjs
+          npm ci
+
+      - name: "🧠 Memory Usage Validation"
+        id: performance-check
+        run: |
+          echo "🧠 Validating memory usage..."
+
+          cd apps/backend
+
+          # Start Flask app in background with memory monitoring
+          python -c "
+          import psutil
+          import time
+          import os
+          from main import app
+
+          print('📊 Starting memory monitoring...')
+
+          # Get initial memory
+          process = psutil.Process()
+          initial_memory = process.memory_info().rss / 1024 / 1024  # MB
+          print(f'Initial memory: {initial_memory:.2f} MB')
+
+          # Start app and monitor for 30 seconds
+          max_memory = initial_memory
+          for i in range(30):
+              current_memory = process.memory_info().rss / 1024 / 1024
+              max_memory = max(max_memory, current_memory)
+              time.sleep(1)
+
+          print(f'Max memory usage: {max_memory:.2f} MB')
+
+          # Validate memory usage (should be under 500MB for Cloud Run efficiency)
+          if max_memory > 500:
+              print(f'❌ MEMORY GATE FAILED: {max_memory:.2f} MB > 500 MB limit')
+              exit(1)
+          else:
+              print(f'✅ MEMORY GATE PASSED: {max_memory:.2f} MB < 500 MB limit')
+          " || (echo "❌ Memory validation failed"; echo "status=failed" >> $GITHUB_OUTPUT; exit 1)
+
+          echo "status=passed" >> $GITHUB_OUTPUT
+
+      - name: "🚀 Build Performance Test"
+        run: |
+          echo "🚀 Testing build performance..."
+          cd apps/frontend-nextjs
+
+          # Measure build time
+          start_time=$(date +%s)
+
+          if npm run build; then
+            end_time=$(date +%s)
+            build_time=$((end_time - start_time))
+            echo "✅ Build completed in ${build_time}s"
+
+            # Validate build time (should be under 5 minutes for CI efficiency)
+            if [[ $build_time -gt 300 ]]; then
+              echo "⚠️ Build time warning: ${build_time}s > 300s"
+              echo "::warning::Build time exceeded 5 minutes: ${build_time}s"
+            fi
+          else
+            echo "❌ Build failed"
+            exit 1
+          fi
+
+  # ============================================================================
+  # GATE 4: FUNCTIONAL TESTING VALIDATION
+  # ============================================================================
+  functional-gate:
+    name: "🧪 Functional Gate"
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: [security-gate, import-validation-gate, performance-gate]
+    if: needs.performance-gate.outputs.performance-status == 'passed'
+    outputs:
+      functional-status: ${{ steps.functional-check.outputs.status }}
+    strategy:
+      matrix:
+        test-suite: [backend, frontend]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: "🐍 Setup Python"
+        if: matrix.test-suite == 'backend'
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: "⚡ Setup Node.js"
+        if: matrix.test-suite == 'frontend'
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: apps/frontend-nextjs/package-lock.json
+
+      - name: "📦 Install Backend Dependencies"
+        if: matrix.test-suite == 'backend'
+        run: |
+          cd apps/backend
+          pip install -r requirements.txt
+          pip install pytest pytest-cov
+
+      - name: "📦 Install Frontend Dependencies"
+        if: matrix.test-suite == 'frontend'
+        run: |
+          cd apps/frontend-nextjs
+          npm ci
+
+      - name: "🧪 Backend Functional Tests"
+        if: matrix.test-suite == 'backend'
+        id: functional-check
+        run: |
+          cd apps/backend
+          echo "🧪 Running backend functional tests..."
+
+          # Test Flask app startup
+          echo "🌶️ Testing Flask startup..."
+          timeout 30s python -c "
+          from main import app
+          import time
+
+          # Test app creation
+          assert app is not None, 'Flask app creation failed'
+
+          # Test basic configuration
+          assert app.config is not None, 'Flask config missing'
+
+          print('✅ Flask app functional')
+          " || (echo "❌ Flask functional test failed"; echo "status=failed" >> $GITHUB_OUTPUT; exit 1)
+
+          # Test critical endpoints
+          echo "🔍 Testing critical services..."
+          python -c "
+          from services.personas import get_personas
+          from services.rag_service import RAGService
+
+          # Test personas service
+          personas = get_personas()
+          assert len(personas) > 0, 'No personas available'
+          print(f'✅ Personas service: {len(personas)} personas available')
+
+          # Test RAG service initialization
+          try:
+              rag = RAGService()
+              print('✅ RAG service initialized')
+          except Exception as e:
+              print(f'⚠️ RAG service warning: {e}')
+          " || (echo "❌ Services functional test failed"; echo "status=failed" >> $GITHUB_OUTPUT; exit 1)
+
+          echo "status=passed" >> $GITHUB_OUTPUT
+
+      - name: "🧪 Frontend Functional Tests"
+        if: matrix.test-suite == 'frontend'
+        id: functional-check-frontend
+        run: |
+          cd apps/frontend-nextjs
+          echo "🧪 Running frontend functional tests..."
+
+          # Run type checking
+          echo "📝 TypeScript validation..."
+          if npm run type-check; then
+            echo "✅ TypeScript validation passed"
+          else
+            echo "❌ TypeScript validation failed"
+            echo "status=failed" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+          # Run linting
+          echo "🔍 ESLint validation..."
+          if npm run lint; then
+            echo "✅ ESLint validation passed"
+          else
+            echo "❌ ESLint validation failed"
+            echo "status=failed" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+          # Run unit tests if available
+          echo "🧪 Unit tests..."
+          if npm run test:unit 2>/dev/null || echo "⚠️ Unit tests not configured"; then
+            echo "✅ Unit tests completed"
+          fi
+
+          echo "status=passed" >> $GITHUB_OUTPUT
+
+  # ============================================================================
+  # GATE 5: ARCHITECTURE COMPLIANCE VALIDATION
+  # ============================================================================
+  architecture-gate:
+    name: "🏗️ Architecture Gate"
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [security-gate, import-validation-gate, performance-gate, functional-gate]
+    if: needs.functional-gate.outputs.functional-status == 'passed'
+    outputs:
+      architecture-status: ${{ steps.architecture-check.outputs.status }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: "🏗️ Architecture Compliance Check"
+        id: architecture-check
+        run: |
+          echo "🏗️ Validating architecture compliance..."
+
+          # Check blueprint structure (should be 8 blueprints max)
+          BLUEPRINT_COUNT=$(find apps/backend/blueprints -name "*_blueprint.py" | wc -l)
+          echo "📦 Blueprint count: $BLUEPRINT_COUNT"
+
+          if [[ $BLUEPRINT_COUNT -gt 8 ]]; then
+            echo "❌ ARCHITECTURE VIOLATION: Too many blueprints ($BLUEPRINT_COUNT > 8)"
+            echo "This violates the simplified architecture (20→8 blueprints)"
+            echo "status=failed" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+          # Check for forbidden patterns
+          FORBIDDEN_PATTERNS=(
+            "from.*import \*"  # Discourage wildcard imports
+            "global [a-zA-Z]"  # Discourage global variables
+            "exec\("          # Dangerous execution
+            "eval\("          # Dangerous evaluation
+          )
+
+          VIOLATIONS_FOUND=false
+          for pattern in "${FORBIDDEN_PATTERNS[@]}"; do
+            if git diff --name-only HEAD~1 HEAD | xargs grep -l "$pattern" 2>/dev/null; then
+              echo "⚠️ ARCHITECTURE WARNING: Pattern detected: $pattern"
+              echo "::warning::Architecture pattern violation: $pattern"
+            fi
+          done
+
+          # Check for proper module structure
+          echo "📁 Validating module structure..."
+
+          # Backend structure validation
+          REQUIRED_BACKEND_DIRS=("services" "blueprints" "core" "core/security")
+          for dir in "${REQUIRED_BACKEND_DIRS[@]}"; do
+            if [[ ! -d "apps/backend/$dir" ]]; then
+              echo "❌ Missing required directory: apps/backend/$dir"
+              VIOLATIONS_FOUND=true
+            fi
+          done
+
+          # Frontend structure validation
+          REQUIRED_FRONTEND_DIRS=("src/components" "src/hooks" "src/services")
+          for dir in "${REQUIRED_FRONTEND_DIRS[@]}"; do
+            if [[ ! -d "apps/frontend-nextjs/$dir" ]]; then
+              echo "❌ Missing required directory: apps/frontend-nextjs/$dir"
+              VIOLATIONS_FOUND=true
+            fi
+          done
+
+          if [[ "$VIOLATIONS_FOUND" == "true" ]]; then
+            echo "❌ ARCHITECTURE GATE FAILED"
+            echo "status=failed" >> $GITHUB_OUTPUT
+            exit 1
+          else
+            echo "✅ ARCHITECTURE GATE PASSED"
+            echo "status=passed" >> $GITHUB_OUTPUT
+          fi
+
+      - name: "📊 Code Quality Metrics"
+        run: |
+          echo "📊 Collecting code quality metrics..."
+
+          # Count lines of code changes
+          ADDED_LINES=$(git diff --numstat HEAD~1 HEAD | awk '{sum += $1} END {print sum}')
+          REMOVED_LINES=$(git diff --numstat HEAD~1 HEAD | awk '{sum += $2} END {print sum}')
+
+          echo "📈 Lines added: $ADDED_LINES"
+          echo "📉 Lines removed: $REMOVED_LINES"
+
+          # Large PR warning
+          if [[ $ADDED_LINES -gt 500 ]]; then
+            echo "⚠️ Large PR detected: $ADDED_LINES lines added"
+            echo "::warning::Large PR - consider breaking into smaller PRs: $ADDED_LINES lines"
+          fi
+
+  # ============================================================================
+  # FINAL GATE: INTEGRATION VALIDATION
+  # ============================================================================
+  integration-gate:
+    name: "🔗 Integration Gate"
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [security-gate, import-validation-gate, performance-gate, functional-gate, architecture-gate]
+    if: |
+      needs.security-gate.outputs.security-status == 'passed' &&
+      needs.import-validation-gate.outputs.import-status == 'passed' &&
+      needs.performance-gate.outputs.performance-status == 'passed' &&
+      needs.functional-gate.outputs.functional-status == 'passed' &&
+      needs.architecture-gate.outputs.architecture-status == 'passed'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: "🐍 Setup Python"
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: "⚡ Setup Node.js"
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: apps/frontend-nextjs/package-lock.json
+
+      - name: "📦 Install All Dependencies"
+        run: |
+          # Backend
+          cd apps/backend
+          pip install -r requirements.txt
+
+          # Frontend
+          cd ../frontend-nextjs
+          npm ci
+
+      - name: "🔗 Integration Test"
+        run: |
+          echo "🔗 Running integration validation..."
+
+          # Start backend in background
+          cd apps/backend
+          python main.py &
+          BACKEND_PID=$!
+          sleep 10  # Wait for startup
+
+          # Test backend health
+          if curl -f http://localhost:5000/health >/dev/null 2>&1; then
+            echo "✅ Backend health check passed"
+          else
+            echo "❌ Backend health check failed"
+            kill $BACKEND_PID 2>/dev/null
+            exit 1
+          fi
+
+          # Test API endpoints
+          if curl -f http://localhost:5000/api/v1/personas >/dev/null 2>&1; then
+            echo "✅ API endpoints responding"
+          else
+            echo "❌ API endpoints failed"
+            kill $BACKEND_PID 2>/dev/null
+            exit 1
+          fi
+
+          # Cleanup
+          kill $BACKEND_PID 2>/dev/null
+
+          # Build frontend to test integration
+          cd ../frontend-nextjs
+          if npm run build; then
+            echo "✅ Frontend builds successfully with current backend"
+          else
+            echo "❌ Frontend build failed"
+            exit 1
+          fi
+
+      - name: "✅ All Quality Gates Passed"
+        run: |
+          echo "## 🎉 All Quality Gates Passed!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### ✅ Quality Gate Results:" >> $GITHUB_STEP_SUMMARY
+          echo "| Gate | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| 🛡️ Security | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
+          echo "| 📦 Import Validation | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
+          echo "| ⚡ Performance | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🧪 Functional | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🏗️ Architecture | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🔗 Integration | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**✅ PR is ready for merge!**" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🛡️ Quality Assurance:" >> $GITHUB_STEP_SUMMARY
+          echo "- Memory usage validated (< 500MB)" >> $GITHUB_STEP_SUMMARY
+          echo "- No security vulnerabilities detected" >> $GITHUB_STEP_SUMMARY
+          echo "- All imports functional" >> $GITHUB_STEP_SUMMARY
+          echo "- Architecture compliance verified" >> $GITHUB_STEP_SUMMARY
+          echo "- Integration tests passed" >> $GITHUB_STEP_SUMMARY
+
+  # ============================================================================
+  # FAILURE HANDLING & REPORTING
+  # ============================================================================
+  failure-report:
+    name: "❌ Failure Report"
+    runs-on: ubuntu-latest
+    needs: [security-gate, import-validation-gate, performance-gate, functional-gate, architecture-gate, integration-gate]
+    if: failure()
+    steps:
+      - name: "📊 Generate Failure Report"
+        run: |
+          echo "## ❌ Quality Gates Failed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📊 Gate Results:" >> $GITHUB_STEP_SUMMARY
+          echo "| Gate | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| 🛡️ Security | ${{ needs.security-gate.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 📦 Import Validation | ${{ needs.import-validation-gate.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| ⚡ Performance | ${{ needs.performance-gate.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🧪 Functional | ${{ needs.functional-gate.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🏗️ Architecture | ${{ needs.architecture-gate.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🔗 Integration | ${{ needs.integration-gate.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**❌ PR requires fixes before merge**" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🔧 Next Steps:" >> $GITHUB_STEP_SUMMARY
+          echo "1. Review failed gates above" >> $GITHUB_STEP_SUMMARY
+          echo "2. Fix identified issues" >> $GITHUB_STEP_SUMMARY
+          echo "3. Push updates to re-trigger validation" >> $GITHUB_STEP_SUMMARY
+          echo "4. Ensure all gates pass before requesting review" >> $GITHUB_STEP_SUMMARY

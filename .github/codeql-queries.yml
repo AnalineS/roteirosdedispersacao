@@ -1,0 +1,184 @@
+# CodeQL Query Pack - Medical Platform Security Focus
+# Consultas customizadas para reduzir falsos positivos e focar em segurança médica
+
+name: medical-platform-security
+version: 1.0.0
+description: "Customized CodeQL queries for medical educational platform with false positive reduction"
+
+# Configuração de queries otimizadas
+query-filters:
+  # EXCLUIR queries que geram muitos falsos positivos
+  exclude:
+    # JavaScript/TypeScript - Falsos positivos comuns
+    - "js/unused-local-variable"
+    - "js/unreachable-statement"
+    - "js/inconsistent-use-of-new"
+    - "js/duplicate-property"
+    - "js/missing-token"
+    - "js/useless-assignment-to-local"
+    - "js/unused-property"
+    - "js/useless-conditional"
+    - "js/redundant-operation"
+    - "js/identical-branches"
+    - "js/empty-block"
+    - "js/assignment-to-const"
+    - "js/comparison-of-identical-expressions"
+    - "js/duplicate-condition"
+
+    # Python - Falsos positivos comuns
+    - "py/unused-import"
+    - "py/unused-local-variable"
+    - "py/redundant-assignment"
+    - "py/similar-function"
+    - "py/missing-call-to-init"
+    - "py/unused-name-in-except"
+    - "py/redundant-else"
+    - "py/unreachable-statement"
+    - "py/unused-loop-variable"
+    - "py/multiple-definition"
+    - "py/duplicate-key-dict-literal"
+    - "py/non-constant-kernel-argument"
+
+    # Queries de qualidade de código (não são vulnerabilidades)
+    - "py/too-many-locals"
+    - "py/complex-condition"
+    - "js/too-many-parameters"
+    - "js/complex-condition"
+    - "py/long-parameter-list"
+
+  # INCLUIR apenas queries de segurança críticas
+  include:
+    # Injeção e execução de código
+    - "js/code-injection"
+    - "js/command-line-injection"
+    - "py/code-injection"
+    - "py/command-line-injection"
+    - "js/server-side-template-injection"
+    - "py/unsafe-deserialization"
+
+    # SQL Injection
+    - "js/sql-injection"
+    - "py/sql-injection"
+    - "js/mongodb-injection"
+
+    # XSS e problemas de sanitização
+    - "js/reflected-xss"
+    - "js/stored-xss"
+    - "js/dom-based-xss"
+    - "py/reflective-xss"
+
+    # Autenticação e autorização
+    - "js/missing-authentication"
+    - "js/weak-authentication"
+    - "py/weak-authentication"
+    - "js/session-fixation"
+    - "py/session-fixation"
+
+    # Problemas de validação de entrada
+    - "js/incomplete-sanitization"
+    - "js/unsafe-html-construction"
+    - "py/incomplete-sanitization"
+    - "js/unsafe-deserialization"
+
+    # Vazamento de informações sensíveis
+    - "js/clear-text-logging"
+    - "js/clear-text-storage-of-sensitive-data"
+    - "py/clear-text-logging-sensitive-data"
+    - "py/clear-text-storage-sensitive-data"
+
+    # Problemas de criptografia
+    - "js/weak-cryptographic-algorithm"
+    - "js/insufficient-key-size"
+    - "py/weak-crypto-algorithm"
+    - "py/weak-crypto-key"
+
+    # Path traversal e acesso a arquivos
+    - "js/path-injection"
+    - "js/zipslip"
+    - "py/path-injection"
+    - "py/zipslip"
+
+    # CORS e headers de segurança
+    - "js/cors-misconfiguration"
+    - "js/missing-origin-check"
+
+# Configurações específicas por linguagem
+language-config:
+  javascript:
+    # Focar em vulnerabilidades web críticas
+    focus-areas:
+      - "web-security"
+      - "data-sanitization"
+      - "authentication"
+
+    # Ignorar padrões de desenvolvimento
+    ignore-patterns:
+      - "console.log usage"
+      - "development configurations"
+      - "test file patterns"
+
+  python:
+    # Focar em vulnerabilidades de API e dados
+    focus-areas:
+      - "api-security"
+      - "data-validation"
+      - "medical-data-protection"
+
+    # Ignorar padrões de desenvolvimento
+    ignore-patterns:
+      - "debug print statements"
+      - "development configurations"
+      - "test patterns"
+
+# Configurações de severidade
+severity-mapping:
+  # Apenas alertas de média severidade ou superior
+  minimum-severity: "medium"
+
+  # Mapeamento customizado para contexto médico
+  custom-severity:
+    # Elevar severidade para problemas relacionados a dados médicos
+    medical-data-exposure: "critical"
+    patient-data-leak: "critical"
+    medication-calculation-error: "critical"
+    authentication-bypass: "critical"
+
+    # Reduzir severidade para problemas menores
+    code-style-issues: "info"
+    unused-variables: "info"
+    similar-code-blocks: "low"
+
+# Configurações de contexto médico
+medical-context:
+  # Palavras-chave que indicam código médico crítico
+  critical-keywords:
+    - "patient"
+    - "medication"
+    - "dose"
+    - "prescription"
+    - "medical"
+    - "clinical"
+    - "health"
+    - "hanseniase"
+    - "leprosy"
+
+  # Arquivos críticos para análise médica
+  critical-files:
+    - "apps/backend/blueprints/**"
+    - "apps/backend/services/**"
+    - "apps/frontend-nextjs/src/components/**"
+    - "apps/frontend-nextjs/src/services/**"
+
+# Configurações de performance
+performance:
+  # Análise incremental para reduzir tempo
+  incremental-analysis: true
+
+  # Cache de resultados
+  enable-cache: true
+
+  # Timeout ajustado
+  analysis-timeout: "20m"
+
+  # Paralelização otimizada
+  parallel-queries: true

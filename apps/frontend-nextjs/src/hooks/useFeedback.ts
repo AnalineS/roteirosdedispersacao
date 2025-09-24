@@ -267,21 +267,41 @@ export function useFeedback(options: UseFeedbackOptions = {}) {
     }
   }, []);
 
-  // Buscar estatísticas de feedback
+  // Buscar estatísticas de feedback do backend real
   const fetchStats = useCallback(async (): Promise<FeedbackStats | null> => {
     try {
-      // Esta seria uma chamada para um endpoint de stats específico para feedback
-      // Por ora, vamos retornar dados mockados ou calcular baseado no que temos
-      
-      const mockStats: FeedbackStats = {
-        totalFeedbacks: 0,
-        averageRating: 0,
-        ratingsDistribution: {},
-        recentFeedbacks: []
-      };
+      const response = await fetch('/api/v1/feedback/stats', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
-      setStats(mockStats);
-      return mockStats;
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      // Estrutura real do backend: { general: {...}, by_persona: {...}, recent_feedbacks: [...] }
+      if (data.general) {
+        const realStats: FeedbackStats = {
+          totalFeedbacks: data.general.total_count || 0,
+          averageRating: data.general.average_rating || 0,
+          ratingsDistribution: data.general.rating_distribution || {},
+          recentFeedbacks: (data.recent_feedbacks || []).map((feedback: any) => ({
+            rating: feedback.rating,
+            timestamp: feedback.created_at,
+            personaId: feedback.persona_id || 'unknown',
+            hasComments: feedback.has_comments || false
+          }))
+        };
+
+        setStats(realStats);
+        return realStats;
+      } else {
+        throw new Error(data.error || 'Invalid response format');
+      }
 
     } catch (error) {
       // Erro ao buscar estatísticas de feedback
@@ -388,7 +408,7 @@ export function useFeedback(options: UseFeedbackOptions = {}) {
   };
 }
 
-// Hook para estatísticas globais de feedback (opcional)
+// Hook para estatísticas globais de feedback (usando backend real)
 export function useFeedbackStats() {
   const [stats, setStats] = useState<FeedbackStats | null>(null);
   const [loading, setLoading] = useState(false);
@@ -399,33 +419,37 @@ export function useFeedbackStats() {
     setError(null);
 
     try {
-      // Aqui poderia ser uma chamada específica para stats de feedback
-      // Por ora, usar o endpoint de stats geral
-      interface FeedbackStatsApiResponse {
-        rag?: {
-          feedback_count?: number;
-          average_rating?: number;
-          ratings_distribution?: Record<number, number>;
-          recent_feedbacks?: Array<{
-            rating: number;
-            timestamp: string;
-            personaId: string;
-            hasComments: boolean;
-          }>;
-        };
-      }
-      
-      const response = await apiClient.get<FeedbackStatsApiResponse>('/api/v1/feedback/stats');
-      
-      // Extrair dados de feedback se disponível
-      const mockStats: FeedbackStats = {
-        totalFeedbacks: response.rag?.feedback_count || 0,
-        averageRating: response.rag?.average_rating || 0,
-        ratingsDistribution: response.rag?.ratings_distribution || {},
-        recentFeedbacks: response.rag?.recent_feedbacks || []
-      };
+      const response = await fetch('/api/v1/feedback/stats', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
-      setStats(mockStats);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      // Usar estrutura real do backend
+      if (data.general) {
+        const realStats: FeedbackStats = {
+          totalFeedbacks: data.general.total_count || 0,
+          averageRating: data.general.average_rating || 0,
+          ratingsDistribution: data.general.rating_distribution || {},
+          recentFeedbacks: (data.recent_feedbacks || []).map((feedback: any) => ({
+            rating: feedback.rating,
+            timestamp: feedback.created_at,
+            personaId: feedback.persona_id || 'unknown',
+            hasComments: feedback.has_comments || false
+          }))
+        };
+
+        setStats(realStats);
+      } else {
+        throw new Error(data.error || 'Invalid response format');
+      }
 
     } catch (fetchError: Error | unknown) {
       setError(fetchError instanceof Error ? fetchError.message : 'Erro ao buscar estatísticas');

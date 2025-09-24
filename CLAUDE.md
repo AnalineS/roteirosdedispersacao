@@ -42,16 +42,17 @@ npm run type-check            # TypeScript validation
 
 ## Architecture Overview
 
-### Backend Architecture
-- **Flask 3.1 API** with comprehensive security measures
+### Backend Architecture (Real Stack)
+- **Flask 3.1 API** with comprehensive security measures + blueprints modulares
 - **OpenRouter Integration**: Llama 3.2 and Kimie K2 models (free tier)
 - **RAG System**: ChromaDB + OpenAI embeddings for knowledge retrieval
 - **Persona System**: Two specialized AI assistants with distinct personalities
-- **Hybrid Storage**: Google Cloud Storage + SQLite for performance
-- **Vector Database**: Supabase with pgvector extension
-- **Multimodal Processing**: OCR with OpenCV + Tesseract
-- **Security Framework**: JWT auth, SQLite rate limiting, input sanitization
-- **Cache System**: Unified cache manager (memory + cloud + API)
+- **Hybrid Storage**: Google Cloud Storage + SQLite for performance optimization
+- **Vector Database**: Supabase PostgreSQL with pgvector extension
+- **Multimodal Processing**: OpenCV + Tesseract + EasyOCR + PIL
+- **Security Framework**: PyJWT + cryptography + bleach + CORS + bandit
+- **Cache System**: cachetools (memory) + Google Cloud Storage fallback
+- **Validation**: Pydantic 2.0 + jsonschema for data integrity
 
 ### Frontend Architecture (Next.js)
 - **App Router**: Modern Next.js 14+ structure with server-side rendering
@@ -62,13 +63,15 @@ npm run type-check            # TypeScript validation
   - `hooks/`: Custom React hooks for state management
   - `services/`: API integration and business logic
 
-### Key Technologies
-- **Backend**: Flask 3.1, OpenRouter APIs, ChromaDB, Google Cloud Storage, SQLite, Pydantic validation
-- **Frontend**: Next.js 14, React 19, TypeScript, 15 types of tests
-- **Vector Store**: Supabase PostgreSQL with pgvector extension
-- **AI Models**: Meta Llama 3.2-3B, Kimie K2 Chat (both free tier)
-- **Multimodal**: OpenCV, Tesseract OCR, PIL for image processing
-- **Data**: Structured JSON knowledge base + Markdown documents + vector embeddings
+### Key Technologies (Real Stack - Updated)
+- **Backend**: Flask 3.1 + cachetools + Google Cloud Storage + Supabase PostgreSQL
+- **Frontend**: Next.js 14 + React 19 + TypeScript + 15 tipos de testes automatizados
+- **Vector Store**: Supabase PostgreSQL with pgvector extension (produção)
+- **AI Models**: Meta Llama 3.2-3B + Kimie K2 Chat via OpenRouter (free tier)
+- **Multimodal**: OpenCV + Tesseract + EasyOCR + PIL for image processing
+- **Security**: PyJWT + cryptography + bleach + bandit + CodeQL
+- **CI/CD**: GitHub Actions + Google Cloud Run + Docker containers
+- **Automation**: SuperClaude Framework + quality hooks + LGPD compliance
 
 ## Personas System
 

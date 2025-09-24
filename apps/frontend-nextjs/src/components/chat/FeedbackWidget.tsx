@@ -4,7 +4,7 @@ import React, { useState, useCallback, useMemo } from 'react';
 import { useOptimizedEffect, useSmartInterval } from '@/hooks/useEffectOptimizer';
 import { modernChatTheme } from '@/config/modernTheme';
 import { validateFeedbackData, feedbackRateLimiter, generateSessionId } from '@/utils/securityUtils';
-import { useGoogleAnalytics } from '@/components/analytics/GoogleAnalyticsSetup';
+import { useGoogleAnalyticsUX } from '@/components/analytics/GoogleAnalyticsSetup';
 import type { FeedbackData, FeedbackValidation } from '@/types/feedback';
 
 interface FeedbackWidgetProps {
@@ -91,7 +91,7 @@ export default function FeedbackWidget({
   const [validationWarnings, setValidationWarnings] = useState<string[]>([]);
   const [personaData, setPersonaData] = useState<PersonaData | null>(null);
   
-  const { trackFeedback, trackUserInteraction, trackError } = useGoogleAnalytics();
+  const { trackCognitiveLoad, trackMobileIssue, trackOnboardingEvent, trackCustomUXEvent } = useGoogleAnalyticsUX();
   const sessionId = useMemo(() => generateSessionId(), []);
 
   // Load persona data on component mount - otimizado

@@ -6,6 +6,7 @@
 
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { logger } from '@/utils/logger';
+import type { ChatMessage, ChatSession } from '@/types/api';
 
 // Configuração simplificada de API URL
 const getApiUrl = (): string => {
@@ -126,20 +127,7 @@ export interface PersonasResponse {
   [key: string]: Persona;
 }
 
-export interface ChatMessage {
-  id?: string;
-  role: 'user' | 'assistant';
-  content: string;
-  timestamp: number;
-  persona?: string;
-  metadata?: {
-    isFallback?: boolean;
-    fallbackSource?: 'cache' | 'local_knowledge' | 'emergency' | 'generic';
-    confidence?: number;
-    suggestion?: string;
-    emergency_contact?: string;
-  };
-}
+// ChatMessage interface moved to @/types/api
 
 export interface ChatRequest {
   question: string;

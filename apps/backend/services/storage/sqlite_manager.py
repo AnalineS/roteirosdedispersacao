@@ -62,13 +62,21 @@ class SQLiteCloudManager:
 
     def _init_storage(self):
         """Inicializar cliente Cloud Storage"""
+        if not self.enable_cloud_sync:
+            return
+
         try:
-            if self.enable_cloud_sync:
-                self._client = storage.Client()
-                self._bucket = self._client.bucket(self.bucket_name)
-                logger.info(f"Cloud Storage inicializado: {self.bucket_name}")
+            # Verificar se estamos em desenvolvimento
+            from app_config import config
+
+            # SEMPRE usar cliente real - NO MOCKS (user requirement)
+            # Try real cloud first, fallback to local-only if unavailable
+            self._client = storage.Client()
+            self._bucket = self._client.bucket(self.bucket_name)
+            logger.info(f"[PROD] Cloud Storage inicializado: {self.bucket_name}")
+
         except Exception as e:
-            logger.warning(f"Falha ao inicializar Cloud Storage: {e}")
+            logger.info(f"Cloud Storage não disponível - usando apenas SQLite local: {e}")
             self.enable_cloud_sync = False
 
     def _init_database(self):

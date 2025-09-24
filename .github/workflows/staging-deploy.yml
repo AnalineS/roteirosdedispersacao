@@ -26,10 +26,12 @@ on:
 env:
   NODE_VERSION: '20'
   ENVIRONMENT: 'staging'
-  FRONTEND_SITE: 'hml-roteiros-de-dispensacao'
-  BACKEND_SERVICE: 'hml-roteiro-dispensacao-api'
-  GCP_PROJECT_ID: 'red-truck-468923-s4'
-  GCP_REGION: 'us-central1'
+  FRONTEND_SERVICE: ${{ vars.HML_FRONTEND_SERVICE }}
+  BACKEND_SERVICE: ${{ vars.HML_BACKEND_SERVICE }}
+  FRONTEND_DOMAIN: ${{ vars.HML_FRONTEND_DOMAIN }}
+  BACKEND_DOMAIN: ${{ vars.HML_API_DOMAIN }}
+  GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+  GCP_REGION: ${{ vars.GCP_REGION }}
   MEDICAL_MODE: 'true'
   LGPD_COMPLIANCE_REQUIRED: 'true'
   STAGING_TIMEOUT: 60
@@ -273,7 +275,7 @@ jobs:
           echo "|---------------|---------|--------|" >> $GITHUB_STEP_SUMMARY
           echo "| GCP Service Account | ✅ Valid | JSON format verified |" >> $GITHUB_STEP_SUMMARY
           echo "| GCP Project & Region | ✅ Valid | Connectivity tested |" >> $GITHUB_STEP_SUMMARY
-          echo "| Firebase Variables | ✅ Valid | All NEXT_PUBLIC vars set |" >> $GITHUB_STEP_SUMMARY
+          echo "| Environment Variables | ✅ Valid | All NEXT_PUBLIC vars set |" >> $GITHUB_STEP_SUMMARY
           echo "| API URLs | ✅ Valid | Staging & Production URLs configured |" >> $GITHUB_STEP_SUMMARY
 
           # Check Telegram configuration
@@ -696,7 +698,7 @@ jobs:
 
       - name: "🔍 Post-build Standalone Validation"
         run: |
-          echo "🔨 Validando build standalone para Firebase..."
+          echo "🔨 Validando build standalone para Cloud Run..."
 
           # Verificar se o build standalone foi gerado
           if [ -d ".next/standalone" ]; then
@@ -763,9 +765,9 @@ jobs:
 
       - name: "🚀 Deploy to Cloud Run Frontend"
         run: |
-          echo "🚀 Deploying frontend to Cloud Run..."
+          echo "🚀 Deploying frontend to Cloud Run with custom domain..."
 
-          gcloud run deploy hml-roteiro-dispensacao-frontend \
+          gcloud run deploy ${{ env.FRONTEND_SERVICE }} \
             --image gcr.io/${{ vars.GCP_PROJECT_ID }}/hml-roteiro-dispensacao-frontend:${{ github.sha }} \
             --region ${{ vars.GCP_REGION }} \
             --platform managed \
@@ -774,15 +776,16 @@ jobs:
             --memory 1Gi \
             --cpu 1 \
             --max-instances 10 \
-            --set-env-vars="NODE_ENV=production,NEXT_PUBLIC_ENVIRONMENT=staging,NEXT_PUBLIC_BACKEND_URL=${{ vars.NEXT_PUBLIC_API_URL_STAGING }}" \
+            --set-env-vars="NODE_ENV=production,NEXT_PUBLIC_ENVIRONMENT=staging,NEXT_PUBLIC_BACKEND_URL=https://${{ env.BACKEND_DOMAIN }}" \
             --timeout 120 \
             --concurrency 80
 
           echo "✅ Frontend deployed successfully"
 
-          # Obter URL do serviço
-          SERVICE_URL=$(gcloud run services describe hml-roteiro-dispensacao-frontend --region=${{ vars.GCP_REGION }} --format='value(status.url)')
-          echo "🌐 Frontend URL: $SERVICE_URL"
+          # Obter URL do serviço Cloud Run
+          SERVICE_URL=$(gcloud run services describe ${{ env.FRONTEND_SERVICE }} --region=${{ vars.GCP_REGION }} --format='value(status.url)')
+          echo "🌐 Cloud Run URL: $SERVICE_URL"
+          echo "🌐 Custom Domain: https://${{ env.FRONTEND_DOMAIN }}"
 
   # Deploy Backend (se aplicável)
   backend-deploy:
@@ -932,9 +935,16 @@ jobs:
             --timeout=900 \
             --memory=1Gi \
             --cpu=1 \
-            --set-env-vars "ENVIRONMENT=staging,LGPD_MODE=strict,PROJECT_ID=red-truck-468923-s4" \
+            --set-env-vars "ENVIRONMENT=staging,LGPD_MODE=strict,PROJECT_ID=red-truck-468923-s4,FRONTEND_URL=https://${{ env.FRONTEND_DOMAIN }},CORS_ORIGINS=https://${{ env.FRONTEND_DOMAIN }},http://localhost:3000,http://127.0.0.1:3000" \
             --max-instances=10 \
             --min-instances=1
+
+          echo "✅ Backend deployed successfully"
+
+          # Obter URL do serviço Cloud Run
+          BACKEND_SERVICE_URL=$(gcloud run services describe ${{ env.BACKEND_SERVICE }} --region=${{ vars.GCP_REGION }} --format='value(status.url)')
+          echo "🌐 Backend Cloud Run URL: $BACKEND_SERVICE_URL"
+          echo "🌐 Backend Custom Domain: https://${{ env.BACKEND_DOMAIN }}"
 
       - name: "📊 Resumo de Custos e Performance"
         if: always()

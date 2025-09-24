@@ -1,403 +1,255 @@
+/**
+ * Backend API Types (DEPRECATED)
+ * Este arquivo está sendo migrado para o sistema unificado em unified-api.ts
+ * Para novos projetos, use os tipos de unified-api.ts
+ */
+
+// Re-export dos tipos unificados para manter compatibilidade
+import {
+  AuthUserDTO as AuthUser,
+  AuthStateDTO as AuthState,
+  LoginCredentialsDTO as LoginCredentials,
+  RegisterDataDTO as RegisterData,
+  UserProfileDTO as BackendUserProfile,
+  ChatMessageDTO as ChatMessage,
+  ChatSessionDTO as ChatSession,
+  ConversationDTO as BackendConversation,
+  FeedbackDTO as BackendFeedback,
+  SessionDataDTO as SessionData,
+  LearningProgressDTO as LearningProgress,
+  ModuleDTO as Module,
+  AchievementDTO as Achievement,
+  LeaderboardEntryDTO as LeaderboardEntry,
+  ProgressDataDTO as ProgressData,
+  PaginationOptionsDTO as PaginationOptions,
+  BatchOperationResultDTO as BatchOperationResult,
+  SyncStatusDTO as SyncStatus,
+  APIResponse,
+  // Type guards
+  isAuthUser,
+  isUserProfile as isBackendUserProfile,
+  isChatMessage,
+  isConversation as isBackendConversation,
+  // Utilities
+  validateData,
+  makeValidatedRequest,
+  transformBackendResponse,
+  transformFrontendRequest
+} from './unified-api';
+
+// Export para manter compatibilidade com código existente
+export type {
+  AuthUser,
+  AuthState,
+  LoginCredentials,
+  RegisterData,
+  BackendUserProfile,
+  ChatMessage,
+  ChatSession,
+  BackendConversation,
+  BackendFeedback,
+  SessionData,
+  LearningProgress,
+  Module,
+  Achievement,
+  LeaderboardEntry,
+  ProgressData,
+  PaginationOptions,
+  BatchOperationResult,
+  SyncStatus,
+  APIResponse,
+};
+
+// Export functions separately
+export {
+  // Type guards
+  isAuthUser,
+  isBackendUserProfile,
+  isChatMessage,
+  isBackendConversation,
+  // Utilities
+  validateData,
+  makeValidatedRequest,
+  transformBackendResponse,
+  transformFrontendRequest
+};
+
 // ============================================
-// API TYPES - Substituição de any em APIs
+// LEGACY TYPES (Maintained for compatibility)
 // ============================================
 
-// Base API types
-export interface ApiResponse<T = unknown> {
-  data: T;
-  status: number;
-  message: string;
-  timestamp: number;
+// Note: Estes tipos são mantidos para compatibilidade com código legado
+// Para novos desenvolvimentos, use os tipos de unified-api.ts
+
+export interface SocialAuthCredentials {
+  providerId: 'google.com';
+  preferredDisplayName?: string;
+  preferredProfileType?: UserProfileType;
+}
+
+// ============================================
+// TYPE ALIASES (Maintained for compatibility)
+// ============================================
+
+export type UserProfileType = 'admin' | 'professional' | 'student' | 'patient' | 'caregiver';
+export type UserFocus = 'technical' | 'practical' | 'effects' | 'general' | 'empathetic';
+export type LanguagePreference = 'simple' | 'technical';
+export type ThemePreference = 'light' | 'dark' | 'auto';
+
+// Interfaces específicas mantidas para compatibilidade
+export interface UserPreferences {
+  language: LanguagePreference;
+  notifications: boolean;
+  theme: ThemePreference;
+  emailUpdates: boolean;
+  dataCollection: boolean;
+  lgpdConsent: boolean;
+}
+
+export interface UserHistory {
+  lastPersona: string;
+  conversationCount: number;
+  lastAccess: string;
+  preferredTopics: string[];
+  totalSessions: number;
+  totalTimeSpent: number; // em minutos
+  completedModules: string[];
+  achievements: string[];
+}
+
+export interface UserStats {
+  joinedAt: string;
+  lastActiveAt: string;
+  sessionCount: number;
+  messageCount: number;
+  averageSessionDuration: number;
+  favoritePersona: string;
+  completionRate: number;
+}
+
+// ============================================
+// CONVERSATION TYPES (LEGACY)
+// ============================================
+
+// Note: Estes tipos são mantidos apenas para compatibilidade
+// Use ChatMessageDTO e ConversationDTO do unified-api.ts para novos desenvolvimentos
+
+export interface BackendMessage {
+  id: string;
+  content: string;
+  role: 'user' | 'assistant';
+  persona?: string;
+  timestamp: string;
+  metadata?: {
+    confidence?: number;
+    sources?: string[];
+    processingTime?: number;
+    qaScore?: number;
+  };
+}
+
+// ============================================
+// FEEDBACK TYPES (LEGACY)
+// ============================================
+
+// Note: Use FeedbackDTO do unified-api.ts para novos desenvolvimentos
+
+// ============================================
+// ANALYTICS TYPES (LEGACY)
+// ============================================
+
+// Note: Use SessionDataDTO e LearningProgressDTO do unified-api.ts para novos desenvolvimentos
+
+// ============================================
+// LEGACY INTERFACES (Maintained for compatibility)
+// ============================================
+
+// Interface simples para User mantida para compatibilidade
+export interface User {
+  uid: string;
+  email?: string;
+  displayName?: string;
+  photoURL?: string;
+  isAnonymous: boolean;
+  provider?: string;
+}
+
+export interface UserProgress {
+  userId: string;
+  completedModules: string[];
+  totalXP: number;
+  currentLevel: number;
+  achievements: string[];
+  lastActivity: string;
+}
+
+export interface ApiResponse<T = any> {
   success: boolean;
+  data?: T;
+  error?: string;
+  message?: string;
 }
 
 export interface ApiError {
   code: string;
   message: string;
-  status: number;
-  details?: Record<string, unknown>;
-  timestamp: number;
-  path?: string;
-  method?: string;
+  status?: number;
+  timestamp?: number;
+  details?: Record<string, any>;
 }
 
-export interface PaginatedResponse<T> {
-  data: T[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-    hasNext: boolean;
-    hasPrev: boolean;
-  };
+// ============================================
+// GAMIFICATION TYPES (LEGACY)
+// ============================================
+
+// Note: Use AchievementDTO, LeaderboardEntryDTO e ProgressDataDTO do unified-api.ts
+
+// ============================================
+// API RESPONSE TYPES (LEGACY)
+// ============================================
+
+// Note: Use APIResponse e BatchOperationResultDTO do unified-api.ts
+
+// ============================================
+// SYNC TYPES (LEGACY)
+// ============================================
+
+// Note: Use SyncStatusDTO do unified-api.ts
+
+// ============================================
+// UTILITY TYPES
+// ============================================
+
+export interface QueryFilters {
+  [key: string]: any;
 }
 
-export interface ApiRequestConfig {
-  method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
-  headers?: Record<string, string>;
-  params?: Record<string, unknown>;
-  timeout?: number;
-  retries?: number;
-  cache?: boolean;
-}
+// ============================================
+// MIGRATION NOTICE
+// ============================================
 
-// Authentication API
-export interface AuthRequest {
-  email: string;
-  password: string;
-}
-
-export interface AuthResponse {
-  user: User;
-  token: string;
-  refreshToken: string;
-  expiresIn: number;
-}
-
-export interface RefreshTokenRequest {
-  refreshToken: string;
-}
-
-export interface ResetPasswordRequest {
-  email: string;
-}
-
-export interface ChangePasswordRequest {
-  currentPassword: string;
-  newPassword: string;
-}
-
-// User API
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  avatar?: string;
-  role: 'admin' | 'user' | 'moderator';
-  status: 'active' | 'inactive' | 'suspended';
-  createdAt: string;
-  updatedAt: string;
-  profile?: UserProfile;
-}
-
-export interface UserProfile {
-  bio?: string;
-  phone?: string;
-  address?: Address;
-  preferences: UserPreferences;
-  statistics: UserStatistics;
-}
-
-export interface UserPreferences {
-  theme: 'light' | 'dark' | 'auto';
-  language: string;
-  notifications: {
-    email: boolean;
-    push: boolean;
-    inApp: boolean;
-  };
-  privacy: {
-    profileVisible: boolean;
-    dataCollection: boolean;
-  };
-}
-
-export interface UserStatistics {
-  loginCount: number;
-  lastLogin: string;
-  totalTimeSpent: number;
-  modulesCompleted: number;
-  achievements: string[];
-}
-
-export interface Address {
-  street: string;
-  number: string;
-  complement?: string;
-  neighborhood: string;
-  city: string;
-  state: string;
-  country: string;
-  zipCode: string;
-}
-
-// Content/Module API
-export interface Module {
-  id: string;
-  title: string;
-  description: string;
-  content: ModuleContent[];
-  duration: number;
-  difficulty: 'beginner' | 'intermediate' | 'advanced';
-  category: string;
-  tags: string[];
-  prerequisites?: string[];
-  createdAt: string;
-  updatedAt: string;
-  author: {
-    id: string;
-    name: string;
-    avatar?: string;
-  };
-  statistics: ModuleStatistics;
-}
-
-export interface ModuleContent {
-  id: string;
-  type: 'text' | 'video' | 'image' | 'quiz' | 'interactive';
-  title: string;
-  data: TextContent | VideoContent | ImageContent | QuizContent | InteractiveContent;
-  order: number;
-}
-
-export interface TextContent {
-  content: string;
-  format: 'markdown' | 'html' | 'plain';
-}
-
-export interface VideoContent {
-  url: string;
-  duration: number;
-  thumbnail?: string;
-  captions?: string[];
-}
-
-export interface ImageContent {
-  url: string;
-  alt: string;
-  caption?: string;
-}
-
-export interface QuizContent {
-  questions: Question[];
-  passingScore: number;
-  timeLimit?: number;
-}
-
-export interface Question {
-  id: string;
-  type: 'multiple-choice' | 'true-false' | 'open-ended';
-  question: string;
-  options?: string[];
-  correctAnswer: string | string[];
-  explanation?: string;
-}
-
-export interface InteractiveContent {
-  type: 'simulation' | 'calculator' | 'diagram';
-  config: Record<string, unknown>;
-  data: Record<string, unknown>;
-}
-
-export interface ModuleStatistics {
-  views: number;
-  completions: number;
-  averageRating: number;
-  totalRatings: number;
-  averageTime: number;
-}
-
-// Progress API
-export interface UserProgress {
-  userId: string;
-  moduleId: string;
-  status: 'not_started' | 'in_progress' | 'completed';
-  progress: number; // 0-100
-  timeSpent: number;
-  startedAt?: string;
-  completedAt?: string;
-  currentSection?: string;
-  scores?: Record<string, number>;
-}
-
-export interface ProgressUpdate {
-  moduleId: string;
-  progress: number;
-  timeSpent: number;
-  currentSection: string;
-  completed?: boolean;
-}
-
-// Chat/Persona API
-export interface ChatMessage {
-  id?: string; // Optional para compatibilidade com services/api.ts
-  content: string;
-  role: 'user' | 'assistant';
-  timestamp: string | number; // Flexível para compatibilidade
-  persona?: string;
-  metadata?: ChatMessageMetadata;
-}
-
-export interface ChatMessageMetadata {
-  tokens?: number;
-  model?: string;
-  confidence?: number;
-  sources?: string[];
-  processingTime?: number;
-  // Propriedades específicas de fallback do services/api.ts
-  isFallback?: boolean;
-  fallbackSource?: 'cache' | 'local_knowledge' | 'emergency' | 'generic';
-  suggestion?: string;
-  emergency_contact?: string;
-}
-
-export interface ChatRequest {
-  message: string;
-  persona?: string;
-  context?: string[];
-  sessionId?: string;
-}
-
-export interface ChatResponse {
-  message: ChatMessage;
-  suggestions?: string[];
-  sources?: Reference[];
-  confidence: number;
-}
-
-export interface Reference {
-  title: string;
-  url: string;
-  excerpt: string;
-  relevance: number;
-}
-
-// Analytics API
-export interface AnalyticsEvent {
-  eventType: string;
-  userId?: string;
-  sessionId: string;
-  timestamp: string;
-  properties: Record<string, unknown>;
-  context: AnalyticsContext;
-}
-
-export interface AnalyticsContext {
-  page: {
-    url: string;
-    title: string;
-    referrer?: string;
-  };
-  device: {
-    type: 'desktop' | 'mobile' | 'tablet';
-    os: string;
-    browser: string;
-  };
-  user?: {
-    id: string;
-    segment: string;
-  };
-}
-
-export interface AnalyticsReport {
-  metric: string;
-  value: number;
-  change: number;
-  period: {
-    start: string;
-    end: string;
-  };
-  breakdown?: Array<{
-    key: string;
-    value: number;
-    percentage: number;
-  }>;
-}
-
-// File Upload API
-export interface FileUploadResponse {
-  url: string;
-  filename: string;
-  size: number;
-  mimeType: string;
-  hash: string;
-}
-
-export interface FileUploadRequest {
-  file: File;
-  directory?: string;
-  public?: boolean;
-  metadata?: Record<string, unknown>;
-}
-
-// Search API
-export interface SearchQuery {
-  q: string;
-  filters?: SearchFilters;
-  sort?: SearchSort;
-  pagination?: {
-    page: number;
-    limit: number;
-  };
-}
-
-export interface SearchFilters {
-  category?: string[];
-  dateRange?: {
-    start: string;
-    end: string;
-  };
-  tags?: string[];
-  difficulty?: string[];
-}
-
-export interface SearchSort {
-  field: string;
-  direction: 'asc' | 'desc';
-}
-
-export interface SearchResult<T = unknown> {
-  item: T;
-  score: number;
-  highlights: Record<string, string[]>;
-}
-
-export interface SearchResponse<T = unknown> {
-  results: SearchResult<T>[];
-  total: number;
-  took: number;
-  suggestions?: string[];
-  facets?: Record<string, SearchFacet>;
-}
-
-export interface SearchFacet {
-  name: string;
-  values: Array<{
-    value: string;
-    count: number;
-  }>;
-}
-
-// Generic API utilities
-export type ApiMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
-
-export interface RequestOptions {
-  headers?: Record<string, string>;
-  timeout?: number;
-  signal?: AbortSignal;
-}
-
-export type ApiEndpoint<TRequest = unknown, TResponse = unknown> = {
-  method: ApiMethod;
-  path: string;
-  request?: TRequest;
-  response: TResponse;
-};
-
-// Error handling
-export class ApiErrorClass extends Error {
-  constructor(
-    public code: string,
-    public status: number,
-    message: string,
-    public details?: Record<string, unknown>
-  ) {
-    super(message);
-    this.name = 'ApiError';
-  }
-}
-
-// Utility types
-export type ExtractApiResponse<T> = T extends ApiResponse<infer R> ? R : never;
-export type ExtractApiRequest<T> = T extends ApiEndpoint<infer R, unknown> ? R : never;
+/**
+ * AVISO DE MIGRAÇÃO
+ *
+ * Este arquivo está sendo gradualmente migrado para o novo sistema unificado
+ * em unified-api.ts. Para novos desenvolvimentos:
+ *
+ * 1. Use os tipos do unified-api.ts que incluem:
+ *    - Validação com Zod schemas
+ *    - Conversão automática snake_case ↔ camelCase
+ *    - Type guards robustos
+ *    - Utilitários de API
+ *
+ * 2. Os tipos legados neste arquivo são mantidos apenas para compatibilidade
+ *
+ * 3. Migre gradualmente o código existente para usar unified-api.ts
+ *
+ * Exemplo de migração:
+ * ```typescript
+ * // Antigo
+ * import { ChatMessage, APIResponse } from './api';
+ *
+ * // Novo
+ * import { ChatMessageDTO, APIResponse } from './unified-api';
+ * ```
+ */

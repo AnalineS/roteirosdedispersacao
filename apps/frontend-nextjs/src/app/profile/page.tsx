@@ -17,7 +17,8 @@ import {
 } from 'lucide-react';
 import { useSafeAuth as useAuth } from '@/hooks/useSafeAuth';
 import { SocialAuthButtons } from '@/components/auth';
-import type { UserFocus } from '@/lib/firebase/types';
+import type { UserFocus } from '@/types/api';
+import type { UserPreferencesDTO } from '@/types/unified-api';
 import { SocialProfile, AvatarUploader, EmailPreferences, ConnectedAccounts } from '@/components/profile';
 
 interface ProfileFormData {
@@ -25,12 +26,7 @@ interface ProfileFormData {
   email: string;
   profileType: 'admin' | 'professional' | 'student' | 'patient' | 'caregiver';
   focus: UserFocus;
-  preferences: {
-    language: 'simple' | 'technical';
-    notifications: boolean;
-    theme: 'light' | 'dark' | 'auto';
-    emailUpdates: boolean;
-  };
+  preferences: UserPreferencesDTO;
 }
 
 export default function ProfilePage() {
@@ -54,7 +50,9 @@ export default function ProfilePage() {
       language: 'simple',
       notifications: true,
       theme: 'auto',
-      emailUpdates: true
+      emailUpdates: true,
+      dataCollection: false,
+      lgpdConsent: false
     }
   });
 
@@ -82,7 +80,9 @@ export default function ProfilePage() {
           language: profile.preferences?.language || 'simple',
           notifications: profile.preferences?.notifications ?? true,
           theme: profile.preferences?.theme || 'auto',
-          emailUpdates: profile.preferences?.emailUpdates ?? true
+          emailUpdates: profile.preferences?.emailUpdates ?? true,
+          dataCollection: profile.preferences?.dataCollection ?? false,
+          lgpdConsent: profile.preferences?.lgpdConsent ?? false
         }
       });
     }
@@ -96,9 +96,11 @@ export default function ProfilePage() {
     try {
       const result = await updateUserProfile({
         displayName: formData.displayName,
-        type: formData.profileType,
+        type: formData.profileType === 'caregiver' ? 'patient' : formData.profileType as 'admin' | 'professional' | 'student' | 'patient',
         focus: formData.focus,
-        preferences: formData.preferences
+        preferences: {
+          ...formData.preferences
+        }
       });
 
       if (result.success) {
@@ -173,7 +175,7 @@ export default function ProfilePage() {
     return null; // Will redirect
   }
 
-  const connectedProviders = user?.providerData?.map((p: any) => p.providerId) || [];
+  const connectedProviders = user?.provider ? [user.provider] : [];
 
   return (
     <div className="profile-container">

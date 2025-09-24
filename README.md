@@ -1,8 +1,17 @@
 # 🏥 Roteiro de Dispensação - Hanseníase
 
-Sistema moderno de apoio à dispensação farmacêutica para hanseníase, desenvolvido com tecnologias de ponta e IA.
+**Plataforma educacional médica moderna** para apoio à dispensação farmacêutica de hanseníase, desenvolvida com **arquitetura full-stack**, **IA conversacional avançada** e **automação inteligente**.
 
-> **✅ Sistema de Labels Inteligente ATIVO**: Labels automáticos baseados em arquivos alterados, branches e análise de impacto.
+## 🎯 Visão Técnica
+
+Sistema **híbrido cloud-native** que combina:
+- **Frontend moderno**: Next.js 14 + React 19 + TypeScript
+- **Backend especializado**: Flask 3.1 + RAG + Vector DB
+- **IA conversacional**: Personas especializadas (Dr. Gasnelio + Gá)
+- **Automação avançada**: SuperClaude Framework + CI/CD inteligente
+- **Compliance total**: LGPD + WCAG 2.1 AA + Segurança médica
+
+> **🤖 SuperClaude Framework integrado**: Agentes especializados para documentação técnica, análise de requisitos e arquitetura de código.
 
 ## 📁 Estrutura do Projeto
 
@@ -18,23 +27,46 @@ roteiro-dispensacao/
 └── ⚙️  firebase.json     # Configuração Firebase
 ```
 
-## [START] Tecnologias
+## 🔧 Stack Tecnológico
 
-### Frontend
-- **Next.js 14** + **React 19** + **TypeScript**
-- **App Router** para SSR otimizado
-- **TailwindCSS** para estilização
-- **PWA** com Service Worker
-- **Testes extensivos** (15 tipos diferentes)
+### Frontend Architecture (Next.js 14)
+```typescript
+// App Router + React Server Components
+- Framework: Next.js 14.2+ (App Router)
+- Runtime: React 19 + TypeScript 5.0+
+- Styling: TailwindCSS 3.4 + CSS Modules
+- State: Zustand + React Query (TanStack)
+- Testing: Jest + Playwright + Cypress (15 test types)
+- PWA: Service Worker + Offline support
+- Accessibility: WCAG 2.1 AA compliant
+```
 
-### Backend
-- **Flask 3.1** + **Python**
-- **OpenRouter API** para IA conversacional
-- **Sistema RAG** com ChromaDB e OpenAI embeddings
-- **Google Cloud Storage + SQLite** para persistência híbrida
-- **Supabase** para vector store (pgvector)
-- **OCR/OpenCV** para processamento multimodal
-- **Pydantic** para validação
+### Backend Architecture (Flask 3.1)
+```python
+# Real Stack - Microservices + RAG + Vector DB
+- Framework: Flask 3.1 + Blueprints modulares
+- AI/ML: OpenRouter API + Llama 3.2 + Kimie K2
+- Vector Store: Supabase PostgreSQL + pgvector
+- RAG System: ChromaDB + OpenAI embeddings
+- Storage: Google Cloud Storage + SQLite híbrido
+- Cache: cachetools (memory) + Google Cloud Storage
+- Validation: Pydantic 2.0 + jsonschema
+- OCR: OpenCV + Tesseract + EasyOCR + PIL
+- Security: PyJWT + cryptography + bleach + CORS
+```
+
+### DevOps & Cloud Architecture
+```yaml
+# Real Infrastructure - Google Cloud Native
+- Cloud: Google Cloud Run (containers)
+- Storage: Google Cloud Storage (static + backups)
+- Database: Supabase PostgreSQL + pgvector (vectors)
+- CI/CD: GitHub Actions + Docker multi-stage
+- Monitoring: Google Cloud Logging + Monitoring
+- Security: CodeQL + LGPD compliance + bandit
+- Automation: SuperClaude Framework + Quality hooks
+- Testing: 15 tipos de testes automatizados (Jest + Pytest)
+```
 
 ## 📁 Estrutura do Projeto
 

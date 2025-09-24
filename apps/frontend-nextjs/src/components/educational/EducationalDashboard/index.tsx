@@ -506,7 +506,7 @@ export default function EducationalDashboard({ currentPersona }: EducationalDash
                 {currentQuiz && (
                   <EducationalQuizComponent
                     quiz={currentQuiz}
-                    userLevel={profile?.professional ? 'profissional' : 'estudante'}
+                    userLevel={profile?.type === 'professional' ? 'profissional' : 'estudante'}
                     onQuizComplete={(attempt: QuizAttempt) => {
                       if (typeof window !== 'undefined' && window.gtag) {
                         window.gtag('event', 'quiz_completed', {
@@ -515,7 +515,7 @@ export default function EducationalDashboard({ currentPersona }: EducationalDash
                           custom_parameters: {
                             medical_context: 'hanseniase_education',
                             quiz_score: attempt.score,
-                            user_level: profile?.professional ? 'profissional' : 'estudante'
+                            user_level: profile?.type === 'professional' ? 'profissional' : 'estudante'
                           }
                         });
                       }
@@ -530,7 +530,7 @@ export default function EducationalDashboard({ currentPersona }: EducationalDash
                           event_label: 'quiz_abandonment',
                           custom_parameters: {
                             medical_context: 'hanseniase_education',
-                            user_level: profile?.professional ? 'profissional' : 'estudante'
+                            user_level: profile?.type === 'professional' ? 'profissional' : 'estudante'
                           }
                         });
                       }

@@ -13,6 +13,8 @@ from datetime import datetime, timedelta
 from dataclasses import dataclass
 from enum import Enum
 import requests
+import aiohttp
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -306,37 +308,46 @@ class AIProviderManager:
         temperature: float,
         max_tokens: Optional[int]
     ) -> Optional[str]:
-        """Chama OpenRouter API"""
-        
+        """Chama OpenRouter API usando aiohttp para async real"""
+
         if not self.openrouter_key:
             raise ValueError("OpenRouter API key não configurada no GitHub")
-        
+
         headers = {
             "Authorization": f"Bearer {self.openrouter_key}",
             "Content-Type": "application/json",
             "HTTP-Referer": "https://github.com/roteiro-dispensacao",
             "X-Title": "Roteiro de Dispensação PQT-U"
         }
-        
+
         data = {
             "model": model_config.name,
             "messages": messages,
             "temperature": temperature,
             "max_tokens": max_tokens or model_config.max_tokens
         }
-        
-        response = requests.post(
-            model_config.endpoint_url,
-            headers=headers,
-            json=data,
-            timeout=model_config.timeout_seconds
-        )
-        
-        if response.status_code == 200:
-            result = response.json()
-            return result["choices"][0]["message"]["content"]
-        else:
-            raise Exception(f"OpenRouter API error: {response.status_code} - {response.text}")
+
+        timeout = aiohttp.ClientTimeout(total=model_config.timeout_seconds)
+
+        try:
+            async with aiohttp.ClientSession(timeout=timeout) as session:
+                async with session.post(
+                    model_config.endpoint_url,
+                    headers=headers,
+                    json=data
+                ) as response:
+
+                    if response.status == 200:
+                        result = await response.json()
+                        return result["choices"][0]["message"]["content"]
+                    else:
+                        error_text = await response.text()
+                        raise Exception(f"OpenRouter API error: {response.status} - {error_text}")
+
+        except asyncio.TimeoutError:
+            raise Exception(f"OpenRouter API timeout after {model_config.timeout_seconds}s")
+        except aiohttp.ClientError as e:
+            raise Exception(f"OpenRouter API connection error: {e}")
     
     async def _call_huggingface_api(
         self,
@@ -345,19 +356,19 @@ class AIProviderManager:
         temperature: float,
         max_tokens: Optional[int]
     ) -> Optional[str]:
-        """Chama HuggingFace API"""
-        
+        """Chama HuggingFace API usando aiohttp para async real"""
+
         if not self.huggingface_key:
             raise ValueError("HuggingFace API key não configurada no GitHub")
-        
+
         headers = {
             "Authorization": f"Bearer {self.huggingface_key}",
             "Content-Type": "application/json"
         }
-        
+
         # Converter mensagens para texto
         text_input = "\n".join([f"{msg['role']}: {msg['content']}" for msg in messages])
-        
+
         data = {
             "inputs": text_input,
             "parameters": {
@@ -365,21 +376,30 @@ class AIProviderManager:
                 "max_new_tokens": max_tokens or model_config.max_tokens
             }
         }
-        
-        response = requests.post(
-            model_config.endpoint_url,
-            headers=headers,
-            json=data,
-            timeout=model_config.timeout_seconds
-        )
-        
-        if response.status_code == 200:
-            result = response.json()
-            if isinstance(result, list) and result:
-                return result[0].get("generated_text", "")
-            return str(result)
-        else:
-            raise Exception(f"HuggingFace API error: {response.status_code} - {response.text}")
+
+        timeout = aiohttp.ClientTimeout(total=model_config.timeout_seconds)
+
+        try:
+            async with aiohttp.ClientSession(timeout=timeout) as session:
+                async with session.post(
+                    model_config.endpoint_url,
+                    headers=headers,
+                    json=data
+                ) as response:
+
+                    if response.status == 200:
+                        result = await response.json()
+                        if isinstance(result, list) and result:
+                            return result[0].get("generated_text", "")
+                        return str(result)
+                    else:
+                        error_text = await response.text()
+                        raise Exception(f"HuggingFace API error: {response.status} - {error_text}")
+
+        except asyncio.TimeoutError:
+            raise Exception(f"HuggingFace API timeout after {model_config.timeout_seconds}s")
+        except aiohttp.ClientError as e:
+            raise Exception(f"HuggingFace API connection error: {e}")
     
     def _generate_fallback_response(self, messages: List[Dict]) -> str:
         """Gera resposta fallback quando APIs falham"""

@@ -15,13 +15,20 @@ import hashlib
 # Importar dependências do sistema existente
 try:
     from core.dependencies import get_cache, get_rag, get_config
-    from services.ai_provider_manager import generate_ai_response, get_ai_health_status
+    from services.ai.ai_provider_manager import generate_ai_response, get_ai_health_status
     from services.enhanced_rag_system import get_enhanced_context, cache_rag_response
     from services.scope_detection_system import detect_question_scope, get_limitation_response
     from services.personas import get_persona_prompt
     DEPENDENCIES_AVAILABLE = True
 except ImportError as e:
-    logging.warning(f"Dependências não disponíveis para Celery tasks: {e}")
+    # Only log warning if not in clean startup mode
+    import os
+    clean_startup = os.environ.get('CLEAN_STARTUP', 'true').lower() == 'true'
+    environment = os.environ.get('ENVIRONMENT', 'development')
+
+    if not (clean_startup and environment in ['development', 'testing']):
+        logging.warning(f"Dependências não disponíveis para Celery tasks: {e}")
+
     DEPENDENCIES_AVAILABLE = False
 
 logger = logging.getLogger(__name__)

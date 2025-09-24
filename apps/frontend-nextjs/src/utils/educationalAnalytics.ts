@@ -278,7 +278,7 @@ export class EducationalMonitoringSystem {
     });
 
     // Track como métrica médica
-    AnalyticsFirestoreCache.trackMedicalMetric(caseSession.id, {
+    AnalyticsFirestoreCache.trackMedicalMetric('current-session', {
       type: 'task_completion',
       value: caseSession.totalScore,
       context: {
