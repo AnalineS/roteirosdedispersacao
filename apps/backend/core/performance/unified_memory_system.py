@@ -25,11 +25,13 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class MemoryThresholds:
-    """Memory thresholds for medical system safety"""
-    emergency: float = 90.0      # Critical - immediate action
-    warning: float = 80.0        # High - proactive cleanup
-    normal: float = 70.0         # Normal operation
-    target: float = 50.0         # Target after optimization
+    """Memory thresholds for medical system safety - REALISTIC SYSTEM THRESHOLDS"""
+    emergency: float = 98.0      # Critical - immediate action (system %)
+    warning: float = 95.0        # High - proactive cleanup (system %)
+    normal: float = 90.0         # Normal operation (system %)
+    target: float = 85.0         # Target after optimization (system %)
+
+    # Windows typically runs at 80-85% normally, so these are realistic
 
 @dataclass
 class MedicalMemoryStats:
@@ -106,11 +108,14 @@ class UnifiedMemoryManager:
                     except:
                         continue
 
-            # Determine status based on thresholds
+            # Determine status based on REALISTIC system thresholds
             system_percent = system_memory.percent
-            if system_percent >= self.thresholds.emergency:
+            process_percent = round(process.memory_percent(), 1)
+
+            # Use realistic system thresholds (Windows typically at 80-85%)
+            if system_percent >= self.thresholds.emergency:  # 98%+
                 status = 'emergency'
-            elif system_percent >= self.thresholds.warning:
+            elif system_percent >= self.thresholds.warning:  # 95%+
                 status = 'warning'
             else:
                 status = 'normal'
@@ -148,6 +153,7 @@ class UnifiedMemoryManager:
         """Check if memory is in critical state requiring immediate action"""
         try:
             stats = self.get_memory_stats()
+            # Use realistic system threshold (98%+)
             return stats.system_percent >= self.thresholds.emergency
         except:
             # Assume critical if we can't determine state (medical safety)

@@ -9,6 +9,7 @@ try:
     from .rag.real_rag_system import get_real_rag_system, RealRAGSystem
     from .rag.real_vector_store import get_real_vector_store, RealVectorStore
     from .cache.real_cloud_cache import get_real_cloud_cache, RealCloudCache
+    from .cache.cloud_native_cache import get_cloud_cache, RealCloudNativeCache
     RAG_SERVICES_AVAILABLE = True
 except ImportError as e:
     RAG_SERVICES_AVAILABLE = False
@@ -18,14 +19,16 @@ except ImportError as e:
     RealVectorStore = None
     get_real_cloud_cache = None
     RealCloudCache = None
+    get_cloud_cache = None
+    RealCloudNativeCache = None
 
 # Backward compatibility aliases (all point to REAL services)
 get_rag_system = get_real_rag_system
 SupabaseRAGSystem = RealRAGSystem
 get_vector_store = get_real_vector_store
 SupabaseVectorStore = RealVectorStore
-get_cloud_cache = get_real_cloud_cache
-CloudNativeCache = RealCloudCache
+get_cloud_cache = get_cloud_cache  # Use the correct cloud_native_cache function
+CloudNativeCache = RealCloudNativeCache  # CORRECTED: Use RealCloudNativeCache
 
 __all__ = [
     # Real services

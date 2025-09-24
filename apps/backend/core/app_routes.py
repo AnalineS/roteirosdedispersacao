@@ -50,6 +50,9 @@ def setup_routes(app: Flask) -> None:
     """Setup root routes for medical platform"""
     @app.route('/')
     def root():
+        # Get dynamic list of registered blueprints
+        blueprints_list = [bp.name for bp in app.blueprints.values()]
+
         return jsonify({
             "api_name": "Roteiros de Dispensação PQT-U",
             "version": "v1.0.0",
@@ -58,6 +61,8 @@ def setup_routes(app: Flask) -> None:
             "environment": EnvironmentConfig.get_current(),
             "status": "operational",
             "memory_management": "unified_system",
+            "blueprints": blueprints_list,
+            "documentation": "/docs/swagger-ui",
             "timestamp": datetime.now().isoformat()
         })
 
