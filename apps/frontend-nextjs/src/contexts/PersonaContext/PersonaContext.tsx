@@ -1,14 +1,8 @@
 'use client';
 
-/**
- * PersonaContext - Refactored for better maintainability
- * Reduced from 735 lines to ~200 lines by extracting modules
- * All functionality preserved for medical education platform
- */
-
 import React, { createContext, useContext, useCallback, useEffect, useMemo, useState } from 'react';
 import { usePersonasEnhanced } from '@/hooks/usePersonasEnhanced';
-import { useSafePersonaFromURL } from '@/hooks/useSafePersonaFromURL';
+import { useSafePersonaFromURL, type ValidPersonaId } from '@/hooks/useSafePersonaFromURL';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import { ErrorMonitorService } from '@/components/monitoring/ErrorMonitor';
@@ -17,25 +11,26 @@ import type {
   PersonaContextValue,
   PersonaProviderProps,
   PersonaHistoryEntryInternal,
-  ValidPersonaId as ValidPersonaIdType
-} from './PersonaContext/types';
+  ValidPersonaId as ValidPersonaIdType,
+  PersonaSource
+} from './types';
 
 import {
   getPersonaConfigWithFallback,
   createAvailablePersonasRecord,
   addToPersonaHistory,
   determineErrorState
-} from './PersonaContext/utils';
+} from './utils';
 
 import {
   trackPersonasLoaded,
   trackPersonaResolved,
   trackActivePersonaDebug,
   trackLocalStorageError
-} from './PersonaContext/analytics';
+} from './analytics';
 
-import { usePersonaResolution } from './PersonaContext/usePersonaResolution';
-import { usePersonaActions } from './PersonaContext/usePersonaActions';
+import { usePersonaResolution } from './usePersonaResolution';
+import { usePersonaActions } from './usePersonaActions';
 
 // ============================================
 // CONTEXTO E PROVIDER
@@ -204,7 +199,6 @@ export function PersonaProvider({ children, config = {} }: PersonaProviderProps)
     return profileRec && profileRec in ['ga', 'dr_gasnelio'] ? profileRec as ValidPersonaIdType : 'ga';
   }, [getProfileRecommendation]);
 
-
   // ============================================
   // VALOR DO CONTEXTO
   // ============================================
@@ -251,11 +245,11 @@ export function PersonaProvider({ children, config = {} }: PersonaProviderProps)
 
 export function usePersonaContext(): PersonaContextValue {
   const context = useContext(PersonaContext);
-  
+
   if (!context) {
     throw new Error('usePersonaContext deve ser usado dentro de um PersonaProvider');
   }
-  
+
   return context;
 }
 
