@@ -4,6 +4,7 @@ RAG Health Checker - Monitors RAG system status for health endpoints
 Provides detailed status information for debugging and monitoring
 """
 
+import os
 import logging
 from typing import Dict, Any, List
 from datetime import datetime

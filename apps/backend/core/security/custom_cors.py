@@ -93,13 +93,13 @@ class CustomCORSMiddleware:
         """Adiciona todos os headers CORS necessários"""
         origin = request.headers.get('Origin')
         
-        # Access-Control-Allow-Origin
+        # Access-Control-Allow-Origin - SEMPRE adicionar o header
         if origin and self.is_origin_allowed(origin):
             response.headers['Access-Control-Allow-Origin'] = origin
         elif '*' in self.origins:
             response.headers['Access-Control-Allow-Origin'] = '*'
-        elif request.method == 'OPTIONS':
-            # Para OPTIONS sem Origin, adicionar primeiro origin permitido ou *
+        else:
+            # Fallback: sempre adicionar um header CORS válido
             if self.origins and self.origins[0] != '*':
                 response.headers['Access-Control-Allow-Origin'] = self.origins[0]
             else:
