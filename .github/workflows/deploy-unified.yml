@@ -593,7 +593,7 @@ jobs:
   enhanced-security-quality:
     name: "🔒 Enhanced Security & Quality Analysis"
     runs-on: ubuntu-latest
-    needs: [environment-preparation, backend-quality-gates]
+    needs: [environment-preparation]
     if: always() && !failure()
     timeout-minutes: 30
     outputs:
@@ -916,7 +916,7 @@ jobs:
   backend-deploy:
     name: "🔧 Backend Deploy (Cloud Run)"
     runs-on: ubuntu-latest
-    needs: [environment-preparation, enhanced-security-quality, comprehensive-backend-tests]
+    needs: [environment-preparation, comprehensive-backend-tests, backend-quality-gates, enhanced-security-quality]
     if: needs.environment-preparation.outputs.deploy-backend == 'true' && (needs.comprehensive-backend-tests.result == 'success' || needs.comprehensive-backend-tests.result == 'skipped')
     timeout-minutes: 55
     defaults:
