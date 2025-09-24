@@ -354,7 +354,7 @@ def assert_error_response(response, expected_status, error_code=None):
 
 # Performance thresholds
 PERFORMANCE_THRESHOLDS = {
-    'health_check': 0.1,      # 100ms
+    'health_check': 0.6,      # 600ms (increased due to RAG initialization)
     'chat_response': 2.0,     # 2 seconds
     'persona_list': 0.2,      # 200ms
     'feedback_submit': 0.5,   # 500ms

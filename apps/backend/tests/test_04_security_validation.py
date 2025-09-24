@@ -374,9 +374,9 @@ class TestDataProtectionSecurity:
 
         # Trigger various error conditions
         error_tests = [
-            ('GET', '/nonexistent/endpoint'),
+            ('GET', '/nonexistent/endpoint', None),
             ('POST', '/api/v1/chat', {'invalid': 'data'}),
-            ('PUT', '/api/v1/health'),  # Wrong method
+            ('PUT', '/api/v1/health', None),  # Wrong method
             ('POST', '/api/v1/feedback', {'malformed': 'json'})
         ]
 

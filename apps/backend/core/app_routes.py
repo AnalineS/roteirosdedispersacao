@@ -19,8 +19,23 @@ def setup_error_handlers(app: Flask) -> None:
         return jsonify({
             "error": "Endpoint não encontrado",
             "error_code": "NOT_FOUND",
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
+            "available_endpoints": [
+                "/api/v1/health",
+                "/api/v1/personas",
+                "/api/v1/chat",
+                "/api/v1/feedback"
+            ]
         }), 404
+
+    @app.errorhandler(405)
+    def method_not_allowed(error):
+        return jsonify({
+            "error": "Método não permitido",
+            "error_code": "METHOD_NOT_ALLOWED",
+            "timestamp": datetime.now().isoformat(),
+            "allowed_methods": ["GET", "POST", "OPTIONS"]
+        }), 405
 
     @app.errorhandler(500)
     def internal_error(error):
@@ -38,6 +53,7 @@ def setup_routes(app: Flask) -> None:
         return jsonify({
             "api_name": "Roteiros de Dispensação PQT-U",
             "version": "v1.0.0",
+            "api_version": "v1",
             "description": "Sistema educacional para dispensação farmacêutica",
             "environment": EnvironmentConfig.get_current(),
             "status": "operational",

@@ -98,6 +98,12 @@ class CustomCORSMiddleware:
             response.headers['Access-Control-Allow-Origin'] = origin
         elif '*' in self.origins:
             response.headers['Access-Control-Allow-Origin'] = '*'
+        elif request.method == 'OPTIONS':
+            # Para OPTIONS sem Origin, adicionar primeiro origin permitido ou *
+            if self.origins and self.origins[0] != '*':
+                response.headers['Access-Control-Allow-Origin'] = self.origins[0]
+            else:
+                response.headers['Access-Control-Allow-Origin'] = '*'
         
         # Outros headers CORS
         response.headers['Access-Control-Allow-Methods'] = ', '.join(self.methods)
