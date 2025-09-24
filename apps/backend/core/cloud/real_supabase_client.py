@@ -53,11 +53,11 @@ class RealSupabaseClient:
 
         if testing_mode:
             # In testing mode, just validate secrets are present and well-formatted
-            if not self.url or not self.key:
+            if not self.supabase_url or not self.supabase_key:
                 raise ConnectionError("Missing Supabase credentials")
-            if not self.url.startswith('https://'):
+            if not self.supabase_url.startswith('https://'):
                 raise ConnectionError("Invalid Supabase URL format")
-            if len(self.key) < 20:
+            if len(self.supabase_key) < 20:
                 raise ConnectionError("Invalid Supabase key format")
             logger.info("✅ Supabase secrets validation passed (testing mode)")
         else:
@@ -293,7 +293,7 @@ class RealSupabaseClient:
         if testing_mode:
             # In testing mode, just validate secrets
             try:
-                if self.url and self.key and self.url.startswith('https://') and len(self.key) > 20:
+                if self.supabase_url and self.supabase_key and self.supabase_url.startswith('https://') and len(self.supabase_key) > 20:
                     supabase_healthy = True
                     supabase_error = None
                 else:

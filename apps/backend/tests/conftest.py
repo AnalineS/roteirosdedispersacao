@@ -19,7 +19,10 @@ import time
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import Flask app and dependencies
-from main import create_app
+try:
+    from main_ultra_optimized import create_app
+except ImportError:
+    from main import create_app
 from app_config import config, EnvironmentConfig
 
 class TestConfig:

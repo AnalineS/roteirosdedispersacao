@@ -71,7 +71,10 @@ class BackendValidator:
             os.environ['SECRET_KEY'] = 'test-secret-key'
             os.environ['RATE_LIMIT_ENABLED'] = 'false'
 
-            from main import create_app
+            try:
+                from main_ultra_optimized import create_app
+            except ImportError:
+                from main import create_app
             app = create_app()
 
             if app is not None:
@@ -102,7 +105,10 @@ class BackendValidator:
         print("\n🌐 VALIDATING BASIC ENDPOINTS...")
 
         try:
-            from main import create_app
+            try:
+                from main_ultra_optimized import create_app
+            except ImportError:
+                from main import create_app
 
             app = create_app()
             client = app.test_client()
@@ -286,7 +292,10 @@ class BackendValidator:
         print("\n⚡ VALIDATING PERFORMANCE...")
 
         try:
-            from main import create_app
+            try:
+                from main_ultra_optimized import create_app
+            except ImportError:
+                from main import create_app
 
             app = create_app()
             client = app.test_client()
