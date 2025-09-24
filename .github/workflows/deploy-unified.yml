@@ -367,7 +367,8 @@ jobs:
             tesseract-ocr \
             tesseract-ocr-por \
             tesseract-ocr-eng \
-            libgl1-mesa-glx \
+            libgl1-mesa-dri \
+            libglx-mesa0 \
             libglib2.0-0 \
             libsm6 \
             libxext6 \
