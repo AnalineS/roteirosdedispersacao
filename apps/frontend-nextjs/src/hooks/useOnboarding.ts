@@ -11,7 +11,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useGoogleAnalytics } from '@/components/analytics/GoogleAnalyticsSetup';
+import { useGoogleAnalytics } from '@/components/GoogleAnalytics';
 
 interface UserRole {
   id: 'medical' | 'student' | 'patient';

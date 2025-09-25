@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { knowledgeSearch, EnhancedMessage } from '@/services/knowledgeSearch';
 // Removed astraClient import as it was deleted
 import { SentimentResult } from '@/services/sentimentAnalysis';
+import { SimpleRAGStats as RAGStats } from '@/types/rag-knowledge';
 
 // Compatible RAGResponse interface
 interface RAGResponse {
@@ -15,11 +16,7 @@ interface RAGResponse {
   processing_time: number;
 }
 
-interface RAGStats {
-  totalQueries: number;
-  avgResponseTime: number;
-  cacheHitRate: number;
-}
+// RAGStats now imported from unified types
 
 interface UseKnowledgeBaseOptions {
   prefetchCommon?: boolean;

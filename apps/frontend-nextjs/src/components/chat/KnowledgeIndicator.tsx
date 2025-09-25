@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { RAGStats } from '@/types/rag-knowledge';
 import { RAGResponse } from '@/services/supabaseRAGClient';
 import { theme } from '@/config/theme';
 
@@ -12,14 +13,7 @@ interface KnowledgeChunk {
   metadata?: Record<string, any>;
 }
 
-// Estatísticas do sistema RAG
-interface RAGStats {
-  documentsIndexed?: number;
-  totalQueries?: number;
-  averageResponseTime?: number;
-  cacheHitRate?: number;
-  successRate?: number;
-}
+// RAGStats imported from unified types
 
 interface KnowledgeIndicatorProps {
   searchResult?: RAGResponse | null;

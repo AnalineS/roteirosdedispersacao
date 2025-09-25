@@ -9,6 +9,7 @@ export * from './api';
 export * from './components';
 export * from './contexts';
 export * from './utils';
+export * from './rag-knowledge';
 
 // Import types needed for utility functions
 import type { APIResponse, ApiError } from './api';

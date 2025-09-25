@@ -26,10 +26,21 @@ def chat():
         if not message:
             return jsonify({
                 'error': 'Message is required',
-                'error_code': 'MISSING_MESSAGE'
+                'error_code': 'MISSING_MESSAGE',
+                'timestamp': datetime.now().isoformat()
             }), 400
 
         persona = data.get('persona', 'gasnelio')
+
+        # Validate persona
+        valid_personas = ['gasnelio', 'dr_gasnelio', 'ga', 'ga_empathetic']
+        if persona not in valid_personas:
+            return jsonify({
+                'error': 'Invalid persona specified',
+                'error_code': 'INVALID_PERSONA',
+                'valid_personas': valid_personas,
+                'timestamp': datetime.now().isoformat()
+            }), 400
 
         # Map persona names for RAG system
         rag_persona = 'dr_gasnelio' if persona in ['gasnelio', 'dr_gasnelio'] else 'ga_empathetic'
@@ -136,29 +147,43 @@ def get_personas():
 
 @medical_core_bp.route('/health', methods=['GET'])
 def health_check():
-    """Comprehensive health check with RAG status"""
-    # Check RAG system status
+    """Fast health check for testing and monitoring"""
+    # Fast RAG status check only
     rag_status = 'UNKNOWN'
-    rag_details = {}
+
+    # Get detailed parameter for comprehensive check
+    detailed = request.args.get('detailed', 'false').lower() == 'true'
 
     try:
-        from services.rag.rag_health_checker import get_rag_simple_status, get_rag_health
+        from services.rag.rag_health_checker import get_rag_simple_status
         rag_status = get_rag_simple_status()
-        rag_details = get_rag_health()
+
+        # Only run detailed check if explicitly requested
+        if detailed:
+            from services.rag.rag_health_checker import get_rag_health
+            rag_details = get_rag_health()
+        else:
+            rag_details = {'note': 'Use ?detailed=true for comprehensive RAG status'}
+
     except Exception as e:
         logger.warning(f"RAG health check failed: {e}")
         rag_status = 'ERROR'
+        rag_details = {'error': str(e)} if detailed else {}
 
     health_status = {
         'status': 'healthy',
         'medical_system': 'operational',
         'ai_models': 'available',
         'validation_system': 'active',
-        'rag': rag_status,  # This will show "RAG: OK" when working
-        'rag_details': rag_details,
+        'rag': rag_status,
         'timestamp': datetime.now().isoformat(),
         'version': '1.0.0'
     }
+
+    # Only include detailed info when requested
+    if detailed or rag_details.get('error'):
+        health_status['rag_details'] = rag_details
+
     return jsonify(health_status), 200
 
 @medical_core_bp.route('/health/live', methods=['GET'])
@@ -200,7 +225,8 @@ def validate_medical_response():
         logger.error(f"Validation error: {e}")
         return jsonify({
             'error': 'Validation failed',
-            'error_code': 'VALIDATION_ERROR'
+            'error_code': 'VALIDATION_ERROR',
+            'timestamp': datetime.now().isoformat()
         }), 500
 
 # Export blueprint

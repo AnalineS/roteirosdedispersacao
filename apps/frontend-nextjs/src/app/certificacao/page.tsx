@@ -130,6 +130,7 @@ Conclusão realizada em {issueDate}, com {casesCompleted} casos clínicos resolv
         startDate: new Date(),
         lastActivity: new Date(),
         casesCompleted: [],
+        totalScore: 0,
         averageScore: 0,
         totalTimeSpent: 0,
         certificationStatus: 'not_started',

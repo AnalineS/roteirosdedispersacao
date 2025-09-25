@@ -5,6 +5,7 @@ import { useOptimizedEffect, useSmartInterval } from '@/hooks/useEffectOptimizer
 import { modernChatTheme } from '@/config/modernTheme';
 import { validateFeedbackData, feedbackRateLimiter, generateSessionId } from '@/utils/securityUtils';
 import { useGoogleAnalyticsUX } from '@/components/analytics/GoogleAnalyticsSetup';
+import { useGoogleAnalytics } from '@/components/GoogleAnalytics';
 import type { FeedbackData, FeedbackValidation } from '@/types/feedback';
 
 interface FeedbackWidgetProps {
@@ -92,6 +93,7 @@ export default function FeedbackWidget({
   const [personaData, setPersonaData] = useState<PersonaData | null>(null);
   
   const { trackCognitiveLoad, trackMobileIssue, trackOnboardingEvent, trackCustomUXEvent } = useGoogleAnalyticsUX();
+  const { trackError, trackUserInteraction, trackFeedback } = useGoogleAnalytics();
   const sessionId = useMemo(() => generateSessionId(), []);
 
   // Load persona data on component mount - otimizado

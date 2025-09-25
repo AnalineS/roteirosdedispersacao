@@ -5,6 +5,7 @@
 
 import { ragCache } from './simpleCache';
 import { secureLogger } from '@/utils/secureLogger';
+import { CompleteRAGStats as RAGStats } from '@/types/rag-knowledge';
 
 export interface RAGQuery {
   query: string;
@@ -52,21 +53,7 @@ export interface RAGResponse {
   query?: string;
 }
 
-export interface RAGStats {
-  queriesProcessed: number;
-  cacheHits: number;
-  supabaseSearches: number;
-  avgContextScore: number;
-  avgRelevance?: number;
-  scopeViolations: number;
-  availableComponents: {
-    vectorStore: boolean;
-    cache: boolean;
-    searchEngine: boolean;
-    openrouter: boolean;
-  };
-  [key: string]: unknown;
-}
+// RAGStats imported from unified types
 
 export class SupabaseRAGClient {
   private static instance: SupabaseRAGClient;

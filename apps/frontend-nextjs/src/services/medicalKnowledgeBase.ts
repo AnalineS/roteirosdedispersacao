@@ -21,6 +21,7 @@ import { embeddingService } from './embeddingService';
 import { knowledgeCache } from './simpleCache';
 import { supabaseRAGClient } from './supabaseRAGClient';
 import { secureLogger } from '@/utils/secureLogger';
+import { MedicalKnowledgeStats as KnowledgeStats } from '@/types/rag-knowledge';
 
 export interface MedicalDocument {
   id: string;
@@ -55,15 +56,7 @@ export interface SearchResult {
   confidence: number;
 }
 
-export interface KnowledgeStats {
-  totalDocuments: number;
-  totalChunks: number;
-  categoriesCount: Record<string, number>;
-  avgDocumentLength: number;
-  lastIndexUpdate: string;
-  embeddingModel: string;
-  searchAccuracy: number;
-}
+// KnowledgeStats imported from unified types
 
 export class MedicalKnowledgeBase {
   private static instance: MedicalKnowledgeBase;

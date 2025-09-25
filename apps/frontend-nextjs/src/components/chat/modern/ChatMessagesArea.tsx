@@ -8,9 +8,9 @@
 import React, { memo, useEffect, useRef, useCallback } from 'react';
 import { type ChatMessage } from '@/types/api';
 import { type Persona } from '@/services/api';
-import { type RAGStats } from '@/services/supabaseRAGClient';
+import { RAGStats, UIKnowledgeStats as KnowledgeStats } from '@/types/rag-knowledge';
 import MessageBubble from './MessageBubble';
-import SmartIndicators, { type KnowledgeStats } from './SmartIndicators';
+import SmartIndicators from './SmartIndicators';
 
 interface ChatMessagesAreaProps {
   messages: ChatMessage[];

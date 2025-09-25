@@ -3,15 +3,9 @@
 import { Persona } from '@/services/api';
 import { modernChatTheme, getPersonaColors } from '@/config/modernTheme';
 import PersonaAvatar from '../PersonaAvatar';
+import { UIKnowledgeStats as KnowledgeStats } from '@/types/rag-knowledge';
 
-export interface KnowledgeStats {
-  documentsFound?: number;
-  searchTime?: number;
-  relevanceScore?: number;
-  sources?: string[];
-  confidence?: number;
-  [key: string]: unknown;
-}
+// KnowledgeStats imported from unified types
 
 interface SmartIndicatorsProps {
   sentiment?: {

@@ -3,7 +3,7 @@
 import React, { memo, useRef, useState, useEffect } from 'react';
 import { type ChatMessage } from '@/types/api';
 import { type Persona } from '@/services/api';
-import { type RAGStats } from '@/services/supabaseRAGClient';
+import { RAGStats, UIKnowledgeStats as KnowledgeStats } from '@/types/rag-knowledge';
 import { modernChatTheme, getCSSVariables } from '@/config/modernTheme';
 
 // OTIMIZAÇÃO CRÍTICA: Componentes especializados para reduzir complexidade
@@ -17,7 +17,7 @@ import SmartIndicators from './SmartIndicators';
 import AccessibleChatInput from '../accessibility/AccessibleChatInput';
 import AccessibleMessageBubble from '../accessibility/AccessibleMessageBubble';
 import { useChatAccessibility } from '../accessibility/ChatAccessibilityProvider';
-import { type KnowledgeStats } from './SmartIndicators';
+// KnowledgeStats imported above
 
 interface ModernChatContainerProps {
   // Personas e seleção

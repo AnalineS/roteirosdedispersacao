@@ -7,7 +7,7 @@ import UserTrackingService, {
   type UserPreferences,
   type InteractionType 
 } from '@/services/UserTrackingService';
-import { useGoogleAnalytics } from '@/components/analytics/GoogleAnalyticsSetup';
+import { useGoogleAnalytics } from '@/components/GoogleAnalytics';
 
 // ============================================
 // HOOK INTEGRADO DE TRACKING 
