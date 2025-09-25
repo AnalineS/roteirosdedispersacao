@@ -263,7 +263,8 @@ export class EducationalMonitoringSystem {
     AnalyticsFirestoreCache.saveAnalyticsEvent({
       id: `case_completion_${caseSession.id}_${Date.now()}`,
       sessionId: caseSession.id,
-      timestamp: Date.now(),
+      timestamp: new Date().toISOString(),
+      type: 'case_completion',
       event: 'case_completion',
       category: 'education',
       value: caseSession.totalScore,
@@ -278,7 +279,7 @@ export class EducationalMonitoringSystem {
     });
 
     // Track como métrica médica
-    AnalyticsFirestoreCache.trackMedicalMetric('current-session', {
+    AnalyticsFirestoreCache.trackMedicalMetric({
       type: 'task_completion',
       value: caseSession.totalScore,
       context: {

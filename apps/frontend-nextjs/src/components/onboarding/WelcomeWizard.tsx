@@ -449,7 +449,7 @@ export function WelcomeWizard({ onComplete }: {
   const [isVisible, setIsVisible] = useState(true);
   const router = useRouter();
   const { user } = useAuth();
-  const { trackUserInteraction } = useGoogleAnalytics();
+  const { trackCustomUXEvent } = useGoogleAnalyticsUX();
 
   // Memoized steps for performance
   const steps: OnboardingStep[] = useMemo(() => [
@@ -476,22 +476,22 @@ export function WelcomeWizard({ onComplete }: {
   // Handlers with useCallback for performance
   const handleRoleSelect = useCallback((role: UserRole) => {
     setSelectedRole(role);
-    trackUserInteraction('onboarding_role_selected', '', role.id, {
+    trackCustomUXEvent('onboarding_role_selected', 'onboarding', undefined, {
       role_type: role.id,
       recommended_persona: role.recommendedPersona
     });
-  }, [trackUserInteraction]);
+  }, [trackCustomUXEvent]);
 
   const handleNext = useCallback(() => {
     if (currentStep < steps.length) {
       setCurrentStep(prev => prev + 1);
-      trackUserInteraction('onboarding_step_advanced', '', `step_${currentStep + 1}`);
+      trackCustomUXEvent('onboarding_step_advanced', 'onboarding');
     }
-  }, [currentStep, steps.length, trackUserInteraction]);
+  }, [currentStep, steps.length, trackCustomUXEvent]);
 
   const handleComplete = useCallback(() => {
     if (selectedRole) {
-      trackUserInteraction('onboarding_completed', '', selectedRole.id, {
+      trackCustomUXEvent('onboarding_completed', 'onboarding', undefined, {
         role_type: selectedRole.id,
         recommended_persona: selectedRole.recommendedPersona
       });
@@ -511,10 +511,10 @@ export function WelcomeWizard({ onComplete }: {
         onComplete(selectedRole);
       }, 300);
     }
-  }, [selectedRole, onComplete, trackUserInteraction]);
+  }, [selectedRole, onComplete, trackCustomUXEvent]);
 
   const handleSkip = useCallback(() => {
-    trackUserInteraction('onboarding_skipped', '', `step_${currentStep}`);
+    trackCustomUXEvent('onboarding_skipped', 'onboarding', currentStep);
     
     // Salvar no cache por 5 dias
     const cacheData = {
@@ -531,11 +531,11 @@ export function WelcomeWizard({ onComplete }: {
     setTimeout(() => {
       onComplete(defaultRole);
     }, 300);
-  }, [currentStep, onComplete, trackUserInteraction]);
+  }, [currentStep, onComplete, trackCustomUXEvent]);
 
   // Handler para completar o questionário informativo (usuários logados)
   const handleSurveyComplete = useCallback((surveyData: SurveyAnswers) => {
-    trackUserInteraction('user_survey_completed', '', 'informative_survey', {
+    trackCustomUXEvent('user_survey_completed', 'onboarding', undefined, {
       institution: surveyData.institution,
       role: surveyData.role,
       experience: surveyData.experience,
@@ -548,7 +548,7 @@ export function WelcomeWizard({ onComplete }: {
       // Para usuários logados, não passa papel específico
       onComplete({ id: 'medical', title: 'Questionário Completado', description: 'Survey completed', icon: '📝', benefits: [], recommendedPersona: 'dr-gasnelio' });
     }, 300);
-  }, [onComplete, trackUserInteraction]);
+  }, [onComplete, trackCustomUXEvent]);
 
   // Verificar cache por 5 dias
   useEffect(() => {

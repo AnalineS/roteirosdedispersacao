@@ -28,12 +28,7 @@ export default function AdvancedCalculator({ onCalculationComplete }: AdvancedCa
       try {
         setHistory(JSON.parse(savedHistory));
       } catch (error) {
-        captureError(error as Error, {
-          severity: 'low',
-          component: 'AdvancedCalculator',
-          action: 'load_calculation_history',
-          metadata: { storage_key: 'pqtu_calculation_history' }
-        });
+        captureError(error as Error, 'low');
       }
     }
   }, []);

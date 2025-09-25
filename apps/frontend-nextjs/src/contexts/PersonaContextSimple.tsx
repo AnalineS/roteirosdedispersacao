@@ -7,16 +7,7 @@ import { useUserProfile } from '@/hooks/useUserProfile';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import type { PersonaConfig, PersonaSource } from '@/types/personas';
 
-// Interface para gtag tracking (compatível com interface global)
-interface WindowWithGtag extends Window {
-  gtag?: (
-    command: 'event' | 'config',
-    eventNameOrId: string,
-    parameters?: Record<string, unknown>
-  ) => void;
-}
-
-declare const window: WindowWithGtag;
+// Use global Window interface from types/analytics.ts
 
 interface PersonaContextValue {
   currentPersona: ValidPersonaId | null;

@@ -171,12 +171,8 @@ export default function EmailPreferences({
           preferences: {
             language: profile?.preferences?.language || 'simple',
             notifications: profile?.preferences?.notifications ?? true,
-            theme: profile?.preferences?.theme || 'auto',
-            emailUpdates: preferences.some(p => p.enabled),
-            dataCollection: profile?.preferences?.dataCollection ?? true,
-            lgpdConsent: profile?.preferences?.lgpdConsent ?? true,
-            ...preferencesData
-          }
+            theme: profile?.preferences?.theme || 'auto'
+          } as any
         });
         setMessage({ type: 'success', text: 'Preferências salvas com sucesso!' });
       } catch (error) {

@@ -20,7 +20,6 @@ export type {
   PersonaResolutionResult,
   PersonaHistoryEntryInternal,
   PersonaSetterOptions,
-  WindowWithGtag,
   // Re-exported from types/personas
   PersonaContextValue,
   PersonaChangeEvent,

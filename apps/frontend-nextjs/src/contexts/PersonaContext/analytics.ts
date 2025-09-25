@@ -7,9 +7,9 @@ import type {
   ValidPersonaId,
   PersonaSource,
   PersonaChangeEvent,
-  PersonaConfig,
-  WindowWithGtag
+  PersonaConfig
 } from './types';
+import type { WindowWithGtag } from '@/types/analytics';
 
 declare const window: WindowWithGtag;
 

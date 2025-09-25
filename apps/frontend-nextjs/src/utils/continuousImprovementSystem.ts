@@ -6,24 +6,7 @@
  * @version 1.0.0
  */
 
-// Interface para Window com gtag tracking
-interface WindowWithGtag extends Window {
-  gtag?: (
-    command: 'event' | 'config',
-    eventNameOrId: string,
-    parameters?: {
-      event_category?: string;
-      event_label?: string;
-      custom_parameters?: Record<string, unknown>;
-      [key: string]: unknown;
-    }
-  ) => void;
-}
-
-// Helper para acessar gtag de forma type-safe
-function getWindowWithGtag(): WindowWithGtag | null {
-  return typeof window !== 'undefined' ? (window as WindowWithGtag) : null;
-}
+// Use global Window interface from types/analytics.ts
 
 // Internal type definitions for continuous improvement
 interface ClinicalCase {
@@ -713,9 +696,8 @@ export class ContinuousImprovementSystem {
     config.status = 'draft';
     this.abTests.set(config.id, config);
     
-    const windowWithGtag = getWindowWithGtag();
-    if (windowWithGtag?.gtag) {
-      windowWithGtag.gtag('event', 'ab_test_created', {
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'ab_test_created', {
         event_category: 'medical_improvement',
         event_label: config.name,
         custom_parameters: {
@@ -740,9 +722,8 @@ export class ContinuousImprovementSystem {
     test.status = 'running';
     test.duration.start = new Date();
     
-    const windowWithGtag = getWindowWithGtag();
-    if (windowWithGtag?.gtag) {
-      windowWithGtag.gtag('event', 'ab_test_started', {
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'ab_test_started', {
         event_category: 'medical_improvement',
         event_label: test.name,
         custom_parameters: {
@@ -798,9 +779,8 @@ export class ContinuousImprovementSystem {
     this.setupImpactMonitoring(recommendation);
     
     // Log implementação
-    const windowWithGtag = getWindowWithGtag();
-    if (windowWithGtag?.gtag) {
-      windowWithGtag.gtag('event', 'improvement_implemented', {
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'improvement_implemented', {
         event_category: 'medical_improvement',
         event_label: recommendation.title,
         custom_parameters: {

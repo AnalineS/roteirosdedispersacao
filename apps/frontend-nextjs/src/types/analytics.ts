@@ -11,29 +11,7 @@ export interface OnboardingEventData {
 // Unified gtag interface - suporta todos os casos de uso
 declare global {
   interface Window {
-    gtag?: (
-      command: 'event' | 'config',
-      eventNameOrId: string,
-      parameters?: {
-        event_category?: string;
-        event_label?: string;
-        value?: number;
-        custom_parameters?: Record<string, unknown>;
-        custom_dimensions?: Record<string, unknown>; // Compatibilidade com auth.ts
-        page_title?: string;
-        page_location?: string;
-        enhanced_measurement_settings?: {
-          scroll_events?: boolean;
-          outbound_clicks?: boolean;
-          site_search?: boolean;
-          video_engagement?: boolean;
-          file_downloads?: boolean;
-          page_changes?: boolean;
-        };
-        custom_map?: Record<string, string>;
-        [key: string]: unknown;
-      }
-    ) => void;
+    gtag?: (...args: any[]) => void;
     dataLayer?: unknown[];
 
     // UX tracking extensions

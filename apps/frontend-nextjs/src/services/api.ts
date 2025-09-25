@@ -8,6 +8,9 @@ import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { logger } from '@/utils/logger';
 import type { ChatMessage, ChatSession } from '@/types/api';
 
+// Re-export types for external use
+export type { ChatMessage, ChatSession } from '@/types/api';
+
 // Configuração simplificada de API URL
 const getApiUrl = (): string => {
   // PRIORIDADE 1: Variável de ambiente
@@ -54,6 +57,14 @@ const API_BASE_URL = getApiUrl();
 
 // Import dados estáticos para fallback
 import { STATIC_PERSONAS } from '@/data/personas';
+
+/**
+ * Busca configurações de personas para uso nos hooks
+ * Alias para getPersonas() para compatibilidade com hooks
+ */
+export async function getPersonaConfigs(): Promise<PersonasResponse> {
+  return await getPersonas();
+}
 
 /**
  * Busca personas do backend ou retorna dados estáticos em modo offline

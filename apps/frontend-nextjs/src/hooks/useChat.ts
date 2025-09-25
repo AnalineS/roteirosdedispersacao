@@ -242,9 +242,10 @@ export function useChat(options: UseChatOptions = {}) {
     lastPersonaRef.current = personaId;
 
     const userMessage: ChatMessage = {
+      id: crypto.randomUUID(),
       role: 'user',
       content: message.trim(),
-      timestamp: Date.now(),
+      timestamp: new Date().toISOString(),
       persona: personaId
     };
 
@@ -270,9 +271,10 @@ export function useChat(options: UseChatOptions = {}) {
 
       // Criar mensagem do assistente baseada na resposta personalizada
       const assistantMessage: ChatMessage = {
+        id: crypto.randomUUID(),
         role: 'assistant',
         content: personaResponse.response,
-        timestamp: Date.now(),
+        timestamp: new Date().toISOString(),
         persona: personaId,
         metadata: {
           confidence: personaResponse.confidence
@@ -290,7 +292,7 @@ export function useChat(options: UseChatOptions = {}) {
 
     } catch (err) {
       console.error(`Erro ao enviar mensagem (tentativa ${retryCount + 1}):`, err);
-      captureError(err as string | Error, { component: 'useChat', action: 'sendMessage', metadata: { retryCount, personaId } });
+      captureError(err as string | Error, 'medium');
       
       if (retryCount < maxRetries) {
         // Retry with exponential backoff
@@ -312,9 +314,10 @@ export function useChat(options: UseChatOptions = {}) {
             const fallbackResponse = fallbackResult as FallbackResult;
             
             const assistantMessage: ChatMessage = {
+              id: crypto.randomUUID(),
               role: 'assistant',
               content: fallbackResponse.response,
-              timestamp: Date.now(),
+              timestamp: new Date().toISOString(),
               persona: personaId,
               metadata: {
                 isFallback: true,

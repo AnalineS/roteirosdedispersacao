@@ -6,24 +6,7 @@
  * @version 1.0.0
  */
 
-// Interface para Window com gtag tracking
-interface WindowWithGtag extends Window {
-  gtag?: (
-    command: 'event' | 'config',
-    eventNameOrId: string,
-    parameters?: {
-      event_category?: string;
-      event_label?: string;
-      custom_parameters?: Record<string, unknown>;
-      [key: string]: unknown;
-    }
-  ) => void;
-}
-
-// Helper para acessar gtag de forma type-safe
-function getWindowWithGtag(): WindowWithGtag | null {
-  return typeof window !== 'undefined' ? (window as WindowWithGtag) : null;
-}
+// Use global Window interface from types/analytics.ts
 
 // Internal types for consistency validation
 interface ClinicalCase {
@@ -980,9 +963,8 @@ export class ReferenceConsistencyValidator {
           reliability
         });
       } catch (error) {
-        const windowWithGtag = getWindowWithGtag();
-        if (windowWithGtag?.gtag) {
-          windowWithGtag.gtag('event', 'reference_validation_failed', {
+        if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'reference_validation_failed', {
             event_category: 'medical_consistency',
             event_label: ref.title,
             custom_parameters: {

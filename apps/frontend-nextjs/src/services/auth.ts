@@ -174,7 +174,7 @@ export class AuthService {
 
     try {
       // Salvar no backend
-      await apiClient.post('/api/auth/profile', userProfile as Record<string, unknown>);
+      await apiClient.post('/api/auth/profile', userProfile as unknown as Record<string, unknown>);
 
       // Track analytics
       Analytics.event('USER', 'signup', userData.provider || 'email');

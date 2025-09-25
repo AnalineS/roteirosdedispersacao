@@ -4,7 +4,7 @@ import type { FeedbackData } from '@/types/feedback';
 
 // Import unified analytics types
 import '@/types/analytics';
-import type { WindowWithGtag } from '@/types/analytics';
+// WindowWithGtag imported via global types
 
 export interface FeedbackResponse {
   message: string;
@@ -327,10 +327,10 @@ export function useFeedback(options: UseFeedbackOptions = {}) {
     feedbackData: FeedbackData, 
     response: FeedbackResponse
   ) => {
-    if (typeof window === 'undefined' || !(window as WindowWithGtag).gtag) return;
+    if (typeof window === 'undefined' || !window.gtag) return;
 
     try {
-      (window as WindowWithGtag).gtag!('event', 'feedback_submitted', {
+      window.gtag!('event', 'feedback_submitted', {
         event_category: 'user_feedback',
         event_label: feedbackData.personaId,
         value: feedbackData.rating,
@@ -345,7 +345,7 @@ export function useFeedback(options: UseFeedbackOptions = {}) {
 
       // Evento específico para ratings baixos (para análise)
       if (feedbackData.rating <= 2) {
-        (window as WindowWithGtag).gtag!('event', 'low_rating_feedback', {
+        window.gtag!('event', 'low_rating_feedback', {
           event_category: 'quality_monitoring',
           event_label: feedbackData.personaId,
           value: feedbackData.rating,

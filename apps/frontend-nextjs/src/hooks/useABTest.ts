@@ -22,12 +22,7 @@ export interface ABTestResult {
 // Cache local para variantes do Google Analytics
 const variantCache = new Map<string, ABTestResult>();
 
-// Google Analytics gtag interface
-declare global {
-  interface Window {
-    gtag?: (...args: any[]) => void;
-  }
-}
+// Google Analytics gtag interface declarada em types/analytics.ts
 
 /**
  * Hook para A/B Testing com Google Analytics

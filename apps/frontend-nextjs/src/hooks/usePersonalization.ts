@@ -126,8 +126,8 @@ export function usePersonalization() {
       medicalAnalytics.trackEvent({
         event: 'personalization_updated',
         event_category: 'user_preferences',
-        custom_parameters: {
-          user_role: newPersonalization.medicalRole,
+        custom_dimensions: {
+          user_role: newPersonalization.medicalRole === 'researcher' ? 'unknown' : newPersonalization.medicalRole,
           clinical_context: newPersonalization.fastAccessPriority === 'emergency' ? 'emergency' : 'routine'
         }
       });
@@ -159,8 +159,8 @@ export function usePersonalization() {
         event: 'role_preset_applied',
         event_category: 'personalization',
         event_label: role,
-        custom_parameters: {
-          user_role: role
+        custom_dimensions: {
+          user_role: role === 'researcher' ? 'unknown' : role
         }
       });
     }

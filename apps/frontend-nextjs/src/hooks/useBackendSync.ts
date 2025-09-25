@@ -10,10 +10,32 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSafeAuth as useAuth } from '@/hooks/useSafeAuth';
 import { backendLeaderboard } from '@/services/backendLeaderboard';
 import { generateSecureId } from '@/utils/cryptoUtils';
+import type { LearningProgress } from '@/types/gamification';
+import type { UserLevel } from '@/types/disclosure';
+import type { FirestoreUserProfile } from '@/types/auth';
 
 // ============================================
 // TYPES
 // ============================================
+
+interface FirestoreConversation {
+  userId: string;
+  personaId: string;
+  title: string;
+  lastMessage: string;
+  lastInteraction: string;
+  messageCount: number;
+  status: string;
+  metadata?: {
+    source?: string;
+    version?: string;
+  };
+  messages?: Array<{
+    role: string;
+    content: string;
+    timestamp: string;
+  }>;
+}
 
 interface SyncOptions {
   autoSync: boolean;
@@ -194,14 +216,83 @@ export function useBackendSync(options: Partial<SyncOptions> = {}) {
           try {
             if (item.type === 'profile' && item.data) {
               // Sincronizar progresso com gamificação
-              const progress = {
-                points: item.data.history?.totalTimeSpent || 0,
-                modulesCompleted: item.data.history?.completedModules?.length || 0,
+              const progress: LearningProgress = {
+                userId: auth.user.uid,
+                currentLevel: 'basic' as UserLevel,
+                experiencePoints: {
+                  total: item.data.history?.totalTimeSpent || 0,
+                  byCategory: {
+                    chat_interactions: 0,
+                    quiz_completion: 0,
+                    module_completion: 0,
+                    case_completion: 0,
+                    streak_bonus: 0,
+                    achievement_bonus: 0
+                  },
+                  level: 1,
+                  nextLevelXP: 100
+                },
+                achievements: [],
+                streakData: {
+                  currentStreak: 0,
+                  longestStreak: 0,
+                  lastActivityDate: new Date().toISOString(),
+                  isActiveToday: false,
+                  streakBreakGrace: 0
+                },
+                moduleProgress: [],
+                quizStats: {
+                  totalQuizzes: 0,
+                  completedQuizzes: 0,
+                  averageScore: 0,
+                  totalXPFromQuizzes: 0,
+                  bestStreak: 0,
+                  currentStreak: 0,
+                  favoriteTopics: [],
+                  weakestTopics: [],
+                  timeSpentQuizzes: 0
+                },
+                caseStats: {
+                  totalCases: 0,
+                  completedCases: 0,
+                  averageScore: 0,
+                  totalXPFromCases: 0,
+                  casesPassedFirstAttempt: 0,
+                  bestDiagnosticStreak: 0,
+                  currentDiagnosticStreak: 0,
+                  categoriesCompleted: {
+                    pediatrico: 0,
+                    adulto: 0,
+                    gravidez: 0,
+                    complicacoes: 0,
+                    interacoes: 0
+                  },
+                  difficultyCompleted: {
+                    basico: 0,
+                    intermediario: 0,
+                    avancado: 0,
+                    complexo: 0
+                  },
+                  averageTimePerCase: 0,
+                  fastestCompletion: 0,
+                  timeSpentCases: 0,
+                  favoriteCategories: [],
+                  strongestSkills: [],
+                  areasForImprovement: []
+                },
+                lastActivity: new Date().toISOString(),
+                totalTimeSpent: item.data.history?.totalTimeSpent || 0,
+                preferredPersona: 'ga',
+                totalXP: item.data.history?.totalTimeSpent || 0,
+                completedCases: [],
+                unlockedAchievements: [],
                 streakDays: 0,
-                displayName: item.data.displayName || auth.user.displayName || 'Usuário'
+                progressPercentage: 0,
+                nextLevelXP: 100
               };
 
-              await backendLeaderboard.syncUserProgress(auth.user.uid, progress, progress.displayName);
+              const displayName = item.data.displayName || auth.user.displayName || 'Usuário';
+              await backendLeaderboard.syncUserProgress(auth.user.uid, progress, displayName);
               successful++;
             }
 
@@ -502,8 +593,7 @@ function transformLocalProfileToFirestore(localProfile: any, userId: string): Pa
       completedModules: localProfile.history?.completedModules || [],
       achievements: localProfile.history?.achievements || []
     },
-    version: '2.0',
-    isAnonymous: false
+    version: '2.0'
   };
 }
 
@@ -519,10 +609,7 @@ function transformLocalConversationToFirestore(localConv: any, userId: string): 
       timestamp: msg.timestamp ? new Date(msg.timestamp) : new Date(),
       persona: msg.persona
     })),
-    messageCount: localConv.messages?.length || 0,
-    isArchived: false,
-    syncStatus: 'synced' as const,
-    localStorageId: localConv.id
+    messageCount: localConv.messages?.length || 0
   };
 }
 

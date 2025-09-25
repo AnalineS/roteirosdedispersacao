@@ -34,11 +34,11 @@ export function DoseCalculatorExample() {
   if (isVariant('improved')) {
     return (
       <div className="calculator-enhanced">
-        <h2 style={{ color: config.color_scheme }}>
+        <h2 style={{ color: config.color_scheme as string }}>
           Calculadora de Dose PQT-U (Layout Melhorado)
         </h2>
 
-        {config.helper_text && (
+        {(config.helper_text as boolean) && (
           <div className="helper-text">
             💡 Dica: Use os campos abaixo para calcular a dose correta
           </div>
@@ -71,7 +71,7 @@ export function DoseCalculatorExample() {
   // Variante de controle (padrão)
   return (
     <div className="calculator-standard">
-      <h2 style={{ color: config.color_scheme || 'blue' }}>
+      <h2 style={{ color: (config.color_scheme as string) || 'blue' }}>
         Calculadora de Dose PQT-U
       </h2>
 
@@ -118,17 +118,17 @@ export function ChatPersonaExample() {
       <h3>Chat Educacional - Teste de Persona</h3>
 
       <div className="persona-selector">
-        {config.show_persona_switch && (
+        {(config.show_persona_switch as boolean) && (
           <div className="persona-buttons">
             <button
               className={config.default_persona === 'dr_gasnelio' ? 'active' : ''}
-              onClick={() => handlePersonaSwitch(config.default_persona, 'dr_gasnelio')}
+              onClick={() => handlePersonaSwitch(config.default_persona as string, 'dr_gasnelio')}
             >
               Dr. Gasnelio (Técnico)
             </button>
             <button
               className={config.default_persona === 'ga' ? 'active' : ''}
-              onClick={() => handlePersonaSwitch(config.default_persona, 'ga')}
+              onClick={() => handlePersonaSwitch(config.default_persona as string, 'ga')}
             >
               Gá (Empático)
             </button>
@@ -137,8 +137,8 @@ export function ChatPersonaExample() {
       </div>
 
       <div className="chat-container">
-        <p>Persona padrão: <strong>{config.default_persona}</strong></p>
-        <p>Nível técnico: <strong>{config.technical_detail_level}</strong></p>
+        <p>Persona padrão: <strong>{config.default_persona as string}</strong></p>
+        <p>Nível técnico: <strong>{config.technical_detail_level as string}</strong></p>
         <p>Variante: <strong>{variant}</strong></p>
 
         <button onClick={handleChatStart}>
@@ -160,7 +160,7 @@ export function OnboardingExample() {
   };
 
   const handleStepCompleted = (stepNumber: number) => {
-    const progress = stepNumber / config.tutorial_steps;
+    const progress = stepNumber / (config.tutorial_steps as number);
     trackConversion('tutorial_engagement', progress, {
       step: stepNumber,
       tutorial_type: config.tutorial_type || 'standard'
@@ -181,17 +181,17 @@ export function OnboardingExample() {
         <div className="video-tutorial">
           <h4>Tutorial em Vídeo</h4>
           <div className="video-placeholder">
-            📹 Vídeo de {config.video_duration}
+            📹 Vídeo de {config.video_duration as string}
           </div>
-          {config.skip_option && <button>Pular Tutorial</button>}
+          {(config.skip_option as boolean) && <button>Pular Tutorial</button>}
         </div>
       ) : (
         <div className="step-tutorial">
           <h4>Tutorial Interativo</h4>
-          <p>Total de passos: {config.tutorial_steps}</p>
+          <p>Total de passos: {config.tutorial_steps as number}</p>
           <p>Elementos interativos: {config.interactive_elements ? 'Sim' : 'Não'}</p>
 
-          {config.progress_tracking && (
+          {(config.progress_tracking as boolean) && (
             <div className="progress-bar">
               <div>Progresso será rastreado</div>
             </div>
@@ -201,7 +201,7 @@ export function OnboardingExample() {
             <button onClick={handleTutorialStart}>Iniciar Tutorial</button>
             <button onClick={() => handleStepCompleted(1)}>Completar Passo 1</button>
             <button onClick={handleFirstAction}>Primeira Ação</button>
-            {config.skip_option && <button>Pular</button>}
+            {(config.skip_option as boolean) && <button>Pular</button>}
           </div>
         </div>
       )}

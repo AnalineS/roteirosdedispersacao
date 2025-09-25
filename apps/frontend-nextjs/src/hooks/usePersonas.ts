@@ -35,7 +35,7 @@ export function usePersonas() {
 
         // Salvar no cache
         await PersonasCache.set(validPersonas);
-        setPersonas(validPersonas);
+        setPersonas(validPersonas as Record<string, PersonaConfig>);
       } catch (err) {
         // Medical system error - explicit stderr + tracking
         const errorMessage = err instanceof Error ? err.message : String(err);
@@ -92,7 +92,7 @@ export function usePersonas() {
         setError(null);
         const personasData = await getPersonaConfigs();
         const validPersonas = filterValidPersonas(personasData);
-        setPersonas(validPersonas);
+        setPersonas(validPersonas as Record<string, PersonaConfig>);
       } catch (err) {
         // Medical system error - explicit stderr + tracking
         const errorMessage = err instanceof Error ? err.message : String(err);

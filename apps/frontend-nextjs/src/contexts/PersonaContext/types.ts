@@ -12,14 +12,7 @@ import type {
   PersonaHistoryEntry
 } from '@/types/personas';
 
-// Interface para gtag tracking (compatível com interface global)
-export interface WindowWithGtag extends Window {
-  gtag?: (
-    command: 'event' | 'config',
-    eventNameOrId: string,
-    parameters?: Record<string, unknown>
-  ) => void;
-}
+// Use global Window interface from types/analytics.ts
 
 export interface PersonaProviderProps {
   children: React.ReactNode;

@@ -25,14 +25,7 @@ interface PerformanceEventTimingEntry extends PerformanceEntry {
   processingStart: number;
 }
 
-// Window interface with gtag
-interface WindowWithGtag extends Window {
-  gtag?: (
-    command: 'event' | 'config',
-    eventNameOrId: string,
-    parameters?: Record<string, unknown>
-  ) => void;
-}
+// Use global Window interface from types/analytics.ts
 
 export interface CognitiveLoadMetrics {
   elements_per_page: number;
@@ -109,10 +102,10 @@ class UXAnalytics {
 
   private setupGA4UXEvents() {
     // Enhanced GA4 tracking for UX metrics
-    if (typeof window !== 'undefined' && (window as WindowWithGtag).gtag) {
+    if (typeof window !== 'undefined' && window.gtag) {
       const measurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || process.env.GA_MEASUREMENT_ID;
       if (measurementId) {
-          (window as WindowWithGtag).gtag!('config', measurementId, {
+          window.gtag!('config', measurementId, {
             custom_map: {
               'custom_parameter_1': 'cognitive_load_score',
               'custom_parameter_2': 'mobile_experience_score',
@@ -529,8 +522,8 @@ class UXAnalytics {
     if (!this.isInitialized) return;
 
     // Send to Google Analytics
-    if (typeof window !== 'undefined' && (window as WindowWithGtag).gtag) {
-      (window as WindowWithGtag).gtag!('event', event.action, {
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag!('event', event.action, {
         event_category: event.category,
         event_label: event.label,
         value: event.value,
@@ -542,8 +535,8 @@ class UXAnalytics {
     this.sendToCustomEndpoint(event);
 
     // Medical tracking for development
-    if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined' && (window as WindowWithGtag).gtag) {
-      (window as WindowWithGtag).gtag!('event', 'ux_event_tracked', {
+    if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined' && window.gtag) {
+      window.gtag!('event', 'ux_event_tracked', {
         event_category: 'medical_analytics_development',
         event_label: 'ux_event_development_log',
         custom_parameters: {
@@ -574,8 +567,8 @@ class UXAnalytics {
         })
       }).catch(err => {
         // Medical tracking for analytics failures
-        if (typeof window !== 'undefined' && (window as WindowWithGtag).gtag) {
-          (window as WindowWithGtag).gtag!('event', 'ux_analytics_failed', {
+        if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag!('event', 'ux_analytics_failed', {
             event_category: 'medical_analytics_error',
             event_label: 'ux_analytics_send_failure',
             custom_parameters: {

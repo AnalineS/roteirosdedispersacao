@@ -8,14 +8,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { socialService, type SocialProfile, type ShareableContent } from '@/services/socialService';
 import type { AuthUser } from '@/types/auth';
 
-// Window interface with gtag for medical tracking
-interface WindowWithGtag extends Window {
-  gtag?: (
-    command: 'event' | 'config',
-    eventNameOrId: string,
-    parameters?: Record<string, unknown>
-  ) => void;
-}
+// Use global Window interface from types/analytics.ts
 
 interface EmailPreferences {
   dailyDigest?: boolean;
@@ -178,8 +171,8 @@ export function useSocialProfile(): SocialProfileHook {
 
     } catch (err) {
       // Medical tracking for profile load error
-      if (typeof window !== 'undefined' && (window as WindowWithGtag).gtag) {
-        (window as WindowWithGtag).gtag!('event', 'social_profile_load_error', {
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag!('event', 'social_profile_load_error', {
           event_category: 'medical_analytics_error',
           event_label: 'social_profile_load_failure',
           custom_parameters: {
@@ -211,8 +204,8 @@ export function useSocialProfile(): SocialProfileHook {
       return success;
     } catch (error) {
       // Medical tracking for profile update error
-      if (typeof window !== 'undefined' && (window as WindowWithGtag).gtag) {
-        (window as WindowWithGtag).gtag!('event', 'social_profile_update_error', {
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag!('event', 'social_profile_update_error', {
           event_category: 'medical_analytics_error',
           event_label: 'social_profile_update_failure',
           custom_parameters: {
@@ -260,8 +253,8 @@ export function useSocialProfile(): SocialProfileHook {
 
     } catch (error) {
       // Medical tracking for achievement share error
-      if (typeof window !== 'undefined' && (window as WindowWithGtag).gtag) {
-        (window as WindowWithGtag).gtag!('event', 'achievement_share_error', {
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag!('event', 'achievement_share_error', {
           event_category: 'medical_analytics_error',
           event_label: 'achievement_share_failure',
           custom_parameters: {
@@ -300,8 +293,8 @@ export function useSocialProfile(): SocialProfileHook {
 
     } catch (error) {
       // Medical tracking for certificate share error
-      if (typeof window !== 'undefined' && (window as WindowWithGtag).gtag) {
-        (window as WindowWithGtag).gtag!('event', 'certificate_share_error', {
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag!('event', 'certificate_share_error', {
           event_category: 'medical_analytics_error',
           event_label: 'certificate_share_failure',
           custom_parameters: {
@@ -340,8 +333,8 @@ export function useSocialProfile(): SocialProfileHook {
 
     } catch (error) {
       // Medical tracking for progress share error
-      if (typeof window !== 'undefined' && (window as WindowWithGtag).gtag) {
-        (window as WindowWithGtag).gtag!('event', 'progress_share_error', {
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag!('event', 'progress_share_error', {
           event_category: 'medical_analytics_error',
           event_label: 'progress_share_failure',
           custom_parameters: {
@@ -398,8 +391,8 @@ export function useSocialProfile(): SocialProfileHook {
       }));
     } catch (error) {
       // Medical tracking for public profiles load error
-      if (typeof window !== 'undefined' && (window as WindowWithGtag).gtag) {
-        (window as WindowWithGtag).gtag!('event', 'public_profiles_load_error', {
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag!('event', 'public_profiles_load_error', {
           event_category: 'medical_analytics_error',
           event_label: 'public_profiles_load_failure',
           custom_parameters: {

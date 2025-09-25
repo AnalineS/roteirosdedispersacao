@@ -1,7 +1,7 @@
 /**
  * Hook para gerenciar histórico de conversas por persona
  * Permite múltiplas conversas simultâneas e navegação entre elas
- * Suporta sincronização automática com Firestore quando autenticado
+ * Suporta sincronização com API backend e fallback para localStorage
  */
 
 import { useState, useCallback, useEffect, useRef } from 'react';
@@ -9,33 +9,13 @@ import { ChatMessage, BackendConversation, BackendMessage } from '@/types/api';
 import { useSafeAuth as useAuth } from '@/hooks/useSafeAuth';
 // Firebase features replaced with backend API
 const FEATURES = {
-  FIRESTORE_ENABLED: false, // Migrated to backend storage
-  AUTH_ENABLED: true,       // Backend authentication enabled
-  REALTIME_ENABLED: false   // No real-time features for now
+  BACKEND_API_ENABLED: true, // Backend API enabled
+  AUTH_ENABLED: true,        // Backend authentication enabled
+  REALTIME_ENABLED: false    // No real-time features for now
 };
 
-// Mock repository - backend API implementation
-const ConversationRepository = {
-  getUserConversations: async (userId: string, options?: { limit?: number }) => {
-    return {
-      success: false,
-      error: 'Not implemented - use localStorage for now',
-      data: null
-    };
-  },
-  saveConversation: async (conversation: BackendConversation) => {
-    return {
-      success: false,
-      error: 'Not implemented - use localStorage for now'
-    };
-  },
-  deleteConversation: async (conversationId: string) => {
-    return {
-      success: false,
-      error: 'Not implemented - use localStorage for now'
-    };
-  }
-};
+// ConversationRepository is now handled by the backend API endpoints
+// All conversation operations go through /api/conversations
 import { generateSecureId } from '@/utils/cryptoUtils';
 
 // Constantes
@@ -73,10 +53,10 @@ export function useConversationHistory() {
   const syncTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
   // Flags para controlar o tipo de persistência
-  const useFirestore = auth.isAuthenticated && FEATURES.FIRESTORE_ENABLED;
-  const useLocalStorage = !useFirestore || FEATURES.AUTH_ENABLED;
+  const useBackendAPI = auth.isAuthenticated && FEATURES.BACKEND_API_ENABLED;
+  const useLocalStorage = !useBackendAPI || FEATURES.AUTH_ENABLED;
 
-  // Carregar conversas (localStorage ou Firestore)
+  // Carregar conversas (localStorage ou Backend API)
   useEffect(() => {
     if (typeof window === 'undefined') return;
     
@@ -85,9 +65,9 @@ export function useConversationHistory() {
         setLoading(true);
         setError(null);
 
-        if (useFirestore && auth.user) {
-          // Carregar do Firestore
-          await loadFromFirestore();
+        if (useBackendAPI && auth.user) {
+          // Carregar do Backend API
+          await loadFromBackendAPI();
         } else if (useLocalStorage) {
           // Carregar do localStorage
           loadFromLocalStorage();
@@ -96,8 +76,8 @@ export function useConversationHistory() {
         console.error('Erro ao carregar conversas:', error);
         setError('Erro ao carregar histórico de conversas');
         
-        // Fallback para localStorage em caso de erro do Firestore
-        if (useFirestore) {
+        // Fallback para localStorage em caso de erro do Backend API
+        if (useBackendAPI) {
           loadFromLocalStorage();
         }
       } finally {
@@ -107,7 +87,7 @@ export function useConversationHistory() {
 
     loadConversations();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [auth.user, auth.isAuthenticated, useFirestore, useLocalStorage]);
+  }, [auth.user, auth.isAuthenticated, useBackendAPI, useLocalStorage]);
 
   // ============================================
   // FUNÇÕES DE CARREGAMENTO
@@ -115,7 +95,7 @@ export function useConversationHistory() {
 
   const loadFromLocalStorage = useCallback(async () => {
     try {
-      // TODO: Implementar cache de conversas com Firestore Cache Service futuramente
+      // TODO: Implementar cache de conversas com Backend API Cache Service futuramente
       
       // Carregar do localStorage
       const stored = localStorage.getItem(STORAGE_KEY);
@@ -129,7 +109,7 @@ export function useConversationHistory() {
           
           // Salvar no Redis para próxima vez (com tratamento de erro)
           if (validConversations.length > 0) {
-            // TODO: Integrar com firestoreCache para cache de conversas
+            // TODO: Integrar com backendCache para cache de conversas
           }
         }
       }
@@ -139,48 +119,72 @@ export function useConversationHistory() {
     }
   }, []);
 
-  const loadFromFirestore = useCallback(async () => {
+  const loadFromBackendAPI = useCallback(async () => {
     if (!auth.user) return;
 
     try {
       setSyncStatus('syncing');
-      const result = await ConversationRepository.getUserConversations(auth.user.uid, {
-        limit: MAX_CONVERSATIONS
+
+      // Use the modern API to load conversations from backend
+      const response = await fetch('/api/conversations', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${auth.user.uid}` // or token-based auth
+        }
       });
 
-      if (result.success && result.data) {
-        // Converter FirestoreConversation para Conversation local
-        const localConversations: Conversation[] = result.data.map(firestoreConv => ({
-          id: firestoreConv.id,
-          personaId: firestoreConv.personaId,
-          title: firestoreConv.title,
-          messages: firestoreConv.messages.map(msg => ({
+      if (!response.ok) {
+        throw new Error(`Failed to load conversations: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+
+      if (data.success && data.conversations) {
+        // Modern conversations already match the Conversation interface
+        const conversations: Conversation[] = data.conversations.map((conv: any) => ({
+          id: conv.id,
+          userId: conv.userId || auth.user?.uid || '',
+          personaId: conv.personaId,
+          title: conv.title,
+          messages: conv.messages.map((msg: any) => ({
             id: msg.id,
             content: msg.content,
-            role: msg.role,
-            timestamp: msg.timestamp.toDate().getTime(),
-            persona: msg.persona
+            role: msg.role as 'user' | 'assistant',
+            timestamp: msg.timestamp,
+            persona: msg.persona,
+            metadata: msg.metadata
           })),
-          lastActivity: firestoreConv.lastActivity.toDate().getTime(),
-          createdAt: firestoreConv.createdAt.toDate().getTime()
+          lastActivity: conv.lastActivity,
+          createdAt: conv.createdAt,
+          messageCount: conv.messages.length,
+          isArchived: conv.isArchived || false,
+          tags: conv.tags || []
         }));
 
-        setConversations(localConversations);
+        setConversations(conversations);
         setSyncStatus('idle');
 
-        // Também salvar no localStorage como backup
+        // Save to localStorage as backup
         if (useLocalStorage) {
-          saveToLocalStorageOnly(localConversations);
+          saveToLocalStorageOnly(conversations);
         }
       } else {
-        throw new Error(result.error || 'Erro ao carregar do Firestore');
+        throw new Error(data.error || 'Failed to load conversations from backend');
       }
     } catch (error) {
+      console.error('Error loading conversations from backend:', error);
       setSyncStatus('error');
-      console.error('Erro ao carregar do Firestore:', error);
-      throw error;
+
+      // Fallback to localStorage if backend fails
+      if (useLocalStorage) {
+        try {
+          loadFromLocalStorage();
+        } catch (storageError) {
+          console.error('Fallback to localStorage also failed:', storageError);
+        }
+      }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [auth.user, useLocalStorage]);
 
   // ============================================
@@ -200,7 +204,7 @@ export function useConversationHistory() {
         
       const dataString = JSON.stringify(limitedConversations);
       
-      // TODO: Integrar com firestoreCache
+      // TODO: Integrar com backendCache
       
       if (dataString.length > 4.5 * 1024 * 1024) {
         const reducedConversations = limitedConversations.slice(0, Math.floor(MAX_CONVERSATIONS / 2));
@@ -213,52 +217,61 @@ export function useConversationHistory() {
     }
   }, [auth.user?.uid]);
 
-  const saveToFirestore = useCallback(async (conversation: Conversation) => {
-    if (!auth.user || !useFirestore) return;
+  const saveToBackendAPI = useCallback(async (conversation: Conversation) => {
+    if (!auth.user || !useBackendAPI) return;
 
     try {
       setSyncStatus('syncing');
       
-      // Converter Conversation local para FirestoreConversation
-      const firestoreConv: Partial<FirestoreConversation> = {
+      // Converter Conversation local para BackendAPIConversation
+      const backendConv = {
         id: conversation.id,
         userId: auth.user.uid,
         personaId: conversation.personaId,
         title: conversation.title,
         messages: conversation.messages.map((msg, index) => ({
-          id: generateSecureId(`msg_${index}_`, 12),
+          id: msg.id || generateSecureId(`msg_${index}_`, 12),
           content: msg.content,
           role: msg.role,
-          timestamp: new Date(msg.timestamp) as any, // Will be converted to Timestamp
+          timestamp: msg.timestamp,
           persona: msg.persona
         })),
-        lastActivity: new Date(conversation.lastActivity) as any,
-        createdAt: new Date(conversation.createdAt) as any,
+        lastActivity: conversation.lastActivity,
+        createdAt: conversation.createdAt,
         messageCount: conversation.messages.length,
         isArchived: false,
         syncStatus: 'synced'
       };
 
-      const result = await ConversationRepository.saveConversation(firestoreConv as FirestoreConversation);
+      const response = await fetch('/api/conversations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${auth.user.uid}`
+        },
+        body: JSON.stringify(backendConv)
+      });
+
+      const result = await response.json();
       
-      if (result.success) {
+      if (response.ok) {
         setSyncStatus('idle');
       } else {
         setSyncStatus('error');
-        console.error('Erro ao salvar no Firestore:', result.error);
+        console.error('Erro ao salvar no Backend API:', result.error);
       }
     } catch (error) {
       setSyncStatus('error');
-      console.error('Erro ao salvar no Firestore:', error);
+      console.error('Erro ao salvar no Backend API:', error);
     }
-  }, [auth.user, useFirestore]);
+  }, [auth.user, useBackendAPI]);
 
-  // Salvar conversas (Redis + localStorage + Firestore se disponível)
+  // Salvar conversas (Redis + localStorage + Backend API se disponível)
   const saveToStorage = useCallback((newConversations: Conversation[]) => {
     if (typeof window === 'undefined') return;
     
     // Salvar no Redis imediatamente (com tratamento de erro robusto)
-    // TODO: Integrar com firestoreCache para conversas
+    // TODO: Integrar com backendCache para conversas
     
     // Limpar timeout anterior
     if (saveTimeoutRef.current) {
@@ -311,18 +324,18 @@ export function useConversationHistory() {
       }, DEBOUNCE_DELAY);
     }
 
-    // Salvar no Firestore (sem debounce para melhor experiência)
-    if (useFirestore) {
-      // Debounce para Firestore também, mas menor delay
+    // Salvar no Backend API (sem debounce para melhor experiência)
+    if (useBackendAPI) {
+      // Debounce para Backend API também, mas menor delay
       if (syncTimeoutRef.current) {
         clearTimeout(syncTimeoutRef.current);
       }
       
       syncTimeoutRef.current = setTimeout(() => {
-        saveToFirestore(conversation);
-      }, 1000); // 1 segundo de debounce para Firestore
+        saveToBackendAPI(conversation);
+      }, 1000); // 1 segundo de debounce para Backend API
     }
-  }, [useLocalStorage, useFirestore, saveToLocalStorageOnly, saveToFirestore]);
+  }, [useLocalStorage, useBackendAPI, saveToLocalStorageOnly, saveToBackendAPI]);
 
   // Gerar título automático para conversa baseado na primeira mensagem
   const generateConversationTitle = useCallback((firstMessage: string): string => {
@@ -457,12 +470,20 @@ export function useConversationHistory() {
   // Excluir conversa
   const deleteConversation = useCallback(async (conversationId: string) => {
     try {
-      // Deletar do Firestore se disponível
-      if (useFirestore) {
+      // Deletar do Backend API se disponível
+      if (useBackendAPI) {
         setSyncStatus('syncing');
-        const result = await ConversationRepository.deleteConversation(conversationId);
-        if (!result.success) {
-          console.error('Erro ao deletar do Firestore:', result.error);
+        const response = await fetch(`/api/conversations/${conversationId}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${auth.user?.uid}`
+          }
+        });
+
+        if (!response.ok) {
+          const result = await response.json();
+          console.error('Erro ao deletar do Backend API:', result.error);
         }
         setSyncStatus('idle');
       }
@@ -486,7 +507,7 @@ export function useConversationHistory() {
       console.error('Erro ao deletar conversa:', error);
       setError('Erro ao deletar conversa');
     }
-  }, [conversations, currentConversationId, saveToStorage, useFirestore, useLocalStorage]);
+  }, [conversations, currentConversationId, saveToStorage, useBackendAPI, useLocalStorage]);
 
   // Renomear conversa
   const renameConversation = useCallback(async (conversationId: string, newTitle: string) => {
@@ -557,7 +578,7 @@ export function useConversationHistory() {
     syncStatus,
     
     // Flags de funcionalidade
-    isUsingFirestore: useFirestore,
+    isUsingBackendAPI: useBackendAPI,
     isUsingLocalStorage: useLocalStorage,
     
     // Conversa atual
@@ -580,8 +601,8 @@ export function useConversationHistory() {
     
     // Sincronização manual
     forceSync: () => {
-      if (useFirestore && auth.user) {
-        loadFromFirestore();
+      if (useBackendAPI && auth.user) {
+        loadFromBackendAPI();
       }
     },
     

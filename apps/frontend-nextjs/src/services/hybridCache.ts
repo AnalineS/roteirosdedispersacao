@@ -167,7 +167,9 @@ class HybridCacheManager {
       this.updateTotalStats();
       
       // Promover para memory cache
-      this.setInMemory(sanitizedKey, localStorageResult, this.config.memory.defaultTTL);
+      if (localStorageResult !== undefined) {
+        this.setInMemory(sanitizedKey, localStorageResult as CacheableData, this.config.memory.defaultTTL);
+      }
       
       logger.log('[HybridCache] localStorage cache hit');
       return localStorageResult;
@@ -182,8 +184,10 @@ class HybridCacheManager {
         this.updateTotalStats();
         
         // Promover para memory e localStorage
-        this.setInMemory(sanitizedKey, firestoreResult, this.config.memory.defaultTTL);
-        this.setInLocalStorage(sanitizedKey, firestoreResult, this.config.localStorage.defaultTTL);
+        if (firestoreResult !== undefined) {
+          this.setInMemory(sanitizedKey, firestoreResult as CacheableData, this.config.memory.defaultTTL);
+          this.setInLocalStorage(sanitizedKey, firestoreResult as CacheableData, this.config.localStorage.defaultTTL);
+        }
         
         logger.log('[HybridCache] Firestore cache hit');
         return firestoreResult;
@@ -213,7 +217,7 @@ class HybridCacheManager {
     
     try {
       // Sempre armazenar em memory cache
-      this.setInMemory(sanitizedKey, data, ttl);
+      this.setInMemory(sanitizedKey, data as CacheableData, ttl);
       
       // Armazenar em localStorage apenas se TTL for maior que um valor mínimo
       if (ttl >= 30000) { // 30 segundos mínimo para localStorage
@@ -380,7 +384,7 @@ class HybridCacheManager {
     entry.timestamp = Date.now();
     
     // Verificar se é null explicitamente (para não retornar null quando o dado é realmente null)
-    return entry.data;
+    return entry.data as T;
   }
 
   private setInMemory<T extends CacheableData>(key: string, data: T, ttl: number): void {

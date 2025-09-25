@@ -129,9 +129,9 @@ export const logCustomMetrics = (metrics: Partial<CustomMetrics>) => {
     const sessionId = getCurrentSessionId();
     AnalyticsFirestoreCache.saveAnalyticsEvent({
       id: `metrics_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      sessionId,
+      type: 'custom_metrics',
       timestamp: new Date().toISOString(),
-      event: 'custom_metrics',
+      sessionId,
       category: 'performance',
       customDimensions: metrics
     }).catch(error => {
@@ -321,10 +321,10 @@ export const Analytics = {
     startSession: (sessionData?: any) => AnalyticsFirestoreCache.startAnalyticsSession(sessionData),
     endSession: (sessionId: string) => AnalyticsFirestoreCache.endAnalyticsSession(sessionId),
     getSession: (sessionId: string) => AnalyticsFirestoreCache.getAnalyticsSession(sessionId),
-    trackMedical: (sessionId: string, metric: any) => AnalyticsFirestoreCache.trackMedicalMetric(sessionId, metric),
-    getAggregated: (timeframe: any, start: number, end: number) => AnalyticsFirestoreCache.getAggregatedAnalytics(timeframe, start, end),
+    trackMedical: (sessionId: string, metric: any) => AnalyticsFirestoreCache.trackMedicalMetric(metric),
+    getAggregated: (timeframe: any, start: number, end: number) => AnalyticsFirestoreCache.getAggregatedAnalytics(timeframe),
     getRealtime: () => AnalyticsFirestoreCache.getRealtimeAnalytics(),
-    cleanup: (olderThanMs?: number) => AnalyticsFirestoreCache.cleanupOldAnalytics(olderThanMs)
+    cleanup: (olderThanMs?: number) => AnalyticsFirestoreCache.cleanupOldAnalytics(olderThanMs ? new Date(Date.now() - olderThanMs) : new Date())
   }
 };
 

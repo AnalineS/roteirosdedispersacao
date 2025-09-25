@@ -106,7 +106,7 @@ export function usePersonasEnhanced(options: UsePersonasEnhancedOptions = {}): U
       if (Object.keys(personasData).length === 0) {
         // Buscar do servidor
         try {
-          personasData = await getPersonaConfigs();
+          personasData = await getPersonaConfigs() as Record<string, PersonaConfig>;
           // Filtrar apenas personas com avatares configurados
           const validPersonas = filterValidPersonas(personasData);
           

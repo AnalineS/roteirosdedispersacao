@@ -106,6 +106,8 @@ const UserProfileRepository = {
 };
 
 export interface UserProfile {
+  email?: string;
+  displayName?: string;
   type: 'admin' | 'professional' | 'student' | 'patient' | 'caregiver';
   focus: 'technical' | 'practical' | 'effects' | 'general' | 'empathetic';
   confidence: number;
@@ -122,6 +124,19 @@ export interface UserProfile {
     lastAccess: string;
     preferredTopics: string[];
   };
+  stats?: {
+    joinedAt: string;
+    lastActiveAt: string;
+    sessionCount: number;
+    messageCount: number;
+    averageSessionDuration: number;
+    favoritePersona: string;
+    completionRate: number;
+  };
+  createdAt?: string;
+  updatedAt?: string;
+  version?: string;
+  isAnonymous?: boolean;
 }
 
 interface UserProfileHook {
@@ -143,7 +158,10 @@ const STORAGE_VERSION = '1.0';
 const defaultPreferences = {
   language: 'simple' as const,
   notifications: true,
-  theme: 'auto' as const
+  theme: 'auto' as const,
+  emailUpdates: false,
+  dataCollection: true,
+  lgpdConsent: false
 };
 
 export function useUserProfile(): UserProfileHook {
@@ -218,7 +236,7 @@ export function useUserProfile(): UserProfileHook {
       
       // Primeiro verificar se há perfil no contexto de auth
       if (auth.profile) {
-        const localProfile = convertBackendToLocal(auth.profile);
+        const localProfile = convertBackendToLocal(auth.profile as BackendUserProfile);
         setProfile(localProfile);
         setSyncStatus('idle');
         return;
@@ -256,16 +274,42 @@ export function useUserProfile(): UserProfileHook {
   // ============================================
 
   const convertBackendToLocal = useCallback((backendProfile: BackendUserProfile): UserProfile => {
+    if (!auth.user) throw new Error('Usuário não autenticado para conversão');
+
     return {
+      email: auth.user.email || undefined,
+      displayName: auth.user.displayName || undefined,
       type: backendProfile.type,
       focus: backendProfile.focus,
       confidence: backendProfile.confidence,
       explanation: backendProfile.explanation,
       selectedPersona: backendProfile.selectedPersona,
-      preferences: backendProfile.preferences,
-      history: backendProfile.history
+      preferences: { ...defaultPreferences, ...backendProfile.preferences },
+      history: backendProfile.history || {
+        lastPersona: backendProfile.selectedPersona || 'ga',
+        conversationCount: 0,
+        lastAccess: new Date().toISOString(),
+        preferredTopics: [],
+        totalSessions: 0,
+        totalTimeSpent: 0,
+        completedModules: [],
+        achievements: []
+      },
+      stats: {
+        joinedAt: new Date().toISOString(),
+        lastActiveAt: new Date().toISOString(),
+        sessionCount: 0,
+        messageCount: 0,
+        averageSessionDuration: 0,
+        favoritePersona: backendProfile.selectedPersona || 'ga',
+        completionRate: 0
+      },
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      version: STORAGE_VERSION,
+      isAnonymous: auth.user.isAnonymous
     };
-  }, []);
+  }, [auth.user]);
 
   const convertLocalToBackend = useCallback((localProfile: UserProfile): BackendUserProfile => {
     if (!auth.user) throw new Error('Usuário não autenticado');

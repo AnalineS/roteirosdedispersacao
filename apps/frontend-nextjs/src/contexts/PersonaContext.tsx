@@ -35,7 +35,7 @@ import {
 } from './PersonaContext/analytics';
 
 import { usePersonaResolution } from './PersonaContext/usePersonaResolution';
-import { usePersonaActions } from './PersonaContext/usePersonaActions';
+import { usePersonaActions as usePersonaActionsImpl } from './PersonaContext/usePersonaActions';
 
 // ============================================
 // CONTEXTO E PROVIDER
@@ -95,9 +95,9 @@ export function PersonaProvider({ children, config = {} }: PersonaProviderProps)
     hasValidURLPersona,
     personaFromURL,
     explicitPersona,
-    profileSelectedPersona: profile?.selectedPersona || null,
+    profileSelectedPersona: (profile?.selectedPersona as "dr_gasnelio" | "ga") || null,
     isPersonaAvailable,
-    getProfileRecommendation,
+    getProfileRecommendation: () => (getProfileRecommendation() as "dr_gasnelio" | "ga" | null),
     personaHistory,
     defaultPersona,
     personas
@@ -109,7 +109,7 @@ export function PersonaProvider({ children, config = {} }: PersonaProviderProps)
   }, [getPersonaConfigFromHook]);
 
   // Hook de ações de persona
-  const { setPersona, clearPersona, refreshPersonas } = usePersonaActions({
+  const { setPersona, clearPersona, refreshPersonas } = usePersonaActionsImpl({
     currentPersona,
     isPersonaAvailable,
     enableAnalytics,
@@ -121,7 +121,7 @@ export function PersonaProvider({ children, config = {} }: PersonaProviderProps)
     profile,
     personas,
     personaHistory,
-    getProfileRecommendation,
+    getProfileRecommendation: () => (getProfileRecommendation() as "dr_gasnelio" | "ga" | null),
     updatePersonaInURL,
     setExplicitPersona
   });
@@ -273,14 +273,43 @@ export function useCurrentPersona() {
   };
 }
 
+
 export function usePersonaActions() {
-  const { setPersona, clearPersona, isPersonaAvailable, getRecommendedPersona } = usePersonaContext();
+  const context = usePersonaContext();
+
+  // Create a wrapper to handle null values for setExplicitPersona
+  const setExplicitPersonaWrapper = (personaId: ValidPersonaIdType | null) => {
+    if (personaId === null) {
+      context.clearPersona();
+    } else {
+      // Use the setPersona function from context which handles the async operation
+      void context.setPersona(personaId);
+    }
+  };
+
+  const { setPersona, clearPersona, refreshPersonas } = usePersonaActionsImpl({
+    currentPersona: context.currentPersona,
+    isPersonaAvailable: context.isPersonaAvailable,
+    enableAnalytics: true,
+    enableLocalStorage: true,
+    enableURLSync: false,
+    sessionStartTime: Date.now(),
+    trackEvent: null,
+    getPersonaConfig: context.getPersonaConfig,
+    profile: null,
+    personas: {},
+    personaHistory: context.history,
+    getProfileRecommendation: context.getRecommendedPersona,
+    updatePersonaInURL: () => {},
+    setExplicitPersona: setExplicitPersonaWrapper
+  });
 
   return {
     setPersona,
     clearPersona,
-    isPersonaAvailable,
-    getRecommendedPersona
+    refreshPersonas,
+    isPersonaAvailable: context.isPersonaAvailable,
+    getRecommendedPersona: context.getRecommendedPersona
   };
 }
 

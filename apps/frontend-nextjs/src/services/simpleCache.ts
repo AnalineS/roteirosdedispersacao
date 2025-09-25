@@ -9,6 +9,7 @@ import LRUCache from '@/utils/apiCache';
 interface AnalyticsEvent {
   id?: string;
   type: string;
+  event?: string; // Alias for type for backward compatibility
   data?: Record<string, unknown>;
   timestamp: string;
   userId?: string;
@@ -32,7 +33,7 @@ interface AnalyticsSession {
 
 interface MedicalMetric {
   id?: string;
-  type: 'dosage' | 'interaction' | 'adverse_effect' | 'treatment_outcome';
+  type: 'dosage' | 'interaction' | 'adverse_effect' | 'treatment_outcome' | 'task_completion' | 'critical_action';
   value: number;
   unit?: string;
   timestamp?: string;

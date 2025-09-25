@@ -30,7 +30,7 @@ import {
 } from './analytics';
 
 import { usePersonaResolution } from './usePersonaResolution';
-import { usePersonaActions } from './usePersonaActions';
+import { usePersonaActions as usePersonaActionsImpl } from './usePersonaActions';
 
 // ============================================
 // CONTEXTO E PROVIDER
@@ -90,9 +90,9 @@ export function PersonaProvider({ children, config = {} }: PersonaProviderProps)
     hasValidURLPersona,
     personaFromURL,
     explicitPersona,
-    profileSelectedPersona: profile?.selectedPersona || null,
+    profileSelectedPersona: (profile?.selectedPersona as "dr_gasnelio" | "ga") || null,
     isPersonaAvailable,
-    getProfileRecommendation,
+    getProfileRecommendation: () => (getProfileRecommendation() as "dr_gasnelio" | "ga" | null),
     personaHistory,
     defaultPersona,
     personas
@@ -104,7 +104,7 @@ export function PersonaProvider({ children, config = {} }: PersonaProviderProps)
   }, [getPersonaConfigFromHook]);
 
   // Hook de ações de persona
-  const { setPersona, clearPersona, refreshPersonas } = usePersonaActions({
+  const { setPersona, clearPersona, refreshPersonas } = usePersonaActionsImpl({
     currentPersona,
     isPersonaAvailable,
     enableAnalytics,
@@ -116,7 +116,7 @@ export function PersonaProvider({ children, config = {} }: PersonaProviderProps)
     profile,
     personas,
     personaHistory,
-    getProfileRecommendation,
+    getProfileRecommendation: () => (getProfileRecommendation() as "dr_gasnelio" | "ga" | null),
     updatePersonaInURL,
     setExplicitPersona
   });

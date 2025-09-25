@@ -156,7 +156,8 @@ export class MedicalAnalytics {
       AnalyticsFirestoreCache.saveAnalyticsEvent({
         id: `medical_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         sessionId,
-        timestamp: Date.now(),
+        timestamp: new Date().toISOString(),
+        type: enrichedEvent.event,
         event: enrichedEvent.event,
         category: enrichedEvent.event_category,
         label: enrichedEvent.event_label,
@@ -230,7 +231,7 @@ export class MedicalAnalytics {
 
     // Track como ação crítica no Firestore
     const sessionId = this.getCurrentSessionId();
-    AnalyticsFirestoreCache.trackMedicalMetric(sessionId, {
+    AnalyticsFirestoreCache.trackMedicalMetric({
       type: 'critical_action',
       value: action.timeToComplete,
       context: {

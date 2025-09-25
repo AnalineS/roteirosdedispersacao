@@ -101,6 +101,7 @@ export interface APIResponse<T = any> {
   data?: T;
   error?: string;
   message?: string;
+  status?: number;
   timestamp: string;
   requestId?: string;
   metadata?: {

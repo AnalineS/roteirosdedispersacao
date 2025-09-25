@@ -10,7 +10,7 @@
 'use client';
 
 import React from 'react';
-import { useABTest, useABConfig } from '@/hooks/useABTest';
+import { useABTest } from '@/hooks/useABTest';
 import BasicCalculator from './BasicCalculator';
 import { CalculationResult } from '@/types/medication';
 
@@ -28,39 +28,27 @@ interface CalculatorLayoutConfig {
 const ABTestBasicCalculator: React.FC<ABTestBasicCalculatorProps> = ({
   onCalculationComplete
 }) => {
-  const { variant, isLoading, trackConversion, trackInteraction } = useABTest(
+  const { variant, loading, trackConversion, isVariant, config } = useABTest(
     'calculator_optimization_v1'
   );
-  
+
   // Configurações baseadas no variant
-  const layoutConfig = useABConfig<CalculatorLayoutConfig>(
-    'calculator_optimization_v1',
-    {
-      control: {
-        buttonSize: 'standard',
-        showVisualAids: false,
-        colorScheme: 'default',
-        spacing: 'compact'
-      },
-      enhanced: {
-        buttonSize: 'large',
-        showVisualAids: true,
-        colorScheme: 'enhanced',
-        spacing: 'comfortable'
-      }
-    },
-    {
-      buttonSize: 'standard',
-      showVisualAids: false,
-      colorScheme: 'default',
-      spacing: 'compact'
-    }
-  );
+  const layoutConfig = variant === 'enhanced' ? {
+    buttonSize: 'large',
+    showVisualAids: true,
+    colorScheme: 'enhanced',
+    spacing: 'comfortable'
+  } : {
+    buttonSize: 'standard',
+    showVisualAids: false,
+    colorScheme: 'default',
+    spacing: 'compact'
+  };
 
   // Handler para quando cálculo é completado - trackear conversão
   const handleCalculationComplete = (result: CalculationResult): void => {
     // Trackear conversão no A/B test
-    trackConversion({
+    trackConversion('calculation_completed', 1.0, {
       isValid: result.isValid,
       hasAlerts: result.safetyAlerts.length > 0,
       calculationType: result.regimen || 'unknown'
@@ -74,14 +62,13 @@ const ABTestBasicCalculator: React.FC<ABTestBasicCalculatorProps> = ({
 
   // Handler para interações - trackear engagement
   const handleInteraction = (interactionType: string, data?: Record<string, unknown>): void => {
-    trackInteraction({
-      type: interactionType,
+    trackConversion(interactionType, 1.0, {
       variant,
       ...data
     });
   };
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
