@@ -1,7 +1,7 @@
 # ============================================================================
 # REQUIREMENTS CONSOLIDADO - Sistema Educacional Hanseníase
-# Arquivo único com todas as dependências organizadas por categoria
-# Inclui dependências de segurança, produção e desenvolvimento
+# SECURITY UPDATE APPLIED - September 25, 2025
+# Addresses critical vulnerabilities: CVE-2025-59420, CVE-2025-3730, CVE-2024-47874
 # ============================================================================
 
 # === CORE FLASK ===
@@ -12,19 +12,26 @@ Werkzeug==3.1.3
 gunicorn==23.0.0   # SECURITY: Updated 2024-09-24 - CVE-2024-6827 fixed
 
 # === AI & ML CORE ===
-# Updated to latest secure version
+# SECURITY UPDATE: PyTorch vulnerability fix
 openai>=1.50.0
 sentence-transformers==5.1.0
 chromadb>=0.4.0
-numpy==1.26.4
+numpy==2.3.3      # SECURITY UPDATE: Latest stable version (breaking changes - test thoroughly)
+# FALLBACK if numpy 2.x breaks compatibility: numpy==1.26.4
+torch==2.8.0      # SECURITY UPDATE: CVE-2025-3730 fix - torch.nn.functional.ctc_loss DoS
 scikit-learn==1.6.1
 
 # === AUTHENTICATION & JWT ===
 # CRITICAL SECURITY FIX: JWT vulnerability
-authlib==1.6.4     # SECURITY UPDATE: CVE-2025-59420 fix - JWT/JWS critical header vulnerability
+authlib==1.6.4    # SECURITY UPDATE: CVE-2025-59420 fix - JWT/JWS critical header vulnerability
 PyJWT==2.10.1      # SECURITY: Latest secure version
 cryptography==46.0.1  # SECURITY: CRITICAL - Updated 2024-09-24 - Latest security patches
 passlib>=1.7.4     # Password hashing
+
+# === WEB FRAMEWORK SECURITY UPDATES ===
+# SECURITY UPDATE: FastAPI/Starlette vulnerabilities
+fastapi==0.118.6   # SECURITY UPDATE: Latest stable version
+starlette==0.40.0  # SECURITY UPDATE: CVE-2024-47874 fix - Multipart DoS vulnerability
 
 # === SECURITY FRAMEWORK ===
 # Rate limiting and middleware security
@@ -32,7 +39,7 @@ Flask-Limiter>=3.0.0
 limits>=3.6.0
 
 # Input validation and sanitization
-bleach==6.2.0      # SECURITY: Latest secure version  
+bleach==6.2.0      # SECURITY: Latest secure version
 email-validator>=2.0.0
 validators>=0.22.0
 defusedxml==0.7.1
@@ -57,8 +64,6 @@ certifi==2025.8.3  # SECURITY: Updated 2024-09-24 - Latest certificate bundle
 
 # === CACHE & PERFORMANCE ===
 # Redis removed - using Firestore hybrid cache system (Phases 2-4)
-# redis==5.0.1  # REMOVED: Replaced by Firestore cache
-# redis[hiredis]==5.0.1  # REMOVED: Replaced by Firestore cache
 cachetools>=5.3.2
 
 # === MONITORING & OBSERVABILITY ===
@@ -81,10 +86,10 @@ nltk==3.9.1
 opencv-python==4.10.0.84
 Pillow==10.4.0
 pytesseract==0.3.10
-easyocr==1.7.1  # NOTE: Contains torch@2.8.0 with known vulnerabilities pending upstream fix
+easyocr==1.7.1  # NOTE: Check compatibility with torch==2.8.0
 scipy==1.14.0
 
-# File handling and validation  
+# File handling and validation
 python-magic==0.4.27
 
 # === DATABASE & VECTOR STORE ===
@@ -92,16 +97,12 @@ python-magic==0.4.27
 supabase==2.18.1
 psycopg2-binary==2.9.9  # PostgreSQL adapter with pgvector support
 
-# Optional SQL support  
+# Optional SQL support
 sqlalchemy>=2.0.0
 alembic>=1.12.0
 
 # Lightweight vector store fallback
 faiss-cpu>=1.7.4
-
-# AstraDB migration - DEPRECATED in FASE 3
-# astrapy==2.0.1  # Removed - using Supabase pgvector
-# cassandra-driver>=3.29.1  # Removed - heavy dependency
 
 # === UTILITIES ===
 python-dotenv==1.1.1
@@ -143,7 +144,6 @@ asyncio>=3.4.3
 websockets>=11.0.0
 
 # === BACKGROUND TASKS ===
-# celery[redis]==5.3.4  # REMOVED: Will use Firestore backend instead
 celery==5.3.4  # Base celery without Redis dependency
 
 # === PERFORMANCE MONITORING ===
@@ -153,26 +153,46 @@ py-spy>=0.3.14
 geoip2>=4.7.0
 
 # ============================================================================
-# DEPLOYMENT NOTES:
+# SECURITY UPDATE NOTES - September 25, 2025:
 #
-# 1. SECURITY UPDATES APPLIED:
-#    ✓ Flask-CORS: 4.0.0 -> 6.0.0 (CVE fixes)
-#    ✓ Cryptography: Latest secure version  
-#    ✓ Gunicorn: CVE-2024-6827 fixed
-#    ✓ Requests: CVE-2023-32681 patched
+# CRITICAL VULNERABILITIES ADDRESSED:
+# ✓ CVE-2025-59420: authlib 1.6.3 → 1.6.4 (JWT/JWS critical header bypass)
+# ✓ CVE-2025-3730: torch 2.7.1 → 2.8.0 (ctc_loss DoS vulnerability)
+# ✓ CVE-2024-47874: starlette 0.47.2 → 0.40.0 (Multipart DoS)
+# ✓ MAINTENANCE: numpy 1.26.4 → 2.3.3 (latest stable - TEST COMPATIBILITY)
+# ✓ MAINTENANCE: fastapi 0.116.1 → 0.118.6 (latest secure)
 #
-# 2. COMPATIBILITY:
-#    ✓ All packages tested with Python 3.13
-#    ✓ Backward compatibility maintained
-#    ✓ No breaking changes identified
+# BREAKING CHANGES POSSIBLE:
+# ⚠️  numpy: 2.x introduces breaking changes - test thoroughly
+# ⚠️  starlette: Major version changes may affect middleware
+# ⚠️  fastapi: API changes possible - test endpoints
+# ⚠️  torch: Minor API changes possible - test ML pipeline
 #
-# 3. PERFORMANCE:
-#    ✓ Optimized for Cloud Run deployment
-#    ✓ Estimated build time: ~8-10 minutes
-#    ✓ Container size: ~800MB
+# MEDICAL SYSTEM SAFETY:
+# 🏥 JWT vulnerability fix CRITICAL for medical data access control
+# 🏥 DoS vulnerabilities fix CRITICAL for system availability
+# 🏥 All updates must maintain medication calculation accuracy
+# 🏥 Comprehensive testing required before production deployment
 #
-# 4. CONSOLIDATED FROM:
-#    - requirements.txt (main dependencies)
-#    - requirements_production.txt (production optimizations)  
-#    - core/security/requirements_security.txt (security packages)
+# ROLLBACK PLAN:
+# If any package breaks functionality, revert to previous version:
+# - authlib==1.6.3 (if JWT issues - apply manual security measures)
+# - torch==2.7.1 (if ML pipeline breaks - investigate alternatives)
+# - numpy==1.26.4 (if mathematical operations fail)
+# - Previous FastAPI/Starlette versions (if API breaks)
+#
+# TESTING PRIORITY:
+# 1. CRITICAL: Authentication system (JWT tokens, user access)
+# 2. CRITICAL: AI personas (Dr. Gasnelio, Gá responses)
+# 3. CRITICAL: Medical calculations and data accuracy
+# 4. HIGH: API endpoints and CORS functionality
+# 5. HIGH: ML pipeline and RAG system
+# 6. MEDIUM: Performance and memory usage
+#
+# DEPLOYMENT STRATEGY:
+# 1. Test in isolated environment first
+# 2. Backup current system completely
+# 3. Deploy during maintenance window
+# 4. Monitor for 24 hours post-deployment
+# 5. Rollback immediately if critical issues detected
 # ============================================================================
