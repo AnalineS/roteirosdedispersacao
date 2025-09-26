@@ -515,7 +515,12 @@ export const medicalAnalytics = {
     const instance = typeof window !== 'undefined' ? MedicalAnalytics.getInstance() : null;
     if (instance) instance.trackEvent(event);
   },
-  trackMedicalError: (error: unknown) => {
+  trackMedicalError: (error: {
+    type: 'calculation_error' | 'interaction_missed' | 'navigation_error' | 'system_error';
+    severity: 'low' | 'medium' | 'high' | 'critical';
+    context: string;
+    userAction?: string;
+  }) => {
     const instance = typeof window !== 'undefined' ? MedicalAnalytics.getInstance() : null;
     if (instance) instance.trackMedicalError(error);
   },
@@ -523,11 +528,21 @@ export const medicalAnalytics = {
     const instance = typeof window !== 'undefined' ? MedicalAnalytics.getInstance() : null;
     if (instance) instance.startClinicalTask(task.taskId, task.taskType);
   },
-  trackCriticalMedicalAction: (action: unknown) => {
+  trackCriticalMedicalAction: (action: {
+    type: 'drug_interaction' | 'contraindication' | 'emergency_dose' | 'protocol_access';
+    success: boolean;
+    timeToComplete: number;
+    errorCount?: number;
+    urgencyLevel?: 'critical' | 'important' | 'standard';
+  }) => {
     const instance = typeof window !== 'undefined' ? MedicalAnalytics.getInstance() : null;
     if (instance) instance.trackCriticalMedicalAction(action);
   },
-  trackFastAccessUsage: (shortcutId: string, context: unknown) => {
+  trackFastAccessUsage: (shortcutId: string, context: {
+    urgencyLevel: 'critical' | 'important' | 'standard';
+    accessMethod: 'click' | 'keyboard' | 'swipe';
+    timeFromPageLoad: number;
+  }) => {
     const instance = typeof window !== 'undefined' ? MedicalAnalytics.getInstance() : null;
     if (instance) instance.trackFastAccessUsage(shortcutId, context);
   },

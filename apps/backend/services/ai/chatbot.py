@@ -2,6 +2,7 @@
 import os
 import json
 import logging
+import time
 from typing import Dict, List, Optional, Tuple
 from datetime import datetime
 import requests
@@ -18,6 +19,14 @@ from core.security.medical_audit_logger import (
     ActionType,
     MedicalDataClassification
 )
+
+# Analytics médico interno (SQLite + Google Storage)
+try:
+    from services.analytics.medical_analytics_service import get_analytics_service
+    analytics_service = get_analytics_service()
+except ImportError:
+    logger.warning("Medical analytics service not available")
+    analytics_service = None
 
 logger = logging.getLogger(__name__)
 
@@ -461,13 +470,13 @@ No momento, estou com acesso limitado à base de conhecimento específica. Para 
     def process_message(self, message: str, persona_id: str, user_session_id: str = None, ip_address: str = None) -> Dict:
         """
         Processa mensagem do usuário com persona específica
-        
+
         Args:
             message: Mensagem do usuário
             persona_id: ID da persona a ser usada
             user_session_id: ID da sessão do usuário (para auditoria)
             ip_address: Endereço IP do usuário (para auditoria)
-            
+
         Returns:
             Dict com resposta e metadados
         """
@@ -475,7 +484,10 @@ No momento, estou com acesso limitado à base de conhecimento específica. Para 
         if not user_session_id:
             import uuid
             user_session_id = str(uuid.uuid4())
-        
+
+        # Tracking de tempo de resposta
+        start_time = time.time()
+
         try:
             # AUDITORIA: Log da pergunta recebida
             medical_audit_logger.log_medical_interaction(
@@ -594,7 +606,36 @@ Estilo de linguagem: {persona.get('language_style', 'profissional')}
                 },
                 ip_address=ip_address
             )
-            
+
+            # ANALYTICS MÉDICO: Track evento médico (SQLite + Google Storage)
+            response_time = time.time() - start_time
+
+            if analytics_service:
+                try:
+                    # Determinar urgência com base no conteúdo
+                    urgency_level = 'standard'
+                    urgent_keywords = ['emergência', 'urgente', 'imediato', 'grave', 'crítico']
+                    if any(keyword in message.lower() for keyword in urgent_keywords):
+                        urgency_level = 'critical'
+                    elif any(keyword in message.lower() for keyword in ['importante', 'atenção', 'cuidado']):
+                        urgency_level = 'important'
+
+                    # Track evento médico
+                    analytics_service.track_event({
+                        'session_id': user_session_id,
+                        'event_type': 'medical_interaction',
+                        'persona_id': persona_id,
+                        'question': message[:500],  # Limitar tamanho para privacidade
+                        'response_time': response_time,
+                        'fallback_used': not api_used,
+                        'urgency_level': urgency_level,
+                        'device_type': 'desktop',  # TODO: Detectar do user agent
+                        'ip_address': ip_address,
+                        'is_anonymous': not ip_address  # Simplificado - melhorar depois
+                    })
+                except Exception as e:
+                    logger.warning(f"Failed to track analytics: {e}")
+
             return {
                 "response": response,
                 "persona": persona['name'],
@@ -602,7 +643,8 @@ Estilo de linguagem: {persona.get('language_style', 'profissional')}
                 "context_used": [{"file": doc["file"], "similarity": doc["similarity"]} for doc in relevant_docs],
                 "api_used": api_used,
                 "timestamp": datetime.now().isoformat(),
-                "audit_compliant": True  # Indicador de conformidade
+                "audit_compliant": True,  # Indicador de conformidade
+                "response_time_ms": int(response_time * 1000)  # Adicionar tempo de resposta
             }
             
         except Exception as e:

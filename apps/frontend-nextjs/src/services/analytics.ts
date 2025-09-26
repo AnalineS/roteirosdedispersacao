@@ -1,5 +1,4 @@
 import ReactGA from 'react-ga4';
-import { AnalyticsFirestoreCache } from './analyticsFirestoreCache';
 
 // Google Analytics Measurement ID - Configured via GitHub secrets
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || '';
@@ -48,28 +47,52 @@ export const AnalyticsAction = {
   PROFILE_UPDATE: 'profile_update',
 } as const;
 
+// Medical Interaction Metrics Interface
+interface MedicalInteractionMetric {
+  urgencyLevel: 'critical' | 'important' | 'standard';
+  accessMethod: 'click' | 'keyboard' | 'swipe';
+  timeFromPageLoad: number;
+}
+
+// Medical Task Completion Interface
+interface MedicalTaskCompletion {
+  type: 'drug_interaction' | 'contraindication' | 'emergency_dose' | 'protocol_access';
+  success: boolean;
+  timeToComplete: number;
+  errorCount?: number;
+  urgencyLevel?: 'critical' | 'important' | 'standard';
+}
+
+// Medical Error Event Interface
+interface MedicalErrorEvent {
+  type: 'calculation_error' | 'interaction_missed' | 'navigation_error' | 'system_error';
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  context: string;
+  userAction?: string;
+}
+
 // Custom Metrics Interface
 interface CustomMetrics {
   // Resolution Metrics
   questionResolved: boolean;
   resolutionTime: number;
   followUpNeeded: boolean;
-  
+
   // Session Metrics
   sessionDuration: number;
   messagesCount: number;
   personaSwitches: number;
-  
+
   // Performance Metrics
   apiResponseTime: number;
   fallbackCount: number;
   errorCount: number;
-  
+
   // Educational Metrics
   modulesCompleted: number;
   certificatesEarned: number;
   quizScore?: number;
-  
+
   // Compliance Metrics
   lgpdConsent: boolean;
   dataCategory: 'public' | 'sensitive' | 'medical';
@@ -123,19 +146,6 @@ export const logCustomMetrics = (metrics: Partial<CustomMetrics>) => {
     // Log as custom dimensions
     ReactGA.gtag('event', 'custom_metrics', {
       custom_parameter: metrics,
-    });
-
-    // Também salvar no Firestore para analytics avançado
-    const sessionId = getCurrentSessionId();
-    AnalyticsFirestoreCache.saveAnalyticsEvent({
-      id: `metrics_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      type: 'custom_metrics',
-      timestamp: new Date().toISOString(),
-      sessionId,
-      category: 'performance',
-      customDimensions: metrics
-    }).catch(error => {
-      console.warn('Failed to save metrics to Firestore:', error);
     });
   }
 };
@@ -269,24 +279,12 @@ export const trackAdminAction = (
   logEvent('ADMIN', action, details);
 };
 
-// Session Management para Firestore Integration
+// Session Management
 let currentSessionId: string | null = null;
 
 const getCurrentSessionId = (): string => {
   if (!currentSessionId) {
     currentSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    // Iniciar sessão no Firestore
-    AnalyticsFirestoreCache.startAnalyticsSession({
-      id: currentSessionId,
-      startTime: new Date().toISOString(),
-      status: 'active' as const,
-      events: [],
-      metadata: {
-        deviceType: getDeviceType()
-      }
-    }).catch(error => {
-      console.warn('Failed to start Firestore analytics session:', error);
-    });
   }
   return currentSessionId;
 };
@@ -297,6 +295,29 @@ const getDeviceType = (): 'mobile' | 'tablet' | 'desktop' => {
   if (width < 768) return 'mobile';
   if (width < 1024) return 'tablet';
   return 'desktop';
+};
+
+// Medical Analytics Functions
+export const trackMedicalInteraction = (metric: MedicalInteractionMetric) => {
+  logEvent('CHAT', 'medical_interaction', metric.urgencyLevel, metric.timeFromPageLoad);
+  logCustomMetrics({
+    resolutionTime: metric.timeFromPageLoad,
+    errorCount: 0
+  });
+};
+
+export const trackMedicalTaskCompletion = (task: MedicalTaskCompletion) => {
+  logEvent('EDUCATION', 'medical_task', task.type, task.timeToComplete);
+  logCustomMetrics({
+    questionResolved: task.success,
+    resolutionTime: task.timeToComplete,
+    errorCount: task.errorCount || 0
+  });
+};
+
+export const trackMedicalError = (error: MedicalErrorEvent) => {
+  logException(`Medical Error: ${error.type} - ${error.context}`, error.severity === 'critical');
+  logEvent('ERROR', 'medical_error', error.type);
 };
 
 // Export all tracking functions
@@ -316,16 +337,10 @@ export const Analytics = {
   education: trackEducationalProgress,
   compliance: trackCompliance,
   admin: trackAdminAction,
-  // Firestore integration
-  firestore: {
-    startSession: (sessionData?: any) => AnalyticsFirestoreCache.startAnalyticsSession(sessionData),
-    endSession: (sessionId: string) => AnalyticsFirestoreCache.endAnalyticsSession(sessionId),
-    getSession: (sessionId: string) => AnalyticsFirestoreCache.getAnalyticsSession(sessionId),
-    trackMedical: (sessionId: string, metric: any) => AnalyticsFirestoreCache.trackMedicalMetric(metric),
-    getAggregated: (timeframe: any, start: number, end: number) => AnalyticsFirestoreCache.getAggregatedAnalytics(timeframe),
-    getRealtime: () => AnalyticsFirestoreCache.getRealtimeAnalytics(),
-    cleanup: (olderThanMs?: number) => AnalyticsFirestoreCache.cleanupOldAnalytics(olderThanMs ? new Date(Date.now() - olderThanMs) : new Date())
-  }
+  // Medical tracking functions
+  medicalInteraction: trackMedicalInteraction,
+  medicalTask: trackMedicalTaskCompletion,
+  medicalError: trackMedicalError,
 };
 
 export default Analytics;

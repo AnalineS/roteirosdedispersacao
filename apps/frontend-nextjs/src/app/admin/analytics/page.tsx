@@ -5,29 +5,25 @@ import { useRouter } from "next/navigation";
 import Analytics from "@/services/analytics";
 import { useServices, useAnalytics } from "@/providers/ServicesProvider";
 
-// Interfaces para os dados de analytics
-interface GA4SessionData {
-  sessions?: number;
-  avgDuration?: number;
-  bounceRate?: number;
-  conversionRate?: number;
-  topPages?: Array<{ page: string; views: number; bounce_rate: number }>;
-}
-
-interface FirestoreAnalyticsData {
-  topQuestions?: string[];
-  personaUsage?: {
-    dr_gasnelio: number;
-    ga: number;
+// Interface baseada no que o backend realmente retorna
+interface MedicalAnalyticsData {
+  sessions: number;
+  avgDuration: number;
+  bounceRate: number;
+  conversionRate: number;
+  topQuestions: string[];
+  personaUsage: {
+    [key: string]: number;
   };
-  peakHours?: number[];
-  resolutionRate?: number;
-  fallbackRate?: number;
+  peakHours: number[];
+  resolutionRate: number;
+  fallbackRate: number;
+  topPages: Array<{ page: string; views: number; bounce_rate: number }>;
 }
 
 interface AnalyticsResponse {
   success: boolean;
-  data?: GA4SessionData;
+  data?: MedicalAnalyticsData;
 }
 
 // Dashboard integrado com GA4 e sistema de serviços
@@ -42,10 +38,7 @@ export default function AnalyticsDashboard() {
     totalSessions: 0,
     avgSessionDuration: 0,
     topQuestions: [] as string[],
-    personaUsage: {
-      dr_gasnelio: 0,
-      ga: 0,
-    },
+    personaUsage: {} as { [key: string]: number },
     peakHours: [] as number[],
     resolutionRate: 0,
     fallbackRate: 0,
@@ -64,54 +57,36 @@ export default function AnalyticsDashboard() {
     setIsLoading(true);
     try {
       // Carregar dados reais via API
-      const [sessionsResponse, firestoreData, realtimeData] = await Promise.all(
+      const [sessionsResponse] = await Promise.all(
         [
           callAPI<AnalyticsResponse>("/api/analytics/sessions", "POST", {
             startDate: dateRange.start.toISOString(),
             endDate: dateRange.end.toISOString(),
           }),
-          Analytics.firestore.getAggregated('daily', dateRange.start.getTime(), dateRange.end.getTime()),
-          Analytics.firestore.getRealtime(),
         ],
       );
 
-      const sessionsData = (
+      const analyticsData = (
         sessionsResponse && "data" in sessionsResponse
           ? sessionsResponse
           : { success: true, data: {} }
       ) as AnalyticsResponse;
-      const firestoreAnalytics = firestoreData as FirestoreAnalyticsData;
 
-      // Processar dados do GA4 + Firestore
+      // Processar dados reais do sistema interno de analytics médicos
+      const data = analyticsData.data;
+
       setMetrics({
-        totalSessions: sessionsData.data?.sessions || 1247,
-        avgSessionDuration: sessionsData.data?.avgDuration || 185,
-        realTimeUsers: Array.isArray(realtimeData) ? realtimeData.length : 23,
-        bounceRate: sessionsData.data?.bounceRate || 0.32,
-        conversionRate: sessionsData.data?.conversionRate || 0.087,
-
-        // Dados educacionais específicos do Firestore
-        topQuestions: firestoreAnalytics?.topQuestions || [
-          "Como fazer o cálculo de dose para PQT-U?",
-          "Quais são os efeitos colaterais da clofazimina?",
-          "Como orientar paciente sobre manchas na pele?",
-          "Protocolo para gestantes com hanseníase",
-          "Diferença entre PQT-PB e PQT-MB",
-        ],
-        personaUsage: firestoreAnalytics?.personaUsage || {
-          dr_gasnelio: 723,
-          ga: 524,
-        },
-        peakHours: firestoreAnalytics?.peakHours || [9, 10, 14, 15, 16, 20],
-        resolutionRate: firestoreAnalytics?.resolutionRate || 87.5,
-        fallbackRate: firestoreAnalytics?.fallbackRate || 12.5,
-        topPages: sessionsData.data?.topPages || [
-          { page: "/", views: 3421, bounce_rate: 0.28 },
-          { page: "/chat", views: 2156, bounce_rate: 0.15 },
-          { page: "/resources/calculator", views: 1543, bounce_rate: 0.22 },
-          { page: "/modules", views: 1234, bounce_rate: 0.35 },
-          { page: "/resources", views: 987, bounce_rate: 0.41 },
-        ],
+        totalSessions: data?.sessions || 0,
+        avgSessionDuration: data?.avgDuration || 0,
+        realTimeUsers: 0, // TODO: Implementar com GA4 Realtime API
+        bounceRate: data?.bounceRate || 0,
+        conversionRate: data?.conversionRate || 0,
+        topQuestions: data?.topQuestions || [],
+        personaUsage: data?.personaUsage || {},
+        peakHours: data?.peakHours || [],
+        resolutionRate: data?.resolutionRate || 0,
+        fallbackRate: data?.fallbackRate || 0,
+        topPages: data?.topPages || [],
       });
     } catch (_error) {
       // Analytics loading error handled silently with fallback data
