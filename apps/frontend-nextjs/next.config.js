@@ -60,19 +60,9 @@ const nextConfig = {
     minimumCacheTTL: 60,
   },
 
-  // Fix workspace root warning - point to the actual workspace root
-  // Critical for monorepo standalone builds - includes files from monorepo base
-  outputFileTracingRoot: require("path").join(__dirname, "../../"),
-
-  // Explicitly include necessary files for standalone build in monorepo
-  outputFileTracingIncludes: {
-    "/*": [
-      "./apps/frontend-nextjs/package.json",
-      "./apps/frontend-nextjs/next.config.js",
-      "./apps/frontend-nextjs/public/**/*",
-      "./package.json"
-    ]
-  },
+  // Standalone deployment configuration following Context7 recommendations
+  // Generate standalone in the Next.js project root, not monorepo structure
+  // This prevents the nested apps/frontend-nextjs structure in standalone output
 
   // Configurações experimentais para otimização e segurança
   experimental: {

@@ -82,7 +82,10 @@ class NotificationSystemClass {
   private scheduledNotifications: Map<string, number> = new Map();
 
   private constructor() {
-    this.initializeSystem();
+    // Only initialize on client-side to prevent SSR errors
+    if (typeof window !== 'undefined') {
+      this.initializeSystem();
+    }
   }
 
   static getInstance(): NotificationSystemClass {

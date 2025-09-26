@@ -1089,15 +1089,17 @@ jobs:
             echo "🔄 Build completo - dependências modificadas"
           fi
 
-          # Set backend service name based on environment
+          # Set backend service name and CORS origins based on environment
           if [[ "${{ needs.environment-preparation.outputs.environment }}" == "production" ]]; then
             BACKEND_SERVICE="${{ vars.PRODUCTION_BACKEND_SERVICE }}"
             API_DOMAIN="${{ vars.PRODUCTION_API_DOMAIN }}"
             FRONTEND_URL="https://${{ vars.PRODUCTION_FRONTEND_DOMAIN }}"
+            CORS_ORIGINS="${{ vars.CORS_ORIGINS_PROD }}"
           else
             BACKEND_SERVICE="${{ vars.HML_BACKEND_SERVICE }}"
             API_DOMAIN="${{ vars.HML_API_DOMAIN }}"
             FRONTEND_URL="https://${{ vars.HML_FRONTEND_DOMAIN }}"
+            CORS_ORIGINS="${{ vars.CORS_ORIGINS_HML }}"
           fi
 
           # Submit build with proper VPC-SC compatible configuration
@@ -1155,7 +1157,7 @@ jobs:
               --timeout=900 \
               --memory=1Gi \
               --cpu=1 \
-              --set-env-vars "ENVIRONMENT=${{ needs.environment-preparation.outputs.environment }},LGPD_MODE=strict,PROJECT_ID=red-truck-468923-s4,FRONTEND_URL=$FRONTEND_URL,CORS_ORIGINS=$FRONTEND_URL,http://localhost:3000,http://127.0.0.1:3000" \
+              --set-env-vars "ENVIRONMENT=${{ needs.environment-preparation.outputs.environment }},LGPD_MODE=strict,PROJECT_ID=${{ vars.GCP_PROJECT_ID }},FRONTEND_URL=$FRONTEND_URL,CORS_ORIGINS=$CORS_ORIGINS" \
               --max-instances=10 \
               --min-instances=1; then
 
