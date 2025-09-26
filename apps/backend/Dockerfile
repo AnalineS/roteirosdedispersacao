@@ -159,11 +159,11 @@ RUN mkdir -p /app/logs /app/uploads /app/cache /app/data && \
     chown -R medicalapp:medicalapp /app
 
 # Create optimized entrypoint script
-COPY <<EOF /app/entrypoint.sh
+RUN cat > /app/entrypoint.sh << 'ENTRYPOINT_EOF'
 #!/bin/bash
 set -e
 
-echo "🏥 Starting Roteiro de Dispensação API - Environment: \${ENVIRONMENT}"
+echo "🏥 Starting Roteiro de Dispensação API - Environment: ${ENVIRONMENT}"
 
 # Validate critical dependencies
 python -c "
@@ -192,7 +192,7 @@ exec gunicorn main:app \
     --access-logfile - \
     --error-logfile - \
     --capture-output
-EOF
+ENTRYPOINT_EOF
 
 RUN chmod +x /app/entrypoint.sh && \
     chown medicalapp:medicalapp /app/entrypoint.sh
