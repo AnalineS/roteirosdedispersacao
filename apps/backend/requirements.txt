@@ -12,14 +12,16 @@ Werkzeug==3.1.3
 gunicorn==23.0.0   # SECURITY: Updated 2024-09-24 - CVE-2024-6827 fixed
 
 # === AI & ML CORE ===
-# Updated to latest secure version
-openai>=1.50.0
-sentence-transformers==5.1.0
-chromadb>=0.4.0
-numpy==1.26.4
-scikit-learn==1.6.1
+# ESSENTIAL for RAG system and semantic search - DO NOT REMOVE
+# Used in: services/rag/embedding_service.py (938 lines)
+# Purpose: Medical knowledge semantic search, embeddings for Portuguese pharmaceutical terms
+openai>=1.50.0                    # AI provider for chat completions
+sentence-transformers==5.1.0      # Semantic embeddings (model: all-MiniLM-L6-v2)
+chromadb>=0.4.0                   # Vector database for RAG system
+numpy==1.26.4                     # Numerical computing foundation
+scikit-learn==1.6.1              # Machine learning utilities
 
-# CRITICAL SECURITY FIX: PyTorch DoS vulnerability
+# PyTorch ecosystem - ESSENTIAL for sentence-transformers backend
 torch==2.8.0       # SECURITY UPDATE: CVE-2025-3730 fix - torch.nn.functional.ctc_loss DoS vulnerability
 torchvision>=0.19.0 # Compatible with torch 2.8.0
 torchaudio>=2.4.0  # Compatible with torch 2.8.0
@@ -82,12 +84,14 @@ python-json-logger>=2.0.7
 nltk==3.9.1
 
 # === MULTIMODAL PROCESSING ===
-# Computer vision and OCR
-opencv-python==4.10.0.84
-Pillow==10.4.0
-pytesseract==0.3.10
-easyocr==1.7.1  # NOTE: Contains torch@2.8.0 with known vulnerabilities pending upstream fix
-scipy==1.14.0
+# Computer vision and OCR - ESSENTIAL for medical document processing
+# Used in: services/integrations/multimodal_processor.py (745 lines)
+# Purpose: OCR for hanseniase medication forms, dosage extraction
+opencv-python==4.10.0.84  # Image preprocessing, grayscale conversion
+Pillow==10.4.0            # Image metadata, format validation
+pytesseract==0.3.10       # Tesseract OCR with Portuguese config (-l por)
+easyocr==1.7.1           # Primary OCR engine with Portuguese/English (['pt', 'en'])
+scipy==1.14.0            # Scientific computing for image processing
 
 # File handling and validation  
 python-magic==0.4.27
@@ -97,8 +101,9 @@ python-magic==0.4.27
 supabase==2.18.1
 psycopg2-binary==2.9.9  # PostgreSQL adapter with pgvector support
 
-# Optional SQL support  
+# Optional SQL support
 sqlalchemy>=2.0.0
+# Database migrations (evaluate if needed - minimal current usage)
 alembic>=1.12.0
 
 # Lightweight vector store fallback
@@ -136,20 +141,22 @@ flake8>=6.0.0
 mypy>=1.5.0
 
 # === DOCUMENTATION ===
-# API documentation
+# API documentation (minimal usage - could be dev-only)
 flask-swagger-ui>=4.11.1
 
-# Sphinx documentation
-sphinx>=7.1.0
-sphinx-rtd-theme>=1.3.0
+# Sphinx documentation - REMOVED (minimal usage in production)
+# sphinx>=7.1.0
+# sphinx-rtd-theme>=1.3.0
 
 # === ASYNC & WEBSOCKETS ===
 asyncio>=3.4.3
 websockets>=11.0.0
 
 # === BACKGROUND TASKS ===
-# celery[redis]==5.3.4  # REMOVED: Will use Firestore backend instead
-celery==5.3.4  # Base celery without Redis dependency
+# ESSENTIAL for async medical processing - DO NOT REMOVE
+# Used in: tasks/ (chat_tasks.py, medical_tasks.py, analytics_tasks.py)
+# Purpose: Async processing of medical consultations, chat responses, analytics
+celery==5.3.4  # Task queue system with SQLite/filesystem backend (no Redis)
 
 # === PERFORMANCE MONITORING ===
 py-spy>=0.3.14

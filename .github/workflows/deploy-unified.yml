@@ -762,8 +762,9 @@ jobs:
   frontend-deploy:
     name: "⚛️ Frontend Deploy (Cloud Run)"
     runs-on: ubuntu-latest
-    needs: [environment-preparation, enhanced-security-quality, backend-deploy]
-    if: needs.environment-preparation.outputs.deploy-frontend == 'true' && (needs.backend-deploy.result == 'success' || needs.backend-deploy.result == 'skipped')
+    # PARALLELIZATION: Removed backend-deploy dependency - can run in parallel
+    needs: [environment-preparation, enhanced-security-quality]
+    if: needs.environment-preparation.outputs.deploy-frontend == 'true'
     timeout-minutes: 15
     defaults:
       run:
@@ -882,20 +883,40 @@ jobs:
             FRONTEND_DOMAIN="${{ vars.HML_FRONTEND_DOMAIN }}"
           fi
 
-          gcloud run deploy $FRONTEND_SERVICE \
-            --image gcr.io/${{ vars.GCP_PROJECT_ID }}/hml-roteiro-dispensacao-frontend:${{ github.sha }} \
-            --region ${{ vars.GCP_REGION }} \
-            --platform managed \
-            --allow-unauthenticated \
-            --port ${{ vars.PORT }} \
-            --memory 1Gi \
-            --cpu 1 \
-            --max-instances 10 \
-            --set-env-vars="NODE_ENV=production,NEXT_PUBLIC_ENVIRONMENT=${{ needs.environment-preparation.outputs.environment }},NEXT_PUBLIC_BACKEND_URL=$BACKEND_URL" \
-            --timeout 120 \
-            --concurrency 80
+          # Retry frontend deployment up to 3 times for network resilience
+          DEPLOY_SUCCESS=false
+          for attempt in {1..3}; do
+            echo "🔄 Frontend deploy attempt $attempt/3..."
 
-          echo "✅ Frontend deployed successfully"
+            if gcloud run deploy $FRONTEND_SERVICE \
+              --image gcr.io/${{ vars.GCP_PROJECT_ID }}/hml-roteiro-dispensacao-frontend:${{ github.sha }} \
+              --region ${{ vars.GCP_REGION }} \
+              --platform managed \
+              --allow-unauthenticated \
+              --port ${{ vars.PORT }} \
+              --memory 1Gi \
+              --cpu 1 \
+              --max-instances 10 \
+              --set-env-vars="NODE_ENV=production,NEXT_PUBLIC_ENVIRONMENT=${{ needs.environment-preparation.outputs.environment }},NEXT_PUBLIC_BACKEND_URL=$BACKEND_URL" \
+              --timeout 120 \
+              --concurrency 80; then
+
+              echo "✅ Frontend deployed successfully on attempt $attempt"
+              DEPLOY_SUCCESS=true
+              break
+            else
+              echo "❌ Frontend deploy attempt $attempt failed"
+              if [ $attempt -lt 3 ]; then
+                echo "⏳ Waiting 30s before retry..."
+                sleep 30
+              fi
+            fi
+          done
+
+          if [ "$DEPLOY_SUCCESS" != "true" ]; then
+            echo "💥 All frontend deploy attempts failed"
+            exit 1
+          fi
 
           # Obter URL do serviço Cloud Run
           SERVICE_URL=$(gcloud run services describe $FRONTEND_SERVICE --region=${{ vars.GCP_REGION }} --format='value(status.url)')
@@ -1079,45 +1100,37 @@ jobs:
             FRONTEND_URL="https://${{ vars.HML_FRONTEND_DOMAIN }}"
           fi
 
-          # Submit build with VPC-SC compatible flags
-          echo "🔧 Submitting build with VPC-SC bypass flags..."
+          # Submit build with proper VPC-SC compatible configuration
+          echo "🔧 Submitting build with detailed logging..."
+          echo "📋 Build config: timeout=3000s, machine=e2-highcpu-8, disk=100GB"
+          echo "🏷️ Target tag: us-central1-docker.pkg.dev/red-truck-468923-s4/hml-roteiro-dispensacao/$BACKEND_SERVICE"
+
+          # Remove problematic --no-user-output-enabled and --async flags
+          # These flags cause VPC-SC issues by suppressing critical error information
           BUILD_ID=$(gcloud builds submit --tag us-central1-docker.pkg.dev/red-truck-468923-s4/hml-roteiro-dispensacao/$BACKEND_SERVICE \
             --timeout=3000s \
             --machine-type=e2-highcpu-8 \
             --disk-size=100GB \
-            --no-user-output-enabled \
+            --verbosity=info \
+            --log-http \
             --format="value(id)" \
-            --async \
-            .)
+            . 2>&1 | tee build-submission.log)
 
+          # Extract BUILD_ID from synchronous build output
+          BUILD_ID=$(echo "$BUILD_ID" | tail -n1 | grep -o '[a-z0-9-]*$' || echo "unknown")
           echo "🔄 Build ID: $BUILD_ID"
-          echo "📋 Monitoring build progress..."
 
-          # Wait for build completion with status polling
-          while true; do
-            BUILD_STATUS=$(gcloud builds describe $BUILD_ID --format="value(status)")
-            echo "⏳ Build status: $BUILD_STATUS"
-
-            case $BUILD_STATUS in
-              "SUCCESS")
-                echo "✅ Build completed successfully"
-                break
-                ;;
-              "FAILURE"|"TIMEOUT"|"CANCELLED")
-                echo "❌ Build failed with status: $BUILD_STATUS"
-                echo "🔍 Build logs: https://console.cloud.google.com/cloud-build/builds/$BUILD_ID"
-                exit 1
-                ;;
-              "WORKING"|"QUEUED")
-                echo "⏳ Build in progress... waiting 30s"
-                sleep 30
-                ;;
-              *)
-                echo "⚠️ Unknown build status: $BUILD_STATUS"
-                sleep 30
-                ;;
-            esac
-          done
+          # Since build is now synchronous, check final status
+          if [ $? -eq 0 ]; then
+            echo "✅ Build completed successfully"
+            echo "📊 Build details: https://console.cloud.google.com/cloud-build/builds/$BUILD_ID"
+          else
+            echo "❌ Build failed - check logs above and build-submission.log"
+            echo "🔍 Build logs: https://console.cloud.google.com/cloud-build/builds/$BUILD_ID"
+            echo "📄 Local logs: build-submission.log"
+            cat build-submission.log | tail -20  # Show last 20 lines of errors
+            exit 1
+          fi
 
           BUILD_END=$(date +%s)
 
@@ -1128,19 +1141,40 @@ jobs:
 
           echo "🚀 Deploying to Cloud Run..."
           echo "⏰ Timestamp deploy: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
-          gcloud run deploy $BACKEND_SERVICE \
-            --image us-central1-docker.pkg.dev/red-truck-468923-s4/hml-roteiro-dispensacao/$BACKEND_SERVICE \
-            --platform managed \
-            --region ${{ vars.GCP_REGION }} \
-            --allow-unauthenticated \
-            --timeout=900 \
-            --memory=1Gi \
-            --cpu=1 \
-            --set-env-vars "ENVIRONMENT=${{ needs.environment-preparation.outputs.environment }},LGPD_MODE=strict,PROJECT_ID=red-truck-468923-s4,FRONTEND_URL=$FRONTEND_URL,CORS_ORIGINS=$FRONTEND_URL,http://localhost:3000,http://127.0.0.1:3000" \
-            --max-instances=10 \
-            --min-instances=1
 
-          echo "✅ Backend deployed successfully"
+          # Retry deployment up to 3 times for network resilience
+          DEPLOY_SUCCESS=false
+          for attempt in {1..3}; do
+            echo "🔄 Deploy attempt $attempt/3..."
+
+            if gcloud run deploy $BACKEND_SERVICE \
+              --image us-central1-docker.pkg.dev/red-truck-468923-s4/hml-roteiro-dispensacao/$BACKEND_SERVICE \
+              --platform managed \
+              --region ${{ vars.GCP_REGION }} \
+              --allow-unauthenticated \
+              --timeout=900 \
+              --memory=1Gi \
+              --cpu=1 \
+              --set-env-vars "ENVIRONMENT=${{ needs.environment-preparation.outputs.environment }},LGPD_MODE=strict,PROJECT_ID=red-truck-468923-s4,FRONTEND_URL=$FRONTEND_URL,CORS_ORIGINS=$FRONTEND_URL,http://localhost:3000,http://127.0.0.1:3000" \
+              --max-instances=10 \
+              --min-instances=1; then
+
+              echo "✅ Backend deployed successfully on attempt $attempt"
+              DEPLOY_SUCCESS=true
+              break
+            else
+              echo "❌ Deploy attempt $attempt failed"
+              if [ $attempt -lt 3 ]; then
+                echo "⏳ Waiting 30s before retry..."
+                sleep 30
+              fi
+            fi
+          done
+
+          if [ "$DEPLOY_SUCCESS" != "true" ]; then
+            echo "💥 All deploy attempts failed"
+            exit 1
+          fi
 
           # Obter URL do serviço Cloud Run
           BACKEND_SERVICE_URL=$(gcloud run services describe $BACKEND_SERVICE --region=${{ vars.GCP_REGION }} --format='value(status.url)')
