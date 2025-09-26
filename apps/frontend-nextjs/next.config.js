@@ -61,7 +61,8 @@ const nextConfig = {
   },
 
   // Fix workspace root warning - point to the actual workspace root
-  outputFileTracingRoot: require("path").join(__dirname, "../../"),
+  // TESTE DIAGNÓSTICO: Comentado temporariamente para verificar se resolve problema do server.js
+  // outputFileTracingRoot: require("path").join(__dirname, "../../"),
 
   // Configurações experimentais para otimização e segurança
   experimental: {
