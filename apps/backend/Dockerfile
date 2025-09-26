@@ -1,135 +1,223 @@
 # ============================================================================
-# DOCKERFILE CONSOLIDADO - Sistema Educacional Hanseníase
-# Multi-stage build otimizado para Cloud Run com build args
-# Suporta: staging, production, e celery workers
+# OPTIMIZED PRODUCTION DOCKERFILE - Sistema Educacional Hanseníase
+# Multi-stage build for Flask medical application with AI personas
+# Optimized for Cloud Run deployment with security hardening
 # ============================================================================
 
-# Build arguments para configurar ambiente
-ARG ENVIRONMENT=production
-ARG ENABLE_CELERY=false
 ARG PYTHON_VERSION=3.11
+ARG ENVIRONMENT=production
 
-# === STAGE 1: BUILD DEPENDENCIES ===
-FROM python:${PYTHON_VERSION}-slim as builder
+# ============================================================================
+# STAGE 1: SYSTEM DEPENDENCIES BUILDER
+# ============================================================================
+FROM python:${PYTHON_VERSION}-slim as system-deps
 
-# Metadados dinâmicos
-ARG ENVIRONMENT
-ARG ENABLE_CELERY
-LABEL maintainer="Roteiro de Dispensação API"
-LABEL version="2.1.0"
-LABEL description="Backend Flask consolidado para ${ENVIRONMENT}"
-LABEL celery_enabled="${ENABLE_CELERY}"
-
-# Configurações de build
-ARG DEBIAN_FRONTEND=noninteractive
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-ENV PIP_NO_CACHE_DIR=1
-ENV PIP_DISABLE_PIP_VERSION_CHECK=1
-
-WORKDIR /app
-
-# Instalar apenas dependências essenciais de build
+# Install system dependencies required for ML/CV libraries
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    # Build tools
+    build-essential \
     gcc \
     g++ \
-    python3-dev \
+    pkg-config \
+    # Computer Vision and OCR dependencies
+    libglib2.0-0 \
+    libsm6 \
+    libxext6 \
+    libxrender-dev \
+    libgomp1 \
+    libglib2.0-dev \
+    # Tesseract OCR system dependencies
+    tesseract-ocr \
+    tesseract-ocr-por \
+    libtesseract-dev \
+    # PostgreSQL client libraries for Supabase
+    libpq-dev \
+    # Image processing
+    libopencv-dev \
+    libgl1-mesa-glx \
+    libgthread-2.0-0 \
+    # Security and networking
     curl \
     ca-certificates \
-    pkg-config \
+    # Cleanup
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
-    && apt-get clean
+    && rm -rf /tmp/* \
+    && rm -rf /var/tmp/*
 
-# Copiar requirements e instalar dependências Python
+# ============================================================================
+# STAGE 2: PYTHON DEPENDENCIES BUILDER
+# ============================================================================
+FROM python:${PYTHON_VERSION}-slim as python-deps
+
+# Copy system dependencies from previous stage
+COPY --from=system-deps /usr/lib /usr/lib
+COPY --from=system-deps /usr/bin/tesseract /usr/bin/tesseract
+COPY --from=system-deps /usr/share/tesseract-ocr /usr/share/tesseract-ocr
+
+# Install minimal build dependencies for Python packages
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    gcc \
+    g++ \
+    libpq-dev \
+    pkg-config \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /build
+
+# Copy and install Python dependencies with optimizations
 COPY requirements.txt .
 
-# Install Python dependencies with optimizations
+# Install Python packages with build optimizations
 RUN pip install --upgrade pip setuptools wheel && \
+    # Security packages first (smaller, faster builds)
+    pip install --no-cache-dir \
+        authlib==1.6.4 \
+        PyJWT==2.10.1 \
+        cryptography==46.0.1 \
+        bleach==6.2.0 && \
+    # Core Flask packages
+    pip install --no-cache-dir \
+        Flask==3.1.2 \
+        Flask-CORS==6.0.1 \
+        gunicorn==23.0.0 && \
+    # AI/ML packages (heaviest, install separately for better caching)
+    pip install --no-cache-dir \
+        torch==2.8.0 \
+        torchvision>=0.19.0 \
+        sentence-transformers==5.1.0 \
+        chromadb>=0.4.0 && \
+    # Computer Vision packages
+    pip install --no-cache-dir \
+        opencv-python-headless==4.10.0.84 \
+        Pillow==10.4.0 \
+        pytesseract==0.3.10 \
+        easyocr==1.7.1 && \
+    # Remaining packages
     pip install --no-cache-dir -r requirements.txt && \
+    # Clean up pip cache and compiled files
+    pip cache purge && \
     find /usr/local/lib/python3.11/site-packages -name "*.pyc" -delete && \
     find /usr/local/lib/python3.11/site-packages -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
 
-# === STAGE 2: RUNTIME OPTIMIZADO ===
-FROM python:${PYTHON_VERSION}-slim as runtime
+# ============================================================================
+# STAGE 3: PRODUCTION RUNTIME
+# ============================================================================
+FROM python:${PYTHON_VERSION}-slim as production
 
-# Build arguments para runtime
 ARG ENVIRONMENT
-ARG ENABLE_CELERY
 
-# Configurações de runtime baseadas no ambiente
+# Set production environment variables
 ENV ENVIRONMENT=${ENVIRONMENT}
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV PIP_NO_CACHE_DIR=1
+ENV PIP_DISABLE_PIP_VERSION_CHECK=1
+ENV FLASK_ENV=production
+ENV DEBUG=False
 
-# Configurações específicas por ambiente
-RUN if [ "$ENVIRONMENT" = "staging" ]; then \
-        export FLASK_ENV=development; \
-        export DEBUG=True; \
-    else \
-        export FLASK_ENV=production; \
-        export DEBUG=False; \
-    fi
+# Install minimal runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    # Runtime libraries for OpenCV and OCR
+    libglib2.0-0 \
+    libsm6 \
+    libxext6 \
+    libxrender1 \
+    libgomp1 \
+    libgl1-mesa-glx \
+    libgthread-2.0-0 \
+    # PostgreSQL client
+    libpq5 \
+    # Process management and health checks
+    dumb-init \
+    curl \
+    ca-certificates \
+    # Tesseract runtime
+    tesseract-ocr \
+    tesseract-ocr-por \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /tmp/* \
+    && rm -rf /var/tmp/*
+
+# Create non-root user for security
+RUN groupadd -r medicalapp && useradd -r -g medicalapp -u 1001 medicalapp
 
 WORKDIR /app
 
-# Instalar apenas runtime dependencies mínimas
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl \
-    ca-certificates \
-    dumb-init \
-    && rm -rf /var/lib/apt/lists/* \
-    && apt-get clean
+# Copy Python dependencies from builder stage
+COPY --from=python-deps /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=python-deps /usr/local/bin /usr/local/bin
 
-# Criar usuário não-root para segurança
-RUN groupadd -r appuser && useradd -r -g appuser appuser
+# Copy application code with proper ownership
+COPY --chown=medicalapp:medicalapp . .
 
-# Copiar dependências Python do builder
-COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
-COPY --from=builder /usr/local/bin /usr/local/bin
+# Create necessary directories with proper permissions
+RUN mkdir -p /app/logs /app/uploads /app/cache /app/data && \
+    chown -R medicalapp:medicalapp /app
 
-# Copiar código da aplicação
-COPY . .
+# Create optimized entrypoint script
+COPY <<EOF /app/entrypoint.sh
+#!/bin/bash
+set -e
 
-# Configurar permissões
-RUN chown -R appuser:appuser /app
+echo "🏥 Starting Roteiro de Dispensação API - Environment: \${ENVIRONMENT}"
 
-# Criar diretórios necessários
-RUN mkdir -p /app/logs /app/uploads /app/cache && \
-    chown -R appuser:appuser /app/logs /app/uploads /app/cache
+# Validate critical dependencies
+python -c "
+try:
+    import flask, openai, chromadb, pydantic, cv2, PIL
+    print('✅ Core dependencies validated')
+except ImportError as e:
+    print(f'❌ Dependency validation failed: {e}')
+    exit(1)
+"
 
-# Criar script de entrypoint dinâmico
-RUN echo '#!/bin/bash\n\
-set -e\n\
-\n\
-# Configurar ambiente\n\
-export ENVIRONMENT=${ENVIRONMENT}\n\
-\n\
-# Health check inicial\n\
-echo "🏥 Starting Roteiro de Dispensação API - Environment: $ENVIRONMENT"\n\
-\n\
-# Verificar dependências críticas\n\
-python -c "import flask, openai, chromadb, pydantic; print('"'"'✅ Core dependencies loaded'"'"')"\n\
-\n\
-# Inicializar baseado na configuração\n\
-if [ "${ENABLE_CELERY}" = "true" ]; then\n\
-    echo "🔄 Starting with Celery workers"\n\
-    exec dumb-init celery -A main:celery worker --loglevel=info --concurrency=2\n\
-else\n\
-    echo "🚀 Starting Flask application"\n\
-    exec dumb-init python main.py\n\
-fi' > /app/entrypoint.sh && \
-    chmod +x /app/entrypoint.sh
+# Set Tesseract path for pytesseract
+export TESSDATA_PREFIX=/usr/share/tesseract-ocr/4.00/tessdata
 
-# Configurar usuário
-USER appuser
+# Start application with optimized gunicorn configuration
+exec gunicorn main:app \
+    --bind 0.0.0.0:8080 \
+    --workers 2 \
+    --worker-class sync \
+    --worker-connections 1000 \
+    --max-requests 1000 \
+    --max-requests-jitter 100 \
+    --timeout 30 \
+    --keep-alive 2 \
+    --log-level info \
+    --access-logfile - \
+    --error-logfile - \
+    --capture-output
+EOF
 
-# Configurar health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8080/health || exit 1
+RUN chmod +x /app/entrypoint.sh && \
+    chown medicalapp:medicalapp /app/entrypoint.sh
 
-# Expor porta
+# Switch to non-root user
+USER medicalapp
+
+# Health check optimized for medical application
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:8080/api/health || exit 1
+
+# Expose port
 EXPOSE 8080
 
-# Configurar entrypoint
-ENTRYPOINT ["/app/entrypoint.sh"]
+# Use entrypoint script
+ENTRYPOINT ["/usr/bin/dumb-init", "--", "/app/entrypoint.sh"]
+
+# ============================================================================
+# METADATA AND LABELS
+# ============================================================================
+LABEL maintainer="Roteiro de Dispensação Medical AI" \
+      version="3.0.0" \
+      description="Optimized Flask medical application with AI personas" \
+      environment="${ENVIRONMENT}" \
+      security.hardened="true" \
+      medical.lgpd_compliant="true" \
+      ai.personas="dr_gasnelio,ga" \
+      build.multi_stage="true"
