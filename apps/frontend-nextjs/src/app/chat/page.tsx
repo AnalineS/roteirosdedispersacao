@@ -43,7 +43,7 @@ export default function ChatPage() {
     setPersonaSelectionViewed();
     
     // Pré-carregar tópicos comuns no Redis para melhor performance
-    const warmupTopics = [
+    const _warmupTopics = [
       'dose rifampicina',
       'efeitos clofazimina',
       'duração tratamento',
@@ -167,7 +167,7 @@ export default function ChatPage() {
   }, [inputValue, selectedPersona, analyzeQuestion]);
 
   // Handlers para aceitação e rejeição de routing
-  const handleAcceptRouting = useCallback((recommendedPersonaId: string) => {
+  const _handleAcceptRouting = useCallback((recommendedPersonaId: string) => {
     // Validar se é uma persona válida antes de aceitar
     if (!isValidPersonaId(recommendedPersonaId)) {
       console.error('Invalid persona ID received:', recommendedPersonaId);
@@ -187,7 +187,7 @@ export default function ChatPage() {
     });
   }, [acceptRecommendation, setPersona, selectedPersona]);
 
-  const handleRejectRouting = useCallback(() => {
+  const _handleRejectRouting = useCallback(() => {
     // Rejeitar a recomendação e manter persona atual
     rejectRecommendation(selectedPersona || 'dr_gasnelio');
     
@@ -317,7 +317,7 @@ export default function ChatPage() {
   }, [triggerReceiveFeedback]);
   
   const handleNewConversation = (personaId: string) => {
-    const _conversationId = createConversation(personaId);
+    createConversation(personaId);
     setSelectedPersona(personaId);
     if (typeof window !== 'undefined') {
       localStorage.setItem('selectedPersona', personaId);
@@ -338,19 +338,6 @@ export default function ChatPage() {
     clearAnalysis();
   };
   
-  // Handlers para roteamento inteligente
-  const _handleAcceptRouting = useCallback((personaId: string) => {
-    acceptRecommendation();
-    handlePersonaChange(personaId);
-  }, [acceptRecommendation, handlePersonaChange]);
-  
-  const _handleRejectRouting = useCallback(() => {
-    rejectRecommendation(selectedPersona || '');
-  }, [rejectRecommendation, selectedPersona]);
-  
-  const _handleShowExplanation = useCallback(() => {
-    console.log('Explicação do roteamento:', getExplanation());
-  }, [getExplanation]);
 
   if (personasLoading) {
     return (

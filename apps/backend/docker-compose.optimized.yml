@@ -1,0 +1,199 @@
+# ============================================================================
+# OPTIMIZED DOCKER COMPOSE - Sistema Educacional Hanseníase
+# Local development and testing environment with production-like setup
+# ============================================================================
+
+version: '3.8'
+
+services:
+  # ============================================================================
+  # MAIN APPLICATION SERVICE
+  # ============================================================================
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.optimized
+      args:
+        - PYTHON_VERSION=3.11
+        - ENVIRONMENT=development
+    image: roteiro-dispensacao-backend:local
+    container_name: roteiro-backend-dev
+    ports:
+      - "8080:8080"
+    environment:
+      - ENVIRONMENT=development
+      - FLASK_ENV=development
+      - DEBUG=True
+      - PYTHONPATH=/app
+    volumes:
+      # Mount source code for hot reload (development only)
+      - ./:/app
+      # Preserve node_modules and cache
+      - backend_cache:/app/cache
+      - backend_logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - medical_network
+    restart: unless-stopped
+
+  # ============================================================================
+  # POSTGRESQL DATABASE (for Local Testing)
+  # ============================================================================
+  postgres:
+    image: postgres:15-alpine
+    container_name: roteiro-postgres-dev
+    environment:
+      POSTGRES_DB: medical_ai_dev
+      POSTGRES_USER: medical_user
+      POSTGRES_PASSWORD: medical_dev_password
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./data/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U medical_user -d medical_ai_dev"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - medical_network
+    restart: unless-stopped
+
+  # ============================================================================
+  # REDIS (Optional - for Caching)
+  # ============================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: roteiro-redis-dev
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - medical_network
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+
+  # ============================================================================
+  # NGINX (Load Balancer / Reverse Proxy)
+  # ============================================================================
+  nginx:
+    image: nginx:alpine
+    container_name: roteiro-nginx-dev
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx/nginx.dev.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - backend
+    networks:
+      - medical_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ============================================================================
+  # MONITORING (Optional - Prometheus + Grafana)
+  # ============================================================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: roteiro-prometheus-dev
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    networks:
+      - medical_network
+    restart: unless-stopped
+    profiles:
+      - monitoring
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: roteiro-grafana-dev
+    ports:
+      - "3001:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./docker/grafana/provisioning:/etc/grafana/provisioning
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin_dev_password
+      - GF_USERS_ALLOW_SIGN_UP=false
+    networks:
+      - medical_network
+    restart: unless-stopped
+    profiles:
+      - monitoring
+
+# ============================================================================
+# NETWORKS
+# ============================================================================
+networks:
+  medical_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+# ============================================================================
+# VOLUMES
+# ============================================================================
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  backend_cache:
+    driver: local
+  backend_logs:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+# ============================================================================
+# PROFILES FOR DIFFERENT ENVIRONMENTS
+# ============================================================================
+# Usage examples:
+#
+# Development (basic):
+#   docker-compose -f docker-compose.optimized.yml up backend postgres
+#
+# Development (full):
+#   docker-compose -f docker-compose.optimized.yml up
+#
+# With monitoring:
+#   docker-compose -f docker-compose.optimized.yml --profile monitoring up
+#
+# Production testing:
+#   ENVIRONMENT=production docker-compose -f docker-compose.optimized.yml up

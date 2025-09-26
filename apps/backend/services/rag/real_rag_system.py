@@ -15,8 +15,8 @@ from dataclasses import dataclass
 import numpy as np
 
 # Import REAL services - NO MOCKS
-from .real_vector_store import get_real_vector_store, VectorDocument, VectorSearchResult
-from ..cache.real_cloud_cache import get_real_cloud_cache
+from services.rag.real_vector_store import get_real_vector_store, VectorDocument, VectorSearchResult
+from services.cache.real_cloud_cache import get_real_cloud_cache
 from core.cloud.unified_real_cloud_manager import get_unified_cloud_manager
 
 logger = logging.getLogger(__name__)

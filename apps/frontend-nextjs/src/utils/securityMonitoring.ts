@@ -620,7 +620,7 @@ class AlertManager {
     }
     
     // Log the alert
-    console.warn(`SECURITY ALERT [${alert.severity.toUpperCase()}]: ${alert.title}`, alert);
+    console.warn('SECURITY ALERT:', alert.severity.toUpperCase(), alert.title, alert);
   }
   
   private escalateAlert(alert: SecurityAlert): void {
@@ -663,12 +663,12 @@ class AlertManager {
   
   private sendEmailAlert(alert: SecurityAlert): void {
     // Placeholder for email notification
-    console.log(`EMAIL ALERT: ${alert.title} - ${alert.description}`);
+    console.log('EMAIL ALERT:', alert.title, '-', alert.description);
   }
   
   private sendWebhookAlert(alert: SecurityAlert): void {
     // Placeholder for webhook notification
-    console.log(`WEBHOOK ALERT: ${alert.alertId}`);
+    console.log('WEBHOOK ALERT:', alert.alertId);
   }
   
   private notifySubscribers(alert: SecurityAlert): void {

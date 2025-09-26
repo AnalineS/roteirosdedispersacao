@@ -85,7 +85,7 @@ export class MedicalAnalytics {
   private sessionStartTime: number;
   private userRole: string = 'unknown';
   private currentTasks: Map<string, ClinicalTaskMetrics> = new Map();
-  private errorBuffer: any[] = [];
+  private errorBuffer: Error[] = [];
   
   private constructor() {
     this.sessionStartTime = Date.now();
@@ -183,7 +183,7 @@ export class MedicalAnalytics {
       
     } catch (error) {
       console.error('Erro ao enviar evento de analytics:', error);
-      this.errorBuffer.push({ event, error, timestamp: Date.now() });
+      this.errorBuffer.push(error as Error);
     }
   }
   
@@ -192,7 +192,7 @@ export class MedicalAnalytics {
    */
   private enrichEventWithContext(event: MedicalAnalyticsEvent): MedicalAnalyticsEvent {
     const baseContext = {
-      user_role: this.userRole as any,
+      user_role: this.userRole as 'pharmacy' | 'medicine' | 'nursing' | 'student' | 'unknown',
       device_type: this.getDeviceType(),
       session_duration: Math.floor((Date.now() - this.sessionStartTime) / 1000)
     };
@@ -276,7 +276,7 @@ export class MedicalAnalytics {
       event_label: flagKey,
       custom_dimensions: {
         feature_flag: `${flagKey}:${flagValue}`,
-        user_role: this.userRole as any
+        user_role: this.userRole as 'pharmacy' | 'medicine' | 'nursing' | 'student' | 'unknown'
       }
     });
   }
@@ -457,9 +457,9 @@ export class MedicalAnalytics {
   
   private getConnectionType(): 'slow' | 'fast' | 'unknown' {
     if ('connection' in navigator) {
-      const connection = (navigator as any).connection;
-      if (connection.effectiveType === '4g') return 'fast';
-      if (connection.effectiveType === '3g' || connection.effectiveType === '2g') return 'slow';
+      const connection = (navigator as Navigator & { connection?: { effectiveType: string } }).connection;
+      if (connection?.effectiveType === '4g') return 'fast';
+      if (connection?.effectiveType === '3g' || connection?.effectiveType === '2g') return 'slow';
     }
     return 'unknown';
   }
@@ -515,7 +515,7 @@ export const medicalAnalytics = {
     const instance = typeof window !== 'undefined' ? MedicalAnalytics.getInstance() : null;
     if (instance) instance.trackEvent(event);
   },
-  trackMedicalError: (error: any) => {
+  trackMedicalError: (error: unknown) => {
     const instance = typeof window !== 'undefined' ? MedicalAnalytics.getInstance() : null;
     if (instance) instance.trackMedicalError(error);
   },
@@ -523,11 +523,11 @@ export const medicalAnalytics = {
     const instance = typeof window !== 'undefined' ? MedicalAnalytics.getInstance() : null;
     if (instance) instance.startClinicalTask(task.taskId, task.taskType);
   },
-  trackCriticalMedicalAction: (action: any) => {
+  trackCriticalMedicalAction: (action: unknown) => {
     const instance = typeof window !== 'undefined' ? MedicalAnalytics.getInstance() : null;
     if (instance) instance.trackCriticalMedicalAction(action);
   },
-  trackFastAccessUsage: (shortcutId: string, context: any) => {
+  trackFastAccessUsage: (shortcutId: string, context: unknown) => {
     const instance = typeof window !== 'undefined' ? MedicalAnalytics.getInstance() : null;
     if (instance) instance.trackFastAccessUsage(shortcutId, context);
   },
@@ -535,7 +535,7 @@ export const medicalAnalytics = {
     const instance = typeof window !== 'undefined' ? MedicalAnalytics.getInstance() : null;
     if (instance) instance.trackFeatureFlagUsage(flagKey, flagValue, source);
   },
-  setUserRole: (role: any) => {
+  setUserRole: (role: 'pharmacy' | 'medicine' | 'nursing' | 'student' | 'unknown') => {
     const instance = typeof window !== 'undefined' ? MedicalAnalytics.getInstance() : null;
     if (instance) instance.setUserRole(role);
   }

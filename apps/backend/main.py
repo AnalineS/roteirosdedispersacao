@@ -1,15 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Main Application - Improved Clean Architecture
-Hanseníase Medication Dispensing Educational Platform
-
-IMPROVEMENTS:
-- Reduced from 1,068 lines to ~150 lines (85% reduction)
-- Separated concerns into specialized modules
-- Eliminated code duplication
-- Improved error handling consistency
-- Better configuration management
-- Cleaner startup sequence
+Main Application - Hanseníase Educational Platform
+Optimized Flask Application with Medical AI Personas
 """
 
 import sys
@@ -23,154 +15,138 @@ if sys.platform == "win32":
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
 
-# Add current directory to Python path for imports
+# Add current directory to Python path
 current_dir = Path(__file__).parent
 sys.path.insert(0, str(current_dir))
 
-from core.config.config_manager import initialize_configuration
-from core.app_factory.flask_app_factory import create_flask_app
-from core.optimization.memory_manager import initialize_memory_management
+from flask import Flask
+from app_config import config, EnvironmentConfig
 
+# Configure logging
+logging.basicConfig(
+    level=getattr(logging, config.LOG_LEVEL, logging.INFO),
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
-def setup_logging():
-    """Configure application logging"""
+def create_app():
+    """Create and configure Flask application"""
+    app = Flask(__name__)
+
+    # Load configuration
+    app.config.from_object(config)
+
+    # CORS Configuration
     try:
-        from core.logging import initialize_clean_logging
-        main_logger, startup_logger, warning_manager = initialize_clean_logging()
-        return main_logger, startup_logger
+        from core.security.custom_cors import CustomCORSMiddleware
+        cors_middleware = CustomCORSMiddleware(app)
+        logger.info("Custom CORS middleware initialized")
     except ImportError:
-        # Fallback to basic logging
-        logging.basicConfig(
-            level=logging.INFO,
-            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-        )
-        return logging.getLogger(__name__), None
+        from flask_cors import CORS
+        CORS(app, origins=config.CORS_ORIGINS)
+        logger.info("Standard CORS initialized")
 
-
-def initialize_application():
-    """
-    Initialize application with all required components
-
-    Returns:
-        Tuple of (Flask app, configuration, logger)
-    """
-    # Set up logging
-    logger, startup_logger = setup_logging()
-
-    if startup_logger:
-        startup_logger.log_startup_begin()
-
+    # Register blueprints
     try:
-        # Initialize configuration
-        config = initialize_configuration()
-        logger.info("Configuration initialized successfully")
+        from blueprints.medical_core_blueprint import medical_core_bp
+        from blueprints.user_management_blueprint import user_management_bp
+        from blueprints.communication_blueprint import communication_bp
+        from blueprints.engagement_multimodal_blueprint import engagement_multimodal_bp
+        from blueprints.analytics_observability_blueprint import analytics_observability_bp
+        from blueprints.infrastructure_blueprint import infrastructure_bp
+        from blueprints.authentication_blueprint import authentication_bp
+        from blueprints.api_documentation_blueprint import api_documentation_bp
 
-        # Create Flask application
-        app = create_flask_app()
-        logger.info("Flask application created successfully")
+        # Register all blueprints
+        app.register_blueprint(medical_core_bp, url_prefix='/api')
+        app.register_blueprint(user_management_bp, url_prefix='/api')
+        app.register_blueprint(communication_bp, url_prefix='/api')
+        app.register_blueprint(engagement_multimodal_bp, url_prefix='/api')
+        app.register_blueprint(analytics_observability_bp, url_prefix='/api')
+        app.register_blueprint(infrastructure_bp, url_prefix='/api')
+        app.register_blueprint(authentication_bp, url_prefix='/api')
+        app.register_blueprint(api_documentation_bp, url_prefix='/api')
 
-        # Initialize memory management
-        memory_manager = initialize_memory_management(app)
-        logger.info("Memory management initialized")
+        logger.info("All blueprints registered successfully")
 
-        # Initialize JWT authentication if available
-        initialize_jwt_authentication(app, logger)
+    except ImportError as e:
+        logger.error(f"Failed to import blueprints: {e}")
+        # Continue without some blueprints if they're not available
 
-        # Initialize rate limiting if available
-        initialize_rate_limiting(app, logger)
-
-        # Log startup completion
-        log_startup_summary(config, logger)
-
-        if startup_logger:
-            startup_logger.log_startup_complete(config.server.host, config.server.port)
-
-        return app, config, logger
-
-    except Exception as e:
-        logger.error(f"Application initialization failed: {e}")
-        raise
-
-
-def initialize_jwt_authentication(app, logger):
-    """Initialize JWT authentication if available"""
+    # Initialize JWT if available
     try:
         from core.auth.jwt_validator import configure_jwt_from_env, create_auth_middleware
-
         configure_jwt_from_env()
         auth_middleware = create_auth_middleware()
         app.before_request(auth_middleware)
         logger.info("JWT authentication configured")
-
     except ImportError:
-        logger.info("JWT authentication not available - continuing without auth")
+        logger.info("JWT authentication not available")
     except Exception as e:
-        logger.warning(f"JWT authentication setup failed: {type(e).__name__}")
+        logger.warning(f"JWT authentication setup failed: {e}")
 
-
-def initialize_rate_limiting(app, logger):
-    """Initialize rate limiting if available"""
+    # Initialize rate limiting if available
     try:
         from core.security.production_rate_limiter import init_production_rate_limiter
-
-        rate_limiter = init_production_rate_limiter(app)
-        logger.info(f"Production rate limiter initialized with {len(rate_limiter.medical_limits)} medical endpoints")
-
+        init_production_rate_limiter(app)
+        logger.info("Production rate limiter initialized")
     except ImportError:
-        logger.warning("Rate limiter not available - security risk in production")
+        logger.warning("Rate limiter not available")
     except Exception as e:
-        logger.error(f"Rate limiter initialization failed: {type(e).__name__}")
+        logger.error(f"Rate limiter initialization failed: {e}")
 
+    # Health check endpoint
+    @app.route('/api/health', methods=['GET'])
+    def health_check():
+        """Health check endpoint"""
+        return {
+            "status": "healthy",
+            "service": "hansenase-education-platform",
+            "version": "1.0.0",
+            "environment": config.ENVIRONMENT.value if hasattr(config, 'ENVIRONMENT') else "unknown"
+        }, 200
 
-def log_startup_summary(config, logger):
-    """Log application startup summary"""
-    logger.info("=" * 60)
-    logger.info("HANSENÍASE DISPENSING EDUCATIONAL PLATFORM - BACKEND")
-    logger.info("=" * 60)
-    logger.info(f"Version: v1.0.0")
-    logger.info(f"Environment: {config.environment.value}")
-    logger.info(f"Python: {sys.version.split()[0]}")
-    logger.info(f"Debug Mode: {config.server.debug}")
-    logger.info(f"RAG System: {'Enabled' if config.ai.rag_available else 'Disabled'}")
-    logger.info(f"Cache System: {'Advanced' if config.cache.advanced_cache else 'Basic'}")
-    logger.info(f"Security: {'Production' if config.security.rate_limit_enabled else 'Development'}")
-    logger.info("=" * 60)
-
+    return app
 
 def run_application():
-    """Run the Flask application"""
+    """Initialize and run the Flask application"""
     try:
-        # Initialize application
-        app, config, logger = initialize_application()
+        # Create Flask app
+        app = create_app()
 
         # Get server configuration
-        host = config.server.host
-        port = config.server.port
-        debug = config.server.debug
+        host = getattr(config, 'HOST', '0.0.0.0')
+        port = int(getattr(config, 'PORT', 5000))
+        debug = getattr(config, 'DEBUG', False)
 
         # Cloud Run optimization
         is_cloud_run = os.environ.get('K_SERVICE') or os.environ.get('CLOUD_RUN_ENV')
         if is_cloud_run:
-            debug = False  # Always disable debug in Cloud Run
-            logger.info("Cloud Run environment detected - optimized settings applied")
+            debug = False
+            logger.info("Cloud Run environment detected - debug disabled")
+
+        logger.info("=" * 60)
+        logger.info("HANSENÍASE EDUCATIONAL PLATFORM - BACKEND")
+        logger.info("=" * 60)
+        logger.info(f"Environment: {getattr(config, 'ENVIRONMENT', 'unknown')}")
+        logger.info(f"Host: {host}:{port}")
+        logger.info(f"Debug: {debug}")
+        logger.info("=" * 60)
 
         # Start server
-        logger.info(f"Starting server on {host}:{port}")
-
         app.run(
             host=host,
             port=port,
             debug=debug,
             threaded=True,
-            use_reloader=False  # Prevent double initialization
+            use_reloader=False
         )
 
     except KeyboardInterrupt:
         logger.info("Server stopped by user")
     except Exception as e:
-        logger.error(f"Server startup failed: {type(e).__name__}")
+        logger.error(f"Application startup failed: {e}")
         sys.exit(1)
-
 
 if __name__ == '__main__':
     run_application()

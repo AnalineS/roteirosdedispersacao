@@ -344,7 +344,7 @@ export default function SobreATesetModulePage() {
         moduleData={moduleData}
         onSectionComplete={(sectionId) => {
           if (process.env.NODE_ENV === 'development') {
-            console.log(`Seção concluída: ${sectionId}`);
+            console.log('Seção concluída:', sectionId);
           }
         }}
         onModuleComplete={() => {

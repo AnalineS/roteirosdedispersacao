@@ -1,8 +1,6 @@
 import Link from 'next/link';
-import Image from 'next/image';
 import StaticEducationalLayout from '@/components/layout/StaticEducationalLayout';
 import HeroSection from '@/components/home/HeroSection';
-import FeaturesSection from '@/components/home/FeaturesSection';
 import PersonaSelectorUnified from '@/components/home/PersonaSelectorUnified';
 import TrustBadges from '@/components/home/TrustBadges';
 import ClientToastContainer from '@/components/ui/ClientToastContainer';
@@ -17,17 +15,11 @@ import { HierarchyHeading, HierarchyText } from '@/components/layout/VisualHiera
 
 // Icons
 import { 
-  CheckIcon, 
-  ChatIcon, 
-  BookIcon, 
-  SupportIcon, 
-  TargetIcon, 
-  DoctorIcon, 
-  QuestionIcon,
+  ChatIcon,
+  BookIcon,
   GovernmentIcon,
   HospitalIcon,
   UniversityIcon,
-  AlertIcon,
   BulbIcon,
   HeartIcon,
   FamilyIcon,

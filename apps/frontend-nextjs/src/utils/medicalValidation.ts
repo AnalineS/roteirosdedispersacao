@@ -15,7 +15,7 @@ interface MedicalValidationResult {
   isValid: boolean;
   errors: string[];
   warnings: string[];
-  sanitizedValue?: any;
+  sanitizedValue?: string | number;
 }
 
 interface DoseValidationParams {

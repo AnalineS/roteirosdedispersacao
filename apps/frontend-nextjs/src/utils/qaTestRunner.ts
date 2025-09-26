@@ -10,7 +10,6 @@ import EducationalQAFramework, { QAValidationResult, EducationalQualityMetrics }
 import EducationalMonitoringSystem from './educationalAnalytics';
 import ConsistencyValidationSystem from './consistencyValidators';
 import ContinuousImprovementSystem from './continuousImprovementSystem';
-import { ClinicalCase } from '@/types/clinicalCases';
 import { CLINICAL_CASES } from '@/data/clinicalCases';
 
 // Sistema de logging controlado
