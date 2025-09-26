@@ -61,8 +61,8 @@ const nextConfig = {
   },
 
   // Standalone deployment configuration following Context7 recommendations
-  // Generate standalone in the Next.js project root, not monorepo structure
-  // This prevents the nested apps/frontend-nextjs structure in standalone output
+  // Force standalone generation in current project directory, not monorepo root
+  outputFileTracingRoot: __dirname,
 
   // Configurações experimentais para otimização e segurança
   experimental: {
