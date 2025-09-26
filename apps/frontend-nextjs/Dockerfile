@@ -29,7 +29,7 @@ ENV NODE_ENV=production
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-# Copy the standalone build output correctly
+# Copy the standalone build output correctly for monorepo structure
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
@@ -47,5 +47,5 @@ ENV PORT=${PORT:-3000}
 HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
   CMD node -e "const http = require('http'); const options = {hostname: 'localhost', port: process.env.PORT || 3000, path: '/', timeout: 5000}; const req = http.request(options, (res) => {process.exit(res.statusCode === 200 ? 0 : 1)}); req.on('error', () => process.exit(1)); req.on('timeout', () => {req.destroy(); process.exit(1)}); req.end();" || exit 1
 
-# Command that runs the standalone server directly
-CMD ["sh", "-c", "PORT=${PORT:-3000} node server.js"]
+# Command that runs the standalone server directly - adjust path for monorepo
+CMD ["sh", "-c", "PORT=${PORT:-3000} node apps/frontend-nextjs/server.js || node server.js"]

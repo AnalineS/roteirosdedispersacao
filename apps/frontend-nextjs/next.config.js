@@ -61,8 +61,18 @@ const nextConfig = {
   },
 
   // Fix workspace root warning - point to the actual workspace root
-  // TESTE DIAGNÓSTICO: Comentado temporariamente para verificar se resolve problema do server.js
-  // outputFileTracingRoot: require("path").join(__dirname, "../../"),
+  // Critical for monorepo standalone builds - includes files from monorepo base
+  outputFileTracingRoot: require("path").join(__dirname, "../../"),
+
+  // Explicitly include necessary files for standalone build in monorepo
+  outputFileTracingIncludes: {
+    "/*": [
+      "./apps/frontend-nextjs/package.json",
+      "./apps/frontend-nextjs/next.config.js",
+      "./apps/frontend-nextjs/public/**/*",
+      "./package.json"
+    ]
+  },
 
   // Configurações experimentais para otimização e segurança
   experimental: {
@@ -71,10 +81,10 @@ const nextConfig = {
     // React Compiler configuration
     reactCompiler: {
       compilationMode: "annotation",
-    },
+    }
   },
 
-  // Server external packages (moved from experimental)
+  // Server external packages - ensure compatibility with standalone build
   serverExternalPackages: [],
   // ESLint configuração para build
   eslint: {
