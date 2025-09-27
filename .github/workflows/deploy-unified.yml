@@ -808,21 +808,13 @@ jobs:
             exit 1
           fi
 
-          # Verificar se server.js existe no local correto (monorepo structure)
-          if [ -f ".next/standalone/apps/frontend-nextjs/server.js" ]; then
-            echo "✅ server.js encontrado no local correto (monorepo structure)"
-          elif [ -f ".next/standalone/server.js" ]; then
-            echo "✅ server.js encontrado na raiz do standalone"
+          # Verificar se server.js existe no local correto
+          if [ -f ".next/standalone/server.js" ]; then
+            echo "✅ server.js encontrado no local correto"
           else
-            echo "❌ server.js não encontrado em local esperado"
-            echo "📁 Verificando estrutura completa do standalone:"
-            find .next/standalone -name "server.js" -type f || echo "server.js não encontrado em lugar algum"
-            echo "📁 Estrutura de .next/standalone/apps:"
-            ls -la .next/standalone/apps/ 2>/dev/null || echo "Pasta apps não existe"
-            if [ -d ".next/standalone/apps/frontend-nextjs" ]; then
-              echo "📁 Conteúdo de apps/frontend-nextjs:"
-              ls -la .next/standalone/apps/frontend-nextjs/
-            fi
+            echo "❌ server.js não encontrado em .next/standalone/server.js"
+            echo "📁 Conteúdo de .next/standalone:"
+            ls -la .next/standalone/ || echo "Pasta não acessível"
             exit 1
           fi
 
@@ -1165,11 +1157,7 @@ jobs:
               --timeout=900 \
               --memory=1Gi \
               --cpu=1 \
-              --set-env-vars "ENVIRONMENT=${{ needs.environment-preparation.outputs.environment }}" \
-              --set-env-vars "LGPD_MODE=strict" \
-              --set-env-vars "PROJECT_ID=${{ vars.GCP_PROJECT_ID }}" \
-              --set-env-vars "FRONTEND_URL=$FRONTEND_URL" \
-              --set-env-vars "CORS_ORIGINS=$CORS_ORIGINS" \
+              --set-env-vars "ENVIRONMENT=${{ needs.environment-preparation.outputs.environment }},LGPD_MODE=strict,PROJECT_ID=${{ vars.GCP_PROJECT_ID }},FRONTEND_URL=$FRONTEND_URL,CORS_ORIGINS=$CORS_ORIGINS" \
               --max-instances=10 \
               --min-instances=1; then
 

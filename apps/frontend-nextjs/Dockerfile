@@ -47,31 +47,5 @@ ENV PORT=${PORT:-3000}
 HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
   CMD node -e "const http = require('http'); const options = {hostname: 'localhost', port: process.env.PORT || 3000, path: '/', timeout: 5000}; const req = http.request(options, (res) => {process.exit(res.statusCode === 200 ? 0 : 1)}); req.on('error', () => process.exit(1)); req.on('timeout', () => {req.destroy(); process.exit(1)}); req.end();" || exit 1
 
-# Create startup script to find and run server.js
-RUN echo '#!/bin/sh\n\
-echo "🔍 Diagnostic: Searching for server.js..."\n\
-echo "📁 Current directory: $(pwd)"\n\
-echo "📁 Directory contents:"\n\
-ls -la\n\
-echo "📁 Looking for server.js files:"\n\
-find . -name "server.js" -type f 2>/dev/null || echo "No server.js found"\n\
-\n\
-# Try different locations for server.js\n\
-if [ -f "./apps/frontend-nextjs/server.js" ]; then\n\
-  echo "✅ Found server.js at ./apps/frontend-nextjs/server.js"\n\
-  exec node ./apps/frontend-nextjs/server.js\n\
-elif [ -f "./server.js" ]; then\n\
-  echo "✅ Found server.js at ./server.js"\n\
-  exec node ./server.js\n\
-elif [ -f "/app/apps/frontend-nextjs/server.js" ]; then\n\
-  echo "✅ Found server.js at /app/apps/frontend-nextjs/server.js"\n\
-  exec node /app/apps/frontend-nextjs/server.js\n\
-else\n\
-  echo "❌ server.js not found in any expected location"\n\
-  echo "📁 Full directory structure:"\n\
-  find . -type f -name "*.js" | head -20\n\
-  exit 1\n\
-fi' > /app/start.sh && chmod +x /app/start.sh
-
-# Command that runs the startup script
-CMD ["/app/start.sh"]
+# Command that runs the standalone server directly - adjust path for monorepo
+CMD ["sh", "-c", "PORT=${PORT:-3000} node apps/frontend-nextjs/server.js || node server.js"]

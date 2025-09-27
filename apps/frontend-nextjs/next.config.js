@@ -60,19 +60,9 @@ const nextConfig = {
     minimumCacheTTL: 60,
   },
 
-  // Standalone deployment configuration for monorepo following Context7 recommendations
-  // Use path.join for correct monorepo root resolution
-  outputFileTracingRoot: require("path").join(__dirname, "../../"),
-
-  // Include essential files for monorepo standalone build
-  outputFileTracingIncludes: {
-    "/*": [
-      "./apps/frontend-nextjs/package.json",
-      "./apps/frontend-nextjs/next.config.js",
-      "./apps/frontend-nextjs/public/**/*",
-      "./package.json"
-    ]
-  },
+  // Standalone deployment configuration following Context7 recommendations
+  // Force standalone generation in current project directory, not monorepo root
+  outputFileTracingRoot: __dirname,
 
   // Configurações experimentais para otimização e segurança
   experimental: {
