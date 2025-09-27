@@ -808,13 +808,21 @@ jobs:
             exit 1
           fi
 
-          # Verificar se server.js existe no local correto
-          if [ -f ".next/standalone/server.js" ]; then
-            echo "✅ server.js encontrado no local correto"
+          # Verificar se server.js existe no local correto (monorepo structure)
+          if [ -f ".next/standalone/apps/frontend-nextjs/server.js" ]; then
+            echo "✅ server.js encontrado no local correto (monorepo structure)"
+          elif [ -f ".next/standalone/server.js" ]; then
+            echo "✅ server.js encontrado na raiz do standalone"
           else
-            echo "❌ server.js não encontrado em .next/standalone/server.js"
-            echo "📁 Conteúdo de .next/standalone:"
-            ls -la .next/standalone/ || echo "Pasta não acessível"
+            echo "❌ server.js não encontrado em local esperado"
+            echo "📁 Verificando estrutura completa do standalone:"
+            find .next/standalone -name "server.js" -type f || echo "server.js não encontrado em lugar algum"
+            echo "📁 Estrutura de .next/standalone/apps:"
+            ls -la .next/standalone/apps/ 2>/dev/null || echo "Pasta apps não existe"
+            if [ -d ".next/standalone/apps/frontend-nextjs" ]; then
+              echo "📁 Conteúdo de apps/frontend-nextjs:"
+              ls -la .next/standalone/apps/frontend-nextjs/
+            fi
             exit 1
           fi
 
