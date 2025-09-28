@@ -54,15 +54,14 @@ print_step "Configurando domínio de produção..."
 
 # Frontend Produção
 print_step "Mapeando frontend produção: $DOMAIN"
-gcloud run domain-mappings create \
+gcloud beta run domain-mappings create \
     --service=roteiro-dispensacao-frontend \
     --domain=$DOMAIN \
-    --region=$REGION \
-    --platform=managed || print_warning "Mapeamento pode já existir"
+    --region=$REGION || print_warning "Mapeamento pode já existir"
 
 # API Produção
 print_step "Mapeando API produção: api.$DOMAIN"
-gcloud run domain-mappings create \
+gcloud beta run domain-mappings create \
     --service=roteiro-dispensacao-api \
     --domain=api.$DOMAIN \
     --region=$REGION \
@@ -76,7 +75,7 @@ print_step "Configurando subdomínio de homologação..."
 
 # Frontend HML
 print_step "Mapeando frontend HML: hml.$DOMAIN"
-gcloud run domain-mappings create \
+gcloud beta run domain-mappings create \
     --service=hml-roteiro-dispensacao-frontend \
     --domain=hml.$DOMAIN \
     --region=$REGION \
@@ -84,7 +83,7 @@ gcloud run domain-mappings create \
 
 # API HML
 print_step "Mapeando API HML: hml-api.$DOMAIN"
-gcloud run domain-mappings create \
+gcloud beta run domain-mappings create \
     --service=hml-roteiro-dispensacao-api \
     --domain=hml-api.$DOMAIN \
     --region=$REGION \
@@ -101,7 +100,7 @@ echo "📋 STATUS DOS MAPEAMENTOS:"
 echo "=========================="
 
 # Listar todos os mapeamentos
-gcloud run domain-mappings list --region=$REGION --platform=managed
+gcloud beta run domain-mappings list --region=$REGION --platform=managed
 
 echo ""
 print_step "Verificando registros DNS necessários..."
@@ -119,7 +118,7 @@ for domain in "${domains[@]}"; do
     echo "-------------------"
 
     # Tentar obter o registro DNS
-    DNS_RECORD=$(gcloud run domain-mappings describe $domain \
+    DNS_RECORD=$(gcloud beta run domain-mappings describe $domain \
         --region=$REGION \
         --platform=managed \
         --format="value(status.resourceRecords[0].rrdata)" 2>/dev/null || echo "Não configurado")
@@ -144,7 +143,7 @@ echo "🔒 STATUS SSL:"
 echo "=============="
 
 for domain in "${domains[@]}"; do
-    SSL_STATUS=$(gcloud run domain-mappings describe $domain \
+    SSL_STATUS=$(gcloud beta run domain-mappings describe $domain \
         --region=$REGION \
         --platform=managed \
         --format="value(status.conditions[0].status)" 2>/dev/null || echo "Desconhecido")

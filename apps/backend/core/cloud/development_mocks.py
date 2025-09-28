@@ -408,7 +408,7 @@ class DevelopmentCloudManager:
 
         # Mock Google Cloud Storage
         self.mock_gcs = MockGoogleCloudStorage(
-            getattr(self.config, 'CLOUD_STORAGE_BUCKET', 'dev-bucket')
+            getattr(self.config, 'GCS_BUCKET_NAME', 'dev-bucket')
         )
 
         # Mock Supabase

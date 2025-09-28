@@ -5,6 +5,7 @@ import EducationalLayout from '@/components/layout/EducationalLayout';
 import CertificateGenerator from '@/components/interactive/Certification/CertificateGenerator';
 import { Certificate, CertificationProgress, DEFAULT_CERTIFICATION_CONFIG } from '@/types/certification';
 import { getUnbColors } from '@/config/modernTheme';
+import { urls } from '@/utils/environmentUrls';
 import {
   GraduationIcon,
   TrophyIcon,
@@ -71,7 +72,7 @@ export default function CertificacaoPage() {
                 'Comunicação farmacêutico-paciente'
               ],
               verificationCode: `VERIFY-${Date.now().toString(36).toUpperCase()}`,
-              qrCodeData: `https://roteirosdedispensacao.com/verify/cert-${Date.now()}`,
+              qrCodeData: urls.certificationVerify(Date.now().toString()),
               template: {
                 type: 'completion',
                 layout: 'academic',

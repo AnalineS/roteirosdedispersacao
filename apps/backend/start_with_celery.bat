@@ -1,14 +1,13 @@
 @echo off
 REM Script para iniciar Flask + Celery Workers no Windows
 REM Usado em desenvolvimento local
+REM Configuração SQLite + Google Cloud Storage (Redis removido)
 
 echo 🚀 Iniciando sistema com Celery Workers...
 
 REM Configurar variáveis de ambiente
-set REDIS_PUBLIC_ENDPOINT=localhost:6379
-set REDIS_ACCOUNT_KEY=
-set REDIS_DATABASE_NAME=0
 set ENVIRONMENT=development
+set CELERY_BROKER_TYPE=sqlite
 
 REM Iniciar Worker 1 em nova janela
 echo 📦 Iniciando Celery Worker 1...

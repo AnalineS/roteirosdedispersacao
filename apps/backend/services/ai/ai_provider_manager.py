@@ -513,22 +513,23 @@ class AIProviderManager:
 # Instância global
 ai_provider_manager = AIProviderManager()
 
-# Funções de conveniência
+# Funções de conveniência - TODAS ASSÍNCRONAS
+
 async def generate_ai_response(
     messages: List[Dict],
     model_preference: Optional[str] = None,
     temperature: float = 0.7,
     max_tokens: Optional[int] = None
 ) -> Tuple[Optional[str], Dict]:
-    """Função principal para gerar resposta de IA"""
+    """Função principal para gerar resposta de IA (assíncrona)"""
     return await ai_provider_manager.generate_response(
         messages, model_preference, temperature, max_tokens
     )
 
 def get_ai_health_status() -> Dict:
-    """Função para obter status de health dos provedores"""
+    """Função síncrona para obter status de health dos provedores"""
     return ai_provider_manager.get_health_status()
 
 async def test_ai_providers() -> Dict:
-    """Função para testar todos os provedores"""
+    """Função assíncrona para testar todos os provedores"""
     return await ai_provider_manager.test_all_providers()

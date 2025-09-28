@@ -67,7 +67,7 @@ class AppConfig:
     # Feature Flags - TODAS AS FUNCIONALIDADES ATIVADAS
     EMBEDDINGS_ENABLED: bool = os.getenv('EMBEDDINGS_ENABLED', 'true').lower() == 'true'
     ADVANCED_FEATURES: bool = os.getenv('ADVANCED_FEATURES', 'true').lower() == 'true'
-    RAG_AVAILABLE: bool = os.getenv('RAG_AVAILABLE', 'true').lower() == 'true'
+    RAG_ENABLED: bool = os.getenv('RAG_ENABLED', 'true').lower() == 'true'
     OPENAI_TEST_AVAILABLE: bool = os.getenv('OPENAI_TEST_AVAILABLE', 'true').lower() == 'true'
     ADVANCED_CACHE: bool = os.getenv('ADVANCED_CACHE', 'true').lower() == 'true'
     
@@ -99,7 +99,7 @@ class AppConfig:
     
     # Cloud Storage Config - CACHE CLOUD ATIVADO
     EMBEDDINGS_CLOUD_CACHE: bool = os.getenv('EMBEDDINGS_CLOUD_CACHE', 'true').lower() == 'true'
-    CLOUD_STORAGE_BUCKET: Optional[str] = os.getenv('CLOUD_STORAGE_BUCKET')
+    GCS_BUCKET_NAME: Optional[str] = os.getenv('GCS_BUCKET_NAME')
     EMBEDDINGS_LAZY_LOAD: bool = os.getenv('EMBEDDINGS_LAZY_LOAD', 'true').lower() == 'true'
     MIN_INSTANCES: int = int(os.getenv('MIN_INSTANCES', '0'))  # Cloud Run min instances
     
@@ -181,21 +181,11 @@ class AppConfig:
     LOCALSTACK_ENDPOINT: str = os.getenv('LOCALSTACK_ENDPOINT', 'http://localhost:4566')
     LOCAL_POSTGRES_URL: Optional[str] = os.getenv('LOCAL_POSTGRES_URL')
     LOCAL_POSTGRES_ENABLED: bool = os.getenv('LOCAL_POSTGRES_ENABLED', 'false').lower() == 'true'
-    LOCAL_REDIS_URL: Optional[str] = os.getenv('LOCAL_REDIS_URL')
-    LOCAL_REDIS_ENABLED: bool = os.getenv('LOCAL_REDIS_ENABLED', 'false').lower() == 'true'
     
     # Vector Store Config (Supabase + pgvector)
     SUPABASE_VECTOR_DIMENSION: int = int(os.getenv('SUPABASE_VECTOR_DIMENSION', 1536))
     SUPABASE_VECTOR_SIMILARITY_THRESHOLD: float = float(os.getenv('SUPABASE_VECTOR_SIMILARITY_THRESHOLD', 0.8))
     
-    # Redis Config - REMOVED (Replaced by Firestore hybrid cache in Phases 2-4)
-    # REDIS_ENABLED: bool = os.getenv('REDIS_ENABLED', '').lower() == 'true'  # REMOVED
-    # REDIS_URL: Optional[str] = os.getenv('REDIS_URL')  # REMOVED
-    # REDIS_PASSWORD: Optional[str] = os.getenv('REDIS_PASSWORD')  # REMOVED
-    # REDIS_USERNAME: str = os.getenv('REDIS_USERNAME', 'default')  # REMOVED
-    # REDIS_MAX_CONNECTIONS: int = int(os.getenv('REDIS_MAX_CONNECTIONS', 20))  # REMOVED
-    # REDIS_SOCKET_TIMEOUT: int = int(os.getenv('REDIS_SOCKET_TIMEOUT', 3))  # REMOVED
-    # REDIS_HEALTH_CHECK_INTERVAL: int = int(os.getenv('REDIS_HEALTH_CHECK_INTERVAL', 30))  # REMOVED
     
     # Cache Config - Now using Firestore hybrid system
     FIRESTORE_CACHE_ENABLED: bool = os.getenv('FIRESTORE_CACHE_ENABLED', 'true').lower() == 'true'

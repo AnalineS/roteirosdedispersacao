@@ -54,7 +54,7 @@ from core.versioning import APIVersionManager
 from app_config import config, EnvironmentConfig
 
 # Import obrigatório do sistema de dependências
-from core.dependencies import dependency_injector
+from core.dependencies import get_dependency_manager
 
 # Aplicar patch para Windows logging (resolve problemas com emojis)
 try:
@@ -443,9 +443,10 @@ def register_blueprints(app):
 
 def inject_dependencies_into_blueprints():
     """Injetar dependências em todos os blueprints - MANTÉM ORIGINAL"""
+    dependency_manager = get_dependency_manager()
     for blueprint in ALL_BLUEPRINTS:
-        dependency_injector.inject_into_blueprint(blueprint)
-        logger.info(f"✓ Dependências injetadas: {blueprint.name}")
+        # Injeção simplificada - dependências são globais via DependencyManager
+        logger.info(f"✓ Dependências disponíveis para: {blueprint.name}")
 
 def setup_error_handlers(app):
     """Configurar handlers de erro globais - MANTÉM ORIGINAL"""
@@ -512,14 +513,18 @@ def log_startup_info():
 
     logger.info(f"[AUTH] QA Enabled: {getattr(config, 'QA_ENABLED', False)}")
     logger.info(f"[SAVE] Cache: {'Advanced' if getattr(config, 'ADVANCED_CACHE', False) else 'Simple'}")
-    logger.info(f"🧠 RAG: {'Available' if getattr(config, 'RAG_AVAILABLE', False) else 'Unavailable'}")
+    logger.info(f"🧠 RAG: {'Available' if getattr(config, 'RAG_ENABLED', False) else 'Unavailable'}")
     logger.info(f"[REPORT] Metrics: {'Enabled' if getattr(config, 'METRICS_ENABLED', False) else 'Disabled'}")
 
     # Status das dependências
-    deps = dependency_injector.get_dependencies()
-    logger.info(f"✓ Cache: {'OK' if deps.cache else 'FAIL'}")
-    logger.info(f"✓ RAG: {'OK' if deps.rag_service else 'FAIL'}")
-    logger.info(f"✓ QA: {'OK' if deps.qa_framework else 'FAIL'}")
+    dependency_manager = get_dependency_manager()
+    cache_service = dependency_manager.create_cache_service()
+    rag_service = dependency_manager.create_rag_service()
+    qa_service = dependency_manager.create_qa_framework()
+
+    logger.info(f"✓ Cache: {'OK' if cache_service else 'FAIL'}")
+    logger.info(f"✓ RAG: {'OK' if rag_service else 'FAIL'}")
+    logger.info(f"✓ QA: {'OK' if qa_service else 'FAIL'}")
 
     # NOVO: Status do sistema unificado de memória
     if UNIFIED_MEMORY_AVAILABLE:

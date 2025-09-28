@@ -28,11 +28,47 @@ const nextConfig = {
         : false,
   },
 
-  // Variáveis de ambiente para Cloud Run deployment
+  // Environment Variables - Explicit declaration for build-time inlining
   env: {
-    // Backend API URL configurado via Cloud Run
+    // API Configuration
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
     NEXT_PUBLIC_BACKEND_URL: process.env.NEXT_PUBLIC_BACKEND_URL,
+    NEXT_PUBLIC_API_URL_DEV: process.env.NEXT_PUBLIC_API_URL_DEV,
+    NEXT_PUBLIC_API_URL_STAGING: process.env.NEXT_PUBLIC_API_URL_STAGING,
+    NEXT_PUBLIC_API_URL_PRODUCTION: process.env.NEXT_PUBLIC_API_URL_PRODUCTION,
+
+    // Environment Detection
+    NEXT_PUBLIC_ENVIRONMENT: process.env.NEXT_PUBLIC_ENVIRONMENT,
+
+    // Feature Flags
+    NEXT_PUBLIC_AUTH_ENABLED: process.env.NEXT_PUBLIC_AUTH_ENABLED,
+    NEXT_PUBLIC_OFFLINE_MODE: process.env.NEXT_PUBLIC_OFFLINE_MODE,
+    NEXT_PUBLIC_DEBUG_MODE: process.env.NEXT_PUBLIC_DEBUG_MODE,
+    NEXT_PUBLIC_ANALYTICS_ENABLED: process.env.NEXT_PUBLIC_ANALYTICS_ENABLED,
+    NEXT_PUBLIC_COOKIES_ENABLED: process.env.NEXT_PUBLIC_COOKIES_ENABLED,
+    NEXT_PUBLIC_CACHE_ENABLED: process.env.NEXT_PUBLIC_CACHE_ENABLED,
+    NEXT_PUBLIC_PERFORMANCE_MONITORING: process.env.NEXT_PUBLIC_PERFORMANCE_MONITORING,
+
+    // Security Settings
+    NEXT_PUBLIC_SECURITY_LEVEL: process.env.NEXT_PUBLIC_SECURITY_LEVEL,
+    NEXT_PUBLIC_CORS_ENABLED: process.env.NEXT_PUBLIC_CORS_ENABLED,
+    NEXT_PUBLIC_CSP_ENABLED: process.env.NEXT_PUBLIC_CSP_ENABLED,
+
+    // Build Configuration
+    NEXT_PUBLIC_BASE_PATH: process.env.NEXT_PUBLIC_BASE_PATH,
+    NEXT_PUBLIC_ASSET_PREFIX: process.env.NEXT_PUBLIC_ASSET_PREFIX,
+    NEXT_PUBLIC_BUILD_ID: process.env.NEXT_PUBLIC_BUILD_ID,
+    NEXT_PUBLIC_VERSION: process.env.NEXT_PUBLIC_VERSION,
+
+    // OAuth Configuration
     NEXT_PUBLIC_GOOGLE_CLIENT_ID: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
+
+    // Logging
+    NEXT_PUBLIC_LOG_LEVEL: process.env.NEXT_PUBLIC_LOG_LEVEL,
+
+    // Storage Configuration
+    NEXT_PUBLIC_STORAGE_MODE: process.env.NEXT_PUBLIC_STORAGE_MODE,
+    NEXT_PUBLIC_DATABASE_MODE: process.env.NEXT_PUBLIC_DATABASE_MODE,
   },
 
   // Configurações de performance

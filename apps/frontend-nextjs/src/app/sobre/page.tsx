@@ -4,6 +4,7 @@ import React from 'react';
 import Image from 'next/image';
 import { modernChatTheme } from '@/config/modernTheme';
 import EducationalLayout from '@/components/layout/EducationalLayout';
+import { urls } from '@/utils/environmentUrls';
 import {
   ChecklistIcon,
   GraduationIcon,
@@ -1195,7 +1196,7 @@ export default function ConhecaEquipePage() {
             }}>
               MOURA JÚNIOR, Nélio Gomes de. <strong>Sistema Educacional PQT-U: Roteiros de Dispensação para Hanseníase</strong>. 
               2024. Tese (Doutorado em Ciências Farmacêuticas) - Universidade de Brasília, Brasília, 2024. 
-              Disponível em: https://roteirosdedispensacao.com. Acesso em: [data].
+              Disponível em: {urls.base()}. Acesso em: [data].
             </div>
           </div>
 
@@ -1222,7 +1223,7 @@ export default function ConhecaEquipePage() {
             }}>
               MOURA JÚNIOR, N. G.; AKKATI, S. C. F.; FRANÇA, S. O. C.; BRANDÃO, L. B. G.; SODRÉ, B. M. C.; SANTANA, R. S. 
               <strong>Roteiros de Dispensação: Sistema Inteligente de Orientação para Hanseníase</strong>. Brasília: UnB, 2024. 
-              Disponível em: https://roteirosdedispensacao.com. Acesso em: [data].
+              Disponível em: {urls.base()}. Acesso em: [data].
             </div>
           </div>
 

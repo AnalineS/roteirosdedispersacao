@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 Configuração Celery - Sistema Hanseníase Chat
-Configuração segura usando Redis existente em DBs separadas
+Configuração usando SQLite + Google Cloud Storage (Redis removido)
 """
 
 from celery import Celery
@@ -10,23 +10,12 @@ import os
 from app_config import config
 
 # Configuração Celery OTIMIZADA - SQLite + Cloud Storage
-# Não depende mais de Redis - usa SQLite para persistência
+# Redis completamente removido - usa apenas SQLite para persistência
 
-# Tentar usar Redis se disponível, senão usar SQLite + filesystem
-REDIS_PUBLIC_ENDPOINT = os.getenv('REDIS_PUBLIC_ENDPOINT')
-REDIS_ACCOUNT_KEY = os.getenv('REDIS_ACCOUNT_KEY')
-
-if REDIS_PUBLIC_ENDPOINT and REDIS_ACCOUNT_KEY:
-    # Formato para Redis Cloud/Azure com auth
-    REDIS_URL = f"redis://:{REDIS_ACCOUNT_KEY}@{REDIS_PUBLIC_ENDPOINT}"
-    CELERY_BROKER_URL = f"{REDIS_URL}/2"  # DB 2 para filas
-    CELERY_RESULT_BACKEND = f"{REDIS_URL}/3"  # DB 3 para resultados
-    BROKER_TYPE = "redis"
-else:
-    # Fallback para SQLite + filesystem (mais compatível)
-    CELERY_BROKER_URL = 'sqlalchemy+sqlite:///./data/celery_broker.db'
-    CELERY_RESULT_BACKEND = 'db+sqlite:///./data/celery_results.db'
-    BROKER_TYPE = "sqlite"
+# Configuração SQLite + filesystem (compatível com Cloud Run)
+CELERY_BROKER_URL = 'sqlalchemy+sqlite:///./data/celery_broker.db'
+CELERY_RESULT_BACKEND = 'db+sqlite:///./data/celery_results.db'
+BROKER_TYPE = "sqlite"
 
 # Criar instância Celery OTIMIZADA
 celery_app = Celery(

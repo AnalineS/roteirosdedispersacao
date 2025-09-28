@@ -109,7 +109,7 @@ class RealCloudNativeCache:
             # Initialize REAL GCS client
             if self.cache_enabled['cloud_storage'] and REAL_CLOUD_AVAILABLE:
                 try:
-                    if (hasattr(self.config, 'CLOUD_STORAGE_BUCKET') and self.config.CLOUD_STORAGE_BUCKET):
+                    if (hasattr(self.config, 'GCS_BUCKET_NAME') and self.config.GCS_BUCKET_NAME):
                         self.real_gcs_client = create_real_gcs_client(self.config)
                         logger.info("✅ REAL GCS cache client initialized")
                     else:

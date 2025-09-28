@@ -35,8 +35,7 @@ class IntelligentFallbackSystem:
             'qa_framework': False,
             'security_middleware': False,
             'metrics': False,
-            'embeddings': False,
-            'redis': False
+            'embeddings': False
         }
         
         # Testar Cache
@@ -62,7 +61,13 @@ class IntelligentFallbackSystem:
             from services.ai.ai_provider_manager import get_ai_health_status
             # Teste real de conexão
             health_status = get_ai_health_status()
-            services['ai_provider'] = health_status.get('status') == 'healthy'
+            overall_status = health_status.get('overall_status', 'no_providers')
+            models_available = health_status.get('configuration', {}).get('models_available', 0)
+
+            # Considera saudável se status é 'healthy' ou 'degraded' E tem modelos disponíveis
+            services['ai_provider'] = overall_status in ['healthy', 'degraded'] and models_available > 0
+
+            logger.info(f"AI Provider status: {overall_status}, models: {models_available}")
         except ImportError:
             # Serviço não disponível - continuar sem ele
             services['ai_provider'] = False
@@ -99,8 +104,7 @@ class IntelligentFallbackSystem:
         # Testar Embeddings
         services['embeddings'] = os.getenv('EMBEDDINGS_ENABLED', 'false').lower() == 'true'
         
-        # Testar Redis
-        services['redis'] = os.getenv('REDIS_ENABLED', 'false').lower() == 'true'
+        # Redis removed - no longer used
         
         logger.info(f"[SEARCH] Serviços detectados: {services}")
         return services
@@ -117,7 +121,7 @@ class IntelligentFallbackSystem:
             "feature_flags": {
                 "embeddings_enabled": os.getenv('EMBEDDINGS_ENABLED', 'false').lower() == 'true',
                 "advanced_features": os.getenv('ADVANCED_FEATURES', 'false').lower() == 'true',
-                "rag_available": os.getenv('RAG_AVAILABLE', 'false').lower() == 'true',
+                "rag_enabled": os.getenv('RAG_ENABLED', 'false').lower() == 'true',
                 "advanced_cache": os.getenv('ADVANCED_CACHE', 'false').lower() == 'true'
             },
             "api_version": "v1",

@@ -114,9 +114,9 @@ class RealCloudInitializer:
 
             # Check for required environment variables - multiple fallback options
             bucket_name = (
-                os.getenv('CLOUD_STORAGE_BUCKET') or
+                os.getenv('GCS_BUCKET_NAME') or
                 os.getenv('GCS_CACHE_BUCKET') or
-                getattr(self.config, 'CLOUD_STORAGE_BUCKET', None) or
+                getattr(self.config, 'GCS_BUCKET_NAME', None) or
                 getattr(self.config, 'GCS_CACHE_BUCKET', None)
             )
 
@@ -125,7 +125,7 @@ class RealCloudInitializer:
             credentials_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
 
             if not bucket_name:
-                raise ValueError("CLOUD_STORAGE_BUCKET is required for real GCS integration")
+                raise ValueError("GCS_BUCKET_NAME is required for real GCS integration")
 
             if not credentials_json and not credentials_path:
                 logger.info("No explicit GCS credentials provided - trying application default credentials")

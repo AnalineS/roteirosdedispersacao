@@ -2,6 +2,9 @@
  * Tipos TypeScript para Sistema de Certificação
  * Baseado na tese de doutorado de Nélio Gomes de Moura Júnior
  * Sistema de certificação educacional para simulador clínico
+ *
+ * CRITICAL: URLs below are fallbacks only
+ * Production values should come from environment variables
  */
 
 export interface CertificationCriteria {
@@ -273,7 +276,7 @@ export const DEFAULT_CERTIFICATION_CONFIG: CertificationConfig = {
     name: 'Universidade Federal',
     department: 'Programa de Pós-graduação em Ciências Farmacêuticas',
     address: 'Brasil',
-    website: 'https://roteirosdedispensacao.com',
+    website: process.env.NEXT_PUBLIC_PRODUCTION_DOMAIN || 'https://roteirosdedispensacao.com',
     logoUrl: '/assets/institutional-logo.png'
   },
   
@@ -314,7 +317,7 @@ Pontuação obtida: {overallScore}% | Casos concluídos: {casesCompleted}/{total
   availableTemplates: [], // Será populado com templates adicionais
   
   verification: {
-    baseUrl: 'https://roteirosdedispensacao.com/verify',
+    baseUrl: `${process.env.NEXT_PUBLIC_PRODUCTION_DOMAIN || 'https://roteirosdedispensacao.com'}/verify`,
     qrCodeEnabled: true,
     blockchainEnabled: false,
     emailVerification: true

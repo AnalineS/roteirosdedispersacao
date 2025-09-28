@@ -417,12 +417,12 @@ class RealGCSClient:
 
 def create_real_gcs_client(config) -> RealGCSClient:
     """Create real GCS client with configuration"""
-    bucket_name = os.getenv('CLOUD_STORAGE_BUCKET') or getattr(config, 'CLOUD_STORAGE_BUCKET', None)
+    bucket_name = os.getenv('GCS_BUCKET_NAME') or getattr(config, 'GCS_BUCKET_NAME', None)
     credentials_json = os.getenv('GOOGLE_APPLICATION_CREDENTIALS_JSON')
     credentials_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
 
     if not bucket_name:
-        raise ValueError("CLOUD_STORAGE_BUCKET is required for real GCS integration")
+        raise ValueError("GCS_BUCKET_NAME is required for real GCS integration")
 
     logger.info("🚀 Creating REAL Google Cloud Storage client (NO MOCKS)")
     return RealGCSClient(bucket_name, credentials_path, credentials_json)

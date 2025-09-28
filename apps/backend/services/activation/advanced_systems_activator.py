@@ -284,7 +284,7 @@ class AdvancedSystemsActivator:
         try:
             # AI Suggestions usa o sistema preditivo + RAG
             # Verificar se RAG está disponível
-            rag_available = getattr(config, 'RAG_AVAILABLE', False)
+            rag_available = getattr(config, 'RAG_ENABLED', False)
             if rag_available:
                 status.available = True
                 status.initialized = True

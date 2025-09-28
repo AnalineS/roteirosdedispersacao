@@ -69,10 +69,10 @@ class TestRealCloudInfrastructure:
             ])
 
         # GCS variables (if GCS is enabled)
-        if hasattr(config, 'CLOUD_STORAGE_BUCKET') and config.CLOUD_STORAGE_BUCKET:
+        if hasattr(config, 'GCS_BUCKET_NAME') and config.GCS_BUCKET_NAME:
             required_vars.extend([
                 'GOOGLE_CLOUD_PROJECT',
-                'CLOUD_STORAGE_BUCKET'
+                'GCS_BUCKET_NAME'
             ])
 
         missing_vars = []

@@ -224,7 +224,7 @@ class EnvironmentConfigLoader:
             embedding_device=os.getenv('EMBEDDING_DEVICE', 'cpu'),
             embeddings_max_length=int(os.getenv('EMBEDDINGS_MAX_LENGTH', 512)),
             embedding_batch_size=int(os.getenv('EMBEDDING_BATCH_SIZE', 32)),
-            rag_available=os.getenv('RAG_AVAILABLE', 'true').lower() == 'true',
+            rag_enabled=os.getenv('RAG_ENABLED', 'true').lower() == 'true',
             qa_enabled=os.getenv('QA_ENABLED', 'true').lower() == 'true',
             qa_min_score=float(os.getenv('QA_MIN_SCORE', 0.90))
         )

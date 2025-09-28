@@ -1,10 +1,13 @@
 /**
  * JWT Client - Comunicação com Backend Auth API
  * Substitui Firebase Auth por sistema JWT próprio
+ * Uses centralized environment configuration
  */
 
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import Cookies from 'js-cookie';
+import config from '@/config/environment';
+import securityConfig from '@/config/security';
 
 export interface User {
   id: string;
@@ -38,17 +41,26 @@ class JWTClient {
   private baseURL: string;
   private accessToken: string | null = null;
   private refreshToken: string | null = null;
+  private environment: string;
 
   constructor() {
-    this.baseURL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+    this.environment = config.environment;
+    this.baseURL = config.api.baseUrl;
 
     this.api = axios.create({
       baseURL: `${this.baseURL}/api/v1`,
-      timeout: 10000,
+      timeout: config.api.timeout,
       headers: {
         'Content-Type': 'application/json',
       },
     });
+
+    // Environment-aware logging
+    if (config.features.debug) {
+      console.log(`[JWT Client] Initialized for ${this.environment} environment`);
+      console.log(`[JWT Client] Base URL: ${this.baseURL}`);
+      console.log(`[JWT Client] Timeout: ${config.api.timeout}ms`);
+    }
 
     // Interceptor para adicionar token
     this.api.interceptors.request.use((config) => {
@@ -92,18 +104,35 @@ class JWTClient {
   private saveTokensToStorage(tokens: AuthTokens): void {
     if (typeof window !== 'undefined') {
       const expiresAt = new Date(Date.now() + tokens.expiresIn * 1000);
+      const isSecure = !config.isDevelopment; // Secure cookies for staging and production
+
+      // Environment-aware cookie settings
+      const cookieOptions = {
+        secure: isSecure,
+        sameSite: 'strict' as const,
+        httpOnly: false, // Client needs access for API calls
+        path: '/',
+      };
 
       Cookies.set('auth_token', tokens.accessToken, {
+        ...cookieOptions,
         expires: expiresAt,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict'
       });
 
+      // Refresh token with longer expiration
+      const refreshExpiresAt = new Date(Date.now() + securityConfig.auth.refreshTimeout);
       Cookies.set('refresh_token', tokens.refreshToken, {
-        expires: 30, // 30 days
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict'
+        ...cookieOptions,
+        expires: refreshExpiresAt,
       });
+
+      // Environment-aware logging
+      if (securityConfig.development.verboseLogging) {
+        console.log(`[JWT Client] Tokens saved for ${this.environment} environment`);
+        console.log(`[JWT Client] Access token expires:`, expiresAt);
+        console.log(`[JWT Client] Refresh token expires:`, refreshExpiresAt);
+        console.log(`[JWT Client] Secure cookies:`, isSecure);
+      }
 
       this.accessToken = tokens.accessToken;
       this.refreshToken = tokens.refreshToken;

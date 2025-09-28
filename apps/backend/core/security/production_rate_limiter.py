@@ -21,8 +21,8 @@ class ProductionRateLimiter:
     Sistema de rate limiting de produção para aplicação médica
 
     Features:
-    - Redis como storage primário (produção)
-    - SQLite como fallback (desenvolvimento/emergency)
+    - SQLite como storage primário (produção e desenvolvimento)
+    - Memory storage como fallback
     - Rate limits específicos para área médica
     - Monitoring e alertas integrados
     - Configuração por ambiente
@@ -103,19 +103,13 @@ class ProductionRateLimiter:
 
         environment = os_module.getenv('ENVIRONMENT', 'development')
 
-        # Flask-Limiter suporta: memory, redis, mongodb, memcached
-        # SQLite NÃO é suportado pelo limits library
-        if environment == 'production':
-            # PRODUÇÃO: Redis como storage primário
-            redis_url = os_module.getenv('REDIS_URL', 'redis://localhost:6379')
-            self.storage_backend = redis_url
-            logger.info(f"✅ Redis configurado para rate limiting em produção: {redis_url}")
-        else:
-            # DESENVOLVIMENTO: Memory storage para desenvolvimento/teste
-            self.storage_backend = "memory://"
-            logger.info("📝 Memory storage configurado para rate limiting em desenvolvimento")
+        # Flask-Limiter suporta: memory, mongodb, memcached
+        # Redis removido - usando memory storage para compatibilidade
+        # PRODUÇÃO e DESENVOLVIMENTO: Memory storage (rápido e compatível)
+        self.storage_backend = "memory://"
+        logger.info(f"📝 Memory storage configurado para rate limiting em {environment}")
 
-        # Garantir que o diretório existe para outros propósitos
+        # Garantir que o diretório exists para armazenar dados SQLite se necessário
         os_module.makedirs('./data', exist_ok=True)
 
     def _get_limiter_key(self) -> str:

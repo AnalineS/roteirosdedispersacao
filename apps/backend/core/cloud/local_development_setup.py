@@ -14,7 +14,7 @@ from typing import Dict, Any, Optional, List
 from pathlib import Path
 import psycopg2
 from psycopg2.extras import RealDictCursor
-import redis
+# Redis import removed - no longer using Redis
 import sqlite3
 
 logger = logging.getLogger(__name__)
@@ -26,8 +26,6 @@ class LocalDevelopmentSetup:
         self.config = config
         self.services_status = {
             'local_postgres': {'available': False, 'connection': None, 'error': None},
-            'local_redis': {'available': False, 'connection': None, 'error': None},
-            'localstack': {'available': False, 'endpoint': None, 'error': None},
             'sqlite_fallback': {'available': False, 'connection': None, 'error': None}
         }
 
@@ -35,10 +33,8 @@ class LocalDevelopmentSetup:
         """Setup all local development services"""
         logger.info("🚀 Setting up LOCAL development environment")
 
-        # Setup services
+        # Setup services (Google Cloud compatible)
         self._setup_local_postgres()
-        self._setup_local_redis()
-        self._setup_localstack()
         self._setup_sqlite_fallback()
 
         # Log summary
@@ -152,60 +148,7 @@ class LocalDevelopmentSetup:
             logger.error(f"❌ Failed to setup PostgreSQL schema: {e}")
             raise
 
-    def _setup_local_redis(self):
-        """Setup local Redis connection"""
-        if not self.config.LOCAL_REDIS_ENABLED:
-            logger.info("🔄 Local Redis disabled by configuration")
-            return
 
-        try:
-            redis_url = self.config.LOCAL_REDIS_URL
-            if not redis_url:
-                raise ValueError("LOCAL_REDIS_URL is required when LOCAL_REDIS_ENABLED=true")
-
-            # Connect to Redis
-            r = redis.from_url(redis_url)
-
-            # Test connection
-            r.ping()
-
-            self.services_status['local_redis']['connection'] = r
-            self.services_status['local_redis']['available'] = True
-            logger.info("✅ Local Redis connection established")
-
-        except Exception as e:
-            self.services_status['local_redis']['error'] = str(e)
-            logger.error(f"❌ Failed to connect to local Redis: {e}")
-
-            # Provide setup instructions
-            self._log_redis_setup_instructions()
-
-    def _setup_localstack(self):
-        """Setup LocalStack for AWS services"""
-        if not self.config.LOCALSTACK_ENABLED:
-            logger.info("🔄 LocalStack disabled by configuration")
-            return
-
-        try:
-            endpoint = self.config.LOCALSTACK_ENDPOINT
-
-            # Test LocalStack connectivity
-            import requests
-            response = requests.get(f"{endpoint}/health", timeout=5)
-
-            if response.status_code == 200:
-                self.services_status['localstack']['endpoint'] = endpoint
-                self.services_status['localstack']['available'] = True
-                logger.info(f"✅ LocalStack connected at {endpoint}")
-            else:
-                raise RuntimeError(f"LocalStack health check failed: {response.status_code}")
-
-        except Exception as e:
-            self.services_status['localstack']['error'] = str(e)
-            logger.error(f"❌ Failed to connect to LocalStack: {e}")
-
-            # Provide setup instructions
-            self._log_localstack_setup_instructions()
 
     def _setup_sqlite_fallback(self):
         """Setup SQLite as fallback database"""
@@ -317,42 +260,7 @@ class LocalDevelopmentSetup:
    - LOCAL_POSTGRES_ENABLED=true
         """)
 
-    def _log_redis_setup_instructions(self):
-        """Log Redis setup instructions"""
-        logger.info("""
-📋 LOCAL REDIS SETUP INSTRUCTIONS:
 
-1. Install Redis:
-   - Ubuntu/Debian: sudo apt install redis-server
-   - macOS: brew install redis
-   - Windows: Use Docker or WSL
-
-2. Start Redis:
-   - Linux/macOS: redis-server
-   - Or use Docker: docker run -d -p 6379:6379 redis:alpine
-
-3. Set environment variable:
-   - LOCAL_REDIS_URL=redis://localhost:6379/0
-   - LOCAL_REDIS_ENABLED=true
-        """)
-
-    def _log_localstack_setup_instructions(self):
-        """Log LocalStack setup instructions"""
-        logger.info("""
-📋 LOCALSTACK SETUP INSTRUCTIONS:
-
-1. Install LocalStack:
-   - pip install localstack
-   - Or use Docker: docker pull localstack/localstack
-
-2. Start LocalStack:
-   - localstack start
-   - Or Docker: docker run -d -p 4566:4566 localstack/localstack
-
-3. Set environment variable:
-   - LOCALSTACK_ENABLED=true
-   - LOCALSTACK_ENDPOINT=http://localhost:4566
-        """)
 
     def get_service_connection(self, service_name: str):
         """Get connection for specific service"""
@@ -371,10 +279,8 @@ class LocalDevelopmentSetup:
         return None
 
     def get_cache_connection(self):
-        """Get cache connection (Redis or fallback)"""
-        if self.is_service_available('local_redis'):
-            return self.get_service_connection('local_redis')
-        # Can use SQLite cache table as fallback
+        """Get cache connection (SQLite fallback only)"""
+        # Redis removed - using SQLite cache table as main option
         return None
 
     def health_check(self) -> Dict[str, Any]:
