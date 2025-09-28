@@ -115,6 +115,18 @@ def create_app():
             "timestamp": datetime.now().isoformat()
         }, 200
 
+    # API v1 health check - required by Docker health check
+    @app.route('/api/v1/health', methods=['GET'])
+    def api_v1_health_check():
+        """API v1 health check endpoint for Docker and Cloud Run"""
+        return {
+            "status": "healthy",
+            "service": "roteiro-dispensacao-api",
+            "version": "1.0.2",
+            "environment": getattr(config, 'ENVIRONMENT', 'unknown'),
+            "timestamp": datetime.now().isoformat()
+        }, 200
+
     # Root endpoint to confirm app is working
     @app.route('/', methods=['GET'])
     def root():

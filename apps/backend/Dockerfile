@@ -119,7 +119,7 @@ exec gunicorn main:app \
     --worker-connections 1000 \
     --max-requests 1000 \
     --max-requests-jitter 100 \
-    --timeout 30 \
+    --timeout 120 \
     --keep-alive 2 \
     --log-level info \
     --access-logfile - \
