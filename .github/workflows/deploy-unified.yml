@@ -1144,16 +1144,14 @@ jobs:
             BACKEND_SERVICE="${{ vars.PRODUCTION_BACKEND_SERVICE }}"
             API_DOMAIN="${{ vars.PRODUCTION_API_DOMAIN }}"
             FRONTEND_URL="https://${{ vars.PRODUCTION_FRONTEND_DOMAIN }}"
-            # Escape CORS origins for production
-            CORS_ORIGINS_RAW="${{ vars.CORS_ORIGINS_PROD }}"
-            CORS_ORIGINS="${CORS_ORIGINS_RAW}"
+            # Use safe CORS origins with semicolon separator to avoid gcloud parsing issues
+            CORS_ORIGINS="${{ vars.CORS_ORIGINS_PROD_SAFE }}"
           else
             BACKEND_SERVICE="${{ vars.HML_BACKEND_SERVICE }}"
             API_DOMAIN="${{ vars.HML_API_DOMAIN }}"
             FRONTEND_URL="https://${{ vars.HML_FRONTEND_DOMAIN }}"
-            # Escape CORS origins for staging - handle comma-separated values properly
-            CORS_ORIGINS_RAW="${{ vars.CORS_ORIGINS_HML }}"
-            CORS_ORIGINS="${CORS_ORIGINS_RAW}"
+            # Use safe CORS origins with semicolon separator to avoid gcloud parsing issues
+            CORS_ORIGINS="${{ vars.CORS_ORIGINS_HML_SAFE }}"
           fi
 
           # Debug: show CORS_ORIGINS value to verify format

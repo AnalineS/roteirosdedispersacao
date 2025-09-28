@@ -49,7 +49,15 @@ class AppConfig:
         else:
             origins = os.getenv('CORS_ORIGINS', 'http://localhost:3000,http://127.0.0.1:3000')
 
-        return origins.split(',') if origins else ['http://localhost:3000']
+        # Handle both comma and semicolon delimiters (semicolon used to avoid gcloud parsing issues)
+        if origins:
+            # Try semicolon first (used in production to avoid gcloud issues)
+            if ';' in origins:
+                return origins.split(';')
+            else:
+                return origins.split(',')
+        else:
+            return ['http://localhost:3000']
     
     # API Keys - with fallback handling
     OPENROUTER_API_KEY: Optional[str] = os.getenv('OPENROUTER_API_KEY', '')
