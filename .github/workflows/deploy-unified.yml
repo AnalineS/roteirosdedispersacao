@@ -1144,13 +1144,20 @@ jobs:
             BACKEND_SERVICE="${{ vars.PRODUCTION_BACKEND_SERVICE }}"
             API_DOMAIN="${{ vars.PRODUCTION_API_DOMAIN }}"
             FRONTEND_URL="https://${{ vars.PRODUCTION_FRONTEND_DOMAIN }}"
-            CORS_ORIGINS="${{ vars.CORS_ORIGINS_PROD }}"
+            # Escape CORS origins for production
+            CORS_ORIGINS_RAW="${{ vars.CORS_ORIGINS_PROD }}"
+            CORS_ORIGINS="${CORS_ORIGINS_RAW}"
           else
             BACKEND_SERVICE="${{ vars.HML_BACKEND_SERVICE }}"
             API_DOMAIN="${{ vars.HML_API_DOMAIN }}"
             FRONTEND_URL="https://${{ vars.HML_FRONTEND_DOMAIN }}"
-            CORS_ORIGINS="${{ vars.CORS_ORIGINS_HML }}"
+            # Escape CORS origins for staging - handle comma-separated values properly
+            CORS_ORIGINS_RAW="${{ vars.CORS_ORIGINS_HML }}"
+            CORS_ORIGINS="${CORS_ORIGINS_RAW}"
           fi
+
+          # Debug: show CORS_ORIGINS value to verify escaping
+          echo "🔍 CORS_ORIGINS value: $CORS_ORIGINS"
 
           # Submit build with proper VPC-SC compatible configuration
           echo "🔧 Submitting build with detailed logging..."
@@ -1211,7 +1218,7 @@ jobs:
               --set-env-vars "LGPD_MODE=strict" \
               --set-env-vars "PROJECT_ID=${{ vars.GCP_PROJECT_ID }}" \
               --set-env-vars "FRONTEND_URL=$FRONTEND_URL" \
-              --set-env-vars "CORS_ORIGINS=$CORS_ORIGINS" \
+              --set-env-vars "CORS_ORIGINS=\"$CORS_ORIGINS\"" \
               --set-env-vars "SECRET_KEY=${{ secrets.SECRET_KEY }}" \
               --set-env-vars "OPENROUTER_API_KEY=${{ secrets.OPENROUTER_API_KEY }}" \
               --set-env-vars "SUPABASE_PROJECT_URL=${{ secrets.SUPABASE_PROJECT_URL }}" \
