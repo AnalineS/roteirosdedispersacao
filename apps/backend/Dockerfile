@@ -51,6 +51,10 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    HOME=/home/medicalapp \
+    HF_HOME=/home/medicalapp/.cache/huggingface \
+    TRANSFORMERS_CACHE=/home/medicalapp/.cache/transformers \
+    SENTENCE_TRANSFORMERS_HOME=/home/medicalapp/.cache/sentence-transformers \
     FLASK_ENV=production \
     DEBUG=False \
     TESSDATA_PREFIX=/usr/share/tesseract-ocr/4.00/tessdata
@@ -69,8 +73,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# Create non-root user for security
-RUN groupadd -r medicalapp && useradd -r -g medicalapp -u 1001 medicalapp
+# Create non-root user for security with home directory and cache directories
+RUN groupadd -r medicalapp && \
+    useradd -r -g medicalapp -u 1001 -m -d /home/medicalapp medicalapp && \
+    mkdir -p /home/medicalapp/.cache/huggingface && \
+    mkdir -p /home/medicalapp/.cache/transformers && \
+    mkdir -p /home/medicalapp/.cache/sentence-transformers && \
+    chown -R medicalapp:medicalapp /home/medicalapp
 
 WORKDIR /app
 
