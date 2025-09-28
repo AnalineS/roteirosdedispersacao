@@ -416,7 +416,7 @@ INSTRUÇÃO: Responda usando sua expertise em hanseníase, baseando-se no contex
 
             # Call real OpenRouter
             response = self.openrouter_client.chat.completions.create(
-                model="x-ai/grok-4-fast:free",  # Grok 4 Fast Free model
+                model="qwen/qwen3-8b:free",     # Qwen 8B Free model
                 messages=[
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_prompt}
