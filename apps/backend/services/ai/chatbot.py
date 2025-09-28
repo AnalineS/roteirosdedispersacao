@@ -46,8 +46,8 @@ class ChatbotService:
         
         # Modelos com redundância (ordem de prioridade)
         self.models = [
-            "meta-llama/llama-3.2-3b-instruct:free",  # Primário
-            "kimie-kimie/k2-chat:free"                 # Redundância
+            "x-ai/grok-4-fast:free",       # Primário - Grok 4 Fast Free
+            "moonshotai/kimi-k2:free"      # Redundância - Kimi K2 Free
         ]
         self.current_model_index = 0
         

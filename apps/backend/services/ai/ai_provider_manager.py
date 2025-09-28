@@ -84,13 +84,13 @@ class AIProviderManager:
         if self.openrouter_key:
             self.models.update({
                 'llama-3.2-3b': ModelConfig(
-                    name="meta-llama/llama-3.2-3b-instruct:free",
+                    name="x-ai/grok-4-fast:free",  # Grok 4 Fast Free para Dr. Gasnelio
                     provider='openrouter',
                     endpoint_url="https://openrouter.ai/api/v1/chat/completions",
                     priority=1
                 ),
                 'kimie-k2': ModelConfig(
-                    name="kimie-kimie/k2-chat:free", 
+                    name="moonshotai/kimi-k2:free",  # Kimi K2 Free correto para Gá
                     provider='openrouter',
                     endpoint_url="https://openrouter.ai/api/v1/chat/completions",
                     priority=2
