@@ -21,10 +21,10 @@ class IntelligentFallbackSystem:
     """
     
     def __init__(self):
-        self.fallback_mode = True
         self.available_services = self._detect_available_services()
+        self.fallback_mode = self._determine_fallback_mode()
         self.startup_time = datetime.now()
-        logger.info("🔄 Sistema de Fallback Inteligente inicializado")
+        logger.info(f"🔄 Sistema de Fallback Inteligente inicializado - Mode: {'fallback' if self.fallback_mode else 'normal'}")
     
     def _detect_available_services(self) -> Dict[str, bool]:
         """Detecta quais serviços estão disponíveis"""
@@ -108,13 +108,32 @@ class IntelligentFallbackSystem:
         
         logger.info(f"[SEARCH] Serviços detectados: {services}")
         return services
-    
+
+    def _determine_fallback_mode(self) -> bool:
+        """Determina se deve estar em fallback mode baseado no ambiente e serviços"""
+        environment = os.getenv('ENVIRONMENT', 'development').lower()
+
+        # Em produção/staging: só usar fallback se serviços críticos falharem
+        if environment in ['production', 'staging', 'homologacao']:
+            ai_provider_available = self.available_services.get('ai_provider', False)
+            if ai_provider_available:
+                logger.info("✅ Produção/Staging: AI provider OK - Modo normal ativado")
+                return False
+            else:
+                logger.warning("⚠️ Produção/Staging: AI provider falhou - Ativando fallback")
+                return True
+
+        # Em desenvolvimento: sempre permitir fallback
+        else:
+            logger.info("🔧 Desenvolvimento: Fallback mode ativado")
+            return True
+
     def get_system_status(self) -> Dict[str, Any]:
         """Retorna status completo do sistema"""
         uptime = (datetime.now() - self.startup_time).total_seconds()
         
         return {
-            "mode": "intelligent_fallback",
+            "mode": "intelligent_fallback" if self.fallback_mode else "normal",
             "uptime_seconds": int(uptime),
             "services": self.available_services,
             "environment": os.getenv('ENVIRONMENT', 'development'),
