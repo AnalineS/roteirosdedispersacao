@@ -98,7 +98,6 @@ def create_app():
 
     # Health check endpoints - Cloud Run optimized
     @app.route('/health', methods=['GET'])
-    @app.route('/api/health', methods=['GET'])
     @app.route('/_ah/health', methods=['GET'])
     def health_check():
         """Fast health check endpoint for Cloud Run"""
