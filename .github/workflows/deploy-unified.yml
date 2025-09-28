@@ -949,7 +949,9 @@ jobs:
               --memory 1Gi \
               --cpu 1 \
               --max-instances 10 \
-              --set-env-vars="NODE_ENV=production,NEXT_PUBLIC_ENVIRONMENT=${{ needs.environment-preparation.outputs.environment }},NEXT_PUBLIC_BACKEND_URL=$BACKEND_URL" \
+              --set-env-vars "NODE_ENV=production" \
+              --set-env-vars "NEXT_PUBLIC_ENVIRONMENT=${{ needs.environment-preparation.outputs.environment }}" \
+              --set-env-vars "NEXT_PUBLIC_BACKEND_URL=$BACKEND_URL" \
               --timeout 120 \
               --concurrency 80; then
 
@@ -1209,7 +1211,11 @@ jobs:
               --timeout=900 \
               --memory=1Gi \
               --cpu=1 \
-              --set-env-vars "ENVIRONMENT=${{ needs.environment-preparation.outputs.environment }},LGPD_MODE=strict,PROJECT_ID=${{ vars.GCP_PROJECT_ID }},FRONTEND_URL=$FRONTEND_URL,CORS_ORIGINS=$CORS_ORIGINS" \
+              --set-env-vars "ENVIRONMENT=${{ needs.environment-preparation.outputs.environment }}" \
+              --set-env-vars "LGPD_MODE=strict" \
+              --set-env-vars "PROJECT_ID=${{ vars.GCP_PROJECT_ID }}" \
+              --set-env-vars "FRONTEND_URL=$FRONTEND_URL" \
+              --set-env-vars "CORS_ORIGINS=$CORS_ORIGINS" \
               --max-instances=10 \
               --min-instances=1; then
 
