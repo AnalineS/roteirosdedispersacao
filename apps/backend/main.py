@@ -116,7 +116,7 @@ def create_app():
         """Root endpoint with basic API information"""
         return {
             "message": "Roteiro de Dispensação API",
-            "version": "1.0.0",
+            "version": "1.0.1",
             "status": "operational",
             "endpoints": {
                 "health": "/health",
