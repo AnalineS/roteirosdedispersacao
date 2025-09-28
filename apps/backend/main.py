@@ -21,6 +21,7 @@ sys.path.insert(0, str(current_dir))
 
 from flask import Flask
 from app_config import config, EnvironmentConfig
+from datetime import datetime
 
 # Configure logging
 logging.basicConfig(
@@ -57,15 +58,15 @@ def create_app():
         from blueprints.authentication_blueprint import authentication_bp
         from blueprints.api_documentation_blueprint import api_documentation_bp
 
-        # Register all blueprints
-        app.register_blueprint(medical_core_bp, url_prefix='/api')
-        app.register_blueprint(user_management_bp, url_prefix='/api')
-        app.register_blueprint(communication_bp, url_prefix='/api')
-        app.register_blueprint(engagement_multimodal_bp, url_prefix='/api')
-        app.register_blueprint(analytics_observability_bp, url_prefix='/api')
-        app.register_blueprint(infrastructure_bp, url_prefix='/api')
-        app.register_blueprint(authentication_bp, url_prefix='/api')
-        app.register_blueprint(api_documentation_bp, url_prefix='/api')
+        # Register all blueprints without additional prefix since they already define /api/v1
+        app.register_blueprint(medical_core_bp)
+        app.register_blueprint(user_management_bp)
+        app.register_blueprint(communication_bp)
+        app.register_blueprint(engagement_multimodal_bp)
+        app.register_blueprint(analytics_observability_bp)
+        app.register_blueprint(infrastructure_bp)
+        app.register_blueprint(authentication_bp)
+        app.register_blueprint(api_documentation_bp)
 
         logger.info("All blueprints registered successfully")
 
@@ -96,7 +97,9 @@ def create_app():
         logger.error(f"Rate limiter initialization failed: {e}")
 
     # Health check endpoints - Cloud Run optimized
+    @app.route('/health', methods=['GET'])
     @app.route('/api/health', methods=['GET'])
+    @app.route('/_ah/health', methods=['GET'])
     def health_check():
         """Fast health check endpoint for Cloud Run"""
         return {
@@ -104,21 +107,35 @@ def create_app():
             "service": "hansenase-education-platform",
             "version": "1.0.0",
             "environment": getattr(config, 'ENVIRONMENT', 'unknown'),
-            "timestamp": "2025-09-28T03:46:00Z"
+            "timestamp": datetime.now().isoformat()
         }, 200
 
-    @app.route('/_ah/health', methods=['GET'])
-    def cloud_run_health():
-        """Google Cloud health check endpoint"""
-        return {"status": "healthy"}, 200
+    # Root endpoint to confirm app is working
+    @app.route('/', methods=['GET'])
+    def root():
+        """Root endpoint with basic API information"""
+        return {
+            "message": "Roteiro de Dispensação API",
+            "version": "1.0.0",
+            "status": "operational",
+            "endpoints": {
+                "health": "/health",
+                "api_health": "/api/health",
+                "medical": "/api/v1/",
+                "chat": "/api/v1/chat"
+            },
+            "timestamp": datetime.now().isoformat()
+        }, 200
 
     return app
 
 def run_application():
     """Initialize and run the Flask application"""
     try:
-        # Create Flask app
-        app = create_app()
+        # Use global app instance or create new one for direct execution
+        global app
+        if app is None:
+            app = create_app()
 
         # Get server configuration
         host = getattr(config, 'HOST', '0.0.0.0')
@@ -153,6 +170,23 @@ def run_application():
     except Exception as e:
         logger.error(f"Application startup failed: {e}")
         sys.exit(1)
+
+# WSGI application instance for Gunicorn
+# Create app instance outside of main to make it accessible to WSGI servers
+app = None
+try:
+    app = create_app()
+    logger.info("Flask app created successfully for WSGI")
+except Exception as e:
+    logger.error(f"Failed to create Flask app for WSGI: {e}")
+    # Create minimal app for error handling
+    from flask import Flask
+    app = Flask(__name__)
+
+    @app.route('/health')
+    @app.route('/api/health')
+    def emergency_health():
+        return {"status": "error", "message": "Application failed to initialize"}, 503
 
 if __name__ == '__main__':
     run_application()
