@@ -96,15 +96,21 @@ def create_app():
     except Exception as e:
         logger.error(f"Rate limiter initialization failed: {e}")
 
-    # Health check endpoints - Cloud Run optimized
+    # Health check endpoints - Cloud Run optimized - ultra fast
     @app.route('/health', methods=['GET'])
     @app.route('/_ah/health', methods=['GET'])
     def health_check():
-        """Fast health check endpoint for Cloud Run"""
+        """Ultra fast health check endpoint for Cloud Run startup"""
+        return {"status": "healthy"}, 200
+
+    # Detailed health check for monitoring
+    @app.route('/api/health', methods=['GET'])
+    def detailed_health_check():
+        """Detailed health check with service information"""
         return {
             "status": "healthy",
             "service": "hansenase-education-platform",
-            "version": "1.0.0",
+            "version": "1.0.2",
             "environment": getattr(config, 'ENVIRONMENT', 'unknown'),
             "timestamp": datetime.now().isoformat()
         }, 200

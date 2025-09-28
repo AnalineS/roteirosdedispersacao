@@ -1209,9 +1209,10 @@ jobs:
               --platform managed \
               --region ${{ vars.GCP_REGION }} \
               --allow-unauthenticated \
-              --timeout=900 \
-              --memory=1Gi \
-              --cpu=1 \
+              --timeout=1800 \
+              --memory=2Gi \
+              --cpu=2 \
+              --cpu-boost \
               --set-env-vars "ENVIRONMENT=${{ needs.environment-preparation.outputs.environment }}" \
               --set-env-vars "LGPD_MODE=strict" \
               --set-env-vars "PROJECT_ID=${{ vars.GCP_PROJECT_ID }}" \
