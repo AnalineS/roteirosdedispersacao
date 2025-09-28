@@ -24,7 +24,6 @@ from app_config import config, EnvironmentConfig
 from datetime import datetime
 
 # Configure logging
-# Force rebuild: 2025-09-28 AI model corrections deployed
 logging.basicConfig(
     level=getattr(logging, config.LOG_LEVEL, logging.INFO),
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
