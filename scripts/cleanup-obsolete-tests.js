@@ -161,25 +161,42 @@ async function cleanTestResults() {
 async function cleanTempFiles() {
   console.log('🧹 Cleaning temporary test files...');
 
-  const { glob } = await import('glob');
+  const tempPatterns = [
+    '.test.tmp',
+    '.spec.tmp',
+    'test-*.tmp.js',
+    'temp-test-',
+    '.test-cache'
+  ];
 
-  for (const pattern of CLEANUP_TARGETS.tempFiles.patterns) {
+  async function scanDirectory(dir) {
     try {
-      const files = await glob(pattern, {
-        cwd: process.cwd(),
-        ignore: ['node_modules/**'],
-      });
+      const entries = await fs.readdir(dir, { withFileTypes: true });
 
-      for (const file of files) {
-        const filePath = path.join(process.cwd(), file);
-        if (await isOlderThan(filePath, CLEANUP_TARGETS.tempFiles.maxAge)) {
-          await deleteItem(filePath);
+      for (const entry of entries) {
+        const fullPath = path.join(dir, entry.name);
+
+        if (entry.isDirectory()) {
+          if (entry.name !== 'node_modules' && entry.name !== '.git') {
+            await scanDirectory(fullPath);
+          }
+        } else {
+          // Check if file matches temp patterns
+          const matchesPattern = tempPatterns.some(pattern =>
+            entry.name.includes(pattern)
+          );
+
+          if (matchesPattern && await isOlderThan(fullPath, CLEANUP_TARGETS.tempFiles.maxAge)) {
+            await deleteItem(fullPath);
+          }
         }
       }
     } catch (error) {
-      // Pattern didn't match any files
+      // Directory doesn't exist or can't be accessed
     }
   }
+
+  await scanDirectory(process.cwd());
 }
 
 /**

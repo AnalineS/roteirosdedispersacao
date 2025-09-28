@@ -179,10 +179,14 @@ jobs:
         run: |
           echo "📋 Validando GitHub Variables obrigatórias..."
 
-          # Variables obrigatórias para deploy (arquitetura real: Google Cloud Storage + SQLite + Supabase)
+          # Variables obrigatórias para deploy (Frontend environment-aware + Backend cloud)
           REQUIRED_VARS=(
             "NEXT_PUBLIC_API_URL_STAGING"
             "NEXT_PUBLIC_API_URL_PRODUCTION"
+            "NEXT_PUBLIC_STAGING_DOMAIN"
+            "NEXT_PUBLIC_PRODUCTION_DOMAIN"
+            "NEXT_PUBLIC_BASE_URL_STAGING"
+            "NEXT_PUBLIC_BASE_URL_PRODUCTION"
             "GCP_PROJECT_ID"
             "GCP_REGION"
           )
@@ -203,6 +207,34 @@ jobs:
                   MISSING_VARS+=("$var_name")
                 else
                   echo "✅ $var_name: ${{ vars.NEXT_PUBLIC_API_URL_PRODUCTION }}"
+                fi
+                ;;
+              "NEXT_PUBLIC_STAGING_DOMAIN")
+                if [ -z "${{ vars.NEXT_PUBLIC_STAGING_DOMAIN }}" ]; then
+                  MISSING_VARS+=("$var_name")
+                else
+                  echo "✅ $var_name: ${{ vars.NEXT_PUBLIC_STAGING_DOMAIN }}"
+                fi
+                ;;
+              "NEXT_PUBLIC_PRODUCTION_DOMAIN")
+                if [ -z "${{ vars.NEXT_PUBLIC_PRODUCTION_DOMAIN }}" ]; then
+                  MISSING_VARS+=("$var_name")
+                else
+                  echo "✅ $var_name: ${{ vars.NEXT_PUBLIC_PRODUCTION_DOMAIN }}"
+                fi
+                ;;
+              "NEXT_PUBLIC_BASE_URL_STAGING")
+                if [ -z "${{ vars.NEXT_PUBLIC_BASE_URL_STAGING }}" ]; then
+                  MISSING_VARS+=("$var_name")
+                else
+                  echo "✅ $var_name: ${{ vars.NEXT_PUBLIC_BASE_URL_STAGING }}"
+                fi
+                ;;
+              "NEXT_PUBLIC_BASE_URL_PRODUCTION")
+                if [ -z "${{ vars.NEXT_PUBLIC_BASE_URL_PRODUCTION }}" ]; then
+                  MISSING_VARS+=("$var_name")
+                else
+                  echo "✅ $var_name: ${{ vars.NEXT_PUBLIC_BASE_URL_PRODUCTION }}"
                 fi
                 ;;
               "GCP_PROJECT_ID")
@@ -782,10 +814,17 @@ jobs:
       - name: "📦 Install Dependencies"
         run: npm ci
 
-      - name: "🏗️ Build for Staging"
+      - name: "🏗️ Build for Environment"
         env:
           NODE_ENV: production
           NEXT_PUBLIC_ENVIRONMENT: ${{ needs.environment-preparation.outputs.environment }}
+          # All NEXT_PUBLIC_ variables required by environment.ts
+          NEXT_PUBLIC_API_URL_STAGING: ${{ vars.NEXT_PUBLIC_API_URL_STAGING }}
+          NEXT_PUBLIC_API_URL_PRODUCTION: ${{ vars.NEXT_PUBLIC_API_URL_PRODUCTION }}
+          NEXT_PUBLIC_STAGING_DOMAIN: ${{ vars.NEXT_PUBLIC_STAGING_DOMAIN }}
+          NEXT_PUBLIC_PRODUCTION_DOMAIN: ${{ vars.NEXT_PUBLIC_PRODUCTION_DOMAIN }}
+          NEXT_PUBLIC_BASE_URL_STAGING: ${{ vars.NEXT_PUBLIC_BASE_URL_STAGING }}
+          NEXT_PUBLIC_BASE_URL_PRODUCTION: ${{ vars.NEXT_PUBLIC_BASE_URL_PRODUCTION }}
           NEXT_PUBLIC_BACKEND_URL: ${{ needs.environment-preparation.outputs.environment == 'production' && vars.NEXT_PUBLIC_API_URL_PRODUCTION || vars.NEXT_PUBLIC_API_URL_STAGING }}
           NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
         run: |
@@ -849,16 +888,29 @@ jobs:
 
       - name: "🏗️ Build and Push Frontend Docker Image"
         env:
-          NEXT_PUBLIC_BACKEND_URL: ${{ needs.environment-preparation.outputs.environment == 'production' && vars.NEXT_PUBLIC_API_URL_PRODUCTION || vars.NEXT_PUBLIC_API_URL_STAGING }}
           NEXT_PUBLIC_ENVIRONMENT: ${{ needs.environment-preparation.outputs.environment }}
+          # All NEXT_PUBLIC_ variables required by environment.ts
+          NEXT_PUBLIC_API_URL_STAGING: ${{ vars.NEXT_PUBLIC_API_URL_STAGING }}
+          NEXT_PUBLIC_API_URL_PRODUCTION: ${{ vars.NEXT_PUBLIC_API_URL_PRODUCTION }}
+          NEXT_PUBLIC_STAGING_DOMAIN: ${{ vars.NEXT_PUBLIC_STAGING_DOMAIN }}
+          NEXT_PUBLIC_PRODUCTION_DOMAIN: ${{ vars.NEXT_PUBLIC_PRODUCTION_DOMAIN }}
+          NEXT_PUBLIC_BASE_URL_STAGING: ${{ vars.NEXT_PUBLIC_BASE_URL_STAGING }}
+          NEXT_PUBLIC_BASE_URL_PRODUCTION: ${{ vars.NEXT_PUBLIC_BASE_URL_PRODUCTION }}
+          NEXT_PUBLIC_BACKEND_URL: ${{ needs.environment-preparation.outputs.environment == 'production' && vars.NEXT_PUBLIC_API_URL_PRODUCTION || vars.NEXT_PUBLIC_API_URL_STAGING }}
           NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
         run: |
           echo "🐳 Building frontend Docker image..."
 
           # Build da imagem
           docker build \
-            --build-arg NEXT_PUBLIC_BACKEND_URL="${NEXT_PUBLIC_BACKEND_URL}" \
             --build-arg NEXT_PUBLIC_ENVIRONMENT="${NEXT_PUBLIC_ENVIRONMENT}" \
+            --build-arg NEXT_PUBLIC_API_URL_STAGING="${NEXT_PUBLIC_API_URL_STAGING}" \
+            --build-arg NEXT_PUBLIC_API_URL_PRODUCTION="${NEXT_PUBLIC_API_URL_PRODUCTION}" \
+            --build-arg NEXT_PUBLIC_STAGING_DOMAIN="${NEXT_PUBLIC_STAGING_DOMAIN}" \
+            --build-arg NEXT_PUBLIC_PRODUCTION_DOMAIN="${NEXT_PUBLIC_PRODUCTION_DOMAIN}" \
+            --build-arg NEXT_PUBLIC_BASE_URL_STAGING="${NEXT_PUBLIC_BASE_URL_STAGING}" \
+            --build-arg NEXT_PUBLIC_BASE_URL_PRODUCTION="${NEXT_PUBLIC_BASE_URL_PRODUCTION}" \
+            --build-arg NEXT_PUBLIC_BACKEND_URL="${NEXT_PUBLIC_BACKEND_URL}" \
             --build-arg NEXT_PUBLIC_GOOGLE_CLIENT_ID="${NEXT_PUBLIC_GOOGLE_CLIENT_ID}" \
             -t gcr.io/${{ vars.GCP_PROJECT_ID }}/hml-roteiro-dispensacao-frontend:${{ github.sha }} \
             -t gcr.io/${{ vars.GCP_PROJECT_ID }}/hml-roteiro-dispensacao-frontend:latest \
