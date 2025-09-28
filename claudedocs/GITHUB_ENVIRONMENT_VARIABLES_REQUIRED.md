@@ -40,14 +40,21 @@
 #### **Environment Variable Requirements**
 
 **🚨 STAGING/PRODUCTION - OBRIGATÓRIAS:**
-```bash
-# URLs do Frontend
-NEXT_PUBLIC_API_URL_STAGING="https://hml-roteiro-dispensacao-api-xxx.run.app"
-NEXT_PUBLIC_API_URL_PRODUCTION="https://roteiro-dispensacao-api-xxx.run.app"
 
-# Domínios Base
-NEXT_PUBLIC_STAGING_DOMAIN="hml-roteiros-de-dispensacao.web.app"
-NEXT_PUBLIC_PRODUCTION_DOMAIN="roteirosdispensacao.com"
+**CRITICAL: As variáveis abaixo devem ser adicionadas no GitHub Repository → Settings → Secrets and Variables → Actions:**
+
+```bash
+# FRONTEND URLS (OBRIGATÓRIAS - CAUSAM FALHA DE BUILD)
+NEXT_PUBLIC_API_URL_STAGING="https://hml-api.roteirosdispensacao.com.br"
+NEXT_PUBLIC_API_URL_PRODUCTION="https://api.roteirosdispensacao.com.br"
+
+# DOMAINS (OBRIGATÓRIAS)
+NEXT_PUBLIC_STAGING_DOMAIN="hml.roteirosdispensacao.com.br"
+NEXT_PUBLIC_PRODUCTION_DOMAIN="roteirosdispensacao.com.br"
+
+# BACKEND URLs (OBRIGATÓRIAS)
+NEXT_PUBLIC_BASE_URL_STAGING="https://hml.roteirosdispensacao.com.br"
+NEXT_PUBLIC_BASE_URL_PRODUCTION="https://roteirosdispensacao.com.br"
 
 # Backend Core (já configuradas)
 SUPABASE_DB_URL="postgresql://postgres.xxx:xxx@aws-1-sa-east-1.pooler.supabase.com:6543/postgres"
@@ -55,6 +62,9 @@ OPENROUTER_API_KEY="sk-or-xxx"
 GCP_PROJECT_ID="seu-projeto-gcp"
 GCS_BUCKET_NAME="seu-bucket-gcs"
 ```
+
+**⚠️ URGENT - DEPLOY FAILING WITHOUT THESE VARIABLES:**
+As variáveis `NEXT_PUBLIC_API_URL_STAGING` e related são obrigatórias desde o último commit environment-aware. O deploy falhará até serem configuradas.
 
 **🟢 DEVELOPMENT - OPCIONAIS:**
 ```bash
