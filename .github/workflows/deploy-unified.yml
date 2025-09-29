@@ -880,7 +880,7 @@ jobs:
           project_id: ${{ vars.GCP_PROJECT_ID }}
 
       - name: "🐳 Configure Docker to use gcloud as credential helper"
-        run: gcloud auth configure-docker
+        run: gcloud auth configure-docker us-central1-docker.pkg.dev
 
       - name: "🏗️ Build and Push Frontend Docker Image"
         env:

@@ -4,8 +4,8 @@ Main Application - Hanseníase Educational Platform
 Optimized Flask Application with Medical AI Personas
 """
 
-# Version for DNS alignment: Service names match CNAME configuration
-__version__ = "3.1.2-dns-alignment-fix"
+# Version for IAM permissions fix: Cloud Build + Artifact Registry access
+__version__ = "3.1.4-iam-permissions-fix"
 
 import sys
 import os
