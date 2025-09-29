@@ -897,6 +897,16 @@ jobs:
         run: |
           echo "🐳 Building frontend Docker image..."
 
+          # Set frontend service name based on environment
+          if [[ "${{ needs.environment-preparation.outputs.environment }}" == "production" ]]; then
+            FRONTEND_SERVICE="${{ vars.PRODUCTION_FRONTEND_SERVICE }}"
+          else
+            FRONTEND_SERVICE="${{ vars.HML_FRONTEND_SERVICE }}"
+          fi
+
+          echo "🏷️ Frontend service name: $FRONTEND_SERVICE"
+          echo "🏷️ Target tag: us-central1-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/hml-roteiro-dispensacao/$FRONTEND_SERVICE"
+
           # Build da imagem
           docker build \
             --build-arg NEXT_PUBLIC_ENVIRONMENT="${NEXT_PUBLIC_ENVIRONMENT}" \
@@ -1160,6 +1170,7 @@ jobs:
           # Submit build with proper VPC-SC compatible configuration
           echo "🔧 Submitting build with detailed logging..."
           echo "📋 Build config: timeout=3000s, machine=e2-highcpu-8, disk=100GB"
+          echo "🏷️ Backend service name: $BACKEND_SERVICE"
           echo "🏷️ Target tag: us-central1-docker.pkg.dev/red-truck-468923-s4/hml-roteiro-dispensacao/$BACKEND_SERVICE"
 
           # Build with async pattern to avoid VPC-SC logging issues (Context7 + SuperClaude)

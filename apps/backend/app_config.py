@@ -3,7 +3,7 @@
 Configuração Centralizada do Sistema
 Todas as configurações globais e variáveis de ambiente
 IMPORTANTE: Todas as variáveis devem ser configuradas no Google Cloud ou GitHub Secrets
-Build Version: 3.1.2 - VPC-SC async build fix + IAM permissions complete
+Build Version: 3.1.3 - DNS alignment + service name consistency fix
 """
 
 import os

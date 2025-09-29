@@ -4,8 +4,8 @@ Main Application - Hanseníase Educational Platform
 Optimized Flask Application with Medical AI Personas
 """
 
-# Version for systematic fixes: Docker user permissions + Supabase + Build process
-__version__ = "3.1.1-systematic-fixes"
+# Version for DNS alignment: Service names match CNAME configuration
+__version__ = "3.1.2-dns-alignment-fix"
 
 import sys
 import os
