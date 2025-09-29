@@ -4,8 +4,8 @@ Main Application - Hanseníase Educational Platform
 Optimized Flask Application with Medical AI Personas
 """
 
-# Version for GitHub Actions SA fix: roteiro-dispensacao-service storage.admin
-__version__ = "3.1.5-github-sa-storage-fix"
+# Version for Cloud Build IAM permissions fix: roteiro-dispensacao-service storage.objects.get
+__version__ = "3.1.6-cloudbuild-iam-permissions-fix"
 
 import sys
 import os

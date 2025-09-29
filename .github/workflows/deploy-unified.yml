@@ -1110,7 +1110,42 @@ jobs:
           ensure_role "roles/logging.logWriter" "Log Writer"
           ensure_role "roles/cloudbuild.builds.builder" "Build Builder"
 
-          echo "✅ Permissões IAM verificadas e ajustadas"
+          echo "✅ Permissões IAM da conta Cloud Build verificadas e ajustadas"
+
+          # Configurar permissões para a conta de serviço do GitHub Actions acessar logs do Cloud Build
+          echo "🔧 Configurando permissões para a conta de serviço do GitHub Actions..."
+
+          # Extrair email da conta de serviço do GitHub Actions
+          GITHUB_SA=$(gcloud auth list --filter="status:ACTIVE" --format="value(account)")
+          echo "🤖 GitHub Actions SA: $GITHUB_SA"
+
+          # Função para verificar e aplicar role para GitHub Actions SA
+          ensure_github_role() {
+            local role=$1
+            local description=$2
+            local sa_email=$3
+
+            if gcloud projects get-iam-policy $PROJECT_ID \
+                --flatten="bindings[].members" \
+                --filter="bindings.role:$role AND bindings.members:serviceAccount:$sa_email" \
+                --format="value(bindings.role)" | grep -q "$role"; then
+              echo "✅ $description ($role) para GitHub SA: JÁ CONFIGURADO"
+            else
+              echo "🔧 Aplicando $description ($role) para GitHub SA..."
+              gcloud projects add-iam-policy-binding $PROJECT_ID \
+                --member="serviceAccount:$sa_email" \
+                --role="$role" \
+                --quiet || echo "⚠️ Falha ao aplicar $role para GitHub SA (pode já existir)"
+              echo "✅ $description para GitHub SA aplicado"
+            fi
+          }
+
+          # Aplicar permissões necessárias para a conta do GitHub Actions acessar logs do Cloud Build
+          ensure_github_role "roles/viewer" "Project Viewer" "$GITHUB_SA"
+          ensure_github_role "roles/storage.objectViewer" "Storage Object Viewer" "$GITHUB_SA"
+          ensure_github_role "roles/logging.viewer" "Logging Viewer" "$GITHUB_SA"
+
+          echo "✅ Permissões IAM para acessar logs do Cloud Build configuradas para ambas as contas"
 
       - name: "🔍 Verify Authentication"
         run: |
@@ -1216,7 +1251,17 @@ jobs:
                   ;;
                 "FAILURE"|"TIMEOUT"|"CANCELLED")
                   echo "❌ Build failed with status: $STATUS"
-                  gcloud builds log $BUILD_ID --format="value(textPayload)" | tail -20
+                  # Tentar obter logs, mas não falhar se não conseguir por problemas de permissão
+                  echo "🔍 Tentando obter logs do build (pode falhar devido a VPC-SC)..."
+                  if ! gcloud builds log $BUILD_ID --format="value(textPayload)" 2>/dev/null | tail -20; then
+                    echo "⚠️ Não foi possível acessar logs detalhados (provavelmente devido a VPC-SC)"
+                    echo "🔗 Verifique os logs completos em: https://console.cloud.google.com/cloud-build/builds/$BUILD_ID"
+                    echo "💡 Causas comuns de falha:"
+                    echo "   - Erro de dependências no requirements.txt"
+                    echo "   - Problemas no Dockerfile"
+                    echo "   - Limite de recursos atingido"
+                    echo "   - Problemas de conectividade de rede"
+                  fi
                   exit 1
                   ;;
                 "WORKING"|"QUEUED")
