@@ -4,6 +4,9 @@ Main Application - Hanseníase Educational Platform
 Optimized Flask Application with Medical AI Personas
 """
 
+# Version for systematic fixes: Docker user permissions + Supabase + Build process
+__version__ = "3.1.1-systematic-fixes"
+
 import sys
 import os
 import logging
