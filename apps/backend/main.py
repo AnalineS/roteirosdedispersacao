@@ -4,8 +4,8 @@ Main Application - Hanseníase Educational Platform
 Optimized Flask Application with Medical AI Personas
 """
 
-# Version for Cloud Build IAM permissions fix: roteiro-dispensacao-service storage.objects.get
-__version__ = "3.1.6-cloudbuild-iam-permissions-fix"
+# Version for Dockerfile syntax fix: Modern heredoc + force rebuild to clear old image cache
+__version__ = "3.1.7-dockerfile-syntax-fix"
 
 import sys
 import os

@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 # ============================================================================
 # SIMPLIFIED PRODUCTION DOCKERFILE - Sistema Educacional Hanseníase
 # 2-stage build for Flask medical application with AI personas
@@ -90,18 +91,18 @@ COPY . .
 # Create necessary directories with proper permissions
 RUN mkdir -p logs uploads cache data
 
-# Create optimized entrypoint script
-RUN cat > entrypoint.sh << 'EOF'
+# Create optimized entrypoint script using modern heredoc syntax
+RUN <<EOF cat > entrypoint.sh
 #!/bin/bash
 set -e
 
 echo "🏥 Starting Roteiro de Dispensação API - $(date)"
 echo "📊 Container Environment Debug Info:"
-echo "  - PORT: ${PORT:-8080}"
-echo "  - ENVIRONMENT: ${ENVIRONMENT:-unknown}"
-echo "  - Python version: $(python --version)"
-echo "  - Working directory: $(pwd)"
-echo "  - User: $(whoami)"
+echo "  - PORT: \${PORT:-8080}"
+echo "  - ENVIRONMENT: \${ENVIRONMENT:-unknown}"
+echo "  - Python version: \$(python --version)"
+echo "  - Working directory: \$(pwd)"
+echo "  - User: \$(whoami)"
 
 # Detailed dependency validation with full error info
 echo "🔍 Validating critical dependencies..."
@@ -136,19 +137,19 @@ except Exception as e:
 
 echo "🚀 Starting gunicorn server..."
 # Start application with detailed logging
-exec gunicorn main:app \
-    --bind 0.0.0.0:8080 \
-    --workers 1 \
-    --worker-class sync \
-    --worker-connections 1000 \
-    --max-requests 1000 \
-    --max-requests-jitter 100 \
-    --timeout 120 \
-    --keep-alive 2 \
-    --log-level debug \
-    --access-logfile - \
-    --error-logfile - \
-    --capture-output \
+exec gunicorn main:app \\
+    --bind 0.0.0.0:8080 \\
+    --workers 1 \\
+    --worker-class sync \\
+    --worker-connections 1000 \\
+    --max-requests 1000 \\
+    --max-requests-jitter 100 \\
+    --timeout 120 \\
+    --keep-alive 2 \\
+    --log-level debug \\
+    --access-logfile - \\
+    --error-logfile - \\
+    --capture-output \\
     --preload
 EOF
 
