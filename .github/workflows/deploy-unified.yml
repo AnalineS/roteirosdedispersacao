@@ -1162,39 +1162,71 @@ jobs:
           echo "📋 Build config: timeout=3000s, machine=e2-highcpu-8, disk=100GB"
           echo "🏷️ Target tag: us-central1-docker.pkg.dev/red-truck-468923-s4/hml-roteiro-dispensacao/$BACKEND_SERVICE"
 
-          # Build with proper Build ID capture (Context7 pattern)
-          echo "🔧 Submitting build - this will wait for completion..."
+          # Build with async pattern to avoid VPC-SC logging issues (Context7 + SuperClaude)
+          echo "🔧 Submitting async build to avoid VPC-SC logging restrictions..."
 
-          set +e  # Allow command to fail for proper error handling
+          # Submit build asynchronously to avoid log streaming issues
           BUILD_ID=$(gcloud builds submit \
             --tag us-central1-docker.pkg.dev/red-truck-468923-s4/hml-roteiro-dispensacao/$BACKEND_SERVICE \
             --timeout=3000s \
             --machine-type=e2-highcpu-8 \
             --disk-size=100GB \
+            --async \
             --format="value(id)" \
             .)
-          BUILD_RESULT=$?
-          set -e  # Re-enable exit on error
 
           echo "🔄 Build ID: $BUILD_ID"
 
-          # Check build result and provide proper feedback
-          if [ $BUILD_RESULT -eq 0 ] && [ -n "$BUILD_ID" ] && [ "$BUILD_ID" != "unknown" ]; then
-            echo "✅ Build completed successfully"
+          if [ -n "$BUILD_ID" ] && [ "$BUILD_ID" != "unknown" ]; then
+            echo "✅ Build submitted successfully"
             echo "📊 Build details: https://console.cloud.google.com/cloud-build/builds/$BUILD_ID"
 
-            # Verify image exists in Artifact Registry
-            echo "🔍 Verifying image exists in Artifact Registry..."
-            if gcloud artifacts docker images list us-central1-docker.pkg.dev/red-truck-468923-s4/hml-roteiro-dispensacao --filter="package~$BACKEND_SERVICE" --limit=1 --quiet; then
-              echo "✅ Image verified in Artifact Registry"
-            else
-              echo "⚠️ Warning: Image not found in Artifact Registry, but build succeeded"
+            # Poll build status until completion
+            echo "⏳ Waiting for build completion (polling every 30s)..."
+            MAX_WAIT=3000  # 50 minutes timeout
+            ELAPSED=0
+
+            while [ $ELAPSED -lt $MAX_WAIT ]; do
+              STATUS=$(gcloud builds describe $BUILD_ID --format="value(status)" 2>/dev/null || echo "UNKNOWN")
+
+              case $STATUS in
+                "SUCCESS")
+                  echo "✅ Build completed successfully!"
+
+                  # Verify image exists in Artifact Registry
+                  echo "🔍 Verifying image exists in Artifact Registry..."
+                  sleep 10  # Give registry time to propagate
+                  if gcloud artifacts docker images list us-central1-docker.pkg.dev/red-truck-468923-s4/hml-roteiro-dispensacao --filter="package~$BACKEND_SERVICE" --limit=1 --quiet; then
+                    echo "✅ Image verified in Artifact Registry"
+                  else
+                    echo "⚠️ Warning: Image not found in Artifact Registry yet, but build succeeded"
+                  fi
+                  break
+                  ;;
+                "FAILURE"|"TIMEOUT"|"CANCELLED")
+                  echo "❌ Build failed with status: $STATUS"
+                  gcloud builds log $BUILD_ID --format="value(textPayload)" | tail -20
+                  exit 1
+                  ;;
+                "WORKING"|"QUEUED")
+                  echo "🔄 Build $STATUS... (${ELAPSED}s elapsed)"
+                  sleep 30
+                  ELAPSED=$((ELAPSED + 30))
+                  ;;
+                *)
+                  echo "⚠️ Unknown build status: $STATUS (${ELAPSED}s elapsed)"
+                  sleep 30
+                  ELAPSED=$((ELAPSED + 30))
+                  ;;
+              esac
+            done
+
+            if [ $ELAPSED -ge $MAX_WAIT ]; then
+              echo "❌ Build timeout after ${MAX_WAIT}s"
+              exit 1
             fi
           else
-            echo "❌ Build failed or Build ID capture failed"
-            echo "🔍 Build result code: $BUILD_RESULT"
-            echo "🔍 Build ID captured: '$BUILD_ID'"
-            echo "📊 Build details: https://console.cloud.google.com/cloud-build/builds"
+            echo "❌ Failed to submit build or capture Build ID"
             exit 1
           fi
 
