@@ -908,13 +908,13 @@ jobs:
             --build-arg NEXT_PUBLIC_BASE_URL_PRODUCTION="${NEXT_PUBLIC_BASE_URL_PRODUCTION}" \
             --build-arg NEXT_PUBLIC_BACKEND_URL="${NEXT_PUBLIC_BACKEND_URL}" \
             --build-arg NEXT_PUBLIC_GOOGLE_CLIENT_ID="${NEXT_PUBLIC_GOOGLE_CLIENT_ID}" \
-            -t gcr.io/${{ vars.GCP_PROJECT_ID }}/hml-roteiro-dispensacao-frontend:${{ github.sha }} \
-            -t gcr.io/${{ vars.GCP_PROJECT_ID }}/hml-roteiro-dispensacao-frontend:latest \
+            -t us-central1-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/hml-roteiro-dispensacao/$FRONTEND_SERVICE:${{ github.sha }} \
+            -t us-central1-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/hml-roteiro-dispensacao/$FRONTEND_SERVICE:latest \
             .
 
           # Push da imagem
-          docker push gcr.io/${{ vars.GCP_PROJECT_ID }}/hml-roteiro-dispensacao-frontend:${{ github.sha }}
-          docker push gcr.io/${{ vars.GCP_PROJECT_ID }}/hml-roteiro-dispensacao-frontend:latest
+          docker push us-central1-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/hml-roteiro-dispensacao/$FRONTEND_SERVICE:${{ github.sha }}
+          docker push us-central1-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/hml-roteiro-dispensacao/$FRONTEND_SERVICE:latest
 
       - name: "🚀 Deploy to Cloud Run Frontend"
         run: |
@@ -937,7 +937,7 @@ jobs:
             echo "🔄 Frontend deploy attempt $attempt/3..."
 
             if gcloud run deploy $FRONTEND_SERVICE \
-              --image gcr.io/${{ vars.GCP_PROJECT_ID }}/hml-roteiro-dispensacao-frontend:${{ github.sha }} \
+              --image us-central1-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/hml-roteiro-dispensacao/$FRONTEND_SERVICE:${{ github.sha }} \
               --region ${{ vars.GCP_REGION }} \
               --platform managed \
               --allow-unauthenticated \
@@ -1162,30 +1162,39 @@ jobs:
           echo "📋 Build config: timeout=3000s, machine=e2-highcpu-8, disk=100GB"
           echo "🏷️ Target tag: us-central1-docker.pkg.dev/red-truck-468923-s4/hml-roteiro-dispensacao/$BACKEND_SERVICE"
 
-          # Remove problematic --no-user-output-enabled and --async flags
-          # These flags cause VPC-SC issues by suppressing critical error information
-          BUILD_ID=$(gcloud builds submit --tag us-central1-docker.pkg.dev/red-truck-468923-s4/hml-roteiro-dispensacao/$BACKEND_SERVICE \
+          # Build with proper Build ID capture (Context7 pattern)
+          echo "🔧 Submitting build - this will wait for completion..."
+
+          set +e  # Allow command to fail for proper error handling
+          BUILD_ID=$(gcloud builds submit \
+            --tag us-central1-docker.pkg.dev/red-truck-468923-s4/hml-roteiro-dispensacao/$BACKEND_SERVICE \
             --timeout=3000s \
             --machine-type=e2-highcpu-8 \
             --disk-size=100GB \
-            --verbosity=info \
-            --log-http \
             --format="value(id)" \
-            . 2>&1 | tee build-submission.log)
+            .)
+          BUILD_RESULT=$?
+          set -e  # Re-enable exit on error
 
-          # Extract BUILD_ID from synchronous build output
-          BUILD_ID=$(echo "$BUILD_ID" | tail -n1 | grep -o '[a-z0-9-]*$' || echo "unknown")
           echo "🔄 Build ID: $BUILD_ID"
 
-          # Since build is now synchronous, check final status
-          if [ $? -eq 0 ]; then
+          # Check build result and provide proper feedback
+          if [ $BUILD_RESULT -eq 0 ] && [ -n "$BUILD_ID" ] && [ "$BUILD_ID" != "unknown" ]; then
             echo "✅ Build completed successfully"
             echo "📊 Build details: https://console.cloud.google.com/cloud-build/builds/$BUILD_ID"
+
+            # Verify image exists in Artifact Registry
+            echo "🔍 Verifying image exists in Artifact Registry..."
+            if gcloud artifacts docker images list us-central1-docker.pkg.dev/red-truck-468923-s4/hml-roteiro-dispensacao --filter="package~$BACKEND_SERVICE" --limit=1 --quiet; then
+              echo "✅ Image verified in Artifact Registry"
+            else
+              echo "⚠️ Warning: Image not found in Artifact Registry, but build succeeded"
+            fi
           else
-            echo "❌ Build failed - check logs above and build-submission.log"
-            echo "🔍 Build logs: https://console.cloud.google.com/cloud-build/builds/$BUILD_ID"
-            echo "📄 Local logs: build-submission.log"
-            cat build-submission.log | tail -20  # Show last 20 lines of errors
+            echo "❌ Build failed or Build ID capture failed"
+            echo "🔍 Build result code: $BUILD_RESULT"
+            echo "🔍 Build ID captured: '$BUILD_ID'"
+            echo "📊 Build details: https://console.cloud.google.com/cloud-build/builds"
             exit 1
           fi
 
