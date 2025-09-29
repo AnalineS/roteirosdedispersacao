@@ -4,8 +4,8 @@ Main Application - Hanseníase Educational Platform
 Optimized Flask Application with Medical AI Personas
 """
 
-# Version for IAM permissions fix: Cloud Build + Artifact Registry access
-__version__ = "3.1.4-iam-permissions-fix"
+# Version for GitHub Actions SA fix: roteiro-dispensacao-service storage.admin
+__version__ = "3.1.5-github-sa-storage-fix"
 
 import sys
 import os
