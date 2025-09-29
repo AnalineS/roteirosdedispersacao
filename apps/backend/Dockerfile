@@ -51,10 +51,9 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
-    HOME=/home/medicalapp \
-    HF_HOME=/home/medicalapp/.cache/huggingface \
-    TRANSFORMERS_CACHE=/home/medicalapp/.cache/transformers \
-    SENTENCE_TRANSFORMERS_HOME=/home/medicalapp/.cache/sentence-transformers \
+    HF_HOME=/tmp/.cache/huggingface \
+    TRANSFORMERS_CACHE=/tmp/.cache/transformers \
+    SENTENCE_TRANSFORMERS_HOME=/tmp/.cache/sentence-transformers \
     FLASK_ENV=production \
     DEBUG=False \
     TESSDATA_PREFIX=/usr/share/tesseract-ocr/4.00/tessdata
@@ -73,13 +72,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# Create non-root user for security with home directory and cache directories
-RUN groupadd -r medicalapp && \
-    useradd -r -g medicalapp -u 1001 -m -d /home/medicalapp medicalapp && \
-    mkdir -p /home/medicalapp/.cache/huggingface && \
-    mkdir -p /home/medicalapp/.cache/transformers && \
-    mkdir -p /home/medicalapp/.cache/sentence-transformers && \
-    chown -R medicalapp:medicalapp /home/medicalapp
+# Create cache directories accessible by default user
+RUN mkdir -p /tmp/.cache/huggingface && \
+    mkdir -p /tmp/.cache/transformers && \
+    mkdir -p /tmp/.cache/sentence-transformers && \
+    chmod -R 777 /tmp/.cache
 
 WORKDIR /app
 
@@ -87,12 +84,11 @@ WORKDIR /app
 COPY --from=builder /usr/local/lib/python*/site-packages /usr/local/lib/python3.11/site-packages
 COPY --from=builder /usr/local/bin /usr/local/bin
 
-# Copy application code with proper ownership
-COPY --chown=medicalapp:medicalapp . .
+# Copy application code
+COPY . .
 
 # Create necessary directories with proper permissions
-RUN mkdir -p logs uploads cache data && \
-    chown -R medicalapp:medicalapp /app
+RUN mkdir -p logs uploads cache data
 
 # Create optimized entrypoint script
 RUN cat > entrypoint.sh << 'EOF'
@@ -156,10 +152,7 @@ exec gunicorn main:app \
     --preload
 EOF
 
-RUN chmod +x entrypoint.sh && chown medicalapp:medicalapp entrypoint.sh
-
-# Switch to non-root user
-USER medicalapp
+RUN chmod +x entrypoint.sh
 
 # Health check for medical application
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
