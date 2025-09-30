@@ -4,8 +4,8 @@ Main Application - Hanseníase Educational Platform
 Optimized Flask Application with Medical AI Personas
 """
 
-# Version for Dockerfile COPY heredoc fix: Most reliable approach + clear Docker cache
-__version__ = "3.1.8-dockerfile-copy-heredoc-fix"
+# Version for Dockerfile with separate entrypoint.sh file: Most stable approach
+__version__ = "3.1.9-dockerfile-separate-entrypoint"
 
 import sys
 import os
