@@ -4,8 +4,8 @@ Main Application - Hanseníase Educational Platform
 Optimized Flask Application with Medical AI Personas
 """
 
-# Version for Dockerfile with separate entrypoint.sh file: Most stable approach
-__version__ = "3.1.9-dockerfile-separate-entrypoint"
+# Version with deprecated package fix: libgl1-mesa-glx → libgl1-mesa-dri
+__version__ = "3.2.0-deprecated-package-fix"
 
 import sys
 import os
