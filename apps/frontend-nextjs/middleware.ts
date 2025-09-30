@@ -33,7 +33,7 @@ function getApiUrlForEnvironment(environment: string): string {
       return process.env.NEXT_PUBLIC_API_URL_DEV || 'http://localhost:5000';
     case 'staging':
       return process.env.NEXT_PUBLIC_API_URL_STAGING ||
-             'https://hml-roteiro-dispensacao-api-4f2gjf6cua-uc.a.run.app';
+             'https://hml-api.roteirosdispensacao.com.br';
     case 'production':
       return process.env.NEXT_PUBLIC_API_URL_PRODUCTION ||
              'https://roteiro-dispensacao-api-4f2gjf6cua-uc.a.run.app';
