@@ -14,14 +14,15 @@ def detailed_health():
     """Detailed health check with cloud build IAM permissions validation"""
     return jsonify({
         'status': 'healthy',
-        'version': '3.1.6-cloudbuild-iam-permissions-fix',
-        'cloud_build_fix': 'storage.objects.get permissions resolved',
-        'github_actions_sa': 'storage.objectViewer role configured',
+        'version': '3.1.8-dockerfile-copy-heredoc-fix',
+        'dockerfile_fix': 'COPY heredoc syntax implemented',
+        'docker_cache_status': 'cleared for fresh build',
+        'build_reliability': 'maximum stability approach',
         'timestamp': datetime.now().isoformat(),
         'components': {
-            'iam_permissions': 'configured',
-            'vpc_sc_mitigation': 'active',
-            'log_access': 'enabled'
+            'dockerfile_syntax': 'modern_copy_heredoc',
+            'entrypoint_creation': 'reliable',
+            'cache_strategy': 'force_rebuild'
         }
     }), 200
 

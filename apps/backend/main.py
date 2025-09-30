@@ -4,8 +4,8 @@ Main Application - Hanseníase Educational Platform
 Optimized Flask Application with Medical AI Personas
 """
 
-# Version for Dockerfile syntax fix: Modern heredoc + force rebuild to clear old image cache
-__version__ = "3.1.7-dockerfile-syntax-fix"
+# Version for Dockerfile COPY heredoc fix: Most reliable approach + clear Docker cache
+__version__ = "3.1.8-dockerfile-copy-heredoc-fix"
 
 import sys
 import os

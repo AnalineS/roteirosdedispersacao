@@ -91,12 +91,12 @@ COPY . .
 # Create necessary directories with proper permissions
 RUN mkdir -p logs uploads cache data
 
-# Create optimized entrypoint script using modern heredoc syntax
-RUN <<EOF cat > entrypoint.sh
+# Create optimized entrypoint script using COPY heredoc (most reliable approach)
+COPY <<EOF entrypoint.sh
 #!/bin/bash
 set -e
 
-echo "🏥 Starting Roteiro de Dispensação API - $(date)"
+echo "🏥 Starting Roteiro de Dispensação API - \$(date)"
 echo "📊 Container Environment Debug Info:"
 echo "  - PORT: \${PORT:-8080}"
 echo "  - ENVIRONMENT: \${ENVIRONMENT:-unknown}"
