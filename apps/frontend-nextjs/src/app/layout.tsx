@@ -6,7 +6,7 @@ import GoogleAnalytics from '@/components/GoogleAnalytics'
 import { AnalyticsProvider } from '@/components/analytics/AnalyticsProvider'
 import { GlobalTrackingProvider } from '@/components/analytics/GlobalTrackingProvider'
 import PWAManager from '@/components/pwa/PWAManager'
-import AuthProviderWrapper from '@/components/auth/AuthProviderWrapper'
+import { ConditionalAuthProvider } from '@/components/auth/ConditionalAuthProvider'
 import { ThemeProvider } from '@/contexts/ThemeContext'
 import { AccessibilityProvider } from '@/contexts/AccessibilityContext'
 import { GlobalNavigationProvider } from '@/components/navigation/GlobalNavigationProvider'
@@ -124,11 +124,11 @@ export default function RootLayout({
                   <PersonaProvider>
                     <PersonaAccessibilityProvider>
                       <GlobalNavigationProvider>
-                        <AuthProviderWrapper>
+                        <ConditionalAuthProvider>
                           <AnalyticsProvider>
                             {children}
                           </AnalyticsProvider>
-                        </AuthProviderWrapper>
+                        </ConditionalAuthProvider>
                       </GlobalNavigationProvider>
                     </PersonaAccessibilityProvider>
                   </PersonaProvider>
