@@ -22,7 +22,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     # PostgreSQL client for Supabase
     libpq-dev \
     # Image processing
-    libopencv-dev libgl1-mesa-glx libgthread-2.0-0 \
+    libopencv-dev libgl1-mesa-dri libgthread-2.0-0 \
     # Networking
     curl ca-certificates \
     && apt-get clean \
