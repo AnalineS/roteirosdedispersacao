@@ -124,7 +124,7 @@ export function AuthProviderWrapper({ children }: AuthProviderWrapperProps) {
         setInitializationState(prev => ({ ...prev, isLoading: true, error: null }));
 
         // Only check auth for protected routes and if auth is enabled
-        if (FEATURES.AUTH_ENABLED && isProtectedRoute(pathname)) {
+        if (FEATURES.AUTH_ENABLED && pathname && isProtectedRoute(pathname)) {
           // Real backend connectivity check with timeout
           const controller = new AbortController();
           const timeout = setTimeout(() => controller.abort(), FEATURES.AUTH_CHECK_TIMEOUT);
@@ -299,9 +299,9 @@ function AuthStatusIndicator() {
 export function useAuthAvailability() {
   return {
     isAuthEnabled: FEATURES.AUTH_ENABLED,
-    isFirestoreEnabled: FEATURES.FIRESTORE_ENABLED,
-    isOfflineMode: FEATURES.OFFLINE_MODE,
-    hasFullFeatures: FEATURES.AUTH_ENABLED && FEATURES.FIRESTORE_ENABLED
+    isFirestoreEnabled: false, // Disabled since we use local storage
+    isOfflineMode: false,
+    hasFullFeatures: FEATURES.AUTH_ENABLED
   };
 }
 

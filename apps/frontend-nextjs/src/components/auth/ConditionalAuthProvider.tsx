@@ -20,7 +20,7 @@ export function ConditionalAuthProvider({ children }: ConditionalAuthProviderPro
   const pathname = usePathname();
 
   // For public routes, provide minimal auth context without initialization checks
-  if (isPublicRoute(pathname)) {
+  if (pathname && isPublicRoute(pathname)) {
     return (
       <AuthProvider>
         {children}
