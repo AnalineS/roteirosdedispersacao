@@ -1,13 +1,18 @@
 'use client';
 
-import React, { useState } from 'react';
-import EducationalLayout from '@/components/layout/EducationalLayout';
-import AccessibleSearchWithSuggestions from '@/components/search/AccessibleSearchWithSuggestions';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { ChatAccessibilityProvider } from '@/components/chat/accessibility/ChatAccessibilityProvider';
 import type { AudienceType } from '@/components/search/AccessibleSearchWithSuggestions';
 
+// Carregamento dinâmico para evitar problemas de SSR
+const EducationalLayout = dynamic(() => import('@/components/layout/EducationalLayout'), { ssr: false });
+const AccessibleSearchWithSuggestions = dynamic(() => import('@/components/search/AccessibleSearchWithSuggestions'), { ssr: false });
+
 export default function SearchPage() {
   const [selectedAudience, setSelectedAudience] = useState<AudienceType>('general');
+  const router = useRouter();
 
   return (
     <ChatAccessibilityProvider>
@@ -231,28 +236,28 @@ export default function SearchPage() {
             <section className="popular-searches" aria-label="Buscas populares">
               <h2 className="popular-title">🔥 Buscas Mais Populares</h2>
               <div className="popular-tags">
-                <button className="popular-tag" onClick={() => window.location.href = '/search?q=como+tomar+PQT-U'}>
+                <button className="popular-tag" onClick={() => router.push('/search?q=como+tomar+PQT-U')}>
                   Como tomar PQT-U
                 </button>
-                <button className="popular-tag" onClick={() => window.location.href = '/search?q=efeitos+colaterais'}>
+                <button className="popular-tag" onClick={() => router.push('/search?q=efeitos+colaterais')}>
                   Efeitos colaterais
                 </button>
-                <button className="popular-tag" onClick={() => window.location.href = '/search?q=hanseniase+tem+cura'}>
+                <button className="popular-tag" onClick={() => router.push('/search?q=hanseniase+tem+cura')}>
                   Hanseníase tem cura?
                 </button>
-                <button className="popular-tag" onClick={() => window.location.href = '/search?q=posso+trabalhar'}>
+                <button className="popular-tag" onClick={() => router.push('/search?q=posso+trabalhar')}>
                   Posso trabalhar?
                 </button>
-                <button className="popular-tag" onClick={() => window.location.href = '/search?q=direitos+paciente'}>
+                <button className="popular-tag" onClick={() => router.push('/search?q=direitos+paciente')}>
                   Direitos do paciente
                 </button>
-                <button className="popular-tag" onClick={() => window.location.href = '/search?q=dosagem+rifampicina'}>
+                <button className="popular-tag" onClick={() => router.push('/search?q=dosagem+rifampicina')}>
                   Dosagem rifampicina
                 </button>
-                <button className="popular-tag" onClick={() => window.location.href = '/search?q=interacoes+medicamentosas'}>
+                <button className="popular-tag" onClick={() => router.push('/search?q=interacoes+medicamentosas')}>
                   Interações medicamentosas
                 </button>
-                <button className="popular-tag" onClick={() => window.location.href = '/search?q=diagnostico+hanseniase'}>
+                <button className="popular-tag" onClick={() => router.push('/search?q=diagnostico+hanseniase')}>
                   Diagnóstico clínico
                 </button>
               </div>

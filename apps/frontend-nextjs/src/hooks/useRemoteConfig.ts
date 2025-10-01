@@ -243,7 +243,6 @@ export const useRemoteConfig = (options: RemoteConfigOptions = {}) => {
             return;
           }
         }
-      }
       
       // Buscar do API Backend Config
       const success = await mockRemoteConfig.fetchAndActivate();

@@ -111,23 +111,22 @@ function getEnvNumber(key: string, fallback: number): number {
  * Detect current environment based on multiple sources
  */
 function detectEnvironment(): Environment {
-  // Priority 1: Explicit environment variable
+  // Priority 1: Explicit environment variable (GitHub Variables override)
   const explicitEnv = getEnvVar('NEXT_PUBLIC_ENVIRONMENT').toLowerCase()
   if (explicitEnv === 'development' || explicitEnv === 'staging' || explicitEnv === 'production') {
     return explicitEnv as Environment
   }
 
-  // Priority 2: NODE_ENV
-  const nodeEnv = getEnvVar('NODE_ENV').toLowerCase()
-  if (nodeEnv === 'production') {
-    // In production, check for staging indicators
-    if (typeof window !== 'undefined') {
-      const hostname = window.location.hostname
-      if (hostname.includes('hml-') || hostname.includes('staging') || hostname.includes('test')) {
-        return 'staging'
-      }
+  // Priority 2: GitHub Variables detection (staging/production only set via GitHub)
+  const hasGitHubVars = getEnvVar('NEXT_PUBLIC_API_URL_STAGING') || getEnvVar('NEXT_PUBLIC_API_URL_PRODUCTION')
+  if (hasGitHubVars) {
+    // If GitHub variables are present, determine based on which ones
+    if (getEnvVar('NEXT_PUBLIC_API_URL_PRODUCTION')) {
+      return 'production'
     }
-    return 'production'
+    if (getEnvVar('NEXT_PUBLIC_API_URL_STAGING')) {
+      return 'staging'
+    }
   }
 
   // Priority 3: Hostname detection (client-side only)
@@ -151,7 +150,7 @@ function detectEnvironment(): Environment {
     }
   }
 
-  // Priority 4: Default to development
+  // Priority 4: Default to development (local builds without GitHub Variables)
   return 'development'
 }
 
@@ -159,28 +158,29 @@ function detectEnvironment(): Environment {
  * Get API URL based on environment
  */
 function getApiUrl(environment: Environment): string {
-  // Priority 1: Explicit environment variable
+  // Priority 1: Explicit environment variable (standard naming)
   const explicitUrl = getEnvVar('NEXT_PUBLIC_API_URL')
   if (explicitUrl) return explicitUrl
 
-  // Priority 2: Environment-specific URLs
+  // Priority 2: Environment-specific URLs (GitHub Variables for staging/production)
   switch (environment) {
     case 'development':
+      // Development: Allow fallback to localhost
       return getEnvVar('NEXT_PUBLIC_API_URL_DEV', 'http://localhost:5000')
 
     case 'staging':
-      // CRITICAL: No hardcoded fallbacks in staging - must use GitHub Variables
+      // Staging: Must use GitHub Variables only
       const stagingUrl = getEnvVar('NEXT_PUBLIC_API_URL_STAGING')
       if (!stagingUrl) {
-        throw new Error('CRITICAL: NEXT_PUBLIC_API_URL_STAGING is required for staging environment')
+        throw new Error('CRITICAL: NEXT_PUBLIC_API_URL_STAGING is required for staging environment (set via GitHub Variables)')
       }
       return stagingUrl
 
     case 'production':
-      // CRITICAL: No hardcoded fallbacks in production - must use GitHub Variables
+      // Production: Must use GitHub Variables only
       const productionUrl = getEnvVar('NEXT_PUBLIC_API_URL_PRODUCTION')
       if (!productionUrl) {
-        throw new Error('CRITICAL: NEXT_PUBLIC_API_URL_PRODUCTION is required for production environment')
+        throw new Error('CRITICAL: NEXT_PUBLIC_API_URL_PRODUCTION is required for production environment (set via GitHub Variables)')
       }
       return productionUrl
 

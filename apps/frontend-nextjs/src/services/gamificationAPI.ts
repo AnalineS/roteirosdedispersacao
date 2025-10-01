@@ -12,6 +12,7 @@ import type {
   LeaderboardEntry,
   ModuleProgress
 } from '../types/gamification';
+import { safeLocalStorage } from '@/hooks/useClientStorage';
 
 interface ActivityMetadata {
   module_id?: string;

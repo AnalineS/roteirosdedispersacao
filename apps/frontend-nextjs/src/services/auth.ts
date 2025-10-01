@@ -16,6 +16,7 @@ import {
 } from '@/types/auth';
 import Analytics from './analytics';
 import { apiClient } from './api';
+import { safeLocalStorage } from '@/hooks/useClientStorage';
 
 // Tipos para compatibilidade
 type SocialCredentials = {

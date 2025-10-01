@@ -11,6 +11,7 @@
 
 import React, { useEffect, useRef, useCallback } from "react";
 import { usePathname } from "next/navigation";
+import { safeLocalStorage } from "@/hooks/useClientStorage";
 // Simple UUID v4 generator to avoid external dependency
 const generateUUID = (): string => {
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {

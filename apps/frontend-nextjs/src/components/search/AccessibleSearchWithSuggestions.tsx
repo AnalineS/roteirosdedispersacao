@@ -6,7 +6,18 @@ import { useOptimizedEffect, useAutoCleanup } from '@/hooks/useEffectOptimizer';
 import { useRouter } from 'next/navigation';
 import { getUnbColors } from '@/config/modernTheme';
 import { useChatAccessibility } from '@/components/chat/accessibility/ChatAccessibilityProvider';
-import DOMPurify from 'dompurify';
+
+// SSR-safe DOMPurify wrapper
+const sanitizeHtml = (html: string): string => {
+  if (!isClientSide()) return html; // No sanitization on server, Next.js will handle it
+
+  try {
+    const DOMPurify = require('dompurify');
+    return DOMPurify.sanitize(html);
+  } catch (error) {
+    return html; // Fallback to unsanitized if DOMPurify fails
+  }
+};
 
 // Speech Recognition API type definitions
 interface SpeechRecognitionEvent extends Event {
@@ -787,8 +798,8 @@ export default function AccessibleSearchWithSuggestions({
                         <div className="result-header">
                           <h4 
                             className="result-title"
-                            dangerouslySetInnerHTML={{ 
-                              __html: DOMPurify.sanitize((item as SearchResult).highlightedText?.split(' | ')[0] || (item as SearchResult).title) 
+                            dangerouslySetInnerHTML={{
+                              __html: sanitizeHtml((item as SearchResult).highlightedText?.split(' | ')[0] || (item as SearchResult).title)
                             }} 
                           />
                           <span 
@@ -801,8 +812,8 @@ export default function AccessibleSearchWithSuggestions({
                         
                         <p 
                           className="result-snippet"
-                          dangerouslySetInnerHTML={{ 
-                            __html: DOMPurify.sanitize((item as SearchResult).highlightedText?.split(' | ')[1] || (item as SearchResult).snippet) 
+                          dangerouslySetInnerHTML={{
+                            __html: sanitizeHtml((item as SearchResult).highlightedText?.split(' | ')[1] || (item as SearchResult).snippet)
                           }} 
                         />
                         

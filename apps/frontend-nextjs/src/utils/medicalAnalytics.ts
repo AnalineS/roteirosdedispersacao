@@ -4,6 +4,7 @@
  */
 
 import { AnalyticsFirestoreCache } from '@/services/analyticsFirestoreCache';
+import { safeLocalStorage } from '@/hooks/useClientStorage';
 
 interface MedicalAnalyticsEvent {
   event: string;

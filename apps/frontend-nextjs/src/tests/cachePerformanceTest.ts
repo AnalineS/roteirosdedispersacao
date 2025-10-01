@@ -3,6 +3,8 @@
  * Testes básicos de performance do cache
  */
 
+import { safeLocalStorage } from '@/hooks/useClientStorage';
+
 interface PerformanceResult {
   operation: string;
   duration: number;

@@ -6,6 +6,7 @@
  */
 
 import { logger } from '@/utils/logger';
+import { safeLocalStorage } from '@/hooks/useClientStorage';
 
 // Interfaces
 interface HybridCacheEntry<T> {

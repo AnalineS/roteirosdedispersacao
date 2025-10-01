@@ -148,9 +148,8 @@ export default function ProgressPage() {
 
   useEffect(() => {
     const stored = safeLocalStorage()?.getItem('selectedPersona');
-      if (stored && personas[stored]) {
-        setSelectedPersona(stored);
-      }
+    if (stored && personas[stored]) {
+      setSelectedPersona(stored);
     }
   }, [personas]);
 

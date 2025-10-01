@@ -11,6 +11,8 @@
  * - Error boundary monitoring
  */
 
+import { safeLocalStorage } from '@/hooks/useClientStorage';
+
 interface ReactDevToolsHook {
   onCommitFiberRoot?: (id: string | number, root: unknown, priorityLevel: unknown) => void;
   [key: string]: unknown;

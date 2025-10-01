@@ -4,6 +4,8 @@
  * Sends data to internal SQLite/Google Storage backend
  */
 
+import { safeLocalStorage } from '@/hooks/useClientStorage';
+
 interface MedicalEvent {
   event_type: 'medical_interaction' | 'medical_error' | 'clinical_task' | 'educational_progress';
   persona_id?: string;

@@ -11,6 +11,7 @@
  */
 
 import { EducationalSecurity } from './educationalSecurity';
+import { safeLocalStorage } from '@/hooks/useClientStorage';
 
 // ================== TIPOS E INTERFACES ==================
 

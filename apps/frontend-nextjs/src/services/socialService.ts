@@ -3,6 +3,8 @@
  * Substitui Firebase com funcionalidades sociais via API
  */
 
+import { safeLocalStorage } from '@/hooks/useClientStorage';
+
 import { apiClient } from '@/services/api';
 
 // Sistema de logging controlado

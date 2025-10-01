@@ -6,6 +6,8 @@
 
 'use client';
 
+import { safeLocalStorage } from '@/hooks/useClientStorage';
+
 // Sistema de logging controlado
 const isDevelopment = process.env.NODE_ENV === 'development';
 

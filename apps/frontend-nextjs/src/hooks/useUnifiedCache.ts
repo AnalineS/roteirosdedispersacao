@@ -8,6 +8,7 @@
  */
 
 import { useCallback, useRef, useEffect } from "react";
+import { safeLocalStorage } from "@/hooks/useClientStorage";
 
 interface CacheEntry<T> {
   data: T;

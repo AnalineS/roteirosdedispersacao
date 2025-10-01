@@ -5,6 +5,8 @@
  * no contexto médico e educacional do sistema PQT-U
  */
 
+import { safeLocalStorage } from '@/hooks/useClientStorage';
+
 // Interface para extensões vendor-specific do Navigator
 interface ExtendedNavigator extends Navigator {
   webkitVibrate?: (pattern: number | number[]) => boolean;

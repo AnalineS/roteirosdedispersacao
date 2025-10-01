@@ -11,6 +11,7 @@ import { ThemeProvider } from '@/contexts/ThemeContext'
 import { AccessibilityProvider } from '@/contexts/AccessibilityContext'
 import { ErrorHandlerProvider } from '@/hooks/useErrorHandler'
 import { GlobalNavigationProvider } from '@/components/navigation/GlobalNavigationProvider'
+import { SmartNavigationProvider } from '@/components/navigation/SmartNavigationSystem'
 import { PersonaProvider } from '@/contexts/PersonaContext'
 import PersonaAccessibilityProvider from '@/components/accessibility/PersonaAccessibilityProvider'
 import EnhancedCoreWebVitals from '@/components/analytics/EnhancedCoreWebVitals'
@@ -126,11 +127,13 @@ export default function RootLayout({
                     <PersonaProvider>
                       <PersonaAccessibilityProvider>
                         <GlobalNavigationProvider>
-                          <ConditionalAuthProvider>
-                            <AnalyticsProvider>
-                              {children}
-                            </AnalyticsProvider>
-                          </ConditionalAuthProvider>
+                          <SmartNavigationProvider>
+                            <ConditionalAuthProvider>
+                              <AnalyticsProvider>
+                                {children}
+                              </AnalyticsProvider>
+                            </ConditionalAuthProvider>
+                          </SmartNavigationProvider>
                         </GlobalNavigationProvider>
                       </PersonaAccessibilityProvider>
                     </PersonaProvider>

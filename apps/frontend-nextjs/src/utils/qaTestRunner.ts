@@ -11,6 +11,7 @@ import EducationalMonitoringSystem from './educationalAnalytics';
 import ConsistencyValidationSystem from './consistencyValidators';
 import ContinuousImprovementSystem from './continuousImprovementSystem';
 import { CLINICAL_CASES } from '@/data/clinicalCases';
+import { safeLocalStorage } from '@/hooks/useClientStorage';
 
 // Sistema de logging controlado
 const isDevelopment = process.env.NODE_ENV === 'development';

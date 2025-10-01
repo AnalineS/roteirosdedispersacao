@@ -6,6 +6,7 @@
  */
 
 import { secureLogger } from '@/utils/secureLogger';
+import { safeLocalStorage } from '@/hooks/useClientStorage';
 
 export interface NotificationData {
   type?: 'medication' | 'appointment' | 'emergency' | 'educational' | 'reminder';
@@ -168,7 +169,6 @@ class NotificationSystemClass {
           secureLogger.error('Failed to load appointment reminders', e instanceof Error ? e : new Error(String(e)));
         }
       }
-    }
   }
 
   private savePreferences() {

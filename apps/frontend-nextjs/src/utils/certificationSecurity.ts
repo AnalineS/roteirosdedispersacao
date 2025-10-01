@@ -14,6 +14,7 @@
 import { Certificate, CertificateTemplate } from '@/types/certification';
 import { EducationalSecurity } from './educationalSecurity';
 import { generateSecureId } from './cryptoUtils';
+import { safeLocalStorage } from '@/hooks/useClientStorage';
 
 // ================== TIPOS DE SEGURANÇA DE CERTIFICAÇÃO ==================
 

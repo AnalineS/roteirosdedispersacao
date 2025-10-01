@@ -205,7 +205,6 @@ export default function SmartSearch({
           }
         }
       }
-    }
   }, []);
 
   // Salvar busca recente

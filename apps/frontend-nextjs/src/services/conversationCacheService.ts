@@ -6,6 +6,7 @@
 import { apiClient } from '@/services/api';
 import type { ChatMessage } from '@/types/api';
 import type { ChatSession } from '@/types/api';
+import { safeLocalStorage } from '@/hooks/useClientStorage';
 
 interface CachedConversation {
   id: string;

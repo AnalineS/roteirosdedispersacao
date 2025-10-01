@@ -1,5 +1,7 @@
 'use client';
 
+import { safeLocalStorage } from '@/hooks/useClientStorage';
+
 // ============================================
 // SISTEMA DE TRACKING DE USUÁRIO
 // ============================================

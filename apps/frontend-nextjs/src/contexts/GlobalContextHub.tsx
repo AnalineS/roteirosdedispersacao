@@ -9,6 +9,7 @@ import React, {
   useCallback,
 } from "react";
 import { useTrackingContext } from "@/components/tracking/IntegratedTrackingProvider";
+import { safeLocalStorage } from "@/hooks/useClientStorage";
 
 // ============================================
 // TIPOS DO CONTEXTO GLOBAL

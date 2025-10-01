@@ -10,6 +10,7 @@
  */
 
 import { secureLogger } from '@/utils/secureLogger';
+import { safeLocalStorage } from '@/hooks/useClientStorage';
 
 // ================== TIPOS LGPD ==================
 
