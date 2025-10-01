@@ -88,7 +88,7 @@ export function useChatService(options: UseChatServiceOptions = {}): UseChatServ
 
   // Dependências
   const { user, isAuthenticated } = useSafeAuth();
-  const { handleError } = useErrorHandler();
+  const { captureError } = useErrorHandler();
   const chatService = useMemo(() => ChatService.getInstance(), []);
 
   // Estados
@@ -122,10 +122,10 @@ export function useChatService(options: UseChatServiceOptions = {}): UseChatServ
             }
           });
         }
-          handleError(error, 'medium');
+          captureError(error, { severity: 'medium' });
         });
     }
-  }, [isAuthenticated, user?.uid, chatService, handleError]);
+  }, [isAuthenticated, user?.uid, chatService, captureError]);
 
   // Auto-start session se configurado
   useEffect(() => {
@@ -225,7 +225,7 @@ export function useChatService(options: UseChatServiceOptions = {}): UseChatServ
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Erro ao iniciar sessão');
       setError(error.message);
-      handleError(error, 'medium');
+      captureError(error, { severity: 'medium' });
       
       if (onError) {
         onError(error);
@@ -233,7 +233,7 @@ export function useChatService(options: UseChatServiceOptions = {}): UseChatServ
     } finally {
       setLoading(false);
     }
-  }, [user?.uid, defaultPersona, defaultPreferences, chatService, onSessionStart, enableAnalytics, onError, handleError]);
+  }, [user?.uid, defaultPersona, defaultPreferences, chatService, onSessionStart, enableAnalytics, onError, captureError]);
 
   // Finalizar sessão
   const endSession = useCallback(async () => {
@@ -276,9 +276,9 @@ export function useChatService(options: UseChatServiceOptions = {}): UseChatServ
           }
         });
       }
-      handleError(error, 'medium');
+      captureError(error, { severity: 'medium' });
     }
-  }, [session, chatService, onSessionEnd, enableAnalytics, handleError]);
+  }, [session, chatService, onSessionEnd, enableAnalytics, captureError]);
 
   // Enviar mensagem
   const sendMessage = useCallback(async (message: string): Promise<ChatMessage | null> => {
@@ -321,7 +321,7 @@ export function useChatService(options: UseChatServiceOptions = {}): UseChatServ
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Erro ao enviar mensagem');
       setError(error.message);
-      handleError(error, 'medium');
+      captureError(error, { severity: 'medium' });
       
       if (onError) {
         onError(error);
@@ -331,7 +331,7 @@ export function useChatService(options: UseChatServiceOptions = {}): UseChatServ
     } finally {
       setLoading(false);
     }
-  }, [session, chatService, onMessageProcessed, enableAnalytics, onError, handleError]);
+  }, [session, chatService, onMessageProcessed, enableAnalytics, onError, captureError]);
 
   // Trocar persona
   const switchPersona = useCallback(async (persona: 'dr_gasnelio' | 'ga'): Promise<boolean> => {
@@ -364,10 +364,10 @@ export function useChatService(options: UseChatServiceOptions = {}): UseChatServ
           }
         });
       }
-      handleError(error, 'medium');
+      captureError(error, { severity: 'medium' });
       return false;
     }
-  }, [session, chatService, enableAnalytics, handleError]);
+  }, [session, chatService, enableAnalytics, captureError]);
 
   // Obter histórico
   const getHistory = useCallback(async (): Promise<ChatMessage[]> => {
@@ -420,9 +420,9 @@ export function useChatService(options: UseChatServiceOptions = {}): UseChatServ
           }
         });
       }
-      handleError(error, 'medium');
+      captureError(error, { severity: 'medium' });
     }
-  }, [isAuthenticated, user?.uid, chatService, enableAnalytics, handleError]);
+  }, [isAuthenticated, user?.uid, chatService, enableAnalytics, captureError]);
 
   // Atualizar analytics
   const refreshAnalytics = useCallback(() => {

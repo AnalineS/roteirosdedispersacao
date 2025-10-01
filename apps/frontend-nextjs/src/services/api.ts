@@ -5,7 +5,6 @@
  * Uses centralized environment configuration system
  */
 
-import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { logger } from '@/utils/logger';
 import type { ChatMessage, ChatSession } from '@/types/api';
 import config from '@/config/environment';
