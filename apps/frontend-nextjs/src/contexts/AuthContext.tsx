@@ -7,6 +7,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
+import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 import { jwtClient, User as JWTUser, AuthResponse, GoogleAuthResponse } from '@/lib/auth/jwt-client';
 
 interface AuthenticationError {
@@ -243,7 +244,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const loadUserProfile = useCallback(async (userId: string): Promise<void> => {
     try {
-      const stored = localStorage.getItem(`user-profile-${userId}`);
+      const stored = safeLocalStorage()?.getItem(`user-profile-${userId}`);
       if (stored) {
         const parsedProfile = JSON.parse(stored);
         setProfile(parsedProfile);
@@ -251,7 +252,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         // Criar perfil padrão
         const defaultProfile = createDefaultProfile(userId, user);
         setProfile(defaultProfile);
-        localStorage.setItem(`user-profile-${userId}`, JSON.stringify(defaultProfile));
+        safeLocalStorage()?.setItem(`user-profile-${userId}`, JSON.stringify(defaultProfile));
       }
     } catch (error) {
       if (typeof window !== 'undefined' && window.gtag) {
@@ -387,7 +388,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       if (result.success) {
         // Migrar dados do usuário anônimo se necessário
         const anonProfileKey = `user-profile-${user.uid}`;
-        const anonProfile = localStorage.getItem(anonProfileKey);
+        const anonProfile = safeLocalStorage()?.getItem(anonProfileKey);
 
         if (anonProfile && user) {
           try {
@@ -398,8 +399,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
             parsedProfile.displayName = user.displayName;
             parsedProfile.updatedAt = new Date().toISOString();
 
-            localStorage.setItem(`user-profile-${user.uid}`, JSON.stringify(parsedProfile));
-            localStorage.removeItem(anonProfileKey);
+            safeLocalStorage()?.setItem(`user-profile-${user.uid}`, JSON.stringify(parsedProfile));
+            safeLocalStorage()?.removeItem(anonProfileKey);
             setProfile(parsedProfile);
           } catch (e) {
             if (typeof window !== 'undefined' && window.gtag) {
@@ -455,7 +456,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       // Sempre atualizar localmente
       setProfile(updatedProfile);
-      localStorage.setItem(`user-profile-${user.uid}`, JSON.stringify(updatedProfile));
+      safeLocalStorage()?.setItem(`user-profile-${user.uid}`, JSON.stringify(updatedProfile));
 
       return { success: true };
     } catch (error: AuthenticationError | Error | unknown) {
@@ -473,7 +474,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setLoading(true);
 
       // Deletar dados locais
-      localStorage.removeItem(`user-profile-${user.uid}`);
+      safeLocalStorage()?.removeItem(`user-profile-${user.uid}`);
 
       if (!user.isAnonymous) {
         // Fazer logout do backend

@@ -12,6 +12,7 @@
 'use client';
 
 import { useState, useCallback, useMemo, useEffect } from 'react';
+import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
@@ -233,12 +234,12 @@ const InformativeSurveyStep = ({ onComplete }: { onComplete: (data: SurveyAnswer
     };
     
     // Salvar dados do survey
-    const existingSurveys = JSON.parse(localStorage.getItem('admin_surveys') || '[]');
+    const existingSurveys = JSON.parse(safeLocalStorage()?.getItem('admin_surveys') || '[]');
     existingSurveys.push(surveyData);
-    localStorage.setItem('admin_surveys', JSON.stringify(existingSurveys));
+    safeLocalStorage()?.setItem('admin_surveys', JSON.stringify(existingSurveys));
     
     // Marcar como completado
-    localStorage.setItem('user_survey_completed', 'true');
+    safeLocalStorage()?.setItem('user_survey_completed', 'true');
     
     onComplete(surveyData);
   };
@@ -502,7 +503,7 @@ export function WelcomeWizard({ onComplete }: {
         completed: true,
         selectedRole: selectedRole.id
       };
-      localStorage.setItem('welcome_wizard_seen', JSON.stringify(cacheData));
+      safeLocalStorage()?.setItem('welcome_wizard_seen', JSON.stringify(cacheData));
       
       setIsVisible(false);
       
@@ -522,7 +523,7 @@ export function WelcomeWizard({ onComplete }: {
       skipped: true,
       step: currentStep
     };
-    localStorage.setItem('welcome_wizard_seen', JSON.stringify(cacheData));
+    safeLocalStorage()?.setItem('welcome_wizard_seen', JSON.stringify(cacheData));
     
     // Default to medical professional if skipped
     const defaultRole = USER_ROLES[0];
@@ -553,7 +554,7 @@ export function WelcomeWizard({ onComplete }: {
   // Verificar cache por 5 dias
   useEffect(() => {
     const cacheKey = 'welcome_wizard_seen';
-    const cachedData = localStorage.getItem(cacheKey);
+    const cachedData = safeLocalStorage()?.getItem(cacheKey);
     
     if (cachedData) {
       try {
@@ -567,25 +568,25 @@ export function WelcomeWizard({ onComplete }: {
           return;
         } else {
           // Cache expirado, remover
-          localStorage.removeItem(cacheKey);
+          safeLocalStorage()?.removeItem(cacheKey);
         }
       } catch (error) {
         // Cache corrompido, remover
-        localStorage.removeItem(cacheKey);
+        safeLocalStorage()?.removeItem(cacheKey);
       }
     }
   }, []);
 
   // Para usuários logados, verificar se já completaram o questionário informativo
   const isLoggedIn = !!user;
-  const hasCompletedUserSurvey = localStorage.getItem('user_survey_completed');
+  const hasCompletedUserSurvey = safeLocalStorage()?.getItem('user_survey_completed');
   
   if (isLoggedIn && hasCompletedUserSurvey) {
     return null;
   }
   
   // Para usuários não logados, verificar onboarding tradicional
-  if (!isLoggedIn && localStorage.getItem('onboarding_completed')) {
+  if (!isLoggedIn && safeLocalStorage()?.getItem('onboarding_completed')) {
     return null;
   }
 

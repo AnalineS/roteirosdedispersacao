@@ -13,6 +13,7 @@
 
 
 import { useState, useEffect, useCallback } from 'react';
+import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 import { useSafeAuth as useAuth } from '@/hooks/useSafeAuth';
 import { BackendUserProfile } from '@/types/api';
 
@@ -209,7 +210,7 @@ export function useUserProfile(): UserProfileHook {
 
   const loadFromLocalStorage = useCallback(() => {
     try {
-      const saved = localStorage.getItem(STORAGE_KEY);
+      const saved = safeLocalStorage()?.getItem(STORAGE_KEY);
       if (saved) {
         const data = JSON.parse(saved);
         // Verificar versão para migração se necessário
@@ -218,12 +219,12 @@ export function useUserProfile(): UserProfileHook {
         } else {
           // Migração de versão se necessário
           console.log('Migrando perfil para nova versão');
-          localStorage.removeItem(STORAGE_KEY);
+          safeLocalStorage()?.removeItem(STORAGE_KEY);
         }
       }
     } catch (error) {
       console.error('Erro ao carregar do localStorage:', error);
-      localStorage.removeItem(STORAGE_KEY);
+      safeLocalStorage()?.removeItem(STORAGE_KEY);
       throw error;
     }
   }, []);
@@ -373,7 +374,7 @@ export function useUserProfile(): UserProfileHook {
         savedAt: new Date().toISOString()
       };
 
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
+      safeLocalStorage()?.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
     } catch (error) {
       console.error('Erro ao salvar no localStorage:', error);
       throw error;
@@ -456,7 +457,7 @@ export function useUserProfile(): UserProfileHook {
 
       // Limpar localStorage
       if (useLocalStorage) {
-        localStorage.removeItem(STORAGE_KEY);
+        safeLocalStorage()?.removeItem(STORAGE_KEY);
       }
 
       setProfile(null);

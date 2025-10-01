@@ -4,6 +4,7 @@
  */
 
 import { useCallback, useRef, useEffect, useMemo } from 'react';
+import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 import { sendChatMessage, type ChatMessage, type ChatRequest, type ChatResponse } from '@/services/api';
 import { PersonaRAGIntegration, type PersonaResponse } from '@/services/personaRAGIntegration';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
@@ -56,11 +57,11 @@ export function useChat(options: UseChatOptions = {}) {
     }
     
     // Usuário anônimo: gerar sessionId temporário persistente com randomness segura
-    let tempSessionId = localStorage.getItem('temp_session_id');
+    let tempSessionId = safeLocalStorage()?.getItem('temp_session_id');
     if (!tempSessionId) {
       // Usar randomness criptograficamente segura em vez de Math.random()
       tempSessionId = generateTempUserId();
-      localStorage.setItem('temp_session_id', tempSessionId);
+      safeLocalStorage()?.setItem('temp_session_id', tempSessionId);
     }
     return tempSessionId;
   }, [isAuthenticated, user?.uid]);
@@ -68,7 +69,7 @@ export function useChat(options: UseChatOptions = {}) {
   // Gerenciar transição de sessionId quando usuário faz login
   useEffect(() => {
     if (isAuthenticated && user?.uid) {
-      const tempSessionId = localStorage.getItem('temp_session_id');
+      const tempSessionId = safeLocalStorage()?.getItem('temp_session_id');
       if (tempSessionId && tempSessionId !== user.uid) {
         // Usuário acabou de fazer login - migrar dados da sessão temporária
         const migrationData = {
@@ -78,10 +79,10 @@ export function useChat(options: UseChatOptions = {}) {
         };
         
         // Armazenar informação de migração para potencial sincronização
-        localStorage.setItem('session_migration', JSON.stringify(migrationData));
+        safeLocalStorage()?.setItem('session_migration', JSON.stringify(migrationData));
         
         // Remover sessionId temporário
-        localStorage.removeItem('temp_session_id');
+        safeLocalStorage()?.removeItem('temp_session_id');
         
         console.log('🔄 Migração de sessão:', tempSessionId, '→', user.uid);
       }
@@ -90,7 +91,7 @@ export function useChat(options: UseChatOptions = {}) {
 
   // Persona atual baseada no último uso ou preferência
   const currentPersona = useMemo(() => {
-    const saved = localStorage.getItem('current_persona');
+    const saved = safeLocalStorage()?.getItem('current_persona');
     return saved || 'dr_gasnelio';
   }, []);
 
@@ -375,7 +376,7 @@ export function useChat(options: UseChatOptions = {}) {
       sessionType: isAuthenticated ? 'authenticated' : 'anonymous',
       migrationData: (() => {
         try {
-          const migration = localStorage.getItem('session_migration');
+          const migration = safeLocalStorage()?.getItem('session_migration');
           return migration ? JSON.parse(migration) : null;
         } catch {
           return null;
@@ -386,7 +387,7 @@ export function useChat(options: UseChatOptions = {}) {
 
   // Função para limpar dados de migração
   const clearMigrationData = useCallback(() => {
-    localStorage.removeItem('session_migration');
+    safeLocalStorage()?.removeItem('session_migration');
   }, []);
 
   return {

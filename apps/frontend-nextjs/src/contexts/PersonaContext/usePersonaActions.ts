@@ -4,6 +4,7 @@
  */
 
 import { useCallback } from 'react';
+import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 import { ErrorMonitorService } from '@/components/monitoring/ErrorMonitor';
 import type { ValidPersonaId, PersonaSource, PersonaConfig } from './types';
 import {
@@ -104,8 +105,8 @@ export function usePersonaActions({
       // Persistir mudanças se necessário
       if (enableLocalStorage) {
         try {
-          localStorage.setItem('selectedPersona', personaId);
-          localStorage.setItem('personaLastChanged', new Date().toISOString());
+          safeLocalStorage()?.setItem('selectedPersona', personaId);
+          safeLocalStorage()?.setItem('personaLastChanged', new Date().toISOString());
         } catch (error) {
           trackLocalStorageError('localstorage_save_error_setpersona', error);
           ErrorMonitorService.getInstance().logError(error as Error, {
@@ -165,7 +166,7 @@ export function usePersonaActions({
       // Limpar localStorage
       if (enableLocalStorage) {
         try {
-          localStorage.removeItem('selectedPersona');
+          safeLocalStorage()?.removeItem('selectedPersona');
         } catch (error) {
           trackLocalStorageError('localstorage_clear_error', error);
         }

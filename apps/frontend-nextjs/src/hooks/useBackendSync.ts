@@ -7,6 +7,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 import { useSafeAuth as useAuth } from '@/hooks/useSafeAuth';
 import { backendLeaderboard } from '@/services/backendLeaderboard';
 import { generateSecureId } from '@/utils/cryptoUtils';
@@ -136,9 +137,9 @@ export function useBackendSync(options: Partial<SyncOptions> = {}) {
     }
 
     // Verificar se há dados no localStorage
-    const localProfile = localStorage.getItem('userProfile');
-    const localConversations = localStorage.getItem('conversation-history');
-    const localFeedback = localStorage.getItem('feedbackHistory');
+    const localProfile = safeLocalStorage()?.getItem('userProfile');
+    const localConversations = safeLocalStorage()?.getItem('conversation-history');
+    const localFeedback = safeLocalStorage()?.getItem('feedbackHistory');
 
     return !!(localProfile || localConversations || localFeedback);
   }, [auth.isAuthenticated]);
@@ -160,7 +161,7 @@ export function useBackendSync(options: Partial<SyncOptions> = {}) {
       let totalItems = 0;
 
       // Migrar perfil do usuário
-      const localProfile = localStorage.getItem('userProfile');
+      const localProfile = safeLocalStorage()?.getItem('userProfile');
       if (localProfile) {
         try {
           const profileData = JSON.parse(localProfile);
@@ -180,7 +181,7 @@ export function useBackendSync(options: Partial<SyncOptions> = {}) {
       }
 
       // Migrar conversas
-      const localConversations = localStorage.getItem('conversation-history');
+      const localConversations = safeLocalStorage()?.getItem('conversation-history');
       if (localConversations) {
         try {
           const conversationsData = JSON.parse(localConversations);
@@ -315,9 +316,9 @@ export function useBackendSync(options: Partial<SyncOptions> = {}) {
           }));
 
           // Limpar localStorage após migração bem-sucedida
-          localStorage.removeItem('userProfile');
-          localStorage.removeItem('conversation-history');
-          localStorage.removeItem('feedbackHistory');
+          safeLocalStorage()?.removeItem('userProfile');
+          safeLocalStorage()?.removeItem('conversation-history');
+          safeLocalStorage()?.removeItem('feedbackHistory');
         }
       }
     } catch (error: any) {
@@ -360,7 +361,7 @@ export function useBackendSync(options: Partial<SyncOptions> = {}) {
 
     try {
       // Registrar atividade de conversa se houver dados locais
-      const localConversations = localStorage.getItem('conversation-history');
+      const localConversations = safeLocalStorage()?.getItem('conversation-history');
       if (localConversations) {
         const conversations = JSON.parse(localConversations);
         if (Array.isArray(conversations) && conversations.length > 0) {

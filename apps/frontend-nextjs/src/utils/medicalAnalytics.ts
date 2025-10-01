@@ -447,8 +447,8 @@ export class MedicalAnalytics {
   }
   
   private getSessionType(): 'first_visit' | 'returning' | 'frequent' {
-    const visitCount = parseInt(localStorage.getItem('visit_count') || '0');
-    localStorage.setItem('visit_count', (visitCount + 1).toString());
+    const visitCount = parseInt(safeLocalStorage()?.getItem('visit_count') || '0');
+    safeLocalStorage()?.setItem('visit_count', (visitCount + 1).toString());
     
     if (visitCount === 0) return 'first_visit';
     if (visitCount < 5) return 'returning';

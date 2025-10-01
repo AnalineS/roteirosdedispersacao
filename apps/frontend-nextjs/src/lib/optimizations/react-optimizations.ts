@@ -16,6 +16,7 @@ import {
   ReactElement,
   MutableRefObject
 } from 'react';
+import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 import { UniversalCache, debounce, throttle } from './index';
 
 // Sistema de logging controlado
@@ -25,14 +26,14 @@ const logger = {
   warn: (message: string, error?: unknown) => {
     if (isDevelopment && typeof window !== 'undefined') {
       // Em desenvolvimento, apenas armazena no localStorage
-      const logs = JSON.parse(localStorage.getItem('react_optimization_logs') || '[]');
+      const logs = JSON.parse(safeLocalStorage()?.getItem('react_optimization_logs') || '[]');
       logs.push({
         level: 'warn',
         message,
         error: error instanceof Error ? error.message : String(error),
         timestamp: Date.now()
       });
-      localStorage.setItem('react_optimization_logs', JSON.stringify(logs.slice(-100)));
+      safeLocalStorage()?.setItem('react_optimization_logs', JSON.stringify(logs.slice(-100)));
     }
   }
 };
@@ -173,7 +174,7 @@ export function useOptimizedLocalStorage<T>(
     if (typeof window === 'undefined') return initialValue;
 
     try {
-      const item = localStorage.getItem(key);
+      const item = safeLocalStorage()?.getItem(key);
       return item ? deserialize(item) : initialValue;
     } catch (error) {
       logger.warn(`Error reading localStorage key "${key}":`, error);
@@ -188,7 +189,7 @@ export function useOptimizedLocalStorage<T>(
 
       if (typeof window !== 'undefined') {
         const serialized = serialize(valueToStore);
-        localStorage.setItem(key, serialized);
+        safeLocalStorage()?.setItem(key, serialized);
       }
     } catch (error) {
       logger.warn(`Error setting localStorage key "${key}":`, error);

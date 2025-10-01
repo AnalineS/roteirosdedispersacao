@@ -138,8 +138,7 @@ class NotificationSystemClass {
   }
 
   private loadPreferences() {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('notification_preferences');
+    const saved = safeLocalStorage()?.getItem('notification_preferences');
       if (saved) {
         try {
           this.preferences = JSON.parse(saved);
@@ -149,7 +148,7 @@ class NotificationSystemClass {
       }
 
       // Load medication reminders
-      const savedMeds = localStorage.getItem('medication_reminders');
+      const savedMeds = safeLocalStorage()?.getItem('medication_reminders');
       if (savedMeds) {
         try {
           const meds = JSON.parse(savedMeds);
@@ -160,7 +159,7 @@ class NotificationSystemClass {
       }
 
       // Load appointment reminders
-      const savedAppts = localStorage.getItem('appointment_reminders');
+      const savedAppts = safeLocalStorage()?.getItem('appointment_reminders');
       if (savedAppts) {
         try {
           const appts = JSON.parse(savedAppts);
@@ -174,9 +173,9 @@ class NotificationSystemClass {
 
   private savePreferences() {
     if (typeof window !== 'undefined') {
-      localStorage.setItem('notification_preferences', JSON.stringify(this.preferences));
-      localStorage.setItem('medication_reminders', JSON.stringify(Array.from(this.medicationReminders.entries())));
-      localStorage.setItem('appointment_reminders', JSON.stringify(Array.from(this.appointmentReminders.entries())));
+      safeLocalStorage()?.setItem('notification_preferences', JSON.stringify(this.preferences));
+      safeLocalStorage()?.setItem('medication_reminders', JSON.stringify(Array.from(this.medicationReminders.entries())));
+      safeLocalStorage()?.setItem('appointment_reminders', JSON.stringify(Array.from(this.appointmentReminders.entries())));
     }
   }
 

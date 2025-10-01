@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 import { getUnbColors } from '@/config/modernTheme';
 
 interface LGPDBannerProps {
@@ -15,7 +16,7 @@ export default function LGPDBanner({ onAccept, onDecline }: LGPDBannerProps) {
 
   useEffect(() => {
     // Verificar se usuário já deu consentimento geral
-    const generalConsent = localStorage.getItem('lgpd-general-consent');
+    const generalConsent = safeLocalStorage()?.getItem('lgpd-general-consent');
 
     if (!generalConsent) {
       setIsVisible(true);
@@ -31,7 +32,7 @@ export default function LGPDBanner({ onAccept, onDecline }: LGPDBannerProps) {
       userAgent: navigator.userAgent.substring(0, 100) // Limitado para privacidade
     };
 
-    localStorage.setItem('lgpd-general-consent', JSON.stringify(consentData));
+    safeLocalStorage()?.setItem('lgpd-general-consent', JSON.stringify(consentData));
     setIsVisible(false);
 
     if (onAccept) {
@@ -260,7 +261,7 @@ export function useGeneralConsent() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const generalConsent = localStorage.getItem('lgpd-general-consent');
+    const generalConsent = safeLocalStorage()?.getItem('lgpd-general-consent');
 
     if (generalConsent) {
       try {

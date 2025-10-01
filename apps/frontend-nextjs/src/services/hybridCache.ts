@@ -405,7 +405,7 @@ class HybridCacheManager {
   private async getFromLocalStorage<T>(key: string): Promise<T | null> {
     try {
       const storageKey = this.config.localStorage.keyPrefix + key;
-      const item = localStorage.getItem(storageKey);
+      const item = safeLocalStorage()?.getItem(storageKey);
       
       if (!item) {
         return null;
@@ -414,7 +414,7 @@ class HybridCacheManager {
       const entry: HybridCacheEntry<T> = JSON.parse(item);
       
       if (this.isExpired(entry)) {
-        localStorage.removeItem(storageKey);
+        safeLocalStorage()?.removeItem(storageKey);
         return null;
       }
       
@@ -440,7 +440,7 @@ class HybridCacheManager {
       };
       
       const storageKey = this.config.localStorage.keyPrefix + key;
-      localStorage.setItem(storageKey, JSON.stringify(entry));
+      safeLocalStorage()?.setItem(storageKey, JSON.stringify(entry));
       
     } catch (error) {
       if (error instanceof Error && error.name === 'QuotaExceededError') {
@@ -457,7 +457,7 @@ class HybridCacheManager {
             key,
             syncStatus: 'pending'
           };
-          localStorage.setItem(storageKey, JSON.stringify(entry));
+          safeLocalStorage()?.setItem(storageKey, JSON.stringify(entry));
         } catch (retryError) {
           logger.error('[HybridCache] Falha ao armazenar no localStorage:', retryError);
         }
@@ -501,7 +501,7 @@ class HybridCacheManager {
   private removeFromLocalStorage(key: string): void {
     try {
       const storageKey = this.config.localStorage.keyPrefix + key;
-      localStorage.removeItem(storageKey);
+      safeLocalStorage()?.removeItem(storageKey);
     } catch (error) {
       logger.warn(`[HybridCache] Erro ao remover ${key} do localStorage:`, error);
     }
@@ -517,7 +517,7 @@ class HybridCacheManager {
         }
       }
       
-      keysToRemove.forEach(key => localStorage.removeItem(key));
+      keysToRemove.forEach(key => safeLocalStorage()?.removeItem(key));
       
     } catch (error) {
       logger.error('[HybridCache] Erro ao limpar localStorage:', error);
@@ -532,14 +532,14 @@ class HybridCacheManager {
         const key = localStorage.key(i);
         if (key && key.startsWith(this.config.localStorage.keyPrefix)) {
           try {
-            const item = localStorage.getItem(key);
+            const item = safeLocalStorage()?.getItem(key);
             if (item) {
               const entry = JSON.parse(item);
               entries.push({ key, timestamp: entry.timestamp || 0 });
             }
           } catch (parseError) {
             // Remove entries que não conseguimos fazer parse
-            localStorage.removeItem(key);
+            safeLocalStorage()?.removeItem(key);
           }
         }
       }
@@ -549,7 +549,7 @@ class HybridCacheManager {
       const toRemove = Math.ceil(entries.length * 0.25);
       
       for (let i = 0; i < toRemove; i++) {
-        localStorage.removeItem(entries[i].key);
+        safeLocalStorage()?.removeItem(entries[i].key);
       }
       
     } catch (error) {

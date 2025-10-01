@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 import { useSafePersonaFromURL, type ValidPersonaId, isValidPersonaId } from './useSafePersonaFromURL';
 import { usePersonasEnhanced } from './usePersonasEnhanced';
 import { useUserProfile } from './useUserProfile';
@@ -93,7 +94,7 @@ export function usePersonaState(options: UsePersonaStateOptions = {}): UsePerson
     if (typeof window === 'undefined') return null;
     
     try {
-      const stored = localStorage.getItem(STORAGE_KEY);
+      const stored = safeLocalStorage()?.getItem(STORAGE_KEY);
       return stored && isValidPersonaId(stored) ? stored : null;
     } catch {
       return null;
@@ -196,7 +197,7 @@ export function usePersonaState(options: UsePersonaStateOptions = {}): UsePerson
     if (!currentPersona || !persistToLocalStorage) return;
 
     try {
-      localStorage.setItem(STORAGE_KEY, currentPersona);
+      safeLocalStorage()?.setItem(STORAGE_KEY, currentPersona);
     } catch (error) {
       console.warn('Erro ao salvar persona no localStorage:', error);
     }
@@ -239,7 +240,7 @@ export function usePersonaState(options: UsePersonaStateOptions = {}): UsePerson
     
     if (persistToLocalStorage) {
       try {
-        localStorage.removeItem(STORAGE_KEY);
+        safeLocalStorage()?.removeItem(STORAGE_KEY);
       } catch (error) {
         console.warn('Erro ao limpar persona do localStorage:', error);
       }

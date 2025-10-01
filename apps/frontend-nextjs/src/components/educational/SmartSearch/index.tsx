@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useMemo } from 'react';
+import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 import { useGlossary } from '@/components/educational/Glossary';
 import Glossary from '@/components/educational/Glossary';
 import Link from 'next/link';
@@ -189,8 +190,7 @@ export default function SmartSearch({
 
   // Carregar buscas recentes
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('smartSearchRecents');
+    const stored = safeLocalStorage()?.getItem('smartSearchRecents');
       if (stored) {
         try {
           setRecentSearches(JSON.parse(stored));
@@ -215,7 +215,7 @@ export default function SmartSearch({
     setRecentSearches(prev => {
       const newRecents = [search, ...prev.filter(item => item !== search)].slice(0, 5);
       if (typeof window !== 'undefined') {
-        localStorage.setItem('smartSearchRecents', JSON.stringify(newRecents));
+        safeLocalStorage()?.setItem('smartSearchRecents', JSON.stringify(newRecents));
       }
       return newRecents;
     });

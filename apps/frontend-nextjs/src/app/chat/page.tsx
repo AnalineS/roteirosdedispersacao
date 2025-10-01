@@ -17,6 +17,7 @@ import ChatFeedback, { useChatFeedback } from '@/components/ui/ChatFeedback';
 const ConversationHistory = lazy(() => import('@/components/chat/ConversationHistory'));
 import { usePersonasEnhanced } from '@/hooks/usePersonasEnhanced';
 import { useCurrentPersona, usePersonaActions } from '@/contexts/PersonaContext';
+import { safeLocalStorage } from '@/hooks/useClientStorage';
 import { useChat } from '@/hooks/useChat';
 import { useConversationHistory } from '@/hooks/useConversationHistory';
 import { useIntelligentRouting } from '@/hooks/useIntelligentRouting';
@@ -319,9 +320,7 @@ export default function ChatPage() {
   const handleNewConversation = (personaId: string) => {
     createConversation(personaId);
     setSelectedPersona(personaId);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('selectedPersona', personaId);
-    }
+    safeLocalStorage()?.setItem('selectedPersona', personaId);
   };
   
   const handleConversationSelect = (conversationId: string) => {
@@ -331,9 +330,7 @@ export default function ChatPage() {
     const selectedConv = allConversations.find(conv => conv.id === conversationId);
     if (selectedConv) {
       setSelectedPersona(selectedConv.personaId);
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('selectedPersona', selectedConv.personaId);
-      }
+      safeLocalStorage()?.setItem('selectedPersona', selectedConv.personaId);
     }
     clearAnalysis();
   };

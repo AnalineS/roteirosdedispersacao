@@ -106,7 +106,7 @@ export class HapticFeedbackSystem {
     if (typeof window === 'undefined') return;
 
     try {
-      const saved = localStorage.getItem('haptic-preferences');
+      const saved = safeLocalStorage()?.getItem('haptic-preferences');
       if (saved) {
         this.userPreferences = { ...this.userPreferences, ...JSON.parse(saved) };
       }
@@ -141,7 +141,7 @@ export class HapticFeedbackSystem {
     if (typeof window === 'undefined') return;
 
     try {
-      localStorage.setItem('haptic-preferences', JSON.stringify(this.userPreferences));
+      safeLocalStorage()?.setItem('haptic-preferences', JSON.stringify(this.userPreferences));
     } catch (error) {
       // Haptic preferences saving error - explicit stderr + tracking
       const errorMessage = error instanceof Error ? error.message : String(error);

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useCallback, useEffect } from 'react';
+import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 import { useOptimizedEffect, useAutoCleanup } from '@/hooks/useEffectOptimizer';
 import { useRouter } from 'next/navigation';
 import { getUnbColors } from '@/config/modernTheme';
@@ -315,7 +316,7 @@ export default function AccessibleSearchWithSuggestions({
   // Load recent searches from localStorage - otimizado
   useOptimizedEffect(() => {
     if (showRecentSearches && typeof window !== 'undefined') {
-      const saved = localStorage.getItem('recentSearches');
+      const saved = safeLocalStorage()?.getItem('recentSearches');
       if (saved) {
         try {
           setRecentSearches(JSON.parse(saved));
@@ -343,7 +344,7 @@ export default function AccessibleSearchWithSuggestions({
     
     setRecentSearches(prev => {
       const updated = [searchTerm, ...prev.filter(s => s !== searchTerm)].slice(0, 5);
-      localStorage.setItem('recentSearches', JSON.stringify(updated));
+      safeLocalStorage()?.setItem('recentSearches', JSON.stringify(updated));
       return updated;
     });
   }, [showRecentSearches]);

@@ -12,6 +12,7 @@ import {
   useSyncExternalStore,
   forwardRef
 } from 'react';
+import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 import { useGlobalContext } from '@/contexts/GlobalContextHub';
 
 // ============================================
@@ -330,7 +331,7 @@ export const useDynamicOptimization = (config: OptimizationConfig = {}) => {
   const useLocalStorage = useCallback(<T>(key: string, initialValue: T) => {
     const [storedValue, setStoredValue] = useState<T>(() => {
       try {
-        const item = localStorage.getItem(key);
+        const item = safeLocalStorage()?.getItem(key);
         return item ? JSON.parse(item) : initialValue;
       } catch {
         return initialValue;
@@ -341,7 +342,7 @@ export const useDynamicOptimization = (config: OptimizationConfig = {}) => {
       try {
         const valueToStore = value instanceof Function ? value(storedValue) : value;
         setStoredValue(valueToStore);
-        localStorage.setItem(key, JSON.stringify(valueToStore));
+        safeLocalStorage()?.setItem(key, JSON.stringify(valueToStore));
       } catch (error) {
         if (typeof window !== 'undefined' && window.gtag) {
           window.gtag('event', 'optimization_storage_error', {

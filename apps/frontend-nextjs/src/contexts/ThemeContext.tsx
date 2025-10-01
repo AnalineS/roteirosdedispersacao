@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 
 type ThemeMode = 'light' | 'dark' | 'system';
 type ResolvedTheme = 'light' | 'dark';
@@ -21,7 +22,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Sempre usar tema light (UnB cores claras)
     setThemeMode('light');
-    localStorage.setItem('theme-mode', 'light');
+    safeLocalStorage()?.setItem('theme-mode', 'light');
   }, []);
 
   // Resolver tema baseado no modo - sempre light
@@ -62,7 +63,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const handleSetThemeMode = (mode: ThemeMode) => {
     // Sempre forçar light mode (UnB tema oficial)
     setThemeMode('light');
-    localStorage.setItem('theme-mode', 'light');
+    safeLocalStorage()?.setItem('theme-mode', 'light');
   };
 
   return (

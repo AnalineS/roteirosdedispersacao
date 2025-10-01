@@ -616,9 +616,9 @@ class UXInstrumentationManager {
     if (!this.config.enableLocalStorage) return;
 
     try {
-      localStorage.setItem('ux_instrumentation_events', JSON.stringify(this.events));
-      localStorage.setItem('ux_instrumentation_metrics', JSON.stringify(this.metrics));
-      localStorage.setItem('ux_instrumentation_violations', JSON.stringify(this.violations));
+      safeLocalStorage()?.setItem('ux_instrumentation_events', JSON.stringify(this.events));
+      safeLocalStorage()?.setItem('ux_instrumentation_metrics', JSON.stringify(this.metrics));
+      safeLocalStorage()?.setItem('ux_instrumentation_violations', JSON.stringify(this.violations));
     } catch (error) {
       this.log('Failed to persist data to localStorage', error);
     }
@@ -628,9 +628,9 @@ class UXInstrumentationManager {
     if (!this.config.enableLocalStorage) return;
 
     try {
-      const storedEvents = localStorage.getItem('ux_instrumentation_events');
-      const storedMetrics = localStorage.getItem('ux_instrumentation_metrics');
-      const storedViolations = localStorage.getItem('ux_instrumentation_violations');
+      const storedEvents = safeLocalStorage()?.getItem('ux_instrumentation_events');
+      const storedMetrics = safeLocalStorage()?.getItem('ux_instrumentation_metrics');
+      const storedViolations = safeLocalStorage()?.getItem('ux_instrumentation_violations');
 
       if (storedEvents) this.events = JSON.parse(storedEvents);
       if (storedMetrics) this.metrics = JSON.parse(storedMetrics);
@@ -701,9 +701,9 @@ class UXInstrumentationManager {
     this.violations = [];
     
     if (this.config.enableLocalStorage) {
-      localStorage.removeItem('ux_instrumentation_events');
-      localStorage.removeItem('ux_instrumentation_metrics');
-      localStorage.removeItem('ux_instrumentation_violations');
+      safeLocalStorage()?.removeItem('ux_instrumentation_events');
+      safeLocalStorage()?.removeItem('ux_instrumentation_metrics');
+      safeLocalStorage()?.removeItem('ux_instrumentation_violations');
     }
     
     this.log('All instrumentation data cleared');

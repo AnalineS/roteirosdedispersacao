@@ -11,17 +11,17 @@ const logger = {
   warn: (message: string) => {
     if (isDevelopment && typeof window !== 'undefined') {
       // Em desenvolvimento, apenas armazena no localStorage
-      const logs = JSON.parse(localStorage.getItem('optimization_logs') || '[]');
+      const logs = JSON.parse(safeLocalStorage()?.getItem('optimization_logs') || '[]');
       logs.push({ level: 'warn', message, timestamp: Date.now() });
-      localStorage.setItem('optimization_logs', JSON.stringify(logs.slice(-100)));
+      safeLocalStorage()?.setItem('optimization_logs', JSON.stringify(logs.slice(-100)));
     }
   },
   error: (message: string, error?: unknown) => {
     if (isDevelopment && typeof window !== 'undefined') {
       // Em desenvolvimento, apenas armazena no localStorage
-      const logs = JSON.parse(localStorage.getItem('optimization_logs') || '[]');
+      const logs = JSON.parse(safeLocalStorage()?.getItem('optimization_logs') || '[]');
       logs.push({ level: 'error', message, error: error instanceof Error ? error.message : String(error), timestamp: Date.now() });
-      localStorage.setItem('optimization_logs', JSON.stringify(logs.slice(-100)));
+      safeLocalStorage()?.setItem('optimization_logs', JSON.stringify(logs.slice(-100)));
     }
   }
 };
@@ -493,6 +493,7 @@ export class PerformanceMonitor {
  * Hook para debounce de valores
  */
 import { useState, useEffect } from 'react';
+import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 
 export function useDebounce<T>(value: T, delay: number): T {
   const [debouncedValue, setDebouncedValue] = useState<T>(value);
@@ -658,17 +659,17 @@ export class OptimizedStorage {
       
       // Para dados pequenos, não comprimir
       if (jsonString.length < 1000) {
-        localStorage.setItem(key, jsonString);
+        safeLocalStorage()?.setItem(key, jsonString);
         return;
       }
 
       // Comprimir dados grandes
       const compressed = await this.compress(jsonString);
-      localStorage.setItem(key, compressed);
-      localStorage.setItem(`${key}_compressed`, 'true');
+      safeLocalStorage()?.setItem(key, compressed);
+      safeLocalStorage()?.setItem(`${key}_compressed`, 'true');
     } catch (error) {
       logger.error('Erro ao salvar dados comprimidos:', error);
-      localStorage.setItem(key, JSON.stringify(data));
+      safeLocalStorage()?.setItem(key, JSON.stringify(data));
     }
   }
 
@@ -679,10 +680,10 @@ export class OptimizedStorage {
     if (typeof window === 'undefined') return null;
 
     try {
-      const stored = localStorage.getItem(key);
+      const stored = safeLocalStorage()?.getItem(key);
       if (!stored) return null;
 
-      const isCompressed = localStorage.getItem(`${key}_compressed`) === 'true';
+      const isCompressed = safeLocalStorage()?.getItem(`${key}_compressed`) === 'true';
       
       if (isCompressed) {
         const decompressed = await this.decompress(stored);

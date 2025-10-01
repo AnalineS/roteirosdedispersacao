@@ -12,23 +12,23 @@ const isDevelopment = process.env.NODE_ENV === 'development';
 const logger = {
   log: (message: string, data?: unknown) => {
     if (isDevelopment && typeof window !== 'undefined') {
-      const logs = JSON.parse(localStorage.getItem('ga4_logs') || '[]');
+      const logs = JSON.parse(safeLocalStorage()?.getItem('ga4_logs') || '[]');
       logs.push({ level: 'info', message, data, timestamp: Date.now() });
-      localStorage.setItem('ga4_logs', JSON.stringify(logs.slice(-100)));
+      safeLocalStorage()?.setItem('ga4_logs', JSON.stringify(logs.slice(-100)));
     }
   },
   warn: (message: string, error?: unknown) => {
     if (isDevelopment && typeof window !== 'undefined') {
-      const logs = JSON.parse(localStorage.getItem('ga4_logs') || '[]');
+      const logs = JSON.parse(safeLocalStorage()?.getItem('ga4_logs') || '[]');
       logs.push({ level: 'warn', message, error: error instanceof Error ? error.message : String(error), timestamp: Date.now() });
-      localStorage.setItem('ga4_logs', JSON.stringify(logs.slice(-100)));
+      safeLocalStorage()?.setItem('ga4_logs', JSON.stringify(logs.slice(-100)));
     }
   },
   error: (message: string, error?: unknown) => {
     if (isDevelopment && typeof window !== 'undefined') {
-      const logs = JSON.parse(localStorage.getItem('ga4_logs') || '[]');
+      const logs = JSON.parse(safeLocalStorage()?.getItem('ga4_logs') || '[]');
       logs.push({ level: 'error', message, error: error instanceof Error ? error.message : String(error), timestamp: Date.now() });
-      localStorage.setItem('ga4_logs', JSON.stringify(logs.slice(-100)));
+      safeLocalStorage()?.setItem('ga4_logs', JSON.stringify(logs.slice(-100)));
     }
   }
 };

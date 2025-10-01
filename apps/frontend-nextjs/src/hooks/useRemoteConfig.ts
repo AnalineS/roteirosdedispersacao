@@ -6,6 +6,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 import {
   FeatureFlagsConfig,
   DEFAULT_FLAGS,
@@ -143,7 +144,7 @@ const loadUserFlags = (): Partial<FeatureFlagsConfig> => {
   if (typeof window === 'undefined') return {};
   
   try {
-    const saved = localStorage.getItem(STORAGE_KEYS.USER_FLAGS);
+    const saved = safeLocalStorage()?.getItem(STORAGE_KEYS.USER_FLAGS);
     return saved ? JSON.parse(saved) : {};
   } catch (error) {
     // Erro ao carregar flags do usuário
@@ -213,8 +214,7 @@ export const useRemoteConfig = (options: RemoteConfigOptions = {}) => {
       setState(prev => ({ ...prev, loading: true, error: null }));
       
       // Tentar buscar do cache primeiro
-      if (typeof window !== 'undefined') {
-        const cached = localStorage.getItem(STORAGE_KEYS.REMOTE_CONFIG_CACHE);
+      const cached = safeLocalStorage()?.getItem(STORAGE_KEYS.REMOTE_CONFIG_CACHE);
         if (cached) {
           const { data, timestamp } = JSON.parse(cached);
           const isExpired = Date.now() - timestamp > cacheTimeout * 60 * 1000;
@@ -280,7 +280,7 @@ export const useRemoteConfig = (options: RemoteConfigOptions = {}) => {
           const timestamp = Date.now();
           
           if (typeof window !== 'undefined') {
-            localStorage.setItem(STORAGE_KEYS.REMOTE_CONFIG_CACHE, JSON.stringify({
+            safeLocalStorage()?.setItem(STORAGE_KEYS.REMOTE_CONFIG_CACHE, JSON.stringify({
               data: globalFlags,
               timestamp
             }));
@@ -352,7 +352,7 @@ export const useRemoteConfig = (options: RemoteConfigOptions = {}) => {
         saveSessionFlags(newFlags);
       } else if (key === 'custom_shortcuts' || key === 'advanced_analytics') {
         if (typeof window !== 'undefined') {
-          localStorage.setItem(STORAGE_KEYS.USER_FLAGS, JSON.stringify({
+          safeLocalStorage()?.setItem(STORAGE_KEYS.USER_FLAGS, JSON.stringify({
             custom_shortcuts: newFlags.custom_shortcuts,
             advanced_analytics: newFlags.advanced_analytics
           }));
@@ -371,7 +371,7 @@ export const useRemoteConfig = (options: RemoteConfigOptions = {}) => {
   // Função para forçar refresh
   const refresh = useCallback(() => {
     if (typeof window !== 'undefined') {
-      localStorage.removeItem(STORAGE_KEYS.REMOTE_CONFIG_CACHE);
+      safeLocalStorage()?.removeItem(STORAGE_KEYS.REMOTE_CONFIG_CACHE);
     }
     fetchRemoteConfig();
   }, [fetchRemoteConfig]);

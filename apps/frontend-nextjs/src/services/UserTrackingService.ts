@@ -314,11 +314,11 @@ class UserTrackingService {
   // ============================================
 
   private generateAnonymousUserId(): string {
-    const stored = localStorage.getItem('anonymous-user-id');
+    const stored = safeLocalStorage()?.getItem('anonymous-user-id');
     if (stored) return stored;
     
     const newId = `anon_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    localStorage.setItem('anonymous-user-id', newId);
+    safeLocalStorage()?.setItem('anonymous-user-id', newId);
     return newId;
   }
 
@@ -490,7 +490,7 @@ class UserTrackingService {
         analytics: this.analytics,
         timestamp: Date.now()
       };
-      localStorage.setItem(this.storageKey, JSON.stringify(data));
+      safeLocalStorage()?.setItem(this.storageKey, JSON.stringify(data));
     } catch (error) {
       console.warn('Failed to save tracking data to localStorage:', error);
     }
@@ -502,7 +502,7 @@ class UserTrackingService {
     }
     
     try {
-      const stored = localStorage.getItem(this.storageKey);
+      const stored = safeLocalStorage()?.getItem(this.storageKey);
       if (stored) {
         const data = JSON.parse(stored);
         this.sessions = new Map(data.sessions);
@@ -521,7 +521,7 @@ class UserTrackingService {
     const key = `user-prefs-${userId}`;
     const existing = this.loadUserPreferencesFromLocal(userId);
     const updated = { ...existing, ...preferences };
-    localStorage.setItem(key, JSON.stringify(updated));
+    safeLocalStorage()?.setItem(key, JSON.stringify(updated));
   }
 
   private loadUserPreferencesFromLocal(userId: string): UserPreferences | null {
@@ -531,7 +531,7 @@ class UserTrackingService {
     
     try {
       const key = `user-prefs-${userId}`;
-      const stored = localStorage.getItem(key);
+      const stored = safeLocalStorage()?.getItem(key);
       return stored ? JSON.parse(stored) : null;
     } catch {
       return null;

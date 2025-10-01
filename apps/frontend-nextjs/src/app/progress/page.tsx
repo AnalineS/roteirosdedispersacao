@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 import EducationalLayout from '@/components/layout/EducationalLayout';
 import ProgressSystem, { useProgressData } from '@/components/navigation/Progress';
 import { usePersonas } from '@/hooks/usePersonas';
@@ -146,8 +147,7 @@ export default function ProgressPage() {
   });
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('selectedPersona');
+    const stored = safeLocalStorage()?.getItem('selectedPersona');
       if (stored && personas[stored]) {
         setSelectedPersona(stored);
       }

@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 import { 
   UserPersonalization, 
   PersonalizationContext,
@@ -74,8 +75,8 @@ export function usePersonalization() {
   useEffect(() => {
     const loadPersonalization = () => {
       try {
-        const stored = localStorage.getItem(STORAGE_KEY);
-        const storedContext = localStorage.getItem(CONTEXT_KEY);
+        const stored = safeLocalStorage()?.getItem(STORAGE_KEY);
+        const storedContext = safeLocalStorage()?.getItem(CONTEXT_KEY);
         
         if (stored) {
           const parsed = JSON.parse(stored);
@@ -119,8 +120,8 @@ export function usePersonalization() {
   // Salvar personalização no storage
   const savePersonalization = useCallback((newPersonalization: UserPersonalization) => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(newPersonalization));
-      localStorage.setItem(CONTEXT_KEY, JSON.stringify(context));
+      safeLocalStorage()?.setItem(STORAGE_KEY, JSON.stringify(newPersonalization));
+      safeLocalStorage()?.setItem(CONTEXT_KEY, JSON.stringify(context));
       
       // Analytics tracking
       medicalAnalytics.trackEvent({

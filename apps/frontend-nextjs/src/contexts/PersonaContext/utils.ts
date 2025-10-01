@@ -4,6 +4,7 @@
  */
 
 import { isValidPersonaId } from '@/hooks/useSafePersonaFromURL';
+import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 import { STATIC_PERSONAS } from '@/data/personas';
 import type {
   ValidPersonaId,
@@ -21,7 +22,7 @@ export function getLocalStoragePersona(
   if (typeof window === 'undefined') return null;
 
   try {
-    const stored = localStorage.getItem('selectedPersona');
+    const stored = safeLocalStorage()?.getItem('selectedPersona');
     return stored && isValidPersonaId(stored) && isPersonaAvailable(stored) ? stored : null;
   } catch {
     return null;

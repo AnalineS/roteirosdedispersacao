@@ -697,7 +697,7 @@ export class ABTestingFramework {
     
     // Persistir no localStorage para desenvolvimento
     if (typeof localStorage !== 'undefined') {
-      localStorage.setItem(`ab_assignment_${assignment.userId}`, JSON.stringify(userAssignments));
+      safeLocalStorage()?.setItem(`ab_assignment_${assignment.userId}`, JSON.stringify(userAssignments));
     }
   }
 

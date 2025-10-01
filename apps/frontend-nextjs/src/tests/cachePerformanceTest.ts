@@ -16,7 +16,7 @@ export async function runCachePerformanceTest(): Promise<PerformanceResult[]> {
   try {
     // Test localStorage write
     const start1 = performance.now();
-    localStorage.setItem('test-cache-perf', JSON.stringify({ test: 'data' }));
+    safeLocalStorage()?.setItem('test-cache-perf', JSON.stringify({ test: 'data' }));
     const end1 = performance.now();
     results.push({
       operation: 'localStorage.setItem',
@@ -26,7 +26,7 @@ export async function runCachePerformanceTest(): Promise<PerformanceResult[]> {
 
     // Test localStorage read
     const start2 = performance.now();
-    const data = localStorage.getItem('test-cache-perf');
+    const data = safeLocalStorage()?.getItem('test-cache-perf');
     const end2 = performance.now();
     results.push({
       operation: 'localStorage.getItem',
@@ -35,7 +35,7 @@ export async function runCachePerformanceTest(): Promise<PerformanceResult[]> {
     });
 
     // Cleanup
-    localStorage.removeItem('test-cache-perf');
+    safeLocalStorage()?.removeItem('test-cache-perf');
 
   } catch (error) {
     results.push({

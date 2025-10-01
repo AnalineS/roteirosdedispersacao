@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 import { useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
 import { getPersonaAvatar } from '@/constants/avatars';
@@ -50,7 +51,7 @@ export default function GlobalPersonaFAB({ className, style }: GlobalPersonaFABP
   const getBestPersonaForUser = () => {
     try {
       // Check for saved wizard data
-      const wizardData = localStorage.getItem('welcome_wizard_seen');
+      const wizardData = safeLocalStorage()?.getItem('welcome_wizard_seen');
       if (wizardData) {
         const data = JSON.parse(wizardData);
         if (data.selectedRole) {
@@ -64,7 +65,7 @@ export default function GlobalPersonaFAB({ className, style }: GlobalPersonaFABP
       }
 
       // Check for user profile data
-      const userProfile = localStorage.getItem('user_profile');
+      const userProfile = safeLocalStorage()?.getItem('user_profile');
       if (userProfile) {
         const profile = JSON.parse(userProfile);
         if (profile.type === 'patient' || profile.role === 'patient') {

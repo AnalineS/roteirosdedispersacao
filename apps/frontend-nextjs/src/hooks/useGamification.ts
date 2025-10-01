@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 import { useSafeAuth } from '@/hooks/useSafeAuth';
 import type { GamificationNotification, LeaderboardEntry, ModuleProgress } from '@/types/gamification';
 
@@ -259,7 +260,7 @@ export function useGamification(options: UseGamificationOptions = {}) {
 
     try {
       const storageKeyFull = `${storageKey}_${user?.uid || 'anonymous'}`;
-      const stored = localStorage.getItem(storageKeyFull);
+      const stored = safeLocalStorage()?.getItem(storageKeyFull);
       return stored ? JSON.parse(stored) : null;
     } catch (error) {
       console.error('Erro ao carregar gamificação do storage:', error);
@@ -273,7 +274,7 @@ export function useGamification(options: UseGamificationOptions = {}) {
 
     try {
       const storageKeyFull = `${storageKey}_${user?.uid || 'anonymous'}`;
-      localStorage.setItem(storageKeyFull, JSON.stringify(state));
+      safeLocalStorage()?.setItem(storageKeyFull, JSON.stringify(state));
     } catch (error) {
       console.error('Erro ao salvar gamificação no storage:', error);
     }

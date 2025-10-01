@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
+import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 import { useCurrentPersona, usePersonaAnalytics } from '@/contexts/PersonaContext';
 import type { ValidPersonaId } from '@/types/personas';
 import { secureLogger } from '@/utils/secureLogger';
@@ -206,7 +207,7 @@ export function PersonaAccessibilityProvider({
     if (typeof window === 'undefined') return;
 
     try {
-      const savedConfig = localStorage.getItem('personaAccessibilityConfig');
+      const savedConfig = safeLocalStorage()?.getItem('personaAccessibilityConfig');
       if (savedConfig) {
         const parsed = JSON.parse(savedConfig);
         setConfig(prev => ({ ...prev, ...parsed }));
@@ -228,7 +229,7 @@ export function PersonaAccessibilityProvider({
 
     if (typeof window !== 'undefined') {
       try {
-        localStorage.setItem('personaAccessibilityConfig', JSON.stringify(updatedConfig));
+        safeLocalStorage()?.setItem('personaAccessibilityConfig', JSON.stringify(updatedConfig));
       } catch (error) {
         if (typeof window !== 'undefined' && window.gtag) {
           window.gtag('event', 'accessibility_config_save_error', {

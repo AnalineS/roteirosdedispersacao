@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import EducationalLayout from '@/components/layout/EducationalLayout';
+import { safeLocalStorage } from '@/hooks/useClientStorage';
 import { usePersonas } from '@/hooks/usePersonas';
 import EducationalDashboard from '@/components/educational/EducationalDashboard';
 import ProgressDashboard from '@/components/gamification/ProgressDashboard';
@@ -13,11 +14,9 @@ export default function DashboardPage() {
 
   // Carregar persona selecionada
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('selectedPersona');
-      if (stored && personas[stored]) {
-        setSelectedPersona(stored);
-      }
+    const stored = safeLocalStorage()?.getItem('selectedPersona');
+    if (stored && personas[stored]) {
+      setSelectedPersona(stored);
     }
   }, [personas]);
 

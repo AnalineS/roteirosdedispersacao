@@ -460,7 +460,7 @@ class GamificationAPI {
    */
   private getAuthToken(): string | null {
     // Integrar com sistema de auth quando disponível
-    return localStorage.getItem('authToken') || null;
+    return safeLocalStorage()?.getItem('authToken') || null;
   }
 
   /**

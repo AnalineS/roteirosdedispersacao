@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 import { useHydration, type IsomorphicAuthData, type AuthState, type SocialCredentials } from './useIsomorphicAuth';
 
 interface LoginCredentials {
@@ -82,7 +83,7 @@ export function useSafeAuth(): IsomorphicAuthData {
         
         // Aqui precisamos de uma forma segura de usar o hook
         // Por enquanto, vamos simular os estados baseado em localStorage ou outras fontes
-        const savedAuth = localStorage.getItem('auth_state');
+        const savedAuth = safeLocalStorage()?.getItem('auth_state');
         if (savedAuth) {
           const parsed = JSON.parse(savedAuth);
           setAuthState(parsed.isAuthenticated ? 'authenticated' : 'anonymous');

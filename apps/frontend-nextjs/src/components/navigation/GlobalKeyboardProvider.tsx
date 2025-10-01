@@ -6,6 +6,7 @@
  */
 
 import React, { createContext, useContext, ReactNode, useState, useEffect, useCallback } from 'react';
+import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation';
 import KeyboardNavigationTutorial from './KeyboardNavigationTutorial';
 import { ACCESS_KEYS } from '@/constants/medicalShortcuts';
@@ -263,9 +264,7 @@ export default function GlobalKeyboardProvider({ children }: GlobalKeyboardProvi
     });
 
     // Salvar que usuário completou tutorial
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('keyboard_tutorial_completed', 'true');
-    }
+    safeLocalStorage()?.setItem('keyboard_tutorial_completed', 'true');
   }, []);
 
   return (

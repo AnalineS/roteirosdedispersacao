@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 import { useServices, useAnalytics } from '@/providers/ServicesProvider';
 import HighContrastToggle from './HighContrastToggle';
 import SkipToContent from './SkipToContent';
@@ -35,8 +36,11 @@ export default function AccessibilityPanel({
   // ============================================
 
   useEffect(() => {
+    // Check if we're in the browser
+    if (typeof window === 'undefined') return;
+
     // Load accessibility preferences from localStorage
-    const savedPrefs = localStorage.getItem('accessibility_preferences');
+    const savedPrefs = safeLocalStorage()?.getItem('accessibility_preferences');
     if (savedPrefs) {
       const prefs = JSON.parse(savedPrefs);
       setFontSize(prefs.fontSize || 16);
@@ -45,7 +49,7 @@ export default function AccessibilityPanel({
     }
 
     // Detect system preferences
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       setReducedMotion(true);
     }
 
@@ -58,6 +62,9 @@ export default function AccessibilityPanel({
   // ============================================
 
   const applyAccessibilitySettings = useCallback(() => {
+    // Only apply settings if we're in the browser
+    if (typeof window === 'undefined' || typeof document === 'undefined') return;
+
     const root = document.documentElement;
     
     // Font size adjustment
@@ -87,7 +94,11 @@ export default function AccessibilityPanel({
       reducedMotion,
       screenReaderMode
     };
-    localStorage.setItem('accessibility_preferences', JSON.stringify(prefs));
+
+    // Only save to localStorage if we're in the browser
+    if (typeof window !== 'undefined') {
+      safeLocalStorage()?.setItem('accessibility_preferences', JSON.stringify(prefs));
+    }
 
     // Apply system-wide changes
     applyAccessibilitySettings();

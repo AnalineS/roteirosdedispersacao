@@ -309,14 +309,14 @@ class DigitalSignatureManager {
     } catch (error) {
       // Sistema de logging controlado
       if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
-        const logs = JSON.parse(localStorage.getItem('cert_security_logs') || '[]');
+        const logs = JSON.parse(safeLocalStorage()?.getItem('cert_security_logs') || '[]');
         logs.push({
           level: 'error',
           message: 'Erro na verificação de assinatura',
           error: error instanceof Error ? error.message : String(error),
           timestamp: Date.now()
         });
-        localStorage.setItem('cert_security_logs', JSON.stringify(logs.slice(-100)));
+        safeLocalStorage()?.setItem('cert_security_logs', JSON.stringify(logs.slice(-100)));
       }
       return false;
     }

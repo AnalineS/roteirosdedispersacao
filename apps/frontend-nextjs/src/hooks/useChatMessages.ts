@@ -4,6 +4,7 @@
  */
 
 import { useState, useCallback, useRef, useMemo } from 'react';
+import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 import { type ChatMessage } from '@/types/api';
 
 interface UseChatMessagesOptions {
@@ -24,7 +25,7 @@ export function useChatMessages(options: UseChatMessagesOptions = {}) {
     if (!persistToLocalStorage || typeof window === 'undefined') return [];
     
     try {
-      const stored = localStorage.getItem(storageKey);
+      const stored = safeLocalStorage()?.getItem(storageKey);
       return stored ? JSON.parse(stored) : [];
     } catch (error) {
       // Medical system error - explicit stderr + tracking
@@ -58,7 +59,7 @@ export function useChatMessages(options: UseChatMessagesOptions = {}) {
     try {
       // Manter apenas as últimas N mensagens para evitar estouro de localStorage
       const messagesToSave = newMessages.slice(-maxMessages);
-      localStorage.setItem(storageKey, JSON.stringify(messagesToSave));
+      safeLocalStorage()?.setItem(storageKey, JSON.stringify(messagesToSave));
     } catch (error) {
       // Medical system error - explicit stderr + tracking
       const errorMessage = error instanceof Error ? error.message : String(error);

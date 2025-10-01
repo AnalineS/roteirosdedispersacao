@@ -61,11 +61,11 @@ class MedicalAnalyticsClient {
     // Store in localStorage for persistence
     if (typeof window !== 'undefined') {
       if (userId) {
-        localStorage.setItem('medical_user_id', userId);
-        localStorage.setItem('medical_is_anonymous', 'false');
+        safeLocalStorage()?.setItem('medical_user_id', userId);
+        safeLocalStorage()?.setItem('medical_is_anonymous', 'false');
       } else {
-        localStorage.removeItem('medical_user_id');
-        localStorage.setItem('medical_is_anonymous', 'true');
+        safeLocalStorage()?.removeItem('medical_user_id');
+        safeLocalStorage()?.setItem('medical_is_anonymous', 'true');
       }
     }
   }
@@ -76,8 +76,8 @@ class MedicalAnalyticsClient {
   private initializeSession(): void {
     if (typeof window !== 'undefined') {
       // Restore user context from localStorage
-      const storedUserId = localStorage.getItem('medical_user_id');
-      const storedSessionId = localStorage.getItem('medical_session_id');
+      const storedUserId = safeLocalStorage()?.getItem('medical_user_id');
+      const storedSessionId = safeLocalStorage()?.getItem('medical_session_id');
 
       if (storedUserId) {
         this.userId = storedUserId;
@@ -88,7 +88,7 @@ class MedicalAnalyticsClient {
       if (storedSessionId) {
         this.sessionId = storedSessionId;
       } else {
-        localStorage.setItem('medical_session_id', this.sessionId);
+        safeLocalStorage()?.setItem('medical_session_id', this.sessionId);
         this.startSession();
       }
     }
@@ -111,7 +111,7 @@ class MedicalAnalyticsClient {
         const data = await response.json();
         if (data.session_id) {
           this.sessionId = data.session_id;
-          localStorage.setItem('medical_session_id', this.sessionId);
+          safeLocalStorage()?.setItem('medical_session_id', this.sessionId);
         }
       }
     } catch (error) {
@@ -133,7 +133,7 @@ class MedicalAnalyticsClient {
       });
 
       // Clear session from localStorage
-      localStorage.removeItem('medical_session_id');
+      safeLocalStorage()?.removeItem('medical_session_id');
     } catch (error) {
       console.warn('Failed to end analytics session:', error);
     }

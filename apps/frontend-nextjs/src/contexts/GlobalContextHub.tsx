@@ -441,7 +441,7 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({
   useEffect(() => {
     const saveState = () => {
       try {
-        localStorage.setItem(
+        safeLocalStorage()?.setItem(
           "global-context-state",
           JSON.stringify({
             userPreferences: state.userPreferences,
@@ -488,7 +488,7 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({
   // Load saved state
   useEffect(() => {
     try {
-      const saved = localStorage.getItem("global-context-state");
+      const saved = safeLocalStorage()?.getItem("global-context-state");
       if (saved) {
         const data = JSON.parse(saved);
         if (data.userPreferences) {

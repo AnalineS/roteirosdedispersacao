@@ -12,14 +12,14 @@ const logger = {
   error: (message: string, error?: unknown) => {
     if (isDevelopment && typeof window !== 'undefined') {
       // Em desenvolvimento, apenas armazena no localStorage
-      const logs = JSON.parse(localStorage.getItem('social_service_logs') || '[]');
+      const logs = JSON.parse(safeLocalStorage()?.getItem('social_service_logs') || '[]');
       logs.push({
         level: 'error',
         message,
         error: error instanceof Error ? error.message : String(error),
         timestamp: Date.now()
       });
-      localStorage.setItem('social_service_logs', JSON.stringify(logs.slice(-100)));
+      safeLocalStorage()?.setItem('social_service_logs', JSON.stringify(logs.slice(-100)));
     }
   }
 };
@@ -149,7 +149,7 @@ class SocialService {
    */
   private getLocalSocialProfile(uid: string): SocialProfile | null {
     try {
-      const stored = localStorage.getItem(`social-profile-${uid}`);
+      const stored = safeLocalStorage()?.getItem(`social-profile-${uid}`);
       if (stored) {
         return JSON.parse(stored);
       }
@@ -179,7 +179,7 @@ class SocialService {
    */
   private saveLocalSocialProfile(uid: string, profile: SocialProfile): void {
     try {
-      localStorage.setItem(`social-profile-${uid}`, JSON.stringify(profile));
+      safeLocalStorage()?.setItem(`social-profile-${uid}`, JSON.stringify(profile));
     } catch (error) {
       logger.error('Erro ao salvar perfil social local:', error);
     }

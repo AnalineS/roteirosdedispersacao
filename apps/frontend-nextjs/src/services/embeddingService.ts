@@ -611,8 +611,10 @@ export class EmbeddingService {
   }
 
   private getAPIKey(): string | null {
-    return process.env.NEXT_PUBLIC_OPENROUTER_API_KEY || 
-           process.env.NEXT_PUBLIC_OPENAI_API_KEY || 
+    return process.env.OPENROUTER_API_KEY ||
+           process.env.NEXT_PUBLIC_OPENROUTER_API_KEY ||
+           process.env.OPENAI_API_KEY ||
+           process.env.NEXT_PUBLIC_OPENAI_API_KEY ||
            null;
   }
 

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useCallback } from 'react';
+import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 
 interface AdditionalMetricData {
   pageType?: string;
@@ -500,7 +501,7 @@ function getPageType(): string {
 
 function getUserType(): string {
   // Try to detect user type from localStorage or URL params
-  const userType = localStorage.getItem('selectedPersona') || 
+  const userType = safeLocalStorage()?.getItem('selectedPersona') || 
                   new URLSearchParams(window.location.search).get('user_type');
   
   if (userType === 'dr_gasnelio') return 'professional';

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useCallback, useEffect, useMemo, useState } from 'react';
+import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 import { usePersonasEnhanced } from '@/hooks/usePersonasEnhanced';
 import { useSafePersonaFromURL, type ValidPersonaId, isValidPersonaId } from '@/hooks/useSafePersonaFromURL';
 import { useUserProfile } from '@/hooks/useUserProfile';
@@ -77,7 +78,7 @@ export function PersonaProvider({ children }: { children: React.ReactNode }) {
     // 4. localStorage
     if (typeof window !== 'undefined') {
       try {
-        const stored = localStorage.getItem('selectedPersona');
+        const stored = safeLocalStorage()?.getItem('selectedPersona');
         if (stored && isValidPersonaId(stored) && isPersonaAvailable(stored)) {
           return stored;
         }
@@ -134,7 +135,7 @@ export function PersonaProvider({ children }: { children: React.ReactNode }) {
 
     // Persistir no localStorage
     try {
-      localStorage.setItem('selectedPersona', personaId);
+      safeLocalStorage()?.setItem('selectedPersona', personaId);
     } catch {
       // Ignore localStorage write errors
     }
@@ -154,7 +155,7 @@ export function PersonaProvider({ children }: { children: React.ReactNode }) {
   const clearPersona = useCallback(() => {
     setExplicitPersona(null);
     try {
-      localStorage.removeItem('selectedPersona');
+      safeLocalStorage()?.removeItem('selectedPersona');
     } catch {
       // Ignore localStorage remove errors
     }

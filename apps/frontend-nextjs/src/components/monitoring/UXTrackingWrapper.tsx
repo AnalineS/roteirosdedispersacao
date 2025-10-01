@@ -68,10 +68,10 @@ const getUserId = (providedUserId?: string): string => {
 
   if (typeof window === "undefined") return "anonymous";
 
-  let userId = localStorage.getItem("ux_user_id");
+  let userId = safeLocalStorage()?.getItem("ux_user_id");
   if (!userId) {
     userId = `user_${generateUUID()}`;
-    localStorage.setItem("ux_user_id", userId);
+    safeLocalStorage()?.setItem("ux_user_id", userId);
   }
   return userId;
 };

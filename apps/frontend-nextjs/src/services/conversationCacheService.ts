@@ -36,7 +36,7 @@ class ConversationCacheService {
    */
   async getCachedConversations(): Promise<CachedConversation[]> {
     try {
-      const cached = localStorage.getItem(this.cacheKey);
+      const cached = safeLocalStorage()?.getItem(this.cacheKey);
       if (!cached) return [];
 
       const cache: ConversationCache = JSON.parse(cached);
@@ -67,7 +67,7 @@ class ConversationCacheService {
    */
   async cacheConversation(conversation: CachedConversation): Promise<void> {
     try {
-      const cached = localStorage.getItem(this.cacheKey);
+      const cached = safeLocalStorage()?.getItem(this.cacheKey);
       const cache: ConversationCache = cached ? JSON.parse(cached) : {
         conversations: {},
         lastSync: new Date().toISOString(),
@@ -79,7 +79,7 @@ class ConversationCacheService {
         updatedAt: new Date().toISOString()
       };
 
-      localStorage.setItem(this.cacheKey, JSON.stringify(cache));
+      safeLocalStorage()?.setItem(this.cacheKey, JSON.stringify(cache));
     } catch (error) {
       // Medical system error - explicit stderr + tracking
       const errorMessage = error instanceof Error ? error.message : String(error);
@@ -141,7 +141,7 @@ class ConversationCacheService {
         version: '2.0'
       };
 
-      localStorage.setItem(this.cacheKey, JSON.stringify(cache));
+      safeLocalStorage()?.setItem(this.cacheKey, JSON.stringify(cache));
       return true;
 
     } catch (error) {
@@ -226,7 +226,7 @@ class ConversationCacheService {
    * Limpar cache local
    */
   clearCache(): void {
-    localStorage.removeItem(this.cacheKey);
+    safeLocalStorage()?.removeItem(this.cacheKey);
   }
 
   /**
@@ -239,7 +239,7 @@ class ConversationCacheService {
     cacheSize: number;
   }> {
     const conversations = await this.getCachedConversations();
-    const cached = localStorage.getItem(this.cacheKey);
+    const cached = safeLocalStorage()?.getItem(this.cacheKey);
 
     return {
       totalConversations: conversations.length,

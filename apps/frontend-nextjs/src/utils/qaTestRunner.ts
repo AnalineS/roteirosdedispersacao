@@ -19,26 +19,26 @@ const logger = {
   log: (message: string, data?: unknown) => {
     if (isDevelopment && typeof window !== 'undefined') {
       // Em desenvolvimento, apenas armazena no localStorage
-      const logs = JSON.parse(localStorage.getItem('qa_test_runner_logs') || '[]');
+      const logs = JSON.parse(safeLocalStorage()?.getItem('qa_test_runner_logs') || '[]');
       logs.push({
         level: 'log',
         message,
         data: data ? JSON.stringify(data) : undefined,
         timestamp: Date.now()
       });
-      localStorage.setItem('qa_test_runner_logs', JSON.stringify(logs.slice(-100)));
+      safeLocalStorage()?.setItem('qa_test_runner_logs', JSON.stringify(logs.slice(-100)));
     }
   },
   error: (message: string, error?: unknown) => {
     if (isDevelopment && typeof window !== 'undefined') {
-      const logs = JSON.parse(localStorage.getItem('qa_test_runner_logs') || '[]');
+      const logs = JSON.parse(safeLocalStorage()?.getItem('qa_test_runner_logs') || '[]');
       logs.push({
         level: 'error',
         message,
         error: error instanceof Error ? error.message : String(error),
         timestamp: Date.now()
       });
-      localStorage.setItem('qa_test_runner_logs', JSON.stringify(logs.slice(-100)));
+      safeLocalStorage()?.setItem('qa_test_runner_logs', JSON.stringify(logs.slice(-100)));
     }
   }
 };

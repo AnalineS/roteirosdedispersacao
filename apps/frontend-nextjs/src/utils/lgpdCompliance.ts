@@ -245,7 +245,7 @@ class ConsentManager {
 
     // Store consent record (localStorage for demo)
     const consentKey = `consent_${subjectId}`;
-    localStorage.setItem(consentKey, JSON.stringify(consent));
+    safeLocalStorage()?.setItem(consentKey, JSON.stringify(consent));
 
     // Log consent for audit
     secureLogger.lgpd('Consentimento registrado', subjectId, { 
@@ -286,7 +286,7 @@ class ConsentManager {
    */
   private getConsent(subjectId: string): ConsentStatus | null {
     const consentKey = `consent_${subjectId}`;
-    const stored = localStorage.getItem(consentKey);
+    const stored = safeLocalStorage()?.getItem(consentKey);
     return stored ? JSON.parse(stored) : null;
   }
 
@@ -306,7 +306,7 @@ class ConsentManager {
 
     updated.consentDate = new Date();
     const consentKey = `consent_${subjectId}`;
-    localStorage.setItem(consentKey, JSON.stringify(updated));
+    safeLocalStorage()?.setItem(consentKey, JSON.stringify(updated));
 
     secureLogger.lgpd('Consentimento retirado', subjectId, { categories });
   }
@@ -349,7 +349,7 @@ class DataManager {
     };
 
     const dataKey = `data_${subjectId}_${purpose}_${Date.now()}`;
-    localStorage.setItem(dataKey, JSON.stringify(dataRecord));
+    safeLocalStorage()?.setItem(dataKey, JSON.stringify(dataRecord));
 
     return true;
   }
@@ -468,7 +468,7 @@ class PrivacyRequestProcessor {
     };
 
     for (const key of dataKeys) {
-      const stored = localStorage.getItem(key);
+      const stored = safeLocalStorage()?.getItem(key);
       if (stored) {
         const record = JSON.parse(stored);
         userData.processingActivities.push({
@@ -519,27 +519,27 @@ class PrivacyRequestProcessor {
     const dataKeys = this.getDataKeysForSubject(subjectId);
     
     for (const key of dataKeys) {
-      const stored = localStorage.getItem(key);
+      const stored = safeLocalStorage()?.getItem(key);
       if (stored) {
         const record = JSON.parse(stored);
         
         // Verificar se pode ser deletado (algumas retenções são legalmente obrigatórias)
         if (this.canBeDeleted(record)) {
-          localStorage.removeItem(key);
+          safeLocalStorage()?.removeItem(key);
           secureLogger.lgpd('Dados deletados', 'system-cleanup', { key });
         } else {
           // Anonimizar se não pode deletar
           record.data = this.anonymizeRecord(record.data);
           record.anonymizedAt = new Date();
           record.anonymizationReason = reason;
-          localStorage.setItem(key, JSON.stringify(record));
+          safeLocalStorage()?.setItem(key, JSON.stringify(record));
           secureLogger.lgpd('Dados anonimizados', 'system-cleanup', { key });
         }
       }
     }
 
     // Remover consentimentos
-    localStorage.removeItem(`consent_${subjectId}`);
+    safeLocalStorage()?.removeItem(`consent_${subjectId}`);
 
     return true;
   }
@@ -660,7 +660,7 @@ class ComplianceAuditor {
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
       if (key && key.startsWith('consent_')) {
-        const consent = JSON.parse(localStorage.getItem(key) || '{}');
+        const consent = JSON.parse(safeLocalStorage()?.getItem(key) || '{}');
         for (const [type, value] of Object.entries(consent)) {
           if (typeof value === 'boolean' && value && counts.hasOwnProperty(type)) {
             counts[type as keyof typeof counts]++;

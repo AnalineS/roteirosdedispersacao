@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useCallback, useEffect } from 'react';
+import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { calculatePQTUDoses, validateCalculation } from '@/utils/doseCalculations';
 import { PatientProfile, CalculationResult, CalculationHistory } from '@/types/medication';
@@ -23,7 +24,7 @@ export default function AdvancedCalculator({ onCalculationComplete }: AdvancedCa
 
   // Carregar histórico do localStorage no mount
   useEffect(() => {
-    const savedHistory = localStorage.getItem('pqtu_calculation_history');
+    const savedHistory = safeLocalStorage()?.getItem('pqtu_calculation_history');
     if (savedHistory) {
       try {
         setHistory(JSON.parse(savedHistory));
@@ -52,7 +53,7 @@ export default function AdvancedCalculator({ onCalculationComplete }: AdvancedCa
 
     const updatedHistory = [historyItem, ...history].slice(0, 50); // Manter apenas 50 mais recentes
     setHistory(updatedHistory);
-    localStorage.setItem('pqtu_calculation_history', JSON.stringify(updatedHistory));
+    safeLocalStorage()?.setItem('pqtu_calculation_history', JSON.stringify(updatedHistory));
   }, [history]);
 
   const handleCalculationComplete = useCallback((result: CalculationResult, profile?: PatientProfile) => {
@@ -74,7 +75,7 @@ export default function AdvancedCalculator({ onCalculationComplete }: AdvancedCa
   const clearHistory = useCallback(() => {
     if (confirm('Tem certeza que deseja limpar todo o histórico de cálculos?')) {
       setHistory([]);
-      localStorage.removeItem('pqtu_calculation_history');
+      safeLocalStorage()?.removeItem('pqtu_calculation_history');
     }
   }, []);
 

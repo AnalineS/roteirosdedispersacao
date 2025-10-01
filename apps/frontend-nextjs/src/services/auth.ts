@@ -51,8 +51,8 @@ export class AuthService {
 
   private async checkStoredAuth() {
     try {
-      const token = localStorage.getItem('auth_token');
-      const userData = localStorage.getItem('user_data');
+      const token = safeLocalStorage()?.getItem('auth_token');
+      const userData = safeLocalStorage()?.getItem('user_data');
 
       if (token && userData) {
         const parsedUser = JSON.parse(userData) as AuthUser;
@@ -118,9 +118,9 @@ export class AuthService {
   }
 
   private clearAuthStorage() {
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('user_data');
-    localStorage.removeItem('refresh_token');
+    safeLocalStorage()?.removeItem('auth_token');
+    safeLocalStorage()?.removeItem('user_data');
+    safeLocalStorage()?.removeItem('refresh_token');
   }
 
   onAuthStateChange(callback: (authState: AuthState) => void) {
@@ -278,8 +278,8 @@ export class AuthService {
       });
 
       // Salvar token e dados do usuário
-      localStorage.setItem('auth_token', response.token);
-      localStorage.setItem('user_data', JSON.stringify(response.user));
+      safeLocalStorage()?.setItem('auth_token', response.token);
+      safeLocalStorage()?.setItem('user_data', JSON.stringify(response.user));
 
       // Atualizar estado
       this.notifyAuthStateChange({
@@ -307,8 +307,8 @@ export class AuthService {
       });
 
       // Salvar token e dados do usuário
-      localStorage.setItem('auth_token', response.token);
-      localStorage.setItem('user_data', JSON.stringify(response.user));
+      safeLocalStorage()?.setItem('auth_token', response.token);
+      safeLocalStorage()?.setItem('user_data', JSON.stringify(response.user));
 
       // Atualizar estado
       this.notifyAuthStateChange({
@@ -339,8 +339,8 @@ export class AuthService {
       });
 
       // Salvar token e dados do usuário
-      localStorage.setItem('auth_token', response.token);
-      localStorage.setItem('user_data', JSON.stringify(response.user));
+      safeLocalStorage()?.setItem('auth_token', response.token);
+      safeLocalStorage()?.setItem('user_data', JSON.stringify(response.user));
 
       // Atualizar estado
       this.notifyAuthStateChange({
@@ -401,12 +401,12 @@ export class AuthService {
       });
 
       // Atualizar dados locais se for o usuário atual
-      const currentUserData = localStorage.getItem('user_data');
+      const currentUserData = safeLocalStorage()?.getItem('user_data');
       if (currentUserData) {
         const currentUser = JSON.parse(currentUserData) as AuthUser;
         if (currentUser.uid === uid) {
           const updatedUser = { ...currentUser, ...updates };
-          localStorage.setItem('user_data', JSON.stringify(updatedUser));
+          safeLocalStorage()?.setItem('user_data', JSON.stringify(updatedUser));
 
           // Notificar mudança de estado
           this.notifyAuthStateChange({
@@ -435,7 +435,7 @@ export class AuthService {
       });
 
       // Atualizar dados locais se for o usuário atual
-      const currentUserData = localStorage.getItem('user_data');
+      const currentUserData = safeLocalStorage()?.getItem('user_data');
       if (currentUserData) {
         const currentUser = JSON.parse(currentUserData) as AuthUser;
         if (currentUser.uid === uid) {
@@ -444,7 +444,7 @@ export class AuthService {
             role: newRole,
             permissions: USER_LEVEL_CONFIG[newRole],
           };
-          localStorage.setItem('user_data', JSON.stringify(updatedUser));
+          safeLocalStorage()?.setItem('user_data', JSON.stringify(updatedUser));
 
           // Notificar mudança de estado
           this.notifyAuthStateChange({
@@ -470,7 +470,7 @@ export class AuthService {
 
   getCurrentUser(): AuthUser | null {
     try {
-      const userData = localStorage.getItem('user_data');
+      const userData = safeLocalStorage()?.getItem('user_data');
       return userData ? JSON.parse(userData) as AuthUser : null;
     } catch {
       return null;
@@ -478,8 +478,8 @@ export class AuthService {
   }
 
   isAuthenticated(): boolean {
-    const token = localStorage.getItem('auth_token');
-    const userData = localStorage.getItem('user_data');
+    const token = safeLocalStorage()?.getItem('auth_token');
+    const userData = safeLocalStorage()?.getItem('user_data');
     return !!(token && userData);
   }
 

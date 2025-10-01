@@ -132,19 +132,19 @@ export const useUnifiedCache = <T = any>(config: UnifiedCacheConfig = {}) => {
       }
 
       try {
-        const stored = localStorage.getItem(cacheKey);
+        const stored = safeLocalStorage()?.getItem(cacheKey);
         if (!stored) return null;
 
         const entry: CacheEntry<T> = JSON.parse(stored);
 
         // Verificar TTL
         if (Date.now() - entry.timestamp > entry.ttl) {
-          localStorage.removeItem(cacheKey);
+          safeLocalStorage()?.removeItem(cacheKey);
           return null;
         }
 
         entry.hits++;
-        localStorage.setItem(cacheKey, JSON.stringify(entry));
+        safeLocalStorage()?.setItem(cacheKey, JSON.stringify(entry));
         stats.current.localStorageHits++;
         return entry.data;
       } catch (error) {
@@ -172,7 +172,7 @@ export const useUnifiedCache = <T = any>(config: UnifiedCacheConfig = {}) => {
           source: "localStorage",
         };
 
-        localStorage.setItem(cacheKey, JSON.stringify(entry));
+        safeLocalStorage()?.setItem(cacheKey, JSON.stringify(entry));
 
         // Atualizar estatísticas
         stats.current.localStorageSize = localStorage.length;
@@ -328,7 +328,7 @@ export const useUnifiedCache = <T = any>(config: UnifiedCacheConfig = {}) => {
       memoryCache.current.delete(cacheKey);
 
       if (finalConfig.enableLocalStorage && typeof window !== "undefined") {
-        localStorage.removeItem(cacheKey);
+        safeLocalStorage()?.removeItem(cacheKey);
       }
 
       if (finalConfig.enableAPICache) {
@@ -363,7 +363,7 @@ export const useUnifiedCache = <T = any>(config: UnifiedCacheConfig = {}) => {
       const keys = Object.keys(localStorage);
       keys.forEach((key) => {
         if (key.startsWith("unified_cache_")) {
-          localStorage.removeItem(key);
+          safeLocalStorage()?.removeItem(key);
         }
       });
     }

@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 import { apiClient } from '@/services/api';
 import type { FeedbackData } from '@/types/feedback';
 
@@ -150,7 +151,7 @@ export function useFeedback(options: UseFeedbackOptions = {}) {
       // Salvar no localStorage
       if (typeof window !== 'undefined') {
         try {
-          localStorage.setItem('feedback_offline_queue', JSON.stringify(newQueue));
+          safeLocalStorage()?.setItem('feedback_offline_queue', JSON.stringify(newQueue));
         } catch (e) {
           // Erro ao salvar queue offline no localStorage
           if (typeof process !== 'undefined' && process.stderr) {
@@ -219,7 +220,7 @@ export function useFeedback(options: UseFeedbackOptions = {}) {
     // Limpar localStorage
     if (typeof window !== 'undefined') {
       try {
-        localStorage.removeItem('feedback_offline_queue');
+        safeLocalStorage()?.removeItem('feedback_offline_queue');
       } catch (e) {
         // Erro ao limpar queue offline do localStorage
         if (typeof process !== 'undefined' && process.stderr) {
@@ -244,7 +245,7 @@ export function useFeedback(options: UseFeedbackOptions = {}) {
     if (typeof window === 'undefined') return;
 
     try {
-      const saved = localStorage.getItem('feedback_offline_queue');
+      const saved = safeLocalStorage()?.getItem('feedback_offline_queue');
       if (saved) {
         const queue: FeedbackData[] = JSON.parse(saved);
         setOfflineQueue(queue);

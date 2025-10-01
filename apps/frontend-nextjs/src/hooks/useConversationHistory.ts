@@ -5,6 +5,7 @@
  */
 
 import { useState, useCallback, useEffect, useRef } from 'react';
+import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 import { ChatMessage, BackendConversation, BackendMessage } from '@/types/api';
 import { useSafeAuth as useAuth } from '@/hooks/useSafeAuth';
 // Firebase features replaced with backend API
@@ -98,7 +99,7 @@ export function useConversationHistory() {
       // TODO: Implementar cache de conversas com Backend API Cache Service futuramente
       
       // Carregar do localStorage
-      const stored = localStorage.getItem(STORAGE_KEY);
+      const stored = safeLocalStorage()?.getItem(STORAGE_KEY);
       if (stored) {
         const parsedConversations = JSON.parse(stored);
         if (Array.isArray(parsedConversations)) {
@@ -208,9 +209,9 @@ export function useConversationHistory() {
       
       if (dataString.length > 4.5 * 1024 * 1024) {
         const reducedConversations = limitedConversations.slice(0, Math.floor(MAX_CONVERSATIONS / 2));
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(reducedConversations));
+        safeLocalStorage()?.setItem(STORAGE_KEY, JSON.stringify(reducedConversations));
       } else {
-        localStorage.setItem(STORAGE_KEY, dataString);
+        safeLocalStorage()?.setItem(STORAGE_KEY, dataString);
       }
     } catch (error) {
       console.error('Erro ao salvar no localStorage:', error);
@@ -537,7 +538,7 @@ export function useConversationHistory() {
     setConversations([]);
     setCurrentConversationId(null);
     if (typeof window !== 'undefined') {
-      localStorage.removeItem('conversation-history');
+      safeLocalStorage()?.removeItem('conversation-history');
     }
   }, []);
 

@@ -7,6 +7,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 import { useRouter } from 'next/navigation';
 import {
   UserLevel,
@@ -63,7 +64,7 @@ export function useProgressiveDisclosure(options: UseProgressiveDisclosureOption
     if (!persistState || typeof window === 'undefined') return;
 
     try {
-      const stored = localStorage.getItem('progressive-disclosure-state');
+      const stored = safeLocalStorage()?.getItem('progressive-disclosure-state');
       if (stored) {
         const parsedState = JSON.parse(stored);
         setState(prev => ({
@@ -97,7 +98,7 @@ export function useProgressiveDisclosure(options: UseProgressiveDisclosureOption
 
     try {
       const stateToSave = { ...state, ...newState };
-      localStorage.setItem('progressive-disclosure-state', JSON.stringify(stateToSave));
+      safeLocalStorage()?.setItem('progressive-disclosure-state', JSON.stringify(stateToSave));
     } catch (error) {
       // Erro ao salvar estado do progressive disclosure
       if (typeof process !== 'undefined' && process.stderr) {
@@ -136,7 +137,7 @@ export function useProgressiveDisclosure(options: UseProgressiveDisclosureOption
     if (typeof window !== 'undefined') {
       // Tenta detectar persona do localStorage ou contexto
       try {
-        const userProfile = localStorage.getItem('user-profile');
+        const userProfile = safeLocalStorage()?.getItem('user-profile');
         if (userProfile) {
           const profile = JSON.parse(userProfile);
           if (profile.selectedPersona) {

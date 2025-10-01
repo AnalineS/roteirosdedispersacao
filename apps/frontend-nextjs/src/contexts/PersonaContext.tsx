@@ -7,6 +7,7 @@
  */
 
 import React, { createContext, useContext, useCallback, useEffect, useMemo, useState } from 'react';
+import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 import { usePersonasEnhanced } from '@/hooks/usePersonasEnhanced';
 import { useSafePersonaFromURL } from '@/hooks/useSafePersonaFromURL';
 import { useUserProfile } from '@/hooks/useUserProfile';
@@ -161,7 +162,7 @@ export function PersonaProvider({ children, config = {} }: PersonaProviderProps)
         // Persistir mudança no localStorage se necessário
         if (enableLocalStorage && source !== 'localStorage') {
           try {
-            localStorage.setItem('selectedPersona', resolvedPersona);
+            safeLocalStorage()?.setItem('selectedPersona', resolvedPersona);
           } catch (error) {
             trackLocalStorageError('localstorage_save_error_initial', error);
             ErrorMonitorService.getInstance().logError(error as Error, {
