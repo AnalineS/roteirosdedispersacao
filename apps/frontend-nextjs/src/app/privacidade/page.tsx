@@ -3,6 +3,9 @@
 import EducationalLayout from '@/components/layout/EducationalLayout';
 import { getUnbColors } from '@/config/modernTheme';
 
+// Forçar renderização dinâmica - sem SSG
+export const dynamic = 'force-dynamic';
+
 export default function PrivacidadePage() {
   const unbColors = getUnbColors();
 

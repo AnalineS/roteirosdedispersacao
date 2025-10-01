@@ -180,7 +180,13 @@ export const ErrorHandlerProvider: React.FC<{
 
     // Mostrar toast para erros medium/high/critical (não silent)
     if (!options.silent && ['medium', 'high', 'critical'].includes(severity)) {
-      showToast(errorId, severity, errorObj.message);
+      // showToast será chamado após ser declarado
+      const event = new CustomEvent('show-error-toast', {
+        detail: { errorId, severity, message: errorObj.message }
+      });
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(event);
+      }
     }
 
     // Medical analytics para produção
@@ -197,7 +203,7 @@ export const ErrorHandlerProvider: React.FC<{
     }
 
     return errorId;
-  }, [generateErrorId, calculateSeverity, maxHistorySize, onError, showToast]);
+  }, [generateErrorId, calculateSeverity, maxHistorySize, onError]);
 
   const showToast = useCallback((errorId: string, severity: ErrorSeverity, message: string) => {
     // Trigger toast notification

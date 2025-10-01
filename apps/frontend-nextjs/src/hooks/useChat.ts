@@ -292,7 +292,7 @@ export function useChat(options: UseChatOptions = {}) {
 
     } catch (err) {
       console.error(`Erro ao enviar mensagem (tentativa ${retryCount + 1}):`, err);
-      captureError(err as string | Error, 'medium');
+      captureError(err as string | Error, { severity: 'medium' });
       
       if (retryCount < maxRetries) {
         // Retry with exponential backoff

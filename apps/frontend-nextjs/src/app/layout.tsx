@@ -9,6 +9,7 @@ import PWAManager from '@/components/pwa/PWAManager'
 import { ConditionalAuthProvider } from '@/components/auth/ConditionalAuthProvider'
 import { ThemeProvider } from '@/contexts/ThemeContext'
 import { AccessibilityProvider } from '@/contexts/AccessibilityContext'
+import { ErrorHandlerProvider } from '@/hooks/useErrorHandler'
 import { GlobalNavigationProvider } from '@/components/navigation/GlobalNavigationProvider'
 import { PersonaProvider } from '@/contexts/PersonaContext'
 import PersonaAccessibilityProvider from '@/components/accessibility/PersonaAccessibilityProvider'
@@ -118,23 +119,25 @@ export default function RootLayout({
         
         <main id="main-content">
           <ErrorBoundary>
-            <GlobalTrackingProvider>
-              <AccessibilityProvider>
-                <ThemeProvider>
-                  <PersonaProvider>
-                    <PersonaAccessibilityProvider>
-                      <GlobalNavigationProvider>
-                        <ConditionalAuthProvider>
-                          <AnalyticsProvider>
-                            {children}
-                          </AnalyticsProvider>
-                        </ConditionalAuthProvider>
-                      </GlobalNavigationProvider>
-                    </PersonaAccessibilityProvider>
-                  </PersonaProvider>
-                </ThemeProvider>
-              </AccessibilityProvider>
-            </GlobalTrackingProvider>
+            <ErrorHandlerProvider>
+              <GlobalTrackingProvider>
+                <AccessibilityProvider>
+                  <ThemeProvider>
+                    <PersonaProvider>
+                      <PersonaAccessibilityProvider>
+                        <GlobalNavigationProvider>
+                          <ConditionalAuthProvider>
+                            <AnalyticsProvider>
+                              {children}
+                            </AnalyticsProvider>
+                          </ConditionalAuthProvider>
+                        </GlobalNavigationProvider>
+                      </PersonaAccessibilityProvider>
+                    </PersonaProvider>
+                  </ThemeProvider>
+                </AccessibilityProvider>
+              </GlobalTrackingProvider>
+            </ErrorHandlerProvider>
             
             {/* Toast System - Fora dos providers para máxima compatibilidade */}
             <ErrorToast 

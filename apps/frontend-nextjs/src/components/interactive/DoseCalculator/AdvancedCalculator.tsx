@@ -28,7 +28,7 @@ export default function AdvancedCalculator({ onCalculationComplete }: AdvancedCa
       try {
         setHistory(JSON.parse(savedHistory));
       } catch (error) {
-        captureError(error as Error, 'low');
+        captureError(error as Error, { severity: 'low' });
       }
     }
   }, []);
