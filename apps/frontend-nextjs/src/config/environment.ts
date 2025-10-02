@@ -132,13 +132,15 @@ function detectEnvironment(): Environment {
       return 'development'
     }
 
-    // Staging patterns
-    if (hostname.includes('hml-') || hostname.includes('staging') || hostname.includes('test')) {
+    // Staging patterns (MUST be checked BEFORE production patterns)
+    if (hostname.includes('hml.') || hostname.includes('hml-') ||
+        hostname.includes('staging') || hostname.includes('test')) {
       return 'staging'
     }
 
-    // Production patterns
-    if (hostname.includes('roteirosdispensacao.com') ||
+    // Production patterns (more specific to avoid conflicts with staging)
+    if (hostname === 'roteirosdispensacao.com.br' ||
+        hostname === 'www.roteirosdispensacao.com.br' ||
         hostname.includes('roteiros-de-dispensacao.web.app')) {
       return 'production'
     }
