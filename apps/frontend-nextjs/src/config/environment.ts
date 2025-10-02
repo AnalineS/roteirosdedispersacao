@@ -78,13 +78,7 @@ interface EnvironmentConfig {
  * Get environment variable with type safety and fallback
  */
 function getEnvVar(key: string, fallback: string = ''): string {
-  if (typeof window !== 'undefined') {
-    // Client-side: only NEXT_PUBLIC_ variables are available
-    return (window as any).__NEXT_DATA__?.env?.[key] ||
-           process.env[key] ||
-           fallback
-  }
-  // Server-side: all variables available
+  // Both client and server-side: NEXT_PUBLIC_ variables are available in process.env
   return process.env[key] || fallback
 }
 
