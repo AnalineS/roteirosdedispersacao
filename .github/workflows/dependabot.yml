@@ -38,35 +38,37 @@ jobs:
         
       - name: "🤖 Claude Smart Analysis"
         id: claude-analysis
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
-          echo "🔍 Claude analyzing dependency changes..."
-          
+          echo "�� Claude analyzing dependency changes..."
+
           # Security check
           SECURITY_CRITICAL=false
-          if [[ "${{ github.event.pull_request.title }}" == *"security"* ]] || 
-             [[ "${{ github.event.pull_request.title }}" == *"vulnerability"* ]]; then
+          if [[ "$PR_TITLE" == *"security"* ]] ||
+             [[ "$PR_TITLE" == *"vulnerability"* ]]; then
             SECURITY_CRITICAL=true
             echo "🔒 CRITICAL: Security update detected"
           fi
-          
+
           # Auto-merge logic (simplified)
           AUTO_MERGE=false
           if [[ "$SECURITY_CRITICAL" == "true" ]]; then
             AUTO_MERGE=true
             echo "✅ Auto-merge APPROVED: Critical security"
-          elif [[ "${{ github.event.pull_request.title }}" == *"patch"* ]]; then
+          elif [[ "$PR_TITLE" == *"patch"* ]]; then
             AUTO_MERGE=true
             echo "✅ Auto-merge APPROVED: Patch update"
           fi
-          
+
           # Medical platform impact
           MEDICAL_IMPACT="low"
-          if [[ "${{ github.event.pull_request.title }}" == *"firebase"* ]] ||
-             [[ "${{ github.event.pull_request.title }}" == *"react"* ]] ||
-             [[ "${{ github.event.pull_request.title }}" == *"next"* ]]; then
+          if [[ "$PR_TITLE" == *"firebase"* ]] ||
+             [[ "$PR_TITLE" == *"react"* ]] ||
+             [[ "$PR_TITLE" == *"next"* ]]; then
             MEDICAL_IMPACT="high"
           fi
-          
+
           echo "security_critical=$SECURITY_CRITICAL" >> $GITHUB_OUTPUT
           echo "auto_merge_approved=$AUTO_MERGE" >> $GITHUB_OUTPUT
           echo "medical_impact=$MEDICAL_IMPACT" >> $GITHUB_OUTPUT
@@ -77,25 +79,26 @@ jobs:
     runs-on: ubuntu-latest
     needs: claude-dependency-analysis
     if: needs.claude-dependency-analysis.outputs.auto-merge-approved == 'true'
-    
+
     steps:
       - name: "✅ Auto-approve & Merge"
         env:
           SECURITY_CRITICAL: ${{ needs.claude-dependency-analysis.outputs.security-critical }}
           MEDICAL_IMPACT: ${{ needs.claude-dependency-analysis.outputs.medical-impact }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           if [[ "$SECURITY_CRITICAL" == "true" ]]; then
             REASON="🔒 [SECURITY] Critical security update for medical platform"
           else
             REASON="🔧 [PATCH] Safe dependency update"
           fi
-          
-          echo "🤖 Claude approving: $REASON"
-          gh pr review --approve "${{ github.event.pull_request.html_url }}" --body "$REASON"
-          gh pr merge --auto --squash "${{ github.event.pull_request.html_url }}"
-          
+
+          echo "🤖 Claude approving PR #$PR_NUMBER: $REASON"
+          gh pr review "$PR_NUMBER" --approve --body "$REASON"
+          gh pr merge "$PR_NUMBER" --auto --squash
+
           # Label for tracking
-          gh pr edit "${{ github.event.pull_request.html_url }}" --add-label "claude-auto-merged"
+          gh pr edit "$PR_NUMBER" --add-label "claude-auto-merged"
 
   # Release management simplificado
   claude-release-management:
