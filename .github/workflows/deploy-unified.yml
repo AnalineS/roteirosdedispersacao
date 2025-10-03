@@ -930,15 +930,29 @@ jobs:
         run: |
           echo "🚀 Deploying frontend to Cloud Run with custom domain..."
 
-          # Set service name based on environment
+          # Set service name and environment variables based on environment
           if [[ "${{ needs.environment-preparation.outputs.environment }}" == "production" ]]; then
             FRONTEND_SERVICE="${{ vars.PRODUCTION_FRONTEND_SERVICE }}"
             BACKEND_URL="${{ vars.NEXT_PUBLIC_API_URL_PRODUCTION }}"
             FRONTEND_DOMAIN="${{ vars.PRODUCTION_FRONTEND_DOMAIN }}"
+            # Production-specific environment variables
+            API_URL_STAGING="${{ vars.NEXT_PUBLIC_API_URL_STAGING }}"
+            API_URL_PRODUCTION="${{ vars.NEXT_PUBLIC_API_URL_PRODUCTION }}"
+            STAGING_DOMAIN="${{ vars.NEXT_PUBLIC_STAGING_DOMAIN }}"
+            PRODUCTION_DOMAIN="${{ vars.NEXT_PUBLIC_PRODUCTION_DOMAIN }}"
+            BASE_URL_STAGING="${{ vars.NEXT_PUBLIC_BASE_URL_STAGING }}"
+            BASE_URL_PRODUCTION="${{ vars.NEXT_PUBLIC_BASE_URL_PRODUCTION }}"
           else
             FRONTEND_SERVICE="${{ vars.HML_FRONTEND_SERVICE }}"
             BACKEND_URL="${{ vars.NEXT_PUBLIC_API_URL_STAGING }}"
             FRONTEND_DOMAIN="${{ vars.HML_FRONTEND_DOMAIN }}"
+            # Staging-specific environment variables
+            API_URL_STAGING="${{ vars.NEXT_PUBLIC_API_URL_STAGING }}"
+            API_URL_PRODUCTION="${{ vars.NEXT_PUBLIC_API_URL_PRODUCTION }}"
+            STAGING_DOMAIN="${{ vars.NEXT_PUBLIC_STAGING_DOMAIN }}"
+            PRODUCTION_DOMAIN="${{ vars.NEXT_PUBLIC_PRODUCTION_DOMAIN }}"
+            BASE_URL_STAGING="${{ vars.NEXT_PUBLIC_BASE_URL_STAGING }}"
+            BASE_URL_PRODUCTION="${{ vars.NEXT_PUBLIC_BASE_URL_PRODUCTION }}"
           fi
 
           # Retry frontend deployment up to 3 times for network resilience
@@ -958,6 +972,13 @@ jobs:
               --set-env-vars "NODE_ENV=production" \
               --set-env-vars "NEXT_PUBLIC_ENVIRONMENT=${{ needs.environment-preparation.outputs.environment }}" \
               --set-env-vars "NEXT_PUBLIC_BACKEND_URL=$BACKEND_URL" \
+              --set-env-vars "NEXT_PUBLIC_API_URL_STAGING=$API_URL_STAGING" \
+              --set-env-vars "NEXT_PUBLIC_API_URL_PRODUCTION=$API_URL_PRODUCTION" \
+              --set-env-vars "NEXT_PUBLIC_STAGING_DOMAIN=$STAGING_DOMAIN" \
+              --set-env-vars "NEXT_PUBLIC_PRODUCTION_DOMAIN=$PRODUCTION_DOMAIN" \
+              --set-env-vars "NEXT_PUBLIC_BASE_URL_STAGING=$BASE_URL_STAGING" \
+              --set-env-vars "NEXT_PUBLIC_BASE_URL_PRODUCTION=$BASE_URL_PRODUCTION" \
+              --set-env-vars "NEXT_PUBLIC_GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" \
               --timeout 120 \
               --concurrency 80; then
 

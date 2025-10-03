@@ -18,12 +18,13 @@
     "build": "cd apps/frontend-nextjs && npm run build"
   },
   "dependencies": {
+    "chalk": "^4.1.2",
+    "chokidar": "^3.6.0",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
     "fs-extra": "^11.2.0",
     "glob": "^10.3.12",
-    "chokidar": "^3.6.0",
-    "express": "^4.19.2",
-    "cors": "^2.8.5",
-    "chalk": "^4.1.2"
+    "playwright": "^1.55.1"
   },
   "devDependencies": {
     "@types/node": "^20.12.12",
