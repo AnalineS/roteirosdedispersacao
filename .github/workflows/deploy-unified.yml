@@ -942,6 +942,7 @@ jobs:
             PRODUCTION_DOMAIN="${{ vars.NEXT_PUBLIC_PRODUCTION_DOMAIN }}"
             BASE_URL_STAGING="${{ vars.NEXT_PUBLIC_BASE_URL_STAGING }}"
             BASE_URL_PRODUCTION="${{ vars.NEXT_PUBLIC_BASE_URL_PRODUCTION }}"
+            GOOGLE_CLIENT_ID="${{ vars.GOOGLE_CLIENT_ID_PROD }}"
           else
             FRONTEND_SERVICE="${{ vars.HML_FRONTEND_SERVICE }}"
             BACKEND_URL="${{ vars.NEXT_PUBLIC_API_URL_STAGING }}"
@@ -953,6 +954,7 @@ jobs:
             PRODUCTION_DOMAIN="${{ vars.NEXT_PUBLIC_PRODUCTION_DOMAIN }}"
             BASE_URL_STAGING="${{ vars.NEXT_PUBLIC_BASE_URL_STAGING }}"
             BASE_URL_PRODUCTION="${{ vars.NEXT_PUBLIC_BASE_URL_PRODUCTION }}"
+            GOOGLE_CLIENT_ID="${{ vars.GOOGLE_CLIENT_ID }}"
           fi
 
           # Retry frontend deployment up to 3 times for network resilience
@@ -978,7 +980,7 @@ jobs:
               --set-env-vars "NEXT_PUBLIC_PRODUCTION_DOMAIN=$PRODUCTION_DOMAIN" \
               --set-env-vars "NEXT_PUBLIC_BASE_URL_STAGING=$BASE_URL_STAGING" \
               --set-env-vars "NEXT_PUBLIC_BASE_URL_PRODUCTION=$BASE_URL_PRODUCTION" \
-              --set-env-vars "NEXT_PUBLIC_GOOGLE_CLIENT_ID=${{ secrets.NEXT_PUBLIC_GOOGLE_CLIENT_ID }}" \
+              --set-env-vars "NEXT_PUBLIC_GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID" \
               --timeout 120 \
               --concurrency 80; then
 
