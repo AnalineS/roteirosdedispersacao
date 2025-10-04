@@ -63,12 +63,17 @@ class TestModelConfig:
 class TestAIProviderManager:
     """Test AIProviderManager implementation"""
 
-    def setup_method(self):
+    @pytest.fixture(autouse=True)
+    def setup(self):
         """Setup test environment"""
         # Clear environment variables
         for key in ['OPENROUTER_API_KEY', 'HUGGINGFACE_API_KEY']:
             if key in os.environ:
                 del os.environ[key]
+
+        yield
+
+        # Teardown: cleanup if needed
 
     def test_initialization_no_keys(self):
         """Test initialization without API keys"""

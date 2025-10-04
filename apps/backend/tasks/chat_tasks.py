@@ -233,7 +233,10 @@ Responda de forma empática e didática."""
             logger.info(f"[{request_id}] Chamando AI Provider em async com modelo {model_preference}")
             
             # Usar AI Provider existente (assíncrono)
-            answer, ai_metadata = asyncio.run(generate_ai_response(
+            # CRITICAL FIX: Use get_event_loop() instead of asyncio.run() for celery 5.5.3 compatibility
+            # asyncio.run() creates new event loop conflicting with Celery's worker event loop
+            loop = asyncio.get_event_loop()
+            answer, ai_metadata = loop.run_until_complete(generate_ai_response(
                 messages=messages,
                 model_preference=model_preference,
                 temperature=0.7 if personality_id == 'dr_gasnelio' else 0.8,

@@ -69,13 +69,18 @@ class TestSearchResult:
 class TestEmbeddingService:
     """Test EmbeddingService implementation"""
 
-    def setup_method(self):
+    @pytest.fixture(autouse=True)
+    def setup(self):
         """Setup test environment"""
         self.mock_config = Mock()
         self.mock_config.EMBEDDING_MODEL = 'all-MiniLM-L6-v2'
         self.mock_config.EMBEDDING_DIMENSION = 384
         self.mock_config.USE_OPENAI_EMBEDDINGS = False
         self.mock_config.OPENAI_API_KEY = None
+
+        yield
+
+        # Teardown: cleanup if needed
 
     @patch('services.semantic_search.SENTENCE_TRANSFORMERS_AVAILABLE', True)
     @patch('services.semantic_search.SentenceTransformer')
