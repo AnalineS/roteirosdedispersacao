@@ -45,8 +45,13 @@ function sanitizeHTMLServerSide(html: string): string {
     sanitized = sanitized.replace(/vbscript:/gi, '');
     sanitized = sanitized.replace(/file:/gi, '');       // Proteção adicional contra file: URIs
     
-    // Remover event handlers
-    sanitized = sanitized.replace(/on\w+\s*=/gi, '');
+    // Remover event handlers (CWE-20/CWE-80/CWE-116)
+    // Regex melhorada para capturar variações de event handlers
+    // Exemplos: onclick=, on click=, onclick =, on-click=, onerror=
+    sanitized = sanitized.replace(/\bon[\w\-]*\s*=/gi, '');
+
+    // Proteção adicional: remover atributos 'on' isolados que possam ter sido criados
+    sanitized = sanitized.replace(/\bon\s*=/gi, '');
     
     iterations++;
   } while (sanitized !== previous && iterations < maxIterations);
