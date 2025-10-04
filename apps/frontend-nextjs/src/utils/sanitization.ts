@@ -25,17 +25,22 @@ function sanitizeHTMLServerSide(html: string): string {
   
   // Passo 2: Aplicar múltiplas passadas de remoção de tags para evitar bypass
   // Como recomendado pelo CodeQL, aplicar até não haver mais mudanças
+  // PROTEÇÃO contra CWE-20/CWE-80/CWE-116: Incomplete Multi-Character Sanitization
   let previous = '';
   let iterations = 0;
   const maxIterations = 10; // Prevenir loop infinito
-  
+
   do {
     previous = sanitized;
-    
+
     // Remover tags HTML básicas (incluindo tags malformadas)
+    // Exemplo: <script>alert()</script> → ""
     sanitized = sanitized.replace(/<[^>]*>/g, '');
-    
-    // Remover tentativas de bypass como <<script>alert()>/script>
+
+    // Proteção adicional: remover < e > isolados criados por remoção anterior
+    // Exemplo: <scrip<script>alert()</script>t> → primeira passada remove meio → <script>
+    // Esta linha remove o <script> remanescente → script (texto puro)
+    // DEFESA EM PROFUNDIDADE contra reintrodução de tags (CWE-20/80/116)
     sanitized = sanitized.replace(/<+|>+/g, '');
     
     // Remover protocolos perigosos (CWE-20/CWE-184)
