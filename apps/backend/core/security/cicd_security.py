@@ -45,6 +45,72 @@ import zipfile
 cicd_logger = logging.getLogger('security.cicd')
 
 
+class PathTraversalError(Exception):
+    """Exception raised when path traversal attack is detected"""
+    pass
+
+
+def validate_safe_path(user_path: str, allowed_base_dir: Optional[str] = None) -> str:
+    """
+    Valida e sanitiza caminho para prevenir path traversal (CWE-22).
+
+    Security measures:
+    - Resolve symbolic links and relative paths using os.path.realpath()
+    - Validate path stays within allowed base directory
+    - Prevent directory traversal sequences (../, ..)
+    - Normalize path separators for platform compatibility
+
+    Args:
+        user_path: Path fornecido pelo usuário (potencialmente malicioso)
+        allowed_base_dir: Diretório base permitido (None = diretório atual)
+
+    Returns:
+        str: Caminho absoluto validado e seguro
+
+    Raises:
+        PathTraversalError: Se path traversal for detectado
+        ValueError: Se caminho for inválido
+    """
+    if not user_path:
+        raise ValueError("Path cannot be empty")
+
+    # Definir diretório base permitido
+    if allowed_base_dir is None:
+        allowed_base_dir = os.getcwd()
+
+    # Normalizar e resolver caminho base
+    base_dir = os.path.realpath(os.path.abspath(allowed_base_dir))
+
+    # Normalizar e resolver caminho do usuário
+    # realpath() resolve symlinks e normaliza o caminho
+    resolved_path = os.path.realpath(os.path.abspath(user_path))
+
+    # Verificar se o caminho resolvido está dentro do diretório base
+    # Usar commonpath para detecção segura de path traversal
+    try:
+        common = os.path.commonpath([base_dir, resolved_path])
+        if common != base_dir:
+            raise PathTraversalError(
+                f"Path traversal detected: '{user_path}' escapes allowed directory '{base_dir}'"
+            )
+    except ValueError:
+        # commonpath raises ValueError if paths are on different drives (Windows)
+        raise PathTraversalError(
+            f"Path '{user_path}' is not within allowed directory '{base_dir}'"
+        )
+
+    # Verificação adicional: garantir que resolved_path começa com base_dir
+    if not resolved_path.startswith(base_dir + os.sep) and resolved_path != base_dir:
+        raise PathTraversalError(
+            f"Path traversal detected: '{user_path}' attempts to escape '{base_dir}'"
+        )
+
+    # Log de validação bem-sucedida
+    cicd_logger.debug(f"Path validation successful: {user_path} -> {resolved_path}")
+
+    return resolved_path
+
+
 class ScanType(Enum):
     """Tipos de scan de segurança"""
     SECRETS = "secrets"
@@ -175,18 +241,35 @@ class SecretsScanner:
         ]
     
     def scan_directory(self, directory: str) -> ScanResult:
-        """Escaneia diretório em busca de secrets"""
+        """
+        Escaneia diretório em busca de secrets.
+
+        Security: Path is validated to prevent traversal attacks (CWE-22)
+
+        Args:
+            directory: Diretório para escanear (validado contra path traversal)
+
+        Returns:
+            ScanResult com findings de segurança
+
+        Raises:
+            PathTraversalError: Se path traversal for detectado
+        """
         start_time = datetime.now()
         findings = []
-        
+
         try:
-            for root, dirs, files in os.walk(directory):
+            # SECURITY FIX: Validate directory path to prevent traversal (CWE-22)
+            safe_directory = validate_safe_path(directory)
+            cicd_logger.info(f"Scanning directory for secrets: {safe_directory}")
+
+            for root, dirs, files in os.walk(safe_directory):
                 # Filtrar diretórios ignorados
                 dirs[:] = [d for d in dirs if not any(re.search(pattern, os.path.join(root, d)) for pattern in self.ignore_patterns)]
                 
                 for file in files:
                     file_path = os.path.join(root, file)
-                    relative_path = os.path.relpath(file_path, directory)
+                    relative_path = os.path.relpath(file_path, safe_directory)
                     
                     # Pular arquivos ignorados
                     if any(re.search(pattern, relative_path) for pattern in self.ignore_patterns):
@@ -208,11 +291,23 @@ class SecretsScanner:
                     'total_findings': len(findings),
                     'high_severity': len([f for f in findings if f.severity == SeverityLevel.HIGH]),
                     'medium_severity': len([f for f in findings if f.severity == SeverityLevel.MEDIUM]),
-                    'files_scanned': sum(1 for _ in Path(directory).rglob('*') if _.is_file())
+                    'files_scanned': sum(1 for _ in Path(safe_directory).rglob('*') if _.is_file())
                 },
-                metadata={'directory': directory}
+                metadata={'directory': safe_directory}
             )
             
+        except PathTraversalError as e:
+            # Security: Log path traversal attempt
+            cicd_logger.warning(f"Path traversal attempt blocked: {e}")
+            return ScanResult(
+                scan_type=ScanType.SECRETS,
+                timestamp=start_time,
+                duration_seconds=(datetime.now() - start_time).total_seconds(),
+                success=False,
+                findings=[],
+                summary={'error': f'Security violation: {str(e)}'},
+                metadata={'directory': directory, 'security_violation': True}
+            )
         except Exception as e:
             cicd_logger.error(f"Erro no scan de secrets: {e}")
             return ScanResult(
@@ -318,12 +413,25 @@ class DependencyScanner:
         ]
     
     def scan_python_dependencies(self, requirements_file: str) -> ScanResult:
-        """Escaneia dependências Python"""
+        """
+        Escaneia dependências Python.
+
+        Security: File path is validated to prevent traversal attacks (CWE-22)
+
+        Args:
+            requirements_file: Caminho para requirements.txt (validado contra path traversal)
+
+        Returns:
+            ScanResult com vulnerabilidades encontradas
+        """
         start_time = datetime.now()
         findings = []
-        
+
         try:
-            if not os.path.exists(requirements_file):
+            # SECURITY FIX: Validate file path before checking existence (CWE-22)
+            safe_file_path = validate_safe_path(requirements_file)
+
+            if not os.path.exists(safe_file_path):
                 return ScanResult(
                     scan_type=ScanType.DEPENDENCY,
                     timestamp=start_time,
@@ -331,11 +439,11 @@ class DependencyScanner:
                     success=False,
                     findings=[],
                     summary={'error': 'Requirements file not found'},
-                    metadata={'file': requirements_file}
+                    metadata={'file': safe_file_path}
                 )
-            
-            # Ler dependências
-            dependencies = self._parse_requirements(requirements_file)
+
+            # Ler dependências (método já valida internamente)
+            dependencies = self._parse_requirements(safe_file_path)
             
             # Verificar cada dependência
             for dep_name, dep_version in dependencies.items():
@@ -356,9 +464,21 @@ class DependencyScanner:
                     'total_vulnerabilities': len(findings),
                     'critical_vulnerabilities': len([f for f in findings if f.severity == SeverityLevel.CRITICAL])
                 },
-                metadata={'requirements_file': requirements_file}
+                metadata={'requirements_file': safe_file_path}
             )
-            
+
+        except PathTraversalError as e:
+            # Security: Log path traversal attempt
+            cicd_logger.warning(f"Path traversal attempt blocked in dependency scan: {e}")
+            return ScanResult(
+                scan_type=ScanType.DEPENDENCY,
+                timestamp=start_time,
+                duration_seconds=(datetime.now() - start_time).total_seconds(),
+                success=False,
+                findings=[],
+                summary={'error': f'Security violation: {str(e)}'},
+                metadata={'requirements_file': requirements_file, 'security_violation': True}
+            )
         except Exception as e:
             cicd_logger.error(f"Erro no scan de dependências: {e}")
             return ScanResult(
@@ -372,10 +492,27 @@ class DependencyScanner:
             )
     
     def _parse_requirements(self, requirements_file: str) -> Dict[str, str]:
-        """Parseia arquivo requirements.txt"""
+        """
+        Parseia arquivo requirements.txt.
+
+        Security: File path is validated to prevent traversal attacks (CWE-22)
+
+        Args:
+            requirements_file: Caminho para requirements.txt (validado contra path traversal)
+
+        Returns:
+            Dict com dependências e versões
+
+        Raises:
+            PathTraversalError: Se path traversal for detectado
+        """
         dependencies = {}
-        
-        with open(requirements_file, 'r') as f:
+
+        # SECURITY FIX: Validate file path to prevent traversal (CWE-22)
+        safe_file_path = validate_safe_path(requirements_file)
+        cicd_logger.debug(f"Parsing requirements file: {safe_file_path}")
+
+        with open(safe_file_path, 'r') as f:
             for line in f:
                 line = line.strip()
                 if line and not line.startswith('#'):
@@ -519,12 +656,38 @@ class ComplianceChecker:
         ]
     
     def check_compliance(self, directory: str) -> List[ComplianceCheck]:
-        """Executa verificações de compliance"""
+        """
+        Executa verificações de compliance.
+
+        Security: Directory path is validated to prevent traversal attacks (CWE-22)
+
+        Args:
+            directory: Diretório para verificar (validado contra path traversal)
+
+        Returns:
+            Lista de ComplianceCheck com resultados
+        """
         results = []
-        
+
+        # SECURITY FIX: Validate directory path to prevent traversal (CWE-22)
+        try:
+            safe_directory = validate_safe_path(directory)
+        except PathTraversalError as e:
+            cicd_logger.warning(f"Path traversal attempt blocked in compliance check: {e}")
+            # Return failed compliance check for security violation
+            return [ComplianceCheck(
+                rule_id='SEC000',
+                rule_name='Path Security',
+                description='Directory path validation',
+                severity=SeverityLevel.CRITICAL,
+                passed=False,
+                details=f'Security violation: {str(e)}',
+                remediation='Use valid directory paths only'
+            )]
+
         for rule in self.compliance_rules:
             try:
-                passed, details = rule['check_function'](directory)
+                passed, details = rule['check_function'](safe_directory)
                 
                 check = ComplianceCheck(
                     rule_id=rule['id'],
@@ -717,11 +880,23 @@ class CICDSecurityOrchestrator:
         self.compliance_checker = ComplianceChecker()
         self.scan_results: List[ScanResult] = []
         
-    def run_security_pipeline(self, 
+    def run_security_pipeline(self,
                             project_directory: str,
                             stage: DeploymentStage = DeploymentStage.BUILD,
                             config: Dict[str, Any] = None) -> Dict[str, Any]:
-        """Executa pipeline completo de segurança"""
+        """
+        Executa pipeline completo de segurança.
+
+        Security: Directory path is validated to prevent traversal attacks (CWE-22)
+
+        Args:
+            project_directory: Diretório do projeto (validado contra path traversal)
+            stage: Estágio do deployment
+            config: Configurações opcionais
+
+        Returns:
+            Dict com resultados do pipeline de segurança
+        """
         pipeline_start = datetime.now()
         results = {
             'stage': stage.value,
@@ -733,41 +908,53 @@ class CICDSecurityOrchestrator:
             'passed': True,
             'recommendations': []
         }
-        
+
         config = config or {}
-        
-        cicd_logger.info(f"Iniciando pipeline de segurança para estágio: {stage.value}")
+
+        # SECURITY FIX: Validate project directory path (CWE-22)
+        try:
+            safe_project_dir = validate_safe_path(project_directory)
+            results['project_directory'] = safe_project_dir
+            cicd_logger.info(f"Iniciando pipeline de segurança para estágio: {stage.value}")
+        except PathTraversalError as e:
+            cicd_logger.error(f"Path traversal attempt blocked in security pipeline: {e}")
+            results['passed'] = False
+            results['summary'] = {
+                'error': f'Security violation: {str(e)}',
+                'security_violation': True
+            }
+            return results
         
         # 1. Scan de Secrets
         if config.get('scan_secrets', True):
             cicd_logger.info("Executando scan de secrets...")
-            secrets_result = self.secrets_scanner.scan_directory(project_directory)
+            secrets_result = self.secrets_scanner.scan_directory(safe_project_dir)
             self.scan_results.append(secrets_result)
             results['scans']['secrets'] = asdict(secrets_result)
-            
+
             # Falhar se encontrar secrets críticos
             if any(f.severity == SeverityLevel.HIGH for f in secrets_result.findings):
                 results['passed'] = False
                 results['recommendations'].append("Remove hardcoded secrets before deployment")
-        
+
         # 2. Scan de Dependências
         if config.get('scan_dependencies', True):
-            requirements_file = os.path.join(project_directory, 'requirements.txt')
+            requirements_file = os.path.join(safe_project_dir, 'requirements.txt')
             if os.path.exists(requirements_file):
                 cicd_logger.info("Executando scan de dependências...")
                 deps_result = self.dependency_scanner.scan_python_dependencies(requirements_file)
                 self.scan_results.append(deps_result)
                 results['scans']['dependencies'] = asdict(deps_result)
-                
+
                 # Falhar se encontrar vulnerabilidades críticas
                 if any(f.severity == SeverityLevel.CRITICAL for f in deps_result.findings):
                     results['passed'] = False
                     results['recommendations'].append("Update dependencies with critical vulnerabilities")
-        
+
         # 3. Verificações de Compliance
         if config.get('check_compliance', True):
             cicd_logger.info("Executando verificações de compliance...")
-            compliance_results = self.compliance_checker.check_compliance(project_directory)
+            compliance_results = self.compliance_checker.check_compliance(safe_project_dir)
             results['compliance'] = [asdict(check) for check in compliance_results]
             
             # Falhar se houver violações de compliance críticas
@@ -916,9 +1103,22 @@ class CICDSecurityOrchestrator:
         )
     
     def setup_pre_commit_hooks(self, project_directory: str) -> bool:
-        """Configura pre-commit hooks de segurança"""
+        """
+        Configura pre-commit hooks de segurança.
+
+        Security: Directory path is validated to prevent traversal attacks (CWE-22)
+
+        Args:
+            project_directory: Diretório do projeto (validado contra path traversal)
+
+        Returns:
+            bool: True se configuração bem-sucedida
+        """
         try:
-            hooks_dir = os.path.join(project_directory, '.git', 'hooks')
+            # SECURITY FIX: Validate project directory path (CWE-22)
+            safe_project_dir = validate_safe_path(project_directory)
+
+            hooks_dir = os.path.join(safe_project_dir, '.git', 'hooks')
             if not os.path.exists(hooks_dir):
                 os.makedirs(hooks_dir)
             
@@ -958,7 +1158,10 @@ exit $?
             
             cicd_logger.info("Pre-commit hooks configurados com sucesso")
             return True
-            
+
+        except PathTraversalError as e:
+            cicd_logger.error(f"Path traversal attempt blocked in hook setup: {e}")
+            return False
         except Exception as e:
             cicd_logger.error(f"Erro ao configurar pre-commit hooks: {e}")
             return False
