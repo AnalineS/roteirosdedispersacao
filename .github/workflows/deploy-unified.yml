@@ -978,7 +978,7 @@ jobs:
               --set-env-vars "NEXT_PUBLIC_PRODUCTION_DOMAIN=$PRODUCTION_DOMAIN" \
               --set-env-vars "NEXT_PUBLIC_BASE_URL_STAGING=$BASE_URL_STAGING" \
               --set-env-vars "NEXT_PUBLIC_BASE_URL_PRODUCTION=$BASE_URL_PRODUCTION" \
-              --set-env-vars "NEXT_PUBLIC_GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" \
+              --set-env-vars "NEXT_PUBLIC_GOOGLE_CLIENT_ID=${{ secrets.NEXT_PUBLIC_GOOGLE_CLIENT_ID }}" \
               --timeout 120 \
               --concurrency 80; then
 
