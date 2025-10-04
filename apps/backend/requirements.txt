@@ -123,7 +123,8 @@ python-decouple>=3.8
 
 # === TESTING & QUALITY ASSURANCE ===
 pytest==8.4.2
-pytest-cov==4.1.0
+coverage>=7.10.6  # Required dependency for pytest-cov 7.x
+pytest-cov==7.0.0  # SECURITY: Improved pytest 8.4 compatibility, warning filter fixes
 pytest-mock==3.15.1
 pytest-asyncio==0.25.3  # Required for pytest 8.x async test support
 
@@ -155,7 +156,7 @@ websockets>=11.0.0
 # ESSENTIAL for async medical processing - DO NOT REMOVE
 # Used in: tasks/ (chat_tasks.py, medical_tasks.py, analytics_tasks.py)
 # Purpose: Async processing of medical consultations, chat responses, analytics
-celery==5.3.4  # Task queue system with SQLite/filesystem backend
+celery==5.5.3  # SECURITY: Critical asyncio fix for Python 3.13, improved task management
 
 # === PERFORMANCE MONITORING ===
 py-spy>=0.3.14
