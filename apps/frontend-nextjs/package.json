@@ -44,7 +44,7 @@
   },
   "dependencies": {
     "@next/third-parties": "^15.4.6",
-    "dompurify": "^3.2.6",
+    "dompurify": "^3.2.7",
     "firebase": "^12.2.1",
     "framer-motion": "^12.23.22",
     "jspdf": "^3.0.2",
@@ -62,7 +62,7 @@
     "@testing-library/jest-dom": "^6.8.0",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.5.0",
-    "@types/dompurify": "^3.0.5",
+    "@types/dompurify": "^3.2.0",
     "@types/jest": "^29.5.0",
     "@types/node": "^20.0.0",
     "@types/react": "^19.1.12",
