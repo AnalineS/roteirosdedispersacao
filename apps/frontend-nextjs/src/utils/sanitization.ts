@@ -38,10 +38,12 @@ function sanitizeHTMLServerSide(html: string): string {
     // Remover tentativas de bypass como <<script>alert()>/script>
     sanitized = sanitized.replace(/<+|>+/g, '');
     
-    // Remover protocolos perigosos
+    // Remover protocolos perigosos (CWE-20/CWE-184)
+    // Proteção contra javascript:, data:, vbscript: e file: schemes
     sanitized = sanitized.replace(/javascript:/gi, '');
-    sanitized = sanitized.replace(/data:text\/html/gi, '');
+    sanitized = sanitized.replace(/data:/gi, '');       // Bloqueia todos os data: URIs
     sanitized = sanitized.replace(/vbscript:/gi, '');
+    sanitized = sanitized.replace(/file:/gi, '');       // Proteção adicional contra file: URIs
     
     // Remover event handlers
     sanitized = sanitized.replace(/on\w+\s*=/gi, '');
@@ -109,11 +111,13 @@ export function sanitizeHTML(html: string): string {
   // Sanitizar com DOMPurify
   const clean = DOMPurify.sanitize(html, config);
   
-  // Verificação adicional para URLs perigosas
+  // Verificação adicional para URLs perigosas (CWE-20/CWE-184)
   const finalClean = clean
     .replace(/javascript:/gi, '')
-    .replace(/data:text\/html/gi, '');
-  
+    .replace(/data:/gi, '')      // Remove todos os data: URIs
+    .replace(/vbscript:/gi, '')
+    .replace(/file:/gi, '');
+
   return finalClean;
 }
 
