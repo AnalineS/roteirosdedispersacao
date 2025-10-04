@@ -85,13 +85,15 @@ class TestVectorDocument:
 class TestLocalVectorStore:
     """Test LocalVectorStore implementation"""
 
-    def setup_method(self):
+    @pytest.fixture(autouse=True)
+    def setup(self):
         """Setup test environment"""
         self.temp_dir = tempfile.mkdtemp()
         self.store = LocalVectorStore(self.temp_dir)
 
-    def teardown_method(self):
-        """Cleanup test environment"""
+        yield
+
+        # Teardown: cleanup test environment
         shutil.rmtree(self.temp_dir)
 
     def test_local_store_initialization(self):
