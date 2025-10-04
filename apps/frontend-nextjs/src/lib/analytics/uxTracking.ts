@@ -72,6 +72,21 @@ class UXAnalytics {
   }
 
   private generateSessionId(): string {
+    // CWE-338: Usar crypto.randomUUID() em vez de Math.random()
+    // Contexto: Session ID para UX analytics (GA4, Clarity, métricas)
+    // Não é security-sensitive, mas usar crypto é best practice
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+      return `ux_${Date.now()}_${crypto.randomUUID()}`;
+    }
+
+    // Fallback: Web Crypto API para gerar valores seguros
+    if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+      const array = new Uint32Array(2);
+      crypto.getRandomValues(array);
+      return `ux_${Date.now()}_${array[0].toString(36)}${array[1].toString(36)}`;
+    }
+
+    // Último fallback para compatibilidade extrema
     return `ux_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
 
