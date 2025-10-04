@@ -136,6 +136,22 @@ class UXInstrumentationManager {
   }
 
   private generateSessionId(): string {
+    // CWE-338: Usar crypto.randomUUID() em vez de Math.random()
+    // Mesmo que session ID não seja security-sensitive (apenas analytics),
+    // usar crypto garante unicidade e segue best practices
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+      return `ux_${Date.now()}_${crypto.randomUUID()}`;
+    }
+
+    // Fallback para ambientes sem crypto.randomUUID (muito raro)
+    // Usar Web Crypto API para gerar valores aleatórios seguros
+    if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+      const array = new Uint32Array(2);
+      crypto.getRandomValues(array);
+      return `ux_${Date.now()}_${array[0].toString(36)}${array[1].toString(36)}`;
+    }
+
+    // Último fallback (apenas para compatibilidade)
     return `ux_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
 
