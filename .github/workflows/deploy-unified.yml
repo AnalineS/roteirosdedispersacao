@@ -909,6 +909,8 @@ jobs:
 
           # Build da imagem
           docker build \
+            --no-cache \
+            --platform linux/amd64 \
             --build-arg NEXT_PUBLIC_ENVIRONMENT="${NEXT_PUBLIC_ENVIRONMENT}" \
             --build-arg NEXT_PUBLIC_API_URL_STAGING="${NEXT_PUBLIC_API_URL_STAGING}" \
             --build-arg NEXT_PUBLIC_API_URL_PRODUCTION="${NEXT_PUBLIC_API_URL_PRODUCTION}" \
