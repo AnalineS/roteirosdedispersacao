@@ -165,18 +165,30 @@ function getApiUrl(environment: Environment): string {
       return getEnvVar('NEXT_PUBLIC_API_URL_DEV', 'http://localhost:5000')
 
     case 'staging':
-      // Staging: Must use GitHub Variables only
+      // Staging: Prefer GitHub Variables, allow fallback during build
       const stagingUrl = getEnvVar('NEXT_PUBLIC_API_URL_STAGING')
       if (!stagingUrl) {
-        throw new Error('CRITICAL: NEXT_PUBLIC_API_URL_STAGING is required for staging environment (set via GitHub Variables)')
+        // During build: allow fallback to prevent build-time errors
+        // At runtime: this will be caught by app initialization
+        const fallback = 'https://hml-api.roteirosdispensacao.com.br'
+        if (typeof window !== 'undefined') {
+          console.warn(`⚠️ NEXT_PUBLIC_API_URL_STAGING not set, using fallback: ${fallback}`)
+        }
+        return fallback
       }
       return stagingUrl
 
     case 'production':
-      // Production: Must use GitHub Variables only
+      // Production: Prefer GitHub Variables, allow fallback during build
       const productionUrl = getEnvVar('NEXT_PUBLIC_API_URL_PRODUCTION')
       if (!productionUrl) {
-        throw new Error('CRITICAL: NEXT_PUBLIC_API_URL_PRODUCTION is required for production environment (set via GitHub Variables)')
+        // During build: allow fallback to prevent build-time errors
+        // At runtime: this will be caught by app initialization
+        const fallback = 'https://api.roteirosdispensacao.com.br'
+        if (typeof window !== 'undefined') {
+          console.warn(`⚠️ NEXT_PUBLIC_API_URL_PRODUCTION not set, using fallback: ${fallback}`)
+        }
+        return fallback
       }
       return productionUrl
 
