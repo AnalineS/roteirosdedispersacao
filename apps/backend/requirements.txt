@@ -63,9 +63,7 @@ urllib3>=2.5.0    # SECURITY: CRITICAL - Updated 2024-09-24 - Resolves CVE-2025-
 certifi==2025.8.3  # SECURITY: Updated 2024-09-24 - Latest certificate bundle
 
 # === CACHE & PERFORMANCE ===
-# Redis removed - using Firestore hybrid cache system (Phases 2-4)
-# redis==5.0.1  # REMOVED: Replaced by Firestore cache
-# redis[hiredis]==5.0.1  # REMOVED: Replaced by Firestore cache
+# Hybrid cache: cachetools (memory) + Google Cloud Storage + SQLite fallback
 cachetools>=5.3.2
 
 # === MONITORING & OBSERVABILITY ===
@@ -156,7 +154,7 @@ websockets>=11.0.0
 # ESSENTIAL for async medical processing - DO NOT REMOVE
 # Used in: tasks/ (chat_tasks.py, medical_tasks.py, analytics_tasks.py)
 # Purpose: Async processing of medical consultations, chat responses, analytics
-celery==5.3.4  # Task queue system with SQLite/filesystem backend (no Redis)
+celery==5.3.4  # Task queue system with SQLite/filesystem backend
 
 # === PERFORMANCE MONITORING ===
 py-spy>=0.3.14
