@@ -14,9 +14,9 @@ gunicorn==23.0.0   # Updated to fix CVE-2024-6827
 # === AI & ML CORE ===
 # Updated to latest secure version
 openai>=1.50.0
-sentence-transformers==5.1.0
+sentence-transformers==5.1.1
 chromadb>=0.4.0
-numpy==1.26.4
+numpy==2.0.2
 scikit-learn==1.6.1
 
 # === AUTHENTICATION & JWT ===
