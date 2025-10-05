@@ -71,7 +71,6 @@
     "@next/third-parties": "^15.5.4",
     "axios": "1.12.2",
     "dompurify": "^3.2.7",
-    "firebase": "^12.2.1",
     "framer-motion": "^12.23.22",
     "js-cookie": "3.0.5",
     "jspdf": "^3.0.3",
