@@ -163,16 +163,17 @@ def check_rate_limit(endpoint_type: str = 'default'):
     from services.security.sqlite_rate_limiter import rate_limit
 
     # Limites para endpoints de personas
+    # personas endpoint has higher limit as it's configuration data, not medical queries
     limits = {
-        'personas': (60, 60),   # 60 req/min para listagem
-        'default': (100, 60)    # 100 req/min geral
+        'personas': (300, 60),   # 300 req/min for configuration endpoint (5/sec)
+        'default': (100, 60)     # 100 req/min general
     }
 
     max_requests, window_seconds = limits.get(endpoint_type, limits['default'])
     return rate_limit(f"personas_{endpoint_type}", max_requests, window_seconds)
 
 @personas_bp.route('/personas', methods=['GET'])
-@check_rate_limit('general')
+@check_rate_limit('personas')  # Use personas-specific higher limit
 def get_personas_api():
     """Endpoint para informações completas das personas"""
     try:
