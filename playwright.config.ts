@@ -6,7 +6,9 @@ import { defineConfig, devices } from '@playwright/test';
  */
 
 export default defineConfig({
-  testDir: './apps/frontend-nextjs/tests/playwright',
+  // Unified test directories: E2E (backend+frontend) and Frontend-only
+  testDir: './tests',
+  testMatch: ['**/*.spec.ts', '**/*.spec.js'],
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
