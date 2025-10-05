@@ -269,8 +269,20 @@ test.beforeAll(() => {
 });
 
 test.beforeEach(async ({ page }) => {
-  await page.goto(STAGING_URL);
-  await page.waitForLoadState('networkidle');
+  // Strategy compatible with Next.js 15 App Router streaming architecture
+  // Issue #219: networkidle incompatible with persistent prefetch connections
+  await page.goto(STAGING_URL, {
+    waitUntil: 'domcontentloaded', // DOM ready for interaction (SSR/SSG compatible)
+    timeout: 60000 // Accommodates Cloud Run cold starts (5-15s typical)
+  });
+
+  // Wait for full page load
+  await page.waitForLoadState('load');
+
+  // Ensure complete document readiness
+  await page.waitForFunction(() => document.readyState === 'complete', {
+    timeout: 10000
+  });
 });
 
 test.afterAll(() => {

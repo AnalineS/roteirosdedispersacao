@@ -6,7 +6,7 @@ import { defineConfig, devices } from '@playwright/test';
  */
 
 export default defineConfig({
-  testDir: './tests/playwright',
+  testDir: './apps/frontend-nextjs/tests/playwright',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
@@ -27,8 +27,9 @@ export default defineConfig({
     trace: 'on-first-retry',
 
     // Timeout configuration
-    actionTimeout: 10000,
-    navigationTimeout: 30000,
+    // Increased for Cloud Run latency and Next.js 15 streaming (Issue #219)
+    actionTimeout: 15000,
+    navigationTimeout: 60000, // Supports cold starts + Next.js App Router streaming
 
     // Browser context options
     contextOptions: {
@@ -87,6 +88,29 @@ export default defineConfig({
     timeout: 120000,
   },
 });
+
+// Environment-specific timeout configurations (Issue #219)
+// Different strategies for different deployment environments
+export const envConfig = {
+  staging: {
+    // Google Cloud Run staging environment
+    navigationTimeout: 60000, // Accommodates cold starts (5-15s)
+    waitForLoadState: 'domcontentloaded' as const, // Next.js 15 streaming compatible
+    maxRetries: 3
+  },
+  production: {
+    // Production environment with warm containers
+    navigationTimeout: 45000,
+    waitForLoadState: 'load' as const,
+    maxRetries: 2
+  },
+  local: {
+    // Local development (can use networkidle)
+    navigationTimeout: 30000,
+    waitForLoadState: 'networkidle' as const,
+    maxRetries: 0
+  }
+};
 
 // Environment-specific configurations
 export const testConfig = {
