@@ -12,9 +12,9 @@ from typing import Dict, List, Any
 # Import dependências
 from core.dependencies import get_cache, get_config
 
-# Import personas services
+# Import personas services (correct path: services.ai.personas)
 try:
-    from services.personas import get_personas, get_persona_prompt
+    from services.ai.personas import get_personas, get_persona_prompt
     PERSONAS_SERVICE_AVAILABLE = True
 except ImportError:
     PERSONAS_SERVICE_AVAILABLE = False

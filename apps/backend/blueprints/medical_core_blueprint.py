@@ -120,28 +120,11 @@ Estou torcendo por você! ✨"""
             'timestamp': datetime.now().isoformat()
         }), 500
 
-@medical_core_bp.route('/personas', methods=['GET'])
-def get_personas():
-    """Get available AI personas"""
-    personas = {
-        'gasnelio': {
-            'name': 'Dr. Gasnelio',
-            'role': 'Clinical Pharmacist',
-            'specialty': 'Leprosy medication dispensing',
-            'available': True
-        },
-        'ga': {
-            'name': 'Gá',
-            'role': 'Empathetic Assistant',
-            'specialty': 'Patient support and education',
-            'available': True
-        }
-    }
-    return jsonify({
-        'personas': personas,
-        'total': len(personas),
-        'timestamp': datetime.now().isoformat()
-    }), 200
+# Personas endpoint moved to personas_blueprint.py for:
+# - Better rate limiting control (300 req/min vs 200 req/hour)
+# - Comprehensive persona management features
+# - Cache support and request tracking
+# - Rich metadata and usage guides
 
 # === HEALTH ENDPOINTS ===
 

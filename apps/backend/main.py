@@ -53,6 +53,7 @@ def create_app():
     # Register blueprints
     try:
         from blueprints.medical_core_blueprint import medical_core_bp
+        from blueprints.personas_blueprint import personas_bp
         from blueprints.user_management_blueprint import user_management_bp
         from blueprints.communication_blueprint import communication_bp
         from blueprints.engagement_multimodal_blueprint import engagement_multimodal_bp
@@ -63,6 +64,7 @@ def create_app():
 
         # Register all blueprints without additional prefix since they already define /api/v1
         app.register_blueprint(medical_core_bp)
+        app.register_blueprint(personas_bp)  # Comprehensive personas management with proper rate limiting
         app.register_blueprint(user_management_bp)
         app.register_blueprint(communication_bp)
         app.register_blueprint(engagement_multimodal_bp)
