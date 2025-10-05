@@ -35,7 +35,15 @@ import { STATIC_PERSONAS } from '@/data/personas';
  * Alias para getPersonas() para compatibilidade com hooks
  */
 export async function getPersonaConfigs(): Promise<PersonasResponse> {
-  return await getPersonas();
+  try {
+    const personas = await getPersonas();
+    console.log('[getPersonaConfigs] Received personas:', Object.keys(personas || {}).length);
+    // Garantir que nunca retorna null/undefined
+    return personas || STATIC_PERSONAS;
+  } catch (error) {
+    console.error('[getPersonaConfigs] Exception caught, returning static personas:', error);
+    return STATIC_PERSONAS;
+  }
 }
 
 /**

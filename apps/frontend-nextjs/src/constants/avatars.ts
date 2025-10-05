@@ -66,11 +66,23 @@ export const hasPersonaAvatar = (personaId: string): boolean => {
  * Filtra personas que têm avatares configurados
  */
 export const filterValidPersonas = <T>(personas: Record<string, T>): Record<string, T> => {
+  // Proteção contra valores inválidos
+  if (!personas || typeof personas !== 'object') {
+    console.warn('[filterValidPersonas] Invalid personas input:', personas);
+    return {};
+  }
+
   const validPersonas: Record<string, T> = {};
-  Object.entries(personas).forEach(([id, persona]) => {
-    if (hasPersonaAvatar(id)) {
-      validPersonas[id] = persona;
-    }
-  });
+  try {
+    Object.entries(personas).forEach(([id, persona]) => {
+      if (hasPersonaAvatar(id)) {
+        validPersonas[id] = persona;
+      }
+    });
+  } catch (error) {
+    console.error('[filterValidPersonas] Error filtering personas:', error);
+    return {};
+  }
+
   return validPersonas;
 };
