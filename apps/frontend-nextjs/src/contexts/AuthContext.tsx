@@ -6,7 +6,7 @@
 
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef, ReactNode } from 'react';
 import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 import { jwtClient, User as JWTUser, AuthResponse, GoogleAuthResponse } from '@/lib/auth/jwt-client';
 
@@ -171,6 +171,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [showAuthPrompt, setShowAuthPrompt] = useState(false);
   const [authPromptReason, setAuthPromptReason] = useState<string>();
 
+  // Track if initialization already happened to prevent infinite loop
+  const isInitialized = useRef(false);
+
   // Derived state
   const isAuthenticated = !!user && !user.isAnonymous;
   const isAnonymous = !!user && user.isAnonymous;
@@ -198,6 +201,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     provider: 'anonymous'
   });
 
+  // Stable function - no dependencies, takes currentUser as parameter
   const createDefaultProfile = useCallback((userId: string, currentUser: AuthUser | null): UserProfile => {
     const now = new Date().toISOString();
 
@@ -242,7 +246,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     };
   }, []);
 
-  const loadUserProfile = useCallback(async (userId: string): Promise<void> => {
+  // Stable function - takes currentUser as parameter to avoid dependency on 'user' state
+  const loadUserProfile = useCallback(async (userId: string, currentUser: AuthUser | null): Promise<void> => {
     try {
       const stored = safeLocalStorage()?.getItem(`user-profile-${userId}`);
       if (stored) {
@@ -250,7 +255,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setProfile(parsedProfile);
       } else {
         // Criar perfil padrão
-        const defaultProfile = createDefaultProfile(userId, user);
+        const defaultProfile = createDefaultProfile(userId, currentUser);
         setProfile(defaultProfile);
         safeLocalStorage()?.setItem(`user-profile-${userId}`, JSON.stringify(defaultProfile));
       }
@@ -262,7 +267,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         });
       }
     }
-  }, [user, createDefaultProfile]);
+  }, [createDefaultProfile]);
 
   // ============================================
   // AUTHENTICATION METHODS
@@ -278,7 +283,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const authUser = convertJWTUserToAuthUser(response.user);
       setUser(authUser);
 
-      await loadUserProfile(authUser.uid);
+      await loadUserProfile(authUser.uid, authUser);
 
       return { success: true };
     } catch (error: AuthenticationError | Error | unknown) {
@@ -364,7 +369,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       const anonUser = createAnonymousUser();
       setUser(anonUser);
-      await loadUserProfile(anonUser.uid);
+      await loadUserProfile(anonUser.uid, anonUser);
 
       return { success: true };
     } catch (error: AuthenticationError | Error | unknown) {
@@ -531,7 +536,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         if (currentUser) {
           const authUser = convertJWTUserToAuthUser(currentUser);
           setUser(authUser);
-          await loadUserProfile(authUser.uid);
+          await loadUserProfile(authUser.uid, authUser);
         }
       }
     } catch (error) {
@@ -570,8 +575,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // EFFECTS
   // ============================================
 
-  // Initialize auth state
+  // Initialize auth state - runs only once
   useEffect(() => {
+    // Guard: prevent re-initialization
+    if (isInitialized.current) {
+      return;
+    }
+
     const initAuth = async () => {
       try {
         setLoading(true);
@@ -588,7 +598,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
             const response: AuthResponse = await jwtClient.completeGoogleAuth(code, state);
             const authUser = convertJWTUserToAuthUser(response.user);
             setUser(authUser);
-            await loadUserProfile(authUser.uid);
+            await loadUserProfile(authUser.uid, authUser);
 
             // Clean up URL and storage
             sessionStorage.removeItem('oauth_state');
@@ -597,6 +607,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
             newUrl.searchParams.delete('state');
             window.history.replaceState({}, '', newUrl.toString());
 
+            isInitialized.current = true;
             return;
           } catch (oauthError) {
             if (typeof window !== 'undefined' && window.gtag) {
@@ -616,7 +627,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
             if (currentUser) {
               const authUser = convertJWTUserToAuthUser(currentUser);
               setUser(authUser);
-              await loadUserProfile(authUser.uid);
+              await loadUserProfile(authUser.uid, authUser);
+              isInitialized.current = true;
               return;
             }
           } catch (tokenError) {
@@ -630,10 +642,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
           }
         }
 
-        // Default to anonymous user
-        const anonUser = createAnonymousUser();
-        setUser(anonUser);
-        await loadUserProfile(anonUser.uid);
+        // Default to anonymous user (only if not already initialized)
+        if (!isInitialized.current) {
+          const anonUser = createAnonymousUser();
+          setUser(anonUser);
+          await loadUserProfile(anonUser.uid, anonUser);
+          isInitialized.current = true;
+        }
 
       } catch (error) {
         if (typeof window !== 'undefined' && window.gtag) {
@@ -649,7 +664,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     };
 
     initAuth();
-  }, [loadUserProfile]);
+    // Empty dependency array - run only once on mount
+  }, []);
 
   // ============================================
   // CONTEXT VALUE

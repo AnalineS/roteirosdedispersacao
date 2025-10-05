@@ -16,6 +16,7 @@ import { PersonaProvider } from '@/contexts/PersonaContext'
 import PersonaAccessibilityProvider from '@/components/accessibility/PersonaAccessibilityProvider'
 import EnhancedCoreWebVitals from '@/components/analytics/EnhancedCoreWebVitals'
 import NumericNavigationWrapper from '@/components/navigation/NumericNavigationWrapper'
+import { StorageProtectionProvider } from '@/components/StorageProtectionProvider'
 import SITE_CONFIG from '@/lib/config'
 import '@/styles/globals.css'
 import '@/styles/fluid-typography.css'
@@ -119,44 +120,46 @@ export default function RootLayout({
         <EnhancedCoreWebVitals />
         
         <main id="main-content">
-          <ErrorBoundary>
-            <ErrorHandlerProvider>
-              <GlobalTrackingProvider>
-                <AccessibilityProvider>
-                  <ThemeProvider>
-                    <PersonaProvider>
-                      <PersonaAccessibilityProvider>
-                        <GlobalNavigationProvider>
-                          <SmartNavigationProvider>
-                            <ConditionalAuthProvider>
-                              <AnalyticsProvider>
-                                {children}
-                              </AnalyticsProvider>
-                            </ConditionalAuthProvider>
-                          </SmartNavigationProvider>
-                        </GlobalNavigationProvider>
-                      </PersonaAccessibilityProvider>
-                    </PersonaProvider>
-                  </ThemeProvider>
-                </AccessibilityProvider>
-              </GlobalTrackingProvider>
-            </ErrorHandlerProvider>
-            
-            {/* Toast System - Fora dos providers para máxima compatibilidade */}
-            <ErrorToast 
-              position="top-right"
-              maxToasts={3}
-              autoCloseDuration={5000}
-            />
+          <StorageProtectionProvider>
+            <ErrorBoundary>
+              <ErrorHandlerProvider>
+                <GlobalTrackingProvider>
+                  <AccessibilityProvider>
+                    <ThemeProvider>
+                      <PersonaProvider>
+                        <PersonaAccessibilityProvider>
+                          <GlobalNavigationProvider>
+                            <SmartNavigationProvider>
+                              <ConditionalAuthProvider>
+                                <AnalyticsProvider>
+                                  {children}
+                                </AnalyticsProvider>
+                              </ConditionalAuthProvider>
+                            </SmartNavigationProvider>
+                          </GlobalNavigationProvider>
+                        </PersonaAccessibilityProvider>
+                      </PersonaProvider>
+                    </ThemeProvider>
+                  </AccessibilityProvider>
+                </GlobalTrackingProvider>
+              </ErrorHandlerProvider>
+
+              {/* Toast System - Fora dos providers para máxima compatibilidade */}
+              <ErrorToast
+                position="top-right"
+                maxToasts={3}
+                autoCloseDuration={5000}
+              />
 
             {/* Numeric Navigation System - PR #172 */}
-            <NumericNavigationWrapper 
+            <NumericNavigationWrapper
               enabled={true}
               showHint={true}
               hintPosition="bottom-right"
             />
           </ErrorBoundary>
-        </main>
+        </StorageProtectionProvider>
+      </main>
         
         {/* PWA Manager - Service Worker desabilitado conforme solicitado */}
         <PWAManager enableServiceWorker={false} />
