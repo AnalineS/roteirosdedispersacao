@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, Suspense, lazy } from 'react';
 import Link from 'next/link';
 import EducationalLayout from '@/components/layout/EducationalLayout';
 import ModernChatContainer from '@/components/chat/modern/ModernChatContainer';
+import PersonaSwitch from '@/components/chat/modern/PersonaSwitch';
 import { ChatAccessibilityProvider } from '@/components/chat/accessibility/ChatAccessibilityProvider';
 import SystemStatus from '@/components/system/SystemStatus';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
@@ -424,14 +425,27 @@ export default function ChatPage() {
             margin: '0 auto 1rem',
             padding: '0 1rem'
           }}>
-            <ConversationProgress 
+            <ConversationProgress
               messages={currentMessages}
               currentPersona={currentPersona?.name}
               variant="detailed"
             />
           </div>
         )}
-        
+
+        {/* Persona Switcher - Issue #221 */}
+        {hasConsent && selectedPersona && (
+          <div style={{
+            maxWidth: '800px',
+            margin: '0 auto 1rem',
+            padding: '0 1rem',
+            display: 'flex',
+            justifyContent: 'flex-end'
+          }}>
+            <PersonaSwitch />
+          </div>
+        )}
+
         <ModernChatContainer
           personas={personas}
           selectedPersona={selectedPersona}
