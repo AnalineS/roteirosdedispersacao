@@ -12,19 +12,12 @@ Werkzeug==3.1.3
 gunicorn==23.0.0   # SECURITY: Updated 2024-09-24 - CVE-2024-6827 fixed
 
 # === AI & ML CORE ===
-# ESSENTIAL for RAG system and semantic search - DO NOT REMOVE
-# Used in: services/rag/embedding_service.py (938 lines)
-# Purpose: Medical knowledge semantic search, embeddings for Portuguese pharmaceutical terms
-openai>=1.50.0                    # AI provider for chat completions
-sentence-transformers==5.1.0      # Semantic embeddings (model: all-MiniLM-L6-v2)
-chromadb>=0.4.0                   # Vector database for RAG system
-numpy==1.26.4                     # Numerical computing foundation
-scikit-learn==1.6.1              # Machine learning utilities
-
-# PyTorch ecosystem - ESSENTIAL for sentence-transformers backend
-torch==2.8.0       # SECURITY UPDATE: CVE-2025-3730 fix - torch.nn.functional.ctc_loss DoS vulnerability
-torchvision>=0.19.0 # Compatible with torch 2.8.0
-torchaudio>=2.4.0  # Compatible with torch 2.8.0
+# Updated to latest secure version
+openai>=1.50.0
+sentence-transformers==5.1.1
+chromadb>=0.4.0
+numpy==2.0.2
+scikit-learn==1.6.1
 
 # === AUTHENTICATION & JWT ===
 # CRITICAL SECURITY FIX: JWT vulnerability
@@ -57,10 +50,10 @@ pydantic==2.11.9   # SECURITY: Updated 2024-09-24 - Performance improvements and
 jsonschema>=4.23.0
 
 # === HTTP & NETWORKING ===
-requests==2.32.5   # SECURITY: CRITICAL - Updated 2024-09-24 - Latest security patches
+requests==2.32.5   # SECURITY: Updated beyond CVE-2023-32681
 httpx>=0.24.0
-urllib3>=2.5.0    # SECURITY: CRITICAL - Updated 2024-09-24 - Resolves CVE-2025-50181 (High severity)
-certifi==2025.8.3  # SECURITY: Updated 2024-09-24 - Latest certificate bundle
+urllib3>=1.26.0
+certifi==2025.8.3
 
 # === CACHE & PERFORMANCE ===
 # Hybrid cache: cachetools (memory) + Google Cloud Storage + SQLite fallback
@@ -68,7 +61,7 @@ cachetools>=5.3.2
 
 # === MONITORING & OBSERVABILITY ===
 # System monitoring
-psutil==7.0.0
+psutil==7.1.0
 
 # Google Cloud Operations Suite
 google-cloud-monitoring==2.27.2
@@ -82,22 +75,20 @@ python-json-logger>=2.0.7
 nltk==3.9.1
 
 # === MULTIMODAL PROCESSING ===
-# Computer vision and OCR - ESSENTIAL for medical document processing
-# Used in: services/integrations/multimodal_processor.py (745 lines)
-# Purpose: OCR for hanseniase medication forms, dosage extraction
-opencv-python==4.10.0.84  # Image preprocessing, grayscale conversion
-Pillow==10.4.0            # Image metadata, format validation
-pytesseract==0.3.10       # Tesseract OCR with Portuguese config (-l por)
-easyocr==1.7.1           # Primary OCR engine with Portuguese/English (['pt', 'en'])
-scipy==1.14.0            # Scientific computing for image processing
+# Computer vision and OCR
+opencv-python==4.10.0.84
+Pillow==10.4.0
+pytesseract==0.3.13
+easyocr==1.7.1  # NOTE: Contains torch@2.8.0 with known vulnerabilities pending upstream fix
+scipy==1.14.0
 
 # File handling and validation  
 python-magic==0.4.27
 
 # === DATABASE & VECTOR STORE ===
 # Supabase integration - FASE 3 RAG
-supabase==2.18.1
-psycopg2-binary==2.9.9  # PostgreSQL adapter with pgvector support
+supabase==2.20.0
+psycopg2-binary==2.9.10  # PostgreSQL adapter with pgvector support
 
 # Optional SQL support
 sqlalchemy>=2.0.0
@@ -122,11 +113,9 @@ pyyaml>=6.0.1
 python-decouple>=3.8
 
 # === TESTING & QUALITY ASSURANCE ===
-pytest==8.4.2
-coverage>=7.10.6  # Required dependency for pytest-cov 7.x
-pytest-cov==7.0.0  # SECURITY: Improved pytest 8.4 compatibility, warning filter fixes
+pytest==7.4.3
+pytest-cov==4.1.0
 pytest-mock==3.15.1
-pytest-asyncio==0.25.3  # Required for pytest 8.x async test support
 
 # === SECURITY ANALYSIS & COMPLIANCE ===
 # Vulnerability scanning
