@@ -219,26 +219,49 @@ async function validateMedicalAccuracy(
 }
 
 async function switchPersona(page: Page, personaName: string): Promise<void> {
-  // Look for persona selector - could be dropdown, buttons, or tabs
-  const personaSelector = page.locator(`[data-testid="persona-selector"], select, [role="tablist"]`).first();
+  // Convert persona name to ID format
+  const personaMap: Record<string, string> = {
+    'Dr. Gasnelio': 'dr_gasnelio',
+    'Gá': 'ga',
+    'dr_gasnelio': 'dr_gasnelio',
+    'ga': 'ga'
+  };
+
+  const targetPersonaId = personaMap[personaName] || personaName.toLowerCase().replace(/\s+/g, '_');
+
+  // Look for the persona selector container
+  const personaSelector = page.locator('[data-testid="persona-selector"]');
 
   if (await personaSelector.count() === 0) {
-    throw new Error('Persona selector not found on page');
+    throw new Error('Persona selector not found on page - check that data-testid="persona-selector" exists');
   }
 
-  // Check if it's a select dropdown
-  const isSelect = await personaSelector.evaluate(el => el.tagName === 'SELECT');
+  // The PersonaSwitch is a toggle button - click it to switch between personas
+  // It shows the current persona, so we need to click if we're not already on the target
+  const toggleButton = personaSelector.locator('button[role="radio"]');
 
-  if (isSelect) {
-    await personaSelector.selectOption({ label: personaName });
-  } else {
-    // Try finding button or tab with persona name
-    const personaButton = page.locator(`button:has-text("${personaName}"), [role="tab"]:has-text("${personaName}")`);
-    await personaButton.click();
+  // Get current persona from data-testid
+  const currentPersonaTestId = await toggleButton.getAttribute('data-testid');
+  const currentPersona = currentPersonaTestId?.replace('persona-option-', '');
+
+  // Only click if we need to switch
+  if (currentPersona !== targetPersonaId) {
+    await toggleButton.click();
+
+    // Wait for transition to complete
+    await page.waitForTimeout(300);
+
+    // Verify the switch occurred
+    const newPersonaTestId = await toggleButton.getAttribute('data-testid');
+    const newPersona = newPersonaTestId?.replace('persona-option-', '');
+
+    if (newPersona !== targetPersonaId) {
+      throw new Error(`Persona switch failed: expected ${targetPersonaId}, got ${newPersona}`);
+    }
   }
 
-  // Wait for persona change to be reflected
-  await page.waitForTimeout(500);
+  // Wait for any state updates to complete
+  await page.waitForTimeout(200);
 }
 
 async function sendMessage(page: Page, message: string): Promise<{ responseText: string; responseTime: number }> {
