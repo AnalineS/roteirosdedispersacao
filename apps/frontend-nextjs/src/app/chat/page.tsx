@@ -442,7 +442,12 @@ export default function ChatPage() {
             display: 'flex',
             justifyContent: 'flex-end'
           }}>
-            <PersonaSwitch />
+            <PersonaSwitch
+              personas={personas}
+              selected={selectedPersona}
+              onChange={handlePersonaChange}
+              isMobile={isMobile}
+            />
           </div>
         )}
 
