@@ -434,7 +434,8 @@ export default function ChatPage() {
         )}
 
         {/* Persona Switcher - Issue #221 */}
-        {hasConsent && selectedPersona && (
+        {/* Show PersonaSwitch after LGPD consent, regardless of selection */}
+        {hasConsent && Object.keys(personas).length > 0 && (
           <div style={{
             maxWidth: '800px',
             margin: '0 auto 1rem',
