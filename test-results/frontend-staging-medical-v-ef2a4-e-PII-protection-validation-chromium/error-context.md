@@ -145,215 +145,222 @@
           - generic [ref=e167]:
             - img [ref=e168]
             - text: Universidade de Brasília (UnB)
-        - paragraph [ref=e174]: Carregando assistentes virtuais...
-        - generic [ref=e175]:
-          - generic [ref=e176]:
-            - heading "Recursos Educacionais" [level=2] [ref=e177]
-            - paragraph [ref=e178]: Ferramentas e conteúdo desenvolvidos para apoiar o cuidado farmacêutico na hanseníase
-          - generic [ref=e179]:
-            - link "Módulos Educacionais Conteúdo estruturado sobre hanseníase, tratamento PQT-U e cuidado farmacêutico" [ref=e180] [cursor=pointer]:
-              - /url: /modules
-              - generic [ref=e181] [cursor=pointer]:
-                - img [ref=e183] [cursor=pointer]
-                - heading "Módulos Educacionais" [level=3] [ref=e186] [cursor=pointer]
-              - paragraph [ref=e187] [cursor=pointer]: Conteúdo estruturado sobre hanseníase, tratamento PQT-U e cuidado farmacêutico
-            - link "Recursos Práticos Calculadora de doses, checklist de dispensação e ferramentas práticas" [ref=e188] [cursor=pointer]:
-              - /url: /resources
-              - generic [ref=e189] [cursor=pointer]:
-                - img [ref=e191] [cursor=pointer]
-                - heading "Recursos Práticos" [level=3] [ref=e194] [cursor=pointer]
-              - paragraph [ref=e195] [cursor=pointer]: Calculadora de doses, checklist de dispensação e ferramentas práticas
-            - link "Chat Interativo Converse com assistentes virtuais especializados em hanseníase" [ref=e196] [cursor=pointer]:
-              - /url: /chat
-              - generic [ref=e197] [cursor=pointer]:
-                - img [ref=e199] [cursor=pointer]
-                - heading "Chat Interativo" [level=3] [ref=e201] [cursor=pointer]
-              - paragraph [ref=e202] [cursor=pointer]: Converse com assistentes virtuais especializados em hanseníase
+        - generic [ref=e171]:
+          - generic [ref=e172]:
+            - heading "Escolha Seu Assistente Virtual" [level=2] [ref=e173]:
+              - img [ref=e174]
+              - text: Escolha Seu Assistente Virtual
+            - paragraph [ref=e177]:
+              - text: Dois especialistas virtuais prontos para ajudar no cuidado farmacêutico da hanseníase.
+              - generic [ref=e178]: ✨ Gá é recomendado para você
+          - main "Seleção de assistentes virtuais" [ref=e179]:
+            - button "Iniciar conversa com Dr. Gasnelio - Profissionais de Saúde" [ref=e180] [cursor=pointer]:
+              - generic [ref=e181] [cursor=pointer]: 👨‍⚕️
+              - heading "Dr. Gasnelio" [level=3] [ref=e182] [cursor=pointer]
+              - paragraph [ref=e183] [cursor=pointer]: Profissionais de Saúde
+              - paragraph [ref=e184] [cursor=pointer]: Especializado em aspectos técnicos, protocolos e diretrizes clínicas. Ideal para profissionais de saúde.
+              - generic [ref=e185] [cursor=pointer]:
+                - generic [ref=e186] [cursor=pointer]: Protocolos
+                - generic [ref=e187] [cursor=pointer]: Farmacologia
+                - generic [ref=e188] [cursor=pointer]: Diretrizes
+              - generic [ref=e189] [cursor=pointer]: 🚀 Iniciar Conversa
+            - button "Iniciar conversa com Gá - Pacientes e Familiares" [ref=e190] [cursor=pointer]:
+              - generic [ref=e191] [cursor=pointer]: Recomendado
+              - generic [ref=e192] [cursor=pointer]: 💬
+              - heading "Gá" [level=3] [ref=e193] [cursor=pointer]
+              - paragraph [ref=e194] [cursor=pointer]: Pacientes e Familiares
+              - paragraph [ref=e195] [cursor=pointer]: Focado no cuidado humanizado e suporte emocional. Ideal para pacientes e familiares.
+              - generic [ref=e196] [cursor=pointer]:
+                - generic [ref=e197] [cursor=pointer]: Acolhimento
+                - generic [ref=e198] [cursor=pointer]: Orientação
+                - generic [ref=e199] [cursor=pointer]: Suporte
+              - generic [ref=e200] [cursor=pointer]: 🚀 Iniciar Conversa
+          - paragraph [ref=e202]:
+            - text: 💡
+            - strong [ref=e203]: "Dica:"
+            - text: Você pode alternar entre os assistentes a qualquer momento durante a conversa. Suas preferências serão lembradas para próximas visitas.
         - generic [ref=e204]:
           - generic [ref=e205]:
-            - heading "Credibilidade e Transparência" [level=2] [ref=e206]
-            - paragraph [ref=e207]: Nossa plataforma educacional é construída com base em evidências científicas e transparência total
-          - generic [ref=e209]:
-            - generic [ref=e210]:
-              - img [ref=e212]
-              - heading "Baseado em PCDT 2022" [level=3] [ref=e214]
-              - paragraph [ref=e215]: Conteúdo fundamentado no Protocolo Clínico oficial do Ministério da Saúde
-              - generic [ref=e216]:
-                - img [ref=e217]
-                - generic [ref=e220]: Verificado
-            - generic [ref=e221]:
-              - img [ref=e223]
-              - heading "Pesquisa de Doutorado" [level=3] [ref=e226]
-              - paragraph [ref=e227]: Desenvolvido como parte de tese acadêmica com rigor científico
-              - generic [ref=e228]:
-                - img [ref=e229]
-                - generic [ref=e232]: Verificado
-            - generic [ref=e233]:
-              - img [ref=e235]
-              - heading "Código Aberto" [level=3] [ref=e237]
-              - paragraph [ref=e238]: Transparência total com código-fonte disponível publicamente
-              - generic [ref=e239]:
-                - img [ref=e240]
-                - generic [ref=e243]: Verificado
-            - generic [ref=e244]:
-              - img [ref=e246]
-              - heading "Peer Review" [level=3] [ref=e251]
-              - paragraph [ref=e252]: Conteúdo revisado por profissionais especialistas da área
-              - generic [ref=e253]:
-                - img [ref=e254]
-                - generic [ref=e257]: Verificado
-            - generic [ref=e258]:
-              - img [ref=e260]
-              - heading "Fontes Citadas" [level=3] [ref=e263]
-              - paragraph [ref=e264]: Todas as informações possuem referências científicas verificáveis
-              - generic [ref=e265]:
-                - img [ref=e266]
-                - generic [ref=e269]: Verificado
-            - generic [ref=e270]:
-              - img [ref=e272]
-              - heading "Sem Fins Lucrativos" [level=3] [ref=e275]
-              - paragraph [ref=e276]: Plataforma educacional gratuita sem interesses comerciais
-              - generic [ref=e277]:
-                - img [ref=e278]
-                - generic [ref=e281]: Verificado
-          - generic [ref=e282]:
-            - generic [ref=e283]:
-              - img [ref=e284]
-              - heading "Importante" [level=3] [ref=e286]
+            - heading "Recursos Educacionais" [level=2] [ref=e206]
+            - paragraph [ref=e207]: Ferramentas e conteúdo desenvolvidos para apoiar o cuidado farmacêutico na hanseníase
+          - generic [ref=e208]:
+            - link "Módulos Educacionais Conteúdo estruturado sobre hanseníase, tratamento PQT-U e cuidado farmacêutico" [ref=e209] [cursor=pointer]:
+              - /url: /modules
+              - generic [ref=e210] [cursor=pointer]:
+                - img [ref=e212] [cursor=pointer]
+                - heading "Módulos Educacionais" [level=3] [ref=e215] [cursor=pointer]
+              - paragraph [ref=e216] [cursor=pointer]: Conteúdo estruturado sobre hanseníase, tratamento PQT-U e cuidado farmacêutico
+            - link "Recursos Práticos Calculadora de doses, checklist de dispensação e ferramentas práticas" [ref=e217] [cursor=pointer]:
+              - /url: /resources
+              - generic [ref=e218] [cursor=pointer]:
+                - img [ref=e220] [cursor=pointer]
+                - heading "Recursos Práticos" [level=3] [ref=e223] [cursor=pointer]
+              - paragraph [ref=e224] [cursor=pointer]: Calculadora de doses, checklist de dispensação e ferramentas práticas
+            - link "Chat Interativo Converse com assistentes virtuais especializados em hanseníase" [ref=e225] [cursor=pointer]:
+              - /url: /chat
+              - generic [ref=e226] [cursor=pointer]:
+                - img [ref=e228] [cursor=pointer]
+                - heading "Chat Interativo" [level=3] [ref=e230] [cursor=pointer]
+              - paragraph [ref=e231] [cursor=pointer]: Converse com assistentes virtuais especializados em hanseníase
+        - generic [ref=e233]:
+          - generic [ref=e234]:
+            - heading "Credibilidade e Transparência" [level=2] [ref=e235]
+            - paragraph [ref=e236]: Nossa plataforma educacional é construída com base em evidências científicas e transparência total
+          - generic [ref=e238]:
+            - generic [ref=e239]:
+              - img [ref=e241]
+              - heading "Baseado em PCDT 2022" [level=3] [ref=e243]
+              - paragraph [ref=e244]: Conteúdo fundamentado no Protocolo Clínico oficial do Ministério da Saúde
+              - generic [ref=e245]:
+                - img [ref=e246]
+                - generic [ref=e249]: Verificado
+            - generic [ref=e250]:
+              - img [ref=e252]
+              - heading "Pesquisa de Doutorado" [level=3] [ref=e255]
+              - paragraph [ref=e256]: Desenvolvido como parte de tese acadêmica com rigor científico
+              - generic [ref=e257]:
+                - img [ref=e258]
+                - generic [ref=e261]: Verificado
+            - generic [ref=e262]:
+              - img [ref=e264]
+              - heading "Código Aberto" [level=3] [ref=e266]
+              - paragraph [ref=e267]: Transparência total com código-fonte disponível publicamente
+              - generic [ref=e268]:
+                - img [ref=e269]
+                - generic [ref=e272]: Verificado
+            - generic [ref=e273]:
+              - img [ref=e275]
+              - heading "Peer Review" [level=3] [ref=e280]
+              - paragraph [ref=e281]: Conteúdo revisado por profissionais especialistas da área
+              - generic [ref=e282]:
+                - img [ref=e283]
+                - generic [ref=e286]: Verificado
             - generic [ref=e287]:
-              - paragraph [ref=e288]:
-                - strong [ref=e289]: Esta é uma ferramenta educacional
-                - text: desenvolvida para apoio ao aprendizado sobre dispensação de medicamentos para hanseníase. Não substitui consulta médica, orientação farmacêutica profissional ou diretrizes oficiais das instituições de saúde.
-              - list [ref=e290]:
-                - listitem [ref=e291]: • Sempre consulte fontes oficiais para decisões clínicas
-                - listitem [ref=e292]: • Use como complemento ao conhecimento profissional
-                - listitem [ref=e293]: • Verifique informações com literatura científica atualizada
-                - listitem [ref=e294]: • Em caso de dúvidas, procure orientação especializada
-          - generic [ref=e295]:
-            - generic [ref=e296]:
-              - heading "Contexto Acadêmico" [level=4] [ref=e297]
-              - paragraph [ref=e298]: Desenvolvido como parte de pesquisa doutoral em Ciências Farmacêuticas, com foco na melhoria de processos educacionais em dispensação de medicamentos para hanseníase no sistema público de saúde brasileiro.
+              - img [ref=e289]
+              - heading "Fontes Citadas" [level=3] [ref=e292]
+              - paragraph [ref=e293]: Todas as informações possuem referências científicas verificáveis
+              - generic [ref=e294]:
+                - img [ref=e295]
+                - generic [ref=e298]: Verificado
             - generic [ref=e299]:
-              - link "Ver Metodologia" [ref=e300] [cursor=pointer]:
+              - img [ref=e301]
+              - heading "Sem Fins Lucrativos" [level=3] [ref=e304]
+              - paragraph [ref=e305]: Plataforma educacional gratuita sem interesses comerciais
+              - generic [ref=e306]:
+                - img [ref=e307]
+                - generic [ref=e310]: Verificado
+          - generic [ref=e311]:
+            - generic [ref=e312]:
+              - img [ref=e313]
+              - heading "Importante" [level=3] [ref=e315]
+            - generic [ref=e316]:
+              - paragraph [ref=e317]:
+                - strong [ref=e318]: Esta é uma ferramenta educacional
+                - text: desenvolvida para apoio ao aprendizado sobre dispensação de medicamentos para hanseníase. Não substitui consulta médica, orientação farmacêutica profissional ou diretrizes oficiais das instituições de saúde.
+              - list [ref=e319]:
+                - listitem [ref=e320]: • Sempre consulte fontes oficiais para decisões clínicas
+                - listitem [ref=e321]: • Use como complemento ao conhecimento profissional
+                - listitem [ref=e322]: • Verifique informações com literatura científica atualizada
+                - listitem [ref=e323]: • Em caso de dúvidas, procure orientação especializada
+          - generic [ref=e324]:
+            - generic [ref=e325]:
+              - heading "Contexto Acadêmico" [level=4] [ref=e326]
+              - paragraph [ref=e327]: Desenvolvido como parte de pesquisa doutoral em Ciências Farmacêuticas, com foco na melhoria de processos educacionais em dispensação de medicamentos para hanseníase no sistema público de saúde brasileiro.
+            - generic [ref=e328]:
+              - link "Ver Metodologia" [ref=e329] [cursor=pointer]:
                 - /url: "#metodologia"
-              - link "Referências Bibliográficas" [ref=e301] [cursor=pointer]:
+              - link "Referências Bibliográficas" [ref=e330] [cursor=pointer]:
                 - /url: "#referencias"
-              - link "Código Fonte" [ref=e302] [cursor=pointer]:
+              - link "Código Fonte" [ref=e331] [cursor=pointer]:
                 - /url: "#codigo-fonte"
-        - generic [ref=e304]:
-          - heading "Precisa de Ajuda?" [level=2] [ref=e305]
-          - paragraph [ref=e306]: Nossa equipe está disponível para apoiar profissionais de saúde
-          - generic [ref=e307]:
-            - generic [ref=e308]:
-              - img [ref=e309]
-              - generic [ref=e312]: "Disque Saúde: 136"
-            - generic [ref=e313]:
-              - img [ref=e314]
-              - generic [ref=e316]: Unidade de Saúde mais próxima
-      - generic [ref=e317]:
-        - link "Mapa do Site" [ref=e320] [cursor=pointer]:
-          - /url: /sitemap
-          - img [ref=e321] [cursor=pointer]
-          - text: Mapa do Site
-        - generic [ref=e325]:
-          - generic [ref=e326]:
-            - generic [ref=e327]:
-              - img "Universidade de Brasília" [ref=e328]
-              - img "Programa de Pós-Graduação em Ciências Farmacêuticas" [ref=e329]
-            - generic [ref=e330]:
-              - generic [ref=e331]: UnB
-              - generic [ref=e332]: "Campus Darcy Ribeiro • Brasília - DF • CEP: 70910-900"
-            - generic [ref=e333]:
-              - generic [ref=e334]: Contato
-              - link "roteirosdedispensacaounb@gmail.com" [ref=e335] [cursor=pointer]:
-                - /url: mailto:roteirosdedispensacaounb@gmail.com
+        - generic [ref=e333]:
+          - heading "Precisa de Ajuda?" [level=2] [ref=e334]
+          - paragraph [ref=e335]: Nossa equipe está disponível para apoiar profissionais de saúde
           - generic [ref=e336]:
-            - generic [ref=e337]: 2 assistentes especializados
-            - generic [ref=e338]: Pesquisa de doutorado • 2025 © 2025 Sistema Educacional Roteiros de Dispensação
-    - status [ref=e339]: Assistente virtual Gá está ativo e pronto para conversar
-    - alert [ref=e340]
-    - log [ref=e341]
-    - alert [ref=e342]:
-      - alert "Atenção" [ref=e343]:
-        - generic [ref=e344]:
-          - img [ref=e346]
-          - generic [ref=e348]:
-            - generic [ref=e349]: Atenção
-            - generic [ref=e350]: Conectando com servidor offline. Usando dados locais.
-          - button "Fechar notificação de erro api_personas_1759675073264" [ref=e351] [cursor=pointer]:
-            - img [ref=e352] [cursor=pointer]
-      - alert "Atenção" [ref=e355]:
-        - generic [ref=e356]:
-          - img [ref=e358]
-          - generic [ref=e360]:
-            - generic [ref=e361]: Atenção
-            - generic [ref=e362]: Conectando com servidor offline. Usando dados locais.
-          - button "Fechar notificação de erro api_personas_1759675073083" [ref=e363] [cursor=pointer]:
-            - img [ref=e364] [cursor=pointer]
-      - alert "Atenção" [ref=e367]:
-        - generic [ref=e368]:
-          - img [ref=e370]
-          - generic [ref=e372]:
-            - generic [ref=e373]: Atenção
-            - generic [ref=e374]: Conectando com servidor offline. Usando dados locais.
-          - button "Fechar notificação de erro api_personas_1759675073081" [ref=e375] [cursor=pointer]:
-            - img [ref=e376] [cursor=pointer]
-      - button "Limpar todas as notificações" [ref=e379] [cursor=pointer]: Limpar Todas (3)
-    - generic [ref=e380]:
-      - generic [ref=e381]:
-        - generic [ref=e382]:
-          - generic [ref=e383]: ⌨️
+            - generic [ref=e337]:
+              - img [ref=e338]
+              - generic [ref=e341]: "Disque Saúde: 136"
+            - generic [ref=e342]:
+              - img [ref=e343]
+              - generic [ref=e345]: Unidade de Saúde mais próxima
+      - generic [ref=e346]:
+        - link "Mapa do Site" [ref=e349] [cursor=pointer]:
+          - /url: /sitemap
+          - img [ref=e350] [cursor=pointer]
+          - text: Mapa do Site
+        - generic [ref=e354]:
+          - generic [ref=e355]:
+            - generic [ref=e356]:
+              - img "Universidade de Brasília" [ref=e357]
+              - img "Programa de Pós-Graduação em Ciências Farmacêuticas" [ref=e358]
+            - generic [ref=e359]:
+              - generic [ref=e360]: UnB
+              - generic [ref=e361]: "Campus Darcy Ribeiro • Brasília - DF • CEP: 70910-900"
+            - generic [ref=e362]:
+              - generic [ref=e363]: Contato
+              - link "roteirosdedispensacaounb@gmail.com" [ref=e364] [cursor=pointer]:
+                - /url: mailto:roteirosdedispensacaounb@gmail.com
+          - generic [ref=e365]:
+            - generic [ref=e366]: 2 assistentes especializados
+            - generic [ref=e367]: Pesquisa de doutorado • 2025 © 2025 Sistema Educacional Roteiros de Dispensação
+    - status [ref=e368]
+    - alert [ref=e369]
+    - log [ref=e370]
+    - generic [ref=e371]:
+      - generic [ref=e372]:
+        - generic [ref=e373]:
+          - generic [ref=e374]: ⌨️
           - text: Navegação Numérica
-        - generic [ref=e384]:
-          - button "−" [ref=e385] [cursor=pointer]
-          - button "×" [ref=e386] [cursor=pointer]
-      - generic [ref=e387]:
-        - generic [ref=e388]:
-          - generic [ref=e389] [cursor=pointer]:
-            - generic [ref=e390] [cursor=pointer]: "1"
-            - generic [ref=e391] [cursor=pointer]:
-              - generic [ref=e392] [cursor=pointer]: Início
-              - generic [ref=e393] [cursor=pointer]: Página inicial do sistema
-          - generic [ref=e394] [cursor=pointer]:
-            - generic [ref=e395] [cursor=pointer]: "2"
-            - generic [ref=e396] [cursor=pointer]:
-              - generic [ref=e397] [cursor=pointer]: Dashboard
-              - generic [ref=e398] [cursor=pointer]: Dashboard educacional com progress tracking
-          - generic [ref=e399] [cursor=pointer]:
-            - generic [ref=e400] [cursor=pointer]: "3"
-            - generic [ref=e401] [cursor=pointer]:
-              - generic [ref=e402] [cursor=pointer]: Chat
-              - generic [ref=e403] [cursor=pointer]: Assistentes virtuais Dr. Gasnelio & Gá
-          - generic [ref=e404] [cursor=pointer]:
-            - generic [ref=e405] [cursor=pointer]: "4"
-            - generic [ref=e406] [cursor=pointer]:
-              - generic [ref=e407] [cursor=pointer]: Simulador
-              - generic [ref=e408] [cursor=pointer]: Simulador clínico de casos reais
-          - generic [ref=e409] [cursor=pointer]:
-            - generic [ref=e410] [cursor=pointer]: "5"
-            - generic [ref=e411] [cursor=pointer]:
-              - generic [ref=e412] [cursor=pointer]: Certificação
-              - generic [ref=e413] [cursor=pointer]: Sistema de certificação educacional
-          - generic [ref=e414] [cursor=pointer]:
-            - generic [ref=e415] [cursor=pointer]: "6"
-            - generic [ref=e416] [cursor=pointer]:
-              - generic [ref=e417] [cursor=pointer]: Acessibilidade
-              - generic [ref=e418] [cursor=pointer]: Ferramentas de acessibilidade
-          - generic [ref=e419] [cursor=pointer]:
-            - generic [ref=e420] [cursor=pointer]: "7"
-            - generic [ref=e421] [cursor=pointer]:
-              - generic [ref=e422] [cursor=pointer]: Timeline
-              - generic [ref=e423] [cursor=pointer]: Timeline interativa do tratamento PQT-U
-          - generic [ref=e424] [cursor=pointer]:
-            - generic [ref=e425] [cursor=pointer]: "8"
-            - generic [ref=e426] [cursor=pointer]:
-              - generic [ref=e427] [cursor=pointer]: Calculadora
-              - generic [ref=e428] [cursor=pointer]: Calculadora PQT-U
-          - generic [ref=e429] [cursor=pointer]:
-            - generic [ref=e430] [cursor=pointer]: "9"
-            - generic [ref=e431] [cursor=pointer]:
-              - generic [ref=e432] [cursor=pointer]: Checklist
-              - generic [ref=e433] [cursor=pointer]: Checklist de dispensação
-        - generic [ref=e434]: 💡 Pressione qualquer tecla numérica (1-9) para navegar rapidamente
-  - alert [ref=e435]
+        - generic [ref=e375]:
+          - button "−" [ref=e376] [cursor=pointer]
+          - button "×" [ref=e377] [cursor=pointer]
+      - generic [ref=e378]:
+        - generic [ref=e379]:
+          - generic [ref=e380] [cursor=pointer]:
+            - generic [ref=e381] [cursor=pointer]: "1"
+            - generic [ref=e382] [cursor=pointer]:
+              - generic [ref=e383] [cursor=pointer]: Início
+              - generic [ref=e384] [cursor=pointer]: Página inicial do sistema
+          - generic [ref=e385] [cursor=pointer]:
+            - generic [ref=e386] [cursor=pointer]: "2"
+            - generic [ref=e387] [cursor=pointer]:
+              - generic [ref=e388] [cursor=pointer]: Dashboard
+              - generic [ref=e389] [cursor=pointer]: Dashboard educacional com progress tracking
+          - generic [ref=e390] [cursor=pointer]:
+            - generic [ref=e391] [cursor=pointer]: "3"
+            - generic [ref=e392] [cursor=pointer]:
+              - generic [ref=e393] [cursor=pointer]: Chat
+              - generic [ref=e394] [cursor=pointer]: Assistentes virtuais Dr. Gasnelio & Gá
+          - generic [ref=e395] [cursor=pointer]:
+            - generic [ref=e396] [cursor=pointer]: "4"
+            - generic [ref=e397] [cursor=pointer]:
+              - generic [ref=e398] [cursor=pointer]: Simulador
+              - generic [ref=e399] [cursor=pointer]: Simulador clínico de casos reais
+          - generic [ref=e400] [cursor=pointer]:
+            - generic [ref=e401] [cursor=pointer]: "5"
+            - generic [ref=e402] [cursor=pointer]:
+              - generic [ref=e403] [cursor=pointer]: Certificação
+              - generic [ref=e404] [cursor=pointer]: Sistema de certificação educacional
+          - generic [ref=e405] [cursor=pointer]:
+            - generic [ref=e406] [cursor=pointer]: "6"
+            - generic [ref=e407] [cursor=pointer]:
+              - generic [ref=e408] [cursor=pointer]: Acessibilidade
+              - generic [ref=e409] [cursor=pointer]: Ferramentas de acessibilidade
+          - generic [ref=e410] [cursor=pointer]:
+            - generic [ref=e411] [cursor=pointer]: "7"
+            - generic [ref=e412] [cursor=pointer]:
+              - generic [ref=e413] [cursor=pointer]: Timeline
+              - generic [ref=e414] [cursor=pointer]: Timeline interativa do tratamento PQT-U
+          - generic [ref=e415] [cursor=pointer]:
+            - generic [ref=e416] [cursor=pointer]: "8"
+            - generic [ref=e417] [cursor=pointer]:
+              - generic [ref=e418] [cursor=pointer]: Calculadora
+              - generic [ref=e419] [cursor=pointer]: Calculadora PQT-U
+          - generic [ref=e420] [cursor=pointer]:
+            - generic [ref=e421] [cursor=pointer]: "9"
+            - generic [ref=e422] [cursor=pointer]:
+              - generic [ref=e423] [cursor=pointer]: Checklist
+              - generic [ref=e424] [cursor=pointer]: Checklist de dispensação
+        - generic [ref=e425]: 💡 Pressione qualquer tecla numérica (1-9) para navegar rapidamente
+  - alert [ref=e426]
 ```

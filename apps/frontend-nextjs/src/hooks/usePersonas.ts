@@ -19,26 +19,36 @@ export function usePersonas() {
       try {
         setLoading(true);
         setError(null);
-        
+
+        console.log('[usePersonas] Starting persona load...');
+
         // Verificar cache primeiro
         const cachedPersonas = await PersonasCache.get();
         if (cachedPersonas) {
+          console.log('[usePersonas] Cache hit, personas count:', Object.keys(cachedPersonas).length);
           setPersonas(cachedPersonas as Record<string, PersonaConfig>);
           setLoading(false);
           return;
         }
 
+        console.log('[usePersonas] No cache, fetching from server...');
         // Buscar do servidor se não há cache
         const personasData = await getPersonaConfigs();
+        console.log('[usePersonas] Raw data received, keys:', Object.keys(personasData));
+
         // Filtrar apenas personas com avatares configurados
         const validPersonas = filterValidPersonas(personasData);
+        console.log('[usePersonas] After filter, personas count:', Object.keys(validPersonas).length);
+        console.log('[usePersonas] Valid persona IDs:', Object.keys(validPersonas));
 
         // Salvar no cache
         await PersonasCache.set(validPersonas);
         setPersonas(validPersonas as Record<string, PersonaConfig>);
+        console.log('[usePersonas] Personas set successfully');
       } catch (err) {
         // Medical system error - explicit stderr + tracking
         const errorMessage = err instanceof Error ? err.message : String(err);
+        console.error('[usePersonas] Error loading personas:', errorMessage);
         if (typeof process !== 'undefined' && process.stderr) {
           process.stderr.write(`❌ ERRO - Falha ao carregar personas médicas:\n  Error: ${errorMessage}\n\n`);
         }
