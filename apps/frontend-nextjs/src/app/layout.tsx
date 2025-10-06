@@ -17,6 +17,7 @@ import PersonaAccessibilityProvider from '@/components/accessibility/PersonaAcce
 import EnhancedCoreWebVitals from '@/components/analytics/EnhancedCoreWebVitals'
 import NumericNavigationWrapper from '@/components/navigation/NumericNavigationWrapper'
 import { StorageProtectionProvider } from '@/components/StorageProtectionProvider'
+import { GlobalPersonasProvider } from '@/contexts/GlobalPersonasProvider'
 import SITE_CONFIG from '@/lib/config'
 import '@/styles/globals.css'
 import '@/styles/fluid-typography.css'
@@ -121,12 +122,13 @@ export default function RootLayout({
         
         <main id="main-content">
           <StorageProtectionProvider>
-            <ErrorBoundary>
-              <ErrorHandlerProvider>
-                <GlobalTrackingProvider>
-                  <AccessibilityProvider>
-                    <ThemeProvider>
-                      <PersonaProvider>
+            <GlobalPersonasProvider>
+              <ErrorBoundary>
+                <ErrorHandlerProvider>
+                  <GlobalTrackingProvider>
+                    <AccessibilityProvider>
+                      <ThemeProvider>
+                        <PersonaProvider>
                         <PersonaAccessibilityProvider>
                           <GlobalNavigationProvider>
                             <SmartNavigationProvider>
@@ -158,6 +160,7 @@ export default function RootLayout({
               hintPosition="bottom-right"
             />
           </ErrorBoundary>
+        </GlobalPersonasProvider>
         </StorageProtectionProvider>
       </main>
         
