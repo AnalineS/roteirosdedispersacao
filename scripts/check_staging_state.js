@@ -13,6 +13,26 @@ async function checkStagingState() {
   const browser = await chromium.launch({ headless: true });
   const page = await browser.newPage();
 
+  // Collect ALL console messages - MUST be BEFORE page.goto
+  const consoleMessages = {
+    log: [],
+    error: [],
+    warn: []
+  };
+
+  page.on('console', msg => {
+    const text = msg.text();
+    const type = msg.type();
+
+    if (type === 'error') {
+      consoleMessages.error.push(text);
+    } else if (type === 'warning') {
+      consoleMessages.warn.push(text);
+    } else if (type === 'log' && (text.includes('[usePersonas]') || text.includes('[getPersonaConfigs]') || text.includes('[Personas]') || text.includes('[filterValidPersonas]'))) {
+      consoleMessages.log.push(text);
+    }
+  });
+
   try {
     console.log('Step 1: Navegando para /chat...');
     await page.goto(`${STAGING_URL}/chat`, {
@@ -21,8 +41,8 @@ async function checkStagingState() {
     });
     console.log('✓ Página carregada\n');
 
-    // Wait for React to hydrate
-    await page.waitForTimeout(3000);
+    // Wait for React to hydrate and logs to accumulate
+    await page.waitForTimeout(5000);
 
     console.log('Step 2: Extraindo estado da página...\n');
 
@@ -81,20 +101,25 @@ async function checkStagingState() {
     });
     console.log(`\n✓ Screenshot salvo: staging_state_debug.png`);
 
-    // Check console errors
-    const consoleMessages = [];
-    page.on('console', msg => {
-      if (msg.type() === 'error') {
-        consoleMessages.push(msg.text());
-      }
-    });
+    // Display collected logs
+    if (consoleMessages.log.length > 0) {
+      console.log(`\n📋 Logs de persona loading (${consoleMessages.log.length}):`);
+      consoleMessages.log.forEach((msg, i) => {
+        console.log(`  ${i + 1}. ${msg}`);
+      });
+    }
 
-    await page.waitForTimeout(2000);
+    if (consoleMessages.error.length > 0) {
+      console.log(`\n⚠️  Erros no console (${consoleMessages.error.length}):`);
+      consoleMessages.error.forEach((msg, i) => {
+        console.log(`  ${i + 1}. ${msg.substring(0, 150)}`);
+      });
+    }
 
-    if (consoleMessages.length > 0) {
-      console.log(`\n⚠️  Erros no console (${consoleMessages.length}):`);
-      consoleMessages.forEach((msg, i) => {
-        console.log(`  ${i + 1}. ${msg.substring(0, 100)}`);
+    if (consoleMessages.warn.length > 0) {
+      console.log(`\n⚠️  Warnings no console (${consoleMessages.warn.length}):`);
+      consoleMessages.warn.forEach((msg, i) => {
+        console.log(`  ${i + 1}. ${msg.substring(0, 150)}`);
       });
     }
 
