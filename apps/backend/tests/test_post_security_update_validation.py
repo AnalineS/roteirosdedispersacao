@@ -12,6 +12,7 @@ import json
 import time
 import hashlib
 import re
+import os
 from datetime import datetime, timedelta
 from unittest.mock import patch, Mock, MagicMock
 from typing import Dict, List, Any, Optional
@@ -260,8 +261,15 @@ class TestAuthenticationMedicalContext:
 
     @pytest.mark.critical
     @pytest.mark.auth_medical
+    @pytest.mark.skipif(
+        not os.getenv('OPENROUTER_API_KEY') and not os.getenv('OPENAI_API_KEY'),
+        reason="Requires RAG system with API keys - not available in CI without secrets"
+    )
     def test_jwt_medical_session_continuity(self, client):
-        """Ensure JWT security updates don't break medical conversation continuity"""
+        """Ensure JWT security updates don't break medical conversation continuity
+
+        NOTE: Skipped in CI when RAG not configured (requires OPENROUTER_API_KEY or OPENAI_API_KEY)
+        """
 
         # Simulate a medical consultation session
         session_messages = [
