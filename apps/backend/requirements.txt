@@ -65,7 +65,7 @@ psutil==7.1.0
 
 # Google Cloud Operations Suite
 google-cloud-monitoring==2.27.2
-google-cloud-logging==3.12.1
+google-cloud-logging==3.11.4  # Upgraded from 3.10.0 - incremental approach to avoid resolution-too-deep
 google-cloud-storage>=2.10.0
 
 # Structured logging

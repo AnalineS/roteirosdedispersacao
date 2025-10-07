@@ -290,3 +290,5 @@ scripts/**/*.log
 
 # Ignorar relatórios gerados automaticamente
 .claude/automation/reports/
+# Claude Code MCP configuration with API keys
+.claude.json
