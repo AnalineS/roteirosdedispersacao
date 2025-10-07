@@ -25,6 +25,7 @@ interface RAGValidationResult {
   warnings: string[];
   suggestions?: string[];
   confidence?: number;
+  verified?: boolean;
 }
 
 export interface MedicationDose {
