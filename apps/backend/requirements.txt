@@ -87,7 +87,7 @@ python-magic==0.4.27
 
 # === DATABASE & VECTOR STORE ===
 # Supabase integration - FASE 3 RAG
-supabase==2.20.0
+supabase==2.21.1
 psycopg2-binary==2.9.10  # PostgreSQL adapter with pgvector support
 
 # Optional SQL support  
