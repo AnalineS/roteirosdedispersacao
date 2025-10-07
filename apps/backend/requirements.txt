@@ -65,7 +65,19 @@ psutil==7.1.0
 
 # Google Cloud Operations Suite
 google-cloud-monitoring==2.27.2
-google-cloud-logging==3.11.4  # Upgraded from 3.10.0 - incremental approach to avoid resolution-too-deep
+# google-cloud-logging MANTIDO em 3.10.0 devido a conflito de dependências
+# PROBLEMA: Versões 3.11.x+ requerem opentelemetry-api>=1.9.0 que conflita com semgrep
+#   - semgrep>=1.113.0 requer opentelemetry-api~=1.25.0 (versão específica)
+#   - semgrep>=1.137.0 requer opentelemetry-api~=1.37.0 (versão específica)
+#   - Resultado: pip entra em loop "resolution-too-deep" testando centenas de combinações
+# ANÁLISE REALIZADA:
+#   - Python 3.11.13 é versão ideal (upgrade não resolve o conflito)
+#   - Testado upgrade incremental 3.10.0→3.11.4: FALHOU (mesmo erro)
+#   - Opções analisadas: manter 3.10.0 (ZERO risco) vs pins complexos (MÉDIO risco)
+# SEGURANÇA: 3.10.0 sem vulnerabilidades conhecidas (verificado 2025-10-07)
+# REVISÃO: 2025-04 (verificar se conflito foi resolvido upstream)
+# ALTERNATIVAS: Ver apps/backend/python_version_analysis.py para opções de upgrade
+google-cloud-logging==3.10.0
 google-cloud-storage>=2.10.0
 
 # Structured logging
