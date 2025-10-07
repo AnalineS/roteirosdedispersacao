@@ -27,8 +27,10 @@
     "playwright": "^1.55.1"
   },
   "devDependencies": {
+    "@playwright/mcp": "^0.0.41",
     "@playwright/test": "^1.55.1",
     "@types/node": "^20.12.12",
+    "@upstash/context7-mcp": "^1.0.20",
     "typescript": "^5.4.5"
   },
   "keywords": [
