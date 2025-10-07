@@ -13,7 +13,7 @@ import config from '@/config/environment';
 export type { ChatMessage, ChatSession } from '@/types/api';
 
 // Environment-aware API configuration
-const getApiConfig = () => {
+const getApiConfig = (): { apiUrl: string; timeout: number; retries: number } => {
   const apiUrl = config.api.baseUrl;
   const timeout = config.api.timeout;
   const retries = config.api.retries;

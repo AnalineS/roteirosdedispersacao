@@ -100,7 +100,7 @@
     "@typescript-eslint/eslint-plugin": "^8.42.0",
     "@typescript-eslint/parser": "^8.42.0",
     "babel-plugin-react-compiler": "^19.0.0-beta-af1b7da-20250417",
-    "eslint": "^8.57.0",
+    "eslint": "^9.37.0",
     "eslint-config-next": "^15.5.4",
     "glob": "^11.0.3",
     "husky": "^9.1.7",

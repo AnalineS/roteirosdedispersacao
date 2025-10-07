@@ -1,7 +1,13 @@
 'use client';
 
 import React, { useEffect, useRef, useCallback, useMemo } from 'react';
-import { useDynamicOptimization } from './useDynamicOptimization';
+import {
+  useDynamicOptimization,
+  useIntersectionObserver,
+  useResizeObserver,
+  usePrevious,
+  useLocalStorage
+} from './useDynamicOptimization';
 import { EffectUtils } from './useEffectOptimizer';
 import { useGlobalContext } from '@/contexts/GlobalContextHub';
 import { useSimpleTrack } from '@/components/tracking/IntegratedTrackingProvider';
@@ -66,7 +72,7 @@ export const useActiveHooksSystem = (config: ActiveHooksConfig = {}) => {
   const { addCleanup } = EffectUtils.useAutoCleanup();
 
   // Intersection observer para performance
-  const { isIntersecting, intersectionRatio } = optimization.useIntersectionObserver(
+  const { isIntersecting, intersectionRatio } = useIntersectionObserver(
     componentRef as React.RefObject<HTMLDivElement>,
     {
       threshold: [0, 0.25, 0.5, 0.75, 1]
@@ -74,16 +80,16 @@ export const useActiveHooksSystem = (config: ActiveHooksConfig = {}) => {
   );
 
   // Resize observer para responsividade
-  const dimensions = optimization.useResizeObserver(
+  const dimensions = useResizeObserver(
     componentRef as React.RefObject<HTMLDivElement>
   );
 
   // Previous state tracking
-  const previousDimensions = optimization.usePrevious(dimensions);
-  const previousIntersection = optimization.usePrevious(intersectionRatio);
+  const previousDimensions = usePrevious(dimensions);
+  const previousIntersection = usePrevious(intersectionRatio);
 
   // Local storage para preferências do componente
-  const [componentPrefs, setComponentPrefs] = optimization.useLocalStorage(
+  const [componentPrefs, setComponentPrefs] = useLocalStorage(
     `component-prefs-${componentName}`,
     { initialized: false, lastUsed: Date.now() }
   );
@@ -411,10 +417,10 @@ export const useActiveHooksSystem = (config: ActiveHooksConfig = {}) => {
     
     // Hooks utilities (for custom usage)
     hooks: {
-      useIntersectionObserver: optimization.useIntersectionObserver,
-      useResizeObserver: optimization.useResizeObserver,
-      usePrevious: optimization.usePrevious,
-      useLocalStorage: optimization.useLocalStorage,
+      useIntersectionObserver,
+      useResizeObserver,
+      usePrevious,
+      useLocalStorage,
       effectUtils: EffectUtils
     }
   };

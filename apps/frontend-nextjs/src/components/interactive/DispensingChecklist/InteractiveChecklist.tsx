@@ -196,7 +196,7 @@ export default function InteractiveChecklist({
     announceChange('Sessão retomada');
   }, [announceChange]);
 
-  const getStageIcon = (stage: WorkflowStage) => {
+  const getStageIcon = (stage: WorkflowStage): React.JSX.Element => {
     if (stage.isCompleted) return <CheckIcon size={20} color="#22c55e" />;
     const progress = calculateStageProgress(stage);
     if (progress > 0) return <HeartIcon size={20} color="#f59e0b" />;

@@ -139,7 +139,7 @@ const DEFAULT_CONFIG: TrackingConfig = {
 
 export function useGlobalTracking(config: TrackingConfig = DEFAULT_CONFIG) {
   const pathname = usePathname();
-  const searchParams = typeof window !== 'undefined' ? useSearchParams() : null;
+  const searchParams = useSearchParams(); // Always call hook, check window in useEffect
   const { 
     trackCognitiveLoad, 
     trackMobileIssue, 

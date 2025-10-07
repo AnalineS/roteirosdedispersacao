@@ -177,24 +177,7 @@ class HybridCacheManager {
     }
     this.stats.localStorage.misses++;
 
-    // 3. Verificar Firestore (se online)
-    if (this.isOnline) {
-      const firestoreResult = await this.getFromFirestore<T>(sanitizedKey);
-      if (firestoreResult !== null) {
-        this.stats.firestore.hits++;
-        this.updateTotalStats();
-        
-        // Promover para memory e localStorage
-        if (firestoreResult !== undefined) {
-          this.setInMemory(sanitizedKey, firestoreResult as CacheableData, this.config.memory.defaultTTL);
-          this.setInLocalStorage(sanitizedKey, firestoreResult as CacheableData, this.config.localStorage.defaultTTL);
-        }
-        
-        logger.log('[HybridCache] Firestore cache hit');
-        return firestoreResult;
-      }
-      this.stats.firestore.misses++;
-    }
+    // Firestore cache layer removed (no longer in use)
 
     this.updateTotalStats();
     logger.log('[HybridCache] Cache miss');
@@ -229,18 +212,7 @@ class HybridCacheManager {
       if (!options?.skipFirestore && this.isOnline) {
         const firestoreTTL = Math.max(ttl, this.config.firestore.defaultTTL);
         
-        // Adicionar à queue de sincronização para background processing
-        this.syncQueue.add(sanitizedKey);
-        
-        // Para prioridade alta, fazer sync imediato
-        if (options?.priority === 'high') {
-          try {
-            await this.syncToFirestore(sanitizedKey, data, firestoreTTL);
-          } catch (syncError) {
-            console.warn(`[HybridCache] Erro no sync prioritário ${key}:`, syncError);
-            // Não falhar a operação se sync falhou - dados ainda estão localmente
-          }
-        }
+        // Firestore sync queue removed - local storage only
       }
       
       logger.log('[HybridCache] Data cached successfully');
@@ -325,21 +297,10 @@ class HybridCacheManager {
     
     const keysToSync = Array.from(this.syncQueue);
     
+    // Firestore sync removed - clearing sync queue
     for (const key of keysToSync) {
-      const memoryEntry = this.memoryCache.get(key);
-      if (memoryEntry && !this.isExpired(memoryEntry) && memoryEntry.syncStatus !== 'synced') {
-        try {
-          await this.syncToFirestore(key, memoryEntry.data, memoryEntry.ttl);
-          synced++;
-          this.syncQueue.delete(key);
-        } catch (error) {
-          console.error(`[HybridCache] Falha ao sincronizar ${key}:`, error);
-          failed++;
-        }
-      } else {
-        // Remover da queue se não existir, expirou ou já está sincronizado
-        this.syncQueue.delete(key);
-      }
+      this.syncQueue.delete(key);
+      synced++;
     }
     
     logger.log(`[HybridCache] Sincronização manual: ${synced} ok, ${failed} falhas`);
@@ -468,36 +429,7 @@ class HybridCacheManager {
     }
   }
 
-  private async getFromFirestore<T>(key: string): Promise<T | null> {
-    try {
-      return null; // Firestore fallback removed
-    } catch (error) {
-      logger.warn(`[HybridCache] Erro ao buscar ${key} no Firestore:`, error);
-      return null;
-    }
-  }
 
-  private async syncToFirestore<T>(key: string, data: T, ttl: number): Promise<void> {
-    try {
-      // Firestore sync removed - using local storage only
-      logger.debug('Firestore sync disabled - data cached locally only');
-
-      // Atualizar status de sync no memory cache
-      const memoryEntry = this.memoryCache.get(key);
-      if (memoryEntry) {
-        memoryEntry.syncStatus = 'synced';
-      }
-
-    } catch (error) {
-      // Atualizar status de falha
-      const memoryEntry = this.memoryCache.get(key);
-      if (memoryEntry) {
-        memoryEntry.syncStatus = 'failed';
-        memoryEntry.retryCount = (memoryEntry.retryCount || 0) + 1;
-      }
-      throw error;
-    }
-  }
 
   private removeFromLocalStorage(key: string): void {
     try {

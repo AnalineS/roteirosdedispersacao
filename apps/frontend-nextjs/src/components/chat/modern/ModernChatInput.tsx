@@ -230,9 +230,9 @@ export default function ModernChatInput({
   const [showImageUploader, setShowImageUploader] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   
-  // Hooks multimodais (somente se multimodal estiver habilitado)
-  const multimodalHook = multimodal ? useMultimodal() : null;
-  const healthHook = multimodal ? useMultimodalHealth() : null;
+  // Hooks multimodais (sempre chamados, mas valores usados condicionalmente)
+  const multimodalHook = useMultimodal();
+  const healthHook = useMultimodalHealth();
 
   const colors = persona ? getPersonaColors(personaId) : null;
 

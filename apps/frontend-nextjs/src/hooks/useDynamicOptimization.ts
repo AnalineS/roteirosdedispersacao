@@ -16,6 +16,99 @@ import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 import { useGlobalContext } from '@/contexts/GlobalContextHub';
 
 // ============================================
+// CUSTOM HOOKS UTILITÁRIOS (Exportados separadamente)
+// ============================================
+
+// Hook para Intersection Observer
+export function useIntersectionObserver(
+  elementRef: React.RefObject<Element>,
+  options: IntersectionObserverInit = {}
+) {
+  const [isIntersecting, setIsIntersecting] = useState(false);
+  const [intersectionRatio, setIntersectionRatio] = useState(0);
+
+  useEffect(() => {
+    const element = elementRef.current;
+    if (!element) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsIntersecting(entry.isIntersecting);
+        setIntersectionRatio(entry.intersectionRatio);
+      },
+      { threshold: [0, 0.25, 0.5, 0.75, 1], ...options }
+    );
+
+    observer.observe(element);
+    return () => observer.unobserve(element);
+  }, [elementRef, options]);
+
+  return { isIntersecting, intersectionRatio };
+}
+
+// Hook para Resize Observer
+export function useResizeObserver(elementRef: React.RefObject<Element>) {
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+
+  useEffect(() => {
+    const element = elementRef.current;
+    if (!element) return;
+
+    const observer = new ResizeObserver(([entry]) => {
+      setDimensions({
+        width: entry.contentRect.width,
+        height: entry.contentRect.height
+      });
+    });
+
+    observer.observe(element);
+    return () => observer.unobserve(element);
+  }, [elementRef]);
+
+  return dimensions;
+}
+
+// Hook para rastrear valor anterior
+export function usePrevious<T>(value: T): T | undefined {
+  const ref = useRef<T | undefined>(undefined);
+
+  useEffect(() => {
+    ref.current = value;
+  });
+
+  return ref.current;
+}
+
+// Hook para localStorage
+export function useLocalStorage<T>(key: string, initialValue: T) {
+  const [storedValue, setStoredValue] = useState<T>(() => {
+    try {
+      const item = safeLocalStorage()?.getItem(key);
+      return item ? JSON.parse(item) : initialValue;
+    } catch {
+      return initialValue;
+    }
+  });
+
+  const setValue = useCallback((value: T | ((val: T) => T)) => {
+    try {
+      const valueToStore = value instanceof Function ? value(storedValue) : value;
+      setStoredValue(valueToStore);
+      safeLocalStorage()?.setItem(key, JSON.stringify(valueToStore));
+    } catch (error) {
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'optimization_storage_error', {
+          event_category: 'optimization',
+          event_label: 'localstorage_save_failed'
+        });
+      }
+    }
+  }, [key, storedValue]);
+
+  return [storedValue, setValue] as const;
+}
+
+// ============================================
 // HOOK DE OTIMIZAÇÃO DINÂMICA
 // ============================================
 
@@ -200,7 +293,7 @@ export const useDynamicOptimization = (config: OptimizationConfig = {}) => {
     let lastCall = 0;
     let timeoutId: NodeJS.Timeout | undefined;
 
-    const throttledFn = (...args: [React.SyntheticEvent, string]) => {
+    const throttledFn = (...args: [React.SyntheticEvent, string]): void => {
       const now = Date.now();
 
       if (now - lastCall >= delay) {
@@ -266,95 +359,11 @@ export const useDynamicOptimization = (config: OptimizationConfig = {}) => {
   }, [enableErrorBoundary]);
 
   // ============================================
-  // CUSTOM HOOKS INTERNOS
+  // UTILITY FUNCTIONS (não são hooks, então sem problema estar aqui)
   // ============================================
-
-  const useIntersectionObserver = useCallback((
-    elementRef: React.RefObject<Element>,
-    options: IntersectionObserverInit = {}
-  ) => {
-    const [isIntersecting, setIsIntersecting] = useState(false);
-    const [intersectionRatio, setIntersectionRatio] = useState(0);
-
-    useEffect(() => {
-      const element = elementRef.current;
-      if (!element) return;
-
-      const observer = new IntersectionObserver(
-        ([entry]) => {
-          setIsIntersecting(entry.isIntersecting);
-          setIntersectionRatio(entry.intersectionRatio);
-        },
-        { threshold: [0, 0.25, 0.5, 0.75, 1], ...options }
-      );
-
-      observer.observe(element);
-      return () => observer.unobserve(element);
-    }, [elementRef, options]);
-
-    return { isIntersecting, intersectionRatio };
-  }, []);
-
-  const useResizeObserver = useCallback((
-    elementRef: React.RefObject<Element>
-  ) => {
-    const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
-
-    useEffect(() => {
-      const element = elementRef.current;
-      if (!element) return;
-
-      const observer = new ResizeObserver(([entry]) => {
-        setDimensions({
-          width: entry.contentRect.width,
-          height: entry.contentRect.height
-        });
-      });
-
-      observer.observe(element);
-      return () => observer.unobserve(element);
-    }, [elementRef]);
-
-    return dimensions;
-  }, []);
-
-  const usePrevious = useCallback(<T>(value: T): T | undefined => {
-    const ref = useRef<T | undefined>(undefined);
-    
-    useEffect(() => {
-      ref.current = value;
-    });
-    
-    return ref.current;
-  }, []);
-
-  const useLocalStorage = useCallback(<T>(key: string, initialValue: T) => {
-    const [storedValue, setStoredValue] = useState<T>(() => {
-      try {
-        const item = safeLocalStorage()?.getItem(key);
-        return item ? JSON.parse(item) : initialValue;
-      } catch {
-        return initialValue;
-      }
-    });
-
-    const setValue = useCallback((value: T | ((val: T) => T)) => {
-      try {
-        const valueToStore = value instanceof Function ? value(storedValue) : value;
-        setStoredValue(valueToStore);
-        safeLocalStorage()?.setItem(key, JSON.stringify(valueToStore));
-      } catch (error) {
-        if (typeof window !== 'undefined' && window.gtag) {
-          window.gtag('event', 'optimization_storage_error', {
-            event_category: 'optimization',
-            event_label: 'localstorage_save_failed'
-          });
-        }
-      }
-    }, [key, storedValue]);
-
-    return [storedValue, setValue] as const;
-  }, []);
+  // NOTA: Removidos os "custom hooks" que estavam dentro de useCallback
+  // pois violavam as regras dos Hooks do React. Esses podem ser extraídos
+  // para hooks separados exportados se necessário no futuro.
 
   // ============================================
   // EXTERNAL STORE SYNC
@@ -409,12 +418,8 @@ export const useDynamicOptimization = (config: OptimizationConfig = {}) => {
     // Error handling
     handleError,
     lastError: errorBoundaryRef.current,
-    
-    // Custom hooks
-    useIntersectionObserver,
-    useResizeObserver,
-    usePrevious,
-    useLocalStorage,
+
+    // Utility functions
     createExternalStoreSync,
     createImperativeHandle,
     

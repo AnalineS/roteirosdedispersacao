@@ -21,6 +21,12 @@ export interface PatientData {
   hepaticFunction: 'normal' | 'mild' | 'moderate' | 'severe';
 }
 
+interface RAGValidationResult {
+  warnings: string[];
+  suggestions?: string[];
+  confidence?: number;
+}
+
 export interface MedicationDose {
   name: string;
   standardDose: number;
@@ -62,7 +68,7 @@ export default function IntelligentDoseCalculator({
   persona = 'dr_gasnelio',
   enableRAGValidation = true,
   className = ''
-}: IntelligentDoseCalculatorProps) {
+}: IntelligentDoseCalculatorProps): React.JSX.Element {
   const [patientData, setPatientData] = useState<Partial<PatientData>>({
     renalFunction: 'normal',
     hepaticFunction: 'normal'
@@ -74,7 +80,7 @@ export default function IntelligentDoseCalculator({
   });
   const [loading, setLoading] = useState(false);
   const [recommendation, setRecommendation] = useState<DoseRecommendation | null>(null);
-  const [ragValidation, setRagValidation] = useState<any>(null);
+  const [ragValidation, setRagValidation] = useState<RAGValidationResult | null>(null);
   const [validationStatus, setValidationStatus] = useState<'pending' | 'validating' | 'validated' | 'error'>('pending');
 
   const personaRAG = useMemo(() => PersonaRAGIntegration.getInstance(), []);
