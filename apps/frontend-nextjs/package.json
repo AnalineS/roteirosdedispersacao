@@ -43,7 +43,7 @@
     "prepare": "echo 'Skipping husky install in subproject'"
   },
   "dependencies": {
-    "@next/third-parties": "^15.4.6",
+    "@next/third-parties": "^15.5.3",
     "dompurify": "^3.2.6",
     "firebase": "^12.2.1",
     "framer-motion": "^12.23.13",
