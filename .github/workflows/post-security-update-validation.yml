@@ -383,7 +383,7 @@ jobs:
           echo "✅ Using existing test suite instead"
 
           # Run existing medical UI tests instead
-          npm run test -- --testPathPattern="(accessibility|personas|educational)" \
+          npm run test -- --testPathPatterns="(accessibility|personas|educational)" \
             --coverage \
             --watchAll=false \
             --testTimeout=30000 \
