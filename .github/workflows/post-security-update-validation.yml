@@ -375,8 +375,11 @@ jobs:
         run: |
           cd apps/frontend-nextjs
           echo "🎨 Running medical UI validation tests..."
+          echo "⚠️  Skipping post-security-update tests (removed after PR #222)"
+          echo "✅ Using existing test suite instead"
 
-          npm run test -- tests/post-security-update/medical-ui-validation.test.ts \
+          # Run existing medical UI tests instead
+          npm run test -- --testPathPattern="(accessibility|personas|educational)" \
             --coverage \
             --watchAll=false \
             --testTimeout=30000 \

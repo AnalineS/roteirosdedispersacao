@@ -139,7 +139,16 @@ const DEFAULT_CONFIG: TrackingConfig = {
 
 export function useGlobalTracking(config: TrackingConfig = DEFAULT_CONFIG) {
   const pathname = usePathname();
-  const searchParams = useSearchParams(); // Always call hook, check window in useEffect
+  // Safe way to use searchParams - only access in effects/callbacks
+  let searchParams: ReturnType<typeof useSearchParams> | null = null;
+
+  try {
+    // Try to use searchParams, but handle gracefully if not in Suspense boundary
+    searchParams = useSearchParams();
+  } catch {
+    // Fallback for server-side or static rendering
+    searchParams = null;
+  }
   const { 
     trackCognitiveLoad, 
     trackMobileIssue, 
