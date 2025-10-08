@@ -80,7 +80,7 @@ opencv-python==4.10.0.84
 Pillow==10.4.0
 pytesseract==0.3.13
 easyocr==1.7.1  # NOTE: Contains torch@2.8.0 with known vulnerabilities pending upstream fix
-scipy==1.14.0
+scipy==1.16.2
 
 # File handling and validation  
 python-magic==0.4.27
