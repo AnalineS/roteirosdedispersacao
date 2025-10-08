@@ -40,7 +40,7 @@ jobs:
         
       - name: "[LABELS] Aplicar Labels v5"
         id: labeler
-        uses: actions/labeler@v5
+        uses: actions/labeler@v6
         with:
           configuration-path: '.github/labeler.yml'
           sync-labels: true
