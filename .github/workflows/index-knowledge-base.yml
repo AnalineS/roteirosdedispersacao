@@ -60,37 +60,37 @@ jobs:
           SUPABASE_KEY: ${{ secrets.SUPABASE_API_KEY }}
         run: |
           cd apps/backend
-          python -c "
-import os
-import sys
-sys.path.insert(0, '.')
+          python -c '
+          import os
+          import sys
+          sys.path.insert(0, ".")
 
-try:
-    from supabase import create_client
+          try:
+              from supabase import create_client
 
-    url = os.getenv('SUPABASE_URL')
-    key = os.getenv('SUPABASE_KEY')
+              url = os.getenv("SUPABASE_URL")
+              key = os.getenv("SUPABASE_KEY")
 
-    client = create_client(url, key)
+              client = create_client(url, key)
 
-    # Query to count indexed documents
-    result = client.table('medical_embeddings').select('*', count='exact').execute()
-    count = result.count if hasattr(result, 'count') else len(result.data)
+              # Query to count indexed documents
+              result = client.table("medical_embeddings").select("*", count="exact").execute()
+              count = result.count if hasattr(result, "count") else len(result.data)
 
-    print(f'✅ Verification successful!')
-    print(f'📊 Total indexed documents: {count}')
+              print(f"✅ Verification successful!")
+              print(f"📊 Total indexed documents: {count}")
 
-    if count >= 100:
-        print('🎉 Knowledge base successfully indexed!')
-        sys.exit(0)
-    else:
-        print(f'⚠️  Expected at least 100 documents, got {count}')
-        sys.exit(1)
+              if count >= 100:
+                  print("🎉 Knowledge base successfully indexed!")
+                  sys.exit(0)
+              else:
+                  print(f"⚠️  Expected at least 100 documents, got {count}")
+                  sys.exit(1)
 
-except Exception as e:
-    print(f'❌ Verification failed: {e}')
-    sys.exit(1)
-"
+          except Exception as e:
+              print(f"❌ Verification failed: {e}")
+              sys.exit(1)
+          '
 
       - name: Upload indexing logs
         uses: actions/upload-artifact@v4
