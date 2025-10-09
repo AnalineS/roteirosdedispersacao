@@ -30,9 +30,13 @@ jobs:
           cd apps/backend
           pip install -r requirements.txt
 
+      - name: Install HuggingFace Hub
+        run: |
+          pip install huggingface_hub
+
       - name: Run knowledge base indexing
         env:
-          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          HUGGINGFACE_TOKEN: ${{ secrets.HUGGINGFACE_TOKEN }}
           SUPABASE_URL: ${{ secrets.SUPABASE_PROJECT_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_API_KEY }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_API_KEY }}
@@ -40,7 +44,7 @@ jobs:
           cd "apps/backend"
           echo "🚀 Starting knowledge base indexing..."
           echo "Environment variables configured:"
-          echo "  OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:0:20}..."
+          echo "  HUGGINGFACE_TOKEN: ${HUGGINGFACE_TOKEN:0:15}..."
           echo "  SUPABASE_URL: ${SUPABASE_URL:0:30}..."
           echo "  SUPABASE_KEY: ${SUPABASE_KEY:0:20}..."
 
