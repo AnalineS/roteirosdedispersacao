@@ -87,9 +87,9 @@ class SupabaseVectorStore:
                 supabase_key=api_key
             )
             
-            # Testar conexão
-            result = self.client.table("test").select("*").limit(1).execute()
-            
+            # Testar conexão com a tabela correta
+            result = self.client.table(self.table_name).select("id").limit(1).execute()
+
             logger.info(f"[OK] Conectado ao Supabase - Projeto: {self.config.SUPABASE_URL}")
             return True
             
