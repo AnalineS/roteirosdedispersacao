@@ -31,6 +31,14 @@ except ImportError:
     OPENAI_AVAILABLE = False
     openai = None
 
+# Import HuggingFace for embeddings (PRIORITY)
+try:
+    from huggingface_hub import InferenceClient
+    HUGGINGFACE_AVAILABLE = True
+except ImportError:
+    HUGGINGFACE_AVAILABLE = False
+    InferenceClient = None
+
 # Import sklearn for fallback TF-IDF embeddings
 try:
     from sklearn.feature_extraction.text import TfidfVectorizer
@@ -69,6 +77,11 @@ class EmbeddingService:
 
     # Supported models
     SUPPORTED_MODELS = {
+        'huggingface': {
+            'BAAI/bge-small-en-v1.5': 384,     # PRIORITY - Same as indexing
+            'sentence-transformers/all-MiniLM-L6-v2': 384,
+            'sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2': 384
+        },
         'sentence_transformers': {
             'all-MiniLM-L6-v2': 384,           # Fast and efficient
             'all-mpnet-base-v2': 768,          # Better quality
@@ -86,13 +99,18 @@ class EmbeddingService:
         self.config = config
         self.model = None
         self.tfidf_vectorizer = None
+        self.huggingface_client = None
 
-        # Configuration
-        self.backend = getattr(config, 'EMBEDDING_BACKEND', 'sentence_transformers')
-        self.model_name = getattr(config, 'EMBEDDING_MODEL', 'all-MiniLM-L6-v2')
+        # Configuration - PRIORITY: HuggingFace > SentenceTransformers > OpenAI
+        self.backend = getattr(config, 'EMBEDDING_BACKEND', 'huggingface')
+        self.model_name = getattr(config, 'EMBEDDING_MODEL', 'BAAI/bge-small-en-v1.5')
         self.embedding_dimension = getattr(config, 'EMBEDDING_DIMENSION', 384)
 
-        # OpenAI configuration
+        # HuggingFace configuration (PRIORITY)
+        self.huggingface_token = getattr(config, 'HUGGINGFACE_TOKEN', os.getenv('HUGGINGFACE_TOKEN')) or os.getenv('HF_TOKEN')
+        self.huggingface_model = getattr(config, 'HUGGINGFACE_MODEL', 'BAAI/bge-small-en-v1.5')
+
+        # OpenAI configuration (fallback)
         self.openai_api_key = getattr(config, 'OPENAI_API_KEY', os.getenv('OPENAI_API_KEY'))
         self.openai_model = getattr(config, 'OPENAI_EMBEDDING_MODEL', 'text-embedding-ada-002')
 
@@ -123,19 +141,44 @@ class EmbeddingService:
         self._initialize_backend()
 
     def _initialize_backend(self):
-        """Initialize the embedding backend"""
-        if self.backend == 'openai' and self._try_initialize_openai():
+        """Initialize the embedding backend - PRIORITY: HuggingFace API"""
+        # Try requested backend first
+        if self.backend == 'huggingface' and self._try_initialize_huggingface():
+            return
+        elif self.backend == 'openai' and self._try_initialize_openai():
             return
         elif self.backend == 'sentence_transformers' and self._try_initialize_sentence_transformers():
             return
-        elif self._try_initialize_sentence_transformers():  # Try sentence transformers as fallback
+
+        # Fallback priority: HuggingFace > SentenceTransformers > OpenAI > TF-IDF
+        if self._try_initialize_huggingface():
             return
-        elif self._try_initialize_openai():  # Try OpenAI as fallback
+        elif self._try_initialize_sentence_transformers():
             return
-        elif self._try_initialize_tfidf():  # Try TF-IDF as last resort
+        elif self._try_initialize_openai():
+            return
+        elif self._try_initialize_tfidf():
             return
         else:
             logger.error("[ERROR] No embedding backend available")
+
+    def _try_initialize_huggingface(self) -> bool:
+        """Try to initialize HuggingFace embeddings - PRIORITY METHOD"""
+        if not HUGGINGFACE_AVAILABLE or not self.huggingface_token:
+            return False
+
+        try:
+            self.huggingface_client = InferenceClient(api_key=self.huggingface_token)
+            self.stats['backend_used'] = 'huggingface'
+            self.stats['model_loaded'] = True
+            self.embedding_dimension = self.SUPPORTED_MODELS['huggingface'].get(self.huggingface_model, 384)
+
+            logger.info(f"[OK] HuggingFace embeddings initialized with model: {self.huggingface_model}")
+            return True
+
+        except Exception as e:
+            logger.error(f"[ERROR] Failed to initialize HuggingFace embeddings: {e}")
+            return False
 
     def _try_initialize_openai(self) -> bool:
         """Try to initialize OpenAI embeddings"""
@@ -237,7 +280,9 @@ class EmbeddingService:
         start_time = time.time()
 
         try:
-            if self.stats['backend_used'] == 'openai':
+            if self.stats['backend_used'] == 'huggingface':
+                embedding = self._generate_huggingface_embedding(text)
+            elif self.stats['backend_used'] == 'openai':
                 embedding = self._generate_openai_embedding(text)
             elif self.stats['backend_used'] == 'sentence_transformers':
                 embedding = self._generate_sentence_transformer_embedding(text)
@@ -362,6 +407,23 @@ class EmbeddingService:
             logger.error(f"[ERROR] Batch processing failed: {e}")
             # Fallback to individual processing
             return [self.embed_text(text) for text in texts]
+
+    def _generate_huggingface_embedding(self, text: str) -> np.ndarray:
+        """Generate embedding using HuggingFace Inference API"""
+        try:
+            embedding = self.huggingface_client.feature_extraction(text, model=self.huggingface_model)
+
+            # Convert to numpy array
+            if hasattr(embedding, 'tolist'):
+                embedding = embedding.tolist()
+            elif isinstance(embedding, list) and isinstance(embedding[0], list):
+                embedding = embedding[0]
+
+            return np.array(embedding)
+
+        except Exception as e:
+            logger.error(f"[ERROR] HuggingFace embedding generation failed: {e}")
+            return None
 
     def _generate_openai_embedding(self, text: str) -> np.ndarray:
         """Generate embedding using OpenAI API"""
