@@ -29,13 +29,13 @@ except ImportError:
     CHROMADB_AVAILABLE = False
     chromadb = None
 
-# OpenAI for embeddings (API-based, more reliable than local models)
+# HuggingFace for embeddings (free alternative to OpenAI)
 try:
-    import openai
-    OPENAI_AVAILABLE = True
+    from huggingface_hub import InferenceClient
+    HUGGINGFACE_AVAILABLE = True
 except ImportError:
-    OPENAI_AVAILABLE = False
-    openai = None
+    HUGGINGFACE_AVAILABLE = False
+    InferenceClient = None
 
 @dataclass
 class MedicalDocument:
@@ -70,40 +70,43 @@ class RAGContext:
     processing_time_ms: int
 
 class MedicalEmbeddingService:
-    """Medical-optimized embedding service using OpenAI API"""
+    """Medical-optimized embedding service using HuggingFace API"""
 
     def __init__(self, config):
         self.config = config
-        self.api_key = getattr(config, 'OPENAI_API_KEY', os.getenv('OPENAI_API_KEY'))
-        self.model = getattr(config, 'EMBEDDING_MODEL', 'text-embedding-3-small')
+        self.api_key = getattr(config, 'HUGGINGFACE_TOKEN', os.getenv('HUGGINGFACE_TOKEN')) or os.getenv('HF_TOKEN')
+        self.model = 'BAAI/bge-small-en-v1.5'  # Same model used for indexing
 
-        if self.api_key and OPENAI_AVAILABLE:
-            openai.api_key = self.api_key
+        if self.api_key and HUGGINGFACE_AVAILABLE:
+            self.client = InferenceClient(api_key=self.api_key)
             self.available = True
             logger.info(f"✅ Medical Embedding Service initialized with {self.model}")
         else:
+            self.client = None
             self.available = False
-            logger.warning("⚠️ OpenAI API key not available - embeddings disabled")
+            logger.warning("⚠️ HuggingFace API key not available - embeddings disabled")
 
     def is_available(self) -> bool:
-        return self.available and OPENAI_AVAILABLE
+        return self.available and HUGGINGFACE_AVAILABLE
 
     def embed_text(self, text: str) -> Optional[List[float]]:
-        """Generate embedding for medical text"""
+        """Generate embedding for medical text using HuggingFace"""
         if not self.is_available() or not text.strip():
             return None
 
         try:
             # Truncate text if too long
-            if len(text) > 8000:  # OpenAI limit
+            if len(text) > 8000:
                 text = text[:8000]
 
-            response = openai.embeddings.create(
-                model=self.model,
-                input=text.strip()
-            )
+            embedding = self.client.feature_extraction(text.strip(), model=self.model)
 
-            embedding = response.data[0].embedding
+            # Convert to list if needed
+            if hasattr(embedding, 'tolist'):
+                embedding = embedding.tolist()
+            elif isinstance(embedding, list) and isinstance(embedding[0], list):
+                embedding = embedding[0]
+
             logger.debug(f"Generated embedding: {len(embedding)} dimensions")
             return embedding
 
@@ -112,29 +115,21 @@ class MedicalEmbeddingService:
             return None
 
     def embed_batch(self, texts: List[str]) -> List[Optional[List[float]]]:
-        """Generate embeddings for multiple texts"""
+        """Generate embeddings for multiple texts using HuggingFace"""
         if not self.is_available():
             return [None] * len(texts)
 
         try:
-            # Process in batches to avoid API limits
-            batch_size = 20
+            # Process texts one by one (HuggingFace free tier limitation)
             all_embeddings = []
 
-            for i in range(0, len(texts), batch_size):
-                batch = [t[:8000] for t in texts[i:i + batch_size] if t.strip()]
-
-                if not batch:
-                    all_embeddings.extend([None] * min(batch_size, len(texts) - i))
+            for text in texts:
+                if not text.strip():
+                    all_embeddings.append(None)
                     continue
 
-                response = openai.embeddings.create(
-                    model=self.model,
-                    input=batch
-                )
-
-                batch_embeddings = [data.embedding for data in response.data]
-                all_embeddings.extend(batch_embeddings)
+                embedding = self.embed_text(text)
+                all_embeddings.append(embedding)
 
             return all_embeddings
 
