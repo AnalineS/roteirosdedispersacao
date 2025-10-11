@@ -106,8 +106,14 @@ class EmbeddingService:
         self.model_name = getattr(config, 'EMBEDDING_MODEL', 'BAAI/bge-small-en-v1.5')
         self.embedding_dimension = getattr(config, 'EMBEDDING_DIMENSION', 384)
 
-        # HuggingFace configuration (PRIORITY)
-        self.huggingface_token = getattr(config, 'HUGGINGFACE_TOKEN', os.getenv('HUGGINGFACE_TOKEN')) or os.getenv('HF_TOKEN')
+        # HuggingFace configuration (PRIORITY) - check multiple env var names
+        self.huggingface_token = (
+            getattr(config, 'HUGGINGFACE_TOKEN', None) or
+            getattr(config, 'HUGGINGFACE_API_KEY', None) or
+            os.getenv('HUGGINGFACE_TOKEN') or
+            os.getenv('HUGGINGFACE_API_KEY') or
+            os.getenv('HF_TOKEN')
+        )
         self.huggingface_model = getattr(config, 'HUGGINGFACE_MODEL', 'BAAI/bge-small-en-v1.5')
 
         # OpenAI configuration (fallback)
