@@ -40,6 +40,11 @@ def create_app():
     # Load configuration
     app.config.from_object(config)
 
+    # UTF-8 JSON configuration for emoji and special characters support
+    # Required for Windows development + Unix production compatibility
+    app.config['JSON_AS_ASCII'] = False
+    app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False
+
     # CORS Configuration
     try:
         from core.security.custom_cors import CustomCORSMiddleware

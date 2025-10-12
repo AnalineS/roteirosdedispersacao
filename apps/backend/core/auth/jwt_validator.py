@@ -152,3 +152,43 @@ def get_current_user():
     Obtém usuário atual do contexto da request
     """
     return getattr(g, 'current_user', None)
+
+def configure_jwt_from_env():
+    """
+    Configura JWT Manager a partir de variáveis de ambiente
+
+    Inicializa o sistema JWT global usando SECRET_KEY ou JWT_SECRET_KEY do config
+    Esta função é chamada no startup do Flask em main.py
+    """
+    from .jwt_manager import initialize_jwt_system
+    from app_config import config
+
+    # Usar JWT_SECRET_KEY se disponível, senão SECRET_KEY
+    secret_key = getattr(config, 'JWT_SECRET_KEY', None) or getattr(config, 'SECRET_KEY', None)
+
+    if secret_key:
+        initialize_jwt_system(secret_key)
+        logger.info("JWT system configured from app_config")
+    else:
+        logger.warning("No JWT secret key found in configuration")
+
+def create_auth_middleware():
+    """
+    Cria middleware de autenticação para app.before_request
+
+    DESIGN: Middleware passthrough que não requer autenticação globalmente
+
+    Comportamento:
+    - Permite acesso anônimo a todos os endpoints por padrão
+    - Endpoints protegidos usam @require_auth decorator explicitamente
+    - Exemplos de endpoints públicos: /health, /chat, /personas
+    - Exemplos de endpoints protegidos: /admin/*, /profile (usam @require_auth)
+
+    Este design é apropriado para aplicações com endpoints mistos (públicos + privados)
+    """
+    def auth_middleware():
+        # Passthrough middleware - não bloqueia requests
+        # Autenticação é enforçada por @require_auth nos endpoints individuais
+        pass
+
+    return auth_middleware
