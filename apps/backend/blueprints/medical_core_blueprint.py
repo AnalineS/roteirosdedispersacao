@@ -221,7 +221,7 @@ def embeddings_diagnostics():
     Returns detailed information about embedding backend initialization
     """
     try:
-        from services.embedding_service import get_embedding_service
+        from services.unified_embedding_service import get_embedding_service
 
         service = get_embedding_service()
 

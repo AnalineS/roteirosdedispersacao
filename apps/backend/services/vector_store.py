@@ -67,6 +67,7 @@ class SupabaseVectorStore:
         # Connection parameters from config
         self.supabase_url = getattr(config, 'SUPABASE_URL', os.getenv('SUPABASE_URL'))
         self.supabase_key = getattr(config, 'SUPABASE_ANON_KEY', os.getenv('SUPABASE_ANON_KEY'))
+        self.supabase_db_url = getattr(config, 'SUPABASE_DB_URL', os.getenv('SUPABASE_DB_URL'))
         self.database_url = getattr(config, 'DATABASE_URL', os.getenv('DATABASE_URL'))
 
         # Vector dimensions (based on sentence-transformers models)
@@ -89,10 +90,15 @@ class SupabaseVectorStore:
             return
 
         try:
-            if self.database_url:
-                # Use full database URL
-                self.connection = psycopg2.connect(self.database_url)
-                logger.info("[OK] Connected to Supabase via DATABASE_URL")
+            # IMPORTANT: Vector store ONLY uses Supabase PostgreSQL, NOT SQLite
+            # SQLite DATABASE_URL is for other data, not vector embeddings
+
+            # Priority 1: Use SUPABASE_DB_URL (direct PostgreSQL connection string)
+            if self.supabase_db_url and 'postgresql' in self.supabase_db_url.lower():
+                self.connection = psycopg2.connect(self.supabase_db_url)
+                logger.info("[OK] Connected to Supabase via SUPABASE_DB_URL (direct PostgreSQL)")
+
+            # Priority 2: Use SUPABASE_URL + SUPABASE_ANON_KEY
             elif self.supabase_url and self.supabase_key:
                 # Build connection from Supabase URL
                 # Extract connection details from Supabase URL
@@ -106,9 +112,16 @@ class SupabaseVectorStore:
                     user="postgres",
                     password=self.supabase_key
                 )
-                logger.info("[OK] Connected to Supabase via URL/KEY")
+                logger.info("[OK] Connected to Supabase via URL/KEY for vector storage")
+
+            # Priority 3: Use DATABASE_URL only if it's PostgreSQL (not SQLite)
+            elif self.database_url and 'postgresql' in self.database_url.lower():
+                self.connection = psycopg2.connect(self.database_url)
+                logger.info("[OK] Connected to Supabase via DATABASE_URL (PostgreSQL)")
+
             else:
-                logger.warning("[WARNING] No Supabase connection details available")
+                logger.warning("[WARNING] No Supabase PostgreSQL connection details available")
+                logger.warning("[WARNING] SQLite DATABASE_URL ignored - vector store requires PostgreSQL")
                 return
 
             # Enable autocommit for DDL operations
@@ -600,7 +613,8 @@ _vector_store_instance: Optional[Union[SupabaseVectorStore, LocalVectorStore]] =
 def get_vector_store() -> Optional[Union[SupabaseVectorStore, LocalVectorStore]]:
     """
     Get the global vector store instance
-    Prioritizes Supabase > Local fallback
+    Prioritizes Supabase PostgreSQL > Local fallback
+    SQLite DATABASE_URL is ignored for vector storage
     """
     global _vector_store_instance
 
@@ -609,19 +623,25 @@ def get_vector_store() -> Optional[Union[SupabaseVectorStore, LocalVectorStore]]
             # Try to get config
             from app_config import config
 
-            # Try Supabase first
-            if PSYCOPG2_AVAILABLE and (getattr(config, 'SUPABASE_URL', None) or getattr(config, 'DATABASE_URL', None)):
+            # Try Supabase first (PostgreSQL only, not SQLite)
+            supabase_url = getattr(config, 'SUPABASE_URL', None)
+            database_url = getattr(config, 'DATABASE_URL', None)
+
+            # Check if DATABASE_URL is PostgreSQL (not SQLite)
+            is_postgres_db = database_url and 'postgresql' in database_url.lower()
+
+            if PSYCOPG2_AVAILABLE and (supabase_url or is_postgres_db):
                 _vector_store_instance = SupabaseVectorStore(config)
                 if _vector_store_instance.is_available():
-                    logger.info("[OK] Using SupabaseVectorStore")
+                    logger.info("[OK] Using SupabaseVectorStore for vector embeddings")
                 else:
                     _vector_store_instance = None
 
-            # Fallback to local store
+            # Fallback to local store for development
             if _vector_store_instance is None:
                 storage_path = getattr(config, 'VECTOR_DB_PATH', './data/vector_store')
                 _vector_store_instance = LocalVectorStore(storage_path)
-                logger.info("[OK] Using LocalVectorStore as fallback")
+                logger.info("[OK] Using LocalVectorStore as fallback (dev only)")
 
         except Exception as e:
             logger.error(f"[ERROR] Failed to initialize vector store: {e}")

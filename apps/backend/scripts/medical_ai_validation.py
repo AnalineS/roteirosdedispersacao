@@ -167,7 +167,7 @@ class MedicalAIValidator:
             logger.info("✅ Chatbot service initialized")
 
             # Import and initialize embedding service
-            from services.embedding_service import get_embedding_service
+            from services.unified_embedding_service import get_embedding_service
             self.embedding_service = get_embedding_service()
 
             if self.embedding_service and self.embedding_service.is_available():
