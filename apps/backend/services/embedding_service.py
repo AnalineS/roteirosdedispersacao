@@ -469,26 +469,55 @@ class EmbeddingService:
             return [self.embed_text(text) for text in texts]
 
     def _generate_huggingface_embedding(self, text: str) -> np.ndarray:
-        """Generate embedding using HuggingFace Inference API"""
+        """Generate embedding using HuggingFace Serverless Inference API (Free Tier Compatible)"""
         try:
             logger.debug(f"[HUGGINGFACE] Generating embedding for text (length: {len(text)} chars)")
             logger.debug(f"[HUGGINGFACE] Using model: {self.huggingface_model}")
 
-            embedding = self.huggingface_client.feature_extraction(text, model=self.huggingface_model)
+            # Try InferenceClient first (requires PRO account for some models)
+            try:
+                embedding = self.huggingface_client.feature_extraction(text, model=self.huggingface_model)
 
-            # Convert to numpy array
-            if hasattr(embedding, 'tolist'):
-                embedding = embedding.tolist()
-            elif isinstance(embedding, list) and isinstance(embedding[0], list):
-                embedding = embedding[0]
+                # Convert to numpy array
+                if hasattr(embedding, 'tolist'):
+                    embedding = embedding.tolist()
+                elif isinstance(embedding, list) and isinstance(embedding[0], list):
+                    embedding = embedding[0]
 
-            embedding_array = np.array(embedding)
-            logger.debug(f"[HUGGINGFACE] Generated embedding with dimension: {len(embedding_array)}")
+                embedding_array = np.array(embedding)
+                logger.debug(f"[HUGGINGFACE] Generated embedding via InferenceClient, dimension: {len(embedding_array)}")
+                return embedding_array
 
-            return embedding_array
+            except Exception as inference_error:
+                # If InferenceClient fails (403), fallback to direct API call (works with free tier)
+                logger.warning(f"[HUGGINGFACE] InferenceClient failed (may need PRO account), trying Serverless API")
+                logger.warning(f"[HUGGINGFACE] Error was: {inference_error}")
+
+                # Use Serverless Inference API directly (free tier compatible)
+                import requests
+
+                api_url = f"https://api-inference.huggingface.co/models/{self.huggingface_model}"
+                headers = {"Authorization": f"Bearer {self.huggingface_token}"}
+
+                response = requests.post(api_url, headers=headers, json={"inputs": text}, timeout=30)
+
+                if response.status_code == 200:
+                    embedding = response.json()
+
+                    # Handle different response formats
+                    if isinstance(embedding, list):
+                        if len(embedding) > 0 and isinstance(embedding[0], list):
+                            embedding = embedding[0]  # Extract first embedding if nested
+
+                    embedding_array = np.array(embedding)
+                    logger.info(f"[HUGGINGFACE] Generated embedding via Serverless API (free tier), dimension: {len(embedding_array)}")
+                    return embedding_array
+                else:
+                    logger.error(f"[HUGGINGFACE] Serverless API failed: {response.status_code} - {response.text}")
+                    return None
 
         except Exception as e:
-            logger.error(f"[HUGGINGFACE ERROR] Embedding generation failed: {e}")
+            logger.error(f"[HUGGINGFACE ERROR] All embedding methods failed: {e}")
             logger.error(f"[HUGGINGFACE ERROR] Exception type: {type(e).__name__}")
             logger.error(f"[HUGGINGFACE ERROR] Text length: {len(text)} chars")
             return None
