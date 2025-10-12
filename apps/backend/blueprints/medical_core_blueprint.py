@@ -212,5 +212,62 @@ def validate_medical_response():
             'timestamp': datetime.now().isoformat()
         }), 500
 
+# === DIAGNOSTIC ENDPOINTS ===
+
+@medical_core_bp.route('/diagnostics/embeddings', methods=['GET'])
+def embeddings_diagnostics():
+    """
+    Comprehensive diagnostics for embedding service
+    Returns detailed information about embedding backend initialization
+    """
+    try:
+        from services.embedding_service import get_embedding_service
+
+        service = get_embedding_service()
+
+        if not service:
+            return jsonify({
+                'status': 'ERROR',
+                'message': 'Embedding service not initialized',
+                'available': False,
+                'timestamp': datetime.now().isoformat()
+            }), 500
+
+        # Get comprehensive statistics
+        stats = service.get_statistics()
+
+        # Add detailed diagnostic information
+        diagnostics = {
+            'status': 'OK' if service.is_available() else 'ERROR',
+            'available': service.is_available(),
+            'backend_used': stats.get('backend_used', 'none'),
+            'model_loaded': stats.get('model_loaded', False),
+            'configuration': stats.get('configuration', {}),
+            'statistics': {
+                'embeddings_generated': stats.get('embeddings_generated', 0),
+                'avg_generation_time': stats.get('avg_generation_time', 0),
+                'cache_hit_rate': stats.get('cache_hit_rate', 0),
+                'cache_size': stats.get('cache_size', 0),
+                'errors': stats.get('errors', 0)
+            },
+            'timestamp': datetime.now().isoformat()
+        }
+
+        # Add warning if not using HuggingFace
+        if stats.get('backend_used') != 'huggingface':
+            diagnostics['warning'] = f"Not using HuggingFace backend (expected), using: {stats.get('backend_used')}"
+            diagnostics['recommendation'] = "Check HUGGINGFACE_API_KEY environment variable"
+
+        return jsonify(diagnostics), 200
+
+    except Exception as e:
+        logger.error(f"Embeddings diagnostics error: {e}")
+        return jsonify({
+            'status': 'ERROR',
+            'message': str(e),
+            'available': False,
+            'timestamp': datetime.now().isoformat()
+        }), 500
+
 # Export blueprint
 __all__ = ['medical_core_bp']

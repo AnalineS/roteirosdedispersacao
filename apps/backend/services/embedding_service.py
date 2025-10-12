@@ -148,42 +148,96 @@ class EmbeddingService:
 
     def _initialize_backend(self):
         """Initialize the embedding backend - PRIORITY: HuggingFace API"""
+        logger.info("=" * 80)
+        logger.info("[EMBEDDING SERVICE] Initialization started")
+        logger.info(f"[CONFIG] Requested backend: {self.backend}")
+        logger.info(f"[CONFIG] Model name: {self.model_name}")
+        logger.info(f"[CONFIG] HuggingFace model: {self.huggingface_model}")
+        logger.info(f"[CONFIG] Embedding dimension: {self.embedding_dimension}")
+
+        # Log environment variable detection
+        logger.info("[ENV VARS] Checking HuggingFace token availability...")
+        logger.info(f"[ENV VARS] - config.HUGGINGFACE_TOKEN: {'SET' if getattr(self.config, 'HUGGINGFACE_TOKEN', None) else 'NOT SET'}")
+        logger.info(f"[ENV VARS] - config.HUGGINGFACE_API_KEY: {'SET' if getattr(self.config, 'HUGGINGFACE_API_KEY', None) else 'NOT SET'}")
+        logger.info(f"[ENV VARS] - env.HUGGINGFACE_TOKEN: {'SET' if os.getenv('HUGGINGFACE_TOKEN') else 'NOT SET'}")
+        logger.info(f"[ENV VARS] - env.HUGGINGFACE_API_KEY: {'SET' if os.getenv('HUGGINGFACE_API_KEY') else 'NOT SET'}")
+        logger.info(f"[ENV VARS] - env.HF_TOKEN: {'SET' if os.getenv('HF_TOKEN') else 'NOT SET'}")
+        logger.info(f"[ENV VARS] Final token available: {'YES' if self.huggingface_token else 'NO'}")
+
+        # Log library availability
+        logger.info("[LIBRARIES] Checking availability...")
+        logger.info(f"[LIBRARIES] - HuggingFace: {'AVAILABLE' if HUGGINGFACE_AVAILABLE else 'NOT AVAILABLE'}")
+        logger.info(f"[LIBRARIES] - SentenceTransformers: {'AVAILABLE' if SENTENCE_TRANSFORMERS_AVAILABLE else 'NOT AVAILABLE'}")
+        logger.info(f"[LIBRARIES] - OpenAI: {'AVAILABLE' if OPENAI_AVAILABLE else 'NOT AVAILABLE'}")
+        logger.info(f"[LIBRARIES] - Sklearn: {'AVAILABLE' if SKLEARN_AVAILABLE else 'NOT AVAILABLE'}")
+
         # Try requested backend first
+        logger.info(f"[INIT] Attempting requested backend: {self.backend}")
         if self.backend == 'huggingface' and self._try_initialize_huggingface():
+            logger.info(f"[SUCCESS] Initialized requested backend: huggingface")
+            logger.info("=" * 80)
             return
         elif self.backend == 'openai' and self._try_initialize_openai():
+            logger.info(f"[SUCCESS] Initialized requested backend: openai")
+            logger.info("=" * 80)
             return
         elif self.backend == 'sentence_transformers' and self._try_initialize_sentence_transformers():
+            logger.info(f"[SUCCESS] Initialized requested backend: sentence_transformers")
+            logger.info("=" * 80)
             return
 
         # Fallback priority: HuggingFace > SentenceTransformers > OpenAI > TF-IDF
+        logger.warning(f"[FALLBACK] Requested backend '{self.backend}' failed, trying fallbacks...")
         if self._try_initialize_huggingface():
+            logger.info("[FALLBACK SUCCESS] Initialized HuggingFace")
+            logger.info("=" * 80)
             return
         elif self._try_initialize_sentence_transformers():
+            logger.info("[FALLBACK SUCCESS] Initialized SentenceTransformers")
+            logger.info("=" * 80)
             return
         elif self._try_initialize_openai():
+            logger.info("[FALLBACK SUCCESS] Initialized OpenAI")
+            logger.info("=" * 80)
             return
         elif self._try_initialize_tfidf():
+            logger.info("[FALLBACK SUCCESS] Initialized TF-IDF")
+            logger.info("=" * 80)
             return
         else:
-            logger.error("[ERROR] No embedding backend available")
+            logger.error("[CRITICAL ERROR] No embedding backend available")
+            logger.error("[CRITICAL ERROR] All initialization attempts failed")
+            logger.info("=" * 80)
 
     def _try_initialize_huggingface(self) -> bool:
         """Try to initialize HuggingFace embeddings - PRIORITY METHOD"""
-        if not HUGGINGFACE_AVAILABLE or not self.huggingface_token:
+        logger.info("[HUGGINGFACE] Attempting initialization...")
+
+        if not HUGGINGFACE_AVAILABLE:
+            logger.warning("[HUGGINGFACE] Library not available (huggingface_hub not installed)")
+            return False
+
+        if not self.huggingface_token:
+            logger.warning("[HUGGINGFACE] Token not available - cannot initialize")
+            logger.warning("[HUGGINGFACE] Please set HUGGINGFACE_API_KEY or HUGGINGFACE_TOKEN")
             return False
 
         try:
+            logger.info(f"[HUGGINGFACE] Creating InferenceClient with model: {self.huggingface_model}")
+            logger.info(f"[HUGGINGFACE] Token length: {len(self.huggingface_token)} characters")
+
             self.huggingface_client = InferenceClient(api_key=self.huggingface_token)
             self.stats['backend_used'] = 'huggingface'
             self.stats['model_loaded'] = True
             self.embedding_dimension = self.SUPPORTED_MODELS['huggingface'].get(self.huggingface_model, 384)
 
-            logger.info(f"[OK] HuggingFace embeddings initialized with model: {self.huggingface_model}")
+            logger.info(f"[HUGGINGFACE SUCCESS] Embeddings initialized with model: {self.huggingface_model}")
+            logger.info(f"[HUGGINGFACE SUCCESS] Embedding dimension: {self.embedding_dimension}")
             return True
 
         except Exception as e:
-            logger.error(f"[ERROR] Failed to initialize HuggingFace embeddings: {e}")
+            logger.error(f"[HUGGINGFACE ERROR] Failed to initialize: {e}")
+            logger.error(f"[HUGGINGFACE ERROR] Exception type: {type(e).__name__}")
             return False
 
     def _try_initialize_openai(self) -> bool:
@@ -417,6 +471,9 @@ class EmbeddingService:
     def _generate_huggingface_embedding(self, text: str) -> np.ndarray:
         """Generate embedding using HuggingFace Inference API"""
         try:
+            logger.debug(f"[HUGGINGFACE] Generating embedding for text (length: {len(text)} chars)")
+            logger.debug(f"[HUGGINGFACE] Using model: {self.huggingface_model}")
+
             embedding = self.huggingface_client.feature_extraction(text, model=self.huggingface_model)
 
             # Convert to numpy array
@@ -425,10 +482,15 @@ class EmbeddingService:
             elif isinstance(embedding, list) and isinstance(embedding[0], list):
                 embedding = embedding[0]
 
-            return np.array(embedding)
+            embedding_array = np.array(embedding)
+            logger.debug(f"[HUGGINGFACE] Generated embedding with dimension: {len(embedding_array)}")
+
+            return embedding_array
 
         except Exception as e:
-            logger.error(f"[ERROR] HuggingFace embedding generation failed: {e}")
+            logger.error(f"[HUGGINGFACE ERROR] Embedding generation failed: {e}")
+            logger.error(f"[HUGGINGFACE ERROR] Exception type: {type(e).__name__}")
+            logger.error(f"[HUGGINGFACE ERROR] Text length: {len(text)} chars")
             return None
 
     def _generate_openai_embedding(self, text: str) -> np.ndarray:
