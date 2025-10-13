@@ -45,6 +45,15 @@ def create_app():
     app.config['JSON_AS_ASCII'] = False
     app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False
 
+    # Force UTF-8 encoding for all requests and responses
+    @app.before_request
+    def force_utf8_encoding():
+        """Ensure all requests are processed with UTF-8 encoding"""
+        from flask import request
+        if request.data:
+            # Force UTF-8 decoding for request body
+            request.environ['wsgi.input_terminated'] = True
+
     # CORS Configuration
     try:
         from core.security.custom_cors import CustomCORSMiddleware
