@@ -45,7 +45,7 @@
   "dependencies": {
     "@next/third-parties": "^15.5.3",
     "dompurify": "^3.2.6",
-    "firebase": "^12.2.1",
+    "firebase": "^12.3.0",
     "framer-motion": "^12.23.13",
     "jspdf": "^3.0.2",
     "lucide-react": "^0.542.0",
