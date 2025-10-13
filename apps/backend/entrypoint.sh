@@ -41,7 +41,7 @@ except Exception as e:
 "
 
 echo "🚀 Starting gunicorn server..."
-# Start application with detailed logging
+# Start application with detailed logging and UTF-8 encoding
 exec gunicorn main:app \
     --bind 0.0.0.0:8080 \
     --workers 1 \
@@ -55,4 +55,7 @@ exec gunicorn main:app \
     --access-logfile - \
     --error-logfile - \
     --capture-output \
-    --preload
+    --preload \
+    --env PYTHONIOENCODING=utf-8 \
+    --env LANG=C.UTF-8 \
+    --env LC_ALL=C.UTF-8
