@@ -1347,6 +1347,7 @@ jobs:
               --set-env-vars "SUPABASE_DB_URL=${{ secrets.SUPABASE_DB_URL }}" \
               --set-env-vars "HUGGINGFACE_API_KEY=${{ secrets.HUGGINGFACE_API_KEY }}" \
               --set-env-vars "SUPABASE_VECTOR_SIMILARITY_THRESHOLD=${{ vars.SUPABASE_VECTOR_SIMILARITY_THRESHOLD }}" \
+              --set-env-vars "SEMANTIC_SIMILARITY_THRESHOLD=${{ vars.SEMANTIC_SIMILARITY_THRESHOLD }}" \
               --set-env-vars "CACHE_ENABLED=true" \
               --set-env-vars "EMBEDDINGS_ENABLED=true" \
               --set-env-vars "RAG_AVAILABLE=true" \
