@@ -26,6 +26,11 @@ import '@/styles/themes.css'
 import '@/styles/text-selection.css'
 import '@/styles/navigation-fixes.css'
 
+// Force dynamic rendering for all pages (SSR) - Cloud Run optimization
+// Prevents static site generation that breaks interactivity
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export const metadata: Metadata = SITE_CONFIG.getMetadata()
 
 export const viewport: Viewport = {

@@ -46,7 +46,8 @@ export class EmbeddingService {
   private providers: Map<string, EmbeddingProvider> = new Map();
   private defaultProvider = 'openrouter';
   private defaultModel = 'text-embedding-3-small';
-  
+  private initialized = false;
+
   private stats = {
     requestsProcessed: 0,
     cacheHits: 0,
@@ -56,7 +57,8 @@ export class EmbeddingService {
   };
 
   private constructor() {
-    this.initializeProviders();
+    // Don't initialize providers during build time
+    // They will be lazily initialized on first use
   }
 
   static getInstance(): EmbeddingService {
@@ -337,9 +339,32 @@ export class EmbeddingService {
   }
 
   /**
+   * Garante que providers sejam inicializados (lazy loading)
+   */
+  private ensureInitialized(): void {
+    if (!this.initialized) {
+      // Skip durante build-time (quando não há window nem process.env runtime)
+      const isBuildTime = typeof window === 'undefined' &&
+                         typeof process !== 'undefined' &&
+                         process.env.NODE_ENV === 'production' &&
+                         !process.env.NEXT_PUBLIC_API_URL;
+
+      if (isBuildTime) {
+        return;
+      }
+
+      this.initializeProviders();
+      this.initialized = true;
+    }
+  }
+
+  /**
    * Chama API do provider para gerar embedding
    */
   private async callEmbeddingAPI(text: string, model: string): Promise<number[] | null> {
+    // Lazy initialization - providers são criados apenas em runtime
+    this.ensureInitialized();
+
     const provider = this.providers.get(this.defaultProvider);
     if (!provider || !provider.available) {
       return null;
@@ -348,28 +373,44 @@ export class EmbeddingService {
     try {
       const apiKey = this.getAPIKey();
       if (!apiKey) {
-        // Medical embedding API key warning - explicit stderr + tracking
+        const isProduction = process.env.NEXT_PUBLIC_ENVIRONMENT === 'production' ||
+                           process.env.NEXT_PUBLIC_ENVIRONMENT === 'staging';
 
-        // Explicit warning to stderr for medical system visibility
-        if (typeof process !== 'undefined' && process.stderr) {
-          process.stderr.write(`⚠️ AVISO - Chave API não configurada para embeddings médicos:\n` +
-            `  Provider: ${this.defaultProvider}\n` +
-            `  Model: ${model}\n` +
-            `  Fallback: Embedding local ativado\n\n`);
+        // FAIL HONEST POLICY: No fallbacks in production/staging
+        if (isProduction) {
+          const error = new Error('PRODUÇÃO CRÍTICO: API Key de embeddings médicos não configurada');
+
+          if (typeof process !== 'undefined' && process.stderr) {
+            process.stderr.write(`🚨 ERRO CRÍTICO - Chave API não configurada (PRODUÇÃO):\n` +
+              `  Environment: ${process.env.NEXT_PUBLIC_ENVIRONMENT}\n` +
+              `  Provider: ${this.defaultProvider}\n` +
+              `  Model: ${model}\n` +
+              `  FAIL HONEST: Sistema deve falhar sem fallback em produção\n\n`);
+          }
+
+          if (typeof window !== 'undefined' && window.gtag) {
+            window.gtag('event', 'medical_embedding_production_api_key_missing', {
+              event_category: 'medical_error_critical',
+              event_label: 'production_api_key_not_configured_fatal',
+              custom_parameters: {
+                medical_context: 'embedding_api_configuration_production',
+                environment: process.env.NEXT_PUBLIC_ENVIRONMENT,
+                provider: this.defaultProvider,
+                model_used: model,
+                fail_honest_policy: 'no_fallback_in_production',
+                error_type: 'api_key_missing_fatal'
+              }
+            });
+          }
+          throw error;
         }
 
-        if (typeof window !== 'undefined' && window.gtag) {
-          window.gtag('event', 'medical_embedding_api_key_missing', {
-            event_category: 'medical_warning',
-            event_label: 'embedding_api_key_not_configured',
-            custom_parameters: {
-              medical_context: 'embedding_api_configuration',
-              provider: this.defaultProvider,
-              model_used: model,
-              fallback_type: 'local_embedding',
-              warning_type: 'api_key_missing'
-            }
-          });
+        // Development: fallback permitido com warning
+        if (typeof process !== 'undefined' && process.stderr) {
+          process.stderr.write(`⚠️ AVISO - Chave API não configurada (DESENVOLVIMENTO):\n` +
+            `  Provider: ${this.defaultProvider}\n` +
+            `  Model: ${model}\n` +
+            `  Fallback: Embedding local ativado (apenas dev)\n\n`);
         }
         return this.generateLocalEmbedding(text);
       }
@@ -404,15 +445,18 @@ export class EmbeddingService {
     } catch (error) {
       // Medical embedding API call error - explicit stderr + tracking
       const errorMessage = error instanceof Error ? error.message : String(error);
+      const isProduction = process.env.NEXT_PUBLIC_ENVIRONMENT === 'production' ||
+                         process.env.NEXT_PUBLIC_ENVIRONMENT === 'staging';
 
       // Explicit error to stderr for medical system visibility
       if (typeof process !== 'undefined' && process.stderr) {
         process.stderr.write(`❌ ERRO - Falha na API de embeddings médicos:\n` +
+          `  Environment: ${process.env.NEXT_PUBLIC_ENVIRONMENT || 'unknown'}\n` +
           `  Provider: ${provider?.name || 'unknown'}\n` +
           `  Model: ${model}\n` +
           `  Text: ${text.substring(0, 100)}...\n` +
           `  Error: ${errorMessage}\n` +
-          `  Fallback: Embedding local ativado\n\n`);
+          `  Fallback: ${isProduction ? 'BLOQUEADO (fail honest)' : 'Embedding local ativado'}\n\n`);
       }
 
       if (typeof window !== 'undefined' && window.gtag) {
@@ -421,16 +465,24 @@ export class EmbeddingService {
           event_label: 'embedding_api_call_failed',
           custom_parameters: {
             medical_context: 'embedding_api_call',
+            environment: process.env.NEXT_PUBLIC_ENVIRONMENT,
             provider_name: provider?.name || 'unknown',
             model_used: model,
             text_length: text.length,
             error_type: 'api_call_failure',
             error_message: errorMessage,
-            fallback_type: 'local_embedding'
+            fallback_type: isProduction ? 'fail_honest_no_fallback' : 'local_embedding',
+            fail_honest_policy: isProduction
           }
         });
       }
-      // Fallback para embedding local
+
+      // FAIL HONEST POLICY: No fallbacks in production/staging
+      if (isProduction) {
+        throw new Error(`Falha na API de embeddings médicos (produção): ${errorMessage}`);
+      }
+
+      // Development: fallback para embedding local
       return this.generateLocalEmbedding(text);
     }
   }
