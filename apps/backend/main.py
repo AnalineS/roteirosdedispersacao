@@ -4,8 +4,8 @@ Main Application - Hanseníase Educational Platform
 Optimized Flask Application with Medical AI Personas
 """
 
-# Version with complete deprecated package fix: all libgl1-mesa-glx → libgl1-mesa-dri
-__version__ = "3.2.1-complete-package-fix"
+# Version with SEMANTIC_SIMILARITY_THRESHOLD fix for RAG retrieval
+__version__ = "3.2.2-rag-threshold-fix"
 
 import sys
 import os
