@@ -75,7 +75,7 @@ class MedicalEmbeddingService:
     def __init__(self, config):
         self.config = config
         self.api_key = getattr(config, 'HUGGINGFACE_TOKEN', os.getenv('HUGGINGFACE_TOKEN')) or os.getenv('HF_TOKEN')
-        self.model = 'BAAI/bge-small-en-v1.5'  # Same model used for indexing
+        self.model = 'intfloat/multilingual-e5-small'  # Best free multilingual model (384D)
 
         if self.api_key and HUGGINGFACE_AVAILABLE:
             self.client = InferenceClient(api_key=self.api_key)

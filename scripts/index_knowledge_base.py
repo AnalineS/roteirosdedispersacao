@@ -155,8 +155,8 @@ class KnowledgeBaseIndexer:
             # Use multilingual model that works well with Portuguese
             client = InferenceClient(api_key=hf_token)
 
-            # Use BAAI/bge-small-en-v1.5 - supports feature extraction
-            model = "BAAI/bge-small-en-v1.5"
+            # Use intfloat/multilingual-e5-small - best free multilingual model (384D)
+            model = "intfloat/multilingual-e5-small"
 
             embedding = client.feature_extraction(
                 text,

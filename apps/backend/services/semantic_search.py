@@ -73,7 +73,7 @@ class EmbeddingService:
     def __init__(self, config):
         self.config = config
         self.model = None
-        self.model_name = getattr(config, 'EMBEDDING_MODEL', 'all-MiniLM-L6-v2')
+        self.model_name = getattr(config, 'EMBEDDING_MODEL', 'intfloat/multilingual-e5-small')
         self.embedding_dimension = getattr(config, 'EMBEDDING_DIMENSION', 384)
         self.use_openai = getattr(config, 'USE_OPENAI_EMBEDDINGS', False)
         self.openai_api_key = getattr(config, 'OPENAI_API_KEY', os.getenv('OPENAI_API_KEY'))

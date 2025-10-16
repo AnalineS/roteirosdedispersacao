@@ -2,7 +2,7 @@
 """
 Unified Embedding Service - Cloud Run Optimized
 Uses HuggingFace Serverless API ONLY (no local models)
-Model: BAAI/bge-small-en-v1.5 (384 dimensions) - matches indexed data
+Model: intfloat/multilingual-e5-small (384 dimensions) - best free multilingual
 """
 
 import os
@@ -41,11 +41,11 @@ class UnifiedEmbeddingService:
     """
     Cloud Run optimized embedding service
     Uses HuggingFace Serverless API ONLY (no local models)
-    Enforces model consistency with indexed database (BAAI/bge-small-en-v1.5)
+    Enforces model consistency with indexed database (intfloat/multilingual-e5-small)
     """
 
     # CRITICAL: Must match indexing model exactly
-    MODEL_ID = "BAAI/bge-small-en-v1.5"
+    MODEL_ID = "intfloat/multilingual-e5-small"
     EMBEDDING_DIMENSION = 384
     API_URL = f"https://api-inference.huggingface.co/models/{MODEL_ID}"
 

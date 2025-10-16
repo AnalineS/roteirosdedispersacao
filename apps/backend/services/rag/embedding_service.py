@@ -215,7 +215,7 @@ class EmbeddingService:
     def __init__(self, config):
         self.config = config
         self.model = None  # Será carregado lazy
-        self.model_name = getattr(config, 'EMBEDDING_MODEL', 'all-MiniLM-L6-v2')
+        self.model_name = getattr(config, 'EMBEDDING_MODEL', 'intfloat/multilingual-e5-small')
         self.device = getattr(config, 'EMBEDDING_DEVICE', 'cpu')
         
         # Cache só se numpy disponível

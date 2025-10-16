@@ -88,12 +88,13 @@ class AppConfig:
     API_CACHE_ENABLED: bool = os.getenv('API_CACHE_ENABLED', 'true').lower() == 'true'
     
     # Embeddings Config - Configuração unificada para ML features + sentence-transformers v5.1+
-    EMBEDDING_MODEL: str = os.getenv('EMBEDDING_MODEL', 'sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2')
+    # MODELO ATUALIZADO: intfloat/multilingual-e5-small (384D) - melhor multilingual gratuito
+    EMBEDDING_MODEL: str = os.getenv('EMBEDDING_MODEL', 'intfloat/multilingual-e5-small')
     EMBEDDING_DEVICE: str = os.getenv('EMBEDDING_DEVICE', 'cpu')  # cpu/cuda
     EMBEDDINGS_MAX_LENGTH: int = int(os.getenv('EMBEDDINGS_MAX_LENGTH', 512))
     EMBEDDING_BATCH_SIZE: int = int(os.getenv('EMBEDDING_BATCH_SIZE', 32))
     EMBEDDING_CACHE_SIZE: int = int(os.getenv('EMBEDDING_CACHE_SIZE', 1000))
-    
+
     # Sentence-transformers v5.1+ otimizações
     EMBEDDING_CHUNK_SIZE: int = int(os.getenv('EMBEDDING_CHUNK_SIZE', 32))  # Para textos longos
     EMBEDDING_PARALLEL_PROCESSING: bool = os.getenv('EMBEDDING_PARALLEL_PROCESSING', 'false').lower() == 'true'
