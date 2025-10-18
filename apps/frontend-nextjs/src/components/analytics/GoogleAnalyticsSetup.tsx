@@ -235,7 +235,7 @@ export function useGoogleAnalyticsUX() {
 declare global {
   interface Window {
     gtag?: (...args: any[]) => void;
-    dataLayer?: any[];
+    dataLayer?: unknown[];
     trackUXEvent: (eventName: string, category: string, score?: number, parameters?: any) => void;
     trackCognitiveLoad: (score: number, context: string) => void;
     trackMobileIssue: (issueType: string, severity: number) => void;

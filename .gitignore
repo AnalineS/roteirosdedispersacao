@@ -284,3 +284,4 @@ docs/**/temp_*.md
 scripts/**/logs/
 scripts/**/*.logapps/backend/data/database/*.db-shm
 apps/backend/data/database/*.db-wal
+apps/backend/data/
