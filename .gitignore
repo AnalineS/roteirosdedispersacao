@@ -282,4 +282,5 @@ docs/**/temp_*.md
 
 # Manter scripts mas ignorar logs
 scripts/**/logs/
-scripts/**/*.log
+scripts/**/*.logapps/backend/data/database/*.db-shm
+apps/backend/data/database/*.db-wal
