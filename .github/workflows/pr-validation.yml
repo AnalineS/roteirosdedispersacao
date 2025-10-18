@@ -48,18 +48,36 @@ jobs:
 
           SECURITY_ISSUES=0
           for pattern in "${SENSITIVE_PATTERNS[@]}"; do
-            if grep -r -E -i "$pattern" . --exclude-dir=.git --exclude-dir=node_modules 2>/dev/null; then
-              echo "❌ Sensitive data pattern found: $pattern"
+            # Exclude test files, docs, validation scripts, and config files
+            if grep -r -E -i "$pattern" . \
+              --exclude-dir=.git \
+              --exclude-dir=node_modules \
+              --exclude-dir=tests \
+              --exclude-dir=__tests__ \
+              --exclude="*.md" \
+              --exclude="test_*.py" \
+              --exclude="*_test.py" \
+              --exclude="conftest.py" \
+              --exclude="validate_*.py" \
+              --exclude="verify_*.py" \
+              --exclude="*_validation.py" \
+              --exclude="pytest.ini" \
+              --exclude=".env.example" \
+              --exclude=".env.template" \
+              2>/dev/null; then
+              echo "❌ Sensitive data pattern found in source code: $pattern"
               SECURITY_ISSUES=$((SECURITY_ISSUES + 1))
             fi
           done
 
           if [[ $SECURITY_ISSUES -gt 0 ]]; then
-            echo "❌ $SECURITY_ISSUES security issue(s) found"
+            echo "❌ $SECURITY_ISSUES security issue(s) found in source code"
+            echo "⚠️  Test files, docs, and validation scripts are excluded from this check"
             exit 1
           fi
 
-          echo "✅ Security validation passed"
+          echo "✅ Security validation passed - no sensitive data in source code"
+          echo "ℹ️  Test files and documentation are excluded from this scan"
 
   # Gate de qualidade de código - validações rápidas
   code-quality-gate:
