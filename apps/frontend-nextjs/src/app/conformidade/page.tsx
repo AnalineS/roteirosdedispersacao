@@ -12,6 +12,9 @@ import {
   CertificateIcon,
   MailIcon
 } from '@/components/ui/EducationalIcons';
+import { 
+  AlertIcon 
+} from '@/components/icons/FlatOutlineIcons';
 
 /**
  * Página de Conformidade do Sistema
@@ -27,7 +30,7 @@ interface ComplianceFramework {
   status: 'compliant' | 'partial' | 'planned';
   measures: string[];
   references: string[];
-  icon: React.ComponentType<any>;
+  icon: React.ComponentType<{ size?: number; className?: string; color?: string }>;
   color: string;
 }
 
@@ -572,6 +575,107 @@ export default function ConformidadePage() {
               <li>Navegação Estruturada</li>
               <li>Múltiplas Audiências</li>
             </ul>
+          </div>
+        </div>
+      </div>
+
+      {/* Alertas de Conformidade */}
+      <div
+        style={{
+          background: 'linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%)',
+          borderRadius: modernChatTheme.borderRadius.lg,
+          padding: modernChatTheme.spacing.xl,
+          marginBottom: modernChatTheme.spacing.xl,
+          border: '1px solid #F59E0B'
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: modernChatTheme.spacing.md, marginBottom: modernChatTheme.spacing.lg }}>
+          <AlertIcon size={32} color="#F59E0B" />
+          <div>
+            <h3 style={{ 
+              fontSize: '20px', 
+              fontWeight: '700', 
+              marginBottom: modernChatTheme.spacing.xs,
+              color: '#92400E'
+            }}>
+              ⚠️ Alertas Importantes de Conformidade
+            </h3>
+            <p style={{ 
+              fontSize: '14px', 
+              color: '#92400E',
+              margin: 0,
+              opacity: 0.8
+            }}>
+              Pontos de atenção para manutenção da conformidade regulatória
+            </p>
+          </div>
+        </div>
+        
+        <div style={{ 
+          display: 'grid', 
+          gap: modernChatTheme.spacing.md 
+        }}>
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'flex-start', 
+            gap: modernChatTheme.spacing.sm,
+            padding: modernChatTheme.spacing.md,
+            background: 'rgba(255,255,255,0.5)',
+            borderRadius: modernChatTheme.borderRadius.md
+          }}>
+            <div style={{ marginTop: '2px', flexShrink: 0 }}>
+              <AlertIcon size={20} color="#F59E0B" />
+            </div>
+            <div>
+              <strong style={{ color: '#92400E', fontSize: '14px' }}>
+                Auditoria ISO 27001 Pendente
+              </strong>
+              <p style={{ fontSize: '13px', color: '#92400E', margin: '4px 0 0 0', opacity: 0.8 }}>
+                Certificação completa ISO 27001:2022 em processo de implementação. Auditoria externa programada para Q2/2024.
+              </p>
+            </div>
+          </div>
+          
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'flex-start', 
+            gap: modernChatTheme.spacing.sm,
+            padding: modernChatTheme.spacing.md,
+            background: 'rgba(255,255,255,0.5)',
+            borderRadius: modernChatTheme.borderRadius.md
+          }}>
+            <div style={{ marginTop: '2px', flexShrink: 0 }}>
+              <AlertIcon size={20} color="#F59E0B" />
+            </div>
+            <div>
+              <strong style={{ color: '#92400E', fontSize: '14px' }}>
+                Revisão Periódica de Conteúdo Médico
+              </strong>
+              <p style={{ fontSize: '13px', color: '#92400E', margin: '4px 0 0 0', opacity: 0.8 }}>
+                Conteúdo médico deve ser revisado a cada 12 meses ou mediante atualização de protocolos oficiais do Ministério da Saúde.
+              </p>
+            </div>
+          </div>
+          
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'flex-start', 
+            gap: modernChatTheme.spacing.sm,
+            padding: modernChatTheme.spacing.md,
+            background: 'rgba(255,255,255,0.5)',
+            borderRadius: modernChatTheme.borderRadius.md
+          }}>
+            <div style={{ marginTop: '2px', flexShrink: 0 }}>
+              <AlertIcon size={20} color="#F59E0B" />
+            </div>
+            <div>
+              <strong style={{ color: '#92400E', fontSize: '14px' }}>
+                Monitoramento Contínuo LGPD
+              </strong>
+              <p style={{ fontSize: '13px', color: '#92400E', margin: '4px 0 0 0', opacity: 0.8 }}>
+                Relatório de atividades de tratamento deve ser atualizado trimestralmente conforme Art. 37 da LGPD.
+              </p>
+            </div>
           </div>
         </div>
       </div>

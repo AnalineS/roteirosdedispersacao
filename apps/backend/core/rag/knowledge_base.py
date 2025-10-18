@@ -542,6 +542,8 @@ if __name__ == "__main__":
         print(f"Chunks relevantes: {len(chunks)}")
         
         for chunk in chunks:
-            print(f"- Seção: {chunk['section']}, Score: {chunk['relevance_score']:.2f}")
+            # Mascarar nome da seção para segurança
+            section_hash = hashlib.sha256(chunk['section'].encode()).hexdigest()[:8]
+            print(f"- Seção: section_{section_hash}, Score: {chunk['relevance_score']:.2f}")
     
     print(f"\nEstatísticas: {get_rag_stats()}")

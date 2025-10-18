@@ -1,0 +1,1846 @@
+
+> roteiros-dispensacao-nextjs@1.0.0 lint
+> eslint .
+
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\app\cadastro\page.tsx
+  149:14  warning  'err' is defined but never used  @typescript-eslint/no-unused-vars
+  165:14  warning  'err' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\app\chat\page.tsx
+    3:60  warning  'useRef' is defined but never used                                 @typescript-eslint/no-unused-vars
+   35:47  warning  'personaLoading' is assigned a value but never used                @typescript-eslint/no-unused-vars
+   79:11  warning  'profile' is assigned a value but never used                       @typescript-eslint/no-unused-vars
+   79:20  warning  'updateProfile' is assigned a value but never used                 @typescript-eslint/no-unused-vars
+   79:35  warning  'getRecommendedPersona' is assigned a value but never used         @typescript-eslint/no-unused-vars
+   82:12  warning  'chatError' is assigned a value but never used                     @typescript-eslint/no-unused-vars
+   85:5   warning  'personaSwitchSuggestion' is assigned a value but never used       @typescript-eslint/no-unused-vars
+   87:5   warning  'lastSearchResult' is assigned a value but never used              @typescript-eslint/no-unused-vars
+   90:5   warning  'resetFallback' is assigned a value but never used                 @typescript-eslint/no-unused-vars
+   91:5   warning  'resetSystemFailures' is assigned a value but never used           @typescript-eslint/no-unused-vars
+  145:11  warning  'navigationState' is assigned a value but never used               @typescript-eslint/no-unused-vars
+  149:5   warning  'currentAnalysis' is assigned a value but never used               @typescript-eslint/no-unused-vars
+  150:5   warning  'isAnalyzing' is assigned a value but never used                   @typescript-eslint/no-unused-vars
+  151:5   warning  'shouldShowRouting' is assigned a value but never used             @typescript-eslint/no-unused-vars
+  152:28  warning  'getRoutingRecommendedPersona' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  241:37  warning  Unexpected any. Specify a different type                           @typescript-eslint/no-explicit-any
+  289:11  warning  'conversationId' is assigned a value but never used                @typescript-eslint/no-unused-vars
+  311:9   warning  'handleAcceptRouting' is assigned a value but never used           @typescript-eslint/no-unused-vars
+  316:9   warning  'handleRejectRouting' is assigned a value but never used           @typescript-eslint/no-unused-vars
+  320:9   warning  'handleShowExplanation' is assigned a value but never used         @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\app\conformidade\page.tsx
+  30:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\app\esqueci-senha\page.tsx
+  13:9   warning  'router' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  31:14  warning  'error' is defined but never used            @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\app\gamification-demo\page.tsx
+  14:21  warning  'BadgeCollection' is defined but never used           @typescript-eslint/no-unused-vars
+  15:8   warning  'ProgressRing' is defined but never used              @typescript-eslint/no-unused-vars
+  21:3   warning  'GamificationNotification' is defined but never used  @typescript-eslint/no-unused-vars
+  23:10  warning  'hanseniaseQuizzes' is defined but never used         @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\app\login\page.tsx
+  20:44  warning  'authLoading' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  49:14  warning  'err' is defined but never used                   @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\app\modules\diagnostico\page.tsx
+  476:47  warning  'index' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\app\modules\hanseniase\page.tsx
+  195:47  warning  'index' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\app\modules\page.tsx
+  26:9  warning  'router' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\app\modules\roteiro-dispensacao\page.tsx
+  661:47  warning  'index' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\app\modules\sobre-a-tese\page.tsx
+  346:11  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\app\modules\tratamento\page.tsx
+  677:47  warning  'index' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\app\modules\vida-com-doenca\page.tsx
+  875:47  warning  'index' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\app\page.tsx
+   2:8  warning  'Image' is defined but never used            @typescript-eslint/no-unused-vars
+   5:8  warning  'FeaturesSection' is defined but never used  @typescript-eslint/no-unused-vars
+  20:3  warning  'CheckIcon' is defined but never used        @typescript-eslint/no-unused-vars
+  23:3  warning  'SupportIcon' is defined but never used      @typescript-eslint/no-unused-vars
+  24:3  warning  'TargetIcon' is defined but never used       @typescript-eslint/no-unused-vars
+  25:3  warning  'DoctorIcon' is defined but never used       @typescript-eslint/no-unused-vars
+  26:3  warning  'QuestionIcon' is defined but never used     @typescript-eslint/no-unused-vars
+  30:3  warning  'AlertIcon' is defined but never used        @typescript-eslint/no-unused-vars
+  31:3  warning  'BulbIcon' is defined but never used         @typescript-eslint/no-unused-vars
+  32:3  warning  'HeartIcon' is defined but never used        @typescript-eslint/no-unused-vars
+  33:3  warning  'FamilyIcon' is defined but never used       @typescript-eslint/no-unused-vars
+  36:3  warning  'PillIcon' is defined but never used         @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\app\profile\page.tsx
+    7:3   warning  'Mail' is defined but never used                        @typescript-eslint/no-unused-vars
+   14:3   warning  'Camera' is defined but never used                      @typescript-eslint/no-unused-vars
+   43:5   warning  'linkSocialAccount' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  108:14  warning  'error' is defined but never used                       @typescript-eslint/no-unused-vars
+  115:67  warning  Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  122:87  warning  Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  154:14  warning  'error' is defined but never used                       @typescript-eslint/no-unused-vars
+  175:58  warning  Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  390:58  warning  Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\app\progress\page.tsx
+   48:24  warning  'setProgressData' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  154:9   warning  'currentPersona' is assigned a value but never used   @typescript-eslint/no-unused-vars
+  321:55  warning  'index' is defined but never used                     @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\app\progressive-disclosure-demo\page.tsx
+  13:10  warning  'ProgressiveCard' is defined but never used   @typescript-eslint/no-unused-vars
+  14:10  warning  'MedicalTermPopup' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\app\resources\calculator\page.tsx
+  3:20  warning  'useEffect' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\app\search\page.tsx
+  10:28  warning  'setSelectedAudience' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\app\sitemap\page.tsx
+  19:7  warning  'ChatIcon' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\app\sobre-a-tese\page.tsx
+    8:7  warning  'MedIcon' is assigned a value but never used       @typescript-eslint/no-unused-vars
+  218:7  warning  'BuildingIcon' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  224:7  warning  'PrintIcon' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  230:7  warning  'MoneyIcon' is assigned a value but never used     @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\app\sobre\page.tsx
+  18:3  warning  'LightbulbIcon' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\GoogleAnalytics.tsx
+    8:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+    9:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  117:39  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  146:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  160:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  173:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  185:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\Navigation.tsx
+  11:3  warning  'ClipboardListIcon' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\__tests__\GoogleAnalytics.test.tsx
+  12:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  40:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  49:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  59:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  64:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  69:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  77:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  88:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  96:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\__tests__\Navigation.test.tsx
+  17:56  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\accessibility\AccessibilityAuditPanel.tsx
+  342:53  warning  'index' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\accessibility\AccessibilityDashboard.tsx
+  406:53  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\accessibility\AccessibilityValidator.tsx
+   14:27  warning  'useEffect' is defined but never used          @typescript-eslint/no-unused-vars
+   14:38  warning  'useRef' is defined but never used             @typescript-eslint/no-unused-vars
+  162:13  warning  'tabindex' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\accessibility\ColorContrastValidator.tsx
+   14:27  warning  'useEffect' is defined but never used                  @typescript-eslint/no-unused-vars
+   14:38  warning  'useRef' is defined but never used                     @typescript-eslint/no-unused-vars
+   69:9   warning  'hexToRgb' is assigned a value but never used          @typescript-eslint/no-unused-vars
+  389:9   warning  'getContrastColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\accessibility\ContrastAuditPanel.tsx
+  43:9  warning  'getWcagColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  54:9  warning  'getWcagIcon' is assigned a value but never used   @typescript-eslint/no-unused-vars
+  65:9  warning  'formatRatio' is assigned a value but never used   @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\accessibility\FocusIndicator.tsx
+  324:9  warning  'isKeyboardNav' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\accessibility\KeyboardNavigationValidator.tsx
+   14:27  warning  'useEffect' is defined but never used                               @typescript-eslint/no-unused-vars
+   14:38  warning  'useRef' is defined but never used                                  @typescript-eslint/no-unused-vars
+  359:9   warning  'elementsWithoutAccessibleName' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  360:9   warning  'elementsWithPositiveTabIndex' is assigned a value but never used   @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\accessibility\PersonaAccessibilityProvider.tsx
+  108:5  warning  Avoid logging template literals that might contain sensitive medical data                                                    no-restricted-syntax
+  157:6  warning  React Hook useCallback has a missing dependency: 'playPersonaChangeSound'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\accessibility\ScreenReaderTester.tsx
+   14:27  warning  'useEffect' is defined but never used                @typescript-eslint/no-unused-vars
+   14:38  warning  'useRef' is defined but never used                   @typescript-eslint/no-unused-vars
+  475:9   warning  'getImpactColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\accessibility\TypographyAuditPanel.tsx
+  46:9  warning  'getSeverityColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\admin\ABTestManager.tsx
+  15:44  warning  'ABVariant' is defined but never used                 @typescript-eslint/no-unused-vars
+  23:3   warning  'allowManagement' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\admin\AdminAnalyticsDashboard.tsx
+   19:3   warning  'LearningAnalytics' is defined but never used  @typescript-eslint/no-unused-vars
+   71:9   warning  Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+  133:71  warning  'period' is defined but never used             @typescript-eslint/no-unused-vars
+  234:31  warning  Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+  402:58  warning  Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\analytics\CognitiveLoadAuditor.tsx
+  403:11  warning  'trackCognitiveLoad' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\analytics\EnhancedCoreWebVitals.tsx
+   62:69  warning  'value' is defined but never used                                          @typescript-eslint/no-unused-vars
+   96:82  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  112:50  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  113:38  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  139:37  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  140:35  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  153:45  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  168:7   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  183:41  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  183:98  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  238:42  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  239:42  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  409:45  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  409:57  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  421:20  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  443:82  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\analytics\GoogleAnalyticsSetup.tsx
+   26:24  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   31:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   51:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  197:53  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  203:53  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  204:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  209:53  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  210:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  214:70  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  215:53  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  216:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  220:97  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  221:53  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  222:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  237:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  238:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  239:86  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  242:65  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\analytics\MobileUXAuditor.tsx
+   36:48  warning  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+  193:11  warning  'thumbReachZone' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  268:16  warning  'error' is defined but never used                    @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\auth\AuthProviderWrapper.tsx
+  100:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\auth\LoginModal.tsx
+  93:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\auth\SocialAuthButtons.tsx
+  27:47  warning  'isLoading' is assigned a value but never used         @typescript-eslint/no-unused-vars
+  39:37  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+  50:21  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+  85:9   warning  'getProviderName' is assigned a value but never used   @typescript-eslint/no-unused-vars
+  90:9   warning  'getProviderColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\auth\UserBenefitsCard.tsx
+  189:9  warning  'benefits' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\auth\backup\SoftAuthModal.tsx
+  49:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  72:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  90:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\auth\backup\SoftAuthPrompt.tsx
+  199:7  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  223:9  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  248:9  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\auth\backup\UserProfileWidget.tsx
+  26:9  warning  'userProfile' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\chat\ConversationExporter.tsx
+  92:13  warning  'conversationText' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\chat\ConversationHistory.tsx
+   9:7   warning  'SIDEBAR_WIDTH' is assigned a value but never used         @typescript-eslint/no-unused-vars
+  10:7   warning  'MOBILE_SIDEBAR_WIDTH' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  48:10  warning  'loading' is assigned a value but never used               @typescript-eslint/no-unused-vars
+  48:19  warning  'setLoading' is assigned a value but never used            @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\chat\FeedbackWidget.tsx
+   95:3   warning  'isVisible' is assigned a value but never used             @typescript-eslint/no-unused-vars
+  101:10  warning  'hasSubmittedFeedback' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\chat\MultimodalChatInput.tsx
+   15:50  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   16:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   31:56  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   80:55  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  329:69  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\chat\PersonaAvatar.tsx
+  10:7  warning  'isValidImageUrl' is assigned a value but never used                       @typescript-eslint/no-unused-vars
+  48:5  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  76:5  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\chat\PredictiveSuggestions.tsx
+  13:8  warning  'SuggestionContext' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\chat\RoutingIndicator.tsx
+  49:9  warning  'handleReject' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\chat\accessibility\AccessibleChatInput.tsx
+  197:66  warning  'index' is defined but never used  @typescript-eslint/no-unused-vars
+  217:35  warning  'e' is defined but never used      @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\chat\accessibility\AccessibleMessageBubble.tsx
+  105:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\chat\modern\ChatMessagesArea.tsx
+  26:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\chat\modern\ExportChatModal.tsx
+  27:43  warning  'index' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\chat\modern\MessageBubble.tsx
+  68:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\chat\modern\ModernChatContainer.tsx
+   11:8   warning  'ModernChatInput' is defined but never used                @typescript-eslint/no-unused-vars
+   13:8   warning  'MessageBubble' is defined but never used                  @typescript-eslint/no-unused-vars
+   41:20  warning  Unexpected any. Specify a different type                   @typescript-eslint/no-explicit-any
+   88:11  warning  'announceNewMessage' is assigned a value but never used    @typescript-eslint/no-unused-vars
+   88:31  warning  'announceSystemStatus' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   88:53  warning  'focusLastMessage' is assigned a value but never used      @typescript-eslint/no-unused-vars
+  104:9   warning  'MessagesArea' is assigned a value but never used          @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\chat\modern\ModernChatHeader.tsx
+   12:3  warning  'MenuIcon' is defined but never used                @typescript-eslint/no-unused-vars
+   14:3  warning  'InfoIcon' is defined but never used                @typescript-eslint/no-unused-vars
+   67:7  warning  'HistoryToggle' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  225:3  warning  'onHistoryToggle' is defined but never used         @typescript-eslint/no-unused-vars
+  227:3  warning  'showHistory' is assigned a value but never used    @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\chat\modern\PersonaSwitch.tsx
+   6:27  warning  'getPersonaColors' is defined but never used     @typescript-eslint/no-unused-vars
+   7:10  warning  'ToggleIcon' is defined but never used           @typescript-eslint/no-unused-vars
+  26:9   warning  'personaIds' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\chat\modern\SmartIndicators.tsx
+   15:13  warning  Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+  168:85  warning  Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+  259:3   warning  'isMobile' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\common\KeyboardShortcuts.tsx
+   17:10  warning  'focusedIndex' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  178:79  warning  'categoryIndex' is defined but never used          @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\common\OptimizedImage.tsx
+   75:9   warning  'generateSrcSet' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  255:34  warning  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\content\ContentChunkingStrategy.tsx
+  124:3   warning  'layout' is defined but never used              @typescript-eslint/no-unused-vars
+  126:9   warning  'unbColors' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  412:39  warning  'index' is defined but never used               @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\content\ContentSegmentation.tsx
+  39:9  warning  'unbColors' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\content\LastUpdated.tsx
+   44:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+   65:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+   79:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  368:12  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\disclosure\DosageCard.tsx
+  44:5  warning  'toggleSection' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  50:9  warning  'isExpanded' is assigned a value but never used     @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\disclosure\MedicalAccordion.tsx
+   35:5   warning  'currentLevel' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  186:3   warning  'index' is defined but never used                     @typescript-eslint/no-unused-vars
+  285:3   warning  'sectionId' is defined but never used                 @typescript-eslint/no-unused-vars
+  294:31  warning  'index' is defined but never used                     @typescript-eslint/no-unused-vars
+  375:7   warning  'accordionStyles' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\disclosure\MedicalTermPopup.tsx
+  122:34  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\dx\UXInstrumentationPanel.tsx
+   12:66  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  201:76  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\educational\EducationalDashboard\index.tsx
+  3:20  warning  'useEffect' is defined but never used          @typescript-eslint/no-unused-vars
+  5:8   warning  'ProgressIndicator' is defined but never used  @typescript-eslint/no-unused-vars
+  6:10  warning  'ProgressData' is defined but never used       @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\educational\Glossary\index.tsx
+  110:10  warning  'selectedTerm' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  137:67  warning  Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\educational\InfoCard\index.tsx
+    3:20  warning  'ReactNode' is defined but never used             @typescript-eslint/no-unused-vars
+    5:10  warning  'theme' is defined but never used                 @typescript-eslint/no-unused-vars
+   42:3   warning  'interactive' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  331:44  warning  'props' is defined but never used                 @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\educational\ModuleTemplate\index.tsx
+  14:11  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\educational\PersonaEducationalAvatar.tsx
+   58:3  warning  'context' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  292:3  warning  'context' is defined but never used           @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\educational\SmartSearch\index.tsx
+   57:18  warning  'findTerm' is assigned a value but never used       @typescript-eslint/no-unused-vars
+   57:28  warning  'getDefinition' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  399:9   warning  'sanitizeUrl' is assigned a value but never used    @typescript-eslint/no-unused-vars
+  455:9   warning  'getTypeIcon' is assigned a value but never used    @typescript-eslint/no-unused-vars
+  507:51  warning  'index' is defined but never used                   @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\educational\VisualCards\index.tsx
+   27:9  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  146:3  warning  'variant' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\forms\OptimizedForm.tsx
+   14:3   warning  'Calendar' is defined but never used                 @typescript-eslint/no-unused-vars
+   23:20  warning  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+   40:43  warning  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+   45:32  warning  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+   46:35  warning  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+   47:42  warning  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+   47:71  warning  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+   61:28  warning  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+   65:38  warning  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+   72:7   warning  'useFormContext' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   83:10  warning  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+   86:21  warning  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+  461:59  warning  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+  468:59  warning  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+  508:57  warning  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\gamification\BadgeCard.tsx
+  48:11  warning  'baseColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\gamification\EducationalQuiz.tsx
+   15:3   warning  'GamificationNotification' is defined but never used  @typescript-eslint/no-unused-vars
+  174:29  warning  'isTimeout' is assigned a value but never used        @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\gamification\NotificationSystem.tsx
+  290:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\gamification\ProgressDashboard.tsx
+  16:10  warning  'UserLevel' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\glossary\AutoGlossary.tsx
+   47:9   warning  'remainingText' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  144:56  warning  Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\glossary\MedicalTermTooltip.tsx
+  118:9  warning  'unbColors' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\hierarchy\MedicalColorSystem.tsx
+  254:9   warning  'hoverStyles' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  320:29  warning  'color1' is defined but never used                @typescript-eslint/no-unused-vars
+  320:45  warning  'color2' is defined but never used                @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\hierarchy\TypographySystem.tsx
+  13:37  warning  'JSX' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\home\HeroSection.tsx
+  5:8  warning  'Image' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\home\PersonaSelector.tsx
+   8:10  warning  'getPersonaAvatar' is defined but never used                @typescript-eslint/no-unused-vars
+  22:11  warning  'personas' is assigned a value but never used               @typescript-eslint/no-unused-vars
+  22:26  warning  'loading' is assigned a value but never used                @typescript-eslint/no-unused-vars
+  22:43  warning  'error' is assigned a value but never used                  @typescript-eslint/no-unused-vars
+  22:57  warning  'getValidPersonasCount' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\home\PersonaSelectorUnified.tsx
+  262:3  warning  'variant' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\interactive\Certification\CertificateGenerator.tsx
+   4:23  warning  'CertificateTemplate' is defined but never used       @typescript-eslint/no-unused-vars
+  16:3   warning  'ClockIcon' is defined but never used                 @typescript-eslint/no-unused-vars
+  37:24  warning  'setEmailAddress' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\interactive\ClinicalSimulator\CaseSelector.tsx
+  277:36  warning  'index' is defined but never used  @typescript-eslint/no-unused-vars
+  812:39  warning  'index' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\interactive\ClinicalSimulator\SimulatorIntroduction.tsx
+  123:56  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\interactive\DispensingChecklist\InteractiveChecklist.tsx
+    7:3   warning  'ChecklistProgress' is defined but never used  @typescript-eslint/no-unused-vars
+    9:3   warning  'QualityMetrics' is defined but never used     @typescript-eslint/no-unused-vars
+   21:16  error    Missing return type on function                @typescript-eslint/explicit-function-return-type
+   69:17  error    Missing return type on function                @typescript-eslint/explicit-function-return-type
+  198:47  error    Missing return type on function                @typescript-eslint/explicit-function-return-type
+  205:35  error    Missing return type on function                @typescript-eslint/explicit-function-return-type
+  211:46  error    Missing return type on function                @typescript-eslint/explicit-function-return-type
+  247:15  error    Missing return type on function                @typescript-eslint/explicit-function-return-type
+  679:1   error    Missing return type on function                @typescript-eslint/explicit-function-return-type
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\interactive\DispensingChecklist\ReadOnlyChecklist.tsx
+    4:25  warning  'ChecklistProgress' is defined but never used          @typescript-eslint/no-unused-vars
+   12:16  error    Missing return type on function                        @typescript-eslint/explicit-function-return-type
+   28:47  error    Missing return type on function                        @typescript-eslint/explicit-function-return-type
+   37:9   warning  'getSeverityColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   37:47  error    Missing return type on function                        @typescript-eslint/explicit-function-return-type
+  101:29  warning  'index' is defined but never used                      @typescript-eslint/no-unused-vars
+  350:58  warning  'index' is defined but never used                      @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\interactive\DispensingChecklist\index.tsx
+   13:29  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   14:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   17:16  error  Missing return type on function           @typescript-eslint/explicit-function-return-type
+   29:35  error  Missing return type on function           @typescript-eslint/explicit-function-return-type
+  139:1   error  Missing return type on function           @typescript-eslint/explicit-function-return-type
+  186:1   error  Missing return type on function           @typescript-eslint/explicit-function-return-type
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\interactive\DoseCalculator\ABTestBasicCalculator.tsx
+   61:65  error    Missing return type on function                     @typescript-eslint/explicit-function-return-type
+   76:62  error    Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+   76:67  error    Missing return type on function                     @typescript-eslint/explicit-function-return-type
+  105:9   warning  'buttonClasses' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\interactive\DoseCalculator\AdvancedCalculator.tsx
+    4:10  warning  'calculatePQTUDoses' is defined but never used   @typescript-eslint/no-unused-vars
+    4:30  warning  'validateCalculation' is defined but never used  @typescript-eslint/no-unused-vars
+   15:16  error    Missing return type on function                  @typescript-eslint/explicit-function-return-type
+  136:52  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  202:1   error    Missing return type on function                  @typescript-eslint/explicit-function-return-type
+  211:19  warning  'setProfile' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  411:1   error    Missing return type on function                  @typescript-eslint/explicit-function-return-type
+  411:24  warning  'result' is defined but never used               @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\interactive\DoseCalculator\BasicCalculator.tsx
+  29:16  error  Missing return type on function           @typescript-eslint/explicit-function-return-type
+  69:66  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  69:71  error  Missing return type on function           @typescript-eslint/explicit-function-return-type
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\interactive\DoseCalculator\CalculationHistory.tsx
+  13:16  error  Missing return type on function  @typescript-eslint/explicit-function-return-type
+  97:1   error  Missing return type on function  @typescript-eslint/explicit-function-return-type
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\interactive\DoseCalculator\ExportOptions.tsx
+  12:16  error  Missing return type on function  @typescript-eslint/explicit-function-return-type
+  19:36  error  Missing return type on function  @typescript-eslint/explicit-function-return-type
+  54:36  error  Missing return type on function  @typescript-eslint/explicit-function-return-type
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\interactive\DoseCalculator\index.tsx
+  13:16  error  Missing return type on function  @typescript-eslint/explicit-function-return-type
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\interactive\TreatmentTimeline\InteractiveTimeline.tsx
+   37:10   warning  'newNote' is assigned a value but never used       @typescript-eslint/no-unused-vars
+   37:19   warning  'setNewNote' is assigned a value but never used    @typescript-eslint/no-unused-vars
+  433:52   warning  Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+  710:26   warning  'timeline' is defined but never used               @typescript-eslint/no-unused-vars
+  710:36   warning  'config' is defined but never used                 @typescript-eslint/no-unused-vars
+  710:44   warning  'onMilestoneToggle' is defined but never used      @typescript-eslint/no-unused-vars
+  710:63   warning  'onMilestoneNote' is defined but never used        @typescript-eslint/no-unused-vars
+  710:80   warning  'selectedMilestone' is defined but never used      @typescript-eslint/no-unused-vars
+  710:99   warning  'onMilestoneSelect' is defined but never used      @typescript-eslint/no-unused-vars
+  710:120  warning  Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+  727:25   warning  'timeline' is defined but never used               @typescript-eslint/no-unused-vars
+  727:35   warning  'config' is defined but never used                 @typescript-eslint/no-unused-vars
+  727:43   warning  'onAdherenceRecord' is defined but never used      @typescript-eslint/no-unused-vars
+  727:64   warning  Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+  744:28   warning  'timeline' is defined but never used               @typescript-eslint/no-unused-vars
+  744:38   warning  'config' is defined but never used                 @typescript-eslint/no-unused-vars
+  744:46   warning  'onAppointmentSchedule' is defined but never used  @typescript-eslint/no-unused-vars
+  744:71   warning  Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+  761:26   warning  'timeline' is defined but never used               @typescript-eslint/no-unused-vars
+  761:45   warning  'onUpdate' is defined but never used               @typescript-eslint/no-unused-vars
+  761:57   warning  Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\interactive\TreatmentTimeline\StaticTimeline.tsx
+   98:50  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  330:15  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  456:15  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\interactive\TreatmentTimeline\index.tsx
+  15:37  warning  Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+  28:10  warning  'demoMode' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  28:20  warning  'setDemoMode' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\layout\EducationalLayout.tsx
+  7:8  warning  'LanguageToggle' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\layout\FABCollisionDetector.tsx
+  21:22  warning  'screenSize' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\layout\VisualHierarchyOptimizer.tsx
+  477:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  492:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  504:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\medical\MedicalContentBadges.tsx
+  94:3  warning  'requiresAuth' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\mobile\MedicalMobileComponents.tsx
+  46:9  warning  'unbColors' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\mobile\MobileFirstFramework.tsx
+  163:11  warning  'isMobile' is assigned a value but never used                              @typescript-eslint/no-unused-vars
+  163:21  warning  'isTablet' is assigned a value but never used                              @typescript-eslint/no-unused-vars
+  163:45  warning  'orientation' is assigned a value but never used                           @typescript-eslint/no-unused-vars
+  171:7   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  558:18  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  587:18  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  646:18  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\multimodal\ImageUploader.tsx
+   14:33  warning  Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+   32:5   warning  'capabilities' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  420:54  warning  Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\navigation\ChatNavigation.tsx
+    5:8   warning  'Link' is defined but never used               @typescript-eslint/no-unused-vars
+   30:9   warning  'pathname' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  403:57  warning  Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\navigation\EducationalFooter.tsx
+  11:3   warning  'SystemLogoIcon' is defined but never used     @typescript-eslint/no-unused-vars
+  13:3   warning  'ModulesIcon' is defined but never used        @typescript-eslint/no-unused-vars
+  14:3   warning  'DashboardIcon' is defined but never used      @typescript-eslint/no-unused-vars
+  15:3   warning  'ChatBotIcon' is defined but never used        @typescript-eslint/no-unused-vars
+  16:3   warning  'ResourcesIcon' is defined but never used      @typescript-eslint/no-unused-vars
+  17:3   warning  'ProgressIcon' is defined but never used       @typescript-eslint/no-unused-vars
+  18:3   warning  'InstitutionalIcon' is defined but never used  @typescript-eslint/no-unused-vars
+  28:3   warning  'emojiToIcon' is defined but never used        @typescript-eslint/no-unused-vars
+  29:3   warning  'useMedicalIcons' is defined but never used    @typescript-eslint/no-unused-vars
+  32:11  warning  'FooterSection' is defined but never used      @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\navigation\FastAccessBar.tsx
+   25:10  warning  'getUrgencyFromKeywords' is defined but never used    @typescript-eslint/no-unused-vars
+   52:10  warning  'isScrollingDown' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  157:41  warning  Unexpected any. Specify a different type              @typescript-eslint/no-explicit-any
+  157:51  warning  Unexpected any. Specify a different type              @typescript-eslint/no-explicit-any
+  226:37  warning  'index' is defined but never used                     @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\navigation\FloatingElementsCoordinator.tsx
+   30:10  warning  'screenSize' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   72:70  warning  'size' is defined but never used                 @typescript-eslint/no-unused-vars
+  219:35  warning  Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\navigation\MobileNavigation.tsx
+    9:3   warning  'getIconByEmoji' is defined but never used          @typescript-eslint/no-unused-vars
+   23:20  warning  Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+   38:11  warning  'isMobile' is assigned a value but never used       @typescript-eslint/no-unused-vars
+   38:21  warning  'touchSupport' is assigned a value but never used   @typescript-eslint/no-unused-vars
+   45:9   warning  'swipeHandlers' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  257:33  warning  'shortcut' is defined but never used                @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\navigation\NavigationHeader.tsx
+  11:3   warning  'SystemLogoIcon' is defined but never used            @typescript-eslint/no-unused-vars
+  26:10  warning  'ThemeToggle' is defined but never used               @typescript-eslint/no-unused-vars
+  27:8   warning  'IntelligentSearchSystem' is defined but never used   @typescript-eslint/no-unused-vars
+  70:30  warning  'maxVisibleItems' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  70:47  warning  'deviceType' is assigned a value but never used       @typescript-eslint/no-unused-vars
+  77:10  warning  'isWideScreen' is assigned a value but never used     @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\navigation\OptimizedNavigationStructure.tsx
+  13:30  warning  'NavigationItem' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\navigation\Progress\GlobalProgress.tsx
+  28:9  warning  'formatTimeSpent' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\navigation\Progress\index.tsx
+  54:3  warning  'children' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\navigation\QuickNavigationMenu.tsx
+  30:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\onboarding\ExperienceBanner.tsx
+   5:68  warning  'TargetIcon' is defined but never used       @typescript-eslint/no-unused-vars
+  28:9   warning  'router' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\onboarding\QuickStartGuide.tsx
+    5:32  warning  'MessageCircle' is defined but never used  @typescript-eslint/no-unused-vars
+  193:43  warning  'index' is defined but never used          @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\onboarding\WelcomeWizard.tsx
+   35:34  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  196:69  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  204:53  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  443:9   warning  'router' is assigned a value but never used   @typescript-eslint/no-unused-vars
+  530:57  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  536:82  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  547:28  warning  'skipped' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  559:16  warning  'error' is defined but never used             @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\optimization\LazyComponent.tsx
+    7:59  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+   29:22  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+   34:35  warning  'error' is defined but never used                                          @typescript-eslint/no-unused-vars
+   39:5   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  260:58  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\performance\CoreWebVitals.tsx
+  42:37  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  72:11  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\personalization\PersonalizationProvider.tsx
+  31:10  warning  'showOnboardingModal' is assigned a value but never used       @typescript-eslint/no-unused-vars
+  55:9   warning  'handleOnboardingComplete' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  60:9   warning  'handleOnboardingSkip' is assigned a value but never used      @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\personalization\PersonalizedDashboard.tsx
+  154:56  warning  'index' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\personas\PersonaSelector.tsx
+    3:25  warning  'JSX' is defined but never used           @typescript-eslint/no-unused-vars
+    7:10  warning  'theme' is defined but never used         @typescript-eslint/no-unused-vars
+  176:52  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\privacy\LGPDCompliance.tsx
+  397:16  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\progress\ConversationProgress.tsx
+   16:13  warning  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+   34:3   warning  'currentPersona' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   91:41  warning  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+  254:33  warning  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+  268:83  warning  'messageCount' is defined but never used             @typescript-eslint/no-unused-vars
+  536:48  warning  'index' is defined but never used                    @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\pwa\PWAManager.tsx
+  13:56  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  24:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\qa\QualityDashboard.tsx
+   15:3   warning  'MistakePattern' is defined but never used                @typescript-eslint/no-unused-vars
+   26:3   warning  'showDetailedMetrics' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  102:9   warning  'warningAlerts' is assigned a value but never used        @typescript-eslint/no-unused-vars
+  339:69  warning  'index' is defined but never used                         @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\search\AccessibleSearchWithSuggestions.tsx
+  509:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  519:36  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  526:28  warning  'event' is defined but never used         @typescript-eslint/no-unused-vars
+  526:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\search\IntelligentSearchSystem.tsx
+  141:3  warning  'showFilters' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\search\SearchBar.tsx
+  67:9  warning  'pathname' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\security\SecureIcon.tsx
+   22:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  116:17  warning  'e' is defined but never used             @typescript-eslint/no-unused-vars
+  176:37  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  199:71  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  205:5   warning  'ref' is defined but never used           @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\seo\MedicalStructuredData.tsx
+  100:9  warning  'structuredData' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  196:3  warning  'duration' is defined but never used                 @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\system\SystemStatus.tsx
+   42:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  211:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\ui\ChatFeedback.tsx
+   43:74  warning  Unexpected any. Specify a different type                     @typescript-eslint/no-explicit-any
+  116:9   warning  'triggerSendFeedback' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  147:9   warning  'triggerReceiveFeedback' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  166:9   warning  'triggerErrorFeedback' is assigned a value but never used    @typescript-eslint/no-unused-vars
+  364:32  warning  Unexpected any. Specify a different type                     @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\ui\GlobalPersonaFAB.tsx
+  22:9   warning  'pathname' is assigned a value but never used          @typescript-eslint/no-unused-vars
+  35:11  warning  'optimalPosition' is assigned a value but never used   @typescript-eslint/no-unused-vars
+  35:28  warning  'updateVisibility' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  43:43  warning  'sessionId' is assigned a value but never used         @typescript-eslint/no-unused-vars
+  44:11  warning  'isAuthenticated' is assigned a value but never used   @typescript-eslint/no-unused-vars
+  44:28  warning  'user' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  77:14  warning  'error' is defined but never used                      @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\ui\ImprovedFeedbackSystem.tsx
+  13:3  warning  'Heart' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\ui\PersonaEducationalAvatar.tsx
+  256:9  warning  'persona' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\components\ui\StandardizedButton.tsx
+  295:7  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\constants\avatars.ts
+  27:5  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  38:3  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  64:3  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\constants\medicalShortcuts.ts
+  320:3   warning  'includeCustom' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  326:49  warning  Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\contexts\AuthContext.tsx
+   27:3   warning  'getRedirectResult' is defined but never used                 @typescript-eslint/no-unused-vars
+   30:43  warning  'googleProvider' is defined but never used                    @typescript-eslint/no-unused-vars
+  145:21  warning  Unexpected any. Specify a different type                      @typescript-eslint/no-explicit-any
+  187:21  warning  Unexpected any. Specify a different type                      @typescript-eslint/no-explicit-any
+  206:14  warning  'error' is defined but never used                             @typescript-eslint/no-unused-vars
+  206:21  warning  Unexpected any. Specify a different type                      @typescript-eslint/no-explicit-any
+  223:21  warning  Unexpected any. Specify a different type                      @typescript-eslint/no-explicit-any
+  253:28  warning  Unexpected any. Specify a different type                      @typescript-eslint/no-explicit-any
+  276:21  warning  Unexpected any. Specify a different type                      @typescript-eslint/no-explicit-any
+  305:28  warning  Unexpected any. Specify a different type                      @typescript-eslint/no-explicit-any
+  318:21  warning  Unexpected any. Specify a different type                      @typescript-eslint/no-explicit-any
+  353:14  warning  'error' is defined but never used                             @typescript-eslint/no-unused-vars
+  353:21  warning  Unexpected any. Specify a different type                      @typescript-eslint/no-explicit-any
+  384:21  warning  Unexpected any. Specify a different type                      @typescript-eslint/no-explicit-any
+  445:35  warning  Unexpected any. Specify a different type                      @typescript-eslint/no-explicit-any
+  446:39  warning  Unexpected any. Specify a different type                      @typescript-eslint/no-explicit-any
+  453:34  warning  Unexpected any. Specify a different type                      @typescript-eslint/no-explicit-any
+  454:34  warning  Unexpected any. Specify a different type                      @typescript-eslint/no-explicit-any
+  481:21  warning  Unexpected any. Specify a different type                      @typescript-eslint/no-explicit-any
+  509:14  warning  'error' is defined but never used                             @typescript-eslint/no-unused-vars
+  509:21  warning  Unexpected any. Specify a different type                      @typescript-eslint/no-explicit-any
+  522:9   warning  'updateUserProfileSecond' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  543:36  warning  Unexpected any. Specify a different type                      @typescript-eslint/no-explicit-any
+  554:83  warning  Unexpected any. Specify a different type                      @typescript-eslint/no-explicit-any
+  558:21  warning  Unexpected any. Specify a different type                      @typescript-eslint/no-explicit-any
+  567:9   warning  'deleteAccountSecond' is assigned a value but never used      @typescript-eslint/no-unused-vars
+  590:21  warning  Unexpected any. Specify a different type                      @typescript-eslint/no-explicit-any
+  640:35  warning  Unexpected any. Specify a different type                      @typescript-eslint/no-explicit-any
+  641:39  warning  Unexpected any. Specify a different type                      @typescript-eslint/no-explicit-any
+  648:34  warning  Unexpected any. Specify a different type                      @typescript-eslint/no-explicit-any
+  649:34  warning  Unexpected any. Specify a different type                      @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\contexts\PersonaContext.tsx
+   53:12  warning  'personaStats' is assigned a value but never used                          @typescript-eslint/no-unused-vars
+  197:7   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  280:11  warning  'startTime' is assigned a value but never used                             @typescript-eslint/no-unused-vars
+  286:9   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  291:7   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  359:7   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  362:7   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  417:7   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  419:7   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  447:7   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\contexts\PersonaContextSimple.tsx
+    3:68  warning  'useMemo' is defined but never used                                        @typescript-eslint/no-unused-vars
+   12:22  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+   82:15  error    Empty block statement                                                      no-empty
+  117:7   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  127:13  error    Empty block statement                                                      no-empty
+  145:13  error    Empty block statement                                                      no-empty
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\contexts\ThemeContext.tsx
+  62:31  warning  'mode' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\hooks\__tests__\useFeedback.test.ts
+   91:16  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  114:16  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  155:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\hooks\useABTest.ts
+    9:43  warning  'useABTestCore' is defined but never used  @typescript-eslint/no-unused-vars
+   48:46  warning  Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+   61:47  warning  Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+   88:34  warning  Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+  106:33  warning  Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+  149:46  warning  Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\hooks\useAnalytics.ts
+  6:66  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\hooks\useAuth.ts
+  188:11  warning  'usage' is assigned a value but never used                                 @typescript-eslint/no-unused-vars
+  279:7   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\hooks\useChat.ts
+    9:38  warning  'adjustResponseTone' is defined but never used                             @typescript-eslint/no-unused-vars
+   92:5   warning  'addMessages' is assigned a value but never used                           @typescript-eslint/no-unused-vars
+   94:5   warning  'removeMessage' is assigned a value but never used                         @typescript-eslint/no-unused-vars
+   95:5   warning  'updateMessage' is assigned a value but never used                         @typescript-eslint/no-unused-vars
+   96:12  warning  'messageStats' is assigned a value but never used                          @typescript-eslint/no-unused-vars
+  107:5   warning  'isOnline' is assigned a value but never used                              @typescript-eslint/no-unused-vars
+  108:5   warning  'retryCount' is assigned a value but never used                            @typescript-eslint/no-unused-vars
+  109:5   warning  'canRetry' is assigned a value but never used                              @typescript-eslint/no-unused-vars
+  110:5   warning  'shouldShowError' is assigned a value but never used                       @typescript-eslint/no-unused-vars
+  114:5   warning  'setOnlineStatus' is assigned a value but never used                       @typescript-eslint/no-unused-vars
+  115:5   warning  'incrementRetry' is assigned a value but never used                        @typescript-eslint/no-unused-vars
+  116:5   warning  'resetRetry' is assigned a value but never used                            @typescript-eslint/no-unused-vars
+  136:5   warning  'enrichMessage' is assigned a value but never used                         @typescript-eslint/no-unused-vars
+  148:5   warning  'shouldUseFallback' is assigned a value but never used                     @typescript-eslint/no-unused-vars
+  355:7   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\hooks\useConversationHistory.ts
+   11:33  warning  'FirestoreMessage' is defined but never used                                                                         @typescript-eslint/no-unused-vars
+  137:6   warning  React Hook useCallback has a missing dependency: 'auth.user?.uid'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  238:49  warning  Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  241:62  warning  Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  242:56  warning  Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  297:6   warning  React Hook useCallback has a missing dependency: 'auth.user?.uid'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\hooks\useFeedback.ts
+  106:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  120:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  230:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  233:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  248:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  311:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  323:26  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\hooks\useFirebaseSync.ts
+   16:3   warning  'FeedbackRepository' is defined but never used  @typescript-eslint/no-unused-vars
+   22:3   warning  'SyncStatus' is defined but never used          @typescript-eslint/no-unused-vars
+   23:3   warning  'DataMigration' is defined but never used       @typescript-eslint/no-unused-vars
+  149:28  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  226:21  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  255:21  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  275:21  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  317:21  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  363:21  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  372:21  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  469:57  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  498:59  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  503:52  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\hooks\useGamification.ts
+   44:44  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+   56:7   warning  'CACHE_DURATION' is assigned a value but never used    @typescript-eslint/no-unused-vars
+   74:10  warning  'lastSync' is assigned a value but never used          @typescript-eslint/no-unused-vars
+  598:13  warning  'completedModules' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  599:47  warning  'newAchievements' is assigned a value but never used   @typescript-eslint/no-unused-vars
+  643:47  warning  'newAchievements' is assigned a value but never used   @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\hooks\useIntelligentRouting.ts
+  37:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  40:26  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\hooks\useIsomorphicAuth.ts
+  38:9   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  39:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  42:25  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  44:34  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  45:36  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  46:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\hooks\useKnowledgeBase.ts
+  33:5  warning  'cacheTimeout' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\hooks\useMultimodal.ts
+  129:11  warning  'sessionId' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  500:19  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  521:14  warning  'error' is defined but never used               @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\hooks\useOnboarding.ts
+  196:107  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\hooks\usePersonaFromURL.ts
+  65:5  warning  'defaultPersona' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\hooks\usePersonaState.ts
+  217:7  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\hooks\usePersonalization.ts
+   14:3   warning  'ExperienceLevel' is defined but never used  @typescript-eslint/no-unused-vars
+  130:56  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  163:30  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  170:73  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\hooks\usePersonasEnhanced.ts
+  140:6   warning  React Hook useCallback has a missing dependency: 'personas'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  208:64  warning  Unexpected any. Specify a different type                                                                       @typescript-eslint/no-explicit-any
+  210:44  warning  'persona' is defined but never used                                                                            @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\hooks\usePredictiveSuggestions.ts
+   71:47  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  257:46  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\hooks\useProgressiveDisclosure.ts
+   33:9   warning  'router' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  209:70  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\hooks\useRemoteConfig.ts
+  150:5   warning  'enableABTesting' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  209:48  warning  Unexpected any. Specify a different type              @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\hooks\useResponsiveScreen.ts
+  207:16  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\hooks\useSafeAuth.ts
+  20:43  warning  'credentials' is defined but never used          @typescript-eslint/no-unused-vars
+  20:57  warning  Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  38:49  warning  'credentials' is defined but never used          @typescript-eslint/no-unused-vars
+  38:62  warning  Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  42:51  warning  'data' is defined but never used                 @typescript-eslint/no-unused-vars
+  42:57  warning  Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  61:15  warning  'authModule' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  77:16  warning  'error' is defined but never used                @typescript-eslint/no-unused-vars
+  96:40  warning  'permission' is defined but never used           @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\hooks\useSafePersonaFromURL.ts
+  56:5  warning  'defaultPersona' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\hooks\useScrollAnimation.ts
+  104:15  warning  'rect' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\hooks\useSentimentAnalysis.ts
+   36:5  warning  'autoAnalyze' is assigned a value but never used                @typescript-eslint/no-unused-vars
+  111:9  warning  'analyzeSentimentDebounced' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\hooks\useSmartSync.ts
+   10:10  warning  'ConflictResolutionManager' is defined but never used                      @typescript-eslint/no-unused-vars
+   42:10  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+   43:11  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+   44:16  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+   56:67  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+   61:97  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  232:21  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  250:21  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  280:11  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  318:18  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  327:21  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  343:9   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  413:42  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  424:48  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  440:98  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\lib\analytics\googleAnalyticsUX.ts
+   31:20   warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+   38:24   warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+   54:16   warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+  232:50   warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+  302:9    warning  'rapidBackNavigation' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  328:9    warning  'timeOnPage' is assigned a value but never used           @typescript-eslint/no-unused-vars
+  358:44   warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+  360:16   warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+  409:131  warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\lib\analytics\uxTracking.ts
+   91:53  warning  Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+   92:18  warning  Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+  339:9   warning  'scrollEvents' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  480:36  warning  Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+  492:30  warning  Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+  507:53  warning  Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+  508:18  warning  Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\lib\firebase\config.ts
+  84:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  93:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\lib\firebase\firestore.ts
+   19:3   warning  'startAfter' is defined but never used                                     @typescript-eslint/no-unused-vars
+   23:3   warning  'enableNetwork' is defined but never used                                  @typescript-eslint/no-unused-vars
+   24:3   warning  'disableNetwork' is defined but never used                                 @typescript-eslint/no-unused-vars
+   25:3   warning  'DocumentSnapshot' is defined but never used                               @typescript-eslint/no-unused-vars
+   26:3   warning  'QuerySnapshot' is defined but never used                                  @typescript-eslint/no-unused-vars
+   27:3   warning  'DocumentReference' is defined but never used                              @typescript-eslint/no-unused-vars
+   35:3   warning  'SessionData' is defined but never used                                    @typescript-eslint/no-unused-vars
+   36:3   warning  'LearningProgress' is defined but never used                               @typescript-eslint/no-unused-vars
+   37:3   warning  'SyncStatus' is defined but never used                                     @typescript-eslint/no-unused-vars
+   38:3   warning  'DataMigration' is defined but never used                                  @typescript-eslint/no-unused-vars
+   42:3   warning  'QueryFilters' is defined but never used                                   @typescript-eslint/no-unused-vars
+  139:21  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  177:21  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  213:21  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  245:21  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  272:21  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  326:21  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  374:21  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  414:21  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  441:21  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  493:21  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  533:21  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  574:21  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  595:23  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  629:25  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  645:21  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  664:50  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  667:33  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  675:28  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  714:7   warning  'WriteDebouncer' is defined but never used                                 @typescript-eslint/no-unused-vars
+  729:9   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  862:25  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  878:21  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  918:18  warning  'error' is defined but never used                                          @typescript-eslint/no-unused-vars
+  935:21  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  979:7   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  983:7   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\lib\firebase\firestoreCache.ts
+   23:42  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  138:7   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  142:7   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  179:7   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  183:7   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  201:7   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  205:7   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  228:22  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  252:7   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  299:9   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  387:34  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\lib\firebase\sync\conflictResolution.ts
+    7:10  warning  'Timestamp' is defined but never used     @typescript-eslint/no-unused-vars
+   49:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   80:45  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   81:57  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  111:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  113:5   warning  'context' is defined but never used       @typescript-eslint/no-unused-vars
+  128:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  145:47  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  154:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  163:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  176:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  189:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  225:15  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  239:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  241:5   warning  'context' is defined but never used       @typescript-eslint/no-unused-vars
+  250:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  267:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  269:5   warning  'context' is defined but never used       @typescript-eslint/no-unused-vars
+  297:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  327:55  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  353:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  390:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  392:5   warning  'context' is defined but never used       @typescript-eslint/no-unused-vars
+  445:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  447:5   warning  'context' is defined but never used       @typescript-eslint/no-unused-vars
+  466:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  468:5   warning  'context' is defined but never used       @typescript-eslint/no-unused-vars
+  491:72  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  498:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\lib\firebase\sync\smartSyncManager.ts
+    9:3    warning  'ConflictResolutionResult' is defined but never used                       @typescript-eslint/no-unused-vars
+   15:3    warning  'RealtimeSubscriptions' is defined but never used                          @typescript-eslint/no-unused-vars
+   20:3    warning  'SyncStatus' is defined but never used                                     @typescript-eslint/no-unused-vars
+   31:9    warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  152:11   warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  196:9    warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  205:11   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  332:16   warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  376:19   warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  492:46   warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  497:44   warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  502:45   warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  508:42   warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  516:30   warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  542:5    warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  609:109  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\lib\firebase\types.ts
+  258:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  294:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  298:34  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  302:49  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  309:47  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\lib\gamification\achievementSystem.ts
+   22:15  warning  'UserLevel' is defined but never used     @typescript-eslint/no-unused-vars
+  562:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\lib\iconValidation.ts
+   26:42  warning  Unexpected any. Specify a different type              @typescript-eslint/no-explicit-any
+   37:12  warning  'error' is defined but never used                     @typescript-eslint/no-unused-vars
+   93:28  warning  Unexpected any. Specify a different type              @typescript-eslint/no-explicit-any
+  101:3   warning  'backgroundColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\lib\observability\cloudOperations.ts
+   12:29  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+   37:82  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+   54:7   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+   66:52  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+   70:51  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+   74:54  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+   78:52  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+   82:55  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  174:53  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\lib\optimizations\api-optimizations.ts
+   80:28  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+   98:20  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  115:9   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  153:60  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  208:7   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  232:9   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  254:28  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  383:30  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  389:22  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  403:21  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  438:41  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\lib\optimizations\index.ts
+   14:33  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+   23:26  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+   94:45  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+   94:55  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  126:46  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  126:56  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  133:7   warning  'lastCallTime' is assigned a value but never used                          @typescript-eslint/no-unused-vars
+  178:11  warning  'now' is assigned a value but never used                                   @typescript-eslint/no-unused-vars
+  210:46  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  210:56  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  403:9   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  434:7   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  441:38  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  442:34  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  572:33  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  631:49  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  656:34  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\lib\optimizations\react-optimizations.ts
+   28:38  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+   30:3   warning  'fallback' is defined but never used                                       @typescript-eslint/no-unused-vars
+   76:22  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  110:20  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  150:5   warning  'compress' is assigned a value but never used                              @typescript-eslint/no-unused-vars
+  160:7   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  175:7   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  233:9   warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  396:8   warning  'React' is defined but never used                                          @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\services\__tests__\api.test.ts
+   14:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   35:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   47:69  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   60:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   80:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  101:69  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  119:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  134:69  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  144:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  161:69  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  180:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  205:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  219:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  231:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\services\api.ts
+    7:22  error    Missing return type on function                                            @typescript-eslint/explicit-function-return-type
+   11:5   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  100:20  error    Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  293:9   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  301:7   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  319:8   error    Missing return type on function                                            @typescript-eslint/explicit-function-return-type
+  363:41  error    Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  366:7   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  385:7   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  393:7   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  411:7   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\services\astraClient.ts
+    6:10  warning  'SentimentResult' is defined but never used  @typescript-eslint/no-unused-vars
+  251:31  warning  'query' is defined but never used            @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\services\auth.ts
+   25:20  warning  'FEATURES' is defined but never used          @typescript-eslint/no-unused-vars
+   33:3   warning  'AUTH_EVENTS' is defined but never used       @typescript-eslint/no-unused-vars
+  224:56  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  246:25  warning  'options' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\services\fallbackSystem.ts
+    7:10  warning  'AstraResponse' is defined but never used                      @typescript-eslint/no-unused-vars
+   29:39  warning  Unexpected any. Specify a different type                       @typescript-eslint/no-explicit-any
+   58:7   warning  'useLocalKnowledge' is assigned a value but never used         @typescript-eslint/no-unused-vars
+   59:7   warning  'includeEmergencyContacts' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   60:7   warning  'adaptToSentiment' is assigned a value but never used          @typescript-eslint/no-unused-vars
+   61:7   warning  'maxRetries' is assigned a value but never used                @typescript-eslint/no-unused-vars
+   62:7   warning  'timeoutMs' is assigned a value but never used                 @typescript-eslint/no-unused-vars
+   91:5   warning  'options' is assigned a value but never used                   @typescript-eslint/no-unused-vars
+   95:48  warning  Unexpected any. Specify a different type                       @typescript-eslint/no-explicit-any
+  156:5   warning  'options' is assigned a value but never used                   @typescript-eslint/no-unused-vars
+  179:5   warning  'options' is assigned a value but never used                   @typescript-eslint/no-unused-vars
+  202:5   warning  'options' is assigned a value but never used                   @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\services\firebaseLeaderboard.ts
+   18:3   warning  'increment' is defined but never used             @typescript-eslint/no-unused-vars
+   40:10  warning  'isFirestoreAvailable' is defined but never used  @typescript-eslint/no-unused-vars
+  141:21  warning  Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+  188:21  warning  Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+  255:21  warning  Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+  298:21  warning  Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+  434:24  warning  Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+  471:21  warning  Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+  498:21  warning  Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\services\gamificationAPI.ts
+   13:3   warning  'ModuleProgress' is defined but never used  @typescript-eslint/no-unused-vars
+  131:16  warning  Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  394:16  warning  Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  488:14  warning  'error' is defined but never used           @typescript-eslint/no-unused-vars
+  499:34  warning  Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\services\hybridCache.ts
+    8:26  warning  'FirestoreCacheUtils' is defined but never used                            @typescript-eslint/no-unused-vars
+   63:58  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  118:7   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  132:7   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  148:9   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  155:5   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  195:13  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  201:7   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  205:7   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  235:7   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  239:7   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  297:11  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  306:5   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  386:7   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  427:9   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  436:7   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  470:7   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  504:20  warning  'parseError' is defined but never used                                     @typescript-eslint/no-unused-vars
+  534:14  warning  'error' is defined but never used                                          @typescript-eslint/no-unused-vars
+  563:45  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  601:13  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\services\intelligentRouting.ts
+  127:26  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  257:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\services\redisCache.ts
+    8:34  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+   41:17  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+   75:17  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  178:29  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  242:11  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  264:15  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  274:58  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  285:15  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  303:26  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\services\sentimentAnalysis.ts
+   77:17  warning  'category' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  235:3   warning  'sentiment' is defined but never used          @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\test\astra-integration-test.js
+  119:55  warning  'options' is assigned a value but never used                               no-unused-vars
+  214:7   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  225:7   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  239:7   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  502:5   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  503:5   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  504:5   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  505:5   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  506:5   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  507:5   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  514:11  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  524:11  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  526:13  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  534:5   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  547:7   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  552:5   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  560:7   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\test\astra-integration-test.ts
+   12:25  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+   26:12  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+   53:65  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+   57:7   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+   68:7   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+   82:7   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  363:5   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  364:5   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  365:5   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  366:5   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  367:5   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  368:5   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  375:11  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  386:11  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  388:13  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  397:5   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\test\fallback-system-test.js
+   48:5  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+   55:9  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+   58:9  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+   61:7  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+   74:5  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+   75:5  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+   76:5  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+   89:5  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+   90:5  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+   91:5  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  104:5  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  105:5  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  119:5  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  120:5  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  132:5  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  133:5  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  146:5  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  147:5  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  162:5  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  163:5  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  172:5  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  173:5  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  174:5  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  187:5  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  188:5  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  206:5  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  207:5  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  208:5  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  215:3  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  217:3  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  218:3  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  219:3  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  222:5  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  224:5  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\tests\accessibility.test.ts
+  339:15  warning  'requiredRatio' is assigned a value but never used                         @typescript-eslint/no-unused-vars
+  465:7   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  466:7   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  467:7   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  470:9   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  475:11  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  477:13  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\tests\e2e\persona-flows.test.tsx
+    7:26  warning  'fireEvent' is defined but never used                            @typescript-eslint/no-unused-vars
+  123:7   warning  'MockPersonaSelectorUnified' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  123:44  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\tests\educational\clinicalCasesQA.test.ts
+   11:10  warning  'ClinicalCase' is defined but never used         @typescript-eslint/no-unused-vars
+   11:24  warning  'CaseStep' is defined but never used             @typescript-eslint/no-unused-vars
+   11:34  warning  'StepInteraction' is defined but never used      @typescript-eslint/no-unused-vars
+  264:13  warning  'adultCases' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\tests\educational\interactiveComponentsQA.test.ts
+   9:46  warning  'afterEach' is defined but never used             @typescript-eslint/no-unused-vars
+  10:10  warning  'render' is defined but never used                @typescript-eslint/no-unused-vars
+  10:18  warning  'screen' is defined but never used                @typescript-eslint/no-unused-vars
+  10:26  warning  'fireEvent' is defined but never used             @typescript-eslint/no-unused-vars
+  10:37  warning  'waitFor' is defined but never used               @typescript-eslint/no-unused-vars
+  22:7   warning  'qaFramework' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  23:7   warning  'user' is assigned a value but never used         @typescript-eslint/no-unused-vars
+  23:13  warning  Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\types\certification.ts
+  382:45  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  382:87  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  403:50  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  403:95  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\types\checklist.ts
+  586:9  warning  'completedStages' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\types\clinicalCases.ts
+  161:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  174:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  270:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\types\emergencyShortcuts.ts
+  204:64  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\types\gamification.ts
+  241:11  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\types\personalization.ts
+  91:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  92:46  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  93:36  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\types\personas.ts
+  205:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  213:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\utils\abTesting.ts
+   65:28   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   66:29   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   67:30   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  130:14   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  136:29   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  379:16   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  417:117  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  588:30   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  589:31   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  678:26   warning  'userId' is defined but never used        @typescript-eslint/no-unused-vars
+  678:42   warning  'sessionId' is defined but never used     @typescript-eslint/no-unused-vars
+  704:40   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  704:46   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\utils\accessibility\contrastRatioChecker.ts
+  260:41  warning  'passes' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\utils\accessibility\headingHierarchyAudit.ts
+  433:11  warning  'totalIssues' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\utils\apiCache.ts
+   17:46  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+   25:45  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+   33:39  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+   76:32  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+   84:15  warning  'hybridKey' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  114:43  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  115:11  warning  'key' is assigned a value but never used        @typescript-eslint/no-unused-vars
+  136:41  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  171:52  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  172:11  warning  'key' is assigned a value but never used        @typescript-eslint/no-unused-vars
+  214:32  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  236:43  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  317:45  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  331:12  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  386:14  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  433:12  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  434:25  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  435:15  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  436:20  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  450:53  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  452:58  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\utils\certificationSecurity.ts
+   14:23  warning  'CertificateTemplate' is defined but never used  @typescript-eslint/no-unused-vars
+  532:33  warning  'certificate' is defined but never used          @typescript-eslint/no-unused-vars
+  575:34  warning  'certificate' is defined but never used          @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\utils\consistencyValidators.ts
+     9:24  warning  'CaseStep' is defined but never used                                       @typescript-eslint/no-unused-vars
+     9:34  warning  'StepResult' is defined but never used                                     @typescript-eslint/no-unused-vars
+   309:46  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+   309:61  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+   322:42  warning  'content' is defined but never used                                        @typescript-eslint/no-unused-vars
+   775:17  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+   799:52  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+   815:16  warning  'error' is defined but never used                                          @typescript-eslint/no-unused-vars
+   816:9   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+   823:56  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+   829:15  error    Unreachable code                                                           no-unreachable
+   838:49  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+   867:49  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+   893:65  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+   922:51  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+   973:47  warning  'references' is defined but never used                                     @typescript-eslint/no-unused-vars
+   973:59  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  1071:18  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  1147:49  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  1174:35  warning  'componentData' is defined but never used                                  @typescript-eslint/no-unused-vars
+  1174:50  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  1183:40  warning  'componentData' is defined but never used                                  @typescript-eslint/no-unused-vars
+  1183:55  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  1191:39  warning  'componentData' is defined but never used                                  @typescript-eslint/no-unused-vars
+  1191:54  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  1200:41  warning  'componentData' is defined but never used                                  @typescript-eslint/no-unused-vars
+  1200:56  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  1209:34  warning  'inconsistencies' is defined but never used                                @typescript-eslint/no-unused-vars
+  1209:51  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  1304:33  warning  'validationResults' is defined but never used                              @typescript-eslint/no-unused-vars
+  1304:52  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  1313:35  warning  'violations' is defined but never used                                     @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\utils\continuousImprovementSystem.ts
+    9:10  warning  'ClinicalCase' is defined but never used                                   @typescript-eslint/no-unused-vars
+    9:24  warning  'CaseSession' is defined but never used                                    @typescript-eslint/no-unused-vars
+    9:37  warning  'StepResult' is defined but never used                                     @typescript-eslint/no-unused-vars
+   10:10  warning  'LearningAnalytics' is defined but never used                              @typescript-eslint/no-unused-vars
+  185:20  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  288:19  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  460:66  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  474:65  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  493:11  warning  'recommendations' is assigned a value but never used                       @typescript-eslint/no-unused-vars
+  518:5   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  534:5   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  575:11  warning  'implementationPlan' is assigned a value but never used                    @typescript-eslint/no-unused-vars
+  581:5   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  584:90  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  605:72  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  629:54  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  661:53  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  683:39  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  683:45  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  696:44  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  707:31  warning  'timeframe' is defined but never used                                      @typescript-eslint/no-unused-vars
+  707:43  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  708:35  warning  'feedback' is defined but never used                                       @typescript-eslint/no-unused-vars
+  708:62  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  709:25  warning  'feedback' is defined but never used                                       @typescript-eslint/no-unused-vars
+  709:52  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  710:27  warning  'feedback' is defined but never used                                       @typescript-eslint/no-unused-vars
+  710:54  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  711:31  warning  'textFeedback' is defined but never used                                   @typescript-eslint/no-unused-vars
+  711:56  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  712:28  warning  'textFeedback' is defined but never used                                   @typescript-eslint/no-unused-vars
+  712:53  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  713:34  warning  'feedback' is defined but never used                                       @typescript-eslint/no-unused-vars
+  713:61  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  714:31  warning  'feedback' is defined but never used                                       @typescript-eslint/no-unused-vars
+  714:58  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  715:34  warning  'feedback' is defined but never used                                       @typescript-eslint/no-unused-vars
+  715:61  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  716:32  warning  'feedback' is defined but never used                                       @typescript-eslint/no-unused-vars
+  716:59  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  717:44  warning  'feedback' is defined but never used                                       @typescript-eslint/no-unused-vars
+  717:71  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  718:54  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  718:62  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  719:38  warning  'issues' is defined but never used                                         @typescript-eslint/no-unused-vars
+  719:46  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  719:54  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  720:44  warning  'opportunities' is defined but never used                                  @typescript-eslint/no-unused-vars
+  720:59  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  720:67  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  721:37  warning  'issues' is defined but never used                                         @typescript-eslint/no-unused-vars
+  721:45  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  721:52  warning  'feedback' is defined but never used                                       @typescript-eslint/no-unused-vars
+  722:32  warning  'feedback' is defined but never used                                       @typescript-eslint/no-unused-vars
+  724:35  warning  'interactions' is defined but never used                                   @typescript-eslint/no-unused-vars
+  727:32  warning  'config' is defined but never used                                         @typescript-eslint/no-unused-vars
+  728:29  warning  'testId' is defined but never used                                         @typescript-eslint/no-unused-vars
+  728:46  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  729:38  warning  'feedback' is defined but never used                                       @typescript-eslint/no-unused-vars
+  729:48  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  729:53  warning  'variants' is defined but never used                                       @typescript-eslint/no-unused-vars
+  729:63  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  729:69  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  730:37  warning  'feedback' is defined but never used                                       @typescript-eslint/no-unused-vars
+  730:47  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  730:52  warning  'variants' is defined but never used                                       @typescript-eslint/no-unused-vars
+  730:62  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  730:68  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  731:27  warning  'variantResults' is defined but never used                                 @typescript-eslint/no-unused-vars
+  731:43  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  731:49  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  732:34  warning  'feedback' is defined but never used                                       @typescript-eslint/no-unused-vars
+  732:44  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  732:49  warning  'results' is defined but never used                                        @typescript-eslint/no-unused-vars
+  732:58  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  732:64  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  735:36  warning  'recommendation' is defined but never used                                 @typescript-eslint/no-unused-vars
+  735:80  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  736:33  warning  'recommendation' is defined but never used                                 @typescript-eslint/no-unused-vars
+  737:30  warning  'recommendation' is defined but never used                                 @typescript-eslint/no-unused-vars
+  737:73  warning  'timeframe' is defined but never used                                      @typescript-eslint/no-unused-vars
+  737:84  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  737:90  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  738:29  warning  'recommendation' is defined but never used                                 @typescript-eslint/no-unused-vars
+  738:72  warning  'timeframe' is defined but never used                                      @typescript-eslint/no-unused-vars
+  738:83  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  738:89  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  742:26  warning  'metric' is defined but never used                                         @typescript-eslint/no-unused-vars
+  742:42  warning  'recommendation' is defined but never used                                 @typescript-eslint/no-unused-vars
+  746:32  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\utils\cryptoUtils.ts
+   35:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  147:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\utils\doseCalculations.ts
+  14:3  warning  'TREATMENT_DURATION' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\utils\dx\uxInstrumentation.ts
+   18:25  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+   33:28  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  132:39  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  134:7   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  269:53  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  270:31  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  272:37  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  272:48  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  272:68  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  311:40  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\utils\educationalAnalytics.ts
+    9:10  warning  'ClinicalCase' is defined but never used                                   @typescript-eslint/no-unused-vars
+  107:9   warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  406:5   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  427:55  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  428:35  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  545:38  warning  'event' is defined but never used                                          @typescript-eslint/no-unused-vars
+  551:36  warning  'session' is defined but never used                                        @typescript-eslint/no-unused-vars
+  552:44  warning  'session' is defined but never used                                        @typescript-eslint/no-unused-vars
+  553:34  warning  'metrics' is defined but never used                                        @typescript-eslint/no-unused-vars
+  553:43  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  554:27  warning  'result' is defined but never used                                         @typescript-eslint/no-unused-vars
+  555:42  warning  'result' is defined but never used                                         @typescript-eslint/no-unused-vars
+  556:33  warning  'result' is defined but never used                                         @typescript-eslint/no-unused-vars
+  557:27  warning  'duration' is defined but never used                                       @typescript-eslint/no-unused-vars
+  563:31  warning  'alert' is defined but never used                                          @typescript-eslint/no-unused-vars
+  564:31  warning  'category' is defined but never used                                       @typescript-eslint/no-unused-vars
+  564:49  warning  'severity' is defined but never used                                       @typescript-eslint/no-unused-vars
+  565:31  warning  'category' is defined but never used                                       @typescript-eslint/no-unused-vars
+  566:30  warning  'category' is defined but never used                                       @typescript-eslint/no-unused-vars
+  569:33  warning  'analytics' is defined but never used                                      @typescript-eslint/no-unused-vars
+  570:35  warning  'analytics' is defined but never used                                      @typescript-eslint/no-unused-vars
+  571:37  warning  'analytics' is defined but never used                                      @typescript-eslint/no-unused-vars
+  572:33  warning  'analytics' is defined but never used                                      @typescript-eslint/no-unused-vars
+  573:35  warning  'analytics' is defined but never used                                      @typescript-eslint/no-unused-vars
+  574:35  warning  'analytics' is defined but never used                                      @typescript-eslint/no-unused-vars
+  575:44  warning  'analytics' is defined but never used                                      @typescript-eslint/no-unused-vars
+  576:35  warning  'analytics' is defined but never used                                      @typescript-eslint/no-unused-vars
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\utils\educationalQAFramework.ts
+   12:24  warning  'CaseStep' is defined but never used      @typescript-eslint/no-unused-vars
+   12:34  warning  'StepResult' is defined but never used    @typescript-eslint/no-unused-vars
+   13:45  warning  'SafetyAlert' is defined but never used   @typescript-eslint/no-unused-vars
+  107:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  452:40  warning  'clinicalCase' is defined but never used  @typescript-eslint/no-unused-vars
+  453:38  warning  'clinicalCase' is defined but never used  @typescript-eslint/no-unused-vars
+  454:32  warning  'clinicalCase' is defined but never used  @typescript-eslint/no-unused-vars
+  455:46  warning  'clinicalCase' is defined but never used  @typescript-eslint/no-unused-vars
+  456:42  warning  'accuracy' is defined but never used      @typescript-eslint/no-unused-vars
+  456:52  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  457:37  warning  'clinicalCase' is defined but never used  @typescript-eslint/no-unused-vars
+  458:33  warning  'clinicalCase' is defined but never used  @typescript-eslint/no-unused-vars
+  459:41  warning  'clinicalCase' is defined but never used  @typescript-eslint/no-unused-vars
+  460:33  warning  'clinicalCase' is defined but never used  @typescript-eslint/no-unused-vars
+  461:37  warning  'educational' is defined but never used   @typescript-eslint/no-unused-vars
+  461:50  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  462:31  warning  'clinicalCase' is defined but never used  @typescript-eslint/no-unused-vars
+  462:59  warning  'result' is defined but never used        @typescript-eslint/no-unused-vars
+  463:38  warning  'result' is defined but never used        @typescript-eslint/no-unused-vars
+  464:34  warning  'weight' is defined but never used        @typescript-eslint/no-unused-vars
+  465:24  warning  'expected' is defined but never used      @typescript-eslint/no-unused-vars
+  465:50  warning  'calculated' is defined but never used    @typescript-eslint/no-unused-vars
+  466:37  warning  'result' is defined but never used        @typescript-eslint/no-unused-vars
+  466:64  warning  'validation' is defined but never used    @typescript-eslint/no-unused-vars
+  471:35  warning  'message' is defined but never used       @typescript-eslint/no-unused-vars
+  472:32  warning  'message' is defined but never used       @typescript-eslint/no-unused-vars
+  479:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  484:18  warning  'component' is defined but never used     @typescript-eslint/no-unused-vars
+  484:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  489:18  warning  'component' is defined but never used     @typescript-eslint/no-unused-vars
+  489:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  494:18  warning  'component' is defined but never used     @typescript-eslint/no-unused-vars
+  494:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  499:18  warning  'component' is defined but never used     @typescript-eslint/no-unused-vars
+  499:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  504:18  warning  'component' is defined but never used     @typescript-eslint/no-unused-vars
+  504:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  509:18  warning  'component' is defined but never used     @typescript-eslint/no-unused-vars
+  509:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  514:18  warning  'component' is defined but never used     @typescript-eslint/no-unused-vars
+  514:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\utils\educationalSecurity.ts
+   12:26   warning  'CalculationResult' is defined but never used  @typescript-eslint/no-unused-vars
+   13:10   warning  'ClinicalCase' is defined but never used       @typescript-eslint/no-unused-vars
+   14:10   warning  'Certificate' is defined but never used        @typescript-eslint/no-unused-vars
+   26:13   warning  Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+   27:14   warning  Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+   35:19   warning  Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+   69:15   warning  Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+  281:50   warning  Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+  291:76   warning  Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+  295:12   warning  'error' is defined but never used              @typescript-eslint/no-unused-vars
+  303:41   warning  Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+  303:47   warning  Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+  406:33   warning  Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+  406:39   warning  Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+  536:56   warning  Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+  536:107  warning  Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+  631:34   warning  Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\utils\featureFlags.ts
+  173:9  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  179:9  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  185:9  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\utils\lgpdCompliance.ts
+  234:5   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  288:5   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  301:11  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  307:7   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  356:30  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  356:64  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  360:22  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  385:38  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  385:72  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  438:58  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  440:21  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  505:11  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  512:11  warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  536:32  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  546:33  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  546:39  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  564:31  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\utils\medicalAnalytics.ts
+   27:11  warning  'MedicalUXMetrics' is defined but never used         @typescript-eslint/no-unused-vars
+   86:24  warning  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+  172:35  warning  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+  234:69  warning  'source' is defined but never used                   @typescript-eslint/no-unused-vars
+  241:37  warning  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+  286:11  warning  'completionRate' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  374:52  warning  'event' is defined but never used                    @typescript-eslint/no-unused-vars
+  422:40  warning  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+  444:30  warning  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+  452:40  warning  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+  456:55  warning  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+  464:23  warning  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\utils\pwa\pwaValidator.ts
+   12:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   58:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   97:63  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  107:62  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  291:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  400:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  401:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\utils\qaTestRunner.ts
+   13:10  warning  'ClinicalCase' is defined but never used                                   @typescript-eslint/no-unused-vars
+  165:7   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  178:5   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  225:11  warning  'allPassed' is assigned a value but never used                             @typescript-eslint/no-unused-vars
+  244:42  warning  'componentIds' is defined but never used                                   @typescript-eslint/no-unused-vars
+  286:37  warning  'componentIds' is defined but never used                                   @typescript-eslint/no-unused-vars
+  302:39  warning  'componentIds' is defined but never used                                   @typescript-eslint/no-unused-vars
+  412:5   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  413:5   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  420:5   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  427:5   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  503:39  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  507:22  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  541:28  warning  'results' is defined but never used                                        @typescript-eslint/no-unused-vars
+  541:60  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  552:65  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  553:22  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  588:47  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  598:50  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\utils\sanitization.ts
+  239:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  239:41  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  248:24  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  248:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  254:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\utils\securityMonitoring.ts
+   15:10  warning  'FraudAlert' is defined but never used                                     @typescript-eslint/no-unused-vars
+  284:32  warning  'component' is defined but never used                                      @typescript-eslint/no-unused-vars
+  539:28  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  555:30  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  592:5   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  635:5   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  640:5   warning  Avoid logging template literals that might contain sensitive medical data  no-restricted-syntax
+  837:27  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\utils\securityUtils.ts
+  115:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  117:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Ana\Meu Drive\Site roteiro de dispensação\apps\frontend-nextjs\src\utils\typography\fluidTypographyAuditor.ts
+   84:16  warning  'error' is defined but never used           @typescript-eslint/no-unused-vars
+  368:11  warning  'infos' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  424:63  warning  'ratio' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+✖ 1355 problems (40 errors, 1315 warnings)
+

@@ -87,9 +87,9 @@ class SupabaseVectorStore:
                 supabase_key=api_key
             )
             
-            # Testar conexão
-            result = self.client.table("test").select("*").limit(1).execute()
-            
+            # Testar conexão com a tabela correta
+            result = self.client.table(self.table_name).select("id").limit(1).execute()
+
             logger.info(f"[OK] Conectado ao Supabase - Projeto: {self.config.SUPABASE_URL}")
             return True
             
@@ -203,70 +203,75 @@ CREATE TABLE IF NOT EXISTS {self.metadata_table} (
             return self.local_store.add_document(document)
     
     def search_similar(
-        self, 
+        self,
         query_embedding: np.ndarray,
         top_k: int = 5,
         min_score: float = 0.0
     ) -> List[Tuple[VectorDocument, float]]:
-        """Busca documentos similares usando pgvector cosine similarity"""
+        """Busca documentos similares usando pgvector cosine similarity via RPC function"""
         if self.use_local:
             return self.local_store.search_similar(query_embedding, top_k, min_score)
-        
+
         try:
             # Cache key para evitar queries repetidas
             embedding_hash = hashlib.sha256(query_embedding.tobytes()).hexdigest()[:16]
             cache_key = f"{embedding_hash}_{top_k}_{min_score}"
-            
+
             # Verificar cache primeiro
             cached_result = self._get_cached_search(cache_key)
             if cached_result:
+                logger.debug(f"Cache hit - retornando {len(cached_result)} resultados")
                 return cached_result
-            
-            # Converter embedding para formato pgvector
-            embedding_str = '[' + ','.join(map(str, query_embedding.tolist())) + ']'
-            
-            # Query usando pgvector similarity search
-            # Nota: Esta query usa a sintaxe específica do pgvector
-            query = f"""
-                SELECT id, text, chunk_type, priority, source_file, metadata,
-                       (embedding <=> '{embedding_str}') as distance,
-                       (1 - (embedding <=> '{embedding_str}')) as similarity
-                FROM {self.table_name}
-                WHERE (1 - (embedding <=> '{embedding_str}')) >= {min_score}
-                ORDER BY embedding <=> '{embedding_str}'
-                LIMIT {top_k}
-            """
-            
-            result = self.client.rpc('exec_sql', {'query': query}).execute()
-            
+
+            # Converter numpy array para lista Python para JSON serialization
+            embedding_list = query_embedding.tolist()
+
+            # Chamar função RPC match_medical_embeddings definida no SQL schema
+            # Parâmetros conforme assinatura da função (setup_supabase_rpc.sql)
+            result = self.client.rpc(
+                'match_medical_embeddings',
+                {
+                    'query_embedding': embedding_list,
+                    'match_threshold': min_score,
+                    'match_count': top_k
+                }
+            ).execute()
+
+            logger.info(f"RPC match_medical_embeddings executado - recebidos {len(result.data) if result.data else 0} resultados")
+
             if result.data and len(result.data) > 0:
                 documents = []
-                
+
+                # Parsing conforme esquema de retorno da função RPC match_medical_embeddings
                 for row in result.data:
                     doc = VectorDocument(
-                        id=row['id'],
-                        text=row['text'],
+                        id=row['id'],  # RPC match_medical_embeddings retorna 'id'
+                        text=row['text'],  # RPC match_medical_embeddings retorna 'text'
                         embedding=None,  # Não retornar embedding para economizar banda
                         metadata=row.get('metadata', {}),
-                        chunk_type=row['chunk_type'],
-                        priority=row['priority'],
+                        chunk_type=row.get('chunk_type'),
+                        priority=row.get('priority'),
                         source_file=row.get('source_file')
                     )
-                    
+
                     similarity_score = float(row['similarity'])
                     documents.append((doc, similarity_score))
-                
+
+                    logger.debug(f"Documento encontrado: {doc.id[:30]}... (similarity: {similarity_score:.3f})")
+
                 # Cachear resultado
                 self._cache_search_result(cache_key, documents)
-                
+
+                logger.info(f"Busca bem-sucedida: {len(documents)} documentos com similarity >= {min_score}")
                 return documents
             else:
-                logger.warning("Nenhum resultado encontrado na busca vetorial")
+                logger.warning(f"Nenhum resultado encontrado na busca vetorial (threshold: {min_score}, max: {top_k})")
                 return []
-            
+
         except Exception as e:
-            logger.error(f"Erro na busca Supabase: {e}")
+            logger.error(f"Erro na busca Supabase RPC: {e}", exc_info=True)
             # Fallback para busca local
+            logger.info("Usando fallback para busca local")
             return self.local_store.search_similar(query_embedding, top_k, min_score)
     
     def get_document(self, doc_id: str) -> Optional[VectorDocument]:

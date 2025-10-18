@@ -21,10 +21,10 @@ class IntelligentFallbackSystem:
     """
     
     def __init__(self):
-        self.fallback_mode = True
         self.available_services = self._detect_available_services()
+        self.fallback_mode = self._determine_fallback_mode()
         self.startup_time = datetime.now()
-        logger.info("🔄 Sistema de Fallback Inteligente inicializado")
+        logger.info(f"🔄 Sistema de Fallback Inteligente inicializado - Mode: {'fallback' if self.fallback_mode else 'normal'}")
     
     def _detect_available_services(self) -> Dict[str, bool]:
         """Detecta quais serviços estão disponíveis"""
@@ -35,8 +35,7 @@ class IntelligentFallbackSystem:
             'qa_framework': False,
             'security_middleware': False,
             'metrics': False,
-            'embeddings': False,
-            'redis': False
+            'embeddings': False
         }
         
         # Testar Cache
@@ -62,7 +61,13 @@ class IntelligentFallbackSystem:
             from services.ai.ai_provider_manager import get_ai_health_status
             # Teste real de conexão
             health_status = get_ai_health_status()
-            services['ai_provider'] = health_status.get('status') == 'healthy'
+            overall_status = health_status.get('overall_status', 'no_providers')
+            models_available = health_status.get('configuration', {}).get('models_available', 0)
+
+            # Considera saudável se status é 'healthy' ou 'degraded' E tem modelos disponíveis
+            services['ai_provider'] = overall_status in ['healthy', 'degraded'] and models_available > 0
+
+            logger.info(f"AI Provider status: {overall_status}, models: {models_available}")
         except ImportError:
             # Serviço não disponível - continuar sem ele
             services['ai_provider'] = False
@@ -99,25 +104,43 @@ class IntelligentFallbackSystem:
         # Testar Embeddings
         services['embeddings'] = os.getenv('EMBEDDINGS_ENABLED', 'false').lower() == 'true'
         
-        # Testar Redis
-        services['redis'] = os.getenv('REDIS_ENABLED', 'false').lower() == 'true'
+        # Redis removed - no longer used
         
         logger.info(f"[SEARCH] Serviços detectados: {services}")
         return services
-    
+
+    def _determine_fallback_mode(self) -> bool:
+        """Determina se deve estar em fallback mode baseado no ambiente e serviços"""
+        environment = os.getenv('ENVIRONMENT', 'development').lower()
+
+        # Em produção/staging: só usar fallback se serviços críticos falharem
+        if environment in ['production', 'staging', 'homologacao']:
+            ai_provider_available = self.available_services.get('ai_provider', False)
+            if ai_provider_available:
+                logger.info("✅ Produção/Staging: AI provider OK - Modo normal ativado")
+                return False
+            else:
+                logger.warning("⚠️ Produção/Staging: AI provider falhou - Ativando fallback")
+                return True
+
+        # Em desenvolvimento: sempre permitir fallback
+        else:
+            logger.info("🔧 Desenvolvimento: Fallback mode ativado")
+            return True
+
     def get_system_status(self) -> Dict[str, Any]:
         """Retorna status completo do sistema"""
         uptime = (datetime.now() - self.startup_time).total_seconds()
         
         return {
-            "mode": "intelligent_fallback",
+            "mode": "intelligent_fallback" if self.fallback_mode else "normal",
             "uptime_seconds": int(uptime),
             "services": self.available_services,
             "environment": os.getenv('ENVIRONMENT', 'development'),
             "feature_flags": {
                 "embeddings_enabled": os.getenv('EMBEDDINGS_ENABLED', 'false').lower() == 'true',
                 "advanced_features": os.getenv('ADVANCED_FEATURES', 'false').lower() == 'true',
-                "rag_available": os.getenv('RAG_AVAILABLE', 'false').lower() == 'true',
+                "rag_enabled": os.getenv('RAG_ENABLED', 'false').lower() == 'true',
                 "advanced_cache": os.getenv('ADVANCED_CACHE', 'false').lower() == 'true'
             },
             "api_version": "v1",

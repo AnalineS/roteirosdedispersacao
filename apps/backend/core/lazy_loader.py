@@ -22,7 +22,7 @@ class LazyLoader:
         self._feature_flags = {
             'EMBEDDINGS_ENABLED': os.getenv('EMBEDDINGS_ENABLED', 'false').lower() == 'true',
             'ADVANCED_FEATURES': os.getenv('ADVANCED_FEATURES', 'false').lower() == 'true',
-            'RAG_AVAILABLE': os.getenv('RAG_AVAILABLE', 'false').lower() == 'true',
+            'RAG_ENABLED': os.getenv('RAG_ENABLED', 'false').lower() == 'true',
             'ADVANCED_CACHE': os.getenv('ADVANCED_CACHE', 'false').lower() == 'true',
         }
         logger.info(f"LazyLoader inicializado com flags: {self._feature_flags}")
@@ -56,10 +56,10 @@ class LazyLoader:
     @lru_cache(maxsize=32)
     def load_chromadb(self) -> Optional[Any]:
         """
-        Carrega ChromaDB apenas se RAG_AVAILABLE=true
+        Carrega ChromaDB apenas se RAG_ENABLED=true
         """
-        if not self.is_feature_enabled('RAG_AVAILABLE'):
-            logger.info("🔒 ChromaDB desabilitado (RAG_AVAILABLE=false)")
+        if not self.is_feature_enabled('RAG_ENABLED'):
+            logger.info("🔒 ChromaDB desabilitado (RAG_ENABLED=false)")
             return None
             
         if 'chromadb' in self._loaded_modules:
@@ -78,10 +78,10 @@ class LazyLoader:
     @lru_cache(maxsize=32)
     def load_faiss(self) -> Optional[Any]:
         """
-        Carrega FAISS apenas se RAG_AVAILABLE=true
+        Carrega FAISS apenas se RAG_ENABLED=true
         """
-        if not self.is_feature_enabled('RAG_AVAILABLE'):
-            logger.info("🔒 FAISS desabilitado (RAG_AVAILABLE=false)")
+        if not self.is_feature_enabled('RAG_ENABLED'):
+            logger.info("🔒 FAISS desabilitado (RAG_ENABLED=false)")
             return None
             
         if 'faiss' in self._loaded_modules:
@@ -119,27 +119,6 @@ class LazyLoader:
             logger.warning(f"[WARNING]  OpenCV não disponível: {e}")
             return None
     
-    @lru_cache(maxsize=32)  
-    def load_redis(self) -> Optional[Any]:
-        """
-        Carrega Redis apenas se ADVANCED_CACHE=true
-        """
-        if not self.is_feature_enabled('ADVANCED_CACHE'):
-            logger.info("🔒 Redis desabilitado (ADVANCED_CACHE=false)")
-            return None
-            
-        if 'redis' in self._loaded_modules:
-            return self._loaded_modules['redis']
-            
-        try:
-            logger.info("📦 Carregando Redis...")
-            import redis
-            self._loaded_modules['redis'] = redis
-            logger.info("[OK] Redis carregado com sucesso")
-            return redis
-        except ImportError as e:
-            logger.warning(f"[WARNING]  Redis não disponível: {e}")
-            return None
     
     def get_feature_status(self) -> dict:
         """
@@ -201,9 +180,6 @@ def load_opencv():
     """Função de conveniência para carregar OpenCV"""
     return lazy_loader.load_opencv()
 
-def load_redis():
-    """Função de conveniência para carregar Redis"""
-    return lazy_loader.load_redis()
 
 def is_feature_enabled(feature: str) -> bool:
     """Função de conveniência para verificar feature flags"""

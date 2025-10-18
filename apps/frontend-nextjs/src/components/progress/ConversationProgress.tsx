@@ -3,6 +3,20 @@
 import React, { useState, useEffect } from 'react';
 import { getUnbColors } from '@/config/modernTheme';
 
+interface ConversationMessage {
+  id?: string;
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+  timestamp?: Date | string | number; // Compatible with ChatMessage
+  persona?: string;
+  type?: 'text' | 'file' | 'image';
+  metadata?: {
+    confidence?: number;
+    sources?: string[];
+    processingTime?: number;
+  };
+}
+
 interface ConversationStep {
   id: string;
   title: string;
@@ -13,7 +27,7 @@ interface ConversationStep {
 }
 
 interface ConversationProgressProps {
-  messages: any[];
+  messages: ConversationMessage[];
   currentPersona?: string;
   onStepChange?: (step: ConversationStep) => void;
   className?: string;
@@ -88,7 +102,7 @@ export default function ConversationProgress({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messages, onStepChange]);
 
-  const detectConversationType = (msgs: any[]): ProgressAnalysis['conversationType'] => {
+  const detectConversationType = (msgs: ConversationMessage[]): ProgressAnalysis['conversationType'] => {
     const messageContent = msgs.map(m => m.content?.toLowerCase() || '').join(' ');
     
     // Palavras-chave para cada tipo
@@ -251,7 +265,7 @@ export default function ConversationProgress({
     }
   ];
 
-  const getCurrentStep = (msgs: any[], steps: ConversationStep[]): number => {
+  const getCurrentStep = (msgs: ConversationMessage[], steps: ConversationStep[]): number => {
     const messageCount = msgs.length;
     let cumulativeQuestions = 0;
     
@@ -533,7 +547,7 @@ export default function ConversationProgress({
             display: 'grid',
             gap: '0.75rem'
           }}>
-            {progressAnalysis.steps.map((step, index) => (
+            {progressAnalysis.steps.map((step) => (
               <div
                 key={step.id}
                 style={{

@@ -83,13 +83,25 @@ class SecretEncryption:
             # Gerar chave master se não existir
             self.master_key = base64.urlsafe_b64encode(secrets.token_bytes(32)).decode()
             security_logger.warning("Chave master gerada automaticamente - configure SECRET_MASTER_KEY")
-        
-        self._fernet = self._create_fernet()
     
-    def _create_fernet(self) -> Fernet:
-        """Cria instância Fernet com chave derivada"""
-        # Usar salt fixo para consistência (em produção, usar salt por secret)
-        salt = b'roteiro_dispensacao_salt_2025'
+    def _create_fernet(self, salt: Optional[bytes] = None) -> Tuple[Fernet, bytes]:
+        """Cria instância Fernet com chave derivada
+
+        Args:
+            salt: Salt criptográfico. Se None, gera salt aleatório seguro.
+
+        Returns:
+            Tuple de (instância Fernet, salt usado)
+
+        Security:
+            - Usa salt único por operação para prevenir rainbow table attacks
+            - Salt gerado com os.urandom() (cryptographically secure)
+            - 32 bytes = 256 bits de entropia
+        """
+        if salt is None:
+            # Generate cryptographically secure random salt
+            salt = os.urandom(32)  # 32 bytes = 256 bits
+
         kdf = PBKDF2HMAC(
             algorithm=hashes.SHA256(),
             length=32,
@@ -97,22 +109,53 @@ class SecretEncryption:
             iterations=100000,
         )
         key = base64.urlsafe_b64encode(kdf.derive(self.master_key.encode()))
-        return Fernet(key)
-    
+        return Fernet(key), salt
+
     def encrypt(self, data: str) -> str:
-        """Criptografa dados"""
+        """Criptografa dados com salt único
+
+        Security:
+            - Gera salt aleatório único para cada operação
+            - Prepend salt aos dados criptografados para recuperação
+            - Formato: base64(salt + encrypted_data)
+        """
         try:
-            encrypted = self._fernet.encrypt(data.encode())
-            return base64.urlsafe_b64encode(encrypted).decode()
+            # Generate unique salt for this encryption
+            fernet, salt = self._create_fernet()
+
+            # Encrypt data
+            encrypted = fernet.encrypt(data.encode())
+
+            # Prepend salt to encrypted data
+            salt_and_encrypted = salt + encrypted
+
+            # Return base64 encoded
+            return base64.urlsafe_b64encode(salt_and_encrypted).decode()
         except Exception as e:
             security_logger.error(f"Erro ao criptografar dados: {e}")
             raise
-    
+
     def decrypt(self, encrypted_data: str) -> str:
-        """Descriptografa dados"""
+        """Descriptografa dados extraindo salt
+
+        Security:
+            - Extrai salt dos primeiros 32 bytes
+            - Usa salt específico para derivar chave correta
+            - Formato esperado: base64(salt + encrypted_data)
+        """
         try:
-            encrypted_bytes = base64.urlsafe_b64decode(encrypted_data.encode())
-            decrypted = self._fernet.decrypt(encrypted_bytes)
+            # Decode base64
+            salt_and_encrypted = base64.urlsafe_b64decode(encrypted_data.encode())
+
+            # Extract salt (first 32 bytes)
+            salt = salt_and_encrypted[:32]
+            encrypted_bytes = salt_and_encrypted[32:]
+
+            # Create Fernet with extracted salt
+            fernet, _ = self._create_fernet(salt)
+
+            # Decrypt data
+            decrypted = fernet.decrypt(encrypted_bytes)
             return decrypted.decode()
         except Exception as e:
             security_logger.error(f"Erro ao descriptografar dados: {e}")
@@ -240,11 +283,11 @@ class SecretsManager:
                 # Log de auditoria
                 self._log_access(name, 'SET', success=True, details={'encrypted': encrypt, 'critical': is_critical})
                 
-                security_logger.info(f"Secret '{name}' definido com sucesso")
+                security_logger.info(f"Secret '{self._mask_secret_name(name)}' definido com sucesso")
                 return True
                 
             except Exception as e:
-                security_logger.error(f"Erro ao definir secret '{name}': {e}")
+                security_logger.error(f"Erro ao definir secret '{self._mask_secret_name(name)}': Falha na operação")
                 self._log_access(name, 'SET', success=False, error=str(e))
                 return False
     
@@ -275,7 +318,7 @@ class SecretsManager:
                 
                 # Verificar expiração
                 if metadata.expires_at and datetime.now() > metadata.expires_at:
-                    security_logger.warning(f"Secret '{name}' expirado")
+                    security_logger.warning(f"Secret '{self._mask_secret_name(name)}' expirado")
                     if log_access:
                         self._log_access(name, 'GET', success=False, error='Secret expirado')
                     return None
@@ -303,7 +346,7 @@ class SecretsManager:
                 return decrypted_value
                 
             except Exception as e:
-                security_logger.error(f"Erro ao obter secret '{name}': {e}")
+                security_logger.error(f"Erro ao obter secret '{self._mask_secret_name(name)}': Falha na operação")
                 if log_access:
                     self._log_access(name, 'GET', success=False, error=str(e))
                 return None
@@ -329,11 +372,11 @@ class SecretsManager:
                 self._save_metadata()
                 
                 self._log_access(name, 'ROTATE', success=True)
-                security_logger.info(f"Secret '{name}' rotacionado com sucesso")
+                security_logger.info(f"Secret '{self._mask_secret_name(name)}' rotacionado com sucesso")
                 return True
                 
             except Exception as e:
-                security_logger.error(f"Erro ao rotacionar secret '{name}': {e}")
+                security_logger.error(f"Erro ao rotacionar secret '{self._mask_secret_name(name)}': Falha na operação")
                 self._log_access(name, 'ROTATE', success=False, error=str(e))
                 return False
     
@@ -380,7 +423,11 @@ class SecretsManager:
             name for name, metadata in self.metadata.items()
             if self.rotation_policy.should_rotate(metadata)
         ]
-    
+
+    def _mask_secret_name(self, name: str) -> str:
+        """Mascara nome do secret para logging seguro"""
+        return f"secret_{hashlib.sha256(name.encode()).hexdigest()[:8]}"
+
     def _log_access(self, secret_name: str, operation: str, success: bool, details: Dict = None, error: str = None):
         """Registra acesso para auditoria"""
         log_entry = {
@@ -402,8 +449,15 @@ class SecretsManager:
         if len(self.access_log) > 1000:
             self.access_log = self.access_log[-1000:]
         
-        # Log estruturado para o sistema
-        security_logger.info(f"SECRET_ACCESS: {json.dumps(log_entry)}")
+        # Log estruturado para o sistema (sanitizado para segurança)
+        safe_log_entry = {
+            'timestamp': log_entry['timestamp'],
+            'operation': log_entry['operation'],
+            'success': log_entry['success'],
+            'client_info': log_entry['client_info']
+            # secret_name, details e error omitidos por segurança
+        }
+        security_logger.info(f"SECRET_ACCESS: {json.dumps(safe_log_entry)}")
     
     def _start_rotation_thread(self):
         """Inicia thread para rotação automática"""

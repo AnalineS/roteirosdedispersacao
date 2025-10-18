@@ -10,6 +10,8 @@ export interface FallbackState {
   attempts: number;
   lastFailureType: string | null;
   systemHealth: string;
+  hasFailures?: boolean;
+  failureCount?: number;
 }
 
 export interface UseFallbackOptions {

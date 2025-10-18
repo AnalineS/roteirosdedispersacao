@@ -11,6 +11,7 @@
  */
 
 import { EducationalSecurity } from './educationalSecurity';
+import { safeLocalStorage } from '@/hooks/useClientStorage';
 
 // ================== TIPOS E INTERFACES ==================
 
@@ -697,7 +698,7 @@ export class ABTestingFramework {
     
     // Persistir no localStorage para desenvolvimento
     if (typeof localStorage !== 'undefined') {
-      localStorage.setItem(`ab_assignment_${assignment.userId}`, JSON.stringify(userAssignments));
+      safeLocalStorage()?.setItem(`ab_assignment_${assignment.userId}`, JSON.stringify(userAssignments));
     }
   }
 
@@ -717,6 +718,12 @@ export class ABTestingFramework {
   private loadUserAssignments(): void {
     // Em produção, carregar do backend baseado no usuário atual
     // Para desenvolvimento, usar localStorage
+  }
+
+  // Método público para integração
+  public initialize(): void {
+    this.initializeFramework();
+    console.log('A/B Testing Framework re-initialized');
   }
 }
 

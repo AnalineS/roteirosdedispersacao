@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
+import { logger } from '@/utils/logger';
 
 interface ProtectedQuizContentProps {
   children: React.ReactNode;
@@ -34,7 +35,7 @@ export default function ProtectedQuizContent({
       if (blockRightClick) {
         e.preventDefault();
         if (showWarning) {
-          console.warn('Conteúdo protegido: cópia não permitida em questões de avaliação');
+          logger.warn('Conteúdo protegido: cópia não permitida em questões de avaliação');
         }
       }
     };
@@ -71,7 +72,7 @@ export default function ProtectedQuizContent({
       if (e.ctrlKey && (e.key === 'c' || e.key === 'a' || e.key === 'x')) {
         e.preventDefault();
         if (showWarning) {
-          console.warn('Atalhos de cópia desabilitados em área de avaliação');
+          logger.warn('Atalhos de cópia desabilitados em área de avaliação');
         }
       }
       // Bloquear PrintScreen (limitado, nem sempre funciona)
@@ -96,12 +97,13 @@ export default function ProtectedQuizContent({
   useEffect(() => {
     if (blockPrint) {
       const style = document.createElement('style');
-      style.innerHTML = `
+      // Use textContent instead of innerHTML for safety
+      style.textContent = `
         @media print {
           .quiz-protected-content {
             display: none !important;
           }
-          
+
           .quiz-protected-content::after {
             content: "Conteúdo protegido - Impressão não permitida";
             display: block !important;
@@ -196,7 +198,7 @@ export function useQuizProtection() {
     // Detectar mudança de aba/janela (possível consulta)
     const handleVisibilityChange = () => {
       if (document.hidden) {
-        console.log('Usuário saiu da aba durante avaliação');
+        logger.log('Usuário saiu da aba durante avaliação');
       }
     };
 

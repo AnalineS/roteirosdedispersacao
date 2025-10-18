@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { DISPENSING_WORKFLOW_TEMPLATE, WorkflowStage } from '@/types/checklist';
+import { DISPENSING_WORKFLOW_TEMPLATE, WorkflowStage, DispensingSession } from '@/types/checklist';
 import { modernChatTheme } from '@/config/modernTheme';
 import ReadOnlyChecklist from './ReadOnlyChecklist';
 import InteractiveChecklist from './InteractiveChecklist';
@@ -10,8 +10,8 @@ interface DispensingChecklistProps {
   userType?: 'anonymous' | 'authenticated';
   patientName?: string;
   enablePersistence?: boolean;
-  onSessionSave?: (session: any) => void;
-  onSessionComplete?: (session: any) => void;
+  onSessionSave?: (session: DispensingSession) => void;
+  onSessionComplete?: (session: DispensingSession) => void;
 }
 
 export default function DispensingChecklist({
@@ -20,13 +20,13 @@ export default function DispensingChecklist({
   enablePersistence = false,
   onSessionSave,
   onSessionComplete
-}: DispensingChecklistProps) {
+}: DispensingChecklistProps): React.JSX.Element {
   const [isLoading, setIsLoading] = useState(true);
   const [workflowStages, setWorkflowStages] = useState<WorkflowStage[]>([]);
 
   useEffect(() => {
     // Simulate loading and prepare workflow data
-    const loadWorkflow = async () => {
+    const loadWorkflow = async (): Promise<void> => {
       try {
         // Add current timestamps and reset completion states
         const processedStages = DISPENSING_WORKFLOW_TEMPLATE.map(stage => ({
@@ -48,7 +48,18 @@ export default function DispensingChecklist({
         setWorkflowStages(processedStages);
         setIsLoading(false);
       } catch (error) {
-        console.error('Erro ao carregar workflow de dispensação:', error);
+        if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'dispensing_checklist_workflow_load_error', {
+            event_category: 'medical_dispensing_workflow',
+            event_label: 'workflow_load_failed',
+            custom_parameters: {
+              medical_context: 'dispensing_checklist_workflow',
+              user_type: userType,
+              error_type: 'workflow_load_failure',
+              error_message: error instanceof Error ? error.message : String(error)
+            }
+          });
+        }
         setIsLoading(false);
       }
     };
@@ -136,7 +147,7 @@ export default function DispensingChecklist({
 }
 
 // Loading component
-function LoadingState() {
+function LoadingState(): React.JSX.Element {
   return (
     <div style={{
       display: 'flex',
@@ -183,7 +194,7 @@ function LoadingState() {
 }
 
 // Feature comparison for anonymous users
-function FeatureComparison() {
+function FeatureComparison(): React.JSX.Element {
   return (
     <div style={{
       marginBottom: modernChatTheme.spacing.xl,

@@ -164,7 +164,20 @@ Para mais informações, visite nosso sistema educacional.
       doc.save(filename);
       
     } catch (error) {
-      console.error('Erro ao exportar PDF:', error);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'conversation_export_pdf_error', {
+          event_category: 'medical_chat_export',
+          event_label: 'pdf_export_failed',
+          custom_parameters: {
+            medical_context: 'conversation_export_system',
+            persona_name: currentPersona?.name || 'unknown',
+            messages_count: messages.length,
+            export_format: 'pdf',
+            error_type: 'pdf_generation',
+            error_message: error instanceof Error ? error.message : String(error)
+          }
+        });
+      }
       alert('Erro ao exportar PDF. Tente novamente.');
     } finally {
       setIsExporting(false);
@@ -208,7 +221,20 @@ Para mais informações, visite nosso sistema educacional.
       alert('Conversa copiada para a área de transferência!');
       setIsOpen(false);
     } catch (error) {
-      console.error('Erro ao copiar texto:', error);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'conversation_copy_clipboard_error', {
+          event_category: 'medical_chat_export',
+          event_label: 'clipboard_copy_failed',
+          custom_parameters: {
+            medical_context: 'conversation_clipboard_system',
+            persona_name: currentPersona?.name || 'unknown',
+            messages_count: messages.length,
+            export_format: 'clipboard',
+            error_type: 'clipboard_api',
+            error_message: error instanceof Error ? error.message : String(error)
+          }
+        });
+      }
       alert('Erro ao copiar texto. Tente novamente.');
     }
   };

@@ -1,6 +1,6 @@
 /**
  * Google Analytics Setup Component
- * Integra seu GA existente (G-3MQVGKVMLP) com UX tracking
+ * Integra seu Google Analytics com UX tracking
  * Parte da ETAPA 1: Auditoria UX Baseada em Dados
  */
 
@@ -23,12 +23,12 @@ export function GoogleAnalyticsSetup({
     // Aguardar GA carregar e então iniciar UX tracking
     if (enableUXTracking && typeof window !== 'undefined') {
       const checkGtag = () => {
-        if ((window as any).gtag) {
+        if (window.gtag) {
           console.log('🔍 Google Analytics carregado, iniciando UX tracking...');
           googleAnalyticsUX.startUXAudit();
-          
+
           // Configurar dimensões customizadas para UX
-          (window as any).gtag('config', measurementId, {
+          window.gtag('config', measurementId || '', {
             // Configurar enhanced measurement
             enhanced_measurement_settings: {
               scroll_events: true,
@@ -48,7 +48,7 @@ export function GoogleAnalyticsSetup({
           });
 
           // Track initial page como baseline UX
-          (window as any).gtag('event', 'ux_audit_start', {
+          window.gtag('event', 'ux_audit_start', {
             event_category: 'ux_analysis',
             custom_parameters: {
               audit_version: '1.0',
@@ -194,32 +194,41 @@ export function GoogleAnalyticsSetup({
 export function useGoogleAnalyticsUX() {
   useEffect(() => {
     // Verificar se GA está disponível
-    if (typeof window !== 'undefined' && (window as any).gtag) {
+    if (typeof window !== 'undefined' && window.gtag) {
       // GA disponível - setup já feito
     }
   }, []);
 
   const trackCognitiveLoad = (score: number, context: string) => {
-    if (typeof window !== 'undefined' && (window as any).trackCognitiveLoad) {
-      (window as any).trackCognitiveLoad(score, context);
+    if (typeof window !== 'undefined' && window.trackCognitiveLoad) {
+      window.trackCognitiveLoad(score, context);
     }
   };
 
   const trackMobileIssue = (issueType: string, severity: number) => {
-    if (typeof window !== 'undefined' && (window as any).trackMobileIssue) {
-      (window as any).trackMobileIssue(issueType, severity);
+    if (typeof window !== 'undefined' && window.trackMobileIssue) {
+      window.trackMobileIssue(issueType, severity);
     }
   };
 
-  const trackOnboardingEvent = (action: string, step: number, data?: any) => {
-    if (typeof window !== 'undefined' && (window as any).trackOnboardingEvent) {
-      (window as any).trackOnboardingEvent(action, step, data);
+  const trackOnboardingEvent = (action: string, step: number, data?: Record<string, unknown>) => {
+    if (typeof window !== 'undefined' && window.trackOnboardingEvent) {
+      // Converter Record<string, unknown> para OnboardingEventData
+      const convertedData = data ? Object.fromEntries(
+        Object.entries(data).map(([key, value]) => [
+          key,
+          typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean'
+            ? value
+            : String(value)
+        ])
+      ) : undefined;
+      window.trackOnboardingEvent(action, step, convertedData);
     }
   };
 
-  const trackCustomUXEvent = (eventName: string, category: string, score?: number, parameters?: any) => {
-    if (typeof window !== 'undefined' && (window as any).trackUXEvent) {
-      (window as any).trackUXEvent(eventName, category, score, parameters);
+  const trackCustomUXEvent = (eventName: string, category: string, score?: number, parameters?: Record<string, unknown>) => {
+    if (typeof window !== 'undefined' && window.trackUXEvent) {
+      window.trackUXEvent(eventName, category, score, parameters);
     }
   };
 
@@ -231,14 +240,4 @@ export function useGoogleAnalyticsUX() {
   };
 }
 
-// Extend Window interface for TypeScript
-declare global {
-  interface Window {
-    gtag?: (...args: any[]) => void;
-    dataLayer?: Object[];
-    trackUXEvent: (eventName: string, category: string, score?: number, parameters?: any) => void;
-    trackCognitiveLoad: (score: number, context: string) => void;
-    trackMobileIssue: (issueType: string, severity: number) => void;
-    trackOnboardingEvent: (action: string, step: number, data?: any) => void;
-  }
-}
+// Note: Window interface extensions are now centralized in types/analytics.ts

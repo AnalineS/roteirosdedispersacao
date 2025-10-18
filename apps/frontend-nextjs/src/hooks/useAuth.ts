@@ -1,222 +1,129 @@
 /**
- * Hook de Autenticação para Sistema 3 Níveis
+ * useAuth Hook - Sistema JWT
+ * Hook que usa o AuthContext com compatibilidade para o sistema anterior
  */
 
-import { useState, useEffect, useCallback } from 'react';
-import { authService } from '@/services/auth';
-import {
-  UserProfile,
+import { useAuth as useAuthContext, type UserProfile } from '@/contexts/AuthContext';
+import { useCallback } from 'react';
+import type {
   UserRole,
-  AuthState,
-  LoginOptions,
-  RegistrationData,
-  USER_LEVEL_BENEFITS,
+  UserLevelBenefits
 } from '@/types/auth';
+import { USER_LEVEL_BENEFITS } from '@/types/auth';
+
+interface GoogleLoginOptions {
+  prompt?: 'none' | 'consent' | 'select_account';
+  includeGrantedScopes?: boolean;
+  enableGranularConsent?: boolean;
+  loginHint?: string;
+  hd?: string;
+  displayName?: string;
+  profileType?: 'patient' | 'professional' | 'student';
+}
+
+interface RegistrationData {
+  email: string;
+  password: string;
+  displayName?: string;
+  type?: 'patient' | 'professional' | 'student';
+  acceptTerms: boolean;
+  acceptPrivacy: boolean;
+  optInMarketing?: boolean;
+}
+
+type ProfileUpdates = Partial<UserProfile>;
+
+// USER_LEVEL_BENEFITS imported from @/types/auth
 
 export function useAuth() {
-  const [authState, setAuthState] = useState<AuthState>({
-    user: null,
-    isLoading: true,
-    isAuthenticated: false,
-    error: null,
-  });
-
-  useEffect(() => {
-    const unsubscribe = authService.onAuthStateChange(setAuthState);
-    return unsubscribe;
-  }, []);
+  const authContext = useAuthContext();
 
   // ============================================================================
-  // AUTHENTICATION ACTIONS
+  // COMPATIBILITY WRAPPERS
   // ============================================================================
 
-  const loginWithGoogle = useCallback(async (options?: LoginOptions) => {
-    setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
-    
-    try {
-      const user = await authService.loginWithGoogle(options);
-      return user;
-    } catch (error) {
-      setAuthState(prev => ({
-        ...prev,
-        isLoading: false,
-        error: error instanceof Error ? error.message : 'Erro no login',
-      }));
-      throw error;
-    }
-  }, []);
+  const getUserRole = useCallback((): UserRole => {
+    if (authContext.isAdmin()) return 'admin';
+    if (authContext.isAuthenticated) return 'registered';
+    return 'visitor';
+  }, [authContext]);
 
-  const loginWithEmail = useCallback(async (email: string, password: string) => {
-    setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
-    
-    try {
-      const user = await authService.loginWithEmail(email, password);
-      return user;
-    } catch (error) {
-      setAuthState(prev => ({
-        ...prev,
-        isLoading: false,
-        error: error instanceof Error ? error.message : 'Erro no login',
-      }));
-      throw error;
-    }
-  }, []);
+  const getUserBenefits = useCallback((): UserLevelBenefits => {
+    return USER_LEVEL_BENEFITS[getUserRole()];
+  }, [getUserRole]);
 
-  const register = useCallback(async (data: RegistrationData) => {
-    setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
-    
-    try {
-      const user = await authService.registerWithEmail(data);
-      return user;
-    } catch (error) {
-      setAuthState(prev => ({
-        ...prev,
-        isLoading: false,
-        error: error instanceof Error ? error.message : 'Erro no registro',
-      }));
-      throw error;
-    }
-  }, []);
-
-  const registerWithEmail = useCallback(async (data: RegistrationData) => {
-    return register(data);
-  }, [register]);
-
-  const registerWithGoogle = useCallback(async (options?: LoginOptions) => {
-    setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
-    
-    try {
-      const user = await authService.loginWithGoogle(options);
-      return user;
-    } catch (error) {
-      setAuthState(prev => ({
-        ...prev,
-        isLoading: false,
-        error: error instanceof Error ? error.message : 'Erro no registro',
-      }));
-      throw error;
-    }
-  }, []);
-
-  const logout = useCallback(async () => {
-    setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
-    
-    try {
-      await authService.logout();
-    } catch (error) {
-      setAuthState(prev => ({
-        ...prev,
-        isLoading: false,
-        error: error instanceof Error ? error.message : 'Erro no logout',
-      }));
-      throw error;
-    }
-  }, []);
-
-  // ============================================================================
-  // USER MANAGEMENT
-  // ============================================================================
-
-  const updateProfile = useCallback(async (updates: Partial<UserProfile>) => {
-    if (!authState.user) {
-      throw new Error('Usuário não está logado');
-    }
-
-    try {
-      await authService.updateUserProfile(authState.user.uid, updates);
-    } catch (error) {
-      throw error;
-    }
-  }, [authState.user]);
-
-  const upgradeRole = useCallback(async (newRole: UserRole) => {
-    if (!authState.user) {
-      throw new Error('Usuário não está logado');
-    }
-
-    try {
-      await authService.upgradeUserRole(authState.user.uid, newRole);
-    } catch (error) {
-      throw error;
-    }
-  }, [authState.user]);
-
-  // ============================================================================
-  // PERMISSION HELPERS
-  // ============================================================================
-
-  const hasPermission = useCallback((permission: keyof UserProfile['permissions']) => {
-    return authService.hasPermission(authState.user, permission);
-  }, [authState.user]);
+  const hasPermission = useCallback((permission: keyof UserLevelBenefits) => {
+    const benefits = getUserBenefits();
+    return benefits[permission] as boolean;
+  }, [getUserBenefits]);
 
   const canAccessFeature = useCallback((feature: string) => {
-    return authService.canAccessFeature(authState.user, feature);
-  }, [authState.user]);
+    switch (feature) {
+      case 'advanced':
+        return authContext.isFeatureAvailable('advanced');
+      case 'analytics':
+        return authContext.isFeatureAvailable('analytics');
+      case 'admin':
+        return authContext.isFeatureAvailable('admin');
+      case 'profiles':
+        return authContext.isFeatureAvailable('profiles');
+      case 'conversations':
+        return authContext.isFeatureAvailable('conversations');
+      default:
+        return true;
+    }
+  }, [authContext]);
 
   const hasRole = useCallback((role: UserRole) => {
-    return authState.user?.role === role;
-  }, [authState.user]);
+    return getUserRole() === role;
+  }, [getUserRole]);
 
   const isVisitor = useCallback(() => {
-    return !authState.isAuthenticated || authState.user?.role === 'visitor';
-  }, [authState.isAuthenticated, authState.user]);
+    return getUserRole() === 'visitor';
+  }, [getUserRole]);
 
   const isRegistered = useCallback(() => {
-    return authState.user?.role === 'registered' || authState.user?.role === 'admin';
-  }, [authState.user]);
+    const role = getUserRole();
+    return role === 'registered' || role === 'admin';
+  }, [getUserRole]);
 
   const isAdmin = useCallback(() => {
-    return authState.user?.role === 'admin';
-  }, [authState.user]);
+    return authContext.isAdmin();
+  }, [authContext]);
 
   // ============================================================================
   // USAGE LIMITS
   // ============================================================================
 
   const checkUsageLimit = useCallback((action: 'conversation' | 'module' | 'certificate') => {
-    if (!authState.user) {
-      // Limites para visitantes
-      return {
-        canPerform: true, // Permitir ação mas com limitação
-        remaining: 10,
-        limit: 10,
-        message: 'Cadastre-se para ter acesso ilimitado',
-      };
-    }
-
-    const permissions = authState.user.permissions;
-    const usage = authState.user.usage;
+    const benefits = getUserBenefits();
 
     switch (action) {
       case 'conversation':
-        const dailyConversations = 0; // Buscar do histórico diário
         return {
-          canPerform: dailyConversations < permissions.maxConversationsPerDay,
-          remaining: permissions.maxConversationsPerDay - dailyConversations,
-          limit: permissions.maxConversationsPerDay,
-          message: permissions.maxConversationsPerDay === 999 ? 'Ilimitado' : undefined,
+          canPerform: true, // Para simplicidade, sempre permitir
+          remaining: benefits.maxConversationsPerDay,
+          limit: benefits.maxConversationsPerDay,
+          message: benefits.maxConversationsPerDay === 999 ? 'Ilimitado' : undefined,
         };
-      
+
       case 'module':
-        const dailyModules = 0; // Buscar do histórico diário
         return {
-          canPerform: dailyModules < permissions.maxModulesPerDay,
-          remaining: permissions.maxModulesPerDay - dailyModules,
-          limit: permissions.maxModulesPerDay,
-          message: permissions.maxModulesPerDay === 999 ? 'Ilimitado' : undefined,
+          canPerform: true,
+          remaining: benefits.maxModulesPerDay,
+          limit: benefits.maxModulesPerDay,
+          message: benefits.maxModulesPerDay === 999 ? 'Ilimitado' : undefined,
         };
-      
+
       case 'certificate':
-        const monthlyCertificates = 0; // Buscar do histórico mensal
         return {
-          canPerform: permissions.canExportCertificates && 
-                     monthlyCertificates < permissions.maxCertificatesPerMonth,
-          remaining: permissions.maxCertificatesPerMonth - monthlyCertificates,
-          limit: permissions.maxCertificatesPerMonth,
-          message: permissions.maxCertificatesPerMonth === 999 ? 'Ilimitado' : 
-                  !permissions.canExportCertificates ? 'Cadastre-se para acessar certificados' : undefined,
+          canPerform: benefits.canExportCertificates,
+          remaining: benefits.maxCertificatesPerMonth,
+          limit: benefits.maxCertificatesPerMonth,
+          message: benefits.maxCertificatesPerMonth === 999 ? 'Ilimitado' :
+                  !benefits.canExportCertificates ? 'Cadastre-se para acessar certificados' : undefined,
         };
-      
+
       default:
         return {
           canPerform: true,
@@ -224,67 +131,141 @@ export function useAuth() {
           limit: 999,
         };
     }
-  }, [authState.user]);
+  }, [getUserBenefits]);
 
   // ============================================================================
-  // CLEAR ERROR
+  // SIMPLIFIED METHODS
   // ============================================================================
 
-  const clearError = useCallback(() => {
-    setAuthState(prev => ({ ...prev, error: null }));
+  const loginWithGoogle = useCallback(async (options?: GoogleLoginOptions) => {
+    const result = await authContext.loginWithSocial({
+      providerId: 'google.com',
+      preferredDisplayName: options?.displayName,
+      preferredProfileType: options?.profileType
+    });
+
+    if (!result.success) {
+      throw new Error(result.error);
+    }
+
+    return authContext.user;
+  }, [authContext]);
+
+  const loginWithEmail = useCallback(async (email: string, password: string) => {
+    const result = await authContext.login({ email, password });
+
+    if (!result.success) {
+      throw new Error(result.error);
+    }
+
+    return authContext.user;
+  }, [authContext]);
+
+  const register = useCallback(async (data: RegistrationData) => {
+    const result = await authContext.register(data);
+
+    if (!result.success) {
+      throw new Error(result.error);
+    }
+
+    return authContext.user;
+  }, [authContext]);
+
+  const logout = useCallback(async () => {
+    const result = await authContext.logout();
+
+    if (!result.success) {
+      throw new Error(result.error);
+    }
+  }, [authContext]);
+
+  const updateProfile = useCallback(async (updates: ProfileUpdates) => {
+    const result = await authContext.updateUserProfile(updates);
+
+    if (!result.success) {
+      throw new Error(result.error);
+    }
+  }, [authContext]);
+
+  const upgradeRole = useCallback(async (newRole: UserRole) => {
+    // Não implementado no novo sistema - usar upgrade de conta anônima
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'upgrade_role_not_implemented', {
+        event_category: 'auth',
+        event_label: 'jwt_system_limitation',
+        custom_parameters: { targetRole: newRole }
+      });
+    }
   }, []);
 
+  const clearError = useCallback(() => {
+    authContext.clearError();
+  }, [authContext]);
+
   return {
-    // State
-    user: authState.user,
-    isLoading: authState.isLoading,
-    isAuthenticated: authState.isAuthenticated,
-    error: authState.error,
-    
-    // Actions
+    // State - Mapeamento do contexto para compatibilidade
+    user: authContext.user,
+    isLoading: authContext.loading,
+    isAuthenticated: authContext.isAuthenticated,
+    error: authContext.error,
+
+    // Actions - Compatibilidade com interface anterior
     loginWithGoogle,
     loginWithEmail,
     register,
-    registerWithEmail,
-    registerWithGoogle,
+    registerWithEmail: register,
+    registerWithGoogle: loginWithGoogle,
     logout,
     updateProfile,
     upgradeRole,
     clearError,
-    
-    // Permissions
+
+    // Permissions - Mapeamento para novo sistema
     hasPermission,
     canAccessFeature,
     hasRole,
     isVisitor,
     isRegistered,
     isAdmin,
-    
-    // Usage
+
+    // Usage - Mantido para compatibilidade
     checkUsageLimit,
-    
-    // Helpers
-    getUserBenefits: () => authState.user ? USER_LEVEL_BENEFITS[authState.user.role] : USER_LEVEL_BENEFITS.visitor,
-    getUserRole: () => authState.user?.role || 'visitor',
+
+    // Helpers - Mantido para compatibilidade
+    getUserBenefits,
+    getUserRole,
+
+    // Context methods - Acesso direto ao contexto
+    profile: authContext.profile,
+    continueAsGuest: authContext.continueAsGuest,
+    upgradeAnonymousAccount: authContext.upgradeAnonymousAccount,
+    getAccessLevel: authContext.getAccessLevel,
+    refreshAuth: authContext.refreshAuth,
+    showAuthPrompt: authContext.showAuthPrompt,
+    dismissAuthPrompt: authContext.dismissAuthPrompt,
+    authPromptReason: authContext.authPromptReason
   };
 }
 
 // Hook específico para componentes que precisam de autenticação
 export function useRequireAuth(requiredRole?: UserRole) {
   const auth = useAuth();
-  
-  useEffect(() => {
-    if (!auth.isLoading && !auth.isAuthenticated && requiredRole && requiredRole !== 'visitor') {
-      // Redirecionar para login ou mostrar modal
-      console.warn(`Acesso negado: requer role ${requiredRole}`);
+
+  if (!auth.isLoading && !auth.isAuthenticated && requiredRole && requiredRole !== 'visitor') {
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'access_denied_role_required', {
+        event_category: 'auth',
+        event_label: 'role_check_failed',
+        custom_parameters: { requiredRole }
+      });
     }
-  }, [auth.isLoading, auth.isAuthenticated, requiredRole]);
+  }
 
   return auth;
 }
 
 // Hook para verificar permissões específicas
-export function usePermission(permission: keyof UserProfile['permissions']) {
+export function usePermission(permission: keyof UserLevelBenefits) {
   const { hasPermission } = useAuth();
   return hasPermission(permission);
 }
@@ -294,3 +275,5 @@ export function useUsageLimit(action: 'conversation' | 'module' | 'certificate')
   const { checkUsageLimit } = useAuth();
   return checkUsageLimit(action);
 }
+
+export default useAuth;

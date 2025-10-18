@@ -18,7 +18,7 @@ describe('Personas System Tests', () => {
       specialization: 'clinical-pharmacist',
       responseStyle: 'scientific'
     };
-    
+
     expect(drGasnelio.type).toBe('technical');
     expect(drGasnelio.specialization).toBe('clinical-pharmacist');
   });
@@ -31,7 +31,7 @@ describe('Personas System Tests', () => {
       specialization: 'patient-educator',
       responseStyle: 'caring'
     };
-    
+
     expect(ga.type).toBe('empathetic');
     expect(ga.specialization).toBe('patient-educator');
   });
@@ -43,7 +43,7 @@ describe('Personas System Tests', () => {
       emotionalSupport: 'ga',
       generalEducation: 'both'
     };
-    
+
     expect(personaSwitchRules.technicalQuery).toBe('dr-gasnelio');
     expect(personaSwitchRules.emotionalSupport).toBe('ga');
   });

@@ -3,6 +3,9 @@
 import { Persona } from '@/services/api';
 import { modernChatTheme, getPersonaColors } from '@/config/modernTheme';
 import PersonaAvatar from '../PersonaAvatar';
+import { UIKnowledgeStats as KnowledgeStats } from '@/types/rag-knowledge';
+
+// KnowledgeStats imported from unified types
 
 interface SmartIndicatorsProps {
   sentiment?: {
@@ -12,7 +15,7 @@ interface SmartIndicatorsProps {
   } | null;
   knowledge?: {
     isSearching: boolean;
-    stats?: any;
+    stats?: KnowledgeStats;
   };
   fallback?: {
     isActive: boolean;
@@ -165,7 +168,7 @@ const SentimentIndicator = ({ sentiment, confidence }: { sentiment: string; conf
   );
 };
 
-const KnowledgeIndicator = ({ isSearching, stats }: { isSearching: boolean; stats?: any }) => {
+const KnowledgeIndicator = ({ isSearching, stats }: { isSearching: boolean; stats?: KnowledgeStats }) => {
   if (!isSearching && !stats) return null;
 
   return (

@@ -45,7 +45,7 @@ except ImportError:
 def _lazy_import_embedding_service():
     """Import lazy do embedding service"""
     try:
-        from services.embedding_service import get_embedding_service, embed_text, is_embeddings_available
+        from services.unified_embedding_service import get_embedding_service, embed_text, is_embeddings_available
         return get_embedding_service, embed_text, is_embeddings_available
     except ImportError as e:
         logger.warning(f"[WARNING] Embedding service não disponível: {e}")
@@ -56,7 +56,7 @@ def _lazy_import_vector_store():
     try:
         # FASE 3: Priorizar Supabase Vector Store
         from services.vector_store import get_vector_store, get_supabase_vector_store
-        from services.supabase_vector_store import VectorDocument
+        from services.integrations.supabase_vector_store import VectorDocument
         return get_vector_store, VectorDocument, get_supabase_vector_store
     except ImportError as e:
         logger.warning(f"[WARNING] Vector store não disponível: {e}")
@@ -94,7 +94,7 @@ class SemanticSearchEngine:
         
         # Lazy loading dos serviços
         get_embedding_service_func, embed_text_func, is_embeddings_available_func = _lazy_import_embedding_service()
-        get_vector_store_func, VectorDocument = _lazy_import_vector_store()
+        get_vector_store_func, VectorDocument, get_supabase_vector_store_func = _lazy_import_vector_store()
         
         self.embedding_service = get_embedding_service_func() if get_embedding_service_func else None
         self.vector_store = get_vector_store_func() if get_vector_store_func else None
@@ -173,10 +173,17 @@ class SemanticSearchEngine:
             # Gerar embedding
             # Sentence-transformers v5.1+ - usar embed_document para chunks médicos
             if hasattr(self.embedding_service, 'embed_document'):
-                embedding = self.embedding_service.embed_document(chunk.content)
+                embedding_result = self.embedding_service.embed_document(chunk.content)
                 logger.debug(f"[V5.1+] Usando embed_document() para chunk médico")
             else:
-                embedding = self.embedding_service.embed_text(chunk.content)
+                embedding_result = self.embedding_service.embed_text(chunk.content)
+
+            # Extract numpy array from EmbeddingResult
+            if hasattr(embedding_result, 'embedding'):
+                embedding = embedding_result.embedding
+            else:
+                embedding = embedding_result
+
             if embedding is None:
                 logger.error(f"Falha ao gerar embedding para chunk")
                 return False
@@ -240,8 +247,16 @@ class SemanticSearchEngine:
             
             # Gerar embeddings em lote
             texts = [chunk.content for chunk in batch]
-            embeddings = self.embedding_service.embed_batch(texts)
-            
+            embedding_results = self.embedding_service.embed_batch(texts)
+
+            # Extract numpy arrays from EmbeddingResult objects
+            embeddings = []
+            for result in embedding_results:
+                if hasattr(result, 'embedding'):
+                    embeddings.append(result.embedding)
+                else:
+                    embeddings.append(result)
+
             # Indexar cada chunk com seu embedding
             for chunk, embedding in zip(batch, embeddings):
                 if embedding is not None:
@@ -319,10 +334,17 @@ class SemanticSearchEngine:
             # Gerar embedding da query
             # Sentence-transformers v5.1+ - usar embed_query para consultas do usuário
             if hasattr(self.embedding_service, 'embed_query'):
-                query_embedding = self.embedding_service.embed_query(query)
+                query_embedding_result = self.embedding_service.embed_query(query)
                 logger.debug(f"[V5.1+] Usando embed_query() para consulta do usuário")
             else:
-                query_embedding = self.embedding_service.embed_text(query)
+                query_embedding_result = self.embedding_service.embed_text(query)
+
+            # Extract numpy array from EmbeddingResult
+            if hasattr(query_embedding_result, 'embedding'):
+                query_embedding = query_embedding_result.embedding
+            else:
+                query_embedding = query_embedding_result
+
             if query_embedding is None:
                 logger.error("Falha ao gerar embedding da query")
                 return []

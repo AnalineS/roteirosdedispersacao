@@ -9,15 +9,20 @@ Versão: 2.0
 """
 
 try:
-    from .personas import get_persona_prompt
-    from ..prompts.dr_gasnelio_technical_prompt import DrGasnelioTechnicalPrompt
+    from services.ai.personas import get_persona_prompt
+    from config.dr_gasnelio_technical_prompt import DrGasnelioTechnicalPrompt
 except ImportError:
     # Para execução standalone
     import sys
     import os
     sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-    from personas import get_persona_prompt
-    from prompts.dr_gasnelio_technical_prompt import DrGasnelioTechnicalPrompt
+    try:
+        from services.ai.personas import get_persona_prompt
+        from config.dr_gasnelio_technical_prompt import DrGasnelioTechnicalPrompt
+    except ImportError:
+        # Fallback imports
+        get_persona_prompt = None
+        DrGasnelioTechnicalPrompt = None
 import json
 import re
 

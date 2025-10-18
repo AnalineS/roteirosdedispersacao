@@ -1,13 +1,18 @@
 'use client';
 
-import React, { useState } from 'react';
-import EducationalLayout from '@/components/layout/EducationalLayout';
-import AccessibleSearchWithSuggestions from '@/components/search/AccessibleSearchWithSuggestions';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { ChatAccessibilityProvider } from '@/components/chat/accessibility/ChatAccessibilityProvider';
 import type { AudienceType } from '@/components/search/AccessibleSearchWithSuggestions';
 
+// Carregamento dinâmico para evitar problemas de SSR
+const EducationalLayout = dynamic(() => import('@/components/layout/EducationalLayout'), { ssr: false });
+const AccessibleSearchWithSuggestions = dynamic(() => import('@/components/search/AccessibleSearchWithSuggestions'), { ssr: false });
+
 export default function SearchPage() {
   const [selectedAudience, setSelectedAudience] = useState<AudienceType>('general');
+  const router = useRouter();
 
   return (
     <ChatAccessibilityProvider>
@@ -25,6 +30,49 @@ export default function SearchPage() {
               Encontre rapidamente informações sobre hanseníase, tratamentos, medicamentos e muito mais
             </p>
           </header>
+
+          {/* Audience Selector - Sistema de filtro por audiência ativo */}
+          <section className="audience-selector" aria-label="Selecionar audiência para busca personalizada">
+            <h2 className="audience-title">🎯 Personalizar busca por audiência</h2>
+            <div className="audience-options">
+              <button
+                onClick={() => setSelectedAudience('general')}
+                className={`audience-btn ${selectedAudience === 'general' ? 'active' : ''}`}
+                aria-pressed={selectedAudience === 'general'}
+              >
+                <span className="audience-icon">👥</span>
+                <span className="audience-label">Geral</span>
+                <span className="audience-desc">Para todos os usuários</span>
+              </button>
+              <button
+                onClick={() => setSelectedAudience('patient')}
+                className={`audience-btn ${selectedAudience === 'patient' ? 'active' : ''}`}
+                aria-pressed={selectedAudience === 'patient'}
+              >
+                <span className="audience-icon">🤲</span>
+                <span className="audience-label">Pacientes</span>
+                <span className="audience-desc">Linguagem simples e acessível</span>
+              </button>
+              <button
+                onClick={() => setSelectedAudience('professional')}
+                className={`audience-btn ${selectedAudience === 'professional' ? 'active' : ''}`}
+                aria-pressed={selectedAudience === 'professional'}
+              >
+                <span className="audience-icon">👨‍⚕️</span>
+                <span className="audience-label">Profissionais</span>
+                <span className="audience-desc">Termos técnicos e protocolos</span>
+              </button>
+              <button
+                onClick={() => setSelectedAudience('student')}
+                className={`audience-btn ${selectedAudience === 'student' ? 'active' : ''}`}
+                aria-pressed={selectedAudience === 'student'}
+              >
+                <span className="audience-icon">🎓</span>
+                <span className="audience-label">Estudantes</span>
+                <span className="audience-desc">Conteúdo educativo detalhado</span>
+              </button>
+            </div>
+          </section>
 
           {/* Main Search Interface */}
           <main className="search-main">
@@ -188,28 +236,28 @@ export default function SearchPage() {
             <section className="popular-searches" aria-label="Buscas populares">
               <h2 className="popular-title">🔥 Buscas Mais Populares</h2>
               <div className="popular-tags">
-                <button className="popular-tag" onClick={() => window.location.href = '/search?q=como+tomar+PQT-U'}>
+                <button className="popular-tag" onClick={() => router.push('/search?q=como+tomar+PQT-U')}>
                   Como tomar PQT-U
                 </button>
-                <button className="popular-tag" onClick={() => window.location.href = '/search?q=efeitos+colaterais'}>
+                <button className="popular-tag" onClick={() => router.push('/search?q=efeitos+colaterais')}>
                   Efeitos colaterais
                 </button>
-                <button className="popular-tag" onClick={() => window.location.href = '/search?q=hanseniase+tem+cura'}>
+                <button className="popular-tag" onClick={() => router.push('/search?q=hanseniase+tem+cura')}>
                   Hanseníase tem cura?
                 </button>
-                <button className="popular-tag" onClick={() => window.location.href = '/search?q=posso+trabalhar'}>
+                <button className="popular-tag" onClick={() => router.push('/search?q=posso+trabalhar')}>
                   Posso trabalhar?
                 </button>
-                <button className="popular-tag" onClick={() => window.location.href = '/search?q=direitos+paciente'}>
+                <button className="popular-tag" onClick={() => router.push('/search?q=direitos+paciente')}>
                   Direitos do paciente
                 </button>
-                <button className="popular-tag" onClick={() => window.location.href = '/search?q=dosagem+rifampicina'}>
+                <button className="popular-tag" onClick={() => router.push('/search?q=dosagem+rifampicina')}>
                   Dosagem rifampicina
                 </button>
-                <button className="popular-tag" onClick={() => window.location.href = '/search?q=interacoes+medicamentosas'}>
+                <button className="popular-tag" onClick={() => router.push('/search?q=interacoes+medicamentosas')}>
                   Interações medicamentosas
                 </button>
-                <button className="popular-tag" onClick={() => window.location.href = '/search?q=diagnostico+hanseniase'}>
+                <button className="popular-tag" onClick={() => router.push('/search?q=diagnostico+hanseniase')}>
                   Diagnóstico clínico
                 </button>
               </div>

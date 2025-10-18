@@ -2,6 +2,7 @@
 
 import { useState, type JSX } from 'react';
 import Image from 'next/image';
+import { Loader2 } from 'lucide-react';  // PR #173 - Loading spinner
 import { Persona } from '@/services/api';
 import { getPersonaAvatar } from '@/constants/avatars';
 import { theme } from '@/config/theme';
@@ -136,6 +137,7 @@ const questions: Question[] = [
 
 export default function PersonaSelector({ personas, onPersonaSelect }: PersonaSelectorProps) {
   const [currentStep, setCurrentStep] = useState<'intro' | 'question1' | 'question2' | 'recommendation'>('intro');
+  const [_personaLoading, setPersonaLoading] = useState(false);  // PR #173 - Loading state
   const [answers, setAnswers] = useState<{
     profile?: UserProfile['type'];
     focus?: UserProfile['focus'];
@@ -173,7 +175,7 @@ export default function PersonaSelector({ personas, onPersonaSelect }: PersonaSe
     return { personaId, confidence, explanation };
   };
 
-  const handleAnswer = (questionId: string, value: any) => {
+  const handleAnswer = (questionId: string, value: UserProfile['type'] | UserProfile['focus']) => {
     const newAnswers = { ...answers, [questionId === 'profile' ? 'profile' : 'focus']: value };
     setAnswers(newAnswers);
 
@@ -184,18 +186,27 @@ export default function PersonaSelector({ personas, onPersonaSelect }: PersonaSe
     }
   };
 
-  const handlePersonaSelect = (recommendedPersonaId?: string) => {
-    const finalPersonaId = recommendedPersonaId || 'ga';
-    const recommendation = calculateRecommendation();
+  const handlePersonaSelect = async (recommendedPersonaId?: string) => {
+    setPersonaLoading(true);  // PR #173 - Start loading
     
-    const userProfile: UserProfile = {
-      type: answers.profile || 'patient',
-      focus: answers.focus || 'general',
-      confidence: recommendation.confidence,
-      explanation: recommendation.explanation
-    };
+    try {
+      // Simulate persona selection processing time
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      const finalPersonaId = recommendedPersonaId || 'ga';
+      const recommendation = calculateRecommendation();
+      
+      const userProfile: UserProfile = {
+        type: answers.profile || 'patient',
+        focus: answers.focus || 'general',
+        confidence: recommendation.confidence,
+        explanation: recommendation.explanation
+      };
 
-    onPersonaSelect(finalPersonaId, userProfile);
+      onPersonaSelect(finalPersonaId, userProfile);
+    } finally {
+      setPersonaLoading(false);  // PR #173 - End loading
+    }
   };
 
   const renderIntro = () => (
@@ -294,7 +305,7 @@ export default function PersonaSelector({ personas, onPersonaSelect }: PersonaSe
                 handlePersonaSelect('ga');
               }
             }}
-            aria-label="Escolher Gá como assistente - Clara e acolhedora"
+            aria-label="Escolher Gá como assistente - Claro e acolhedor"
             role="button"
             tabIndex={0}
           >
@@ -322,7 +333,7 @@ export default function PersonaSelector({ personas, onPersonaSelect }: PersonaSe
               Gá
             </h4>
             <p style={{ fontSize: '0.75rem', color: '#64748b' }}>
-              Clara e acolhedora
+              Claro e acolhedor
             </p>
           </button>
         </div>
@@ -468,10 +479,18 @@ export default function PersonaSelector({ personas, onPersonaSelect }: PersonaSe
           
           <button
             onClick={() => handlePersonaSelect(recommendation.personaId)}
+            disabled={_personaLoading}
             className="btn btn-primary"
             style={{ width: '100%', marginTop: '1.5rem' }}
           >
-            Iniciar conversa com {recommendedPersona.name}
+            {_personaLoading ? (
+              <>
+                <Loader2 className="animate-spin mr-2" size={16} />
+                Carregando persona...
+              </>
+            ) : (
+              `Iniciar conversa com ${recommendedPersona.name}`
+            )}
           </button>
         </div>
 
@@ -523,9 +542,14 @@ export default function PersonaSelector({ personas, onPersonaSelect }: PersonaSe
             
             <button
               onClick={() => handlePersonaSelect(alternativePersonaId)}
+              disabled={_personaLoading}
               className="btn btn-secondary btn-sm"
             >
-              Escolher
+              {_personaLoading ? (
+                <Loader2 className="animate-spin" size={14} />
+              ) : (
+                'Escolher'
+              )}
             </button>
           </div>
         </div>

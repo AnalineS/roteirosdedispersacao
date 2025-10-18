@@ -14,7 +14,7 @@ describe('Performance Tests', () => {
     // Placeholder para testes de performance de renderização
     const mockRenderTime = 50; // ms
     const maxAcceptableTime = 100; // ms
-    
+
     expect(mockRenderTime).toBeLessThan(maxAcceptableTime);
   });
 
@@ -22,7 +22,7 @@ describe('Performance Tests', () => {
     // Placeholder para validação de tamanho do bundle
     const mockBundleSize = 500; // KB
     const maxBundleSize = 1000; // KB
-    
+
     expect(mockBundleSize).toBeLessThan(maxBundleSize);
   });
 
@@ -30,7 +30,7 @@ describe('Performance Tests', () => {
     // Placeholder para monitoramento de memória
     const mockMemoryUsage = 50; // MB
     const maxMemoryUsage = 100; // MB
-    
+
     expect(mockMemoryUsage).toBeLessThan(maxMemoryUsage);
   });
 });

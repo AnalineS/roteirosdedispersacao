@@ -24,7 +24,6 @@ export const getPersonaAvatar = (personaId: string): string => {
   // Buscar primeira correspondência exata
   const directMatch = PERSONA_AVATARS[personaId as keyof typeof PERSONA_AVATARS];
   if (directMatch) {
-    console.log(`[getPersonaAvatar] personaId: "${personaId}" found directly:`, directMatch);
     return directMatch;
   }
   
@@ -35,7 +34,6 @@ export const getPersonaAvatar = (personaId: string): string => {
   );
   
   const result = match?.[1] || '';
-  console.log(`[getPersonaAvatar] personaId: "${personaId}", normalized: "${normalizedId}", available keys:`, Object.keys(PERSONA_AVATARS), 'result:', result);
   return result;
 };
 
@@ -61,7 +59,6 @@ export const hasPersonaAvatar = (personaId: string): boolean => {
     key.toLowerCase().replace(/[-_\s]/g, '') === normalizedId
   );
   
-  console.log(`[hasPersonaAvatar] personaId: "${personaId}", normalized: "${normalizedId}", found:`, !!match);
   return !!match;
 };
 
@@ -69,11 +66,23 @@ export const hasPersonaAvatar = (personaId: string): boolean => {
  * Filtra personas que têm avatares configurados
  */
 export const filterValidPersonas = <T>(personas: Record<string, T>): Record<string, T> => {
+  // Proteção contra valores inválidos
+  if (!personas || typeof personas !== 'object') {
+    console.warn('[filterValidPersonas] Invalid personas input:', personas);
+    return {};
+  }
+
   const validPersonas: Record<string, T> = {};
-  Object.entries(personas).forEach(([id, persona]) => {
-    if (hasPersonaAvatar(id)) {
-      validPersonas[id] = persona;
-    }
-  });
+  try {
+    Object.entries(personas).forEach(([id, persona]) => {
+      if (hasPersonaAvatar(id)) {
+        validPersonas[id] = persona;
+      }
+    });
+  } catch (error) {
+    console.error('[filterValidPersonas] Error filtering personas:', error);
+    return {};
+  }
+
   return validPersonas;
 };

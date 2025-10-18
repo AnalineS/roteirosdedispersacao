@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect, useCallback, Suspense, lazy, useRef } from 'react';
+import { useState, useEffect, useCallback, Suspense, lazy } from 'react';
 import Link from 'next/link';
 import EducationalLayout from '@/components/layout/EducationalLayout';
 import ModernChatContainer from '@/components/chat/modern/ModernChatContainer';
+import PersonaSwitch from '@/components/chat/modern/PersonaSwitch';
 import { ChatAccessibilityProvider } from '@/components/chat/accessibility/ChatAccessibilityProvider';
 import SystemStatus from '@/components/system/SystemStatus';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
@@ -15,19 +16,26 @@ import ChatFeedback, { useChatFeedback } from '@/components/ui/ChatFeedback';
 
 // Lazy load dos componentes complementares
 const ConversationHistory = lazy(() => import('@/components/chat/ConversationHistory'));
-import { usePersonas } from '@/hooks/usePersonas';
+import { usePersonasEnhanced } from '@/hooks/usePersonasEnhanced';
+import { useCurrentPersona, usePersonaActions } from '@/contexts/PersonaContext';
+import { safeLocalStorage } from '@/hooks/useClientStorage';
 import { useChat } from '@/hooks/useChat';
 import { useConversationHistory } from '@/hooks/useConversationHistory';
 import { useIntelligentRouting } from '@/hooks/useIntelligentRouting';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { theme } from '@/config/theme';
 import { SidebarLoader } from '@/components/LoadingSpinner';
-import { type ChatMessage } from '@/services/api';
-import { redisCache } from '@/services/redisCache';
+import { type ChatMessage } from '@/types/api';
+import { isValidPersonaId, type ValidPersonaId } from '@/types/personas';
 
 export default function ChatPage() {
   const { setPersonaSelectionViewed } = useGlobalNavigation();
-  const { personas, loading: personasLoading, error: personasError } = usePersonas();
+  const { personas, loading: personasLoading, error: personasError } = usePersonasEnhanced({
+    includeFallback: true,
+    useCache: true
+  });
+  const { persona: contextPersona, isLoading: _personaLoading } = useCurrentPersona();
+  const { setPersona } = usePersonaActions();
   
   // Chat feedback hook
   const { triggerSendFeedback, triggerReceiveFeedback, triggerErrorFeedback } = useChatFeedback();
@@ -37,7 +45,7 @@ export default function ChatPage() {
     setPersonaSelectionViewed();
     
     // Pré-carregar tópicos comuns no Redis para melhor performance
-    const warmupTopics = [
+    const _warmupTopics = [
       'dose rifampicina',
       'efeitos clofazimina',
       'duração tratamento',
@@ -51,13 +59,9 @@ export default function ChatPage() {
     ];
     
     // Redis warmup com fallback robusto
-    Promise.resolve()
-      .then(() => redisCache.warmupCache(warmupTopics))
-      .then(() => console.log('🔥 Cache pré-aquecido com sucesso'))
-      .catch(err => {
-        console.warn('Erro no warmup do cache (continuando sem cache):', err);
-        // Não bloquear a aplicação se Redis falhar
-      });
+    // Cache warmup já implementado com firestoreCache
+    // Podem ser chamados os métodos de warmup quando necessário
+    console.log('🔥 Cache warmup disponível via firestoreCache.warmupCache()');
   }, [setPersonaSelectionViewed]);
   
   const {
@@ -70,23 +74,25 @@ export default function ChatPage() {
     getConversationsForPersona,
     currentConversationId
   } = useConversationHistory();
-  const { profile, updateProfile, getRecommendedPersona } = useUserProfile();
+  const { profile: _profile, updateProfile: _updateProfile, getRecommendedPersona: _getRecommendedPersona } = useUserProfile();
   const { 
     loading: chatLoading, 
-    error: chatError, 
+    error: _chatError, 
     sendMessage,
     currentSentiment,
-    personaSwitchSuggestion,
+    personaSwitchSuggestion: _personaSwitchSuggestion,
     knowledgeStats,
-    lastSearchResult,
+    lastSearchResult: _lastSearchResult,
     isSearchingKnowledge,
     fallbackState,
-    resetFallback,
-    resetSystemFailures
+    resetFallback: _resetFallback,
+    resetSystemFailures: _resetSystemFailures
   } = useChat({ 
     persistToLocalStorage: false, 
     enableSentimentAnalysis: true,
     enableKnowledgeEnrichment: true,
+    enableIntelligentRouting: true,
+    availablePersonas: personas,
     onMessageReceived: useCallback((message: ChatMessage) => {
       // Adicionar resposta da IA ao histórico de conversas
       addMessageToConversation(message);
@@ -96,7 +102,7 @@ export default function ChatPage() {
   });
   
   const [inputValue, setInputValue] = useState('');
-  const [selectedPersona, setSelectedPersona] = useState<string | null>(null); // Será definido baseado na URL ou preferência
+  const [selectedPersona, setSelectedPersona] = useState<string | null>(contextPersona); // Usar persona do contexto
   const [showHistory, setShowHistory] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [pendingQuestion, setPendingQuestion] = useState<string>('');
@@ -136,14 +142,14 @@ export default function ChatPage() {
   const currentMessages = getCurrentMessages();
   
   // Chat Navigation state
-  const { navigationState } = useChatNavigation(currentMessages);
+  const { navigationState: _navigationState } = useChatNavigation(currentMessages);
   
   // Hook de roteamento inteligente
   const {
-    currentAnalysis,
-    isAnalyzing,
-    shouldShowRouting,
-    getRecommendedPersona: getRoutingRecommendedPersona,
+    currentAnalysis: _currentAnalysis,
+    isAnalyzing: _isAnalyzing,
+    shouldShowRouting: _shouldShowRouting,
+    getRecommendedPersona: _getRoutingRecommendedPersona,
     analyzeQuestion,
     acceptRecommendation,
     rejectRecommendation,
@@ -162,73 +168,58 @@ export default function ChatPage() {
     }
   }, [inputValue, selectedPersona, analyzeQuestion]);
 
-  // Carregar persona baseada no perfil do usuário ou localStorage
-  useEffect(() => {
-    if (personas && Object.keys(personas).length > 0 && !selectedPersona) {
-      let selectedPersonaId = null;
-      
-      // Prioridade 1: Persona do perfil do usuário
-      if (profile && profile.selectedPersona && personas[profile.selectedPersona]) {
-        selectedPersonaId = profile.selectedPersona;
-      }
-      // Prioridade 2: Recomendação baseada no perfil
-      else if (profile) {
-        const recommended = getRecommendedPersona();
-        if (recommended && personas[recommended]) {
-          selectedPersonaId = recommended;
-        }
-      }
-      
-      // Prioridade 3: localStorage (compatibilidade com versão anterior)
-      if (!selectedPersonaId && typeof window !== 'undefined') {
-        const storedPersona = localStorage.getItem('selectedPersona');
-        if (storedPersona && personas[storedPersona]) {
-          selectedPersonaId = storedPersona;
-        }
-      }
-      
-      // Prioridade 4: Usar 'ga' como padrão quando não há preferência específica
-      if (!selectedPersonaId) {
-        // Sempre preferir 'ga' como padrão
-        if (personas['ga']) {
-          selectedPersonaId = 'ga';
-        } else if (personas['dr_gasnelio']) {
-          selectedPersonaId = 'dr_gasnelio';
-        } else {
-          // Usar a primeira persona disponível como fallback
-          selectedPersonaId = Object.keys(personas)[0];
-        }
-      }
+  // Handlers para aceitação e rejeição de routing
+  const _handleAcceptRouting = useCallback((recommendedPersonaId: string) => {
+    // Validar se é uma persona válida antes de aceitar
+    if (!isValidPersonaId(recommendedPersonaId)) {
+      console.error('Invalid persona ID received:', recommendedPersonaId);
+      return;
+    }
+    
+    // Aceitar a recomendação e trocar para a persona sugerida
+    acceptRecommendation();
+    setPersona(recommendedPersonaId as ValidPersonaId);
+    setSelectedPersona(recommendedPersonaId);
+    
+    // Analytics para métricas de sucesso
+    console.log('Routing accepted:', {
+      from: selectedPersona,
+      to: recommendedPersonaId,
+      timestamp: Date.now()
+    });
+  }, [acceptRecommendation, setPersona, selectedPersona]);
 
-      if (selectedPersonaId) {
-        console.log('[ChatPage] Setting initial persona:', selectedPersonaId);
-        setSelectedPersona(selectedPersonaId);
-        
-        // Salvar no localStorage
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('selectedPersona', selectedPersonaId);
-        }
-        
-        // Atualizar perfil se necessário
-        if (profile && profile.selectedPersona !== selectedPersonaId) {
-          updateProfile({ selectedPersona: selectedPersonaId });
-        }
-        
-        // Criar conversa se não houver uma ativa
-        if (!currentConversationId) {
-          createConversation(selectedPersonaId);
-        }
+  const _handleRejectRouting = useCallback(() => {
+    // Rejeitar a recomendação e manter persona atual
+    rejectRecommendation(selectedPersona || 'dr_gasnelio');
+    
+    // Analytics para melhoria do algoritmo
+    console.log('Routing rejected:', {
+      currentPersona: selectedPersona,
+      timestamp: Date.now()
+    });
+  }, [rejectRecommendation, selectedPersona]);
+
+  // Sincronizar persona do contexto com estado local
+  useEffect(() => {
+    if (contextPersona && contextPersona !== selectedPersona) {
+      setSelectedPersona(contextPersona);
+      
+      // Criar conversa se não houver uma ativa
+      if (!currentConversationId) {
+        createConversation(contextPersona);
       }
     }
-  }, [personas, selectedPersona, profile, getRecommendedPersona, updateProfile, currentConversationId, createConversation]);
+  }, [contextPersona, selectedPersona, currentConversationId, createConversation]);
 
 
   // Função wrapper para enviar mensagens e adicionar ao histórico
   const sendMessageWithHistory = useCallback(async (messageText: string, personaId: string) => {
     const userMessage = {
+      id: `user-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       role: 'user' as const,
       content: messageText,
-      timestamp: Date.now(),
+      timestamp: new Date().toISOString(),
       persona: personaId
     };
     
@@ -277,23 +268,27 @@ export default function ChatPage() {
     }
   };
 
-  const handlePersonaChange = useCallback((personaId: string) => {
-    setSelectedPersona(personaId);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('selectedPersona', personaId);
+  const handlePersonaChange = useCallback(async (personaId: string) => {
+    try {
+      // Usar o contexto unificado para mudar persona
+      await setPersona(personaId as ValidPersonaId, 'explicit');
+      setSelectedPersona(personaId);
+      
+      // Criar nova conversa para a persona selecionada
+      createConversation(personaId);
+      
+      // Limpar análise de roteamento
+      clearAnalysis();
+      
+      // Se há uma pergunta pendente, enviá-la agora
+      if (pendingQuestion) {
+        setInputValue(pendingQuestion);
+        setPendingQuestion('');
+      }
+    } catch (error) {
+      console.error('Erro ao alterar persona:', error);
     }
-    // Criar nova conversa para a persona selecionada
-    createConversation(personaId);
-    
-    // Limpar análise de roteamento
-    clearAnalysis();
-    
-    // Se há uma pergunta pendente, enviá-la agora
-    if (pendingQuestion) {
-      setInputValue(pendingQuestion);
-      setPendingQuestion('');
-    }
-  }, [createConversation, clearAnalysis, pendingQuestion]);
+  }, [setPersona, createConversation, clearAnalysis, pendingQuestion]);
 
   // Handler para upload de arquivos
   const handleFileUpload = useCallback((files: FileList) => {
@@ -324,11 +319,9 @@ export default function ChatPage() {
   }, [triggerReceiveFeedback]);
   
   const handleNewConversation = (personaId: string) => {
-    const conversationId = createConversation(personaId);
+    createConversation(personaId);
     setSelectedPersona(personaId);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('selectedPersona', personaId);
-    }
+    safeLocalStorage()?.setItem('selectedPersona', personaId);
   };
   
   const handleConversationSelect = (conversationId: string) => {
@@ -338,26 +331,11 @@ export default function ChatPage() {
     const selectedConv = allConversations.find(conv => conv.id === conversationId);
     if (selectedConv) {
       setSelectedPersona(selectedConv.personaId);
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('selectedPersona', selectedConv.personaId);
-      }
+      safeLocalStorage()?.setItem('selectedPersona', selectedConv.personaId);
     }
     clearAnalysis();
   };
   
-  // Handlers para roteamento inteligente
-  const handleAcceptRouting = useCallback((personaId: string) => {
-    acceptRecommendation();
-    handlePersonaChange(personaId);
-  }, [acceptRecommendation, handlePersonaChange]);
-  
-  const handleRejectRouting = useCallback(() => {
-    rejectRecommendation(selectedPersona || '');
-  }, [rejectRecommendation, selectedPersona]);
-  
-  const handleShowExplanation = useCallback(() => {
-    console.log('Explicação do roteamento:', getExplanation());
-  }, [getExplanation]);
 
   if (personasLoading) {
     return (
@@ -447,14 +425,33 @@ export default function ChatPage() {
             margin: '0 auto 1rem',
             padding: '0 1rem'
           }}>
-            <ConversationProgress 
+            <ConversationProgress
               messages={currentMessages}
               currentPersona={currentPersona?.name}
               variant="detailed"
             />
           </div>
         )}
-        
+
+        {/* Persona Switcher - Issue #221 */}
+        {/* Show PersonaSwitch after LGPD consent, regardless of selection */}
+        {hasConsent && Object.keys(personas).length > 0 && (
+          <div style={{
+            maxWidth: '800px',
+            margin: '0 auto 1rem',
+            padding: '0 1rem',
+            display: 'flex',
+            justifyContent: 'flex-end'
+          }}>
+            <PersonaSwitch
+              personas={personas}
+              selected={selectedPersona}
+              onChange={handlePersonaChange}
+              isMobile={isMobile}
+            />
+          </div>
+        )}
+
         <ModernChatContainer
           personas={personas}
           selectedPersona={selectedPersona}
@@ -466,7 +463,7 @@ export default function ChatPage() {
           isLoading={chatLoading}
           isMobile={isMobile}
           currentSentiment={currentSentiment}
-          knowledgeStats={knowledgeStats}
+          knowledgeStats={knowledgeStats as any}
           isSearchingKnowledge={isSearchingKnowledge}
           fallbackState={fallbackState}
           onHistoryToggle={() => setShowHistory(!showHistory)}

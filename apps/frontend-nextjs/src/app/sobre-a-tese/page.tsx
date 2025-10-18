@@ -987,6 +987,137 @@ export default function SobreATestePage() {
           </div>
 
           {/* Referências */}
+          {/* Recursos Médicos Especializados - Ícones Médicos Ativados */}
+          <div style={{
+            background: 'white',
+            padding: '2rem',
+            borderRadius: '16px',
+            marginTop: '2rem',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+          }}>
+            <h3 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', color: '#1e293b' }}>
+              <MedIcon /> Recursos Médicos Especializados
+            </h3>
+
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+              gap: '1.5rem'
+            }}>
+              {/* Instituições de Saúde */}
+              <div style={{
+                padding: '1.5rem',
+                background: '#f8fafc',
+                borderRadius: '12px',
+                border: '1px solid #e2e8f0'
+              }}>
+                <h4 style={{
+                  fontSize: '1.2rem',
+                  marginBottom: '1rem',
+                  color: '#3b82f6',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
+                }}>
+                  <BuildingIcon /> Instituições Parceiras
+                </h4>
+                <ul style={{ paddingLeft: '1rem', lineHeight: '1.8', color: '#64748b' }}>
+                  <li>Universidade de Brasília (UnB)</li>
+                  <li>Ministério da Saúde</li>
+                  <li>ANVISA - Agência Nacional</li>
+                  <li>Conselho Federal de Farmácia</li>
+                </ul>
+              </div>
+
+              {/* Materiais para Download */}
+              <div style={{
+                padding: '1.5rem',
+                background: '#f0fdf4',
+                borderRadius: '12px',
+                border: '1px solid #bbf7d0'
+              }}>
+                <h4 style={{
+                  fontSize: '1.2rem',
+                  marginBottom: '1rem',
+                  color: '#059669',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
+                }}>
+                  <PrintIcon /> Materiais Técnicos
+                </h4>
+                <ul style={{ paddingLeft: '1rem', lineHeight: '1.8', color: '#065f46' }}>
+                  <li>Protocolo PCDT Hanseníase</li>
+                  <li>Roteiro de Dispensação</li>
+                  <li>Fichas de Acompanhamento</li>
+                  <li>Cartilhas Educacionais</li>
+                </ul>
+              </div>
+
+              {/* Aspectos Econômicos */}
+              <div style={{
+                padding: '1.5rem',
+                background: '#fefbf3',
+                borderRadius: '12px',
+                border: '1px solid #fed7aa'
+              }}>
+                <h4 style={{
+                  fontSize: '1.2rem',
+                  marginBottom: '1rem',
+                  color: '#d97706',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
+                }}>
+                  <MoneyIcon /> Aspectos Econômicos
+                </h4>
+                <ul style={{ paddingLeft: '1rem', lineHeight: '1.8', color: '#92400e' }}>
+                  <li>Tratamento 100% gratuito no SUS</li>
+                  <li>Medicamentos fornecidos pelo MS</li>
+                  <li>Acompanhamento sem custos</li>
+                  <li>Custo-efetividade comprovada</li>
+                </ul>
+              </div>
+
+              {/* Suporte Científico */}
+              <div style={{
+                padding: '1.5rem',
+                background: '#faf5ff',
+                borderRadius: '12px',
+                border: '1px solid #e9d5ff'
+              }}>
+                <h4 style={{
+                  fontSize: '1.2rem',
+                  marginBottom: '1rem',
+                  color: '#9333ea',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
+                }}>
+                  <MedIcon /> Evidências Científicas
+                </h4>
+                <ul style={{ paddingLeft: '1rem', lineHeight: '1.8', color: '#7c3aed' }}>
+                  <li>Pesquisa de Doutorado</li>
+                  <li>Revisão Sistemática</li>
+                  <li>Padrões Internacionais OMS</li>
+                  <li>Validação Clínica Nacional</li>
+                </ul>
+              </div>
+            </div>
+
+            <div style={{
+              marginTop: '1.5rem',
+              padding: '1rem',
+              background: '#f1f5f9',
+              borderRadius: '8px',
+              fontSize: '0.9rem',
+              color: '#475569',
+              textAlign: 'center'
+            }}>
+              ⚕️ Sistema desenvolvido seguindo as diretrizes do Ministério da Saúde e validado por especialistas
+            </div>
+          </div>
+
           <div style={{
             background: 'white',
             padding: '2rem',

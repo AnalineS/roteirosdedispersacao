@@ -3,6 +3,7 @@
 import NavigationHeader from '@/components/navigation/NavigationHeader';
 import EducationalFooter from '@/components/navigation/EducationalFooter';
 import { ContentSegment, AudienceSelector, useAudiencePreference } from '@/components/content/ContentSegmentation';
+import { urls } from '@/utils/environmentUrls';
 
 export default function VidaComHansenitePage() {
   const { selectedAudience, updateAudience } = useAudiencePreference();
@@ -18,7 +19,7 @@ export default function VidaComHansenitePage() {
             "@type": "MedicalWebPage",
             "name": "Vida com Hanseníase - Qualidade de Vida e Direitos",
             "description": "Informações essenciais sobre qualidade de vida, direitos e reintegração social para pessoas com hanseníase.",
-            "url": "https://roteirosdedispensacao.com/vida-com-hanseniase",
+            "url": urls.lifeWithHansen(),
             "medicalAudience": [
               {
                 "@type": "MedicalAudience",
@@ -50,7 +51,7 @@ export default function VidaComHansenitePage() {
               "description": "Qualidade de vida, direitos e cuidados para pessoas com hanseníase"
             },
             "significantLink": [
-              "https://roteirosdedispensacao.com/chat"
+              urls.chat()
             ],
             "breadcrumb": {
               "@type": "BreadcrumbList",
@@ -59,13 +60,13 @@ export default function VidaComHansenitePage() {
                   "@type": "ListItem",
                   "position": 1,
                   "name": "Início",
-                  "item": "https://roteirosdedispensacao.com"
+                  "item": urls.base()
                 },
                 {
                   "@type": "ListItem",
                   "position": 2,
                   "name": "Vida com Hanseníase",
-                  "item": "https://roteirosdedispensacao.com/vida-com-hanseniase"
+                  "item": urls.lifeWithHansen()
                 }
               ]
             }

@@ -1,90 +1,26 @@
 /**
- * Hook para gerenciar personas do backend
- * Conecta diretamente com as personas que usam prompts de IA
+ * Hook para consumir personas do Global Provider
+ *
+ * REFATORAÇÃO FINAL: Issue #221 - ERR_INSUFFICIENT_RESOURCES
+ *
+ * ANTES: Hook independente com API calls
+ * → Cada componente criava instância separada
+ * → 5 componentes = 5 API calls simultâneos
+ *
+ * DEPOIS: Wrapper do GlobalPersonasProvider
+ * → Todos componentes compartilham mesma instância
+ * → 1 API call global por página
  */
 
-import { useState, useEffect } from 'react';
-import { getPersonas, type Persona, type PersonasResponse } from '@/services/api';
-import { filterValidPersonas } from '@/constants/avatars';
-import { PersonasCache } from '@/utils/apiCache';
+import { useGlobalPersonas } from '@/contexts/GlobalPersonasProvider';
 
+/**
+ * Hook simplificado que consome o provider global
+ *
+ * IMPORTANTE: Este hook agora é apenas um alias/wrapper
+ * Toda lógica de carregamento está em GlobalPersonasProvider
+ */
 export function usePersonas() {
-  const [personas, setPersonas] = useState<PersonasResponse>({});
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function loadPersonas() {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        // Verificar cache primeiro
-        const cachedPersonas = PersonasCache.get();
-        if (cachedPersonas) {
-          setPersonas(cachedPersonas);
-          setLoading(false);
-          return;
-        }
-        
-        // Buscar do servidor se não há cache
-        const personasData = await getPersonas();
-        // Filtrar apenas personas com avatares configurados
-        const validPersonas = filterValidPersonas(personasData);
-        
-        // Salvar no cache
-        PersonasCache.set(validPersonas);
-        setPersonas(validPersonas);
-      } catch (err) {
-        console.error('Erro ao carregar personas:', err);
-        setError(err instanceof Error ? err.message : 'Erro desconhecido');
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadPersonas();
-  }, []);
-
-  const getPersonaById = (personaId: string): Persona | null => {
-    return personas[personaId] || null;
-  };
-
-  const getPersonasList = (): Array<{id: string; persona: Persona}> => {
-    return Object.entries(personas).map(([id, persona]) => ({
-      id,
-      persona
-    }));
-  };
-  
-  const getValidPersonasCount = (): number => {
-    const count = Object.keys(personas).length;
-    console.log('[usePersonas] getValidPersonasCount:', { personas, count });
-    // Retorna contagem ou fallback para 2 (Dr. Gasnelio + Gá)
-    return count > 0 ? count : 2;
-  };
-
-  return {
-    personas,
-    loading,
-    error,
-    getPersonaById,
-    getPersonasList,
-    getValidPersonasCount,
-    refetch: async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const personasData = await getPersonas();
-        const validPersonas = filterValidPersonas(personasData);
-        setPersonas(validPersonas);
-      } catch (err) {
-        console.error('Erro ao carregar personas:', err);
-        setError(err instanceof Error ? err.message : 'Erro desconhecido');
-      } finally {
-        setLoading(false);
-      }
-    }
-  };
-
+  // Simply re-export global context
+  return useGlobalPersonas();
 }

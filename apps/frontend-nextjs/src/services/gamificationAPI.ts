@@ -4,14 +4,33 @@
  * Suporte a fallback para localStorage quando backend indisponível
  */
 
-import type { 
-  LearningProgress, 
-  Achievement, 
+import type {
+  LearningProgress,
+  Achievement,
   GamificationNotification,
   QuizAttempt,
   LeaderboardEntry,
   ModuleProgress
 } from '../types/gamification';
+import { safeLocalStorage } from '@/hooks/useClientStorage';
+
+interface ActivityMetadata {
+  module_id?: string;
+  quiz_id?: string;
+  question_count?: number;
+  completion_time?: number;
+  streak_day?: number;
+  [key: string]: unknown;
+}
+
+interface SyncConflict {
+  field: string;
+  localValue: unknown;
+  serverValue: unknown;
+  resolvedValue: unknown;
+  resolution: 'local' | 'server' | 'merged';
+  timestamp: string;
+}
 
 interface APIResponse<T> {
   success: boolean;
@@ -128,7 +147,7 @@ class GamificationAPI {
     userId: string, 
     activity: 'chat' | 'quiz' | 'module' | 'streak',
     points: number,
-    metadata?: any
+    metadata?: ActivityMetadata
   ): Promise<APIResponse<{ newXP: number; newLevel: number; achievements: Achievement[] }>> {
     try {
       const response = await this.fetchWithTimeout(
@@ -391,7 +410,7 @@ class GamificationAPI {
       timestamp: string;
     }
   ): Promise<APIResponse<{
-    conflicts: any[];
+    conflicts: SyncConflict[];
     mergedProgress: LearningProgress;
     mergedNotifications: GamificationNotification[];
   }>> {
@@ -442,7 +461,7 @@ class GamificationAPI {
    */
   private getAuthToken(): string | null {
     // Integrar com sistema de auth quando disponível
-    return localStorage.getItem('authToken') || null;
+    return safeLocalStorage()?.getItem('authToken') || null;
   }
 
   /**
@@ -496,7 +515,7 @@ class GamificationAPI {
   /**
    * Extrair mensagem de erro
    */
-  private getErrorMessage(error: any): string {
+  private getErrorMessage(error: Error | unknown): string {
     if (error instanceof Error) {
       if (error.name === 'AbortError') {
         return 'Timeout: Servidor não respondeu em tempo hábil';

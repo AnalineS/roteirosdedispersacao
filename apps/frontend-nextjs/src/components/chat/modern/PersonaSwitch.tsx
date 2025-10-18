@@ -41,8 +41,11 @@ export default function PersonaSwitch({
   };
 
   return (
-    <div 
+    <div
       className="persona-switch-container"
+      data-testid="persona-selector"
+      role="radiogroup"
+      aria-label="Selecionar assistente virtual"
       style={{
         display: 'flex',
         alignItems: 'center',
@@ -58,6 +61,7 @@ export default function PersonaSwitch({
     >
       {/* Label Esquerda - Dr. Gasnelio */}
       <span
+        data-testid="persona-label-dr_gasnelio"
         style={{
           padding: `0 ${modernChatTheme.spacing.sm}`,
           fontSize: modernChatTheme.typography.meta.fontSize,
@@ -76,14 +80,18 @@ export default function PersonaSwitch({
         onClick={handleToggle}
         disabled={isTransitioning}
         className="toggle-switch"
+        data-testid={`persona-option-${actualSelected}`}
+        role="radio"
+        aria-checked={true}
+        aria-label={`${isDrGasnelio ? 'Dr. Gasnelio' : 'Gá'} - Assistente ${isDrGasnelio ? 'Técnico' : 'Empático'}`}
         style={{
           position: 'relative',
           width: '60px',
           height: '32px',
           borderRadius: '50px',
           border: 'none',
-          background: isDrGasnelio 
-            ? modernChatTheme.colors.personas.gasnelio.primary 
+          background: isDrGasnelio
+            ? modernChatTheme.colors.personas.gasnelio.primary
             : modernChatTheme.colors.personas.ga.primary,
           cursor: isTransitioning ? 'wait' : 'pointer',
           transition: 'background 0.3s ease',
@@ -91,11 +99,10 @@ export default function PersonaSwitch({
           outline: 'none',
           boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)'
         }}
-        aria-label={`Mudar para ${isDrGasnelio ? 'Gá' : 'Dr. Gasnelio'}`}
-        aria-pressed={isDrGasnelio}
       >
         {/* Slider */}
         <div
+          data-testid={isTransitioning ? "persona-switch-feedback" : undefined}
           style={{
             position: 'absolute',
             top: '3px',
@@ -109,24 +116,39 @@ export default function PersonaSwitch({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            overflow: 'hidden'
+            overflow: 'hidden',
+            opacity: isTransitioning ? 0.6 : 1
           }}
         >
-          <Image 
-            src={isDrGasnelio ? '/images/avatars/dr-gasnelio.png' : '/images/avatars/ga.png'}
-            alt={isDrGasnelio ? 'Dr. Gasnelio' : 'Gá'}
-            width={22}
-            height={22}
-            style={{
-              borderRadius: '50%',
-              objectFit: 'cover'
-            }}
-          />
+          {isTransitioning ? (
+            <div
+              style={{
+                width: '16px',
+                height: '16px',
+                border: '2px solid currentColor',
+                borderTopColor: 'transparent',
+                borderRadius: '50%',
+                animation: 'spin 0.6s linear infinite'
+              }}
+            />
+          ) : (
+            <Image
+              src={isDrGasnelio ? '/images/avatars/dr-gasnelio.png' : '/images/avatars/ga.png'}
+              alt={isDrGasnelio ? 'Dr. Gasnelio' : 'Gá'}
+              width={22}
+              height={22}
+              style={{
+                borderRadius: '50%',
+                objectFit: 'cover'
+              }}
+            />
+          )}
         </div>
       </button>
       
       {/* Label Direita - Gá */}
       <span
+        data-testid="persona-label-ga"
         style={{
           padding: `0 ${modernChatTheme.spacing.sm}`,
           fontSize: modernChatTheme.typography.meta.fontSize,
@@ -143,6 +165,7 @@ export default function PersonaSwitch({
       {/* Mobile Labels com Avatar */}
       {isMobile && (
         <div
+          data-testid="persona-current-selection"
           style={{
             display: 'flex',
             alignItems: 'center',
@@ -150,7 +173,7 @@ export default function PersonaSwitch({
             marginLeft: modernChatTheme.spacing.sm
           }}
         >
-          <Image 
+          <Image
             src={isDrGasnelio ? '/images/avatars/dr-gasnelio.png' : '/images/avatars/ga.png'}
             alt={isDrGasnelio ? 'Dr. Gasnelio' : 'Gá'}
             width={22}
@@ -164,8 +187,8 @@ export default function PersonaSwitch({
             style={{
               fontSize: modernChatTheme.typography.meta.fontSize,
               fontWeight: '600',
-              color: isDrGasnelio 
-                ? modernChatTheme.colors.personas.gasnelio.primary 
+              color: isDrGasnelio
+                ? modernChatTheme.colors.personas.gasnelio.primary
                 : modernChatTheme.colors.personas.ga.primary,
               transition: 'all 0.3s ease'
             }}
@@ -176,17 +199,23 @@ export default function PersonaSwitch({
       )}
 
       <style jsx>{`
+        @keyframes spin {
+          to {
+            transform: rotate(360deg);
+          }
+        }
+
         .toggle-switch:focus-visible {
-          outline: 2px solid ${isDrGasnelio 
-            ? modernChatTheme.colors.personas.gasnelio.primary 
+          outline: 2px solid ${isDrGasnelio
+            ? modernChatTheme.colors.personas.gasnelio.primary
             : modernChatTheme.colors.personas.ga.primary};
           outline-offset: 3px;
         }
-        
+
         .toggle-switch:hover:not(:disabled) {
           filter: brightness(1.1);
         }
-        
+
         .toggle-switch:active:not(:disabled) {
           transform: scale(0.98);
         }

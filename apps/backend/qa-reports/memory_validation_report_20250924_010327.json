@@ -1,0 +1,227 @@
+{
+  "validation_summary": {
+    "start_time": "2025-09-24T01:03:24.817546",
+    "duration_seconds": 2.4,
+    "total_tests": 6,
+    "passed_tests": 0,
+    "failed_tests": 6,
+    "success_rate_percent": 0.0,
+    "overall_success": false,
+    "target_memory_percent": 50.0
+  },
+  "system_memory": {
+    "baseline": {
+      "timestamp": "2025-09-24T01:03:24.818575",
+      "system": {
+        "total_gb": 31.63,
+        "used_gb": 24.78,
+        "available_gb": 6.85,
+        "percent": 78.3
+      },
+      "process": {
+        "rss_mb": 20.5,
+        "vms_mb": 12.0,
+        "percent": 0.1
+      },
+      "python_objects": 12126
+    },
+    "final": {
+      "timestamp": "2025-09-24T01:03:27.219170",
+      "system": {
+        "total_gb": 31.63,
+        "used_gb": 25.16,
+        "available_gb": 6.47,
+        "percent": 79.5
+      },
+      "process": {
+        "rss_mb": 45.0,
+        "vms_mb": 34.2,
+        "percent": 0.1
+      },
+      "python_objects": 39343
+    }
+  },
+  "individual_test_results": {
+    "emergency_memory_reducer": {
+      "system": "Emergency Memory Reducer",
+      "available": true,
+      "initial_status": {
+        "emergency_active": false,
+        "current_memory_percent": 78.5,
+        "target_memory_percent": 45.0,
+        "initial_memory_percent": 78.5,
+        "memory_reduction": 0.0,
+        "target_achieved": false,
+        "modules_unloaded_count": 0,
+        "critical_threshold": 85.0,
+        "timestamp": "2025-09-24T01:03:24.957195"
+      },
+      "reduction_result": {
+        "status": "completed",
+        "initial_memory_percent": 78.5,
+        "final_memory_percent": 78.5,
+        "reduction_percent": 0.0,
+        "target_achieved": false,
+        "duration_seconds": 0.21,
+        "phases": {
+          "ai_libraries_mb": 1.315,
+          "caches_mb": 0,
+          "garbage_collection_mb": 0.001,
+          "modules_mb": 3.0,
+          "system_optimization_mb": 0
+        },
+        "modules_unloaded": [
+          "itsdangerous",
+          "jinja2",
+          "blinker"
+        ],
+        "timestamp": "2025-09-24T01:03:25.166838"
+      },
+      "final_status": {
+        "emergency_active": false,
+        "current_memory_percent": 78.5,
+        "target_memory_percent": 45.0,
+        "initial_memory_percent": 78.5,
+        "memory_reduction": 0.0,
+        "target_achieved": false,
+        "modules_unloaded_count": 3,
+        "critical_threshold": 85.0,
+        "timestamp": "2025-09-24T01:03:25.167722"
+      },
+      "validation": {
+        "reducer_active": false,
+        "reduction_successful": false,
+        "memory_freed": 0,
+        "target_achieved": false
+      },
+      "test_passed": false
+    },
+    "medical_cache_optimizer": {
+      "system": "Medical Cache Optimizer",
+      "available": false,
+      "error": "<function _SpecialForm.__getitem__ at 0x000002932A17F6A0>",
+      "test_passed": false
+    },
+    "memory_optimized_rag": {
+      "system": "Memory-Optimized RAG",
+      "available": false,
+      "error": "<function _SpecialForm.__getitem__ at 0x000002932A17F6A0>",
+      "test_passed": false
+    },
+    "lightweight_vector_store": {
+      "system": "Lightweight Vector Store",
+      "available": false,
+      "error": "<function _generic_class_getitem at 0x000002932A1B0F40>",
+      "test_passed": false
+    },
+    "system_memory_stress_test": {
+      "system": "Memory Stress Test",
+      "baseline_memory": {
+        "timestamp": "2025-09-24T01:03:25.200729",
+        "system": {
+          "total_gb": 31.63,
+          "used_gb": 24.84,
+          "available_gb": 6.78,
+          "percent": 78.6
+        },
+        "process": {
+          "rss_mb": 44.0,
+          "vms_mb": 32.4,
+          "percent": 0.1
+        },
+        "python_objects": 39594
+      },
+      "stress_memory": {
+        "timestamp": "2025-09-24T01:03:25.204731",
+        "system": {
+          "total_gb": 31.63,
+          "used_gb": 24.85,
+          "available_gb": 6.78,
+          "percent": 78.6
+        },
+        "process": {
+          "rss_mb": 44.9,
+          "vms_mb": 34.2,
+          "percent": 0.1
+        },
+        "python_objects": 39453
+      },
+      "cleanup_memory": {
+        "timestamp": "2025-09-24T01:03:25.212690",
+        "system": {
+          "total_gb": 31.63,
+          "used_gb": 24.85,
+          "available_gb": 6.78,
+          "percent": 78.6
+        },
+        "process": {
+          "rss_mb": 44.9,
+          "vms_mb": 34.2,
+          "percent": 0.1
+        },
+        "python_objects": 39339
+      },
+      "final_memory": {
+        "timestamp": "2025-09-24T01:03:27.214650",
+        "system": {
+          "total_gb": 31.63,
+          "used_gb": 25.15,
+          "available_gb": 6.47,
+          "percent": 79.5
+        },
+        "process": {
+          "rss_mb": 44.9,
+          "vms_mb": 34.2,
+          "percent": 0.1
+        },
+        "python_objects": 39340
+      },
+      "gc_collected": 71,
+      "validation": {
+        "memory_recovered": true,
+        "final_memory_acceptable": false,
+        "gc_effective": true
+      },
+      "final_memory_percent": 79.5,
+      "test_passed": false
+    },
+    "overall_system_memory": {
+      "system": "Overall System Memory",
+      "target_percent": 50.0,
+      "current_memory": {
+        "timestamp": "2025-09-24T01:03:27.217245",
+        "system": {
+          "total_gb": 31.63,
+          "used_gb": 25.15,
+          "available_gb": 6.47,
+          "percent": 79.5
+        },
+        "process": {
+          "rss_mb": 45.0,
+          "vms_mb": 34.2,
+          "percent": 0.1
+        },
+        "python_objects": 39342
+      },
+      "validation": {
+        "system_target_met": false,
+        "process_reasonable": true,
+        "system_percent": 79.5,
+        "process_percent": 0.1
+      },
+      "test_passed": false,
+      "status": "FAIL"
+    }
+  },
+  "recommendations": [
+    "Emergency Memory Reducer needs attention - critical for medical safety",
+    "Medical Cache Optimizer requires fixes - impacts response time",
+    "Memory-Optimized RAG system needs optimization",
+    "Lightweight Vector Store requires memory tuning",
+    "System memory recovery is insufficient under stress",
+    "CRITICAL: System memory above 50.0% target - immediate action required",
+    "Consider running emergency memory reduction before deployment",
+    "Monitor system memory continuously during operation"
+  ],
+  "timestamp": "2025-09-24T01:03:27.219827"
+}

@@ -11,6 +11,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 import { useGoogleAnalytics } from '@/components/GoogleAnalytics';
 
 interface UserRole {
@@ -51,7 +52,7 @@ export function useOnboarding() {
   // Initialize onboarding state
   useEffect(() => {
     try {
-      const stored = localStorage.getItem(STORAGE_KEY);
+      const stored = safeLocalStorage()?.getItem(STORAGE_KEY);
       
       if (stored) {
         const parsed: OnboardingState = JSON.parse(stored);
@@ -62,7 +63,7 @@ export function useOnboarding() {
         if (daysSinceLastVisit > RETENTION_DAYS) {
           // Reset if data is too old
           setState(DEFAULT_STATE);
-          localStorage.removeItem(STORAGE_KEY);
+          safeLocalStorage()?.removeItem(STORAGE_KEY);
           trackUserInteraction('onboarding_data_expired', '', String(daysSinceLastVisit));
         } else {
           setState({
@@ -77,7 +78,17 @@ export function useOnboarding() {
       
       setIsLoaded(true);
     } catch (error) {
-      console.error('Erro ao carregar estado do onboarding:', error);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'onboarding_load_error', {
+          event_category: 'medical_onboarding_system',
+          event_label: 'onboarding_state_load_failed',
+          custom_parameters: {
+            medical_context: 'onboarding_initialization',
+            error_type: 'localStorage_read_failure',
+            error_message: error instanceof Error ? error.message : 'unknown_error'
+          }
+        });
+      }
       setState(DEFAULT_STATE);
       setIsLoaded(true);
     }
@@ -109,9 +120,19 @@ export function useOnboarding() {
     setState(updatedState);
     
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedState));
+      safeLocalStorage()?.setItem(STORAGE_KEY, JSON.stringify(updatedState));
     } catch (error) {
-      console.error('Erro ao salvar estado do onboarding:', error);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'onboarding_save_error', {
+          event_category: 'medical_onboarding_system',
+          event_label: 'onboarding_state_save_failed',
+          custom_parameters: {
+            medical_context: 'onboarding_persistence',
+            error_type: 'localStorage_write_failure',
+            error_message: error instanceof Error ? error.message : 'unknown_error'
+          }
+        });
+      }
     }
   }, [state]);
 
@@ -132,7 +153,7 @@ export function useOnboarding() {
     });
 
     // Store user preference for role-based features
-    localStorage.setItem('user_role_preference', selectedRole.id);
+    safeLocalStorage()?.setItem('user_role_preference', selectedRole.id);
   }, [saveState, trackUserInteraction]);
 
   // Skip onboarding
@@ -164,8 +185,8 @@ export function useOnboarding() {
 
   // Reset onboarding (for testing or admin purposes)
   const resetOnboarding = useCallback(() => {
-    localStorage.removeItem(STORAGE_KEY);
-    localStorage.removeItem('user_role_preference');
+    safeLocalStorage()?.removeItem(STORAGE_KEY);
+    safeLocalStorage()?.removeItem('user_role_preference');
     setState(DEFAULT_STATE);
     setShowWizard(true);
     
@@ -182,7 +203,7 @@ export function useOnboarding() {
     }
 
     // Fallback: check localStorage for manual preference
-    const rolePreference = localStorage.getItem('user_role_preference');
+    const rolePreference = safeLocalStorage()?.getItem('user_role_preference');
     if (rolePreference === 'medical' || rolePreference === 'student') {
       return 'dr-gasnelio';
     } else if (rolePreference === 'patient') {

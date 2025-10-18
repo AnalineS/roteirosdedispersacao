@@ -7,14 +7,16 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 import { useRouter } from 'next/navigation';
-import { 
-  UserLevel, 
-  DisclosureState, 
+import {
+  UserLevel,
+  DisclosureState,
   DisclosureContent,
+  ContentType,
   USER_LEVELS,
   PERSONA_TO_LEVEL,
-  CONTENT_PRIORITY 
+  CONTENT_PRIORITY
 } from '@/types/disclosure';
 
 interface UseProgressiveDisclosureOptions {
@@ -62,7 +64,7 @@ export function useProgressiveDisclosure(options: UseProgressiveDisclosureOption
     if (!persistState || typeof window === 'undefined') return;
 
     try {
-      const stored = localStorage.getItem('progressive-disclosure-state');
+      const stored = safeLocalStorage()?.getItem('progressive-disclosure-state');
       if (stored) {
         const parsedState = JSON.parse(stored);
         setState(prev => ({
@@ -73,7 +75,20 @@ export function useProgressiveDisclosure(options: UseProgressiveDisclosureOption
         }));
       }
     } catch (error) {
-      console.error('Erro ao carregar estado do progressive disclosure:', error);
+      // Erro ao carregar estado do progressive disclosure
+      if (typeof process !== 'undefined' && process.stderr) {
+        process.stderr.write(`❌ ERRO - Falha ao carregar estado do progressive disclosure: ${error}\n`);
+      }
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'progressive_disclosure_load_error', {
+          event_category: 'medical_disclosure_error',
+          event_label: 'disclosure_state_load_failed',
+          custom_parameters: {
+            error_context: 'progressive_disclosure_loading',
+            error_message: String(error)
+          }
+        });
+      }
     }
   }, [persistState, defaultLevel]);
 
@@ -83,9 +98,22 @@ export function useProgressiveDisclosure(options: UseProgressiveDisclosureOption
 
     try {
       const stateToSave = { ...state, ...newState };
-      localStorage.setItem('progressive-disclosure-state', JSON.stringify(stateToSave));
+      safeLocalStorage()?.setItem('progressive-disclosure-state', JSON.stringify(stateToSave));
     } catch (error) {
-      console.error('Erro ao salvar estado do progressive disclosure:', error);
+      // Erro ao salvar estado do progressive disclosure
+      if (typeof process !== 'undefined' && process.stderr) {
+        process.stderr.write(`❌ ERRO - Falha ao salvar estado do progressive disclosure: ${error}\n`);
+      }
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'progressive_disclosure_save_error', {
+          event_category: 'medical_disclosure_error',
+          event_label: 'disclosure_state_save_failed',
+          custom_parameters: {
+            error_context: 'progressive_disclosure_saving',
+            error_message: String(error)
+          }
+        });
+      }
     }
   }, [state, persistState]);
 
@@ -109,7 +137,7 @@ export function useProgressiveDisclosure(options: UseProgressiveDisclosureOption
     if (typeof window !== 'undefined') {
       // Tenta detectar persona do localStorage ou contexto
       try {
-        const userProfile = localStorage.getItem('user-profile');
+        const userProfile = safeLocalStorage()?.getItem('user-profile');
         if (userProfile) {
           const profile = JSON.parse(userProfile);
           if (profile.selectedPersona) {
@@ -117,7 +145,20 @@ export function useProgressiveDisclosure(options: UseProgressiveDisclosureOption
           }
         }
       } catch (error) {
-        console.error('Erro ao detectar persona:', error);
+        // Erro ao detectar persona
+        if (typeof process !== 'undefined' && process.stderr) {
+          process.stderr.write(`❌ ERRO - Falha ao detectar persona: ${error}\n`);
+        }
+        if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'progressive_disclosure_persona_error', {
+            event_category: 'medical_disclosure_error',
+            event_label: 'persona_detection_failed',
+            custom_parameters: {
+              error_context: 'persona_detection',
+              error_message: String(error)
+            }
+          });
+        }
       }
     }
   }, [setLevelFromPersona]);
@@ -206,7 +247,7 @@ export function useProgressiveDisclosure(options: UseProgressiveDisclosureOption
 
   // Verificar se conteúdo deve ser mostrado
   const shouldShowContent = useCallback((contentType: string) => {
-    return currentLevelConfig.allowedContent.includes(contentType as any);
+    return currentLevelConfig.allowedContent.includes(contentType as ContentType);
   }, [currentLevelConfig]);
 
   return {

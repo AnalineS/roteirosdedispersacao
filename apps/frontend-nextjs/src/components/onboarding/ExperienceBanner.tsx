@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 import { useRouter } from 'next/navigation';
 import { BeginnerIcon, IntermediateIcon, AdvancedIcon, ExpertIcon, TargetIcon, DoctorIcon, PillIcon, HeartIcon } from '@/components/icons/FlatOutlineIcons';
 import { usePersonalization } from '@/hooks/usePersonalization';
@@ -30,7 +31,7 @@ export default function ExperienceBanner({ onComplete }: ExperienceBannerProps) 
 
   // Show banner immediately, check localStorage after
   useEffect(() => {
-    const hasCompletedOnboarding = localStorage.getItem('personalization_onboarding_completed');
+    const hasCompletedOnboarding = safeLocalStorage()?.getItem('personalization_onboarding_completed');
     
     // Show if user hasn't completed full onboarding
     if (!hasCompletedOnboarding) {
@@ -107,8 +108,8 @@ export default function ExperienceBanner({ onComplete }: ExperienceBannerProps) 
     });
     
     // Mark as completed
-    localStorage.setItem('personalization_onboarding_completed', 'true');
-    localStorage.setItem('experience_banner_seen', 'true');
+    safeLocalStorage()?.setItem('personalization_onboarding_completed', 'true');
+    safeLocalStorage()?.setItem('experience_banner_seen', 'true');
     
     // Hide banner with animation
     setTimeout(() => {
@@ -118,7 +119,7 @@ export default function ExperienceBanner({ onComplete }: ExperienceBannerProps) 
   };
 
   const handleSkip = () => {
-    localStorage.setItem('experience_banner_seen', 'true');
+    safeLocalStorage()?.setItem('experience_banner_seen', 'true');
     setIsVisible(false);
     if (onComplete) onComplete();
   };

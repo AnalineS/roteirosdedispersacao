@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 import Image from 'next/image';
 import { X, ArrowRight, Check, MessageCircle, BookOpen, Search, HelpCircle } from 'lucide-react';
 
@@ -76,8 +77,8 @@ export default function QuickStartGuide({
   const [hasSeenGuide, setHasSeenGuide] = useState(false);
 
   useEffect(() => {
-    const guideSeen = localStorage.getItem('quick-start-guide-seen');
-    const completedStepsStored = localStorage.getItem('quick-start-completed-steps');
+    const guideSeen = safeLocalStorage()?.getItem('quick-start-guide-seen');
+    const completedStepsStored = safeLocalStorage()?.getItem('quick-start-completed-steps');
     
     if (completedStepsStored) {
       setCompletedSteps(new Set(JSON.parse(completedStepsStored)));
@@ -95,7 +96,7 @@ export default function QuickStartGuide({
     const newCompleted = new Set(completedSteps);
     newCompleted.add(stepId);
     setCompletedSteps(newCompleted);
-    localStorage.setItem('quick-start-completed-steps', JSON.stringify([...newCompleted]));
+    safeLocalStorage()?.setItem('quick-start-completed-steps', JSON.stringify([...newCompleted]));
     
     // If all steps completed, trigger completion
     if (newCompleted.size === quickStartSteps.length) {
@@ -107,21 +108,21 @@ export default function QuickStartGuide({
 
   const handleComplete = () => {
     setIsVisible(false);
-    localStorage.setItem('quick-start-guide-seen', 'true');
+    safeLocalStorage()?.setItem('quick-start-guide-seen', 'true');
     setHasSeenGuide(true);
     onComplete?.();
   };
 
   const handleDismiss = () => {
     setIsVisible(false);
-    localStorage.setItem('quick-start-guide-seen', 'dismissed');
+    safeLocalStorage()?.setItem('quick-start-guide-seen', 'dismissed');
     setHasSeenGuide(true);
   };
 
   const handleRestart = () => {
     setCompletedSteps(new Set());
-    localStorage.removeItem('quick-start-completed-steps');
-    localStorage.removeItem('quick-start-guide-seen');
+    safeLocalStorage()?.removeItem('quick-start-completed-steps');
+    safeLocalStorage()?.removeItem('quick-start-guide-seen');
     setIsVisible(true);
     setHasSeenGuide(false);
   };
@@ -190,7 +191,7 @@ export default function QuickStartGuide({
 
             {/* Steps */}
             <div className="quick-start-steps">
-              {quickStartSteps.map((step, index) => {
+              {quickStartSteps.map((step) => {
                 const isCompleted = completedSteps.has(step.id);
                 
                 return (

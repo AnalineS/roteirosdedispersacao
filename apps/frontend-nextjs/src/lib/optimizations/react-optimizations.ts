@@ -5,18 +5,38 @@
 
 'use client';
 
-import { 
-  useState, 
-  useEffect, 
-  useCallback, 
-  useMemo, 
-  useRef, 
+import {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef,
   useLayoutEffect,
   ComponentType,
   ReactElement,
   MutableRefObject
 } from 'react';
+import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 import { UniversalCache, debounce, throttle } from './index';
+
+// Sistema de logging controlado
+const isDevelopment = process.env.NODE_ENV === 'development';
+
+const logger = {
+  warn: (message: string, error?: unknown) => {
+    if (isDevelopment && typeof window !== 'undefined') {
+      // Em desenvolvimento, apenas armazena no localStorage
+      const logs = JSON.parse(safeLocalStorage()?.getItem('react_optimization_logs') || '[]');
+      logs.push({
+        level: 'warn',
+        message,
+        error: error instanceof Error ? error.message : String(error),
+        timestamp: Date.now()
+      });
+      safeLocalStorage()?.setItem('react_optimization_logs', JSON.stringify(logs.slice(-100)));
+    }
+  }
+};
 
 // ============================================
 // HOOKS DE PERFORMANCE
@@ -154,10 +174,10 @@ export function useOptimizedLocalStorage<T>(
     if (typeof window === 'undefined') return initialValue;
 
     try {
-      const item = localStorage.getItem(key);
+      const item = safeLocalStorage()?.getItem(key);
       return item ? deserialize(item) : initialValue;
     } catch (error) {
-      console.warn(`Error reading localStorage key "${key}":`, error);
+      logger.warn(`Error reading localStorage key "${key}":`, error);
       return initialValue;
     }
   });
@@ -169,10 +189,10 @@ export function useOptimizedLocalStorage<T>(
 
       if (typeof window !== 'undefined') {
         const serialized = serialize(valueToStore);
-        localStorage.setItem(key, serialized);
+        safeLocalStorage()?.setItem(key, serialized);
       }
     } catch (error) {
-      console.warn(`Error setting localStorage key "${key}":`, error);
+      logger.warn(`Error setting localStorage key "${key}":`, error);
     }
   }, [key, serialize, storedValue]);
 
@@ -190,7 +210,7 @@ export function useDebouncedState<T>(
   const [debouncedValue, setDebouncedValue] = useState(initialValue);
 
   const debouncedSetValue = useMemo(
-    () => debounce((value: T) => setDebouncedValue(value), delay),
+    () => debounce((...args: unknown[]) => setDebouncedValue(args[0] as T), delay),
     [delay]
   );
 
@@ -213,7 +233,7 @@ export function useThrottledState<T>(
   const [throttledValue, setThrottledValue] = useState(initialValue);
 
   const throttledSetValue = useMemo(
-    () => throttle((value: T) => setThrottledValue(value), limit),
+    () => throttle((...args: unknown[]) => setThrottledValue(args[0] as T), limit),
     [limit]
   );
 
@@ -230,7 +250,7 @@ export function useThrottledState<T>(
  */
 export function useAsyncState<T>(
   asyncFn: () => Promise<T>,
-  deps: any[] = [],
+  deps: React.DependencyList = [],
   cacheKey?: string
 ): {
   data: T | null;

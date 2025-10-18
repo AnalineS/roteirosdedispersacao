@@ -1,0 +1,3565 @@
+{
+  "timestamp": "2025-09-23T03:02:46.277Z",
+  "version": "2.0.0",
+  "compliance": {
+    "score": 0,
+    "status": "NON_COMPLIANT",
+    "level": "LOW"
+  },
+  "summary": {
+    "totalViolations": 89,
+    "totalWarnings": 596,
+    "criticalViolations": 38,
+    "highViolations": 23,
+    "mediumViolations": 28,
+    "lowViolations": 0
+  },
+  "violations": [
+    {
+      "code": "SENSITIVE_DATA_LOGGING",
+      "message": "Possível log de dados sensíveis em .snyk-custom-rules.yml",
+      "severity": "MEDIUM",
+      "timestamp": "2025-09-23T03:02:43.574Z"
+    },
+    {
+      "code": "PII_RG_DETECTED",
+      "message": "RG encontrado em all_security_alerts.json: 99 ocorrência(s)",
+      "severity": "HIGH",
+      "timestamp": "2025-09-23T03:02:43.585Z"
+    },
+    {
+      "code": "SENSITIVE_DATA_LOGGING",
+      "message": "Possível log de dados sensíveis em all_security_alerts.json",
+      "severity": "MEDIUM",
+      "timestamp": "2025-09-23T03:02:44.050Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em apps\\backend\\cache\\embeddings\\metadata.json: 2 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T03:02:44.094Z"
+    },
+    {
+      "code": "PII_RG_DETECTED",
+      "message": "RG encontrado em apps\\backend\\data_analysis_report.json: 4 ocorrência(s)",
+      "severity": "HIGH",
+      "timestamp": "2025-09-23T03:02:44.101Z"
+    },
+    {
+      "code": "PII_RG_DETECTED",
+      "message": "RG encontrado em apps\\frontend-nextjs\\firebase.json: 6 ocorrência(s)",
+      "severity": "HIGH",
+      "timestamp": "2025-09-23T03:02:44.115Z"
+    },
+    {
+      "code": "PII_RG_DETECTED",
+      "message": "RG encontrado em apps\\frontend-nextjs\\middleware.ts: 1 ocorrência(s)",
+      "severity": "HIGH",
+      "timestamp": "2025-09-23T03:02:44.118Z"
+    },
+    {
+      "code": "PII_RG_DETECTED",
+      "message": "RG encontrado em apps\\frontend-nextjs\\package-lock.json: 10 ocorrência(s)",
+      "severity": "HIGH",
+      "timestamp": "2025-09-23T03:02:44.122Z"
+    },
+    {
+      "code": "PII_RG_DETECTED",
+      "message": "RG encontrado em apps\\frontend-nextjs\\package.json: 1 ocorrência(s)",
+      "severity": "HIGH",
+      "timestamp": "2025-09-23T03:02:44.183Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em apps\\frontend-nextjs\\src\\app\\admin\\analytics\\page.tsx: 1 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T03:02:44.220Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em apps\\frontend-nextjs\\src\\app\\modules\\diagnostico\\page.tsx: 2 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T03:02:44.250Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em apps\\frontend-nextjs\\src\\app\\modules\\roteiro-dispensacao\\page.tsx: 8 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T03:02:44.258Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em apps\\frontend-nextjs\\src\\app\\modules\\sobre-a-tese\\page.tsx: 1 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T03:02:44.262Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em apps\\frontend-nextjs\\src\\app\\modules\\tratamento\\page.tsx: 8 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T03:02:44.265Z"
+    },
+    {
+      "code": "SENSITIVE_DATA_LOGGING",
+      "message": "Possível log de dados sensíveis em apps\\frontend-nextjs\\src\\app\\profile\\page.tsx",
+      "severity": "MEDIUM",
+      "timestamp": "2025-09-23T03:02:44.279Z"
+    },
+    {
+      "code": "PII_RG_DETECTED",
+      "message": "RG encontrado em apps\\frontend-nextjs\\src\\app\\sitemap\\page.tsx: 2 ocorrência(s)",
+      "severity": "HIGH",
+      "timestamp": "2025-09-23T03:02:44.299Z"
+    },
+    {
+      "code": "PII_RG_DETECTED",
+      "message": "RG encontrado em apps\\frontend-nextjs\\src\\app\\sobre-a-tese\\page.tsx: 1 ocorrência(s)",
+      "severity": "HIGH",
+      "timestamp": "2025-09-23T03:02:44.307Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em apps\\frontend-nextjs\\src\\app\\sobre-a-tese\\page.tsx: 1 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T03:02:44.307Z"
+    },
+    {
+      "code": "SENSITIVE_DATA_LOGGING",
+      "message": "Possível log de dados sensíveis em apps\\frontend-nextjs\\src\\components\\analytics\\GoogleAnalyticsSetup.tsx",
+      "severity": "MEDIUM",
+      "timestamp": "2025-09-23T03:02:44.366Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em apps\\frontend-nextjs\\src\\components\\chat\\ContextualSuggestions.tsx: 1 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T03:02:44.393Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em apps\\frontend-nextjs\\src\\components\\chat\\modern\\ExportChatModal.tsx: 2 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T03:02:44.407Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em apps\\frontend-nextjs\\src\\components\\content\\ContentSegmentation.tsx: 1 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T03:02:44.459Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em apps\\frontend-nextjs\\src\\components\\educational\\EducationalDashboard\\index.tsx: 1 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T03:02:44.474Z"
+    },
+    {
+      "code": "PII_RG_DETECTED",
+      "message": "RG encontrado em apps\\frontend-nextjs\\src\\components\\GoogleAnalytics.tsx: 2 ocorrência(s)",
+      "severity": "HIGH",
+      "timestamp": "2025-09-23T03:02:44.518Z"
+    },
+    {
+      "code": "SENSITIVE_DATA_LOGGING",
+      "message": "Possível log de dados sensíveis em apps\\frontend-nextjs\\src\\components\\interactive\\Certification\\CertificateGenerator.tsx",
+      "severity": "MEDIUM",
+      "timestamp": "2025-09-23T03:02:44.545Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em apps\\frontend-nextjs\\src\\components\\interactive\\DoseCalculator\\AdvancedCalculator.tsx: 1 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T03:02:44.567Z"
+    },
+    {
+      "code": "SENSITIVE_DATA_LOGGING",
+      "message": "Possível log de dados sensíveis em apps\\frontend-nextjs\\src\\components\\interactive\\DoseCalculator\\ExportOptions.tsx",
+      "severity": "MEDIUM",
+      "timestamp": "2025-09-23T03:02:44.575Z"
+    },
+    {
+      "code": "SENSITIVE_DATA_LOGGING",
+      "message": "Possível log de dados sensíveis em apps\\frontend-nextjs\\src\\components\\interactive\\TreatmentTimeline\\index.tsx",
+      "severity": "MEDIUM",
+      "timestamp": "2025-09-23T03:02:44.583Z"
+    },
+    {
+      "code": "SENSITIVE_DATA_LOGGING",
+      "message": "Possível log de dados sensíveis em apps\\frontend-nextjs\\src\\components\\navigation\\GlobalKeyboardProvider.tsx",
+      "severity": "MEDIUM",
+      "timestamp": "2025-09-23T03:02:44.628Z"
+    },
+    {
+      "code": "SENSITIVE_DATA_LOGGING",
+      "message": "Possível log de dados sensíveis em apps\\frontend-nextjs\\src\\components\\navigation\\IntelligentNavigationProvider.tsx",
+      "severity": "MEDIUM",
+      "timestamp": "2025-09-23T03:02:44.631Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em apps\\frontend-nextjs\\src\\components\\onboarding\\WelcomeWizard.tsx: 1 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T03:02:44.664Z"
+    },
+    {
+      "code": "SENSITIVE_DATA_LOGGING",
+      "message": "Possível log de dados sensíveis em apps\\frontend-nextjs\\src\\components\\onboarding\\WelcomeWizard.tsx",
+      "severity": "MEDIUM",
+      "timestamp": "2025-09-23T03:02:44.666Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em apps\\frontend-nextjs\\src\\components\\search\\AccessibleSearchWithSuggestions.tsx: 2 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T03:02:44.702Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em apps\\frontend-nextjs\\src\\components\\search\\IntelligentSearchSystem.tsx: 1 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T03:02:44.707Z"
+    },
+    {
+      "code": "SENSITIVE_LOCAL_STORAGE",
+      "message": "Armazenamento local de dados sensíveis em apps\\frontend-nextjs\\src\\contexts\\AuthContext.tsx",
+      "severity": "HIGH",
+      "timestamp": "2025-09-23T03:02:44.758Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em apps\\frontend-nextjs\\src\\data\\clinicalCases.ts: 3 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T03:02:44.768Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em apps\\frontend-nextjs\\src\\data\\educationalQuizzes.ts: 1 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T03:02:44.776Z"
+    },
+    {
+      "code": "SENSITIVE_DATA_LOGGING",
+      "message": "Possível log de dados sensíveis em apps\\frontend-nextjs\\src\\hooks\\useAnalytics.ts",
+      "severity": "MEDIUM",
+      "timestamp": "2025-09-23T03:02:44.785Z"
+    },
+    {
+      "code": "SENSITIVE_DATA_LOGGING",
+      "message": "Possível log de dados sensíveis em apps\\frontend-nextjs\\src\\hooks\\useChat.ts",
+      "severity": "MEDIUM",
+      "timestamp": "2025-09-23T03:02:44.789Z"
+    },
+    {
+      "code": "SENSITIVE_DATA_LOGGING",
+      "message": "Possível log de dados sensíveis em apps\\frontend-nextjs\\src\\hooks\\useChatService.ts",
+      "severity": "MEDIUM",
+      "timestamp": "2025-09-23T03:02:44.792Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em apps\\frontend-nextjs\\src\\hooks\\useMedicalGlossary.ts: 1 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T03:02:44.821Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em apps\\frontend-nextjs\\src\\hooks\\useOptimizedInput.ts: 1 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T03:02:44.828Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em apps\\frontend-nextjs\\src\\lib\\auth\\jwt-client.ts: 1 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T03:02:44.865Z"
+    },
+    {
+      "code": "SENSITIVE_DATA_LOGGING",
+      "message": "Possível log de dados sensíveis em apps\\frontend-nextjs\\src\\services\\ActiveServicesHub.ts",
+      "severity": "MEDIUM",
+      "timestamp": "2025-09-23T03:02:44.890Z"
+    },
+    {
+      "code": "SENSITIVE_DATA_LOGGING",
+      "message": "Possível log de dados sensíveis em apps\\frontend-nextjs\\src\\services\\advancedAnalytics.ts",
+      "severity": "MEDIUM",
+      "timestamp": "2025-09-23T03:02:44.893Z"
+    },
+    {
+      "code": "SENSITIVE_DATA_LOGGING",
+      "message": "Possível log de dados sensíveis em apps\\frontend-nextjs\\src\\services\\auth.ts",
+      "severity": "MEDIUM",
+      "timestamp": "2025-09-23T03:02:44.900Z"
+    },
+    {
+      "code": "SENSITIVE_DATA_LOGGING",
+      "message": "Possível log de dados sensíveis em apps\\frontend-nextjs\\src\\services\\chatService.ts",
+      "severity": "MEDIUM",
+      "timestamp": "2025-09-23T03:02:44.903Z"
+    },
+    {
+      "code": "SENSITIVE_DATA_LOGGING",
+      "message": "Possível log de dados sensíveis em apps\\frontend-nextjs\\src\\services\\notifications\\NotificationSystem.ts",
+      "severity": "MEDIUM",
+      "timestamp": "2025-09-23T03:02:44.927Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em apps\\frontend-nextjs\\src\\services\\validationService.ts: 2 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T03:02:44.952Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em apps\\frontend-nextjs\\src\\types\\checklist.ts: 1 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T03:02:44.980Z"
+    },
+    {
+      "code": "PII_RG_DETECTED",
+      "message": "RG encontrado em apps\\frontend-nextjs\\src\\utils\\abTesting.ts: 6 ocorrência(s)",
+      "severity": "HIGH",
+      "timestamp": "2025-09-23T03:02:45.003Z"
+    },
+    {
+      "code": "SENSITIVE_DATA_LOGGING",
+      "message": "Possível log de dados sensíveis em apps\\frontend-nextjs\\src\\utils\\cloudLogger.ts",
+      "severity": "MEDIUM",
+      "timestamp": "2025-09-23T03:02:45.026Z"
+    },
+    {
+      "code": "PII_RG_DETECTED",
+      "message": "RG encontrado em apps\\frontend-nextjs\\src\\utils\\educationalSecurity.ts: 1 ocorrência(s)",
+      "severity": "HIGH",
+      "timestamp": "2025-09-23T03:02:45.052Z"
+    },
+    {
+      "code": "SENSITIVE_DATA_LOGGING",
+      "message": "Possível log de dados sensíveis em apps\\frontend-nextjs\\src\\utils\\logger.ts",
+      "severity": "MEDIUM",
+      "timestamp": "2025-09-23T03:02:45.063Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em apps\\frontend-nextjs\\src\\utils\\medicalValidation.ts: 1 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T03:02:45.066Z"
+    },
+    {
+      "code": "PII_CPF_DETECTED",
+      "message": "CPF encontrado em apps\\frontend-nextjs\\src\\utils\\secureLogger.ts: 1 ocorrência(s)",
+      "severity": "HIGH",
+      "timestamp": "2025-09-23T03:02:45.075Z"
+    },
+    {
+      "code": "SENSITIVE_DATA_LOGGING",
+      "message": "Possível log de dados sensíveis em apps\\frontend-nextjs\\src\\utils\\secureLogger.ts",
+      "severity": "MEDIUM",
+      "timestamp": "2025-09-23T03:02:45.076Z"
+    },
+    {
+      "code": "SENSITIVE_DATA_LOGGING",
+      "message": "Possível log de dados sensíveis em apps\\frontend-nextjs\\src\\utils\\securityMonitoring.ts",
+      "severity": "MEDIUM",
+      "timestamp": "2025-09-23T03:02:45.079Z"
+    },
+    {
+      "code": "PII_RG_DETECTED",
+      "message": "RG encontrado em apps\\frontend-nextjs\\src\\utils\\securityUtils.ts: 1 ocorrência(s)",
+      "severity": "HIGH",
+      "timestamp": "2025-09-23T03:02:45.080Z"
+    },
+    {
+      "code": "SENSITIVE_DATA_LOGGING",
+      "message": "Possível log de dados sensíveis em apps\\frontend-nextjs\\tests\\analytics.validation.ts",
+      "severity": "MEDIUM",
+      "timestamp": "2025-09-23T03:02:45.088Z"
+    },
+    {
+      "code": "SENSITIVE_DATA_LOGGING",
+      "message": "Possível log de dados sensíveis em apps\\frontend-nextjs\\tests\\uiux.validation.tsx",
+      "severity": "MEDIUM",
+      "timestamp": "2025-09-23T03:02:45.095Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em data\\knowledge-base\\hanseniase.md: 1 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T03:02:45.154Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em data\\structured\\dispensing_workflow.json: 2 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T03:02:45.170Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em data\\structured\\dosing_protocols.json: 1 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T03:02:45.177Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em data\\structured\\frequently_asked_questions.json: 2 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T03:02:45.180Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em data\\structured\\hanseniase_catalog.json: 1 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T03:02:45.184Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em data\\structured\\quick_reference_protocols.json: 1 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T03:02:45.211Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em data\\training\\structured_data\\dispensing_workflow.json: 2 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T03:02:45.223Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em data\\training\\structured_data\\dosing_protocols.json: 1 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T03:02:45.226Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em data\\training\\structured_data\\frequently_asked_questions.json: 2 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T03:02:45.228Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em data\\training\\structured_data\\hanseniase_catalog.json: 1 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T03:02:45.231Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em data\\training\\structured_data\\quick_reference_protocols.json: 1 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T03:02:45.241Z"
+    },
+    {
+      "code": "MEDICAL_CNS_DETECTED",
+      "message": "Cartão Nacional de Saúde encontrado em data\\training\\training_data.json: 2 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T03:02:45.244Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em data\\training\\training_data.json: 4 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T03:02:45.244Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em data\\training\\training_splits\\train.json: 1 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T03:02:45.254Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em data\\training\\training_splits\\validation.json: 1 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T03:02:45.259Z"
+    },
+    {
+      "code": "PII_RG_DETECTED",
+      "message": "RG encontrado em docs\\generated\\documentation-report.json: 1 ocorrência(s)",
+      "severity": "HIGH",
+      "timestamp": "2025-09-23T03:02:45.275Z"
+    },
+    {
+      "code": "PII_CPF_DETECTED",
+      "message": "CPF encontrado em PLANO_HABILITACAO_SERVICOS.md: 2 ocorrência(s)",
+      "severity": "HIGH",
+      "timestamp": "2025-09-23T03:02:45.382Z"
+    },
+    {
+      "code": "PII_RG_DETECTED",
+      "message": "RG encontrado em PLANO_HABILITACAO_SERVICOS.md: 1 ocorrência(s)",
+      "severity": "HIGH",
+      "timestamp": "2025-09-23T03:02:45.382Z"
+    },
+    {
+      "code": "PII_RG_DETECTED",
+      "message": "RG encontrado em REPOSITORY_REORGANIZATION_REPORT.md: 2 ocorrência(s)",
+      "severity": "HIGH",
+      "timestamp": "2025-09-23T03:02:45.393Z"
+    },
+    {
+      "code": "SENSITIVE_DATA_LOGGING",
+      "message": "Possível log de dados sensíveis em scripts\\supabase_documents_20250831_205501.json",
+      "severity": "MEDIUM",
+      "timestamp": "2025-09-23T03:02:45.526Z"
+    },
+    {
+      "code": "SENSITIVE_DATA_LOGGING",
+      "message": "Possível log de dados sensíveis em scripts\\supabase_documents_20250902_215627.json",
+      "severity": "MEDIUM",
+      "timestamp": "2025-09-23T03:02:45.547Z"
+    },
+    {
+      "code": "PII_RG_DETECTED",
+      "message": "RG encontrado em scripts\\UPDATE_GCP_KEY.md: 2 ocorrência(s)",
+      "severity": "HIGH",
+      "timestamp": "2025-09-23T03:02:45.549Z"
+    },
+    {
+      "code": "PII_RG_DETECTED",
+      "message": "RG encontrado em security_alerts.json: 86 ocorrência(s)",
+      "severity": "HIGH",
+      "timestamp": "2025-09-23T03:02:45.561Z"
+    },
+    {
+      "code": "SENSITIVE_DATA_LOGGING",
+      "message": "Possível log de dados sensíveis em security_alerts.json",
+      "severity": "MEDIUM",
+      "timestamp": "2025-09-23T03:02:46.016Z"
+    },
+    {
+      "code": "PII_RG_DETECTED",
+      "message": "RG encontrado em SECURITY_ANALYSIS.md: 2 ocorrência(s)",
+      "severity": "HIGH",
+      "timestamp": "2025-09-23T03:02:46.059Z"
+    },
+    {
+      "code": "SENSITIVE_DATA_LOGGING",
+      "message": "Possível log de dados sensíveis em SPRINT1_IMPLEMENTATION_GUIDE.md",
+      "severity": "MEDIUM",
+      "timestamp": "2025-09-23T03:02:46.061Z"
+    },
+    {
+      "code": "MISSING_PRIVACY_POLICY",
+      "message": "Política de privacidade não encontrada",
+      "severity": "HIGH",
+      "timestamp": "2025-09-23T03:02:46.070Z"
+    },
+    {
+      "code": "ANALYTICS_WITHOUT_CONSENT",
+      "message": "Analytics detectado sem consentimento de cookies",
+      "severity": "HIGH",
+      "timestamp": "2025-09-23T03:02:46.277Z"
+    }
+  ],
+  "warnings": [
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em .claude-workspace\\Checklist de Execução - Modernização Roteiro de Dispensação.md",
+      "timestamp": "2025-09-23T03:02:43.551Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em .github\\workflows\\production-deploy.yml",
+      "timestamp": "2025-09-23T03:02:43.564Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em .github\\workflows\\staging-deploy.yml",
+      "timestamp": "2025-09-23T03:02:43.567Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'analytics' em .github\\workflows\\staging-deploy.yml pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:43.571Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em .github\\workflows\\staging-deploy.yml - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:43.573Z"
+    },
+    {
+      "code": "PII_EMAIL_DETECTED",
+      "message": "Email encontrado em .snyk-custom-rules.yml: 3 ocorrência(s) - Verificar se há consentimento",
+      "timestamp": "2025-09-23T03:02:43.573Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em .snyk-custom-rules.yml",
+      "timestamp": "2025-09-23T03:02:43.573Z"
+    },
+    {
+      "code": "PII_EMAIL_DETECTED",
+      "message": "Email encontrado em all_security_alerts.json: 313 ocorrência(s) - Verificar se há consentimento",
+      "timestamp": "2025-09-23T03:02:43.598Z"
+    },
+    {
+      "code": "PII_PHONE_DETECTED",
+      "message": "Telefone encontrado em all_security_alerts.json: 291 ocorrência(s) - Verificar se há consentimento",
+      "timestamp": "2025-09-23T03:02:43.599Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em all_security_alerts.json",
+      "timestamp": "2025-09-23T03:02:43.606Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em all_security_alerts.json - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.051Z"
+    },
+    {
+      "code": "PERSONAL_DATA_API",
+      "message": "API com dados pessoais em all_security_alerts.json - Verificar proteções LGPD",
+      "timestamp": "2025-09-23T03:02:44.089Z"
+    },
+    {
+      "code": "PII_PHONE_DETECTED",
+      "message": "Telefone encontrado em apps\\backend\\.safety-policy.yml: 1 ocorrência(s) - Verificar se há consentimento",
+      "timestamp": "2025-09-23T03:02:44.092Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'email' em apps\\backend\\.safety-policy.yml pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.093Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\backend\\cache\\embeddings\\metadata.json",
+      "timestamp": "2025-09-23T03:02:44.094Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\backend\\core\\security\\README.md",
+      "timestamp": "2025-09-23T03:02:44.100Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'email' em apps\\backend\\core\\security\\README.md pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.100Z"
+    },
+    {
+      "code": "PII_PHONE_DETECTED",
+      "message": "Telefone encontrado em apps\\backend\\data_analysis_report.json: 7 ocorrência(s) - Verificar se há consentimento",
+      "timestamp": "2025-09-23T03:02:44.102Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\backend\\data_analysis_report.json",
+      "timestamp": "2025-09-23T03:02:44.102Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\backend\\qa-reports\\supabase_migration_final_report.md",
+      "timestamp": "2025-09-23T03:02:44.103Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\.eslintrc.security.js",
+      "timestamp": "2025-09-23T03:02:44.112Z"
+    },
+    {
+      "code": "PII_PHONE_DETECTED",
+      "message": "Telefone encontrado em apps\\frontend-nextjs\\firebase.json: 6 ocorrência(s) - Verificar se há consentimento",
+      "timestamp": "2025-09-23T03:02:44.115Z"
+    },
+    {
+      "code": "PII_PHONE_DETECTED",
+      "message": "Telefone encontrado em apps\\frontend-nextjs\\middleware.ts: 1 ocorrência(s) - Verificar se há consentimento",
+      "timestamp": "2025-09-23T03:02:44.118Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\next.config.js - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.119Z"
+    },
+    {
+      "code": "PII_PHONE_DETECTED",
+      "message": "Telefone encontrado em apps\\frontend-nextjs\\package-lock.json: 10 ocorrência(s) - Verificar se há consentimento",
+      "timestamp": "2025-09-23T03:02:44.124Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\package-lock.json",
+      "timestamp": "2025-09-23T03:02:44.125Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\package-lock.json - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.181Z"
+    },
+    {
+      "code": "PII_PHONE_DETECTED",
+      "message": "Telefone encontrado em apps\\frontend-nextjs\\package.json: 1 ocorrência(s) - Verificar se há consentimento",
+      "timestamp": "2025-09-23T03:02:44.183Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\PRODUCTION_DEPLOYMENT_CHECKLIST.md - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.186Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\public\\sw.js",
+      "timestamp": "2025-09-23T03:02:44.189Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\RELATORIO_OTIMIZACOES_PERFORMANCE.md",
+      "timestamp": "2025-09-23T03:02:44.191Z"
+    },
+    {
+      "code": "PII_PHONE_DETECTED",
+      "message": "Telefone encontrado em apps\\frontend-nextjs\\scripts\\cleanup-dev.js: 1 ocorrência(s) - Verificar se há consentimento",
+      "timestamp": "2025-09-23T03:02:44.195Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\scripts\\cleanup-dev.js",
+      "timestamp": "2025-09-23T03:02:44.195Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\scripts\\generateQAReport.ts",
+      "timestamp": "2025-09-23T03:02:44.199Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\app\\acessibilidade\\page.tsx",
+      "timestamp": "2025-09-23T03:02:44.219Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\app\\admin\\analytics\\master\\page.tsx",
+      "timestamp": "2025-09-23T03:02:44.220Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\app\\admin\\analytics\\master\\page.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.220Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\app\\admin\\analytics\\page.tsx",
+      "timestamp": "2025-09-23T03:02:44.221Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\app\\admin\\analytics\\page.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.222Z"
+    },
+    {
+      "code": "PII_EMAIL_DETECTED",
+      "message": "Email encontrado em apps\\frontend-nextjs\\src\\app\\admin\\page.tsx: 4 ocorrência(s) - Verificar se há consentimento",
+      "timestamp": "2025-09-23T03:02:44.223Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\app\\admin\\page.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.224Z"
+    },
+    {
+      "code": "PII_EMAIL_DETECTED",
+      "message": "Email encontrado em apps\\frontend-nextjs\\src\\app\\cadastro\\page.tsx: 1 ocorrência(s) - Verificar se há consentimento",
+      "timestamp": "2025-09-23T03:02:44.224Z"
+    },
+    {
+      "code": "PII_PHONE_DETECTED",
+      "message": "Telefone encontrado em apps\\frontend-nextjs\\src\\app\\cadastro\\page.tsx: 1 ocorrência(s) - Verificar se há consentimento",
+      "timestamp": "2025-09-23T03:02:44.224Z"
+    },
+    {
+      "code": "PII_EMAIL_DETECTED",
+      "message": "Email encontrado em apps\\frontend-nextjs\\src\\app\\certificacao\\page.tsx: 1 ocorrência(s) - Verificar se há consentimento",
+      "timestamp": "2025-09-23T03:02:44.227Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\app\\certificacao\\page.tsx",
+      "timestamp": "2025-09-23T03:02:44.227Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'email' em apps\\frontend-nextjs\\src\\app\\certificacao\\page.tsx pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.228Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\app\\certificacao\\page.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.229Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\app\\chat\\page.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.232Z"
+    },
+    {
+      "code": "PII_EMAIL_DETECTED",
+      "message": "Email encontrado em apps\\frontend-nextjs\\src\\app\\conformidade\\page.tsx: 1 ocorrência(s) - Verificar se há consentimento",
+      "timestamp": "2025-09-23T03:02:44.233Z"
+    },
+    {
+      "code": "PII_EMAIL_DETECTED",
+      "message": "Email encontrado em apps\\frontend-nextjs\\src\\app\\esqueci-senha\\page.tsx: 3 ocorrência(s) - Verificar se há consentimento",
+      "timestamp": "2025-09-23T03:02:44.237Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'email' em apps\\frontend-nextjs\\src\\app\\esqueci-senha\\page.tsx pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.237Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'medicamentos' em apps\\frontend-nextjs\\src\\app\\glossario\\page.tsx pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.242Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\app\\icones\\page.tsx",
+      "timestamp": "2025-09-23T03:02:44.243Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\app\\layout.tsx",
+      "timestamp": "2025-09-23T03:02:44.244Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\app\\layout.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.245Z"
+    },
+    {
+      "code": "PII_EMAIL_DETECTED",
+      "message": "Email encontrado em apps\\frontend-nextjs\\src\\app\\login\\page.tsx: 1 ocorrência(s) - Verificar se há consentimento",
+      "timestamp": "2025-09-23T03:02:44.245Z"
+    },
+    {
+      "code": "PII_PHONE_DETECTED",
+      "message": "Telefone encontrado em apps\\frontend-nextjs\\src\\app\\metodologia\\detalhada\\page.tsx: 1 ocorrência(s) - Verificar se há consentimento",
+      "timestamp": "2025-09-23T03:02:44.247Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\app\\modules\\diagnostico\\page.tsx",
+      "timestamp": "2025-09-23T03:02:44.250Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\app\\modules\\page.tsx",
+      "timestamp": "2025-09-23T03:02:44.255Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'medicamentos' em apps\\frontend-nextjs\\src\\app\\modules\\page.tsx pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.257Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\app\\modules\\roteiro-dispensacao\\page.tsx",
+      "timestamp": "2025-09-23T03:02:44.258Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'medicamentos' em apps\\frontend-nextjs\\src\\app\\modules\\roteiro-dispensacao\\page.tsx pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.260Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\app\\modules\\sobre-a-tese\\page.tsx",
+      "timestamp": "2025-09-23T03:02:44.262Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'medicamentos' em apps\\frontend-nextjs\\src\\app\\modules\\sobre-a-tese\\page.tsx pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.263Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\app\\modules\\tratamento\\page.tsx",
+      "timestamp": "2025-09-23T03:02:44.265Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'medicamentos' em apps\\frontend-nextjs\\src\\app\\modules\\tratamento\\page.tsx pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.267Z"
+    },
+    {
+      "code": "PII_EMAIL_DETECTED",
+      "message": "Email encontrado em apps\\frontend-nextjs\\src\\app\\modules\\vida-com-doenca\\page.tsx: 2 ocorrência(s) - Verificar se há consentimento",
+      "timestamp": "2025-09-23T03:02:44.269Z"
+    },
+    {
+      "code": "PII_PHONE_DETECTED",
+      "message": "Telefone encontrado em apps\\frontend-nextjs\\src\\app\\modules\\vida-com-doenca\\page.tsx: 7 ocorrência(s) - Verificar se há consentimento",
+      "timestamp": "2025-09-23T03:02:44.269Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\app\\modules\\vida-com-doenca\\page.tsx",
+      "timestamp": "2025-09-23T03:02:44.269Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'telefone' em apps\\frontend-nextjs\\src\\app\\modules\\vida-com-doenca\\page.tsx pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.270Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'cpf' em apps\\frontend-nextjs\\src\\app\\modules\\vida-com-doenca\\page.tsx pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.271Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\app\\page.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.276Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\app\\profile\\page.tsx",
+      "timestamp": "2025-09-23T03:02:44.277Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'email' em apps\\frontend-nextjs\\src\\app\\profile\\page.tsx pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.277Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\app\\progressive-disclosure-demo\\page.tsx",
+      "timestamp": "2025-09-23T03:02:44.282Z"
+    },
+    {
+      "code": "PII_PHONE_DETECTED",
+      "message": "Telefone encontrado em apps\\frontend-nextjs\\src\\app\\referencias\\page.tsx: 1 ocorrência(s) - Verificar se há consentimento",
+      "timestamp": "2025-09-23T03:02:44.285Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\app\\resources\\calculator\\page.tsx",
+      "timestamp": "2025-09-23T03:02:44.286Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\app\\resources\\checklist\\page.tsx",
+      "timestamp": "2025-09-23T03:02:44.287Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\app\\resources\\page.tsx",
+      "timestamp": "2025-09-23T03:02:44.290Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\app\\search\\page.tsx",
+      "timestamp": "2025-09-23T03:02:44.293Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\app\\simulador\\page.tsx",
+      "timestamp": "2025-09-23T03:02:44.295Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\app\\sitemap\\page.tsx",
+      "timestamp": "2025-09-23T03:02:44.299Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\app\\sitemap\\page.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.300Z"
+    },
+    {
+      "code": "PII_EMAIL_DETECTED",
+      "message": "Email encontrado em apps\\frontend-nextjs\\src\\app\\sobre\\page.tsx: 1 ocorrência(s) - Verificar se há consentimento",
+      "timestamp": "2025-09-23T03:02:44.301Z"
+    },
+    {
+      "code": "PII_PHONE_DETECTED",
+      "message": "Telefone encontrado em apps\\frontend-nextjs\\src\\app\\sobre\\page.tsx: 1 ocorrência(s) - Verificar se há consentimento",
+      "timestamp": "2025-09-23T03:02:44.301Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\app\\sobre\\page.tsx",
+      "timestamp": "2025-09-23T03:02:44.301Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\app\\sobre-a-tese\\page.tsx",
+      "timestamp": "2025-09-23T03:02:44.307Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\app\\termos\\page.tsx",
+      "timestamp": "2025-09-23T03:02:44.312Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'medicamentos' em apps\\frontend-nextjs\\src\\app\\timeline\\page.tsx pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.313Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\app\\vida-com-hanseniase\\page.tsx",
+      "timestamp": "2025-09-23T03:02:44.314Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\accessibility\\AccessibilityAuditPanel.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.320Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\accessibility\\AccessibilityDashboard.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.320Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\accessibility\\AccessibilityPanel.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.322Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'analytics' em apps\\frontend-nextjs\\src\\components\\accessibility\\AccessibilityValidator.tsx pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.326Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\accessibility\\AccessibilityValidator.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.327Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\accessibility\\PersonaAccessibilityProvider.tsx",
+      "timestamp": "2025-09-23T03:02:44.343Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\accessibility\\PersonaAccessibilityProvider.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.344Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\achievements\\ShareProgress.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.355Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\admin\\AdminAnalyticsDashboard.tsx",
+      "timestamp": "2025-09-23T03:02:44.356Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'analytics' em apps\\frontend-nextjs\\src\\components\\admin\\AdminAnalyticsDashboard.tsx pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.358Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\admin\\AdminAnalyticsDashboard.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.358Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\analytics\\AnalyticsProvider.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.359Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\analytics\\ClientAnalytics.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.360Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\analytics\\CognitiveLoadAuditor.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.362Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\analytics\\EnhancedCoreWebVitals.tsx",
+      "timestamp": "2025-09-23T03:02:44.362Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\analytics\\EnhancedCoreWebVitals.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.365Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\analytics\\GoogleAnalyticsSetup.tsx",
+      "timestamp": "2025-09-23T03:02:44.366Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\analytics\\GoogleAnalyticsSetup.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.366Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\analytics\\MasterDashboard.tsx",
+      "timestamp": "2025-09-23T03:02:44.367Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\analytics\\MasterDashboard.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.369Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\analytics\\MobileUXAuditor.tsx",
+      "timestamp": "2025-09-23T03:02:44.369Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\analytics\\MobileUXAuditor.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.371Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\analytics\\UXAnalyticsProvider.tsx",
+      "timestamp": "2025-09-23T03:02:44.372Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\analytics\\UXAnalyticsProvider.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.373Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\analytics\\WebVitalsDashboard.tsx",
+      "timestamp": "2025-09-23T03:02:44.373Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\analytics\\WebVitalsDashboard.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.375Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\auth\\AuthButton.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.378Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\auth\\AuthProviderWrapper.tsx",
+      "timestamp": "2025-09-23T03:02:44.378Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\auth\\AuthProviderWrapper.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.379Z"
+    },
+    {
+      "code": "PII_EMAIL_DETECTED",
+      "message": "Email encontrado em apps\\frontend-nextjs\\src\\components\\auth\\LoginModal.tsx: 1 ocorrência(s) - Verificar se há consentimento",
+      "timestamp": "2025-09-23T03:02:44.381Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\auth\\LoginModal.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.382Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\auth\\UserBenefitsCard.tsx",
+      "timestamp": "2025-09-23T03:02:44.383Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\auth\\UserBenefitsCard.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.384Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\chat\\ContextualSuggestions.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.395Z"
+    },
+    {
+      "code": "PII_EMAIL_DETECTED",
+      "message": "Email encontrado em apps\\frontend-nextjs\\src\\components\\chat\\ConversationExporter.tsx: 1 ocorrência(s) - Verificar se há consentimento",
+      "timestamp": "2025-09-23T03:02:44.395Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\chat\\ConversationExporter.tsx",
+      "timestamp": "2025-09-23T03:02:44.395Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'email' em apps\\frontend-nextjs\\src\\components\\chat\\ConversationExporter.tsx pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.395Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\chat\\ConversationExporter.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.396Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\chat\\FallbackIndicator.tsx",
+      "timestamp": "2025-09-23T03:02:44.399Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\chat\\FeedbackWidget.tsx",
+      "timestamp": "2025-09-23T03:02:44.400Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\chat\\FeedbackWidget.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.403Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\chat\\KnowledgeIndicator.tsx",
+      "timestamp": "2025-09-23T03:02:44.404Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\chat\\modern\\ChatEmptyState.tsx",
+      "timestamp": "2025-09-23T03:02:44.405Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\chat\\modern\\ExportChatModal.tsx",
+      "timestamp": "2025-09-23T03:02:44.407Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'email' em apps\\frontend-nextjs\\src\\components\\chat\\modern\\ExportChatModal.tsx pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.407Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\chat\\modern\\ExportChatModal.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.408Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\chat\\modern\\ImprovedPersonaSwitch.tsx",
+      "timestamp": "2025-09-23T03:02:44.409Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\chat\\modern\\MessageBubble.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.412Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\chat\\modern\\ModernChatInput.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.418Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\chat\\modern\\README.md",
+      "timestamp": "2025-09-23T03:02:44.421Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\chat\\MultimodalChatInput.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.425Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\chat\\PersonaAvatar.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.427Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\content\\ContentChunkingStrategy.tsx",
+      "timestamp": "2025-09-23T03:02:44.457Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\content\\ContentSegmentation.tsx",
+      "timestamp": "2025-09-23T03:02:44.459Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\content\\LastUpdated.tsx",
+      "timestamp": "2025-09-23T03:02:44.461Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\disclosure\\DosageCard.tsx",
+      "timestamp": "2025-09-23T03:02:44.462Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\disclosure\\MedicalAccordion.tsx",
+      "timestamp": "2025-09-23T03:02:44.464Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\disclosure\\MedicalTermPopup.tsx",
+      "timestamp": "2025-09-23T03:02:44.465Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\disclosure\\ProgressiveCard.tsx",
+      "timestamp": "2025-09-23T03:02:44.467Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\dx\\UXInstrumentationPanel.tsx",
+      "timestamp": "2025-09-23T03:02:44.469Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\educational\\AnonymousTimeline.tsx",
+      "timestamp": "2025-09-23T03:02:44.472Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\educational\\EducationalDashboard\\index.tsx",
+      "timestamp": "2025-09-23T03:02:44.474Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\educational\\EducationalDashboard\\index.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.476Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\educational\\Glossary\\index.tsx",
+      "timestamp": "2025-09-23T03:02:44.477Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\educational\\MedicalTermPopup.tsx",
+      "timestamp": "2025-09-23T03:02:44.481Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\educational\\ModuleTemplate\\index.tsx",
+      "timestamp": "2025-09-23T03:02:44.483Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\educational\\PersonaEducationalAvatar.tsx",
+      "timestamp": "2025-09-23T03:02:44.485Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\educational\\SmartSearch\\index.tsx",
+      "timestamp": "2025-09-23T03:02:44.488Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\educational\\SmartSearch\\index.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.490Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\educational\\VisualCards\\index.tsx",
+      "timestamp": "2025-09-23T03:02:44.491Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\ErrorBoundary.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.493Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\errors\\ErrorBoundary.tsx",
+      "timestamp": "2025-09-23T03:02:44.494Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\errors\\ErrorBoundary.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.495Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'email' em apps\\frontend-nextjs\\src\\components\\forms\\OptimizedForm.tsx pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.500Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\gamification\\BadgeCard.tsx",
+      "timestamp": "2025-09-23T03:02:44.503Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\gamification\\GamificationWidget.tsx",
+      "timestamp": "2025-09-23T03:02:44.508Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\gamification\\GamificationWidget.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.509Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\gamification\\NotificationSystem.tsx",
+      "timestamp": "2025-09-23T03:02:44.509Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\gamification\\NotificationSystem.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.511Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\gamification\\ProgressDashboard.tsx",
+      "timestamp": "2025-09-23T03:02:44.512Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\glossary\\MedicalTermTooltip.tsx",
+      "timestamp": "2025-09-23T03:02:44.517Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'medicamentos' em apps\\frontend-nextjs\\src\\components\\glossary\\MedicalTermTooltip.tsx pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.517Z"
+    },
+    {
+      "code": "PII_PHONE_DETECTED",
+      "message": "Telefone encontrado em apps\\frontend-nextjs\\src\\components\\GoogleAnalytics.tsx: 2 ocorrência(s) - Verificar se há consentimento",
+      "timestamp": "2025-09-23T03:02:44.518Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\GoogleAnalytics.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.519Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\hierarchy\\MedicalColorSystem.tsx",
+      "timestamp": "2025-09-23T03:02:44.519Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\hierarchy\\TypographySystem.tsx",
+      "timestamp": "2025-09-23T03:02:44.521Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\home\\FeaturesSection.tsx",
+      "timestamp": "2025-09-23T03:02:44.522Z"
+    },
+    {
+      "code": "PERSONAL_DATA_API",
+      "message": "API com dados pessoais em apps\\frontend-nextjs\\src\\components\\home\\FeaturesSection.tsx - Verificar proteções LGPD",
+      "timestamp": "2025-09-23T03:02:44.523Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\home\\HeroSection.tsx",
+      "timestamp": "2025-09-23T03:02:44.523Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\home\\PersonaSelector.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.526Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\home\\PersonaSelectorUnified.tsx",
+      "timestamp": "2025-09-23T03:02:44.527Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\home\\PersonaSelectorUnified.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.528Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\home\\TrustBadges.tsx",
+      "timestamp": "2025-09-23T03:02:44.529Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\icons\\ActiveIconSystem.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.532Z"
+    },
+    {
+      "code": "PII_EMAIL_DETECTED",
+      "message": "Email encontrado em apps\\frontend-nextjs\\src\\components\\interactive\\Certification\\CertificateGenerator.tsx: 1 ocorrência(s) - Verificar se há consentimento",
+      "timestamp": "2025-09-23T03:02:44.541Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\interactive\\Certification\\CertificateGenerator.tsx",
+      "timestamp": "2025-09-23T03:02:44.542Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'email' em apps\\frontend-nextjs\\src\\components\\interactive\\Certification\\CertificateGenerator.tsx pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.542Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\interactive\\ClinicalSimulator\\CaseSelector.tsx",
+      "timestamp": "2025-09-23T03:02:44.549Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\interactive\\ClinicalSimulator\\SimulatorIntroduction.tsx",
+      "timestamp": "2025-09-23T03:02:44.553Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\interactive\\DispensingChecklist\\index.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.559Z"
+    },
+    {
+      "code": "PII_EMAIL_DETECTED",
+      "message": "Email encontrado em apps\\frontend-nextjs\\src\\components\\interactive\\DoseCalculator\\ExportOptions.tsx: 1 ocorrência(s) - Verificar se há consentimento",
+      "timestamp": "2025-09-23T03:02:44.573Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\interactive\\DoseCalculator\\ExportOptions.tsx",
+      "timestamp": "2025-09-23T03:02:44.574Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'email' em apps\\frontend-nextjs\\src\\components\\interactive\\DoseCalculator\\ExportOptions.tsx pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.574Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\interactive\\DoseCalculator\\index.tsx",
+      "timestamp": "2025-09-23T03:02:44.575Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\interactive\\DoseCalculator\\IntelligentDoseCalculator.tsx",
+      "timestamp": "2025-09-23T03:02:44.576Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\interactive\\DoseCalculator\\IntelligentDoseCalculator.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.578Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\interactive\\MedicalAssessment\\SmartAssessmentForm.tsx",
+      "timestamp": "2025-09-23T03:02:44.579Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\interactive\\MedicalAssessment\\SmartAssessmentForm.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.581Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\interactive\\TreatmentTimeline\\index.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.583Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\layout\\EducationalLayout.tsx",
+      "timestamp": "2025-09-23T03:02:44.589Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\medical\\MedicalContentBadges.tsx",
+      "timestamp": "2025-09-23T03:02:44.594Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\mobile\\MedicalMobileComponents.tsx",
+      "timestamp": "2025-09-23T03:02:44.595Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\mobile\\MobileFirstFramework.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.599Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\monitoring\\UnifiedErrorSystem.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.603Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\monitoring\\UXDashboard.tsx",
+      "timestamp": "2025-09-23T03:02:44.603Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\monitoring\\UXDashboard.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.605Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\monitoring\\UXTrackingWrapper.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.607Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\multimodal\\ImageUploader.tsx",
+      "timestamp": "2025-09-23T03:02:44.608Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\multimodal\\ImageUploader.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.610Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\navigation\\ActiveNavigationPanel.tsx",
+      "timestamp": "2025-09-23T03:02:44.610Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\navigation\\ActiveNavigationPanel.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.611Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\navigation\\Breadcrumbs\\ContextualBreadcrumbs.tsx",
+      "timestamp": "2025-09-23T03:02:44.612Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\navigation\\Breadcrumbs\\index.tsx",
+      "timestamp": "2025-09-23T03:02:44.613Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'analytics' em apps\\frontend-nextjs\\src\\components\\navigation\\Breadcrumbs\\index.tsx pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.614Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\navigation\\Breadcrumbs\\index.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.615Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\navigation\\ChatNavigation.tsx",
+      "timestamp": "2025-09-23T03:02:44.615Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\navigation\\EducationalFooter.tsx",
+      "timestamp": "2025-09-23T03:02:44.617Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\navigation\\EducationalFooter.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.620Z"
+    },
+    {
+      "code": "PII_EMAIL_DETECTED",
+      "message": "Email encontrado em apps\\frontend-nextjs\\src\\components\\navigation\\EducationalFooterSimple.tsx: 2 ocorrência(s) - Verificar se há consentimento",
+      "timestamp": "2025-09-23T03:02:44.621Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\navigation\\EducationalFooterSimple.tsx",
+      "timestamp": "2025-09-23T03:02:44.621Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\navigation\\FastAccessBar.tsx",
+      "timestamp": "2025-09-23T03:02:44.623Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\navigation\\FastAccessBar.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.624Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\navigation\\GlobalNavigationProvider.tsx",
+      "timestamp": "2025-09-23T03:02:44.628Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'analytics' em apps\\frontend-nextjs\\src\\components\\navigation\\IntelligentNavigationProvider.tsx pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.630Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\navigation\\IntelligentNavigationProvider.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.631Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\navigation\\NavigationHeader.tsx",
+      "timestamp": "2025-09-23T03:02:44.636Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\navigation\\OptimizedNavigationStructure.tsx",
+      "timestamp": "2025-09-23T03:02:44.641Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\navigation\\OptimizedNavigationStructure.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.642Z"
+    },
+    {
+      "code": "PERSONAL_DATA_API",
+      "message": "API com dados pessoais em apps\\frontend-nextjs\\src\\components\\navigation\\OptimizedNavigationStructure.tsx - Verificar proteções LGPD",
+      "timestamp": "2025-09-23T03:02:44.642Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\navigation\\Progress\\index.tsx",
+      "timestamp": "2025-09-23T03:02:44.644Z"
+    },
+    {
+      "code": "PERSONAL_DATA_API",
+      "message": "API com dados pessoais em apps\\frontend-nextjs\\src\\components\\onboarding\\ExperienceBanner.tsx - Verificar proteções LGPD",
+      "timestamp": "2025-09-23T03:02:44.659Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\onboarding\\OnboardingTour.tsx",
+      "timestamp": "2025-09-23T03:02:44.660Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\onboarding\\QuickStartGuide.tsx",
+      "timestamp": "2025-09-23T03:02:44.662Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\onboarding\\WelcomeWizard.tsx",
+      "timestamp": "2025-09-23T03:02:44.664Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\onboarding\\WelcomeWizard.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.666Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\optimization\\LazyComponent.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.667Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\performance\\CoreWebVitals.tsx",
+      "timestamp": "2025-09-23T03:02:44.668Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\performance\\CoreWebVitals.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.669Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\personalization\\PersonalizedDashboard.tsx",
+      "timestamp": "2025-09-23T03:02:44.671Z"
+    },
+    {
+      "code": "PERSONAL_DATA_API",
+      "message": "API com dados pessoais em apps\\frontend-nextjs\\src\\components\\personalization\\PersonalizedDashboard.tsx - Verificar proteções LGPD",
+      "timestamp": "2025-09-23T03:02:44.673Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\personas\\PersonaSelector.tsx",
+      "timestamp": "2025-09-23T03:02:44.673Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\profile\\ConnectedAccounts.tsx",
+      "timestamp": "2025-09-23T03:02:44.680Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'email' em apps\\frontend-nextjs\\src\\components\\profile\\ConnectedAccounts.tsx pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.680Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\profile\\EmailPreferences.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.684Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\profile\\ImageCropper.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.686Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\profile\\SocialProfile.tsx",
+      "timestamp": "2025-09-23T03:02:44.687Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'email' em apps\\frontend-nextjs\\src\\components\\profile\\SocialProfile.tsx pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.688Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\profile\\SocialProfile.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.690Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\progress\\ConversationProgress.tsx",
+      "timestamp": "2025-09-23T03:02:44.691Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\pwa\\PWAManager.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.695Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'nome' em apps\\frontend-nextjs\\src\\components\\pwa\\PWAValidationPanel.tsx pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.696Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\qa\\QualityDashboard.tsx",
+      "timestamp": "2025-09-23T03:02:44.699Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\qa\\QualityDashboard.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.700Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\search\\AccessibleSearchWithSuggestions.tsx",
+      "timestamp": "2025-09-23T03:02:44.702Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\search\\AccessibleSearchWithSuggestions.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.707Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\search\\IntelligentSearchSystem.tsx",
+      "timestamp": "2025-09-23T03:02:44.707Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\summary\\ExecutiveSummary.tsx",
+      "timestamp": "2025-09-23T03:02:44.713Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\system\\SystemStatus.tsx",
+      "timestamp": "2025-09-23T03:02:44.715Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'analytics' em apps\\frontend-nextjs\\src\\components\\tracking\\IntegratedTrackingProvider.tsx pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.718Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\tracking\\IntegratedTrackingProvider.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.718Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\ui\\GlobalPersonaFAB.tsx",
+      "timestamp": "2025-09-23T03:02:44.727Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\ui\\GlobalPersonaFAB.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.729Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\ui\\LoadingStates.tsx",
+      "timestamp": "2025-09-23T03:02:44.733Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'email' em apps\\frontend-nextjs\\src\\components\\ui\\LoadingStates.tsx pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.734Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\ui\\MicroInteractions.tsx",
+      "timestamp": "2025-09-23T03:02:44.737Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\ui\\PersonaEducationalAvatar.tsx",
+      "timestamp": "2025-09-23T03:02:44.739Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\ui\\StandardizedButton.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.743Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\components\\__tests__\\GoogleAnalytics.test.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.747Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\components\\__tests__\\LoadingSpinner.test.tsx",
+      "timestamp": "2025-09-23T03:02:44.748Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\constants\\avatars.ts",
+      "timestamp": "2025-09-23T03:02:44.753Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\constants\\medicalShortcuts.ts",
+      "timestamp": "2025-09-23T03:02:44.754Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'analytics' em apps\\frontend-nextjs\\src\\constants\\medicalShortcuts.ts pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.755Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\constants\\medicalShortcuts.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.755Z"
+    },
+    {
+      "code": "PII_EMAIL_DETECTED",
+      "message": "Email encontrado em apps\\frontend-nextjs\\src\\contexts\\AuthContext.tsx: 4 ocorrência(s) - Verificar se há consentimento",
+      "timestamp": "2025-09-23T03:02:44.756Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\contexts\\AuthContext.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.758Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\contexts\\GlobalContextHub.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.761Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\contexts\\PersonaContext.tsx",
+      "timestamp": "2025-09-23T03:02:44.762Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\contexts\\PersonaContext.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.765Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\contexts\\PersonaContextSimple.tsx",
+      "timestamp": "2025-09-23T03:02:44.765Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\contexts\\PersonaContextSimple.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.766Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\data\\clinicalCases.ts",
+      "timestamp": "2025-09-23T03:02:44.768Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\data\\educationalQuizzes.ts",
+      "timestamp": "2025-09-23T03:02:44.776Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'medicamentos' em apps\\frontend-nextjs\\src\\data\\educationalQuizzes.ts pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.777Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\data\\personas.ts",
+      "timestamp": "2025-09-23T03:02:44.778Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\data\\quiz\\hanseniaseQuestions.ts",
+      "timestamp": "2025-09-23T03:02:44.779Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\hooks\\useAnalytics.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.785Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\hooks\\useAuth.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.787Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\hooks\\useChat.ts",
+      "timestamp": "2025-09-23T03:02:44.787Z"
+    },
+    {
+      "code": "PERSONAL_DATA_API",
+      "message": "API com dados pessoais em apps\\frontend-nextjs\\src\\hooks\\useChat.ts - Verificar proteções LGPD",
+      "timestamp": "2025-09-23T03:02:44.789Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\hooks\\useChatMessages.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.790Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\hooks\\useChatService.ts",
+      "timestamp": "2025-09-23T03:02:44.791Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'analytics' em apps\\frontend-nextjs\\src\\hooks\\useChatService.ts pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.792Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\hooks\\useChatService.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.792Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\hooks\\useDynamicOptimization.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.799Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\hooks\\useEffectOptimizer.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.801Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\hooks\\useErrorHandler.tsx",
+      "timestamp": "2025-09-23T03:02:44.802Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\hooks\\useErrorHandler.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.803Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\hooks\\useFeedback.ts",
+      "timestamp": "2025-09-23T03:02:44.804Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'analytics' em apps\\frontend-nextjs\\src\\hooks\\useFeedback.ts pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.805Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\hooks\\useFeedback.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.806Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\hooks\\useFirebaseSync.ts",
+      "timestamp": "2025-09-23T03:02:44.806Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\hooks\\useGamification.ts",
+      "timestamp": "2025-09-23T03:02:44.809Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\hooks\\useGlobalTracking.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.814Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\hooks\\useIntegratedTracking.ts",
+      "timestamp": "2025-09-23T03:02:44.815Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'analytics' em apps\\frontend-nextjs\\src\\hooks\\useIntegratedTracking.ts pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.816Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\hooks\\useIntegratedTracking.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.817Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'analytics' em apps\\frontend-nextjs\\src\\hooks\\useIntelligentRouting.ts pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.818Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\hooks\\useIntelligentRouting.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.818Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\hooks\\useIsomorphicAuth.ts",
+      "timestamp": "2025-09-23T03:02:44.818Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'email' em apps\\frontend-nextjs\\src\\hooks\\useIsomorphicAuth.ts pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.818Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\hooks\\useKnowledgeBase.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.821Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\hooks\\useMedicalGlossary.ts",
+      "timestamp": "2025-09-23T03:02:44.821Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\hooks\\useMultimodal.ts",
+      "timestamp": "2025-09-23T03:02:44.823Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'analytics' em apps\\frontend-nextjs\\src\\hooks\\useOnboarding.ts pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.827Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\hooks\\useOnboarding.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.827Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\hooks\\useOptimisticUpdate.ts",
+      "timestamp": "2025-09-23T03:02:44.827Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\hooks\\useOptimizedScroll.ts",
+      "timestamp": "2025-09-23T03:02:44.830Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\hooks\\usePersonalization.ts",
+      "timestamp": "2025-09-23T03:02:44.832Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\hooks\\usePersonalization.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.833Z"
+    },
+    {
+      "code": "PERSONAL_DATA_API",
+      "message": "API com dados pessoais em apps\\frontend-nextjs\\src\\hooks\\usePersonalization.ts - Verificar proteções LGPD",
+      "timestamp": "2025-09-23T03:02:44.834Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\hooks\\usePersonas.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.834Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\hooks\\usePersonasEnhanced.ts",
+      "timestamp": "2025-09-23T03:02:44.835Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\hooks\\usePersonasEnhanced.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.836Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\hooks\\usePersonaState.ts",
+      "timestamp": "2025-09-23T03:02:44.836Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'analytics' em apps\\frontend-nextjs\\src\\hooks\\usePredictiveSuggestions.ts pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.838Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\hooks\\usePredictiveSuggestions.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.838Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\hooks\\useProgressiveDisclosure.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.840Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'analytics' em apps\\frontend-nextjs\\src\\hooks\\useRemoteConfig.ts pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.842Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\hooks\\useRemoteConfig.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.842Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\hooks\\useSafeAuth.ts",
+      "timestamp": "2025-09-23T03:02:44.844Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\hooks\\useSafeAuth.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.845Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\hooks\\useSmartSync.ts",
+      "timestamp": "2025-09-23T03:02:44.849Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'email' em apps\\frontend-nextjs\\src\\hooks\\useSocialProfile.ts pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.850Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\hooks\\useSocialProfile.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.852Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\hooks\\useUserProfile.ts",
+      "timestamp": "2025-09-23T03:02:44.854Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'email' em apps\\frontend-nextjs\\src\\hooks\\useUserProfile.ts pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.854Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\lib\\analytics\\ga4DataFetcher.ts",
+      "timestamp": "2025-09-23T03:02:44.857Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\lib\\analytics\\ga4DataFetcher.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.858Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\lib\\analytics\\googleAnalyticsUX.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.861Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'analytics' em apps\\frontend-nextjs\\src\\lib\\analytics\\uxTracking.ts pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.864Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\lib\\analytics\\uxTracking.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.864Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'email' em apps\\frontend-nextjs\\src\\lib\\auth\\jwt-client.ts pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.865Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\lib\\firebase\\types.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.867Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\lib\\gamification\\achievementSystem.ts",
+      "timestamp": "2025-09-23T03:02:44.868Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\lib\\optimizations\\api-optimizations.ts",
+      "timestamp": "2025-09-23T03:02:44.873Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\lib\\optimizations\\api-optimizations.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.875Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\lib\\optimizations\\index.ts",
+      "timestamp": "2025-09-23T03:02:44.875Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\lib\\optimizations\\react-optimizations.ts",
+      "timestamp": "2025-09-23T03:02:44.878Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\lib\\optimizations\\README.md",
+      "timestamp": "2025-09-23T03:02:44.880Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\pages\\admin\\features.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.884Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'analytics' em apps\\frontend-nextjs\\src\\providers\\ServicesProvider.tsx pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.885Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\providers\\ServicesProvider.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.885Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\scripts\\testCacheBasic.js - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.888Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'analytics' em apps\\frontend-nextjs\\src\\services\\ActiveServicesHub.ts pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.890Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\services\\ActiveServicesHub.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.890Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\services\\advancedAnalytics.ts",
+      "timestamp": "2025-09-23T03:02:44.891Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'analytics' em apps\\frontend-nextjs\\src\\services\\advancedAnalytics.ts pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.892Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\services\\advancedAnalytics.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.893Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\services\\aiService.ts",
+      "timestamp": "2025-09-23T03:02:44.894Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\services\\aiService.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.895Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\services\\analytics.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.896Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\services\\analyticsFirestoreCache.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.897Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\services\\api.ts",
+      "timestamp": "2025-09-23T03:02:44.897Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'medicamentos' em apps\\frontend-nextjs\\src\\services\\api.ts pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.898Z"
+    },
+    {
+      "code": "PII_EMAIL_DETECTED",
+      "message": "Email encontrado em apps\\frontend-nextjs\\src\\services\\auth.ts: 4 ocorrência(s) - Verificar se há consentimento",
+      "timestamp": "2025-09-23T03:02:44.899Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\services\\auth.ts",
+      "timestamp": "2025-09-23T03:02:44.899Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'email' em apps\\frontend-nextjs\\src\\services\\auth.ts pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.899Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'analytics' em apps\\frontend-nextjs\\src\\services\\auth.ts pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.900Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\services\\auth.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.900Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\services\\chatService.ts",
+      "timestamp": "2025-09-23T03:02:44.900Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'analytics' em apps\\frontend-nextjs\\src\\services\\chatService.ts pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.902Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\services\\chatService.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.903Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\services\\conversationCacheService.ts",
+      "timestamp": "2025-09-23T03:02:44.903Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\services\\conversationCacheService.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.904Z"
+    },
+    {
+      "code": "PII_EMAIL_DETECTED",
+      "message": "Email encontrado em apps\\frontend-nextjs\\src\\services\\dataSanitizer.ts: 1 ocorrência(s) - Verificar se há consentimento",
+      "timestamp": "2025-09-23T03:02:44.905Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\services\\dataSanitizer.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.905Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\services\\embeddingService.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.908Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\services\\fallbackSystem.ts",
+      "timestamp": "2025-09-23T03:02:44.910Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\services\\gamificationAPI.ts",
+      "timestamp": "2025-09-23T03:02:44.912Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\services\\hybridCache.ts",
+      "timestamp": "2025-09-23T03:02:44.914Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'analytics' em apps\\frontend-nextjs\\src\\services\\hybridCache.ts pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.916Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\services\\hybridCache.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.916Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\services\\intelligentRouting.ts",
+      "timestamp": "2025-09-23T03:02:44.917Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\services\\knowledgeSearch.ts",
+      "timestamp": "2025-09-23T03:02:44.919Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\services\\medicalKnowledgeBase.ts",
+      "timestamp": "2025-09-23T03:02:44.922Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\services\\personaRAGIntegration.ts",
+      "timestamp": "2025-09-23T03:02:44.928Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'analytics' em apps\\frontend-nextjs\\src\\services\\personaRAGIntegration.ts pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.931Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\services\\personaRAGIntegration.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.931Z"
+    },
+    {
+      "code": "PERSONAL_DATA_API",
+      "message": "API com dados pessoais em apps\\frontend-nextjs\\src\\services\\personaRAGIntegration.ts - Verificar proteções LGPD",
+      "timestamp": "2025-09-23T03:02:44.931Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\services\\ragIntegrationService.ts",
+      "timestamp": "2025-09-23T03:02:44.932Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\services\\ragIntegrationService.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.935Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\services\\ragPerformanceOptimizer.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.939Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\services\\README-HybridCache.md",
+      "timestamp": "2025-09-23T03:02:44.941Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\services\\semanticSearchEngine.ts",
+      "timestamp": "2025-09-23T03:02:44.942Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\services\\simpleCache.ts",
+      "timestamp": "2025-09-23T03:02:44.947Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\services\\simpleCache.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.948Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\services\\socialService.ts",
+      "timestamp": "2025-09-23T03:02:44.948Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'analytics' em apps\\frontend-nextjs\\src\\services\\UserTrackingService.ts pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.952Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\services\\UserTrackingService.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.952Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\services\\validationService.ts",
+      "timestamp": "2025-09-23T03:02:44.952Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\services\\__tests__\\api.test.ts",
+      "timestamp": "2025-09-23T03:02:44.954Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'medicamentos' em apps\\frontend-nextjs\\src\\services\\__tests__\\api.test.ts pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.955Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\styles\\grid.ts",
+      "timestamp": "2025-09-23T03:02:44.956Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\test-hook.ts",
+      "timestamp": "2025-09-23T03:02:44.958Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\tests\\cache\\hybridCache.test.ts",
+      "timestamp": "2025-09-23T03:02:44.961Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\tests\\consistency.test.ts",
+      "timestamp": "2025-09-23T03:02:44.963Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\tests\\e2e\\persona-flows.test.tsx - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.966Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\tests\\educational\\interactiveComponentsQA.test.ts",
+      "timestamp": "2025-09-23T03:02:44.967Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\tests\\ragPerformanceTest.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.974Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\types\\analytics.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.975Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\types\\api.ts",
+      "timestamp": "2025-09-23T03:02:44.975Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'email' em apps\\frontend-nextjs\\src\\types\\api.ts pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.975Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\types\\api.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.976Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\types\\auth.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.978Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'email' em apps\\frontend-nextjs\\src\\types\\certification.ts pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.978Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\types\\certification.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.979Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\types\\checklist.ts",
+      "timestamp": "2025-09-23T03:02:44.980Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\types\\clinicalCases.ts",
+      "timestamp": "2025-09-23T03:02:44.982Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'medicamentos' em apps\\frontend-nextjs\\src\\types\\clinicalCases.ts pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.983Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'analytics' em apps\\frontend-nextjs\\src\\types\\clinicalCases.ts pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.983Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\types\\clinicalCases.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.983Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\types\\contexts.ts",
+      "timestamp": "2025-09-23T03:02:44.985Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'email' em apps\\frontend-nextjs\\src\\types\\contexts.ts pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.985Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'analytics' em apps\\frontend-nextjs\\src\\types\\contexts.ts pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.986Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'marketing' em apps\\frontend-nextjs\\src\\types\\contexts.ts pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.986Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\types\\contexts.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.986Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\types\\disclosure.ts",
+      "timestamp": "2025-09-23T03:02:44.986Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\types\\doseCalculator.ts",
+      "timestamp": "2025-09-23T03:02:44.987Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\types\\emergencyShortcuts.ts",
+      "timestamp": "2025-09-23T03:02:44.988Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'analytics' em apps\\frontend-nextjs\\src\\types\\emergencyShortcuts.ts pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.988Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\types\\emergencyShortcuts.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.989Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\types\\events.ts",
+      "timestamp": "2025-09-23T03:02:44.989Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\types\\events.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.989Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\types\\feedback.ts",
+      "timestamp": "2025-09-23T03:02:44.990Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'email' em apps\\frontend-nextjs\\src\\types\\forms.ts pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.990Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'cpf' em apps\\frontend-nextjs\\src\\types\\forms.ts pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.990Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\types\\gamification.ts",
+      "timestamp": "2025-09-23T03:02:44.991Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'email' em apps\\frontend-nextjs\\src\\types\\index.ts pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.994Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\types\\medication.ts",
+      "timestamp": "2025-09-23T03:02:44.995Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\types\\personalization.ts",
+      "timestamp": "2025-09-23T03:02:44.995Z"
+    },
+    {
+      "code": "PERSONAL_DATA_API",
+      "message": "API com dados pessoais em apps\\frontend-nextjs\\src\\types\\personalization.ts - Verificar proteções LGPD",
+      "timestamp": "2025-09-23T03:02:44.996Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'analytics' em apps\\frontend-nextjs\\src\\types\\personas.ts pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:44.997Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\types\\personas.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:44.997Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\types\\timeline.ts",
+      "timestamp": "2025-09-23T03:02:44.997Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\types\\utils.ts",
+      "timestamp": "2025-09-23T03:02:45.000Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\utils\\abTesting.ts",
+      "timestamp": "2025-09-23T03:02:45.003Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\utils\\abTesting.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:45.006Z"
+    },
+    {
+      "code": "PERSONAL_DATA_API",
+      "message": "API com dados pessoais em apps\\frontend-nextjs\\src\\utils\\abTesting.ts - Verificar proteções LGPD",
+      "timestamp": "2025-09-23T03:02:45.006Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\utils\\accessibility\\headingHierarchyAudit.ts",
+      "timestamp": "2025-09-23T03:02:45.010Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\utils\\accessibilityHelpers.ts",
+      "timestamp": "2025-09-23T03:02:45.013Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\utils\\ActiveUtilities.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:45.019Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\utils\\apiCache.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:45.020Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\utils\\cloudLogger.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:45.026Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\utils\\consistencyValidators.ts",
+      "timestamp": "2025-09-23T03:02:45.027Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\utils\\consistencyValidators.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:45.032Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\utils\\continuousImprovementSystem.ts",
+      "timestamp": "2025-09-23T03:02:45.033Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'analytics' em apps\\frontend-nextjs\\src\\utils\\continuousImprovementSystem.ts pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:45.037Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\utils\\continuousImprovementSystem.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:45.037Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\utils\\doseCalculations.ts",
+      "timestamp": "2025-09-23T03:02:45.040Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\utils\\dx\\uxInstrumentation.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:45.044Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\utils\\educationalAnalytics.ts",
+      "timestamp": "2025-09-23T03:02:45.045Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'analytics' em apps\\frontend-nextjs\\src\\utils\\educationalAnalytics.ts pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:45.047Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\utils\\educationalAnalytics.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:45.048Z"
+    },
+    {
+      "code": "PII_PHONE_DETECTED",
+      "message": "Telefone encontrado em apps\\frontend-nextjs\\src\\utils\\educationalSecurity.ts: 1 ocorrência(s) - Verificar se há consentimento",
+      "timestamp": "2025-09-23T03:02:45.052Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\utils\\educationalSecurity.ts",
+      "timestamp": "2025-09-23T03:02:45.052Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'email' em apps\\frontend-nextjs\\src\\utils\\educationalSecurity.ts pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:45.052Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\utils\\educationalSecurity.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:45.055Z"
+    },
+    {
+      "code": "PERSONAL_DATA_API",
+      "message": "API com dados pessoais em apps\\frontend-nextjs\\src\\utils\\educationalSecurity.ts - Verificar proteções LGPD",
+      "timestamp": "2025-09-23T03:02:45.055Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'analytics' em apps\\frontend-nextjs\\src\\utils\\featureFlags.ts pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:45.057Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\utils\\featureFlags.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:45.057Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\utils\\hapticFeedback.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:45.059Z"
+    },
+    {
+      "code": "PII_EMAIL_DETECTED",
+      "message": "Email encontrado em apps\\frontend-nextjs\\src\\utils\\lgpdCompliance.ts: 2 ocorrência(s) - Verificar se há consentimento",
+      "timestamp": "2025-09-23T03:02:45.060Z"
+    },
+    {
+      "code": "PII_PHONE_DETECTED",
+      "message": "Telefone encontrado em apps\\frontend-nextjs\\src\\utils\\lgpdCompliance.ts: 1 ocorrência(s) - Verificar se há consentimento",
+      "timestamp": "2025-09-23T03:02:45.060Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\utils\\lgpdCompliance.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:45.062Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'analytics' em apps\\frontend-nextjs\\src\\utils\\medicalAnalytics.ts pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:45.066Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\utils\\medicalAnalytics.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:45.066Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\utils\\medicalValidation.ts",
+      "timestamp": "2025-09-23T03:02:45.066Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\utils\\pwa\\pwaValidator.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:45.070Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\utils\\qaTestRunner.ts",
+      "timestamp": "2025-09-23T03:02:45.070Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\utils\\qaTestRunner.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:45.073Z"
+    },
+    {
+      "code": "PII_EMAIL_DETECTED",
+      "message": "Email encontrado em apps\\frontend-nextjs\\src\\utils\\secureLogger.ts: 1 ocorrência(s) - Verificar se há consentimento",
+      "timestamp": "2025-09-23T03:02:45.075Z"
+    },
+    {
+      "code": "PII_PHONE_DETECTED",
+      "message": "Telefone encontrado em apps\\frontend-nextjs\\src\\utils\\secureLogger.ts: 1 ocorrência(s) - Verificar se há consentimento",
+      "timestamp": "2025-09-23T03:02:45.075Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\utils\\secureLogger.ts",
+      "timestamp": "2025-09-23T03:02:45.075Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'email' em apps\\frontend-nextjs\\src\\utils\\secureLogger.ts pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:45.075Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'telefone' em apps\\frontend-nextjs\\src\\utils\\secureLogger.ts pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:45.075Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'cpf' em apps\\frontend-nextjs\\src\\utils\\secureLogger.ts pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:45.075Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\src\\utils\\securityMonitoring.ts",
+      "timestamp": "2025-09-23T03:02:45.077Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'email' em apps\\frontend-nextjs\\src\\utils\\securityMonitoring.ts pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:45.077Z"
+    },
+    {
+      "code": "PII_PHONE_DETECTED",
+      "message": "Telefone encontrado em apps\\frontend-nextjs\\src\\utils\\securityUtils.ts: 1 ocorrência(s) - Verificar se há consentimento",
+      "timestamp": "2025-09-23T03:02:45.080Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\src\\utils\\securityUtils.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:45.081Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\tests\\analytics.validation.ts",
+      "timestamp": "2025-09-23T03:02:45.086Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'analytics' em apps\\frontend-nextjs\\tests\\analytics.validation.ts pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:45.088Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\tests\\analytics.validation.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:45.088Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em apps\\frontend-nextjs\\tests\\masterValidation.ts",
+      "timestamp": "2025-09-23T03:02:45.089Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'analytics' em apps\\frontend-nextjs\\tests\\masterValidation.ts pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:45.091Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\tests\\masterValidation.ts - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:45.091Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em apps\\frontend-nextjs\\TODO-PR-175.md - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:45.126Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em ARQUITETURA_SISTEMA.md",
+      "timestamp": "2025-09-23T03:02:45.132Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em ARQUITETURA_SISTEMA.md - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:45.133Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em CLAUDE-AUTOMATIONS.md",
+      "timestamp": "2025-09-23T03:02:45.133Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em CLAUDE.md",
+      "timestamp": "2025-09-23T03:02:45.135Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em claude_code_optimization_prompt.md",
+      "timestamp": "2025-09-23T03:02:45.137Z"
+    },
+    {
+      "code": "PII_EMAIL_DETECTED",
+      "message": "Email encontrado em CONSOLIDACAO_WORKFLOWS_FINAL.md: 3 ocorrência(s) - Verificar se há consentimento",
+      "timestamp": "2025-09-23T03:02:45.146Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em CONSOLIDACAO_WORKFLOWS_FINAL.md",
+      "timestamp": "2025-09-23T03:02:45.146Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'email' em CONSOLIDACAO_WORKFLOWS_FINAL.md pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:45.146Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em data\\knowledge-base\\hanseniase.md",
+      "timestamp": "2025-09-23T03:02:45.154Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em data\\knowledge-base\\roteiro_hanseniase_basico.md",
+      "timestamp": "2025-09-23T03:02:45.157Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em data\\structured\\clinical_taxonomy.json",
+      "timestamp": "2025-09-23T03:02:45.162Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em data\\structured\\dispensing_workflow.json",
+      "timestamp": "2025-09-23T03:02:45.170Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em data\\structured\\frequently_asked_questions.json",
+      "timestamp": "2025-09-23T03:02:45.181Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'medicamentos' em data\\structured\\frequently_asked_questions.json pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:45.182Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em data\\structured\\hanseniase_catalog.json",
+      "timestamp": "2025-09-23T03:02:45.184Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em data\\structured\\knowledge_scope_limitations.json",
+      "timestamp": "2025-09-23T03:02:45.190Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'medicamentos' em data\\structured\\knowledge_scope_limitations.json pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:45.191Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em data\\structured\\pharmacovigilance_guidelines.json",
+      "timestamp": "2025-09-23T03:02:45.203Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em data\\structured\\quick_reference_protocols.json",
+      "timestamp": "2025-09-23T03:02:45.211Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em data\\training\\COLAB_INSTRUCTIONS.md",
+      "timestamp": "2025-09-23T03:02:45.214Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'nome' em data\\training\\COLAB_INSTRUCTIONS.md pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:45.214Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em data\\training\\READY_FOR_COLAB.md",
+      "timestamp": "2025-09-23T03:02:45.218Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em data\\training\\structured_data\\clinical_taxonomy.json",
+      "timestamp": "2025-09-23T03:02:45.220Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em data\\training\\structured_data\\dispensing_workflow.json",
+      "timestamp": "2025-09-23T03:02:45.223Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em data\\training\\structured_data\\frequently_asked_questions.json",
+      "timestamp": "2025-09-23T03:02:45.228Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'medicamentos' em data\\training\\structured_data\\frequently_asked_questions.json pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:45.229Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em data\\training\\structured_data\\hanseniase_catalog.json",
+      "timestamp": "2025-09-23T03:02:45.231Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em data\\training\\structured_data\\knowledge_scope_limitations.json",
+      "timestamp": "2025-09-23T03:02:45.233Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'medicamentos' em data\\training\\structured_data\\knowledge_scope_limitations.json pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:45.234Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em data\\training\\structured_data\\pharmacovigilance_guidelines.json",
+      "timestamp": "2025-09-23T03:02:45.238Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em data\\training\\structured_data\\quick_reference_protocols.json",
+      "timestamp": "2025-09-23T03:02:45.241Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em data\\training\\training_data.json",
+      "timestamp": "2025-09-23T03:02:45.244Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em data\\training\\training_splits\\train.json",
+      "timestamp": "2025-09-23T03:02:45.255Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em DEPENDABOT-STRATEGY.md",
+      "timestamp": "2025-09-23T03:02:45.261Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em docs\\analytics\\GOOGLE_DATA_STUDIO_SETUP.md",
+      "timestamp": "2025-09-23T03:02:45.268Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em docs\\analytics\\GOOGLE_DATA_STUDIO_SETUP.md - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:45.269Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em docs\\ARQUITETURA_ATUAL_2025.md",
+      "timestamp": "2025-09-23T03:02:45.270Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em docs\\ARQUITETURA_ATUAL_2025.md - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:45.270Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'nome' em docs\\deployment\\DEPLOY_GUIDE.md pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:45.271Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em docs\\deployment\\DEPLOY_GUIDE.md - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:45.272Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em docs\\deployment\\FIREBASE_SETUP.md",
+      "timestamp": "2025-09-23T03:02:45.272Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'email' em docs\\deployment\\FIREBASE_SETUP.md pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:45.272Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em docs\\deployment\\FIREBASE_SETUP.md - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:45.273Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em docs\\DOCUMENTACAO_ATUALIZADA_RELATORIO.md",
+      "timestamp": "2025-09-23T03:02:45.273Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'analytics' em docs\\generated\\documentation-report.json pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:45.275Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em docs\\generated\\documentation-report.json - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:45.275Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em docs\\generated\\metrics\\README.md - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:45.290Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em docs\\GITHUB_CONFIGURATION.md - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:45.310Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em docs\\PERSONA_UNIFIED_SYSTEM.md - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:45.324Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em docs\\PRs\\PR-171-ui-components.md",
+      "timestamp": "2025-09-23T03:02:45.335Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em docs\\PRs\\PR-175-analytics-dashboard.md",
+      "timestamp": "2025-09-23T03:02:45.357Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em docs\\PRs\\PR-175-analytics-dashboard.md - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:45.358Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em ETAPA4_COMPLETION_SUMMARY.md",
+      "timestamp": "2025-09-23T03:02:45.365Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em ETAPA4_COMPLETION_SUMMARY.md - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:45.365Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em GITHUB_PR_172_COMMENT.md",
+      "timestamp": "2025-09-23T03:02:45.366Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em GITHUB_PR_172_COMMENT.md - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:45.367Z"
+    },
+    {
+      "code": "PII_EMAIL_DETECTED",
+      "message": "Email encontrado em GITHUB_PR_COMMENT.md: 1 ocorrência(s) - Verificar se há consentimento",
+      "timestamp": "2025-09-23T03:02:45.367Z"
+    },
+    {
+      "code": "PII_EMAIL_DETECTED",
+      "message": "Email encontrado em IMPLEMENTATION_SUMMARY.md: 1 ocorrência(s) - Verificar se há consentimento",
+      "timestamp": "2025-09-23T03:02:45.368Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em IMPLEMENTATION_SUMMARY.md - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:45.369Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em MONITORAMENTO_PROFISSIONAL.md - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:45.372Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em package-lock.json",
+      "timestamp": "2025-09-23T03:02:45.373Z"
+    },
+    {
+      "code": "PII_EMAIL_DETECTED",
+      "message": "Email encontrado em package.json: 6 ocorrência(s) - Verificar se há consentimento",
+      "timestamp": "2025-09-23T03:02:45.381Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'email' em package.json pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:45.381Z"
+    },
+    {
+      "code": "PII_EMAIL_DETECTED",
+      "message": "Email encontrado em PLANO_HABILITACAO_SERVICOS.md: 1 ocorrência(s) - Verificar se há consentimento",
+      "timestamp": "2025-09-23T03:02:45.382Z"
+    },
+    {
+      "code": "PII_PHONE_DETECTED",
+      "message": "Telefone encontrado em PLANO_HABILITACAO_SERVICOS.md: 3 ocorrência(s) - Verificar se há consentimento",
+      "timestamp": "2025-09-23T03:02:45.382Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em PLANO_HABILITACAO_SERVICOS.md",
+      "timestamp": "2025-09-23T03:02:45.382Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'nome' em PLANO_HABILITACAO_SERVICOS.md pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:45.383Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'analytics' em PR_171_STATUS_UPDATE.md pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:45.387Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em PR_171_STATUS_UPDATE.md - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:45.387Z"
+    },
+    {
+      "code": "PII_EMAIL_DETECTED",
+      "message": "Email encontrado em pr_comment.md: 1 ocorrência(s) - Verificar se há consentimento",
+      "timestamp": "2025-09-23T03:02:45.387Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em pr_comment.md",
+      "timestamp": "2025-09-23T03:02:45.387Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em pr_comment.md - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:45.388Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em PR_ERROR_SYSTEM_EVALUATION.md",
+      "timestamp": "2025-09-23T03:02:45.389Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em PR_ERROR_SYSTEM_EVALUATION.md - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:45.390Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em README_FASE3.md",
+      "timestamp": "2025-09-23T03:02:45.391Z"
+    },
+    {
+      "code": "PII_PHONE_DETECTED",
+      "message": "Telefone encontrado em REPOSITORY_REORGANIZATION_REPORT.md: 2 ocorrência(s) - Verificar se há consentimento",
+      "timestamp": "2025-09-23T03:02:45.393Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em REPOSITORY_REORGANIZATION_REPORT.md",
+      "timestamp": "2025-09-23T03:02:45.393Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em REPOSITORY_REORGANIZATION_SUMMARY.md",
+      "timestamp": "2025-09-23T03:02:45.394Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em scripts\\google-monitoring-integration.js",
+      "timestamp": "2025-09-23T03:02:45.476Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em scripts\\google-monitoring-integration.js - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:45.478Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em scripts\\package-lock.json",
+      "timestamp": "2025-09-23T03:02:45.491Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em scripts\\supabase_documents_20250831_205501.json",
+      "timestamp": "2025-09-23T03:02:45.516Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em scripts\\supabase_documents_20250902_215627.json",
+      "timestamp": "2025-09-23T03:02:45.537Z"
+    },
+    {
+      "code": "PII_EMAIL_DETECTED",
+      "message": "Email encontrado em scripts\\UPDATE_GCP_KEY.md: 3 ocorrência(s) - Verificar se há consentimento",
+      "timestamp": "2025-09-23T03:02:45.549Z"
+    },
+    {
+      "code": "PII_PHONE_DETECTED",
+      "message": "Telefone encontrado em scripts\\UPDATE_GCP_KEY.md: 2 ocorrência(s) - Verificar se há consentimento",
+      "timestamp": "2025-09-23T03:02:45.549Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'email' em scripts\\UPDATE_GCP_KEY.md pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T03:02:45.549Z"
+    },
+    {
+      "code": "PII_EMAIL_DETECTED",
+      "message": "Email encontrado em security_alerts.json: 313 ocorrência(s) - Verificar se há consentimento",
+      "timestamp": "2025-09-23T03:02:45.575Z"
+    },
+    {
+      "code": "PII_PHONE_DETECTED",
+      "message": "Telefone encontrado em security_alerts.json: 278 ocorrência(s) - Verificar se há consentimento",
+      "timestamp": "2025-09-23T03:02:45.576Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em security_alerts.json",
+      "timestamp": "2025-09-23T03:02:45.583Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em security_alerts.json - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:46.017Z"
+    },
+    {
+      "code": "PERSONAL_DATA_API",
+      "message": "API com dados pessoais em security_alerts.json - Verificar proteções LGPD",
+      "timestamp": "2025-09-23T03:02:46.055Z"
+    },
+    {
+      "code": "PII_PHONE_DETECTED",
+      "message": "Telefone encontrado em SECURITY_ANALYSIS.md: 2 ocorrência(s) - Verificar se há consentimento",
+      "timestamp": "2025-09-23T03:02:46.059Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em SPRINT1_IMPLEMENTATION_GUIDE.md - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T03:02:46.061Z"
+    },
+    {
+      "code": "PII_EMAIL_DETECTED",
+      "message": "Email encontrado em TEAM_ONBOARDING.md: 12 ocorrência(s) - Verificar se há consentimento",
+      "timestamp": "2025-09-23T03:02:46.062Z"
+    },
+    {
+      "code": "PII_EMAIL_DETECTED",
+      "message": "Email encontrado em TROUBLESHOOTING.md: 5 ocorrência(s) - Verificar se há consentimento",
+      "timestamp": "2025-09-23T03:02:46.064Z"
+    },
+    {
+      "code": "PII_PHONE_DETECTED",
+      "message": "Telefone encontrado em TROUBLESHOOTING.md: 4 ocorrência(s) - Verificar se há consentimento",
+      "timestamp": "2025-09-23T03:02:46.064Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em WORKFLOWS-CLEANUP.md",
+      "timestamp": "2025-09-23T03:02:46.068Z"
+    },
+    {
+      "code": "MISSING_HTTPS_REDIRECT",
+      "message": "Redirecionamento HTTPS não configurado",
+      "timestamp": "2025-09-23T03:02:46.069Z"
+    },
+    {
+      "code": "MISSING_TERMS_OF_USE",
+      "message": "Termos de uso não encontrados",
+      "timestamp": "2025-09-23T03:02:46.070Z"
+    }
+  ],
+  "recommendations": [
+    {
+      "priority": "HIGH",
+      "action": "Criar política de privacidade",
+      "description": "Elaborar política de privacidade específica para plataforma médica educacional, incluindo tratamento de dados sobre hanseníase"
+    },
+    {
+      "priority": "CRITICAL",
+      "action": "Remover ou anonimizar dados pessoais",
+      "description": "Identificar e remover/anonimizar todos os dados pessoais encontrados no código-fonte"
+    },
+    {
+      "priority": "CRITICAL",
+      "action": "Proteger dados médicos",
+      "description": "Implementar proteções especiais para dados médicos e de saúde (PHI/PII médicos)"
+    },
+    {
+      "priority": "HIGH",
+      "action": "Implementar consentimento de cookies",
+      "description": "Adicionar banner de consentimento de cookies antes de carregar analytics"
+    }
+  ],
+  "nextSteps": [
+    "1. Corrigir todas as violações críticas e de alta prioridade",
+    "2. Implementar mecanismos de consentimento explícito",
+    "3. Criar documentação de privacidade completa",
+    "4. Implementar logs de auditoria para dados médicos",
+    "5. Configurar proteções adicionais para dados de hanseníase",
+    "6. Realizar nova verificação de conformidade"
+  ]
+}

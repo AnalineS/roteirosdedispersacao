@@ -12,7 +12,7 @@ interface TreatmentTimelineProps {
   patientName?: string;
   patientId?: string;
   onTimelineUpdate?: (timeline: TreatmentTimeline) => void;
-  onMilestoneComplete?: (milestone: any) => void;
+  onMilestoneComplete?: (milestone: import('@/types/timeline').TimelineMilestone) => void;
 }
 
 export default function TreatmentTimelineContainer({

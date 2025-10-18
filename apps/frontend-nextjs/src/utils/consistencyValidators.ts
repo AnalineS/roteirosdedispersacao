@@ -1,12 +1,100 @@
 /**
  * Consistency Validation System
  * Validadores especializados para personas, terminologia e referências
- * 
+ *
  * @author Claude Code QA Specialist
  * @version 1.0.0
  */
 
-import { ClinicalCase, CaseStep, StepResult } from '@/types/clinicalCases';
+// Use global Window interface from types/analytics.ts
+
+// Internal types for consistency validation
+interface ClinicalCase {
+  id: string;
+  title: string;
+  scenario: { presentation: string };
+  learningObjectives: string[];
+  steps: CaseStep[];
+  references?: Reference[];
+}
+
+interface CaseStep {
+  id: string;
+  title: string;
+  description: string;
+  instruction: string;
+  validation: {
+    clinicalRationale: string;
+    feedback: {
+      correct: { message: string };
+      incorrect: { message: string };
+    };
+  };
+}
+
+interface StepResult {
+  stepId: string;
+  completed: boolean;
+  score?: number;
+}
+
+interface ProfileObject {
+  [key: string]: number | string | string[];
+}
+
+// Extend profile interfaces to support index signature
+interface VocabularyProfileWithIndex extends VocabularyProfile {
+  [key: string]: number | string | string[];
+}
+
+interface ToneProfileWithIndex extends ToneProfile {
+  [key: string]: number | string | string[];
+}
+
+interface ExpertiseProfileWithIndex extends ExpertiseProfile {
+  [key: string]: number | string | string[];
+}
+
+interface PedagogicalProfileWithIndex extends PedagogicalProfile {
+  [key: string]: number | string | string[];
+}
+
+interface Reference {
+  id?: string;
+  title: string;
+  source?: string;
+  type: 'protocolo_nacional' | 'tese_doutorado' | 'literatura_cientifica' | string;
+  url?: string;
+  year?: number;
+  author?: string;
+  [key: string]: unknown;
+}
+
+interface ComponentData {
+  id: string;
+  type: 'button' | 'input' | 'card' | 'text' | string;
+  styles: {
+    color?: string;
+    backgroundColor?: string;
+    fontSize?: number;
+    fontFamily?: string;
+    fontWeight?: string | number;
+    padding?: string;
+    margin?: string;
+    borderRadius?: string;
+  };
+  interactions?: {
+    hover?: string;
+    focus?: string;
+    active?: string;
+  };
+}
+
+interface ValidationResult {
+  score: number;
+  violations?: unknown[];
+  inconsistencies?: unknown[];
+}
 
 // ===== INTERFACES DE VALIDAÇÃO =====
 
@@ -293,10 +381,22 @@ export class PersonaConsistencyValidator {
       pedagogical: 0.15
     };
     
-    const vocabularyScore = this.calculateProfileSimilarity(actual.vocabulary, expected.vocabulary);
-    const toneScore = this.calculateProfileSimilarity(actual.tone, expected.tone);
-    const expertiseScore = this.calculateProfileSimilarity(actual.expertise, expected.expertise);
-    const pedagogicalScore = this.calculateProfileSimilarity(actual.pedagogicalApproach, expected.pedagogicalApproach);
+    const vocabularyScore = this.calculateProfileSimilarity(
+      this.vocabularyProfileToProfileObject(actual.vocabulary),
+      this.vocabularyProfileToProfileObject(expected.vocabulary)
+    );
+    const toneScore = this.calculateProfileSimilarity(
+      this.toneProfileToProfileObject(actual.tone),
+      this.toneProfileToProfileObject(expected.tone)
+    );
+    const expertiseScore = this.calculateProfileSimilarity(
+      this.expertiseProfileToProfileObject(actual.expertise),
+      this.expertiseProfileToProfileObject(expected.expertise)
+    );
+    const pedagogicalScore = this.calculateProfileSimilarity(
+      this.pedagogicalProfileToProfileObject(actual.pedagogicalApproach),
+      this.pedagogicalProfileToProfileObject(expected.pedagogicalApproach)
+    );
     
     return Math.round(
       vocabularyScore * weights.vocabulary +
@@ -306,17 +406,58 @@ export class PersonaConsistencyValidator {
     );
   }
   
-  private calculateProfileSimilarity(actual: any, expected: any): number {
+  private vocabularyProfileToProfileObject(profile: VocabularyProfile): ProfileObject {
+    return {
+      technicalTermsUsage: profile.technicalTermsUsage,
+      simplificationLevel: profile.simplificationLevel,
+      medicalJargonFrequency: profile.medicalJargonFrequency,
+      commonInconsistencies: profile.commonInconsistencies
+    };
+  }
+
+  private toneProfileToProfileObject(profile: ToneProfile): ProfileObject {
+    return {
+      professionalismLevel: profile.professionalismLevel,
+      empathyLevel: profile.empathyLevel,
+      formalityLevel: profile.formalityLevel,
+      encouragementFrequency: profile.encouragementFrequency
+    };
+  }
+
+  private expertiseProfileToProfileObject(profile: ExpertiseProfile): ProfileObject {
+    return {
+      clinicalDepth: profile.clinicalDepth,
+      practicalFocus: profile.practicalFocus,
+      evidenceReferences: profile.evidenceReferences,
+      protocolAdherence: profile.protocolAdherence
+    };
+  }
+
+  private pedagogicalProfileToProfileObject(profile: PedagogicalProfile): ProfileObject {
+    return {
+      explanationComplexity: profile.explanationComplexity,
+      exampleUsage: profile.exampleUsage,
+      stepByStepApproach: profile.stepByStepApproach,
+      reinforcementPatterns: profile.reinforcementPatterns
+    };
+  }
+
+  private calculateProfileSimilarity(actual: ProfileObject, expected: ProfileObject): number {
     const keys = Object.keys(expected).filter(key => typeof expected[key] === 'number');
     let totalSimilarity = 0;
-    
+
     for (const key of keys) {
-      const difference = Math.abs(actual[key] - expected[key]);
-      const similarity = Math.max(0, 1 - difference);
-      totalSimilarity += similarity;
+      const actualValue = actual[key];
+      const expectedValue = expected[key];
+
+      if (typeof actualValue === 'number' && typeof expectedValue === 'number') {
+        const difference = Math.abs(actualValue - expectedValue);
+        const similarity = Math.max(0, 1 - difference);
+        totalSimilarity += similarity;
+      }
     }
-    
-    return (totalSimilarity / keys.length) * 100;
+
+    return keys.length > 0 ? (totalSimilarity / keys.length) * 100 : 0;
   }
   
   private analyzeCrossPersonaConsistency(content: string): CrossPersonaAnalysis {
@@ -642,11 +783,11 @@ export class TerminologyConsistencyValidator {
     }
     
     // Identificar grupos com múltiplas variações
-    for (const [concept, variations] of termGroups) {
+    termGroups.forEach((variations, concept) => {
       if (variations.size > 1) {
         inconsistentTerms.set(concept, Array.from(variations));
       }
-    }
+    });
     
     return inconsistentTerms;
   }
@@ -662,7 +803,16 @@ export class TerminologyConsistencyValidator {
       }
     }
     
-    return [...new Set(missing)]; // Remover duplicatas
+    // Remover duplicatas convertendo para array
+    const uniqueMissing: string[] = [];
+    const seen = new Set<string>();
+    for (const term of missing) {
+      if (!seen.has(term)) {
+        seen.add(term);
+        uniqueMissing.push(term);
+      }
+    }
+    return uniqueMissing;
   }
   
   private calculateTerminologyScore(
@@ -772,7 +922,7 @@ export class ReferenceConsistencyValidator {
   ]);
   
   public async validateReferences(
-    references: any[], 
+    references: Reference[],
     content: string
   ): Promise<ReferenceValidationResult> {
     const validReferences = await this.validateReferencesList(references);
@@ -796,7 +946,7 @@ export class ReferenceConsistencyValidator {
     };
   }
   
-  private async validateReferencesList(references: any[]): Promise<ValidatedReference[]> {
+  private async validateReferencesList(references: Reference[]): Promise<ValidatedReference[]> {
     const validated: ValidatedReference[] = [];
     
     for (const ref of references) {
@@ -806,26 +956,37 @@ export class ReferenceConsistencyValidator {
         
         validated.push({
           id: ref.id || ref.title,
-          type: ref.type,
+          type: ref.type as 'protocolo_nacional' | 'tese_doutorado' | 'literatura_cientifica',
           title: ref.title,
           isAccessible,
           lastValidated: new Date(),
           reliability
         });
       } catch (error) {
-        console.warn(`Could not validate reference: ${ref.title}`);
+        if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'reference_validation_failed', {
+            event_category: 'medical_consistency',
+            event_label: ref.title,
+            custom_parameters: {
+              medical_context: 'reference_validation',
+              error_type: 'validation_failure',
+              reference_type: ref.type
+            }
+          });
+        }
       }
     }
     
     return validated;
   }
   
-  private async checkReferenceAccessibility(reference: any): Promise<boolean> {
+  private async checkReferenceAccessibility(reference: Reference): Promise<boolean> {
     // Implementação simplificada - em produção usaria fetch
     if (reference.url) {
       try {
-        // Simular verificação de URL
-        return true;
+        // Simular verificação de URL - em produção seria uma requisição HTTP
+        const url = new URL(reference.url);
+        return url.protocol === 'http:' || url.protocol === 'https:';
       } catch {
         return false;
       }
@@ -835,13 +996,14 @@ export class ReferenceConsistencyValidator {
     return true;
   }
   
-  private assessReferenceReliability(reference: any): number {
+  private assessReferenceReliability(reference: Reference): number {
     let score = 0.5; // Base score
     
     // Verificar fonte confiável
     if (reference.source) {
       const source = reference.source.toLowerCase();
-      for (const trustedSource of this.TRUSTED_SOURCES) {
+      const trustedSourcesArray = Array.from(this.TRUSTED_SOURCES);
+      for (const trustedSource of trustedSourcesArray) {
         if (source.includes(trustedSource)) {
           score += 0.3;
           break;
@@ -864,7 +1026,7 @@ export class ReferenceConsistencyValidator {
     return Math.min(score, 1.0);
   }
   
-  private identifyInvalidReferences(references: any[]): InvalidReference[] {
+  private identifyInvalidReferences(references: Reference[]): InvalidReference[] {
     const invalid: InvalidReference[] = [];
     
     for (const ref of references) {
@@ -890,7 +1052,7 @@ export class ReferenceConsistencyValidator {
     return invalid;
   }
   
-  private identifyMissingCitations(content: string, references: any[]): MissingCitation[] {
+  private identifyMissingCitations(content: string, references: Reference[]): MissingCitation[] {
     const missing: MissingCitation[] = [];
     
     // Identificar afirmações que precisam de citação
@@ -919,7 +1081,7 @@ export class ReferenceConsistencyValidator {
     return missing;
   }
   
-  private identifyReferenceViolations(references: any[]): ReferenceViolation[] {
+  private identifyReferenceViolations(references: Reference[]): ReferenceViolation[] {
     const violations: ReferenceViolation[] = [];
     
     for (const ref of references) {
@@ -970,7 +1132,7 @@ export class ReferenceConsistencyValidator {
     );
   }
   
-  private hasNearbyReference(context: string, references: any[]): boolean {
+  private hasNearbyReference(context: string, references: Reference[]): boolean {
     // Verificar se há referência no contexto (implementação simplificada)
     const referenceIndicators = ['(', '[', 'ref', 'fonte'];
     return referenceIndicators.some(indicator => 
@@ -1068,7 +1230,7 @@ interface ComponentAnalysis {
 
 interface ComponentStyleAnalysis {
   variations: number;
-  standardStyle: any;
+  standardStyle: Record<string, unknown>;
   deviations: StyleDeviation[];
 }
 
@@ -1144,7 +1306,7 @@ export class UIUXConsistencyValidator {
     }
   };
   
-  public validateUIUXConsistency(componentData: any[]): UIUXValidationResult {
+  public validateUIUXConsistency(componentData: ComponentData[]): UIUXValidationResult {
     const colorAnalysis = this.analyzeColorConsistency(componentData);
     const typographyAnalysis = this.analyzeTypographyConsistency(componentData);
     const componentAnalysis = this.analyzeComponentConsistency(componentData);
@@ -1171,7 +1333,7 @@ export class UIUXConsistencyValidator {
   }
   
   // Implementações simplificadas dos métodos de análise
-  private analyzeColorConsistency(componentData: any[]): ColorSchemeAnalysis {
+  private analyzeColorConsistency(componentData: ComponentData[]): ColorSchemeAnalysis {
     return {
       primaryColors: Object.values(this.DESIGN_STANDARDS.colors),
       secondaryColors: [],
@@ -1180,7 +1342,7 @@ export class UIUXConsistencyValidator {
     };
   }
   
-  private analyzeTypographyConsistency(componentData: any[]): TypographyAnalysis {
+  private analyzeTypographyConsistency(componentData: ComponentData[]): TypographyAnalysis {
     return {
       fontFamilies: this.DESIGN_STANDARDS.typography.fontFamily,
       fontSizes: Object.values(this.DESIGN_STANDARDS.typography.fontSize),
@@ -1188,7 +1350,7 @@ export class UIUXConsistencyValidator {
     };
   }
   
-  private analyzeComponentConsistency(componentData: any[]): ComponentAnalysis {
+  private analyzeComponentConsistency(componentData: ComponentData[]): ComponentAnalysis {
     return {
       buttonStyles: { variations: 1, standardStyle: {}, deviations: [] },
       inputStyles: { variations: 1, standardStyle: {}, deviations: [] },
@@ -1197,7 +1359,7 @@ export class UIUXConsistencyValidator {
     };
   }
   
-  private analyzeInteractionConsistency(componentData: any[]): InteractionAnalysis {
+  private analyzeInteractionConsistency(componentData: ComponentData[]): InteractionAnalysis {
     return {
       hoverStates: { consistent: true, variations: 1, standardBehavior: 'subtle highlight' },
       focusStates: { consistent: true, variations: 1, standardBehavior: 'blue outline' },
@@ -1206,7 +1368,7 @@ export class UIUXConsistencyValidator {
     };
   }
   
-  private identifyUIUXViolations(inconsistencies: any[]): UIUXViolation[] {
+  private identifyUIUXViolations(inconsistencies: unknown[]): UIUXViolation[] {
     // Converter inconsistências para violações padronizadas
     return [];
   }
@@ -1301,7 +1463,7 @@ export class ConsistencyValidationSystem {
     return content;
   }
   
-  private consolidateViolations(validationResults: any[]): ConsistencyViolation[] {
+  private consolidateViolations(validationResults: ValidationResult[]): ConsistencyViolation[] {
     const violations: ConsistencyViolation[] = [];
     
     // Converter violações específicas para formato padrão

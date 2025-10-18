@@ -283,3 +283,12 @@ docs/**/temp_*.md
 # Manter scripts mas ignorar logs
 scripts/**/logs/
 scripts/**/*.log
+
+# ==========================================
+# CLAUDE AUTOMATION REPORTS
+# ==========================================
+
+# Ignorar relatórios gerados automaticamente
+.claude/automation/reports/
+# Claude Code MCP configuration with API keys
+.claude.json

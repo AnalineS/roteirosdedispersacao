@@ -6,7 +6,9 @@
 'use client';
 
 import React, { memo, useEffect, useRef, useCallback } from 'react';
-import { ChatMessage, Persona } from '@/services/api';
+import { type ChatMessage } from '@/types/api';
+import { type Persona } from '@/services/api';
+import { RAGStats, UIKnowledgeStats as KnowledgeStats } from '@/types/rag-knowledge';
 import MessageBubble from './MessageBubble';
 import SmartIndicators from './SmartIndicators';
 
@@ -23,7 +25,7 @@ interface ChatMessagesAreaProps {
     confidence: number;
     score: number;
   } | null;
-  knowledgeStats?: any;
+  knowledgeStats?: KnowledgeStats | RAGStats;
   isSearchingKnowledge?: boolean;
   fallbackState?: {
     isActive: boolean;
@@ -125,7 +127,7 @@ const ChatMessagesArea = memo(function ChatMessagesArea({
         sentiment={currentSentiment}
         knowledge={{
           isSearching: isSearchingKnowledge || false,
-          stats: knowledgeStats
+          stats: knowledgeStats as KnowledgeStats
         }}
         fallback={fallbackState}
         isMobile={isMobile}

@@ -1,0 +1,53 @@
+{
+  "timestamp": "2025-09-24T01:02:46.614093",
+  "environment": "production",
+  "tests_passed": 1,
+  "tests_failed": 7,
+  "tests_total": 8,
+  "services": {
+    "environment": {
+      "status": "FAIL",
+      "error": "Missing critical environment variables: ['SECRET_KEY', 'OPENROUTER_API_KEY', 'SUPABASE_PROJECT_URL', 'SUPABASE_API_KEY', 'GCP_SA_KEY']"
+    },
+    "cloud_initialization": {
+      "status": "FAIL",
+      "error": "No real cloud services were successfully initialized"
+    },
+    "supabase": {
+      "status": "FAIL",
+      "error": "SUPABASE_URL and SUPABASE_ANON_KEY are required for real Supabase integration"
+    },
+    "gcs": {
+      "status": "FAIL",
+      "error": "Your default credentials were not found. To set up Application Default Credentials, see https://cloud.google.com/docs/authentication/external/set-up-adc for more information."
+    },
+    "openrouter": {
+      "status": "FAIL",
+      "error": "OpenRouter API key not configured"
+    },
+    "rag": {
+      "status": "FAIL",
+      "error": "SupabaseRAGSystem.__init__() missing 1 required positional argument: 'config'"
+    },
+    "cache": {
+      "status": "PASS",
+      "cache_operations": true,
+      "stats": {
+        "memory_hits": 0,
+        "supabase_hits": 0,
+        "cloud_storage_hits": 0,
+        "firestore_hits": 0,
+        "misses": 0,
+        "evictions": 0,
+        "total_requests": 0
+      },
+      "supabase_connected": false,
+      "gcs_connected": false
+    },
+    "api": {
+      "status": "FAIL",
+      "error": "get_medical_cache() got an unexpected keyword argument 'max_memory_mb'"
+    }
+  },
+  "overall_status": "FAIL"
+}

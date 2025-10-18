@@ -81,7 +81,7 @@ export class FluidTypographyAuditor {
         
         const rules = Array.from(stylesheet.cssRules || []);
         this.processRules(rules);
-      } catch (error) {
+      } catch {
         // Skip stylesheets that can't be accessed (CORS)
         continue;
       }
@@ -365,7 +365,7 @@ export class FluidTypographyAuditor {
   private generateReport(): FluidTypographyReport {
     const errors = this.violations.filter(v => v.severity === 'error').length;
     const warnings = this.violations.filter(v => v.severity === 'warning').length;
-    const infos = this.violations.filter(v => v.severity === 'info').length;
+    const _infos = this.violations.filter(v => v.severity === 'info').length;
 
     const accessibilityViolations = this.violations.filter(v => v.type === 'accessibility').length;
     const accessibilityScore = Math.max(0, 100 - (accessibilityViolations * 10));
@@ -421,7 +421,7 @@ export class FluidTypographyAuditor {
   }
 
   // Static helper methods
-  public static generateFluidScale(baseFontSize: number = 16, ratio: number = 1.25): Record<string, string> {
+  public static generateFluidScale(baseFontSize: number = 16, _ratio: number = 1.25): Record<string, string> {
     const scale: Record<string, string> = {};
     const sizes = ['xs', 'sm', 'base', 'lg', 'xl', '2xl', '3xl', '4xl', '5xl', '6xl'];
     const multipliers = [0.75, 0.875, 1, 1.125, 1.25, 1.5, 1.875, 2.25, 3, 4];

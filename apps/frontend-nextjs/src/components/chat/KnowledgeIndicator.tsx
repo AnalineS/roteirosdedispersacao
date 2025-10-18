@@ -1,12 +1,23 @@
 'use client';
 
 import React, { useState } from 'react';
-import { AstraResponse, AstraStats } from '@/services/astraClient';
+import { RAGStats } from '@/types/rag-knowledge';
+import { RAGResponse } from '@/services/supabaseRAGClient';
 import { theme } from '@/config/theme';
 
+// Tipo para chunks de conhecimento
+interface KnowledgeChunk {
+  content: string;
+  score: number;
+  section?: string;
+  metadata?: Record<string, any>;
+}
+
+// RAGStats imported from unified types
+
 interface KnowledgeIndicatorProps {
-  searchResult?: AstraResponse | null;
-  stats?: AstraStats | null;
+  searchResult?: RAGResponse | null;
+  stats?: RAGStats | null;
   isSearching?: boolean;
   showDetails?: boolean;
   position?: 'inline' | 'floating';
@@ -28,16 +39,16 @@ export const KnowledgeIndicator: React.FC<KnowledgeIndicatorProps> = ({
   const getStatusColor = () => {
     if (isSearching) return theme.colors.warning[500];
     if (!searchResult) return theme.colors.neutral[400];
-    if (searchResult.confidence > 0.7) return theme.colors.success[500];
-    if (searchResult.confidence > 0.4) return theme.colors.warning[500];
+    if (searchResult.qualityScore > 0.7) return theme.colors.success[500];
+    if (searchResult.qualityScore > 0.4) return theme.colors.warning[500];
     return theme.colors.danger[500];
   };
   
   const getStatusIcon = () => {
     if (isSearching) return '🔄';
     if (!searchResult) return '📚';
-    if (searchResult.confidence > 0.7) return '✅';
-    if (searchResult.confidence > 0.4) return '⚠️';
+    if (searchResult.qualityScore > 0.7) return '✅';
+    if (searchResult.qualityScore > 0.4) return '⚠️';
     return '❓';
   };
   
@@ -45,8 +56,8 @@ export const KnowledgeIndicator: React.FC<KnowledgeIndicatorProps> = ({
     if (isSearching) return 'Buscando contexto...';
     if (!searchResult) return 'Base de conhecimento';
     if (searchResult.cached) return 'Contexto (cache)';
-    if (searchResult.confidence > 0.7) return 'Contexto encontrado';
-    if (searchResult.confidence > 0.4) return 'Contexto parcial';
+    if (searchResult.qualityScore > 0.7) return 'Contexto encontrado';
+    if (searchResult.qualityScore > 0.4) return 'Contexto parcial';
     return 'Contexto limitado';
   };
   
@@ -127,7 +138,7 @@ export const KnowledgeIndicator: React.FC<KnowledgeIndicatorProps> = ({
             opacity: 0.7,
             marginLeft: '4px'
           }}>
-            ({Math.round(searchResult.confidence * 100)}%)
+            ({Math.round(searchResult.qualityScore * 100)}%)
           </span>
         )}
         
@@ -139,23 +150,23 @@ export const KnowledgeIndicator: React.FC<KnowledgeIndicatorProps> = ({
                 <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
                   Última Busca:
                 </div>
-                <div>Chunks encontrados: {searchResult.chunks.length}</div>
-                <div>Confiança: {Math.round(searchResult.confidence * 100)}%</div>
-                <div>Tempo: {searchResult.processing_time}ms</div>
+                <div>Chunks encontrados: {searchResult.context?.chunks?.length || 0}</div>
+                <div>Confiança: {Math.round(searchResult.qualityScore * 100)}%</div>
+                <div>Tempo: {searchResult.processingTimeMs}ms</div>
                 <div>Cache: {searchResult.cached ? 'Sim' : 'Não'}</div>
                 
-                {searchResult.chunks.length > 0 && (
+                {searchResult.context?.chunks && searchResult.context.chunks.length > 0 && (
                   <div style={{ marginTop: '6px' }}>
                     <div style={{ fontWeight: 'bold', fontSize: '0.7rem' }}>
                       Fontes:
                     </div>
-                    {searchResult.chunks.slice(0, 3).map((chunk, index) => (
+                    {searchResult.context.chunks.slice(0, 3).map((chunk: KnowledgeChunk, index: number) => (
                       <div key={index} style={{ 
                         fontSize: '0.65rem', 
                         opacity: 0.8,
                         marginLeft: '8px'
                       }}>
-                        • {chunk.section.replace(/_/g, ' ')}
+                        • {(chunk.section || 'contexto').replace(/_/g, ' ')}
                       </div>
                     ))}
                   </div>
@@ -169,9 +180,9 @@ export const KnowledgeIndicator: React.FC<KnowledgeIndicatorProps> = ({
                 <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
                   Estatísticas:
                 </div>
-                <div>Cache: {stats.cache_stats.hit_rate_percent}% hits</div>
-                <div>Feedback: {stats.feedback_stats.average_rating}/5</div>
-                <div>Base: {stats.system_stats.total_chunks} chunks</div>
+                <div>Taxa de cache: {Math.round((stats.cacheHitRate || 0) * 100)}%</div>
+                <div>Taxa de sucesso: {Math.round((stats.successRate || 0) * 100)}%</div>
+                <div>Documentos: {stats.documentsIndexed || 0} indexados</div>
               </div>
             )}
           </div>

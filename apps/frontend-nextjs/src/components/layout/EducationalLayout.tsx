@@ -14,6 +14,7 @@ import { GlobalNavigationProvider } from '@/components/navigation/GlobalNavigati
 import { FloatingElementsCoordinator } from '@/components/navigation/FloatingElementsCoordinator';
 import { SmartNavigationProvider } from '@/components/navigation/SmartNavigationSystem';
 import FABCollisionDetector from '@/components/layout/FABCollisionDetector';
+import { GlossaryWrapper } from '@/components/glossary/AutoGlossary';
 
 interface EducationalLayoutProps {
   children: ReactNode;
@@ -38,7 +39,7 @@ export default function EducationalLayout({
         <FloatingElementsCoordinator>
           <VisualHierarchyOptimizer applyToRoot={true}>
             <MobileFirstFramework enableSwipeGestures={true} touchTargetSize="medium">
-              <div className="educational-layout hierarchy-content-container mobile-safe-area" role="document">
+              <div className="educational-layout hierarchy-content-container mobile-safe-area" role="document" style={{ width: '100%', maxWidth: '100%' }}>
         {/* Indicador de foco global */}
         <FocusIndicator 
           enabled={true}
@@ -73,10 +74,12 @@ export default function EducationalLayout({
           </header>
         )}
         
-        {/* Page Content com detecção de colisão do FAB */}
+        {/* Page Content com detecção de colisão do FAB e glossário automático */}
         <main className="content-main hierarchy-section" id="main-content" tabIndex={-1}>
           <FABCollisionDetector>
-            {children}
+            <GlossaryWrapper enabled={true}>
+              {children}
+            </GlossaryWrapper>
           </FABCollisionDetector>
         </main>
       </div>

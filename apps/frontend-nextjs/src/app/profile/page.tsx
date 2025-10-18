@@ -15,21 +15,18 @@ import {
   Link as LinkIcon,
   Trash2
 } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useSafeAuth as useAuth } from '@/hooks/useSafeAuth';
 import { SocialAuthButtons } from '@/components/auth';
-import type { UserFocus } from '@/lib/firebase/types';
+import type { UserFocus } from '@/types/api';
+import type { UserPreferencesDTO } from '@/types/unified-api';
+import { SocialProfile, AvatarUploader, EmailPreferences, ConnectedAccounts } from '@/components/profile';
 
 interface ProfileFormData {
   displayName: string;
   email: string;
   profileType: 'admin' | 'professional' | 'student' | 'patient' | 'caregiver';
   focus: UserFocus;
-  preferences: {
-    language: 'simple' | 'technical';
-    notifications: boolean;
-    theme: 'light' | 'dark' | 'auto';
-    emailUpdates: boolean;
-  };
+  preferences: UserPreferencesDTO;
 }
 
 export default function ProfilePage() {
@@ -53,13 +50,15 @@ export default function ProfilePage() {
       language: 'simple',
       notifications: true,
       theme: 'auto',
-      emailUpdates: true
+      emailUpdates: true,
+      dataCollection: false,
+      lgpdConsent: false
     }
   });
 
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
-  const [activeTab, setActiveTab] = useState<'profile' | 'account' | 'privacy'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'account' | 'privacy' | 'social'>('profile');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // Redirecionar se não autenticado
@@ -81,7 +80,9 @@ export default function ProfilePage() {
           language: profile.preferences?.language || 'simple',
           notifications: profile.preferences?.notifications ?? true,
           theme: profile.preferences?.theme || 'auto',
-          emailUpdates: profile.preferences?.emailUpdates ?? true
+          emailUpdates: profile.preferences?.emailUpdates ?? true,
+          dataCollection: profile.preferences?.dataCollection ?? false,
+          lgpdConsent: profile.preferences?.lgpdConsent ?? false
         }
       });
     }
@@ -95,9 +96,11 @@ export default function ProfilePage() {
     try {
       const result = await updateUserProfile({
         displayName: formData.displayName,
-        type: formData.profileType,
+        type: formData.profileType === 'caregiver' ? 'patient' : formData.profileType as 'admin' | 'professional' | 'student' | 'patient',
         focus: formData.focus,
-        preferences: formData.preferences
+        preferences: {
+          ...formData.preferences
+        }
       });
 
       if (result.success) {
@@ -172,7 +175,7 @@ export default function ProfilePage() {
     return null; // Will redirect
   }
 
-  const connectedProviders = user?.providerData?.map(p => p.providerId) || [];
+  const connectedProviders = user?.provider ? [user.provider] : [];
 
   return (
     <div className="profile-container">
@@ -206,6 +209,13 @@ export default function ProfilePage() {
           >
             <Shield size={20} />
             Privacidade
+          </button>
+          <button
+            onClick={() => setActiveTab('social')}
+            className={`tab-button ${activeTab === 'social' ? 'active' : ''}`}
+          >
+            <LinkIcon size={20} />
+            Social
           </button>
         </div>
 
@@ -387,7 +397,7 @@ export default function ProfilePage() {
                 <div className="connected-accounts">
                   {connectedProviders.length > 0 ? (
                     <div className="account-list">
-                      {connectedProviders.map(provider => (
+                      {connectedProviders.map((provider: any) => (
                         <div key={provider} className="account-item connected">
                           <div className="account-info">
                             <LinkIcon size={20} />
@@ -481,6 +491,43 @@ export default function ProfilePage() {
                     Termos de Uso
                   </a>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'social' && (
+            <div className="social-content">
+              {/* Social Profile Component - PR #175 */}
+              <div className="form-section">
+                <SocialProfile />
+              </div>
+
+              {/* Avatar Uploader - PR #175 */}
+              <div className="form-section">
+                <h3 className="section-title">Avatar do Perfil</h3>
+                <AvatarUploader 
+                  userId={user?.uid || ''}
+                  currentAvatarUrl={user?.photoURL || ''}
+                  onUploadComplete={(url) => console.log('Avatar uploaded:', url)}
+                />
+              </div>
+
+              {/* Email Preferences - PR #175 */}
+              <div className="form-section">
+                <h3 className="section-title">Preferências de Email</h3>
+                <EmailPreferences 
+                  userId={user?.uid || ''}
+                  onPreferencesChange={async (prefs) => {
+                    console.log('Email preferences updated:', prefs);
+                    return true;
+                  }}
+                />
+              </div>
+
+              {/* Connected Accounts - PR #175 */}
+              <div className="form-section">
+                <h3 className="section-title">Contas Conectadas</h3>
+                <ConnectedAccounts />
               </div>
             </div>
           )}

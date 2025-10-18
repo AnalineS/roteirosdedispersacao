@@ -1,19 +1,26 @@
 /**
  * Quality Assurance Dashboard
  * Dashboard em tempo real para monitoramento de qualidade educativa
- * 
+ *
  * @author Claude Code QA Specialist
  * @version 1.0.0
  */
 
-'use client';
+"use client";
 
-import React, { useState, useEffect, useMemo } from 'react';
-import EducationalMonitoringSystem, { 
-  EducationalMetrics, 
-  QualityAlert,
-  MistakePattern 
-} from '@/utils/educationalAnalytics';
+import React, { useState, useEffect, useMemo } from "react";
+import validationService, {
+  DashboardData,
+  ValidationAlert,
+} from "@/services/validationService";
+
+type MistakePattern = {
+  pattern: string;
+  frequency: number;
+  severity: "critical" | "high" | "medium" | "low";
+  recommendation: string;
+  category: string;
+};
 
 interface QualityDashboardProps {
   refreshInterval?: number; // ms, default 30000
@@ -24,103 +31,109 @@ interface QualityDashboardProps {
 const QualityDashboard: React.FC<QualityDashboardProps> = ({
   refreshInterval = 30000,
   showDetailedMetrics = false,
-  allowAlertManagement = false
+  allowAlertManagement = false,
 }) => {
-  const [metrics, setMetrics] = useState<EducationalMetrics | null>(null);
-  const [alerts, setAlerts] = useState<QualityAlert[]>([]);
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(
+    null,
+  );
+  const [alerts, setAlerts] = useState<ValidationAlert[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedTab, setSelectedTab] = useState<string>('overview');
-  
-  const monitoringSystem = EducationalMonitoringSystem.getInstance();
-  
+  const [selectedTab, setSelectedTab] = useState<string>("overview");
+  const [error, setError] = useState<string | null>(null);
+
   // ===== EFFECTS =====
-  
+
   useEffect(() => {
-    // Iniciar monitoramento
-    monitoringSystem.startRealTimeMonitoring();
-    
     // Carregar dados iniciais
     loadDashboardData();
-    
+
     // Setup refresh interval
     const interval = setInterval(loadDashboardData, refreshInterval);
-    
+
     return () => {
       clearInterval(interval);
-      monitoringSystem.stopRealTimeMonitoring();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refreshInterval]);
-  
+
   const loadDashboardData = async () => {
     try {
       setIsLoading(true);
-      
-      const currentMetrics = monitoringSystem.getMetrics();
-      const activeAlerts = monitoringSystem.getActiveAlerts();
-      
-      setMetrics(currentMetrics);
-      setAlerts(activeAlerts);
-      
+      setError(null);
+
+      // Carregar dados do dashboard e alertas em paralelo
+      const [dashboardResponse, alertsResponse] = await Promise.all([
+        validationService.getDashboardData(),
+        validationService.getValidationAlerts(),
+      ]);
+
+      setDashboardData(dashboardResponse);
+      setAlerts(alertsResponse.alerts);
     } catch (error) {
-      console.error('Error loading dashboard data:', error);
+      // Silent error handling for dashboard data loading
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'qa_dashboard_load_error', {
+          event_category: 'quality_assurance',
+          event_label: 'dashboard_data_load_failed'
+        });
+      }
+      setError(error instanceof Error ? error.message : "Erro desconhecido");
     } finally {
       setIsLoading(false);
     }
   };
-  
+
   // ===== COMPUTED VALUES =====
-  
+
   const overallHealthScore = useMemo(() => {
-    if (!metrics) return 0;
-    
-    const weights = {
-      engagement: 0.25,
-      learning: 0.25,
-      quality: 0.25,
-      performance: 0.25
-    };
-    
-    const scores = {
-      engagement: metrics.engagement.completionRate * 100,
-      learning: metrics.learning.knowledgeRetention * 100,
-      quality: metrics.quality.userSatisfaction * 20, // 5-scale to 100-scale
-      performance: 100 - (metrics.performance.errorRates.size * 10)
-    };
-    
-    return Math.round(
-      scores.engagement * weights.engagement +
-      scores.learning * weights.learning +
-      scores.quality * weights.quality +
-      scores.performance * weights.performance
-    );
-  }, [metrics]);
-  
-  const criticalAlerts = useMemo(() => 
-    alerts.filter(alert => alert.severity === 'critical'), [alerts]);
-  
-  const warningAlerts = useMemo(() => 
-    alerts.filter(alert => alert.severity === 'warning'), [alerts]);
-  
+    if (!dashboardData) return 0;
+    return dashboardData.summary.overallHealthScore;
+  }, [dashboardData]);
+
+  const criticalAlerts = useMemo(
+    () => alerts.filter((alert) => alert.severity === "critical"),
+    [alerts],
+  );
+
+  const warningAlerts = useMemo(
+    () =>
+      alerts.filter(
+        (alert) => alert.severity === "medium" || alert.severity === "low",
+      ),
+    [alerts],
+  );
+
   // ===== EVENT HANDLERS =====
-  
+
   const handleAcknowledgeAlert = (alertId: string) => {
     if (!allowAlertManagement) return;
-    
-    monitoringSystem.acknowledgeAlert(alertId);
+
+    // TODO: Implementar endpoint para acknowledge de alertas
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'qa_alert_acknowledged', {
+        event_category: 'quality_assurance',
+        event_label: 'alert_management'
+      });
+    }
     loadDashboardData();
   };
-  
+
   const handleResolveAlert = (alertId: string) => {
     if (!allowAlertManagement) return;
-    
-    monitoringSystem.resolveAlert(alertId);
+
+    // TODO: Implementar endpoint para resolver alertas
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'qa_alert_resolved', {
+        event_category: 'quality_assurance',
+        event_label: 'alert_management'
+      });
+    }
     loadDashboardData();
   };
-  
+
   // ===== RENDER =====
-  
-  if (isLoading && !metrics) {
+
+  if (isLoading && !dashboardData) {
     return (
       <div className="qa-dashboard loading">
         <div className="loading-spinner">
@@ -130,8 +143,18 @@ const QualityDashboard: React.FC<QualityDashboardProps> = ({
       </div>
     );
   }
-  
-  if (!metrics) {
+
+  if (error) {
+    return (
+      <div className="qa-dashboard error">
+        <h2>Erro ao carregar dashboard</h2>
+        <p>{error}</p>
+        <button onClick={loadDashboardData}>Tentar novamente</button>
+      </div>
+    );
+  }
+
+  if (!dashboardData) {
     return (
       <div className="qa-dashboard error">
         <h2>Erro ao carregar dashboard</h2>
@@ -140,13 +163,15 @@ const QualityDashboard: React.FC<QualityDashboardProps> = ({
       </div>
     );
   }
-  
+
   return (
     <div className="qa-dashboard">
       {/* Header com Score Geral */}
       <div className="dashboard-header">
         <div className="overall-health">
-          <div className={`health-score ${getHealthScoreClass(overallHealthScore)}`}>
+          <div
+            className={`health-score ${getHealthScoreClass(overallHealthScore)}`}
+          >
             <span className="score-value">{overallHealthScore}</span>
             <span className="score-label">Score Geral</span>
           </div>
@@ -155,7 +180,7 @@ const QualityDashboard: React.FC<QualityDashboardProps> = ({
             <p>Monitoramento em tempo real da qualidade educativa</p>
           </div>
         </div>
-        
+
         {/* Alertas Críticos */}
         {criticalAlerts.length > 0 && (
           <div className="critical-alerts">
@@ -166,51 +191,51 @@ const QualityDashboard: React.FC<QualityDashboardProps> = ({
           </div>
         )}
       </div>
-      
+
       {/* Navigation Tabs */}
       <div className="dashboard-tabs">
-        <button 
-          className={selectedTab === 'overview' ? 'active' : ''}
-          onClick={() => setSelectedTab('overview')}
+        <button
+          className={selectedTab === "overview" ? "active" : ""}
+          onClick={() => setSelectedTab("overview")}
         >
           Visão Geral
         </button>
-        <button 
-          className={selectedTab === 'performance' ? 'active' : ''}
-          onClick={() => setSelectedTab('performance')}
+        <button
+          className={selectedTab === "performance" ? "active" : ""}
+          onClick={() => setSelectedTab("performance")}
         >
           Performance
         </button>
-        <button 
-          className={selectedTab === 'learning' ? 'active' : ''}
-          onClick={() => setSelectedTab('learning')}
+        <button
+          className={selectedTab === "learning" ? "active" : ""}
+          onClick={() => setSelectedTab("learning")}
         >
           Aprendizagem
         </button>
-        <button 
-          className={selectedTab === 'alerts' ? 'active' : ''}
-          onClick={() => setSelectedTab('alerts')}
+        <button
+          className={selectedTab === "alerts" ? "active" : ""}
+          onClick={() => setSelectedTab("alerts")}
         >
           Alertas ({alerts.length})
         </button>
       </div>
-      
+
       {/* Tab Content */}
       <div className="dashboard-content">
-        {selectedTab === 'overview' && (
-          <OverviewTab metrics={metrics} />
+        {selectedTab === "overview" && dashboardData && (
+          <OverviewTab metrics={dashboardData.metrics} />
         )}
-        
-        {selectedTab === 'performance' && (
-          <PerformanceTab metrics={metrics} />
+
+        {selectedTab === "performance" && dashboardData && (
+          <PerformanceTab metrics={dashboardData.metrics} />
         )}
-        
-        {selectedTab === 'learning' && (
-          <LearningTab metrics={metrics} />
+
+        {selectedTab === "learning" && dashboardData && (
+          <LearningTab metrics={dashboardData.metrics} />
         )}
-        
-        {selectedTab === 'alerts' && (
-          <AlertsTab 
+
+        {selectedTab === "alerts" && (
+          <AlertsTab
             alerts={alerts}
             onAcknowledge={handleAcknowledgeAlert}
             onResolve={handleResolveAlert}
@@ -224,7 +249,9 @@ const QualityDashboard: React.FC<QualityDashboardProps> = ({
 
 // ===== TAB COMPONENTS =====
 
-const OverviewTab: React.FC<{ metrics: EducationalMetrics }> = ({ metrics }) => (
+const OverviewTab: React.FC<{ metrics: DashboardData["metrics"] }> = ({
+  metrics,
+}) => (
   <div className="overview-tab">
     <div className="metrics-grid">
       <MetricCard
@@ -234,7 +261,7 @@ const OverviewTab: React.FC<{ metrics: EducationalMetrics }> = ({ metrics }) => 
         color="green"
         description="Percentual de usuários que completam os casos clínicos"
       />
-      
+
       <MetricCard
         title="Satisfação do Usuário"
         value={`${metrics.quality.userSatisfaction.toFixed(1)}/5`}
@@ -242,15 +269,15 @@ const OverviewTab: React.FC<{ metrics: EducationalMetrics }> = ({ metrics }) => 
         color="blue"
         description="Avaliação média da qualidade educativa"
       />
-      
+
       <MetricCard
         title="Tempo de Resposta"
         value={`${metrics.performance.responseTime}ms`}
-        trend={metrics.performance.responseTime > 2000 ? 'down' : 'up'}
-        color={metrics.performance.responseTime > 2000 ? 'red' : 'green'}
+        trend={metrics.performance.responseTime > 2000 ? "down" : "up"}
+        color={metrics.performance.responseTime > 2000 ? "red" : "green"}
         description="Tempo médio de resposta dos componentes"
       />
-      
+
       <MetricCard
         title="Retenção de Conhecimento"
         value={`${(metrics.learning.knowledgeRetention * 100).toFixed(1)}%`}
@@ -259,51 +286,66 @@ const OverviewTab: React.FC<{ metrics: EducationalMetrics }> = ({ metrics }) => 
         description="Capacidade de retenção das competências adquiridas"
       />
     </div>
-    
+
     <div className="engagement-summary">
       <h3>Resumo de Engajamento</h3>
       <div className="engagement-stats">
         <div className="stat">
           <span className="stat-label">Duração Média da Sessão</span>
-          <span className="stat-value">{Math.round(metrics.engagement.sessionDuration)} min</span>
+          <span className="stat-value">
+            {Math.round(metrics.engagement.sessionDuration)} min
+          </span>
         </div>
         <div className="stat">
           <span className="stat-label">Interações por Sessão</span>
-          <span className="stat-value">{metrics.engagement.componentInteractions}</span>
+          <span className="stat-value">
+            {metrics.engagement.componentInteractions}
+          </span>
         </div>
         <div className="stat">
           <span className="stat-label">Taxa de Retorno</span>
-          <span className="stat-value">{(metrics.engagement.returnRate * 100).toFixed(1)}%</span>
+          <span className="stat-value">
+            {(metrics.engagement.returnRate * 100).toFixed(1)}%
+          </span>
         </div>
       </div>
     </div>
   </div>
 );
 
-const PerformanceTab: React.FC<{ metrics: EducationalMetrics }> = ({ metrics }) => (
+const PerformanceTab: React.FC<{ metrics: DashboardData["metrics"] }> = ({
+  metrics,
+}) => (
   <div className="performance-tab">
     <div className="performance-metrics">
       <div className="metric-section">
         <h3>Tempos de Carregamento</h3>
         <div className="load-times">
-          {metrics.performance.loadTimes.slice(-10).map((time, index) => (
-            <div key={index} className="load-time-bar">
-              <span className="time-label">Componente {index + 1}</span>
-              <div className="time-bar">
-                <div 
-                  className="time-fill"
-                  style={{ 
-                    width: `${Math.min(time / 3000 * 100, 100)}%`,
-                    backgroundColor: time > 2000 ? '#ef4444' : time > 1000 ? '#f59e0b' : '#10b981'
-                  }}
-                />
+          {metrics.performance.loadTimes
+            .slice(-10)
+            .map((time: number, index: number) => (
+              <div key={index} className="load-time-bar">
+                <span className="time-label">Componente {index + 1}</span>
+                <div className="time-bar">
+                  <div
+                    className="time-fill"
+                    style={{
+                      width: `${Math.min((time / 3000) * 100, 100)}%`,
+                      backgroundColor:
+                        time > 2000
+                          ? "#ef4444"
+                          : time > 1000
+                            ? "#f59e0b"
+                            : "#10b981",
+                    }}
+                  />
+                </div>
+                <span className="time-value">{Math.round(time)}ms</span>
               </div>
-              <span className="time-value">{Math.round(time)}ms</span>
-            </div>
-          ))}
+            ))}
         </div>
       </div>
-      
+
       <div className="metric-section">
         <h3>Uso de Recursos</h3>
         <div className="resource-usage">
@@ -322,7 +364,10 @@ const PerformanceTab: React.FC<{ metrics: EducationalMetrics }> = ({ metrics }) 
           <div className="resource-item">
             <span className="resource-label">Armazenamento</span>
             <span className="resource-value">
-              {(metrics.performance.resourceUsage.storageUsed / 1024).toFixed(1)} MB
+              {(metrics.performance.resourceUsage.storageUsed / 1024).toFixed(
+                1,
+              )}{" "}
+              MB
             </span>
           </div>
         </div>
@@ -331,50 +376,65 @@ const PerformanceTab: React.FC<{ metrics: EducationalMetrics }> = ({ metrics }) 
   </div>
 );
 
-const LearningTab: React.FC<{ metrics: EducationalMetrics }> = ({ metrics }) => (
+const LearningTab: React.FC<{ metrics: DashboardData["metrics"] }> = ({
+  metrics,
+}) => (
   <div className="learning-tab">
     <div className="learning-metrics">
       <div className="mistake-patterns">
         <h3>Padrões de Erro Comuns</h3>
-        {metrics.learning.mistakePatterns.slice(0, 5).map((pattern, index) => (
-          <div key={pattern.stepId} className="mistake-pattern">
-            <div className="pattern-header">
-              <span className="pattern-type">{pattern.mistakeType}</span>
-              <span className={`pattern-severity ${pattern.severity}`}>
-                {pattern.severity.toUpperCase()}
-              </span>
+        {metrics.learning.mistakePatterns
+          .slice(0, 5)
+          .map((pattern: MistakePattern, index: number) => (
+            <div key={index} className="mistake-pattern">
+              <div className="pattern-header">
+                <span className="pattern-type">{pattern.pattern}</span>
+                <span className={`pattern-severity ${pattern.severity}`}>
+                  {pattern.severity.toUpperCase()}
+                </span>
+              </div>
+              <div className="pattern-stats">
+                <span className="frequency">
+                  Frequência: {pattern.frequency}
+                </span>
+                <span className="step-id">Categoria: {pattern.category}</span>
+              </div>
+              <div className="pattern-improvements">
+                <span className="improvement-tag">
+                  {pattern.recommendation}
+                </span>
+              </div>
             </div>
-            <div className="pattern-stats">
-              <span className="frequency">Frequência: {pattern.frequency}</span>
-              <span className="step-id">Step: {pattern.stepId}</span>
-            </div>
-            <div className="pattern-improvements">
-              {pattern.suggestedImprovements.map((improvement, idx) => (
-                <span key={idx} className="improvement-tag">{improvement}</span>
-              ))}
-            </div>
-          </div>
-        ))}
+          ))}
       </div>
-      
+
       <div className="concept-mastery">
         <h3>Domínio de Conceitos</h3>
         <div className="mastery-chart">
-          {Array.from(metrics.learning.conceptMastery.entries()).map(([concept, score]) => (
-            <div key={concept} className="concept-bar">
-              <span className="concept-label">{concept}</span>
-              <div className="mastery-bar">
-                <div 
-                  className="mastery-fill"
-                  style={{ 
-                    width: `${score * 100}%`,
-                    backgroundColor: score > 0.8 ? '#10b981' : score > 0.6 ? '#f59e0b' : '#ef4444'
-                  }}
-                />
+          {Object.entries(metrics.learning.conceptMastery).map(
+            ([concept, score]: [string, number]) => (
+              <div key={concept} className="concept-bar">
+                <span className="concept-label">{concept}</span>
+                <div className="mastery-bar">
+                  <div
+                    className="mastery-fill"
+                    style={{
+                      width: `${score * 100}%`,
+                      backgroundColor:
+                        score > 0.8
+                          ? "#10b981"
+                          : score > 0.6
+                            ? "#f59e0b"
+                            : "#ef4444",
+                    }}
+                  />
+                </div>
+                <span className="mastery-score">
+                  {(score * 100).toFixed(0)}%
+                </span>
               </div>
-              <span className="mastery-score">{(score * 100).toFixed(0)}%</span>
-            </div>
-          ))}
+            ),
+          )}
         </div>
       </div>
     </div>
@@ -382,7 +442,7 @@ const LearningTab: React.FC<{ metrics: EducationalMetrics }> = ({ metrics }) => 
 );
 
 const AlertsTab: React.FC<{
-  alerts: QualityAlert[];
+  alerts: ValidationAlert[];
   onAcknowledge: (id: string) => void;
   onResolve: (id: string) => void;
   allowManagement: boolean;
@@ -395,7 +455,7 @@ const AlertsTab: React.FC<{
       </div>
     ) : (
       <div className="alerts-list">
-        {alerts.map(alert => (
+        {alerts.map((alert) => (
           <AlertCard
             key={alert.id}
             alert={alert}
@@ -414,7 +474,7 @@ const AlertsTab: React.FC<{
 const MetricCard: React.FC<{
   title: string;
   value: string;
-  trend: 'up' | 'down' | 'stable';
+  trend: "up" | "down" | "stable";
   color: string;
   description: string;
 }> = ({ title, value, trend, color, description }) => (
@@ -422,7 +482,7 @@ const MetricCard: React.FC<{
     <div className="metric-header">
       <h4>{title}</h4>
       <span className={`trend-indicator ${trend}`}>
-        {trend === 'up' ? '↗' : trend === 'down' ? '↘' : '→'}
+        {trend === "up" ? "↗" : trend === "down" ? "↘" : "→"}
       </span>
     </div>
     <div className="metric-value">{value}</div>
@@ -431,7 +491,7 @@ const MetricCard: React.FC<{
 );
 
 const AlertCard: React.FC<{
-  alert: QualityAlert;
+  alert: ValidationAlert;
   onAcknowledge: () => void;
   onResolve: () => void;
   allowActions: boolean;
@@ -449,35 +509,33 @@ const AlertCard: React.FC<{
         {alert.severity.toUpperCase()}
       </div>
     </div>
-    
-    <div className="alert-description">
-      {alert.description}
-    </div>
-    
+
+    <div className="alert-description">{alert.description}</div>
+
     {alert.actions.immediate.length > 0 && (
       <div className="alert-actions-list">
         <strong>Ações Imediatas:</strong>
         <ul>
-          {alert.actions.immediate.map((action, index) => (
+          {alert.actions.immediate.map((action: string, index: number) => (
             <li key={index}>{action}</li>
           ))}
         </ul>
       </div>
     )}
-    
+
     {allowActions && (
       <div className="alert-actions">
-        <button 
+        <button
           className="btn-acknowledge"
           onClick={onAcknowledge}
-          disabled={alert.status !== 'active'}
+          disabled={alert.status !== "active"}
         >
           Reconhecer
         </button>
-        <button 
+        <button
           className="btn-resolve"
           onClick={onResolve}
-          disabled={alert.status === 'resolved'}
+          disabled={alert.status === "resolved"}
         >
           Resolver
         </button>
@@ -489,11 +547,11 @@ const AlertCard: React.FC<{
 // ===== UTILITY FUNCTIONS =====
 
 const getHealthScoreClass = (score: number): string => {
-  if (score >= 90) return 'excellent';
-  if (score >= 80) return 'good';
-  if (score >= 70) return 'fair';
-  if (score >= 60) return 'poor';
-  return 'critical';
+  if (score >= 90) return "excellent";
+  if (score >= 80) return "good";
+  if (score >= 70) return "fair";
+  if (score >= 60) return "poor";
+  return "critical";
 };
 
 export default QualityDashboard;

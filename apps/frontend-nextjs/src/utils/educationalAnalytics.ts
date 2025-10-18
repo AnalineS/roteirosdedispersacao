@@ -8,6 +8,7 @@
 
 import { ClinicalCase, CaseSession, StepResult } from '@/types/clinicalCases';
 import { CalculationResult } from '@/types/medication';
+import { AnalyticsFirestoreCache } from '@/services/analyticsFirestoreCache';
 
 // ===== INTERFACES DE ANALYTICS =====
 
@@ -257,6 +258,38 @@ export class EducationalMonitoringSystem {
     
     // Verificar se merece certificação
     this.evaluateCertificationEligibility(caseSession);
+
+    // Salvar no Firestore para persistência
+    AnalyticsFirestoreCache.saveAnalyticsEvent({
+      id: `case_completion_${caseSession.id}_${Date.now()}`,
+      sessionId: caseSession.id,
+      timestamp: new Date().toISOString(),
+      type: 'case_completion',
+      event: 'case_completion',
+      category: 'education',
+      value: caseSession.totalScore,
+      customDimensions: {
+        caseType: caseSession.caseId,
+        timeSpent: caseSession.timeSpent,
+        stepsCompleted: caseSession.stepResults.length,
+        successRate: caseSession.totalScore
+      }
+    }).catch(error => {
+      console.warn('Failed to save case completion to Firestore:', error);
+    });
+
+    // Track como métrica médica
+    AnalyticsFirestoreCache.trackMedicalMetric({
+      type: 'task_completion',
+      value: caseSession.totalScore,
+      context: {
+        caseId: caseSession.caseId,
+        timeSpent: caseSession.timeSpent,
+        errorCount: caseSession.stepResults.filter(s => !s.isCorrect).length
+      }
+    }).catch(error => {
+      console.warn('Failed to track medical metric:', error);
+    });
   }
   
   public trackCalculatorUsage(
@@ -597,6 +630,23 @@ export class EducationalMonitoringSystem {
     if (alert) {
       alert.status = 'resolved';
     }
+  }
+
+  // Métodos necessários para integração global
+  public trackModuleAccess(data: { module_path: string; timestamp: string }): void {
+    console.log('Module access tracked:', data);
+    // Track module access
+    this.metrics.engagement.componentInteractions++;
+  }
+
+  public startMonitoring(): void {
+    this.isMonitoring = true;
+    console.log('Educational monitoring started');
+  }
+
+  public stopMonitoring(): void {
+    this.isMonitoring = false;
+    console.log('Educational monitoring stopped');
   }
 }
 

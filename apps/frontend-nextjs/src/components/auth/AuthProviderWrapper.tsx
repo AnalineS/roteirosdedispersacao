@@ -7,8 +7,17 @@
 'use client';
 
 import React, { ReactNode, useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
+import Link from 'next/link';
 import { AuthProvider } from '@/contexts/AuthContext';
-import { FEATURES } from '@/lib/firebase/config';
+import { isPublicRoute, isProtectedRoute } from '@/config/routes';
+
+// Features configuration - environment specific
+const FEATURES = {
+  AUTH_ENABLED: process.env.NEXT_PUBLIC_AUTH_ENABLED === 'true',
+  AUTH_CHECK_TIMEOUT: parseInt(process.env.NEXT_PUBLIC_AUTH_TIMEOUT || '5000'),
+  IS_DEVELOPMENT: process.env.NODE_ENV === 'development',
+};
 
 interface AuthProviderWrapperProps {
   children: ReactNode;
@@ -40,25 +49,57 @@ interface AuthErrorScreenProps {
 }
 
 function AuthErrorScreen({ error, onRetry }: AuthErrorScreenProps) {
+  // Error messages in Portuguese for better UX
+  const errorMessages: Record<string, string> = {
+    'Backend indisponível': 'O servidor está temporariamente indisponível. Por favor, tente novamente em alguns minutos.',
+    'Não foi possível conectar ao servidor': 'Não foi possível estabelecer conexão com o servidor. Verifique sua conexão com a internet.',
+    'Timeout': 'A conexão demorou muito para responder. Por favor, tente novamente.',
+    'Configuração ausente': 'O sistema não está configurado corretamente. Entre em contato com o suporte.',
+    'default': 'Ocorreu um erro inesperado. Por favor, entre em contato com o suporte.'
+  };
+
+  const getErrorMessage = (err: string): string => {
+    // Check if error matches any key
+    for (const key in errorMessages) {
+      if (err.includes(key)) {
+        return errorMessages[key];
+      }
+    }
+    return errorMessages.default;
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="text-center max-w-md">
-        <div className="text-red-500 text-4xl mb-4">⚠️</div>
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">
-          Erro de Inicialização
-        </h2>
-        <p className="text-gray-600 mb-4">{error}</p>
-        {onRetry && (
-          <button
-            onClick={onRetry}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            Tentar Novamente
-          </button>
-        )}
-        <div className="mt-4 text-sm text-gray-500">
-          <p>A plataforma funcionará em modo limitado.</p>
-          <p>Verifique sua conexão com a internet.</p>
+      <div className="max-w-md w-full px-6">
+        <div className="bg-white rounded-lg shadow-lg p-8">
+          <div className="text-red-500 text-4xl mb-4 text-center">⚠️</div>
+          <h1 className="text-xl font-semibold text-center text-gray-800 mb-4">
+            Erro de Conexão
+          </h1>
+          <p className="text-gray-600 text-center mb-6">
+            {getErrorMessage(error)}
+          </p>
+          <div className="space-y-3">
+            {onRetry && (
+              <button
+                onClick={onRetry}
+                className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Tentar Novamente
+              </button>
+            )}
+            <Link
+              href="/"
+              className="w-full px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-center block"
+            >
+              Voltar ao Início
+            </Link>
+          </div>
+          {FEATURES.IS_DEVELOPMENT && (
+            <div className="mt-4 p-3 bg-gray-50 rounded text-xs text-gray-500">
+              <p className="font-mono">Código do erro: {error}</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -66,6 +107,7 @@ function AuthErrorScreen({ error, onRetry }: AuthErrorScreenProps) {
 }
 
 export function AuthProviderWrapper({ children }: AuthProviderWrapperProps) {
+  const pathname = usePathname();
   const [initializationState, setInitializationState] = useState<{
     isLoading: boolean;
     error: string | null;
@@ -81,49 +123,90 @@ export function AuthProviderWrapper({ children }: AuthProviderWrapperProps) {
       try {
         setInitializationState(prev => ({ ...prev, isLoading: true, error: null }));
 
-        // Verificar disponibilidade do Firebase
-        if (FEATURES.AUTH_ENABLED) {
-          // Simular verificação de conectividade com Firebase
-          await new Promise(resolve => setTimeout(resolve, 1000));
+        // Only check auth for protected routes and if auth is enabled
+        if (FEATURES.AUTH_ENABLED && pathname && isProtectedRoute(pathname)) {
+          // Real backend connectivity check with timeout
+          const controller = new AbortController();
+          const timeout = setTimeout(() => controller.abort(), FEATURES.AUTH_CHECK_TIMEOUT);
 
-          // Aqui você pode adicionar verificações específicas do Firebase
-          // como conectividade, configuração, etc.
+          try {
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL_STAGING || 'https://hml-api.roteirosdispensacao.com.br';
+            const response = await fetch(`${apiUrl}/api/v1/health`, {
+              signal: controller.signal,
+              method: 'GET',
+              headers: {
+                'Accept': 'application/json'
+              }
+            });
+            clearTimeout(timeout);
+
+            if (!response.ok) {
+              throw new Error(`Backend indisponível: ${response.status}`);
+            }
+          } catch (fetchError) {
+            clearTimeout(timeout);
+            if ((fetchError as Error).name === 'AbortError') {
+              throw new Error('Timeout');
+            }
+            throw new Error('Não foi possível conectar ao servidor');
+          }
+        } else if (!FEATURES.AUTH_ENABLED) {
+          // Auth disabled - check if required environment variables are missing
+          if (process.env.NODE_ENV === 'production' && !process.env.NEXT_PUBLIC_AUTH_ENABLED) {
+            throw new Error('Configuração ausente');
+          }
         }
 
-        // Inicialização bem-sucedida
-        setInitializationState(prev => ({ 
-          ...prev, 
+        // Initialization successful
+        setInitializationState({
           isLoading: false,
-          error: null 
-        }));
+          error: null,
+          retryCount: 0
+        });
 
-      } catch (error: any) {
-        console.error('Erro na inicialização da autenticação:', error);
-        
-        setInitializationState(prev => ({ 
-          ...prev, 
+      } catch (error: unknown) {
+        if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'auth_initialization_error', {
+            event_category: 'medical_authentication',
+            event_label: 'auth_init_failed',
+            custom_parameters: {
+              medical_context: 'auth_provider_initialization',
+              error_type: 'initialization_failure',
+              error_message: error instanceof Error ? error.message : String(error)
+            }
+          });
+        }
+
+        setInitializationState(prev => ({
+          ...prev,
           isLoading: false,
-          error: error.message || 'Erro desconhecido',
-          retryCount: prev.retryCount + 1
+          error: (error as Error)?.message || 'Erro desconhecido'
         }));
       }
     };
 
     initializeAuth();
-  }, [initializationState.retryCount]);
+  }, []); // No dependencies to avoid loop
 
   const handleRetry = () => {
     if (initializationState.retryCount < 3) {
-      setInitializationState(prev => ({ 
-        ...prev, 
-        retryCount: prev.retryCount + 1 
+      setInitializationState(prev => ({
+        ...prev,
+        retryCount: prev.retryCount + 1,
+        isLoading: true,
+        error: null
       }));
+
+      // Trigger re-initialization
+      setTimeout(() => {
+        window.location.reload();
+      }, 100);
     } else {
-      // Após 3 tentativas, continuar sem autenticação
-      setInitializationState(prev => ({ 
-        ...prev, 
+      // After 3 attempts, show permanent error (no fallback)
+      setInitializationState(prev => ({
+        ...prev,
         isLoading: false,
-        error: null 
+        error: 'Máximo de tentativas excedido. Entre em contato com o suporte.'
       }));
     }
   };
@@ -216,9 +299,9 @@ function AuthStatusIndicator() {
 export function useAuthAvailability() {
   return {
     isAuthEnabled: FEATURES.AUTH_ENABLED,
-    isFirestoreEnabled: FEATURES.FIRESTORE_ENABLED,
-    isOfflineMode: FEATURES.OFFLINE_MODE,
-    hasFullFeatures: FEATURES.AUTH_ENABLED && FEATURES.FIRESTORE_ENABLED
+    isFirestoreEnabled: false, // Disabled since we use local storage
+    isOfflineMode: false,
+    hasFullFeatures: FEATURES.AUTH_ENABLED
   };
 }
 
