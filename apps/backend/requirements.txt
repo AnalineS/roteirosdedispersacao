@@ -21,7 +21,7 @@ scikit-learn==1.6.1
 
 # === AUTHENTICATION & JWT ===
 # CRITICAL SECURITY FIX: JWT vulnerability
-authlib==1.6.4     # SECURITY UPDATE: CVE-2025-59420 fix - JWT/JWS critical header vulnerability
+authlib==1.6.5     # SECURITY UPDATE: CVE-2025-59420 fix - JWT/JWS critical header vulnerability
 PyJWT==2.10.1      # SECURITY: Latest secure version
 cryptography==46.0.1  # SECURITY: CRITICAL - Updated 2024-09-24 - Latest security patches
 passlib>=1.7.4     # Password hashing
@@ -52,7 +52,7 @@ jsonschema>=4.23.0
 # === HTTP & NETWORKING ===
 requests==2.32.5   # SECURITY: Updated beyond CVE-2023-32681
 httpx>=0.24.0
-urllib3>=1.26.0
+urllib3>=2.5.0
 certifi==2025.8.3
 
 # === CACHE & PERFORMANCE ===
@@ -189,3 +189,5 @@ geoip2>=4.7.0
 #    - requirements_production.txt (production optimizations)  
 #    - core/security/requirements_security.txt (security packages)
 # ============================================================================
+protobuf>=4.25.8 # not directly required, pinned by Snyk to avoid a vulnerability
+zipp>=3.19.1 # not directly required, pinned by Snyk to avoid a vulnerability
