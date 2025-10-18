@@ -23,17 +23,19 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 def load_environment():
-    """Load environment variables"""
+    """Load environment variables from backend .env file"""
     try:
         from dotenv import load_dotenv
-        env_file = Path(__file__).parent.parent / '.env'
+        # Use backend .env file as directed by user
+        env_file = Path(__file__).parent.parent / 'apps' / 'backend' / '.env'
         if env_file.exists():
             load_dotenv(env_file)
-            logger.info(f"✅ Loaded environment from {env_file}")
+            logger.info(f"[INFO] Loaded environment from {env_file}")
+            logger.info(f"[INFO] SUPABASE_URL: {os.getenv('SUPABASE_URL')}")
         else:
-            logger.warning("⚠️ No .env file found, using system environment")
+            logger.warning(f"[WARNING] Backend .env not found at {env_file}, using system environment")
     except ImportError:
-        logger.info("Using system environment variables")
+        logger.info("[INFO] Using system environment variables")
 
 def verify_dependencies():
     """Verify all required dependencies"""
@@ -113,7 +115,7 @@ def fetch_documents(supabase) -> List[Dict[str, Any]]:
     logger.info("📥 Buscando documentos do Supabase...")
 
     try:
-        response = supabase.table('roteiro_dispensacao_embeddings').select('*').execute()
+        response = supabase.table('medical_embeddings').select('*').execute()
         documents = response.data
 
         if not documents:
@@ -183,7 +185,7 @@ def reindex_documents(supabase, model, documents: List[Dict[str, Any]], batch_si
                     embedding_list = embedding.tolist() if isinstance(embedding, np.ndarray) else embedding
 
                     # Update document
-                    supabase.table('roteiro_dispensacao_embeddings').update({
+                    supabase.table('medical_embeddings').update({
                         'embedding': embedding_list,
                         'updated_at': datetime.now().isoformat()
                     }).eq('id', doc_id).execute()
@@ -222,7 +224,7 @@ def verify_reindex(supabase, sample_size: int = 5):
     logger.info(f"🔍 Verificando re-indexação (amostra de {sample_size} docs)...")
 
     try:
-        response = supabase.table('roteiro_dispensacao_embeddings').select('*').limit(sample_size).execute()
+        response = supabase.table('medical_embeddings').select('*').limit(sample_size).execute()
         documents = response.data
 
         if not documents:
@@ -289,17 +291,21 @@ def main():
         logger.error(f"❌ Erro ao buscar documentos: {e}")
         return 1
 
-    # Step 6: Confirm before proceeding
-    print()
-    print(f"⚠️  ATENÇÃO: Você está prestes a re-indexar {len(documents)} documentos")
-    print(f"   Modelo antigo: desconhecido (279D)")
-    print(f"   Modelo novo: intfloat/multilingual-e5-small (384D)")
-    print()
-    response = input("Deseja continuar? (sim/não): ").strip().lower()
+    # Step 6: Confirm before proceeding (skip if --force)
+    import sys
+    force_mode = '--force' in sys.argv
 
-    if response not in ['sim', 's', 'yes', 'y']:
-        logger.info("❌ Re-indexação cancelada pelo usuário")
-        return 0
+    if not force_mode:
+        logger.warning(f"[WARNING] You are about to re-index {len(documents)} documents")
+        logger.info(f"[INFO] Old model: unknown (4646D)")
+        logger.info(f"[INFO] New model: intfloat/multilingual-e5-small (384D)")
+        response = input("\nContinue? (yes/no): ").strip().lower()
+
+        if response not in ['sim', 's', 'yes', 'y']:
+            logger.info("[INFO] Re-indexing canceled by user")
+            return 0
+    else:
+        logger.info(f"[INFO] FORCE MODE: Re-indexing {len(documents)} documents without confirmation")
 
     # Step 7: Reindex documents
     try:

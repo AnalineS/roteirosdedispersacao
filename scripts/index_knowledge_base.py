@@ -108,12 +108,24 @@ class KnowledgeBaseIndexer:
     def validate_environment(self) -> bool:
         """Validate required environment variables and files"""
         errors = []
+        warnings = []
 
-        # Check API keys
-        hf_token = os.getenv('HUGGINGFACE_TOKEN') or os.getenv('HF_TOKEN')
-        if not hf_token:
-            errors.append("HUGGINGFACE_TOKEN not set (required for embeddings)")
-            logger.warning("Get free token at: https://huggingface.co/settings/tokens")
+        # Detect environment
+        env = os.getenv('ENVIRONMENT', 'development')
+
+        # Check API keys (optional in development, required in production)
+        hf_token = os.getenv('HUGGINGFACE_API_KEY') or os.getenv('HF_TOKEN') or os.getenv('HUGGINGFACE_TOKEN')
+
+        if env in ['production', 'staging', 'hml']:
+            # Production environments: Validate GitHub Secret is present
+            if not hf_token:
+                errors.append("HUGGINGFACE_API_KEY not set in GitHub Secrets (required for production)")
+                logger.warning("Configure at: https://github.com/settings/secrets")
+        else:
+            # Development environment: Token is optional (will use local sentence-transformers)
+            if not hf_token:
+                warnings.append("HUGGINGFACE_TOKEN not set - using local sentence-transformers model")
+                logger.info("📦 Will download multilingual-e5-small model locally (384D, ~500MB)")
 
         # Check Supabase config
         if not self.config.SUPABASE_URL:
@@ -129,6 +141,13 @@ class KnowledgeBaseIndexer:
         if not self.structured_dir.exists():
             errors.append(f"Structured data directory not found: {self.structured_dir}")
 
+        # Log warnings (non-blocking)
+        if warnings:
+            logger.info("Environment notices:")
+            for warning in warnings:
+                logger.info(f"  ℹ️  {warning}")
+
+        # Check for errors (blocking)
         if errors:
             logger.error("Environment validation failed:")
             for error in errors:
@@ -140,39 +159,60 @@ class KnowledgeBaseIndexer:
 
     def get_embedding(self, text: str) -> Optional[List[float]]:
         """
-        Generate embedding using Hugging Face Inference API (FREE)
-        Uses InferenceClient for proper API access
+        Generate embedding using environment-appropriate method:
+        - Local/Development: sentence-transformers library (offline, no API needed)
+        - Production/CI: HuggingFace API with GitHub Secrets
+
+        Uses multilingual-e5-small model (384D) for Portuguese support
         """
         try:
-            from huggingface_hub import InferenceClient
+            # Detect environment (same pattern as app_config.py)
+            env = os.environ.get('ENVIRONMENT', 'development')
+            model_name = "intfloat/multilingual-e5-small"
 
-            hf_token = os.environ.get('HUGGINGFACE_TOKEN') or os.environ.get('HF_TOKEN')
-            if not hf_token:
-                logger.error("HUGGINGFACE_TOKEN not found in environment")
-                logger.info("Get free token at: https://huggingface.co/settings/tokens")
-                return None
+            # Production/CI environment: Use HuggingFace API with GitHub Secrets
+            if env in ['production', 'staging', 'hml']:
+                logger.info(f"Using HuggingFace API for {env} environment")
 
-            # Use multilingual model that works well with Portuguese
-            client = InferenceClient(api_key=hf_token)
+                # Validate required secrets
+                hf_token = os.environ.get('HUGGINGFACE_API_KEY') or os.environ.get('HF_TOKEN')
+                if not hf_token:
+                    logger.error("HUGGINGFACE_API_KEY not found in GitHub Secrets")
+                    logger.info("Configure at: https://github.com/settings/secrets")
+                    return None
 
-            # Use intfloat/multilingual-e5-small - best free multilingual model (384D)
-            model = "intfloat/multilingual-e5-small"
+                # Note: multilingual-e5-small doesn't support feature-extraction via API
+                # For production, we'll use sentence-transformers as well since it's more reliable
+                # Fall through to local method below
+                logger.warning("HuggingFace API doesn't support feature-extraction for this model")
+                logger.info("Using local sentence-transformers instead")
 
-            embedding = client.feature_extraction(
+            # Local Development OR Production (both use sentence-transformers)
+            logger.info(f"Loading local embedding model: {model_name}")
+
+            # Cache model instance to avoid reloading on every call
+            if not hasattr(self, '_embedding_model'):
+                from sentence_transformers import SentenceTransformer
+                self._embedding_model = SentenceTransformer(model_name)
+                logger.info(f"Model loaded successfully (384D embeddings)")
+
+            # Generate embedding using local model
+            embedding = self._embedding_model.encode(
                 text,
-                model=model
+                convert_to_numpy=True,
+                show_progress_bar=False
             )
 
-            # Convert to list if needed
-            if hasattr(embedding, 'tolist'):
-                embedding = embedding.tolist()
-            elif isinstance(embedding, list) and isinstance(embedding[0], list):
-                # Flatten if nested
-                embedding = embedding[0]
+            # Convert numpy array to list
+            embedding_list = embedding.tolist()
 
-            logger.debug(f"Generated embedding with HuggingFace ({len(embedding)} dimensions)")
-            return embedding
+            logger.debug(f"Generated embedding ({len(embedding_list)} dimensions)")
+            return embedding_list
 
+        except ImportError as e:
+            logger.error(f"sentence-transformers not installed: {e}")
+            logger.info("Install with: pip install sentence-transformers")
+            return None
         except Exception as e:
             logger.error(f"Failed to generate embedding: {e}")
             import traceback

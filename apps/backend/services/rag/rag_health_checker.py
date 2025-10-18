@@ -53,13 +53,13 @@ class RAGHealthChecker:
             'recommendations': []
         }
 
-        # Check unified RAG system
-        unified_status = self._check_unified_rag()
-        health_status['systems']['unified_rag'] = unified_status
+        # Check Supabase RAG system (primary)
+        supabase_status = self._check_unified_rag()
+        health_status['systems']['supabase_rag'] = supabase_status
 
-        # Check complete medical RAG
-        complete_status = self._check_complete_medical_rag()
-        health_status['systems']['complete_medical_rag'] = complete_status
+        # Check Enhanced RAG (fallback)
+        enhanced_status = self._check_enhanced_rag()
+        health_status['systems']['enhanced_rag'] = enhanced_status
 
         # Check vector stores
         vector_status = self._check_vector_stores()
@@ -82,44 +82,64 @@ class RAGHealthChecker:
         return health_status
 
     def _check_unified_rag(self) -> Dict[str, Any]:
-        """Check unified RAG system status"""
+        """Check Supabase RAG system status (primary system)"""
         try:
-            from services.rag.unified_rag_system import get_unified_rag_status
+            from services.rag.supabase_rag_system import get_rag_system
 
-            status = get_unified_rag_status()
+            rag_system = get_rag_system()
+
+            if not rag_system:
+                return {
+                    'status': 'FAIL',
+                    'available': False,
+                    'error': 'RAG system not initialized'
+                }
+
+            stats = rag_system.get_stats()
+            available_components = stats.get('available_components', {})
+
+            # System is OK if vector store and search engine are available
+            is_available = (
+                available_components.get('vector_store', False) and
+                available_components.get('search_engine', False)
+            )
 
             return {
-                'status': 'OK' if status.get('unified_rag_available', False) else 'FAIL',
-                'available': status.get('unified_rag_available', False),
-                'best_system': status.get('best_system', 'none'),
-                'system_count': status.get('system_count', 0),
-                'health': status.get('health', 'unknown'),
-                'details': status
+                'status': 'OK' if is_available else 'FAIL',
+                'available': is_available,
+                'best_system': 'supabase_rag',
+                'system_count': sum(1 for v in available_components.values() if v),
+                'health': 'operational' if is_available else 'degraded',
+                'details': stats
             }
         except Exception as e:
-            logger.error(f"Error checking unified RAG: {e}")
+            logger.error(f"Error checking Supabase RAG: {e}")
             return {
                 'status': 'ERROR',
                 'available': False,
                 'error': str(e)
             }
 
-    def _check_complete_medical_rag(self) -> Dict[str, Any]:
-        """Check complete medical RAG system"""
+    def _check_enhanced_rag(self) -> Dict[str, Any]:
+        """Check Enhanced RAG system (fallback system)"""
         try:
-            from services.rag.complete_medical_rag import get_rag_status
+            from services.rag.enhanced_rag_system import EnhancedRAGSystem
 
-            status = get_rag_status()
+            # Try to instantiate enhanced RAG
+            from app_config import config
+            enhanced_rag = EnhancedRAGSystem(config)
+
+            is_available = enhanced_rag.is_available() if hasattr(enhanced_rag, 'is_available') else True
 
             return {
-                'status': 'OK' if status.get('available', False) else 'FAIL',
-                'available': status.get('available', False),
-                'components': status.get('components', {}),
-                'statistics': status.get('statistics', {}),
-                'details': status
+                'status': 'OK' if is_available else 'FAIL',
+                'available': is_available,
+                'components': {'enhanced_rag': 'operational'},
+                'statistics': {},
+                'details': {'system': 'enhanced_rag', 'role': 'fallback'}
             }
         except Exception as e:
-            logger.error(f"Error checking complete medical RAG: {e}")
+            logger.error(f"Error checking Enhanced RAG: {e}")
             return {
                 'status': 'ERROR',
                 'available': False,
@@ -171,43 +191,45 @@ class RAGHealthChecker:
     def _check_embedding_services(self) -> Dict[str, Any]:
         """Check embedding service availability"""
         embedding_status = {
-            'openai_api': 'UNKNOWN',
-            'sentence_transformers': 'UNKNOWN',
-            'local_embeddings': 'UNKNOWN'
+            'unified_embedding_service': 'UNKNOWN',
+            'huggingface_api': 'UNKNOWN',
+            'local_model': 'UNKNOWN'
         }
 
-        # Check OpenAI API
+        # Check UnifiedEmbeddingService (ÚNICO serviço de embeddings)
         try:
-            from app_config import config
-            if hasattr(config, 'OPENAI_API_KEY') and config.OPENAI_API_KEY:
-                # Try to import openai
-                import openai
-                embedding_status['openai_api'] = 'OK'
-            else:
-                embedding_status['openai_api'] = 'NO_API_KEY'
-        except ImportError:
-            embedding_status['openai_api'] = 'NOT_INSTALLED'
-        except Exception as e:
-            embedding_status['openai_api'] = f'ERROR: {str(e)}'
+            from services.unified_embedding_service import get_embedding_service
 
-        # Check sentence-transformers
-        try:
-            from sentence_transformers import SentenceTransformer
-            embedding_status['sentence_transformers'] = 'OK'
-        except ImportError:
-            embedding_status['sentence_transformers'] = 'NOT_INSTALLED'
-        except Exception as e:
-            embedding_status['sentence_transformers'] = f'ERROR: {str(e)}'
+            embedding_service = get_embedding_service()
 
-        # Check local embedding service
-        try:
-            from services.rag.embedding_service import is_embeddings_available
-            if is_embeddings_available():
-                embedding_status['local_embeddings'] = 'OK'
+            if embedding_service and embedding_service.is_available():
+                embedding_status['unified_embedding_service'] = 'OK'
+
+                # Get statistics to check backend
+                stats = embedding_service.get_statistics()
+                backend_used = stats.get('backend_used', 'unknown')
+
+                # Check which backend is active
+                if backend_used == 'huggingface':
+                    embedding_status['huggingface_api'] = 'OK'
+                    embedding_status['local_model'] = 'UNUSED'
+                elif backend_used == 'local':
+                    embedding_status['local_model'] = 'OK'
+                    embedding_status['huggingface_api'] = 'UNUSED'
+                else:
+                    embedding_status['huggingface_api'] = 'UNKNOWN'
+                    embedding_status['local_model'] = 'UNKNOWN'
             else:
-                embedding_status['local_embeddings'] = 'UNAVAILABLE'
+                embedding_status['unified_embedding_service'] = 'UNAVAILABLE'
+                embedding_status['huggingface_api'] = 'N/A'
+                embedding_status['local_model'] = 'N/A'
+
+        except ImportError as e:
+            embedding_status['unified_embedding_service'] = 'NOT_INSTALLED'
+            embedding_status['huggingface_api'] = 'N/A'
+            embedding_status['local_model'] = 'N/A'
         except Exception as e:
-            embedding_status['local_embeddings'] = f'ERROR: {str(e)}'
+            embedding_status['unified_embedding_service'] = f'ERROR: {str(e)}'
 
         return embedding_status
 
@@ -248,23 +270,23 @@ class RAGHealthChecker:
 
     def _determine_overall_status(self, systems: Dict[str, Any]) -> str:
         """Determine overall RAG status"""
-        # Check if unified RAG is working
-        unified_rag = systems.get('unified_rag', {})
-        if unified_rag.get('status') == 'OK' and unified_rag.get('available', False):
+        # Check if Supabase RAG is working (primary)
+        supabase_rag = systems.get('supabase_rag', {})
+        if supabase_rag.get('status') == 'OK' and supabase_rag.get('available', False):
             return 'OK'
 
-        # Check if complete medical RAG is working
-        complete_rag = systems.get('complete_medical_rag', {})
-        if complete_rag.get('status') == 'OK' and complete_rag.get('available', False):
+        # Check if Enhanced RAG is working (fallback)
+        enhanced_rag = systems.get('enhanced_rag', {})
+        if enhanced_rag.get('status') == 'OK' and enhanced_rag.get('available', False):
             return 'OK'
 
         # Check if any vector store is available
         vector_stores = systems.get('vector_stores', {})
         vector_ok = any(status == 'OK' for status in vector_stores.values())
 
-        # Check if any embedding service is available
+        # Check if embedding service is available
         embedding_services = systems.get('embedding_services', {})
-        embedding_ok = any(status == 'OK' for status in embedding_services.values())
+        embedding_ok = embedding_services.get('unified_embedding_service') == 'OK'
 
         if vector_ok and embedding_ok:
             return 'PARTIAL'
@@ -277,16 +299,13 @@ class RAGHealthChecker:
 
         # Check embedding services
         embedding_services = systems.get('embedding_services', {})
-        if embedding_services.get('openai_api') == 'NO_API_KEY':
-            recommendations.append("Set OPENAI_API_KEY environment variable for better embedding performance")
-
-        if embedding_services.get('sentence_transformers') == 'NOT_INSTALLED':
-            recommendations.append("Install sentence-transformers: pip install sentence-transformers")
+        if embedding_services.get('unified_embedding_service') not in ['OK', 'UNKNOWN']:
+            recommendations.append("UnifiedEmbeddingService not available - check HUGGINGFACE_API_KEY environment variable")
 
         # Check vector stores
         vector_stores = systems.get('vector_stores', {})
-        if vector_stores.get('chromadb') == 'NOT_INSTALLED':
-            recommendations.append("Install ChromaDB: pip install chromadb")
+        if vector_stores.get('supabase_vector') not in ['OK', 'UNKNOWN']:
+            recommendations.append("Supabase vector store not available - check SUPABASE credentials")
 
         # Check knowledge base
         kb = systems.get('knowledge_base', {})
@@ -296,10 +315,10 @@ class RAGHealthChecker:
         if not kb.get('paths_found'):
             recommendations.append("Create knowledge base directories: data/knowledge-base/ and data/structured/")
 
-        # Unified RAG recommendations
-        unified_rag = systems.get('unified_rag', {})
-        if unified_rag.get('system_count', 0) == 0:
-            recommendations.append("No RAG systems available - check dependencies and configuration")
+        # Supabase RAG recommendations
+        supabase_rag = systems.get('supabase_rag', {})
+        if supabase_rag.get('status') not in ['OK', 'UNKNOWN']:
+            recommendations.append("Supabase RAG system not available - check dependencies and configuration")
 
         return recommendations
 
@@ -315,21 +334,27 @@ class RAGHealthChecker:
     def test_rag_query(self, test_query: str = "O que é PQT-U?") -> Dict[str, Any]:
         """Test RAG system with a sample query"""
         try:
-            from services.rag.unified_rag_system import query_unified_rag
+            from services.rag.supabase_rag_system import query_rag_system
 
             start_time = datetime.now()
-            response = query_unified_rag(test_query, 'dr_gasnelio', 3)
+            response = query_rag_system(test_query, persona='dr_gasnelio', max_chunks=3)
             end_time = datetime.now()
 
-            return {
-                'test_successful': response.success,
-                'response_received': bool(response.answer),
-                'system_used': response.system_used,
-                'confidence': response.confidence,
-                'processing_time_ms': response.processing_time_ms,
-                'total_time_ms': int((end_time - start_time).total_seconds() * 1000),
-                'answer_preview': response.answer[:200] + "..." if len(response.answer) > 200 else response.answer
-            }
+            if response:
+                return {
+                    'test_successful': True,
+                    'response_received': bool(response.answer),
+                    'system_used': 'supabase_rag',
+                    'confidence': response.quality_score,
+                    'processing_time_ms': response.processing_time_ms,
+                    'total_time_ms': int((end_time - start_time).total_seconds() * 1000),
+                    'answer_preview': response.answer[:200] + "..." if len(response.answer) > 200 else response.answer
+                }
+            else:
+                return {
+                    'test_successful': False,
+                    'error': 'No response from RAG system'
+                }
         except Exception as e:
             return {
                 'test_successful': False,

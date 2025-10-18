@@ -45,25 +45,25 @@ def chat():
         # Map persona names for RAG system
         rag_persona = 'dr_gasnelio' if persona in ['gasnelio', 'dr_gasnelio'] else 'ga_empathetic'
 
-        # Get RAG context
+        # Get RAG context using Supabase RAG system
         rag_response = None
         rag_used = False
 
         try:
-            from services.rag.unified_rag_system import query_unified_rag
-            rag_response = query_unified_rag(message, rag_persona, max_results=3)
-            rag_used = rag_response.success if rag_response else False
-            logger.info(f"RAG query successful: {rag_used}, system: {rag_response.system_used if rag_response else 'none'}")
+            from services.rag.supabase_rag_system import query_rag_system
+            rag_response = query_rag_system(message, persona=rag_persona, max_chunks=3)
+            rag_used = rag_response is not None
+            logger.info(f"RAG query successful: {rag_used}, system: supabase_rag")
         except Exception as e:
             logger.warning(f"RAG query failed: {e}")
 
         # Generate response based on persona and RAG context
-        if rag_response and rag_response.success:
+        if rag_response:
             # Use RAG-enhanced response
             response_text = rag_response.answer
-            confidence = rag_response.confidence
+            confidence = rag_response.quality_score
             sources = rag_response.sources
-            system_used = rag_response.system_used
+            system_used = 'supabase_rag'
         else:
             # Fallback response
             if persona in ['gasnelio', 'dr_gasnelio']:

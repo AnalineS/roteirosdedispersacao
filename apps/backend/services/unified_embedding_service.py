@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-Unified Embedding Service - Cloud Run Optimized
-Uses HuggingFace Serverless API ONLY (no local models)
-Model: intfloat/multilingual-e5-small (384 dimensions) - best free multilingual
+Unified Embedding Service - Hybrid Architecture
+Supports both local model (development) and HuggingFace API (production)
+Model: intfloat/multilingual-e5-small (384 dimensions) - multilingual support
+
+Strategy:
+- Development: sentence-transformers local model (fast, no API limits)
+- Production/HML: HuggingFace Serverless API (no local model deployment)
 """
 
 import os
@@ -15,6 +19,14 @@ from dataclasses import dataclass
 from cachetools import TTLCache
 
 logger = logging.getLogger(__name__)
+
+# Try to import sentence-transformers for local model support
+try:
+    from sentence_transformers import SentenceTransformer
+    SENTENCE_TRANSFORMERS_AVAILABLE = True
+except ImportError:
+    SENTENCE_TRANSFORMERS_AVAILABLE = False
+    logger.warning("sentence-transformers not installed - API-only mode")
 
 @dataclass
 class EmbeddingResult:
@@ -39,20 +51,38 @@ class EmbeddingResult:
 
 class UnifiedEmbeddingService:
     """
-    Cloud Run optimized embedding service
-    Uses HuggingFace Serverless API ONLY (no local models)
-    Enforces model consistency with indexed database (intfloat/multilingual-e5-small)
+    Hybrid embedding service with intelligent backend selection
+    - Development: sentence-transformers local model (fast, no API limits)
+    - Production: HuggingFace Serverless API (no model deployment needed)
+
+    Ensures model consistency with indexed database (intfloat/multilingual-e5-small)
     """
 
     # CRITICAL: Must match indexing model exactly
     MODEL_ID = "intfloat/multilingual-e5-small"
     EMBEDDING_DIMENSION = 384
-    API_URL = f"https://api-inference.huggingface.co/models/{MODEL_ID}"
+    API_URL = "https://api-inference.huggingface.co/models/{model}"
 
     def __init__(self, config):
         self.config = config
+        self.local_model = None
+        self.use_local = False
 
-        # Get API key (check multiple env var names for compatibility)
+        # Detect environment
+        env = os.getenv('ENVIRONMENT', 'production')
+
+        # Try to initialize local model first (development priority)
+        if SENTENCE_TRANSFORMERS_AVAILABLE and env == 'development':
+            try:
+                logger.info("[LOCAL MODEL] Loading sentence-transformers...")
+                self.local_model = SentenceTransformer(self.MODEL_ID)
+                self.use_local = True
+                logger.info("[LOCAL MODEL] Successfully loaded (384D)")
+            except Exception as e:
+                logger.warning(f"[LOCAL MODEL] Failed to load: {e}")
+                logger.info("[FALLBACK] Will use HuggingFace API")
+
+        # Get API key for fallback or production use
         self.api_key = (
             getattr(config, 'HUGGINGFACE_API_KEY', None) or
             getattr(config, 'HUGGINGFACE_TOKEN', None) or
@@ -62,13 +92,14 @@ class UnifiedEmbeddingService:
             os.getenv('HF_TOKEN')
         )
 
-        if not self.api_key:
-            logger.error("[CRITICAL] HuggingFace API key required")
-            logger.error("[CRITICAL] Set HUGGINGFACE_API_KEY environment variable")
-            raise ValueError("HuggingFace API key required (set HUGGINGFACE_API_KEY)")
+        # If not using local model, API key is required
+        if not self.use_local and not self.api_key:
+            logger.error("[CRITICAL] No embedding backend available")
+            logger.error("[CRITICAL] Install sentence-transformers OR set HUGGINGFACE_API_KEY")
+            raise ValueError("No embedding backend: install sentence-transformers or set HUGGINGFACE_API_KEY")
 
         # API configuration
-        self.headers = {"Authorization": f"Bearer {self.api_key}"}
+        self.headers = {"Authorization": f"Bearer {self.api_key}"} if self.api_key else {}
 
         # Caching (1 hour TTL, 1000 items max)
         self.cache = TTLCache(maxsize=1000, ttl=3600)
@@ -78,27 +109,30 @@ class UnifiedEmbeddingService:
         self.min_interval = 1.0  # seconds between requests
 
         # Statistics
+        backend = 'local_model' if self.use_local else 'huggingface_api'
         self.stats = {
             'embeddings_generated': 0,
             'total_generation_time': 0.0,
             'cache_hits': 0,
             'cache_misses': 0,
             'errors': 0,
-            'backend_used': 'huggingface',
+            'backend_used': backend,
             'model_loaded': True
         }
 
         logger.info("=" * 80)
         logger.info("[UNIFIED EMBEDDING SERVICE] Initialized")
-        logger.info(f"[MODEL] {self.MODEL_ID}")
-        logger.info(f"[DIMENSIONS] {self.EMBEDDING_DIMENSION}")
-        logger.info(f"[API KEY] {'SET' if self.api_key else 'NOT SET'}")
-        logger.info(f"[CACHE] TTL=3600s, maxsize=1000")
+        logger.info("[MODEL] %s", self.MODEL_ID)
+        logger.info("[DIMENSIONS] %s", self.EMBEDDING_DIMENSION)
+        logger.info("[BACKEND] %s", backend.upper())
+        if not self.use_local:
+            logger.info("[API KEY] %s", 'SET' if self.api_key else 'NOT SET')
+        logger.info("[CACHE] TTL=3600s, maxsize=1000")
         logger.info("=" * 80)
 
     def is_available(self) -> bool:
         """Check if service is available"""
-        return self.api_key is not None
+        return self.use_local or self.api_key is not None
 
     def embed_text(self, text: str) -> EmbeddingResult:
         """Generate embedding for single text with caching and rate limiting"""
@@ -107,7 +141,7 @@ class UnifiedEmbeddingService:
         if cache_key in self.cache:
             self.stats['cache_hits'] += 1
             cached_embedding = self.cache[cache_key]
-            logger.debug(f"[CACHE HIT] Returning cached embedding")
+            logger.debug("[CACHE HIT] Returning cached embedding")
             return EmbeddingResult(
                 embedding=cached_embedding,
                 dimension=self.EMBEDDING_DIMENSION,
@@ -119,18 +153,88 @@ class UnifiedEmbeddingService:
         self.stats['cache_misses'] += 1
         start_time = time.time()
 
+        # Use local model if available (development)
+        if self.use_local and self.local_model:
+            return self._embed_with_local_model(text, cache_key, start_time)
+
+        # Fallback to API (production)
+        return self._embed_with_api(text, cache_key, start_time)
+
+    def _embed_with_local_model(self, text: str, cache_key: str, start_time: float) -> EmbeddingResult:
+        """Generate embedding using local sentence-transformers model"""
+        try:
+            logger.debug("[LOCAL] Generating embedding (text length: %d)", len(text))
+
+            # Use sentence-transformers encode method
+            embedding = self.local_model.encode(
+                text,
+                convert_to_numpy=True,
+                show_progress_bar=False,
+                normalize_embeddings=False
+            )
+
+            embedding_array = np.array(embedding, dtype=np.float32)
+
+            # Validate dimension
+            if len(embedding_array) != self.EMBEDDING_DIMENSION:
+                error_msg = f"Dimension mismatch: expected {self.EMBEDDING_DIMENSION}, got {len(embedding_array)}"
+                logger.error("[LOCAL ERROR] %s", error_msg)
+                return EmbeddingResult(
+                    embedding=None,
+                    dimension=0,
+                    model_used=self.MODEL_ID,
+                    generation_time=time.time() - start_time,
+                    success=False,
+                    error_message=error_msg
+                )
+
+            # Cache result
+            self.cache[cache_key] = embedding_array
+
+            # Update stats
+            generation_time = time.time() - start_time
+            self.stats['embeddings_generated'] += 1
+            self.stats['total_generation_time'] += generation_time
+
+            logger.debug("[LOCAL SUCCESS] Embedding generated in %.3fs (dim: %d)", generation_time, len(embedding_array))
+
+            return EmbeddingResult(
+                embedding=embedding_array,
+                dimension=self.EMBEDDING_DIMENSION,
+                model_used=f"{self.MODEL_ID}_local",
+                generation_time=generation_time,
+                success=True
+            )
+
+        except Exception as e:
+            logger.error("[LOCAL ERROR] Embedding generation failed: %s", e)
+            self.stats['errors'] += 1
+
+            return EmbeddingResult(
+                embedding=None,
+                dimension=0,
+                model_used=self.MODEL_ID,
+                generation_time=time.time() - start_time,
+                success=False,
+                error_message=str(e)
+            )
+
+    def _embed_with_api(self, text: str, cache_key: str, start_time: float) -> EmbeddingResult:
+        """Generate embedding using HuggingFace API"""
+
         try:
             # Rate limiting
             elapsed = time.time() - self.last_request_time
             if elapsed < self.min_interval:
                 sleep_time = self.min_interval - elapsed
-                logger.debug(f"[RATE LIMIT] Sleeping {sleep_time:.2f}s")
+                logger.debug("[RATE LIMIT] Sleeping %.2fs", sleep_time)
                 time.sleep(sleep_time)
 
             # API call
-            logger.info(f"[API CALL] Generating embedding (text length: {len(text)})")
+            api_url = self.API_URL.format(model=self.MODEL_ID)
+            logger.info("[API CALL] Generating embedding (text length: %d)", len(text))
             response = requests.post(
-                self.API_URL,
+                api_url,
                 headers=self.headers,
                 json={
                     "inputs": text,
