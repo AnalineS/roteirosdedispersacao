@@ -59,6 +59,19 @@ def create_app():
             return self.wsgi_app(environ, start_response)
 
     app.wsgi_app = UTF8EnforcerMiddleware(app.wsgi_app)
+# Security Headers Middleware
+@app.after_request
+def add_security_headers(response):
+    """Add security headers to all responses"""
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+    response.headers['X-XSS-Protection'] = '1; mode=block'
+    response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+    response.headers['X-Permitted-Cross-Domain-Policies'] = 'none'
+    # CSP header for medical platform security
+    response.headers['Content-Security-Policy'] = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';"
+    return response
+
 
     # CORS Configuration
     try:
