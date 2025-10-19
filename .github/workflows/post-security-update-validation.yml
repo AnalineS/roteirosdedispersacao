@@ -189,8 +189,8 @@ jobs:
       - name: Run critical medical functionality tests
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-          SUPABASE_URL: ${{ secrets.SUPABASE_PROJECT_URL }}
-          SUPABASE_KEY: ${{ secrets.SUPABASE_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: |
           cd apps/backend
           echo "🔴 CRITICAL: Running medical functionality validation..."

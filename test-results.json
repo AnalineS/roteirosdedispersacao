@@ -1,7 +1,7 @@
 {
   "config": {
     "configFile": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\playwright.config.ts",
-    "rootDir": "C:/Users/Ana/Meu Drive/Site roteiro de dispensação/apps/frontend-nextjs/tests/playwright",
+    "rootDir": "C:/Users/Ana/Meu Drive/Site roteiro de dispensação/tests",
     "forbidOnly": false,
     "fullyParallel": true,
     "globalSetup": null,
@@ -10,7 +10,9 @@
     "grep": {},
     "grepInvert": null,
     "maxFailures": 0,
-    "metadata": {},
+    "metadata": {
+      "actualWorkers": 11
+    },
     "preserveOutput": "always",
     "reporter": [
       [
@@ -40,71 +42,86 @@
         "outputDir": "C:/Users/Ana/Meu Drive/Site roteiro de dispensação/test-results",
         "repeatEach": 1,
         "retries": 0,
-        "metadata": {},
+        "metadata": {
+          "actualWorkers": 11
+        },
         "id": "chromium",
         "name": "chromium",
-        "testDir": "C:/Users/Ana/Meu Drive/Site roteiro de dispensação/apps/frontend-nextjs/tests/playwright",
+        "testDir": "C:/Users/Ana/Meu Drive/Site roteiro de dispensação/tests",
         "testIgnore": [],
         "testMatch": [
-          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+          "**/*.spec.ts",
+          "**/*.spec.js"
         ],
-        "timeout": 30000
+        "timeout": 60000
       },
       {
         "outputDir": "C:/Users/Ana/Meu Drive/Site roteiro de dispensação/test-results",
         "repeatEach": 1,
         "retries": 0,
-        "metadata": {},
+        "metadata": {
+          "actualWorkers": 11
+        },
         "id": "firefox",
         "name": "firefox",
-        "testDir": "C:/Users/Ana/Meu Drive/Site roteiro de dispensação/apps/frontend-nextjs/tests/playwright",
+        "testDir": "C:/Users/Ana/Meu Drive/Site roteiro de dispensação/tests",
         "testIgnore": [],
         "testMatch": [
-          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+          "**/*.spec.ts",
+          "**/*.spec.js"
         ],
-        "timeout": 30000
+        "timeout": 60000
       },
       {
         "outputDir": "C:/Users/Ana/Meu Drive/Site roteiro de dispensação/test-results",
         "repeatEach": 1,
         "retries": 0,
-        "metadata": {},
+        "metadata": {
+          "actualWorkers": 11
+        },
         "id": "mobile-chrome",
         "name": "mobile-chrome",
-        "testDir": "C:/Users/Ana/Meu Drive/Site roteiro de dispensação/apps/frontend-nextjs/tests/playwright",
+        "testDir": "C:/Users/Ana/Meu Drive/Site roteiro de dispensação/tests",
         "testIgnore": [],
         "testMatch": [
-          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+          "**/*.spec.ts",
+          "**/*.spec.js"
         ],
-        "timeout": 30000
+        "timeout": 60000
       },
       {
         "outputDir": "C:/Users/Ana/Meu Drive/Site roteiro de dispensação/test-results",
         "repeatEach": 1,
         "retries": 0,
-        "metadata": {},
+        "metadata": {
+          "actualWorkers": 11
+        },
         "id": "mobile-safari",
         "name": "mobile-safari",
-        "testDir": "C:/Users/Ana/Meu Drive/Site roteiro de dispensação/apps/frontend-nextjs/tests/playwright",
+        "testDir": "C:/Users/Ana/Meu Drive/Site roteiro de dispensação/tests",
         "testIgnore": [],
         "testMatch": [
-          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+          "**/*.spec.ts",
+          "**/*.spec.js"
         ],
-        "timeout": 30000
+        "timeout": 60000
       },
       {
         "outputDir": "C:/Users/Ana/Meu Drive/Site roteiro de dispensação/test-results",
         "repeatEach": 1,
         "retries": 0,
-        "metadata": {},
+        "metadata": {
+          "actualWorkers": 11
+        },
         "id": "accessibility",
         "name": "accessibility",
-        "testDir": "C:/Users/Ana/Meu Drive/Site roteiro de dispensação/apps/frontend-nextjs/tests/playwright",
+        "testDir": "C:/Users/Ana/Meu Drive/Site roteiro de dispensação/tests",
         "testIgnore": [],
         "testMatch": [
-          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+          "**/*.spec.ts",
+          "**/*.spec.js"
         ],
-        "timeout": 30000
+        "timeout": 60000
       }
     ],
     "shard": null,
@@ -120,29 +137,534 @@
       "timeout": 120000
     }
   },
-  "suites": [],
-  "errors": [
+  "suites": [
     {
-      "message": "Error: Requiring @playwright/test second time, \nFirst:\nError: \n    at Object.<anonymous> (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\node_modules\\playwright\\lib\\index.js:60:33)\n    at Module._compile (node:internal/modules/cjs/loader:1730:14)\n    at Object.<anonymous> (node:internal/modules/cjs/loader:1895:10)\n    at Object.newLoader2 [as .js] (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\node_modules\\playwright\\lib\\third_party\\pirates.js:52:22)\n    at Module.load (node:internal/modules/cjs/loader:1465:32)\n    at Function._load (node:internal/modules/cjs/loader:1282:12)\n    at TracingChannel.traceSync (node:diagnostics_channel:322:14)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)\n    at Module.require (node:internal/modules/cjs/loader:1487:12)\n    at require (node:internal/modules/helpers:135:16)\n    at Object.<anonymous> (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\node_modules\\playwright\\test.js:17:13)\n    at Module._compile (node:internal/modules/cjs/loader:1730:14)\n    at Object.<anonymous> (node:internal/modules/cjs/loader:1895:10)\n    at Object.newLoader2 [as .js] (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\node_modules\\playwright\\lib\\third_party\\pirates.js:52:22)\n    at Module.load (node:internal/modules/cjs/loader:1465:32)\n    at Function._load (node:internal/modules/cjs/loader:1282:12)\n    at TracingChannel.traceSync (node:diagnostics_channel:322:14)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)\n    at Module.require (node:internal/modules/cjs/loader:1487:12)\n    at require (node:internal/modules/helpers:135:16)\n    at Object.<anonymous> (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\node_modules\\@playwright\\test\\index.js:17:18)\n    at Module._compile (node:internal/modules/cjs/loader:1730:14)\n    at Object.<anonymous> (node:internal/modules/cjs/loader:1895:10)\n    at Object.newLoader2 [as .js] (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\node_modules\\playwright\\lib\\third_party\\pirates.js:52:22)\n    at Module.load (node:internal/modules/cjs/loader:1465:32)\n    at Function._load (node:internal/modules/cjs/loader:1282:12)\n    at TracingChannel.traceSync (node:diagnostics_channel:322:14)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)\n    at Module.require (node:internal/modules/cjs/loader:1487:12)\n    at require (node:internal/modules/helpers:135:16)\n    at Object.<anonymous> (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\playwright.config.ts:1:1)\n    at Module._compile (node:internal/modules/cjs/loader:1730:14)\n    at Module.newCompile2 (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\node_modules\\playwright\\lib\\third_party\\pirates.js:46:29)\n    at Object.<anonymous> (node:internal/modules/cjs/loader:1895:10)\n    at Object.newLoader2 [as .ts] (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\node_modules\\playwright\\lib\\third_party\\pirates.js:52:22)\n    at Module.load (node:internal/modules/cjs/loader:1465:32)\n    at Function._load (node:internal/modules/cjs/loader:1282:12)\n    at TracingChannel.traceSync (node:diagnostics_channel:322:14)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)\n    at Module.require (node:internal/modules/cjs/loader:1487:12)\n    at require (node:internal/modules/helpers:135:16)\n    at requireOrImport (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\node_modules\\playwright\\lib\\transform\\transform.js:218:18)\n    at loadUserConfig (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\node_modules\\playwright\\lib\\common\\configLoader.js:107:89)\n    at loadConfig (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\node_modules\\playwright\\lib\\common\\configLoader.js:119:28)\n    at loadConfigFromFile (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\node_modules\\playwright\\lib\\common\\configLoader.js:331:10)\n    at runTests (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\node_modules\\playwright\\lib\\program.js:145:18)\n    at i.<anonymous> (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\node_modules\\playwright\\lib\\program.js:64:7)\n\nSecond: ",
-      "stack": "Error: Requiring @playwright/test second time, \nFirst:\nError: \n    at Object.<anonymous> (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\node_modules\\playwright\\lib\\index.js:60:33)\n    at Module._compile (node:internal/modules/cjs/loader:1730:14)\n    at Object.<anonymous> (node:internal/modules/cjs/loader:1895:10)\n    at Object.newLoader2 [as .js] (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\node_modules\\playwright\\lib\\third_party\\pirates.js:52:22)\n    at Module.load (node:internal/modules/cjs/loader:1465:32)\n    at Function._load (node:internal/modules/cjs/loader:1282:12)\n    at TracingChannel.traceSync (node:diagnostics_channel:322:14)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)\n    at Module.require (node:internal/modules/cjs/loader:1487:12)\n    at require (node:internal/modules/helpers:135:16)\n    at Object.<anonymous> (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\node_modules\\playwright\\test.js:17:13)\n    at Module._compile (node:internal/modules/cjs/loader:1730:14)\n    at Object.<anonymous> (node:internal/modules/cjs/loader:1895:10)\n    at Object.newLoader2 [as .js] (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\node_modules\\playwright\\lib\\third_party\\pirates.js:52:22)\n    at Module.load (node:internal/modules/cjs/loader:1465:32)\n    at Function._load (node:internal/modules/cjs/loader:1282:12)\n    at TracingChannel.traceSync (node:diagnostics_channel:322:14)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)\n    at Module.require (node:internal/modules/cjs/loader:1487:12)\n    at require (node:internal/modules/helpers:135:16)\n    at Object.<anonymous> (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\node_modules\\@playwright\\test\\index.js:17:18)\n    at Module._compile (node:internal/modules/cjs/loader:1730:14)\n    at Object.<anonymous> (node:internal/modules/cjs/loader:1895:10)\n    at Object.newLoader2 [as .js] (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\node_modules\\playwright\\lib\\third_party\\pirates.js:52:22)\n    at Module.load (node:internal/modules/cjs/loader:1465:32)\n    at Function._load (node:internal/modules/cjs/loader:1282:12)\n    at TracingChannel.traceSync (node:diagnostics_channel:322:14)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)\n    at Module.require (node:internal/modules/cjs/loader:1487:12)\n    at require (node:internal/modules/helpers:135:16)\n    at Object.<anonymous> (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\playwright.config.ts:1:1)\n    at Module._compile (node:internal/modules/cjs/loader:1730:14)\n    at Module.newCompile2 (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\node_modules\\playwright\\lib\\third_party\\pirates.js:46:29)\n    at Object.<anonymous> (node:internal/modules/cjs/loader:1895:10)\n    at Object.newLoader2 [as .ts] (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\node_modules\\playwright\\lib\\third_party\\pirates.js:52:22)\n    at Module.load (node:internal/modules/cjs/loader:1465:32)\n    at Function._load (node:internal/modules/cjs/loader:1282:12)\n    at TracingChannel.traceSync (node:diagnostics_channel:322:14)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)\n    at Module.require (node:internal/modules/cjs/loader:1487:12)\n    at require (node:internal/modules/helpers:135:16)\n    at requireOrImport (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\node_modules\\playwright\\lib\\transform\\transform.js:218:18)\n    at loadUserConfig (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\node_modules\\playwright\\lib\\common\\configLoader.js:107:89)\n    at loadConfig (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\node_modules\\playwright\\lib\\common\\configLoader.js:119:28)\n    at loadConfigFromFile (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\node_modules\\playwright\\lib\\common\\configLoader.js:331:10)\n    at runTests (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\node_modules\\playwright\\lib\\program.js:145:18)\n    at i.<anonymous> (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\node_modules\\playwright\\lib\\program.js:64:7)\n\nSecond: \n    at Object.<anonymous> (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\node_modules\\@playwright\\test\\index.js:17:18)\n    at Object.<anonymous> (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\playwright.config.ts:1:1)\n    at Object.<anonymous> (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\apps\\frontend-nextjs\\node_modules\\playwright\\lib\\index.js:55:11)\n    at Object.<anonymous> (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\apps\\frontend-nextjs\\node_modules\\playwright\\test.js:17:13)\n    at Object.<anonymous> (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\apps\\frontend-nextjs\\node_modules\\@playwright\\test\\index.js:17:18)\n    at Object.<anonymous> (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\apps\\frontend-nextjs\\tests\\playwright\\staging-medical-validation.spec.ts:11:1)",
-      "location": {
-        "file": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\playwright.config.ts",
-        "column": 1,
-        "line": 1
-      },
-      "snippet": "\u001b[90m   at \u001b[39m..\\..\\..\\..\\playwright.config.ts:1\n\n\u001b[0m\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 1 |\u001b[39m \u001b[36mimport\u001b[39m { defineConfig\u001b[33m,\u001b[39m devices } \u001b[36mfrom\u001b[39m \u001b[32m'@playwright/test'\u001b[39m\u001b[33m;\u001b[39m\n \u001b[90m   |\u001b[39m \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 2 |\u001b[39m\n \u001b[90m 3 |\u001b[39m \u001b[90m/**\u001b[39m\n \u001b[90m 4 |\u001b[39m \u001b[90m * Playwright Configuration for Medical Platform\u001b[39m\u001b[0m"
-    },
-    {
-      "message": "Error: No tests found",
-      "stack": "Error: No tests found"
+      "title": "e2e\\issue-8-persona-selection.spec.ts",
+      "file": "e2e/issue-8-persona-selection.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Persona Selection System - Issue #8",
+          "file": "e2e/issue-8-persona-selection.spec.ts",
+          "line": 19,
+          "column": 6,
+          "specs": [
+            {
+              "title": "AC1: Persona cards exist on home page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 11051,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-19T17:56:46.960Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0682fbba0c8a3d9a3b06-72ad70dc29a7731e6d59",
+              "file": "e2e/issue-8-persona-selection.spec.ts",
+              "line": 32,
+              "column": 7
+            },
+            {
+              "title": "AC2: Navigation to /chat with persona query param",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "failed",
+                      "duration": 21140,
+                      "error": {
+                        "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"**/chat?persona=dr_gasnelio\" until \"load\"\n  navigated to \"http://localhost:3000/?persona=dr_gasnelio\"\n============================================================",
+                        "stack": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"**/chat?persona=dr_gasnelio\" until \"load\"\n  navigated to \"http://localhost:3000/?persona=dr_gasnelio\"\n============================================================\n    at C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\tests\\e2e\\issue-8-persona-selection.spec.ts:54:16",
+                        "location": {
+                          "file": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\tests\\e2e\\issue-8-persona-selection.spec.ts",
+                          "column": 16,
+                          "line": 54
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 52 |\u001b[39m\n \u001b[90m 53 |\u001b[39m     \u001b[90m// ✅ Wait for navigation using URL pattern instead of networkidle\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 54 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForURL(\u001b[32m'**/chat?persona=dr_gasnelio'\u001b[39m\u001b[33m,\u001b[39m { timeout\u001b[33m:\u001b[39m \u001b[35m10000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 55 |\u001b[39m\n \u001b[90m 56 |\u001b[39m     \u001b[90m// Verify URL contains correct query parameter\u001b[39m\n \u001b[90m 57 |\u001b[39m     expect(page\u001b[33m.\u001b[39murl())\u001b[33m.\u001b[39mtoContain(\u001b[32m'/chat?persona=dr_gasnelio'\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\tests\\e2e\\issue-8-persona-selection.spec.ts",
+                            "column": 16,
+                            "line": 54
+                          },
+                          "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"**/chat?persona=dr_gasnelio\" until \"load\"\n  navigated to \"http://localhost:3000/?persona=dr_gasnelio\"\n============================================================\n\n  52 |\n  53 |     // ✅ Wait for navigation using URL pattern instead of networkidle\n> 54 |     await page.waitForURL('**/chat?persona=dr_gasnelio', { timeout: 10000 });\n     |                ^\n  55 |\n  56 |     // Verify URL contains correct query parameter\n  57 |     expect(page.url()).toContain('/chat?persona=dr_gasnelio');\n    at C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\tests\\e2e\\issue-8-persona-selection.spec.ts:54:16"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-19T17:56:46.964Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\test-results\\e2e-issue-8-persona-select-c40b4-at-with-persona-query-param-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\test-results\\e2e-issue-8-persona-select-c40b4-at-with-persona-query-param-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\test-results\\e2e-issue-8-persona-select-c40b4-at-with-persona-query-param-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\tests\\e2e\\issue-8-persona-selection.spec.ts",
+                        "column": 16,
+                        "line": 54
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "0682fbba0c8a3d9a3b06-32dbebdfb9f0f6f4aba3",
+              "file": "e2e/issue-8-persona-selection.spec.ts",
+              "line": 49,
+              "column": 7
+            },
+            {
+              "title": "AC3: LocalStorage persistence after selection",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 17246,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-19T17:56:46.998Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0682fbba0c8a3d9a3b06-8d8614714932ce559b8b",
+              "file": "e2e/issue-8-persona-selection.spec.ts",
+              "line": 60,
+              "column": 7
+            },
+            {
+              "title": "AC4: Keyboard navigation works",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
+                      "status": "failed",
+                      "duration": 15943,
+                      "error": {
+                        "message": "TimeoutError: page.waitForSelector: Timeout 5000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"persona-card-dr_gasnelio\"]:focus-visible') to be visible\u001b[22m\n",
+                        "stack": "TimeoutError: page.waitForSelector: Timeout 5000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"persona-card-dr_gasnelio\"]:focus-visible') to be visible\u001b[22m\n\n    at C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\tests\\e2e\\issue-8-persona-selection.spec.ts:83:16",
+                        "location": {
+                          "file": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\tests\\e2e\\issue-8-persona-selection.spec.ts",
+                          "column": 16,
+                          "line": 83
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 81 |\u001b[39m\n \u001b[90m 82 |\u001b[39m     \u001b[90m// ✅ Wait for focus using selector\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 83 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForSelector(\u001b[32m'[data-testid=\"persona-card-dr_gasnelio\"]:focus-visible'\u001b[39m\u001b[33m,\u001b[39m {\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 84 |\u001b[39m       timeout\u001b[33m:\u001b[39m \u001b[35m5000\u001b[39m\n \u001b[90m 85 |\u001b[39m     })\u001b[33m;\u001b[39m\n \u001b[90m 86 |\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\tests\\e2e\\issue-8-persona-selection.spec.ts",
+                            "column": 16,
+                            "line": 83
+                          },
+                          "message": "TimeoutError: page.waitForSelector: Timeout 5000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"persona-card-dr_gasnelio\"]:focus-visible') to be visible\u001b[22m\n\n\n  81 |\n  82 |     // ✅ Wait for focus using selector\n> 83 |     await page.waitForSelector('[data-testid=\"persona-card-dr_gasnelio\"]:focus-visible', {\n     |                ^\n  84 |       timeout: 5000\n  85 |     });\n  86 |\n    at C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\tests\\e2e\\issue-8-persona-selection.spec.ts:83:16"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-19T17:56:46.959Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\test-results\\e2e-issue-8-persona-select-ce2e4-4-Keyboard-navigation-works-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\test-results\\e2e-issue-8-persona-select-ce2e4-4-Keyboard-navigation-works-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\test-results\\e2e-issue-8-persona-select-ce2e4-4-Keyboard-navigation-works-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\tests\\e2e\\issue-8-persona-selection.spec.ts",
+                        "column": 16,
+                        "line": 83
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "0682fbba0c8a3d9a3b06-d599eee5f8dac2c26711",
+              "file": "e2e/issue-8-persona-selection.spec.ts",
+              "line": 77,
+              "column": 7
+            },
+            {
+              "title": "AC5: Screen reader announcements present",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
+                      "status": "passed",
+                      "duration": 11072,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-19T17:56:46.986Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0682fbba0c8a3d9a3b06-ac1a7a72fb32de5baa33",
+              "file": "e2e/issue-8-persona-selection.spec.ts",
+              "line": 101,
+              "column": 7
+            },
+            {
+              "title": "AC6: Heading hierarchy is semantic",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
+                      "status": "passed",
+                      "duration": 11048,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-19T17:56:46.974Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0682fbba0c8a3d9a3b06-fb165be0b81a285d0813",
+              "file": "e2e/issue-8-persona-selection.spec.ts",
+              "line": 112,
+              "column": 7
+            },
+            {
+              "title": "AC7: Focus indicators are visible",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 6,
+                      "status": "passed",
+                      "duration": 10845,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-19T17:56:46.995Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0682fbba0c8a3d9a3b06-5fb421112fdf249d90e8",
+              "file": "e2e/issue-8-persona-selection.spec.ts",
+              "line": 125,
+              "column": 7
+            },
+            {
+              "title": "AC8: Persona preference restored on revisit",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 7,
+                      "status": "failed",
+                      "duration": 21143,
+                      "error": {
+                        "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"**/chat?persona=dr_gasnelio\" until \"load\"\n  navigated to \"http://localhost:3000/?persona=dr_gasnelio\"\n============================================================",
+                        "stack": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"**/chat?persona=dr_gasnelio\" until \"load\"\n  navigated to \"http://localhost:3000/?persona=dr_gasnelio\"\n============================================================\n    at C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\tests\\e2e\\issue-8-persona-selection.spec.ts:150:16",
+                        "location": {
+                          "file": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\tests\\e2e\\issue-8-persona-selection.spec.ts",
+                          "column": 16,
+                          "line": 150
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 148 |\u001b[39m     \u001b[90m// Select a persona\u001b[39m\n \u001b[90m 149 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mclick(\u001b[32m'[data-testid=\"persona-card-dr_gasnelio\"]'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 150 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForURL(\u001b[32m'**/chat?persona=dr_gasnelio'\u001b[39m\u001b[33m,\u001b[39m { timeout\u001b[33m:\u001b[39m \u001b[35m10000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 151 |\u001b[39m\n \u001b[90m 152 |\u001b[39m     \u001b[90m// Go back to home\u001b[39m\n \u001b[90m 153 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[33mBASE_URL\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\tests\\e2e\\issue-8-persona-selection.spec.ts",
+                            "column": 16,
+                            "line": 150
+                          },
+                          "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"**/chat?persona=dr_gasnelio\" until \"load\"\n  navigated to \"http://localhost:3000/?persona=dr_gasnelio\"\n============================================================\n\n  148 |     // Select a persona\n  149 |     await page.click('[data-testid=\"persona-card-dr_gasnelio\"]');\n> 150 |     await page.waitForURL('**/chat?persona=dr_gasnelio', { timeout: 10000 });\n      |                ^\n  151 |\n  152 |     // Go back to home\n  153 |     await page.goto(BASE_URL);\n    at C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\tests\\e2e\\issue-8-persona-selection.spec.ts:150:16"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-19T17:56:47.024Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\test-results\\e2e-issue-8-persona-select-a21ed-ference-restored-on-revisit-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\test-results\\e2e-issue-8-persona-select-a21ed-ference-restored-on-revisit-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\test-results\\e2e-issue-8-persona-select-a21ed-ference-restored-on-revisit-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\tests\\e2e\\issue-8-persona-selection.spec.ts",
+                        "column": 16,
+                        "line": 150
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "0682fbba0c8a3d9a3b06-c54eeddb45d07269df49",
+              "file": "e2e/issue-8-persona-selection.spec.ts",
+              "line": 147,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "Accessibility Compliance - WCAG 2.1 AA",
+          "file": "e2e/issue-8-persona-selection.spec.ts",
+          "line": 167,
+          "column": 6,
+          "specs": [
+            {
+              "title": "A11Y1: Contrast ratio meets 4.5:1 for normal text",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 8,
+                      "status": "passed",
+                      "duration": 10885,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-19T17:56:47.017Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0682fbba0c8a3d9a3b06-7df82fd8ab72c151f2d7",
+              "file": "e2e/issue-8-persona-selection.spec.ts",
+              "line": 173,
+              "column": 7
+            },
+            {
+              "title": "A11Y2: Landmarks are properly structured",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 9,
+                      "status": "passed",
+                      "duration": 11038,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-19T17:56:47.047Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0682fbba0c8a3d9a3b06-faecabcf0670a56e7df3",
+              "file": "e2e/issue-8-persona-selection.spec.ts",
+              "line": 192,
+              "column": 7
+            },
+            {
+              "title": "A11Y3: Interactive elements have labels",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 10,
+                      "parallelIndex": 10,
+                      "status": "passed",
+                      "duration": 11296,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-19T17:56:47.046Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0682fbba0c8a3d9a3b06-2843ca071e847b077ad8",
+              "file": "e2e/issue-8-persona-selection.spec.ts",
+              "line": 202,
+              "column": 7
+            }
+          ]
+        }
+      ]
     }
   ],
+  "errors": [],
   "stats": {
-    "startTime": "2025-10-05T14:19:37.194Z",
-    "duration": 1862.1870000000001,
-    "expected": 0,
+    "startTime": "2025-10-19T17:56:45.777Z",
+    "duration": 23086.864,
+    "expected": 8,
     "skipped": 0,
-    "unexpected": 0,
+    "unexpected": 3,
     "flaky": 0
   }
 }

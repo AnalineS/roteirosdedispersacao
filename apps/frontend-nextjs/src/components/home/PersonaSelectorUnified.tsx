@@ -90,6 +90,7 @@ const PersonaCard: React.FC<PersonaCardProps> = ({
 
   return (
     <Card
+      data-testid={`persona-card-${personaId}`}
       variants={cardVariants}
       initial="initial"
       whileHover="hover"
@@ -136,17 +137,20 @@ const PersonaCard: React.FC<PersonaCardProps> = ({
 
       {/* Badge de persona ativa */}
       {isActive && (
-        <div style={{
-          position: 'absolute',
-          top: '1rem',
-          left: '1rem',
-          background: config.buttonColor,
-          color: 'white',
-          padding: '0.25rem 0.75rem',
-          borderRadius: '12px',
-          fontSize: '0.75rem',
-          fontWeight: '600'
-        }}>
+        <div
+          data-testid={`persona-badge-active-${personaId}`}
+          style={{
+            position: 'absolute',
+            top: '1rem',
+            left: '1rem',
+            background: config.buttonColor,
+            color: 'white',
+            padding: '0.25rem 0.75rem',
+            borderRadius: '12px',
+            fontSize: '0.75rem',
+            fontWeight: '600'
+          }}
+        >
           Ativo
         </div>
       )}
@@ -226,19 +230,22 @@ const PersonaCard: React.FC<PersonaCardProps> = ({
       </div>
 
       {/* CTA Button */}
-      <div style={{
-        width: '100%',
-        padding: '1rem 2rem',
-        background: config.buttonColor,
-        color: 'white',
-        borderRadius: '16px',
-        fontWeight: '600',
-        fontSize: '1.1rem',
-        textAlign: 'center',
-        transition: 'all 0.3s ease',
-        transform: isHovered ? 'translateY(-2px)' : 'translateY(0)',
-        boxShadow: isHovered ? `0 8px 24px rgba(0, 0, 0, 0.2)` : '0 4px 12px rgba(0, 0, 0, 0.1)'
-      }}>
+      <div
+        data-testid={`persona-cta-${personaId}`}
+        style={{
+          width: '100%',
+          padding: '1rem 2rem',
+          background: config.buttonColor,
+          color: 'white',
+          borderRadius: '16px',
+          fontWeight: '600',
+          fontSize: '1.1rem',
+          textAlign: 'center',
+          transition: 'all 0.3s ease',
+          transform: isHovered ? 'translateY(-2px)' : 'translateY(0)',
+          boxShadow: isHovered ? `0 8px 24px rgba(0, 0, 0, 0.2)` : '0 4px 12px rgba(0, 0, 0, 0.1)'
+        }}
+      >
         🚀 Iniciar Conversa
       </div>
 

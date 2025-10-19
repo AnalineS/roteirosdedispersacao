@@ -487,7 +487,6 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
                           aria-expanded={dropdownsOpen[category.id]}
                           aria-haspopup="menu"
                           aria-label={`Abrir menu ${category.label}: ${category.description}`}
-                          aria-describedby={`category-${category.id}-desc`}
                         >
                           <IconComponent size={isTablet ? 16 : 18} variant="unb" color={unbColors.primary} />
                           <span className={`whitespace-nowrap overflow-hidden text-ellipsis ${isTablet && category.label.length > 12 ? 'hidden' : 'inline'} ${isTablet ? 'max-w-[80px]' : 'max-w-none'}`}>
@@ -506,6 +505,7 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
                             isActive(category.items[0].href) ? 'opacity-100' : 'opacity-90'
                           } whitespace-nowrap min-w-fit flex-shrink-0 hover:bg-blue-500/10`}
                           style={{ color: unbColors.primary }}
+                          aria-label={`${category.label}: ${category.description}`}
                         >
                           <IconComponent size={isTablet ? 16 : 18} variant="unb" color={unbColors.primary} />
                           <span className={`whitespace-nowrap overflow-hidden text-ellipsis ${isTablet && category.label.length > 12 ? 'hidden' : 'inline'} ${isTablet ? 'max-w-[80px]' : 'max-w-none'}`}>
@@ -513,14 +513,6 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
                           </span>
                         </Link>
                       )}
-
-                      {/* Hidden description for screen readers */}
-                      <span
-                        id={`category-${category.id}-desc`}
-                        className="absolute -left-[10000px] w-px h-px overflow-hidden"
-                      >
-                        {category.description}
-                      </span>
 
                       {/* Dropdown Menu */}
                       {hasDropdown && dropdownsOpen[category.id] && (
@@ -759,8 +751,8 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
             </div>
           </div> {/* Fim da primeira linha */}
 
-          {/* Segunda linha - Barra de pesquisa */}
-          {!isMobile && (
+          {/* Segunda linha - Barra de pesquisa (não exibir na home que já tem barra de busca no hero) */}
+          {!isMobile && pathname !== '/' && (
             <div className="px-4 sm:px-6 lg:px-8 pb-4 bg-gradient-to-b from-slate-50/50 to-slate-50/0">
               <SearchBar
                 placeholder="🔍 Buscar no site..."
