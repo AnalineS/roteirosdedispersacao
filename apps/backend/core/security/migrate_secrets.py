@@ -44,12 +44,16 @@ class OldSecretEncryption:
 
     def _create_fernet(self) -> Fernet:
         """Create Fernet with OLD PREDICTABLE salt"""
-        # OLD VULNERABLE SALT - for migration only
+        # WARNING: OLD VULNERABLE HARDCODED SALT - ONLY for migration/decryption of legacy data (CWE-329)
+        # This salt is intentionally kept for backward compatibility with old encrypted data
+        # NEW ENCRYPTION must use os.urandom() generated salts (see SecretsManager for secure implementation)
+        # Context7 best practice: Use os.urandom(16) for cryptographically secure random salts
+        # This migration script should be run once and then removed from production
         salt = b'roteiro_dispensacao_salt_2025'
         kdf = PBKDF2HMAC(
             algorithm=hashes.SHA256(),
             length=32,
-            salt=salt,
+            salt=salt,  # Legacy salt for decryption only
             iterations=100000,
         )
         key = base64.urlsafe_b64encode(kdf.derive(self.master_key.encode()))

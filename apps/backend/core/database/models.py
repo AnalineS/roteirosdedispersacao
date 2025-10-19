@@ -232,7 +232,10 @@ class DatabaseSchema:
     def get_default_data_sql() -> List[str]:
         """Dados iniciais do sistema"""
         admin_id = str(uuid.uuid4())
-        admin_password = hashlib.pbkdf2_hmac('sha256', b'admin123', b'salt', 100000).hex()
+        # SECURITY FIX: Use os.urandom() for cryptographically secure salt (CWE-329)
+        # Context7 best practice: cryptography library recommends os.urandom(16) for salt generation
+        salt = os.urandom(16)
+        admin_password = hashlib.pbkdf2_hmac('sha256', b'admin123', salt, 100000).hex()
 
         return [
             f"""

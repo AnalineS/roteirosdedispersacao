@@ -333,6 +333,12 @@ class AppConfig:
                 'SUPABASE_URL': self.database.supabase_url,
                 'SUPABASE_SERVICE_KEY': self.database.supabase_service_key
             }
+
+            # Verify all production required vars
+            for var_name, var_value in required_vars.items():
+                if not var_value:
+                    missing.append(var_name)
+
         elif self.environment in [Environment.STAGING, Environment.HOMOLOGACAO, Environment.HML]:
             # Staging environments have relaxed requirements
             required_vars = {
@@ -346,11 +352,11 @@ class AppConfig:
             for var_name, var_value in required_vars.items():
                 if not var_value:
                     missing.append(var_name)
-
-        elif self.environment in [Environment.STAGING, Environment.HOMOLOGACAO, Environment.HML]:
-            # At least one AI API key is required in staging too
-            if not any([self.ai.openrouter_api_key, self.ai.huggingface_api_key, self.ai.openai_api_key]):
-                missing.append('AI_API_KEY (OPENROUTER_API_KEY, HUGGINGFACE_API_KEY, or OPENAI_API_KEY)')
+        else:
+            # Development and other environments have minimal requirements
+            required_vars = {
+                'SECRET_KEY': self.security.secret_key
+            }
 
             for var_name, var_value in required_vars.items():
                 if not var_value:
