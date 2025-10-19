@@ -726,7 +726,7 @@ jobs:
           project_id: ${{ vars.GCP_PROJECT_ID }}
 
       - name: "🔧 Setup Google Cloud"
-        uses: google-github-actions/setup-gcloud@4d9be00c5d95aa5db5da002e36cf1e0b4b8e83ca
+        uses: google-github-actions/setup-gcloud@6a7c903a70c8625ed6700fa299f5ddb4ca6022e9
         with:
           project_id: ${{ vars.GCP_PROJECT_ID }}
 
@@ -944,7 +944,7 @@ jobs:
           project_id: ${{ vars.GCP_PROJECT_ID }}
 
       - name: "⚡ Setup Cloud SDK"
-        uses: google-github-actions/setup-gcloud@4d9be00c5d95aa5db5da002e36cf1e0b4b8e83ca
+        uses: google-github-actions/setup-gcloud@6a7c903a70c8625ed6700fa299f5ddb4ca6022e9
         with:
           project_id: ${{ vars.GCP_PROJECT_ID }}
 
@@ -1268,7 +1268,7 @@ jobs:
           project_id: ${{ vars.GCP_PROJECT_ID }}
 
       - name: "🔧 Setup Google Cloud for health checks"
-        uses: google-github-actions/setup-gcloud@4d9be00c5d95aa5db5da002e36cf1e0b4b8e83ca
+        uses: google-github-actions/setup-gcloud@6a7c903a70c8625ed6700fa299f5ddb4ca6022e9
         with:
           project_id: ${{ vars.GCP_PROJECT_ID }}
 

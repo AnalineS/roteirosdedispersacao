@@ -79,8 +79,8 @@ Este arquivo documenta os commit hashes exatos das GitHub Actions usadas neste p
 
 ### google-github-actions/setup-gcloud@v2
 - **Tag**: v2.1.5 (latest stable v2.x)
-- **Commit Hash**: `4d9be00c5d95aa5db5da002e36cf1e0b4b8e83ca`
-- **Data**: 2024-11-08
+- **Commit Hash**: `6a7c903a70c8625ed6700fa299f5ddb4ca6022e9`
+- **Data**: 2025-01-19
 - **Uso**: Setup Google Cloud SDK
 
 ## Ações de Terceiros
