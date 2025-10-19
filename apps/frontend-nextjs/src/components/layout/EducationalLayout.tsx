@@ -1,7 +1,7 @@
 'use client';
 
 import { ReactNode } from 'react';
-import NavigationHeader from '@/components/navigation/NavigationHeader';
+import NavigationHeaderSimplified from '@/components/navigation/NavigationHeaderSimplified';
 import EducationalBreadcrumbs from '@/components/navigation/Breadcrumbs';
 import EducationalFooterSimple from '@/components/navigation/EducationalFooterSimple';
 import LanguageToggle from '@/components/accessibility/LanguageToggle';
@@ -46,13 +46,9 @@ export default function EducationalLayout({
           animation={true}
         />
       
-      {/* Navigation Header */}
+      {/* Navigation Header - PR #264 Simplified */}
       {showHeader && (
-        <header role="banner">
-          <nav id="navigation" aria-label="Navegação principal">
-            <NavigationHeader currentPersona={currentPersona} />
-          </nav>
-        </header>
+        <NavigationHeaderSimplified currentPersona={currentPersona} />
       )}
       
       {/* Skip links consolidados - Apenas os essenciais */}
