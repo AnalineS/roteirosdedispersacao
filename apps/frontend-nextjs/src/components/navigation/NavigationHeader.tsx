@@ -300,7 +300,7 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
   };
 
   // Obter persona atual
-  const currentPersonaData = currentPersona && personas[currentPersona] ? personas[currentPersona] : null;
+  const currentPersonaData = currentPersona && personas[currentPersona] ? personas[currentPersona] : undefined;
 
   return (
     <>
