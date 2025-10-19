@@ -26,9 +26,9 @@ Este arquivo documenta os commit hashes exatos das GitHub Actions usadas neste p
 - **Uso**: Setup ambiente Python
 
 ### actions/cache@v4
-- **Tag**: v4.2.0 (latest stable v4.x)
-- **Commit Hash**: `6849a6489940f00c2f30c0fb92c6274307ccb58a`
-- **Data**: 2024-12-11
+- **Tag**: v4.3.0 (latest stable v4.x)
+- **Commit Hash**: `0057852bfaa89a56745cba8c7296529d2fc39830`
+- **Data**: 2025-01-19
 - **Uso**: Cache de dependências
 
 ### actions/upload-artifact@v4
