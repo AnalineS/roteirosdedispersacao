@@ -493,12 +493,12 @@ jobs:
               echo "📊 Safety: $SAFETY_VULNS high/critical vulnerabilities"
           fi
 
-          # Pip-audit scan - Focus on high severity
-          pip-audit --severity high --format=json --output=/tmp/pip-audit-report.json || true
+          # Pip-audit scan
+          pip-audit --format=json --output=/tmp/pip-audit-report.json || true
           PIP_AUDIT_VULNS=0
           if [[ -f "/tmp/pip-audit-report.json" ]]; then
               PIP_AUDIT_VULNS=$(cat /tmp/pip-audit-report.json | jq '.vulnerabilities | length // 0' 2>/dev/null || echo "0")
-              echo "📊 Pip-audit: $PIP_AUDIT_VULNS high-severity vulnerabilities"
+              echo "📊 Pip-audit: $PIP_AUDIT_VULNS vulnerabilities"
           fi
 
           # Bandit security scan - Medical app appropriate configuration
