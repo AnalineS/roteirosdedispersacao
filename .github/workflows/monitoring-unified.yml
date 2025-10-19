@@ -4,10 +4,8 @@ on:
   schedule:
     # Daily comprehensive health check at 6 AM UTC
     - cron: '0 6 * * *'
-    # Performance monitoring every 4 hours during business days
-    - cron: '0 */4 * * 1-5'
-    # Security alert management daily at 8 AM UTC
-    - cron: '0 8 * * *'
+    # Quick health monitoring every 6 hours during business days
+    - cron: '0 */6 * * 1-5'
   workflow_dispatch:
     inputs:
       monitoring_type:
@@ -64,7 +62,7 @@ jobs:
   unified-health-check:
     name: "🏥 Unified System Health Check"
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 20
     if: ${{ contains(fromJson('["health_only", "comprehensive"]'), github.event.inputs.monitoring_type) || github.event_name == 'schedule' }}
     outputs:
       staging-status: ${{ steps.health-check.outputs.staging-status }}

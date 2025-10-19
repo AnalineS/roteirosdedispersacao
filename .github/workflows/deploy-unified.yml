@@ -342,216 +342,67 @@ jobs:
 
 
   # ============================================================================
-  # BACKEND TESTING SUITE - TEMPORARIAMENTE DESABILITADA
+  # QUICK VALIDATION
   # ============================================================================
-  comprehensive-backend-tests:
-    name: "🧪 Comprehensive Backend Testing Suite (Temporarily Disabled)"
+  quick-validation:
+    name: "⚡ Quick Validation"
     runs-on: ubuntu-latest
     needs: [environment-preparation, secrets-validation]
-    timeout-minutes: 45
-    if: false # ${{ !github.event.inputs.skip_tests }} - DISABLED FOR SUCCESSFUL DEPLOY
-    strategy:
-      fail-fast: false
-      matrix:
-        test-suite: ["unit", "integration", "performance", "security", "system"]
-    env:
-      # Real environment configuration for ${{ needs.environment-preparation.outputs.environment }} tests
-      TESTING: true
-      ENVIRONMENT: ${{ needs.environment-preparation.outputs.environment }}
-      SECRET_KEY: ${{ secrets.SECRET_KEY }}
-      RATE_LIMIT_ENABLED: true
-      CACHE_ENABLED: true
-      EMBEDDINGS_ENABLED: true
-      RAG_AVAILABLE: true
-      QA_ENABLED: true
-      EMAIL_ENABLED: false
-      METRICS_ENABLED: true
-      # Real API keys from GitHub secrets
-      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-      HUGGINGFACE_API_KEY: ${{ secrets.HUGGINGFACE_API_KEY }}
-      CONTEXT7_API_KEY: ${{ secrets.CONTEXT7_API_KEY }}
-      # Supabase configuration for RAG tests
-      SUPABASE_PROJECT_URL: ${{ secrets.SUPABASE_PROJECT_URL }}
-      SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
-      # Database settings for real testing
-      SQLITE_DB_PATH: 'test_${{ needs.environment-preparation.outputs.environment }}.db'
-      GCS_BUCKET_NAME: ${{ vars.GCS_BUCKET_NAME }}
+    timeout-minutes: 10
+    if: ${{ !github.event.inputs.skip_tests }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v4
 
-      - name: Set up Python 3.11
+      - name: "🐍 Setup Python"
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
           cache: 'pip'
 
-      - name: Install system dependencies
+      - name: "📦 Install Backend Dependencies"
+        working-directory: apps/backend
+        run: pip install -r requirements.txt
+
+      - name: "🧪 Backend Import Test"
+        working-directory: apps/backend
+        env:
+          TESTING: true
+          SECRET_KEY: "test-secret-key"
         run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            tesseract-ocr \
-            tesseract-ocr-por \
-            tesseract-ocr-eng \
-            libgl1-mesa-dri \
-            libglx-mesa0 \
-            libglib2.0-0 \
-            libsm6 \
-            libxext6 \
-            libxrender-dev \
-            libgomp1 \
-            libgtk-3-0 \
-            sqlite3
+          echo "🧪 Testing backend imports..."
+          python3 -c "import main; print('✅ Backend imports successful')"
 
-      - name: Install Python dependencies
-        working-directory: ./apps/backend
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pytest-xdist pytest-html pytest-json-report
-
-      - name: Create test directories
-        working-directory: ./apps/backend
-        run: |
-          mkdir -p logs
-          mkdir -p cache
-          mkdir -p htmlcov
-          mkdir -p test-results
-
-      - name: Run Core Functionality Tests
-        if: matrix.test-suite == 'unit' || matrix.test-suite == 'all'
-        working-directory: ./apps/backend
-        run: |
-          python -m pytest tests/test_00_core_functionality.py \
-            -v \
-            --tb=short \
-            --maxfail=5 \
-            --html=test-results/core-functionality-report.html \
-            --json-report --json-report-file=test-results/core-functionality.json \
-            -m "not slow"
-
-      - name: Run Blueprint Functionality Tests
-        if: matrix.test-suite == 'unit' || matrix.test-suite == 'all'
-        working-directory: ./apps/backend
-        run: |
-          python -m pytest tests/test_01_blueprint_functionality.py \
-            -v \
-            --tb=short \
-            --maxfail=10 \
-            --html=test-results/blueprint-functionality-report.html \
-            --json-report --json-report-file=test-results/blueprint-functionality.json \
-            -m "not slow"
-
-      - name: Run Integration Tests
-        if: matrix.test-suite == 'integration' || matrix.test-suite == 'all'
-        working-directory: ./apps/backend
-        run: |
-          python -m pytest tests/test_02_integration_workflows.py \
-            -v \
-            --tb=short \
-            --maxfail=5 \
-            --html=test-results/integration-report.html \
-            --json-report --json-report-file=test-results/integration.json \
-            -m "integration and not slow"
-
-      - name: Run Performance Tests
-        if: matrix.test-suite == 'performance' || matrix.test-suite == 'all'
-        working-directory: ./apps/backend
-        run: |
-          python -m pytest tests/test_03_performance_load.py \
-            -v \
-            --tb=short \
-            --maxfail=3 \
-            --html=test-results/performance-report.html \
-            --json-report --json-report-file=test-results/performance.json \
-            -m "performance and not slow" \
-            --timeout=300
-
-      - name: Run Security Tests
-        if: matrix.test-suite == 'security' || matrix.test-suite == 'all'
-        working-directory: ./apps/backend
-        run: |
-          python -m pytest tests/test_04_security_validation.py \
-            -v \
-            --tb=short \
-            --maxfail=5 \
-            --html=test-results/security-report.html \
-            --json-report --json-report-file=test-results/security.json \
-            -m "security and not slow"
-
-      - name: Run System Validation Tests
-        if: matrix.test-suite == 'system' || matrix.test-suite == 'all'
-        working-directory: ./apps/backend
-        run: |
-          python -m pytest tests/test_05_system_validation.py \
-            -v \
-            --tb=short \
-            --maxfail=3 \
-            --html=test-results/system-validation-report.html \
-            --json-report --json-report-file=test-results/system-validation.json \
-            -m "integration and not slow"
-
-      - name: Generate Test Summary
-        if: always()
-        working-directory: ./apps/backend
-        run: |
-          echo "## Test Results Summary" >> test_summary.md
-          echo "" >> test_summary.md
-          echo "**Test Suite**: ${{ matrix.test-suite }}" >> test_summary.md
-          echo "**Branch**: ${{ github.ref_name }}" >> test_summary.md
-          echo "**Commit**: ${{ github.sha }}" >> test_summary.md
-          echo "" >> test_summary.md
-
-          # Count test results
-          if ls test-results/*.json 1> /dev/null 2>&1; then
-            echo "### Test Counts" >> test_summary.md
-            python -c "
-          import json
-          import glob
-
-          total_tests = 0
-          total_passed = 0
-          total_failed = 0
-          total_skipped = 0
-
-          for file in glob.glob('test-results/*.json'):
-              try:
-                  with open(file) as f:
-                      data = json.load(f)
-                      summary = data.get('summary', {})
-                      total_tests += summary.get('total', 0)
-                      total_passed += summary.get('passed', 0)
-                      total_failed += summary.get('failed', 0)
-                      total_skipped += summary.get('skipped', 0)
-              except:
-                  pass
-
-          print(f'- Total Tests: {total_tests}')
-          print(f'- Passed: {total_passed}')
-          print(f'- Failed: {total_failed}')
-          print(f'- Skipped: {total_skipped}')
-          print(f'- Success Rate: {(total_passed/total_tests*100) if total_tests > 0 else 0:.1f}%')
-          " >> test_summary.md
-          fi
-
-      - name: Upload Test Results
-        uses: actions/upload-artifact@v4
-        if: always()
+      - name: "⚡ Setup Node.js"
+        uses: actions/setup-node@v4
         with:
-          name: test-results-${{ matrix.test-suite }}
-          path: |
-            apps/backend/test-results/
-            apps/backend/htmlcov/
-            apps/backend/coverage.xml
-            apps/backend/test_summary.md
-          retention-days: 30
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: apps/frontend-nextjs/package-lock.json
+
+      - name: "📦 Install Frontend Dependencies"
+        working-directory: apps/frontend-nextjs
+        run: npm ci
+
+      - name: "🏗️ Frontend Build Test"
+        working-directory: apps/frontend-nextjs
+        run: |
+          echo "🏗️ Testing frontend build..."
+          npm run build
+          echo "✅ Frontend build successful"
+
+      - name: "📊 Validation Summary"
+        run: |
+          echo "## ⚡ Quick Validation Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ **Backend Imports**: Passed" >> $GITHUB_STEP_SUMMARY
+          echo "✅ **Frontend Build**: Passed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📝 **Note**: Comprehensive testing runs via pr-validation.yml" >> $GITHUB_STEP_SUMMARY
 
   # Quality Gates Evaluation - Integrated from backend-tests.yml
   backend-quality-gates:
     name: "📊 Backend Quality Gates (Simplified)"
-    needs: [environment-preparation] # comprehensive-backend-tests - REMOVED DEPENDENCY
+    needs: [environment-preparation, quick-validation]
     runs-on: ubuntu-latest
     if: always()
     timeout-minutes: 10
