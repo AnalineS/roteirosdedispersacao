@@ -11,7 +11,7 @@
     "grepInvert": null,
     "maxFailures": 0,
     "metadata": {
-      "actualWorkers": 11
+      "actualWorkers": 13
     },
     "preserveOutput": "always",
     "reporter": [
@@ -43,7 +43,7 @@
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
-          "actualWorkers": 11
+          "actualWorkers": 13
         },
         "id": "chromium",
         "name": "chromium",
@@ -53,14 +53,14 @@
           "**/*.spec.ts",
           "**/*.spec.js"
         ],
-        "timeout": 60000
+        "timeout": 30000
       },
       {
         "outputDir": "C:/Users/Ana/Meu Drive/Site roteiro de dispensação/test-results",
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
-          "actualWorkers": 11
+          "actualWorkers": 13
         },
         "id": "firefox",
         "name": "firefox",
@@ -70,14 +70,14 @@
           "**/*.spec.ts",
           "**/*.spec.js"
         ],
-        "timeout": 60000
+        "timeout": 30000
       },
       {
         "outputDir": "C:/Users/Ana/Meu Drive/Site roteiro de dispensação/test-results",
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
-          "actualWorkers": 11
+          "actualWorkers": 13
         },
         "id": "mobile-chrome",
         "name": "mobile-chrome",
@@ -87,14 +87,14 @@
           "**/*.spec.ts",
           "**/*.spec.js"
         ],
-        "timeout": 60000
+        "timeout": 30000
       },
       {
         "outputDir": "C:/Users/Ana/Meu Drive/Site roteiro de dispensação/test-results",
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
-          "actualWorkers": 11
+          "actualWorkers": 13
         },
         "id": "mobile-safari",
         "name": "mobile-safari",
@@ -104,14 +104,14 @@
           "**/*.spec.ts",
           "**/*.spec.js"
         ],
-        "timeout": 60000
+        "timeout": 30000
       },
       {
         "outputDir": "C:/Users/Ana/Meu Drive/Site roteiro de dispensação/test-results",
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
-          "actualWorkers": 11
+          "actualWorkers": 13
         },
         "id": "accessibility",
         "name": "accessibility",
@@ -121,7 +121,7 @@
           "**/*.spec.ts",
           "**/*.spec.js"
         ],
-        "timeout": 60000
+        "timeout": 30000
       }
     ],
     "shard": null,
@@ -139,25 +139,25 @@
   },
   "suites": [
     {
-      "title": "e2e\\issue-8-persona-selection.spec.ts",
-      "file": "e2e/issue-8-persona-selection.spec.ts",
+      "title": "e2e\\pr-264-navigation-simplified.spec.ts",
+      "file": "e2e/pr-264-navigation-simplified.spec.ts",
       "column": 0,
       "line": 0,
       "specs": [],
       "suites": [
         {
-          "title": "Persona Selection System - Issue #8",
-          "file": "e2e/issue-8-persona-selection.spec.ts",
-          "line": 19,
+          "title": "PR #264 - NavigationHeaderSimplified",
+          "file": "e2e/pr-264-navigation-simplified.spec.ts",
+          "line": 20,
           "column": 6,
           "specs": [
             {
-              "title": "AC1: Persona cards exist on home page",
+              "title": "AC1: Navegação exibe exatamente 5 itens principais no desktop",
               "ok": true,
               "tags": [],
               "tests": [
                 {
-                  "timeout": 60000,
+                  "timeout": 30000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
@@ -167,12 +167,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 11051,
+                      "duration": 7196,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T17:56:46.960Z",
+                      "startTime": "2025-10-19T20:03:36.436Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -180,18 +180,18 @@
                   "status": "expected"
                 }
               ],
-              "id": "0682fbba0c8a3d9a3b06-72ad70dc29a7731e6d59",
-              "file": "e2e/issue-8-persona-selection.spec.ts",
+              "id": "730e646997e25e661c43-061b44fe6e5a1e6d6dfb",
+              "file": "e2e/pr-264-navigation-simplified.spec.ts",
               "line": 32,
               "column": 7
             },
             {
-              "title": "AC2: Navigation to /chat with persona query param",
-              "ok": false,
+              "title": "AC2: Botões CTAs têm hierarquia visual clara",
+              "ok": true,
               "tags": [],
               "tests": [
                 {
-                  "timeout": 60000,
+                  "timeout": 30000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
@@ -200,72 +200,32 @@
                     {
                       "workerIndex": 1,
                       "parallelIndex": 1,
-                      "status": "failed",
-                      "duration": 21140,
-                      "error": {
-                        "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"**/chat?persona=dr_gasnelio\" until \"load\"\n  navigated to \"http://localhost:3000/?persona=dr_gasnelio\"\n============================================================",
-                        "stack": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"**/chat?persona=dr_gasnelio\" until \"load\"\n  navigated to \"http://localhost:3000/?persona=dr_gasnelio\"\n============================================================\n    at C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\tests\\e2e\\issue-8-persona-selection.spec.ts:54:16",
-                        "location": {
-                          "file": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\tests\\e2e\\issue-8-persona-selection.spec.ts",
-                          "column": 16,
-                          "line": 54
-                        },
-                        "snippet": "\u001b[0m \u001b[90m 52 |\u001b[39m\n \u001b[90m 53 |\u001b[39m     \u001b[90m// ✅ Wait for navigation using URL pattern instead of networkidle\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 54 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForURL(\u001b[32m'**/chat?persona=dr_gasnelio'\u001b[39m\u001b[33m,\u001b[39m { timeout\u001b[33m:\u001b[39m \u001b[35m10000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 55 |\u001b[39m\n \u001b[90m 56 |\u001b[39m     \u001b[90m// Verify URL contains correct query parameter\u001b[39m\n \u001b[90m 57 |\u001b[39m     expect(page\u001b[33m.\u001b[39murl())\u001b[33m.\u001b[39mtoContain(\u001b[32m'/chat?persona=dr_gasnelio'\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\tests\\e2e\\issue-8-persona-selection.spec.ts",
-                            "column": 16,
-                            "line": 54
-                          },
-                          "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"**/chat?persona=dr_gasnelio\" until \"load\"\n  navigated to \"http://localhost:3000/?persona=dr_gasnelio\"\n============================================================\n\n  52 |\n  53 |     // ✅ Wait for navigation using URL pattern instead of networkidle\n> 54 |     await page.waitForURL('**/chat?persona=dr_gasnelio', { timeout: 10000 });\n     |                ^\n  55 |\n  56 |     // Verify URL contains correct query parameter\n  57 |     expect(page.url()).toContain('/chat?persona=dr_gasnelio');\n    at C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\tests\\e2e\\issue-8-persona-selection.spec.ts:54:16"
-                        }
-                      ],
+                      "status": "passed",
+                      "duration": 7208,
+                      "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T17:56:46.964Z",
+                      "startTime": "2025-10-19T20:03:36.442Z",
                       "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\test-results\\e2e-issue-8-persona-select-c40b4-at-with-persona-query-param-chromium\\test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\test-results\\e2e-issue-8-persona-select-c40b4-at-with-persona-query-param-chromium\\video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\test-results\\e2e-issue-8-persona-select-c40b4-at-with-persona-query-param-chromium\\error-context.md"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\tests\\e2e\\issue-8-persona-selection.spec.ts",
-                        "column": 16,
-                        "line": 54
-                      }
+                      "attachments": []
                     }
                   ],
-                  "status": "unexpected"
+                  "status": "expected"
                 }
               ],
-              "id": "0682fbba0c8a3d9a3b06-32dbebdfb9f0f6f4aba3",
-              "file": "e2e/issue-8-persona-selection.spec.ts",
-              "line": 49,
+              "id": "730e646997e25e661c43-d24d4d15381cef04452b",
+              "file": "e2e/pr-264-navigation-simplified.spec.ts",
+              "line": 55,
               "column": 7
             },
             {
-              "title": "AC3: LocalStorage persistence after selection",
+              "title": "AC3: Dropdown Educacional abre e fecha corretamente",
               "ok": true,
               "tags": [],
               "tests": [
                 {
-                  "timeout": 60000,
+                  "timeout": 30000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
@@ -275,12 +235,12 @@
                       "workerIndex": 2,
                       "parallelIndex": 2,
                       "status": "passed",
-                      "duration": 17246,
+                      "duration": 6870,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T17:56:46.998Z",
+                      "startTime": "2025-10-19T20:03:36.496Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -288,18 +248,18 @@
                   "status": "expected"
                 }
               ],
-              "id": "0682fbba0c8a3d9a3b06-8d8614714932ce559b8b",
-              "file": "e2e/issue-8-persona-selection.spec.ts",
-              "line": 60,
+              "id": "730e646997e25e661c43-de2bdd6fdedcdd75b79c",
+              "file": "e2e/pr-264-navigation-simplified.spec.ts",
+              "line": 84,
               "column": 7
             },
             {
-              "title": "AC4: Keyboard navigation works",
+              "title": "AC4: Navegação para /chat ao clicar no link Chat",
               "ok": false,
               "tags": [],
               "tests": [
                 {
-                  "timeout": 60000,
+                  "timeout": 30000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
@@ -308,72 +268,64 @@
                     {
                       "workerIndex": 3,
                       "parallelIndex": 3,
-                      "status": "failed",
-                      "duration": 15943,
+                      "status": "timedOut",
+                      "duration": 30126,
                       "error": {
-                        "message": "TimeoutError: page.waitForSelector: Timeout 5000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"persona-card-dr_gasnelio\"]:focus-visible') to be visible\u001b[22m\n",
-                        "stack": "TimeoutError: page.waitForSelector: Timeout 5000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"persona-card-dr_gasnelio\"]:focus-visible') to be visible\u001b[22m\n\n    at C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\tests\\e2e\\issue-8-persona-selection.spec.ts:83:16",
-                        "location": {
-                          "file": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\tests\\e2e\\issue-8-persona-selection.spec.ts",
-                          "column": 16,
-                          "line": 83
-                        },
-                        "snippet": "\u001b[0m \u001b[90m 81 |\u001b[39m\n \u001b[90m 82 |\u001b[39m     \u001b[90m// ✅ Wait for focus using selector\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 83 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForSelector(\u001b[32m'[data-testid=\"persona-card-dr_gasnelio\"]:focus-visible'\u001b[39m\u001b[33m,\u001b[39m {\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 84 |\u001b[39m       timeout\u001b[33m:\u001b[39m \u001b[35m5000\u001b[39m\n \u001b[90m 85 |\u001b[39m     })\u001b[33m;\u001b[39m\n \u001b[90m 86 |\u001b[39m\u001b[0m"
+                        "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
                       },
                       "errors": [
                         {
+                          "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                        },
+                        {
                           "location": {
-                            "file": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\tests\\e2e\\issue-8-persona-selection.spec.ts",
+                            "file": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\tests\\e2e\\pr-264-navigation-simplified.spec.ts",
                             "column": 16,
-                            "line": 83
+                            "line": 125
                           },
-                          "message": "TimeoutError: page.waitForSelector: Timeout 5000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"persona-card-dr_gasnelio\"]:focus-visible') to be visible\u001b[22m\n\n\n  81 |\n  82 |     // ✅ Wait for focus using selector\n> 83 |     await page.waitForSelector('[data-testid=\"persona-card-dr_gasnelio\"]:focus-visible', {\n     |                ^\n  84 |       timeout: 5000\n  85 |     });\n  86 |\n    at C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\tests\\e2e\\issue-8-persona-selection.spec.ts:83:16"
+                          "message": "Error: page.waitForURL: Test timeout of 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"**/chat**\" until \"load\"\n  navigated to \"http://localhost:3000/?persona=ga\"\n============================================================\n\n  123 |\n  124 |     // Aguardar navegação completar com timeout maior\n> 125 |     await page.waitForURL('**/chat**', { timeout: 30000 });\n      |                ^\n  126 |\n  127 |     // Verificar URL atual\n  128 |     expect(page.url()).toContain('/chat');\n    at C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\tests\\e2e\\pr-264-navigation-simplified.spec.ts:125:16"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T17:56:46.959Z",
+                      "startTime": "2025-10-19T20:03:36.488Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\test-results\\e2e-issue-8-persona-select-ce2e4-4-Keyboard-navigation-works-chromium\\test-failed-1.png"
+                          "path": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\test-results\\e2e-pr-264-navigation-simp-2351b-chat-ao-clicar-no-link-Chat-chromium\\test-failed-1.png"
                         },
                         {
                           "name": "video",
                           "contentType": "video/webm",
-                          "path": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\test-results\\e2e-issue-8-persona-select-ce2e4-4-Keyboard-navigation-works-chromium\\video.webm"
+                          "path": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\test-results\\e2e-pr-264-navigation-simp-2351b-chat-ao-clicar-no-link-Chat-chromium\\video.webm"
                         },
                         {
                           "name": "error-context",
                           "contentType": "text/markdown",
-                          "path": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\test-results\\e2e-issue-8-persona-select-ce2e4-4-Keyboard-navigation-works-chromium\\error-context.md"
+                          "path": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\test-results\\e2e-pr-264-navigation-simp-2351b-chat-ao-clicar-no-link-Chat-chromium\\error-context.md"
                         }
-                      ],
-                      "errorLocation": {
-                        "file": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\tests\\e2e\\issue-8-persona-selection.spec.ts",
-                        "column": 16,
-                        "line": 83
-                      }
+                      ]
                     }
                   ],
                   "status": "unexpected"
                 }
               ],
-              "id": "0682fbba0c8a3d9a3b06-d599eee5f8dac2c26711",
-              "file": "e2e/issue-8-persona-selection.spec.ts",
-              "line": 77,
+              "id": "730e646997e25e661c43-e2f04a988fcd9e5e86d5",
+              "file": "e2e/pr-264-navigation-simplified.spec.ts",
+              "line": 114,
               "column": 7
             },
             {
-              "title": "AC5: Screen reader announcements present",
+              "title": "AC5: Touch targets têm mínimo 44x44px (WCAG AA)",
               "ok": true,
               "tags": [],
               "tests": [
                 {
-                  "timeout": 60000,
+                  "timeout": 30000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
@@ -383,12 +335,12 @@
                       "workerIndex": 4,
                       "parallelIndex": 4,
                       "status": "passed",
-                      "duration": 11072,
+                      "duration": 6724,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T17:56:46.986Z",
+                      "startTime": "2025-10-19T20:03:36.521Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -396,18 +348,18 @@
                   "status": "expected"
                 }
               ],
-              "id": "0682fbba0c8a3d9a3b06-ac1a7a72fb32de5baa33",
-              "file": "e2e/issue-8-persona-selection.spec.ts",
-              "line": 101,
+              "id": "730e646997e25e661c43-c024e6784059197ef050",
+              "file": "e2e/pr-264-navigation-simplified.spec.ts",
+              "line": 131,
               "column": 7
             },
             {
-              "title": "AC6: Heading hierarchy is semantic",
+              "title": "AC6: Indicador offline não aparece quando online",
               "ok": true,
               "tags": [],
               "tests": [
                 {
-                  "timeout": 60000,
+                  "timeout": 30000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
@@ -417,12 +369,12 @@
                       "workerIndex": 5,
                       "parallelIndex": 5,
                       "status": "passed",
-                      "duration": 11048,
+                      "duration": 6806,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T17:56:46.974Z",
+                      "startTime": "2025-10-19T20:03:36.522Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -430,18 +382,18 @@
                   "status": "expected"
                 }
               ],
-              "id": "0682fbba0c8a3d9a3b06-fb165be0b81a285d0813",
-              "file": "e2e/issue-8-persona-selection.spec.ts",
-              "line": 112,
+              "id": "730e646997e25e661c43-d7b0e4f72ea2cf7e4b09",
+              "file": "e2e/pr-264-navigation-simplified.spec.ts",
+              "line": 154,
               "column": 7
             },
             {
-              "title": "AC7: Focus indicators are visible",
+              "title": "AC7: Indicador offline aparece quando offline",
               "ok": true,
               "tags": [],
               "tests": [
                 {
-                  "timeout": 60000,
+                  "timeout": 30000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
@@ -451,12 +403,12 @@
                       "workerIndex": 6,
                       "parallelIndex": 6,
                       "status": "passed",
-                      "duration": 10845,
+                      "duration": 6861,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T17:56:46.995Z",
+                      "startTime": "2025-10-19T20:03:36.496Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -464,18 +416,18 @@
                   "status": "expected"
                 }
               ],
-              "id": "0682fbba0c8a3d9a3b06-5fb421112fdf249d90e8",
-              "file": "e2e/issue-8-persona-selection.spec.ts",
-              "line": 125,
+              "id": "730e646997e25e661c43-0acd567e9c86a9076141",
+              "file": "e2e/pr-264-navigation-simplified.spec.ts",
+              "line": 163,
               "column": 7
             },
             {
-              "title": "AC8: Persona preference restored on revisit",
-              "ok": false,
+              "title": "AC8: Navegação responsiva - Mobile mostra menu hambúrguer",
+              "ok": true,
               "tags": [],
               "tests": [
                 {
-                  "timeout": 60000,
+                  "timeout": 30000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
@@ -484,80 +436,32 @@
                     {
                       "workerIndex": 7,
                       "parallelIndex": 7,
-                      "status": "failed",
-                      "duration": 21143,
-                      "error": {
-                        "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"**/chat?persona=dr_gasnelio\" until \"load\"\n  navigated to \"http://localhost:3000/?persona=dr_gasnelio\"\n============================================================",
-                        "stack": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"**/chat?persona=dr_gasnelio\" until \"load\"\n  navigated to \"http://localhost:3000/?persona=dr_gasnelio\"\n============================================================\n    at C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\tests\\e2e\\issue-8-persona-selection.spec.ts:150:16",
-                        "location": {
-                          "file": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\tests\\e2e\\issue-8-persona-selection.spec.ts",
-                          "column": 16,
-                          "line": 150
-                        },
-                        "snippet": "\u001b[0m \u001b[90m 148 |\u001b[39m     \u001b[90m// Select a persona\u001b[39m\n \u001b[90m 149 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mclick(\u001b[32m'[data-testid=\"persona-card-dr_gasnelio\"]'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 150 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForURL(\u001b[32m'**/chat?persona=dr_gasnelio'\u001b[39m\u001b[33m,\u001b[39m { timeout\u001b[33m:\u001b[39m \u001b[35m10000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 151 |\u001b[39m\n \u001b[90m 152 |\u001b[39m     \u001b[90m// Go back to home\u001b[39m\n \u001b[90m 153 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[33mBASE_URL\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\tests\\e2e\\issue-8-persona-selection.spec.ts",
-                            "column": 16,
-                            "line": 150
-                          },
-                          "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"**/chat?persona=dr_gasnelio\" until \"load\"\n  navigated to \"http://localhost:3000/?persona=dr_gasnelio\"\n============================================================\n\n  148 |     // Select a persona\n  149 |     await page.click('[data-testid=\"persona-card-dr_gasnelio\"]');\n> 150 |     await page.waitForURL('**/chat?persona=dr_gasnelio', { timeout: 10000 });\n      |                ^\n  151 |\n  152 |     // Go back to home\n  153 |     await page.goto(BASE_URL);\n    at C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\tests\\e2e\\issue-8-persona-selection.spec.ts:150:16"
-                        }
-                      ],
+                      "status": "passed",
+                      "duration": 5660,
+                      "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T17:56:47.024Z",
+                      "startTime": "2025-10-19T20:03:36.580Z",
                       "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\test-results\\e2e-issue-8-persona-select-a21ed-ference-restored-on-revisit-chromium\\test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\test-results\\e2e-issue-8-persona-select-a21ed-ference-restored-on-revisit-chromium\\video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\test-results\\e2e-issue-8-persona-select-a21ed-ference-restored-on-revisit-chromium\\error-context.md"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\tests\\e2e\\issue-8-persona-selection.spec.ts",
-                        "column": 16,
-                        "line": 150
-                      }
+                      "attachments": []
                     }
                   ],
-                  "status": "unexpected"
+                  "status": "expected"
                 }
               ],
-              "id": "0682fbba0c8a3d9a3b06-c54eeddb45d07269df49",
-              "file": "e2e/issue-8-persona-selection.spec.ts",
-              "line": 147,
+              "id": "730e646997e25e661c43-482ca6d2c2819c748c24",
+              "file": "e2e/pr-264-navigation-simplified.spec.ts",
+              "line": 184,
               "column": 7
-            }
-          ]
-        },
-        {
-          "title": "Accessibility Compliance - WCAG 2.1 AA",
-          "file": "e2e/issue-8-persona-selection.spec.ts",
-          "line": 167,
-          "column": 6,
-          "specs": [
+            },
             {
-              "title": "A11Y1: Contrast ratio meets 4.5:1 for normal text",
+              "title": "AC9: Acessibilidade - Navegação por teclado funciona",
               "ok": true,
               "tags": [],
               "tests": [
                 {
-                  "timeout": 60000,
+                  "timeout": 30000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
@@ -567,12 +471,12 @@
                       "workerIndex": 8,
                       "parallelIndex": 8,
                       "status": "passed",
-                      "duration": 10885,
+                      "duration": 5782,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T17:56:47.017Z",
+                      "startTime": "2025-10-19T20:03:36.541Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -580,18 +484,18 @@
                   "status": "expected"
                 }
               ],
-              "id": "0682fbba0c8a3d9a3b06-7df82fd8ab72c151f2d7",
-              "file": "e2e/issue-8-persona-selection.spec.ts",
-              "line": 173,
+              "id": "730e646997e25e661c43-f54c9e5508834c48da5f",
+              "file": "e2e/pr-264-navigation-simplified.spec.ts",
+              "line": 212,
               "column": 7
             },
             {
-              "title": "A11Y2: Landmarks are properly structured",
-              "ok": true,
+              "title": "AC10: Dropdown fecha ao clicar fora (overlay)",
+              "ok": false,
               "tags": [],
               "tests": [
                 {
-                  "timeout": 60000,
+                  "timeout": 30000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
@@ -600,32 +504,72 @@
                     {
                       "workerIndex": 9,
                       "parallelIndex": 9,
-                      "status": "passed",
-                      "duration": 11038,
-                      "errors": [],
+                      "status": "failed",
+                      "duration": 8928,
+                      "error": {
+                        "message": "TimeoutError: page.waitForSelector: Timeout 3000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[role=\"menu\"]') to be hidden\u001b[22m\n\u001b[2m    11 × locator resolved to visible <div role=\"menu\" class=\"jsx-7fd04687007ece3d absolute top-full left-1/2 -translate-x-1/2 mt-2 rounded-xl shadow-2xl min-w-[300px] max-w-[340px] z-[1001] animate-fadeIn overflow-hidden\">…</div>\u001b[22m\n",
+                        "stack": "TimeoutError: page.waitForSelector: Timeout 3000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[role=\"menu\"]') to be hidden\u001b[22m\n\u001b[2m    11 × locator resolved to visible <div role=\"menu\" class=\"jsx-7fd04687007ece3d absolute top-full left-1/2 -translate-x-1/2 mt-2 rounded-xl shadow-2xl min-w-[300px] max-w-[340px] z-[1001] animate-fadeIn overflow-hidden\">…</div>\u001b[22m\n\n    at C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\tests\\e2e\\pr-264-navigation-simplified.spec.ts:251:16",
+                        "location": {
+                          "file": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\tests\\e2e\\pr-264-navigation-simplified.spec.ts",
+                          "column": 16,
+                          "line": 251
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 249 |\u001b[39m\n \u001b[90m 250 |\u001b[39m     \u001b[90m// Aguardar menu fechar\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 251 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForSelector(\u001b[32m'[role=\"menu\"]'\u001b[39m\u001b[33m,\u001b[39m {\n \u001b[90m     |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 252 |\u001b[39m       state\u001b[33m:\u001b[39m \u001b[32m'hidden'\u001b[39m\u001b[33m,\u001b[39m\n \u001b[90m 253 |\u001b[39m       timeout\u001b[33m:\u001b[39m \u001b[35m3000\u001b[39m\n \u001b[90m 254 |\u001b[39m     })\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\tests\\e2e\\pr-264-navigation-simplified.spec.ts",
+                            "column": 16,
+                            "line": 251
+                          },
+                          "message": "TimeoutError: page.waitForSelector: Timeout 3000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[role=\"menu\"]') to be hidden\u001b[22m\n\u001b[2m    11 × locator resolved to visible <div role=\"menu\" class=\"jsx-7fd04687007ece3d absolute top-full left-1/2 -translate-x-1/2 mt-2 rounded-xl shadow-2xl min-w-[300px] max-w-[340px] z-[1001] animate-fadeIn overflow-hidden\">…</div>\u001b[22m\n\n\n  249 |\n  250 |     // Aguardar menu fechar\n> 251 |     await page.waitForSelector('[role=\"menu\"]', {\n      |                ^\n  252 |       state: 'hidden',\n  253 |       timeout: 3000\n  254 |     });\n    at C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\tests\\e2e\\pr-264-navigation-simplified.spec.ts:251:16"
+                        }
+                      ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T17:56:47.047Z",
+                      "startTime": "2025-10-19T20:03:36.571Z",
                       "annotations": [],
-                      "attachments": []
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\test-results\\e2e-pr-264-navigation-simp-11fb7-cha-ao-clicar-fora-overlay--chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\test-results\\e2e-pr-264-navigation-simp-11fb7-cha-ao-clicar-fora-overlay--chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\test-results\\e2e-pr-264-navigation-simp-11fb7-cha-ao-clicar-fora-overlay--chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\tests\\e2e\\pr-264-navigation-simplified.spec.ts",
+                        "column": 16,
+                        "line": 251
+                      }
                     }
                   ],
-                  "status": "expected"
+                  "status": "unexpected"
                 }
               ],
-              "id": "0682fbba0c8a3d9a3b06-faecabcf0670a56e7df3",
-              "file": "e2e/issue-8-persona-selection.spec.ts",
-              "line": 192,
+              "id": "730e646997e25e661c43-2b94b2eb7bcac1bfa77d",
+              "file": "e2e/pr-264-navigation-simplified.spec.ts",
+              "line": 236,
               "column": 7
             },
             {
-              "title": "A11Y3: Interactive elements have labels",
+              "title": "AC11: Navegação preserva persona atual (se existir)",
               "ok": true,
               "tags": [],
               "tests": [
                 {
-                  "timeout": 60000,
+                  "timeout": 30000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
@@ -635,12 +579,12 @@
                       "workerIndex": 10,
                       "parallelIndex": 10,
                       "status": "passed",
-                      "duration": 11296,
+                      "duration": 7739,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-19T17:56:47.046Z",
+                      "startTime": "2025-10-19T20:03:36.579Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -648,9 +592,93 @@
                   "status": "expected"
                 }
               ],
-              "id": "0682fbba0c8a3d9a3b06-2843ca071e847b077ad8",
-              "file": "e2e/issue-8-persona-selection.spec.ts",
-              "line": 202,
+              "id": "730e646997e25e661c43-4da014ce59810a564676",
+              "file": "e2e/pr-264-navigation-simplified.spec.ts",
+              "line": 257,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "PR #264 - Design Tokens Validation",
+          "file": "e2e/pr-264-navigation-simplified.spec.ts",
+          "line": 275,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Design tokens aplicados corretamente",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 11,
+                      "status": "passed",
+                      "duration": 6416,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-19T20:03:36.590Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "730e646997e25e661c43-40bb178541fe503982c7",
+              "file": "e2e/pr-264-navigation-simplified.spec.ts",
+              "line": 276,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "PR #264 - Performance",
+          "file": "e2e/pr-264-navigation-simplified.spec.ts",
+          "line": 296,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Navegação carrega em tempo razoável (dev: <10s, prod: <3s)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 12,
+                      "parallelIndex": 12,
+                      "status": "passed",
+                      "duration": 5584,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-19T20:03:36.619Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "730e646997e25e661c43-a311052c94f05a94658d",
+              "file": "e2e/pr-264-navigation-simplified.spec.ts",
+              "line": 297,
               "column": 7
             }
           ]
@@ -660,11 +688,11 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2025-10-19T17:56:45.777Z",
-    "duration": 23086.864,
-    "expected": 8,
+    "startTime": "2025-10-19T20:03:35.519Z",
+    "duration": 31837.724,
+    "expected": 11,
     "skipped": 0,
-    "unexpected": 3,
+    "unexpected": 2,
     "flaky": 0
   }
 }
