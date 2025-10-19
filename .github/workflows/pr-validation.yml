@@ -34,7 +34,7 @@ jobs:
         language: ['javascript', 'python']
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
@@ -90,7 +90,7 @@ jobs:
 
       # CodeQL Analysis
       - name: "🔍 Initialize CodeQL"
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@ea9e4e37992a54ee68a9622e985e60c8e8f12d9f
         with:
           languages: ${{ matrix.language }}
           queries: +security-and-quality
@@ -103,10 +103,10 @@ jobs:
               - '**/tests/**'
 
       - name: "🏗️ Autobuild"
-        uses: github/codeql-action/autobuild@v3
+        uses: github/codeql-action/autobuild@ea9e4e37992a54ee68a9622e985e60c8e8f12d9f
 
       - name: "📊 Perform CodeQL Analysis"
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@ea9e4e37992a54ee68a9622e985e60c8e8f12d9f
         with:
           category: "/language:${{ matrix.language }}"
           upload: true
@@ -151,7 +151,7 @@ jobs:
 
       - name: "📤 Upload Snyk Results"
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882
         with:
           name: snyk-results-${{ matrix.language }}
           path: |
@@ -167,20 +167,20 @@ jobs:
     needs: security-gate
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
       - name: "⚡ Setup Node.js"
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d09e38ffe
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
           cache-dependency-path: apps/frontend-nextjs/package-lock.json
 
       - name: "🐍 Setup Python"
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@0b93645e9e7c3edae3314b6ec69dd7d1fecd7343
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: 'pip'
@@ -235,7 +235,7 @@ jobs:
 
       # SonarQube Analysis
       - name: "🔬 SonarQube Scan"
-        uses: sonarsource/sonarcloud-github-action@v3
+        uses: sonarsource/sonarcloud-github-action@42e69ba06f4ca18e92aabb7aed3bbdc77e2fbfaa
         continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -258,12 +258,12 @@ jobs:
     needs: code-quality-gate
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
       - name: "🐍 Setup Python"
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@0b93645e9e7c3edae3314b6ec69dd7d1fecd7343
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: 'pip'

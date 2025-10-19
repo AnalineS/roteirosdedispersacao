@@ -69,12 +69,12 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           fetch-depth: 2
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@0b93645e9e7c3edae3314b6ec69dd7d1fecd7343
         with:
           python-version: '3.11'
 
@@ -116,7 +116,7 @@ jobs:
           npm audit --audit-level=moderate --json > npm-audit-report.json || true
 
       - name: Upload security audit reports
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882
         with:
           name: security-audit-reports
           path: |
@@ -150,10 +150,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@0b93645e9e7c3edae3314b6ec69dd7d1fecd7343
         with:
           python-version: '3.11'
           cache: 'pip'
@@ -254,7 +254,7 @@ jobs:
           "
 
       - name: Upload medical test results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882
         if: always()
         with:
           name: medical-validation-results
@@ -274,10 +274,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@0b93645e9e7c3edae3314b6ec69dd7d1fecd7343
         with:
           python-version: '3.11'
           cache: 'pip'
@@ -363,10 +363,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d09e38ffe # v4.1.0
         with:
           node-version: '18'
 
@@ -397,10 +397,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@0b93645e9e7c3edae3314b6ec69dd7d1fecd7343
         with:
           python-version: '3.11'
           cache: 'pip'
@@ -445,7 +445,7 @@ jobs:
           "
 
       - name: Upload PCDT test results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882
         if: always()
         with:
           name: pcdt-compliance-results
@@ -462,10 +462,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@0b93645e9e7c3edae3314b6ec69dd7d1fecd7343
         with:
           python-version: '3.11'
           cache: 'pip'
@@ -531,7 +531,7 @@ jobs:
           "
 
       - name: Upload LGPD test results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882
         if: always()
         with:
           name: lgpd-compliance-results
@@ -555,10 +555,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@0b93645e9e7c3edae3314b6ec69dd7d1fecd7343
         with:
           python-version: '3.11'
           cache: 'pip'
@@ -591,7 +591,7 @@ jobs:
           echo "📊 Validation report generated"
 
       - name: Upload comprehensive results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882
         if: always()
         with:
           name: comprehensive-validation-results
@@ -617,10 +617,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: Download all validation artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16
 
       - name: Analyze validation results
         id: analyze

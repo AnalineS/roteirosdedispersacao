@@ -55,7 +55,7 @@ jobs:
       deploy-backend: ${{ steps.deploy-config.outputs.backend }}
       environment: ${{ steps.env-detect.outputs.environment }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           fetch-depth: 0
 
@@ -81,7 +81,7 @@ jobs:
           echo "🎮 Trigger: ${{ github.event_name }}"
 
       - name: "📊 Detectar mudanças"
-        uses: dorny/paths-filter@v2
+        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36
         id: filter
         with:
           filters: |
@@ -116,7 +116,7 @@ jobs:
     needs: environment-preparation
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           fetch-depth: 0
 
@@ -351,10 +351,10 @@ jobs:
     timeout-minutes: 10
     if: ${{ !github.event.inputs.skip_tests }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: "🐍 Setup Python"
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@0b93645e9e7c3edae3314b6ec69dd7d1fecd7343
         with:
           python-version: '3.11'
           cache: 'pip'
@@ -373,7 +373,7 @@ jobs:
           python3 -c "import main; print('✅ Backend imports successful')"
 
       - name: "⚡ Setup Node.js"
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d09e38ffe
         with:
           node-version: '20'
           cache: 'npm'
@@ -434,19 +434,19 @@ jobs:
       critical-vulns: ${{ steps.vuln-scan.outputs.critical-count }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           fetch-depth: 0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d09e38ffe
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
           cache-dependency-path: apps/frontend-nextjs/package-lock.json
 
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@0b93645e9e7c3edae3314b6ec69dd7d1fecd7343
         with:
           python-version: '3.11'
           cache: 'pip'
@@ -616,7 +616,7 @@ jobs:
           echo "score=$OVERALL_SCORE" >> $GITHUB_OUTPUT
 
       - name: Store Security & Quality Reports
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882
         if: always()
         with:
           name: security-quality-reports
@@ -649,10 +649,10 @@ jobs:
       run:
         working-directory: apps/frontend-nextjs
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: "⚡ Setup Node.js"
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d09e38ffe
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -720,13 +720,13 @@ jobs:
           fi
 
       - name: "🔑 Google Cloud Auth"
-        uses: google-github-actions/auth@v2
+        uses: google-github-actions/auth@6fc4af4b145ae7821d527454aa9bd537d1f2dc5f
         with:
           credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
           project_id: ${{ vars.GCP_PROJECT_ID }}
 
       - name: "🔧 Setup Google Cloud"
-        uses: google-github-actions/setup-gcloud@v2
+        uses: google-github-actions/setup-gcloud@4d9be00c5d95aa5db5da002e36cf1e0b4b8e83ca
         with:
           project_id: ${{ vars.GCP_PROJECT_ID }}
 
@@ -870,7 +870,7 @@ jobs:
       run:
         working-directory: apps/backend
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           fetch-depth: 2  # Necessário para análise de mudanças
 
@@ -930,7 +930,7 @@ jobs:
           GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
 
       - name: "💾 Cache Dependencies Hash"
-        uses: actions/cache@v4
+        uses: actions/cache@6849a6489940f00c2f30c0fb92c6274307ccb58a
         with:
           path: ~/.cache/docker-deps
           key: docker-deps-${{ steps.changes.outputs.deps-hash }}
@@ -938,13 +938,13 @@ jobs:
             docker-deps-
 
       - name: "🔑 Google Cloud Auth"
-        uses: google-github-actions/auth@v2
+        uses: google-github-actions/auth@6fc4af4b145ae7821d527454aa9bd537d1f2dc5f
         with:
           credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
           project_id: ${{ vars.GCP_PROJECT_ID }}
 
       - name: "⚡ Setup Cloud SDK"
-        uses: google-github-actions/setup-gcloud@v2
+        uses: google-github-actions/setup-gcloud@4d9be00c5d95aa5db5da002e36cf1e0b4b8e83ca
         with:
           project_id: ${{ vars.GCP_PROJECT_ID }}
 
@@ -1259,16 +1259,16 @@ jobs:
     if: always() && (needs.frontend-deploy.result == 'success' || needs.backend-deploy.result == 'success')
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: "🔑 Google Cloud Auth for Health Checks"
-        uses: google-github-actions/auth@v2
+        uses: google-github-actions/auth@6fc4af4b145ae7821d527454aa9bd537d1f2dc5f
         with:
           credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
           project_id: ${{ vars.GCP_PROJECT_ID }}
 
       - name: "🔧 Setup Google Cloud for health checks"
-        uses: google-github-actions/setup-gcloud@v2
+        uses: google-github-actions/setup-gcloud@4d9be00c5d95aa5db5da002e36cf1e0b4b8e83ca
         with:
           project_id: ${{ vars.GCP_PROJECT_ID }}
 
@@ -1435,10 +1435,10 @@ jobs:
     needs: [post-deploy-tests]
     if: success()
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: "⚡ Setup Node.js"
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d09e38ffe
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -1450,7 +1450,7 @@ jobs:
           npm install
 
       - name: "🔑 Google Cloud Auth for Monitoring"
-        uses: google-github-actions/auth@v2
+        uses: google-github-actions/auth@6fc4af4b145ae7821d527454aa9bd537d1f2dc5f
         with:
           credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
           project_id: ${{ vars.GCP_PROJECT_ID }}
