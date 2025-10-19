@@ -14,15 +14,15 @@ Este arquivo documenta os commit hashes exatos das GitHub Actions usadas neste p
 - **Uso**: Checkout do repositório
 
 ### actions/setup-node@v4
-- **Tag**: v4.1.0 (latest stable v4.x)
-- **Commit Hash**: `39370e3970a6d050c480ffad4ff0ed4d09e38ffe`
-- **Data**: 2024-11-20
+- **Tag**: v4.2.0 (latest stable v4.x)
+- **Commit Hash**: `1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a`
+- **Data**: 2025-01-19
 - **Uso**: Setup ambiente Node.js
 
 ### actions/setup-python@v5
-- **Tag**: v5.3.0 (latest stable - v4 deprecated)
-- **Commit Hash**: `0b93645e9e7c3edae3314b6ec69dd7d1fecd7343`
-- **Data**: 2024-11-06
+- **Tag**: v5.4.0 (latest stable - v4 deprecated)
+- **Commit Hash**: `42375524e23c412d93fb67b49958b491fce71c38`
+- **Data**: 2025-01-19
 - **Uso**: Setup ambiente Python
 
 ### actions/cache@v4

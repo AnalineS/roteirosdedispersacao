@@ -354,7 +354,7 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: "🐍 Setup Python"
-        uses: actions/setup-python@0b93645e9e7c3edae3314b6ec69dd7d1fecd7343
+        uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38
         with:
           python-version: '3.11'
           cache: 'pip'
@@ -373,7 +373,7 @@ jobs:
           python3 -c "import main; print('✅ Backend imports successful')"
 
       - name: "⚡ Setup Node.js"
-        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d09e38ffe
+        uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a
         with:
           node-version: '20'
           cache: 'npm'
@@ -439,14 +439,14 @@ jobs:
           fetch-depth: 0
 
       - name: Setup Node.js
-        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d09e38ffe
+        uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
           cache-dependency-path: apps/frontend-nextjs/package-lock.json
 
       - name: Setup Python
-        uses: actions/setup-python@0b93645e9e7c3edae3314b6ec69dd7d1fecd7343
+        uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38
         with:
           python-version: '3.11'
           cache: 'pip'
@@ -652,7 +652,7 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: "⚡ Setup Node.js"
-        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d09e38ffe
+        uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -1438,7 +1438,7 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: "⚡ Setup Node.js"
-        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d09e38ffe
+        uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
