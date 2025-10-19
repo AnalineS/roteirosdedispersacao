@@ -205,7 +205,18 @@ def setup_security_routes(app: Flask, security_framework: SecurityFramework):
             data = request.get_json() or {}
             stage = data.get('stage', 'build')
             directory = data.get('directory', os.getcwd())
-            
+
+            # SECURITY FIX: Validate directory path to prevent path traversal (CWE-22)
+            from .cicd_security import validate_safe_path, PathTraversalError
+            try:
+                safe_directory = validate_safe_path(directory)
+            except PathTraversalError as e:
+                return jsonify({
+                    'status': 'error',
+                    'message': f'Security violation: {str(e)}',
+                    'timestamp': datetime.now().isoformat()
+                }), 400
+
             # Mapear string para enum
             from .cicd_security import DeploymentStage
             stage_map = {
@@ -215,11 +226,11 @@ def setup_security_routes(app: Flask, security_framework: SecurityFramework):
                 'staging': DeploymentStage.STAGING,
                 'production': DeploymentStage.PRODUCTION
             }
-            
+
             stage_enum = stage_map.get(stage, DeploymentStage.BUILD)
-            
-            # Executar scan
-            results = security_framework.run_security_scan(directory, stage_enum)
+
+            # Executar scan com caminho validado
+            results = security_framework.run_security_scan(safe_directory, stage_enum)
             
             return jsonify({
                 'status': 'success',
