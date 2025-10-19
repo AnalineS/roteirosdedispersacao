@@ -2,24 +2,26 @@ name: Post-Security-Update Validation
 
 # Critical validation workflow for medical platform after security dependency updates
 # Priority: 🔴 CRITICAL - Patient Safety & Medical Accuracy
+#
+# OPTIMIZED: Triggers only on dependency file changes (requirements*.txt, package*.json)
+# Frontend UI tests moved to Unified Deploy workflow to avoid redundancy
+# Focus: Medical accuracy, PCDT compliance, LGPD compliance, security integrity
 
 on:
   push:
     branches: [ main, hml, develop ]
     paths:
-      - 'apps/backend/requirements.txt'
+      - 'apps/backend/requirements*.txt'
       - 'apps/frontend-nextjs/package.json'
-      - 'apps/backend/core/**'
-      - 'apps/frontend-nextjs/src/**'
+      - 'apps/frontend-nextjs/package-lock.json'
       - '.github/workflows/post-security-update-validation.yml'
 
   pull_request:
     branches: [ main, hml ]
     paths:
-      - 'apps/backend/requirements.txt'
+      - 'apps/backend/requirements*.txt'
       - 'apps/frontend-nextjs/package.json'
-      - 'apps/backend/core/**'
-      - 'apps/frontend-nextjs/src/**'
+      - 'apps/frontend-nextjs/package-lock.json'
 
   workflow_dispatch:
     inputs:
@@ -352,11 +354,11 @@ jobs:
           print('🌐 CORS security validation completed')
           "
 
-  # Frontend medical UI validation
-  frontend-medical-ui-validation:
-    name: 🎨 Frontend Medical UI Validation
+  # Frontend security validation (lightweight)
+  frontend-security-validation:
+    name: 🔐 Frontend Security Validation
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
     needs: security-dependency-audit
 
     steps:
@@ -367,63 +369,24 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          cache: 'npm'
-          cache-dependency-path: apps/frontend-nextjs/package-lock.json
 
-      - name: Install dependencies
+      - name: Validate package.json security
         run: |
           cd apps/frontend-nextjs
-          npm ci
+          echo "🔐 Validating package.json after security update..."
 
-      - name: Run medical UI component tests
+          # Check for known vulnerable patterns
+          if grep -q "framer-motion.*12\.23\.1[0-3]" package.json; then
+            echo "❌ Vulnerable framer-motion version detected"
+            exit 1
+          fi
+
+          echo "✅ Package.json security validation passed"
+
+      - name: Quick dependency audit
         run: |
           cd apps/frontend-nextjs
-          echo "🎨 Running medical UI validation tests..."
-          echo "⚠️  Skipping post-security-update tests (removed after PR #222)"
-          echo "✅ Using existing test suite instead"
-
-          # Run existing medical UI tests instead
-          npm run test -- --testPathPatterns="(accessibility|personas|educational)" \
-            --coverage \
-            --watchAll=false \
-            --testTimeout=30000 \
-            --maxWorkers=2
-
-      - name: Test medical calculation components
-        run: |
-          cd apps/frontend-nextjs
-          echo "🧮 Testing dose calculator accuracy..."
-
-          npm run test -- --testNamePattern="dose calculation" \
-            --watchAll=false \
-            --verbose
-
-      - name: Validate accessibility compliance
-        run: |
-          cd apps/frontend-nextjs
-          echo "♿ Testing accessibility compliance for medical UI..."
-
-          npm run test -- --testNamePattern="accessibility" \
-            --watchAll=false
-
-      - name: Test medical content preservation
-        run: |
-          cd apps/frontend-nextjs
-          echo "📚 Validating medical content preservation after security updates..."
-
-          # Test that medical terminology is preserved
-          npm run test -- --testNamePattern="medical.*content" \
-            --watchAll=false
-
-      - name: Upload frontend test results
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: frontend-medical-ui-results
-          path: |
-            apps/frontend-nextjs/coverage/
-            apps/frontend-nextjs/test-results/
-          retention-days: 30
+          npm audit --audit-level=high --production
 
   # PCDT compliance validation
   pcdt-compliance-validation:
@@ -584,7 +547,7 @@ jobs:
     needs: [
       critical-medical-validation,
       security-integrity-validation,
-      frontend-medical-ui-validation,
+      frontend-security-validation,
       pcdt-compliance-validation,
       lgpd-compliance-validation
     ]
@@ -706,9 +669,9 @@ jobs:
           echo "|---------------|--------|----------|" >> $GITHUB_STEP_SUMMARY
           echo "| ⚕️ Medical Accuracy | ✅ VALIDATED | 🔴 YES |" >> $GITHUB_STEP_SUMMARY
           echo "| 🔐 Security Integrity | ✅ VALIDATED | 🔴 YES |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🔐 Frontend Security | ✅ VALIDATED | 🔴 YES |" >> $GITHUB_STEP_SUMMARY
           echo "| 📋 PCDT Compliance | ✅ VALIDATED | 🔴 YES |" >> $GITHUB_STEP_SUMMARY
           echo "| 🔒 LGPD Compliance | ✅ VALIDATED | 🔴 YES |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🎨 UI Components | ✅ VALIDATED | 🟡 NO |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
           echo "### 🚀 Deployment Recommendation" >> $GITHUB_STEP_SUMMARY
