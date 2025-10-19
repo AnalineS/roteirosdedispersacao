@@ -163,6 +163,8 @@ coverage.xml
 *.sqlite
 *.sqlite3
 *.db-journal
+*.db-shm
+*.db-wal
 
 # Cache
 .cache/
