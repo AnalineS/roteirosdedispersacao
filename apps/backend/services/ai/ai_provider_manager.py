@@ -12,7 +12,7 @@ from typing import Dict, List, Optional, Union, Tuple
 from datetime import datetime, timedelta
 from dataclasses import dataclass
 from enum import Enum
-import requests
+import httpx
 
 logger = logging.getLogger(__name__)
 
@@ -306,32 +306,34 @@ class AIProviderManager:
         temperature: float,
         max_tokens: Optional[int]
     ) -> Optional[str]:
-        """Chama OpenRouter API"""
-        
+        """Chama OpenRouter API usando httpx async client"""
+
         if not self.openrouter_key:
             raise ValueError("OpenRouter API key não configurada no GitHub")
-        
+
         headers = {
             "Authorization": f"Bearer {self.openrouter_key}",
             "Content-Type": "application/json",
             "HTTP-Referer": "https://github.com/roteiro-dispensacao",
             "X-Title": "Roteiro de Dispensação PQT-U"
         }
-        
+
         data = {
             "model": model_config.name,
             "messages": messages,
             "temperature": temperature,
             "max_tokens": max_tokens or model_config.max_tokens
         }
-        
-        response = requests.post(
-            model_config.endpoint_url,
-            headers=headers,
-            json=data,
-            timeout=model_config.timeout_seconds
-        )
-        
+
+        # SonarCloud python:S7499 fix - usar httpx.AsyncClient para async functions
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                model_config.endpoint_url,
+                headers=headers,
+                json=data,
+                timeout=model_config.timeout_seconds
+            )
+
         if response.status_code == 200:
             result = response.json()
             return result["choices"][0]["message"]["content"]
@@ -345,19 +347,19 @@ class AIProviderManager:
         temperature: float,
         max_tokens: Optional[int]
     ) -> Optional[str]:
-        """Chama HuggingFace API"""
-        
+        """Chama HuggingFace API usando httpx async client"""
+
         if not self.huggingface_key:
             raise ValueError("HuggingFace API key não configurada no GitHub")
-        
+
         headers = {
             "Authorization": f"Bearer {self.huggingface_key}",
             "Content-Type": "application/json"
         }
-        
+
         # Converter mensagens para texto
         text_input = "\n".join([f"{msg['role']}: {msg['content']}" for msg in messages])
-        
+
         data = {
             "inputs": text_input,
             "parameters": {
@@ -365,14 +367,16 @@ class AIProviderManager:
                 "max_new_tokens": max_tokens or model_config.max_tokens
             }
         }
-        
-        response = requests.post(
-            model_config.endpoint_url,
-            headers=headers,
-            json=data,
-            timeout=model_config.timeout_seconds
-        )
-        
+
+        # SonarCloud python:S7499 fix - usar httpx.AsyncClient para async functions
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                model_config.endpoint_url,
+                headers=headers,
+                json=data,
+                timeout=model_config.timeout_seconds
+            )
+
         if response.status_code == 200:
             result = response.json()
             if isinstance(result, list) and result:

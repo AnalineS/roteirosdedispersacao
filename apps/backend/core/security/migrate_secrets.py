@@ -49,7 +49,12 @@ class OldSecretEncryption:
         # NEW ENCRYPTION must use os.urandom() generated salts (see SecretsManager for secure implementation)
         # Context7 best practice: Use os.urandom(16) for cryptographically secure random salts
         # This migration script should be run once and then removed from production
-        salt = b'roteiro_dispensacao_salt_2025'
+        #
+        # SONAR SUPPRESSION: python:S2053 - Hardcoded salt is intentional for backward compatibility
+        # This is a one-time migration script that decrypts legacy data encrypted with this specific salt
+        # New encryption uses cryptographically secure random salts (line 82: os.urandom(32))
+        # This file should be deleted after successful migration
+        salt = b'roteiro_dispensacao_salt_2025'  # NOSONAR - Intentional for legacy data migration only
         kdf = PBKDF2HMAC(
             algorithm=hashes.SHA256(),
             length=32,
