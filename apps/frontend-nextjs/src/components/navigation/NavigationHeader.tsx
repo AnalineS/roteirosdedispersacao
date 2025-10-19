@@ -72,23 +72,11 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
   // Estados
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [dropdownsOpen, setDropdownsOpen] = useState<DropdownState>({});
-  const [isMobile, setIsMobile] = useState(false);
-  const [isTablet, setIsTablet] = useState(false);
-  const [isWideScreen, setIsWideScreen] = useState(false);
 
-  // Detectar tipo de dispositivo
-  useEffect(() => {
-    const checkDeviceType = () => {
-      const width = window.innerWidth;
-      setIsMobile(width < 768);
-      setIsTablet(width >= 768 && width < 1280);
-      setIsWideScreen(width >= 1600);
-    };
-    
-    checkDeviceType();
-    window.addEventListener('resize', checkDeviceType);
-    return () => window.removeEventListener('resize', checkDeviceType);
-  }, []);
+  // Usar deviceType do SmartNavigationSystem ao invés de detecção duplicada
+  const isMobile = deviceType === 'mobile';
+  const isTablet = deviceType === 'tablet';
+  const isWideScreen = false; // Removido pois não é usado no SmartNavigationSystem
 
   // Configurar navegação por teclado
   useKeyboardNavigation({
@@ -401,587 +389,394 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
       <SkipToContent mainContentId="main-content" />
       <header
         ref={headerRef}
-        className={`navigation-header ${className}`}
+        className={`fixed top-0 left-0 right-0 z-[1000] bg-gradient-to-br from-white/95 to-slate-50/98 backdrop-blur-md border-b border-slate-200/80 shadow-lg ${className}`}
         role="banner"
         aria-label="Main navigation header"
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        width: '100%',
-        background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.98) 100%)',
-        backdropFilter: 'blur(10px)',
-        borderBottom: '1px solid rgba(226, 232, 240, 0.8)',
-        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
-        zIndex: 1000
-      }}
-    >
-      {/* Primeira linha - Navegação principal */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: isMobile ? '0 1rem' : isTablet ? '0 clamp(1.5rem, 2vw, 2rem)' : '0 clamp(2rem, 3vw, 4rem)',
-        gap: isMobile ? '0.5rem' : isTablet ? '1rem' : '1.5rem',
-        height: '80px',
-        boxSizing: 'border-box'
-      }}>
-      {/* Logo e Título - Esquerda */}
-      <div className="nav-logo-section">
-        <Tooltip content="Roteiros de Dispensação - Sistema Inteligente de Orientação" position="bottom">
-          <Link
-            href="/"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              textDecoration: 'none',
-              color: unbColors.primary
-            }}
-          >
-            <Image 
-              src={getUniversityLogo('unb_logo2')} 
-              alt="Universidade de Brasília" 
-              className="nav-logo"
-              width={48}
-              height={48}
-              priority
-            />
-            {!isMobile && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                <div className="nav-title-main">
-                  Roteiros de Dispensação
-                </div>
-                <div className="nav-title-sub">
-                  Sistema de Aprendizagem Inteligente
-                </div>
-              </div>
-            )}
-            {isMobile && (
-              <div className="nav-title-main">
-                Roteiros de Dispensação
-              </div>
-            )}
-          </Link>
-        </Tooltip>
-      </div>
-
-
-
-      {/* Navegação Principal - Centro (Desktop/Tablet) */}
-      {!isMobile && (
-        <nav 
-          className="nav-main-section"
-          role="navigation"
-          aria-label="Navegação principal do sistema educacional"
-          id="main-navigation"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: isTablet ? '0.5rem' : '1rem',
-            flexWrap: 'nowrap',
-            overflow: 'hidden'
-          }}
-        >
-          {visibleCategories.map((category) => {
-            const IconComponent = getCategoryIcon(category.id);
-            const hasDropdown = category.items.length > 1 || category.items.some(item => item.subItems?.length);
-            
-            return (
-              <div key={category.id} style={{ position: 'relative' }}>
-                {hasDropdown ? (
-                  <button
-                    onClick={() => toggleDropdown(category.id)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Escape') {
-                        setDropdownsOpen(prev => ({...prev, [category.id]: false}));
-                      }
-                      if (e.key === 'ArrowDown' && dropdownsOpen[category.id]) {
-                        e.preventDefault();
-                        const dropdown = e.currentTarget.parentElement?.querySelector('[role="menu"]');
-                        const firstMenuItem = dropdown?.querySelector('[role="menuitem"]') as HTMLElement;
-                        firstMenuItem?.focus();
-                      }
-                    }}
-                    onBlur={(e) => {
-                      // Reset visual styles
-                      e.currentTarget.style.background = 'none'; 
-                      e.currentTarget.style.border = '2px solid transparent';
-                      
-                      // Fechar dropdown se clicar fora
-                      setTimeout(() => {
-                        if (!e.currentTarget.parentElement?.contains(document.activeElement)) {
-                          setDropdownsOpen(prev => ({...prev, [category.id]: false}));
-                        }
-                      }, 150);
-                    }}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      background: 'none',
-                      border: `2px solid ${dropdownsOpen[category.id] ? unbColors.primary : 'transparent'}`,
-                      color: unbColors.primary,
-                      padding: isTablet ? '6px 10px' : '8px 14px',
-                      borderRadius: '8px',
-                      cursor: 'pointer',
-                      fontSize: isTablet ? '0.85rem' : '0.95rem',
-                      fontWeight: '500',
-                      transition: 'all 200ms ease',
-                      opacity: dropdownsOpen[category.id] ? 1 : 0.9,
-                      outline: 'none',
-                      whiteSpace: 'nowrap',
-                      minWidth: 'fit-content',
-                      flexShrink: 0
-                    }}
-                    onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(59, 130, 246, 0.1)'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.background = 'none'; }}
-                    onFocus={(e) => { e.currentTarget.style.background = 'rgba(59, 130, 246, 0.1)'; e.currentTarget.style.border = `2px solid ${unbColors.primary}`; }}
-                    aria-expanded={dropdownsOpen[category.id]}
-                    aria-haspopup="menu"
-                    aria-label={`Abrir menu ${category.label}: ${category.description}`}
-                    aria-describedby={`category-${category.id}-desc`}
-                  >
-                    <IconComponent size={isTablet ? 16 : 18} variant="unb" color={unbColors.primary} />
-                    <span style={{ 
-                      display: isTablet && category.label.length > 12 ? 'none' : 'inline',
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      maxWidth: isTablet ? '80px' : 'none'
-                    }}>
-                      {category.label}
-                    </span>
-                    <ChevronDownIcon 
-                      size={14} 
-                      color={unbColors.primary}
-                      style={{
-                        transform: dropdownsOpen[category.id] ? 'rotate(180deg)' : 'rotate(0deg)',
-                        transition: 'transform 200ms ease'
-                      }}
-                    />
-                  </button>
-                ) : (
-                  <Link
-                    href={category.items[0].href}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      color: unbColors.primary,
-                      textDecoration: 'none',
-                      padding: isTablet ? '6px 10px' : '8px 14px',
-                      borderRadius: '8px',
-                      fontSize: isTablet ? '0.85rem' : '0.95rem',
-                      fontWeight: '500',
-                      transition: 'all 200ms ease',
-                      opacity: isActive(category.items[0].href) ? 1 : 0.9,
-                      whiteSpace: 'nowrap',
-                      minWidth: 'fit-content',
-                      flexShrink: 0
-                    }}
-                    onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(59, 130, 246, 0.1)'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.background = 'none'; }}
-                  >
-                    <IconComponent size={isTablet ? 16 : 18} variant="unb" color={unbColors.primary} />
-                    <span style={{ 
-                      display: isTablet && category.label.length > 12 ? 'none' : 'inline',
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      maxWidth: isTablet ? '80px' : 'none'
-                    }}>
-                      {category.label}
-                    </span>
-                  </Link>
-                )}
-
-                {/* Hidden description for screen readers */}
-                <span
-                  id={`category-${category.id}-desc`}
-                  style={{
-                    position: 'absolute',
-                    left: '-10000px',
-                    width: '1px',
-                    height: '1px',
-                    overflow: 'hidden'
-                  }}
+      >
+        {/* Inner container with max-width and responsive padding */}
+        <div className="max-w-[1400px] mx-auto">
+          {/* Primeira linha - Navegação principal */}
+          <div className="flex items-center justify-between px-4 sm:px-6 lg:px-8 gap-2 sm:gap-4 lg:gap-6 h-20">
+            {/* Logo e Título - Esquerda */}
+            <div className="nav-logo-section">
+              <Tooltip content="Roteiros de Dispensação - Sistema Inteligente de Orientação" position="bottom">
+                <Link
+                  href="/"
+                  className="flex items-center gap-3 no-underline"
+                  style={{ color: unbColors.primary }}
                 >
-                  {category.description}
-                </span>
+                  <Image
+                    src={getUniversityLogo('unb_logo2')}
+                    alt="Universidade de Brasília"
+                    className="nav-logo"
+                    width={48}
+                    height={48}
+                    priority
+                  />
+                  {!isMobile && (
+                    <div className="flex flex-col gap-0.5">
+                      <div className="nav-title-main">
+                        Roteiros de Dispensação
+                      </div>
+                      <div className="nav-title-sub">
+                        Sistema de Aprendizagem Inteligente
+                      </div>
+                    </div>
+                  )}
+                  {isMobile && (
+                    <div className="nav-title-main">
+                      Roteiros de Dispensação
+                    </div>
+                  )}
+                </Link>
+              </Tooltip>
+            </div>
 
-                {/* Dropdown Menu */}
-                {hasDropdown && dropdownsOpen[category.id] && (
-                  <div
-                    role="menu"
-                    aria-labelledby={`category-${category.id}-button`}
-                    style={{
-                      position: 'absolute',
-                      top: '100%',
-                      left: '50%',
-                      transform: 'translateX(-50%)',
-                      marginTop: '8px',
-                      background: unbColors.white,
-                      border: `1px solid ${unbColors.alpha.primary}`,
-                      borderRadius: '12px',
-                      boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
-                      minWidth: '280px',
-                      maxWidth: '320px',
-                      zIndex: 1001,
-                      animation: 'fadeIn 200ms ease'
-                    }}
-                  >
-                    {category.items.map((item) => {
-                      const ItemIcon = getIconByEmoji(item.icon);
-                      return (
-                        <div key={item.id}>
-                          <Link
-                            href={item.href}
-                            onClick={closeAllDropdowns}
-                            role="menuitem"
-                            tabIndex={-1}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Escape') {
+
+
+            {/* Navegação Principal - Centro (Desktop/Tablet) */}
+            {!isMobile && (
+              <nav
+                className="nav-main-section flex items-center gap-2 lg:gap-4 flex-nowrap overflow-hidden"
+                role="navigation"
+                aria-label="Navegação principal do sistema educacional"
+                id="main-navigation"
+              >
+                {visibleCategories.map((category) => {
+                  const IconComponent = getCategoryIcon(category.id);
+                  const hasDropdown = category.items.length > 1 || category.items.some(item => item.subItems?.length);
+
+                  return (
+                    <div key={category.id} className="relative">
+                      {hasDropdown ? (
+                        <button
+                          onClick={() => toggleDropdown(category.id)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Escape') {
+                              setDropdownsOpen(prev => ({...prev, [category.id]: false}));
+                            }
+                            if (e.key === 'ArrowDown' && dropdownsOpen[category.id]) {
+                              e.preventDefault();
+                              const dropdown = e.currentTarget.parentElement?.querySelector('[role="menu"]');
+                              const firstMenuItem = dropdown?.querySelector('[role="menuitem"]') as HTMLElement;
+                              firstMenuItem?.focus();
+                            }
+                          }}
+                          onBlur={(e) => {
+                            // Reset visual styles
+                            e.currentTarget.style.background = 'none';
+                            e.currentTarget.style.border = '2px solid transparent';
+
+                            // Fechar dropdown se clicar fora
+                            setTimeout(() => {
+                              if (!e.currentTarget.parentElement?.contains(document.activeElement)) {
                                 setDropdownsOpen(prev => ({...prev, [category.id]: false}));
-                                const button = e.currentTarget.closest('[role="button"]') as HTMLElement;
-                                button?.focus();
                               }
-                            }}
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '12px',
-                              padding: '12px 16px',
-                              color: unbColors.neutral,
-                              textDecoration: 'none',
-                              borderRadius: '8px',
-                              margin: '4px',
-                              transition: 'all 200ms ease',
-                              background: isActive(item.href) ? unbColors.alpha.primary : 'transparent',
-                              outline: 'none',
-                              border: '2px solid transparent'
-                            }}
-                            onMouseEnter={(e) => { 
-                              if (!isActive(item.href)) {
-                                e.currentTarget.style.background = unbColors.alpha.secondary; 
-                              }
-                            }}
-                            onMouseLeave={(e) => { 
-                              if (!isActive(item.href)) {
-                                e.currentTarget.style.background = 'transparent'; 
-                              }
-                            }}
-                            onFocus={(e) => { 
-                              e.currentTarget.style.background = unbColors.alpha.secondary;
-                              e.currentTarget.style.border = `2px solid ${unbColors.primary}`;
-                            }}
-                            onBlur={(e) => { 
-                              if (!isActive(item.href)) {
-                                e.currentTarget.style.background = 'transparent';
-                              }
-                              e.currentTarget.style.border = '2px solid transparent';
-                            }}
-                            aria-describedby={`item-${item.id}-desc`}
-                          >
-                            <ItemIcon size={20} variant="unb" />
-                            <div style={{ flex: 1 }}>
-                              <div style={{ 
-                                fontWeight: isActive(item.href) ? 'bold' : '500',
-                                fontSize: '0.95rem',
-                                marginBottom: '2px'
-                              }}>
-                                {item.label}
-                              </div>
-                              <div style={{
-                                fontSize: '0.8rem',
-                                opacity: 0.7,
-                                lineHeight: '1.3'
-                              }}>
-                                {item.description}
-                              </div>
-                            </div>
-                          </Link>
-                          
-                          {/* Sub Items */}
-                          {item.subItems?.map((subItem) => {
-                            const SubIcon = getIconByEmoji(subItem.icon);
+                            }, 150);
+                          }}
+                          className={`flex items-center gap-1.5 bg-transparent ${
+                            dropdownsOpen[category.id] ? 'border-2' : 'border-2 border-transparent'
+                          } px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-lg cursor-pointer text-sm sm:text-base font-medium transition-all duration-200 ${
+                            dropdownsOpen[category.id] ? 'opacity-100' : 'opacity-90'
+                          } outline-none whitespace-nowrap min-w-fit flex-shrink-0 hover:bg-blue-500/10 focus:bg-blue-500/10`}
+                          style={{
+                            borderColor: dropdownsOpen[category.id] ? unbColors.primary : 'transparent',
+                            color: unbColors.primary
+                          }}
+                          onFocus={(e) => { e.currentTarget.style.background = 'rgba(59, 130, 246, 0.1)'; e.currentTarget.style.border = `2px solid ${unbColors.primary}`; }}
+                          aria-expanded={dropdownsOpen[category.id]}
+                          aria-haspopup="menu"
+                          aria-label={`Abrir menu ${category.label}: ${category.description}`}
+                          aria-describedby={`category-${category.id}-desc`}
+                        >
+                          <IconComponent size={isTablet ? 16 : 18} variant="unb" color={unbColors.primary} />
+                          <span className={`whitespace-nowrap overflow-hidden text-ellipsis ${isTablet && category.label.length > 12 ? 'hidden' : 'inline'} ${isTablet ? 'max-w-[80px]' : 'max-w-none'}`}>
+                            {category.label}
+                          </span>
+                          <ChevronDownIcon
+                            size={14}
+                            color={unbColors.primary}
+                            className={`transition-transform duration-200 ${dropdownsOpen[category.id] ? 'rotate-180' : 'rotate-0'}`}
+                          />
+                        </button>
+                      ) : (
+                        <Link
+                          href={category.items[0].href}
+                          className={`flex items-center gap-1.5 no-underline px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-lg text-sm sm:text-base font-medium transition-all duration-200 ${
+                            isActive(category.items[0].href) ? 'opacity-100' : 'opacity-90'
+                          } whitespace-nowrap min-w-fit flex-shrink-0 hover:bg-blue-500/10`}
+                          style={{ color: unbColors.primary }}
+                        >
+                          <IconComponent size={isTablet ? 16 : 18} variant="unb" color={unbColors.primary} />
+                          <span className={`whitespace-nowrap overflow-hidden text-ellipsis ${isTablet && category.label.length > 12 ? 'hidden' : 'inline'} ${isTablet ? 'max-w-[80px]' : 'max-w-none'}`}>
+                            {category.label}
+                          </span>
+                        </Link>
+                      )}
+
+                      {/* Hidden description for screen readers */}
+                      <span
+                        id={`category-${category.id}-desc`}
+                        className="absolute -left-[10000px] w-px h-px overflow-hidden"
+                      >
+                        {category.description}
+                      </span>
+
+                      {/* Dropdown Menu */}
+                      {hasDropdown && dropdownsOpen[category.id] && (
+                        <div
+                          role="menu"
+                          aria-labelledby={`category-${category.id}-button`}
+                          className="absolute top-full left-1/2 -translate-x-1/2 mt-2 rounded-xl shadow-2xl min-w-[280px] max-w-[320px] z-[1001] animate-fadeIn"
+                          style={{
+                            background: unbColors.white,
+                            border: `1px solid ${unbColors.alpha.primary}`
+                          }}
+                        >
+                          {category.items.map((item) => {
+                            const ItemIcon = getIconByEmoji(item.icon);
                             return (
-                              <Link
-                                key={subItem.id}
-                                href={subItem.href}
-                                onClick={closeAllDropdowns}
-                                style={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '10px',
-                                  padding: '10px 16px 10px 32px',
-                                  color: unbColors.neutral,
-                                  textDecoration: 'none',
-                                  fontSize: '0.9rem',
-                                  borderRadius: '6px',
-                                  margin: '2px 4px',
-                                  opacity: isActive(subItem.href) ? 1 : 0.8,
-                                  background: isActive(subItem.href) ? unbColors.alpha.accent : 'transparent'
-                                }}
-                                onMouseEnter={(e) => { 
-                                  if (!isActive(subItem.href)) {
-                                    e.currentTarget.style.background = unbColors.alpha.secondary; 
-                                    e.currentTarget.style.opacity = '1';
-                                  }
-                                }}
-                                onMouseLeave={(e) => { 
-                                  if (!isActive(subItem.href)) {
-                                    e.currentTarget.style.background = 'transparent'; 
-                                    e.currentTarget.style.opacity = '0.8';
-                                  }
-                                }}
-                              >
-                                <SubIcon size={16} variant="unb" />
-                                <span>{subItem.label}</span>
-                              </Link>
+                              <div key={item.id}>
+                                <Link
+                                  href={item.href}
+                                  onClick={closeAllDropdowns}
+                                  role="menuitem"
+                                  tabIndex={-1}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Escape') {
+                                      setDropdownsOpen(prev => ({...prev, [category.id]: false}));
+                                      const button = e.currentTarget.closest('[role="button"]') as HTMLElement;
+                                      button?.focus();
+                                    }
+                                  }}
+                                  className={`flex items-center gap-3 p-3 no-underline rounded-lg m-1 transition-all duration-200 outline-none border-2 border-transparent hover:border-transparent focus:border-2`}
+                                  style={{
+                                    color: unbColors.neutral,
+                                    background: isActive(item.href) ? unbColors.alpha.primary : 'transparent',
+                                    borderColor: 'transparent'
+                                  }}
+                                  onMouseEnter={(e) => {
+                                    if (!isActive(item.href)) {
+                                      e.currentTarget.style.background = unbColors.alpha.secondary;
+                                    }
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    if (!isActive(item.href)) {
+                                      e.currentTarget.style.background = 'transparent';
+                                    }
+                                  }}
+                                  onFocus={(e) => {
+                                    e.currentTarget.style.background = unbColors.alpha.secondary;
+                                    e.currentTarget.style.border = `2px solid ${unbColors.primary}`;
+                                  }}
+                                  onBlur={(e) => {
+                                    if (!isActive(item.href)) {
+                                      e.currentTarget.style.background = 'transparent';
+                                    }
+                                    e.currentTarget.style.border = '2px solid transparent';
+                                  }}
+                                  aria-describedby={`item-${item.id}-desc`}
+                                >
+                                  <ItemIcon size={20} variant="unb" />
+                                  <div className="flex-1">
+                                    <div className={`${isActive(item.href) ? 'font-bold' : 'font-medium'} text-[0.95rem] mb-0.5`}>
+                                      {item.label}
+                                    </div>
+                                    <div className="text-[0.8rem] opacity-70 leading-tight">
+                                      {item.description}
+                                    </div>
+                                  </div>
+                                </Link>
+                          
+                                {/* Sub Items */}
+                                {item.subItems?.map((subItem) => {
+                                  const SubIcon = getIconByEmoji(subItem.icon);
+                                  return (
+                                    <Link
+                                      key={subItem.id}
+                                      href={subItem.href}
+                                      onClick={closeAllDropdowns}
+                                      className={`flex items-center gap-2.5 py-2.5 px-4 pl-8 no-underline text-sm rounded-md my-0.5 mx-1 ${
+                                        isActive(subItem.href) ? 'opacity-100' : 'opacity-80'
+                                      } hover:opacity-100`}
+                                      style={{
+                                        color: unbColors.neutral,
+                                        background: isActive(subItem.href) ? unbColors.alpha.accent : 'transparent'
+                                      }}
+                                      onMouseEnter={(e) => {
+                                        if (!isActive(subItem.href)) {
+                                          e.currentTarget.style.background = unbColors.alpha.secondary;
+                                          e.currentTarget.style.opacity = '1';
+                                        }
+                                      }}
+                                      onMouseLeave={(e) => {
+                                        if (!isActive(subItem.href)) {
+                                          e.currentTarget.style.background = 'transparent';
+                                          e.currentTarget.style.opacity = '0.8';
+                                        }
+                                      }}
+                                    >
+                                      <SubIcon size={16} variant="unb" />
+                                      <span>{subItem.label}</span>
+                                    </Link>
+                                  );
+                                })}
+                              </div>
                             );
                           })}
                         </div>
-                      );
-                    })}
+                      )}
+                    </div>
+                  );
+                })}
+              </nav>
+            )}
+
+            {/* Área de Personas e Usuário - Direita */}
+            <div className="nav-actions-section">
+
+              {/* Persona Atual (Desktop/Tablet) */}
+              {!isMobile && currentPersonaData && (
+                <div
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-full"
+                  style={{
+                    background: unbColors.alpha.secondary,
+                    border: `1px solid ${unbColors.alpha.primary}`
+                  }}
+                >
+                  <span className="text-xl">{currentPersonaData.avatar}</span>
+                  <div>
+                    <div className="text-[0.85rem] font-bold" style={{ color: unbColors.white }}>
+                      {currentPersonaData.name}
+                    </div>
+                    <div className="text-[0.7rem] opacity-80" style={{ color: unbColors.white }}>
+                      {currentPersonaData.personality}
+                    </div>
                   </div>
+                </div>
+              )}
+
+              {/* Simplified Navigation Links */}
+              <div className="ml-auto flex items-center gap-1 sm:gap-3">
+                {!isMobile && (
+                  <>
+                    <HighContrastToggle
+                      variant="button"
+                      showLabel={false}
+                      className="header-accessibility-toggle"
+                    />
+
+                    <Link
+                      href="/sobre"
+                      className="no-underline text-sm font-medium px-3 py-1.5 rounded-md transition-all duration-200 opacity-90 hover:bg-blue-500/10 hover:opacity-100"
+                      style={{ color: unbColors.primary }}
+                    >
+                      Mapa do Site
+                    </Link>
+
+                    <AuthButton variant="header" className="header-auth-buttons" />
+                  </>
+                )}
+
+                {isAdmin && !isMobile && (
+                  <Link
+                    href="/admin"
+                    className={`flex items-center py-1.5 px-2.5 rounded-md no-underline transition-all duration-200 text-xs font-medium opacity-80 hover:bg-blue-500/10 hover:opacity-100 ${
+                      pathname === '/admin' ? 'bg-blue-500/10' : 'bg-transparent'
+                    }`}
+                    style={{ color: unbColors.primary }}
+                  >
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      className="mr-1"
+                    >
+                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    Admin
+                  </Link>
                 )}
               </div>
-            );
-          })}
-        </nav>
-      )}
 
-      {/* Área de Personas e Usuário - Direita */}
-      <div className="nav-actions-section">
+              {/* Mobile Search Button */}
+              {isMobile && (
+                <button
+                  onClick={() => {
+                    // TODO: Implement mobile search modal
+                    console.log('Mobile search modal not implemented yet');
+                  }}
+                  className="bg-transparent border-2 border-transparent p-2 cursor-pointer rounded-lg flex items-center justify-center min-w-[44px] min-h-[44px] outline-none mr-2 focus:border-2"
+                  style={{ color: unbColors.primary }}
+                  onFocus={(e) => { e.currentTarget.style.border = `2px solid ${unbColors.primary}`; }}
+                  onBlur={(e) => { e.currentTarget.style.border = '2px solid transparent'; }}
+                  aria-label="Buscar conteúdo"
+                  title="Buscar conteúdo"
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="11" cy="11" r="8"/>
+                    <path d="m21 21-4.35-4.35"/>
+                  </svg>
+                </button>
+              )}
 
-        {/* Persona Atual (Desktop/Tablet) */}
-        {!isMobile && currentPersonaData && (
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            background: unbColors.alpha.secondary,
-            padding: '6px 12px',
-            borderRadius: '20px',
-            border: `1px solid ${unbColors.alpha.primary}`
-          }}>
-            <span style={{ fontSize: '1.2rem' }}>{currentPersonaData.avatar}</span>
-            <div>
-              <div style={{ 
-                color: unbColors.white,
-                fontSize: '0.85rem',
-                fontWeight: 'bold'
-              }}>
-                {currentPersonaData.name}
-              </div>
-              <div style={{ 
-                color: unbColors.white,
-                fontSize: '0.7rem',
-                opacity: 0.8
-              }}>
-                {currentPersonaData.personality}
-              </div>
+              {/* Menu Mobile Toggle */}
+              {isMobile && (
+                <button
+                  onClick={toggleMobileMenu}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Escape' && isMobileMenuOpen) {
+                      setIsMobileMenuOpen(false);
+                    }
+                  }}
+                  className="bg-transparent border-2 border-transparent p-2 cursor-pointer rounded-lg flex items-center justify-center min-w-[44px] min-h-[44px] outline-none hover:bg-blue-500/10 focus:bg-blue-500/10"
+                  style={{ color: unbColors.primary }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.border = `2px solid ${unbColors.primary}`;
+                    e.currentTarget.style.background = 'rgba(59, 130, 246, 0.1)';
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.border = '2px solid transparent';
+                    e.currentTarget.style.background = 'none';
+                  }}
+                  aria-label={isMobileMenuOpen ? 'Fechar menu de navegação' : 'Abrir menu de navegação'}
+                  aria-expanded={isMobileMenuOpen}
+                  aria-controls="mobile-navigation-menu"
+                  aria-haspopup="menu"
+                  type="button"
+                  role="button"
+                >
+                  {isMobileMenuOpen ? (
+                    <CloseIcon size={24} color={unbColors.primary} />
+                  ) : (
+                    <MenuIcon size={24} color={unbColors.primary} />
+                  )}
+                </button>
+              )}
             </div>
-          </div>
-        )}
+          </div> {/* Fim da primeira linha */}
 
-        {/* Simplified Navigation Links */}
-        <div style={{
-          marginLeft: 'auto',
-          display: 'flex',
-          alignItems: 'center',
-          gap: isMobile ? '4px' : '12px'
-        }}>
+          {/* Segunda linha - Barra de pesquisa */}
           {!isMobile && (
-            <>
-              <HighContrastToggle 
-                variant="button" 
-                showLabel={false}
-                className="header-accessibility-toggle"
+            <div className="px-4 sm:px-6 lg:px-8 pb-4 bg-gradient-to-b from-slate-50/50 to-slate-50/0">
+              <SearchBar
+                placeholder="🔍 Buscar no site..."
+                className="nav-search-bar"
               />
-              
-              <Link 
-                href="/sobre"
-                style={{
-                  color: unbColors.primary,
-                  textDecoration: 'none',
-                  fontSize: '0.9rem',
-                  fontWeight: '500',
-                  padding: '6px 12px',
-                  borderRadius: '6px',
-                  transition: 'all 0.2s ease',
-                  opacity: 0.9
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = 'rgba(59, 130, 246, 0.1)';
-                  e.currentTarget.style.opacity = '1';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                  e.currentTarget.style.opacity = '0.9';
-                }}
-              >
-                Mapa do Site
-              </Link>
-              
-              <AuthButton variant="header" className="header-auth-buttons" />
-            </>
+            </div>
           )}
-          
-          {isAdmin && !isMobile && (
-            <Link 
-              href="/admin"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                padding: '6px 10px',
-                borderRadius: '6px',
-                backgroundColor: pathname === '/admin' ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
-                color: unbColors.primary,
-                textDecoration: 'none',
-                transition: 'all 0.2s ease',
-                fontSize: '0.8rem',
-                fontWeight: '500',
-                opacity: 0.8
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(59, 130, 246, 0.1)';
-                e.currentTarget.style.opacity = '1';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = pathname === '/admin' ? 'rgba(59, 130, 246, 0.1)' : 'transparent';
-                e.currentTarget.style.opacity = '0.8';
-              }}
-            >
-              <svg 
-                width="14" 
-                height="14" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor" 
-                strokeWidth="2"
-                style={{ marginRight: '4px' }}
-              >
-                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-              </svg>
-              Admin
-            </Link>
-          )}
-        </div>
+        </div> {/* Fim do inner container */}
 
-        {/* Mobile Search Button */}
-        {isMobile && (
-          <button
-            onClick={() => {
-              // TODO: Implement mobile search modal
-              console.log('Mobile search modal not implemented yet');
-            }}
-            style={{
-              background: 'none',
-              border: `2px solid transparent`,
-              color: unbColors.primary,
-              padding: '8px',
-              cursor: 'pointer',
-              borderRadius: '8px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              minWidth: '44px',
-              minHeight: '44px',
-              outline: 'none',
-              marginRight: '8px'
-            }}
-            onFocus={(e) => { e.currentTarget.style.border = `2px solid ${unbColors.primary}`; }}
-            onBlur={(e) => { e.currentTarget.style.border = '2px solid transparent'; }}
-            aria-label="Buscar conteúdo"
-            title="Buscar conteúdo"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="11" cy="11" r="8"/>
-              <path d="m21 21-4.35-4.35"/>
-            </svg>
-          </button>
-        )}
-
-        {/* Menu Mobile Toggle */}
-        {isMobile && (
-          <button
-            onClick={toggleMobileMenu}
-            onKeyDown={(e) => {
-              if (e.key === 'Escape' && isMobileMenuOpen) {
-                setIsMobileMenuOpen(false);
-              }
-            }}
-            style={{
-              background: 'none',
-              border: `2px solid transparent`,
-              color: unbColors.primary,
-              padding: '8px',
-              cursor: 'pointer',
-              borderRadius: '8px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              minWidth: '44px',
-              minHeight: '44px',
-              outline: 'none'
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(59, 130, 246, 0.1)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = 'none'; }}
-            onFocus={(e) => { 
-              e.currentTarget.style.border = `2px solid ${unbColors.primary}`; 
-              e.currentTarget.style.background = 'rgba(59, 130, 246, 0.1)';
-            }}
-            onBlur={(e) => { 
-              e.currentTarget.style.border = '2px solid transparent';
-              e.currentTarget.style.background = 'none';
-            }}
-            aria-label={isMobileMenuOpen ? 'Fechar menu de navegação' : 'Abrir menu de navegação'}
-            aria-expanded={isMobileMenuOpen}
-            aria-controls="mobile-navigation-menu"
-            aria-haspopup="menu"
-            type="button"
-            role="button"
-          >
-            {isMobileMenuOpen ? (
-              <CloseIcon size={24} color={unbColors.primary} />
-            ) : (
-              <MenuIcon size={24} color={unbColors.primary} />
-            )}
-          </button>
-        )}
-      </div>
-      </div> {/* Fim da primeira linha */}
-
-      {/* Segunda linha - Barra de pesquisa */}
-      {!isMobile && (
-        <div style={{
-          padding: '0 clamp(2rem, 3vw, 4rem) 1rem',
-          background: 'linear-gradient(180deg, rgba(248, 250, 252, 0.5) 0%, rgba(248, 250, 252, 0) 100%)'
-        }}>
-          <SearchBar 
-            placeholder="🔍 Buscar no site..." 
-            className="nav-search-bar"
+        {/* Overlay para fechar dropdowns */}
+        {Object.values(dropdownsOpen).some(Boolean) && (
+          <div
+            className="fixed inset-0 z-[999]"
+            onClick={closeAllDropdowns}
           />
-        </div>
-      )}
-
-      {/* Overlay para fechar dropdowns */}
-      {Object.values(dropdownsOpen).some(Boolean) && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            zIndex: 999
-          }}
-          onClick={closeAllDropdowns}
-        />
-      )}
+        )}
 
       {/* Mobile Navigation Menu */}
       <MobileNavigation
@@ -992,14 +787,14 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
         isActive={isActive}
       />
 
-      {/* Animações CSS */}
-      <style jsx global>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateX(-50%) translateY(-8px); }
-          to { opacity: 1; transform: translateX(-50%) translateY(0); }
-        }
-      `}</style>
-    </header>
+        {/* Animações CSS */}
+        <style jsx global>{`
+          @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(-50%) translateY(-8px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+          }
+        `}</style>
+      </header>
     </>
   );
 }
