@@ -83,7 +83,7 @@ pip install -r requirements_security.txt
 
 ```bash
 # Secrets Management
-export SECRET_MASTER_KEY="sua-chave-master-segura"
+export SECRET_MASTER_KEY="<your-secure-master-key-here>"
 export SECRETS_CONFIG_DIR="./config/secrets"
 
 # Monitoramento
@@ -91,7 +91,7 @@ export SECURITY_WEBHOOK_URL="https://seu-webhook.com/alerts"
 export SLACK_WEBHOOK_URL="https://hooks.slack.com/services/..."
 export SMTP_SERVER="smtp.gmail.com"
 export SMTP_USERNAME="alerts@yourdomain.com"
-export SMTP_PASSWORD="senha-do-email"
+export SMTP_PASSWORD="<your-smtp-password-here>"
 
 # Logging
 export SECURITY_LOG_LEVEL="INFO"
@@ -211,7 +211,7 @@ security_config = {
             'smtp_server': 'smtp.gmail.com',
             'smtp_port': 587,
             'smtp_username': 'alerts@domain.com',
-            'smtp_password': 'password',
+            'smtp_password': '<your-smtp-password-here>',
             'from_email': 'security@domain.com',
             'to_emails': ['admin@domain.com']
         },
