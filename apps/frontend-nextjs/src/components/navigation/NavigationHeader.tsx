@@ -68,7 +68,7 @@ interface DropdownState {
   [key: string]: boolean;
 }
 
-export default function NavigationHeaderSimplified({ currentPersona, className = '' }: NavigationHeaderProps) {
+export default function NavigationHeader({ currentPersona, className = '' }: NavigationHeaderProps) {
   const pathname = usePathname();
   const { personas } = usePersonas();
   const { isAdmin, isAuthenticated } = useSafeAuth();

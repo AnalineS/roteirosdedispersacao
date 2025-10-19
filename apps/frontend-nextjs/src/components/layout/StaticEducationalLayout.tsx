@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import NavigationHeaderSimplified from '@/components/navigation/NavigationHeaderSimplified';
+import NavigationHeader from '@/components/navigation/NavigationHeader';
 import EducationalFooterSimple from '@/components/navigation/EducationalFooterSimple';
 import FastAccessBar from '@/components/navigation/FastAccessBar';
 import DeveloperToolsProvider from '@/components/dx/DeveloperToolsProvider';
@@ -20,7 +20,7 @@ export default function StaticEducationalLayout({ children }: StaticEducationalL
             <FastAccessBar position="top" behavior="smart-hide" />
 
             {/* Navigation Header - PR #264 Simplified */}
-            <NavigationHeaderSimplified />
+            <NavigationHeader />
 
             {/* Main Content */}
             <main
