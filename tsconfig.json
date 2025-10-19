@@ -1,0 +1,52 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "target": "ES2022",
+    "lib": ["DOM", "DOM.Iterable", "ES2022"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "preserve",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./apps/frontend-nextjs/src/*"],
+      "@/backend/*": ["./apps/backend/*"],
+      "@/data/*": ["./data/*"],
+      "@/docs/*": ["./docs/*"]
+    }
+  },
+  "include": [
+    "apps/**/*.ts",
+    "apps/**/*.tsx",
+    "apps/**/*.js",
+    "apps/**/*.jsx",
+    "data/**/*.ts",
+    "docs/**/*.ts",
+    ".claude/**/*.ts",
+    ".claude/**/*.js"
+  ],
+  "exclude": [
+    "node_modules",
+    "**/.next",
+    "**/dist",
+    "**/build",
+    "**/__pycache__"
+  ],
+  "references": [
+    {
+      "path": "./apps/frontend-nextjs"
+    }
+  ]
+}

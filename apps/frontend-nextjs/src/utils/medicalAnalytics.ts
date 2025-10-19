@@ -3,6 +3,9 @@
  * Tracking específico para UX médico e segurança farmacêutica
  */
 
+import { AnalyticsFirestoreCache } from '@/services/analyticsFirestoreCache';
+import { safeLocalStorage } from '@/hooks/useClientStorage';
+
 interface MedicalAnalyticsEvent {
   event: string;
   event_category: string;
@@ -83,7 +86,7 @@ export class MedicalAnalytics {
   private sessionStartTime: number;
   private userRole: string = 'unknown';
   private currentTasks: Map<string, ClinicalTaskMetrics> = new Map();
-  private errorBuffer: any[] = [];
+  private errorBuffer: Error[] = [];
   
   private constructor() {
     this.sessionStartTime = Date.now();
@@ -148,6 +151,27 @@ export class MedicalAnalytics {
         value: enrichedEvent.value,
         ...enrichedEvent.custom_dimensions
       });
+
+      // Também salvar no Firestore para analytics médico avançado
+      const sessionId = this.getCurrentSessionId();
+      AnalyticsFirestoreCache.saveAnalyticsEvent({
+        id: `medical_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        sessionId,
+        timestamp: new Date().toISOString(),
+        type: enrichedEvent.event,
+        event: enrichedEvent.event,
+        category: enrichedEvent.event_category,
+        label: enrichedEvent.event_label,
+        value: enrichedEvent.value,
+        customDimensions: enrichedEvent.custom_dimensions,
+        medicalContext: {
+          urgencyLevel: enrichedEvent.custom_dimensions?.urgency_level,
+          clinicalContext: enrichedEvent.custom_dimensions?.clinical_context,
+          userRole: enrichedEvent.custom_dimensions?.user_role
+        }
+      }).catch(error => {
+        console.warn('Failed to save medical event to Firestore:', error);
+      });
       
       // Log em desenvolvimento
       if (process.env.NODE_ENV === 'development') {
@@ -160,7 +184,7 @@ export class MedicalAnalytics {
       
     } catch (error) {
       console.error('Erro ao enviar evento de analytics:', error);
-      this.errorBuffer.push({ event, error, timestamp: Date.now() });
+      this.errorBuffer.push(error as Error);
     }
   }
   
@@ -169,7 +193,7 @@ export class MedicalAnalytics {
    */
   private enrichEventWithContext(event: MedicalAnalyticsEvent): MedicalAnalyticsEvent {
     const baseContext = {
-      user_role: this.userRole as any,
+      user_role: this.userRole as 'pharmacy' | 'medicine' | 'nursing' | 'student' | 'unknown',
       device_type: this.getDeviceType(),
       session_duration: Math.floor((Date.now() - this.sessionStartTime) / 1000)
     };
@@ -205,6 +229,21 @@ export class MedicalAnalytics {
         success_rate: action.success ? 100 : 0
       }
     });
+
+    // Track como ação crítica no Firestore
+    const sessionId = this.getCurrentSessionId();
+    AnalyticsFirestoreCache.trackMedicalMetric({
+      type: 'critical_action',
+      value: action.timeToComplete,
+      context: {
+        actionType: action.type,
+        success: action.success,
+        urgencyLevel: action.urgencyLevel,
+        errorCount: action.errorCount || 0
+      }
+    }).catch(error => {
+      console.warn('Failed to track critical medical action:', error);
+    });
   }
   
   /**
@@ -238,7 +277,7 @@ export class MedicalAnalytics {
       event_label: flagKey,
       custom_dimensions: {
         feature_flag: `${flagKey}:${flagValue}`,
-        user_role: this.userRole as any
+        user_role: this.userRole as 'pharmacy' | 'medicine' | 'nursing' | 'student' | 'unknown'
       }
     });
   }
@@ -409,8 +448,8 @@ export class MedicalAnalytics {
   }
   
   private getSessionType(): 'first_visit' | 'returning' | 'frequent' {
-    const visitCount = parseInt(localStorage.getItem('visit_count') || '0');
-    localStorage.setItem('visit_count', (visitCount + 1).toString());
+    const visitCount = parseInt(safeLocalStorage()?.getItem('visit_count') || '0');
+    safeLocalStorage()?.setItem('visit_count', (visitCount + 1).toString());
     
     if (visitCount === 0) return 'first_visit';
     if (visitCount < 5) return 'returning';
@@ -419,9 +458,9 @@ export class MedicalAnalytics {
   
   private getConnectionType(): 'slow' | 'fast' | 'unknown' {
     if ('connection' in navigator) {
-      const connection = (navigator as any).connection;
-      if (connection.effectiveType === '4g') return 'fast';
-      if (connection.effectiveType === '3g' || connection.effectiveType === '2g') return 'slow';
+      const connection = (navigator as Navigator & { connection?: { effectiveType: string } }).connection;
+      if (connection?.effectiveType === '4g') return 'fast';
+      if (connection?.effectiveType === '3g' || connection?.effectiveType === '2g') return 'slow';
     }
     return 'unknown';
   }
@@ -430,6 +469,42 @@ export class MedicalAnalytics {
     const emergencyTasks = ['dose_calculation', 'interaction_check'];
     if (emergencyTasks.includes(taskType)) return 'emergency';
     return 'routine';
+  }
+
+  private getCurrentSessionId(): string {
+    if (!this.currentSessionId) {
+      this.currentSessionId = `medical_session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      // Iniciar sessão médica no Firestore
+      AnalyticsFirestoreCache.startAnalyticsSession({
+        id: this.currentSessionId,
+        startTime: new Date().toISOString(),
+        status: 'active' as const,
+        events: [],
+        metadata: {
+          deviceType: this.getDeviceType(),
+          userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'server'
+        }
+      }).catch(error => {
+        console.warn('Failed to start medical analytics session:', error);
+      });
+    }
+    return this.currentSessionId;
+  }
+
+  private currentSessionId: string | null = null;
+
+  // Método público para tracking de erros gerais
+  public trackError(error: {
+    type: string;
+    message: string;
+    page?: string;
+  }): void {
+    this.trackMedicalError({
+      type: 'system_error',
+      severity: 'medium',
+      context: error.page || 'unknown',
+      userAction: 'page_interaction'
+    });
   }
 }
 
@@ -441,7 +516,12 @@ export const medicalAnalytics = {
     const instance = typeof window !== 'undefined' ? MedicalAnalytics.getInstance() : null;
     if (instance) instance.trackEvent(event);
   },
-  trackMedicalError: (error: any) => {
+  trackMedicalError: (error: {
+    type: 'calculation_error' | 'interaction_missed' | 'navigation_error' | 'system_error';
+    severity: 'low' | 'medium' | 'high' | 'critical';
+    context: string;
+    userAction?: string;
+  }) => {
     const instance = typeof window !== 'undefined' ? MedicalAnalytics.getInstance() : null;
     if (instance) instance.trackMedicalError(error);
   },
@@ -449,11 +529,21 @@ export const medicalAnalytics = {
     const instance = typeof window !== 'undefined' ? MedicalAnalytics.getInstance() : null;
     if (instance) instance.startClinicalTask(task.taskId, task.taskType);
   },
-  trackCriticalMedicalAction: (action: any) => {
+  trackCriticalMedicalAction: (action: {
+    type: 'drug_interaction' | 'contraindication' | 'emergency_dose' | 'protocol_access';
+    success: boolean;
+    timeToComplete: number;
+    errorCount?: number;
+    urgencyLevel?: 'critical' | 'important' | 'standard';
+  }) => {
     const instance = typeof window !== 'undefined' ? MedicalAnalytics.getInstance() : null;
     if (instance) instance.trackCriticalMedicalAction(action);
   },
-  trackFastAccessUsage: (shortcutId: string, context: any) => {
+  trackFastAccessUsage: (shortcutId: string, context: {
+    urgencyLevel: 'critical' | 'important' | 'standard';
+    accessMethod: 'click' | 'keyboard' | 'swipe';
+    timeFromPageLoad: number;
+  }) => {
     const instance = typeof window !== 'undefined' ? MedicalAnalytics.getInstance() : null;
     if (instance) instance.trackFastAccessUsage(shortcutId, context);
   },
@@ -461,7 +551,7 @@ export const medicalAnalytics = {
     const instance = typeof window !== 'undefined' ? MedicalAnalytics.getInstance() : null;
     if (instance) instance.trackFeatureFlagUsage(flagKey, flagValue, source);
   },
-  setUserRole: (role: any) => {
+  setUserRole: (role: 'pharmacy' | 'medicine' | 'nursing' | 'student' | 'unknown') => {
     const instance = typeof window !== 'undefined' ? MedicalAnalytics.getInstance() : null;
     if (instance) instance.setUserRole(role);
   }

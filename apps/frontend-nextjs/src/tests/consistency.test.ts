@@ -24,7 +24,7 @@ describe('Consistency Tests', () => {
         duration: '6 months'
       }
     };
-    
+
     expect(medicationData.rifampicina.duration).toBe('6 months');
     expect(medicationData.clofazimina.duration).toBe('6 months');
   });
@@ -36,7 +36,7 @@ describe('Consistency Tests', () => {
       fontFamily: 'Arial, sans-serif',
       spacing: '16px'
     };
-    
+
     expect(uiConsistency.colorScheme).toBe('#2563eb');
     expect(typeof uiConsistency.fontFamily).toBe('string');
   });
@@ -51,7 +51,7 @@ describe('Consistency Tests', () => {
         timestamp: Date.now()
       }
     };
-    
+
     expect(mockApiResponse.status).toBe(200);
     expect(mockApiResponse.data.persona).toBeDefined();
   });

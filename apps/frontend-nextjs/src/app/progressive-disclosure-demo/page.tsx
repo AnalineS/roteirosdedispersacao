@@ -315,7 +315,14 @@ export default function ProgressiveDisclosureDemoPage() {
             
             <div className="bg-white rounded-lg p-4 border border-blue-100">
               <h4 className="font-medium text-blue-900 mb-2">✅ Medical Terminology</h4>
-              <p className="text-gray-700">Popup inline + Modal para termos médicos</p>
+              <p className="text-gray-700">
+                <MedicalTermPopup 
+                  term={sampleMedicalTerms[0]}
+                >
+                  Rifampicina
+                </MedicalTermPopup>
+                {' '}inline + Modal para termos médicos
+              </p>
             </div>
             
             <div className="bg-white rounded-lg p-4 border border-blue-100">
@@ -323,10 +330,11 @@ export default function ProgressiveDisclosureDemoPage() {
               <p className="text-gray-700">Simples primeiro, depois técnico</p>
             </div>
             
-            <div className="bg-white rounded-lg p-4 border border-blue-100">
-              <h4 className="font-medium text-blue-900 mb-2">✅ Integration Ready</h4>
-              <p className="text-gray-700">Integrado com sistema de personas existente</p>
-            </div>
+            <ProgressiveCard 
+              content={sampleContent[0]}
+              medicalTerms={sampleMedicalTerms}
+              className="bg-white rounded-lg p-4 border border-blue-100"
+            />
           </div>
         </div>
       </div>

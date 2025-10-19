@@ -43,8 +43,8 @@ const PERSONA_CONFIG = {
     avatar: '/images/avatars/ga.png', // Avatar já existente
     color: modernChatTheme.colors.personas.ga.primary,
     backgroundColor: modernChatTheme.colors.personas.ga.background,
-    description: 'Assistente educativa especializada',
-    personality: 'Empática e acessível, linguagem simples'
+    description: 'Assistente educativo especializado',
+    personality: 'Empático e acessível, linguagem simples'
   }
 };
 
@@ -106,7 +106,8 @@ export const PersonaEducationalAvatar: React.FC<PersonaEducationalAvatarProps> =
               // Fallback para ícone se avatar não encontrado
               const target = e.target as HTMLImageElement;
               target.style.display = 'none';
-              target.parentElement!.innerHTML = personaId === 'dr-gasnelio' ? '👨‍⚕️' : '👩‍🎓';
+              // Use textContent instead of innerHTML for safety
+              target.parentElement!.textContent = personaId === 'dr-gasnelio' ? '👨‍⚕️' : '👩‍🎓';
               target.parentElement!.style.fontSize = `${avatarSize * 0.5}px`;
             }}
           />

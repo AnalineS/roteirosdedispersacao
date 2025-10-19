@@ -2,6 +2,9 @@
  * Tipos TypeScript para Sistema de Certificação
  * Baseado na tese de doutorado de Nélio Gomes de Moura Júnior
  * Sistema de certificação educacional para simulador clínico
+ *
+ * CRITICAL: URLs below are fallbacks only
+ * Production values should come from environment variables
  */
 
 export interface CertificationCriteria {
@@ -13,7 +16,7 @@ export interface CertificationCriteria {
   retryLimit?: number; // Número máximo de tentativas por caso
 }
 
-export interface UserProgress {
+export interface CertificationProgress {
   userId: string;
   userName: string;
   email?: string;
@@ -273,7 +276,7 @@ export const DEFAULT_CERTIFICATION_CONFIG: CertificationConfig = {
     name: 'Universidade Federal',
     department: 'Programa de Pós-graduação em Ciências Farmacêuticas',
     address: 'Brasil',
-    website: 'https://roteirosdedispensacao.com',
+    website: process.env.NEXT_PUBLIC_PRODUCTION_DOMAIN || 'https://roteirosdedispensacao.com',
     logoUrl: '/assets/institutional-logo.png'
   },
   
@@ -314,7 +317,7 @@ Pontuação obtida: {overallScore}% | Casos concluídos: {casesCompleted}/{total
   availableTemplates: [], // Será populado com templates adicionais
   
   verification: {
-    baseUrl: 'https://roteirosdedispensacao.com/verify',
+    baseUrl: `${process.env.NEXT_PUBLIC_PRODUCTION_DOMAIN || 'https://roteirosdedispensacao.com'}/verify`,
     qrCodeEnabled: true,
     blockchainEnabled: false,
     emailVerification: true
@@ -322,13 +325,13 @@ Pontuação obtida: {overallScore}% | Casos concluídos: {casesCompleted}/{total
 };
 
 // Utility functions
-export const calculateOverallProgress = (progress: UserProgress): number => {
+export const calculateOverallProgress = (progress: CertificationProgress): number => {
   if (progress.casesCompleted.length === 0) return 0;
   return Math.round(progress.totalScore / progress.casesCompleted.length);
 };
 
 export const checkCertificationEligibility = (
-  progress: UserProgress, 
+  progress: CertificationProgress, 
   criteria: CertificationCriteria
 ): { eligible: boolean; missing: string[] } => {
   const missing: string[] = [];

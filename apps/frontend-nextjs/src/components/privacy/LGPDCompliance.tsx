@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 import Link from 'next/link';
 import { getUnbColors } from '@/config/modernTheme';
 
@@ -24,7 +25,7 @@ export default function LGPDCompliance({
   useEffect(() => {
     // Verificar se usuário já deu consentimento para este contexto
     const consentKey = `lgpd-consent-${context}`;
-    const existingConsent = localStorage.getItem(consentKey);
+    const existingConsent = safeLocalStorage()?.getItem(consentKey);
     
     if (!existingConsent && context !== 'general') {
       setIsVisible(true);
@@ -42,7 +43,7 @@ export default function LGPDCompliance({
       accepted: true
     };
     
-    localStorage.setItem(consentKey, JSON.stringify(consentData));
+    safeLocalStorage()?.setItem(consentKey, JSON.stringify(consentData));
     setHasConsented(true);
     setIsVisible(false);
     
@@ -388,7 +389,7 @@ export function useLGPDConsent(context: 'chat' | 'registration' | 'data-collecti
 
   useEffect(() => {
     const consentKey = `lgpd-consent-${context}`;
-    const existingConsent = localStorage.getItem(consentKey);
+    const existingConsent = safeLocalStorage()?.getItem(consentKey);
     
     if (existingConsent) {
       try {
@@ -411,13 +412,13 @@ export function useLGPDConsent(context: 'chat' | 'registration' | 'data-collecti
       accepted: true
     };
     
-    localStorage.setItem(consentKey, JSON.stringify(consentData));
+    safeLocalStorage()?.setItem(consentKey, JSON.stringify(consentData));
     setHasConsent(true);
   };
 
   const revokeConsent = () => {
     const consentKey = `lgpd-consent-${context}`;
-    localStorage.removeItem(consentKey);
+    safeLocalStorage()?.removeItem(consentKey);
     setHasConsent(false);
   };
 

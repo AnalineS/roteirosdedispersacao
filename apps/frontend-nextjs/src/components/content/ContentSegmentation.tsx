@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 import { getUnbColors } from '@/config/modernTheme';
 
 export type ContentAudience = 'professional' | 'patient' | 'student' | 'general';
@@ -40,7 +41,10 @@ export function ContentSegment({
 
   // Carregar preferência de público do localStorage
   useEffect(() => {
-    const savedAudience = localStorage.getItem('preferred-audience') as ContentAudience;
+    // Check if we're in the browser
+    if (typeof window === 'undefined') return;
+
+    const savedAudience = safeLocalStorage()?.getItem('preferred-audience') as ContentAudience;
     if (savedAudience) {
       setSelectedAudience(savedAudience);
     }
@@ -336,7 +340,8 @@ export function AudienceSelector({
 
   const handleAudienceChange = (audience: ContentAudience) => {
     onAudienceChange(audience);
-    localStorage.setItem('preferred-audience', audience);
+    // Only save to localStorage if we're in the browser
+    safeLocalStorage()?.setItem('preferred-audience', audience);
   };
 
   return (
@@ -431,7 +436,10 @@ export function useAudiencePreference() {
   const [selectedAudience, setSelectedAudience] = useState<ContentAudience>('general');
 
   useEffect(() => {
-    const saved = localStorage.getItem('preferred-audience') as ContentAudience;
+    // Check if we're in the browser
+    if (typeof window === 'undefined') return;
+
+    const saved = safeLocalStorage()?.getItem('preferred-audience') as ContentAudience;
     if (saved) {
       setSelectedAudience(saved);
     }
@@ -439,7 +447,8 @@ export function useAudiencePreference() {
 
   const updateAudience = (audience: ContentAudience) => {
     setSelectedAudience(audience);
-    localStorage.setItem('preferred-audience', audience);
+    // Only save to localStorage if we're in the browser
+    safeLocalStorage()?.setItem('preferred-audience', audience);
   };
 
   return {

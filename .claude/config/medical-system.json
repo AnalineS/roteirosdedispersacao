@@ -1,0 +1,58 @@
+{
+  "project": {
+    "type": "medical-education",
+    "domain": "hanseniase",
+    "compliance": "LGPD",
+    "accessibility": "WCAG-2.1-AA"
+  },
+  "personas": {
+    "dr_gasnelio": {
+      "type": "experienced_doctor",
+      "complexity_level": "advanced",
+      "needs": [
+        "complex_cases",
+        "scientific_refs",
+        "quick_updates"
+      ]
+    },
+    "ga": {
+      "type": "young_pharmacist",
+      "complexity_level": "learning",
+      "needs": [
+        "guided_learning",
+        "basic_cases",
+        "detailed_explanations"
+      ]
+    }
+  },
+  "calculators": {
+    "rifampicina": {
+      "precision_threshold": 95,
+      "validation_required": true,
+      "adult_mb_cases": true,
+      "pediatric_pb_cases": true
+    },
+    "dapsona": {
+      "precision_threshold": 95,
+      "renal_function_check": true,
+      "pregnancy_cases": true
+    },
+    "pqt_schemes": {
+      "pb_complete": true,
+      "mb_complete": true,
+      "duration_validation": true
+    }
+  },
+  "monitoring": {
+    "lgpd_real_time": true,
+    "medical_precision": true,
+    "accessibility_wcag": true,
+    "performance_critical": true
+  },
+  "automation": {
+    "pre_commit_medical": true,
+    "pre_push_compliance": true,
+    "post_merge_docs": true,
+    "ci_medical_validation": true
+  }
+}

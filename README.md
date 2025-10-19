@@ -1,8 +1,17 @@
 # 🏥 Roteiro de Dispensação - Hanseníase
 
-Sistema moderno de apoio à dispensação farmacêutica para hanseníase, desenvolvido com tecnologias de ponta e IA.
+**Plataforma educacional médica moderna** para apoio à dispensação farmacêutica de hanseníase, desenvolvida com **arquitetura full-stack**, **IA conversacional avançada** e **automação inteligente**.
 
-> **✅ Sistema de Labels Inteligente ATIVO**: Labels automáticos baseados em arquivos alterados, branches e análise de impacto.
+## 🎯 Visão Técnica
+
+Sistema **híbrido cloud-native** que combina:
+- **Frontend moderno**: Next.js 14 + React 19 + TypeScript
+- **Backend especializado**: Flask 3.1 + RAG + Vector DB
+- **IA conversacional**: Personas especializadas (Dr. Gasnelio + Gá)
+- **Automação avançada**: SuperClaude Framework + CI/CD inteligente
+- **Compliance total**: LGPD + WCAG 2.1 AA + Segurança médica
+
+> **🤖 SuperClaude Framework integrado**: Agentes especializados para documentação técnica, análise de requisitos e arquitetura de código.
 
 ## 📁 Estrutura do Projeto
 
@@ -10,7 +19,7 @@ Sistema moderno de apoio à dispensação farmacêutica para hanseníase, desenv
 roteiro-dispensacao/
 ├── 📱 apps/              # Aplicações principais
 │   ├── backend/          # API Flask + Python
-│   └── frontend/         # React + TypeScript
+│   └── frontend-nextjs/  # Next.js 14 + TypeScript (aplicação principal)
 ├── [REPORT] data/              # Base de conhecimento
 ├── 📚 docs/              # Documentação
 ├── 🛠️  scripts/          # Scripts de deploy e setup
@@ -18,85 +27,114 @@ roteiro-dispensacao/
 └── ⚙️  firebase.json     # Configuração Firebase
 ```
 
-## [START] Tecnologias
+## 🔧 Stack Tecnológico
 
-### Frontend
-- **React 18** + **TypeScript**
-- **Vite** para build otimizado
-- **TailwindCSS** para estilização
-- **PWA** com Service Worker
-- **React Query** para gerenciamento de estado
+### Frontend Architecture (Next.js 14)
+```typescript
+// App Router + React Server Components
+- Framework: Next.js 14.2+ (App Router)
+- Runtime: React 19 + TypeScript 5.0+
+- Styling: TailwindCSS 3.4 + CSS Modules
+- State: Zustand + React Query (TanStack)
+- Testing: Jest + Playwright + Cypress (15 test types)
+- PWA: Service Worker + Offline support
+- Accessibility: WCAG 2.1 AA compliant
+```
 
-### Backend
-- **Flask 3.0** + **Python**
-- **OpenAI API** para IA conversacional
-- **Sistema RAG** avançado
-- **Redis** para cache
-- **Pydantic** para validação
+### Backend Architecture (Flask 3.1)
+```python
+# Real Stack - Microservices + RAG + Vector DB
+- Framework: Flask 3.1 + Blueprints modulares
+- AI/ML: OpenRouter API + Llama 3.2 + Kimie K2
+- Vector Store: Supabase PostgreSQL + pgvector
+- RAG System: ChromaDB + OpenAI embeddings
+- Storage: Google Cloud Storage + SQLite híbrido
+- Cache: cachetools (memory) + Google Cloud Storage
+- Validation: Pydantic 2.0 + jsonschema
+- OCR: OpenCV + Tesseract + EasyOCR + PIL
+- Security: PyJWT + cryptography + bleach + CORS
+```
+
+### DevOps & Cloud Architecture
+```yaml
+# Real Infrastructure - Google Cloud Native
+- Cloud: Google Cloud Run (containers)
+- Storage: Google Cloud Storage (static + backups)
+- Database: Supabase PostgreSQL + pgvector (vectors)
+- CI/CD: GitHub Actions + Docker multi-stage
+- Monitoring: Google Cloud Logging + Monitoring
+- Security: CodeQL + LGPD compliance + bandit
+- Automation: SuperClaude Framework + Quality hooks
+- Testing: 15 tipos de testes automatizados (Jest + Pytest)
+```
 
 ## 📁 Estrutura do Projeto
 
 ```
-├── src/
-│   ├── frontend/          # React App moderna
+├── apps/
+│   ├── frontend-nextjs/   # Next.js 14 App Router
 │   │   ├── src/
+│   │   │   ├── app/           # App Router pages
 │   │   │   ├── components/    # Componentes React
-│   │   │   ├── pages/         # Páginas da aplicação
 │   │   │   ├── hooks/         # Hooks customizados
 │   │   │   ├── services/      # APIs e serviços
-│   │   │   └── styles/        # Estilos CSS
-│   │   └── public/        # Assets estáticos
+│   │   │   ├── types/         # TypeScript types
+│   │   │   └── utils/         # Utilitários
+│   │   └── tests/         # Testes (15 tipos)
 │   └── backend/           # API Flask avançada
-│       ├── core/          # Funcionalidades principais
-│       ├── services/      # Serviços de negócio
-│       └── config/        # Configurações
+│       ├── blueprints/    # Blueprints modulares
+│       ├── services/      # Serviços especializados
+│       ├── core/          # Funcionalidades centrais
+│       └── tasks/         # Tasks background
 ├── data/                  # Base de conhecimento
 ├── docs/                  # Documentação
-└── firebase.json          # Configuração de deploy
+└── supabase/              # Configuração Supabase
 ```
 
 ## 🛠️ Desenvolvimento
 
-### Frontend
+### Frontend (Next.js)
 ```bash
-cd src/frontend
+cd apps/frontend-nextjs
 npm install
-npm run dev          # Desenvolvimento
+npm run dev          # Desenvolvimento (porta 3000)
 npm run build        # Build para produção
-npm run type-check   # Verificação de tipos
-npm run lint         # Linting
+npm run type-check   # Verificação TypeScript
+npm run lint         # ESLint + fixes
+npm run test         # Testes (15 tipos)
 ```
 
-### Backend
+### Backend (Flask)
 ```bash
-cd src/backend
+cd apps/backend
 pip install -r requirements.txt
-python main.py       # Servidor desenvolvimento
+python main.py       # Servidor desenvolvimento (porta 8080)
 ```
 
 ## [START] Deploy
 
-### Firebase Hosting (Frontend)
+### Google Cloud Run (Frontend + Backend)
 ```bash
-cd src/frontend
+# Frontend Next.js
+cd apps/frontend-nextjs
 npm run build
-firebase deploy
-```
+# Deploy automático via GitHub Actions
 
-### Cloud Run (Backend)
-```bash
-cd src/backend
-docker build -t roteiro-backend .
-# Deploy via Google Cloud Console
+# Backend Flask
+cd apps/backend
+# Deploy automático via Docker + Cloud Run
 ```
 
 ## 🔒 Segurança
 
 - **CSP Headers** configurados
-- **Rate Limiting** implementado
-- **Input Validation** com Pydantic
+- **Rate Limiting** com SQLite backend
+- **Input Validation** com Pydantic + bleach
 - **CORS** configurado adequadamente
-- Ver `POLITICAS_SEGURANCA_GLOBAL.md` para detalhes
+- **JWT Authentication** próprio (sem Firebase Auth)
+- **Sanitização automática** de inputs
+- **Bloqueio automático** após ataques
+- Ver `docs/security/` para detalhes
 
 ## 📁 Estrutura do Repositório
 

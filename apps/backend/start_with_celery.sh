@@ -1,14 +1,13 @@
 #!/bin/bash
 # Script para iniciar Flask + Celery Workers
 # Usado em produção (Google Cloud Run)
+# Configuração SQLite + Google Cloud Storage (Redis removido)
 
 echo "🚀 Iniciando sistema com Celery Workers..."
 
 # Exportar variáveis de ambiente para workers
-export REDIS_PUBLIC_ENDPOINT=${REDIS_PUBLIC_ENDPOINT:-localhost:6379}
-export REDIS_ACCOUNT_KEY=${REDIS_ACCOUNT_KEY:-}
-export REDIS_DATABASE_NAME=${REDIS_DATABASE_NAME:-0}
 export ENVIRONMENT=${ENVIRONMENT:-production}
+export CELERY_BROKER_TYPE=sqlite
 
 # Função para iniciar worker em background
 start_worker() {

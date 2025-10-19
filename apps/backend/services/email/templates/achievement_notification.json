@@ -1,0 +1,13 @@
+{
+  "subject": "🏆 Nova conquista desbloqueada: {{ achievement_name }}!",
+  "html_template": "achievement_notification.html",
+  "text_template": "achievement_notification.txt",
+  "variables": {
+    "user_name": "string",
+    "achievement_name": "string", 
+    "achievement_description": "string",
+    "badge_url": "string|null",
+    "date": "string",
+    "site_url": "string"
+  }
+}

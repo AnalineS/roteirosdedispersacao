@@ -77,7 +77,7 @@ interface RetryOptions {
   maxDelay: number;
   backoffMultiplier: number;
   jitter: boolean;
-  retryCondition?: (error: any) => boolean;
+  retryCondition?: (error: Error | unknown) => boolean;
 }
 
 export class SmartRetry {
@@ -87,7 +87,13 @@ export class SmartRetry {
     maxDelay: 30000,
     backoffMultiplier: 2,
     jitter: true,
-    retryCondition: (error) => error.status >= 500 || error.code === 'NETWORK_ERROR'
+    retryCondition: (error: unknown) => {
+      if (error && typeof error === 'object') {
+        const err = error as { status?: number; code?: string };
+        return (typeof err.status === 'number' && err.status >= 500) || err.code === 'NETWORK_ERROR';
+      }
+      return false;
+    }
   };
 
   static async execute<T>(
@@ -95,7 +101,7 @@ export class SmartRetry {
     options: Partial<RetryOptions> = {}
   ): Promise<T> {
     const config = { ...this.defaultOptions, ...options };
-    let lastError: any;
+    let lastError: Error | unknown;
 
     for (let attempt = 1; attempt <= config.maxAttempts; attempt++) {
       try {
@@ -112,7 +118,22 @@ export class SmartRetry {
         }
 
         const delay = this.calculateDelay(attempt, config);
-        console.warn(`Retry attempt ${attempt}/${config.maxAttempts} in ${delay}ms`);
+        // Medical system optimization tracking - stderr + gtag
+        if (typeof process !== 'undefined' && process.stderr) {
+          process.stderr.write(`⚠️ API RETRY - Tentativa ${attempt}/${config.maxAttempts} em ${delay}ms\n`);
+        }
+        if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'medical_api_retry_attempt', {
+            event_category: 'medical_api_optimization',
+            event_label: 'api_retry_in_progress',
+            custom_parameters: {
+              medical_context: 'api_optimization_retry',
+              retry_attempt: attempt,
+              max_attempts: config.maxAttempts,
+              delay_ms: delay
+            }
+          });
+        }
         await this.sleep(delay);
       }
     }
@@ -205,7 +226,23 @@ export class RequestCache {
       const result = await operation();
       this.cache.set(key, result, ttl);
     } catch (error) {
-      console.warn(`Background revalidation failed for ${key}:`, error);
+      // Medical system optimization warning - stderr + gtag
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      if (typeof process !== 'undefined' && process.stderr) {
+        process.stderr.write(`⚠️ API CACHE - Falha na revalidação em background para ${key}: ${errorMessage}\n`);
+      }
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'medical_api_background_revalidation_failed', {
+          event_category: 'medical_api_optimization',
+          event_label: 'background_revalidation_error',
+          custom_parameters: {
+            medical_context: 'api_cache_revalidation',
+            cache_key: key,
+            error_type: 'background_revalidation_failure',
+            error_message: errorMessage
+          }
+        });
+      }
     }
   }
 
@@ -229,7 +266,23 @@ export class RequestCache {
         const result = await operation();
         this.cache.set(key, result, ttl);
       } catch (error) {
-        console.warn(`Preload failed for ${key}:`, error);
+        // Medical system optimization warning - stderr + gtag
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      if (typeof process !== 'undefined' && process.stderr) {
+        process.stderr.write(`⚠️ API PRELOAD - Falha no preload para ${key}: ${errorMessage}\n`);
+      }
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'medical_api_preload_failed', {
+          event_category: 'medical_api_optimization',
+          event_label: 'api_preload_error',
+          custom_parameters: {
+            medical_context: 'api_cache_preload',
+            cache_key: key,
+            error_type: 'preload_failure',
+            error_message: errorMessage
+          }
+        });
+      }
       }
     }
   }
@@ -383,13 +436,18 @@ interface BatchableRequest {
   variables?: Record<string, any>;
 }
 
+interface BatchResult<T = unknown> {
+  data?: T;
+  error?: { message: string };
+}
+
 export class APIBatcher {
   private pending: Array<{
     request: BatchableRequest;
-    resolve: (value: any) => void;
+    resolve: (value: unknown) => void;
     reject: (error: Error) => void;
   }> = [];
-  
+
   private timer: NodeJS.Timeout | null = null;
 
   constructor(
@@ -401,8 +459,12 @@ export class APIBatcher {
   ) {}
 
   async request<T = any>(request: BatchableRequest): Promise<T> {
-    return new Promise((resolve, reject) => {
-      this.pending.push({ request, resolve, reject });
+    return new Promise<T>((resolve, reject) => {
+      this.pending.push({
+        request,
+        resolve: resolve as (value: unknown) => void,
+        reject
+      });
 
       const maxSize = this.options.maxBatchSize || 10;
       const maxWait = this.options.maxWaitTime || 50;
@@ -435,7 +497,7 @@ export class APIBatcher {
       });
 
       // Processar respostas
-      response.results.forEach((result: any, index: number) => {
+      response.results.forEach((result: BatchResult, index: number) => {
         const { resolve, reject } = batch[index];
         
         if (result.error) {

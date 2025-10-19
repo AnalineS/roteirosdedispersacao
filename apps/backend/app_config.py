@@ -3,6 +3,7 @@
 Configuração Centralizada do Sistema
 Todas as configurações globais e variáveis de ambiente
 IMPORTANTE: Todas as variáveis devem ser configuradas no Google Cloud ou GitHub Secrets
+Build Version: 3.1.4 - IAM permissions fix + Docker auth for Artifact Registry
 """
 
 import os
@@ -10,16 +11,26 @@ from dataclasses import dataclass
 from typing import Optional
 import logging
 
-# NÃO usar dotenv - apenas variáveis de ambiente do GitHub Secrets/Cloud Run
+# Load .env file for development if available
+try:
+    from dotenv import load_dotenv
+    # Try to load .env file for development
+    env_file = '.env'
+    if os.path.exists(env_file):
+        load_dotenv(env_file)
+        print(f"Loaded environment from {env_file}")
+except ImportError:
+    # dotenv not available, use environment variables directly
+    pass
 
 @dataclass
 class AppConfig:
     """Configurações da aplicação - TODAS vindas de variáveis de ambiente"""
     
-    # Flask Config
-    SECRET_KEY: str = os.getenv('SECRET_KEY')  # OBRIGATÓRIO em produção
-    DEBUG: bool = os.getenv('FLASK_ENV') == 'development'
-    TESTING: bool = os.getenv('TESTING', '').lower() == 'true'
+    # Flask Config - with secure defaults
+    SECRET_KEY: str = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production-min-32-chars')  # OBRIGATÓRIO em produção
+    DEBUG: bool = os.getenv('DEBUG', 'false').lower() == 'true' or os.getenv('FLASK_ENV') == 'development'
+    TESTING: bool = os.getenv('TESTING', 'false').lower() == 'true'
     
     # Server Config - Cloud Run compatible
     HOST: str = os.getenv('HOST', '0.0.0.0')
@@ -28,34 +39,62 @@ class AppConfig:
     # CORS Config
     @property
     def CORS_ORIGINS(self) -> list:
-        """Retorna lista de origens permitidas do env"""
-        origins = os.getenv('CORS_ORIGINS', '')
-        return origins.split(',') if origins else []
+        """Retorna lista de origens permitidas do env com fallbacks por ambiente"""
+        # Check environment-specific CORS first
+        env = os.getenv('ENVIRONMENT', 'development')
+
+        if env == 'production':
+            origins = os.getenv('CORS_ORIGINS_PROD', os.getenv('CORS_ORIGINS', ''))
+        elif env == 'staging':
+            origins = os.getenv('CORS_ORIGINS_HML', os.getenv('CORS_ORIGINS', ''))
+        else:
+            origins = os.getenv('CORS_ORIGINS', 'http://localhost:3000,http://127.0.0.1:3000')
+
+        # Handle both comma and semicolon delimiters (semicolon used to avoid gcloud parsing issues)
+        if origins:
+            # Try semicolon first (used in production to avoid gcloud issues)
+            if ';' in origins:
+                return origins.split(';')
+            else:
+                return origins.split(',')
+        else:
+            return ['http://localhost:3000']
     
-    # API Keys - OBRIGATÓRIAS
-    OPENROUTER_API_KEY: Optional[str] = os.getenv('OPENROUTER_API_KEY')
-    HUGGINGFACE_API_KEY: Optional[str] = os.getenv('HUGGINGFACE_API_KEY')
+    # API Keys - with fallback handling
+    OPENROUTER_API_KEY: Optional[str] = os.getenv('OPENROUTER_API_KEY', '')
+    HUGGINGFACE_API_KEY: Optional[str] = os.getenv('HUGGINGFACE_API_KEY', '')
+    OPENAI_API_KEY: Optional[str] = os.getenv('OPENAI_API_KEY', '')
     
-    # Supabase Config - FASE 3 RAG Integration
-    SUPABASE_URL: Optional[str] = os.getenv('SUPABASE_PROJECT_URL')
-    SUPABASE_KEY: Optional[str] = os.getenv('SUPABASE_PUBLISHABLE_KEY')
-    SUPABASE_SERVICE_KEY: Optional[str] = os.getenv('SUPABASE_SERVICE_ROLE_KEY')
-    SUPABASE_JWT_SECRET: Optional[str] = os.getenv('SUPABASE_JWT_SIGNING_KEY')
+    # Supabase Config - RAG COMPLETO ATIVADO - REAL INTEGRATION
+    SUPABASE_URL: Optional[str] = os.getenv('SUPABASE_URL') or os.getenv('SUPABASE_PROJECT_URL')
+    SUPABASE_ANON_KEY: Optional[str] = os.getenv('SUPABASE_ANON_KEY') or os.getenv('SUPABASE_PUBLISHABLE_KEY')
+    SUPABASE_KEY: Optional[str] = os.getenv('SUPABASE_KEY') or os.getenv('SUPABASE_ANON_KEY') or os.getenv('SUPABASE_PUBLISHABLE_KEY')
+    SUPABASE_SERVICE_KEY: Optional[str] = os.getenv('SUPABASE_SERVICE_KEY') or os.getenv('SUPABASE_API_KEY')
+    SUPABASE_JWT_SECRET: Optional[str] = os.getenv('SUPABASE_JWT_SECRET') or os.getenv('SUPABASE_JWT_SIGNING_KEY')
+    SUPABASE_DB_URL: Optional[str] = os.getenv('SUPABASE_DB_URL')  # Direct PostgreSQL connection for pgvector
     
-    # Feature Flags - Padrão conservador para evitar timeout Cloud Run
-    EMBEDDINGS_ENABLED: bool = os.getenv('EMBEDDINGS_ENABLED', 'false').lower() == 'true'
-    ADVANCED_FEATURES: bool = os.getenv('ADVANCED_FEATURES', 'false').lower() == 'true'
-    RAG_AVAILABLE: bool = os.getenv('RAG_AVAILABLE', 'false').lower() == 'true'
-    OPENAI_TEST_AVAILABLE: bool = os.getenv('OPENAI_TEST_AVAILABLE', 'false').lower() == 'true'
-    ADVANCED_CACHE: bool = os.getenv('ADVANCED_CACHE', 'false').lower() == 'true'
+    # Feature Flags - TODAS AS FUNCIONALIDADES ATIVADAS
+    EMBEDDINGS_ENABLED: bool = os.getenv('EMBEDDINGS_ENABLED', 'true').lower() == 'true'
+    ADVANCED_FEATURES: bool = os.getenv('ADVANCED_FEATURES', 'true').lower() == 'true'
+    RAG_ENABLED: bool = os.getenv('RAG_ENABLED', 'true').lower() == 'true'
+    OPENAI_TEST_AVAILABLE: bool = os.getenv('OPENAI_TEST_AVAILABLE', 'true').lower() == 'true'
+    ADVANCED_CACHE: bool = os.getenv('ADVANCED_CACHE', 'true').lower() == 'true'
+    
+    # Unified Cache Config - Sistema Integrado
+    UNIFIED_CACHE_ENABLED: bool = os.getenv('UNIFIED_CACHE_ENABLED', 'true').lower() == 'true'
+    MEMORY_CACHE_SIZE: int = int(os.getenv('MEMORY_CACHE_SIZE', 2000))
+    MEMORY_CACHE_TTL: int = int(os.getenv('MEMORY_CACHE_TTL', 120))
+    CLOUD_CACHE_ENABLED: bool = os.getenv('CLOUD_CACHE_ENABLED', 'true').lower() == 'true'
+    API_CACHE_ENABLED: bool = os.getenv('API_CACHE_ENABLED', 'true').lower() == 'true'
     
     # Embeddings Config - Configuração unificada para ML features + sentence-transformers v5.1+
-    EMBEDDING_MODEL: str = os.getenv('EMBEDDING_MODEL', 'sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2')
+    # MODELO ATUALIZADO: intfloat/multilingual-e5-small (384D) - melhor multilingual gratuito
+    EMBEDDING_MODEL: str = os.getenv('EMBEDDING_MODEL', 'intfloat/multilingual-e5-small')
     EMBEDDING_DEVICE: str = os.getenv('EMBEDDING_DEVICE', 'cpu')  # cpu/cuda
     EMBEDDINGS_MAX_LENGTH: int = int(os.getenv('EMBEDDINGS_MAX_LENGTH', 512))
     EMBEDDING_BATCH_SIZE: int = int(os.getenv('EMBEDDING_BATCH_SIZE', 32))
     EMBEDDING_CACHE_SIZE: int = int(os.getenv('EMBEDDING_CACHE_SIZE', 1000))
-    
+
     # Sentence-transformers v5.1+ otimizações
     EMBEDDING_CHUNK_SIZE: int = int(os.getenv('EMBEDDING_CHUNK_SIZE', 32))  # Para textos longos
     EMBEDDING_PARALLEL_PROCESSING: bool = os.getenv('EMBEDDING_PARALLEL_PROCESSING', 'false').lower() == 'true'
@@ -68,9 +107,9 @@ class AppConfig:
     SEMANTIC_SIMILARITY_THRESHOLD: float = float(os.getenv('SEMANTIC_SIMILARITY_THRESHOLD', '0.7'))
     PGVECTOR_DIMENSIONS: int = int(os.getenv('PGVECTOR_DIMENSIONS', '384'))  # MiniLM dimensions
     
-    # Cloud Storage Config - FASE 3 Cache Cloud-Native
-    EMBEDDINGS_CLOUD_CACHE: bool = os.getenv('EMBEDDINGS_CLOUD_CACHE', 'false').lower() == 'true'
-    CLOUD_STORAGE_BUCKET: Optional[str] = os.getenv('CLOUD_STORAGE_BUCKET')
+    # Cloud Storage Config - CACHE CLOUD ATIVADO
+    EMBEDDINGS_CLOUD_CACHE: bool = os.getenv('EMBEDDINGS_CLOUD_CACHE', 'true').lower() == 'true'
+    GCS_BUCKET_NAME: Optional[str] = os.getenv('GCS_BUCKET_NAME')
     EMBEDDINGS_LAZY_LOAD: bool = os.getenv('EMBEDDINGS_LAZY_LOAD', 'true').lower() == 'true'
     MIN_INSTANCES: int = int(os.getenv('MIN_INSTANCES', '0'))  # Cloud Run min instances
     
@@ -78,8 +117,8 @@ class AppConfig:
     CACHE_MAX_SIZE: int = int(os.getenv('CACHE_MAX_SIZE', 1000))
     CACHE_TTL_MINUTES: int = int(os.getenv('CACHE_TTL_MINUTES', 60))
     
-    # Security Middleware - FASE 4 HABILITADO
-    SECURITY_MIDDLEWARE_ENABLED: bool = os.getenv('SECURITY_MIDDLEWARE_ENABLED', 'false').lower() == 'true'
+    # Security Middleware - ATIVADO POR PADRÃO
+    SECURITY_MIDDLEWARE_ENABLED: bool = os.getenv('SECURITY_MIDDLEWARE_ENABLED', 'true').lower() == 'true'
     
     # Rate Limiting - Configurações moderadas
     RATE_LIMIT_ENABLED: bool = os.getenv('RATE_LIMIT_ENABLED', '').lower() != 'false'
@@ -132,35 +171,45 @@ class AppConfig:
         'general': float(os.getenv('WEIGHT_GENERAL', 0.2))
     }
     
-    # Database Config (AstraDB) - Mapeamento para GitHub Secrets
-    ASTRA_DB_ENABLED: bool = os.getenv('ASTRA_BD_ENABLED', os.getenv('ASTRA_DB_ENABLED', '')).lower() == 'true'
-    ASTRA_DB_URL: Optional[str] = os.getenv('ASTRA_BD_URL', os.getenv('ASTRA_DB_URL'))
-    ASTRA_DB_TOKEN: Optional[str] = os.getenv('ASTRA_BD_TOKEN', os.getenv('ASTRA_DB_TOKEN'))
-    ASTRA_DB_KEYSPACE: Optional[str] = os.getenv('ASTRA_BD_KEYSPACE', os.getenv('ASTRA_DB_KEYSPACE'))
-    ASTRA_DB_API_KEY: Optional[str] = os.getenv('ASTRA_BD_API_KEY')
-    ASTRA_DB_APPLICATION_TOKEN: Optional[str] = os.getenv('ASTRA_BD_APLICATION_TOKEN')
-    ASTRA_DB_CLIENT_ID: Optional[str] = os.getenv('ASTRA_BD_CLIENTID')
-    ASTRA_DB_SECRET: Optional[str] = os.getenv('ASTRA_BD_SECRET')
+    # Cloud Storage Config - Google Cloud Storage - REAL INTEGRATION
+    GOOGLE_APPLICATION_CREDENTIALS: Optional[str] = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
+    GOOGLE_APPLICATION_CREDENTIALS_JSON: Optional[str] = os.getenv('GOOGLE_APPLICATION_CREDENTIALS_JSON')
+    GOOGLE_CLOUD_PROJECT: Optional[str] = os.getenv('GOOGLE_CLOUD_PROJECT') or os.getenv('GCP_PROJECT_ID')
+    GCP_REGION: Optional[str] = os.getenv('GCP_REGION', 'us-central1')
+
+    # Specialized GCS buckets
+    GCS_CACHE_BUCKET: Optional[str] = os.getenv('GCS_CACHE_BUCKET')
+    GCS_BACKUP_BUCKET: Optional[str] = os.getenv('GCS_BACKUP_BUCKET')
+    GCS_MEDICAL_DOCUMENTS_BUCKET: Optional[str] = os.getenv('GCS_MEDICAL_DOCUMENTS_BUCKET')
+
+    # Development environment detection
+    IS_DEVELOPMENT: bool = os.getenv('ENVIRONMENT', 'development') == 'development'
+    IS_CLOUD_RUN: bool = bool(os.getenv('K_SERVICE') or os.getenv('CLOUD_RUN_ENV'))
+
+    # Local Development Alternatives - for development without cloud services
+    LOCALSTACK_ENABLED: bool = os.getenv('LOCALSTACK_ENABLED', 'false').lower() == 'true'
+    LOCALSTACK_ENDPOINT: str = os.getenv('LOCALSTACK_ENDPOINT', 'http://localhost:4566')
+    LOCAL_POSTGRES_URL: Optional[str] = os.getenv('LOCAL_POSTGRES_URL')
+    LOCAL_POSTGRES_ENABLED: bool = os.getenv('LOCAL_POSTGRES_ENABLED', 'false').lower() == 'true'
     
-    # Redis Config - REMOVED (Replaced by Firestore hybrid cache in Phases 2-4)
-    # REDIS_ENABLED: bool = os.getenv('REDIS_ENABLED', '').lower() == 'true'  # REMOVED
-    # REDIS_URL: Optional[str] = os.getenv('REDIS_URL')  # REMOVED
-    # REDIS_PASSWORD: Optional[str] = os.getenv('REDIS_PASSWORD')  # REMOVED
-    # REDIS_USERNAME: str = os.getenv('REDIS_USERNAME', 'default')  # REMOVED
-    # REDIS_MAX_CONNECTIONS: int = int(os.getenv('REDIS_MAX_CONNECTIONS', 20))  # REMOVED
-    # REDIS_SOCKET_TIMEOUT: int = int(os.getenv('REDIS_SOCKET_TIMEOUT', 3))  # REMOVED
-    # REDIS_HEALTH_CHECK_INTERVAL: int = int(os.getenv('REDIS_HEALTH_CHECK_INTERVAL', 30))  # REMOVED
+    # Vector Store Config (Supabase + pgvector)
+    SUPABASE_VECTOR_DIMENSION: int = int(os.getenv('SUPABASE_VECTOR_DIMENSION', 1536))
+    SUPABASE_VECTOR_SIMILARITY_THRESHOLD: float = float(os.getenv('SUPABASE_VECTOR_SIMILARITY_THRESHOLD', 0.8))
+    
     
     # Cache Config - Now using Firestore hybrid system
     FIRESTORE_CACHE_ENABLED: bool = os.getenv('FIRESTORE_CACHE_ENABLED', 'true').lower() == 'true'
     HYBRID_CACHE_STRATEGY: str = os.getenv('HYBRID_CACHE_STRATEGY', 'memory_first')
     
-    # Email Config (para alertas)
-    EMAIL_ENABLED: bool = os.getenv('EMAIL_ENABLED', '').lower() == 'true'
-    EMAIL_FROM: Optional[str] = os.getenv('EMAIL_FROM')
+    # Email Config - GMAIL CONFIGURADO with defaults
+    EMAIL_ENABLED: bool = os.getenv('EMAIL_ENABLED', 'true').lower() == 'true'
+    EMAIL_FROM: str = os.getenv('EMAIL_FROM', 'noreply@roteirosdedispensacao.com')
+    EMAIL_FROM_NAME: str = os.getenv('EMAIL_FROM_NAME', 'Roteiro de Dispensação PQT-U')
+    EMAIL_REPLY_TO: str = os.getenv('EMAIL_REPLY_TO', 'suporte@roteirosdedispensacao.com')
     EMAIL_SMTP_HOST: str = os.getenv('EMAIL_SMTP_HOST', 'smtp.gmail.com')
     EMAIL_SMTP_PORT: int = int(os.getenv('EMAIL_SMTP_PORT', 587))
-    EMAIL_PASSWORD: Optional[str] = os.getenv('EMAIL_PASSWORD')  # App password
+    EMAIL_SMTP_USE_TLS: bool = os.getenv('EMAIL_SMTP_USE_TLS', 'true').lower() == 'true'
+    EMAIL_PASSWORD: Optional[str] = os.getenv('EMAIL_PASSWORD', '')  # Gmail App password with fallback
     
     # Google Cloud Config
     GCP_PROJECT_ID: Optional[str] = os.getenv('GCP_PROJECT_ID')
@@ -172,6 +221,16 @@ class AppConfig:
     METRICS_RETENTION_DAYS: int = int(os.getenv('METRICS_RETENTION_DAYS', '30'))
     MEDICAL_METRICS_NAMESPACE: str = os.getenv('MEDICAL_METRICS_NAMESPACE', 'medical_platform')
     GOOGLE_CLOUD_MONITORING_ENABLED: bool = os.getenv('GOOGLE_CLOUD_MONITORING_ENABLED', 'true').lower() == 'true'
+
+    # Advanced Systems Config - ATIVADOS POR PADRÃO
+    UX_MONITORING_ENABLED: bool = os.getenv('UX_MONITORING_ENABLED', 'true').lower() == 'true'
+    PREDICTIVE_ANALYTICS_ENABLED: bool = os.getenv('PREDICTIVE_ANALYTICS_ENABLED', 'true').lower() == 'true'
+    ADVANCED_ANALYTICS_ENABLED: bool = os.getenv('ADVANCED_ANALYTICS_ENABLED', 'true').lower() == 'true'
+    PERSONA_ANALYTICS_ENABLED: bool = os.getenv('PERSONA_ANALYTICS_ENABLED', 'true').lower() == 'true'
+    BEHAVIOR_TRACKING_ENABLED: bool = os.getenv('BEHAVIOR_TRACKING_ENABLED', 'true').lower() == 'true'
+    LEARNING_ANALYTICS_ENABLED: bool = os.getenv('LEARNING_ANALYTICS_ENABLED', 'true').lower() == 'true'
+    PERFORMANCE_MONITORING_ENABLED: bool = os.getenv('PERFORMANCE_MONITORING_ENABLED', 'true').lower() == 'true'
+    AI_SUGGESTIONS_ENABLED: bool = os.getenv('AI_SUGGESTIONS_ENABLED', 'true').lower() == 'true'
     
     
     # Data Redaction for Logs
@@ -201,25 +260,26 @@ class AppConfig:
         return True
 
     def get_required_env_vars(self) -> list:
-        """Retorna lista de variáveis de ambiente obrigatórias"""
-        required = [
-            'SECRET_KEY',
-            'OPENROUTER_API_KEY',
-            'CORS_ORIGINS'
-        ]
-        
-        if self.ASTRA_DB_ENABLED:
-            required.extend(['ASTRA_DB_URL', 'ASTRA_DB_TOKEN', 'ASTRA_DB_KEYSPACE'])
-        
-        # Redis removido - usando apenas Firestore cache
-        
-        if self.EMAIL_ENABLED:
-            required.extend(['EMAIL_FROM', 'EMAIL_PASSWORD'])
-            
+        """Retorna lista de variáveis de ambiente obrigatórias para prodção"""
+        # Only require these in production environment
         if os.getenv('ENVIRONMENT') == 'production':
+            required = [
+                'SECRET_KEY',
+                'OPENROUTER_API_KEY',
+                'CORS_ORIGINS',
+                'EMAIL_FROM',
+                'EMAIL_PASSWORD'
+            ]
+
+            # Validar Supabase se habilitado
+            if self.SUPABASE_URL:
+                required.extend(['SUPABASE_ANON_KEY', 'SUPABASE_SERVICE_KEY'])
+
             required.extend(['GCP_PROJECT_ID', 'GCP_REGION'])
-            
-        return required
+            return required
+
+        # In development, no variables are strictly required due to defaults
+        return []
 
 @dataclass
 class EnvironmentConfig:
@@ -248,6 +308,41 @@ class EnvironmentConfig:
         """Verifica se está em staging"""
         return EnvironmentConfig.get_current() == 'staging'
 
+# Adicionar configurações extras no AppConfig após line 189
+def _add_multimodal_and_celery_config():
+    """Adiciona configurações de multimodal e Celery ao AppConfig"""
+
+    # Multimodal Processing - ATIVADO
+    AppConfig.MULTIMODAL_PROCESSING = os.getenv('MULTIMODAL_PROCESSING', 'true').lower() == 'true'
+    AppConfig.OCR_ENABLED = os.getenv('OCR_ENABLED', 'true').lower() == 'true'
+    AppConfig.COMPUTER_VISION = os.getenv('COMPUTER_VISION', 'true').lower() == 'true'
+    AppConfig.DOCUMENT_ANALYSIS = os.getenv('DOCUMENT_ANALYSIS', 'true').lower() == 'true'
+    AppConfig.IMAGE_UPLOAD_MAX_SIZE = int(os.getenv('IMAGE_UPLOAD_MAX_SIZE', 10485760))  # 10MB
+    AppConfig.ALLOWED_IMAGE_FORMATS = os.getenv('ALLOWED_IMAGE_FORMATS', 'jpg,jpeg,png,pdf,tiff').split(',')
+
+    # Tesseract Config
+    AppConfig.TESSDATA_PREFIX = os.getenv('TESSDATA_PREFIX', '/usr/share/tesseract-ocr/5/tessdata/')
+    AppConfig.OCR_LANGUAGE = os.getenv('OCR_LANGUAGE', 'por+eng')
+    AppConfig.OCR_PSM = int(os.getenv('OCR_PSM', 6))  # Page segmentation mode
+
+    # Background Jobs (Celery) - ATIVADO
+    AppConfig.CELERY_ENABLED = os.getenv('CELERY_ENABLED', 'true').lower() == 'true'
+    AppConfig.BACKGROUND_ANALYTICS = os.getenv('BACKGROUND_ANALYTICS', 'true').lower() == 'true'
+    AppConfig.AUTO_BACKUP_ENABLED = os.getenv('AUTO_BACKUP_ENABLED', 'true').lower() == 'true'
+    AppConfig.BACKGROUND_REPORTS = os.getenv('BACKGROUND_REPORTS', 'true').lower() == 'true'
+
+    # SQLite specific configs
+    AppConfig.SQLITE_DB_PATH = os.getenv('SQLITE_DB_PATH', './data/roteiros.db')
+    AppConfig.SQLITE_BACKUP_INTERVAL = int(os.getenv('SQLITE_BACKUP_INTERVAL', 3600))  # 1 hora
+    AppConfig.SQLITE_AUTO_VACUUM = os.getenv('SQLITE_AUTO_VACUUM', 'true').lower() == 'true'
+
+    # Add runtime environment detection
+    AppConfig.ENVIRONMENT = os.getenv('ENVIRONMENT', 'development')
+    AppConfig.IS_CLOUD_RUN = bool(os.getenv('K_SERVICE') or os.getenv('CLOUD_RUN_ENV'))
+
+# Executar adição de configurações
+_add_multimodal_and_celery_config()
+
 # Instância global de configuração
 config = AppConfig()
 
@@ -265,10 +360,20 @@ except Exception as e:
 
 # Logging será configurado no main.py para evitar duplicação
 
-# Listar variáveis obrigatórias não configuradas
+# Listar variáveis obrigatórias não configuradas (apenas em produção)
+current_env = os.getenv('ENVIRONMENT', 'development')
 missing_vars = [var for var in config.get_required_env_vars() if not os.getenv(var)]
-if missing_vars:
-    logging.warning(f"Variáveis de ambiente faltando: {', '.join(missing_vars)}")
+
+if missing_vars and current_env == 'production':
+    logging.error(f"CRITICAL: Variáveis de ambiente obrigatórias faltando em produção: {', '.join(missing_vars)}")
+elif missing_vars and current_env != 'development':
+    logging.warning(f"Variáveis de ambiente recomendadas faltando: {', '.join(missing_vars)}")
+else:
+    # In development, show info about optional configuration
+    optional_vars = ['OPENROUTER_API_KEY', 'EMAIL_PASSWORD', 'SUPABASE_URL']
+    missing_optional = [var for var in optional_vars if not os.getenv(var)]
+    if missing_optional:
+        logging.info(f"Para funcionalidade completa, configure: {', '.join(missing_optional)}")
 
 # Export configurations
 __all__ = ['config', 'AppConfig', 'EnvironmentConfig']

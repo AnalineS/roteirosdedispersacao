@@ -47,12 +47,9 @@ export const MobileDosageCard: React.FC<{ dosage: DosageInfo }> = ({ dosage }) =
   const { isMobile } = useMobileDetection();
   
   return (
-    <MobileCard 
+    <MobileCard
       variant={dosage.critical ? 'emergency' : 'prescription'}
-      style={{
-        borderLeft: `6px solid ${dosage.critical ? '#dc2626' : '#0ea5e9'}`,
-        marginBottom: '1rem'
-      }}
+      className={`border-l-6 mb-4 ${dosage.critical ? 'border-l-red-600' : 'border-l-blue-500'}`}
     >
       <div className="mobile-flex-col mobile-gap-sm">
         {/* Header com medicamento */}
@@ -167,7 +164,7 @@ export const MobileEmergencyContacts: React.FC<{ contacts: EmergencyContact[] }>
   }, []);
   
   return (
-    <MobileCard variant="emergency" style={{ background: '#fee2e2', borderColor: '#dc2626' }}>
+    <MobileCard variant="emergency" className="bg-red-100 border-red-600">
       <div className="mobile-flex-col mobile-gap-sm">
         <h3 style={{
           fontSize: isMobile ? '1.125rem' : '1.25rem',
@@ -207,18 +204,12 @@ export const MobileEmergencyContacts: React.FC<{ contacts: EmergencyContact[] }>
                   </div>
                 </div>
                 
-                <MobileButton
-                  variant="emergency"
-                  size="medium"
+                <button
+                  className="mobile-button mobile-emergency min-w-[60px] px-3 py-2 text-sm"
                   onClick={() => handleCall(contact.phone)}
-                  style={{
-                    minWidth: '60px',
-                    padding: '8px 12px',
-                    fontSize: '0.875rem'
-                  }}
                 >
                   📞 Ligar
-                </MobileButton>
+                </button>
               </div>
             </div>
           ))}
@@ -474,21 +465,14 @@ export const MobileQuickActions: React.FC<{
   return (
     <div className="mobile-grid mobile-grid-2 mobile-gap-sm" style={{ marginBottom: '1rem' }}>
       {actions.map((action) => (
-        <MobileButton
+        <button
           key={action.id}
-          variant={action.variant === 'emergency' ? 'emergency' : 'primary'}
+          className={`mobile-button ${action.variant === 'emergency' ? 'mobile-emergency' : 'mobile-primary'} h-20 flex-col gap-2 text-sm font-semibold`}
           onClick={action.action}
-          style={{
-            height: '80px',
-            flexDirection: 'column',
-            gap: '8px',
-            fontSize: '0.875rem',
-            fontWeight: '600'
-          }}
         >
           <span style={{ fontSize: '1.5rem' }}>{action.icon}</span>
           {action.label}
-        </MobileButton>
+        </button>
       ))}
     </div>
   );

@@ -33,7 +33,7 @@
   - changed-files:
     - any-glob-to-any-file:
       - "*.json"
-      - "*.yml" 
+      - "*.yml"
       - "*.yaml"
       - "*.toml"
       - "*.env*"
@@ -53,7 +53,7 @@
   - changed-files:
     - any-glob-to-any-file:
       - "apps/backend/src/routes/**/*"
-      - "apps/backend/src/controllers/**/*" 
+      - "apps/backend/src/controllers/**/*"
       - "apps/frontend-nextjs/src/pages/**/*"
       - "apps/frontend-nextjs/src/components/**/*"
 
@@ -134,7 +134,7 @@
   - changed-files:
     - any-glob-to-any-file:
       - "apps/backend/src/models/**/*"
-      - "apps/backend/migrations/**/*"  
+      - "apps/backend/migrations/**/*"
       - "apps/frontend-nextjs/src/types/**/*"
 
 "dependabot":

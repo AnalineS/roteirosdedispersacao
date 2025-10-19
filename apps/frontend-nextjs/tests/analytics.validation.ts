@@ -50,7 +50,7 @@ let capturedLogs: Array<{ level: string; message: string; timestamp: number }> =
 function startLogCapture() {
   capturedLogs = [];
   
-  console.log = (...args: any[]) => {
+  console.log = (...args: unknown[]) => {
     capturedLogs.push({
       level: 'log',
       message: args.join(' '),
@@ -59,7 +59,7 @@ function startLogCapture() {
     originalConsoleLog(...args);
   };
   
-  console.error = (...args: any[]) => {
+  console.error = (...args: unknown[]) => {
     capturedLogs.push({
       level: 'error',
       message: args.join(' '),
@@ -68,7 +68,7 @@ function startLogCapture() {
     originalConsoleError(...args);
   };
   
-  console.warn = (...args: any[]) => {
+  console.warn = (...args: unknown[]) => {
     capturedLogs.push({
       level: 'warn',
       message: args.join(' '),

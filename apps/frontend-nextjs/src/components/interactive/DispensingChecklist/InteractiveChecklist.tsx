@@ -8,6 +8,7 @@ import {
   ChecklistConfig,
   QualityMetrics 
 } from '@/types/checklist';
+import { ClipboardIcon, CheckIcon, HeartIcon } from '@/components/icons/FlatOutlineIcons';
 import { modernChatTheme } from '@/config/modernTheme';
 
 interface InteractiveChecklistProps {
@@ -24,7 +25,7 @@ export default function InteractiveChecklist({
   patientName,
   onSessionSave,
   onSessionComplete
-}: InteractiveChecklistProps) {
+}: InteractiveChecklistProps): React.JSX.Element {
   const announcementRef = useRef<HTMLDivElement>(null);
   const [session, setSession] = useState<DispensingSession>(() => ({
     id: `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -51,7 +52,7 @@ export default function InteractiveChecklist({
   const [announcement, setAnnouncement] = useState<string>('');
 
   // Anunciar mudanças para leitores de tela
-  const announceChange = useCallback((message: string) => {
+  const announceChange = useCallback((message: string): void => {
     setAnnouncement(message);
     if (announcementRef.current) {
       announcementRef.current.textContent = message;
@@ -66,7 +67,7 @@ export default function InteractiveChecklist({
         handleSave();
       }, 30000); // Auto-save every 30 seconds
 
-      return () => clearTimeout(saveTimer);
+      return (): void => clearTimeout(saveTimer);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session, autoSave, config.allowSave]);
@@ -96,7 +97,7 @@ export default function InteractiveChecklist({
     return totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
   }, []);
 
-  const handleItemToggle = useCallback((stageId: string, activityId: string, itemId: string) => {
+  const handleItemToggle = useCallback((stageId: string, activityId: string, itemId: string): void => {
     if (!config.allowEdit) return;
 
     setSession(prevSession => {
@@ -142,7 +143,7 @@ export default function InteractiveChecklist({
     });
   }, [config.allowEdit, calculateStageProgress, calculateOverallProgress, onSessionComplete, announceChange]);
 
-  const handleAddNote = useCallback((stageId: string, activityId: string, itemId: string, note: string) => {
+  const handleAddNote = useCallback((stageId: string, activityId: string, itemId: string, note: string): void => {
     if (!config.allowNotes) return;
 
     setSession(prevSession => {
@@ -163,14 +164,14 @@ export default function InteractiveChecklist({
     });
   }, [config.allowNotes]);
 
-  const handlePharmacistNotesChange = useCallback((notes: string) => {
+  const handlePharmacistNotesChange = useCallback((notes: string): void => {
     setSession(prevSession => ({
       ...prevSession,
       pharmacistNotes: notes
     }));
   }, []);
 
-  const handleSave = useCallback(() => {
+  const handleSave = useCallback((): void => {
     if (config.allowSave) {
       onSessionSave?.(session);
       setLastSaved(new Date());
@@ -178,7 +179,7 @@ export default function InteractiveChecklist({
     }
   }, [config.allowSave, session, onSessionSave, announceChange]);
 
-  const handlePauseSession = useCallback(() => {
+  const handlePauseSession = useCallback((): void => {
     setSession(prevSession => ({
       ...prevSession,
       status: 'paused'
@@ -187,7 +188,7 @@ export default function InteractiveChecklist({
     announceChange('Sessão pausada');
   }, [handleSave, announceChange]);
 
-  const handleResumeSession = useCallback(() => {
+  const handleResumeSession = useCallback((): void => {
     setSession(prevSession => ({
       ...prevSession,
       status: 'in_progress'
@@ -195,20 +196,22 @@ export default function InteractiveChecklist({
     announceChange('Sessão retomada');
   }, [announceChange]);
 
-  const getStageIcon = (stage: WorkflowStage) => {
-    if (stage.isCompleted) return '✅';
+  const getStageIcon = (stage: WorkflowStage): React.JSX.Element => {
+    if (stage.isCompleted) return <CheckIcon size={20} color="#22c55e" />;
     const progress = calculateStageProgress(stage);
-    if (progress > 0) return '⏳';
-    return stage.sequence === 1 ? '🔍' : stage.sequence === 2 ? '📋' : '📊';
+    if (progress > 0) return <HeartIcon size={20} color="#f59e0b" />;
+    return stage.sequence === 1 ? <ClipboardIcon size={20} color="#6366f1" /> : 
+           stage.sequence === 2 ? <ClipboardIcon size={20} color="#8b5cf6" /> : 
+           <HeartIcon size={20} color="#06b6d4" />;
   };
 
-  const getCurrentStageIndex = () => {
+  const getCurrentStageIndex = (): number => {
     return session.stages.findIndex(stage => !stage.isCompleted);
   };
 
   // Navegação por teclado
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
+    const handleKeyDown = (e: KeyboardEvent): void => {
       // Alt + S para salvar
       if (e.altKey && e.key === 's') {
         e.preventDefault();
@@ -244,7 +247,7 @@ export default function InteractiveChecklist({
     };
 
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    return (): void => window.removeEventListener('keydown', handleKeyDown);
   }, [session, expandedStage, handleSave, handlePauseSession, handleResumeSession, announceChange]);
 
   return (
@@ -683,7 +686,7 @@ function StageDetailView({
   onAddNote,
   expandedActivity,
   onActivityToggle
-}: StageDetailViewProps) {
+}: StageDetailViewProps): React.JSX.Element {
   const [editingNote, setEditingNote] = useState<string | null>(null);
   const [noteText, setNoteText] = useState('');
 

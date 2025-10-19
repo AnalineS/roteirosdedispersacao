@@ -1,0 +1,118 @@
+{
+  "mcpServers": {
+    "supabase-dev": {
+      "url": "https://mcp.supabase.com/mcp",
+      "metadata": {
+        "description": "Supabase MCP Server for development environment only",
+        "environment": "development",
+        "warning": "NEVER connect to production project - dev environment only",
+        "features": [
+          "database",
+          "docs",
+          "debugging",
+          "development",
+          "functions",
+          "storage"
+        ],
+        "excluded_features": [
+          "branching"
+        ],
+        "security": {
+          "read_only_mode": false,
+          "require_code_review": true,
+          "auto_backup_before_use": true
+        },
+        "setup_notes": [
+          "1. Create separate Supabase dev project",
+          "2. Copy production schema (read-only)",
+          "3. OAuth2 login will prompt in browser",
+          "4. Select ONLY dev project during auth",
+          "5. Never select production project"
+        ]
+      }
+    },
+    "context7": {
+      "url": "https://context7.com/mcp",
+      "metadata": {
+        "description": "Context7 documentation and code snippets",
+        "use_for": [
+          "Library documentation",
+          "Code examples",
+          "Best practices"
+        ]
+      }
+    },
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@executeautomation/playwright-mcp-server"
+      ],
+      "metadata": {
+        "description": "Playwright browser automation for testing",
+        "use_for": [
+          "E2E testing",
+          "Browser automation",
+          "Accessibility testing"
+        ]
+      }
+    }
+  },
+  "settings": {
+    "default_timeout": 30000,
+    "max_retries": 3,
+    "log_level": "info"
+  },
+  "security_policy": {
+    "supabase_restrictions": {
+      "production_access": "FORBIDDEN",
+      "environments_allowed": ["development", "local"],
+      "code_review_required": true,
+      "backup_before_changes": true,
+      "operations_whitelist": [
+        "schema_design",
+        "query_testing",
+        "performance_analysis",
+        "documentation_search"
+      ],
+      "operations_blacklist": [
+        "production_modification",
+        "data_deletion_without_review",
+        "rls_policy_changes_without_review"
+      ]
+    }
+  },
+  "workflows": {
+    "schema_design": {
+      "description": "Safe schema design workflow with MCP",
+      "steps": [
+        "1. Use Supabase MCP to design schema in dev project",
+        "2. Review generated SQL manually",
+        "3. Test in dev environment",
+        "4. Create migration file manually",
+        "5. Code review migration",
+        "6. Deploy to production via CI/CD"
+      ]
+    },
+    "query_testing": {
+      "description": "Test complex queries safely",
+      "steps": [
+        "1. Describe query in natural language to MCP",
+        "2. Review generated SQL",
+        "3. Test with dev data",
+        "4. Optimize based on EXPLAIN ANALYZE",
+        "5. Copy to production code after review"
+      ]
+    },
+    "performance_debugging": {
+      "description": "Debug performance issues",
+      "steps": [
+        "1. Ask MCP for performance advisors",
+        "2. Review recommendations",
+        "3. Test index additions in dev",
+        "4. Measure impact",
+        "5. Apply to production via migration"
+      ]
+    }
+  }
+}

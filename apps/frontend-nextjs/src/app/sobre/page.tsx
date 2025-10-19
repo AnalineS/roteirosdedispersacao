@@ -4,6 +4,7 @@ import React from 'react';
 import Image from 'next/image';
 import { modernChatTheme } from '@/config/modernTheme';
 import EducationalLayout from '@/components/layout/EducationalLayout';
+import { urls } from '@/utils/environmentUrls';
 import {
   ChecklistIcon,
   GraduationIcon,
@@ -26,11 +27,11 @@ import {
 } from '@/components/icons/EducationalIcons';
 
 /**
- * Página dos Pesquisadores Envolvidos
+ * Página Conheça a Equipe
  * Apresentação da equipe multidisciplinar do projeto Hanseníase PQT-U
  */
 
-export default function SobrePage() {
+export default function ConhecaEquipePage() {
   return (
     <EducationalLayout>
       <div style={{
@@ -66,7 +67,7 @@ export default function SobrePage() {
               color: modernChatTheme.colors.neutral.text,
               margin: 0
             }}>
-              Pesquisadores Envolvidos
+              Conheça a Equipe
             </h1>
           </div>
           
@@ -1195,7 +1196,7 @@ export default function SobrePage() {
             }}>
               MOURA JÚNIOR, Nélio Gomes de. <strong>Sistema Educacional PQT-U: Roteiros de Dispensação para Hanseníase</strong>. 
               2024. Tese (Doutorado em Ciências Farmacêuticas) - Universidade de Brasília, Brasília, 2024. 
-              Disponível em: https://roteirosdedispensacao.com. Acesso em: [data].
+              Disponível em: {urls.base()}. Acesso em: [data].
             </div>
           </div>
 
@@ -1222,7 +1223,7 @@ export default function SobrePage() {
             }}>
               MOURA JÚNIOR, N. G.; AKKATI, S. C. F.; FRANÇA, S. O. C.; BRANDÃO, L. B. G.; SODRÉ, B. M. C.; SANTANA, R. S. 
               <strong>Roteiros de Dispensação: Sistema Inteligente de Orientação para Hanseníase</strong>. Brasília: UnB, 2024. 
-              Disponível em: https://roteirosdedispensacao.com. Acesso em: [data].
+              Disponível em: {urls.base()}. Acesso em: [data].
             </div>
           </div>
 
@@ -1570,6 +1571,113 @@ export default function SobrePage() {
               saúde pública e metodologia científica para desenvolver protocolos seguros e baseados em evidências 
               para o Sistema Único de Saúde.
             </p>
+          </div>
+
+          {/* Dicas Interativas - LightbulbIcon ativado */}
+          <div style={{
+            marginTop: modernChatTheme.spacing.xl,
+            padding: modernChatTheme.spacing.lg,
+            background: `linear-gradient(135deg, ${modernChatTheme.colors.unb.primary}08, ${modernChatTheme.colors.unb.secondary}08)`,
+            borderRadius: modernChatTheme.borderRadius.md,
+            border: `1px solid ${modernChatTheme.colors.unb.primary}30`
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: modernChatTheme.spacing.sm,
+              marginBottom: modernChatTheme.spacing.md
+            }}>
+              <LightbulbIcon size={24} color={modernChatTheme.colors.unb.primary} />
+              <h3 style={{
+                fontSize: '18px',
+                fontWeight: '600',
+                color: modernChatTheme.colors.neutral.text,
+                margin: 0
+              }}>
+                Dicas para Aproveitar Melhor a Plataforma
+              </h3>
+            </div>
+
+            <div style={{
+              display: 'grid',
+              gap: modernChatTheme.spacing.md,
+              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))'
+            }}>
+              <div style={{
+                padding: modernChatTheme.spacing.sm,
+                background: 'white',
+                borderRadius: modernChatTheme.borderRadius.sm,
+                border: `1px solid ${modernChatTheme.colors.neutral.border}`
+              }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: modernChatTheme.spacing.xs,
+                  marginBottom: modernChatTheme.spacing.xs
+                }}>
+                  <span style={{ fontSize: '16px' }}>💬</span>
+                  <strong style={{ fontSize: '14px', color: modernChatTheme.colors.neutral.text }}>Chat Inteligente</strong>
+                </div>
+                <p style={{
+                  fontSize: '13px',
+                  color: modernChatTheme.colors.neutral.textMuted,
+                  margin: 0,
+                  lineHeight: '1.4'
+                }}>
+                  Use perguntas específicas como "Como calcular dose para criança de 8 anos com 25kg?" para obter respostas mais precisas.
+                </p>
+              </div>
+
+              <div style={{
+                padding: modernChatTheme.spacing.sm,
+                background: 'white',
+                borderRadius: modernChatTheme.borderRadius.sm,
+                border: `1px solid ${modernChatTheme.colors.neutral.border}`
+              }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: modernChatTheme.spacing.xs,
+                  marginBottom: modernChatTheme.spacing.xs
+                }}>
+                  <span style={{ fontSize: '16px' }}>🎮</span>
+                  <strong style={{ fontSize: '14px', color: modernChatTheme.colors.neutral.text }}>Simulações Práticas</strong>
+                </div>
+                <p style={{
+                  fontSize: '13px',
+                  color: modernChatTheme.colors.neutral.textMuted,
+                  margin: 0,
+                  lineHeight: '1.4'
+                }}>
+                  Complete os casos clínicos do simulador para ganhar XP e desbloquear conquistas educacionais.
+                </p>
+              </div>
+
+              <div style={{
+                padding: modernChatTheme.spacing.sm,
+                background: 'white',
+                borderRadius: modernChatTheme.borderRadius.sm,
+                border: `1px solid ${modernChatTheme.colors.neutral.border}`
+              }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: modernChatTheme.spacing.xs,
+                  marginBottom: modernChatTheme.spacing.xs
+                }}>
+                  <span style={{ fontSize: '16px' }}>📱</span>
+                  <strong style={{ fontSize: '14px', color: modernChatTheme.colors.neutral.text }}>Acesso Mobile</strong>
+                </div>
+                <p style={{
+                  fontSize: '13px',
+                  color: modernChatTheme.colors.neutral.textMuted,
+                  margin: 0,
+                  lineHeight: '1.4'
+                }}>
+                  Instale a PWA no seu celular para acesso rápido durante consultas e dispensações.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>

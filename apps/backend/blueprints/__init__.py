@@ -7,7 +7,6 @@ Organização por domínio de responsabilidade
 from .chat_blueprint import chat_bp
 from .personas_blueprint import personas_bp
 from .feedback_blueprint import feedback_bp
-from .health_blueprint import health_bp
 from .monitoring_blueprint import monitoring_bp
 from .metrics_blueprint import metrics_bp
 from .docs_blueprint import docs_bp
@@ -15,6 +14,14 @@ from .analytics_blueprint import analytics_bp
 from .predictions_blueprint import predictions_bp
 from .multimodal_blueprint import multimodal_bp
 from .observability import observability_bp
+
+# Import health blueprint (com fallback)
+try:
+    from .health_blueprint import health_bp
+    HEALTH_BP_AVAILABLE = True
+except ImportError:
+    HEALTH_BP_AVAILABLE = False
+    health_bp = None
 
 # Import cache blueprint
 try:
@@ -45,7 +52,6 @@ ALL_BLUEPRINTS = [
     chat_bp,
     personas_bp,
     feedback_bp,
-    health_bp,
     monitoring_bp,
     metrics_bp,
     docs_bp,
@@ -54,6 +60,10 @@ ALL_BLUEPRINTS = [
     multimodal_bp,
     observability_bp
 ]
+
+# Adicionar health blueprint se disponível
+if HEALTH_BP_AVAILABLE and health_bp:
+    ALL_BLUEPRINTS.append(health_bp)
 
 # Adicionar cache blueprint se disponível
 if CACHE_BP_AVAILABLE and cache_blueprint:
@@ -69,7 +79,7 @@ if SWAGGER_AVAILABLE and swagger_ui_blueprint:
 
 __all__ = [
     'chat_bp',
-    'personas_bp', 
+    'personas_bp',
     'feedback_bp',
     'health_bp',
     'monitoring_bp',

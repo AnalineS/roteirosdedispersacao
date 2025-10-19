@@ -1,45 +1,107 @@
 /**
- * AuthContext - Sistema de Autenticação "Soft"
- * Implementa login opcional com benefícios extras para usuários autenticados
- * Mantém compatibilidade total com o sistema atual (anônimo)
+ * AuthContext - JWT Authentication System
+ * Substituição completa do Firebase Auth por sistema JWT próprio
+ * Mantém compatibilidade com interfaces existentes
  */
 
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import type { 
-  User,
-  AuthProvider
-} from 'firebase/auth';
-import { 
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged,
-  updateProfile,
-  sendPasswordResetEmail,
-  signInAnonymously,
-  linkWithCredential,
-  EmailAuthProvider,
-  deleteUser,
-  signInWithPopup,
-  signInWithRedirect,
-  getRedirectResult
-} from 'firebase/auth';
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef, ReactNode } from 'react';
+import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
+import { jwtClient, User as JWTUser, AuthResponse, GoogleAuthResponse } from '@/lib/auth/jwt-client';
 
-import { auth, FEATURES, getAuthProvider, googleProvider } from '@/lib/firebase/config';
-import { 
-  AuthState, 
-  LoginCredentials, 
-  RegisterData,
-  SocialAuthCredentials,
-  FirestoreUserProfile,
-  AuthUser 
-} from '@/lib/firebase/types';
-import { UserProfileRepository } from '@/lib/firebase/firestore';
+interface AuthenticationError {
+  code?: string;
+  message: string;
+  details?: string;
+}
 
 // ============================================
-// CONTEXT TYPES
+// TYPES
+// ============================================
+
+// Interface compatível com Firebase User
+export interface AuthUser {
+  uid: string;
+  email: string | null;
+  displayName: string | null;
+  emailVerified: boolean;
+  isAnonymous: boolean;
+  photoURL?: string;
+  provider: 'google' | 'email' | 'anonymous';
+}
+
+// Interface de perfil local (substituindo Firestore)
+export interface UserProfile {
+  uid: string;
+  email?: string;
+  displayName?: string;
+  type: 'patient' | 'professional' | 'student' | 'admin';
+  focus: 'general' | 'clinical' | 'research' | 'education';
+  confidence: number;
+  explanation: string;
+  preferences: {
+    language: 'simple' | 'technical';
+    notifications: boolean;
+    theme: 'auto' | 'light' | 'dark';
+    emailUpdates: boolean;
+    dataCollection: boolean;
+    lgpdConsent: boolean;
+  };
+  history: {
+    lastPersona: 'dr_gasnelio' | 'ga';
+    conversationCount: number;
+    lastAccess: string;
+    preferredTopics: string[];
+    totalSessions: number;
+    totalTimeSpent: number;
+    completedModules: string[];
+    achievements: string[];
+  };
+  stats: {
+    joinedAt: string;
+    lastActiveAt: string;
+    sessionCount: number;
+    messageCount: number;
+    averageSessionDuration: number;
+    favoritePersona: 'dr_gasnelio' | 'ga';
+    completionRate: number;
+  };
+  createdAt: string;
+  updatedAt: string;
+  version: string;
+}
+
+// Auth state interface
+export interface AuthState {
+  user: AuthUser | null;
+  loading: boolean;
+  error: string | null;
+  isAuthenticated: boolean;
+  isAnonymous: boolean;
+}
+
+// Credentials interfaces
+export interface LoginCredentials {
+  email: string;
+  password: string;
+}
+
+export interface RegisterData {
+  email: string;
+  password: string;
+  displayName?: string;
+  profileType?: 'patient' | 'professional' | 'student';
+}
+
+export interface SocialAuthCredentials {
+  providerId: 'google.com';
+  preferredDisplayName?: string;
+  preferredProfileType?: 'patient' | 'professional' | 'student';
+}
+
+// ============================================
+// CONTEXT TYPE
 // ============================================
 
 interface AuthContextType extends AuthState {
@@ -48,27 +110,27 @@ interface AuthContextType extends AuthState {
   register: (data: RegisterData) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<{ success: boolean; error?: string }>;
   resetPassword: (email: string) => Promise<{ success: boolean; error?: string }>;
-  
+
   // Social authentication
   loginWithSocial: (credentials: SocialAuthCredentials) => Promise<{ success: boolean; error?: string }>;
   linkSocialAccount: (providerId: string) => Promise<{ success: boolean; error?: string }>;
-  
+
   // Profile management
-  profile: FirestoreUserProfile | null;
-  updateUserProfile: (updates: Partial<FirestoreUserProfile>) => Promise<{ success: boolean; error?: string }>;
+  profile: UserProfile | null;
+  updateUserProfile: (updates: Partial<UserProfile>) => Promise<{ success: boolean; error?: string }>;
   deleteAccount: () => Promise<{ success: boolean; error?: string }>;
-  
+
   // Anonymous/Guest methods
   continueAsGuest: () => Promise<{ success: boolean; error?: string }>;
   upgradeAnonymousAccount: (credentials: LoginCredentials) => Promise<{ success: boolean; error?: string }>;
-  
+
   // Utility methods
   isFeatureAvailable: (feature: 'profiles' | 'conversations' | 'analytics' | 'advanced' | 'admin') => boolean;
   getAccessLevel: () => 'anonymous' | 'authenticated' | 'premium' | 'admin';
   isAdmin: () => boolean;
   refreshAuth: () => Promise<void>;
   clearError: () => void;
-  
+
   // Soft Authentication flags
   showAuthPrompt: boolean;
   dismissAuthPrompt: () => void;
@@ -103,15 +165,109 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [profile, setProfile] = useState<FirestoreUserProfile | null>(null);
-  
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+
   // Soft authentication state
   const [showAuthPrompt, setShowAuthPrompt] = useState(false);
   const [authPromptReason, setAuthPromptReason] = useState<string>();
-  
+
+  // Track if initialization already happened to prevent infinite loop
+  const isInitialized = useRef(false);
+
   // Derived state
   const isAuthenticated = !!user && !user.isAnonymous;
   const isAnonymous = !!user && user.isAnonymous;
+
+  // ============================================
+  // HELPER FUNCTIONS
+  // ============================================
+
+  const convertJWTUserToAuthUser = (jwtUser: JWTUser): AuthUser => ({
+    uid: jwtUser.id,
+    email: jwtUser.email,
+    displayName: jwtUser.name,
+    emailVerified: jwtUser.verified,
+    isAnonymous: false,
+    photoURL: jwtUser.picture,
+    provider: jwtUser.provider
+  });
+
+  const createAnonymousUser = (): AuthUser => ({
+    uid: `anon-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    email: null,
+    displayName: null,
+    emailVerified: false,
+    isAnonymous: true,
+    provider: 'anonymous'
+  });
+
+  // Stable function - no dependencies, takes currentUser as parameter
+  const createDefaultProfile = useCallback((userId: string, currentUser: AuthUser | null): UserProfile => {
+    const now = new Date().toISOString();
+
+    return {
+      uid: userId,
+      email: currentUser?.email || undefined,
+      displayName: currentUser?.displayName || undefined,
+      type: 'patient',
+      focus: 'general',
+      confidence: 0.5,
+      explanation: 'Perfil criado automaticamente',
+      preferences: {
+        language: 'simple',
+        notifications: true,
+        theme: 'auto',
+        emailUpdates: true,
+        dataCollection: true,
+        lgpdConsent: true
+      },
+      history: {
+        lastPersona: 'ga',
+        conversationCount: 0,
+        lastAccess: now,
+        preferredTopics: [],
+        totalSessions: 1,
+        totalTimeSpent: 0,
+        completedModules: [],
+        achievements: []
+      },
+      stats: {
+        joinedAt: now,
+        lastActiveAt: now,
+        sessionCount: 1,
+        messageCount: 0,
+        averageSessionDuration: 0,
+        favoritePersona: 'ga',
+        completionRate: 0
+      },
+      createdAt: now,
+      updatedAt: now,
+      version: '2.0'
+    };
+  }, []);
+
+  // Stable function - takes currentUser as parameter to avoid dependency on 'user' state
+  const loadUserProfile = useCallback(async (userId: string, currentUser: AuthUser | null): Promise<void> => {
+    try {
+      const stored = safeLocalStorage()?.getItem(`user-profile-${userId}`);
+      if (stored) {
+        const parsedProfile = JSON.parse(stored);
+        setProfile(parsedProfile);
+      } else {
+        // Criar perfil padrão
+        const defaultProfile = createDefaultProfile(userId, currentUser);
+        setProfile(defaultProfile);
+        safeLocalStorage()?.setItem(`user-profile-${userId}`, JSON.stringify(defaultProfile));
+      }
+    } catch (error) {
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'user_profile_load_error', {
+          event_category: 'auth',
+          event_label: 'profile_load_failed'
+        });
+      }
+    }
+  }, [createDefaultProfile]);
 
   // ============================================
   // AUTHENTICATION METHODS
@@ -122,28 +278,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setLoading(true);
       setError(null);
 
-      if (!FEATURES.AUTH_ENABLED) {
-        return { success: false, error: 'Autenticação não está habilitada' };
-      }
+      const response: AuthResponse = await jwtClient.loginWithEmail(credentials.email, credentials.password);
 
-      if (!auth) {
-        throw new Error('Firebase auth não está disponível');
-      }
+      const authUser = convertJWTUserToAuthUser(response.user);
+      setUser(authUser);
 
-      const userCredential = await signInWithEmailAndPassword(
-        auth, 
-        credentials.email, 
-        credentials.password
-      );
-
-      // Carregar perfil do usuário
-      if (userCredential.user) {
-        await loadUserProfile(userCredential.user.uid);
-      }
+      await loadUserProfile(authUser.uid, authUser);
 
       return { success: true };
-    } catch (error: any) {
-      const errorMessage = getFirebaseErrorMessage(error.code);
+    } catch (error: AuthenticationError | Error | unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao fazer login';
       setError(errorMessage);
       return { success: false, error: errorMessage };
     } finally {
@@ -152,58 +296,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   const register = async (data: RegisterData): Promise<{ success: boolean; error?: string }> => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      if (!FEATURES.AUTH_ENABLED) {
-        return { success: false, error: 'Autenticação não está habilitada' };
-      }
-
-      if (!auth) {
-        throw new Error('Firebase auth não está disponível');
-      }
-
-      // Criar conta
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        data.email,
-        data.password
-      );
-
-      // Atualizar display name se fornecido
-      if (data.displayName && userCredential.user) {
-        await updateProfile(userCredential.user, {
-          displayName: data.displayName
-        });
-      }
-
-      // Criar perfil inicial no Firestore
-      if (userCredential.user) {
-        await createInitialProfile(userCredential.user, data);
-      }
-
-      return { success: true };
-    } catch (error: any) {
-      const errorMessage = getFirebaseErrorMessage(error.code);
-      setError(errorMessage);
-      return { success: false, error: errorMessage };
-    } finally {
-      setLoading(false);
-    }
+    // Email registration não implementado ainda no backend
+    return { success: false, error: 'Registro com email ainda não implementado. Use login com Google.' };
   };
 
   const logout = async (): Promise<{ success: boolean; error?: string }> => {
     try {
       setLoading(true);
-      if (!auth) {
-        throw new Error('Firebase auth não está disponível');
-      }
-      await signOut(auth);
+      await jwtClient.logout();
+      setUser(null);
       setProfile(null);
       setError(null);
       return { success: true };
-    } catch (error: any) {
+    } catch (error: AuthenticationError | Error | unknown) {
       const errorMessage = 'Erro ao fazer logout';
       setError(errorMessage);
       return { success: false, error: errorMessage };
@@ -213,18 +318,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   const resetPassword = async (email: string): Promise<{ success: boolean; error?: string }> => {
-    try {
-      setError(null);
-      if (!auth) {
-        throw new Error('Firebase auth não está disponível');
-      }
-      await sendPasswordResetEmail(auth, email);
-      return { success: true };
-    } catch (error: any) {
-      const errorMessage = getFirebaseErrorMessage(error.code);
-      setError(errorMessage);
-      return { success: false, error: errorMessage };
-    }
+    // Password reset não implementado ainda no backend
+    return { success: false, error: 'Reset de senha ainda não implementado.' };
   };
 
   // ============================================
@@ -236,45 +331,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setLoading(true);
       setError(null);
 
-      if (!FEATURES.AUTH_ENABLED) {
-        return { success: false, error: 'Autenticação não está habilitada' };
+      if (credentials.providerId !== 'google.com') {
+        return { success: false, error: 'Apenas login com Google é suportado' };
       }
 
-      if (!auth) {
-        throw new Error('Firebase auth não está disponível');
-      }
+      // Iniciar fluxo OAuth Google
+      const googleAuth: GoogleAuthResponse = await jwtClient.initiateGoogleAuth();
 
-      const provider = getAuthProvider(credentials.providerId);
-      
-      // Tentar login com popup primeiro, fallback para redirect em mobile
-      let userCredential;
-      try {
-        userCredential = await signInWithPopup(auth, provider);
-      } catch (popupError: any) {
-        // Se popup falhar (bloqueador de popup ou mobile), usar redirect
-        if (popupError.code === 'auth/popup-blocked' || popupError.code === 'auth/popup-closed-by-user') {
-          await signInWithRedirect(auth, provider);
-          return { success: true }; // O redirect será tratado no onAuthStateChanged
-        }
-        throw popupError;
-      }
+      // Armazenar state para verificação
+      sessionStorage.setItem('oauth_state', googleAuth.state);
 
-      // Atualizar display name se fornecido e diferente
-      if (credentials.preferredDisplayName && 
-          userCredential.user.displayName !== credentials.preferredDisplayName) {
-        await updateProfile(userCredential.user, {
-          displayName: credentials.preferredDisplayName
-        });
-      }
-
-      // Criar perfil inicial se for novo usuário
-      if (userCredential.user) {
-        await createSocialUserProfile(userCredential.user, credentials);
-      }
+      // Redirecionar para Google OAuth
+      window.location.href = googleAuth.authUrl;
 
       return { success: true };
-    } catch (error: any) {
-      const errorMessage = getSocialAuthErrorMessage(error.code);
+    } catch (error: AuthenticationError | Error | unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao iniciar login social';
       setError(errorMessage);
       return { success: false, error: errorMessage };
     } finally {
@@ -283,45 +355,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   const linkSocialAccount = async (providerId: string): Promise<{ success: boolean; error?: string }> => {
-    try {
-      if (!user) {
-        return { success: false, error: 'Usuário não autenticado' };
-      }
-
-      setLoading(true);
-      setError(null);
-
-      if (!auth) {
-        throw new Error('Firebase auth não está disponível');
-      }
-
-      const provider = getAuthProvider(providerId);
-      
-      // Tentar link com popup primeiro
-      let result;
-      try {
-        const socialResult = await signInWithPopup(auth, provider);
-        result = socialResult;
-      } catch (popupError: any) {
-        if (popupError.code === 'auth/popup-blocked') {
-          return { success: false, error: 'Popup foi bloqueado. Habilite popups e tente novamente.' };
-        }
-        throw popupError;
-      }
-
-      // Atualizar perfil com informações adicionais se disponíveis
-      if (result.user) {
-        await loadUserProfile(result.user.uid);
-      }
-
-      return { success: true };
-    } catch (error: any) {
-      const errorMessage = getSocialAuthErrorMessage(error.code);
-      setError(errorMessage);
-      return { success: false, error: errorMessage };
-    } finally {
-      setLoading(false);
-    }
+    return { success: false, error: 'Link de contas sociais ainda não implementado' };
   };
 
   // ============================================
@@ -333,24 +367,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setLoading(true);
       setError(null);
 
-      if (!FEATURES.AUTH_ENABLED) {
-        // Se auth não está habilitado, simular usuário anônimo local
-        setUser({
-          uid: 'local-anonymous',
-          isAnonymous: true,
-          email: null,
-          displayName: null,
-          emailVerified: false
-        } as AuthUser);
-        return { success: true };
-      }
+      const anonUser = createAnonymousUser();
+      setUser(anonUser);
+      await loadUserProfile(anonUser.uid, anonUser);
 
-      if (!auth) {
-        throw new Error('Firebase auth não está disponível');
-      }
-      await signInAnonymously(auth);
       return { success: true };
-    } catch (error: any) {
+    } catch (error: AuthenticationError | Error | unknown) {
       const errorMessage = 'Erro ao continuar como visitante';
       setError(errorMessage);
       return { success: false, error: errorMessage };
@@ -365,28 +387,42 @@ export function AuthProvider({ children }: AuthProviderProps) {
         return { success: false, error: 'Não é possível upgradar esta conta' };
       }
 
-      setLoading(true);
-      setError(null);
+      // Por enquanto, apenas fazer login normal
+      const result = await login(credentials);
 
-      // Criar credencial para link
-      const credential = EmailAuthProvider.credential(credentials.email, credentials.password);
-      
-      // Link anonymous account with email/password  
-      if (!auth) {
-        throw new Error('Firebase auth não está disponível');
+      if (result.success) {
+        // Migrar dados do usuário anônimo se necessário
+        const anonProfileKey = `user-profile-${user.uid}`;
+        const anonProfile = safeLocalStorage()?.getItem(anonProfileKey);
+
+        if (anonProfile && user) {
+          try {
+            const parsedProfile = JSON.parse(anonProfile);
+            // Atualizar com dados do novo usuário
+            parsedProfile.uid = user.uid;
+            parsedProfile.email = user.email;
+            parsedProfile.displayName = user.displayName;
+            parsedProfile.updatedAt = new Date().toISOString();
+
+            safeLocalStorage()?.setItem(`user-profile-${user.uid}`, JSON.stringify(parsedProfile));
+            safeLocalStorage()?.removeItem(anonProfileKey);
+            setProfile(parsedProfile);
+          } catch (e) {
+            if (typeof window !== 'undefined' && window.gtag) {
+              window.gtag('event', 'anonymous_profile_migration_error', {
+                event_category: 'auth',
+                event_label: 'migration_failed'
+              });
+            }
+          }
+        }
       }
-      await linkWithCredential(user as User, credential);
 
-      // Carregar perfil se existir
-      await loadUserProfile(user.uid);
-
-      return { success: true };
-    } catch (error: any) {
-      const errorMessage = getFirebaseErrorMessage(error.code);
+      return result;
+    } catch (error: AuthenticationError | Error | unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao upgradar conta';
       setError(errorMessage);
       return { success: false, error: errorMessage };
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -394,92 +430,43 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // PROFILE MANAGEMENT
   // ============================================
 
-  const loadUserProfile = async (userId: string): Promise<void> => {
+  const updateUserProfile = async (updates: Partial<UserProfile>): Promise<{ success: boolean; error?: string }> => {
     try {
-      if (!FEATURES.FIRESTORE_ENABLED) {
-        return;
+      if (!user) {
+        return { success: false, error: 'Usuário não autenticado' };
       }
 
-      const result = await UserProfileRepository.getProfile(userId);
-      if (result.success && result.data) {
-        setProfile(result.data);
-      }
-    } catch (error) {
-      console.error('Erro ao carregar perfil:', error);
-    }
-  };
+      const updatedProfile = {
+        ...profile,
+        ...updates,
+        updatedAt: new Date().toISOString()
+      } as UserProfile;
 
-  const createInitialProfile = async (user: User, data: RegisterData): Promise<void> => {
-    try {
-      if (!FEATURES.FIRESTORE_ENABLED) {
-        return;
-      }
-
-      const initialProfile: FirestoreUserProfile = {
-        uid: user.uid,
-        email: user.email || undefined,
-        displayName: data.displayName || user.displayName || undefined,
-        type: data.profileType || 'patient',
-        focus: 'general',
-        confidence: 0.5,
-        explanation: 'Perfil criado automaticamente no registro',
-        preferences: {
-          language: 'simple',
-          notifications: true,
-          theme: 'auto',
-          emailUpdates: true,
-          dataCollection: true,
-          lgpdConsent: true
-        },
-        history: {
-          lastPersona: 'ga',
-          conversationCount: 0,
-          lastAccess: new Date().toISOString(),
-          preferredTopics: [],
-          totalSessions: 1,
-          totalTimeSpent: 0,
-          completedModules: [],
-          achievements: []
-        },
-        stats: {
-          joinedAt: new Date() as any, // Will be converted to Timestamp
-          lastActiveAt: new Date() as any,
-          sessionCount: 1,
-          messageCount: 0,
-          averageSessionDuration: 0,
-          favoritePersona: 'ga',
-          completionRate: 0
-        },
-        createdAt: new Date() as any,
-        updatedAt: new Date() as any,
-        version: '2.0',
-        isAnonymous: false
-      };
-
-      const result = await UserProfileRepository.createProfile(initialProfile);
-      if (result.success) {
-        setProfile(initialProfile);
-      }
-    } catch (error) {
-      console.error('Erro ao criar perfil inicial:', error);
-    }
-  };
-
-  const updateUserProfile = async (updates: Partial<FirestoreUserProfile>): Promise<{ success: boolean; error?: string }> => {
-    try {
-      if (!user || !FEATURES.FIRESTORE_ENABLED) {
-        return { success: false, error: 'Usuário não autenticado ou Firestore indisponível' };
+      // Atualizar no backend se usuário está autenticado
+      if (!user.isAnonymous) {
+        try {
+          await jwtClient.updateProfile({
+            name: updates.displayName,
+            picture: updates.preferences?.theme === 'dark' ? undefined : undefined // Placeholder
+          });
+        } catch (backendError) {
+          if (typeof window !== 'undefined' && window.gtag) {
+            window.gtag('event', 'backend_profile_update_error', {
+              event_category: 'auth',
+              event_label: 'backend_update_failed'
+            });
+          }
+        }
       }
 
-      const result = await UserProfileRepository.updateProfileFields(user.uid, updates);
-      
-      if (result.success && profile) {
-        setProfile({ ...profile, ...updates });
-      }
+      // Sempre atualizar localmente
+      setProfile(updatedProfile);
+      safeLocalStorage()?.setItem(`user-profile-${user.uid}`, JSON.stringify(updatedProfile));
 
-      return result;
-    } catch (error: any) {
-      return { success: false, error: error.message };
+      return { success: true };
+    } catch (error: AuthenticationError | Error | unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao atualizar perfil';
+      return { success: false, error: errorMessage };
     }
   };
 
@@ -491,22 +478,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       setLoading(true);
 
-      // Deletar dados do Firestore primeiro
-      if (FEATURES.FIRESTORE_ENABLED && !user.isAnonymous) {
-        await UserProfileRepository.deleteProfile(user.uid);
+      // Deletar dados locais
+      safeLocalStorage()?.removeItem(`user-profile-${user.uid}`);
+
+      if (!user.isAnonymous) {
+        // Fazer logout do backend
+        await jwtClient.logout();
       }
 
-      // Deletar conta do Authentication
-      if (!auth) {
-        throw new Error('Firebase auth não está disponível');
-      }
-      await deleteUser(user as User);
-      
       setProfile(null);
       setUser(null);
 
       return { success: true };
-    } catch (error: any) {
+    } catch (error: AuthenticationError | Error | unknown) {
       const errorMessage = 'Erro ao deletar conta';
       setError(errorMessage);
       return { success: false, error: errorMessage };
@@ -516,164 +500,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   // ============================================
-  // PROFILE MANAGEMENT METHODS (SECOND IMPLEMENTATION - REMOVE)
-  // ============================================
-
-  const updateUserProfileSecond = async (updates: Partial<FirestoreUserProfile>): Promise<{ success: boolean; error?: string }> => {
-    try {
-      if (!user) {
-        return { success: false, error: 'Usuário não autenticado' };
-      }
-
-      setLoading(true);
-      setError(null);
-
-      // Atualizar nome no Firebase Auth se fornecido
-      if (updates.displayName && updates.displayName !== user.displayName) {
-        await updateProfile(user as User, {
-          displayName: updates.displayName
-        });
-      }
-
-      // Atualizar perfil no Firestore se habilitado
-      if (FEATURES.FIRESTORE_ENABLED && profile) {
-        const updatedProfile = {
-          ...profile,
-          ...updates,
-          updatedAt: new Date() as any
-        };
-
-        const result = await UserProfileRepository.updateProfileFields(user.uid, updatedProfile);
-        if (result.success) {
-          setProfile(updatedProfile);
-        } else {
-          return { success: false, error: result.error };
-        }
-      } else {
-        // Atualizar apenas localmente se Firestore não disponível
-        setProfile(prev => prev ? { ...prev, ...updates, updatedAt: new Date() as any } : null);
-      }
-
-      return { success: true };
-    } catch (error: any) {
-      const errorMessage = getFirebaseErrorMessage(error.code);
-      setError(errorMessage);
-      return { success: false, error: errorMessage };
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const deleteAccountSecond = async (): Promise<{ success: boolean; error?: string }> => {
-    try {
-      if (!user) {
-        return { success: false, error: 'Usuário não autenticado' };
-      }
-
-      setLoading(true);
-      setError(null);
-
-      // Deletar perfil do Firestore primeiro
-      if (FEATURES.FIRESTORE_ENABLED && profile) {
-        await UserProfileRepository.deleteProfile(user.uid);
-      }
-
-      // Deletar usuário do Firebase Auth
-      await deleteUser(user as User);
-
-      // Limpar estado local
-      setUser(null);
-      setProfile(null);
-      // isAuthenticated and isAnonymous are derived from user state, no need to set them
-
-      return { success: true };
-    } catch (error: any) {
-      const errorMessage = getFirebaseErrorMessage(error.code);
-      setError(errorMessage);
-      return { success: false, error: errorMessage };
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const createSocialUserProfile = async (user: User, credentials: SocialAuthCredentials): Promise<void> => {
-    try {
-      if (!FEATURES.FIRESTORE_ENABLED) {
-        return;
-      }
-
-      // Extrair informações do provedor social
-      const providerData = user.providerData[0];
-      const displayName = credentials.preferredDisplayName || 
-                         user.displayName || 
-                         providerData?.displayName || 
-                         user.email?.split('@')[0] || 
-                         'Usuário';
-
-      const initialProfile: FirestoreUserProfile = {
-        uid: user.uid,
-        email: user.email || providerData?.email || undefined,
-        displayName: displayName,
-        type: credentials.preferredProfileType || 'patient',
-        focus: 'general',
-        confidence: 0.5,
-        explanation: `Perfil criado via login social (${credentials.providerId})`,
-        preferences: {
-          language: 'simple',
-          notifications: true,
-          theme: 'auto',
-          emailUpdates: true,
-          dataCollection: true,
-          lgpdConsent: true
-        },
-        history: {
-          lastPersona: 'ga',
-          conversationCount: 0,
-          lastAccess: new Date().toISOString(),
-          preferredTopics: [],
-          totalSessions: 1,
-          totalTimeSpent: 0,
-          completedModules: [],
-          achievements: []
-        },
-        stats: {
-          joinedAt: new Date() as any,
-          lastActiveAt: new Date() as any,
-          sessionCount: 1,
-          messageCount: 0,
-          averageSessionDuration: 0,
-          favoritePersona: 'ga',
-          completionRate: 0
-        },
-        createdAt: new Date() as any,
-        updatedAt: new Date() as any,
-        version: '2.0',
-        isAnonymous: false
-      };
-
-      const result = await UserProfileRepository.createProfile(initialProfile);
-      if (result.success) {
-        setProfile(initialProfile);
-      }
-    } catch (error) {
-      console.error('Erro ao criar perfil social:', error);
-    }
-  };
-
-  // ============================================
   // UTILITY METHODS
   // ============================================
 
   const isFeatureAvailable = (feature: 'profiles' | 'conversations' | 'analytics' | 'advanced' | 'admin'): boolean => {
-    if (!FEATURES.AUTH_ENABLED) {
-      return feature === 'profiles'; // Apenas perfis locais disponíveis
-    }
-
     switch (feature) {
       case 'profiles':
         return true; // Sempre disponível
       case 'conversations':
-        return isAuthenticated || isAnonymous; // Disponível para todos os usuários
+        return !!user; // Disponível para todos os usuários (incluindo anônimos)
       case 'analytics':
         return isAuthenticated; // Apenas para usuários autenticados
       case 'advanced':
@@ -696,11 +531,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const refreshAuth = async (): Promise<void> => {
     try {
-      if (user && !user.isAnonymous) {
-        await loadUserProfile(user.uid);
+      if (!user?.isAnonymous) {
+        const currentUser = await jwtClient.getCurrentUser();
+        if (currentUser) {
+          const authUser = convertJWTUserToAuthUser(currentUser);
+          setUser(authUser);
+          await loadUserProfile(authUser.uid, authUser);
+        }
       }
     } catch (error) {
-      console.error('Erro ao atualizar autenticação:', error);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'auth_refresh_error', {
+          event_category: 'auth',
+          event_label: 'refresh_failed'
+        });
+      }
     }
   };
 
@@ -708,7 +553,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const ADMIN_EMAILS = [
     'neeliogomes@hotmail.com',
     'sousa.analine@gmail.com',
-    'roteirosdedispensacao@gmail.com',
+    'roteirosdedispensacaounb@gmail.com',
     'neliogmoura@gmail.com',
   ];
 
@@ -730,50 +575,96 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // EFFECTS
   // ============================================
 
-  // Monitor authentication state
+  // Initialize auth state - runs only once
   useEffect(() => {
-    if (!FEATURES.AUTH_ENABLED) {
-      // Modo offline - simular usuário anônimo
-      setUser({
-        uid: 'local-anonymous',
-        isAnonymous: true,
-        email: null,
-        displayName: null,
-        emailVerified: false
-      } as AuthUser);
-      setLoading(false);
+    // Guard: prevent re-initialization
+    if (isInitialized.current) {
       return;
     }
 
-    if (!auth) {
-      setLoading(false);
-      return () => {}; // Return empty cleanup function
-    }
-
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+    const initAuth = async () => {
       try {
         setLoading(true);
-        
-        if (firebaseUser) {
-          setUser(firebaseUser as AuthUser);
-          
-          // Carregar perfil se não for anônimo
-          if (!firebaseUser.isAnonymous) {
-            await loadUserProfile(firebaseUser.uid);
+
+        // Check for OAuth callback
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
+        const state = urlParams.get('state');
+        const storedState = sessionStorage.getItem('oauth_state');
+
+        if (code && state && state === storedState) {
+          // Complete OAuth flow
+          try {
+            const response: AuthResponse = await jwtClient.completeGoogleAuth(code, state);
+            const authUser = convertJWTUserToAuthUser(response.user);
+            setUser(authUser);
+            await loadUserProfile(authUser.uid, authUser);
+
+            // Clean up URL and storage
+            sessionStorage.removeItem('oauth_state');
+            const newUrl = new URL(window.location.href);
+            newUrl.searchParams.delete('code');
+            newUrl.searchParams.delete('state');
+            window.history.replaceState({}, '', newUrl.toString());
+
+            isInitialized.current = true;
+            return;
+          } catch (oauthError) {
+            if (typeof window !== 'undefined' && window.gtag) {
+              window.gtag('event', 'oauth_completion_error', {
+                event_category: 'auth',
+                event_label: 'google_oauth_failed'
+              });
+            }
+            setError('Erro ao completar login com Google');
           }
-        } else {
-          setUser(null);
-          setProfile(null);
         }
+
+        // Check for existing JWT token
+        if (jwtClient.isAuthenticated()) {
+          try {
+            const currentUser = await jwtClient.getCurrentUser();
+            if (currentUser) {
+              const authUser = convertJWTUserToAuthUser(currentUser);
+              setUser(authUser);
+              await loadUserProfile(authUser.uid, authUser);
+              isInitialized.current = true;
+              return;
+            }
+          } catch (tokenError) {
+            if (typeof window !== 'undefined' && window.gtag) {
+              window.gtag('event', 'token_validation_error', {
+                event_category: 'auth',
+                event_label: 'token_invalid'
+              });
+            }
+            // Token invalid, continue as guest
+          }
+        }
+
+        // Default to anonymous user (only if not already initialized)
+        if (!isInitialized.current) {
+          const anonUser = createAnonymousUser();
+          setUser(anonUser);
+          await loadUserProfile(anonUser.uid, anonUser);
+          isInitialized.current = true;
+        }
+
       } catch (error) {
-        console.error('Erro no estado de autenticação:', error);
-        setError('Erro ao carregar dados do usuário');
+        if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'auth_initialization_error', {
+            event_category: 'auth',
+            event_label: 'init_failed'
+          });
+        }
+        setError('Erro ao carregar dados de autenticação');
       } finally {
         setLoading(false);
       }
-    });
+    };
 
-    return () => unsubscribe();
+    initAuth();
+    // Empty dependency array - run only once on mount
   }, []);
 
   // ============================================
@@ -788,32 +679,32 @@ export function AuthProvider({ children }: AuthProviderProps) {
     isAuthenticated,
     isAnonymous,
     profile,
-    
+
     // Auth methods
     login,
     register,
     logout,
     resetPassword,
-    
+
     // Social auth methods
     loginWithSocial,
     linkSocialAccount,
-    
+
     // Profile management
     updateUserProfile,
     deleteAccount,
-    
+
     // Guest methods
     continueAsGuest,
     upgradeAnonymousAccount,
-    
+
     // Utility methods
     isFeatureAvailable,
     getAccessLevel,
     isAdmin,
     refreshAuth,
     clearError,
-    
+
     // Soft auth
     showAuthPrompt,
     dismissAuthPrompt,
@@ -825,62 +716,4 @@ export function AuthProvider({ children }: AuthProviderProps) {
       {children}
     </AuthContext.Provider>
   );
-}
-
-// ============================================
-// HELPER FUNCTIONS
-// ============================================
-
-function getFirebaseErrorMessage(errorCode: string): string {
-  switch (errorCode) {
-    case 'auth/user-not-found':
-      return 'Usuário não encontrado';
-    case 'auth/wrong-password':
-      return 'Senha incorreta';
-    case 'auth/email-already-in-use':
-      return 'E-mail já está em uso';
-    case 'auth/weak-password':
-      return 'Senha muito fraca';
-    case 'auth/invalid-email':
-      return 'E-mail inválido';
-    case 'auth/too-many-requests':
-      return 'Muitas tentativas. Tente novamente mais tarde';
-    case 'auth/network-request-failed':
-      return 'Erro de conexão. Verifique sua internet';
-    default:
-      return 'Erro de autenticação';
-  }
-}
-
-function getSocialAuthErrorMessage(errorCode: string): string {
-  switch (errorCode) {
-    case 'auth/account-exists-with-different-credential':
-      return 'Uma conta já existe com o mesmo e-mail mas provedor diferente';
-    case 'auth/auth-domain-config-required':
-      return 'Configuração de domínio de autenticação necessária';
-    case 'auth/cancelled-popup-request':
-      return 'Solicitação de popup cancelada';
-    case 'auth/operation-not-allowed':
-      return 'Operação não permitida';
-    case 'auth/popup-blocked':
-      return 'Popup foi bloqueado pelo navegador';
-    case 'auth/popup-closed-by-user':
-      return 'Popup foi fechado pelo usuário';
-    case 'auth/unauthorized-domain':
-      return 'Domínio não autorizado';
-    case 'auth/user-disabled':
-      return 'Conta de usuário foi desabilitada';
-    case 'auth/credential-already-in-use':
-      return 'Esta conta social já está vinculada a outro usuário';
-    case 'auth/provider-already-linked':
-      return 'Esta conta social já está vinculada ao seu perfil';
-    case 'auth/invalid-credential':
-      return 'Credenciais inválidas para este provedor';
-    case 'auth/web-storage-unsupported':
-      return 'Armazenamento web não suportado';
-    case 'auth/network-request-failed':
-      return 'Erro de conexão. Verifique sua internet';
-    default:
-      return getFirebaseErrorMessage(errorCode); // Fallback para erros comuns
-  }
 }

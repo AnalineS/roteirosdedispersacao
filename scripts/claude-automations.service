@@ -1,0 +1,45 @@
+[Unit]
+Description=Claude Automations - Sistema Médico de Monitoramento
+Documentation=https://claude.ai/code
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/app
+Environment=NODE_ENV=production
+Environment=CLAUDE_AUTOMATION_MODE=production
+
+# Comando principal
+ExecStart=/usr/bin/node /app/scripts/activate-claude-automations.js
+
+# Restart automático
+Restart=always
+RestartSec=10
+StartLimitBurst=5
+StartLimitInterval=60
+
+# Logs
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=claude-automations
+
+# Segurança
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/app/logs /app/.claude/automation/reports
+
+# Timeouts
+TimeoutStartSec=30
+TimeoutStopSec=30
+
+# Saúde do processo
+KillMode=mixed
+KillSignal=SIGTERM
+
+[Install]
+WantedBy=multi-user.target

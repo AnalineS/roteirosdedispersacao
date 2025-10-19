@@ -470,12 +470,11 @@ export const HierarchyHeading = ({
   children, 
   className = '', 
   ...props 
-}: { 
-  level: 'h1' | 'h2' | 'h3' | 'h4'; 
-  children: React.ReactNode; 
+}: {
+  level: 'h1' | 'h2' | 'h3' | 'h4';
+  children: React.ReactNode;
   className?: string;
-  [key: string]: any;
-}) => {
+} & React.HTMLAttributes<HTMLHeadingElement>) => {
   const Tag = level;
   return <Tag className={`hierarchy-${level} ${className}`} {...props}>{children}</Tag>;
 };
@@ -485,12 +484,11 @@ export const HierarchyText = ({
   children, 
   className = '', 
   ...props 
-}: { 
-  size?: 'large' | 'normal' | 'small'; 
-  children: React.ReactNode; 
+}: {
+  size?: 'large' | 'normal' | 'small';
+  children: React.ReactNode;
   className?: string;
-  [key: string]: any;
-}) => {
+} & React.HTMLAttributes<HTMLParagraphElement>) => {
   return <p className={`hierarchy-body-${size} ${className}`} {...props}>{children}</p>;
 };
 
@@ -498,10 +496,9 @@ export const HierarchyContainer = ({
   children, 
   className = '', 
   ...props 
-}: { 
-  children: React.ReactNode; 
+}: {
+  children: React.ReactNode;
   className?: string;
-  [key: string]: any;
-}) => {
+} & React.HTMLAttributes<HTMLDivElement>) => {
   return <div className={`hierarchy-content-container ${className}`} {...props}>{children}</div>;
 };

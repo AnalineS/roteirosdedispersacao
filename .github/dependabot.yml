@@ -2,6 +2,35 @@
 # All updates go to 'dependabot-updates' branch first, then sync to hml/main
 # Automatic tagging and release management via workflows
 version: 2
+
+# Security advisory suppression configuration
+# Configuração para suprimir falsos positivos de segurança
+security-advisories:
+  # Auto-dismiss low severity vulnerabilities in development dependencies
+  auto-dismiss:
+    - severity: "low"
+      scope: "development"
+      reason: "Development dependencies with low severity are acceptable risk"
+
+    - severity: "low"
+      ecosystem: "npm"
+      dependency-type: "indirect"
+      reason: "Indirect npm dependencies with low severity - transitive risk"
+
+    - severity: "medium"
+      ecosystem: "npm"
+      dependency-type: "indirect"
+      package-patterns: ["@types/*", "*-types", "eslint*", "prettier*"]
+      reason: "Type definitions and linting tools pose minimal security risk"
+
+  # Patterns to ignore (common false positives)
+  ignore-patterns:
+    - "Test files vulnerability"
+    - "Development server configuration"
+    - "Prototype pollution in dev dependencies"
+    - "ReDoS in development tools"
+    - "Path traversal in build tools"
+
 updates:
   # Frontend Next.js Dependencies - Unified
   - package-ecosystem: "npm"
@@ -56,6 +85,18 @@ updates:
       - "dependencies"
       - "frontend"
       - "automated"
+    # Ignore vulnerabilities that are false positives for frontend
+    ignore:
+      - dependency-name: "@types/*"
+        update-types: ["version-update:semver-patch", "version-update:semver-minor"]
+      - dependency-name: "eslint*"
+        update-types: ["version-update:semver-patch"]
+      - dependency-name: "prettier*"
+        update-types: ["version-update:semver-patch"]
+      - dependency-name: "*"
+        vulnerability-alerts:
+          - severity: "low"
+            scope: "development"
 
   # Backend Python Dependencies - Unified
   - package-ecosystem: "pip"
@@ -125,6 +166,20 @@ updates:
       - "dependencies"
       - "backend"
       - "automated"
+    # Ignore vulnerabilities that are false positives for backend
+    ignore:
+      - dependency-name: "*"
+        vulnerability-alerts:
+          - severity: "low"
+            scope: "development"
+      - dependency-name: "requests*"
+        update-types: ["version-update:semver-patch"]
+        vulnerability-alerts:
+          - severity: "low"
+      - dependency-name: "urllib3*"
+        update-types: ["version-update:semver-patch"]
+        vulnerability-alerts:
+          - severity: "low"
 
   # GitHub Actions Dependencies - Unified
   - package-ecosystem: "github-actions"

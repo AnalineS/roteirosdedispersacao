@@ -11,7 +11,21 @@ export interface UXEvent {
   label?: string;
   value?: number;
   custom_dimensions?: Record<string, string | number>;
+  custom_parameters?: Record<string, unknown>;
 }
+
+// Specific interfaces for Performance API types
+interface PerformanceEntryWithElement extends PerformanceEntry {
+  element?: {
+    tagName: string;
+  };
+}
+
+interface PerformanceEventTimingEntry extends PerformanceEntry {
+  processingStart: number;
+}
+
+// Use global Window interface from types/analytics.ts
 
 export interface CognitiveLoadMetrics {
   elements_per_page: number;
@@ -58,6 +72,21 @@ class UXAnalytics {
   }
 
   private generateSessionId(): string {
+    // CWE-338: Usar crypto.randomUUID() em vez de Math.random()
+    // Contexto: Session ID para UX analytics (GA4, Clarity, métricas)
+    // Não é security-sensitive, mas usar crypto é best practice
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+      return `ux_${Date.now()}_${crypto.randomUUID()}`;
+    }
+
+    // Fallback: Web Crypto API para gerar valores seguros
+    if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+      const array = new Uint32Array(2);
+      crypto.getRandomValues(array);
+      return `ux_${Date.now()}_${array[0].toString(36)}${array[1].toString(36)}`;
+    }
+
+    // Último fallback para compatibilidade extrema
     return `ux_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
 
@@ -77,7 +106,7 @@ class UXAnalytics {
     this.trackEvent({
       category: 'engagement',
       action: 'session_start',
-      custom_dimensions: {
+      custom_parameters: {
         session_id: this.sessionId,
         user_agent: navigator.userAgent,
         screen_resolution: `${screen.width}x${screen.height}`,
@@ -88,14 +117,17 @@ class UXAnalytics {
 
   private setupGA4UXEvents() {
     // Enhanced GA4 tracking for UX metrics
-    if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('config', process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || process.env.GA_MEASUREMENT_ID, {
-        custom_map: {
-          'custom_parameter_1': 'cognitive_load_score',
-          'custom_parameter_2': 'mobile_experience_score',
-          'custom_parameter_3': 'onboarding_completion'
+    if (typeof window !== 'undefined' && window.gtag) {
+      const measurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || process.env.GA_MEASUREMENT_ID;
+      if (measurementId) {
+          window.gtag!('config', measurementId, {
+            custom_map: {
+              'custom_parameter_1': 'cognitive_load_score',
+              'custom_parameter_2': 'mobile_experience_score',
+              'custom_parameter_3': 'onboarding_completion'
+            }
+          });
         }
-      });
     }
   }
 
@@ -104,7 +136,8 @@ class UXAnalytics {
     if (typeof window !== 'undefined' && !document.getElementById('clarity-script')) {
       const script = document.createElement('script');
       script.id = 'clarity-script';
-      script.innerHTML = `
+      // Use textContent instead of innerHTML for safety
+      script.textContent = `
         (function(c,l,a,r,i,t,y){
           c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
           t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
@@ -170,7 +203,7 @@ class UXAnalytics {
       category: 'cognitive_load',
       action: 'page_analysis',
       value: cognitiveLoadScore,
-      custom_dimensions: {
+      custom_parameters: {
         ...metrics,
         page_url: window.location.pathname,
         cognitive_load_score: cognitiveLoadScore
@@ -269,7 +302,7 @@ class UXAnalytics {
     this.trackEvent({
       category: 'mobile_experience',
       action: 'mobile_audit',
-      custom_dimensions: metrics as unknown as Record<string, string | number>
+      custom_parameters: metrics as unknown as Record<string, string | number>
     });
 
     // Track touch accuracy
@@ -374,7 +407,7 @@ class UXAnalytics {
       category: 'onboarding',
       action: 'step_reached',
       value: currentStep,
-      custom_dimensions: {
+      custom_parameters: {
         time_spent: (Date.now() - this.startTime) / 1000,
         session_id: this.sessionId
       }
@@ -385,7 +418,7 @@ class UXAnalytics {
     this.trackEvent({
       category: 'onboarding',
       action: 'completed',
-      custom_dimensions: {
+      custom_parameters: {
         total_time: (Date.now() - this.startTime) / 1000,
         session_id: this.sessionId
       }
@@ -397,7 +430,7 @@ class UXAnalytics {
       category: 'onboarding',
       action: 'abandoned',
       label: reason,
-      custom_dimensions: {
+      custom_parameters: {
         abandonment_point: window.location.pathname,
         time_spent: (Date.now() - this.startTime) / 1000
       }
@@ -434,7 +467,7 @@ class UXAnalytics {
           category: 'navigation',
           action: 'failed_click',
           label: target.tagName.toLowerCase(),
-          custom_dimensions: {
+          custom_parameters: {
             element_text: target.textContent?.substr(0, 50) || '',
             page_url: window.location.pathname
           }
@@ -476,8 +509,8 @@ class UXAnalytics {
           category: 'engagement',
           action: 'lcp',
           value: lastEntry.startTime,
-          custom_dimensions: {
-            element: (lastEntry as any).element?.tagName || 'unknown'
+          custom_parameters: {
+            element: (lastEntry as PerformanceEntryWithElement).element?.tagName || 'unknown'
           }
         });
       }).observe({ entryTypes: ['largest-contentful-paint'] });
@@ -489,7 +522,7 @@ class UXAnalytics {
           this.trackEvent({
             category: 'engagement',
             action: 'fid',
-            value: (entry as any).processingStart - entry.startTime
+            value: (entry as PerformanceEventTimingEntry).processingStart - entry.startTime
           });
         });
       }).observe({ entryTypes: ['first-input'] });
@@ -504,8 +537,8 @@ class UXAnalytics {
     if (!this.isInitialized) return;
 
     // Send to Google Analytics
-    if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('event', event.action, {
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag!('event', event.action, {
         event_category: event.category,
         event_label: event.label,
         value: event.value,
@@ -516,9 +549,18 @@ class UXAnalytics {
     // Send to custom analytics endpoint
     this.sendToCustomEndpoint(event);
 
-    // Console log for development
-    if (process.env.NODE_ENV === 'development') {
-      console.log('UX Event:', event);
+    // Medical tracking for development
+    if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined' && window.gtag) {
+      window.gtag!('event', 'ux_event_tracked', {
+        event_category: 'medical_analytics_development',
+        event_label: 'ux_event_development_log',
+        custom_parameters: {
+          medical_context: 'ux_event_tracking_system',
+          event_category: event.category,
+          event_action: event.action,
+          development_mode: true
+        }
+      });
     }
   }
 
@@ -539,7 +581,18 @@ class UXAnalytics {
           referrer: document.referrer
         })
       }).catch(err => {
-        console.warn('Failed to send UX analytics:', err);
+        // Medical tracking for analytics failures
+        if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag!('event', 'ux_analytics_failed', {
+            event_category: 'medical_analytics_error',
+            event_label: 'ux_analytics_send_failure',
+            custom_parameters: {
+              medical_context: 'ux_analytics_error_system',
+              error_message: err instanceof Error ? err.message : 'Unknown error',
+              failed_operation: 'send_ux_analytics'
+            }
+          });
+        }
       });
     }
   }

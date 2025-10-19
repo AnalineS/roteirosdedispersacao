@@ -1,7 +1,7 @@
 import ReactGA from 'react-ga4';
 
-// Google Analytics Measurement ID - Replace with your actual ID
-const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || 'G-XXXXXXXXXX';
+// Google Analytics Measurement ID - Configured via GitHub secrets
+const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || '';
 
 // Analytics Categories
 export const AnalyticsCategory = {
@@ -47,28 +47,52 @@ export const AnalyticsAction = {
   PROFILE_UPDATE: 'profile_update',
 } as const;
 
+// Medical Interaction Metrics Interface
+interface MedicalInteractionMetric {
+  urgencyLevel: 'critical' | 'important' | 'standard';
+  accessMethod: 'click' | 'keyboard' | 'swipe';
+  timeFromPageLoad: number;
+}
+
+// Medical Task Completion Interface
+interface MedicalTaskCompletion {
+  type: 'drug_interaction' | 'contraindication' | 'emergency_dose' | 'protocol_access';
+  success: boolean;
+  timeToComplete: number;
+  errorCount?: number;
+  urgencyLevel?: 'critical' | 'important' | 'standard';
+}
+
+// Medical Error Event Interface
+interface MedicalErrorEvent {
+  type: 'calculation_error' | 'interaction_missed' | 'navigation_error' | 'system_error';
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  context: string;
+  userAction?: string;
+}
+
 // Custom Metrics Interface
 interface CustomMetrics {
   // Resolution Metrics
   questionResolved: boolean;
   resolutionTime: number;
   followUpNeeded: boolean;
-  
+
   // Session Metrics
   sessionDuration: number;
   messagesCount: number;
   personaSwitches: number;
-  
+
   // Performance Metrics
   apiResponseTime: number;
   fallbackCount: number;
   errorCount: number;
-  
+
   // Educational Metrics
   modulesCompleted: number;
   certificatesEarned: number;
   quizScore?: number;
-  
+
   // Compliance Metrics
   lgpdConsent: boolean;
   dataCategory: 'public' | 'sensitive' | 'medical';
@@ -76,7 +100,7 @@ interface CustomMetrics {
 
 // Initialize GA4
 export const initGA = () => {
-  if (typeof window !== 'undefined' && GA_MEASUREMENT_ID !== 'G-XXXXXXXXXX') {
+  if (typeof window !== 'undefined' && GA_MEASUREMENT_ID) {
     ReactGA.initialize(GA_MEASUREMENT_ID, {
       gaOptions: {
         anonymizeIp: true, // LGPD compliance
@@ -255,6 +279,47 @@ export const trackAdminAction = (
   logEvent('ADMIN', action, details);
 };
 
+// Session Management
+let currentSessionId: string | null = null;
+
+const getCurrentSessionId = (): string => {
+  if (!currentSessionId) {
+    currentSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
+  return currentSessionId;
+};
+
+const getDeviceType = (): 'mobile' | 'tablet' | 'desktop' => {
+  if (typeof window === 'undefined') return 'desktop';
+  const width = window.innerWidth;
+  if (width < 768) return 'mobile';
+  if (width < 1024) return 'tablet';
+  return 'desktop';
+};
+
+// Medical Analytics Functions
+export const trackMedicalInteraction = (metric: MedicalInteractionMetric) => {
+  logEvent('CHAT', 'medical_interaction', metric.urgencyLevel, metric.timeFromPageLoad);
+  logCustomMetrics({
+    resolutionTime: metric.timeFromPageLoad,
+    errorCount: 0
+  });
+};
+
+export const trackMedicalTaskCompletion = (task: MedicalTaskCompletion) => {
+  logEvent('EDUCATION', 'medical_task', task.type, task.timeToComplete);
+  logCustomMetrics({
+    questionResolved: task.success,
+    resolutionTime: task.timeToComplete,
+    errorCount: task.errorCount || 0
+  });
+};
+
+export const trackMedicalError = (error: MedicalErrorEvent) => {
+  logException(`Medical Error: ${error.type} - ${error.context}`, error.severity === 'critical');
+  logEvent('ERROR', 'medical_error', error.type);
+};
+
 // Export all tracking functions
 export const Analytics = {
   init: initGA,
@@ -272,6 +337,10 @@ export const Analytics = {
   education: trackEducationalProgress,
   compliance: trackCompliance,
   admin: trackAdminAction,
+  // Medical tracking functions
+  medicalInteraction: trackMedicalInteraction,
+  medicalTask: trackMedicalTaskCompletion,
+  medicalError: trackMedicalError,
 };
 
 export default Analytics;

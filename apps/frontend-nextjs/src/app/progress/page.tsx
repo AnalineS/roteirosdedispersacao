@@ -1,9 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 import EducationalLayout from '@/components/layout/EducationalLayout';
 import ProgressSystem, { useProgressData } from '@/components/navigation/Progress';
 import { usePersonas } from '@/hooks/usePersonas';
+import { useSafeAuth as useAuth } from '@/hooks/useSafeAuth';
+import { ShareProgress } from '@/components/achievements';
 
 interface PageProgressData {
   totalTime: number;
@@ -42,6 +45,7 @@ interface LearningPathItem {
 }
 
 export default function ProgressPage() {
+  const { user } = useAuth();
   const { personas, loading: personasLoading } = usePersonas();
   const [selectedPersona, setSelectedPersona] = useState<string | null>(null);
   const userProgressData = useProgressData();
@@ -143,11 +147,9 @@ export default function ProgressPage() {
   });
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('selectedPersona');
-      if (stored && personas[stored]) {
-        setSelectedPersona(stored);
-      }
+    const stored = safeLocalStorage()?.getItem('selectedPersona');
+    if (stored && personas[stored]) {
+      setSelectedPersona(stored);
     }
   }, [personas]);
 
@@ -509,6 +511,48 @@ export default function ProgressPage() {
               </div>
             ))}
           </div>
+        </div>
+
+        {/* Share Progress Button - PR #175 */}
+        <div style={{ 
+          textAlign: 'center', 
+          marginBottom: '40px' 
+        }}>
+          <ShareProgress 
+            isOpen={false}
+            onClose={() => {}}
+            progressData={{
+              totalPoints: 250,
+              achievements_count: 3,
+              completedModules: 2,
+              streak: 5,
+              recent_achievements: [
+                {
+                  id: 'first-lesson',
+                  name: 'Primeira lição concluída',
+                  description: 'Completou a primeira lição sobre hanseníase',
+                  badge_url: '',
+                  earned_date: new Date().toISOString(),
+                  xp_gained: 50,
+                  category: 'learning'
+                },
+                {
+                  id: 'study-streak',
+                  name: 'Sequência de estudos',
+                  description: 'Manteve sequência de 5 dias de estudo',
+                  badge_url: '',
+                  earned_date: new Date().toISOString(),
+                  xp_gained: 100,
+                  category: 'consistency'
+                }
+              ]
+            }}
+            userProfile={{
+              name: user?.displayName || 'Usuário',
+              avatar_url: user?.photoURL || '',
+              uid: user?.uid || ''
+            }}
+          />
         </div>
 
         {/* Weekly Progress Chart */}

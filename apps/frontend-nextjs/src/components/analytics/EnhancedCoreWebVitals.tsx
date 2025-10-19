@@ -1,6 +1,79 @@
 'use client';
 
 import { useEffect, useCallback } from 'react';
+import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
+
+interface AdditionalMetricData {
+  pageType?: string;
+  userType?: string;
+  experimentId?: string;
+  sessionId?: string;
+  userId?: string;
+  featureFlags?: string[];
+  customDimensions?: Record<string, string | number>;
+  // Additional properties found in usage
+  recommendation?: string;
+  resource_name?: string;
+  task_duration?: number;
+  performance_score?: number;
+  resource_type?: string;
+  start_time?: number;
+  is_mobile?: boolean;
+  resource_size?: number;
+  is_slow_connection?: boolean;
+}
+
+interface PerformanceMetric {
+  name: string;
+  value: number;
+  rating: 'good' | 'needs-improvement' | 'poor';
+  id: string;
+  delta?: number;
+  navigationType?: string;
+  startTime?: number;
+  duration?: number;
+  // Additional property found in usage
+  entries?: PerformanceEntry[];
+}
+
+interface MetricAccumulator {
+  [key: string]: {
+    values: number[];
+    ratings: string[];
+    count: number;
+    average: number;
+    median: number;
+  };
+}
+
+interface VitalEntry {
+  name: string;
+  value: number;
+  rating: string;
+  timestamp: number;
+  id: string;
+  // Additional property found in usage
+  metrics?: PerformanceMetric[];
+}
+
+interface MetricSummary {
+  totalMetrics: number;
+  goodMetrics: number;
+  needsImprovementMetrics: number;
+  poorMetrics: number;
+  averageValues: Record<string, number>;
+  recommendations: string[];
+  // Additional properties found in usage
+  session_duration?: number;
+  total_measurements?: number;
+  // Allow dynamic property access for avg_${string} patterns
+  [key: string]: unknown;
+  performanceScore: number;
+  timeRange: {
+    start: number;
+    end: number;
+  };
+}
 
 interface WebVitalsMetric {
   name: string;
@@ -9,6 +82,21 @@ interface WebVitalsMetric {
   id: string;
   delta?: number;
   entries: PerformanceEntry[];
+}
+
+interface NavigatorWithConnection extends Navigator {
+  connection?: {
+    effectiveType?: string;
+    type?: string;
+    downlink?: number;
+    rtt?: number;
+  };
+  deviceMemory?: number;
+}
+
+interface PerformanceResourceTiming extends PerformanceEntry {
+  initiatorType?: string;
+  transferSize?: number;
 }
 
 interface ExtendedWebVitalsData {
@@ -93,25 +181,27 @@ const getPerformanceRecommendation = (name: string, rating: string, value: numbe
 };
 
 export default function EnhancedCoreWebVitals() {
-  const sendToAnalytics = useCallback((metric: WebVitalsMetric, additionalData?: any) => {
+  const sendToAnalytics = useCallback((metric: WebVitalsMetric, additionalData?: AdditionalMetricData) => {
     // Send to Google Analytics 4 with enhanced data
     if (typeof window !== 'undefined' && window.gtag) {
       window.gtag('event', 'web_vitals', {
         event_category: 'Web Vitals',
         event_label: metric.name,
         value: Math.round(metric.value),
-        custom_parameter_1: metric.rating,
-        custom_parameter_2: metric.delta || 0,
-        custom_parameter_3: metric.id,
-        // Additional context data
-        page_location: window.location.href,
-        page_title: document.title,
-        user_agent: navigator.userAgent.substring(0, 100),
-        viewport_width: window.innerWidth,
-        viewport_height: window.innerHeight,
-        connection_effective_type: (navigator as any).connection?.effectiveType || 'unknown',
-        device_memory: (navigator as any).deviceMemory || 'unknown',
-        ...additionalData
+        custom_parameters: {
+          custom_parameter_1: metric.rating,
+          custom_parameter_2: metric.delta || 0,
+          custom_parameter_3: metric.id,
+          // Additional context data
+          page_location: window.location.href,
+          page_title: document.title,
+          user_agent: navigator.userAgent.substring(0, 100),
+          viewport_width: window.innerWidth,
+          viewport_height: window.innerHeight,
+          connection_effective_type: (navigator as NavigatorWithConnection).connection?.effectiveType || 'unknown',
+          device_memory: (navigator as NavigatorWithConnection).deviceMemory || 'unknown',
+          ...additionalData
+        }
       });
 
       // Also send as a custom event for better reporting
@@ -119,11 +209,13 @@ export default function EnhancedCoreWebVitals() {
         event_category: 'Performance',
         event_label: `${metric.name} - ${metric.rating}`,
         value: Math.round(metric.value),
-        metric_rating: metric.rating,
-        metric_value: metric.value,
-        metric_id: metric.id,
-        page_type: getPageType(),
-        user_type: getUserType()
+        custom_parameters: {
+          metric_rating: metric.rating,
+          metric_value: metric.value,
+          metric_id: metric.id,
+          page_type: getPageType(),
+          user_type: getUserType()
+        }
       });
     }
   }, []);
@@ -136,8 +228,8 @@ export default function EnhancedCoreWebVitals() {
       timestamp: Date.now(),
       url: window.location.href,
       userAgent: navigator.userAgent,
-      connectionType: (navigator as any).connection?.effectiveType,
-      deviceMemory: (navigator as any).deviceMemory,
+      connectionType: (navigator as NavigatorWithConnection).connection?.effectiveType,
+      deviceMemory: (navigator as NavigatorWithConnection).deviceMemory,
       viewport: {
         width: window.innerWidth,
         height: window.innerHeight
@@ -150,7 +242,7 @@ export default function EnhancedCoreWebVitals() {
     };
   }, []);
 
-  const reportMetric = useCallback((metric: any) => {
+  const reportMetric = useCallback((metric: PerformanceMetric) => {
     const rating = getMetricRating(metric.name, metric.value);
     const recommendation = getPerformanceRecommendation(metric.name, rating, metric.value);
     
@@ -165,14 +257,24 @@ export default function EnhancedCoreWebVitals() {
 
     // Enhanced logging for development
     if (process.env.NODE_ENV === 'development') {
-      console.group(`📊 ${metric.name} Performance Metric`);
-      console.log('Value:', `${metric.value}${getUnit(metric.name)}`);
-      console.log('Rating:', `${getRatingEmoji(rating)} ${rating.toUpperCase()}`);
-      console.log('Recommendation:', recommendation);
-      if (metric.delta) console.log('Delta:', metric.delta);
-      console.log('Metric ID:', metric.id);
-      console.log('Entries:', metric.entries);
-      console.groupEnd();
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'performance_metric_detailed', {
+          event_category: 'medical_performance_monitoring',
+          event_label: `${metric.name}_performance_analysis`,
+          custom_parameters: {
+            medical_context: 'performance_detailed_analysis',
+            metric_name: metric.name,
+            metric_value: metric.value,
+            metric_rating: rating,
+            metric_unit: getUnit(metric.name),
+            metric_delta: metric.delta || 0,
+            metric_id: metric.id,
+            recommendation: recommendation.substring(0, 100),
+            entries_count: metric.entries?.length || 0,
+            development_mode: true
+          }
+        });
+      }
     }
 
     // Send to Google Analytics
@@ -180,7 +282,7 @@ export default function EnhancedCoreWebVitals() {
       recommendation,
       performance_score: calculatePerformanceScore(metric.name, rating),
       is_mobile: window.innerWidth <= 768,
-      is_slow_connection: (navigator as any).connection?.effectiveType === '2g' || (navigator as any).connection?.effectiveType === 'slow-2g'
+      is_slow_connection: (navigator as NavigatorWithConnection).connection?.effectiveType === '2g' || (navigator as NavigatorWithConnection).connection?.effectiveType === 'slow-2g'
     });
 
     // Store in sessionStorage for debugging and local analysis
@@ -235,8 +337,8 @@ export default function EnhancedCoreWebVitals() {
                 entries: [entry]
               } as WebVitalsMetric, {
                 resource_name: entry.name,
-                resource_type: (entry as any).initiatorType,
-                resource_size: (entry as any).transferSize || 0
+                resource_type: (entry as PerformanceResourceTiming).initiatorType,
+                resource_size: (entry as PerformanceResourceTiming).transferSize || 0
               });
             }
 
@@ -285,14 +387,26 @@ export default function EnhancedCoreWebVitals() {
         cleanup?.();
       };
     }).catch(error => {
-      console.warn('Failed to load web-vitals library:', error);
-      
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'web_vitals_library_load_failed', {
+          event_category: 'medical_performance_error',
+          event_label: 'web_vitals_library_load_error',
+          custom_parameters: {
+            medical_context: 'performance_monitoring_system',
+            error_message: error.message,
+            error_type: 'library_load_failure'
+          }
+        });
+      }
+
       // Send error to analytics
       if (window.gtag) {
         window.gtag('event', 'web_vitals_error', {
           event_category: 'Error',
           event_label: 'web-vitals library load failed',
-          error_message: error.message
+          custom_parameters: {
+            error_message: error.message
+          }
         });
       }
     });
@@ -307,10 +421,12 @@ export default function EnhancedCoreWebVitals() {
         window.gtag('event', 'js_error', {
           event_category: 'Error',
           event_label: 'JavaScript Error',
-          error_message: event.message.substring(0, 100),
-          error_filename: event.filename,
-          error_line: event.lineno,
-          error_column: event.colno
+          custom_parameters: {
+            error_message: event.message.substring(0, 100),
+            error_filename: event.filename,
+            error_line: event.lineno,
+            error_column: event.colno
+          }
         });
       }
     };
@@ -320,7 +436,9 @@ export default function EnhancedCoreWebVitals() {
         window.gtag('event', 'promise_rejection', {
           event_category: 'Error',
           event_label: 'Unhandled Promise Rejection',
-          error_message: String(event.reason).substring(0, 100)
+          custom_parameters: {
+            error_message: String(event.reason).substring(0, 100)
+          }
         });
       }
     };
@@ -383,7 +501,7 @@ function getPageType(): string {
 
 function getUserType(): string {
   // Try to detect user type from localStorage or URL params
-  const userType = localStorage.getItem('selectedPersona') || 
+  const userType = safeLocalStorage()?.getItem('selectedPersona') || 
                   new URLSearchParams(window.location.search).get('user_type');
   
   if (userType === 'dr_gasnelio') return 'professional';
@@ -394,10 +512,21 @@ function getUserType(): string {
 function createPerformanceAlert(metricName: string, value: number, recommendation: string) {
   // Only in development mode
   if (process.env.NODE_ENV === 'development') {
-    console.warn(
-      `🚨 Performance Alert: ${metricName} is performing poorly (${value}${getUnit(metricName)})\n` +
-      `${recommendation}`
-    );
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'performance_alert_critical', {
+        event_category: 'medical_performance_alert',
+        event_label: 'poor_performance_detected',
+        custom_parameters: {
+          medical_context: 'performance_alert_system',
+          metric_name: metricName,
+          metric_value: value,
+          metric_unit: getUnit(metricName),
+          recommendation: recommendation.substring(0, 100),
+          development_mode: true,
+          alert_level: 'critical'
+        }
+      });
+    }
   }
 }
 
@@ -406,10 +535,16 @@ function getSessionSummary() {
     const vitalsData = JSON.parse(sessionStorage.getItem('enhanced-web-vitals') || '[]');
     if (vitalsData.length === 0) return null;
 
-    const metrics = vitalsData.reduce((acc: any, entry: any) => {
-      entry.metrics.forEach((metric: WebVitalsMetric) => {
+    const metrics = vitalsData.reduce((acc: MetricAccumulator, entry: VitalEntry) => {
+      entry.metrics?.forEach((metric: PerformanceMetric) => {
         if (!acc[metric.name]) {
-          acc[metric.name] = { values: [], ratings: [] };
+          acc[metric.name] = {
+            values: [],
+            ratings: [],
+            count: 0,
+            average: 0,
+            median: 0
+          };
         }
         acc[metric.name].values.push(metric.value);
         acc[metric.name].ratings.push(metric.rating);
@@ -418,8 +553,19 @@ function getSessionSummary() {
     }, {});
 
     // Calculate averages and ratings distribution
-    const summary: any = {
-      session_duration: Date.now() - vitalsData[0].timestamp,
+    const summary: MetricSummary = {
+      totalMetrics: vitalsData.length,
+      goodMetrics: 0,
+      needsImprovementMetrics: 0,
+      poorMetrics: 0,
+      averageValues: {},
+      recommendations: [],
+      performanceScore: 0,
+      timeRange: {
+        start: vitalsData[0]?.timestamp || Date.now(),
+        end: Date.now()
+      },
+      session_duration: Date.now() - (vitalsData[0]?.timestamp || Date.now()),
       total_measurements: vitalsData.length
     };
 
@@ -434,13 +580,23 @@ function getSessionSummary() {
 
     return summary;
   } catch (error) {
-    console.warn('Failed to generate session summary:', error);
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'session_summary_generation_failed', {
+        event_category: 'medical_performance_error',
+        event_label: 'session_summary_error',
+        custom_parameters: {
+          medical_context: 'performance_session_analysis',
+          error_type: 'session_summary_generation',
+          error_message: error instanceof Error ? error.message : String(error)
+        }
+      });
+    }
     return null;
   }
 }
 
 // Export function for manual performance reporting
-export function reportCustomMetric(name: string, value: number, additionalData?: any) {
+export function reportCustomMetric(name: string, value: number, additionalData?: AdditionalMetricData) {
   if (typeof window !== 'undefined' && window.gtag) {
     window.gtag('event', 'custom_performance_metric', {
       event_category: 'Performance',

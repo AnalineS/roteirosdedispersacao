@@ -1,0 +1,66 @@
+name: Index Knowledge Base to Supabase
+
+on:
+  workflow_dispatch: # Manual trigger only
+    inputs:
+      force_reindex:
+        description: 'Force reindex (clear and rebuild)'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  index-knowledge-base:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          cd apps/backend
+          pip install -r requirements.txt
+          pip install huggingface_hub
+
+      - name: Index knowledge base
+        env:
+          HUGGINGFACE_TOKEN: ${{ secrets.HUGGINGFACE_TOKEN }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_PROJECT_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_API_KEY }}
+        run: |
+          python scripts/index_knowledge_base.py ${{ inputs.force_reindex && '--force' || '' }}
+
+      - name: Verify indexing
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_PROJECT_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_API_KEY }}
+        run: |
+          python -c "
+          import os
+          from supabase import create_client
+
+          client = create_client(os.environ['SUPABASE_URL'], os.environ['SUPABASE_KEY'])
+          result = client.table('knowledge_base').select('id', count='exact').execute()
+
+          print(f'✅ Indexed documents: {result.count}')
+
+          if result.count < 100:
+              print('⚠️ Warning: Expected at least 100 documents')
+              exit(1)
+          "
+
+      - name: Upload indexing report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: indexing-report
+          path: scripts/indexing_report_*.json
+          retention-days: 30

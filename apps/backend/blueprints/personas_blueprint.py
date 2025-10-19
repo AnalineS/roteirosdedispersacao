@@ -12,12 +12,19 @@ from typing import Dict, List, Any
 # Import dependências
 from core.dependencies import get_cache, get_config
 
-# Import personas services
+# Import personas services (correct path: services.ai.personas)
 try:
-    from services.personas import get_personas, get_persona_prompt
+    from services.ai.personas import get_personas, get_persona_prompt
     PERSONAS_SERVICE_AVAILABLE = True
 except ImportError:
     PERSONAS_SERVICE_AVAILABLE = False
+
+# Import persona stats manager
+try:
+    from services.analytics.persona_stats_manager import get_persona_statistics
+    PERSONA_STATS_AVAILABLE = True
+except ImportError:
+    PERSONA_STATS_AVAILABLE = False
 
 # Configurar logger
 logger = logging.getLogger(__name__)
@@ -125,18 +132,48 @@ def get_persona_response_format(persona_id: str) -> Dict[str, Any]:
     }
     return format_map.get(persona_id, {})
 
+def get_real_persona_stats(persona_id: str) -> Dict:
+    """Obter estatísticas reais da persona do banco de dados"""
+    if PERSONA_STATS_AVAILABLE:
+        try:
+            stats = get_persona_statistics(persona_id)
+            return {
+                "total_interactions": stats.get('total_interactions', 0),
+                "average_rating": stats.get('average_rating', 0.0),
+                "success_rate": stats.get('success_rate', 0.0),
+                "total_ratings": stats.get('total_ratings', 0),
+                "avg_response_time_ms": stats.get('avg_response_time_ms', 0.0),
+                "last_updated": stats.get('last_updated', datetime.now().isoformat())
+            }
+        except Exception as e:
+            logger.error(f"Erro ao obter stats da persona {persona_id}: {e}")
+
+    # Fallback para dados padrão
+    return {
+        "total_interactions": 0,
+        "average_rating": 0.0,
+        "success_rate": 0.0,
+        "total_ratings": 0,
+        "avg_response_time_ms": 0.0,
+        "stats_available": PERSONA_STATS_AVAILABLE
+    }
+
 def check_rate_limit(endpoint_type: str = 'default'):
-    """Decorator simplificado para rate limiting"""
-    def decorator(f):
-        def wrapper(*args, **kwargs):
-            # TODO: Implementar rate limiting distribuído
-            return f(*args, **kwargs)
-        wrapper.__name__ = f.__name__
-        return wrapper
-    return decorator
+    """Rate limiting real para personas usando SQLite"""
+    from services.security.sqlite_rate_limiter import rate_limit
+
+    # Limites para endpoints de personas
+    # personas endpoint has higher limit as it's configuration data, not medical queries
+    limits = {
+        'personas': (300, 60),   # 300 req/min for configuration endpoint (5/sec)
+        'default': (100, 60)     # 100 req/min general
+    }
+
+    max_requests, window_seconds = limits.get(endpoint_type, limits['default'])
+    return rate_limit(f"personas_{endpoint_type}", max_requests, window_seconds)
 
 @personas_bp.route('/personas', methods=['GET'])
-@check_rate_limit('general')
+@check_rate_limit('personas')  # Use personas-specific higher limit
 def get_personas_api():
     """Endpoint para informações completas das personas"""
     try:
@@ -292,11 +329,7 @@ def get_persona_details(persona_id: str):
             "example_questions": get_persona_examples(persona_id),
             "limitations": get_persona_limitations(persona_id),
             "response_format": get_persona_response_format(persona_id),
-            "stats": {
-                "total_interactions": 0,  # TODO: Implementar com persistence layer
-                "average_rating": 0.0,
-                "success_rate": 0.0
-            },
+            "stats": get_real_persona_stats(persona_id),
             "metadata": {
                 "created_date": "2025-01-01",
                 "last_updated": "2025-08-10",

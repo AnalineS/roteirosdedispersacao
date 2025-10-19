@@ -1,0 +1,148 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\playwright.config.ts",
+    "rootDir": "C:/Users/Ana/Meu Drive/Site roteiro de dispensação/apps/frontend-nextjs/tests/playwright",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {},
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "html",
+        {
+          "outputFolder": "playwright-report"
+        }
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results.json"
+        }
+      ],
+      [
+        "list",
+        null
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "C:/Users/Ana/Meu Drive/Site roteiro de dispensação/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {},
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/Ana/Meu Drive/Site roteiro de dispensação/apps/frontend-nextjs/tests/playwright",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/Users/Ana/Meu Drive/Site roteiro de dispensação/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {},
+        "id": "firefox",
+        "name": "firefox",
+        "testDir": "C:/Users/Ana/Meu Drive/Site roteiro de dispensação/apps/frontend-nextjs/tests/playwright",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/Users/Ana/Meu Drive/Site roteiro de dispensação/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {},
+        "id": "mobile-chrome",
+        "name": "mobile-chrome",
+        "testDir": "C:/Users/Ana/Meu Drive/Site roteiro de dispensação/apps/frontend-nextjs/tests/playwright",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/Users/Ana/Meu Drive/Site roteiro de dispensação/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {},
+        "id": "mobile-safari",
+        "name": "mobile-safari",
+        "testDir": "C:/Users/Ana/Meu Drive/Site roteiro de dispensação/apps/frontend-nextjs/tests/playwright",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/Users/Ana/Meu Drive/Site roteiro de dispensação/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {},
+        "id": "accessibility",
+        "name": "accessibility",
+        "testDir": "C:/Users/Ana/Meu Drive/Site roteiro de dispensação/apps/frontend-nextjs/tests/playwright",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.55.1",
+    "workers": 16,
+    "webServer": {
+      "command": "npm run dev",
+      "port": 3000,
+      "reuseExistingServer": true,
+      "cwd": "./apps/frontend-nextjs",
+      "timeout": 120000
+    }
+  },
+  "suites": [],
+  "errors": [
+    {
+      "message": "Error: Requiring @playwright/test second time, \nFirst:\nError: \n    at Object.<anonymous> (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\node_modules\\playwright\\lib\\index.js:60:33)\n    at Module._compile (node:internal/modules/cjs/loader:1730:14)\n    at Object.<anonymous> (node:internal/modules/cjs/loader:1895:10)\n    at Object.newLoader2 [as .js] (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\node_modules\\playwright\\lib\\third_party\\pirates.js:52:22)\n    at Module.load (node:internal/modules/cjs/loader:1465:32)\n    at Function._load (node:internal/modules/cjs/loader:1282:12)\n    at TracingChannel.traceSync (node:diagnostics_channel:322:14)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)\n    at Module.require (node:internal/modules/cjs/loader:1487:12)\n    at require (node:internal/modules/helpers:135:16)\n    at Object.<anonymous> (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\node_modules\\playwright\\test.js:17:13)\n    at Module._compile (node:internal/modules/cjs/loader:1730:14)\n    at Object.<anonymous> (node:internal/modules/cjs/loader:1895:10)\n    at Object.newLoader2 [as .js] (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\node_modules\\playwright\\lib\\third_party\\pirates.js:52:22)\n    at Module.load (node:internal/modules/cjs/loader:1465:32)\n    at Function._load (node:internal/modules/cjs/loader:1282:12)\n    at TracingChannel.traceSync (node:diagnostics_channel:322:14)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)\n    at Module.require (node:internal/modules/cjs/loader:1487:12)\n    at require (node:internal/modules/helpers:135:16)\n    at Object.<anonymous> (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\node_modules\\@playwright\\test\\index.js:17:18)\n    at Module._compile (node:internal/modules/cjs/loader:1730:14)\n    at Object.<anonymous> (node:internal/modules/cjs/loader:1895:10)\n    at Object.newLoader2 [as .js] (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\node_modules\\playwright\\lib\\third_party\\pirates.js:52:22)\n    at Module.load (node:internal/modules/cjs/loader:1465:32)\n    at Function._load (node:internal/modules/cjs/loader:1282:12)\n    at TracingChannel.traceSync (node:diagnostics_channel:322:14)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)\n    at Module.require (node:internal/modules/cjs/loader:1487:12)\n    at require (node:internal/modules/helpers:135:16)\n    at Object.<anonymous> (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\playwright.config.ts:1:1)\n    at Module._compile (node:internal/modules/cjs/loader:1730:14)\n    at Module.newCompile2 (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\node_modules\\playwright\\lib\\third_party\\pirates.js:46:29)\n    at Object.<anonymous> (node:internal/modules/cjs/loader:1895:10)\n    at Object.newLoader2 [as .ts] (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\node_modules\\playwright\\lib\\third_party\\pirates.js:52:22)\n    at Module.load (node:internal/modules/cjs/loader:1465:32)\n    at Function._load (node:internal/modules/cjs/loader:1282:12)\n    at TracingChannel.traceSync (node:diagnostics_channel:322:14)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)\n    at Module.require (node:internal/modules/cjs/loader:1487:12)\n    at require (node:internal/modules/helpers:135:16)\n    at requireOrImport (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\node_modules\\playwright\\lib\\transform\\transform.js:218:18)\n    at loadUserConfig (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\node_modules\\playwright\\lib\\common\\configLoader.js:107:89)\n    at loadConfig (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\node_modules\\playwright\\lib\\common\\configLoader.js:119:28)\n    at loadConfigFromFile (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\node_modules\\playwright\\lib\\common\\configLoader.js:331:10)\n    at runTests (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\node_modules\\playwright\\lib\\program.js:145:18)\n    at i.<anonymous> (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\node_modules\\playwright\\lib\\program.js:64:7)\n\nSecond: ",
+      "stack": "Error: Requiring @playwright/test second time, \nFirst:\nError: \n    at Object.<anonymous> (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\node_modules\\playwright\\lib\\index.js:60:33)\n    at Module._compile (node:internal/modules/cjs/loader:1730:14)\n    at Object.<anonymous> (node:internal/modules/cjs/loader:1895:10)\n    at Object.newLoader2 [as .js] (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\node_modules\\playwright\\lib\\third_party\\pirates.js:52:22)\n    at Module.load (node:internal/modules/cjs/loader:1465:32)\n    at Function._load (node:internal/modules/cjs/loader:1282:12)\n    at TracingChannel.traceSync (node:diagnostics_channel:322:14)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)\n    at Module.require (node:internal/modules/cjs/loader:1487:12)\n    at require (node:internal/modules/helpers:135:16)\n    at Object.<anonymous> (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\node_modules\\playwright\\test.js:17:13)\n    at Module._compile (node:internal/modules/cjs/loader:1730:14)\n    at Object.<anonymous> (node:internal/modules/cjs/loader:1895:10)\n    at Object.newLoader2 [as .js] (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\node_modules\\playwright\\lib\\third_party\\pirates.js:52:22)\n    at Module.load (node:internal/modules/cjs/loader:1465:32)\n    at Function._load (node:internal/modules/cjs/loader:1282:12)\n    at TracingChannel.traceSync (node:diagnostics_channel:322:14)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)\n    at Module.require (node:internal/modules/cjs/loader:1487:12)\n    at require (node:internal/modules/helpers:135:16)\n    at Object.<anonymous> (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\node_modules\\@playwright\\test\\index.js:17:18)\n    at Module._compile (node:internal/modules/cjs/loader:1730:14)\n    at Object.<anonymous> (node:internal/modules/cjs/loader:1895:10)\n    at Object.newLoader2 [as .js] (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\node_modules\\playwright\\lib\\third_party\\pirates.js:52:22)\n    at Module.load (node:internal/modules/cjs/loader:1465:32)\n    at Function._load (node:internal/modules/cjs/loader:1282:12)\n    at TracingChannel.traceSync (node:diagnostics_channel:322:14)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)\n    at Module.require (node:internal/modules/cjs/loader:1487:12)\n    at require (node:internal/modules/helpers:135:16)\n    at Object.<anonymous> (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\playwright.config.ts:1:1)\n    at Module._compile (node:internal/modules/cjs/loader:1730:14)\n    at Module.newCompile2 (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\node_modules\\playwright\\lib\\third_party\\pirates.js:46:29)\n    at Object.<anonymous> (node:internal/modules/cjs/loader:1895:10)\n    at Object.newLoader2 [as .ts] (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\node_modules\\playwright\\lib\\third_party\\pirates.js:52:22)\n    at Module.load (node:internal/modules/cjs/loader:1465:32)\n    at Function._load (node:internal/modules/cjs/loader:1282:12)\n    at TracingChannel.traceSync (node:diagnostics_channel:322:14)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)\n    at Module.require (node:internal/modules/cjs/loader:1487:12)\n    at require (node:internal/modules/helpers:135:16)\n    at requireOrImport (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\node_modules\\playwright\\lib\\transform\\transform.js:218:18)\n    at loadUserConfig (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\node_modules\\playwright\\lib\\common\\configLoader.js:107:89)\n    at loadConfig (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\node_modules\\playwright\\lib\\common\\configLoader.js:119:28)\n    at loadConfigFromFile (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\node_modules\\playwright\\lib\\common\\configLoader.js:331:10)\n    at runTests (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\node_modules\\playwright\\lib\\program.js:145:18)\n    at i.<anonymous> (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\node_modules\\playwright\\lib\\program.js:64:7)\n\nSecond: \n    at Object.<anonymous> (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\node_modules\\@playwright\\test\\index.js:17:18)\n    at Object.<anonymous> (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\playwright.config.ts:1:1)\n    at Object.<anonymous> (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\apps\\frontend-nextjs\\node_modules\\playwright\\lib\\index.js:55:11)\n    at Object.<anonymous> (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\apps\\frontend-nextjs\\node_modules\\playwright\\test.js:17:13)\n    at Object.<anonymous> (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\apps\\frontend-nextjs\\node_modules\\@playwright\\test\\index.js:17:18)\n    at Object.<anonymous> (C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\apps\\frontend-nextjs\\tests\\playwright\\staging-medical-validation.spec.ts:11:1)",
+      "location": {
+        "file": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\playwright.config.ts",
+        "column": 1,
+        "line": 1
+      },
+      "snippet": "\u001b[90m   at \u001b[39m..\\..\\..\\..\\playwright.config.ts:1\n\n\u001b[0m\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 1 |\u001b[39m \u001b[36mimport\u001b[39m { defineConfig\u001b[33m,\u001b[39m devices } \u001b[36mfrom\u001b[39m \u001b[32m'@playwright/test'\u001b[39m\u001b[33m;\u001b[39m\n \u001b[90m   |\u001b[39m \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 2 |\u001b[39m\n \u001b[90m 3 |\u001b[39m \u001b[90m/**\u001b[39m\n \u001b[90m 4 |\u001b[39m \u001b[90m * Playwright Configuration for Medical Platform\u001b[39m\u001b[0m"
+    },
+    {
+      "message": "Error: No tests found",
+      "stack": "Error: No tests found"
+    }
+  ],
+  "stats": {
+    "startTime": "2025-10-05T14:19:37.194Z",
+    "duration": 1862.1870000000001,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

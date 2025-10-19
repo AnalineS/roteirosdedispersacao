@@ -1,82 +1,207 @@
-# Dockerignore otimizado para Cloud Run
-# Cache Python
+# ============================================================================
+# OPTIMIZED .DOCKERIGNORE - Sistema Educacional Hanseníase
+# Performance-optimized for Cloud Run builds with security considerations
+# ============================================================================
+
+# ============================================================================
+# PYTHON ARTIFACTS (High Impact on Build Speed)
+# ============================================================================
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 .pytest_cache/
+.mypy_cache/
 .coverage
 htmlcov/
+.tox/
+.nox/
+*.egg-info/
+build/
+dist/
 
-# Arquivos de desenvolvimento
+# ============================================================================
+# DEVELOPMENT ENVIRONMENT (Security & Size)
+# ============================================================================
 .git/
 .gitignore
+.github/
 .vscode/
 .idea/
+.devcontainer/
 *.swp
 *.swo
 *~
-
-# Logs locais
-logs/
-*.log
-temp/
-
-# Requirements obsoletos (manter apenas os que são usados pelos Dockerfiles)
-requirements_optimized.txt
-requirements_dev.txt
-requirements_local.txt
-
-# Virtual environments
-venv/
-env/
-.venv/
-
-# OS generated
 .DS_Store
 Thumbs.db
 
-# Documentação desnecessária no container
-README.md
-*.md
-docs/
+# ============================================================================
+# VIRTUAL ENVIRONMENTS (Large Directories)
+# ============================================================================
+venv/
+env/
+.venv/
+.env/
+ENV/
+env.bak/
+venv.bak/
 
-# Scripts de desenvolvimento
-scripts/
+# ============================================================================
+# LOGS AND TEMPORARY FILES (Runtime Generated)
+# ============================================================================
+logs/
+*.log
+temp/
+tmp/
+.tmp/
+*.tmp
 
-# Arquivos de teste
-test_*
-*_test.py
-tests/
-
-# Configurações locais
+# ============================================================================
+# CONFIGURATION AND SECRETS (Security Critical)
+# ============================================================================
 .env
 .env.local
+.env.development
+.env.test
+.env.production
+.env.staging
 local_config.py
-
-# Node modules (se houver)
-node_modules/
-
-# Backup files
-*.bak
-*.backup
-
-# Cache e arquivos temporários grandes
-cache/embeddings/
-cache/models/
-*.pkl
-*.joblib
-
-# QA reports (não necessários em runtime)
-qa-reports/
-validation_reports/
-
-# Arquivos de segurança (nunca incluir)
+config_local.py
 *.pem
 *.key
 *.crt
 *.p12
+*.pfx
+service-account*.json
+gcp-key*.json
 
-# Docker files de outros ambientes
+# ============================================================================
+# TESTING AND QA (Not Needed in Production)
+# ============================================================================
+test_*
+*_test.py
+tests/
+pytest.ini
+.pytest.ini
+tox.ini
+.coverage.*
+coverage.xml
+nosetests.xml
+qa-reports/
+validation_reports/
+test-reports/
+
+# ============================================================================
+# DOCUMENTATION (Build Size Optimization)
+# ============================================================================
+README.md
+CHANGELOG.md
+CONTRIBUTING.md
+LICENSE.md
+*.md
+!CLAUDE.md
+docs/
+documentation/
+
+# ============================================================================
+# DEVELOPMENT SCRIPTS (Not Production Ready)
+# ============================================================================
+scripts/dev/
+scripts/local/
+scripts/test/
+dev_*.py
+local_*.py
+debug_*.py
+
+# ============================================================================
+# CACHE AND MODELS (Large Files - Use External Storage)
+# ============================================================================
+cache/embeddings/
+cache/models/
+models/
+*.pkl
+*.joblib
+*.h5
+*.pt
+*.pth
+*.onnx
+data/models/
+data/cache/
+
+# ============================================================================
+# NODE.JS ARTIFACTS (If Any Frontend Build)
+# ============================================================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# ============================================================================
+# DOCKER AND COMPOSE FILES (Environment Specific)
+# ============================================================================
 Dockerfile.dev
+Dockerfile.local
+Dockerfile.test
 docker-compose*.yml
+docker-compose*.yaml
+.dockerignore.bak
+
+# ============================================================================
+# BACKUP AND TEMPORARY FILES
+# ============================================================================
+*.bak
+*.backup
+*.orig
+*.save
+*~
+
+# ============================================================================
+# IDE AND EDITOR FILES
+# ============================================================================
+.vscode/
+.idea/
+*.sublime-*
+.atom/
+*.vim
+
+# ============================================================================
+# CLOUD AND DEPLOYMENT CONFIGS (Environment Specific)
+# ============================================================================
+cloudbuild.yaml
+.gcloudignore
+k8s/
+kubernetes/
+terraform/
+.terraform/
+
+# ============================================================================
+# REQUIREMENTS FILES (Keep Only Production)
+# ============================================================================
+requirements_dev.txt
+requirements_test.txt
+requirements_local.txt
+requirements_optimized.txt
+# Keep requirements.txt for production build
+
+# ============================================================================
+# SAMPLE AND EXAMPLE FILES
+# ============================================================================
+examples/
+samples/
+demo/
+*.example
+*.sample
+
+# ============================================================================
+# PERFORMANCE: EXPLICITLY INCLUDE CRITICAL FILES
+# ============================================================================
+# The following files are explicitly included (override above patterns)
+!requirements.txt
+!main.py
+!CLAUDE.md
+!services/
+!core/
+!data/knowledge_base/
+!data/structured/

@@ -1,0 +1,308 @@
+# Docker Compose para Produção Médica
+# Plataforma Educacional de Hanseníase
+# Configuração otimizada para ambiente crítico de saúde
+
+version: '3.8'
+
+services:
+  # Aplicação Principal
+  hanseniase-app:
+    image: hanseniase/app:${APP_VERSION:-latest}
+    container_name: hanseniase-medical-app
+    restart: always
+    environment:
+      - NODE_ENV=production
+      - MEDICAL_MODE=true
+      - LGPD_COMPLIANCE=true
+      - SLA_TARGET=99.9
+      - DB_HOST=hanseniase-db
+      - REDIS_HOST=hanseniase-cache
+      - MONITORING_ENABLED=true
+    ports:
+      - "3000:3000"
+    networks:
+      - medical-network
+    volumes:
+      - medical-logs:/app/logs
+      - medical-uploads:/app/uploads
+      - medical-backups:/app/backups
+    depends_on:
+      - hanseniase-db
+      - hanseniase-cache
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+        reservations:
+          cpus: '1.0'
+          memory: 2G
+    labels:
+      - "medical.system=hanseniase"
+      - "medical.environment=production"
+      - "medical.sla=99.9"
+
+  # Banco de Dados Principal
+  hanseniase-db:
+    image: postgres:15-alpine
+    container_name: hanseniase-medical-db
+    restart: always
+    environment:
+      - POSTGRES_DB=hanseniase_medical
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    networks:
+      - medical-network
+    volumes:
+      - medical-db-data:/var/lib/postgresql/data
+      - medical-db-backup:/backup
+      - ./db/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d hanseniase_medical"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 1G
+    command: |
+      postgres
+      -c max_connections=200
+      -c shared_buffers=256MB
+      -c effective_cache_size=1GB
+      -c maintenance_work_mem=64MB
+      -c checkpoint_completion_target=0.9
+      -c wal_buffers=16MB
+      -c default_statistics_target=100
+
+  # Banco Replica para Leitura
+  hanseniase-db-replica:
+    image: postgres:15-alpine
+    container_name: hanseniase-medical-db-replica
+    restart: always
+    environment:
+      - POSTGRES_DB=hanseniase_medical
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - PGUSER=${DB_USER}
+      - POSTGRES_MASTER_SERVICE=hanseniase-db
+    networks:
+      - medical-network
+    volumes:
+      - medical-db-replica-data:/var/lib/postgresql/data
+    depends_on:
+      - hanseniase-db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d hanseniase_medical"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1G
+
+  # Cache Redis
+  hanseniase-cache:
+    image: redis:7-alpine
+    container_name: hanseniase-medical-cache
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - medical-network
+    volumes:
+      - medical-cache-data:/data
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1G
+        reservations:
+          cpus: '0.25'
+          memory: 512M
+
+  # Nginx Load Balancer
+  hanseniase-nginx:
+    image: nginx:alpine
+    container_name: hanseniase-medical-nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - medical-network
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/ssl:/etc/nginx/ssl
+      - medical-logs:/var/log/nginx
+    depends_on:
+      - hanseniase-app
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  # Sistema de Monitoramento
+  hanseniase-monitor:
+    image: hanseniase/monitor:${MONITOR_VERSION:-latest}
+    container_name: hanseniase-medical-monitor
+    restart: always
+    environment:
+      - MEDICAL_MONITORING=true
+      - SLA_TARGET=99.9
+      - ALERT_WEBHOOK=${ALERT_WEBHOOK_URL}
+    networks:
+      - medical-network
+    volumes:
+      - medical-logs:/monitor/logs
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on:
+      - hanseniase-app
+      - hanseniase-db
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 512M
+
+  # Backup Automático
+  hanseniase-backup:
+    image: hanseniase/backup:${BACKUP_VERSION:-latest}
+    container_name: hanseniase-medical-backup
+    restart: always
+    environment:
+      - BACKUP_SCHEDULE=0 2 * * *  # Todo dia às 2h
+      - RETENTION_DAYS=30
+      - ENCRYPTION_KEY=${BACKUP_ENCRYPTION_KEY}
+      - LGPD_COMPLIANT=true
+    networks:
+      - medical-network
+    volumes:
+      - medical-db-data:/data/db:ro
+      - medical-uploads:/data/uploads:ro
+      - medical-backups:/backups
+      - medical-backup-external:/external-backups
+    depends_on:
+      - hanseniase-db
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
+
+  # Serviço de Auditoria LGPD
+  hanseniase-audit:
+    image: hanseniase/audit:${AUDIT_VERSION:-latest}
+    container_name: hanseniase-medical-audit
+    restart: always
+    environment:
+      - AUDIT_RETENTION=7_years
+      - LGPD_STRICT_MODE=true
+      - ENCRYPTION_REQUIRED=true
+    networks:
+      - medical-network
+    volumes:
+      - medical-audit-logs:/audit/logs
+      - medical-logs:/app/logs:ro
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
+
+networks:
+  medical-network:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: medical-br0
+    labels:
+      - "medical.network=production"
+
+volumes:
+  # Dados críticos
+  medical-db-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/hanseniase/data/db
+  
+  medical-db-replica-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/hanseniase/data/db-replica
+  
+  medical-cache-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/hanseniase/data/cache
+  
+  # Logs e auditoria
+  medical-logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/hanseniase/logs
+  
+  medical-audit-logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/hanseniase/audit
+  
+  # Uploads e backups
+  medical-uploads:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/hanseniase/uploads
+  
+  medical-backups:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/hanseniase/backups
+  
+  medical-backup-external:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /mnt/external-backup

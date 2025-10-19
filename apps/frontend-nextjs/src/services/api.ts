@@ -1,54 +1,50 @@
 /**
  * API Integration Layer - Next.js
  * Conecta com o backend Python que usa prompts de IA e personas
+ * Integrado com sistema robusto de tratamento de erros
+ * Uses centralized environment configuration system
  */
 
-// Configuração simplificada de API URL
-const getApiUrl = () => {
-  // PRIORIDADE 1: Variável de ambiente
-  const envUrl = process.env.NEXT_PUBLIC_API_URL;
-  if (envUrl && envUrl.trim() !== '') {
-    console.log(`[API] Usando URL do ambiente: ${envUrl}`);
-    return envUrl.trim();
-  }
-  
-  // PRIORIDADE 2: Detectar ambiente
-  if (typeof window !== 'undefined') {
-    const hostname = window.location.hostname;
-    
-    // Desenvolvimento local
-    if (hostname === 'localhost' || hostname === '127.0.0.1') {
-      console.log('[API] Ambiente local detectado');
-      return 'http://localhost:8080';
-    }
-    
-    // Homologação
-    if (hostname.includes('hml-roteiros-de-dispensacao.web.app')) {
-      console.log('[API] Ambiente de homologação detectado');
-      return 'https://hml-roteiro-dispensacao-api-4f2gjf6cua-uc.a.run.app';
-    }
-    
-    // Produção
-    if (hostname.includes('roteirosdispensacao.com') || hostname.includes('roteiros-de-dispensacao.web.app')) {
-      console.log('[API] Produção detectada, usando Cloud Run');
-      // Primeiro, tentar reativar o serviço de produção
-      return 'https://roteiro-dispensacao-api-4f2gjf6cua-uc.a.run.app';
-    }
-    
-    console.log('[API] Hostname não reconhecido, usando homologação como fallback');
-    // Fallback para homologação se hostname não for reconhecido
-    return 'https://hml-roteiro-dispensacao-api-4f2gjf6cua-uc.a.run.app';
-  }
-  
-  // PRIORIDADE 3: Fallback para desenvolvimento  
-  console.log('[API] Fallback para desenvolvimento');
-  return 'http://localhost:8080';
+import { logger } from '@/utils/logger';
+import type { ChatMessage, ChatSession } from '@/types/api';
+import config from '@/config/environment';
+
+// Re-export types for external use
+export type { ChatMessage, ChatSession } from '@/types/api';
+
+// Environment-aware API configuration
+const getApiConfig = (): { apiUrl: string; timeout: number; retries: number } => {
+  const apiUrl = config.api.baseUrl;
+  const timeout = config.api.timeout;
+  const retries = config.api.retries;
+
+  logger.log(`[API Config] Environment: ${config.environment}`);
+  logger.log(`[API Config] Base URL: ${apiUrl}`);
+  logger.log(`[API Config] Timeout: ${timeout}ms, Retries: ${retries}`);
+
+  return { apiUrl, timeout, retries };
 };
 
-const API_BASE_URL = getApiUrl();
+const { apiUrl: API_BASE_URL, timeout: API_TIMEOUT, retries: API_RETRIES } = getApiConfig();
 
 // Import dados estáticos para fallback
 import { STATIC_PERSONAS } from '@/data/personas';
+
+/**
+ * Busca configurações de personas para uso nos hooks
+ * Alias para getPersonas() para compatibilidade com hooks
+ */
+export async function getPersonaConfigs(): Promise<PersonasResponse> {
+  try {
+    const personas = await getPersonas();
+    console.log('[getPersonaConfigs] Received personas:', Object.keys(personas || {}).length);
+    // Garantir que nunca retorna null/undefined
+    return personas || STATIC_PERSONAS;
+  } catch (error) {
+    console.error('[getPersonaConfigs] Exception caught, returning static personas:', error);
+    return STATIC_PERSONAS;
+  }
+}
 
 /**
  * Busca personas do backend ou retorna dados estáticos em modo offline
@@ -56,33 +52,60 @@ import { STATIC_PERSONAS } from '@/data/personas';
 export async function getPersonas(): Promise<PersonasResponse> {
   // Se backend está em modo offline, usar dados estáticos
   if (!API_BASE_URL) {
-    console.log('[Personas] Modo offline ativo, usando dados estáticos');
+    logger.log('[Personas] Modo offline ativo, usando dados estáticos');
     return STATIC_PERSONAS;
   }
 
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000);
-    
-    const response = await fetch(`${API_BASE_URL}/api/v1/personas`, {
-      method: 'GET',
-      headers: { 'Accept': 'application/json' },
-      signal: controller.signal
-    });
+  const maxRetries = config.features.offline ? 1 : API_RETRIES;
+  let lastError: Error | null = null;
 
-    clearTimeout(timeoutId);
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const response = await fetch(`${API_BASE_URL}/api/v1/personas`, {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' },
+        signal: controller.signal
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      logger.log(`[Personas] Carregadas do backend com sucesso (tentativa ${attempt})`);
+      return data;
+    } catch (error) {
+      lastError = error as Error;
+      logger.log(`[Personas] Tentativa ${attempt}/${maxRetries} falhou:`, error);
+
+      // Se não é a última tentativa, aguarda antes de tentar novamente
+      if (attempt < maxRetries) {
+        const backoffDelay = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
+        await new Promise(resolve => setTimeout(resolve, backoffDelay));
+      }
     }
-
-    const data = await response.json();
-    console.log('[Personas] Carregadas do backend:', Object.keys(data).length);
-    return data;
-  } catch (error) {
-    console.error('[Personas] Erro no backend, usando dados estáticos:', error);
-    return STATIC_PERSONAS;
   }
+
+  console.error('[Personas] Todas as tentativas falharam, usando dados estáticos:', lastError);
+
+  // Capturar erro no sistema centralizado
+  if (typeof window !== 'undefined') {
+    const event = new CustomEvent('show-error-toast', {
+      detail: {
+        errorId: `api_personas_${Date.now()}`,
+        severity: 'medium',
+        message: 'Conectando com servidor offline. Usando dados locais.'
+      }
+    });
+    window.dispatchEvent(event);
+  }
+
+  return STATIC_PERSONAS;
 }
 
 export interface Persona {
@@ -97,27 +120,19 @@ export interface Persona {
   capabilities: string[];
   example_questions: string[];
   limitations: string[];
-  response_format: any;
+  response_format: {
+    technical: boolean;
+    citations?: boolean;
+    structured?: boolean;
+    empathetic?: boolean;
+  };
 }
 
 export interface PersonasResponse {
   [key: string]: Persona;
 }
 
-export interface ChatMessage {
-  id?: string;
-  role: 'user' | 'assistant';
-  content: string;
-  timestamp: number;
-  persona?: string;
-  metadata?: {
-    isFallback?: boolean;
-    fallbackSource?: 'cache' | 'local_knowledge' | 'emergency' | 'generic';
-    confidence?: number;
-    suggestion?: string;
-    emergency_contact?: string;
-  };
-}
+// ChatMessage interface moved to @/types/api
 
 export interface ChatRequest {
   question: string;
@@ -157,39 +172,52 @@ export interface ChatResponse {
  * Envia mensagem para o chat com fallback offline
  */
 export async function sendChatMessage(request: ChatRequest): Promise<ChatResponse> {
-  const apiUrl = getApiUrl();
-  
   // Se backend indisponível, usar resposta offline
-  if (!apiUrl) {
+  if (!API_BASE_URL) {
     console.warn('[Chat] Backend indisponível, gerando resposta offline');
     return generateOfflineResponse(request);
   }
-  
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000);
-    
-    const response = await fetch(`${apiUrl}/api/v1/chat`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(request),
-      signal: controller.signal
-    });
 
-    clearTimeout(timeoutId);
+  const maxRetries = config.features.offline ? 1 : API_RETRIES;
+  let lastError: Error | null = null;
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
+
+      const response = await fetch(`${API_BASE_URL}/api/v1/chat`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(request),
+        signal: controller.signal
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      logger.log(`[Chat] Resposta recebida com sucesso (tentativa ${attempt})`);
+      return data;
+    } catch (error) {
+      lastError = error as Error;
+      logger.log(`[Chat] Tentativa ${attempt}/${maxRetries} falhou:`, error);
+
+      // Se não é a última tentativa, aguarda antes de tentar novamente
+      if (attempt < maxRetries) {
+        const backoffDelay = Math.min(1000 * Math.pow(2, attempt - 1), 3000);
+        await new Promise(resolve => setTimeout(resolve, backoffDelay));
+      }
     }
-
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error('[Chat] Erro no backend, usando resposta offline:', error);
-    return generateOfflineResponse(request);
   }
+
+  console.error('[Chat] Todas as tentativas falharam, usando resposta offline:', lastError);
+  return generateOfflineResponse(request);
 }
 
 /**
@@ -255,10 +283,8 @@ export async function checkAPIHealth(): Promise<{
   error?: string;
   fallbackActive: boolean;
 }> {
-  const apiUrl = getApiUrl();
-  
   // Se URL é null, backend está indisponível
-  if (!apiUrl) {
+  if (!API_BASE_URL) {
     console.warn('[API Health] Backend temporariamente indisponível');
     return {
       available: false,
@@ -267,7 +293,7 @@ export async function checkAPIHealth(): Promise<{
       fallbackActive: true
     };
   }
-  
+
   // Lista de endpoints para testar (ordem de prioridade)
   const healthEndpoints = [
     '/api/v1/health',
@@ -275,39 +301,39 @@ export async function checkAPIHealth(): Promise<{
     '/health',
     '/'
   ];
-  
+
   for (const endpoint of healthEndpoints) {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000);
-      
-      const response = await fetch(`${apiUrl}${endpoint}`, {
+      const timeoutId = setTimeout(() => controller.abort(), Math.min(API_TIMEOUT, 5000));
+
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: 'GET',
         headers: { 'Accept': 'application/json' },
         signal: controller.signal
       });
-      
+
       clearTimeout(timeoutId);
-      
+
       if (response.ok) {
-        console.log(`[API Health] Conectado via ${endpoint}`);
+        logger.log(`[API Health] Conectado com sucesso no ambiente ${config.environment}`);
         return {
           available: true,
-          url: apiUrl,
+          url: API_BASE_URL,
           fallbackActive: false
         };
       }
     } catch (error) {
-      console.log(`[API Health] Falhou em ${endpoint}:`, error instanceof Error ? error.message : 'Erro desconhecido');
+      logger.log(`[API Health] Falha na conexão com ${endpoint}:`, error);
       continue;
     }
   }
-  
+
   // Se chegou aqui, nenhum endpoint funcionou
   console.error('[API Health] Todos os endpoints falharam, usando modo offline');
   return {
     available: false,
-    url: apiUrl,
+    url: API_BASE_URL,
     error: 'Backend indisponível - usando funcionalidades básicas',
     fallbackActive: true
   };
@@ -316,100 +342,165 @@ export async function checkAPIHealth(): Promise<{
 /**
  * Detecta escopo da pergunta
  */
-export async function detectQuestionScope(question: string) {
+export async function detectQuestionScope(question: string): Promise<{ scope: string; confidence: number; details: string; category?: string; is_medical?: boolean; offline_mode?: boolean; offline_fallback?: boolean }> {
   // Se backend está em modo offline, retornar escopo padrão
   if (!API_BASE_URL) {
-    console.log('[Scope] Modo offline ativo, retornando escopo padrão');
+    logger.log('[Scope] Modo offline ativo, retornando escopo padrão');
     return {
       scope: 'medical_general',
       confidence: 0.8,
+      details: 'Modo offline - escopo médico geral detectado',
       category: 'hanseniase',
       is_medical: true,
       offline_mode: true
     };
   }
 
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/v1/scope`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ question }),
-    });
+  const maxRetries = config.features.offline ? 1 : Math.min(API_RETRIES, 2);
+  let lastError: Error | null = null;
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error('Erro ao detectar escopo:', error);
-    // Fallback para escopo offline
-    return {
-      scope: 'medical_general',
-      confidence: 0.6,
-      category: 'hanseniase',
-      is_medical: true,
-      offline_fallback: true
-    };
-  }
-}
-
-/**
- * API Client para requisições HTTP
- */
-export const apiClient = {
-  async post<T>(endpoint: string, data: any): Promise<T> {
-    // Verificar se backend está em modo offline
-    if (!API_BASE_URL) {
-      console.log(`[ApiClient] POST ${endpoint} - Modo offline ativo`);
-      throw new Error('Backend em modo offline');
-    }
-
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
+
+      const response = await fetch(`${API_BASE_URL}/api/v1/scope`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify({ question }),
+        signal: controller.signal
       });
+
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      return await response.json();
+      const result = await response.json();
+      logger.log(`[Scope] Detectado com sucesso: ${result.scope} (tentativa ${attempt})`);
+      return result;
     } catch (error) {
-      console.error(`Erro na requisição POST para ${endpoint}:`, error);
-      throw error;
+      lastError = error as Error;
+      logger.log(`[Scope] Tentativa ${attempt}/${maxRetries} falhou:`, error);
+
+      if (attempt < maxRetries) {
+        const backoffDelay = Math.min(500 * attempt, 2000);
+        await new Promise(resolve => setTimeout(resolve, backoffDelay));
+      }
     }
+  }
+
+  console.error('Erro ao detectar escopo após todas as tentativas:', lastError);
+  // Fallback para escopo offline
+  return {
+    scope: 'medical_general',
+    confidence: 0.6,
+    details: 'Fallback para escopo médico geral após erro de rede',
+    category: 'hanseniase',
+    is_medical: true,
+    offline_fallback: true
+  };
+}
+
+/**
+ * API Client para requisições HTTP com retry e timeout configuráveis
+ */
+export const apiClient = {
+  async post<T>(endpoint: string, data: Record<string, unknown>): Promise<T> {
+    // Verificar se backend está em modo offline
+    if (!API_BASE_URL) {
+      logger.log('[ApiClient] POST - Modo offline ativo');
+      throw new Error('Backend em modo offline');
+    }
+
+    const maxRetries = config.features.offline ? 1 : API_RETRIES;
+    let lastError: Error | null = null;
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
+
+        const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
+          signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        logger.log(`[ApiClient] POST ${endpoint} sucesso (tentativa ${attempt})`);
+        return result;
+      } catch (error) {
+        lastError = error as Error;
+        logger.log(`[ApiClient] POST ${endpoint} tentativa ${attempt}/${maxRetries} falhou:`, error);
+
+        if (attempt < maxRetries) {
+          const backoffDelay = Math.min(1000 * attempt, 3000);
+          await new Promise(resolve => setTimeout(resolve, backoffDelay));
+        }
+      }
+    }
+
+    console.error(`Erro na requisição POST para ${endpoint} após todas as tentativas:`, lastError);
+    throw lastError;
   },
 
   async get<T>(endpoint: string): Promise<T> {
     // Verificar se backend está em modo offline
     if (!API_BASE_URL) {
-      console.log(`[ApiClient] GET ${endpoint} - Modo offline ativo`);
+      logger.log('[ApiClient] GET - Modo offline ativo');
       throw new Error('Backend em modo offline');
     }
 
-    try {
-      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+    const maxRetries = config.features.offline ? 1 : API_RETRIES;
+    let lastError: Error | null = null;
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
+
+        const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        logger.log(`[ApiClient] GET ${endpoint} sucesso (tentativa ${attempt})`);
+        return result;
+      } catch (error) {
+        lastError = error as Error;
+        logger.log(`[ApiClient] GET ${endpoint} tentativa ${attempt}/${maxRetries} falhou:`, error);
+
+        if (attempt < maxRetries) {
+          const backoffDelay = Math.min(1000 * attempt, 3000);
+          await new Promise(resolve => setTimeout(resolve, backoffDelay));
+        }
       }
-
-      return await response.json();
-    } catch (error) {
-      console.error(`Erro na requisição GET para ${endpoint}:`, error);
-      throw error;
     }
+
+    console.error(`Erro na requisição GET para ${endpoint} após todas as tentativas:`, lastError);
+    throw lastError;
   },
 };

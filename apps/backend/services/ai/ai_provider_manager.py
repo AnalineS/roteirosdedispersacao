@@ -73,7 +73,7 @@ class AIProviderManager:
         
         self._initialize_models()
         
-        logger.info("🤖 AI Provider Manager inicializado com GitHub config")
+        logger.info("AI Provider Manager inicializado com GitHub config")
     
     def _initialize_models(self):
         """Inicializa modelos baseado nas chaves disponíveis"""
@@ -128,7 +128,7 @@ class AIProviderManager:
                 datetime.now() - breaker.last_failure_time > timedelta(seconds=breaker.timeout_seconds)):
                 breaker.state = CircuitBreakerState.HALF_OPEN
                 breaker.half_open_calls = 0
-                logger.info(f"🔄 Circuit breaker {provider}: OPEN -> HALF_OPEN")
+                logger.info(f"Circuit breaker {provider}: OPEN -> HALF_OPEN")
                 return False
             return True
             
@@ -402,9 +402,9 @@ class AIProviderManager:
         
         for keyword, response in medical_responses.items():
             if keyword in last_message:
-                return f"🔄 Sistema em modo fallback: {response}\n\nPara respostas mais detalhadas, aguarde a normalização do sistema."
+                return f"Sistema em modo fallback: {response}\n\nPara respostas mais detalhadas, aguarde a normalização do sistema."
         
-        return "🔄 Sistema temporariamente em modo fallback. Para informações médicas confiáveis, consulte sempre um profissional de saúde qualificado."
+        return "Sistema temporariamente em modo fallback. Para informações médicas confiáveis, consulte sempre um profissional de saúde qualificado."
     
     def get_health_status(self) -> Dict:
         """Retorna status de health completo"""

@@ -274,20 +274,59 @@ label {
   margin-bottom: var(--space-xs);
 }
 
-/* Container layout - Otimizado para telas grandes */
+/* Container layout - Otimizado para aproveitamento total da tela */
 .container {
   width: 100%;
-  max-width: min(1600px, 95vw);
+  max-width: 100%;
   margin: 0 auto;
-  padding: 0 var(--space-lg);
+  padding: 0 clamp(1rem, 2vw, 2rem);
 }
 
 .container-sm {
   max-width: min(768px, 90vw);
+  margin: 0 auto;
+  padding: 0 var(--space-lg);
 }
 
 .container-lg {
-  max-width: min(1800px, 98vw);
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0 clamp(1rem, 1.5vw, 3rem);
+}
+
+/* Containers responsivos para diferentes breakpoints */
+.container-fluid {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0 clamp(1rem, 2vw, 2rem);
+}
+
+.container-content {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0 clamp(1rem, 3vw, 4rem);
+}
+
+/* Responsive containers por breakpoint */
+@media (max-width: 768px) {
+  .container, .container-lg, .container-fluid, .container-content {
+    padding: 0 var(--space-md);
+  }
+}
+
+@media (min-width: 1600px) {
+  .container-content {
+    padding: 0 clamp(2rem, 4vw, 6rem);
+  }
+}
+
+@media (min-width: 2000px) {
+  .container-content {
+    padding: 0 clamp(3rem, 5vw, 8rem);
+  }
 }
 
 /* Grid system */

@@ -1,9 +1,14 @@
 'use client';
 
 import { useAuth } from '@/hooks/useAuth';
-import { USER_LEVEL_BENEFITS } from '@/types/auth';
+import { USER_LEVEL_BENEFITS, type AuthUser, type UserUsage } from '@/types/auth';
 import { useState } from 'react';
 import LoginModal from './LoginModal';
+
+// Type guard para verificar se o user tem usage
+function hasUsage(user: AuthUser): user is AuthUser & { usage: UserUsage } {
+  return user && 'usage' in user && user.usage !== undefined;
+}
 
 interface UserBenefitsCardProps {
   showUpgradePrompt?: boolean;
@@ -84,25 +89,25 @@ export default function UserBenefitsCard({
         )}
 
         {/* Informações de uso (se logado) */}
-        {user && (
+        {user && hasUsage(user) && (
           <div className="mb-6 p-4 bg-blue-50 rounded-lg">
             <h4 className="font-medium text-blue-900 mb-2">📊 Suas estatísticas:</h4>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <span className="text-blue-700">Sessões:</span>
-                <span className="font-medium ml-2">{user.usage.totalSessions}</span>
+                <span className="font-medium ml-2">{user.usage.totalSessions || 0}</span>
               </div>
               <div>
                 <span className="text-blue-700">Mensagens:</span>
-                <span className="font-medium ml-2">{user.usage.totalMessages}</span>
+                <span className="font-medium ml-2">{user.usage.totalMessages || 0}</span>
               </div>
               <div>
                 <span className="text-blue-700">Módulos:</span>
-                <span className="font-medium ml-2">{user.usage.totalModulesCompleted}</span>
+                <span className="font-medium ml-2">{user.usage.totalModulesCompleted || 0}</span>
               </div>
               <div>
                 <span className="text-blue-700">Certificados:</span>
-                <span className="font-medium ml-2">{user.usage.totalCertificatesEarned}</span>
+                <span className="font-medium ml-2">{user.usage.totalCertificatesEarned || 0}</span>
               </div>
             </div>
           </div>

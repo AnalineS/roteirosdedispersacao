@@ -289,8 +289,90 @@ export default function ChecklistPage() {
     
     const printWindow = window.open('', '_blank');
     if (printWindow) {
-      printWindow.document.write(printContent);
-      printWindow.document.close();
+      // Create print document safely using DOM methods
+      const doc = printWindow.document;
+      doc.open();
+
+      // Create HTML structure
+      const html = doc.createElement('html');
+      const head = doc.createElement('head');
+      const body = doc.createElement('body');
+
+      // Add title and styles
+      const title = doc.createElement('title');
+      title.textContent = 'Checklist de Dispensação';
+
+      const style = doc.createElement('style');
+      style.textContent = `
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .print-header { text-align: center; margin-bottom: 30px; }
+        .category { margin-bottom: 25px; }
+        .category h3 { color: #1e293b; border-bottom: 2px solid #3b82f6; padding-bottom: 5px; }
+        .checklist-item { margin: 10px 0; padding: 8px; border-left: 3px solid #e2e8f0; }
+        .checkbox { margin-right: 8px; }
+      `;
+
+      head.appendChild(title);
+      head.appendChild(style);
+
+      // Add header
+      const header = doc.createElement('div');
+      header.className = 'print-header';
+      const h1 = doc.createElement('h1');
+      h1.textContent = 'Checklist de Dispensação PQT-U';
+      const subtitle = doc.createElement('p');
+      subtitle.textContent = 'Hanseníase - Protocolo Clínico e Diretrizes Terapêuticas';
+      header.appendChild(h1);
+      header.appendChild(subtitle);
+      body.appendChild(header);
+
+      // Add checklist items
+      Object.entries(groupedItems).forEach(([category, items]) => {
+        const categoryDiv = doc.createElement('div');
+        categoryDiv.className = 'category';
+
+        const categoryTitle = doc.createElement('h3');
+        categoryTitle.textContent = category;
+        categoryDiv.appendChild(categoryTitle);
+
+        items.forEach((item, index) => {
+          const itemDiv = doc.createElement('div');
+          itemDiv.className = 'checklist-item';
+
+          const checkbox = doc.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.className = 'checkbox';
+          checkbox.id = `print-${category}-${index}`;
+
+          const label = doc.createElement('label');
+          label.setAttribute('for', `print-${category}-${index}`);
+          label.textContent = item.text;
+
+          if (item.description) {
+            const desc = doc.createElement('div');
+            desc.style.fontSize = '0.9em';
+            desc.style.color = '#64748b';
+            desc.style.marginLeft = '24px';
+            desc.textContent = item.description;
+            itemDiv.appendChild(checkbox);
+            itemDiv.appendChild(label);
+            itemDiv.appendChild(desc);
+          } else {
+            itemDiv.appendChild(checkbox);
+            itemDiv.appendChild(label);
+          }
+
+          categoryDiv.appendChild(itemDiv);
+        });
+
+        body.appendChild(categoryDiv);
+      });
+
+      html.appendChild(head);
+      html.appendChild(body);
+      doc.appendChild(html);
+      doc.close();
+
       printWindow.print();
     }
   };

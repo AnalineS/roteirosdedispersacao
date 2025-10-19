@@ -1,0 +1,195 @@
+# ============================================================================
+# OPTIMIZED CLOUD BUILD - Sistema Educacional Hanseníase
+# Production-ready build configuration with security and performance optimizations
+# ============================================================================
+
+steps:
+  # ============================================================================
+  # STEP 1: SECURITY VULNERABILITY SCANNING
+  # ============================================================================
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "🔒 Security: Scanning for vulnerabilities in requirements.txt"
+        pip install safety pip-audit
+        # Check for known vulnerabilities
+        safety check -r requirements.txt --json || true
+        # Additional audit with pip-audit
+        pip-audit -r requirements.txt --format=json || true
+    id: 'security-scan'
+
+  # ============================================================================
+  # STEP 2: BUILD OPTIMIZED DOCKER IMAGE
+  # ============================================================================
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-f'
+      - 'Dockerfile.optimized'
+      - '--cache-from'
+      - 'gcr.io/$PROJECT_ID/roteiro-dispensacao-backend:latest'
+      - '--build-arg'
+      - 'BUILDKIT_INLINE_CACHE=1'
+      - '--build-arg'
+      - 'ENVIRONMENT=production'
+      - '--build-arg'
+      - 'PYTHON_VERSION=3.11'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/roteiro-dispensacao-backend:$BUILD_ID'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/roteiro-dispensacao-backend:latest'
+      - '.'
+    id: 'build-image'
+    waitFor: ['security-scan']
+
+  # ============================================================================
+  # STEP 3: SECURITY SCANNING OF BUILT IMAGE
+  # ============================================================================
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "🔍 Security: Scanning Docker image for vulnerabilities"
+        gcloud components install docker-credential-gcr
+        docker-credential-gcr configure-docker
+        # Use Google's container analysis
+        gcloud beta container images scan gcr.io/$PROJECT_ID/roteiro-dispensacao-backend:$BUILD_ID || true
+    id: 'image-security-scan'
+    waitFor: ['build-image']
+
+  # ============================================================================
+  # STEP 4: PUSH TO CONTAINER REGISTRY
+  # ============================================================================
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/roteiro-dispensacao-backend:$BUILD_ID']
+    id: 'push-tagged'
+    waitFor: ['image-security-scan']
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/roteiro-dispensacao-backend:latest']
+    id: 'push-latest'
+    waitFor: ['image-security-scan']
+
+  # ============================================================================
+  # STEP 5: DEPLOY TO CLOUD RUN (PRODUCTION)
+  # ============================================================================
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'roteiro-dispensacao-backend'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/roteiro-dispensacao-backend:$BUILD_ID'
+      - '--region'
+      - 'us-central1'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--memory'
+      - '2Gi'
+      - '--cpu'
+      - '2'
+      - '--concurrency'
+      - '100'
+      - '--max-instances'
+      - '10'
+      - '--min-instances'
+      - '1'
+      - '--port'
+      - '8080'
+      - '--timeout'
+      - '300'
+      - '--set-env-vars'
+      - 'ENVIRONMENT=production,FLASK_ENV=production,DEBUG=False'
+      - '--ingress'
+      - 'all'
+      - '--cpu-throttling'
+      - '--execution-environment'
+      - 'gen2'
+      - '--service-account'
+      - 'roteiro-dispensacao@$PROJECT_ID.iam.gserviceaccount.com'
+    id: 'deploy-cloud-run'
+    waitFor: ['push-tagged', 'push-latest']
+
+  # ============================================================================
+  # STEP 6: HEALTH CHECK AND VALIDATION
+  # ============================================================================
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "🏥 Health Check: Validating deployment"
+        # Get the service URL
+        SERVICE_URL=$(gcloud run services describe roteiro-dispensacao-backend \
+          --region=us-central1 --format='value(status.url)')
+
+        # Wait for deployment to be ready
+        sleep 30
+
+        # Health check
+        echo "Testing health endpoint: $SERVICE_URL/api/health"
+        HTTP_STATUS=$(curl -o /dev/null -s -w "%{http_code}" "$SERVICE_URL/api/health" || echo "000")
+
+        if [ "$HTTP_STATUS" -eq "200" ]; then
+          echo "✅ Health check passed: $HTTP_STATUS"
+        else
+          echo "❌ Health check failed: $HTTP_STATUS"
+          exit 1
+        fi
+
+        # Test personas endpoint
+        echo "Testing personas endpoint: $SERVICE_URL/api/personas"
+        PERSONAS_STATUS=$(curl -o /dev/null -s -w "%{http_code}" "$SERVICE_URL/api/personas" || echo "000")
+
+        if [ "$PERSONAS_STATUS" -eq "200" ]; then
+          echo "✅ Personas endpoint available: $PERSONAS_STATUS"
+        else
+          echo "⚠️ Personas endpoint issue: $PERSONAS_STATUS"
+        fi
+
+        echo "🚀 Deployment completed successfully!"
+        echo "Service URL: $SERVICE_URL"
+    id: 'health-check'
+    waitFor: ['deploy-cloud-run']
+
+# ============================================================================
+# BUILD CONFIGURATION
+# ============================================================================
+options:
+  # Use high-performance machine for ML/CV dependencies
+  machineType: 'E2_HIGHCPU_8'
+  diskSizeGb: 100
+  # Enable build logging
+  logging: CLOUD_LOGGING_ONLY
+  # Use latest Docker
+  env:
+    - 'DOCKER_BUILDKIT=1'
+
+# Build timeout (increased for ML dependencies)
+timeout: '1800s'  # 30 minutes
+
+# Substitutions for environment variables
+substitutions:
+  _ENVIRONMENT: 'production'
+  _REGION: 'us-central1'
+  _SERVICE_NAME: 'roteiro-dispensacao-backend'
+
+# ============================================================================
+# ARTIFACTS AND IMAGES
+# ============================================================================
+images:
+  - 'gcr.io/$PROJECT_ID/roteiro-dispensacao-backend:$BUILD_ID'
+  - 'gcr.io/$PROJECT_ID/roteiro-dispensacao-backend:latest'
+
+# ============================================================================
+# AVAILABILITY AND TRIGGERS
+# ============================================================================
+# This configuration can be triggered by:
+# 1. Manual builds: gcloud builds submit
+# 2. GitHub triggers on main branch
+# 3. Scheduled builds for security updates

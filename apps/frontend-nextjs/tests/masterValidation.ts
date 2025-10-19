@@ -18,7 +18,25 @@ interface ValidationResult {
   score: number;
   criticalIssues: string[];
   recommendations: string[];
-  details: any;
+  details: ValidationDetails;
+}
+
+interface ValidationDetails {
+  error?: string;
+  functionalRouting?: { passed: boolean; failed: number };
+  highPriorityCases?: boolean;
+  personaExpertise?: boolean;
+  performance?: { passed: boolean; results: { averageResponseTime: number; successRate: number } };
+  cache?: { passed: boolean };
+  memory?: { passed: boolean };
+  backendFallback?: { passed: boolean };
+  edgeCases?: { passed: boolean };
+  accessibility?: { passed: boolean };
+  responsiveness?: { passed: boolean };
+  apiCommunication?: { passed: boolean };
+  endToEndIntegration?: { passed: boolean };
+  usageMetrics?: { passed: boolean };
+  [key: string]: unknown;
 }
 
 interface ValidationSummary {
@@ -44,14 +62,14 @@ interface ValidationSummary {
 /**
  * Calcula score baseado nos resultados
  */
-function calculateScore(results: any): number {
+function calculateScore(results: ValidationDetails | null): number {
   if (!results || typeof results !== 'object') return 0;
   
   let totalPoints = 0;
   let maxPoints = 0;
   
   // Percorre resultados recursivamente
-  function scoreResults(obj: any, weight: number = 1): void {
+  function scoreResults(obj: unknown, weight: number = 1): void {
     if (typeof obj === 'boolean') {
       maxPoints += weight;
       if (obj) totalPoints += weight;
@@ -70,7 +88,7 @@ function calculateScore(results: any): number {
 /**
  * Extrai issues críticos dos resultados
  */
-function extractCriticalIssues(categoryName: string, results: any): string[] {
+function extractCriticalIssues(categoryName: string, results: ValidationDetails): string[] {
   const issues: string[] = [];
   
   switch (categoryName) {
@@ -140,7 +158,7 @@ function extractCriticalIssues(categoryName: string, results: any): string[] {
 /**
  * Gera recomendações baseadas nos resultados
  */
-function generateRecommendations(categoryName: string, results: any): string[] {
+function generateRecommendations(categoryName: string, results: ValidationDetails): string[] {
   const recommendations: string[] = [];
   
   switch (categoryName) {

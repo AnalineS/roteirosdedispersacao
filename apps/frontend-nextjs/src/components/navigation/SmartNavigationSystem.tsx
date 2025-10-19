@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 import { usePathname } from 'next/navigation';
 
 interface NavigationState {
@@ -77,8 +78,8 @@ export function SmartNavigationProvider({ children }: { children: React.ReactNod
 
   // Carregar preferências do usuário
   useEffect(() => {
-    const savedLevel = localStorage.getItem('userNavigationLevel') as NavigationState['userLevel'];
-    const showFull = localStorage.getItem('showFullNavigation') === 'true';
+    const savedLevel = safeLocalStorage()?.getItem('userNavigationLevel') as NavigationState['userLevel'];
+    const showFull = safeLocalStorage()?.getItem('showFullNavigation') === 'true';
     
     if (savedLevel) {
       setNavigationState(prev => ({ 
@@ -91,13 +92,13 @@ export function SmartNavigationProvider({ children }: { children: React.ReactNod
 
   const updateUserLevel = (level: NavigationState['userLevel']) => {
     setNavigationState(prev => ({ ...prev, userLevel: level }));
-    localStorage.setItem('userNavigationLevel', level);
+    safeLocalStorage()?.setItem('userNavigationLevel', level);
   };
 
   const toggleNavigationMode = () => {
     setNavigationState(prev => {
       const newShowFull = !prev.showFullNavigation;
-      localStorage.setItem('showFullNavigation', String(newShowFull));
+      safeLocalStorage()?.setItem('showFullNavigation', String(newShowFull));
       return { ...prev, showFullNavigation: newShowFull };
     });
   };

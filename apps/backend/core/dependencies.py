@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Sistema de Injeção de Dependências
-Centraliza a criação e gerenciamento de dependências
+Sistema Unificado de Dependências
+Centraliza a criação e gerenciamento de dependências sem imports circulares
 """
 
 from typing import Optional, Dict, Any
@@ -11,37 +11,16 @@ import logging
 # Import configs
 from app_config import config
 
-# Import services (conditional imports for flexibility)
-try:
-    from services.advanced_cache import PerformanceCache
-    ADVANCED_CACHE_AVAILABLE = True
-except ImportError:
-    ADVANCED_CACHE_AVAILABLE = False
-    
-try:
-    from services.simple_rag import generate_context_from_rag
-    from services.enhanced_rag_system import get_enhanced_context
-    from services.medical_rag_integration import get_medical_context, medical_rag_system
-    RAG_SERVICES_AVAILABLE = True
-    MEDICAL_RAG_AVAILABLE = True
-except ImportError:
-    RAG_SERVICES_AVAILABLE = False
-    MEDICAL_RAG_AVAILABLE = False
-
-# Import novo sistema de embeddings (SPRINT 1.2)
-try:
-    from services.embedding_rag_system import get_embedding_rag, get_rag_context
-    EMBEDDING_RAG_AVAILABLE = True
-except ImportError:
-    EMBEDDING_RAG_AVAILABLE = False
-
-try:
-    from core.validation.educational_qa_framework import EducationalQAFramework
-    QA_FRAMEWORK_AVAILABLE = True
-except ImportError:
-    QA_FRAMEWORK_AVAILABLE = False
-
 logger = logging.getLogger(__name__)
+
+@dataclass
+class ServiceConfig:
+    """Configuração para serviços"""
+    cache_enabled: bool = True
+    rag_enabled: bool = True
+    qa_enabled: bool = True
+    max_cache_size: int = 2000
+    cache_ttl_minutes: int = 120
 
 @dataclass
 class Dependencies:
@@ -52,85 +31,107 @@ class Dependencies:
     config: Any = None
     logger: Any = None
     
-class DependencyInjector:
-    """Gerenciador de injeção de dependências"""
-    
-    _instance: Optional['DependencyInjector'] = None
-    _dependencies: Optional[Dependencies] = None
-    
+class DependencyManager:
+    """Gerenciador unificado de dependências com factory pattern"""
+
+    _instance: Optional['DependencyManager'] = None
+
     def __new__(cls):
         """Singleton pattern"""
         if cls._instance is None:
             cls._instance = super().__new__(cls)
         return cls._instance
-    
+
     def __init__(self):
-        """Inicializa dependências uma vez"""
-        if self._dependencies is None:
-            self._dependencies = self._initialize_dependencies()
-    
-    def _initialize_dependencies(self) -> Dependencies:
-        """Inicializa todas as dependências do sistema"""
-        deps = Dependencies()
-        
-        # Config é sempre disponível
-        deps.config = config
-        deps.logger = logger
-        
-        # Cache Service
-        if ADVANCED_CACHE_AVAILABLE and config.ADVANCED_CACHE:
-            try:
-                deps.cache = PerformanceCache(
-                    max_size=config.CACHE_MAX_SIZE,
-                    ttl_minutes=config.CACHE_TTL_MINUTES
-                )
-                logger.info("[OK] Cache avançado inicializado")
-            except Exception as e:
-                logger.error(f"[ERROR] Erro ao inicializar cache: {e}")
-                deps.cache = self._create_fallback_cache()
-        else:
-            deps.cache = self._create_fallback_cache()
-        
-        # RAG Service
-        if RAG_SERVICES_AVAILABLE and config.RAG_AVAILABLE:
-            try:
-                # Wrapper para unificar interface
-                deps.rag_service = self._create_rag_service()
-                logger.info("[OK] RAG service inicializado")
-            except Exception as e:
-                logger.error(f"[ERROR] Erro ao inicializar RAG: {e}")
-                deps.rag_service = None
-        
-        # QA Framework
-        if QA_FRAMEWORK_AVAILABLE and config.QA_ENABLED:
-            try:
-                # Inicializar QA Framework sem parâmetros (usar configuração padrão)
-                deps.qa_framework = EducationalQAFramework()
-                logger.info("[OK] QA Framework inicializado")
-            except Exception as e:
-                logger.error(f"[ERROR] Erro ao inicializar QA: {e}")
-                deps.qa_framework = None
-        
-        return deps
-    
-    def _create_fallback_cache(self) -> Any:
+        """Inicializa gerenciador uma vez"""
+        if not hasattr(self, '_initialized'):
+            self.config = config
+            self.service_config = ServiceConfig(
+                cache_enabled=getattr(config, 'ADVANCED_CACHE', True),
+                rag_enabled=getattr(config, 'RAG_ENABLED', True),
+                qa_enabled=getattr(config, 'QA_ENABLED', True),
+                max_cache_size=getattr(config, 'CACHE_MAX_SIZE', 2000),
+                cache_ttl_minutes=getattr(config, 'CACHE_TTL_MINUTES', 120)
+            )
+
+            # Cache de instâncias para evitar recriação
+            self._cache_instance = None
+            self._rag_instance = None
+            self._qa_instance = None
+            self._initialized = True
+
+    def create_cache_service(self) -> Optional[Any]:
+        """Cria serviço de cache com fallback hierarchy"""
+        if self._cache_instance is not None:
+            return self._cache_instance
+
+        if not self.service_config.cache_enabled:
+            return self._create_simple_cache()
+
+        # Tentar unified cache
+        cache = self._try_create_unified_cache()
+        if cache:
+            self._cache_instance = cache
+            return cache
+
+        # Tentar performance cache
+        cache = self._try_create_performance_cache()
+        if cache:
+            self._cache_instance = cache
+            return cache
+
+        # Fallback simples
+        cache = self._create_simple_cache()
+        self._cache_instance = cache
+        return cache
+
+    def _try_create_unified_cache(self) -> Optional[Any]:
+        """Tenta criar unified cache"""
+        try:
+            from services.cache.unified_cache_manager import UnifiedCacheManager
+            cache = UnifiedCacheManager(self.config)
+            logger.info("[DEPENDENCIES] Unified cache criado com sucesso")
+            return cache
+        except ImportError:
+            logger.debug("[DEPENDENCIES] Unified cache não disponível")
+        except Exception as e:
+            logger.error(f"[DEPENDENCIES] Erro ao criar unified cache: {e}")
+        return None
+
+    def _try_create_performance_cache(self) -> Optional[Any]:
+        """Tenta criar performance cache"""
+        try:
+            from services.advanced_cache import PerformanceCache
+            cache = PerformanceCache(
+                max_size=self.service_config.max_cache_size,
+                ttl_minutes=self.service_config.cache_ttl_minutes
+            )
+            logger.info("[DEPENDENCIES] Performance cache criado com sucesso")
+            return cache
+        except ImportError:
+            logger.debug("[DEPENDENCIES] Performance cache não disponível")
+        except Exception as e:
+            logger.error(f"[DEPENDENCIES] Erro ao criar performance cache: {e}")
+        return None
+
+    def _create_simple_cache(self) -> Any:
         """Cria cache simples como fallback"""
         class SimpleCache:
             def __init__(self):
                 self.cache = {}
                 self.hits = 0
                 self.misses = 0
-            
+
             def get(self, key: str) -> Optional[Any]:
                 if key in self.cache:
                     self.hits += 1
                     return self.cache[key]
                 self.misses += 1
                 return None
-            
+
             def set(self, key: str, value: Any, ttl: Optional[int] = None) -> None:
                 self.cache[key] = value
-            
+
             def get_stats(self) -> Dict[str, Any]:
                 total = self.hits + self.misses
                 hit_rate = (self.hits / total * 100) if total > 0 else 0
@@ -138,116 +139,158 @@ class DependencyInjector:
                     "hits": self.hits,
                     "misses": self.misses,
                     "hit_rate": hit_rate,
-                    "total_entries": len(self.cache)
+                    "total_entries": len(self.cache),
+                    "type": "simple_fallback"
                 }
-        
-        logger.warning("[WARNING] Usando cache simples (fallback)")
+
+        logger.info("[DEPENDENCIES] Simple cache criado como fallback")
         return SimpleCache()
-    
-    def _create_rag_service(self) -> Any:
-        """Cria serviço RAG unificado com chunking médico e embeddings"""
-        class UnifiedRAGService:
-            def __init__(self):
-                # SPRINT 1.2: Priorizar embeddings se disponível
-                self.use_embedding_rag = EMBEDDING_RAG_AVAILABLE and config.EMBEDDINGS_ENABLED
-                self.use_medical_rag = MEDICAL_RAG_AVAILABLE and config.ADVANCED_FEATURES
-                self.use_enhanced = config.ADVANCED_FEATURES
-                
-                # Inicializar embedding RAG se disponível
-                self.embedding_rag = None
-                if self.use_embedding_rag:
-                    self.embedding_rag = get_embedding_rag()
-            
-            def get_context(self, query: str, max_chunks: int = 3, persona: Optional[str] = None) -> str:
-                """Interface unificada para RAG com embeddings e priorização médica"""
-                try:
-                    # SPRINT 1.2: Priorizar embeddings semânticos
-                    if self.use_embedding_rag and self.embedding_rag:
-                        return self.embedding_rag.get_context(query, max_chunks, persona)
-                    # Fallback para RAG médico
-                    elif self.use_medical_rag:
-                        return get_medical_context(query, max_chunks)
-                    # Fallback para RAG enhanced
-                    elif self.use_enhanced:
-                        return get_enhanced_context(query, max_chunks)
-                    # Fallback final para RAG básico
-                    else:
-                        return generate_context_from_rag(query, max_chunks)
-                except Exception as e:
-                    logger.error(f"Erro no RAG: {e}")
-                    return ""
-            
-            def get_stats(self) -> dict:
-                """Retorna estatísticas do RAG"""
-                # SPRINT 1.2: Incluir estatísticas de embeddings
-                if self.use_embedding_rag and self.embedding_rag:
-                    return self.embedding_rag.get_statistics()
-                elif self.use_medical_rag and MEDICAL_RAG_AVAILABLE:
-                    return medical_rag_system.get_stats()
-                return {"type": "basic", "medical_chunking": False, "embeddings": False}
-        
-        return UnifiedRAGService()
-    
-    def get_dependencies(self) -> Dependencies:
-        """Retorna container de dependências"""
-        return self._dependencies
-    
-    def get_cache(self) -> Any:
-        """Retorna serviço de cache"""
-        return self._dependencies.cache
-    
-    def get_rag(self) -> Optional[Any]:
-        """Retorna serviço RAG"""
-        return self._dependencies.rag_service
-    
-    def get_qa(self) -> Optional[Any]:
-        """Retorna QA framework"""
-        return self._dependencies.qa_framework
-    
-    def get_config(self) -> Any:
-        """Retorna configuração"""
-        return self._dependencies.config
-    
-    def inject_into_blueprint(self, blueprint) -> None:
-        """Injeta dependências em um blueprint"""
-        # Adiciona dependências ao contexto do blueprint
-        blueprint.dependencies = self._dependencies
-        blueprint.cache = self._dependencies.cache
-        blueprint.rag_service = self._dependencies.rag_service
-        blueprint.qa_framework = self._dependencies.qa_framework
-        blueprint.config = self._dependencies.config
 
-# Singleton global
-dependency_injector = DependencyInjector()
+    def create_rag_service(self) -> Optional[Any]:
+        """Cria serviço RAG com fallback hierarchy"""
+        if self._rag_instance is not None:
+            return self._rag_instance
 
-# Funções de conveniência
-def get_cache():
-    """Atalho para obter cache"""
-    return dependency_injector.get_cache()
+        if not self.service_config.rag_enabled:
+            return None
 
-def get_rag():
-    """Atalho para obter RAG"""
-    return dependency_injector.get_rag()
+        # Tentar Supabase RAG primeiro
+        rag = self._try_create_supabase_rag()
+        if rag:
+            self._rag_instance = rag
+            return rag
 
-def get_qa():
-    """Atalho para obter QA"""
-    return dependency_injector.get_qa()
+        # Tentar enhanced RAG
+        rag = self._try_create_enhanced_rag()
+        if rag:
+            self._rag_instance = rag
+            return rag
 
-def get_config():
-    """Atalho para obter config"""
-    return dependency_injector.get_config()
+        # Tentar simple RAG
+        rag = self._try_create_simple_rag()
+        if rag:
+            self._rag_instance = rag
+            return rag
 
-def inject_dependencies(blueprint):
-    """Atalho para injetar dependências em blueprint"""
-    dependency_injector.inject_into_blueprint(blueprint)
+        return None
 
-__all__ = [
-    'Dependencies',
-    'DependencyInjector',
-    'dependency_injector',
-    'get_cache',
-    'get_rag',
-    'get_qa',
-    'get_config',
-    'inject_dependencies'
-]
+    def _try_create_supabase_rag(self) -> Optional[Any]:
+        """Tenta criar Supabase RAG system"""
+        try:
+            from services.rag.supabase_rag_system import SupabaseRAGSystem
+            rag = SupabaseRAGSystem(self.config)
+            logger.info("[DEPENDENCIES] Supabase RAG criado com sucesso")
+            return rag
+        except ImportError:
+            logger.debug("[DEPENDENCIES] Supabase RAG não disponível")
+        except Exception as e:
+            logger.error(f"[DEPENDENCIES] Erro ao criar Supabase RAG: {e}")
+        return None
+
+    def _try_create_enhanced_rag(self) -> Optional[Any]:
+        """Tenta criar enhanced RAG"""
+        try:
+            from services.enhanced_rag_system import get_enhanced_context
+            # Wrapper para interface consistente
+            class EnhancedRAGWrapper:
+                def get_context(self, query: str, max_chunks: int = 3, persona: Optional[str] = None) -> str:
+                    return get_enhanced_context(query, max_chunks)
+
+                def get_stats(self) -> dict:
+                    return {"type": "enhanced", "available": True}
+
+            logger.info("[DEPENDENCIES] Enhanced RAG criado com sucesso")
+            return EnhancedRAGWrapper()
+        except ImportError:
+            logger.debug("[DEPENDENCIES] Enhanced RAG não disponível")
+        except Exception as e:
+            logger.error(f"[DEPENDENCIES] Erro ao criar Enhanced RAG: {e}")
+        return None
+
+    def _try_create_simple_rag(self) -> Optional[Any]:
+        """Tenta criar simple RAG"""
+        try:
+            from services.simple_rag import generate_context_from_rag
+            # Wrapper para interface consistente
+            class SimpleRAGWrapper:
+                def get_context(self, query: str, max_chunks: int = 3, persona: Optional[str] = None) -> str:
+                    return generate_context_from_rag(query, max_chunks)
+
+                def get_stats(self) -> dict:
+                    return {"type": "simple", "available": True}
+
+            logger.info("[DEPENDENCIES] Simple RAG criado com sucesso")
+            return SimpleRAGWrapper()
+        except ImportError:
+            logger.debug("[DEPENDENCIES] Simple RAG não disponível")
+        except Exception as e:
+            logger.error(f"[DEPENDENCIES] Erro ao criar Simple RAG: {e}")
+        return None
+
+    def create_qa_framework(self) -> Optional[Any]:
+        """Cria QA framework"""
+        if self._qa_instance is not None:
+            return self._qa_instance
+
+        if not self.service_config.qa_enabled:
+            return None
+
+        try:
+            from core.validation.educational_qa_framework import EducationalQAFramework
+            qa = EducationalQAFramework()
+            self._qa_instance = qa
+            logger.info("[DEPENDENCIES] QA Framework criado com sucesso")
+            return qa
+        except ImportError:
+            logger.debug("[DEPENDENCIES] QA Framework não disponível")
+        except Exception as e:
+            logger.error(f"[DEPENDENCIES] Erro ao criar QA Framework: {e}")
+
+        return None
+
+    def get_service_status(self) -> Dict[str, bool]:
+        """Retorna status de todos os serviços"""
+        return {
+            "cache": self._cache_instance is not None,
+            "rag": self._rag_instance is not None,
+            "qa": self._qa_instance is not None,
+            "cache_enabled": self.service_config.cache_enabled,
+            "rag_enabled": self.service_config.rag_enabled,
+            "qa_enabled": self.service_config.qa_enabled
+        }
+
+
+# Instância global do gerenciador
+_dependency_manager: Optional[DependencyManager] = None
+
+def get_dependency_manager() -> DependencyManager:
+    """Obtém instância global do gerenciador"""
+    global _dependency_manager
+
+    if _dependency_manager is None:
+        _dependency_manager = DependencyManager()
+        logger.info("[DEPENDENCIES] Dependency manager inicializado")
+
+    return _dependency_manager
+
+# Funções de conveniência para compatibilidade
+def get_cache() -> Optional[Any]:
+    """Obtém serviço de cache"""
+    manager = get_dependency_manager()
+    return manager.create_cache_service()
+
+def get_rag() -> Optional[Any]:
+    """Obtém serviço RAG"""
+    manager = get_dependency_manager()
+    return manager.create_rag_service()
+
+def get_qa() -> Optional[Any]:
+    """Obtém QA framework"""
+    manager = get_dependency_manager()
+    return manager.create_qa_framework()
+
+def get_config() -> Any:
+    """Obtém configuração"""
+    return config
+
+

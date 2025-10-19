@@ -170,7 +170,6 @@ export function MedicalAccordion({
           <AccordionSection
             key={section.id}
             section={section}
-            index={index}
             isExpanded={isSectionExpanded(section.id)}
             onToggle={() => toggleSection(section.id)}
           />
@@ -183,12 +182,10 @@ export function MedicalAccordion({
 // Componente de seção individual do acordeon
 function AccordionSection({
   section,
-  index,
   isExpanded,
   onToggle
 }: {
   section: AccordionSection;
-  index: number;
   isExpanded: boolean;
   onToggle: () => void;
 }) {
@@ -291,7 +288,7 @@ function SimpleAccordion({
 
   return (
     <div className="space-y-3">
-      {sections.map((content, index) => (
+      {sections.map((content) => (
         <div key={content.id} className="bg-gray-50 rounded-lg p-4">
           <h4 className="text-sm font-medium text-gray-900 mb-2">
             {content.title}

@@ -73,6 +73,30 @@ Sobre sua pergunta: {question}
 
 Espero ter ajudado! Qualquer dúvida, estou aqui! 💙"""
 
+def get_openrouter_client(config=None):
+    """Obtém cliente OpenRouter configurado"""
+    if not OPENAI_AVAILABLE:
+        return None
+
+    try:
+        api_key = os.environ.get('OPENROUTER_API_KEY')
+        if not api_key:
+            return None
+
+        client = openai.OpenAI(
+            base_url="https://openrouter.ai/api/v1",
+            api_key=api_key
+        )
+        return client
+
+    except Exception as e:
+        logger.warning(f"Erro ao criar cliente OpenRouter: {e}")
+        return None
+
+def is_openrouter_available():
+    """Verifica se OpenRouter está disponível"""
+    return OPENAI_AVAILABLE and bool(os.environ.get('OPENROUTER_API_KEY'))
+
 # Teste de importação
 if __name__ == "__main__":
     result = test_openai_connection()

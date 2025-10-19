@@ -343,10 +343,14 @@ export default function SobreATesetModulePage() {
       <ModuleTemplate 
         moduleData={moduleData}
         onSectionComplete={(sectionId) => {
-          console.log(`Seção concluída: ${sectionId}`);
+          if (process.env.NODE_ENV === 'development') {
+            console.log('Seção concluída:', sectionId);
+          }
         }}
         onModuleComplete={() => {
-          console.log('Módulo "Sobre a Tese" concluído!');
+          if (process.env.NODE_ENV === 'development') {
+            console.log('Módulo "Sobre a Tese" concluído!');
+          }
         }}
         showChatIntegration={true}
       />

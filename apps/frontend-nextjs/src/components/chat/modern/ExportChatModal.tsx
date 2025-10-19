@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { ChatMessage, Persona } from '@/services/api';
+import { type ChatMessage } from '@/types/api';
+import { type Persona } from '@/services/api';
 import { modernChatTheme } from '@/config/modernTheme';
 
 interface ExportChatModalProps {
@@ -24,7 +25,7 @@ const formatMessagesForExport = (messages: ChatMessage[], persona?: Persona | nu
     minute: '2-digit'
   })}\n\n---\n\n`;
 
-  const conversation = messages.map((msg, index) => {
+  const conversation = messages.map((msg) => {
     const sender = msg.role === 'user' ? '**Usuário**' : `**${persona?.name || 'Assistente'}**`;
     const timestamp = new Date(msg.timestamp).toLocaleTimeString('pt-BR', {
       hour: '2-digit',
@@ -156,7 +157,18 @@ export default function ExportChatModal({
           break;
       }
     } catch (error) {
-      console.error('Erro ao exportar:', error);
+      // Log erro de exportação via analytics
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'chat_export_failed', {
+          event_category: 'error',
+          event_label: 'export_failure',
+          value: 1,
+          custom_parameters: {
+            transport_type: 'beacon'
+          }
+        });
+      }
+
       setExportSuccess('Erro ao exportar. Tente novamente.');
     } finally {
       setIsExporting(null);
