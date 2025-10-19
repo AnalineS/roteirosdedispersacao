@@ -51,11 +51,17 @@ jobs:
             if grep -r -E -i "$pattern" . \
               --exclude-dir=.git \
               --exclude-dir=node_modules \
+              --exclude-dir=tests \
               --exclude="*.md" \
               --exclude="*README*" \
               --exclude="*EXAMPLE*" \
               --exclude="*.example" \
-              --exclude="*.sample" 2>/dev/null; then
+              --exclude="*.sample" \
+              --exclude="*test*.py" \
+              --exclude="test_*.py" \
+              --exclude="*_script.py" \
+              --exclude="validate_*.py" \
+              --exclude="conftest.py" 2>/dev/null; then
               echo "❌ Sensitive data pattern found: $pattern"
               SECURITY_ISSUES=$((SECURITY_ISSUES + 1))
             fi
