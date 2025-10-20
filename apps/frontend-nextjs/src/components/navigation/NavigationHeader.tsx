@@ -657,7 +657,7 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
         isOpen={isMobileMenuOpen}
         onClose={() => setIsMobileMenuOpen(false)}
         categories={navigationCategories}
-        currentPersona={currentPersonaData}
+        currentPersona={currentPersonaData as any}
         isActive={isActive}
       />
     </>

@@ -1,0 +1,51 @@
+name: Test RAG Accuracy
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-rag:
+    name: 🧪 Test RAG Medical Knowledge Retrieval
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          cd apps/backend
+          pip install -r requirements.txt
+
+      - name: Install test dependencies
+        run: |
+          pip install pytest pytest-cov huggingface_hub
+
+      - name: Run RAG accuracy test
+        env:
+          HUGGINGFACE_TOKEN: ${{ secrets.HUGGINGFACE_TOKEN }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_PROJECT_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_API_KEY }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_API_KEY }}
+        run: |
+          cd apps/backend
+          echo "🧪 Running RAG accuracy test..."
+          python -m pytest tests/test_post_security_update_validation.py::TestRAGSystemMedicalAccuracy::test_rag_medical_knowledge_retrieval -v --tb=short
+
+          echo "✅ RAG accuracy test completed!"
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rag-test-results
+          path: |
+            apps/backend/.pytest_cache/
+          retention-days: 7
