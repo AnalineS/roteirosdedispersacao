@@ -628,7 +628,19 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
 
         {/* Overlay para fechar dropdowns */}
         {Object.values(dropdownsOpen).some(Boolean) && (
-          <div className="fixed inset-0 z-[999]" onClick={closeAllDropdowns} />
+          <div
+            className="fixed inset-0 z-[999]"
+            onClick={closeAllDropdowns}
+            onKeyDown={(e) => {
+              if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                closeAllDropdowns();
+              }
+            }}
+            role="button"
+            tabIndex={-1}
+            aria-label="Fechar menu de navegação"
+          />
         )}
 
         {/* Animações CSS */}
