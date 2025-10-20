@@ -1,6 +1,27 @@
 import { useCallback, useRef, useEffect } from 'react';
 import Analytics from '@/services/analytics';
 
+// Hook principal de analytics
+export const useAnalytics = () => {
+  const trackEvent = useCallback(async (eventName: string, data: any) => {
+    try {
+      Analytics.event('USER', eventName, data);
+    } catch (error) {
+      console.warn('Analytics error:', error);
+    }
+  }, []);
+
+  const trackPageView = useCallback((page: string) => {
+    try {
+      Analytics.pageView(page);
+    } catch (error) {
+      console.warn('Analytics page view error:', error);
+    }
+  }, []);
+
+  return { trackEvent, trackPageView };
+};
+
 // Hook for tracking chat interactions
 export const useChatAnalytics = (persona: 'dr_gasnelio' | 'ga') => {
   const sessionStartRef = useRef<number>(Date.now());
@@ -178,14 +199,3 @@ export const useComplianceAnalytics = () => {
   };
 };
 
-// Main analytics hook that combines all
-export const useAnalytics = () => {
-  return {
-    chat: useChatAnalytics,
-    education: useEducationAnalytics(),
-    auth: useAuthAnalytics(),
-    admin: useAdminAnalytics(),
-    performance: usePerformanceAnalytics(),
-    compliance: useComplianceAnalytics(),
-  };
-};

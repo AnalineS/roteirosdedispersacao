@@ -497,7 +497,7 @@ export function useMultimodal(): MultimodalHook {
 export function useMultimodalHealth() {
   const [health, setHealth] = useState<{
     status: string;
-    capabilities: any;
+    capabilities: SystemCapabilities | null;
     lastCheck: Date | null;
   }>({
     status: 'unknown',

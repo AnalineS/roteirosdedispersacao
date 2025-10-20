@@ -13,14 +13,17 @@ from datetime import datetime, timezone, timedelta
 from dataclasses import dataclass
 import numpy as np
 
+# Import dependências necessárias
+# SearchResult será importado nas linhas seguintes
+
 logger = logging.getLogger(__name__)
 
 # Imports com fallback seguro
 try:
-    from services.supabase_vector_store import SupabaseVectorStore, VectorDocument, get_vector_store
-    from services.semantic_search import SemanticSearchEngine, SearchResult
-    from services.cloud_native_cache import CloudNativeCache, get_cloud_cache
-    from services.medical_chunking import MedicalChunk, ChunkPriority
+    from services.integrations.supabase_vector_store import SupabaseVectorStore, VectorDocument, get_vector_store
+    from services.rag.semantic_search import SemanticSearchEngine, SearchResult
+    from services.cache.cloud_native_cache import get_cloud_cache
+    from services.rag.medical_chunking import MedicalChunk, ChunkPriority
     DEPENDENCIES_AVAILABLE = True
 except ImportError as e:
     logger.warning(f"[WARNING] Dependências RAG não disponíveis: {e}")
@@ -28,7 +31,7 @@ except ImportError as e:
 
 # Import OpenRouter para contexto adicional
 try:
-    from services.openai_integration import get_openrouter_client, is_openrouter_available
+    from services.ai.openai_integration import get_openrouter_client, is_openrouter_available
     OPENROUTER_AVAILABLE = True
 except ImportError:
     OPENROUTER_AVAILABLE = False
@@ -61,22 +64,22 @@ class SupabaseRAGSystem:
     Integra busca semântica, cache inteligente e OpenRouter
     """
     
-    def __init__(self, config):
+    def __init__(self, config=None):
         self.config = config
         
         # Componentes principais
         self.vector_store = get_vector_store() if DEPENDENCIES_AVAILABLE else None
         self.cache = get_cloud_cache() if DEPENDENCIES_AVAILABLE else None
-        self.search_engine = SemanticSearchEngine(config) if DEPENDENCIES_AVAILABLE else None
+        self.search_engine = SemanticSearchEngine(config) if DEPENDENCIES_AVAILABLE and config else None
         
         # OpenRouter para contexto adicional
         self.openrouter_client = None
-        if OPENROUTER_AVAILABLE and config.OPENROUTER_API_KEY:
+        if OPENROUTER_AVAILABLE and config and hasattr(config, 'OPENROUTER_API_KEY') and config.OPENROUTER_API_KEY:
             self.openrouter_client = get_openrouter_client(config)
         
         # Configurações de qualidade
-        self.min_similarity_threshold = getattr(config, 'SEMANTIC_SIMILARITY_THRESHOLD', 0.7)
-        self.max_context_chunks = getattr(config, 'MAX_CONTEXT_CHUNKS', 5)
+        self.min_similarity_threshold = getattr(config, 'SEMANTIC_SIMILARITY_THRESHOLD', 0.7) if config else 0.7
+        self.max_context_chunks = getattr(config, 'MAX_CONTEXT_CHUNKS', 5) if config else 5
         self.scope_keywords = self._load_scope_keywords()
         
         # Cache de contextos gerados
@@ -396,7 +399,7 @@ INSTRUÇÃO: Responda usando sua expertise em hanseníase, baseando-se no contex
             if self.openrouter_client:
                 # Usar modelo gratuito com prompts estruturados
                 response = self.openrouter_client.chat.completions.create(
-                    model="meta-llama/llama-3.2-3b-instruct:free",  # Modelo gratuito
+                    model="qwen/qwen3-8b:free",     # Qwen 8B Free
                     messages=[
                         {"role": "system", "content": system_prompt},
                         {"role": "user", "content": user_prompt}
@@ -629,8 +632,31 @@ Se você tiver dúvidas sobre hanseníase, ficarei feliz em ajudar! 😊
             'search_engine': self.search_engine is not None,
             'openrouter': self.openrouter_client is not None
         }
-        
+
         return base_stats
+
+    def get_context(self, query: str, max_chunks: int = 3, persona: Optional[str] = None) -> str:
+        """
+        Interface compatível com sistema existente
+        Retorna contexto como string simples para compatibilidade
+        """
+        try:
+            # Usar retrieve_context interno
+            rag_context = self.retrieve_context(query, max_chunks=max_chunks)
+
+            # Extrair textos dos chunks
+            context_texts = []
+            for chunk in rag_context.chunks:
+                context_texts.append(chunk.content)
+
+            if context_texts:
+                return "\n\n".join(context_texts)
+            else:
+                return "Contexto específico não encontrado na base de conhecimento."
+
+        except Exception as e:
+            logger.error(f"❌ Erro em get_context: {e}")
+            return "Sistema RAG temporariamente indisponível."
 
 # Instância global
 _rag_system: Optional[SupabaseRAGSystem] = None

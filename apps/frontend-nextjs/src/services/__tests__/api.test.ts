@@ -25,8 +25,50 @@ describe('API Service', () => {
   describe('getPersonas', () => {
     it('should fetch personas successfully', async () => {
       const mockPersonas = {
-        dr_gasnelio: { name: 'Dr. Gasnelio', avatar: 'avatar.png' },
-        ga: { name: 'Gá', avatar: 'ga.png' }
+        dr_gasnelio: {
+          name: "Dr. Gasnelio",
+          description: "Especialista técnico em hanseníase e farmacologia",
+          avatar: "👨‍⚕️",
+          personality: "Científico e técnico",
+          expertise: ["farmacologia", "hanseníase", "PQT-U", "protocolos clínicos"],
+          response_style: "Detalhado, técnico, com base em evidências científicas",
+          target_audience: "Profissionais de saúde e estudantes",
+          system_prompt: "Você é Dr. Gasnelio, especialista em hanseníase. Forneça respostas técnicas baseadas em evidências.",
+          capabilities: ["dosagem", "interações", "protocolos", "farmacologia"],
+          example_questions: [
+            "Como calcular a dose de rifampicina?",
+            "Quais são as interações da clofazimina?",
+            "Protocolo PQT-U completo"
+          ],
+          limitations: ["Não substitui consulta médica", "Informações gerais apenas"],
+          response_format: {
+            technical: true,
+            citations: true,
+            structured: true
+          }
+        },
+        ga: {
+          name: "Gá",
+          description: "Assistente empático focado no cuidado humanizado",
+          avatar: "🤗",
+          personality: "Empático e acolhedor",
+          expertise: ["cuidado humanizado", "orientação ao paciente", "apoio emocional"],
+          response_style: "Simples, empático, linguagem acessível",
+          target_audience: "Pacientes e familiares",
+          system_prompt: "Você é Gá, assistente empático. Use linguagem simples e acolhedora.",
+          capabilities: ["orientação básica", "apoio emocional", "explicações simples"],
+          example_questions: [
+            "Como tomar os remédios?",
+            "É normal o xixi ficar laranja?",
+            "Quando vou melhorar?"
+          ],
+          limitations: ["Não substitui consulta médica", "Orientações gerais apenas"],
+          response_format: {
+            technical: false,
+            citations: false,
+            empathetic: true
+          }
+        }
       };
 
       mockFetch.mockResolvedValueOnce({
@@ -69,9 +111,20 @@ describe('API Service', () => {
   describe('sendChatMessage', () => {
     it('should send message successfully', async () => {
       const mockResponse = {
-        answer: 'Test response',
-        persona: 'dr_gasnelio',
-        request_id: 'req-123'
+        answer: '👨‍⚕️ Dr. Gasnelio aqui. Atualmente funcionando em modo offline.\n\nSua consulta: "Test message"\n\n📋 **Informações gerais sobre PQT-U:**\n• Duração: 6 meses para hanseníase paucibacilar\n• Medicamentos: Rifampicina, Dapsona, Clofazimina\n• Administração: Dose supervisionada mensal + autoadministração diária\n\n⚠️ **Importante:** Para orientações específicas sobre dosagem, interações medicamentosas ou efeitos adversos, consulte sempre um profissional de saúde qualificado.\n\n📖 Consulte o material técnico disponível nesta plataforma para informações detalhadas baseadas no PCDT Hanseníase 2022.',
+        persona: 'Dr. Gasnelio',
+        request_id: 'offline_1758333443204',
+        timestamp: '2025-09-20T01:57:23.204Z',
+        processing_time_ms: 100,
+        confidence: 0.8,
+        name: 'Dr. Gasnelio',
+        api_version: 'offline_v1.0',
+        metadata: {
+          tokens_used: 0,
+          model_used: 'offline_fallback',
+          context_retrieved: false,
+          scope_detected: 'offline_mode'
+        }
       };
 
       mockFetch.mockResolvedValueOnce({

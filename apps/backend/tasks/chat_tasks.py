@@ -8,6 +8,7 @@ Mantém compatibilidade com sistema síncrono existente
 from celery import current_task
 from celery_config import celery_app
 import logging
+import asyncio
 from datetime import datetime
 from typing import Dict, Any, Optional, Tuple
 import hashlib
@@ -15,13 +16,20 @@ import hashlib
 # Importar dependências do sistema existente
 try:
     from core.dependencies import get_cache, get_rag, get_config
-    from services.ai_provider_manager import generate_ai_response, get_ai_health_status
+    from services.ai.ai_provider_manager import generate_ai_response, get_ai_health_status
     from services.enhanced_rag_system import get_enhanced_context, cache_rag_response
     from services.scope_detection_system import detect_question_scope, get_limitation_response
     from services.personas import get_persona_prompt
     DEPENDENCIES_AVAILABLE = True
 except ImportError as e:
-    logging.warning(f"Dependências não disponíveis para Celery tasks: {e}")
+    # Only log warning if not in clean startup mode
+    import os
+    clean_startup = os.environ.get('CLEAN_STARTUP', 'true').lower() == 'true'
+    environment = os.environ.get('ENVIRONMENT', 'development')
+
+    if not (clean_startup and environment in ['development', 'testing']):
+        logging.warning(f"Dependências não disponíveis para Celery tasks: {e}")
+
     DEPENDENCIES_AVAILABLE = False
 
 logger = logging.getLogger(__name__)
@@ -66,24 +74,24 @@ def process_question_async(self, question: str, personality_id: str, request_id:
         # SISTEMA DE CACHE OTIMIZADO (mesmo do síncrono)
         cache_key = f"chat:{personality_id}:{hashlib.sha256(question.encode()).hexdigest()[:12]}"
         
-        # Tentativa 1: Cache Redis
+        # Tentativa 1: Cache
         if cache and hasattr(cache, 'get'):
             try:
-                redis_cached = cache.get(cache_key)
-                if redis_cached:
-                    logger.info(f"[{request_id}] ⚡ Redis cache hit em task assíncrona")
+                cached_result = cache.get(cache_key)
+                if cached_result:
+                    logger.info(f"[{request_id}] ⚡ Cache hit em task assíncrona")
                     return {
                         'success': True,
-                        'answer': redis_cached['answer'],
+                        'answer': cached_result['answer'],
                         'metadata': {
-                            **redis_cached.get('metadata', {}),
+                            **cached_result.get('metadata', {}),
                             'cache_hit': True,
-                            'cache_type': 'redis_async',
+                            'cache_type': 'cache_async',
                             'processing_mode': 'asynchronous'
                         }
                     }
             except Exception as e:
-                logger.debug(f"[{request_id}] Redis cache erro em async: {e}")
+                logger.debug(f"[{request_id}] Cache erro em async: {e}")
         
         # Tentativa 2: Enhanced RAG
         if DEPENDENCIES_AVAILABLE:
@@ -92,13 +100,13 @@ def process_question_async(self, question: str, personality_id: str, request_id:
                 if enhanced_cached and enhanced_cached.get('confidence', 0) > 0.8:
                     logger.info(f"[{request_id}] [START] AstraDB Enhanced RAG hit em async")
                     
-                    # Cache no Redis para próximas consultas
+                    # Cache para próximas consultas
                     if cache:
                         try:
                             cache.set(cache_key, {
                                 'answer': enhanced_cached['response'],
                                 'metadata': enhanced_cached.get('metadata', {}),
-                                'cached_from': 'astra_to_redis_async'
+                                'cached_from': 'astra_to_cache_async'
                             }, ttl=1800)
                         except:
                             pass
@@ -224,13 +232,16 @@ Responda de forma empática e didática."""
             
             logger.info(f"[{request_id}] Chamando AI Provider em async com modelo {model_preference}")
             
-            # Usar AI Provider existente
-            answer, ai_metadata = generate_ai_response(
+            # Usar AI Provider existente (assíncrono)
+            # CRITICAL FIX: Use get_event_loop() instead of asyncio.run() for celery 5.5.3 compatibility
+            # asyncio.run() creates new event loop conflicting with Celery's worker event loop
+            loop = asyncio.get_event_loop()
+            answer, ai_metadata = loop.run_until_complete(generate_ai_response(
                 messages=messages,
                 model_preference=model_preference,
                 temperature=0.7 if personality_id == 'dr_gasnelio' else 0.8,
                 max_tokens=1000
-            )
+            ))
             
             # Combinar metadados
             metadata.update(ai_metadata)
@@ -309,11 +320,11 @@ Para informações mais detalhadas, recomendo consultar um profissional de saúd
             confidence_final = max(0.1, min(1.0, confidence_score))
             
             # Cache strategy
-            ttl_redis = 1800
+            ttl_cache = 1800
             if any(term in question.lower() for term in ['dosagem', 'dose', 'efeito colateral', 'gravidez', 'criança']):
-                ttl_redis = 900
+                ttl_cache = 900
             
-            # Cache Redis
+            # Cache
             if cache and confidence_final > 0.5:
                 try:
                     cache_data = {
@@ -321,10 +332,10 @@ Para informações mais detalhadas, recomendo consultar um profissional de saúd
                         'metadata': {**metadata, 'confidence': confidence_final, 'cached_at': datetime.now().isoformat()},
                         'cache_version': 'v2_async_optimized'
                     }
-                    cache.set(cache_key, cache_data, ttl=ttl_redis)
-                    logger.info(f"[{request_id}] ⚡ Cached to Redis em async - TTL:{ttl_redis}s, Confidence:{confidence_final:.2f}")
+                    cache.set(cache_key, cache_data, ttl=ttl_cache)
+                    logger.info(f"[{request_id}] ⚡ Cached em async - TTL:{ttl_cache}s, Confidence:{confidence_final:.2f}")
                 except Exception as e:
-                    logger.debug(f"[{request_id}] Redis cache write error em async: {e}")
+                    logger.debug(f"[{request_id}] Cache write error em async: {e}")
             
             # Enhanced RAG cache
             if confidence_final >= 0.8:

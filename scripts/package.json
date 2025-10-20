@@ -1,0 +1,17 @@
+{
+  "name": "github-scripts",
+  "version": "1.0.0",
+  "description": "Scripts para automação GitHub",
+  "type": "commonjs",
+  "scripts": {
+    "discussions": "node github-discussions-manager.js",
+    "google-monitoring": "node google-monitoring-integration.js"
+  },
+  "dependencies": {
+    "@octokit/rest": "^20.0.0",
+    "@google-cloud/monitoring": "^3.0.0"
+  },
+  "keywords": ["github", "automation", "medical", "documentation"],
+  "author": "Ana Lívia",
+  "license": "MIT"
+}

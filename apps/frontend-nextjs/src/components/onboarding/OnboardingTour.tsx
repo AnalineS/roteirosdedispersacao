@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 import { X, ChevronRight, ChevronLeft, Check } from 'lucide-react';
 
 interface TourStep {
@@ -61,7 +62,7 @@ export default function OnboardingTour({ onComplete }: OnboardingTourProps) {
   const [hasSeenTour, setHasSeenTour] = useState(false);
 
   useEffect(() => {
-    const tourSeen = localStorage.getItem('onboarding-tour-completed');
+    const tourSeen = safeLocalStorage()?.getItem('onboarding-tour-completed');
     if (!tourSeen) {
       setTimeout(() => setIsVisible(true), 1000);
     } else {
@@ -85,12 +86,12 @@ export default function OnboardingTour({ onComplete }: OnboardingTourProps) {
 
   const handleSkip = () => {
     setIsVisible(false);
-    localStorage.setItem('onboarding-tour-completed', 'skipped');
+    safeLocalStorage()?.setItem('onboarding-tour-completed', 'skipped');
   };
 
   const handleComplete = () => {
     setIsVisible(false);
-    localStorage.setItem('onboarding-tour-completed', 'true');
+    safeLocalStorage()?.setItem('onboarding-tour-completed', 'true');
     onComplete?.();
   };
 

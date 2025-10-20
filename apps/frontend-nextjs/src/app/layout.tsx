@@ -1,14 +1,23 @@
 import type { Metadata, Viewport } from 'next'
 import ErrorBoundary from '@/components/ErrorBoundary'
+import ErrorToast from '@/components/errors/ErrorToast'
 import OfflineIndicator from '@/components/OfflineIndicator'
 import GoogleAnalytics from '@/components/GoogleAnalytics'
 import { AnalyticsProvider } from '@/components/analytics/AnalyticsProvider'
+import { GlobalTrackingProvider } from '@/components/analytics/GlobalTrackingProvider'
 import PWAManager from '@/components/pwa/PWAManager'
-import AuthProviderWrapper from '@/components/auth/AuthProviderWrapper'
+import { ConditionalAuthProvider } from '@/components/auth/ConditionalAuthProvider'
 import { ThemeProvider } from '@/contexts/ThemeContext'
 import { AccessibilityProvider } from '@/contexts/AccessibilityContext'
+import { ErrorHandlerProvider } from '@/hooks/useErrorHandler'
 import { GlobalNavigationProvider } from '@/components/navigation/GlobalNavigationProvider'
+import { SmartNavigationProvider } from '@/components/navigation/SmartNavigationSystem'
+import { PersonaProvider } from '@/contexts/PersonaContext'
+import PersonaAccessibilityProvider from '@/components/accessibility/PersonaAccessibilityProvider'
 import EnhancedCoreWebVitals from '@/components/analytics/EnhancedCoreWebVitals'
+import NumericNavigationWrapper from '@/components/navigation/NumericNavigationWrapper'
+import { StorageProtectionProvider } from '@/components/StorageProtectionProvider'
+import { GlobalPersonasProvider } from '@/contexts/GlobalPersonasProvider'
 import SITE_CONFIG from '@/lib/config'
 import '@/styles/globals.css'
 import '@/styles/fluid-typography.css'
@@ -16,6 +25,11 @@ import '@/styles/accessibility.css'
 import '@/styles/themes.css'
 import '@/styles/text-selection.css'
 import '@/styles/navigation-fixes.css'
+
+// Force dynamic rendering for all pages (SSR) - Cloud Run optimization
+// Prevents static site generation that breaks interactivity
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export const metadata: Metadata = SITE_CONFIG.getMetadata()
 
@@ -112,20 +126,48 @@ export default function RootLayout({
         <EnhancedCoreWebVitals />
         
         <main id="main-content">
-          <AccessibilityProvider>
-            <ThemeProvider>
-              <GlobalNavigationProvider>
-                <AuthProviderWrapper>
-                  <AnalyticsProvider>
-                    <ErrorBoundary>
-                      {children}
-                    </ErrorBoundary>
-                  </AnalyticsProvider>
-                </AuthProviderWrapper>
-              </GlobalNavigationProvider>
-            </ThemeProvider>
-          </AccessibilityProvider>
-        </main>
+          <StorageProtectionProvider>
+            <GlobalPersonasProvider>
+              <ErrorBoundary>
+                <ErrorHandlerProvider>
+                  <GlobalTrackingProvider>
+                    <AccessibilityProvider>
+                      <ThemeProvider>
+                        <PersonaProvider>
+                        <PersonaAccessibilityProvider>
+                          <GlobalNavigationProvider>
+                            <SmartNavigationProvider>
+                              <ConditionalAuthProvider>
+                                <AnalyticsProvider>
+                                  {children}
+                                </AnalyticsProvider>
+                              </ConditionalAuthProvider>
+                            </SmartNavigationProvider>
+                          </GlobalNavigationProvider>
+                        </PersonaAccessibilityProvider>
+                      </PersonaProvider>
+                    </ThemeProvider>
+                  </AccessibilityProvider>
+                </GlobalTrackingProvider>
+              </ErrorHandlerProvider>
+
+              {/* Toast System - Fora dos providers para máxima compatibilidade */}
+              <ErrorToast
+                position="top-right"
+                maxToasts={3}
+                autoCloseDuration={5000}
+              />
+
+            {/* Numeric Navigation System - PR #172 */}
+            <NumericNavigationWrapper
+              enabled={true}
+              showHint={true}
+              hintPosition="bottom-right"
+            />
+          </ErrorBoundary>
+        </GlobalPersonasProvider>
+        </StorageProtectionProvider>
+      </main>
         
         {/* PWA Manager - Service Worker desabilitado conforme solicitado */}
         <PWAManager enableServiceWorker={false} />

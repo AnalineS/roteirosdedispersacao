@@ -14,6 +14,7 @@
 import { Certificate, CertificateTemplate } from '@/types/certification';
 import { EducationalSecurity } from './educationalSecurity';
 import { generateSecureId } from './cryptoUtils';
+import { safeLocalStorage } from '@/hooks/useClientStorage';
 
 // ================== TIPOS DE SEGURANÇA DE CERTIFICAÇÃO ==================
 
@@ -307,7 +308,17 @@ class DigitalSignatureManager {
       const expectedSignature = await this.signCertificate(certificate);
       return signature === expectedSignature;
     } catch (error) {
-      console.error('Erro na verificação de assinatura:', error);
+      // Sistema de logging controlado
+      if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+        const logs = JSON.parse(safeLocalStorage()?.getItem('cert_security_logs') || '[]');
+        logs.push({
+          level: 'error',
+          message: 'Erro na verificação de assinatura',
+          error: error instanceof Error ? error.message : String(error),
+          timestamp: Date.now()
+        });
+        safeLocalStorage()?.setItem('cert_security_logs', JSON.stringify(logs.slice(-100)));
+      }
       return false;
     }
   }
@@ -652,7 +663,15 @@ class CertificationSecurityManager {
       data: {
         certificateId: certificate.id,
         securityLevel,
-        fraudAlerts: fraudAlerts.length,
+        fraudAlerts: fraudAlerts.map(alert => ({
+          type: 'data_manipulation' as const,
+          severity: alert.confidence > 80 ? 'high' as const : 'medium' as const,
+          details: `${alert.fraudType}: ${alert.evidence.join(', ')}`,
+          timestamp: alert.timestamp,
+          userId: undefined,
+          sessionId: 'cert-security',
+          actionTaken: `Status: ${alert.status}`
+        })),
         validationsPassed: validationChecks.filter(c => c.result).length,
         validationsTotal: validationChecks.length
       },

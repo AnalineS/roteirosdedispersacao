@@ -38,8 +38,37 @@ export default function AccessibilityAuditPanel({
       await new Promise(resolve => setTimeout(resolve, 500));
       const result = auditHeadingHierarchy(document);
       setAuditResult(result);
-    } catch (error) {
-      console.error('Accessibility audit failed:', error);
+    } catch (_error) {
+      // Log falha de auditoria de acessibilidade via analytics
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'accessibility_audit_failed', {
+          event_category: 'error',
+          event_label: 'audit_failure',
+          value: 1,
+          custom_parameters: {
+            transport_type: 'beacon'
+          }
+        });
+      }
+
+      // Definir estado de erro para exibição adequada ao usuário
+      setAuditResult({
+        isValid: false,
+        violations: [],
+        summary: {
+          totalHeadings: 0,
+          h1Count: 0,
+          h2Count: 0,
+          h3Count: 0,
+          h4Count: 0,
+          h5Count: 0,
+          h6Count: 0,
+          errorCount: 1,
+          warningCount: 0,
+          score: 0
+        },
+        recommendations: ['Falha na auditoria de acessibilidade - tente recarregar a página']
+      });
     } finally {
       setIsLoading(false);
     }
@@ -339,7 +368,7 @@ export default function AccessibilityAuditPanel({
                   >
                     {violations.length > 0 ? (
                       <div className="violations-list">
-                        {violations.map((violation, index) => (
+                        {violations.map((violation) => (
                           <div key={violation.id} className="violation-item">
                             <div className="violation-header">
                               <div className="violation-severity">

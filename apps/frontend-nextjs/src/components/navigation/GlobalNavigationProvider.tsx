@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 import { usePathname } from 'next/navigation';
 
 interface NavigationState {
@@ -77,7 +78,7 @@ export function GlobalNavigationProvider({ children }: { children: React.ReactNo
 
   // Carregar estado do localStorage
   useEffect(() => {
-    const savedState = localStorage.getItem('navigation_state');
+    const savedState = safeLocalStorage()?.getItem('navigation_state');
     if (savedState) {
       try {
         const parsed = JSON.parse(savedState);
@@ -94,7 +95,7 @@ export function GlobalNavigationProvider({ children }: { children: React.ReactNo
 
   // Salvar estado no localStorage
   useEffect(() => {
-    localStorage.setItem('navigation_state', JSON.stringify({
+    safeLocalStorage()?.setItem('navigation_state', JSON.stringify({
       hasSeenPersonaSelection: navigationState.hasSeenPersonaSelection,
       lastVisitedPage: navigationState.lastVisitedPage
     }));

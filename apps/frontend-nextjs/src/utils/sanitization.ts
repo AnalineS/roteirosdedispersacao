@@ -25,26 +25,38 @@ function sanitizeHTMLServerSide(html: string): string {
   
   // Passo 2: Aplicar múltiplas passadas de remoção de tags para evitar bypass
   // Como recomendado pelo CodeQL, aplicar até não haver mais mudanças
+  // PROTEÇÃO contra CWE-20/CWE-80/CWE-116: Incomplete Multi-Character Sanitization
   let previous = '';
   let iterations = 0;
   const maxIterations = 10; // Prevenir loop infinito
-  
+
   do {
     previous = sanitized;
-    
+
     // Remover tags HTML básicas (incluindo tags malformadas)
+    // Exemplo: <script>alert()</script> → ""
     sanitized = sanitized.replace(/<[^>]*>/g, '');
-    
-    // Remover tentativas de bypass como <<script>alert()>/script>
+
+    // Proteção adicional: remover < e > isolados criados por remoção anterior
+    // Exemplo: <scrip<script>alert()</script>t> → primeira passada remove meio → <script>
+    // Esta linha remove o <script> remanescente → script (texto puro)
+    // DEFESA EM PROFUNDIDADE contra reintrodução de tags (CWE-20/80/116)
     sanitized = sanitized.replace(/<+|>+/g, '');
     
-    // Remover protocolos perigosos
+    // Remover protocolos perigosos (CWE-20/CWE-184)
+    // Proteção contra javascript:, data:, vbscript: e file: schemes
     sanitized = sanitized.replace(/javascript:/gi, '');
-    sanitized = sanitized.replace(/data:text\/html/gi, '');
+    sanitized = sanitized.replace(/data:/gi, '');       // Bloqueia todos os data: URIs
     sanitized = sanitized.replace(/vbscript:/gi, '');
+    sanitized = sanitized.replace(/file:/gi, '');       // Proteção adicional contra file: URIs
     
-    // Remover event handlers
-    sanitized = sanitized.replace(/on\w+\s*=/gi, '');
+    // Remover event handlers (CWE-20/CWE-80/CWE-116)
+    // Regex melhorada para capturar variações de event handlers
+    // Exemplos: onclick=, on click=, onclick =, on-click=, onerror=
+    sanitized = sanitized.replace(/\bon[\w\-]*\s*=/gi, '');
+
+    // Proteção adicional: remover atributos 'on' isolados que possam ter sido criados
+    sanitized = sanitized.replace(/\bon\s*=/gi, '');
     
     iterations++;
   } while (sanitized !== previous && iterations < maxIterations);
@@ -109,11 +121,13 @@ export function sanitizeHTML(html: string): string {
   // Sanitizar com DOMPurify
   const clean = DOMPurify.sanitize(html, config);
   
-  // Verificação adicional para URLs perigosas
+  // Verificação adicional para URLs perigosas (CWE-20/CWE-184)
   const finalClean = clean
     .replace(/javascript:/gi, '')
-    .replace(/data:text\/html/gi, '');
-  
+    .replace(/data:/gi, '')      // Remove todos os data: URIs
+    .replace(/vbscript:/gi, '')
+    .replace(/file:/gi, '');
+
   return finalClean;
 }
 
@@ -236,7 +250,7 @@ export function sanitizeURL(url: string): string {
  * Sanitiza objeto JSON removendo propriedades perigosas
  * Previne prototype pollution e outros ataques
  */
-export function sanitizeJSON(obj: any): any {
+export function sanitizeJSON<T>(obj: T): T {
   if (!obj || typeof obj !== 'object') {
     return obj;
   }
@@ -245,13 +259,13 @@ export function sanitizeJSON(obj: any): any {
   const dangerousKeys = ['__proto__', 'constructor', 'prototype'];
   
   // Função recursiva para limpar objeto
-  function clean(item: any): any {
+  function clean(item: unknown): unknown {
     if (Array.isArray(item)) {
       return item.map(clean);
     }
     
     if (item && typeof item === 'object') {
-      const cleaned: any = {};
+      const cleaned: Record<string, unknown> = {};
       
       for (const key in item) {
         // Pular propriedades perigosas
@@ -261,7 +275,8 @@ export function sanitizeJSON(obj: any): any {
         
         // Verificar se é propriedade própria (não herdada)
         if (Object.prototype.hasOwnProperty.call(item, key)) {
-          cleaned[key] = clean(item[key]);
+          const itemObj = item as Record<string, unknown>;
+          cleaned[key] = clean(itemObj[key]);
         }
       }
       
@@ -271,7 +286,7 @@ export function sanitizeJSON(obj: any): any {
     return item;
   }
   
-  return clean(obj);
+  return clean(obj) as T;
 }
 
 // Exportar todas as funções como default também

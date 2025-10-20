@@ -1,6 +1,7 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
+import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 import { usePathname } from 'next/navigation';
 
 interface NavigationState {
@@ -77,8 +78,8 @@ export function SmartNavigationProvider({ children }: { children: React.ReactNod
 
   // Carregar preferências do usuário
   useEffect(() => {
-    const savedLevel = localStorage.getItem('userNavigationLevel') as NavigationState['userLevel'];
-    const showFull = localStorage.getItem('showFullNavigation') === 'true';
+    const savedLevel = safeLocalStorage()?.getItem('userNavigationLevel') as NavigationState['userLevel'];
+    const showFull = safeLocalStorage()?.getItem('showFullNavigation') === 'true';
     
     if (savedLevel) {
       setNavigationState(prev => ({ 
@@ -91,18 +92,18 @@ export function SmartNavigationProvider({ children }: { children: React.ReactNod
 
   const updateUserLevel = (level: NavigationState['userLevel']) => {
     setNavigationState(prev => ({ ...prev, userLevel: level }));
-    localStorage.setItem('userNavigationLevel', level);
+    safeLocalStorage()?.setItem('userNavigationLevel', level);
   };
 
   const toggleNavigationMode = () => {
     setNavigationState(prev => {
       const newShowFull = !prev.showFullNavigation;
-      localStorage.setItem('showFullNavigation', String(newShowFull));
+      safeLocalStorage()?.setItem('showFullNavigation', String(newShowFull));
       return { ...prev, showFullNavigation: newShowFull };
     });
   };
 
-  const getRecommendedNavigation = (): NavigationRecommendation => {
+  const getRecommendedNavigation = useCallback((): NavigationRecommendation => {
     const { deviceType, userLevel, currentContext, showFullNavigation } = navigationState;
 
     // Usuário experiente ou modo completo ativado
@@ -132,9 +133,9 @@ export function SmartNavigationProvider({ children }: { children: React.ReactNod
       showQuickAccess: true,
       maxVisibleItems: deviceType === 'mobile' ? 4 : 8
     };
-  };
+  }, [navigationState.deviceType, navigationState.userLevel, navigationState.currentContext, navigationState.showFullNavigation]);
 
-  const shouldShowElement = (elementId: string): boolean => {
+  const shouldShowElement = useCallback((elementId: string): boolean => {
     const recommendation = getRecommendedNavigation();
     const { currentContext, deviceType } = navigationState;
 
@@ -142,39 +143,39 @@ export function SmartNavigationProvider({ children }: { children: React.ReactNod
     const elementRules: Record<string, boolean> = {
       // Header principal
       'main-header': recommendation.primaryNavigation === 'header',
-      
+
       // Quick navigation FAB
       'quick-nav-fab': recommendation.primaryNavigation === 'fab' || deviceType === 'mobile',
-      
+
       // Breadcrumbs
       'breadcrumbs': recommendation.secondaryNavigation === 'breadcrumbs',
-      
+
       // Quick access bar
       'quick-access': recommendation.showQuickAccess,
-      
+
       // Footer navigation
       'footer-nav': currentContext === 'home' || recommendation.primaryNavigation === 'minimal',
-      
+
       // Persona FAB - sempre visível mas posição adaptada
       'persona-fab': true,
-      
+
       // Tour guide - apenas para iniciantes
       'tour-guide': navigationState.userLevel === 'beginner',
-      
+
       // Advanced tools - apenas para intermediários/experts
       'advanced-tools': navigationState.userLevel !== 'beginner'
     };
 
     return elementRules[elementId] ?? true;
-  };
+  }, [getRecommendedNavigation, navigationState.currentContext, navigationState.deviceType, navigationState.userLevel]);
 
-  const contextValue: SmartNavigationContextType = {
+  const contextValue: SmartNavigationContextType = useMemo(() => ({
     navigationState,
     updateUserLevel,
     toggleNavigationMode,
     getRecommendedNavigation,
     shouldShowElement
-  };
+  }), [navigationState, updateUserLevel, toggleNavigationMode, getRecommendedNavigation, shouldShowElement]);
 
   return (
     <SmartNavigationContext.Provider value={contextValue}>
@@ -200,12 +201,14 @@ export function useNavigationVisibility(elementId: string) {
 // Hook para obter configuração de navegação contextual
 export function useContextualNavigation() {
   const { navigationState, getRecommendedNavigation } = useSmartNavigation();
-  const recommendation = getRecommendedNavigation();
-  
-  return {
-    ...recommendation,
-    currentContext: navigationState.currentContext,
-    deviceType: navigationState.deviceType,
-    userLevel: navigationState.userLevel
-  };
+
+  return useMemo(() => {
+    const recommendation = getRecommendedNavigation();
+    return {
+      ...recommendation,
+      currentContext: navigationState.currentContext,
+      deviceType: navigationState.deviceType,
+      userLevel: navigationState.userLevel
+    };
+  }, [navigationState.currentContext, navigationState.deviceType, navigationState.userLevel, getRecommendedNavigation]);
 }

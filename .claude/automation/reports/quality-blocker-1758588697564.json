@@ -1,0 +1,19 @@
+{
+  "timestamp": "2025-09-23T00:51:37.564Z",
+  "duration": 1,
+  "blocked": true,
+  "errors": [
+    "TypeScript Compilation (OBRIGATÓRIO) falhou: Command failed: npm run type-check\n'tsc' n�o � reconhecido como um comando interno\r\nou externo, um programa oper�vel ou um arquivo em lotes.\r\n"
+  ],
+  "warnings": [
+    "ESLint Critical Errors Check falhou: Command failed: npm run lint\n'eslint' n�o � reconhecido como um comando interno\r\nou externo, um programa oper�vel ou um arquivo em lotes.\r\n",
+    "Production Build Validation falhou: Command failed: npm run build\n'next' n�o � reconhecido como um comando interno\r\nou externo, um programa oper�vel ou um arquivo em lotes.\r\n",
+    "LGPD Compliance Check falhou: Command failed: node \"C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\.claude\\automation\\lgpd-compliance-checker.js\" --quick-check"
+  ],
+  "status": "BLOCKED",
+  "medical_compliance": {
+    "typescript_ready": false,
+    "data_safe": true,
+    "quality_adequate": false
+  }
+}

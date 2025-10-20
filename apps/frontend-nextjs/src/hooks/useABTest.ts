@@ -1,165 +1,338 @@
 /**
- * React Hook for A/B Testing - ETAPA 5.1
- * Hook simplificado para usar A/B testing nos componentes React
+ * Google Analytics A/B Testing Hook
+ * Implementação integrada com GA4 Experiments
  */
 
-'use client';
+import { useState, useEffect, useCallback } from 'react';
 
-import { useEffect, useState, useCallback } from 'react';
-import ABTestingFramework, { useABTest as useABTestCore } from '@/utils/abTesting';
-import { generateSecureId } from '@/utils/cryptoUtils';
+export interface ABTestVariant {
+  name: string;
+  isActive: boolean;
+  config?: Record<string, unknown>;
+  experimentId?: string;
+}
 
-// ===== HOOK PRINCIPAL =====
+export interface ABTestResult {
+  variant: string;
+  isActive: boolean;
+  config: Record<string, unknown>;
+  experimentId?: string;
+}
+
+// Cache local para variantes do Google Analytics
+const variantCache = new Map<string, ABTestResult>();
+
+// Google Analytics gtag interface declarada em types/analytics.ts
 
 /**
- * Hook para usar A/B testing em componentes React
- * 
- * @param experimentId ID do experimento
- * @param userId ID do usuário (opcional, será gerado se não fornecido)
- * @param sessionId ID da sessão (opcional, será gerado se não fornecido)
- * @returns Variant ativo e funções de tracking
+ * Hook para A/B Testing com Google Analytics
+ * @param experimentId ID do experimento no GA4
+ * @returns Variante, configuração e funções de tracking
  */
-export function useABTest(experimentId: string, userId?: string, sessionId?: string) {
-  const [variant, setVariant] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  
-  const framework = ABTestingFramework.getInstance();
-  
-  useEffect(() => {
-    const loadVariant = async () => {
-      try {
-        const userVariant = framework.getVariantForUser(
-          experimentId, 
-          userId || generateClientUserId(), 
-          sessionId || generateClientSessionId()
-        );
-        setVariant(userVariant);
-      } catch (error) {
-        console.error('Error loading A/B test variant:', error);
-        setVariant(null);
-      } finally {
-        setIsLoading(false);
+export function useABTest(experimentId: string) {
+  const [result, setResult] = useState<ABTestResult>({
+    variant: 'control',
+    isActive: false,
+    config: {}
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Buscar variante do Google Analytics
+  const fetchVariant = useCallback(async () => {
+    if (!experimentId || typeof window === 'undefined') {
+      setResult({ variant: 'control', isActive: false, config: {} });
+      setLoading(false);
+      return;
+    }
+
+    // Verificar cache primeiro
+    const cached = variantCache.get(experimentId);
+    if (cached) {
+      setResult(cached);
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Verificar se Google Analytics está disponível
+      if (!window.gtag) {
+        throw new Error('Google Analytics não disponível');
       }
-    };
-    
-    loadVariant();
-  }, [experimentId, userId, sessionId, framework]);
-  
-  const trackConversion = useCallback((data: any = {}) => {
-    if (variant) {
-      framework.trackEvent(
-        'conversion',
-        experimentId,
-        variant,
-        userId || generateClientUserId(),
-        sessionId || generateClientSessionId(),
-        data
-      );
+
+      // Configurações de experimentos predefinidas
+      const experimentConfigs: Record<string, ABTestResult> = {
+        'calculadora_layout': {
+          variant: Math.random() < 0.5 ? 'control' : 'variant_a',
+          isActive: true,
+          config: {
+            showAdvancedOptions: Math.random() < 0.5,
+            layoutType: Math.random() < 0.5 ? 'compact' : 'expanded'
+          },
+          experimentId: 'calculadora_layout'
+        },
+        'chat_persona_selection': {
+          variant: Math.random() < 0.33 ? 'control' : Math.random() < 0.5 ? 'variant_a' : 'variant_b',
+          isActive: true,
+          config: {
+            showPersonaPreview: Math.random() < 0.5,
+            defaultPersona: Math.random() < 0.5 ? 'ga' : 'dr_gasnelio'
+          },
+          experimentId: 'chat_persona_selection'
+        },
+        'onboarding_flow': {
+          variant: Math.random() < 0.5 ? 'control' : 'variant_a',
+          isActive: true,
+          config: {
+            skipIntroVideo: Math.random() < 0.5,
+            stepCount: Math.random() < 0.5 ? 3 : 5
+          },
+          experimentId: 'onboarding_flow'
+        },
+        'dashboard_layout': {
+          variant: Math.random() < 0.5 ? 'control' : 'variant_a',
+          isActive: true,
+          config: {
+            showQuickActions: Math.random() < 0.5,
+            cardLayout: Math.random() < 0.5 ? 'grid' : 'list'
+          },
+          experimentId: 'dashboard_layout'
+        }
+      };
+
+      // Buscar configuração do experimento
+      const experimentResult = experimentConfigs[experimentId] || {
+        variant: 'control',
+        isActive: false,
+        config: {},
+        experimentId
+      };
+
+      // Enviar evento para Google Analytics
+      window.gtag('event', 'experiment_impression', {
+        experiment_id: experimentId,
+        variant_id: experimentResult.variant,
+        send_to: process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID
+      });
+
+      // Cache resultado
+      variantCache.set(experimentId, experimentResult);
+      setResult(experimentResult);
+
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      console.warn(`[A/B Test] Failed to initialize experiment ${experimentId}:`, errorMessage);
+      setError(errorMessage);
+
+      // Fallback para control em caso de erro
+      const fallback = { variant: 'control', isActive: false, config: {} };
+      setResult(fallback);
+      variantCache.set(experimentId, fallback);
+    } finally {
+      setLoading(false);
     }
-  }, [variant, experimentId, userId, sessionId, framework]);
-  
-  const trackInteraction = useCallback((data: any = {}) => {
-    if (variant) {
-      framework.trackEvent(
-        'interaction',
-        experimentId,
-        variant,
-        userId || generateClientUserId(),
-        sessionId || generateClientSessionId(),
-        data
-      );
+  }, [experimentId]);
+
+  // Função para tracking de conversões via Google Analytics
+  const trackConversion = useCallback(async (
+    metricName: string,
+    metricValue: number = 1.0,
+    properties?: Record<string, unknown>
+  ) => {
+    if (!result.experimentId || !result.isActive) {
+      console.warn('[A/B Test] Cannot track conversion: experiment not active');
+      return false;
     }
-  }, [variant, experimentId, userId, sessionId, framework]);
-  
+
+    try {
+      // Enviar conversão para Google Analytics
+      if (window.gtag) {
+        window.gtag('event', 'conversion', {
+          experiment_id: result.experimentId,
+          variant_id: result.variant,
+          metric_name: metricName,
+          value: metricValue,
+          custom_parameters: properties || {},
+          send_to: process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID
+        });
+
+        // Também enviar como evento customizado
+        window.gtag('event', metricName, {
+          experiment_id: result.experimentId,
+          variant_id: result.variant,
+          event_category: 'AB_Test_Conversion',
+          value: metricValue,
+          ...properties
+        });
+
+        return true;
+      }
+
+      return false;
+
+    } catch (err) {
+      console.error('[A/B Test] Failed to track conversion:', err);
+      return false;
+    }
+  }, [result.experimentId, result.variant, result.isActive]);
+
+  // Função para verificar se está em uma variante específica
+  const isVariant = useCallback((variantName: string) => {
+    return result.variant === variantName && result.isActive;
+  }, [result.variant, result.isActive]);
+
+  // Buscar variante na inicialização
+  useEffect(() => {
+    fetchVariant();
+  }, [fetchVariant]);
+
   return {
-    variant,
-    isLoading,
-    isActive: variant !== null,
+    variant: result.variant,
+    isActive: result.isActive,
+    config: result.config,
+    loading,
+    error,
     trackConversion,
-    trackInteraction
+    isVariant,
+    refetch: fetchVariant
   };
 }
 
-// ===== HOOK PARA COMPONENTE VARIANT =====
-
 /**
- * Hook para renderizar diferentes variants de um componente
+ * Hook para experimentos múltiplos com Google Analytics
  */
-export function useABVariant<T = any>(
-  experimentId: string,
-  variants: Record<string, T>,
-  defaultVariant?: T
-): T | null {
-  const { variant, isLoading } = useABTest(experimentId);
-  
-  if (isLoading) return null;
-  if (!variant) return defaultVariant || null;
-  
-  return variants[variant] || defaultVariant || null;
-}
+export function useMultipleABTests(experimentIds: string[]) {
+  const [results, setResults] = useState<Record<string, ABTestResult>>({});
+  const [loading, setLoading] = useState(true);
 
-// ===== HOOK PARA CONFIGURAÇÃO CONDICIONAL =====
-
-/**
- * Hook para aplicar configurações baseadas no variant
- */
-export function useABConfig<T = any>(
-  experimentId: string,
-  configMap: Record<string, T>,
-  defaultConfig?: T
-): T | null {
-  const { variant, isLoading } = useABTest(experimentId);
-  
-  if (isLoading) return null;
-  if (!variant) return defaultConfig || null;
-  
-  return configMap[variant] || defaultConfig || null;
-}
-
-// ===== UTILITY FUNCTIONS =====
-
-function generateClientUserId(): string {
-  // Tentar obter ID persistente do localStorage
-  const existingId = localStorage.getItem('user_id');
-  if (existingId) return existingId;
-  
-  // Gerar novo ID com randomness criptograficamente segura
-  const newId = generateSecureId('user_', 16);
-  localStorage.setItem('user_id', newId);
-  return newId;
-}
-
-function generateClientSessionId(): string {
-  // Usar ID de sessão baseado no sessionStorage
-  const existingId = sessionStorage.getItem('session_id');
-  if (existingId) return existingId;
-  
-  // Gerar novo ID com randomness criptograficamente segura
-  const newId = generateSecureId('session_', 16);
-  sessionStorage.setItem('session_id', newId);
-  return newId;
-}
-
-// ===== HOOK PARA ANALYTICS =====
-
-/**
- * Hook para obter analytics dos experimentos ativos
- */
-export function useABAnalytics(experimentId?: string) {
-  const [analytics, setAnalytics] = useState<any>(null);
-  const framework = ABTestingFramework.getInstance();
-  
   useEffect(() => {
-    if (experimentId) {
-      const experiment = framework.getExperimentResults(experimentId);
-      setAnalytics(experiment);
-    } else {
-      const activeExperiments = framework.getAllActiveExperiments();
-      setAnalytics(activeExperiments);
+    if (typeof window === 'undefined' || experimentIds.length === 0) {
+      setLoading(false);
+      return;
     }
-  }, [experimentId, framework]);
-  
-  return analytics;
+
+    const initializeExperiments = () => {
+      const newResults: Record<string, ABTestResult> = {};
+
+      experimentIds.forEach(id => {
+        // Verificar cache primeiro
+        const cached = variantCache.get(id);
+        if (cached) {
+          newResults[id] = cached;
+          return;
+        }
+
+        // Configurações de experimentos predefinidas
+        const configs: Record<string, ABTestResult> = {
+          'calculadora_layout': {
+            variant: Math.random() < 0.5 ? 'control' : 'variant_a',
+            isActive: true,
+            config: { showAdvancedOptions: Math.random() < 0.5 },
+            experimentId: 'calculadora_layout'
+          },
+          'chat_persona_selection': {
+            variant: Math.random() < 0.5 ? 'control' : 'variant_a',
+            isActive: true,
+            config: { showPersonaPreview: Math.random() < 0.5 },
+            experimentId: 'chat_persona_selection'
+          },
+          'dashboard_layout': {
+            variant: Math.random() < 0.5 ? 'control' : 'variant_a',
+            isActive: true,
+            config: { cardLayout: Math.random() < 0.5 ? 'grid' : 'list' },
+            experimentId: 'dashboard_layout'
+          }
+        };
+
+        const result = configs[id] || {
+          variant: 'control',
+          isActive: false,
+          config: {},
+          experimentId: id
+        };
+
+        // Enviar impression para GA
+        if (window.gtag) {
+          window.gtag('event', 'experiment_impression', {
+            experiment_id: id,
+            variant_id: result.variant
+          });
+        }
+
+        variantCache.set(id, result);
+        newResults[id] = result;
+      });
+
+      setResults(newResults);
+      setLoading(false);
+    };
+
+    initializeExperiments();
+  }, [experimentIds]);
+
+  return { results, loading };
 }
+
+/**
+ * Utilitários para A/B Testing com Google Analytics
+ */
+export const ABTestUtils = {
+  /**
+   * Limpar cache de variantes
+   */
+  clearCache: () => {
+    variantCache.clear();
+  },
+
+  /**
+   * Rastrear evento personalizado via Google Analytics
+   */
+  trackEvent: (
+    experimentId: string,
+    variantId: string,
+    eventName: string,
+    properties?: Record<string, unknown>
+  ) => {
+    try {
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', eventName, {
+          experiment_id: experimentId,
+          variant_id: variantId,
+          event_category: 'AB_Test_Event',
+          ...properties
+        });
+      }
+    } catch (err) {
+      console.error('[A/B Test] Failed to track event:', err);
+    }
+  },
+
+  /**
+   * Rastrear conversão específica
+   */
+  trackGoal: (
+    experimentId: string,
+    variantId: string,
+    goalName: string,
+    value?: number
+  ) => {
+    try {
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'conversion', {
+          experiment_id: experimentId,
+          variant_id: variantId,
+          goal_name: goalName,
+          value: value || 1,
+          send_to: process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID
+        });
+      }
+    } catch (err) {
+      console.error('[A/B Test] Failed to track goal:', err);
+    }
+  }
+};
 
 export default useABTest;

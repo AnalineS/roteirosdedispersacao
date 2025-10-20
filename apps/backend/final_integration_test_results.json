@@ -1,0 +1,26 @@
+{
+  "integration_test_timestamp": "2025-09-25T23:50:00",
+  "overall_success": true,
+  "gasnelio_test": {
+    "working": true,
+    "response_length": 336,
+    "persona_id": "dr_gasnelio",
+    "technical_patterns": [
+      "pcdt",
+      "protocolo",
+      "clínico",
+      "ministério",
+      "saúde"
+    ]
+  },
+  "ga_test": {
+    "working": true,
+    "response_length": 433,
+    "persona_id": "ga",
+    "empathy_patterns": [
+      "entendo",
+      "você",
+      "simples"
+    ]
+  }
+}

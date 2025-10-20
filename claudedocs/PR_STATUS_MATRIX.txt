@@ -1,0 +1,100 @@
+PR CONSOLIDATION STATUS MATRIX
+Generated: 2025-10-04 15:36 BRT
+Current Branch: hml
+═══════════════════════════════════════════════════════════════════════════════
+
+BACKEND PRs - TARGET: dependabot-updates
+───────────────────────────────────────────────────────────────────────────────
+PR #   | Package              | Current (hml) | Target    | Action    | Status
+───────────────────────────────────────────────────────────────────────────────
+#180   | pytest-cov           | 7.0.0 ✅      | 7.0.0     | CLOSE     | SUPERSEDED
+#179   | pytest               | 8.4.2 ✅      | 8.4.2     | CLOSE     | SUPERSEDED
+#156   | celery               | 5.5.3 ✅      | 5.5.3     | CLOSE     | SUPERSEDED
+#164   | google-cloud-logging | 3.10.0        | 3.12.1    | DEFER     | VALIDATE LATER
+───────────────────────────────────────────────────────────────────────────────
+
+FRONTEND PRs (SAFE) - TARGET: dependabot-updates
+───────────────────────────────────────────────────────────────────────────────
+PR #   | Package              | Current       | Target    | Risk | Priority
+───────────────────────────────────────────────────────────────────────────────
+#199   | dompurify + types    | 3.2.6         | Latest    | LOW  | 1 (Security)
+#196   | jspdf                | 3.0.2         | 3.0.3     | LOW  | 2 (Patch)
+#198   | build-tools group    | Mixed         | Latest    | LOW  | 3 (Dev-only)
+#194   | sharp                | 0.34.3        | 0.34.4    | LOW  | 4 (Dev-only)
+#215   | react-ecosystem      | 19.1.1+       | Latest    | LOW  | 5 (Ecosystem)
+───────────────────────────────────────────────────────────────────────────────
+
+FRONTEND PRs (MAJOR) - TARGET: dependabot-updates
+───────────────────────────────────────────────────────────────────────────────
+PR #   | Package              | Current | Target | Risk   | Action
+───────────────────────────────────────────────────────────────────────────────
+#186   | eslint               | 8.57.0  | 9.35.0 | MEDIUM | REVIEW (Flat config)
+#206   | lint-staged          | 15.0.0  | 16.2.3 | MEDIUM | REVIEW (After ESLint)
+#195   | testing-tools group  | Mixed   | Latest | MEDIUM | REVIEW (1352+/1075-)
+───────────────────────────────────────────────────────────────────────────────
+
+PRODUCTION SYNC
+───────────────────────────────────────────────────────────────────────────────
+PR #   | Title                | Changes        | Status       | Action
+───────────────────────────────────────────────────────────────────────────────
+#209   | hml → main          | 274K+/88K-     | CONFLICTING  | KEEP OPEN
+       | (217 commits)        |                |              | Resolve after updates
+───────────────────────────────────────────────────────────────────────────────
+
+SUMMARY
+═══════════════════════════════════════════════════════════════════════════════
+Total Open PRs:        13
+Backend Superseded:     3 (CLOSE TODAY)
+Frontend Safe:          5 (MERGE TODAY)
+Frontend Major:         3 (REVIEW REQUIRED)
+Backend Deferred:       1 (VALIDATE LATER)
+Production Sync:        1 (KEEP OPEN)
+═══════════════════════════════════════════════════════════════════════════════
+
+TODAY'S ACTIONS: 8 PRs (3 close + 5 merge)
+DEFERRED: 4 PRs (3 major version + 1 backend)
+TOTAL ACTIONABLE: 12 PRs (excluding #209)
+
+═══════════════════════════════════════════════════════════════════════════════
+
+PHASE 1 (NOW - 5 min): Close #180, #179, #156
+PHASE 2 (TODAY - 2-3h): Merge #199 → #196 → #198 → #194 → #215
+
+EVIDENCE FOR SUPERSEDED PRs:
+───────────────────────────────────────────────────────────────────────────────
+Source: apps/backend/requirements.txt (hml branch)
+Merge: commit 453a86b3 "feat(deps): Merge FASE 2 major version upgrades to hml"
+
+pytest==8.4.2                    # ✅ PR #179 SUPERSEDED
+pytest-cov==7.0.0                # ✅ PR #180 SUPERSEDED
+celery==5.5.3                    # ✅ PR #156 SUPERSEDED
+───────────────────────────────────────────────────────────────────────────────
+
+VALIDATION COMMANDS:
+───────────────────────────────────────────────────────────────────────────────
+After each merge:
+  cd apps/frontend-nextjs
+  npm run type-check && npm run lint && npm run build:staging
+
+After all merges:
+  npm run test:unit && npm run test:integration
+  git push origin dependabot-updates
+  Monitor: https://hml-frontend-4f2gjf6cua-uc.a.run.app/
+───────────────────────────────────────────────────────────────────────────────
+
+ROLLBACK STRATEGY:
+───────────────────────────────────────────────────────────────────────────────
+If issues:
+  git checkout dependabot-updates
+  git log --oneline -5
+  git revert <bad-commit> -m 1
+  git push origin dependabot-updates
+───────────────────────────────────────────────────────────────────────────────
+
+DETAILED DOCUMENTATION:
+- Full Plan:     claudedocs/REMAINING_PRS_ACTION_PLAN.md
+- Quick Ref:     claudedocs/PR_QUICK_REFERENCE.md
+- Executive:     claudedocs/PR_CONSOLIDATION_EXECUTIVE_SUMMARY.md
+
+═══════════════════════════════════════════════════════════════════════════════
+END OF STATUS MATRIX

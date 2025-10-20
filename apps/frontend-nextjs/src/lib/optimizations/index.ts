@@ -4,6 +4,28 @@
  * Aplicável a todos os componentes e serviços da aplicação
  */
 
+// Sistema de logging controlado
+const isDevelopment = process.env.NODE_ENV === 'development';
+
+const logger = {
+  warn: (message: string) => {
+    if (isDevelopment && typeof window !== 'undefined') {
+      // Em desenvolvimento, apenas armazena no localStorage
+      const logs = JSON.parse(safeLocalStorage()?.getItem('optimization_logs') || '[]');
+      logs.push({ level: 'warn', message, timestamp: Date.now() });
+      safeLocalStorage()?.setItem('optimization_logs', JSON.stringify(logs.slice(-100)));
+    }
+  },
+  error: (message: string, error?: unknown) => {
+    if (isDevelopment && typeof window !== 'undefined') {
+      // Em desenvolvimento, apenas armazena no localStorage
+      const logs = JSON.parse(safeLocalStorage()?.getItem('optimization_logs') || '[]');
+      logs.push({ level: 'error', message, error: error instanceof Error ? error.message : String(error), timestamp: Date.now() });
+      safeLocalStorage()?.setItem('optimization_logs', JSON.stringify(logs.slice(-100)));
+    }
+  }
+};
+
 // ============================================
 // CACHE E MEMOIZAÇÃO
 // ============================================
@@ -91,7 +113,7 @@ export class UniversalCache<T = any> {
 /**
  * Memoização de funções com cache inteligente
  */
-export function memoize<T extends (...args: any[]) => any>(
+export function memoize<T extends (...args: unknown[]) => unknown>(
   fn: T,
   options: {
     ttl?: number;
@@ -99,19 +121,19 @@ export function memoize<T extends (...args: any[]) => any>(
     namespace?: string;
   } = {}
 ): T {
-  const cache = UniversalCache.getInstance(options.namespace || 'memoized');
+  const cache = UniversalCache.getInstance<ReturnType<T>>(options.namespace || 'memoized');
   const ttl = options.ttl || 5 * 60 * 1000;
   const keyFn = options.cacheKey || ((...args) => JSON.stringify(args));
 
   return ((...args: Parameters<T>) => {
     const key = keyFn(...args);
-    
+
     if (cache.has(key)) {
-      return cache.get(key);
+      return cache.get(key) as ReturnType<T>;
     }
 
     const result = fn(...args);
-    cache.set(key, result, ttl);
+    cache.set(key, result as ReturnType<T>, ttl);
     return result;
   }) as T;
 }
@@ -123,7 +145,7 @@ export function memoize<T extends (...args: any[]) => any>(
 /**
  * Debounce com cancelamento e execução imediata opcional
  */
-export function debounce<T extends (...args: any[]) => any>(
+export function debounce<T extends (...args: unknown[]) => unknown>(
   fn: T,
   delay: number,
   options: { immediate?: boolean; maxWait?: number } = {}
@@ -135,7 +157,7 @@ export function debounce<T extends (...args: any[]) => any>(
   let result: ReturnType<T>;
 
   const invokeFunc = () => {
-    result = fn(...lastArgs);
+    result = fn(...lastArgs) as ReturnType<T>;
     return result;
   };
 
@@ -207,7 +229,7 @@ export function debounce<T extends (...args: any[]) => any>(
 /**
  * Throttle com controle de frequência
  */
-export function throttle<T extends (...args: any[]) => any>(
+export function throttle<T extends (...args: unknown[]) => unknown>(
   fn: T,
   limit: number,
   options: { leading?: boolean; trailing?: boolean } = { leading: true, trailing: true }
@@ -400,7 +422,7 @@ export class PerformanceMonitor {
       this.recordMetric(name, duration);
 
       if (options.logSlow && duration > threshold) {
-        console.warn(`🐌 Operação lenta: ${name} (${duration.toFixed(2)}ms)`);
+        logger.warn(`🐌 Operação lenta: ${name} (${duration.toFixed(2)}ms)`);
       }
 
       return result;
@@ -431,7 +453,7 @@ export class PerformanceMonitor {
     this.metrics.set(name, existing);
 
     if (isError) {
-      console.error(`❌ Erro na operação: ${name} (${duration.toFixed(2)}ms)`);
+      logger.error(`❌ Erro na operação: ${name} (${duration.toFixed(2)}ms)`);
     }
   }
 
@@ -471,6 +493,7 @@ export class PerformanceMonitor {
  * Hook para debounce de valores
  */
 import { useState, useEffect } from 'react';
+import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 
 export function useDebounce<T>(value: T, delay: number): T {
   const [debouncedValue, setDebouncedValue] = useState<T>(value);
@@ -628,7 +651,7 @@ export class OptimizedStorage {
   /**
    * Salvar dados comprimidos
    */
-  static async setCompressed(key: string, data: any): Promise<void> {
+  static async setCompressed(key: string, data: unknown): Promise<void> {
     if (typeof window === 'undefined') return;
 
     try {
@@ -636,17 +659,17 @@ export class OptimizedStorage {
       
       // Para dados pequenos, não comprimir
       if (jsonString.length < 1000) {
-        localStorage.setItem(key, jsonString);
+        safeLocalStorage()?.setItem(key, jsonString);
         return;
       }
 
       // Comprimir dados grandes
       const compressed = await this.compress(jsonString);
-      localStorage.setItem(key, compressed);
-      localStorage.setItem(`${key}_compressed`, 'true');
+      safeLocalStorage()?.setItem(key, compressed);
+      safeLocalStorage()?.setItem(`${key}_compressed`, 'true');
     } catch (error) {
-      console.error('Erro ao salvar dados comprimidos:', error);
-      localStorage.setItem(key, JSON.stringify(data));
+      logger.error('Erro ao salvar dados comprimidos:', error);
+      safeLocalStorage()?.setItem(key, JSON.stringify(data));
     }
   }
 
@@ -657,10 +680,10 @@ export class OptimizedStorage {
     if (typeof window === 'undefined') return null;
 
     try {
-      const stored = localStorage.getItem(key);
+      const stored = safeLocalStorage()?.getItem(key);
       if (!stored) return null;
 
-      const isCompressed = localStorage.getItem(`${key}_compressed`) === 'true';
+      const isCompressed = safeLocalStorage()?.getItem(`${key}_compressed`) === 'true';
       
       if (isCompressed) {
         const decompressed = await this.decompress(stored);
@@ -669,7 +692,7 @@ export class OptimizedStorage {
         return JSON.parse(stored);
       }
     } catch (error) {
-      console.error('Erro ao carregar dados comprimidos:', error);
+      logger.error('Erro ao carregar dados comprimidos:', error);
       return null;
     }
   }

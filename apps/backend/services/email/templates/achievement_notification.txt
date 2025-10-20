@@ -1,0 +1,32 @@
+🏆 NOVA CONQUISTA DESBLOQUEADA!
+
+Parabéns, {{ user_name }}!
+
+Você acaba de desbloquear: {{ achievement_name }}
+
+{{ achievement_description }}
+
+Esta conquista demonstra seu comprometimento com o aprendizado contínuo sobre hanseníase e o protocolo PQT-U. Cada passo que você dá contribui para melhorar o cuidado e tratamento desta condição.
+
+📊 ESTATÍSTICAS:
+• +50 XP ganho
+• Nova conquista desbloqueada
+• Progresso atualizado
+
+CONTINUE EXPLORANDO:
+• Módulos educativos interativos
+• Calculadora de doses PQT-U  
+• Casos clínicos práticos
+• Chat com Dr. Gasnelio
+
+Ver todas as suas conquistas:
+{{ site_url }}/profile
+
+---
+Roteiro de Dispensação PQT-U
+Educação médica especializada em hanseníase
+{{ date }} • {{ site_url }}
+
+Este email foi enviado porque você tem notificações de conquistas ativadas.
+Gerenciar preferências: {{ site_url }}/preferences
+Cancelar inscrição: {{ site_url }}/unsubscribe

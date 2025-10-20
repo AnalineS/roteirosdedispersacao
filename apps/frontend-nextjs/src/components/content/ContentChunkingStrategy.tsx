@@ -409,7 +409,7 @@ export default function ContentChunking({
 
           {/* Layout dos chunks */}
           <div className={`chunks-container ${group.layout || 'accordion'}`}>
-            {group.chunks.map((chunk, index) => {
+            {group.chunks.map((chunk) => {
               // Lógica para modo progressivo
               if (progressiveMode && group.layout === 'progressive') {
                 const allChunks = groups.flatMap(g => g.chunks);

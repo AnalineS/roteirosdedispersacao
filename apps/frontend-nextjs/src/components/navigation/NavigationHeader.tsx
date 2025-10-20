@@ -1,19 +1,26 @@
 'use client';
 
+/**
+ * NavigationHeader Simplificado - PR #264 Phase 1
+ *
+ * Melhorias implementadas:
+ * - RF01: Redução de 7+ para 5 itens principais
+ * - RF02: Hierarquia visual com CTAs destacados
+ * - RF03: Indicador offline discreto integrado
+ * - RNF05: Design tokens centralizados
+ *
+ * Estrutura: Início | Educacional ▾ | Chat | [Entrar] | [Criar Conta]
+ */
+
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { usePersonas } from '@/hooks/usePersonas';
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation';
-import { useNavigationVisibility, useContextualNavigation } from './SmartNavigationSystem';
-import { 
-  SystemLogoIcon,
-  LearningIcon, 
-  InteractionIcon, 
-  ToolsIcon, 
-  ProgressIcon,
-  InstitutionalIcon,
+import {
+  LearningIcon,
+  InteractionIcon,
   MenuIcon,
   CloseIcon,
   ChevronDownIcon,
@@ -23,12 +30,13 @@ import { getUnbColors } from '@/config/modernTheme';
 import { getUniversityLogo } from '@/constants/avatars';
 import Tooltip from '@/components/common/Tooltip';
 import MobileNavigation from './MobileNavigation';
-import { ThemeToggle } from '@/components/theme/ThemeToggle';
-import IntelligentSearchSystem from '@/components/search/IntelligentSearchSystem';
-import { AuthButton } from '@/components/auth';
-import { useAuth } from '@/contexts/AuthContext';
+import SearchBar from '@/components/search/SearchBar';
+import { useSafeAuth } from '@/hooks/useSafeAuth';
 import { SkipToContent, HighContrastToggle } from '@/components/accessibility';
-// Interfaces de navegação (movidas do Sidebar removido)
+import OfflineIndicator from './OfflineIndicator';
+import { designTokens } from '@/config/designTokens';
+
+// Interfaces
 export interface NavigationItem {
   id: string;
   label: string;
@@ -44,10 +52,11 @@ export interface NavigationItem {
 
 export interface NavigationCategory {
   id: string;
-  label: string; 
+  label: string;
   icon: string;
   description: string;
   items: NavigationItem[];
+  priority?: 'high' | 'medium' | 'low';
 }
 
 interface NavigationHeaderProps {
@@ -62,31 +71,25 @@ interface DropdownState {
 export default function NavigationHeader({ currentPersona, className = '' }: NavigationHeaderProps) {
   const pathname = usePathname();
   const { personas } = usePersonas();
-  const { isAdmin } = useAuth();
+  const { isAdmin, isAuthenticated } = useSafeAuth();
   const headerRef = useRef<HTMLElement>(null);
   const unbColors = getUnbColors();
-  const shouldShowHeader = useNavigationVisibility('main-header');
-  const { primaryNavigation, maxVisibleItems, deviceType } = useContextualNavigation();
 
   // Estados
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [dropdownsOpen, setDropdownsOpen] = useState<DropdownState>({});
   const [isMobile, setIsMobile] = useState(false);
-  const [isTablet, setIsTablet] = useState(false);
-  const [isWideScreen, setIsWideScreen] = useState(false);
 
-  // Detectar tipo de dispositivo
+  // Detectar device type usando designTokens breakpoints
   useEffect(() => {
-    const checkDeviceType = () => {
+    const handleResize = () => {
       const width = window.innerWidth;
-      setIsMobile(width < 768);
-      setIsTablet(width >= 768 && width < 1280);
-      setIsWideScreen(width >= 1600);
+      setIsMobile(width <= parseInt(designTokens.breakpoints.mobile));
     };
-    
-    checkDeviceType();
-    window.addEventListener('resize', checkDeviceType);
-    return () => window.removeEventListener('resize', checkDeviceType);
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   // Configurar navegação por teclado
@@ -100,13 +103,17 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
     }
   });
 
-  // Estrutura de navegação (mesma do sidebar)
+  /**
+   * Estrutura de navegação simplificada - 5 itens principais
+   * Conforme PR #264 RF01
+   */
   const navigationCategories: NavigationCategory[] = [
     {
-      id: 'learning',
-      label: 'Aprendizagem',
-      icon: '📚',
-      description: 'Módulos educacionais estruturados',
+      id: 'home',
+      label: 'Início',
+      icon: '🏠',
+      description: 'Página inicial',
+      priority: 'medium',
       items: [
         {
           id: 'home',
@@ -114,10 +121,17 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
           href: '/',
           icon: '🏠',
           description: 'Seleção de assistentes virtuais',
-          category: 'learning',
-          level: 'beginner',
-          estimatedTime: '2 min'
-        },
+          category: 'learning'
+        }
+      ]
+    },
+    {
+      id: 'educational',
+      label: 'Educacional',
+      icon: '📚',
+      description: 'Conteúdo educacional e recursos',
+      priority: 'high',
+      items: [
         {
           id: 'modules',
           label: 'Módulos',
@@ -125,8 +139,6 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
           icon: '📖',
           description: 'Conteúdo educacional por tópicos',
           category: 'learning',
-          level: 'beginner',
-          estimatedTime: '15-30 min',
           subItems: [
             {
               id: 'hanseniase-overview',
@@ -134,9 +146,7 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
               href: '/modules/hanseniase',
               icon: '🔬',
               description: 'Conceitos fundamentais',
-              category: 'learning',
-              level: 'beginner',
-              estimatedTime: '10 min'
+              category: 'learning'
             },
             {
               id: 'diagnostico',
@@ -144,9 +154,7 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
               href: '/modules/diagnostico',
               icon: '🩺',
               description: 'Sintomas e exames',
-              category: 'learning',
-              level: 'intermediate',
-              estimatedTime: '15 min'
+              category: 'learning'
             },
             {
               id: 'tratamento',
@@ -154,155 +162,117 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
               href: '/modules/tratamento',
               icon: '💊',
               description: 'Poliquimioterapia única',
-              category: 'learning',
-              level: 'advanced',
-              estimatedTime: '20 min'
+              category: 'learning'
+            },
+            {
+              id: 'vida-com-doenca',
+              label: 'Vida com a Doença',
+              href: '/modules/vida-com-doenca',
+              icon: '🤝',
+              description: 'Apoio e qualidade de vida',
+              category: 'learning'
+            },
+            {
+              id: 'roteiro-dispensacao',
+              label: 'Roteiro de Dispensação',
+              href: '/modules/roteiro-dispensacao',
+              icon: '📋',
+              description: 'Protocolo completo',
+              category: 'learning'
             }
           ]
         },
         {
           id: 'dashboard',
-          label: 'Dashboard Educacional',
+          label: 'Dashboard',
           href: '/dashboard',
           icon: '📊',
           description: 'Visão geral do progresso',
-          category: 'learning',
-          level: 'beginner',
-          estimatedTime: '5 min'
-        }
-      ]
-    },
-    {
-      id: 'interaction',
-      label: 'Chat',
-      icon: '💬',
-      description: 'Comunicação com assistentes',
-      items: [
+          category: 'learning'
+        },
         {
-          id: 'chat',
-          label: 'Conversar',
-          href: '/chat',
-          icon: '🤖',
-          description: 'Chat com Dr. Gasnelio e Gá',
-          category: 'interaction',
-          estimatedTime: 'Ilimitado'
-        }
-      ]
-    },
-    {
-      id: 'tools',
-      label: 'Ferramentas',
-      icon: '🛠️',
-      description: 'Recursos práticos e calculadoras',
-      items: [
+          id: 'progress',
+          label: 'Progresso',
+          href: '/progress',
+          icon: '📈',
+          description: 'Acompanhe seu aprendizado',
+          category: 'learning'
+        },
         {
           id: 'resources',
-          label: 'Recursos Práticos',
+          label: 'Recursos',
           href: '/resources',
           icon: '🎯',
-          description: 'Calculadoras e checklists',
-          category: 'tools',
+          description: 'Ferramentas práticas',
+          category: 'learning',
           subItems: [
             {
               id: 'dose-calculator',
-              label: 'Calculadora de Doses',
+              label: 'Calculadora',
               href: '/resources/calculator',
               icon: '🧮',
-              description: 'Cálculo automático PQT-U',
-              category: 'tools'
-            },
-            {
-              id: 'interaction-checker',
-              label: 'Verificador de Interações',
-              href: '/resources/interactions',
-              icon: '⚠️',
-              description: 'Análise de incompatibilidades medicamentosas',
-              category: 'tools'
+              description: 'Cálculo PQT-U',
+              category: 'learning'
             },
             {
               id: 'checklist',
-              label: 'Checklist Dispensação',
+              label: 'Checklist',
               href: '/resources/checklist',
               icon: '✅',
-              description: 'Lista de verificação procedural',
-              category: 'tools'
+              description: 'Lista de verificação',
+              category: 'learning'
             },
             {
               id: 'glossario',
-              label: 'Glossário Médico',
+              label: 'Glossário',
               href: '/glossario',
               icon: '📋',
-              description: 'Terminologia técnica de hanseníase',
-              category: 'tools'
-            },
-            {
-              id: 'downloads',
-              label: 'Downloads',
-              href: '/downloads',
-              icon: '📄',
-              description: 'Materiais complementares',
-              category: 'tools'
+              description: 'Terminologia técnica',
+              category: 'learning'
             }
           ]
-        }
-      ]
-    },
-    {
-      id: 'progress',
-      label: 'Progresso',
-      icon: '📈',
-      description: 'Acompanhamento de aprendizagem',
-      items: [
+        },
+        // Itens do "Conheça o Projeto" movidos para Educacional
         {
-          id: 'progress',
-          label: 'Meu Progresso',
-          href: '/progress',
-          icon: '📊',
-          description: 'Acompanhe seu aprendizado',
-          category: 'progress',
-          completionRate: 65
-        }
-      ]
-    },
-    {
-      id: 'institutional',
-      label: 'Institucional',
-      icon: '🎓',
-      description: 'Informações sobre a plataforma e pesquisa',
-      items: [
+          id: 'sobre-a-tese',
+          label: 'Sobre a Tese',
+          href: '/sobre-a-tese',
+          icon: '📚',
+          description: 'Metodologia e objetivos da pesquisa',
+          category: 'institutional'
+        },
         {
-          id: 'institucional-info',
-          label: 'Informações Institucionais',
+          id: 'sobre-equipe',
+          label: 'Conheça a Equipe',
           href: '/sobre',
-          icon: '🏦',
-          description: 'Sobre a plataforma e instituições',
-          category: 'institutional',
-          subItems: [
-            {
-              id: 'sobre-a-tese',
-              label: 'Sobre a Tese',
-              href: '/sobre-a-tese',
-              icon: '📚',
-              description: 'Metodologia, objetivos e contribuições da pesquisa',
-              category: 'institutional'
-            },
-            {
-              id: 'sobre-sistema',
-              label: 'Sobre o Sistema',
-              href: '/sobre',
-              icon: '💻',
-              description: 'Informações sobre a plataforma educacional',
-              category: 'institutional'
-            },
-            {
-              id: 'metodologia',
-              label: 'Metodologia',
-              href: '/metodologia',
-              icon: '🔬',
-              description: 'Métodos científicos e fundamentação teórica',
-              category: 'institutional'
-            }
-          ]
+          icon: '👥',
+          description: 'Equipe do projeto',
+          category: 'institutional'
+        },
+        {
+          id: 'metodologia',
+          label: 'Metodologia',
+          href: '/metodologia',
+          icon: '🔬',
+          description: 'Métodos científicos',
+          category: 'institutional'
+        }
+      ]
+    },
+    {
+      id: 'chat',
+      label: 'Chat',
+      icon: '💬',
+      description: 'Assistentes virtuais',
+      priority: 'high',
+      items: [
+        {
+          id: 'chat',
+          label: 'Chat',
+          href: '/chat',
+          icon: '💬',
+          description: 'Chat com Dr. Gasnelio e Gá',
+          category: 'interaction'
         }
       ]
     }
@@ -329,616 +299,367 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
-  const getCategoryIcon = (categoryId: string) => {
-    switch (categoryId) {
-      case 'learning': return LearningIcon;
-      case 'interaction': return InteractionIcon;
-      case 'tools': return ToolsIcon;
-      case 'progress': return ProgressIcon;
-      case 'institutional': return InstitutionalIcon;
-      default: return LearningIcon;
-    }
-  };
-
   // Obter persona atual
-  const currentPersonaData = currentPersona && personas[currentPersona] ? personas[currentPersona] : null;
-
-  // Não renderizar se sistema inteligente decidir que não deve
-  if (!shouldShowHeader && primaryNavigation !== 'header') {
-    return null;
-  }
-
-  // Filtrar categorias baseado no limite do sistema inteligente
-  const visibleCategories = navigationCategories.slice(0, Math.min(maxVisibleItems || 8, navigationCategories.length));
+  const currentPersonaData = currentPersona && personas[currentPersona] ? personas[currentPersona] : undefined;
 
   return (
     <>
       <SkipToContent mainContentId="main-content" />
+
+      {/* Indicador Offline - RF03 */}
+      <OfflineIndicator position="top-right" variant="minimal" showDetails="on-hover" />
+
       <header
         ref={headerRef}
-        className={`navigation-header ${className}`}
+        className={`fixed top-0 left-0 right-0 z-[1000] bg-gradient-to-br from-white/95 to-slate-50/98 backdrop-blur-md border-b border-slate-200/80 shadow-lg ${className}`}
         role="banner"
         aria-label="Main navigation header"
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        width: '100%',
-        height: '80px',
-        background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.98) 100%)',
-        backdropFilter: 'blur(10px)',
-        borderBottom: '1px solid rgba(226, 232, 240, 0.8)',
-        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
-        zIndex: 1000,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: isWideScreen ? '0 clamp(1rem, 2vw, 2rem)' : '0 clamp(1rem, 2vw, 1.5rem)',
-        gap: '1rem',
-        minHeight: '80px',
-        boxSizing: 'border-box'
-      }}
-    >
-      {/* Logo e Título - Esquerda */}
-      <div className="nav-logo-section">
-        <Tooltip content="Roteiros de Dispensação - Sistema Inteligente de Orientação" position="bottom">
-          <Link
-            href="/"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              textDecoration: 'none',
-              color: unbColors.primary
-            }}
-          >
-            <Image 
-              src={getUniversityLogo('unb_logo2')} 
-              alt="Universidade de Brasília" 
-              className="nav-logo"
-              width={48}
-              height={48}
-              priority
-            />
-            {!isMobile && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                <div className="nav-title-main">
-                  Roteiros de Dispensação
-                </div>
-                <div className="nav-title-sub">
-                  Sistema de Aprendizagem Inteligente
-                </div>
-              </div>
-            )}
-            {isMobile && (
-              <div className="nav-title-main">
-                Roteiros de Dispensação
-              </div>
-            )}
-          </Link>
-        </Tooltip>
-      </div>
+      >
+        <div className="max-w-[1400px] mx-auto">
+          {/* Linha principal de navegação */}
+          <div className="flex items-center justify-between px-4 sm:px-6 lg:px-8 gap-4 h-20">
 
-
-
-      {/* Navegação Principal - Centro (Desktop/Tablet) */}
-      {!isMobile && (
-        <nav 
-          className="nav-main-section"
-          role="navigation"
-          aria-label="Navegação principal do sistema educacional"
-          id="main-navigation"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: isTablet ? '0.5rem' : '1rem',
-            flexWrap: 'nowrap',
-            overflow: 'hidden'
-          }}
-        >
-          {visibleCategories.map((category) => {
-            const IconComponent = getCategoryIcon(category.id);
-            const hasDropdown = category.items.length > 1 || category.items.some(item => item.subItems?.length);
-            
-            return (
-              <div key={category.id} style={{ position: 'relative' }}>
-                {hasDropdown ? (
-                  <button
-                    onClick={() => toggleDropdown(category.id)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Escape') {
-                        setDropdownsOpen(prev => ({...prev, [category.id]: false}));
-                      }
-                      if (e.key === 'ArrowDown' && dropdownsOpen[category.id]) {
-                        e.preventDefault();
-                        const dropdown = e.currentTarget.parentElement?.querySelector('[role="menu"]');
-                        const firstMenuItem = dropdown?.querySelector('[role="menuitem"]') as HTMLElement;
-                        firstMenuItem?.focus();
-                      }
-                    }}
-                    onBlur={(e) => {
-                      // Reset visual styles
-                      e.currentTarget.style.background = 'none'; 
-                      e.currentTarget.style.border = '2px solid transparent';
-                      
-                      // Fechar dropdown se clicar fora
-                      setTimeout(() => {
-                        if (!e.currentTarget.parentElement?.contains(document.activeElement)) {
-                          setDropdownsOpen(prev => ({...prev, [category.id]: false}));
-                        }
-                      }, 150);
-                    }}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      background: 'none',
-                      border: `2px solid ${dropdownsOpen[category.id] ? unbColors.primary : 'transparent'}`,
-                      color: unbColors.primary,
-                      padding: isTablet ? '6px 10px' : '8px 14px',
-                      borderRadius: '8px',
-                      cursor: 'pointer',
-                      fontSize: isTablet ? '0.85rem' : '0.95rem',
-                      fontWeight: '500',
-                      transition: 'all 200ms ease',
-                      opacity: dropdownsOpen[category.id] ? 1 : 0.9,
-                      outline: 'none',
-                      whiteSpace: 'nowrap',
-                      minWidth: 'fit-content',
-                      flexShrink: 0
-                    }}
-                    onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(59, 130, 246, 0.1)'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.background = 'none'; }}
-                    onFocus={(e) => { e.currentTarget.style.background = 'rgba(59, 130, 246, 0.1)'; e.currentTarget.style.border = `2px solid ${unbColors.primary}`; }}
-                    aria-expanded={dropdownsOpen[category.id]}
-                    aria-haspopup="menu"
-                    aria-label={`Abrir menu ${category.label}: ${category.description}`}
-                    aria-describedby={`category-${category.id}-desc`}
-                  >
-                    <IconComponent size={isTablet ? 16 : 18} variant="unb" color={unbColors.primary} />
-                    <span style={{ 
-                      display: isTablet && category.label.length > 12 ? 'none' : 'inline',
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      maxWidth: isTablet ? '80px' : 'none'
-                    }}>
-                      {category.label}
-                    </span>
-                    <ChevronDownIcon 
-                      size={14} 
-                      color={unbColors.primary}
-                      style={{
-                        transform: dropdownsOpen[category.id] ? 'rotate(180deg)' : 'rotate(0deg)',
-                        transition: 'transform 200ms ease'
-                      }}
-                    />
-                  </button>
-                ) : (
-                  <Link
-                    href={category.items[0].href}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      color: unbColors.primary,
-                      textDecoration: 'none',
-                      padding: isTablet ? '6px 10px' : '8px 14px',
-                      borderRadius: '8px',
-                      fontSize: isTablet ? '0.85rem' : '0.95rem',
-                      fontWeight: '500',
-                      transition: 'all 200ms ease',
-                      opacity: isActive(category.items[0].href) ? 1 : 0.9,
-                      whiteSpace: 'nowrap',
-                      minWidth: 'fit-content',
-                      flexShrink: 0
-                    }}
-                    onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(59, 130, 246, 0.1)'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.background = 'none'; }}
-                  >
-                    <IconComponent size={isTablet ? 16 : 18} variant="unb" color={unbColors.primary} />
-                    <span style={{ 
-                      display: isTablet && category.label.length > 12 ? 'none' : 'inline',
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      maxWidth: isTablet ? '80px' : 'none'
-                    }}>
-                      {category.label}
-                    </span>
-                  </Link>
-                )}
-
-                {/* Hidden description for screen readers */}
-                <span
-                  id={`category-${category.id}-desc`}
-                  style={{
-                    position: 'absolute',
-                    left: '-10000px',
-                    width: '1px',
-                    height: '1px',
-                    overflow: 'hidden'
-                  }}
+            {/* Logo e Título */}
+            <div className="nav-logo-section">
+              <Tooltip content="Roteiros de Dispensação - Sistema Inteligente" position="bottom">
+                <Link
+                  href="/"
+                  className="flex items-center gap-3 no-underline"
+                  style={{ color: unbColors.primary }}
                 >
-                  {category.description}
-                </span>
+                  <Image
+                    src={getUniversityLogo('unb_logo2')}
+                    alt="Universidade de Brasília"
+                    className="nav-logo"
+                    width={48}
+                    height={48}
+                    priority
+                  />
+                  {!isMobile && (
+                    <div className="flex flex-col gap-0.5">
+                      <div className="font-bold text-base sm:text-lg" style={{ color: unbColors.primary }}>
+                        Roteiros de Dispensação
+                      </div>
+                      <div className="text-xs opacity-70" style={{ color: unbColors.primary }}>
+                        Sistema de Aprendizagem Inteligente
+                      </div>
+                    </div>
+                  )}
+                  {isMobile && (
+                    <div className="font-bold text-base" style={{ color: unbColors.primary }}>
+                      Roteiros
+                    </div>
+                  )}
+                </Link>
+              </Tooltip>
+            </div>
 
-                {/* Dropdown Menu */}
-                {hasDropdown && dropdownsOpen[category.id] && (
-                  <div
-                    role="menu"
-                    aria-labelledby={`category-${category.id}-button`}
-                    style={{
-                      position: 'absolute',
-                      top: '100%',
-                      left: '50%',
-                      transform: 'translateX(-50%)',
-                      marginTop: '8px',
-                      background: unbColors.white,
-                      border: `1px solid ${unbColors.alpha.primary}`,
-                      borderRadius: '12px',
-                      boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
-                      minWidth: '280px',
-                      maxWidth: '320px',
-                      zIndex: 1001,
-                      animation: 'fadeIn 200ms ease'
-                    }}
-                  >
-                    {category.items.map((item) => {
-                      const ItemIcon = getIconByEmoji(item.icon);
-                      return (
-                        <div key={item.id}>
-                          <Link
-                            href={item.href}
-                            onClick={closeAllDropdowns}
-                            role="menuitem"
-                            tabIndex={-1}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Escape') {
-                                setDropdownsOpen(prev => ({...prev, [category.id]: false}));
-                                const button = e.currentTarget.closest('[role="button"]') as HTMLElement;
-                                button?.focus();
-                              }
-                            }}
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '12px',
-                              padding: '12px 16px',
-                              color: unbColors.neutral,
-                              textDecoration: 'none',
-                              borderRadius: '8px',
-                              margin: '4px',
-                              transition: 'all 200ms ease',
-                              background: isActive(item.href) ? unbColors.alpha.primary : 'transparent',
-                              outline: 'none',
-                              border: '2px solid transparent'
-                            }}
-                            onMouseEnter={(e) => { 
-                              if (!isActive(item.href)) {
-                                e.currentTarget.style.background = unbColors.alpha.secondary; 
-                              }
-                            }}
-                            onMouseLeave={(e) => { 
-                              if (!isActive(item.href)) {
-                                e.currentTarget.style.background = 'transparent'; 
-                              }
-                            }}
-                            onFocus={(e) => { 
-                              e.currentTarget.style.background = unbColors.alpha.secondary;
-                              e.currentTarget.style.border = `2px solid ${unbColors.primary}`;
-                            }}
-                            onBlur={(e) => { 
-                              if (!isActive(item.href)) {
-                                e.currentTarget.style.background = 'transparent';
-                              }
-                              e.currentTarget.style.border = '2px solid transparent';
-                            }}
-                            aria-describedby={`item-${item.id}-desc`}
-                          >
-                            <ItemIcon size={20} variant="unb" />
-                            <div style={{ flex: 1 }}>
-                              <div style={{ 
-                                fontWeight: isActive(item.href) ? 'bold' : '500',
-                                fontSize: '0.95rem',
-                                marginBottom: '2px'
-                              }}>
-                                {item.label}
-                              </div>
-                              <div style={{
-                                fontSize: '0.8rem',
-                                opacity: 0.7,
-                                lineHeight: '1.3'
-                              }}>
-                                {item.description}
-                              </div>
-                            </div>
-                          </Link>
-                          
-                          {/* Sub Items */}
-                          {item.subItems?.map((subItem) => {
-                            const SubIcon = getIconByEmoji(subItem.icon);
+            {/* Navegação Principal - Desktop/Tablet - 5 itens */}
+            {!isMobile && (
+              <nav
+                className="flex items-center gap-4 flex-1 justify-center"
+                role="navigation"
+                aria-label="Navegação principal"
+              >
+                {navigationCategories.map((category) => {
+                  const hasDropdown = category.items.length > 1 || category.items.some(item => item.subItems?.length);
+                  const IconComponent = category.id === 'educational' ? LearningIcon :
+                                       category.id === 'chat' ? InteractionIcon :
+                                       getIconByEmoji(category.icon);
+
+                  return (
+                    <div key={category.id} className="relative">
+                      {hasDropdown ? (
+                        <button
+                          onClick={() => toggleDropdown(category.id)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Escape') {
+                              setDropdownsOpen(prev => ({...prev, [category.id]: false}));
+                            }
+                          }}
+                          className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:bg-blue-500/10"
+                          style={{
+                            color: unbColors.primary,
+                            borderColor: dropdownsOpen[category.id] ? unbColors.primary : 'transparent',
+                            border: `2px solid ${dropdownsOpen[category.id] ? unbColors.primary : 'transparent'}`
+                          }}
+                          aria-expanded={dropdownsOpen[category.id]}
+                          aria-haspopup="menu"
+                        >
+                          <IconComponent size={18} variant="unb" color={unbColors.primary} />
+                          <span>{category.label}</span>
+                          <ChevronDownIcon
+                            size={14}
+                            color={unbColors.primary}
+                            className={`transition-transform duration-200 ${dropdownsOpen[category.id] ? 'rotate-180' : 'rotate-0'}`}
+                          />
+                        </button>
+                      ) : (
+                        <Link
+                          href={category.items[0].href}
+                          className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:bg-blue-500/10 no-underline"
+                          style={{
+                            color: unbColors.primary,
+                            fontWeight: category.priority === 'high' ? 600 : 500
+                          }}
+                        >
+                          <IconComponent size={18} variant="unb" color={unbColors.primary} />
+                          <span>{category.label}</span>
+                        </Link>
+                      )}
+
+                      {/* Dropdown Menu */}
+                      {hasDropdown && dropdownsOpen[category.id] && (
+                        <div
+                          role="menu"
+                          className="absolute top-full left-1/2 -translate-x-1/2 mt-2 rounded-xl shadow-2xl min-w-[300px] max-w-[340px] z-[1001] animate-fadeIn overflow-hidden"
+                          style={{
+                            background: 'white',
+                            border: `1px solid ${unbColors.alpha.primary}`
+                          }}
+                        >
+                          {category.items.map((item) => {
+                            const ItemIcon = getIconByEmoji(item.icon);
                             return (
-                              <Link
-                                key={subItem.id}
-                                href={subItem.href}
-                                onClick={closeAllDropdowns}
-                                style={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '10px',
-                                  padding: '10px 16px 10px 32px',
-                                  color: unbColors.neutral,
-                                  textDecoration: 'none',
-                                  fontSize: '0.9rem',
-                                  borderRadius: '6px',
-                                  margin: '2px 4px',
-                                  opacity: isActive(subItem.href) ? 1 : 0.8,
-                                  background: isActive(subItem.href) ? unbColors.alpha.accent : 'transparent'
-                                }}
-                                onMouseEnter={(e) => { 
-                                  if (!isActive(subItem.href)) {
-                                    e.currentTarget.style.background = unbColors.alpha.secondary; 
-                                    e.currentTarget.style.opacity = '1';
-                                  }
-                                }}
-                                onMouseLeave={(e) => { 
-                                  if (!isActive(subItem.href)) {
-                                    e.currentTarget.style.background = 'transparent'; 
-                                    e.currentTarget.style.opacity = '0.8';
-                                  }
-                                }}
-                              >
-                                <SubIcon size={16} variant="unb" />
-                                <span>{subItem.label}</span>
-                              </Link>
+                              <div key={item.id}>
+                                <Link
+                                  href={item.href}
+                                  onClick={closeAllDropdowns}
+                                  role="menuitem"
+                                  className="flex items-center gap-3 p-3 no-underline transition-all duration-200 hover:bg-slate-50"
+                                  style={{
+                                    color: unbColors.neutral,
+                                    background: isActive(item.href) ? unbColors.alpha.primary : 'transparent'
+                                  }}
+                                >
+                                  <ItemIcon size={20} variant="unb" />
+                                  <div className="flex-1">
+                                    <div className={`${isActive(item.href) ? 'font-bold' : 'font-medium'} text-sm`}>
+                                      {item.label}
+                                    </div>
+                                    <div className="text-xs opacity-70 mt-0.5">
+                                      {item.description}
+                                    </div>
+                                  </div>
+                                </Link>
+
+                                {/* Sub Items */}
+                                {item.subItems?.map((subItem) => {
+                                  const SubIcon = getIconByEmoji(subItem.icon);
+                                  return (
+                                    <Link
+                                      key={subItem.id}
+                                      href={subItem.href}
+                                      onClick={closeAllDropdowns}
+                                      className="flex items-center gap-2 py-2 px-4 pl-10 no-underline text-sm transition-all duration-200 hover:bg-slate-50"
+                                      style={{
+                                        color: unbColors.neutral,
+                                        background: isActive(subItem.href) ? unbColors.alpha.accent : 'transparent'
+                                      }}
+                                    >
+                                      <SubIcon size={16} variant="unb" />
+                                      <span>{subItem.label}</span>
+                                    </Link>
+                                  );
+                                })}
+                              </div>
                             );
                           })}
                         </div>
-                      );
-                    })}
+                      )}
+                    </div>
+                  );
+                })}
+              </nav>
+            )}
+
+            {/* Ações - Direita */}
+            <div className="flex items-center gap-3">
+
+              {/* Persona Atual (Desktop/Tablet) */}
+              {!isMobile && currentPersonaData && (
+                <div
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-full"
+                  style={{
+                    background: unbColors.alpha.secondary,
+                    border: `1px solid ${unbColors.alpha.primary}`
+                  }}
+                >
+                  <span className="text-lg">{currentPersonaData.avatar}</span>
+                  <div className="text-xs font-medium" style={{ color: unbColors.primary }}>
+                    {currentPersonaData.name}
                   </div>
-                )}
-              </div>
-            );
-          })}
-        </nav>
-      )}
+                </div>
+              )}
 
-      {/* Área de Personas e Usuário - Direita */}
-      <div className="nav-actions-section">
+              {/* CTAs - RF02: Hierarquia Visual */}
+              {!isMobile && !isAuthenticated && (
+                <>
+                  {/* Botão Secundário - Entrar */}
+                  <Link
+                    href="/login"
+                    className="no-underline"
+                  >
+                    <button
+                      style={{
+                        background: 'transparent',
+                        color: designTokens.colors.primary,
+                        border: `${designTokens.borders.width.medium} solid ${designTokens.colors.primary}`,
+                        padding: `${designTokens.spacing.sm} ${designTokens.spacing.lg}`,
+                        borderRadius: designTokens.borders.radius.lg,
+                        fontSize: designTokens.typography.fontSize.sm,
+                        fontWeight: designTokens.typography.fontWeight.semibold,
+                        minHeight: designTokens.touch.minTargetSize,
+                        cursor: 'pointer',
+                        transition: `all ${designTokens.transitions.duration.normal} ${designTokens.transitions.easing.default}`,
+                        whiteSpace: 'nowrap'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = designTokens.colors.primaryAlpha;
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'transparent';
+                      }}
+                      aria-label="Acessar sua conta"
+                    >
+                      Entrar
+                    </button>
+                  </Link>
 
-        {/* Persona Atual (Desktop/Tablet) */}
-        {!isMobile && currentPersonaData && (
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            background: unbColors.alpha.secondary,
-            padding: '6px 12px',
-            borderRadius: '20px',
-            border: `1px solid ${unbColors.alpha.primary}`
-          }}>
-            <span style={{ fontSize: '1.2rem' }}>{currentPersonaData.avatar}</span>
-            <div>
-              <div style={{ 
-                color: unbColors.white,
-                fontSize: '0.85rem',
-                fontWeight: 'bold'
-              }}>
-                {currentPersonaData.name}
-              </div>
-              <div style={{ 
-                color: unbColors.white,
-                fontSize: '0.7rem',
-                opacity: 0.8
-              }}>
-                {currentPersonaData.personality}
-              </div>
+                  {/* Botão Primário - Criar Conta */}
+                  <Link
+                    href="/cadastro"
+                    className="no-underline"
+                  >
+                    <button
+                      style={{
+                        background: designTokens.colors.primary,
+                        color: 'white',
+                        border: 'none',
+                        padding: `${designTokens.spacing.sm} ${designTokens.spacing.lg}`,
+                        borderRadius: designTokens.borders.radius.lg,
+                        fontSize: designTokens.typography.fontSize.sm,
+                        fontWeight: designTokens.typography.fontWeight.bold,
+                        minHeight: designTokens.touch.minTargetSize,
+                        cursor: 'pointer',
+                        transition: `all ${designTokens.transitions.duration.normal} ${designTokens.transitions.easing.default}`,
+                        boxShadow: designTokens.shadows.md,
+                        whiteSpace: 'nowrap'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = designTokens.colors.primaryHover;
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                        e.currentTarget.style.boxShadow = designTokens.shadows.lg;
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = designTokens.colors.primary;
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow = designTokens.shadows.md;
+                      }}
+                      aria-label="Criar uma nova conta"
+                    >
+                      Criar Conta
+                    </button>
+                  </Link>
+                </>
+              )}
+
+              {/* Perfil - Usuário autenticado */}
+              {!isMobile && isAuthenticated && (
+                <Link
+                  href="/profile"
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg no-underline font-medium transition-all duration-200 hover:bg-blue-500/10"
+                  style={{ color: unbColors.primary }}
+                >
+                  <span>👤</span>
+                  <span>Perfil</span>
+                </Link>
+              )}
+
+              {/* Admin Link */}
+              {isAdmin && !isMobile && (
+                <Link
+                  href="/admin"
+                  className="flex items-center px-3 py-2 rounded-lg no-underline text-xs font-medium transition-all duration-200 hover:bg-blue-500/10"
+                  style={{ color: unbColors.primary }}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="mr-1">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                  </svg>
+                  Admin
+                </Link>
+              )}
+
+              {/* Accessibility Toggle */}
+              {!isMobile && (
+                <HighContrastToggle variant="button" showLabel={false} />
+              )}
+
+              {/* Menu Mobile Toggle */}
+              {isMobile && (
+                <button
+                  onClick={toggleMobileMenu}
+                  className="p-2 rounded-lg transition-all duration-200 hover:bg-blue-500/10"
+                  style={{
+                    color: unbColors.primary,
+                    minWidth: designTokens.touch.minTargetSize,
+                    minHeight: designTokens.touch.minTargetSize
+                  }}
+                  aria-label={isMobileMenuOpen ? 'Fechar menu' : 'Abrir menu'}
+                  aria-expanded={isMobileMenuOpen}
+                >
+                  {isMobileMenuOpen ? (
+                    <CloseIcon size={24} color={unbColors.primary} />
+                  ) : (
+                    <MenuIcon size={24} color={unbColors.primary} />
+                  )}
+                </button>
+              )}
             </div>
           </div>
-        )}
 
-        {/* Simplified Navigation Links */}
-        <div style={{
-          marginLeft: 'auto',
-          display: 'flex',
-          alignItems: 'center',
-          gap: isMobile ? '4px' : '12px'
-        }}>
-          {!isMobile && (
-            <>
-              <HighContrastToggle 
-                variant="button" 
-                showLabel={false}
-                className="header-accessibility-toggle"
-              />
-              
-              <Link 
-                href="/sobre"
-                style={{
-                  color: unbColors.primary,
-                  textDecoration: 'none',
-                  fontSize: '0.9rem',
-                  fontWeight: '500',
-                  padding: '6px 12px',
-                  borderRadius: '6px',
-                  transition: 'all 0.2s ease',
-                  opacity: 0.9
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = 'rgba(59, 130, 246, 0.1)';
-                  e.currentTarget.style.opacity = '1';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                  e.currentTarget.style.opacity = '0.9';
-                }}
-              >
-                Mapa do Site
-              </Link>
-              
-              <AuthButton variant="header" className="header-auth-buttons" />
-            </>
-          )}
-          
-          {isAdmin() && !isMobile && (
-            <Link 
-              href="/admin"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                padding: '6px 10px',
-                borderRadius: '6px',
-                backgroundColor: pathname === '/admin' ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
-                color: unbColors.primary,
-                textDecoration: 'none',
-                transition: 'all 0.2s ease',
-                fontSize: '0.8rem',
-                fontWeight: '500',
-                opacity: 0.8
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(59, 130, 246, 0.1)';
-                e.currentTarget.style.opacity = '1';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = pathname === '/admin' ? 'rgba(59, 130, 246, 0.1)' : 'transparent';
-                e.currentTarget.style.opacity = '0.8';
-              }}
-            >
-              <svg 
-                width="14" 
-                height="14" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor" 
-                strokeWidth="2"
-                style={{ marginRight: '4px' }}
-              >
-                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-              </svg>
-              Admin
-            </Link>
+          {/* Barra de pesquisa - Linha secundária (não na home) */}
+          {!isMobile && pathname !== '/' && (
+            <div className="px-4 sm:px-6 lg:px-8 pb-4">
+              <SearchBar placeholder="🔍 Buscar no site..." className="max-w-2xl mx-auto" />
+            </div>
           )}
         </div>
 
-        {/* Mobile Search Button */}
-        {isMobile && (
-          <button
-            onClick={() => {
-              // TODO: Implement mobile search modal
-              console.log('Mobile search modal not implemented yet');
-            }}
-            style={{
-              background: 'none',
-              border: `2px solid transparent`,
-              color: unbColors.primary,
-              padding: '8px',
-              cursor: 'pointer',
-              borderRadius: '8px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              minWidth: '44px',
-              minHeight: '44px',
-              outline: 'none',
-              marginRight: '8px'
-            }}
-            onFocus={(e) => { e.currentTarget.style.border = `2px solid ${unbColors.primary}`; }}
-            onBlur={(e) => { e.currentTarget.style.border = '2px solid transparent'; }}
-            aria-label="Buscar conteúdo"
-            title="Buscar conteúdo"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="11" cy="11" r="8"/>
-              <path d="m21 21-4.35-4.35"/>
-            </svg>
-          </button>
-        )}
-
-        {/* Menu Mobile Toggle */}
-        {isMobile && (
-          <button
-            onClick={toggleMobileMenu}
+        {/* Overlay para fechar dropdowns */}
+        {Object.values(dropdownsOpen).some(Boolean) && (
+          <div
+            className="fixed inset-0 z-[999]"
+            onClick={closeAllDropdowns}
             onKeyDown={(e) => {
-              if (e.key === 'Escape' && isMobileMenuOpen) {
-                setIsMobileMenuOpen(false);
+              if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                closeAllDropdowns();
               }
             }}
-            style={{
-              background: 'none',
-              border: `2px solid transparent`,
-              color: unbColors.primary,
-              padding: '8px',
-              cursor: 'pointer',
-              borderRadius: '8px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              minWidth: '44px',
-              minHeight: '44px',
-              outline: 'none'
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(59, 130, 246, 0.1)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = 'none'; }}
-            onFocus={(e) => { 
-              e.currentTarget.style.border = `2px solid ${unbColors.primary}`; 
-              e.currentTarget.style.background = 'rgba(59, 130, 246, 0.1)';
-            }}
-            onBlur={(e) => { 
-              e.currentTarget.style.border = '2px solid transparent';
-              e.currentTarget.style.background = 'none';
-            }}
-            aria-label={isMobileMenuOpen ? 'Fechar menu de navegação' : 'Abrir menu de navegação'}
-            aria-expanded={isMobileMenuOpen}
-            aria-controls="mobile-navigation-menu"
-            aria-haspopup="menu"
-            type="button"
             role="button"
-          >
-            {isMobileMenuOpen ? (
-              <CloseIcon size={24} color={unbColors.primary} />
-            ) : (
-              <MenuIcon size={24} color={unbColors.primary} />
-            )}
-          </button>
+            tabIndex={-1}
+            aria-label="Fechar menu de navegação"
+          />
         )}
-      </div>
 
-      {/* Overlay para fechar dropdowns */}
-      {Object.values(dropdownsOpen).some(Boolean) && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            zIndex: 999
-          }}
-          onClick={closeAllDropdowns}
-        />
-      )}
+        {/* Animações CSS */}
+        <style jsx global>{`
+          @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(-50%) translateY(-8px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+          }
+        `}</style>
+      </header>
 
       {/* Mobile Navigation Menu */}
       <MobileNavigation
         isOpen={isMobileMenuOpen}
         onClose={() => setIsMobileMenuOpen(false)}
         categories={navigationCategories}
-        currentPersona={currentPersonaData}
+        currentPersona={currentPersonaData as any}
         isActive={isActive}
       />
-
-      {/* Animações CSS */}
-      <style jsx global>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateX(-50%) translateY(-8px); }
-          to { opacity: 1; transform: translateX(-50%) translateY(0); }
-        }
-      `}</style>
-    </header>
     </>
   );
 }

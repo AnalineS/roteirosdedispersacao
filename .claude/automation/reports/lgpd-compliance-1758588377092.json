@@ -1,0 +1,442 @@
+{
+  "timestamp": "2025-09-23T00:46:17.091Z",
+  "version": "2.0.0",
+  "compliance": {
+    "score": 0,
+    "status": "NON_COMPLIANT",
+    "level": "LOW"
+  },
+  "summary": {
+    "totalViolations": 56,
+    "totalWarnings": 14,
+    "criticalViolations": 52,
+    "highViolations": 1,
+    "mediumViolations": 3,
+    "lowViolations": 0
+  },
+  "violations": [
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em auto-documentation.js: 29 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T00:46:16.941Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em docs\\generated\\documentation-report.json: 1 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T00:46:16.961Z"
+    },
+    {
+      "code": "SENSITIVE_DATA_LOGGING",
+      "message": "Possível log de dados sensíveis em docs\\generated\\documentation-report.json",
+      "severity": "MEDIUM",
+      "timestamp": "2025-09-23T00:46:16.965Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em docs\\generated\\medical\\case_caso clínico.md: 1 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T00:46:16.965Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em enhanced-error-handling.js: 1 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T00:46:16.968Z"
+    },
+    {
+      "code": "SENSITIVE_DATA_LOGGING",
+      "message": "Possível log de dados sensíveis em enhanced-error-handling.js",
+      "severity": "MEDIUM",
+      "timestamp": "2025-09-23T00:46:16.971Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em intelligent-notification-system.js: 5 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T00:46:16.972Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em lgpd-compliance-checker.js: 1 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T00:46:16.975Z"
+    },
+    {
+      "code": "SENSITIVE_DATA_LOGGING",
+      "message": "Possível log de dados sensíveis em lgpd-compliance-checker.js",
+      "severity": "MEDIUM",
+      "timestamp": "2025-09-23T00:46:16.978Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em README.md: 7 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T00:46:16.980Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em reports\\lgpd-compliance-1758583710684.json: 9 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T00:46:16.982Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em reports\\lgpd-compliance-1758583720123.json: 10 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T00:46:16.983Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em reports\\lgpd-compliance-1758583961415.json: 11 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T00:46:16.985Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em reports\\lgpd-compliance-1758585526950.json: 12 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T00:46:16.986Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em reports\\lgpd-compliance-1758585541167.json: 13 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T00:46:16.987Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em reports\\lgpd-compliance-1758585561480.json: 14 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T00:46:16.989Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em reports\\lgpd-compliance-1758585583553.json: 15 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T00:46:16.990Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em reports\\lgpd-compliance-1758585607525.json: 16 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T00:46:16.991Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em reports\\lgpd-compliance-1758585613588.json: 17 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T00:46:16.992Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em reports\\lgpd-compliance-1758585782954.json: 18 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T00:46:16.993Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em reports\\lgpd-compliance-1758585873885.json: 19 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T00:46:16.994Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em reports\\lgpd-compliance-1758586052127.json: 20 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T00:46:16.996Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em reports\\lgpd-compliance-1758586063466.json: 21 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T00:46:16.997Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em reports\\lgpd-compliance-1758586079162.json: 22 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T00:46:16.999Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em reports\\lgpd-compliance-1758586113380.json: 23 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T00:46:17.000Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em reports\\lgpd-compliance-1758586127126.json: 24 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T00:46:17.001Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em reports\\lgpd-compliance-1758586213481.json: 25 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T00:46:17.003Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em reports\\lgpd-compliance-1758586246497.json: 26 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T00:46:17.005Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em reports\\lgpd-compliance-1758586299403.json: 27 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T00:46:17.006Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em reports\\lgpd-compliance-1758586361562.json: 28 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T00:46:17.008Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em reports\\lgpd-compliance-1758586384980.json: 29 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T00:46:17.009Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em reports\\lgpd-compliance-1758586390582.json: 30 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T00:46:17.011Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em reports\\lgpd-compliance-1758586989882.json: 31 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T00:46:17.012Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em reports\\lgpd-compliance-1758587002955.json: 32 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T00:46:17.014Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em reports\\lgpd-compliance-1758587329397.json: 33 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T00:46:17.016Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em reports\\lgpd-compliance-1758587337540.json: 34 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T00:46:17.017Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em reports\\lgpd-compliance-1758587564469.json: 35 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T00:46:17.019Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em reports\\lgpd-compliance-1758587590794.json: 36 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T00:46:17.021Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em reports\\lgpd-compliance-1758587634454.json: 37 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T00:46:17.022Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em reports\\lgpd-compliance-1758587693681.json: 38 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T00:46:17.024Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em reports\\lgpd-compliance-1758587764992.json: 39 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T00:46:17.026Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em reports\\lgpd-compliance-1758587893883.json: 40 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T00:46:17.028Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em reports\\lgpd-compliance-1758587971175.json: 41 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T00:46:17.030Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em reports\\lgpd-compliance-1758588059694.json: 42 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T00:46:17.032Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em reports\\lgpd-compliance-1758588092335.json: 43 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T00:46:17.034Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em reports\\lgpd-compliance-1758588099803.json: 44 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T00:46:17.036Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em reports\\lgpd-compliance-1758588106275.json: 45 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T00:46:17.038Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em reports\\lgpd-compliance-1758588131232.json: 46 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T00:46:17.040Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em reports\\lgpd-compliance-1758588168514.json: 47 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T00:46:17.042Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em reports\\lgpd-compliance-1758588191169.json: 48 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T00:46:17.044Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em reports\\lgpd-compliance-1758588207820.json: 49 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T00:46:17.047Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em reports\\lgpd-compliance-1758588232015.json: 50 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T00:46:17.049Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em reports\\lgpd-compliance-1758588366556.json: 51 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T00:46:17.051Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em workflow-performance-optimizer.js: 3 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T00:46:17.067Z"
+    },
+    {
+      "code": "PATIENT_NAME_DETECTED",
+      "message": "Possível nome de paciente em workflow-worker.js: 2 ocorrência(s)",
+      "severity": "CRITICAL",
+      "timestamp": "2025-09-23T00:46:17.069Z"
+    },
+    {
+      "code": "MISSING_PRIVACY_POLICY",
+      "message": "Política de privacidade não encontrada",
+      "severity": "HIGH",
+      "timestamp": "2025-09-23T00:46:17.071Z"
+    }
+  ],
+  "warnings": [
+    {
+      "code": "PII_EMAIL_DETECTED",
+      "message": "Email encontrado em auto-documentation.js: 3 ocorrência(s) - Verificar se há consentimento",
+      "timestamp": "2025-09-23T00:46:16.940Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em auto-documentation.js - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T00:46:16.955Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em continuous-monitoring-system.js",
+      "timestamp": "2025-09-23T00:46:16.957Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em docs\\generated\\documentation-report.json - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T00:46:16.965Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em docs\\generated\\metrics\\README.md - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T00:46:16.966Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em intelligent-notification-system.js",
+      "timestamp": "2025-09-23T00:46:16.972Z"
+    },
+    {
+      "code": "FIELD_REQUIRES_CONSENT",
+      "message": "Campo 'email' em intelligent-notification-system.js pode requerer consentimento explícito",
+      "timestamp": "2025-09-23T00:46:16.972Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em lgpd-compliance-checker.js - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T00:46:16.978Z"
+    },
+    {
+      "code": "PERSONAL_DATA_API",
+      "message": "API com dados pessoais em lgpd-compliance-checker.js - Verificar proteções LGPD",
+      "timestamp": "2025-09-23T00:46:16.978Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em lgpd-robust.js",
+      "timestamp": "2025-09-23T00:46:16.978Z"
+    },
+    {
+      "code": "THIRD_PARTY_TRACKING",
+      "message": "Tracking de terceiros detectado em README.md - Verificar consentimento para cookies",
+      "timestamp": "2025-09-23T00:46:16.981Z"
+    },
+    {
+      "code": "MISSING_CONSENT_MECHANISM",
+      "message": "Possível coleta de dados sem mecanismo de consentimento em workflow-performance-optimizer.js",
+      "timestamp": "2025-09-23T00:46:17.067Z"
+    },
+    {
+      "code": "CONFIG_READ_ERROR",
+      "message": "Erro ao ler package.json: ENOENT: no such file or directory, open 'C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\.claude\\automation\\apps\\frontend-nextjs\\package.json'",
+      "timestamp": "2025-09-23T00:46:17.071Z"
+    },
+    {
+      "code": "MISSING_TERMS_OF_USE",
+      "message": "Termos de uso não encontrados",
+      "timestamp": "2025-09-23T00:46:17.072Z"
+    }
+  ],
+  "recommendations": [
+    {
+      "priority": "HIGH",
+      "action": "Criar política de privacidade",
+      "description": "Elaborar política de privacidade específica para plataforma médica educacional, incluindo tratamento de dados sobre hanseníase"
+    }
+  ],
+  "nextSteps": [
+    "1. Corrigir todas as violações críticas e de alta prioridade",
+    "2. Implementar mecanismos de consentimento explícito",
+    "3. Criar documentação de privacidade completa",
+    "4. Implementar logs de auditoria para dados médicos",
+    "5. Configurar proteções adicionais para dados de hanseníase",
+    "6. Realizar nova verificação de conformidade"
+  ]
+}

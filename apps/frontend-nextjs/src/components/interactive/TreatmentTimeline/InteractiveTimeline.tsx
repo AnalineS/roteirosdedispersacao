@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState, useCallback, useEffect } from 'react';
-import { 
-  TreatmentTimeline, 
-  TimelineMilestone, 
+import {
+  TreatmentTimeline,
+  TimelineMilestone,
   ScheduledAppointment,
   AdherenceRecord,
   TimelineConfig,
@@ -14,6 +14,33 @@ import {
   getTreatmentPhase
 } from '@/types/timeline';
 import { modernChatTheme } from '@/config/modernTheme';
+
+interface MilestonesTabProps {
+  timeline: TreatmentTimeline;
+  config: TimelineConfig;
+  onMilestoneToggle: (milestoneId: string) => void;
+  onMilestoneNote: (milestoneId: string, note: string) => void;
+  selectedMilestone: string | null;
+  onMilestoneSelect: (milestoneId: string | null) => void;
+}
+
+interface AdherenceTabProps {
+  timeline: TreatmentTimeline;
+  config: TimelineConfig;
+  onAdherenceRecord: (record: Partial<AdherenceRecord>) => void;
+}
+
+interface AppointmentsTabProps {
+  timeline: TreatmentTimeline;
+  config: TimelineConfig;
+  onAppointmentSchedule: (appointment: ScheduledAppointment) => void;
+}
+
+interface ReminderModalProps {
+  timeline: TreatmentTimeline;
+  onClose: () => void;
+  onUpdate: (timeline: TreatmentTimeline) => void;
+}
 
 interface InteractiveTimelineProps {
   timeline: TreatmentTimeline;
@@ -430,7 +457,7 @@ export default function InteractiveTimeline({
         ].map(tab => (
           <button
             key={tab.key}
-            onClick={() => setActiveTab(tab.key as any)}
+            onClick={() => setActiveTab(tab.key as 'overview' | 'milestones' | 'adherence' | 'appointments')}
             style={{
               flex: 1,
               padding: modernChatTheme.spacing.md,
@@ -483,10 +510,10 @@ export default function InteractiveTimeline({
         )}
 
         {activeTab === 'appointments' && (
-          <AppointmentsTab 
+          <AppointmentsTab
             timeline={timeline}
             config={config}
-            onAppointmentSchedule={onAppointmentSchedule}
+            onAppointmentSchedule={onAppointmentSchedule || (() => {})}
           />
         )}
       </div>
@@ -707,7 +734,7 @@ function SummaryCard({
 }
 
 // Placeholder components (to be implemented)
-function MilestonesTab({ timeline, config, onMilestoneToggle, onMilestoneNote, selectedMilestone, onMilestoneSelect }: any) {
+function MilestonesTab({ timeline, config, onMilestoneToggle, onMilestoneNote, selectedMilestone, onMilestoneSelect }: MilestonesTabProps) {
   return (
     <div style={{
       background: 'white',
@@ -724,7 +751,7 @@ function MilestonesTab({ timeline, config, onMilestoneToggle, onMilestoneNote, s
   );
 }
 
-function AdherenceTab({ timeline, config, onAdherenceRecord }: any) {
+function AdherenceTab({ timeline, config, onAdherenceRecord }: AdherenceTabProps) {
   return (
     <div style={{
       background: 'white',
@@ -741,7 +768,7 @@ function AdherenceTab({ timeline, config, onAdherenceRecord }: any) {
   );
 }
 
-function AppointmentsTab({ timeline, config, onAppointmentSchedule }: any) {
+function AppointmentsTab({ timeline, config, onAppointmentSchedule }: AppointmentsTabProps) {
   return (
     <div style={{
       background: 'white',
@@ -758,7 +785,7 @@ function AppointmentsTab({ timeline, config, onAppointmentSchedule }: any) {
   );
 }
 
-function ReminderModal({ timeline, onClose, onUpdate }: any) {
+function ReminderModal({ timeline, onClose, onUpdate }: ReminderModalProps) {
   return (
     <div style={{
       position: 'fixed',

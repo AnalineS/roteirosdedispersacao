@@ -11,16 +11,14 @@ import { useGamification } from '@/hooks/useGamification';
 import { useProgressiveDisclosure } from '@/hooks/useProgressiveDisclosure';
 import ProgressDashboard from '@/components/gamification/ProgressDashboard';
 import EducationalQuiz from '@/components/gamification/EducationalQuiz';
-import BadgeCard, { BadgeCollection } from '@/components/gamification/BadgeCard';
-import ProgressRing from '@/components/gamification/ProgressRing';
+import BadgeCard from '@/components/gamification/BadgeCard';
 import { NotificationProvider, NotificationPermissionButton } from '@/components/gamification/NotificationSystem';
 import type { 
   Achievement, 
   EducationalQuiz as QuizType,
   QuizAttempt,
-  GamificationNotification
 } from '@/types/gamification';
-import { hanseniaseQuizzes, getQuizByUserLevel } from '@/data/quiz/hanseniaseQuestions';
+import { getQuizByUserLevel } from '@/data/quiz/hanseniaseQuestions';
 
 interface TutorialStep {
   id: string;

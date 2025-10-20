@@ -1,15 +1,11 @@
 import { useState, useCallback } from 'react';
+import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 import { apiClient } from '@/services/api';
+import type { FeedbackData } from '@/types/feedback';
 
-export interface FeedbackData {
-  messageId: string;
-  personaId: string;
-  question: string;
-  response: string;
-  rating: number;
-  comments?: string;
-  timestamp: number;
-}
+// Import unified analytics types
+import '@/types/analytics';
+// WindowWithGtag imported via global types
 
 export interface FeedbackResponse {
   message: string;
@@ -103,8 +99,8 @@ export function useFeedback(options: UseFeedbackOptions = {}) {
 
           return response;
 
-        } catch (attemptError: any) {
-          lastError = attemptError;
+        } catch (attemptError: Error | unknown) {
+          lastError = attemptError instanceof Error ? attemptError : new Error(String(attemptError));
           
           if (attempt < retryAttempts) {
             // Exponential backoff
@@ -117,16 +113,26 @@ export function useFeedback(options: UseFeedbackOptions = {}) {
       // Se chegou aqui, todos os attempts falharam
       throw lastError;
 
-    } catch (submitError: any) {
-      const errorMessage = submitError?.message || 'Erro ao enviar feedback';
+    } catch (submitError: Error | unknown) {
+      const errorMessage = submitError instanceof Error ? submitError.message : 'Erro ao enviar feedback';
       setError(errorMessage);
 
       // Adicionar à queue offline se habilitado
       if (enableOfflineQueue && !navigator.onLine) {
         addToOfflineQueue(feedbackData);
-        console.log('Feedback adicionado à queue offline');
+        // Feedback adicionado à queue offline
+        if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'feedback_offline_queued', {
+            event_category: 'medical_feedback',
+            event_label: 'offline_queue_add',
+            custom_parameters: {
+              feedback_context: 'offline_storage',
+              queue_action: 'add_to_queue'
+            }
+          });
+        }
       } else {
-        onError?.(submitError);
+        onError?.(submitError instanceof Error ? submitError : new Error(String(submitError)));
       }
 
       throw submitError;
@@ -145,9 +151,22 @@ export function useFeedback(options: UseFeedbackOptions = {}) {
       // Salvar no localStorage
       if (typeof window !== 'undefined') {
         try {
-          localStorage.setItem('feedback_offline_queue', JSON.stringify(newQueue));
+          safeLocalStorage()?.setItem('feedback_offline_queue', JSON.stringify(newQueue));
         } catch (e) {
-          console.warn('Erro ao salvar queue offline no localStorage:', e);
+          // Erro ao salvar queue offline no localStorage
+          if (typeof process !== 'undefined' && process.stderr) {
+            process.stderr.write(`⚠️ AVISO - Falha ao salvar queue offline no localStorage: ${e}\n`);
+          }
+          if (typeof window !== 'undefined' && window.gtag) {
+            window.gtag('event', 'feedback_offline_save_error', {
+              event_category: 'medical_feedback_error',
+              event_label: 'localStorage_save_failed',
+              custom_parameters: {
+                error_context: 'offline_queue_storage',
+                error_type: 'localStorage_write_failure'
+              }
+            });
+          }
         }
       }
       
@@ -167,9 +186,32 @@ export function useFeedback(options: UseFeedbackOptions = {}) {
     for (const feedbackData of queue) {
       try {
         await submitFeedback(feedbackData);
-        console.log('Feedback offline enviado com sucesso:', feedbackData.messageId);
+        // Feedback offline enviado com sucesso
+        if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'feedback_offline_sent', {
+            event_category: 'medical_feedback',
+            event_label: 'offline_queue_success',
+            custom_parameters: {
+              message_id: feedbackData.messageId,
+              feedback_context: 'offline_queue_processing'
+            }
+          });
+        }
       } catch (error) {
-        console.error('Erro ao enviar feedback offline:', error);
+        // Erro ao enviar feedback offline
+        if (typeof process !== 'undefined' && process.stderr) {
+          process.stderr.write(`❌ ERRO - Falha ao enviar feedback offline: ${error}\n`);
+        }
+        if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'feedback_offline_send_error', {
+            event_category: 'medical_feedback_error',
+            event_label: 'offline_send_failed',
+            custom_parameters: {
+              error_context: 'offline_queue_processing',
+              error_message: String(error)
+            }
+          });
+        }
         // Recolocar na queue se falhar
         addToOfflineQueue(feedbackData);
       }
@@ -178,9 +220,22 @@ export function useFeedback(options: UseFeedbackOptions = {}) {
     // Limpar localStorage
     if (typeof window !== 'undefined') {
       try {
-        localStorage.removeItem('feedback_offline_queue');
+        safeLocalStorage()?.removeItem('feedback_offline_queue');
       } catch (e) {
-        console.warn('Erro ao limpar queue offline do localStorage:', e);
+        // Erro ao limpar queue offline do localStorage
+        if (typeof process !== 'undefined' && process.stderr) {
+          process.stderr.write(`⚠️ AVISO - Falha ao limpar queue offline do localStorage: ${e}\n`);
+        }
+        if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'feedback_offline_clear_error', {
+            event_category: 'medical_feedback_error',
+            event_label: 'localStorage_clear_failed',
+            custom_parameters: {
+              error_context: 'offline_queue_cleanup',
+              error_type: 'localStorage_clear_failure'
+            }
+          });
+        }
       }
     }
   }, [offlineQueue, submitFeedback, addToOfflineQueue]);
@@ -190,34 +245,80 @@ export function useFeedback(options: UseFeedbackOptions = {}) {
     if (typeof window === 'undefined') return;
 
     try {
-      const saved = localStorage.getItem('feedback_offline_queue');
+      const saved = safeLocalStorage()?.getItem('feedback_offline_queue');
       if (saved) {
         const queue: FeedbackData[] = JSON.parse(saved);
         setOfflineQueue(queue);
       }
     } catch (e) {
-      console.warn('Erro ao carregar queue offline do localStorage:', e);
+      // Erro ao carregar queue offline do localStorage
+      if (typeof process !== 'undefined' && process.stderr) {
+        process.stderr.write(`⚠️ AVISO - Falha ao carregar queue offline do localStorage: ${e}\n`);
+      }
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'feedback_offline_load_error', {
+          event_category: 'medical_feedback_error',
+          event_label: 'localStorage_load_failed',
+          custom_parameters: {
+            error_context: 'offline_queue_initialization',
+            error_type: 'localStorage_read_failure'
+          }
+        });
+      }
     }
   }, []);
 
-  // Buscar estatísticas de feedback
+  // Buscar estatísticas de feedback do backend real
   const fetchStats = useCallback(async (): Promise<FeedbackStats | null> => {
     try {
-      // Esta seria uma chamada para um endpoint de stats específico para feedback
-      // Por ora, vamos retornar dados mockados ou calcular baseado no que temos
-      
-      const mockStats: FeedbackStats = {
-        totalFeedbacks: 0,
-        averageRating: 0,
-        ratingsDistribution: {},
-        recentFeedbacks: []
-      };
+      const response = await fetch('/api/v1/feedback/stats', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
-      setStats(mockStats);
-      return mockStats;
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      // Estrutura real do backend: { general: {...}, by_persona: {...}, recent_feedbacks: [...] }
+      if (data.general) {
+        const realStats: FeedbackStats = {
+          totalFeedbacks: data.general.total_count || 0,
+          averageRating: data.general.average_rating || 0,
+          ratingsDistribution: data.general.rating_distribution || {},
+          recentFeedbacks: (data.recent_feedbacks || []).map((feedback: any) => ({
+            rating: feedback.rating,
+            timestamp: feedback.created_at,
+            personaId: feedback.persona_id || 'unknown',
+            hasComments: feedback.has_comments || false
+          }))
+        };
+
+        setStats(realStats);
+        return realStats;
+      } else {
+        throw new Error(data.error || 'Invalid response format');
+      }
 
     } catch (error) {
-      console.error('Erro ao buscar estatísticas de feedback:', error);
+      // Erro ao buscar estatísticas de feedback
+      if (typeof process !== 'undefined' && process.stderr) {
+        process.stderr.write(`❌ ERRO - Falha ao buscar estatísticas de feedback: ${error}\n`);
+      }
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'feedback_stats_fetch_error', {
+          event_category: 'medical_feedback_error',
+          event_label: 'stats_fetch_failed',
+          custom_parameters: {
+            error_context: 'feedback_statistics',
+            error_message: String(error)
+          }
+        });
+      }
       return null;
     }
   }, []);
@@ -227,10 +328,10 @@ export function useFeedback(options: UseFeedbackOptions = {}) {
     feedbackData: FeedbackData, 
     response: FeedbackResponse
   ) => {
-    if (typeof window === 'undefined' || !(window as any).gtag) return;
+    if (typeof window === 'undefined' || !window.gtag) return;
 
     try {
-      (window as any).gtag('event', 'feedback_submitted', {
+      window.gtag!('event', 'feedback_submitted', {
         event_category: 'user_feedback',
         event_label: feedbackData.personaId,
         value: feedbackData.rating,
@@ -245,7 +346,7 @@ export function useFeedback(options: UseFeedbackOptions = {}) {
 
       // Evento específico para ratings baixos (para análise)
       if (feedbackData.rating <= 2) {
-        (window as any).gtag('event', 'low_rating_feedback', {
+        window.gtag!('event', 'low_rating_feedback', {
           event_category: 'quality_monitoring',
           event_label: feedbackData.personaId,
           value: feedbackData.rating,
@@ -257,7 +358,20 @@ export function useFeedback(options: UseFeedbackOptions = {}) {
       }
 
     } catch (analyticsError) {
-      console.warn('Erro no tracking de analytics:', analyticsError);
+      // Erro no tracking de analytics
+      if (typeof process !== 'undefined' && process.stderr) {
+        process.stderr.write(`⚠️ AVISO - Falha no tracking de analytics: ${analyticsError}\n`);
+      }
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'feedback_analytics_tracking_error', {
+          event_category: 'medical_feedback_error',
+          event_label: 'analytics_tracking_failed',
+          custom_parameters: {
+            error_context: 'analytics_tracking',
+            error_type: 'gtag_tracking_failure'
+          }
+        });
+      }
     }
   }, []);
 
@@ -295,7 +409,7 @@ export function useFeedback(options: UseFeedbackOptions = {}) {
   };
 }
 
-// Hook para estatísticas globais de feedback (opcional)
+// Hook para estatísticas globais de feedback (usando backend real)
 export function useFeedbackStats() {
   const [stats, setStats] = useState<FeedbackStats | null>(null);
   const [loading, setLoading] = useState(false);
@@ -306,23 +420,54 @@ export function useFeedbackStats() {
     setError(null);
 
     try {
-      // Aqui poderia ser uma chamada específica para stats de feedback
-      // Por ora, usar o endpoint de stats geral
-      const response = await apiClient.get<any>('/api/v1/feedback/stats');
-      
-      // Extrair dados de feedback se disponível
-      const mockStats: FeedbackStats = {
-        totalFeedbacks: response.rag?.feedback_count || 0,
-        averageRating: response.rag?.average_rating || 0,
-        ratingsDistribution: response.rag?.ratings_distribution || {},
-        recentFeedbacks: response.rag?.recent_feedbacks || []
-      };
+      const response = await fetch('/api/v1/feedback/stats', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
-      setStats(mockStats);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
-    } catch (fetchError: any) {
-      setError(fetchError?.message || 'Erro ao buscar estatísticas');
-      console.error('Erro ao buscar stats de feedback:', fetchError);
+      const data = await response.json();
+
+      // Usar estrutura real do backend
+      if (data.general) {
+        const realStats: FeedbackStats = {
+          totalFeedbacks: data.general.total_count || 0,
+          averageRating: data.general.average_rating || 0,
+          ratingsDistribution: data.general.rating_distribution || {},
+          recentFeedbacks: (data.recent_feedbacks || []).map((feedback: any) => ({
+            rating: feedback.rating,
+            timestamp: feedback.created_at,
+            personaId: feedback.persona_id || 'unknown',
+            hasComments: feedback.has_comments || false
+          }))
+        };
+
+        setStats(realStats);
+      } else {
+        throw new Error(data.error || 'Invalid response format');
+      }
+
+    } catch (fetchError: Error | unknown) {
+      setError(fetchError instanceof Error ? fetchError.message : 'Erro ao buscar estatísticas');
+      // Erro ao buscar stats de feedback
+      if (typeof process !== 'undefined' && process.stderr) {
+        process.stderr.write(`❌ ERRO - Falha ao buscar stats de feedback: ${fetchError}\n`);
+      }
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'feedback_stats_error', {
+          event_category: 'medical_feedback_error',
+          event_label: 'stats_fetch_failed',
+          custom_parameters: {
+            error_context: 'feedback_stats_api',
+            error_message: String(fetchError)
+          }
+        });
+      }
     } finally {
       setLoading(false);
     }

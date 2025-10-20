@@ -2,6 +2,7 @@
 
 import EducationalLayout from '@/components/layout/EducationalLayout';
 import Link from 'next/link';
+import { IndexIndicator } from '@/components/ui/IndexIndicator';
 
 export default function VidaComDoencaModulePage() {
   const moduleContent = {
@@ -888,6 +889,12 @@ export default function VidaComDoencaModulePage() {
               alignItems: 'center',
               gap: '10px'
             }}>
+              <IndexIndicator
+                index={index + 1}
+                color="#7c3aed"
+                variant="step"
+                size="medium"
+              />
               {section.title}
             </h2>
             

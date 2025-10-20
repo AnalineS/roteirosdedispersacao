@@ -13,6 +13,13 @@ from typing import Dict, List, Any, Optional
 # Import dependências
 from core.dependencies import get_cache, get_rag, get_qa, get_config
 
+# Import UX Monitoring Manager
+try:
+    from services.monitoring.ux_monitoring_manager import get_ux_monitoring_manager, get_ux_dashboard_data
+    UX_MONITORING_AVAILABLE = True
+except ImportError:
+    UX_MONITORING_AVAILABLE = False
+
 # Configurar logger
 logger = logging.getLogger(__name__)
 
@@ -205,30 +212,34 @@ def get_system_stats():
 
 @monitoring_bp.route('/usability/monitor', methods=['GET'])
 def usability_monitoring():
-    """Endpoint para monitoramento de usabilidade"""
+    """Endpoint para monitoramento de usabilidade - INTEGRADO COM UX MONITORING"""
     try:
         request_id = f"usability_{int(datetime.now().timestamp() * 1000)}"
         logger.info(f"[{request_id}] Relatório de usabilidade solicitado")
         
-        # Obter relatório completo
-        report = usability_monitor.get_comprehensive_report()
-        
-        # Adicionar metadados
-        response = {
-            "usability_report": report,
-            "metadata": {
-                "request_id": request_id,
-                "timestamp": datetime.now().isoformat(),
-                "report_version": "1.0",
-                "data_collection_period": "last_24_hours"
-            },
-            "recommendations": [
-                "Monitor response times to keep under 500ms",
-                "Maintain user satisfaction above 80%",
-                "Keep error rate below 5%",
-                "Monitor cache hit rate for performance"
-            ]
-        }
+        # Usar UX Monitoring Manager se disponível
+        if UX_MONITORING_AVAILABLE:
+            ux_manager = get_ux_monitoring_manager()
+            if ux_manager:
+                dashboard_data = ux_manager.get_dashboard_data()
+                
+                response = {
+                    "usability_report": dashboard_data,
+                    "metadata": {
+                        "request_id": request_id,
+                        "timestamp": datetime.now().isoformat(),
+                        "source": "ux_monitoring_manager",
+                        "version": "2.0_integrated"
+                    },
+                    "report_version": "1.0",
+                    "data_collection_period": "last_24_hours",
+                    "recommendations": [
+                        "Monitor response times to keep under 500ms",
+                        "Maintain user satisfaction above 80%",
+                        "Keep error rate below 5%",
+                        "Monitor cache hit rate for performance"
+                    ]
+                }
         
         logger.info(f"[{request_id}] Relatório de usabilidade gerado")
         return jsonify(response), 200

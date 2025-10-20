@@ -1,11 +1,12 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 import { useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
 import { getPersonaAvatar } from '@/constants/avatars';
 import { useChat } from '@/hooks/useChat';
-import { useAuth } from '@/hooks/useAuth';
+import { useSafeAuth } from '@/hooks/useSafeAuth';
 import { useFloatingElement } from '@/components/navigation/FloatingElementsCoordinator';
 import { useFABVisibility } from '@/hooks/useResponsiveScreen';
 
@@ -41,7 +42,7 @@ export default function GlobalPersonaFAB({ className, style }: GlobalPersonaFABP
   
   // Hooks para chat e autenticação
   const { messages, sendMessage, loading, sessionId, getSessionInfo } = useChat();
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user } = useSafeAuth();
   
   // Informações da sessão para debugging/UX
   const sessionInfo = getSessionInfo();
@@ -50,7 +51,7 @@ export default function GlobalPersonaFAB({ className, style }: GlobalPersonaFABP
   const getBestPersonaForUser = () => {
     try {
       // Check for saved wizard data
-      const wizardData = localStorage.getItem('welcome_wizard_seen');
+      const wizardData = safeLocalStorage()?.getItem('welcome_wizard_seen');
       if (wizardData) {
         const data = JSON.parse(wizardData);
         if (data.selectedRole) {
@@ -64,7 +65,7 @@ export default function GlobalPersonaFAB({ className, style }: GlobalPersonaFABP
       }
 
       // Check for user profile data
-      const userProfile = localStorage.getItem('user_profile');
+      const userProfile = safeLocalStorage()?.getItem('user_profile');
       if (userProfile) {
         const profile = JSON.parse(userProfile);
         if (profile.type === 'patient' || profile.role === 'patient') {
@@ -107,7 +108,18 @@ export default function GlobalPersonaFAB({ className, style }: GlobalPersonaFABP
       await sendMessage(miniChatInput, bestPersona);
       setMiniChatInput('');
     } catch (error) {
-      console.error('Erro ao enviar mensagem:', error);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'global_persona_fab_send_error', {
+          event_category: 'medical_chat_interaction',
+          event_label: 'fab_message_send_failed',
+          custom_parameters: {
+            medical_context: 'global_persona_fab',
+            session_id: sessionId,
+            error_type: 'message_send_failure',
+            error_message: error instanceof Error ? error.message : String(error)
+          }
+        });
+      }
     }
   };
 

@@ -17,7 +17,7 @@ describe('Integration Tests', () => {
       timeout: 10000,
       retries: 3
     };
-    
+
     expect(integrationConfig.timeout).toBe(10000);
     expect(integrationConfig.retries).toBe(3);
   });
@@ -29,7 +29,7 @@ describe('Integration Tests', () => {
       oauthEnabled: true,
       levels: ['visitor', 'registered', 'admin']
     };
-    
+
     expect(authConfig.provider).toBe('firebase');
     expect(authConfig.levels).toHaveLength(3);
   });
@@ -41,7 +41,7 @@ describe('Integration Tests', () => {
       serviceWorkerExists: true,
       iconsGenerated: true
     };
-    
+
     expect(pwaConfig.manifestExists).toBe(true);
     expect(pwaConfig.serviceWorkerExists).toBe(true);
     expect(pwaConfig.iconsGenerated).toBe(true);

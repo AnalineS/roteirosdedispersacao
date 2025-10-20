@@ -1,0 +1,7 @@
+@echo off
+REM Script para executar reindexação com credenciais corretas do Supabase
+
+set SUPABASE_URL=https://skmyflckurikjprdleuz.supabase.co
+set SUPABASE_SERVICE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNrbXlmbGNrdXJpa2pwcmRsZXV6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NjU1Mjc3OCwiZXhwIjoyMDcyMTI4Nzc4fQ.RqGfQ2UIP0rmC6rK_C57CMyLBfMt9_EGOqp9cXJtb4k
+
+python reindex_supabase_e5.py

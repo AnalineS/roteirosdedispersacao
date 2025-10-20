@@ -1,0 +1,698 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\playwright.config.ts",
+    "rootDir": "C:/Users/Ana/Meu Drive/Site roteiro de dispensação/tests",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 13
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "html",
+        {
+          "outputFolder": "playwright-report"
+        }
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results.json"
+        }
+      ],
+      [
+        "list",
+        null
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "C:/Users/Ana/Meu Drive/Site roteiro de dispensação/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 13
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/Ana/Meu Drive/Site roteiro de dispensação/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.spec.ts",
+          "**/*.spec.js"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/Users/Ana/Meu Drive/Site roteiro de dispensação/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 13
+        },
+        "id": "firefox",
+        "name": "firefox",
+        "testDir": "C:/Users/Ana/Meu Drive/Site roteiro de dispensação/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.spec.ts",
+          "**/*.spec.js"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/Users/Ana/Meu Drive/Site roteiro de dispensação/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 13
+        },
+        "id": "mobile-chrome",
+        "name": "mobile-chrome",
+        "testDir": "C:/Users/Ana/Meu Drive/Site roteiro de dispensação/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.spec.ts",
+          "**/*.spec.js"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/Users/Ana/Meu Drive/Site roteiro de dispensação/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 13
+        },
+        "id": "mobile-safari",
+        "name": "mobile-safari",
+        "testDir": "C:/Users/Ana/Meu Drive/Site roteiro de dispensação/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.spec.ts",
+          "**/*.spec.js"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/Users/Ana/Meu Drive/Site roteiro de dispensação/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 13
+        },
+        "id": "accessibility",
+        "name": "accessibility",
+        "testDir": "C:/Users/Ana/Meu Drive/Site roteiro de dispensação/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.spec.ts",
+          "**/*.spec.js"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.55.1",
+    "workers": 16,
+    "webServer": {
+      "command": "npm run dev",
+      "port": 3000,
+      "reuseExistingServer": true,
+      "cwd": "./apps/frontend-nextjs",
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "e2e\\pr-264-navigation-simplified.spec.ts",
+      "file": "e2e/pr-264-navigation-simplified.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "PR #264 - NavigationHeaderSimplified",
+          "file": "e2e/pr-264-navigation-simplified.spec.ts",
+          "line": 20,
+          "column": 6,
+          "specs": [
+            {
+              "title": "AC1: Navegação exibe exatamente 5 itens principais no desktop",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7196,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-19T20:03:36.436Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "730e646997e25e661c43-061b44fe6e5a1e6d6dfb",
+              "file": "e2e/pr-264-navigation-simplified.spec.ts",
+              "line": 32,
+              "column": 7
+            },
+            {
+              "title": "AC2: Botões CTAs têm hierarquia visual clara",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 7208,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-19T20:03:36.442Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "730e646997e25e661c43-d24d4d15381cef04452b",
+              "file": "e2e/pr-264-navigation-simplified.spec.ts",
+              "line": 55,
+              "column": 7
+            },
+            {
+              "title": "AC3: Dropdown Educacional abre e fecha corretamente",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 6870,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-19T20:03:36.496Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "730e646997e25e661c43-de2bdd6fdedcdd75b79c",
+              "file": "e2e/pr-264-navigation-simplified.spec.ts",
+              "line": 84,
+              "column": 7
+            },
+            {
+              "title": "AC4: Navegação para /chat ao clicar no link Chat",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
+                      "status": "timedOut",
+                      "duration": 30126,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                      },
+                      "errors": [
+                        {
+                          "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                        },
+                        {
+                          "location": {
+                            "file": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\tests\\e2e\\pr-264-navigation-simplified.spec.ts",
+                            "column": 16,
+                            "line": 125
+                          },
+                          "message": "Error: page.waitForURL: Test timeout of 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"**/chat**\" until \"load\"\n  navigated to \"http://localhost:3000/?persona=ga\"\n============================================================\n\n  123 |\n  124 |     // Aguardar navegação completar com timeout maior\n> 125 |     await page.waitForURL('**/chat**', { timeout: 30000 });\n      |                ^\n  126 |\n  127 |     // Verificar URL atual\n  128 |     expect(page.url()).toContain('/chat');\n    at C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\tests\\e2e\\pr-264-navigation-simplified.spec.ts:125:16"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-19T20:03:36.488Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\test-results\\e2e-pr-264-navigation-simp-2351b-chat-ao-clicar-no-link-Chat-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\test-results\\e2e-pr-264-navigation-simp-2351b-chat-ao-clicar-no-link-Chat-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\test-results\\e2e-pr-264-navigation-simp-2351b-chat-ao-clicar-no-link-Chat-chromium\\error-context.md"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "730e646997e25e661c43-e2f04a988fcd9e5e86d5",
+              "file": "e2e/pr-264-navigation-simplified.spec.ts",
+              "line": 114,
+              "column": 7
+            },
+            {
+              "title": "AC5: Touch targets têm mínimo 44x44px (WCAG AA)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
+                      "status": "passed",
+                      "duration": 6724,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-19T20:03:36.521Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "730e646997e25e661c43-c024e6784059197ef050",
+              "file": "e2e/pr-264-navigation-simplified.spec.ts",
+              "line": 131,
+              "column": 7
+            },
+            {
+              "title": "AC6: Indicador offline não aparece quando online",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
+                      "status": "passed",
+                      "duration": 6806,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-19T20:03:36.522Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "730e646997e25e661c43-d7b0e4f72ea2cf7e4b09",
+              "file": "e2e/pr-264-navigation-simplified.spec.ts",
+              "line": 154,
+              "column": 7
+            },
+            {
+              "title": "AC7: Indicador offline aparece quando offline",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 6,
+                      "status": "passed",
+                      "duration": 6861,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-19T20:03:36.496Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "730e646997e25e661c43-0acd567e9c86a9076141",
+              "file": "e2e/pr-264-navigation-simplified.spec.ts",
+              "line": 163,
+              "column": 7
+            },
+            {
+              "title": "AC8: Navegação responsiva - Mobile mostra menu hambúrguer",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 7,
+                      "status": "passed",
+                      "duration": 5660,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-19T20:03:36.580Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "730e646997e25e661c43-482ca6d2c2819c748c24",
+              "file": "e2e/pr-264-navigation-simplified.spec.ts",
+              "line": 184,
+              "column": 7
+            },
+            {
+              "title": "AC9: Acessibilidade - Navegação por teclado funciona",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 8,
+                      "status": "passed",
+                      "duration": 5782,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-19T20:03:36.541Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "730e646997e25e661c43-f54c9e5508834c48da5f",
+              "file": "e2e/pr-264-navigation-simplified.spec.ts",
+              "line": 212,
+              "column": 7
+            },
+            {
+              "title": "AC10: Dropdown fecha ao clicar fora (overlay)",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 9,
+                      "status": "failed",
+                      "duration": 8928,
+                      "error": {
+                        "message": "TimeoutError: page.waitForSelector: Timeout 3000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[role=\"menu\"]') to be hidden\u001b[22m\n\u001b[2m    11 × locator resolved to visible <div role=\"menu\" class=\"jsx-7fd04687007ece3d absolute top-full left-1/2 -translate-x-1/2 mt-2 rounded-xl shadow-2xl min-w-[300px] max-w-[340px] z-[1001] animate-fadeIn overflow-hidden\">…</div>\u001b[22m\n",
+                        "stack": "TimeoutError: page.waitForSelector: Timeout 3000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[role=\"menu\"]') to be hidden\u001b[22m\n\u001b[2m    11 × locator resolved to visible <div role=\"menu\" class=\"jsx-7fd04687007ece3d absolute top-full left-1/2 -translate-x-1/2 mt-2 rounded-xl shadow-2xl min-w-[300px] max-w-[340px] z-[1001] animate-fadeIn overflow-hidden\">…</div>\u001b[22m\n\n    at C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\tests\\e2e\\pr-264-navigation-simplified.spec.ts:251:16",
+                        "location": {
+                          "file": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\tests\\e2e\\pr-264-navigation-simplified.spec.ts",
+                          "column": 16,
+                          "line": 251
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 249 |\u001b[39m\n \u001b[90m 250 |\u001b[39m     \u001b[90m// Aguardar menu fechar\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 251 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForSelector(\u001b[32m'[role=\"menu\"]'\u001b[39m\u001b[33m,\u001b[39m {\n \u001b[90m     |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 252 |\u001b[39m       state\u001b[33m:\u001b[39m \u001b[32m'hidden'\u001b[39m\u001b[33m,\u001b[39m\n \u001b[90m 253 |\u001b[39m       timeout\u001b[33m:\u001b[39m \u001b[35m3000\u001b[39m\n \u001b[90m 254 |\u001b[39m     })\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\tests\\e2e\\pr-264-navigation-simplified.spec.ts",
+                            "column": 16,
+                            "line": 251
+                          },
+                          "message": "TimeoutError: page.waitForSelector: Timeout 3000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[role=\"menu\"]') to be hidden\u001b[22m\n\u001b[2m    11 × locator resolved to visible <div role=\"menu\" class=\"jsx-7fd04687007ece3d absolute top-full left-1/2 -translate-x-1/2 mt-2 rounded-xl shadow-2xl min-w-[300px] max-w-[340px] z-[1001] animate-fadeIn overflow-hidden\">…</div>\u001b[22m\n\n\n  249 |\n  250 |     // Aguardar menu fechar\n> 251 |     await page.waitForSelector('[role=\"menu\"]', {\n      |                ^\n  252 |       state: 'hidden',\n  253 |       timeout: 3000\n  254 |     });\n    at C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\tests\\e2e\\pr-264-navigation-simplified.spec.ts:251:16"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-19T20:03:36.571Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\test-results\\e2e-pr-264-navigation-simp-11fb7-cha-ao-clicar-fora-overlay--chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\test-results\\e2e-pr-264-navigation-simp-11fb7-cha-ao-clicar-fora-overlay--chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\test-results\\e2e-pr-264-navigation-simp-11fb7-cha-ao-clicar-fora-overlay--chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\Ana\\Meu Drive\\Site roteiro de dispensação\\tests\\e2e\\pr-264-navigation-simplified.spec.ts",
+                        "column": 16,
+                        "line": 251
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "730e646997e25e661c43-2b94b2eb7bcac1bfa77d",
+              "file": "e2e/pr-264-navigation-simplified.spec.ts",
+              "line": 236,
+              "column": 7
+            },
+            {
+              "title": "AC11: Navegação preserva persona atual (se existir)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 10,
+                      "parallelIndex": 10,
+                      "status": "passed",
+                      "duration": 7739,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-19T20:03:36.579Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "730e646997e25e661c43-4da014ce59810a564676",
+              "file": "e2e/pr-264-navigation-simplified.spec.ts",
+              "line": 257,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "PR #264 - Design Tokens Validation",
+          "file": "e2e/pr-264-navigation-simplified.spec.ts",
+          "line": 275,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Design tokens aplicados corretamente",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 11,
+                      "status": "passed",
+                      "duration": 6416,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-19T20:03:36.590Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "730e646997e25e661c43-40bb178541fe503982c7",
+              "file": "e2e/pr-264-navigation-simplified.spec.ts",
+              "line": 276,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "PR #264 - Performance",
+          "file": "e2e/pr-264-navigation-simplified.spec.ts",
+          "line": 296,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Navegação carrega em tempo razoável (dev: <10s, prod: <3s)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 12,
+                      "parallelIndex": 12,
+                      "status": "passed",
+                      "duration": 5584,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-19T20:03:36.619Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "730e646997e25e661c43-a311052c94f05a94658d",
+              "file": "e2e/pr-264-navigation-simplified.spec.ts",
+              "line": 297,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2025-10-19T20:03:35.519Z",
+    "duration": 31837.724,
+    "expected": 11,
+    "skipped": 0,
+    "unexpected": 2,
+    "flaky": 0
+  }
+}

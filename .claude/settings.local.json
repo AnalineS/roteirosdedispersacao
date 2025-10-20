@@ -1,5 +1,60 @@
 {
   "permissions": {
+    "allow": [
+      "Bash(npx tsc:*)",
+      "Bash(npm run type-check:*)",
+      "Bash(find:*)",
+      "Bash(python index_knowledge_base.py --force)"
+    ],
     "defaultMode": "acceptEdits"
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/medical-quality-blocker.js",
+            "timeout": 45000
+          },
+          {
+            "type": "command",
+            "command": "node claude-quality-hooks/.claude/hooks/react-app/quality-check.js",
+            "timeout": 60000
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/medical-quality-blocker.js",
+            "timeout": 45000
+          },
+          {
+            "type": "command",
+            "command": "node claude-quality-hooks/.claude/hooks/node-typescript/quality-check.js",
+            "timeout": 60000
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/medical-quality-blocker.js",
+            "timeout": 30000
+          },
+          {
+            "type": "command",
+            "command": "node claude-quality-hooks/.claude/hooks/vscode-extension/quality-check.js",
+            "timeout": 45000
+          }
+        ]
+      }
+    ]
   }
 }

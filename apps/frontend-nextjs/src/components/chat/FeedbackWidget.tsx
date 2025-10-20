@@ -1,9 +1,12 @@
 'use client';
 
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
+import { useOptimizedEffect, useSmartInterval } from '@/hooks/useEffectOptimizer';
 import { modernChatTheme } from '@/config/modernTheme';
 import { validateFeedbackData, feedbackRateLimiter, generateSessionId } from '@/utils/securityUtils';
+import { useGoogleAnalyticsUX } from '@/components/analytics/GoogleAnalyticsSetup';
 import { useGoogleAnalytics } from '@/components/GoogleAnalytics';
+import type { FeedbackData, FeedbackValidation } from '@/types/feedback';
 
 interface FeedbackWidgetProps {
   messageId: string;
@@ -14,20 +17,6 @@ interface FeedbackWidgetProps {
   isVisible?: boolean;
 }
 
-interface FeedbackData {
-  messageId: string;
-  personaId: string;
-  question: string;
-  response: string;
-  rating: number;
-  comments?: string;
-  timestamp: number;
-  metadata?: {
-    hasSensitiveData: boolean;
-    sanitizationApplied: boolean;
-    clientTimestamp: number;
-  };
-}
 
 interface PersonaData {
   id: string;
@@ -103,11 +92,12 @@ export default function FeedbackWidget({
   const [validationWarnings, setValidationWarnings] = useState<string[]>([]);
   const [personaData, setPersonaData] = useState<PersonaData | null>(null);
   
-  const { trackFeedback, trackUserInteraction, trackError } = useGoogleAnalytics();
+  const { trackCognitiveLoad, trackMobileIssue, trackOnboardingEvent, trackCustomUXEvent } = useGoogleAnalyticsUX();
+  const { trackError, trackUserInteraction, trackFeedback } = useGoogleAnalytics();
   const sessionId = useMemo(() => generateSessionId(), []);
 
-  // Load persona data on component mount
-  useEffect(() => {
+  // Load persona data on component mount - otimizado
+  useOptimizedEffect(() => {
     const loadPersonaData = async () => {
       try {
         const response = await fetch('/api/personas');
@@ -116,7 +106,19 @@ export default function FeedbackWidget({
         setPersonaData(persona || null);
         setFeedbackState('idle');
       } catch (error) {
-        console.error('Error loading persona data:', error);
+        if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'feedback_widget_persona_load_error', {
+            event_category: 'medical_chat_feedback',
+            event_label: 'persona_data_load_failed',
+            custom_parameters: {
+              medical_context: 'feedback_widget_initialization',
+              persona_id: personaId,
+              message_id: messageId,
+              error_type: 'persona_load',
+              error_message: error instanceof Error ? error.message : String(error)
+            }
+          });
+        }
         setFeedbackState('idle'); // Fallback to idle even if persona load fails
       }
     };
@@ -157,12 +159,25 @@ export default function FeedbackWidget({
     
     // Validar e sanitizar dados
     const validation = validateFeedbackData(feedbackData);
-    
+
     if (!validation.isValid) {
-      console.error('Dados de feedback inválidos:', validation.errors);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'feedback_widget_validation_error_quick', {
+          event_category: 'medical_chat_feedback',
+          event_label: 'quick_feedback_validation_failed',
+          custom_parameters: {
+            medical_context: 'feedback_validation_system',
+            persona_id: personaId,
+            message_id: messageId,
+            rating: rating,
+            error_type: 'validation',
+            validation_errors: validation.errors.join(', ')
+          }
+        });
+      }
       trackError('validation_error', validation.errors.join(', '), 'FeedbackWidget');
       setFeedbackState('error');
-      
+
       setTimeout(() => {
         setFeedbackState('idle');
         setSelectedRating(null);
@@ -177,8 +192,8 @@ export default function FeedbackWidget({
     try {
       trackUserInteraction('quick_feedback', messageId, personaId, {
         feedback_type: rating >= 4 ? 'positive' : 'negative',
-        persona_name: personaData?.name,
-        sanitization_applied: validation.sanitizedData.metadata?.sanitizationApplied
+        persona_name: personaData?.name || 'unknown',
+        sanitization_applied: validation.sanitizedData.metadata?.sanitizationApplied || false
       });
       
       // Simular API call (integração real com backend pendente)
@@ -186,7 +201,7 @@ export default function FeedbackWidget({
       
       onFeedbackSubmit?.(validation.sanitizedData);
       trackFeedback('quick', validation.sanitizedData.rating, personaId, false, {
-        persona_name: personaData?.name
+        persona_name: personaData?.name || 'unknown'
       });
       
       setFeedbackState('submitted');
@@ -197,10 +212,24 @@ export default function FeedbackWidget({
       }, 3000);
 
     } catch (error) {
-      console.error('Erro ao enviar feedback:', error);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'feedback_widget_submit_error_quick', {
+          event_category: 'medical_chat_feedback',
+          event_label: 'quick_feedback_submit_failed',
+          custom_parameters: {
+            medical_context: 'feedback_submission_system',
+            persona_id: personaId,
+            persona_name: personaData?.name || 'unknown',
+            message_id: messageId,
+            rating: rating,
+            error_type: 'submission',
+            error_message: error instanceof Error ? error.message : String(error)
+          }
+        });
+      }
       trackError('submit_error', String(error), 'FeedbackWidget');
       setFeedbackState('error');
-      
+
       setTimeout(() => {
         setFeedbackState('idle');
         setSelectedRating(null);
@@ -238,9 +267,23 @@ export default function FeedbackWidget({
     
     // Validar e sanitizar dados
     const validation = validateFeedbackData(feedbackData);
-    
+
     if (!validation.isValid) {
-      console.error('Dados de feedback inválidos:', validation.errors);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'feedback_widget_validation_error_detailed', {
+          event_category: 'medical_chat_feedback',
+          event_label: 'detailed_feedback_validation_failed',
+          custom_parameters: {
+            medical_context: 'feedback_validation_system',
+            persona_id: personaId,
+            message_id: messageId,
+            rating: selectedRating,
+            has_comments: !!comments.trim(),
+            error_type: 'validation',
+            validation_errors: validation.errors.join(', ')
+          }
+        });
+      }
       trackError('validation_error', validation.errors.join(', '), 'FeedbackWidget');
       setFeedbackState('error');
       return;
@@ -254,8 +297,8 @@ export default function FeedbackWidget({
       trackUserInteraction('detailed_feedback', messageId, personaId, {
         rating: validation.sanitizedData.rating,
         has_comments: !!validation.sanitizedData.comments,
-        persona_name: personaData?.name,
-        sanitization_applied: validation.sanitizedData.metadata?.sanitizationApplied
+        persona_name: personaData?.name || 'unknown',
+        sanitization_applied: validation.sanitizedData.metadata?.sanitizationApplied || false
       });
       
       // Simular API call (integração real com backend pendente)
@@ -263,7 +306,7 @@ export default function FeedbackWidget({
       
       onFeedbackSubmit?.(validation.sanitizedData);
       trackFeedback('detailed', validation.sanitizedData.rating, personaId, !!validation.sanitizedData.comments, {
-        persona_name: personaData?.name
+        persona_name: personaData?.name || 'unknown'
       });
       
       setFeedbackState('submitted');
@@ -274,7 +317,22 @@ export default function FeedbackWidget({
       }, 4000);
 
     } catch (error) {
-      console.error('Erro ao enviar feedback detalhado:', error);
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'feedback_widget_submit_error_detailed', {
+          event_category: 'medical_chat_feedback',
+          event_label: 'detailed_feedback_submit_failed',
+          custom_parameters: {
+            medical_context: 'feedback_submission_system',
+            persona_id: personaId,
+            persona_name: personaData?.name || 'unknown',
+            message_id: messageId,
+            rating: selectedRating,
+            has_comments: !!comments.trim(),
+            error_type: 'submission',
+            error_message: error instanceof Error ? error.message : String(error)
+          }
+        });
+      }
       trackError('submit_error', String(error), 'FeedbackWidget');
       setFeedbackState('error');
     }

@@ -9,6 +9,9 @@
  * - Informações de aprendizagem
  */
 
+import { secureLogger } from '@/utils/secureLogger';
+import { safeLocalStorage } from '@/hooks/useClientStorage';
+
 // ================== TIPOS LGPD ==================
 
 export interface DataSubject {
@@ -96,9 +99,24 @@ export type PrivacyRequestType =
   | 'rectification'              // Art. 16 - Direito de retificação
   | 'erasure'                    // Art. 17 - Direito ao esquecimento
   | 'portability'                // Art. 20 - Direito à portabilidade
-  | 'restrict_processing'         // Art. 18 - Direito à limitação
+  | 'restrict_processing'        // Art. 18 - Direito à limitação
   | 'object_processing'          // Art. 21 - Direito de oposição
   | 'withdraw_consent';          // Retirada de consentimento
+
+export interface ProcessingActivity {
+  purpose: ProcessingPurpose;
+  collectedAt: string;
+  retentionUntil: string;
+  legalBasis: LegalBasis;
+  categories: DataCategory[];
+}
+
+export interface UserDataAccess {
+  personalData: Record<string, string | number | boolean | null>;
+  processingActivities: ProcessingActivity[];
+  retentionPolicies: DataRetentionPolicy[];
+  legalBasis: DataProcessingPurpose[];
+}
 
 // ================== CONFIGURAÇÃO DE COMPLIANCE ==================
 
@@ -228,10 +246,16 @@ class ConsentManager {
 
     // Store consent record (localStorage for demo)
     const consentKey = `consent_${subjectId}`;
-    localStorage.setItem(consentKey, JSON.stringify(consent));
+    safeLocalStorage()?.setItem(consentKey, JSON.stringify(consent));
 
     // Log consent for audit
-    console.log(`LGPD: Consentimento registrado para ${subjectId}`, consent);
+    secureLogger.lgpd('Consentimento registrado', subjectId, { 
+      educational: consent.educational,
+      analytics: consent.analytics,
+      certificates: consent.certificates,
+      communications: consent.communications,
+      research: consent.research
+    });
   }
 
   /**
@@ -263,7 +287,7 @@ class ConsentManager {
    */
   private getConsent(subjectId: string): ConsentStatus | null {
     const consentKey = `consent_${subjectId}`;
-    const stored = localStorage.getItem(consentKey);
+    const stored = safeLocalStorage()?.getItem(consentKey);
     return stored ? JSON.parse(stored) : null;
   }
 
@@ -283,9 +307,9 @@ class ConsentManager {
 
     updated.consentDate = new Date();
     const consentKey = `consent_${subjectId}`;
-    localStorage.setItem(consentKey, JSON.stringify(updated));
+    safeLocalStorage()?.setItem(consentKey, JSON.stringify(updated));
 
-    console.log(`LGPD: Consentimento retirado para ${subjectId}`, categories);
+    secureLogger.lgpd('Consentimento retirado', subjectId, { categories });
   }
 }
 
@@ -298,13 +322,13 @@ class DataManager {
   async collectData(
     subjectId: string,
     purpose: ProcessingPurpose,
-    data: any,
+    data: Record<string, unknown>,
     categories: DataCategory[]
   ): Promise<boolean> {
     // Verificar se há base legal para o processamento
     const hasLegalBasis = this.hasLegalBasisForProcessing(subjectId, purpose);
     if (!hasLegalBasis) {
-      console.warn(`LGPD: Sem base legal para coleta de dados - ${purpose}`);
+      secureLogger.warn('LGPD: Sem base legal para coleta de dados', { purpose });
       return false;
     }
 
@@ -326,7 +350,7 @@ class DataManager {
     };
 
     const dataKey = `data_${subjectId}_${purpose}_${Date.now()}`;
-    localStorage.setItem(dataKey, JSON.stringify(dataRecord));
+    safeLocalStorage()?.setItem(dataKey, JSON.stringify(dataRecord));
 
     return true;
   }
@@ -353,11 +377,11 @@ class DataManager {
   /**
    * Minimização de dados - coletar apenas o necessário
    */
-  private minimizeData(data: any, purpose: ProcessingPurpose): any {
+  private minimizeData(data: Record<string, unknown>, purpose: ProcessingPurpose): Record<string, unknown> {
     const purposeConfig = LGPD_CONFIG.processingPurposes.find(p => p.purpose === purpose);
     if (!purposeConfig) return data;
 
-    const minimized: any = {};
+    const minimized: Record<string, unknown> = {};
 
     // Incluir apenas os dados necessários para a finalidade
     if (purposeConfig.dataCategories.includes('personal_identification')) {
@@ -382,7 +406,7 @@ class DataManager {
   /**
    * Pseudonimização quando apropriada
    */
-  private pseudonymizeIfNeeded(data: any, purpose: ProcessingPurpose): any {
+  private pseudonymizeIfNeeded(data: Record<string, unknown>, purpose: ProcessingPurpose): Record<string, unknown> {
     const nonEssentialPurposes = ['quality_improvement', 'research_academic'];
     
     if (!nonEssentialPurposes.includes(purpose)) {
@@ -391,11 +415,11 @@ class DataManager {
 
     const pseudonymized = { ...data };
     
-    if (pseudonymized.name) {
+    if (pseudonymized.name && typeof pseudonymized.name === 'string') {
       pseudonymized.name = this.createPseudonym(pseudonymized.name);
     }
     
-    if (pseudonymized.email) {
+    if (pseudonymized.email && typeof pseudonymized.email === 'string') {
       pseudonymized.email = this.createPseudonym(pseudonymized.email);
     }
 
@@ -435,9 +459,9 @@ class PrivacyRequestProcessor {
   /**
    * Processar solicitação de acesso aos dados
    */
-  async processAccessRequest(subjectId: string): Promise<any> {
+  async processAccessRequest(subjectId: string): Promise<UserDataAccess> {
     const dataKeys = this.getDataKeysForSubject(subjectId);
-    const userData: any = {
+    const userData: UserDataAccess = {
       personalData: {},
       processingActivities: [],
       retentionPolicies: LGPD_CONFIG.retentionPolicies,
@@ -445,7 +469,7 @@ class PrivacyRequestProcessor {
     };
 
     for (const key of dataKeys) {
-      const stored = localStorage.getItem(key);
+      const stored = safeLocalStorage()?.getItem(key);
       if (stored) {
         const record = JSON.parse(stored);
         userData.processingActivities.push({
@@ -458,7 +482,8 @@ class PrivacyRequestProcessor {
         
         // Merge data (sem exposição de dados pseudonimizados)
         if (record.data && typeof record.data === 'object') {
-          Object.assign(userData.personalData, record.data);
+          const recordData = record.data as Record<string, string | number | boolean | null>;
+          Object.assign(userData.personalData, recordData);
         }
       }
     }
@@ -495,27 +520,27 @@ class PrivacyRequestProcessor {
     const dataKeys = this.getDataKeysForSubject(subjectId);
     
     for (const key of dataKeys) {
-      const stored = localStorage.getItem(key);
+      const stored = safeLocalStorage()?.getItem(key);
       if (stored) {
         const record = JSON.parse(stored);
         
         // Verificar se pode ser deletado (algumas retenções são legalmente obrigatórias)
         if (this.canBeDeleted(record)) {
-          localStorage.removeItem(key);
-          console.log(`LGPD: Dados deletados - ${key}`);
+          safeLocalStorage()?.removeItem(key);
+          secureLogger.lgpd('Dados deletados', 'system-cleanup', { key });
         } else {
           // Anonimizar se não pode deletar
           record.data = this.anonymizeRecord(record.data);
           record.anonymizedAt = new Date();
           record.anonymizationReason = reason;
-          localStorage.setItem(key, JSON.stringify(record));
-          console.log(`LGPD: Dados anonimizados - ${key}`);
+          safeLocalStorage()?.setItem(key, JSON.stringify(record));
+          secureLogger.lgpd('Dados anonimizados', 'system-cleanup', { key });
         }
       }
     }
 
     // Remover consentimentos
-    localStorage.removeItem(`consent_${subjectId}`);
+    safeLocalStorage()?.removeItem(`consent_${subjectId}`);
 
     return true;
   }
@@ -533,7 +558,7 @@ class PrivacyRequestProcessor {
     return keys;
   }
 
-  private canBeDeleted(record: any): boolean {
+  private canBeDeleted(record: Record<string, unknown>): boolean {
     // Certificados profissionais não podem ser deletados (obrigação legal)
     if (record.purpose === 'certification_issuance') return false;
     
@@ -543,7 +568,7 @@ class PrivacyRequestProcessor {
     return true;
   }
 
-  private anonymizeRecord(data: any): any {
+  private anonymizeRecord(data: Record<string, unknown>): Record<string, unknown> {
     const anonymized = { ...data };
     
     // Remover/substituir identificadores diretos
@@ -561,7 +586,7 @@ class ComplianceAuditor {
   /**
    * Gerar relatório de compliance LGPD
    */
-  generateComplianceReport(): any {
+  generateComplianceReport(): Record<string, unknown> {
     return {
       timestamp: new Date().toISOString(),
       controller: LGPD_CONFIG.dataController,
@@ -636,7 +661,7 @@ class ComplianceAuditor {
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
       if (key && key.startsWith('consent_')) {
-        const consent = JSON.parse(localStorage.getItem(key) || '{}');
+        const consent = JSON.parse(safeLocalStorage()?.getItem(key) || '{}');
         for (const [type, value] of Object.entries(consent)) {
           if (typeof value === 'boolean' && value && counts.hasOwnProperty(type)) {
             counts[type as keyof typeof counts]++;

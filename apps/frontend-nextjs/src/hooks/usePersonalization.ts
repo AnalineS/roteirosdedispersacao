@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 import { 
   UserPersonalization, 
   PersonalizationContext,
@@ -74,8 +75,8 @@ export function usePersonalization() {
   useEffect(() => {
     const loadPersonalization = () => {
       try {
-        const stored = localStorage.getItem(STORAGE_KEY);
-        const storedContext = localStorage.getItem(CONTEXT_KEY);
+        const stored = safeLocalStorage()?.getItem(STORAGE_KEY);
+        const storedContext = safeLocalStorage()?.getItem(CONTEXT_KEY);
         
         if (stored) {
           const parsed = JSON.parse(stored);
@@ -107,7 +108,7 @@ export function usePersonalization() {
         }));
         
       } catch (error) {
-        console.error('Erro ao carregar personalização:', error);
+        // Erro silencioso para não quebrar o carregamento
       } finally {
         setIsLoading(false);
       }
@@ -119,20 +120,20 @@ export function usePersonalization() {
   // Salvar personalização no storage
   const savePersonalization = useCallback((newPersonalization: UserPersonalization) => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(newPersonalization));
-      localStorage.setItem(CONTEXT_KEY, JSON.stringify(context));
+      safeLocalStorage()?.setItem(STORAGE_KEY, JSON.stringify(newPersonalization));
+      safeLocalStorage()?.setItem(CONTEXT_KEY, JSON.stringify(context));
       
       // Analytics tracking
       medicalAnalytics.trackEvent({
         event: 'personalization_updated',
         event_category: 'user_preferences',
         custom_dimensions: {
-          user_role: newPersonalization.medicalRole as any,
+          user_role: newPersonalization.medicalRole === 'researcher' ? 'unknown' : newPersonalization.medicalRole,
           clinical_context: newPersonalization.fastAccessPriority === 'emergency' ? 'emergency' : 'routine'
         }
       });
     } catch (error) {
-      console.error('Erro ao salvar personalização:', error);
+      // Erro silencioso para não quebrar o salvamento
     }
   }, [context]);
 
@@ -160,14 +161,14 @@ export function usePersonalization() {
         event_category: 'personalization',
         event_label: role,
         custom_dimensions: {
-          user_role: role as any
+          user_role: role === 'researcher' ? 'unknown' : role
         }
       });
     }
   }, [updatePersonalization]);
 
   // Rastrear comportamento do usuário
-  const trackUserBehavior = useCallback((action: string, actionContext: any = {}) => {
+  const trackUserBehavior = useCallback((action: string, actionContext: Record<string, unknown> = {}) => {
     setContext(prev => ({
       ...prev,
       currentSession: {
@@ -196,11 +197,11 @@ export function usePersonalization() {
       medicalAnalytics.trackCriticalMedicalAction({
         type: action.includes('drug') ? 'drug_interaction' : 'protocol_access',
         success: !actionContext.error,
-        timeToComplete: actionContext.duration || 0,
+        timeToComplete: typeof actionContext.duration === 'number' ? actionContext.duration : 0,
         urgencyLevel: 'critical'
       });
     }
-  }, [context.currentSession.startTime]);
+  }, [context.currentSession]);
 
   // Gerar recomendações personalizadas
   const generateRecommendations = useCallback((): ContentRecommendation[] => {
@@ -327,7 +328,6 @@ export function usePersonalization() {
       }
       return false;
     } catch (error) {
-      console.error('Erro ao importar dados de personalização:', error);
       return false;
     }
   }, [updatePersonalization]);

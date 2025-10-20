@@ -1,6 +1,7 @@
 'use client';
 
 import Script from 'next/script';
+import { urls, getStructuredDataUrls } from '@/utils/environmentUrls';
 
 interface MedicalStructuredDataProps {
   pageType: 'educational' | 'treatment' | 'diagnosis' | 'general';
@@ -41,7 +42,10 @@ export default function MedicalStructuredData({
   mainEntity,
   breadcrumb
 }: MedicalStructuredDataProps) {
-  
+
+  // Get environment-aware URLs
+  const structuredUrls = getStructuredDataUrls();
+
   const getAudience = () => {
     switch (targetAudience) {
       case 'Patient':
@@ -102,7 +106,7 @@ export default function MedicalStructuredData({
     "@type": "MedicalWebPage",
     "name": title,
     "description": description,
-    "url": url || `https://roteirosdedispensacao.com${typeof window !== 'undefined' ? window.location.pathname : ''}`,
+    "url": url || `${structuredUrls.organization}${typeof window !== 'undefined' ? window.location.pathname : ''}`,
     "medicalAudience": getAudience(),
     "specialty": getSpecialtyData(),
     "about": aboutCondition || {
@@ -130,11 +134,7 @@ export default function MedicalStructuredData({
       "name": "UnB - Programa de Pós-Graduação em Ciências Farmacêuticas"
     },
     "mainEntity": mainEntity,
-    "significantLink": [
-      "https://roteirosdedispensacao.com/chat",
-      "https://roteirosdedispensacao.com/modules",
-      "https://roteirosdedispensacao.com/vida-com-hanseniase"
-    ],
+    "significantLink": structuredUrls.sameAs,
     "breadcrumb": breadcrumb && {
       "@type": "BreadcrumbList",
       "itemListElement": breadcrumb.map(item => ({
@@ -171,7 +171,7 @@ export default function MedicalStructuredData({
     "@type": "MedicalWebPage",
     "name": title || "Roteiro de Dispensação - Hanseníase",
     "description": description || "Guia educacional para dispensação de medicamentos para hanseníase",
-    "url": url || "https://roteirosdedispensacao.com",
+    "url": url || structuredUrls.organization,
     "medicalAudience": {
       "@type": "MedicalAudience",
       "audienceType": targetAudience || "Healthcare professionals"
@@ -206,8 +206,8 @@ export function HanseníaseModuleStructuredData({
 }) {
   // Use static path construction to eliminate security vulnerabilities
   const staticPath = moduleType ? `/modules/${moduleType}` : '/modules/educational';
-  const baseUrl = 'https://roteirosdedispensacao.com';
-  
+  const baseUrl = urls.base();
+
   return (
     <MedicalStructuredData
       pageType={moduleType}
@@ -225,12 +225,12 @@ export function HanseníaseModuleStructuredData({
         {
           position: 1,
           name: "Início",
-          item: "https://roteirosdedispensacao.com"
+          item: baseUrl
         },
         {
           position: 2,
           name: "Módulos Educacionais",
-          item: "https://roteirosdedispensacao.com/modules"
+          item: urls.modules()
         },
         {
           position: 3,

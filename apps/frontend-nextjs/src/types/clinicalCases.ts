@@ -4,6 +4,22 @@
  * Doutorando: Nélio Gomes de Moura Júnior
  */
 
+type CalculationResult = {
+  dose?: number;
+  frequency?: string;
+  duration?: number;
+  tablets?: number;
+  weight_based?: boolean;
+} | string | number | boolean;
+
+type ClinicalAnswer = {
+  text?: string;
+  value?: number | string;
+  selected_options?: string[];
+  calculation_result?: CalculationResult;
+  reasoning?: string;
+} | string | number | boolean | string[];
+
 export interface ClinicalCase {
   id: string;
   title: string;
@@ -158,7 +174,7 @@ export interface StepInteraction {
         max?: number;
       };
     }[];
-    expectedResult: any;
+    expectedResult: CalculationResult;
     tolerance?: number;
   };
   
@@ -171,7 +187,7 @@ export interface StepInteraction {
 }
 
 export interface StepValidation {
-  correctAnswer: any;
+  correctAnswer: ClinicalAnswer;
   points: number;
   passingScore: number;
   
@@ -227,6 +243,7 @@ export interface CaseReference {
   page?: number;
   url?: string;
   relevance: 'primary' | 'secondary' | 'supplementary';
+  [key: string]: unknown;
 }
 
 export interface CaseQualityMetrics {
@@ -267,7 +284,7 @@ export interface CaseSession {
 
 export interface StepResult {
   stepId: string;
-  response: any;
+  response: string | number | string[] | boolean; // Text, numeric, multiple choice, or boolean responses
   isCorrect: boolean;
   pointsEarned: number;
   timeSpent: number; // seconds

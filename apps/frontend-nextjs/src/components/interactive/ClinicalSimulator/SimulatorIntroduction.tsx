@@ -120,7 +120,7 @@ export default function SimulatorIntroduction({
         ].map(tab => (
           <button
             key={tab.key}
-            onClick={() => setActiveSection(tab.key as any)}
+            onClick={() => setActiveSection(tab.key as 'introduction' | 'methodology' | 'categories')}
             style={{
               flex: 1,
               padding: modernChatTheme.spacing.lg,

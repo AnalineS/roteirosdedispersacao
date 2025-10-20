@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 
 interface AccessibilityContextType {
   highContrast: boolean;
@@ -20,9 +21,9 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
 
   // Load saved preferences
   useEffect(() => {
-    const savedHighContrast = localStorage.getItem('accessibility-high-contrast');
-    const savedFontSize = localStorage.getItem('accessibility-font-size') as 'normal' | 'large' | 'larger';
-    const savedReducedMotion = localStorage.getItem('accessibility-reduced-motion');
+    const savedHighContrast = safeLocalStorage()?.getItem('accessibility-high-contrast');
+    const savedFontSize = safeLocalStorage()?.getItem('accessibility-font-size') as 'normal' | 'large' | 'larger';
+    const savedReducedMotion = safeLocalStorage()?.getItem('accessibility-reduced-motion');
     
     if (savedHighContrast === 'true') {
       setHighContrast(true);
@@ -58,7 +59,7 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
       root.setAttribute('data-contrast', 'normal');
     }
     
-    localStorage.setItem('accessibility-high-contrast', highContrast.toString());
+    safeLocalStorage()?.setItem('accessibility-high-contrast', highContrast.toString());
   }, [highContrast]);
 
   // Apply font size
@@ -69,7 +70,7 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
     root.classList.add(`font-size-${fontSize}`);
     root.setAttribute('data-font-size', fontSize);
     
-    localStorage.setItem('accessibility-font-size', fontSize);
+    safeLocalStorage()?.setItem('accessibility-font-size', fontSize);
   }, [fontSize]);
 
   // Apply reduced motion
@@ -84,7 +85,7 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
       root.setAttribute('data-motion', 'normal');
     }
     
-    localStorage.setItem('accessibility-reduced-motion', reducedMotion.toString());
+    safeLocalStorage()?.setItem('accessibility-reduced-motion', reducedMotion.toString());
   }, [reducedMotion]);
 
   const handleSetHighContrast = (enabled: boolean) => {

@@ -12,10 +12,11 @@
 'use client';
 
 import { useState, useCallback, useMemo, useEffect } from 'react';
+import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
-import { useGoogleAnalytics } from '@/components/GoogleAnalytics';
+import { useGoogleAnalyticsUX } from '@/components/analytics/GoogleAnalyticsSetup';
 import { getPersonaAvatar } from '@/constants/avatars';
 
 // Types para type safety e maintainability
@@ -193,15 +194,22 @@ const PersonaIntroductionStep = ({ selectedRole }: { selectedRole: UserRole }) =
 };
 
 // Componente para questionário informativo (usuários logados)
-const InformativeSurveyStep = ({ onComplete }: { onComplete: (data: any) => void }) => {
-  const [answers, setAnswers] = useState({
+interface SurveyAnswers {
+  institution: string;
+  role: string;
+  experience: string;
+  interests: string[];
+}
+
+const InformativeSurveyStep = ({ onComplete }: { onComplete: (data: SurveyAnswers) => void }) => {
+  const [answers, setAnswers] = useState<SurveyAnswers>({
     institution: '',
     role: '',
     experience: '',
     interests: [] as string[]
   });
 
-  const handleAnswerChange = (field: string, value: any) => {
+  const handleAnswerChange = <K extends keyof SurveyAnswers>(field: K, value: SurveyAnswers[K]) => {
     setAnswers(prev => ({
       ...prev,
       [field]: value
@@ -226,12 +234,12 @@ const InformativeSurveyStep = ({ onComplete }: { onComplete: (data: any) => void
     };
     
     // Salvar dados do survey
-    const existingSurveys = JSON.parse(localStorage.getItem('admin_surveys') || '[]');
+    const existingSurveys = JSON.parse(safeLocalStorage()?.getItem('admin_surveys') || '[]');
     existingSurveys.push(surveyData);
-    localStorage.setItem('admin_surveys', JSON.stringify(existingSurveys));
+    safeLocalStorage()?.setItem('admin_surveys', JSON.stringify(existingSurveys));
     
     // Marcar como completado
-    localStorage.setItem('user_survey_completed', 'true');
+    safeLocalStorage()?.setItem('user_survey_completed', 'true');
     
     onComplete(surveyData);
   };
@@ -442,7 +450,7 @@ export function WelcomeWizard({ onComplete }: {
   const [isVisible, setIsVisible] = useState(true);
   const router = useRouter();
   const { user } = useAuth();
-  const { trackUserInteraction } = useGoogleAnalytics();
+  const { trackCustomUXEvent } = useGoogleAnalyticsUX();
 
   // Memoized steps for performance
   const steps: OnboardingStep[] = useMemo(() => [
@@ -469,22 +477,22 @@ export function WelcomeWizard({ onComplete }: {
   // Handlers with useCallback for performance
   const handleRoleSelect = useCallback((role: UserRole) => {
     setSelectedRole(role);
-    trackUserInteraction('onboarding_role_selected', '', role.id, {
+    trackCustomUXEvent('onboarding_role_selected', 'onboarding', undefined, {
       role_type: role.id,
       recommended_persona: role.recommendedPersona
     });
-  }, [trackUserInteraction]);
+  }, [trackCustomUXEvent]);
 
   const handleNext = useCallback(() => {
     if (currentStep < steps.length) {
       setCurrentStep(prev => prev + 1);
-      trackUserInteraction('onboarding_step_advanced', '', `step_${currentStep + 1}`);
+      trackCustomUXEvent('onboarding_step_advanced', 'onboarding');
     }
-  }, [currentStep, steps.length, trackUserInteraction]);
+  }, [currentStep, steps.length, trackCustomUXEvent]);
 
   const handleComplete = useCallback(() => {
     if (selectedRole) {
-      trackUserInteraction('onboarding_completed', '', selectedRole.id, {
+      trackCustomUXEvent('onboarding_completed', 'onboarding', undefined, {
         role_type: selectedRole.id,
         recommended_persona: selectedRole.recommendedPersona
       });
@@ -495,7 +503,7 @@ export function WelcomeWizard({ onComplete }: {
         completed: true,
         selectedRole: selectedRole.id
       };
-      localStorage.setItem('welcome_wizard_seen', JSON.stringify(cacheData));
+      safeLocalStorage()?.setItem('welcome_wizard_seen', JSON.stringify(cacheData));
       
       setIsVisible(false);
       
@@ -504,10 +512,10 @@ export function WelcomeWizard({ onComplete }: {
         onComplete(selectedRole);
       }, 300);
     }
-  }, [selectedRole, onComplete, trackUserInteraction]);
+  }, [selectedRole, onComplete, trackCustomUXEvent]);
 
   const handleSkip = useCallback(() => {
-    trackUserInteraction('onboarding_skipped', '', `step_${currentStep}`);
+    trackCustomUXEvent('onboarding_skipped', 'onboarding', currentStep);
     
     // Salvar no cache por 5 dias
     const cacheData = {
@@ -515,7 +523,7 @@ export function WelcomeWizard({ onComplete }: {
       skipped: true,
       step: currentStep
     };
-    localStorage.setItem('welcome_wizard_seen', JSON.stringify(cacheData));
+    safeLocalStorage()?.setItem('welcome_wizard_seen', JSON.stringify(cacheData));
     
     // Default to medical professional if skipped
     const defaultRole = USER_ROLES[0];
@@ -524,23 +532,29 @@ export function WelcomeWizard({ onComplete }: {
     setTimeout(() => {
       onComplete(defaultRole);
     }, 300);
-  }, [currentStep, onComplete, trackUserInteraction]);
+  }, [currentStep, onComplete, trackCustomUXEvent]);
 
   // Handler para completar o questionário informativo (usuários logados)
-  const handleSurveyComplete = useCallback((surveyData: any) => {
-    trackUserInteraction('user_survey_completed', '', 'informative_survey', surveyData);
+  const handleSurveyComplete = useCallback((surveyData: SurveyAnswers) => {
+    trackCustomUXEvent('user_survey_completed', 'onboarding', undefined, {
+      institution: surveyData.institution,
+      role: surveyData.role,
+      experience: surveyData.experience,
+      interests_count: surveyData.interests.length,
+      interests_list: surveyData.interests.join(', ')
+    });
     setIsVisible(false);
     
     setTimeout(() => {
       // Para usuários logados, não passa papel específico
-      onComplete({ id: 'survey_completed', title: 'Questionário Completado' } as any);
+      onComplete({ id: 'medical', title: 'Questionário Completado', description: 'Survey completed', icon: '📝', benefits: [], recommendedPersona: 'dr-gasnelio' });
     }, 300);
-  }, [onComplete, trackUserInteraction]);
+  }, [onComplete, trackCustomUXEvent]);
 
   // Verificar cache por 5 dias
   useEffect(() => {
     const cacheKey = 'welcome_wizard_seen';
-    const cachedData = localStorage.getItem(cacheKey);
+    const cachedData = safeLocalStorage()?.getItem(cacheKey);
     
     if (cachedData) {
       try {
@@ -554,25 +568,25 @@ export function WelcomeWizard({ onComplete }: {
           return;
         } else {
           // Cache expirado, remover
-          localStorage.removeItem(cacheKey);
+          safeLocalStorage()?.removeItem(cacheKey);
         }
       } catch (error) {
         // Cache corrompido, remover
-        localStorage.removeItem(cacheKey);
+        safeLocalStorage()?.removeItem(cacheKey);
       }
     }
   }, []);
 
   // Para usuários logados, verificar se já completaram o questionário informativo
   const isLoggedIn = !!user;
-  const hasCompletedUserSurvey = localStorage.getItem('user_survey_completed');
+  const hasCompletedUserSurvey = safeLocalStorage()?.getItem('user_survey_completed');
   
   if (isLoggedIn && hasCompletedUserSurvey) {
     return null;
   }
   
   // Para usuários não logados, verificar onboarding tradicional
-  if (!isLoggedIn && localStorage.getItem('onboarding_completed')) {
+  if (!isLoggedIn && safeLocalStorage()?.getItem('onboarding_completed')) {
     return null;
   }
 

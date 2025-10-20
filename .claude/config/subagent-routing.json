@@ -1,0 +1,201 @@
+{
+  "routing_system": {
+    "version": "1.0.0",
+    "description": "Sistema de roteamento automático de subagentes baseado no SuperClaude Framework",
+    "activation_methods": ["keyword", "file_type", "context", "manual"],
+    "priority_order": ["manual", "keyword", "file_type", "complexity", "context"]
+  },
+  "subagents": {
+    "security-engineer": {
+      "category": "core",
+      "description": "Especialista em segurança de aplicações e threat modeling",
+      "keywords": ["segurança", "security", "vulnerabilidade", "cve", "threat", "exploit", "sanitização", "autenticação", "autorização", "csrf", "xss", "sql injection"],
+      "file_types": [".env", ".security", ".auth"],
+      "context_patterns": ["análise de segurança", "revisão de código seguro", "configuração de segurança"],
+      "tools": ["Read", "Write", "Edit", "Grep", "Bash"],
+      "auto_activate": true,
+      "collaboration": ["quality-engineer", "medical-backend-architect"]
+    },
+    "quality-engineer": {
+      "category": "core", 
+      "description": "Especialista em estratégias de teste e garantia de qualidade",
+      "keywords": ["teste", "test", "qualidade", "qa", "validation", "coverage", "mock", "unit test", "integration test", "e2e"],
+      "file_types": [".test.js", ".test.ts", ".spec.js", ".spec.ts", "test.py", "spec.py"],
+      "context_patterns": ["estratégia de teste", "cobertura de teste", "validação de qualidade"],
+      "tools": ["Read", "Write", "Edit", "Bash", "Grep"],
+      "auto_activate": true,
+      "collaboration": ["security-engineer", "educational-qa-validator"]
+    },
+    "root-cause-analyst": {
+      "category": "core",
+      "description": "Especialista em investigação sistemática de problemas",
+      "keywords": ["erro", "error", "bug", "falha", "problema", "debug", "troubleshoot", "investigação", "root cause"],
+      "file_types": [".log", ".error"],
+      "context_patterns": ["análise de erro", "investigação de problema", "debug sistemático"],
+      "tools": ["Read", "Grep", "Bash", "WebFetch"],
+      "auto_activate": true,
+      "collaboration": ["medical-performance-engineer", "python-expert"]
+    },
+    "requirements-analyst": {
+      "category": "core",
+      "description": "Especialista em descoberta e especificação de requisitos",
+      "keywords": ["requisitos", "requirements", "necessidades", "especificação", "funcionalidades", "user story", "casos de uso"],
+      "file_types": [".md", ".requirements", ".spec"],
+      "context_patterns": ["análise de requisitos", "levantamento de necessidades", "especificação funcional"],
+      "tools": ["Read", "Write", "Edit", "WebFetch"],
+      "auto_activate": false,
+      "collaboration": ["medical-content-specialist", "educational-frontend-architect"]
+    },
+    "medical-backend-architect": {
+      "category": "architecture",
+      "description": "Arquiteto especializado em APIs médicas e sistemas educacionais",
+      "keywords": ["api", "backend", "flask", "endpoint", "database", "medical", "rag", "embedding", "personas"],
+      "file_types": [".py", "app.py", "main.py", "requirements.txt"],
+      "context_patterns": ["arquitetura de API médica", "sistema RAG", "integração de personas"],
+      "tools": ["Read", "Write", "Edit", "Bash", "Grep"],
+      "auto_activate": true,
+      "collaboration": ["rag-optimization-engineer", "api-integration-specialist"]
+    },
+    "educational-frontend-architect": {
+      "category": "architecture", 
+      "description": "Arquiteto especializado em UX educacional e acessibilidade",
+      "keywords": ["frontend", "react", "nextjs", "componente", "ui", "ux", "educacional", "acessibilidade"],
+      "file_types": [".tsx", ".jsx", ".ts", ".js", ".css"],
+      "context_patterns": ["interface educacional", "experiência do usuário", "componentes React"],
+      "tools": ["Read", "Write", "Edit", "Grep"],
+      "auto_activate": true,
+      "collaboration": ["accessibility-compliance-engineer", "medical-content-specialist"]
+    },
+    "system-architect": {
+      "category": "architecture",
+      "description": "Arquiteto de sistemas distribuídos e integração",
+      "keywords": ["arquitetura", "sistema", "integração", "microserviços", "cloud", "firebase", "deployment"],
+      "file_types": ["docker-compose.yml", "Dockerfile", ".yml", ".yaml"],
+      "context_patterns": ["arquitetura de sistema", "design distribuído", "estratégia de deployment"],
+      "tools": ["Read", "Write", "Edit", "WebFetch", "Bash"],
+      "auto_activate": false,
+      "collaboration": ["api-integration-specialist", "medical-performance-engineer"]
+    },
+    "medical-content-specialist": {
+      "category": "domain-specific",
+      "description": "Especialista em conteúdo médico educacional e hanseníase",
+      "keywords": ["hanseníase", "pqt-u", "medicamento", "dosagem", "protocolo", "pcdt", "farmacêutico", "dispensação"],
+      "file_types": [".md", ".json"],
+      "context_patterns": ["conteúdo médico", "protocolo de tratamento", "educação farmacêutica"],
+      "tools": ["Read", "Write", "Edit", "WebFetch"],
+      "auto_activate": true,
+      "collaboration": ["educational-qa-validator", "requirements-analyst"]
+    },
+    "accessibility-compliance-engineer": {
+      "category": "domain-specific",
+      "description": "Especialista em conformidade WCAG 2.1 AA e acessibilidade",
+      "keywords": ["acessibilidade", "wcag", "aria", "screen reader", "contraste", "navegação", "inclusão"],
+      "file_types": [".tsx", ".jsx", ".css"],
+      "context_patterns": ["compliance WCAG", "acessibilidade web", "design inclusivo"],
+      "tools": ["Read", "Write", "Edit", "WebFetch"],
+      "auto_activate": true,
+      "collaboration": ["educational-frontend-architect", "quality-engineer"]
+    },
+    "educational-qa-validator": {
+      "category": "domain-specific",
+      "description": "Validador de conteúdo educacional e precisão médica",
+      "keywords": ["validação", "educacional", "conteúdo", "precisão", "médico", "pedagógico", "avaliação"],
+      "file_types": [".md", ".json", ".test.ts"],
+      "context_patterns": ["validação educacional", "precisão do conteúdo", "qualidade pedagógica"],
+      "tools": ["Read", "Write", "WebFetch"],
+      "auto_activate": false,
+      "collaboration": ["medical-content-specialist", "quality-engineer"]
+    },
+    "rag-optimization-engineer": {
+      "category": "domain-specific",
+      "description": "Especialista em otimização de sistemas RAG médicos",
+      "keywords": ["rag", "embeddings", "vector", "similarity", "chunking", "retrieval", "semantic search"],
+      "file_types": ["*rag*.py", "*embedding*.py", "*vector*.py"],
+      "context_patterns": ["otimização RAG", "semantic search", "sistema de embeddings"],
+      "tools": ["Read", "Write", "Edit", "Bash", "Grep"],
+      "auto_activate": true,
+      "collaboration": ["medical-backend-architect", "medical-performance-engineer"]
+    },
+    "api-integration-specialist": {
+      "category": "integration",
+      "description": "Especialista em integrações com OpenRouter, Firebase e APIs externas",
+      "keywords": ["openrouter", "firebase", "api", "integração", "webhook", "oauth", "authentication"],
+      "file_types": ["*config*.py", "*integration*.py", "firebase.json"],
+      "context_patterns": ["integração de API", "configuração externa", "autenticação de serviços"],
+      "tools": ["Read", "Write", "Edit", "WebFetch", "Bash"],
+      "auto_activate": true,
+      "collaboration": ["security-engineer", "medical-backend-architect"]
+    },
+    "medical-performance-engineer": {
+      "category": "integration", 
+      "description": "Especialista em otimização de performance para sistemas médicos",
+      "keywords": ["performance", "otimização", "cache", "latência", "throughput", "memory", "cpu"],
+      "file_types": [".py", ".ts", ".js"],
+      "context_patterns": ["otimização de performance", "análise de bottleneck", "tuning de sistema"],
+      "tools": ["Read", "Write", "Edit", "Bash", "Grep"],
+      "auto_activate": false,
+      "collaboration": ["rag-optimization-engineer", "root-cause-analyst"]
+    },
+    "python-expert": {
+      "category": "development",
+      "description": "Especialista em Python, Flask e frameworks médicos",
+      "keywords": ["python", "flask", "pandas", "numpy", "scikit-learn", "transformers", "pydantic"],
+      "file_types": [".py", "requirements.txt", "setup.py"],
+      "context_patterns": ["desenvolvimento Python", "framework Flask", "bibliotecas científicas"],
+      "tools": ["Read", "Write", "Edit", "Bash"],
+      "auto_activate": true,
+      "collaboration": ["medical-backend-architect", "rag-optimization-engineer"]
+    },
+    "refactoring-expert": {
+      "category": "development",
+      "description": "Especialista em melhoria de qualidade de código e refatoração",
+      "keywords": ["refactoring", "code quality", "clean code", "patterns", "solid", "performance"],
+      "file_types": [".py", ".ts", ".tsx", ".js", ".jsx"],
+      "context_patterns": ["refatoração de código", "melhoria de qualidade", "aplicação de patterns"],
+      "tools": ["Read", "Write", "Edit", "MultiEdit", "Grep"],
+      "auto_activate": false,
+      "collaboration": ["quality-engineer", "python-expert"]
+    }
+  },
+  "routing_rules": {
+    "manual_activation": {
+      "prefix": "@agent-",
+      "example": "@agent-security-engineer analyze this code for vulnerabilities"
+    },
+    "keyword_matching": {
+      "strategy": "fuzzy_match",
+      "threshold": 0.7,
+      "case_sensitive": false
+    },
+    "file_type_matching": {
+      "strategy": "extension_based",
+      "wildcard_support": true
+    },
+    "context_matching": {
+      "strategy": "semantic_similarity",
+      "max_agents": 3
+    },
+    "collaboration_rules": {
+      "max_concurrent_agents": 3,
+      "timeout_seconds": 300,
+      "coordination_method": "sequential"
+    }
+  },
+  "activation_examples": {
+    "security_review": {
+      "query": "Review this authentication system for security vulnerabilities",
+      "expected_agents": ["security-engineer", "medical-backend-architect"],
+      "reasoning": "Security keyword + backend context"
+    },
+    "accessibility_audit": {
+      "query": "Audit this React component for WCAG compliance",
+      "expected_agents": ["accessibility-compliance-engineer", "educational-frontend-architect"],
+      "reasoning": "WCAG keyword + React file type"
+    },
+    "rag_optimization": {
+      "query": "Optimize the medical RAG system for better performance",
+      "expected_agents": ["rag-optimization-engineer", "medical-performance-engineer"],
+      "reasoning": "RAG + performance keywords"
+    }
+  }
+}

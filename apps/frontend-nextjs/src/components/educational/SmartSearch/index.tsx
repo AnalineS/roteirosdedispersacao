@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useMemo } from 'react';
+import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 import { useGlossary } from '@/components/educational/Glossary';
 import Glossary from '@/components/educational/Glossary';
 import Link from 'next/link';
@@ -189,16 +190,21 @@ export default function SmartSearch({
 
   // Carregar buscas recentes
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('smartSearchRecents');
+    const stored = safeLocalStorage()?.getItem('smartSearchRecents');
       if (stored) {
         try {
           setRecentSearches(JSON.parse(stored));
         } catch (e) {
-          console.error('Erro ao carregar buscas recentes:', e);
+          // Silent error handling for localStorage parsing
+          // Error tracked for analytics without sensitive data exposure
+          if (typeof window !== 'undefined' && window.gtag) {
+            window.gtag('event', 'search_storage_error', {
+              event_category: 'search',
+              event_label: 'recent_searches_parse_error'
+            });
+          }
         }
       }
-    }
   }, []);
 
   // Salvar busca recente
@@ -208,7 +214,7 @@ export default function SmartSearch({
     setRecentSearches(prev => {
       const newRecents = [search, ...prev.filter(item => item !== search)].slice(0, 5);
       if (typeof window !== 'undefined') {
-        localStorage.setItem('smartSearchRecents', JSON.stringify(newRecents));
+        safeLocalStorage()?.setItem('smartSearchRecents', JSON.stringify(newRecents));
       }
       return newRecents;
     });
@@ -504,7 +510,7 @@ export default function SmartSearch({
                     <div className="p-2 text-xs font-medium text-gray-500 bg-gray-50">
                       {query.trim() ? 'Sugestões' : 'Buscas recentes e sugestões'}
                     </div>
-                    {autocompleteItems.map((item, index) => (
+                    {autocompleteItems.map((item) => (
                       <div
                         key={item.id}
                         className="p-3 cursor-pointer hover:bg-blue-50 transition-colors"

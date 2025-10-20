@@ -1,0 +1,282 @@
+{
+  "timestamp": "2025-10-04T11:54:26.718Z",
+  "url": "https://hml-roteiros-de-dispensacao.web.app/",
+  "overallScore": 72,
+  "categories": {
+    "accessibility": {
+      "score": 57,
+      "issues": [
+        {
+          "severity": "high",
+          "title": "Missing HTML lang attribute",
+          "description": "The <html> element does not have a lang attribute",
+          "suggestion": "Add lang=\"pt-BR\" to the <html> element",
+          "screenshot": null,
+          "timestamp": "2025-10-04T11:54:29.944Z"
+        },
+        {
+          "severity": "high",
+          "title": "Images missing alt text",
+          "description": "1 images do not have alt text",
+          "suggestion": "Add descriptive alt attributes to all images. For decorative images, use alt=\"\"",
+          "screenshot": null,
+          "timestamp": "2025-10-04T11:54:29.958Z"
+        },
+        {
+          "severity": "medium",
+          "title": "Color contrast issues detected",
+          "description": "Found 5 elements with potentially insufficient contrast",
+          "suggestion": "Ensure text has at least 4.5:1 contrast ratio (3:1 for large text). Use tools like WebAIM Contrast Checker.",
+          "screenshot": null,
+          "timestamp": "2025-10-04T11:54:29.965Z"
+        }
+      ],
+      "tests": [
+        {
+          "name": "HTML lang attribute",
+          "passed": false,
+          "value": "missing"
+        },
+        {
+          "name": "H1 heading count",
+          "passed": true,
+          "value": 1
+        },
+        {
+          "name": "Images with alt text",
+          "passed": false,
+          "value": "0/1"
+        },
+        {
+          "name": "Interactive elements with labels",
+          "passed": true,
+          "value": "0/0"
+        },
+        {
+          "name": "Color contrast check",
+          "passed": false,
+          "value": "5 potential issues"
+        },
+        {
+          "name": "Keyboard navigation",
+          "passed": true,
+          "value": "A"
+        },
+        {
+          "name": "Form inputs with labels",
+          "passed": true,
+          "value": "0/0"
+        }
+      ]
+    },
+    "performance": {
+      "score": 100,
+      "issues": [],
+      "metrics": {
+        "domContentLoaded": 0,
+        "loadComplete": 0,
+        "firstPaint": 656,
+        "firstContentfulPaint": 656,
+        "domInteractive": 642.3000000002794,
+        "resourceCount": 2,
+        "fid": 3.5
+      }
+    },
+    "mobileUsability": {
+      "score": 100,
+      "issues": [],
+      "viewports": [
+        {
+          "name": "Mobile Portrait",
+          "width": 375,
+          "height": 667,
+          "touchTargetIssues": 0,
+          "hasHorizontalScroll": false,
+          "smallTextIssues": 0
+        },
+        {
+          "name": "Mobile Landscape",
+          "width": 667,
+          "height": 375,
+          "touchTargetIssues": 0,
+          "hasHorizontalScroll": false,
+          "smallTextIssues": 0
+        },
+        {
+          "name": "Tablet Portrait",
+          "width": 768,
+          "height": 1024,
+          "touchTargetIssues": 0,
+          "hasHorizontalScroll": false,
+          "smallTextIssues": 0
+        },
+        {
+          "name": "Desktop",
+          "width": 1920,
+          "height": 1080,
+          "touchTargetIssues": 0,
+          "hasHorizontalScroll": false,
+          "smallTextIssues": 0
+        }
+      ]
+    },
+    "interactivity": {
+      "score": 67,
+      "issues": [
+        {
+          "severity": "medium",
+          "title": "No loading states detected",
+          "description": "No visual loading indicators found on the page",
+          "suggestion": "Add loading spinners or skeleton screens for async operations",
+          "screenshot": null,
+          "timestamp": "2025-10-04T11:54:32.994Z"
+        }
+      ],
+      "tests": [
+        {
+          "name": "Loading states present",
+          "passed": false,
+          "value": "No"
+        },
+        {
+          "name": "Interactive elements with hover states",
+          "passed": true,
+          "value": "1/1"
+        },
+        {
+          "name": "Visible focus indicators",
+          "passed": true,
+          "value": "Yes"
+        }
+      ]
+    },
+    "navigation": {
+      "score": 0,
+      "issues": [
+        {
+          "severity": "critical",
+          "title": "No main navigation found",
+          "description": "Page does not have a <nav> or [role=\"navigation\"] element",
+          "suggestion": "Add a <nav> element with main navigation links",
+          "screenshot": null,
+          "timestamp": "2025-10-04T11:54:33.002Z"
+        },
+        {
+          "severity": "high",
+          "title": "Links without accessible text",
+          "description": "1 links have no visible text or aria-label",
+          "suggestion": "Add descriptive text or aria-label to all links",
+          "screenshot": null,
+          "timestamp": "2025-10-04T11:54:33.005Z"
+        },
+        {
+          "severity": "medium",
+          "title": "No skip link found",
+          "description": "Page lacks a \"skip to main content\" link for keyboard users",
+          "suggestion": "Add a skip link as the first focusable element: <a href=\"#main\">Skip to main content</a>",
+          "screenshot": null,
+          "timestamp": "2025-10-04T11:54:33.006Z"
+        }
+      ],
+      "tests": [
+        {
+          "name": "Main navigation present",
+          "passed": false,
+          "value": "No"
+        },
+        {
+          "name": "Logo/branding present",
+          "passed": false,
+          "value": "No"
+        },
+        {
+          "name": "Breadcrumb navigation",
+          "passed": false,
+          "value": "No"
+        },
+        {
+          "name": "Links with accessible text",
+          "passed": false,
+          "value": "0/1"
+        },
+        {
+          "name": "Skip to main content link",
+          "passed": false,
+          "value": "No"
+        }
+      ]
+    }
+  },
+  "prioritizedFixes": [
+    {
+      "priority": 4.5,
+      "category": "accessibility",
+      "severity": "high",
+      "title": "Missing HTML lang attribute",
+      "description": "The <html> element does not have a lang attribute",
+      "suggestion": "Add lang=\"pt-BR\" to the <html> element",
+      "effort": "medium",
+      "userImpact": "high"
+    },
+    {
+      "priority": 4.5,
+      "category": "accessibility",
+      "severity": "high",
+      "title": "Images missing alt text",
+      "description": "1 images do not have alt text",
+      "suggestion": "Add descriptive alt attributes to all images. For decorative images, use alt=\"\"",
+      "effort": "medium",
+      "userImpact": "high"
+    },
+    {
+      "priority": 4,
+      "category": "navigation",
+      "severity": "critical",
+      "title": "No main navigation found",
+      "description": "Page does not have a <nav> or [role=\"navigation\"] element",
+      "suggestion": "Add a <nav> element with main navigation links",
+      "effort": "high",
+      "userImpact": "high"
+    },
+    {
+      "priority": 3,
+      "category": "accessibility",
+      "severity": "medium",
+      "title": "Color contrast issues detected",
+      "description": "Found 5 elements with potentially insufficient contrast",
+      "suggestion": "Ensure text has at least 4.5:1 contrast ratio (3:1 for large text). Use tools like WebAIM Contrast Checker.",
+      "effort": "low",
+      "userImpact": "medium"
+    },
+    {
+      "priority": 3,
+      "category": "navigation",
+      "severity": "high",
+      "title": "Links without accessible text",
+      "description": "1 links have no visible text or aria-label",
+      "suggestion": "Add descriptive text or aria-label to all links",
+      "effort": "medium",
+      "userImpact": "high"
+    },
+    {
+      "priority": 2.2,
+      "category": "interactivity",
+      "severity": "medium",
+      "title": "No loading states detected",
+      "description": "No visual loading indicators found on the page",
+      "suggestion": "Add loading spinners or skeleton screens for async operations",
+      "effort": "low",
+      "userImpact": "medium"
+    },
+    {
+      "priority": 2,
+      "category": "navigation",
+      "severity": "medium",
+      "title": "No skip link found",
+      "description": "Page lacks a \"skip to main content\" link for keyboard users",
+      "suggestion": "Add a skip link as the first focusable element: <a href=\"#main\">Skip to main content</a>",
+      "effort": "low",
+      "userImpact": "medium"
+    }
+  ]
+}
