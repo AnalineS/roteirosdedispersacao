@@ -19,7 +19,7 @@ export default function StaticEducationalLayout({ children }: StaticEducationalL
             {/* Fast Access Bar para emergências médicas */}
             <FastAccessBar position="top" behavior="smart-hide" />
 
-            {/* Unified Navigation Header */}
+            {/* Navigation Header - PR #264 Simplified */}
             <NavigationHeader />
 
             {/* Main Content */}

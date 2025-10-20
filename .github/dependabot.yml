@@ -1,217 +1,53 @@
-# GitHub Dependabot Configuration - Fixed Branch Strategy
-# All updates go to 'dependabot-updates' branch first, then sync to hml/main
-# Automatic tagging and release management via workflows
 version: 2
-
-# Security advisory suppression configuration
-# Configuração para suprimir falsos positivos de segurança
-security-advisories:
-  # Auto-dismiss low severity vulnerabilities in development dependencies
-  auto-dismiss:
-    - severity: "low"
-      scope: "development"
-      reason: "Development dependencies with low severity are acceptable risk"
-
-    - severity: "low"
-      ecosystem: "npm"
-      dependency-type: "indirect"
-      reason: "Indirect npm dependencies with low severity - transitive risk"
-
-    - severity: "medium"
-      ecosystem: "npm"
-      dependency-type: "indirect"
-      package-patterns: ["@types/*", "*-types", "eslint*", "prettier*"]
-      reason: "Type definitions and linting tools pose minimal security risk"
-
-  # Patterns to ignore (common false positives)
-  ignore-patterns:
-    - "Test files vulnerability"
-    - "Development server configuration"
-    - "Prototype pollution in dev dependencies"
-    - "ReDoS in development tools"
-    - "Path traversal in build tools"
+enable-beta-ecosystems: true
 
 updates:
-  # Frontend Next.js Dependencies - Unified
+  # Frontend Next.js Dependencies
   - package-ecosystem: "npm"
     directory: "/apps/frontend-nextjs"
-    target-branch: "dependabot-updates"
     schedule:
       interval: "weekly"
       day: "monday"
-      time: "08:00"
+      time: "06:00"
       timezone: "America/Sao_Paulo"
-    open-pull-requests-limit: 10
-    groups:
-      react-ecosystem:
-        patterns:
-          - "react*"
-          - "next*"
-          - "@next/*"
-          - "@types/react*"
-          - "eslint*"
-          - "@typescript-eslint/*"
-        update-types:
-          - "minor"
-          - "patch"
-      ui-components:
-        patterns:
-          - "@radix-ui/*"
-          - "lucide-react"
-          - "tailwindcss"
-          - "@tailwindcss/*"
-          - "clsx"
-          - "class-variance-authority"
-      testing-tools:
-        patterns:
-          - "@testing-library/*"
-          - "jest*"
-          - "vitest*"
-          - "@jest/*"
-      build-tools:
-        patterns:
-          - "typescript"
-          - "postcss*"
-          - "autoprefixer"
-          - "@types/*"
-    reviewers:
-      - "AnalineS"
-    assignees:
-      - "AnalineS"
-    commit-message:
-      prefix: "chore(deps)(frontend)"
-      include: "scope"
+    open-pull-requests-limit: 3
     labels:
       - "dependencies"
-      - "frontend"
-      - "automated"
-    # Ignore vulnerabilities that are false positives for frontend
+      - "javascript"
+      - "automerge"
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+    groups:
+      development-dependencies:
+        dependency-type: "development"
+        update-types: ["minor", "patch"]
+      production-dependencies:
+        dependency-type: "production"
+        update-types: ["patch"]
     ignore:
-      - dependency-name: "@types/*"
-        update-types: ["version-update:semver-patch", "version-update:semver-minor"]
-      - dependency-name: "eslint*"
-        update-types: ["version-update:semver-patch"]
-      - dependency-name: "prettier*"
-        update-types: ["version-update:semver-patch"]
       - dependency-name: "*"
-        vulnerability-alerts:
-          - severity: "low"
-            scope: "development"
+        update-types: ["version-update:semver-major"]
 
-  # Backend Python Dependencies - Unified
+  # Backend Python Dependencies
   - package-ecosystem: "pip"
     directory: "/apps/backend"
-    target-branch: "dependabot-updates"
     schedule:
       interval: "weekly"
-      day: "tuesday"
-      time: "08:00"
+      day: "monday"
+      time: "06:00"
       timezone: "America/Sao_Paulo"
-    open-pull-requests-limit: 10
-    groups:
-      flask-ecosystem:
-        patterns:
-          - "flask*"
-          - "Flask*"
-          - "werkzeug*"
-          - "jinja2*"
-          - "click*"
-          - "itsdangerous*"
-        update-types:
-          - "minor"
-          - "patch"
-      ai-ml:
-        patterns:
-          - "sentence-transformers*"
-          - "transformers*"
-          - "torch*"
-          - "numpy*"
-          - "scikit-learn*"
-          - "huggingface-hub*"
-          - "tokenizers*"
-      database:
-        patterns:
-          - "supabase*"
-          - "psycopg*"
-          - "sqlalchemy*"
-          - "alembic*"
-      security:
-        patterns:
-          - "cryptography*"
-          - "pyjwt*"
-          - "bcrypt*"
-          - "python-jose*"
-          - "passlib*"
-      google-cloud:
-        patterns:
-          - "google-*"
-          - "firebase-*"
-          - "protobuf*"
-      utilities:
-        patterns:
-          - "python-dotenv*"
-          - "requests*"
-          - "urllib3*"
-          - "certifi*"
-          - "charset-normalizer*"
-          - "idna*"
-    reviewers:
-      - "AnalineS"
-    assignees:
-      - "AnalineS"
-    commit-message:
-      prefix: "chore(deps)(backend)"
-      include: "scope"
+    open-pull-requests-limit: 3
     labels:
       - "dependencies"
-      - "backend"
-      - "automated"
-    # Ignore vulnerabilities that are false positives for backend
+      - "python"
+      - "automerge"
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+    groups:
+      python-dependencies:
+        update-types: ["minor", "patch"]
     ignore:
       - dependency-name: "*"
-        vulnerability-alerts:
-          - severity: "low"
-            scope: "development"
-      - dependency-name: "requests*"
-        update-types: ["version-update:semver-patch"]
-        vulnerability-alerts:
-          - severity: "low"
-      - dependency-name: "urllib3*"
-        update-types: ["version-update:semver-patch"]
-        vulnerability-alerts:
-          - severity: "low"
-
-  # GitHub Actions Dependencies - Unified
-  - package-ecosystem: "github-actions"
-    directory: "/"
-    target-branch: "dependabot-updates"
-    schedule:
-      interval: "weekly"
-      day: "wednesday"
-      time: "08:00"
-      timezone: "America/Sao_Paulo"
-    open-pull-requests-limit: 5
-    groups:
-      core-actions:
-        patterns:
-          - "actions/*"
-        update-types:
-          - "minor"
-          - "patch"
-      google-cloud:
-        patterns:
-          - "google-github-actions/*"
-      security:
-        patterns:
-          - "github/codeql-action*"
-          - "ossf/scorecard-action*"
-    reviewers:
-      - "AnalineS"
-    assignees:
-      - "AnalineS"
-    commit-message:
-      prefix: "chore(ci)"
-      include: "scope"
-    labels:
-      - "ci/cd"
-      - "automated"
+        update-types: ["version-update:semver-major"]

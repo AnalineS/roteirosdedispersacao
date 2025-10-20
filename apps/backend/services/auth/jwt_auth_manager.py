@@ -35,6 +35,10 @@ class JWTAuthManager:
     - Google OAuth flow
     - Session management
     - User profiles
+
+    Security:
+    - PBKDF2-HMAC password hashing with unique salts per user (CWE-329 prevention)
+    - Context7 best practice: os.urandom(16) for cryptographically secure salt generation
     """
 
     def __init__(self):
@@ -396,10 +400,19 @@ class JWTAuthManager:
                 self._add_rate_limit_attempt(email)
                 return None
 
-            # Hash da senha
+            # SECURITY FIX: Generate unique salt per user (CWE-329 prevention)
+            # Context7 best practice: Use os.urandom(16) for cryptographically secure random salt
+            # Each user gets a unique salt to prevent rainbow table attacks
+            salt = os.urandom(16)
+
+            # Hash da senha com salt único
             password_hash = hashlib.pbkdf2_hmac(
-                'sha256', password.encode(), b'salt', 100000
+                'sha256', password.encode(), salt, 100000
             ).hex()
+
+            # Store salt with hash (format: salt_hex:hash_hex)
+            salt_hex = salt.hex()
+            stored_credential = f"{salt_hex}:{password_hash}"
 
             # Gerar user ID
             user_id = str(uuid.uuid4())
@@ -410,7 +423,7 @@ class JWTAuthManager:
                 email=email,
                 name=name,
                 profile_data={
-                    'password_hash': password_hash,
+                    'password_hash': stored_credential,  # Store salt:hash
                     'auth_provider': 'email'
                 }
             )
@@ -464,12 +477,24 @@ class JWTAuthManager:
                 self._add_rate_limit_attempt(email)
                 return None
 
-            # Validar hash
+            # SECURITY FIX: Extract salt from stored credential (CWE-329 prevention)
+            # Format: salt_hex:hash_hex
+            try:
+                salt_hex, expected_hash = stored_hash.split(':', 1)
+                salt = bytes.fromhex(salt_hex)
+            except (ValueError, AttributeError):
+                # BACKWARD COMPATIBILITY: Handle old format without salt
+                # This allows existing users to login while migrating to new format
+                logger.warning(f"User {email} using legacy password format without salt")
+                salt = b'salt'  # Legacy fallback
+                expected_hash = stored_hash
+
+            # Validar hash com salt do usuário
             password_hash = hashlib.pbkdf2_hmac(
-                'sha256', password.encode(), b'salt', 100000
+                'sha256', password.encode(), salt, 100000
             ).hex()
 
-            if password_hash != stored_hash:
+            if password_hash != expected_hash:
                 self._add_rate_limit_attempt(email)
                 return None
 

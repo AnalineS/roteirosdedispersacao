@@ -160,19 +160,29 @@ export default [
     },
   },
   
-  // Ignore patterns
+  // Ignore patterns (migrated from .eslintignore)
   {
     ignores: [
+      // Build outputs
       '.next/**',
       'node_modules/**',
       'out/**',
       'build/**',
+      'dist/**',
       '.vercel/**',
+
+      // Configuration files
       '*.config.js',
       '*.config.mjs',
       'next.config.js',
       'eslint.config.mjs',
       'scripts/**',
+
+      // Environment and system files
+      '.env*',
+      '.DS_Store',
+      '*.log',
+      '*.tgz',
     ],
   },
 ];

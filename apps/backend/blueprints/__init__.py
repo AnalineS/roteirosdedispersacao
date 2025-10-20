@@ -1,56 +1,96 @@
 # -*- coding: utf-8 -*-
 """
-Flask Blueprints - Final 8-Blueprint Architecture
-Strategic consolidation: 20→8 blueprints for optimal maintainability
+Flask Blueprints para modularização do backend
+Organização por domínio de responsabilidade
 """
 
-# === FINAL 8-BLUEPRINT ARCHITECTURE ===
+from .chat_blueprint import chat_bp
+from .personas_blueprint import personas_bp
+from .feedback_blueprint import feedback_bp
+from .monitoring_blueprint import monitoring_bp
+from .metrics_blueprint import metrics_bp
+from .docs_blueprint import docs_bp
+from .analytics_blueprint import analytics_bp
+from .predictions_blueprint import predictions_bp
+from .multimodal_blueprint import multimodal_bp
+from .observability import observability_bp
 
-# 1. MEDICAL_CORE: Core medical functionality + validation
-from .medical_core_blueprint import medical_core_bp
+# Import health blueprint (com fallback)
+try:
+    from .health_blueprint import health_bp
+    HEALTH_BP_AVAILABLE = True
+except ImportError:
+    HEALTH_BP_AVAILABLE = False
+    health_bp = None
 
-# 2. USER_MANAGEMENT: Complete user lifecycle + authentication + profiles
-from .user_management_blueprint import user_management_bp
+# Import cache blueprint
+try:
+    from .cache_blueprint import cache_blueprint
+    CACHE_BP_AVAILABLE = True
+except ImportError:
+    CACHE_BP_AVAILABLE = False
+    cache_blueprint = None
 
-# 3. ANALYTICS_OBSERVABILITY: All telemetry + monitoring + logging
-from .analytics_observability_blueprint import analytics_observability_bp
+# Import user blueprint (com fallback)
+try:
+    from .user_blueprint import user_bp
+    USER_BP_AVAILABLE = True
+except ImportError:
+    USER_BP_AVAILABLE = False
+    user_bp = None
 
-# 4. ENGAGEMENT_MULTIMODAL: User interaction + media processing
-from .engagement_multimodal_blueprint import engagement_multimodal_bp
+# Importar swagger ui blueprint
+try:
+    from core.openapi.spec import swagger_ui_blueprint
+    SWAGGER_AVAILABLE = True
+except ImportError:
+    SWAGGER_AVAILABLE = False
+    swagger_ui_blueprint = None
 
-# 5. INFRASTRUCTURE: System infrastructure + performance optimization
-from .infrastructure_blueprint import infrastructure_bp
-
-# 6. API_DOCUMENTATION: API interface + documentation + OpenAPI
-from .api_documentation_blueprint import api_documentation_bp
-
-# 7. AUTHENTICATION: Security + gamification + user motivation
-from .authentication_blueprint import authentication_bp
-
-# 8. COMMUNICATION: User communication + feedback + notifications
-from .communication_blueprint import communication_bp
-
-# === FINAL BLUEPRINT REGISTRY ===
+# Lista de todos os blueprints para registro
 ALL_BLUEPRINTS = [
-    medical_core_bp,              # 1. Core medical functionality + validation
-    user_management_bp,           # 2. Complete user lifecycle management
-    analytics_observability_bp,   # 3. All telemetry and monitoring
-    engagement_multimodal_bp,     # 4. User interaction + media processing
-    infrastructure_bp,            # 5. System infrastructure + performance
-    api_documentation_bp,         # 6. API interface + documentation
-    authentication_bp,            # 7. Security + gamification
-    communication_bp              # 8. User communication + feedback
+    chat_bp,
+    personas_bp,
+    feedback_bp,
+    monitoring_bp,
+    metrics_bp,
+    docs_bp,
+    analytics_bp,
+    predictions_bp,
+    multimodal_bp,
+    observability_bp
 ]
 
-# === EXPORT INTERFACE ===
+# Adicionar health blueprint se disponível
+if HEALTH_BP_AVAILABLE and health_bp:
+    ALL_BLUEPRINTS.append(health_bp)
+
+# Adicionar cache blueprint se disponível
+if CACHE_BP_AVAILABLE and cache_blueprint:
+    ALL_BLUEPRINTS.append(cache_blueprint)
+
+# Adicionar user blueprint se disponível
+if USER_BP_AVAILABLE and user_bp:
+    ALL_BLUEPRINTS.append(user_bp)
+
+# Adicionar swagger ui se disponível
+if SWAGGER_AVAILABLE and swagger_ui_blueprint:
+    ALL_BLUEPRINTS.append(swagger_ui_blueprint)
+
 __all__ = [
-    'medical_core_bp',
-    'user_management_bp',
-    'analytics_observability_bp',
-    'engagement_multimodal_bp',
-    'infrastructure_bp',
-    'api_documentation_bp',
-    'authentication_bp',
-    'communication_bp',
+    'chat_bp',
+    'personas_bp',
+    'feedback_bp',
+    'health_bp',
+    'monitoring_bp',
+    'metrics_bp',
+    'docs_bp',
+    'analytics_bp',
+    'predictions_bp',
+    'multimodal_bp',
+    'observability_bp',
+    'cache_blueprint',
+    'user_bp',
+    'swagger_ui_blueprint',
     'ALL_BLUEPRINTS'
 ]

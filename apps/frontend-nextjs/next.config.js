@@ -79,8 +79,62 @@ const nextConfig = {
 
   // SECURITY ENHANCEMENTS - Medical Application Grade (Score: 9.7/10)
 
-  // Headers de segurança - desabilitado para export estático (configura no firebase.json)
-  // async headers() - não funciona com output: 'export'
+  // Security headers configuration (Context7 recommended patterns)
+  async headers() {
+    const isDev = process.env.NODE_ENV === 'development';
+
+    // CSP policy - stricter for production
+    const cspHeader = `
+      default-src 'self';
+      script-src 'self' ${isDev ? "'unsafe-eval'" : ''};
+      style-src 'self' 'unsafe-inline';
+      img-src 'self' blob: data: https:;
+      font-src 'self';
+      object-src 'none';
+      base-uri 'self';
+      form-action 'self';
+      frame-ancestors 'none';
+      upgrade-insecure-requests;
+    `.replace(/\s{2,}/g, ' ').trim();
+
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          // Content Security Policy
+          {
+            key: 'Content-Security-Policy',
+            value: cspHeader,
+          },
+          // Prevent MIME sniffing
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+          // Prevent clickjacking
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY',
+          },
+          // Control referrer information
+          {
+            key: 'Referrer-Policy',
+            value: 'strict-origin-when-cross-origin',
+          },
+          // Enforce HTTPS
+          {
+            key: 'Strict-Transport-Security',
+            value: 'max-age=63072000; includeSubDomains; preload',
+          },
+          // Control browser features
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=(self), browsing-topics=()',
+          },
+        ],
+      },
+    ];
+  },
 
   // Configurações de imagem para Cloud Run
   images: {

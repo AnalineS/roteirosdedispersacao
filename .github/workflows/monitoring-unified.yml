@@ -4,10 +4,8 @@ on:
   schedule:
     # Daily comprehensive health check at 6 AM UTC
     - cron: '0 6 * * *'
-    # Performance monitoring every 4 hours during business days
-    - cron: '0 */4 * * 1-5'
-    # Security alert management daily at 8 AM UTC
-    - cron: '0 8 * * *'
+    # Quick health monitoring every 6 hours during business days
+    - cron: '0 */6 * * 1-5'
   workflow_dispatch:
     inputs:
       monitoring_type:
@@ -64,7 +62,7 @@ jobs:
   unified-health-check:
     name: "🏥 Unified System Health Check"
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 20
     if: ${{ contains(fromJson('["health_only", "comprehensive"]'), github.event.inputs.monitoring_type) || github.event_name == 'schedule' }}
     outputs:
       staging-status: ${{ steps.health-check.outputs.staging-status }}
@@ -72,15 +70,15 @@ jobs:
       health-score: ${{ steps.health-check.outputs.health-score }}
       critical-issues: ${{ steps.health-check.outputs.critical-issues }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: "🔑 Google Cloud Auth"
-        uses: google-github-actions/auth@v2
+        uses: google-github-actions/auth@6fc4af4b145ae7821d527454aa9bd537d1f2dc5f
         with:
           credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
 
       - name: "🔧 Setup Cloud SDK"
-        uses: google-github-actions/setup-gcloud@v2
+        uses: google-github-actions/setup-gcloud@6a7c903a70c8625ed6700fa299f5ddb4ca6022e9
         with:
           project_id: ${{ vars.GCP_PROJECT_ID }}
 
@@ -214,7 +212,7 @@ jobs:
       performance-score: ${{ steps.perf-check.outputs.performance-score }}
       alerts-needed: ${{ steps.perf-check.outputs.alerts-needed }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: "⚡ Performance Baseline Check"
         id: perf-check
@@ -311,7 +309,7 @@ jobs:
       total-alerts: ${{ steps.security-analysis.outputs.total-alerts }}
       critical-alerts: ${{ steps.security-analysis.outputs.critical-alerts }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: "🛡️ Security Alert Analysis & Management"
         id: security-analysis

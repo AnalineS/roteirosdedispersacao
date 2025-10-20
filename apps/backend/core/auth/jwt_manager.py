@@ -3,6 +3,7 @@ JWT Manager - Sistema completo de autenticação com tokens
 Implementação enterprise com refresh tokens e role-based access
 """
 
+import os
 import jwt
 import uuid
 import hashlib

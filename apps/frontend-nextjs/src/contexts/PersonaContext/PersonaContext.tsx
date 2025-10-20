@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useCallback, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useContext, useCallback, useEffect, useMemo, useState, useRef } from 'react';
 import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 import { usePersonasEnhanced } from '@/hooks/usePersonasEnhanced';
 import { useSafePersonaFromURL, type ValidPersonaId } from '@/hooks/useSafePersonaFromURL';
@@ -86,6 +86,9 @@ export function PersonaProvider({ children, config = {} }: PersonaProviderProps)
   const [explicitPersona, setExplicitPersona] = useState<ValidPersonaIdType | null>(null);
   const [sessionStartTime] = useState(Date.now());
 
+  // ✅ Ref para prevenir loop infinito - mantém valor atual sem causar re-render
+  const currentPersonaRef = useRef<ValidPersonaIdType | null>(null);
+
   // Hook de resolução de persona
   const { resolvePersona } = usePersonaResolution({
     hasValidURLPersona,
@@ -142,45 +145,54 @@ export function PersonaProvider({ children, config = {} }: PersonaProviderProps)
     const resolved = resolvePersona();
     const { persona: resolvedPersona, source, confidence } = resolved;
 
-    if (resolvedPersona !== currentPersona) {
-      trackPersonaResolved(resolvedPersona, source, confidence);
+    // ✅ Usar ref guard para prevenir loop infinito
+    // Compara com ref em vez de state para evitar re-render desnecessário
+    if (resolvedPersona === currentPersonaRef.current) {
+      setIsLoading(false);
+      return;
+    }
 
-      setCurrentPersona(resolvedPersona);
+    // Atualizar ref ANTES de state para manter sincronia
+    currentPersonaRef.current = resolvedPersona;
 
-      // Adicionar ao histórico
-      if (resolvedPersona) {
-        const sessionId = crypto.randomUUID();
-        setPersonaHistory(prev =>
-          addToPersonaHistory(prev, resolvedPersona, source, maxHistoryEntries, sessionId)
-        );
+    trackPersonaResolved(resolvedPersona, source, confidence);
+    setCurrentPersona(resolvedPersona);
 
-        // Persistir mudança no localStorage se necessário
-        if (enableLocalStorage && source !== 'localStorage') {
-          try {
-            safeLocalStorage()?.setItem('selectedPersona', resolvedPersona);
-          } catch (error) {
-            trackLocalStorageError('localstorage_save_error_initial', error);
-            ErrorMonitorService.getInstance().logError(error as Error, {
-              component: 'PersonaContext',
-              severity: 'low',
-              context: { action: 'localStorage.setItem', persona: resolvedPersona }
-            });
-          }
+    // Adicionar ao histórico usando state updater function
+    if (resolvedPersona) {
+      const sessionId = crypto.randomUUID();
+
+      // ✅ State updater function previne dependência de personaHistory
+      setPersonaHistory(prev =>
+        addToPersonaHistory(prev, resolvedPersona, source, maxHistoryEntries, sessionId)
+      );
+
+      // Persistir mudança no localStorage se necessário
+      if (enableLocalStorage && source !== 'localStorage') {
+        try {
+          safeLocalStorage()?.setItem('selectedPersona', resolvedPersona);
+        } catch (error) {
+          trackLocalStorageError('localstorage_save_error_initial', error);
+          ErrorMonitorService.getInstance().logError(error as Error, {
+            component: 'PersonaContext',
+            severity: 'low',
+            context: { action: 'localStorage.setItem', persona: resolvedPersona }
+          });
         }
+      }
 
-        // Atualizar URL se necessário
-        if (enableURLSync && source !== 'url') {
-          updatePersonaInURL(resolvedPersona);
-        }
+      // Atualizar URL se necessário
+      if (enableURLSync && source !== 'url') {
+        updatePersonaInURL(resolvedPersona);
       }
     }
 
     setIsLoading(false);
   }, [
+    // ✅ Incluir resolvePersona agora que temos ref guard
     resolvePersona,
     personasLoading,
     urlLoading,
-    currentPersona,
     maxHistoryEntries,
     enableLocalStorage,
     enableURLSync,

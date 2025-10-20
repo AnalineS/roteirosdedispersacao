@@ -46,13 +46,9 @@ export default function EducationalLayout({
           animation={true}
         />
       
-      {/* Navigation Header */}
+      {/* Navigation Header - PR #264 Simplified */}
       {showHeader && (
-        <header role="banner">
-          <nav id="navigation" aria-label="Navegação principal">
-            <NavigationHeader currentPersona={currentPersona} />
-          </nav>
-        </header>
+        <NavigationHeader currentPersona={currentPersona} />
       )}
       
       {/* Skip links consolidados - Apenas os essenciais */}

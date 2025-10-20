@@ -10,7 +10,7 @@ import { useCallback } from 'react';
 declare global {
   interface Window {
     gtag?: (...args: any[]) => void;
-    dataLayer?: Object[];
+    dataLayer?: unknown[];
   }
 }
 

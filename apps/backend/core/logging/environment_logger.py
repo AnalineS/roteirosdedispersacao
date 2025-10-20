@@ -41,17 +41,26 @@ class EnvironmentLogger:
         return level_map.get(self.environment, 'INFO')
 
     def _get_log_format(self) -> str:
-        """Formato de log baseado no ambiente"""
+        """
+        Formato de log baseado no ambiente.
 
-        if self.environment == 'production':
-            # Formato estruturado para produção
-            return '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-        elif self.environment == 'development':
-            # Formato limpo para desenvolvimento
-            return '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-        else:
-            # Formato padrão para outros ambientes
-            return '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        Formatos distintos por ambiente:
+        - Production: Estruturado com timestamp completo para análise
+        - Development: Minimalista para debug rápido
+        - Testing: Conciso para logs de teste
+        - Staging: Balanceado entre debug e produção
+        """
+
+        format_templates = {
+            'production': '%(asctime)s | %(levelname)-8s | %(name)s | %(funcName)s:%(lineno)d | %(message)s',
+            'development': '%(levelname)s: %(message)s',
+            'testing': '%(levelname)s | %(name)s | %(message)s',
+            'staging': '%(asctime)s - %(levelname)-8s - %(name)s - %(message)s',
+            'hml': '%(asctime)s - %(levelname)-8s - %(name)s - %(message)s',
+            'homologacao': '%(asctime)s - %(levelname)-8s - %(name)s - %(message)s'
+        }
+
+        return format_templates.get(self.environment, '%(asctime)s - %(levelname)s - %(name)s - %(message)s')
 
     def _should_use_clean_startup(self) -> bool:
         """Determina se deve usar startup limpo (sem warnings)"""
@@ -65,7 +74,18 @@ class EnvironmentLogger:
         return self.environment in clean_environments or clean_startup
 
     def configure_logging(self, enable_warning_suppression: bool = True) -> logging.Logger:
-        """Configura logging principal do sistema"""
+        """
+        Configura logging principal do sistema.
+
+        Args:
+            enable_warning_suppression: Habilita supressão de warnings em ambientes limpos
+
+        Returns:
+            Logger raiz configurado
+        """
+
+        # Selecionar formatter baseado no ambiente
+        formatter_name = 'development' if self.environment == 'development' else 'standard'
 
         # Configuração base
         logging_config = {
@@ -73,17 +93,22 @@ class EnvironmentLogger:
             'disable_existing_loggers': False,
             'formatters': {
                 'standard': {
-                    'format': self._get_log_format()
+                    'format': self._get_log_format(),
+                    'datefmt': '%Y-%m-%d %H:%M:%S'
                 },
-                'minimal': {
+                'development': {
                     'format': '%(levelname)s: %(message)s'
+                },
+                'production': {
+                    'format': self._get_log_format(),
+                    'datefmt': '%Y-%m-%d %H:%M:%S.%f'
                 }
             },
             'handlers': {
                 'console': {
                     'class': 'logging.StreamHandler',
                     'level': self.log_level,
-                    'formatter': 'standard' if self.environment != 'development' else 'minimal',
+                    'formatter': formatter_name,
                     'stream': sys.stdout
                 }
             },
