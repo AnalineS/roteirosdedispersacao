@@ -289,19 +289,7 @@ jobs:
           else
             echo "⚠️ No core functionality tests found - creating basic test"
             mkdir -p tests
-            cat > tests/test_basic.py << 'EOF'
-def test_imports():
-    """Basic import test to ensure core modules load"""
-    try:
-        import main
-        assert True
-    except ImportError:
-        assert False, "Core imports failed"
-
-def test_basic_functionality():
-    """Basic functionality test"""
-    assert 1 + 1 == 2
-EOF
+            python -c 'open("tests/test_basic.py", "w").write("def test_imports():\n    \"\"\"Basic import test\"\"\"\n    try:\n        import main\n        assert True\n    except ImportError:\n        assert False\n\ndef test_basic():\n    assert 1 + 1 == 2\n")'
             python -m pytest tests/test_basic.py -v
           fi
 
