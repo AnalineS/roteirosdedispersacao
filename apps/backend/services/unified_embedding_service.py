@@ -67,22 +67,36 @@ class UnifiedEmbeddingService:
         self.config = config
         self.local_model = None
         self.use_local = False
+        self.prefer_api = False
 
         # Detect environment
         env = os.getenv('ENVIRONMENT', 'production')
+        flask_env = os.getenv('FLASK_ENV', 'production')
 
-        # Try to initialize local model first (development priority)
-        if SENTENCE_TRANSFORMERS_AVAILABLE and env == 'development':
+        # ALWAYS try to load local model (universal fallback)
+        if SENTENCE_TRANSFORMERS_AVAILABLE:
             try:
-                logger.info("[LOCAL MODEL] Loading sentence-transformers...")
+                logger.info("[LOCAL MODEL] Loading sentence-transformers as fallback...")
                 self.local_model = SentenceTransformer(self.MODEL_ID)
-                self.use_local = True
-                logger.info("[LOCAL MODEL] Successfully loaded (384D)")
+                logger.info("[LOCAL MODEL] Successfully loaded (384D) - available as fallback")
             except Exception as e:
                 logger.warning(f"[LOCAL MODEL] Failed to load: {e}")
-                logger.info("[FALLBACK] Will use HuggingFace API")
 
-        # Get API key for fallback or production use
+        # Determine environment preference
+        is_dev_test = env in ['development', 'testing'] or flask_env in ['development', 'testing']
+
+        if is_dev_test:
+            # Development/Testing: prefer local (fast, free, offline)
+            self.use_local = bool(self.local_model)
+            self.prefer_api = False
+            logger.info("[PREFERENCE] Development/Testing → LOCAL model preferred")
+        else:
+            # Production: prefer API, local as fallback
+            self.use_local = False
+            self.prefer_api = True
+            logger.info("[PREFERENCE] Production → API preferred, local fallback available")
+
+        # Get API key for production or fallback
         self.api_key = (
             getattr(config, 'HUGGINGFACE_API_KEY', None) or
             getattr(config, 'HUGGINGFACE_TOKEN', None) or
@@ -92,11 +106,20 @@ class UnifiedEmbeddingService:
             os.getenv('HF_TOKEN')
         )
 
-        # If not using local model, API key is required
-        if not self.use_local and not self.api_key:
+        # Validate at least one backend is available
+        if not self.local_model and not self.api_key:
             logger.error("[CRITICAL] No embedding backend available")
             logger.error("[CRITICAL] Install sentence-transformers OR set HUGGINGFACE_API_KEY")
             raise ValueError("No embedding backend: install sentence-transformers or set HUGGINGFACE_API_KEY")
+
+        # Log final configuration
+        backends = []
+        if self.local_model:
+            backends.append("LOCAL (sentence-transformers)")
+        if self.api_key:
+            backends.append("API (HuggingFace)")
+        logger.info(f"[BACKENDS] Available: {', '.join(backends)}")
+        logger.info(f"[STRATEGY] Primary: {'LOCAL' if self.use_local else 'API'}, Fallback: {'LOCAL' if self.local_model and self.prefer_api else 'API' if self.api_key else 'NONE'}")
 
         # API configuration
         self.headers = {"Authorization": f"Bearer {self.api_key}"} if self.api_key else {}
@@ -153,12 +176,39 @@ class UnifiedEmbeddingService:
         self.stats['cache_misses'] += 1
         start_time = time.time()
 
-        # Use local model if available (development)
+        # Strategy 1: Development/Testing → LOCAL preferred
         if self.use_local and self.local_model:
+            result = self._embed_with_local_model(text, cache_key, start_time)
+            if result.success:
+                return result
+            # Local failed, try API fallback
+            if self.api_key:
+                logger.warning("[FALLBACK] Local model failed, trying API...")
+                return self._embed_with_api(text, cache_key, start_time)
+            return result  # Return failed local result
+
+        # Strategy 2: Production → API preferred with LOCAL fallback
+        if self.prefer_api and self.api_key:
+            result = self._embed_with_api(text, cache_key, start_time)
+            if result.success:
+                return result
+            # API failed, try local fallback
+            if self.local_model:
+                logger.warning("[FALLBACK] API failed, trying local model...")
+                return self._embed_with_local_model(text, cache_key, start_time)
+            return result  # Return failed API result
+
+        # Fallback: use whatever is available
+        if self.local_model:
+            logger.info("[FALLBACK] Using local model (no API key)")
             return self._embed_with_local_model(text, cache_key, start_time)
 
-        # Fallback to API (production)
-        return self._embed_with_api(text, cache_key, start_time)
+        if self.api_key:
+            logger.info("[FALLBACK] Using API (no local model)")
+            return self._embed_with_api(text, cache_key, start_time)
+
+        # No backend available
+        raise ValueError("No embedding backend available")
 
     def _embed_with_local_model(self, text: str, cache_key: str, start_time: float) -> EmbeddingResult:
         """Generate embedding using local sentence-transformers model"""
