@@ -422,11 +422,65 @@ INSTRUÇÃO: Responda usando sua expertise em hanseníase, baseando-se no contex
                         return enhanced
             
             return None
-            
+
         except Exception as e:
             logger.warning(f"Erro no enhancement OpenRouter: {e}")
             return None
-    
+
+    def _classify_query_type(self, query: str, category: str) -> str:
+        """
+        Classifica o tipo de consulta baseado em palavras-chave e categoria
+
+        Returns:
+            str: Tipo de consulta ('dosing_queries', 'safety_queries', 'interaction_queries', 'procedure_queries')
+        """
+        query_lower = query.lower()
+
+        # Keywords por tipo de consulta
+        dosing_keywords = ['dosagem', 'dose', 'mg', 'kg', 'quantidade', 'quanto', 'posologia',
+                          'administra', 'toma', 'peso', 'rifampicina', 'dapsona', 'clofazimina',
+                          'diário', 'mensal', 'supervisionado']
+
+        safety_keywords = ['efeito', 'adverso', 'colateral', 'segurança', 'contraindicação',
+                          'reação', 'toxicidade', 'risco', 'perigo', 'cuidado', 'gestante',
+                          'gravidez', 'hepatotoxicidade', 'hemólise', 'anemia']
+
+        interaction_keywords = ['interação', 'interações', 'combinação', 'junto', 'associa',
+                               'anticoncepcional', 'medicamento', 'fármaco', 'droga',
+                               'cefazolina', 'nevirapina', 'antirretroviral']
+
+        procedure_keywords = ['procedimento', 'dispensação', 'roteiro', 'como', 'etapa',
+                             'passo', 'protocolo', 'processo', 'fluxo', 'orientação']
+
+        # Contagem de keywords por categoria
+        dosing_score = sum(1 for keyword in dosing_keywords if keyword in query_lower)
+        safety_score = sum(1 for keyword in safety_keywords if keyword in query_lower)
+        interaction_score = sum(1 for keyword in interaction_keywords if keyword in query_lower)
+        procedure_score = sum(1 for keyword in procedure_keywords if keyword in query_lower)
+
+        # Determina categoria com maior score
+        scores = {
+            'dosing_queries': dosing_score,
+            'safety_queries': safety_score,
+            'interaction_queries': interaction_score,
+            'procedure_queries': procedure_score
+        }
+
+        # Retorna categoria com maior pontuação, ou dosing como padrão
+        max_score = max(scores.values())
+        if max_score > 0:
+            return max(scores.items(), key=lambda x: x[1])[0]
+
+        # Fallback baseado na categoria geral
+        if 'medicação' in category.lower() or 'tratamento' in category.lower():
+            return 'dosing_queries'
+        elif 'segurança' in category.lower() or 'farmácovigilância' in category.lower():
+            return 'safety_queries'
+        elif 'interação' in category.lower():
+            return 'interaction_queries'
+        else:
+            return 'procedure_queries'
+
     def _generate_out_of_scope_response(
         self, 
         query: str, 
