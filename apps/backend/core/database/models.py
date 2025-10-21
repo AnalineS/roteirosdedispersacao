@@ -3,6 +3,7 @@ Database Models - Sistema completo com SQLite
 Schema estruturado para sistema educacional de hanseníase
 """
 
+import os
 import sqlite3
 import hashlib
 import json

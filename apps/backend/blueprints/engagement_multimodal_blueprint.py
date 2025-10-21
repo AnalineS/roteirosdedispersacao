@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Engagement & Multimodal Blueprint"""
 from flask import Blueprint, jsonify, request
+from markupsafe import escape
 from datetime import datetime
 import logging
 
@@ -43,13 +44,19 @@ def submit_feedback():
 
         user_id = data.get('user_id', '')
 
+        # Sanitize user inputs to prevent XSS and injection attacks
+        # Flask best practice: use markupsafe.escape() for all user-provided data
+        feedback_sanitized = str(escape(feedback_text)) if feedback_text else ''
+        message_id_sanitized = str(escape(message_id)) if message_id else ''
+        user_id_sanitized = str(escape(user_id)) if user_id else ''
+
         # Process feedback (in real system would save to database)
         response_data = {
             'status': 'received',
             'rating': rating,
-            'feedback': feedback_text,
-            'message_id': message_id,
-            'user_id': user_id,
+            'feedback': feedback_sanitized,
+            'message_id': message_id_sanitized,
+            'user_id': user_id_sanitized,
             'timestamp': datetime.now().isoformat()
         }
 
