@@ -73,53 +73,14 @@ class UnifiedEmbeddingService:
         env = os.getenv('ENVIRONMENT', 'production')
         flask_env = os.getenv('FLASK_ENV', 'production')
 
-        # ALWAYS try to load local model (universal fallback)
-        if SENTENCE_TRANSFORMERS_AVAILABLE:
-            try:
-                logger.info("[LOCAL MODEL] Loading sentence-transformers as fallback...")
-                self.local_model = SentenceTransformer(self.MODEL_ID)
-                logger.info("[LOCAL MODEL] Successfully loaded (384D) - available as fallback")
-            except Exception as e:
-                logger.warning(f"[LOCAL MODEL] Failed to load: {e}")
+        # Initialize backends
+        self._load_local_model()
+        self._configure_environment_preference(env, flask_env)
+        self.api_key = self._get_api_key(config)
 
-        # Determine environment preference
-        is_dev_test = env in ['development', 'testing'] or flask_env in ['development', 'testing']
-
-        if is_dev_test:
-            # Development/Testing: prefer local (fast, free, offline)
-            self.use_local = bool(self.local_model)
-            self.prefer_api = False
-            logger.info("[PREFERENCE] Development/Testing → LOCAL model preferred")
-        else:
-            # Production: prefer API, local as fallback
-            self.use_local = False
-            self.prefer_api = True
-            logger.info("[PREFERENCE] Production → API preferred, local fallback available")
-
-        # Get API key for production or fallback
-        self.api_key = (
-            getattr(config, 'HUGGINGFACE_API_KEY', None) or
-            getattr(config, 'HUGGINGFACE_TOKEN', None) or
-            getattr(config, 'HF_TOKEN', None) or
-            os.getenv('HUGGINGFACE_API_KEY') or
-            os.getenv('HUGGINGFACE_TOKEN') or
-            os.getenv('HF_TOKEN')
-        )
-
-        # Validate at least one backend is available
-        if not self.local_model and not self.api_key:
-            logger.error("[CRITICAL] No embedding backend available")
-            logger.error("[CRITICAL] Install sentence-transformers OR set HUGGINGFACE_API_KEY")
-            raise ValueError("No embedding backend: install sentence-transformers or set HUGGINGFACE_API_KEY")
-
-        # Log final configuration
-        backends = []
-        if self.local_model:
-            backends.append("LOCAL (sentence-transformers)")
-        if self.api_key:
-            backends.append("API (HuggingFace)")
-        logger.info(f"[BACKENDS] Available: {', '.join(backends)}")
-        logger.info(f"[STRATEGY] Primary: {'LOCAL' if self.use_local else 'API'}, Fallback: {'LOCAL' if self.local_model and self.prefer_api else 'API' if self.api_key else 'NONE'}")
+        # Validate and log configuration
+        self._validate_backends()
+        self._log_configuration()
 
         # API configuration
         self.headers = {"Authorization": f"Bearer {self.api_key}"} if self.api_key else {}
@@ -152,6 +113,72 @@ class UnifiedEmbeddingService:
             logger.info("[API KEY] %s", 'SET' if self.api_key else 'NOT SET')
         logger.info("[CACHE] TTL=3600s, maxsize=1000")
         logger.info("=" * 80)
+
+    def _load_local_model(self):
+        """Load sentence-transformers model if available"""
+        if SENTENCE_TRANSFORMERS_AVAILABLE:
+            try:
+                logger.info("[LOCAL MODEL] Loading sentence-transformers as fallback...")
+                self.local_model = SentenceTransformer(self.MODEL_ID)
+                logger.info("[LOCAL MODEL] Successfully loaded (384D) - available as fallback")
+            except Exception as e:
+                logger.warning(f"[LOCAL MODEL] Failed to load: {e}")
+
+    def _configure_environment_preference(self, env: str, flask_env: str):
+        """Configure backend preference based on environment"""
+        is_dev_test = env in ['development', 'testing'] or flask_env in ['development', 'testing']
+
+        if is_dev_test:
+            # Development/Testing: prefer local (fast, free, offline)
+            self.use_local = bool(self.local_model)
+            self.prefer_api = False
+            logger.info("[PREFERENCE] Development/Testing → LOCAL model preferred")
+        else:
+            # Production: prefer API, local as fallback
+            self.use_local = False
+            self.prefer_api = True
+            logger.info("[PREFERENCE] Production → API preferred, local fallback available")
+
+    def _get_api_key(self, config) -> str:
+        """Extract API key from config or environment"""
+        return (
+            getattr(config, 'HUGGINGFACE_API_KEY', None) or
+            getattr(config, 'HUGGINGFACE_TOKEN', None) or
+            getattr(config, 'HF_TOKEN', None) or
+            os.getenv('HUGGINGFACE_API_KEY') or
+            os.getenv('HUGGINGFACE_TOKEN') or
+            os.getenv('HF_TOKEN')
+        )
+
+    def _validate_backends(self):
+        """Ensure at least one backend is available"""
+        if not self.local_model and not self.api_key:
+            logger.error("[CRITICAL] No embedding backend available")
+            logger.error("[CRITICAL] Install sentence-transformers OR set HUGGINGFACE_API_KEY")
+            raise ValueError("No embedding backend: install sentence-transformers or set HUGGINGFACE_API_KEY")
+
+    def _log_configuration(self):
+        """Log available backends and strategy"""
+        backends = []
+        if self.local_model:
+            backends.append("LOCAL (sentence-transformers)")
+        if self.api_key:
+            backends.append("API (HuggingFace)")
+
+        logger.info(f"[BACKENDS] Available: {', '.join(backends)}")
+
+        # Fix Issue 2: Extract nested conditional into variables
+        primary = 'LOCAL' if self.use_local else 'API'
+        fallback = self._get_fallback_name()
+        logger.info(f"[STRATEGY] Primary: {primary}, Fallback: {fallback}")
+
+    def _get_fallback_name(self) -> str:
+        """Determine fallback backend name"""
+        if self.local_model and self.prefer_api:
+            return 'LOCAL'
+        if self.api_key:
+            return 'API'
+        return 'NONE'
 
     def is_available(self) -> bool:
         """Check if service is available"""
