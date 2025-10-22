@@ -29,6 +29,9 @@ except ImportError as e:
     logger.warning(f"[WARNING] Dependências RAG não disponíveis: {e}")
     DEPENDENCIES_AVAILABLE = False
 
+# SonarQube S1192: Constant for duplicated string literal
+INTERACTION_KEYWORD = 'interação'
+
 # Import OpenRouter para contexto adicional
 try:
     from services.ai.openai_integration import get_openrouter_client, is_openrouter_available
@@ -111,7 +114,7 @@ class SupabaseRAGSystem:
             ],
             'farmacologia': [
                 'dose', 'dosagem', 'posologia', 'administração',
-                'efeito colateral', 'contraindicação', 'interação',
+                'efeito colateral', 'contraindicação', INTERACTION_KEYWORD,
                 'farmacocinética', 'farmacodinâmica'
             ],
             'dispensacao': [
@@ -445,7 +448,7 @@ INSTRUÇÃO: Responda usando sua expertise em hanseníase, baseando-se no contex
                           'reação', 'toxicidade', 'risco', 'perigo', 'cuidado', 'gestante',
                           'gravidez', 'hepatotoxicidade', 'hemólise', 'anemia']
 
-        interaction_keywords = ['interação', 'interações', 'combinação', 'junto', 'associa',
+        interaction_keywords = [INTERACTION_KEYWORD, 'interações', 'combinação', 'junto', 'associa',
                                'anticoncepcional', 'medicamento', 'fármaco', 'droga',
                                'cefazolina', 'nevirapina', 'antirretroviral']
 
@@ -476,7 +479,7 @@ INSTRUÇÃO: Responda usando sua expertise em hanseníase, baseando-se no contex
             return 'dosing_queries'
         elif 'segurança' in category.lower() or 'farmácovigilância' in category.lower():
             return 'safety_queries'
-        elif 'interação' in category.lower():
+        elif INTERACTION_KEYWORD in category.lower():
             return 'interaction_queries'
         else:
             return 'procedure_queries'
