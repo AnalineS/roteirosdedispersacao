@@ -51,13 +51,13 @@ def submit_feedback():
         user_id_sanitized = str(escape(user_id)) if user_id else ''
 
         # Process feedback (in real system would save to database)
+        # Security fix: Never echo user input back in response to prevent XSS/SQL injection
         response_data = {
             'status': 'received',
             'rating': rating,
-            'feedback': feedback_sanitized,
-            'message_id': message_id_sanitized,
-            'user_id': user_id_sanitized,
-            'timestamp': datetime.now().isoformat()
+            'feedback_length': len(feedback_sanitized),
+            'timestamp': datetime.now().isoformat(),
+            'message': 'Feedback received successfully'
         }
 
         logger.info(f"Feedback received: rating={rating}, feedback_length={len(feedback_text)}")

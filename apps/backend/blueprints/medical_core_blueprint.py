@@ -57,6 +57,10 @@ def chat():
         except Exception as e:
             logger.warning(f"RAG query failed: {e}")
 
+        # Security fix: Sanitize user input before including in responses
+        import html
+        sanitized_message = html.escape(message, quote=True) if message else ""
+
         # Generate response based on persona and RAG context
         if rag_response:
             # Use RAG-enhanced response
@@ -65,11 +69,11 @@ def chat():
             sources = rag_response.sources
             system_used = 'supabase_rag'
         else:
-            # Fallback response
+            # Fallback response - don't echo user input to prevent XSS/SQL injection
             if persona in ['gasnelio', 'dr_gasnelio']:
-                response_text = f"""**Dr. Gasnelio (Farmacêutico Clínico):**
+                response_text = """**Dr. Gasnelio (Farmacêutico Clínico):**
 
-Recebi sua consulta sobre: "{message}"
+Recebi sua consulta sobre hanseníase.
 
 No momento, estou com acesso limitado à base de conhecimento específica. Para informações precisas sobre PQT-U (Poliquimioterapia Única) para hanseníase, recomendo:
 
@@ -79,9 +83,9 @@ No momento, estou com acesso limitado à base de conhecimento específica. Para 
 
 **⚠️ Importante:** Para dosagens específicas e orientações clínicas, sempre consulte fontes oficiais atualizadas."""
             else:
-                response_text = f"""**Gá (Assistente Empática):**
+                response_text = """**Gá (Assistente Empática):**
 
-Oi! Recebi sua pergunta sobre: "{message}"
+Oi! Recebi sua pergunta sobre hanseníase.
 
 Estou aqui para ajudar você com informações sobre hanseníase! 😊
 

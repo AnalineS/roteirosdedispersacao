@@ -8,13 +8,19 @@ import sqlite3
 import hashlib
 import json
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Any, Optional, Tuple
 from dataclasses import dataclass, asdict
 from enum import Enum
 import logging
 
 logger = logging.getLogger(__name__)
+
+# Helper function for UTC datetime (timezone-aware)
+# Replaces deprecated datetime.utcnow() with datetime.now(timezone.utc)
+def utcnow() -> datetime:
+    """Get current UTC time as timezone-aware datetime"""
+    return datetime.now(timezone.utc)
 
 class UserRole(Enum):
     ADMIN = "admin"
@@ -242,7 +248,7 @@ class DatabaseSchema:
             f"""
             INSERT OR IGNORE INTO users (id, email, password_hash, roles, created_at, is_active)
             VALUES ('{admin_id}', 'admin@roteiros.com', '{admin_password}',
-                    '["admin", "educator"]', '{datetime.utcnow().isoformat()}', 1)
+                    '["admin", "educator"]', '{utcnow().isoformat()}', 1)
             """,
 
             """
@@ -275,4 +281,4 @@ def calculate_expiry_date(data_category: DataCategory) -> datetime:
     }
 
     days = retention_days.get(data_category, 30)
-    return datetime.utcnow() + timedelta(days=days)
+    return utcnow() + timedelta(days=days)

@@ -242,13 +242,14 @@ def submit_feedback():
             if not isinstance(rating, int) or rating < 1 or rating > 5:
                 rating = 5
 
+            # Security fix: Never echo user input back in response
+            # Store sanitized data but don't return it to prevent XSS/SQL injection
             response = {
                 "status": "received",
-                "feedback": sanitized_feedback,
+                "feedback_length": len(sanitized_feedback),
                 "rating": rating,
-                "user_id": sanitized_user_id,
-                "message_id": sanitized_message_id,
-                "timestamp": start_time.isoformat()
+                "timestamp": start_time.isoformat(),
+                "message": "Feedback received successfully"
             }
 
             logger.info(f"[{request_id}] Feedback simples sanitizado e processado")
