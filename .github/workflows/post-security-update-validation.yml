@@ -186,6 +186,42 @@ jobs:
           print(f'✅ Configuration loaded: {len(config)} sections')
           "
 
+      - name: Validate RAG system credentials
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          echo "🔐 Validating RAG system credentials..."
+
+          # Check if credentials are present and non-empty
+          if [ -z "$OPENROUTER_API_KEY" ]; then
+            echo "❌ ERROR: OPENROUTER_API_KEY secret is not configured or is empty"
+            echo "⚠️  Please configure this secret in GitHub Settings > Secrets and variables > Actions"
+            echo "ℹ️  The medical accuracy test requires OpenRouter API access"
+            exit 1
+          fi
+
+          if [ -z "$SUPABASE_URL" ]; then
+            echo "❌ ERROR: SUPABASE_URL secret is not configured or is empty"
+            echo "⚠️  Please configure this secret in GitHub Settings > Secrets and variables > Actions"
+            echo "ℹ️  The RAG system requires Supabase PostgreSQL vector store"
+            exit 1
+          fi
+
+          if [ -z "$SUPABASE_SERVICE_KEY" ]; then
+            echo "❌ ERROR: SUPABASE_SERVICE_KEY secret is not configured or is empty"
+            echo "⚠️  Please configure this secret in GitHub Settings > Secrets and variables > Actions"
+            echo "ℹ️  The RAG system requires Supabase service key for vector operations"
+            exit 1
+          fi
+
+          echo "✅ All RAG system credentials are configured"
+          echo "🔍 Credentials validation:"
+          echo "   - OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:0:10}... (${#OPENROUTER_API_KEY} chars)"
+          echo "   - SUPABASE_URL: ${SUPABASE_URL:0:30}... (${#SUPABASE_URL} chars)"
+          echo "   - SUPABASE_SERVICE_KEY: ${SUPABASE_SERVICE_KEY:0:10}... (${#SUPABASE_SERVICE_KEY} chars)"
+
       - name: Run critical medical functionality tests
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
