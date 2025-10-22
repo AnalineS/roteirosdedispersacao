@@ -10,6 +10,8 @@ on:
 env:
   NODE_VERSION: '20'
   PYTHON_VERSION: '3.11'
+  # Desabilita pr-diff-range extension pack que está causando falhas com shallow clones
+  CODEQL_ACTION_DISABLE_DIFF_RANGE: true
 
 permissions:
   contents: read
