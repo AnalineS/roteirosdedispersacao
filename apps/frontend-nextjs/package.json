@@ -81,7 +81,7 @@
     "react-ga4": "^2.1.0",
     "react-image-crop": "^11.0.10",
     "web-vitals": "^5.1.0",
-    "zod": "^4.1.5"
+    "zod": "^4.1.11"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
