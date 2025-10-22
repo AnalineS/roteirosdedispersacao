@@ -222,6 +222,39 @@ jobs:
           echo "   - SUPABASE_URL: ${SUPABASE_URL:0:30}... (${#SUPABASE_URL} chars)"
           echo "   - SUPABASE_SERVICE_KEY: ${SUPABASE_SERVICE_KEY:0:10}... (${#SUPABASE_SERVICE_KEY} chars)"
 
+      - name: Index knowledge base to Supabase
+        env:
+          HUGGINGFACE_TOKEN: ${{ secrets.HUGGINGFACE_TOKEN }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: |
+          cd apps/backend
+          echo "📚 Indexing knowledge base to Supabase vector store..."
+
+          # Install dependencies for embedding generation
+          pip install sentence-transformers huggingface_hub
+
+          # Run indexing script from project root
+          cd ../..
+          python scripts/index_knowledge_base.py
+
+          # Verify indexing succeeded by checking document count
+          python -c "
+          import os
+          from supabase import create_client
+
+          client = create_client(os.environ['SUPABASE_URL'], os.environ['SUPABASE_SERVICE_KEY'])
+          result = client.table('documents').select('id', count='exact').execute()
+          doc_count = result.count if hasattr(result, 'count') else len(result.data)
+
+          if doc_count == 0:
+              raise Exception('❌ Knowledge base indexing failed - no documents found')
+
+          print(f'✅ Knowledge base indexed successfully: {doc_count} documents')
+          "
+
       - name: Run critical medical functionality tests
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
