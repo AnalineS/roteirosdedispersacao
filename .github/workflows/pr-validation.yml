@@ -4,6 +4,8 @@ on:
   pull_request:
     branches: [main, hml]
     types: [opened, synchronize, reopened, ready_for_review]
+  push:
+    branches: [main, hml]
 
 env:
   NODE_VERSION: '20'
@@ -119,13 +121,7 @@ jobs:
         with:
           languages: ${{ matrix.language }}
           queries: +security-and-quality
-          config: |
-            paths-ignore:
-              - '**/node_modules/**'
-              - '**/dist/**'
-              - '**/build/**'
-              - '**/__tests__/**'
-              - '**/tests/**'
+          # Config inline removed - using CodeQL defaults to avoid extension pack conflicts
 
       - name: "🏗️ Autobuild"
         uses: github/codeql-action/autobuild@ea9e4e37992a54ee68a9622e985e60c8e8f12d9f
@@ -139,7 +135,7 @@ jobs:
       # Snyk Security Scan (run for each language)
       - name: "🔐 Setup Snyk for ${{ matrix.language }}"
         if: always()
-        run: npm install -g snyk
+        run: npm install -g snyk snyk-to-html
 
       - name: "🔐 Run Snyk Security Scan - JavaScript"
         if: matrix.language == 'javascript'
@@ -180,8 +176,11 @@ jobs:
         with:
           name: snyk-results-${{ matrix.language }}
           path: |
-            snyk-*.json
-            snyk-*.html
+            snyk-js-results.json
+            snyk-js-report.html
+            snyk-py-results.json
+            snyk-py-report.html
+          if-no-files-found: ignore
           retention-days: 30
 
   # Integrated Code Quality Gate: SonarQube + Linting + Type Checking
