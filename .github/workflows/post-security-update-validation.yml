@@ -246,13 +246,13 @@ jobs:
           from supabase import create_client
 
           client = create_client(os.environ['SUPABASE_URL'], os.environ['SUPABASE_SERVICE_KEY'])
-          result = client.table('documents').select('id', count='exact').execute()
+          result = client.table('medical_embeddings').select('id', count='exact').execute()
           doc_count = result.count if hasattr(result, 'count') else len(result.data)
 
           if doc_count == 0:
-              raise Exception('❌ Knowledge base indexing failed - no documents found')
+              raise Exception('❌ Knowledge base indexing failed - no embeddings found')
 
-          print(f'✅ Knowledge base indexed successfully: {doc_count} documents')
+          print(f'✅ Knowledge base indexed successfully: {doc_count} medical embeddings')
           "
 
       - name: Run critical medical functionality tests
