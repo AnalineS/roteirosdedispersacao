@@ -32,17 +32,19 @@ class TestConfig:
     SECRET_KEY = 'test-secret-key-for-testing-only'
     RATE_LIMIT_ENABLED = False
     CACHE_ENABLED = False
-    EMBEDDINGS_ENABLED = False
-    RAG_AVAILABLE = False
+    EMBEDDINGS_ENABLED = True  # Enable for medical validation tests
+    RAG_AVAILABLE = True  # Enable for medical validation tests
     QA_ENABLED = False
     EMAIL_ENABLED = False
     METRICS_ENABLED = False
 
-    # Database settings for testing
+    # Database settings for testing - use environment variables when available
     SQLITE_DB_PATH = ':memory:'
-    SUPABASE_URL = None
-    OPENROUTER_API_KEY = 'test-key'
-    HUGGINGFACE_API_KEY = 'test-key'
+    SUPABASE_URL = os.getenv('SUPABASE_URL')  # Use real Supabase in CI
+    SUPABASE_KEY = os.getenv('SUPABASE_SERVICE_KEY') or os.getenv('SUPABASE_KEY')
+    SUPABASE_SERVICE_KEY = os.getenv('SUPABASE_SERVICE_KEY')
+    OPENROUTER_API_KEY = os.getenv('OPENROUTER_API_KEY', 'test-key')
+    HUGGINGFACE_API_KEY = os.getenv('HUGGINGFACE_API_KEY', 'test-key')
 
 @pytest.fixture(scope="session")
 def app():
