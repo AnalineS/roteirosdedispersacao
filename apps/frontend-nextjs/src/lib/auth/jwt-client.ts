@@ -4,7 +4,7 @@
  * Uses centralized environment configuration
  */
 
-import axios, { AxiosInstance, AxiosResponse } from 'axios';
+import axios, { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig, AxiosError } from 'axios';
 import Cookies from 'js-cookie';
 import config from '@/config/environment';
 import securityConfig from '@/config/security';
@@ -63,7 +63,7 @@ class JWTClient {
     }
 
     // Interceptor para adicionar token
-    this.api.interceptors.request.use((config) => {
+    this.api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
       if (this.accessToken) {
         config.headers.Authorization = `Bearer ${this.accessToken}`;
       }
@@ -72,14 +72,16 @@ class JWTClient {
 
     // Interceptor para refresh automático
     this.api.interceptors.response.use(
-      (response) => response,
-      async (error) => {
-        if (error.response?.status === 401 && this.refreshToken) {
+      (response: AxiosResponse) => response,
+      async (error: AxiosError) => {
+        if (error.response?.status === 401 && this.refreshToken && error.config) {
           try {
             await this.refreshAccessToken();
             // Retry original request
             const originalRequest = error.config;
-            originalRequest.headers.Authorization = `Bearer ${this.accessToken}`;
+            if (originalRequest.headers) {
+              originalRequest.headers.Authorization = `Bearer ${this.accessToken}`;
+            }
             return this.api(originalRequest);
           } catch (refreshError) {
             this.logout();
