@@ -38,17 +38,18 @@ class TestConfig:
     EMAIL_ENABLED = False
     METRICS_ENABLED = False
 
-    # Database settings for testing - use environment variables when available
+    # Database settings for testing
     SQLITE_DB_PATH = ':memory:'
-    SUPABASE_URL = os.getenv('SUPABASE_URL')  # Use real Supabase in CI
-    SUPABASE_KEY = os.getenv('SUPABASE_SERVICE_KEY') or os.getenv('SUPABASE_KEY')
-    SUPABASE_SERVICE_KEY = os.getenv('SUPABASE_SERVICE_KEY')
-    OPENROUTER_API_KEY = os.getenv('OPENROUTER_API_KEY', 'test-key')
-    HUGGINGFACE_API_KEY = os.getenv('HUGGINGFACE_API_KEY', 'test-key')
+    # Note: Supabase config read dynamically from environment in fixture
 
 @pytest.fixture(scope="session")
 def app():
     """Create Flask app instance for testing"""
+    # Debug: Print environment variables BEFORE any modifications
+    print(f"[TEST DEBUG] SUPABASE_URL from env: {os.getenv('SUPABASE_URL', 'NOT SET')[:50] if os.getenv('SUPABASE_URL') else 'NOT SET'}...")
+    print(f"[TEST DEBUG] SUPABASE_SERVICE_KEY from env: {os.getenv('SUPABASE_SERVICE_KEY', 'NOT SET')[:20] if os.getenv('SUPABASE_SERVICE_KEY') else 'NOT SET'}...")
+    print(f"[TEST DEBUG] OPENROUTER_API_KEY from env: {os.getenv('OPENROUTER_API_KEY', 'NOT SET')[:20] if os.getenv('OPENROUTER_API_KEY') else 'NOT SET'}...")
+
     # Set test environment
     os.environ['TESTING'] = 'true'
     os.environ['ENVIRONMENT'] = 'testing'
@@ -65,6 +66,20 @@ def app():
     for key, value in vars(TestConfig).items():
         if not key.startswith('_'):
             app.config[key] = value
+
+    # Read Supabase config from environment variables (set by GitHub Actions)
+    # This must be done AFTER app creation to ensure env vars are available
+    supabase_url = os.getenv('SUPABASE_URL')
+    supabase_service_key = os.getenv('SUPABASE_SERVICE_KEY') or os.getenv('SUPABASE_KEY')
+
+    print(f"[TEST DEBUG] Setting app.config SUPABASE_URL to: {supabase_url[:50] if supabase_url else 'None'}...")
+    print(f"[TEST DEBUG] Setting app.config SUPABASE_SERVICE_KEY to: {supabase_service_key[:20] if supabase_service_key else 'None'}...")
+
+    app.config['SUPABASE_URL'] = supabase_url
+    app.config['SUPABASE_KEY'] = supabase_service_key
+    app.config['SUPABASE_SERVICE_KEY'] = supabase_service_key
+    app.config['OPENROUTER_API_KEY'] = os.getenv('OPENROUTER_API_KEY', 'test-key')
+    app.config['HUGGINGFACE_API_KEY'] = os.getenv('HUGGINGFACE_API_KEY', 'test-key')
 
     app.config['TESTING'] = True
 
