@@ -50,6 +50,11 @@ def app():
     print(f"[TEST DEBUG] SUPABASE_SERVICE_KEY from env: {os.getenv('SUPABASE_SERVICE_KEY', 'NOT SET')[:20] if os.getenv('SUPABASE_SERVICE_KEY') else 'NOT SET'}...")
     print(f"[TEST DEBUG] OPENROUTER_API_KEY from env: {os.getenv('OPENROUTER_API_KEY', 'NOT SET')[:20] if os.getenv('OPENROUTER_API_KEY') else 'NOT SET'}...")
 
+    # Debug: Check global config singleton from app_config
+    print(f"[TEST DEBUG] Global config.SUPABASE_URL: {config.SUPABASE_URL[:50] if config.SUPABASE_URL else 'None'}...")
+    print(f"[TEST DEBUG] Global config.SUPABASE_KEY: {config.SUPABASE_KEY[:20] if config.SUPABASE_KEY else 'None'}...")
+    print(f"[TEST DEBUG] Global config.SUPABASE_SERVICE_KEY: {config.SUPABASE_SERVICE_KEY[:20] if config.SUPABASE_SERVICE_KEY else 'None'}...")
+
     # Set test environment
     os.environ['TESTING'] = 'true'
     os.environ['ENVIRONMENT'] = 'testing'
@@ -62,24 +67,27 @@ def app():
             with patch('core.security.production_rate_limiter.init_production_rate_limiter'):
                 app = create_app()
 
-    # Override config for testing
+    # Override config for testing, BUT preserve Supabase config from environment
+    supabase_url_before = app.config.get('SUPABASE_URL')
+    supabase_key_before = app.config.get('SUPABASE_KEY')
+    supabase_service_key_before = app.config.get('SUPABASE_SERVICE_KEY')
+
+    print(f"[TEST DEBUG] App config BEFORE override - SUPABASE_URL: {supabase_url_before[:50] if supabase_url_before else 'None'}...")
+    print(f"[TEST DEBUG] App config BEFORE override - SUPABASE_SERVICE_KEY: {supabase_service_key_before[:20] if supabase_service_key_before else 'None'}...")
+
     for key, value in vars(TestConfig).items():
         if not key.startswith('_'):
             app.config[key] = value
 
-    # Read Supabase config from environment variables (set by GitHub Actions)
-    # This must be done AFTER app creation to ensure env vars are available
-    supabase_url = os.getenv('SUPABASE_URL')
-    supabase_service_key = os.getenv('SUPABASE_SERVICE_KEY') or os.getenv('SUPABASE_KEY')
-
-    print(f"[TEST DEBUG] Setting app.config SUPABASE_URL to: {supabase_url[:50] if supabase_url else 'None'}...")
-    print(f"[TEST DEBUG] Setting app.config SUPABASE_SERVICE_KEY to: {supabase_service_key[:20] if supabase_service_key else 'None'}...")
-
-    app.config['SUPABASE_URL'] = supabase_url
-    app.config['SUPABASE_KEY'] = supabase_service_key
-    app.config['SUPABASE_SERVICE_KEY'] = supabase_service_key
+    # Restore Supabase config from environment (don't let TestConfig override it)
+    app.config['SUPABASE_URL'] = supabase_url_before or os.getenv('SUPABASE_URL')
+    app.config['SUPABASE_KEY'] = supabase_service_key_before or os.getenv('SUPABASE_SERVICE_KEY') or os.getenv('SUPABASE_KEY')
+    app.config['SUPABASE_SERVICE_KEY'] = supabase_service_key_before or os.getenv('SUPABASE_SERVICE_KEY')
     app.config['OPENROUTER_API_KEY'] = os.getenv('OPENROUTER_API_KEY', 'test-key')
     app.config['HUGGINGFACE_API_KEY'] = os.getenv('HUGGINGFACE_API_KEY', 'test-key')
+
+    print(f"[TEST DEBUG] App config AFTER restore - SUPABASE_URL: {app.config['SUPABASE_URL'][:50] if app.config.get('SUPABASE_URL') else 'None'}...")
+    print(f"[TEST DEBUG] App config AFTER restore - SUPABASE_SERVICE_KEY: {app.config['SUPABASE_SERVICE_KEY'][:20] if app.config.get('SUPABASE_SERVICE_KEY') else 'None'}...")
 
     app.config['TESTING'] = True
 
