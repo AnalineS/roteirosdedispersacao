@@ -73,14 +73,15 @@ class SupabaseVectorStore:
         if not SUPABASE_AVAILABLE:
             logger.warning("[WARNING] Supabase client não instalado - usando store local")
             return False
-        
-        if not self.config.SUPABASE_URL or not self.config.SUPABASE_KEY:
+
+        # Check for Supabase URL and either service key or regular key
+        api_key = self.config.SUPABASE_SERVICE_KEY or self.config.SUPABASE_KEY
+        if not self.config.SUPABASE_URL or not api_key:
             logger.info("📁 Supabase não configurado - usando store local para desenvolvimento")
             return False
-        
+
         try:
             # Usar service role key para operações de administração
-            api_key = self.config.SUPABASE_SERVICE_KEY or self.config.SUPABASE_KEY
             
             self.client = create_client(
                 supabase_url=self.config.SUPABASE_URL,
