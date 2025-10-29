@@ -42,55 +42,66 @@ class TestConfig:
     SQLITE_DB_PATH = ':memory:'
     # Note: Supabase config read dynamically from environment in fixture
 
+def _debug_print_config(label: str, app_config_dict: dict = None):
+    """Helper to print debug config information"""
+    print(f"[TEST DEBUG] {label}")
+    if app_config_dict:
+        for key in ['SUPABASE_URL', 'SUPABASE_SERVICE_KEY']:
+            val = app_config_dict.get(key)
+            truncate_len = 50 if 'URL' in key else 20
+            print(f"  {key}: {val[:truncate_len] if val else 'None'}...")
+    else:
+        # Print from environment
+        for key in ['SUPABASE_URL', 'SUPABASE_SERVICE_KEY', 'OPENROUTER_API_KEY']:
+            val = os.getenv(key, 'NOT SET')
+            truncate_len = 50 if 'URL' in key else 20
+            print(f"  {key}: {val[:truncate_len] if val else 'NOT SET'}...")
+
+def _restore_supabase_config(app, saved_config: dict):
+    """Restore Supabase configuration from saved values or environment"""
+    app.config['SUPABASE_URL'] = saved_config['url'] or os.getenv('SUPABASE_URL')
+    app.config['SUPABASE_KEY'] = saved_config['service_key'] or os.getenv('SUPABASE_SERVICE_KEY') or os.getenv('SUPABASE_KEY')
+    app.config['SUPABASE_SERVICE_KEY'] = saved_config['service_key'] or os.getenv('SUPABASE_SERVICE_KEY')
+    app.config['OPENROUTER_API_KEY'] = os.getenv('OPENROUTER_API_KEY', 'test-key')
+    app.config['HUGGINGFACE_API_KEY'] = os.getenv('HUGGINGFACE_API_KEY', 'test-key')
+
 @pytest.fixture(scope="session")
 def app():
     """Create Flask app instance for testing"""
-    # Debug: Print environment variables BEFORE any modifications
-    print(f"[TEST DEBUG] SUPABASE_URL from env: {os.getenv('SUPABASE_URL', 'NOT SET')[:50] if os.getenv('SUPABASE_URL') else 'NOT SET'}...")
-    print(f"[TEST DEBUG] SUPABASE_SERVICE_KEY from env: {os.getenv('SUPABASE_SERVICE_KEY', 'NOT SET')[:20] if os.getenv('SUPABASE_SERVICE_KEY') else 'NOT SET'}...")
-    print(f"[TEST DEBUG] OPENROUTER_API_KEY from env: {os.getenv('OPENROUTER_API_KEY', 'NOT SET')[:20] if os.getenv('OPENROUTER_API_KEY') else 'NOT SET'}...")
-
-    # Debug: Check global config singleton from app_config
-    print(f"[TEST DEBUG] Global config.SUPABASE_URL: {config.SUPABASE_URL[:50] if config.SUPABASE_URL else 'None'}...")
-    print(f"[TEST DEBUG] Global config.SUPABASE_KEY: {config.SUPABASE_KEY[:20] if config.SUPABASE_KEY else 'None'}...")
-    print(f"[TEST DEBUG] Global config.SUPABASE_SERVICE_KEY: {config.SUPABASE_SERVICE_KEY[:20] if config.SUPABASE_SERVICE_KEY else 'None'}...")
+    _debug_print_config("Environment variables", None)
 
     # Set test environment
-    os.environ['TESTING'] = 'true'
-    os.environ['ENVIRONMENT'] = 'testing'
-    os.environ['SECRET_KEY'] = TestConfig.SECRET_KEY
-    os.environ['RATE_LIMIT_ENABLED'] = 'false'
+    os.environ.update({
+        'TESTING': 'true',
+        'ENVIRONMENT': 'testing',
+        'SECRET_KEY': TestConfig.SECRET_KEY,
+        'RATE_LIMIT_ENABLED': 'false'
+    })
 
     # Mock heavy dependencies during app creation
-    with patch('core.security.enhanced_security.init_security_optimizations'):
-        with patch('core.performance.response_optimizer.init_performance_optimizations'):
-            with patch('core.security.production_rate_limiter.init_production_rate_limiter'):
-                app = create_app()
+    with patch('core.security.enhanced_security.init_security_optimizations'), \
+         patch('core.performance.response_optimizer.init_performance_optimizations'), \
+         patch('core.security.production_rate_limiter.init_production_rate_limiter'):
+        app = create_app()
 
-    # Override config for testing, BUT preserve Supabase config from environment
-    supabase_url_before = app.config.get('SUPABASE_URL')
-    supabase_key_before = app.config.get('SUPABASE_KEY')
-    supabase_service_key_before = app.config.get('SUPABASE_SERVICE_KEY')
+    # Preserve Supabase config before TestConfig override
+    saved_config = {
+        'url': app.config.get('SUPABASE_URL'),
+        'key': app.config.get('SUPABASE_KEY'),
+        'service_key': app.config.get('SUPABASE_SERVICE_KEY')
+    }
+    _debug_print_config("Before override", saved_config)
 
-    print(f"[TEST DEBUG] App config BEFORE override - SUPABASE_URL: {supabase_url_before[:50] if supabase_url_before else 'None'}...")
-    print(f"[TEST DEBUG] App config BEFORE override - SUPABASE_SERVICE_KEY: {supabase_service_key_before[:20] if supabase_service_key_before else 'None'}...")
-
+    # Apply TestConfig
     for key, value in vars(TestConfig).items():
         if not key.startswith('_'):
             app.config[key] = value
 
-    # Restore Supabase config from environment (don't let TestConfig override it)
-    app.config['SUPABASE_URL'] = supabase_url_before or os.getenv('SUPABASE_URL')
-    app.config['SUPABASE_KEY'] = supabase_service_key_before or os.getenv('SUPABASE_SERVICE_KEY') or os.getenv('SUPABASE_KEY')
-    app.config['SUPABASE_SERVICE_KEY'] = supabase_service_key_before or os.getenv('SUPABASE_SERVICE_KEY')
-    app.config['OPENROUTER_API_KEY'] = os.getenv('OPENROUTER_API_KEY', 'test-key')
-    app.config['HUGGINGFACE_API_KEY'] = os.getenv('HUGGINGFACE_API_KEY', 'test-key')
-
-    print(f"[TEST DEBUG] App config AFTER restore - SUPABASE_URL: {app.config['SUPABASE_URL'][:50] if app.config.get('SUPABASE_URL') else 'None'}...")
-    print(f"[TEST DEBUG] App config AFTER restore - SUPABASE_SERVICE_KEY: {app.config['SUPABASE_SERVICE_KEY'][:20] if app.config.get('SUPABASE_SERVICE_KEY') else 'None'}...")
+    # Restore Supabase config from environment
+    _restore_supabase_config(app, saved_config)
+    _debug_print_config("After restore", app.config)
 
     app.config['TESTING'] = True
-
     return app
 
 @pytest.fixture

@@ -338,193 +338,203 @@ class EmbeddingService:
         # Não carrega modelo ainda - será carregado quando necessário
         return _test_sentence_transformers()
     
+    def _get_cached_embedding(self, text: str) -> Optional[Union[list, 'np.ndarray']]:
+        """Retorna embedding do cache se disponível"""
+        if self.cache and NUMPY_AVAILABLE:
+            cached = self.cache.get(text, self.model_name)
+            if cached is not None:
+                self.stats['cache_hits'] += 1
+                return cached
+        self.stats['cache_misses'] += 1
+        return None
+
+    def _prepare_encode_params(self, text: str) -> dict:
+        """Prepara parâmetros para encoding com otimizações v5.1+"""
+        encode_params = {
+            'convert_to_numpy': NUMPY_AVAILABLE,
+            'normalize_embeddings': True,
+            'batch_size': 1
+        }
+
+        if hasattr(self.model, 'encode') and hasattr(self.model, '_modules'):
+            if self.device != 'cpu' and hasattr(self.model, 'device'):
+                encode_params['device'] = self.device
+            if len(text) > 256:
+                encode_params['chunk_size'] = getattr(self.config, 'EMBEDDING_CHUNK_SIZE', 32)
+
+        return encode_params
+
+    def _cache_embedding(self, text: str, embedding):
+        """Salva embedding no cache se disponível"""
+        if self.cache and NUMPY_AVAILABLE and hasattr(embedding, 'shape'):
+            try:
+                self.cache.set(text, self.model_name, embedding)
+            except Exception as cache_error:
+                logger.warning(f"Erro ao salvar embedding no cache: {cache_error}")
+
+    def _update_embedding_stats(self, embedding_time: float, embedding):
+        """Atualiza estatísticas de embedding"""
+        self.stats['embeddings_created'] += 1
+        self.stats['avg_embedding_time'] = (
+            (self.stats['avg_embedding_time'] * (self.stats['embeddings_created'] - 1) + embedding_time) /
+            self.stats['embeddings_created']
+        )
+
+        if hasattr(embedding, 'shape'):
+            logger.debug(f"[OK] Embedding gerado: {embedding.shape} em {embedding_time:.3f}s")
+        else:
+            logger.debug(f"[OK] Embedding gerado: {len(embedding)} dims em {embedding_time:.3f}s")
+
     def embed_text(self, text: str) -> Optional[Union[list, 'np.ndarray']]:
         """
         Gera embedding para um texto (com lazy loading)
-        
+
         Args:
             text: Texto para embedding
-            
+
         Returns:
             Array numpy com embedding, lista Python, ou None se falhar
         """
         if not text or not text.strip():
             return None
-        
+
         text = text.strip()
-        
-        # Tentar cache primeiro (se disponível)
-        if self.cache and NUMPY_AVAILABLE:
-            cached_embedding = self.cache.get(text, self.model_name)
-            if cached_embedding is not None:
-                self.stats['cache_hits'] += 1
-                return cached_embedding
-        
-        self.stats['cache_misses'] += 1
-        
+
+        # Tentar cache primeiro
+        cached = self._get_cached_embedding(text)
+        if cached is not None:
+            return cached
+
         # Carregar modelo com lazy loading
         if not self._load_model():
             logger.debug(f"[ERROR] Modelo não disponível para embedding: {text[:50]}...")
             return None
-        
+
         try:
             start_time = datetime.now()
-            
+
             # Limitar tamanho do texto
             max_length = getattr(self.config, 'EMBEDDINGS_MAX_LENGTH', 512) * 4
             if len(text) > max_length:
                 text = text[:max_length]
                 logger.debug(f"[NOTE] Texto truncado para {max_length} caracteres")
-            
-            # Gerar embedding - usando funcionalidades v5.1+
-            # Detectar contexto para otimizações (query vs document)
-            context_type = getattr(self.config, 'EMBEDDING_CONTEXT_TYPE', 'auto')
-            
-            encode_params = {
-                'convert_to_numpy': NUMPY_AVAILABLE,
-                'normalize_embeddings': True,  # Importante para similaridade coseno
-                'batch_size': 1
-            }
-            
-            # Sentence-transformers v5.1+ - usar encode com otimizações
-            # Suporte para parallel processing com multiple devices se disponível
-            if hasattr(self.model, 'encode') and hasattr(self.model, '_modules'):
-                # Verificar se temos GPU disponível para parallel processing
-                if self.device != 'cpu' and hasattr(self.model, 'device'):
-                    encode_params['device'] = self.device
-                
-                # Para v5.1+: usar chunk_size para melhor performance em textos longos
-                if len(text) > 256:
-                    encode_params['chunk_size'] = getattr(self.config, 'EMBEDDING_CHUNK_SIZE', 32)
-            
+
+            # Gerar embedding com parâmetros otimizados
+            encode_params = self._prepare_encode_params(text)
             embedding = self.model.encode(text, **encode_params)
-            
+
             embedding_time = (datetime.now() - start_time).total_seconds()
-            
-            # Atualizar estatísticas
-            self.stats['embeddings_created'] += 1
-            self.stats['avg_embedding_time'] = (
-                (self.stats['avg_embedding_time'] * (self.stats['embeddings_created'] - 1) + embedding_time) /
-                self.stats['embeddings_created']
-            )
-            
-            # Salvar no cache (se disponível e numpy disponível)
-            if self.cache and NUMPY_AVAILABLE and hasattr(embedding, 'shape'):
-                try:
-                    self.cache.set(text, self.model_name, embedding)
-                except Exception as cache_error:
-                    logger.warning(f"Erro ao salvar embedding no cache: {cache_error}")
-            
-            # Log dependendo do tipo de embedding retornado
-            if hasattr(embedding, 'shape'):
-                logger.debug(f"[OK] Embedding gerado: {embedding.shape} em {embedding_time:.3f}s")
-            else:
-                logger.debug(f"[OK] Embedding gerado: {len(embedding)} dims em {embedding_time:.3f}s")
-            
+
+            # Atualizar estatísticas e cache
+            self._update_embedding_stats(embedding_time, embedding)
+            self._cache_embedding(text, embedding)
+
             return embedding
-            
+
         except Exception as e:
             logger.error(f"[ERROR] Erro ao gerar embedding para '{text[:50]}...': {e}")
             return None
     
+    def _check_batch_cache(self, batch_texts: List[str]):
+        """Verifica cache para lote de textos, retorna (batch_embeddings, texts_to_embed, indices_to_embed)"""
+        batch_embeddings = []
+        texts_to_embed = []
+        indices_to_embed = []
+
+        for j, text in enumerate(batch_texts):
+            if not text or not text.strip():
+                batch_embeddings.append(None)
+                continue
+
+            text = text.strip()
+            cached = self.cache.get(text, self.model_name)
+
+            if cached is not None:
+                batch_embeddings.append(cached)
+                self.stats['cache_hits'] += 1
+            else:
+                batch_embeddings.append(None)  # Placeholder
+                texts_to_embed.append(text)
+                indices_to_embed.append(j)
+                self.stats['cache_misses'] += 1
+
+        return batch_embeddings, texts_to_embed, indices_to_embed
+
+    def _prepare_batch_encode_params(self, batch_size: int, num_texts: int) -> dict:
+        """Prepara parâmetros para encoding de lote"""
+        encode_params = {
+            'convert_to_numpy': True,
+            'normalize_embeddings': True,
+            'batch_size': batch_size
+        }
+
+        if num_texts > 10:
+            if self.device != 'cpu' and hasattr(self.model, 'pool'):
+                encode_params['pool'] = True
+            encode_params['chunk_size'] = min(batch_size, 64)
+
+        return encode_params
+
+    def _process_batch_texts(self, texts_to_embed: List[str]) -> List[str]:
+        """Processa textos do lote (truncar, etc)"""
+        max_length = self.config.EMBEDDINGS_MAX_LENGTH * 4
+        return [text[:max_length] if len(text) > max_length else text for text in texts_to_embed]
+
+    def _cache_batch_embeddings(self, texts_to_embed: List[str], new_embeddings, batch_embeddings: List, indices_to_embed: List[int]):
+        """Insere embeddings na posição correta e salva no cache"""
+        for k, embedding in enumerate(new_embeddings):
+            idx = indices_to_embed[k]
+            batch_embeddings[idx] = embedding
+            self.cache.set(texts_to_embed[k], self.model_name, embedding)
+
     def embed_batch(self, texts: List[str], batch_size: Optional[int] = None) -> List[Optional[np.ndarray]]:
         """
         Gera embeddings para múltiplos textos em lote
-        
+
         Args:
             texts: Lista de textos
             batch_size: Tamanho do lote (padrão: configuração)
-            
+
         Returns:
             Lista de embeddings (pode conter None para falhas)
         """
         if not texts:
             return []
-        
+
         if not self._load_model():
             return [None] * len(texts)
-        
+
         batch_size = batch_size or self.config.EMBEDDING_BATCH_SIZE
         embeddings = []
-        
+
         # Processar em lotes
         for i in range(0, len(texts), batch_size):
             batch_texts = texts[i:i + batch_size]
-            
-            # Verificar cache primeiro
-            batch_embeddings = []
-            texts_to_embed = []
-            indices_to_embed = []
-            
-            for j, text in enumerate(batch_texts):
-                if not text or not text.strip():
-                    batch_embeddings.append(None)
-                    continue
-                
-                text = text.strip()
-                cached = self.cache.get(text, self.model_name)
-                
-                if cached is not None:
-                    batch_embeddings.append(cached)
-                    self.stats['cache_hits'] += 1
-                else:
-                    batch_embeddings.append(None)  # Placeholder
-                    texts_to_embed.append(text)
-                    indices_to_embed.append(j)
-                    self.stats['cache_misses'] += 1
-            
+
+            # Verificar cache e identificar textos para embeddings
+            batch_embeddings, texts_to_embed, indices_to_embed = self._check_batch_cache(batch_texts)
+
             # Embeddings em lote para textos não cacheados
             if texts_to_embed:
                 try:
                     start_time = datetime.now()
-                    
-                    # Limitar tamanho dos textos
-                    processed_texts = []
-                    for text in texts_to_embed:
-                        if len(text) > self.config.EMBEDDINGS_MAX_LENGTH * 4:
-                            text = text[:self.config.EMBEDDINGS_MAX_LENGTH * 4]
-                        processed_texts.append(text)
-                    
-                    # Sentence-transformers v5.1+ - Parallel batch processing otimizado
-                    encode_params = {
-                        'convert_to_numpy': True,
-                        'normalize_embeddings': True,
-                        'batch_size': batch_size
-                    }
-                    
-                    # v5.1+ otimizações para lotes grandes
-                    if len(processed_texts) > 10:
-                        # Usar parallel processing se disponível (múltiplas GPUs/dispositivos)
-                        if self.device != 'cpu' and hasattr(self.model, 'pool'):
-                            encode_params['pool'] = True  # Ativar pooling paralelo
-                        
-                        # Chunk size otimizado para lotes
-                        encode_params['chunk_size'] = min(batch_size, 64)
-                    
+
+                    processed_texts = self._process_batch_texts(texts_to_embed)
+                    encode_params = self._prepare_batch_encode_params(batch_size, len(processed_texts))
+
                     new_embeddings = self.model.encode(processed_texts, **encode_params)
-                    
                     embedding_time = (datetime.now() - start_time).total_seconds()
-                    
-                    # Atualizar estatísticas
+
                     self.stats['embeddings_created'] += len(new_embeddings)
-                    
-                    # Inserir embeddings na posição correta e salvar no cache
-                    for k, embedding in enumerate(new_embeddings):
-                        idx = indices_to_embed[k]
-                        batch_embeddings[idx] = embedding
-                        
-                        # Salvar no cache
-                        self.cache.set(texts_to_embed[k], self.model_name, embedding)
-                    
+                    self._cache_batch_embeddings(texts_to_embed, new_embeddings, batch_embeddings, indices_to_embed)
+
                     logger.debug(f"Lote processado: {len(new_embeddings)} embeddings em {embedding_time:.3f}s")
-                    
+
                 except Exception as e:
                     logger.error(f"Erro no embedding em lote: {e}")
-                    # Manter None para textos que falharam
-                    pass
-            
+
             embeddings.extend(batch_embeddings)
-        
+
         return embeddings
     
     def embed_query(self, query: str) -> Optional[Union[list, 'np.ndarray']]:
