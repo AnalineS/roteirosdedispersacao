@@ -228,13 +228,14 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         run: |
           cd apps/backend
           echo "📚 Indexing knowledge base to Supabase vector store..."
 
-          # Install dependencies for embedding generation
-          pip install sentence-transformers huggingface_hub
+          # Install dependencies for embedding generation and RPC function setup
+          pip install sentence-transformers huggingface_hub psycopg2-binary
 
           # Run indexing script from project root
           cd ../..

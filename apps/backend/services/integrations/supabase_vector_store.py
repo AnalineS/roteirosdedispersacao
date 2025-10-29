@@ -270,9 +270,17 @@ CREATE TABLE IF NOT EXISTS {self.metadata_table} (
                 return []
 
         except Exception as e:
-            logger.error(f"Erro na busca Supabase RPC: {e}", exc_info=True)
+            error_msg = str(e)
+            logger.error(f"Erro na busca Supabase RPC: {error_msg}", exc_info=True)
+
+            # Detectar se é erro de função RPC não existente
+            if 'function' in error_msg.lower() and 'does not exist' in error_msg.lower():
+                logger.error("CRÍTICO: Função RPC 'match_medical_embeddings' não existe no Supabase!")
+                logger.error("Execute o SQL em scripts/setup_supabase_rpc.sql para criar a função")
+                logger.error("Ou rode: python scripts/index_knowledge_base.py --force (cria automaticamente)")
+
             # Fallback para busca local
-            logger.info("Usando fallback para busca local")
+            logger.warning(f"Usando fallback para busca local (40 docs) - threshold: {min_score}")
             return self.local_store.search_similar(query_embedding, top_k, min_score)
     
     def get_document(self, doc_id: str) -> Optional[VectorDocument]:
