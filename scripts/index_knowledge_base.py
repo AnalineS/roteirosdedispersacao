@@ -108,78 +108,64 @@ class KnowledgeBaseIndexer:
             raise
 
     def _setup_rpc_function(self):
-        """Setup RPC function for vector similarity search in Supabase"""
+        """
+        Setup RPC function for vector similarity search in Supabase
+
+        Note: This attempts to create the RPC function. If it fails, the function
+        should be created manually in Supabase Dashboard > SQL Editor using
+        scripts/setup_supabase_rpc.sql
+        """
         try:
-            logger.info("Setting up RPC function for vector similarity search...")
+            logger.info("Checking if RPC function exists...")
 
-            # SQL to create the RPC function (idempotent with CREATE OR REPLACE)
-            rpc_sql = """
-            -- Create RPC function for vector similarity search on medical_embeddings table
-            CREATE OR REPLACE FUNCTION match_medical_embeddings(
-              query_embedding vector(384),
-              match_threshold float,
-              match_count int
-            )
-            RETURNS TABLE (
-              id text,
-              text text,
-              source_file varchar,
-              chunk_type varchar,
-              priority float,
-              metadata jsonb,
-              similarity float
-            )
-            LANGUAGE plpgsql
-            AS $$
-            BEGIN
-              RETURN QUERY
-              SELECT
-                medical_embeddings.id,
-                medical_embeddings.text,
-                medical_embeddings.source_file,
-                medical_embeddings.chunk_type,
-                medical_embeddings.priority,
-                medical_embeddings.metadata,
-                1 - (medical_embeddings.embedding <=> query_embedding) as similarity
-              FROM medical_embeddings
-              WHERE 1 - (medical_embeddings.embedding <=> query_embedding) > match_threshold
-              ORDER BY medical_embeddings.embedding <=> query_embedding ASC
-              LIMIT match_count;
-            END;
-            $$;
-            """
-
-            # Execute SQL via Supabase client's rpc method for SQL execution
-            # Note: We need to use the underlying PostgreSQL connection
             from supabase import create_client
-
             supabase_url = os.getenv('SUPABASE_URL') or self.config.SUPABASE_URL
             supabase_key = os.getenv('SUPABASE_SERVICE_KEY') or os.getenv('SUPABASE_KEY') or self.config.SUPABASE_KEY
 
-            # Use psycopg2 directly for DDL operations (CREATE FUNCTION)
-            # Supabase Python client doesn't support raw SQL execution well
-            db_url = os.getenv('SUPABASE_DB_URL') or os.getenv('DATABASE_URL')
+            if not supabase_url or not supabase_key:
+                logger.warning("⚠️  Supabase credentials not available - skipping RPC function setup")
+                return
 
-            if db_url:
-                import psycopg2
-                conn = psycopg2.connect(db_url)
-                conn.autocommit = True
+            client = create_client(supabase_url, supabase_key)
 
-                with conn.cursor() as cursor:
-                    cursor.execute(rpc_sql)
+            # Test if RPC function exists by trying to call it with test data
+            # This will fail if the function doesn't exist
+            try:
+                test_embedding = [0.0] * 384  # Test embedding with correct dimensions
+                result = client.rpc(
+                    'match_medical_embeddings',
+                    {
+                        'query_embedding': test_embedding,
+                        'match_threshold': 0.9,  # High threshold to return no results
+                        'match_count': 1
+                    }
+                ).execute()
 
-                conn.close()
-                logger.info("✅ RPC function 'match_medical_embeddings' created successfully")
-            else:
-                logger.warning("⚠️  SUPABASE_DB_URL not set - RPC function creation skipped")
-                logger.warning("    The function should be created manually in Supabase SQL Editor")
-                logger.warning("    SQL available at: scripts/setup_supabase_rpc.sql")
+                logger.info("✅ RPC function 'match_medical_embeddings' already exists")
+                return
+
+            except Exception as rpc_error:
+                error_msg = str(rpc_error)
+
+                if 'function' in error_msg.lower() and 'does not exist' in error_msg.lower():
+                    logger.warning("⚠️  RPC function 'match_medical_embeddings' does not exist")
+                    logger.warning("📝 Please create it manually in Supabase Dashboard:")
+                    logger.warning("   1. Go to Supabase Dashboard > SQL Editor")
+                    logger.warning("   2. Execute the SQL in: scripts/setup_supabase_rpc.sql")
+                    logger.warning("   3. This is a one-time manual step required")
+                    logger.warning("")
+                    logger.warning("💡 Automated creation requires database URL with proper credentials")
+                    logger.warning("   which are not configured in GitHub Actions for security")
+                else:
+                    # Other error - function may exist but failed for different reason
+                    logger.debug(f"RPC test call failed: {error_msg}")
+                    logger.info("Assuming RPC function exists (test call failed for other reason)")
 
         except Exception as e:
-            # Don't fail indexing if RPC creation fails - it may already exist
-            logger.warning(f"RPC function setup encountered issue: {e}")
-            logger.warning("This is non-critical - RPC function may already exist")
-            logger.info("If searches fail, run: scripts/setup_supabase_rpc.sql in Supabase SQL Editor")
+            # Don't fail indexing if RPC check fails
+            logger.warning(f"RPC function check encountered issue: {e}")
+            logger.warning("This is non-critical - continuing with indexing")
+            logger.info("If searches fail later, create RPC function via: scripts/setup_supabase_rpc.sql")
 
     def validate_environment(self) -> bool:
         """Validate required environment variables and files"""

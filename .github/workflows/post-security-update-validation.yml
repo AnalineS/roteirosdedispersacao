@@ -222,20 +222,27 @@ jobs:
           echo "   - SUPABASE_URL: ${SUPABASE_URL:0:30}... (${#SUPABASE_URL} chars)"
           echo "   - SUPABASE_SERVICE_KEY: ${SUPABASE_SERVICE_KEY:0:10}... (${#SUPABASE_SERVICE_KEY} chars)"
 
+      - name: Setup Supabase RPC function
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          echo "🔧 Checking Supabase RPC function..."
+          python scripts/setup_supabase_function.py
+
       - name: Index knowledge base to Supabase
         env:
           HUGGINGFACE_TOKEN: ${{ secrets.HUGGINGFACE_TOKEN }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
-          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         run: |
           cd apps/backend
           echo "📚 Indexing knowledge base to Supabase vector store..."
 
-          # Install dependencies for embedding generation and RPC function setup
-          pip install sentence-transformers huggingface_hub psycopg2-binary
+          # Install dependencies for embedding generation
+          pip install sentence-transformers huggingface_hub
 
           # Run indexing script from project root
           cd ../..
