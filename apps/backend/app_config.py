@@ -194,7 +194,9 @@ class AppConfig:
     
     # Vector Store Config (Supabase + pgvector)
     SUPABASE_VECTOR_DIMENSION: int = int(os.getenv('SUPABASE_VECTOR_DIMENSION', 1536))
-    SUPABASE_VECTOR_SIMILARITY_THRESHOLD: float = float(os.getenv('SUPABASE_VECTOR_SIMILARITY_THRESHOLD', 0.8))
+    # Threshold lowered from 0.8 to 0.65 for improved medical knowledge recall
+    # while maintaining relevance filtering (medical validation requires >= 0.75 accuracy)
+    SUPABASE_VECTOR_SIMILARITY_THRESHOLD: float = float(os.getenv('SUPABASE_VECTOR_SIMILARITY_THRESHOLD', 0.65))
     
     
     # Cache Config - Now using Firestore hybrid system
