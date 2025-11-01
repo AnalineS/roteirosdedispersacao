@@ -119,17 +119,17 @@ jobs:
 
       # CodeQL Analysis
       - name: "🔍 Initialize CodeQL"
-        uses: github/codeql-action/init@ea9e4e37992a54ee68a9622e985e60c8e8f12d9f
+        uses: github/codeql-action/init@v3
         with:
           languages: ${{ matrix.language }}
           queries: +security-and-quality
           # Config inline removed - using CodeQL defaults to avoid extension pack conflicts
 
       - name: "🏗️ Autobuild"
-        uses: github/codeql-action/autobuild@ea9e4e37992a54ee68a9622e985e60c8e8f12d9f
+        uses: github/codeql-action/autobuild@v3
 
       - name: "📊 Perform CodeQL Analysis"
-        uses: github/codeql-action/analyze@ea9e4e37992a54ee68a9622e985e60c8e8f12d9f
+        uses: github/codeql-action/analyze@v3
         with:
           category: "/language:${{ matrix.language }}"
           upload: true
