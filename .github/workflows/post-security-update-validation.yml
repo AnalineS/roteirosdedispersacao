@@ -269,6 +269,8 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           HUGGINGFACE_API_KEY: ${{ secrets.HUGGINGFACE_API_KEY }}
+          SEMANTIC_SIMILARITY_THRESHOLD: ${{ vars.SEMANTIC_SIMILARITY_THRESHOLD }}
+          SUPABASE_VECTOR_SIMILARITY_THRESHOLD: ${{ vars.SUPABASE_VECTOR_SIMILARITY_THRESHOLD }}
         run: |
           cd apps/backend
           echo "🔴 CRITICAL: Running medical functionality validation..."
