@@ -261,7 +261,7 @@ jobs:
 
       # SonarQube Analysis
       - name: "🔬 SonarQube Scan"
-        uses: sonarsource/sonarcloud-github-action@42e69ba06f4ca18e92aabb7aed3bbdc77e2fbfaa
+        uses: sonarsource/sonarcloud-github-action@v3
         continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
