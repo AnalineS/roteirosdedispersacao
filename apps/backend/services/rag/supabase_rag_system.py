@@ -83,6 +83,12 @@ class SupabaseRAGSystem:
         # Configurações de qualidade
         self.min_similarity_threshold = getattr(config, 'SEMANTIC_SIMILARITY_THRESHOLD', 0.7) if config else 0.7
         self.max_context_chunks = getattr(config, 'MAX_CONTEXT_CHUNKS', 5) if config else 5
+
+        # Log threshold configuration for debugging (critical for medical accuracy)
+        logger.info(f"🎯 RAG System initialized with similarity threshold: {self.min_similarity_threshold:.2f}")
+        logger.info(f"📊 Config source: {'config object' if config else 'fallback default'}")
+        logger.info(f"📦 Max context chunks: {self.max_context_chunks}")
+
         self.scope_keywords = self._load_scope_keywords()
         
         # Cache de contextos gerados
