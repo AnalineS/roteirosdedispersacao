@@ -17,7 +17,6 @@ REQUIREMENTS:
 import os
 import sys
 import logging
-import requests
 from pathlib import Path
 
 # Setup logging

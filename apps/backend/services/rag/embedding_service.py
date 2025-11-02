@@ -10,7 +10,7 @@ import os
 import json
 import logging
 import hashlib
-from typing import List, Dict, Optional, Tuple, Any, Union
+from typing import List, Dict, Optional, Tuple, Any
 from datetime import datetime, timedelta
 from pathlib import Path
 import threading

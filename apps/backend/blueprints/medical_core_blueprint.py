@@ -57,10 +57,6 @@ def chat():
         except Exception as e:
             logger.warning(f"RAG query failed: {e}")
 
-        # Security fix: Sanitize user input before including in responses
-        import html
-        sanitized_message = html.escape(message, quote=True) if message else ""
-
         # Generate response based on persona and RAG context
         if rag_response:
             # Use RAG-enhanced response
