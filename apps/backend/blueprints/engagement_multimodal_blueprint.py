@@ -60,7 +60,10 @@ def submit_feedback():
             'message': 'Feedback received successfully'
         }
 
-        logger.info(f"Feedback received: rating={rating}, feedback_length={len(feedback_text)}")
+        # Security: Log sanitized data to prevent log injection attacks
+        logger.info(f"Feedback received: rating={rating}, feedback_length={len(feedback_sanitized)}, "
+                   f"message_id={message_id_sanitized[:20] if message_id_sanitized else 'none'}, "
+                   f"user_id={user_id_sanitized[:20] if user_id_sanitized else 'none'}")
 
         return jsonify(response_data), 200
 
