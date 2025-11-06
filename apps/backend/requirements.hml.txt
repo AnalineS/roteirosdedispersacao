@@ -6,36 +6,36 @@
 
 # === CORE FLASK (CRÍTICO) ===
 # Flask framework e extensões essenciais
-Flask==3.1.0
+Flask==3.1.2
 Flask-CORS==6.0.1  # SECURITY UPDATE: CVE fixes aplicados
 Werkzeug==3.1.3
 gunicorn==23.0.0   # Updated to fix CVE-2024-6827
 
 # === AI & API INTEGRATION (CRÍTICO) ===
 # OpenAI/OpenRouter integration para personas
-openai==1.55.3     # Para Dr. Gasnelio e Gá
-requests==2.32.4   # SECURITY: Updated beyond CVE-2023-32681
+openai==1.109.1     # Para Dr. Gasnelio e Gá
+requests==2.32.5   # SECURITY: Updated beyond CVE-2023-32681
 
 # === VALIDATION & SECURITY (CRÍTICO) ===
 # Data validation e input sanitization
-pydantic==2.10.3   # Model validation
-bleach==6.2.0      # SECURITY: Input sanitization
+pydantic==2.12.4   # Model validation
+bleach==6.3.0      # SECURITY: Input sanitization
 PyJWT==2.10.1      # SECURITY: JWT token validation
 
 # === RATE LIMITING & MIDDLEWARE (CRÍTICO) ===
 # Dependências que estavam faltando causando erros
-Flask-Limiter==3.5.0    # Rate limiting middleware
+Flask-Limiter==3.12    # Rate limiting middleware
 user-agents==2.2.0      # User agent parsing (SecurityMiddleware)
-validators==0.22.0      # Input validation helpers
+validators==0.35.0      # Input validation helpers
 
 # === CONFIGURATION & ENVIRONMENT ===
 # Environment e configuration management
-python-dotenv==1.0.1    # .env file loading
-typing-extensions==4.12.2  # Type hints compatibility
+python-dotenv==1.2.1    # .env file loading
+typing-extensions==4.15.0  # Type hints compatibility
 
 # === MONITORING & HEALTH CHECKS ===
 # System monitoring para health endpoints
-psutil==5.9.6           # System resources monitoring
+psutil==5.9.8           # System resources monitoring
 
 # === LOGGING ESTRUTURADO ===
 # Structured logging para produção
