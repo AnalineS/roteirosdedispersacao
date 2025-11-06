@@ -236,7 +236,7 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
-          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          # SUPABASE_DB_URL removed - "Tenant or user not found" error, using URL+KEY method instead
           SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         run: |
@@ -271,7 +271,7 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
-          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          # SUPABASE_DB_URL removed - forcing Priority 2 connection method (URL+SERVICE_KEY)
           HUGGINGFACE_API_KEY: ${{ secrets.HUGGINGFACE_API_KEY }}
           SEMANTIC_SIMILARITY_THRESHOLD: ${{ vars.SEMANTIC_SIMILARITY_THRESHOLD }}
           SUPABASE_VECTOR_SIMILARITY_THRESHOLD: ${{ vars.SUPABASE_VECTOR_SIMILARITY_THRESHOLD }}
