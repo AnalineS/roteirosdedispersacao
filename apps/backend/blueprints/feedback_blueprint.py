@@ -13,6 +13,13 @@ from typing import Dict, List, Any, Optional
 # Import dependências
 from core.dependencies import get_cache, get_config
 
+# Import secure logging
+from core.security.secure_logging import (
+    sanitize_for_logging,
+    log_error_safely,
+    get_safe_error_message
+)
+
 # Configurar logger
 logger = logging.getLogger(__name__)
 
@@ -293,7 +300,7 @@ def submit_feedback():
 
     except Exception as e:
         processing_time = int((datetime.now() - start_time).total_seconds() * 1000)
-        logger.error(f"[{request_id}] Erro ao processar feedback: {e}")
+        log_error_safely(logger, "Erro ao processar feedback", exception=e, request_id=request_id)
 
         return jsonify({
             "error": "Erro interno do servidor",
@@ -361,7 +368,7 @@ def get_feedback_stats():
         return jsonify(response), 200
         
     except Exception as e:
-        logger.error(f"[{request_id}] Erro ao obter estatísticas: {e}")
+        log_error_safely(logger, "Erro ao obter estatísticas de feedback", exception=e, request_id=request_id)
         return jsonify({
             "error": "Erro interno do servidor",
             "error_code": "INTERNAL_ERROR",
@@ -413,7 +420,7 @@ def get_feedback_details(feedback_id: str):
         return jsonify(response), 200
         
     except Exception as e:
-        logger.error(f"[{request_id}] Erro ao obter detalhes do feedback: {e}")
+        log_error_safely(logger, "Erro ao obter detalhes do feedback", exception=e, request_id=request_id)
         return jsonify({
             "error": "Erro interno do servidor",
             "error_code": "INTERNAL_ERROR",

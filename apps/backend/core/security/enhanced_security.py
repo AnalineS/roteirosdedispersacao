@@ -318,24 +318,27 @@ class SecurityOptimizer:
         """Verifica se User-Agent é suspeito"""
         if not user_agent or len(user_agent) < 10:
             return True
-        
+
+        # Limit user agent length to prevent log injection
+        user_agent = user_agent[:500]
+
         # Exceções para QA e health checks legítimos
         legitimate_patterns = [
             r'QA-Automation-Health-Check',
             r'Health-Check',
             r'Monitoring'
         ]
-        
+
         user_agent_lower = user_agent.lower()
         if any(re.search(pattern, user_agent_lower, re.IGNORECASE) for pattern in legitimate_patterns):
             return False
-        
+
         suspicious_patterns = [
             r'scanner', r'bot', r'crawl', r'spider',
             r'python-requests', r'curl/', r'wget/',
             r'test', r'hack', r'exploit'
         ]
-        
+
         return any(re.search(pattern, user_agent_lower) for pattern in suspicious_patterns)
     
     def _get_optimized_csp(self) -> str:
@@ -360,8 +363,11 @@ class SecurityOptimizer:
     
     def _record_violation(self, ip: str, violation_type: str):
         """Registra violação de segurança"""
-        logger.warning(f"SECURITY_VIOLATION: {violation_type} from {ip}")
-        
+        # Sanitize IP and violation type before logging
+        safe_ip = ip[:45] if ip else 'unknown'  # Limit IP length
+        safe_violation = violation_type[:100] if violation_type else 'unknown'  # Limit violation type
+        logger.warning(f"SECURITY_VIOLATION: {safe_violation} from {safe_ip}")
+
         # Na versão completa, isso seria enviado para sistema de monitoring
         # como Prometheus, Datadog, etc.
     

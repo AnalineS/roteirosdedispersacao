@@ -12,6 +12,13 @@ from typing import Dict, List, Any
 # Import dependências
 from core.dependencies import get_cache, get_config
 
+# Import secure logging
+from core.security.secure_logging import (
+    sanitize_for_logging,
+    log_error_safely,
+    get_safe_error_message
+)
+
 # Import personas services (correct path: services.ai.personas)
 try:
     from services.ai.personas import get_personas, get_persona_prompt
@@ -146,7 +153,7 @@ def get_real_persona_stats(persona_id: str) -> Dict:
                 "last_updated": stats.get('last_updated', datetime.now().isoformat())
             }
         except Exception as e:
-            logger.error(f"Erro ao obter stats da persona {persona_id}: {e}")
+            log_error_safely(logger, f"Erro ao obter stats da persona", exception=e)
 
     # Fallback para dados padrão
     return {
@@ -279,7 +286,7 @@ def get_personas_api():
         return jsonify(response), 200
         
     except Exception as e:
-        logger.error(f"[{request_id}] Erro ao obter personas: {e}")
+        log_error_safely(logger, "Erro ao obter personas", exception=e, request_id=request_id)
         return jsonify({
             "error": "Erro interno do servidor",
             "error_code": "INTERNAL_ERROR",
@@ -357,10 +364,10 @@ def get_persona_details(persona_id: str):
         return jsonify(response), 200
         
     except Exception as e:
-        logger.error(f"[{request_id}] Erro ao obter detalhes da persona: {e}")
+        log_error_safely(logger, "Erro ao obter detalhes da persona", exception=e, request_id=request_id)
         return jsonify({
             "error": "Erro interno do servidor",
-            "error_code": "INTERNAL_ERROR", 
+            "error_code": "INTERNAL_ERROR",
             "request_id": request_id
         }), 500
 

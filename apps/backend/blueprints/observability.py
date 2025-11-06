@@ -18,6 +18,13 @@ except ImportError:
     GCP_OBSERVABILITY_AVAILABLE = False
     CloudObservability = None
 
+# Import secure logging
+from core.security.secure_logging import (
+    sanitize_for_logging,
+    log_error_safely,
+    get_safe_error_message
+)
+
 logger = logging.getLogger(__name__)
 
 observability_bp = Blueprint('observability', __name__, url_prefix='/api/v1/observability')
@@ -49,7 +56,7 @@ def receive_frontend_logs():
             try:
                 # Validar campos obrigatórios
                 if not all(key in log_entry for key in ['severity', 'message', 'timestamp', 'component']):
-                    logger.warning(f"Invalid log entry: {log_entry}")
+                    logger.warning(f"Invalid log entry from frontend - missing required fields")
                     continue
                 
                 # Forward para GCP se disponível
@@ -63,13 +70,15 @@ def receive_frontend_logs():
                         metadata=log_entry.get('metadata', {})
                     )
                 else:
-                    # Fallback para log local
-                    logger.info(f"[{log_entry['severity']}] {log_entry['message']} - {log_entry.get('metadata', {})}")
-                
+                    # Fallback para log local - sanitize frontend data
+                    safe_severity = sanitize_for_logging(log_entry.get('severity', 'INFO'))
+                    safe_message = sanitize_for_logging(log_entry.get('message', ''))
+                    logger.info(f"Frontend log [{safe_severity}]: {safe_message}")
+
                 processed_count += 1
-                
+
             except Exception as e:
-                logger.error(f"Error processing log entry: {e}")
+                log_error_safely(logger, "Error processing log entry", exception=e)
                 continue
         
         return jsonify({
@@ -80,7 +89,7 @@ def receive_frontend_logs():
         }), 200
         
     except Exception as e:
-        logger.error(f"Error processing frontend logs: {e}")
+        log_error_safely(logger, "Error processing frontend logs", exception=e)
         return jsonify({
             "error": "Internal server error",
             "timestamp": datetime.utcnow().isoformat()
@@ -113,7 +122,7 @@ def receive_frontend_metrics():
             try:
                 # Validar campos obrigatórios
                 if not all(key in metric for key in ['name', 'value', 'labels', 'timestamp']):
-                    logger.warning(f"Invalid metric: {metric}")
+                    logger.warning("Invalid metric from frontend - missing required fields")
                     continue
                 
                 # Forward métricas específicas para GCP
@@ -158,13 +167,14 @@ def receive_frontend_metrics():
                             metric_type="frontend_metric"
                         )
                 else:
-                    # Fallback para log local
-                    logger.info(f"Metric: {metric_name}={metric_value} {labels}")
-                
+                    # Fallback para log local - sanitize metric data
+                    safe_name = sanitize_for_logging(metric_name)
+                    logger.info(f"Frontend metric: {safe_name}={metric_value}")
+
                 processed_count += 1
-                
+
             except Exception as e:
-                logger.error(f"Error processing metric: {e}")
+                log_error_safely(logger, "Error processing metric", exception=e)
                 continue
         
         return jsonify({
@@ -175,7 +185,7 @@ def receive_frontend_metrics():
         }), 200
         
     except Exception as e:
-        logger.error(f"Error processing frontend metrics: {e}")
+        log_error_safely(logger, "Error processing frontend metrics", exception=e)
         return jsonify({
             "error": "Internal server error",
             "timestamp": datetime.utcnow().isoformat()
@@ -241,9 +251,9 @@ def test_observability():
             }), 200
             
     except Exception as e:
-        logger.error(f"Error in observability test: {e}")
+        log_error_safely(logger, "Error in observability test", exception=e)
         return jsonify({
             "status": "error",
-            "error": str(e),
+            "error": "Test failed - check logs for details",
             "timestamp": datetime.utcnow().isoformat()
         }), 500

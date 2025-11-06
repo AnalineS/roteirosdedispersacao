@@ -172,10 +172,45 @@ def get_secure_logger(name: str) -> SecureLogger:
     return SecureLogger(base_logger)
 
 
+def get_safe_error_message(exception: Exception) -> str:
+    """
+    Extract safe error message from exception without exposing stack traces.
+
+    Args:
+        exception: The exception to process
+
+    Returns:
+        Safe error message string with exception type
+    """
+    error_type = type(exception).__name__
+
+    # Common safe error messages
+    safe_errors = {
+        'ValueError': 'Invalid value provided',
+        'KeyError': 'Required field missing',
+        'TypeError': 'Invalid data type',
+        'AttributeError': 'Invalid attribute access',
+        'ImportError': 'Module import failed',
+        'ConnectionError': 'Connection failed',
+        'TimeoutError': 'Request timeout',
+        'PermissionError': 'Permission denied',
+    }
+
+    # Return generic message for common errors
+    if error_type in safe_errors:
+        return f"{error_type}: {safe_errors[error_type]}"
+
+    # For other errors, sanitize the message
+    error_msg = str(exception) if str(exception) else "Unknown error"
+    safe_msg = sanitize_for_logging(error_msg, max_length=100)
+
+    return f"{error_type}: {safe_msg}"
+
+
 def log_safely(logger: logging.Logger, level: str, message: str, data: Optional[Dict[str, Any]] = None):
     """
     Utility function to log messages safely with optional data.
-    
+
     Args:
         logger: The logger instance
         level: Log level ('debug', 'info', 'warning', 'error')
@@ -187,13 +222,40 @@ def log_safely(logger: logging.Logger, level: str, message: str, data: Optional[
         log_message = f"{message} - Data: {safe_data}"
     else:
         log_message = message
-    
+
     # Sanitize the entire message
     safe_message = sanitize_for_logging(log_message, max_length=1000)
-    
+
     # Log at the appropriate level
     log_func = getattr(logger, level, logger.info)
     log_func(safe_message)
+
+
+def log_error_safely(logger: logging.Logger, message: str, exception: Optional[Exception] = None,
+                     request_id: Optional[str] = None):
+    """
+    Log error message safely without exposing stack traces or sensitive data.
+
+    Args:
+        logger: The logger instance
+        message: Base error message
+        exception: Optional exception to include
+        request_id: Optional request ID for tracing
+    """
+    # Build safe log message
+    log_parts = []
+
+    if request_id:
+        log_parts.append(f"[{sanitize_for_logging(request_id, max_length=50)}]")
+
+    log_parts.append(sanitize_for_logging(message, max_length=200))
+
+    if exception:
+        safe_error = get_safe_error_message(exception)
+        log_parts.append(f"Error: {safe_error}")
+
+    safe_message = " ".join(log_parts)
+    logger.error(safe_message)
 
 
 # Decorator for automatic secure logging

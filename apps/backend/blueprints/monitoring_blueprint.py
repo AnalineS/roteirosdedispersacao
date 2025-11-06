@@ -13,6 +13,13 @@ from typing import Dict, List, Any, Optional
 # Import dependências
 from core.dependencies import get_cache, get_rag, get_qa, get_config
 
+# Import secure logging
+from core.security.secure_logging import (
+    sanitize_for_logging,
+    log_error_safely,
+    get_safe_error_message
+)
+
 # Import UX Monitoring Manager
 try:
     from services.monitoring.ux_monitoring_manager import get_ux_monitoring_manager, get_ux_dashboard_data
@@ -115,8 +122,8 @@ def get_system_metrics() -> Dict[str, Any]:
     except ImportError:
         return {"error": "psutil não disponível"}
     except Exception as e:
-        logger.warning(f"Erro ao coletar métricas: {e}")
-        return {"error": str(e)}
+        log_error_safely(logger, "Erro ao coletar métricas do sistema", exception=e)
+        return {"error": "Erro ao coletar métricas"}
 
 def get_application_metrics() -> Dict[str, Any]:
     """Métricas específicas da aplicação"""
@@ -202,7 +209,7 @@ def get_system_stats():
         return jsonify(response), 200
         
     except Exception as e:
-        logger.error(f"[{request_id}] Erro ao obter estatísticas: {e}")
+        log_error_safely(logger, "Erro ao obter estatísticas", exception=e, request_id=request_id)
         return jsonify({
             "error": "Erro interno do servidor",
             "error_code": "STATS_ERROR",
@@ -245,7 +252,7 @@ def usability_monitoring():
         return jsonify(response), 200
         
     except Exception as e:
-        logger.error(f"[{request_id}] Erro no monitoramento de usabilidade: {e}")
+        log_error_safely(logger, "Erro no monitoramento de usabilidade", exception=e, request_id=request_id)
         return jsonify({
             "error": "Erro interno do servidor",
             "error_code": "USABILITY_ERROR",
@@ -290,7 +297,7 @@ def get_metrics():
         return jsonify(response), 200
         
     except Exception as e:
-        logger.error(f"[{request_id}] Erro ao obter métricas: {e}")
+        log_error_safely(logger, "Erro ao obter métricas", exception=e, request_id=request_id)
         return jsonify({
             "error": "Erro interno do servidor",
             "request_id": request_id
@@ -339,10 +346,9 @@ def debug_info():
         return jsonify(response), 200
         
     except Exception as e:
-        logger.error(f"Erro no endpoint de debug: {e}")
+        log_error_safely(logger, "Erro no endpoint de debug", exception=e)
         return jsonify({
-            "error": "Erro interno do servidor",
-            "debug_error": str(e)
+            "error": "Erro interno do servidor"
         }), 500
 
 @monitoring_bp.route('/monitoring/health', methods=['GET'])
