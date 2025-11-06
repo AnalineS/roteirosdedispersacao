@@ -8,7 +8,7 @@
     "dev:clean": "npm run cleanup && npm run dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "type-check": "tsc --noEmit",
     "cleanup": "node scripts/cleanup-dev.js",
     "cleanup:force": "node scripts/cleanup-dev.js --force",

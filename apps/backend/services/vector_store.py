@@ -105,12 +105,15 @@ class SupabaseVectorStore:
                 supabase_host = self.supabase_url.replace('https://', '').replace('http://', '')
 
                 # Supabase connection format
+                # gssencmode='disable' forces IPv4 resolution (GitHub Actions doesn't support IPv6)
                 self.connection = psycopg2.connect(
                     host=f"db.{supabase_host}",
                     port=5432,
                     database="postgres",
                     user="postgres",
-                    password=self.supabase_key
+                    password=self.supabase_key,
+                    gssencmode='disable',
+                    connect_timeout=10
                 )
                 logger.info("[OK] Connected to Supabase via URL/KEY for vector storage")
 
