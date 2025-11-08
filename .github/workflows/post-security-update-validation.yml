@@ -228,6 +228,7 @@ jobs:
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: |
           echo "🔧 Checking Supabase RPC function..."
+          pip install supabase
           python scripts/setup_supabase_function.py
 
       - name: Index knowledge base to Supabase
@@ -243,8 +244,8 @@ jobs:
           cd apps/backend
           echo "📚 Indexing knowledge base to Supabase vector store..."
 
-          # Install dependencies for embedding generation
-          pip install sentence-transformers huggingface_hub
+          # Install dependencies for embedding generation and Supabase client
+          pip install sentence-transformers huggingface_hub supabase
 
           # Run indexing script from project root
           cd ../..
