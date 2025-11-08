@@ -115,14 +115,14 @@ export default function ProfilePage() {
     }
   };
 
-  const handleInputChange = (field: keyof ProfileFormData, value: any) => {
+  const handleInputChange = (field: keyof ProfileFormData, value: string) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
     }));
   };
 
-  const handlePreferenceChange = (field: keyof ProfileFormData['preferences'], value: any) => {
+  const handlePreferenceChange = (field: keyof ProfileFormData['preferences'], value: string | boolean) => {
     setFormData(prev => ({
       ...prev,
       preferences: {
@@ -397,7 +397,7 @@ export default function ProfilePage() {
                 <div className="connected-accounts">
                   {connectedProviders.length > 0 ? (
                     <div className="account-list">
-                      {connectedProviders.map((provider: any) => (
+                      {connectedProviders.map((provider: string) => (
                         <div key={provider} className="account-item connected">
                           <div className="account-info">
                             <LinkIcon size={20} />

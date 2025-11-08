@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { ChatAccessibilityProvider } from '@/components/chat/accessibility/ChatAccessibilityProvider';
 import type { AudienceType } from '@/components/search/AccessibleSearchWithSuggestions';
+import { HeartIcon, PillIcon, BulbIcon } from '@/components/icons/FlatOutlineIcons';
 
 // Carregamento dinâmico para evitar problemas de SSR
 const EducationalLayout = dynamic(() => import('@/components/layout/EducationalLayout'), { ssr: false });
@@ -97,11 +98,11 @@ export default function SearchPage() {
                   <h3 className="category-title">👥 Para Pacientes</h3>
                   <div className="category-links">
                     <a href="/vida-com-hanseniase" className="quick-link">
-                      <span className="link-icon">❤️</span>
+                      <span className="link-icon"><HeartIcon size={20} color="#ef4444" /></span>
                       <span className="link-text">Como Viver Bem</span>
                     </a>
                     <a href="/vida-com-hanseniase#medicamentos" className="quick-link">
-                      <span className="link-icon">💊</span>
+                      <span className="link-icon"><PillIcon size={20} color="#8b5cf6" /></span>
                       <span className="link-text">Como Tomar Remédios</span>
                     </a>
                     <a href="/vida-com-hanseniase#direitos" className="quick-link">
@@ -188,7 +189,7 @@ export default function SearchPage() {
 
             {/* Search Tips */}
             <section className="search-tips" aria-label="Dicas de busca">
-              <h2 className="tips-title">💡 Dicas para uma Busca Melhor</h2>
+              <h2 className="tips-title"><BulbIcon size={24} color="#00aa44" /> Dicas para uma Busca Melhor</h2>
               <div className="tips-grid">
                 <div className="tip-card">
                   <h3 className="tip-title">🎯 Seja Específico</h3>

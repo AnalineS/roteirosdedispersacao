@@ -66,7 +66,15 @@ class SupabaseVectorStore:
 
         # Connection parameters from config
         self.supabase_url = getattr(config, 'SUPABASE_URL', os.getenv('SUPABASE_URL'))
-        self.supabase_key = getattr(config, 'SUPABASE_ANON_KEY', os.getenv('SUPABASE_ANON_KEY'))
+        # Accept SUPABASE_SERVICE_KEY, SUPABASE_KEY, or SUPABASE_ANON_KEY for authentication
+        self.supabase_key = (
+            getattr(config, 'SUPABASE_SERVICE_KEY', None) or
+            getattr(config, 'SUPABASE_KEY', None) or
+            getattr(config, 'SUPABASE_ANON_KEY', None) or
+            os.getenv('SUPABASE_SERVICE_KEY') or
+            os.getenv('SUPABASE_KEY') or
+            os.getenv('SUPABASE_ANON_KEY')
+        )
         self.supabase_db_url = getattr(config, 'SUPABASE_DB_URL', os.getenv('SUPABASE_DB_URL'))
         self.database_url = getattr(config, 'DATABASE_URL', os.getenv('DATABASE_URL'))
 

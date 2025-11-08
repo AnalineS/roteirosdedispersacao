@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
+import { safeLocalStorage } from '@/hooks/useClientStorage';
 import EducationalLayout from '@/components/layout/EducationalLayout';
 import ProgressSystem, { useProgressData } from '@/components/navigation/Progress';
 import { usePersonas } from '@/hooks/usePersonas';
@@ -49,7 +49,7 @@ export default function ProgressPage() {
   const { personas, loading: personasLoading } = usePersonas();
   const [selectedPersona, setSelectedPersona] = useState<string | null>(null);
   const userProgressData = useProgressData();
-  const [progressData, setProgressData] = useState<PageProgressData>({
+  const [progressData] = useState<PageProgressData>({
     totalTime: 185, // minutos
     modulesStarted: 6,
     modulesCompleted: 3,
