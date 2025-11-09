@@ -101,10 +101,6 @@ python-magic==0.4.27
 # Supabase integration - FASE 3 RAG
 # Main client library (includes auth, storage, functions, realtime)
 supabase>=2.10.0
-# Explicit auth package to ensure http_clients module is available
-supabase_auth>=0.7.0
-# PostgreSQL REST API client
-postgrest-py>=0.13.0
 # PostgreSQL adapter with pgvector support
 psycopg2-binary==2.9.10
 
