@@ -212,6 +212,7 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: 'pip'
+          cache-dependency-path: apps/backend/requirements.txt
 
       - name: "📦 Install Frontend Dependencies"
         working-directory: apps/frontend-nextjs
@@ -295,12 +296,11 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: 'pip'
+          cache-dependency-path: apps/backend/requirements.txt
 
       - name: "📦 Install Dependencies"
         working-directory: apps/backend
-        run: |
-          pip install -r requirements.txt
-          pip install pytest pytest-cov
+        run: pip install -r requirements.txt
 
       - name: "🧪 Quick Unit Tests"
         working-directory: apps/backend

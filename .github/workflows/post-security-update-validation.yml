@@ -77,6 +77,8 @@ jobs:
         uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38
         with:
           python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: apps/backend/requirements.txt
 
       - name: Install security audit tools
         run: |
@@ -157,12 +159,12 @@ jobs:
         with:
           python-version: '3.11'
           cache: 'pip'
+          cache-dependency-path: apps/backend/requirements.txt
 
       - name: Install Python dependencies
         run: |
           cd apps/backend
           pip install -r requirements.txt
-          pip install pytest pytest-cov pytest-mock pytest-timeout
 
       - name: Set up test environment
         run: |
@@ -366,12 +368,12 @@ jobs:
         with:
           python-version: '3.11'
           cache: 'pip'
+          cache-dependency-path: apps/backend/requirements.txt
 
       - name: Install dependencies
         run: |
           cd apps/backend
           pip install -r requirements.txt
-          pip install pytest pytest-mock pytest-timeout
 
       - name: Run JWT authentication security tests
         run: |
@@ -489,12 +491,12 @@ jobs:
         with:
           python-version: '3.11'
           cache: 'pip'
+          cache-dependency-path: apps/backend/requirements.txt
 
       - name: Install dependencies
         run: |
           cd apps/backend
           pip install -r requirements.txt
-          pip install pytest
 
       - name: Run PCDT compliance tests
         run: |
@@ -554,12 +556,12 @@ jobs:
         with:
           python-version: '3.11'
           cache: 'pip'
+          cache-dependency-path: apps/backend/requirements.txt
 
       - name: Install dependencies
         run: |
           cd apps/backend
           pip install -r requirements.txt
-          pip install pytest
 
       - name: Run LGPD compliance tests
         run: |
@@ -647,12 +649,12 @@ jobs:
         with:
           python-version: '3.11'
           cache: 'pip'
+          cache-dependency-path: apps/backend/requirements.txt
 
       - name: Install dependencies
         run: |
           cd apps/backend
           pip install -r requirements.txt
-          pip install pytest pytest-cov pytest-html
 
       - name: Run comprehensive validation suite
         run: |

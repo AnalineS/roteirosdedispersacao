@@ -131,6 +131,8 @@ pytest==8.4.2  # Updated for pytest 8.x migration (FASE 0 completion)
 pytest-cov==6.0.0  # Compatible with pytest 8.x
 pytest-mock==3.15.1
 pytest-asyncio==0.25.2  # Async test support for LGPD compliance tests
+pytest-timeout>=2.2.0  # Required for CI timeout enforcement (--timeout flag)
+pytest-html>=3.2.0  # HTML test reports for comprehensive validation
 
 # === SECURITY ANALYSIS & COMPLIANCE ===
 # Vulnerability scanning
