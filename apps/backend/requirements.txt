@@ -99,8 +99,14 @@ python-magic==0.4.27
 
 # === DATABASE & VECTOR STORE ===
 # Supabase integration - FASE 3 RAG
-supabase==2.20.0
-psycopg2-binary==2.9.10  # PostgreSQL adapter with pgvector support
+# Main client library (includes auth, storage, functions, realtime)
+supabase>=2.10.0
+# Explicit auth package to ensure http_clients module is available
+supabase_auth>=0.7.0
+# PostgreSQL REST API client
+postgrest-py>=0.13.0
+# PostgreSQL adapter with pgvector support
+psycopg2-binary==2.9.10
 
 # Optional SQL support
 sqlalchemy>=2.0.0

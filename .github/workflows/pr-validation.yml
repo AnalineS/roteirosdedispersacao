@@ -163,6 +163,8 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         run: |
           echo "🔐 Running Snyk scan for Python..."
+          echo "📦 Installing Python dependencies for scan..."
+          pip install -r requirements.txt
           snyk test \
             --severity-threshold=high \
             --json-file-output=../../snyk-py-results.json \
