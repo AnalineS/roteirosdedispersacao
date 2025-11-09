@@ -78,7 +78,7 @@ describe('API Service', () => {
 
       const result = await getPersonas();
       expect(result).toEqual(mockPersonas);
-      expect(mockFetch).toHaveBeenCalledWith('http://localhost:8080/api/v1/personas', {
+      expect(mockFetch).toHaveBeenCalledWith('http://localhost:5000/api/v1/personas', {
         method: 'GET',
         headers: { 'Accept': 'application/json' },
         signal: expect.any(AbortSignal)
@@ -140,7 +140,7 @@ describe('API Service', () => {
       const result = await sendChatMessage(request);
       
       expect(result).toEqual(mockResponse);
-      expect(mockFetch).toHaveBeenCalledWith('http://localhost:8080/api/v1/chat', {
+      expect(mockFetch).toHaveBeenCalledWith('http://localhost:5000/api/v1/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -174,7 +174,7 @@ describe('API Service', () => {
       const result = await apiClient.post('/test', { data: 'test' });
       
       expect(result).toEqual(mockData);
-      expect(mockFetch).toHaveBeenCalledWith('http://localhost:8080/test', {
+      expect(mockFetch).toHaveBeenCalledWith('http://localhost:5000/test', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -200,10 +200,10 @@ describe('API Service', () => {
       
       expect(result).toEqual({
         available: true,
-        url: 'http://localhost:8080',
+        url: 'http://localhost:5000',
         fallbackActive: false
       });
-      expect(mockFetch).toHaveBeenCalledWith('http://localhost:8080/api/v1/health', {
+      expect(mockFetch).toHaveBeenCalledWith('http://localhost:5000/api/v1/health', {
         method: 'GET',
         headers: { 'Accept': 'application/json' },
         signal: expect.any(AbortSignal)
