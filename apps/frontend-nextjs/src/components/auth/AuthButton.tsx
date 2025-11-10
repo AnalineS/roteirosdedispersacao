@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { useSafeAuth } from '@/hooks/useSafeAuth';
 import { useRouter } from 'next/navigation';
-import SocialAuthButtons from './SocialAuthButtons';
 
 interface AuthButtonProps {
   variant?: 'header' | 'inline' | 'mobile';
@@ -341,29 +340,6 @@ export default function AuthButton({ variant = 'header', className = '' }: AuthB
               Criar conta grátis
             </button>
           </div>
-
-          <SocialAuthButtons 
-            mode="login"
-            compact={false}
-            showDivider={true}
-            onSuccess={() => {
-              // Login social bem-sucedido
-            }}
-            onError={(error) => {
-              if (typeof window !== 'undefined' && window.gtag) {
-                window.gtag('event', 'auth_button_social_login_error', {
-                  event_category: 'medical_authentication',
-                  event_label: 'social_login_failed',
-                  custom_parameters: {
-                    medical_context: 'auth_button_social_login',
-                    error_type: 'social_auth_failure',
-                    error_message: typeof error === 'string' ? error : String(error)
-                  }
-                });
-              }
-            }}
-            className="inline-social-auth"
-          />
         </div>
       )}
 

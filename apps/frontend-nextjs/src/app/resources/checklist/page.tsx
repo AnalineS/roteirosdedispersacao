@@ -243,138 +243,236 @@ export default function ChecklistPage() {
   };
 
   const printChecklist = () => {
-    const printContent = `
-      <html>
-        <head>
-          <title>Checklist de Dispensação PQT-U</title>
-          <style>
-            body { font-family: Arial, sans-serif; margin: 20px; }
-            .header { text-align: center; margin-bottom: 30px; }
-            .category { margin-bottom: 20px; }
-            .category h3 { color: #003366; border-bottom: 2px solid #003366; }
-            .item { margin: 10px 0; padding: 10px; border: 1px solid #ddd; }
-            .mandatory { background-color: #fff3cd; }
-            .completed { background-color: #d4edda; }
-            .checkbox { margin-right: 10px; }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <h1>Checklist de Dispensação PQT-U</h1>
-            <p>Data: ${new Date().toLocaleDateString('pt-BR')}</p>
-            <p>Progresso: ${summary.completed}/${summary.total} itens (${summary.percentage}%)</p>
-          </div>
-          ${Object.entries(
-            checklistItems.reduce((acc, item) => {
-              if (!acc[item.category]) acc[item.category] = [];
-              acc[item.category].push(item);
-              return acc;
-            }, {} as Record<string, ChecklistItem[]>)
-          ).map(([category, items]) => `
-            <div class="category">
-              <h3>${category}</h3>
-              ${items.map(item => `
-                <div class="item ${item.mandatory ? 'mandatory' : ''} ${item.completed ? 'completed' : ''}">
-                  <input type="checkbox" class="checkbox" ${item.completed ? 'checked' : ''} />
-                  <strong>${item.text}</strong>
-                  ${item.mandatory ? ' (Obrigatório)' : ''}
-                  ${item.description ? `<br><small>${item.description}</small>` : ''}
-                </div>
-              `).join('')}
-            </div>
-          `).join('')}
-        </body>
-      </html>
+    // Agrupar itens por categoria localmente
+    const itemsByCategory = checklistItems.reduce((acc, item) => {
+      if (!acc[item.category]) acc[item.category] = [];
+      acc[item.category].push(item);
+      return acc;
+    }, {} as Record<string, ChecklistItem[]>);
+
+    const printWindow = window.open('', '_blank', 'width=800,height=600');
+
+    if (!printWindow) {
+      alert('Por favor, permita pop-ups para imprimir o checklist');
+      return;
+    }
+
+    const doc = printWindow.document;
+    doc.open();
+
+    // Create HTML structure
+    const html = doc.createElement('html');
+    html.lang = 'pt-BR';
+    const head = doc.createElement('head');
+    const body = doc.createElement('body');
+
+    // Add meta and title
+    const meta = doc.createElement('meta');
+    meta.setAttribute('charset', 'utf-8');
+    head.appendChild(meta);
+
+    const viewport = doc.createElement('meta');
+    viewport.setAttribute('name', 'viewport');
+    viewport.setAttribute('content', 'width=device-width, initial-scale=1');
+    head.appendChild(viewport);
+
+    const title = doc.createElement('title');
+    title.textContent = 'Checklist de Dispensação PQT-U - Hanseníase';
+    head.appendChild(title);
+
+    // Add comprehensive styles
+    const style = doc.createElement('style');
+    style.textContent = `
+      @page { margin: 2cm; }
+      body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        margin: 0;
+        padding: 20px;
+      }
+      .print-header {
+        text-align: center;
+        margin-bottom: 30px;
+        border-bottom: 3px solid #003366;
+        padding-bottom: 20px;
+      }
+      .print-header h1 {
+        color: #003366;
+        margin: 0 0 10px;
+        font-size: 24px;
+      }
+      .print-header p {
+        margin: 5px 0;
+        color: #666;
+      }
+      .summary {
+        background: #f0f9ff;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 25px;
+        border: 1px solid #3b82f6;
+      }
+      .summary strong {
+        color: #1e3a8a;
+      }
+      .category {
+        margin-bottom: 25px;
+        page-break-inside: avoid;
+      }
+      .category h3 {
+        color: #003366;
+        border-bottom: 2px solid #3b82f6;
+        padding-bottom: 8px;
+        margin-top: 0;
+        font-size: 18px;
+      }
+      .checklist-item {
+        margin: 12px 0;
+        padding: 12px;
+        border-left: 3px solid #e2e8f0;
+        background: #f8fafc;
+        page-break-inside: avoid;
+      }
+      .checklist-item.mandatory {
+        border-left-color: #eab308;
+        background: #fefce8;
+      }
+      .checklist-item.completed {
+        border-left-color: #22c55e;
+        background: #f0fdf4;
+      }
+      .checkbox {
+        margin-right: 10px;
+        transform: scale(1.2);
+      }
+      .item-text {
+        font-weight: 600;
+        display: inline;
+      }
+      .item-badge {
+        display: inline-block;
+        background: #dc2626;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        margin-left: 8px;
+      }
+      .item-description {
+        font-size: 14px;
+        color: #64748b;
+        margin: 8px 0 0 28px;
+        line-height: 1.4;
+      }
+      @media print {
+        .no-print { display: none !important; }
+        body { margin: 0; }
+      }
     `;
-    
-    const printWindow = window.open('', '_blank');
-    if (printWindow) {
-      // Create print document safely using DOM methods
-      const doc = printWindow.document;
-      doc.open();
+    head.appendChild(style);
 
-      // Create HTML structure
-      const html = doc.createElement('html');
-      const head = doc.createElement('head');
-      const body = doc.createElement('body');
+    // Add header
+    const header = doc.createElement('div');
+    header.className = 'print-header';
 
-      // Add title and styles
-      const title = doc.createElement('title');
-      title.textContent = 'Checklist de Dispensação';
+    const h1 = doc.createElement('h1');
+    h1.textContent = 'Checklist de Dispensação PQT-U';
+    header.appendChild(h1);
 
-      const style = doc.createElement('style');
-      style.textContent = `
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .print-header { text-align: center; margin-bottom: 30px; }
-        .category { margin-bottom: 25px; }
-        .category h3 { color: #1e293b; border-bottom: 2px solid #3b82f6; padding-bottom: 5px; }
-        .checklist-item { margin: 10px 0; padding: 8px; border-left: 3px solid #e2e8f0; }
-        .checkbox { margin-right: 8px; }
-      `;
+    const subtitle = doc.createElement('p');
+    subtitle.textContent = 'Hanseníase - Protocolo Clínico e Diretrizes Terapêuticas';
+    header.appendChild(subtitle);
 
-      head.appendChild(title);
-      head.appendChild(style);
+    const dateP = doc.createElement('p');
+    dateP.textContent = `Data: ${new Date().toLocaleDateString('pt-BR', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    })}`;
+    header.appendChild(dateP);
 
-      // Add header
-      const header = doc.createElement('div');
-      header.className = 'print-header';
-      const h1 = doc.createElement('h1');
-      h1.textContent = 'Checklist de Dispensação PQT-U';
-      const subtitle = doc.createElement('p');
-      subtitle.textContent = 'Hanseníase - Protocolo Clínico e Diretrizes Terapêuticas';
-      header.appendChild(h1);
-      header.appendChild(subtitle);
-      body.appendChild(header);
+    body.appendChild(header);
 
-      // Add checklist items
-      Object.entries(groupedItems).forEach(([category, items]) => {
-        const categoryDiv = doc.createElement('div');
-        categoryDiv.className = 'category';
+    // Add summary
+    const summaryDiv = doc.createElement('div');
+    summaryDiv.className = 'summary';
+    summaryDiv.innerHTML = `
+      <strong>Progresso:</strong> ${summary.completed}/${summary.total} itens concluídos (${summary.percentage}%) |
+      <strong>Obrigatórios:</strong> ${summary.mandatoryCompleted}/${summary.mandatory} |
+      <strong>Status:</strong> ${summary.readyToDispense ? '✓ Pronto para Dispensar' : '⚠ Verificações Pendentes'}
+    `;
+    body.appendChild(summaryDiv);
 
-        const categoryTitle = doc.createElement('h3');
-        categoryTitle.textContent = category;
-        categoryDiv.appendChild(categoryTitle);
+    // Add checklist items by category
+    Object.entries(itemsByCategory).forEach(([category, items]) => {
+      const categoryDiv = doc.createElement('div');
+      categoryDiv.className = 'category';
 
-        items.forEach((item, index) => {
-          const itemDiv = doc.createElement('div');
-          itemDiv.className = 'checklist-item';
+      const categoryTitle = doc.createElement('h3');
+      categoryTitle.textContent = category;
+      categoryDiv.appendChild(categoryTitle);
 
-          const checkbox = doc.createElement('input');
-          checkbox.type = 'checkbox';
-          checkbox.className = 'checkbox';
-          checkbox.id = `print-${category}-${index}`;
+      items.forEach((item) => {
+        const itemDiv = doc.createElement('div');
+        itemDiv.className = `checklist-item${item.mandatory ? ' mandatory' : ''}${item.completed ? ' completed' : ''}`;
 
-          const label = doc.createElement('label');
-          label.setAttribute('for', `print-${category}-${index}`);
-          label.textContent = item.text;
+        const label = doc.createElement('label');
+        label.style.cursor = 'pointer';
+        label.style.display = 'flex';
+        label.style.alignItems = 'flex-start';
 
-          if (item.description) {
-            const desc = doc.createElement('div');
-            desc.style.fontSize = '0.9em';
-            desc.style.color = '#64748b';
-            desc.style.marginLeft = '24px';
-            desc.textContent = item.description;
-            itemDiv.appendChild(checkbox);
-            itemDiv.appendChild(label);
-            itemDiv.appendChild(desc);
-          } else {
-            itemDiv.appendChild(checkbox);
-            itemDiv.appendChild(label);
-          }
+        const checkbox = doc.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.className = 'checkbox';
+        checkbox.checked = item.completed;
+        checkbox.disabled = true; // Read-only for print
+        label.appendChild(checkbox);
 
-          categoryDiv.appendChild(itemDiv);
-        });
+        const contentDiv = doc.createElement('div');
+        contentDiv.style.flex = '1';
 
-        body.appendChild(categoryDiv);
+        const textSpan = doc.createElement('span');
+        textSpan.className = 'item-text';
+        textSpan.textContent = item.text;
+        contentDiv.appendChild(textSpan);
+
+        if (item.mandatory) {
+          const badge = doc.createElement('span');
+          badge.className = 'item-badge';
+          badge.textContent = 'OBRIGATÓRIO';
+          contentDiv.appendChild(badge);
+        }
+
+        if (item.description) {
+          const descP = doc.createElement('p');
+          descP.className = 'item-description';
+          descP.textContent = item.description;
+          contentDiv.appendChild(descP);
+        }
+
+        label.appendChild(contentDiv);
+        itemDiv.appendChild(label);
+        categoryDiv.appendChild(itemDiv);
       });
 
-      html.appendChild(head);
-      html.appendChild(body);
-      doc.appendChild(html);
-      doc.close();
+      body.appendChild(categoryDiv);
+    });
 
+    // Assemble document
+    html.appendChild(head);
+    html.appendChild(body);
+    doc.appendChild(html);
+    doc.close();
+
+    // Execute print with proper event handling
+    printWindow.focus();
+
+    printWindow.onload = () => {
       printWindow.print();
-    }
+      // Close window after print dialog is closed
+      printWindow.onafterprint = () => printWindow.close();
+    };
   };
 
   // Agrupar itens por categoria

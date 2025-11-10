@@ -2,24 +2,19 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { 
-  User, 
-  Mail, 
-  Shield, 
-  Settings, 
+import {
+  User,
+  Shield,
+  Settings,
   Save,
   Loader2,
   AlertCircle,
   CheckCircle,
-  Camera,
-  Link as LinkIcon,
   Trash2
 } from 'lucide-react';
 import { useSafeAuth as useAuth } from '@/hooks/useSafeAuth';
-import { SocialAuthButtons } from '@/components/auth';
 import type { UserFocus } from '@/types/api';
 import type { UserPreferencesDTO } from '@/types/unified-api';
-import { SocialProfile, AvatarUploader, EmailPreferences, ConnectedAccounts } from '@/components/profile';
 
 interface ProfileFormData {
   displayName: string;
@@ -31,13 +26,12 @@ interface ProfileFormData {
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { 
-    user, 
-    profile, 
-    isAuthenticated, 
+  const {
+    user,
+    profile,
+    isAuthenticated,
     loading: authLoading,
     updateUserProfile,
-    linkSocialAccount,
     deleteAccount
   } = useAuth();
 
@@ -58,7 +52,7 @@ export default function ProfilePage() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
-  const [activeTab, setActiveTab] = useState<'profile' | 'account' | 'privacy' | 'social'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'account' | 'privacy'>('profile');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // Redirecionar se não autenticado
@@ -108,7 +102,7 @@ export default function ProfilePage() {
       } else {
         setMessage({ type: 'error', text: result.error || 'Erro ao atualizar perfil' });
       }
-    } catch (error) {
+    } catch (_error) {
       setMessage({ type: 'error', text: 'Erro inesperado ao atualizar perfil' });
     } finally {
       setIsLoading(false);
@@ -132,14 +126,6 @@ export default function ProfilePage() {
     }));
   };
 
-  const handleSocialLink = (error: string) => {
-    setMessage({ type: 'error', text: error });
-  };
-
-  const handleSocialSuccess = () => {
-    setMessage({ type: 'success', text: 'Conta vinculada com sucesso!' });
-  };
-
   const handleDeleteAccount = async () => {
     if (!showDeleteConfirm) {
       setShowDeleteConfirm(true);
@@ -154,7 +140,7 @@ export default function ProfilePage() {
       } else {
         setMessage({ type: 'error', text: result.error || 'Erro ao excluir conta' });
       }
-    } catch (error) {
+    } catch (_error) {
       setMessage({ type: 'error', text: 'Erro inesperado ao excluir conta' });
     } finally {
       setIsLoading(false);
@@ -174,8 +160,6 @@ export default function ProfilePage() {
   if (!isAuthenticated) {
     return null; // Will redirect
   }
-
-  const connectedProviders = user?.provider ? [user.provider] : [];
 
   return (
     <div className="profile-container">
@@ -209,13 +193,6 @@ export default function ProfilePage() {
           >
             <Shield size={20} />
             Privacidade
-          </button>
-          <button
-            onClick={() => setActiveTab('social')}
-            className={`tab-button ${activeTab === 'social' ? 'active' : ''}`}
-          >
-            <LinkIcon size={20} />
-            Social
           </button>
         </div>
 
@@ -388,41 +365,6 @@ export default function ProfilePage() {
 
           {activeTab === 'account' && (
             <div className="account-content">
-              <div className="form-section">
-                <h3 className="section-title">Contas Vinculadas</h3>
-                <p className="section-description">
-                  Vincule suas contas sociais para facilitar o acesso
-                </p>
-
-                <div className="connected-accounts">
-                  {connectedProviders.length > 0 ? (
-                    <div className="account-list">
-                      {connectedProviders.map((provider: string) => (
-                        <div key={provider} className="account-item connected">
-                          <div className="account-info">
-                            <LinkIcon size={20} />
-                            <span>{provider === 'google.com' ? 'Google' : 
-                                   provider === 'facebook.com' ? 'Facebook' : 
-                                   provider === 'apple.com' ? 'Apple' : provider}</span>
-                          </div>
-                          <span className="account-status">Conectado</span>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="no-accounts">Nenhuma conta social vinculada</p>
-                  )}
-                </div>
-
-                <SocialAuthButtons 
-                  mode="link"
-                  onSuccess={handleSocialSuccess}
-                  onError={handleSocialLink}
-                  showDivider={false}
-                  compact={false}
-                />
-              </div>
-
               <div className="form-section danger-section">
                 <h3 className="section-title danger">Zona de Perigo</h3>
                 <p className="section-description">
@@ -491,43 +433,6 @@ export default function ProfilePage() {
                     Termos de Uso
                   </a>
                 </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'social' && (
-            <div className="social-content">
-              {/* Social Profile Component - PR #175 */}
-              <div className="form-section">
-                <SocialProfile />
-              </div>
-
-              {/* Avatar Uploader - PR #175 */}
-              <div className="form-section">
-                <h3 className="section-title">Avatar do Perfil</h3>
-                <AvatarUploader 
-                  userId={user?.uid || ''}
-                  currentAvatarUrl={user?.photoURL || ''}
-                  onUploadComplete={(url) => console.log('Avatar uploaded:', url)}
-                />
-              </div>
-
-              {/* Email Preferences - PR #175 */}
-              <div className="form-section">
-                <h3 className="section-title">Preferências de Email</h3>
-                <EmailPreferences 
-                  userId={user?.uid || ''}
-                  onPreferencesChange={async (prefs) => {
-                    console.log('Email preferences updated:', prefs);
-                    return true;
-                  }}
-                />
-              </div>
-
-              {/* Connected Accounts - PR #175 */}
-              <div className="form-section">
-                <h3 className="section-title">Contas Conectadas</h3>
-                <ConnectedAccounts />
               </div>
             </div>
           )}

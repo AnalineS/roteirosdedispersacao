@@ -153,7 +153,7 @@ export default function ProgressPage() {
     }
   }, [personas]);
 
-  const currentPersona = selectedPersona ? personas[selectedPersona] : null;
+  const _currentPersona = selectedPersona ? personas[selectedPersona] : null;
 
   const formatTime = (minutes: number): string => {
     const hours = Math.floor(minutes / 60);
@@ -320,7 +320,7 @@ export default function ProgressPage() {
 
               {/* Learning Path Items */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
-                {progressData.learningPath.map((item, index) => (
+                {progressData.learningPath.map((item) => (
                   <div
                     key={item.id}
                     style={{

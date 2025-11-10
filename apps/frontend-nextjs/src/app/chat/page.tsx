@@ -26,7 +26,7 @@ import { useUserProfile } from '@/hooks/useUserProfile';
 import { theme } from '@/config/theme';
 import { SidebarLoader } from '@/components/LoadingSpinner';
 import { type ChatMessage } from '@/types/api';
-import { isValidPersonaId, type ValidPersonaId } from '@/types/personas';
+import { type ValidPersonaId } from '@/types/personas';
 
 export default function ChatPage() {
   const { setPersonaSelectionViewed } = useGlobalNavigation();

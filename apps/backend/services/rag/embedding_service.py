@@ -278,19 +278,19 @@ class EmbeddingService:
         
         try:
             start_time = datetime.now()
-            
+
             # Fazer import lazy
-            SentenceTransformer, torch = _lazy_import_sentence_transformers()
-            
+            sentence_transformer_class, torch = _lazy_import_sentence_transformers()
+
             logger.info(f"🧠 Carregando modelo de embeddings: {self.model_name}")
-            
+
             # Configurar device adequado
             device = self.device
             if device == 'auto':
                 device = 'cuda' if torch.cuda.is_available() else 'cpu'
-            
+
             # Carregar modelo
-            self.model = SentenceTransformer(
+            self.model = sentence_transformer_class(
                 self.model_name,
                 device=device
             )
@@ -576,7 +576,7 @@ class EmbeddingService:
                     convert_to_numpy=NUMPY_AVAILABLE,
                     normalize_embeddings=True
                 )
-                logger.debug(f"[V5.1+] Usando encode_query() otimizado")
+                logger.debug("[V5.1+] Usando encode_query() otimizado")
             else:
                 # Fallback para encode() padrão com hint de query
                 embedding = self.model.encode(
@@ -640,7 +640,7 @@ class EmbeddingService:
                 document = document[:max_length]
                 logger.debug(f"[NOTE] Documento truncado para {max_length} caracteres")
             
-            # Sentence-transformers v5.1+ - encode_document se disponível  
+            # Sentence-transformers v5.1+ - encode_document se disponível
             if hasattr(self.model, 'encode_document'):
                 # Usar método especializado para documentos
                 embedding = self.model.encode_document(
@@ -648,7 +648,7 @@ class EmbeddingService:
                     convert_to_numpy=NUMPY_AVAILABLE,
                     normalize_embeddings=True
                 )
-                logger.debug(f"[V5.1+] Usando encode_document() otimizado")
+                logger.debug("[V5.1+] Usando encode_document() otimizado")
             else:
                 # Fallback para encode() padrão com hint de document
                 embedding = self.model.encode(
