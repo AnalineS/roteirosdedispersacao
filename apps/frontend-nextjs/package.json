@@ -68,20 +68,20 @@
     "claude:monitoring": "node ../../.claude/automation/continuous-monitoring-system.js"
   },
   "dependencies": {
-    "@next/third-parties": "^15.5.4",
+    "@next/third-parties": "^15.5.6",
     "axios": "1.12.2",
     "dompurify": "^3.2.7",
     "framer-motion": "^12.23.22",
     "js-cookie": "3.0.5",
     "jspdf": "^3.0.3",
     "lucide-react": "^0.544.0",
-    "next": "^15.5.4",
+    "next": "^15.5.6",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-ga4": "^2.1.0",
     "react-image-crop": "^11.0.10",
     "web-vitals": "^5.1.0",
-    "zod": "^4.1.5"
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
