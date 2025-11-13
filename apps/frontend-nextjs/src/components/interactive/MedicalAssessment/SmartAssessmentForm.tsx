@@ -69,11 +69,6 @@ interface SmartAssessmentFormProps {
 
 type StepData = Partial<MedicalAssessmentData>;
 
-interface StepFormProps {
-  data: StepData;
-  onUpdate: (data: StepData) => void;
-}
-
 export default function SmartAssessmentForm({
   onAssessmentComplete,
   persona = 'dr_gasnelio',
@@ -138,9 +133,9 @@ export default function SmartAssessmentForm({
 
         setRagSuggestions(suggestions);
       }
-    } catch (error) {
-      // Security: Do not log medical query details
-      // Error handled silently to protect patient data
+    } catch (error) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      // Security: Do not log medical query details to protect patient data
+      // Error handled silently to prevent PHI exposure
     }
   }, [personaRAG, persona, enableRAGSuggestions]);
 
@@ -230,7 +225,7 @@ export default function SmartAssessmentForm({
       }));
 
       onAssessmentComplete(completeData, rec);
-    } catch (error) {
+    } catch (error) { // eslint-disable-line @typescript-eslint/no-unused-vars
       // Security: Medical assessment errors not logged to prevent data exposure
       // Error handled silently to protect patient data
     } finally {

@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { AlertCircle, X, TrendingUp, Clock, AlertTriangle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { AlertCircle, X, Clock, AlertTriangle } from 'lucide-react';
 
 interface ErrorEntry {
   id: string;
@@ -11,7 +11,7 @@ interface ErrorEntry {
   severity: 'low' | 'medium' | 'high' | 'critical';
   component?: string;
   userId?: string;
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
   count: number;
 }
 
