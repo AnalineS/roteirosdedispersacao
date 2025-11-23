@@ -355,19 +355,33 @@ class SupabaseRAGSystem:
         return formatted_context + metadata_info
     
     def _generate_base_answer(self, query: str, context: str, persona: str) -> str:
-        """Gera resposta base usando contexto (sem OpenRouter)"""
-        # Por enquanto, retorna contexto formatado
-        # TODO: Integrar com sistema de personas existente
-        
-        if persona == 'dr_gasnelio':
-            prefix = "**Dr. Gasnelio (Farmacêutico Clínico):**\n\n"
-            style = "Baseado na literatura científica e protocolos clínicos:\n\n"
-        else:  # ga_empathetic
-            prefix = "**Gá (Assistente Empático):**\n\n"
-            style = "Vou explicar de forma clara e acessível:\n\n"
-        
-        base_answer = f"{prefix}{style}{context}"
-        
+        """Gera resposta base usando contexto integrado com sistema de personas"""
+        # Integrar com sistema de personas existente
+        try:
+            from core.personas.persona_manager import get_personas
+            personas = get_personas()
+
+            if persona in personas:
+                persona_data = personas[persona]
+                prefix = f"**{persona_data['name']}:**\n\n"
+                # Usar descrição da persona para estilo de resposta
+                style_hint = f"({persona_data['description']})\n\n"
+            else:
+                # Fallback se persona não encontrada
+                prefix = "**Assistente:**\n\n"
+                style_hint = ""
+
+        except ImportError:
+            # Fallback caso módulo não disponível
+            if persona == 'dr_gasnelio':
+                prefix = "**Dr. Gasnelio (Farmacêutico Clínico):**\n\n"
+                style_hint = "Baseado na literatura científica e protocolos clínicos:\n\n"
+            else:  # ga_empathetic
+                prefix = "**Gá (Assistente Empático):**\n\n"
+                style_hint = "Vou explicar de forma clara e acessível:\n\n"
+
+        base_answer = f"{prefix}{style_hint}{context}"
+
         return base_answer
     
     def _enhance_with_openrouter(
