@@ -69,7 +69,7 @@ class JWTAuthManager:
 
     def _rate_limit_check(self, identifier: str) -> bool:
         """Verificar rate limiting"""
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         key = f"auth_attempts:{identifier}"
 
         # Limpar tentativas antigas
@@ -96,7 +96,7 @@ class JWTAuthManager:
         if key not in self._rate_limit_cache:
             self._rate_limit_cache[key] = []
 
-        self._rate_limit_cache[key].append(datetime.utcnow())
+        self._rate_limit_cache[key].append(datetime.now(timezone.utc))
 
     def _hash_token(self, token: str) -> str:
         """Hash seguro de token"""
@@ -111,7 +111,7 @@ class JWTAuthManager:
         Returns:
             Tuple[access_token, refresh_token, session_id]
         """
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         session_id = str(uuid.uuid4())
 
         # Access Token (curta duração)
@@ -208,7 +208,7 @@ class JWTAuthManager:
             return None
 
         # Gerar novo access token
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         access_payload = {
             'user_id': user['id'],
             'session_id': payload['session_id'],

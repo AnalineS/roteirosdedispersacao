@@ -197,13 +197,13 @@ class TestCloudLogger:
 
         entry = LGPDLogEntry(
             log_id='test-123',
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(timezone.utc),
             level='INFO',
             message='Test message',
             context={'test': 'data'},
             data_category='system',
             retention_days=7,
-            expires_at=datetime.utcnow() + timedelta(days=7),
+            expires_at=datetime.now(timezone.utc) + timedelta(days=7),
             has_sensitive_data=False
         )
 
@@ -313,7 +313,7 @@ class TestAlertManager:
                 title=f'Test {i}',
                 message=f'Message {i}',
                 details={},
-                timestamp=datetime.utcnow()
+                timestamp=datetime.now(timezone.utc)
             )
             alert_manager.alert_history.append(alert)
 
@@ -340,7 +340,7 @@ class TestAlertManager:
     def test_get_alert_stats_with_data(self, alert_manager):
         """Testa estatísticas com dados"""
         # Adicionar alertas de teste
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         old_alert = AlertData(
             alert_id='old',
             alert_type='system_error',
@@ -400,7 +400,7 @@ class TestEmailNotificationChannel:
             title='Test Violation',
             message='Test message',
             details={'test': 'data'},
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(timezone.utc),
             requires_immediate_action=True
         )
 
@@ -421,7 +421,7 @@ class TestEmailNotificationChannel:
             title='Test Alert',
             message='Test message',
             details={},
-            timestamp=datetime.utcnow()
+            timestamp=datetime.now(timezone.utc)
         )
 
         with patch('smtplib.SMTP') as mock_smtp:
@@ -438,7 +438,7 @@ class TestEmailNotificationChannel:
     def test_rate_limiting(self, email_channel):
         """Testa rate limiting"""
         # Simular múltiplos alertas recentes
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         email_channel.last_alerts = [now - timedelta(minutes=i) for i in range(15)]
 
         assert email_channel.is_rate_limited() == True
@@ -472,7 +472,7 @@ class TestTelegramNotificationChannel:
             title='Security Breach',
             message='Unauthorized access detected',
             details={'affected_users': 50},
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(timezone.utc),
             user_id='user123',
             requires_immediate_action=True
         )
@@ -496,7 +496,7 @@ class TestTelegramNotificationChannel:
             title='Test Alert',
             message='Test message',
             details={},
-            timestamp=datetime.utcnow()
+            timestamp=datetime.now(timezone.utc)
         )
 
         with patch('aiohttp.ClientSession') as mock_session:

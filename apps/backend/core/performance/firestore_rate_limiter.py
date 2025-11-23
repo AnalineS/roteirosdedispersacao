@@ -89,7 +89,7 @@ class FirestoreRateLimiter:
         Returns:
             (allowed: bool, info: dict)
         """
-        current_time = datetime.utcnow()
+        current_time = datetime.now(timezone.utc)
         window_start = current_time - timedelta(seconds=window_seconds)
         
         # 1. Verificar cache local primeiro (performance)
@@ -284,7 +284,7 @@ class FirestoreRateLimiter:
     
     def cleanup_expired(self):
         """Remove entradas expiradas do cache local"""
-        current_time = datetime.utcnow()
+        current_time = datetime.now(timezone.utc)
         
         with self.cache_lock:
             expired_keys = []

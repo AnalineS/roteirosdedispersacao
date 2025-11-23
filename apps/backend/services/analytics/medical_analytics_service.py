@@ -170,7 +170,7 @@ class MedicalAnalyticsService:
                 session_id=event_data.get('session_id', 'unknown'),
                 user_id=event_data.get('user_id'),
                 is_anonymous=event_data.get('is_anonymous', True),
-                timestamp=datetime.utcnow().isoformat(),
+                timestamp=datetime.now(timezone.utc).isoformat(),
                 event_type=event_data.get('event_type', 'unknown'),
                 persona_id=event_data.get('persona_id'),
                 question=event_data.get('question'),
@@ -219,14 +219,14 @@ class MedicalAnalyticsService:
                     session_id,
                     session_data.get('user_id'),
                     session_data.get('is_anonymous', True),
-                    datetime.utcnow().isoformat(),
+                    datetime.now(timezone.utc).isoformat(),
                     session_data.get('device_type', 'desktop'),
                     self._hash_ip(session_data.get('ip_address'))
                 ))
                 conn.commit()
 
             self.active_sessions[session_id] = {
-                'start_time': datetime.utcnow(),
+                'start_time': datetime.now(timezone.utc),
                 'events': []
             }
 
@@ -279,7 +279,7 @@ class MedicalAnalyticsService:
                         avg_response_time = ?, fallback_rate = ?, questions_resolved = ?
                     WHERE session_id = ?
                 ''', (
-                    datetime.utcnow().isoformat(),
+                    datetime.now(timezone.utc).isoformat(),
                     len(events),
                     json.dumps(persona_usage),
                     avg_response_time,
@@ -306,7 +306,7 @@ class MedicalAnalyticsService:
                 cursor = conn.cursor()
 
                 # Get active users in last 5 minutes
-                five_minutes_ago = (datetime.utcnow() - timedelta(minutes=5)).isoformat()
+                five_minutes_ago = (datetime.now(timezone.utc) - timedelta(minutes=5)).isoformat()
                 cursor.execute('''
                     SELECT COUNT(DISTINCT session_id), COUNT(DISTINCT user_id)
                     FROM medical_events
@@ -346,7 +346,7 @@ class MedicalAnalyticsService:
                     'persona_usage': persona_usage,
                     'avg_response_time': sum(avg_response_time) / len(avg_response_time) if avg_response_time else 0,
                     'fallback_rate': fallback_count / len(recent_events) if recent_events else 0,
-                    'timestamp': datetime.utcnow().isoformat()
+                    'timestamp': datetime.now(timezone.utc).isoformat()
                 }
 
         except Exception as e:
@@ -359,7 +359,7 @@ class MedicalAnalyticsService:
             with sqlite3.connect(self.db_path) as conn:
                 cursor = conn.cursor()
 
-                # Get session metrics
+                # Get session metrics including bounce rate
                 cursor.execute('''
                     SELECT
                         COUNT(DISTINCT session_id) as total_sessions,
@@ -368,7 +368,8 @@ class MedicalAnalyticsService:
                         AVG(total_messages) as avg_messages,
                         AVG(avg_response_time) as avg_response_time,
                         AVG(fallback_rate) as avg_fallback_rate,
-                        AVG(questions_resolved) as avg_questions_resolved
+                        AVG(questions_resolved) as avg_questions_resolved,
+                        CAST(SUM(CASE WHEN total_messages <= 1 THEN 1 ELSE 0 END) AS REAL) / COUNT(session_id) as bounce_rate
                     FROM sessions
                     WHERE start_time BETWEEN ? AND ?
                 ''', (start_date, end_date))
@@ -419,6 +420,7 @@ class MedicalAnalyticsService:
                     'avg_response_time': metrics[4] or 0,
                     'fallback_rate': metrics[5] or 0,
                     'resolution_rate': (metrics[6] / metrics[3] * 100) if metrics[3] else 0,
+                    'bounce_rate': metrics[7] or 0,  # Real bounce rate calculation
                     'top_questions': top_questions,
                     'persona_usage': persona_usage,
                     'peak_hours': peak_hours,
@@ -440,7 +442,7 @@ class MedicalAnalyticsService:
 
         try:
             if not date:
-                date = datetime.utcnow().date().isoformat()
+                date = datetime.now(timezone.utc).date().isoformat()
 
             # Get metrics for the day
             start_date = f"{date}T00:00:00"
@@ -448,7 +450,7 @@ class MedicalAnalyticsService:
             metrics = self.get_aggregated_metrics(start_date, end_date)
 
             # Add metadata
-            metrics['export_timestamp'] = datetime.utcnow().isoformat()
+            metrics['export_timestamp'] = datetime.now(timezone.utc).isoformat()
             metrics['export_date'] = date
 
             # Upload to Google Storage
@@ -469,7 +471,7 @@ class MedicalAnalyticsService:
     def cleanup_old_data(self, days_to_keep: int = 90) -> bool:
         """Clean up old analytics data"""
         try:
-            cutoff_date = (datetime.utcnow() - timedelta(days=days_to_keep)).isoformat()
+            cutoff_date = (datetime.now(timezone.utc) - timedelta(days=days_to_keep)).isoformat()
 
             with sqlite3.connect(self.db_path) as conn:
                 cursor = conn.cursor()
@@ -493,11 +495,11 @@ class MedicalAnalyticsService:
 
     def _generate_event_id(self) -> str:
         """Generate unique event ID"""
-        return f"evt_{datetime.utcnow().timestamp()}_{hashlib.md5(os.urandom(16)).hexdigest()[:8]}"
+        return f"evt_{datetime.now(timezone.utc).timestamp()}_{hashlib.md5(os.urandom(16)).hexdigest()[:8]}"
 
     def _generate_session_id(self) -> str:
         """Generate unique session ID"""
-        return f"ses_{datetime.utcnow().timestamp()}_{hashlib.md5(os.urandom(16)).hexdigest()[:8]}"
+        return f"ses_{datetime.now(timezone.utc).timestamp()}_{hashlib.md5(os.urandom(16)).hexdigest()[:8]}"
 
     def _hash_ip(self, ip_address: Optional[str]) -> Optional[str]:
         """Hash IP address for privacy compliance (LGPD)"""

@@ -61,13 +61,13 @@ class FallbackCloudLogger:
 
         return LGPDLogEntry(
             log_id=f"fallback_{uuid.uuid4().hex[:8]}",
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(timezone.utc),
             level=level,
             message=message,
             context=self._mask_sensitive_data(context),
             data_category=data_category,
             retention_days=retention_days,
-            expires_at=datetime.utcnow() + timedelta(days=retention_days),
+            expires_at=datetime.now(timezone.utc) + timedelta(days=retention_days),
             user_id=user_id[:8] + "***" if user_id else None  # Mascarar user_id
         )
 

@@ -156,7 +156,7 @@ class AuthlibUpdateValidator:
                 'persona': 'dr_gasnelio',
                 'role': 'pharmacist',
                 'specialization': 'hanseniase',
-                'exp': datetime.utcnow() + timedelta(hours=1)
+                'exp': datetime.now(timezone.utc) + timedelta(hours=1)
             }
 
             gasnelio_token = pyjwt.encode(gasnelio_payload, secret, algorithm='HS256')
@@ -168,7 +168,7 @@ class AuthlibUpdateValidator:
                 'persona': 'ga',
                 'role': 'educator',
                 'specialization': 'patient_support',
-                'exp': datetime.utcnow() + timedelta(hours=1)
+                'exp': datetime.now(timezone.utc) + timedelta(hours=1)
             }
 
             ga_token = pyjwt.encode(ga_payload, secret, algorithm='HS256')
@@ -207,8 +207,8 @@ class AuthlibUpdateValidator:
                 'purpose': 'medical_dispensing_guidance',
                 'data_controller': 'hanseniase_education_platform',
                 'user_rights_acknowledged': True,
-                'exp': datetime.utcnow() + timedelta(hours=1),
-                'iat': datetime.utcnow(),
+                'exp': datetime.now(timezone.utc) + timedelta(hours=1),
+                'iat': datetime.now(timezone.utc),
                 'iss': 'roteirosdedispensacao.com'
             }
 

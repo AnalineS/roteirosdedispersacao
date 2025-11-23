@@ -178,9 +178,9 @@ def get_session_metrics():
 
         # Default to last 7 days if not provided
         if not start_date:
-            start_date = (datetime.utcnow() - timedelta(days=7)).isoformat()
+            start_date = (datetime.now(timezone.utc) - timedelta(days=7)).isoformat()
         if not end_date:
-            end_date = datetime.utcnow().isoformat()
+            end_date = datetime.now(timezone.utc).isoformat()
 
         metrics = analytics_service.get_aggregated_metrics(start_date, end_date)
 
@@ -188,7 +188,7 @@ def get_session_metrics():
         formatted_metrics = {
             'sessions': metrics.get('sessions', 0),
             'avgDuration': metrics.get('avg_response_time', 0) * 1000,  # Convert to ms
-            'bounceRate': 0.32,  # TODO: Calculate actual bounce rate
+            'bounceRate': metrics.get('bounce_rate', 0),  # Real bounce rate from analytics service
             'conversionRate': metrics.get('resolution_rate', 0) / 100,
             'topQuestions': metrics.get('top_questions', []),
             'personaUsage': metrics.get('persona_usage', {}),

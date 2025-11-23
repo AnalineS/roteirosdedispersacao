@@ -17,7 +17,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 # Helper function for UTC datetime (timezone-aware)
-# Replaces deprecated datetime.utcnow() with datetime.now(timezone.utc)
+# Replaces deprecated datetime.now(timezone.utc) with datetime.now(timezone.utc)
 def utcnow() -> datetime:
     """Get current UTC time as timezone-aware datetime"""
     return datetime.now(timezone.utc)

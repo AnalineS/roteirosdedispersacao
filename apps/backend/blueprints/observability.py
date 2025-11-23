@@ -33,14 +33,14 @@ def receive_frontend_logs():
         if not data or 'logs' not in data:
             return jsonify({
                 "error": "Invalid payload - 'logs' field required",
-                "timestamp": datetime.utcnow().isoformat()
+                "timestamp": datetime.now(timezone.utc).isoformat()
             }), 400
         
         logs = data['logs']
         if not isinstance(logs, list):
             return jsonify({
                 "error": "Logs must be an array",
-                "timestamp": datetime.utcnow().isoformat()
+                "timestamp": datetime.now(timezone.utc).isoformat()
             }), 400
         
         processed_count = 0
@@ -76,14 +76,14 @@ def receive_frontend_logs():
             "status": "success",
             "processed": processed_count,
             "total": len(logs),
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": datetime.now(timezone.utc).isoformat()
         }), 200
         
     except Exception as e:
         logger.error(f"Error processing frontend logs: {e}")
         return jsonify({
             "error": "Internal server error",
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": datetime.now(timezone.utc).isoformat()
         }), 500
 
 @observability_bp.route('/metrics', methods=['POST'])
@@ -97,14 +97,14 @@ def receive_frontend_metrics():
         if not data or 'metrics' not in data:
             return jsonify({
                 "error": "Invalid payload - 'metrics' field required",
-                "timestamp": datetime.utcnow().isoformat()
+                "timestamp": datetime.now(timezone.utc).isoformat()
             }), 400
         
         metrics = data['metrics']
         if not isinstance(metrics, list):
             return jsonify({
                 "error": "Metrics must be an array",
-                "timestamp": datetime.utcnow().isoformat()
+                "timestamp": datetime.now(timezone.utc).isoformat()
             }), 400
         
         processed_count = 0
@@ -171,14 +171,14 @@ def receive_frontend_metrics():
             "status": "success",
             "processed": processed_count,
             "total": len(metrics),
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": datetime.now(timezone.utc).isoformat()
         }), 200
         
     except Exception as e:
         logger.error(f"Error processing frontend metrics: {e}")
         return jsonify({
             "error": "Internal server error",
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": datetime.now(timezone.utc).isoformat()
         }), 500
 
 @observability_bp.route('/health', methods=['GET'])
@@ -188,7 +188,7 @@ def observability_health():
     """
     status = {
         "status": "healthy",
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "components": {
             "gcp_operations": GCP_OBSERVABILITY_AVAILABLE,
             "logging": True,
@@ -231,13 +231,13 @@ def test_observability():
             return jsonify({
                 "status": "success",
                 "message": "Test logs and metrics sent to GCP",
-                "timestamp": datetime.utcnow().isoformat()
+                "timestamp": datetime.now(timezone.utc).isoformat()
             }), 200
         else:
             return jsonify({
                 "status": "fallback",
                 "message": "GCP not available - using local logging",
-                "timestamp": datetime.utcnow().isoformat()
+                "timestamp": datetime.now(timezone.utc).isoformat()
             }), 200
             
     except Exception as e:
@@ -245,5 +245,5 @@ def test_observability():
         return jsonify({
             "status": "error",
             "error": str(e),
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": datetime.now(timezone.utc).isoformat()
         }), 500

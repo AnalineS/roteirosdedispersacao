@@ -47,7 +47,7 @@ class NotificationChannel:
 
     def is_rate_limited(self) -> bool:
         """Verifica se está no limite de rate"""
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         hour_ago = now - timedelta(hours=1)
 
         # Remove alertas antigos
@@ -57,7 +57,7 @@ class NotificationChannel:
 
     def record_alert(self):
         """Registra um alerta enviado"""
-        self.last_alerts.append(datetime.utcnow())
+        self.last_alerts.append(datetime.now(timezone.utc))
 
     async def send(self, alert: AlertData) -> bool:
         """Método abstrato para envio"""
@@ -223,7 +223,7 @@ class EmailNotificationChannel(NotificationChannel):
             timestamp=alert.timestamp.strftime('%Y-%m-%d %H:%M:%S UTC'),
             user_id=alert.user_id,
             details_json=json.dumps(alert.details, indent=2, ensure_ascii=False),
-            current_time=datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')
+            current_time=datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')
         )
 
     async def send(self, alert: AlertData) -> bool:
@@ -240,7 +240,7 @@ class EmailNotificationChannel(NotificationChannel):
             logger.info(f"[EMAIL DEMO] Alerta enviado: [{alert.severity.upper()}] {alert.title}")
             logger.info(f"[EMAIL DEMO] Destinatário: admin@roteiros.com (demo)")
             logger.info(f"[EMAIL DEMO] Conteúdo: {alert.message[:100]}...")
-            self.last_alerts.append(datetime.utcnow())
+            self.last_alerts.append(datetime.now(timezone.utc))
             return True
 
         try:
@@ -355,7 +355,7 @@ class TelegramNotificationChannel(NotificationChannel):
             logger.info(f"[TELEGRAM DEMO] Alerta enviado: [{alert.severity.upper()}] {alert.title}")
             logger.info(f"[TELEGRAM DEMO] Chat ID: @roteiros_bot (demo)")
             logger.info(f"[TELEGRAM DEMO] Mensagem: {message[:200]}...")
-            self.last_alerts.append(datetime.utcnow())
+            self.last_alerts.append(datetime.now(timezone.utc))
             return True
 
         try:
@@ -441,7 +441,7 @@ class WebhookNotificationChannel(NotificationChannel):
             logger.info(f"[WEBHOOK DEMO] Alerta enviado: [{alert.severity.upper()}] {alert.title}")
             logger.info(f"[WEBHOOK DEMO] URL: {self.webhook_url or 'https://webhook.example.com/alerts'}")
             logger.info(f"[WEBHOOK DEMO] Payload: {json.dumps(payload, indent=2)[:200]}...")
-            self.last_alerts.append(datetime.utcnow())
+            self.last_alerts.append(datetime.now(timezone.utc))
             return True
 
         try:
@@ -508,13 +508,13 @@ class AlertManager:
 
         # Criar dados do alerta
         alert = AlertData(
-            alert_id=f"alert_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}_{hash(message) % 10000:04d}",
+            alert_id=f"alert_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}_{hash(message) % 10000:04d}",
             alert_type=alert_type,
             severity=severity,
             title=title,
             message=message,
             details=details or {},
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(timezone.utc),
             user_id=user_id,
             requires_immediate_action=requires_immediate_action
         )
@@ -595,7 +595,7 @@ class AlertManager:
                 'by_type': {}
             }
 
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         last_24h = now - timedelta(hours=24)
 
         recent_alerts = [a for a in self.alert_history if a.timestamp > last_24h]

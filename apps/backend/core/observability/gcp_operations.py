@@ -60,7 +60,7 @@ class CloudObservability:
         log_entry = {
             "message": message,
             "severity": level,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "service": SERVICE_NAME,
             "environment": ENVIRONMENT,
             **kwargs

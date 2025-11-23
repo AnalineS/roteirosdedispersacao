@@ -380,7 +380,7 @@ class EnterpriseSecurityFramework:
             ip_address=ip,
             attack_type=attack_type,
             threat_level=threat_level,
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(timezone.utc),
             details=details,
             blocked=ip in self._blocked_ips
         )
@@ -423,7 +423,7 @@ class EnterpriseSecurityFramework:
 
     def get_security_stats(self) -> Dict[str, Any]:
         """Estatísticas de segurança"""
-        current_time = datetime.utcnow()
+        current_time = datetime.now(timezone.utc)
         last_hour = current_time - timedelta(hours=1)
         last_day = current_time - timedelta(days=1)
 
