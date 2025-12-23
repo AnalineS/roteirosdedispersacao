@@ -28,7 +28,7 @@ import pickle
 import logging
 import threading
 import numpy as np
-from typing import Dict, Any, Optional, List, Tuple, Union
+from typing import Dict, Any, Optional, List, Tuple
 from datetime import datetime, timedelta
 from collections import OrderedDict
 import hashlib

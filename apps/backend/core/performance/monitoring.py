@@ -7,8 +7,6 @@ Data: 27 de Janeiro de 2025
 Fase: Monitoramento pós-deploy
 """
 
-import time
-import json
 from datetime import datetime, timedelta
 from collections import defaultdict, deque
 import logging

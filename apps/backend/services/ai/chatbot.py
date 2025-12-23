@@ -3,7 +3,7 @@ import os
 import json
 import logging
 import time
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 from datetime import datetime
 import requests
 from pathlib import Path
@@ -94,11 +94,10 @@ class ChatbotService:
         """Busca documentos relevantes na base de conhecimento com cache otimizado"""
         if not self.knowledge_documents or self.document_vectors is None:
             return []
-        
+
         try:
             # OTIMIZAÇÃO CRÍTICA: Cache de vetorização com hash da query
             import hashlib
-            from functools import lru_cache
             
             query_normalized = query.lower().strip()
             # SHA-256 for cache keys (not sensitive data, but using secure hash for consistency)

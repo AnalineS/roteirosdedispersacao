@@ -5,9 +5,7 @@ Tests for fundamental backend operations and health checks
 """
 
 import pytest
-import json
 import time
-from unittest.mock import patch, Mock
 
 from conftest import (
     assert_valid_json_response,

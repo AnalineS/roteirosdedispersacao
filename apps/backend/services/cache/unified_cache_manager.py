@@ -8,12 +8,11 @@ Data: 09 de Janeiro de 2025
 Fase: Integração de Sistemas Avançados
 """
 
-import json
 import hashlib
 import logging
 import threading
-from datetime import datetime, timedelta, timezone
-from typing import Dict, Any, Optional, List, Tuple, Union
+from datetime import datetime, timedelta
+from typing import Dict, Any, Optional, Union
 from collections import OrderedDict
 
 logger = logging.getLogger(__name__)

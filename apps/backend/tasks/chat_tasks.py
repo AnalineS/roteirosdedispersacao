@@ -10,7 +10,7 @@ from celery_config import celery_app
 import logging
 import asyncio
 from datetime import datetime
-from typing import Dict, Any, Optional, Tuple
+from typing import Dict, Any, Optional
 import hashlib
 
 # Importar dependências do sistema existente
@@ -18,7 +18,6 @@ try:
     from core.dependencies import get_cache, get_rag, get_config
     from services.ai.ai_provider_manager import generate_ai_response, get_ai_health_status
     from services.enhanced_rag_system import get_enhanced_context, cache_rag_response
-    from services.scope_detection_system import detect_question_scope, get_limitation_response
     from services.personas import get_persona_prompt
     DEPENDENCIES_AVAILABLE = True
 except ImportError as e:

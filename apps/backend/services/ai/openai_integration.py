@@ -11,7 +11,6 @@ logger = logging.getLogger(__name__)
 
 try:
     import openai
-    import httpx
     OPENAI_AVAILABLE = True
     logger.info("[OK] OpenAI client importado com sucesso")
 except ImportError as e:

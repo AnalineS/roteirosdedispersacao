@@ -7,11 +7,9 @@ Real Supabase Client - NO MOCKS
 import os
 import logging
 import json
-from typing import List, Dict, Any, Optional, Union
+from typing import List, Dict, Any
 from datetime import datetime
-import numpy as np
 from supabase import create_client, Client
-from postgrest import APIError
 import psycopg2
 from psycopg2.extras import RealDictCursor
 

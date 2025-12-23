@@ -10,13 +10,10 @@ import json
 import logging
 import hashlib
 import re
-from typing import List, Optional, Any
+from typing import List, Optional, Any, Dict, Tuple
 from datetime import datetime
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
 from pathlib import Path
-
-# Core dependencies
-import numpy as np
 
 logger = logging.getLogger(__name__)
 

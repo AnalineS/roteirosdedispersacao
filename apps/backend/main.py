@@ -23,7 +23,7 @@ current_dir = Path(__file__).parent
 sys.path.insert(0, str(current_dir))
 
 from flask import Flask
-from app_config import config, EnvironmentConfig
+from app_config import config
 from datetime import datetime
 
 # Configure logging

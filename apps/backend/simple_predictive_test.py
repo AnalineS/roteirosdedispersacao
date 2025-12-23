@@ -5,7 +5,6 @@ Teste Simplificado do Sistema Preditivo
 Validação básica das funcionalidades
 """
 
-import os
 import sys
 import tempfile
 import shutil

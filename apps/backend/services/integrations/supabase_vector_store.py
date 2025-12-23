@@ -4,15 +4,12 @@ Supabase Vector Store - Sistema de armazenamento vetorial com PostgreSQL + pgvec
 Substitui AstraDB por solução cloud-native gratuita para FASE 3 RAG
 """
 
-import os
-import json
 import logging
 import hashlib
 from typing import List, Dict, Optional, Tuple, Any
 from datetime import datetime, timezone
-from pathlib import Path
 import numpy as np
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +17,6 @@ logger = logging.getLogger(__name__)
 SUPABASE_AVAILABLE = False
 try:
     from supabase import create_client, Client
-    import psycopg2
     SUPABASE_AVAILABLE = True
     logger.info("[OK] Supabase client disponível")
 except ImportError as e:

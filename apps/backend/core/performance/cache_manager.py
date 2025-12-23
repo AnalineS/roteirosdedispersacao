@@ -8,7 +8,6 @@ Fase: Otimizações de Usabilidade
 """
 
 import time
-import json
 import hashlib
 from datetime import datetime, timedelta
 from collections import OrderedDict

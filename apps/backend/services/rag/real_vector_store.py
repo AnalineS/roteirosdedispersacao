@@ -5,11 +5,10 @@ NO MOCKS - Only real Supabase PostgreSQL with pgvector extension
 Replaces ALL mock vector store implementations
 """
 
-import os
 import json
 import logging
 import hashlib
-from typing import Dict, List, Optional, Tuple, Any, Union
+from typing import Dict, List, Optional, Any
 from datetime import datetime, timezone
 from dataclasses import dataclass
 import numpy as np

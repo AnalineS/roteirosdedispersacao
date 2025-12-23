@@ -8,7 +8,6 @@ import warnings
 import logging
 import sys
 import os
-from typing import Dict, List
 
 
 class AggressiveWarningSuppressionFilter(logging.Filter):

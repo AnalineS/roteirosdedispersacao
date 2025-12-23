@@ -8,7 +8,7 @@ Compatível com sentence-transformers v5.1+ - métodos otimizados query/document
 
 import logging
 import hashlib
-from typing import List, Dict, Optional, Tuple, Any, Union
+from typing import List, Dict, Optional, Tuple, Any
 from datetime import datetime
 from dataclasses import dataclass
 
@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 # Import obrigatório para SearchResult
 try:
-    from services.medical_chunking import MedicalChunk, ChunkPriority
+    from services.medical_chunking import MedicalChunk
     MEDICAL_CHUNKING_AVAILABLE = True
 except ImportError:
     # Criar dummy class para compatibilidade
@@ -33,12 +33,7 @@ except ImportError:
         def __init__(self, **kwargs):
             for k, v in kwargs.items():
                 setattr(self, k, v)
-    
-    class ChunkPriority:
-        HIGH = 0.9
-        MEDIUM = 0.7
-        LOW = 0.5
-    
+
     MEDICAL_CHUNKING_AVAILABLE = False
 
 # Lazy imports - só carregados quando necessário

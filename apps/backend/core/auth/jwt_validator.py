@@ -4,7 +4,7 @@ Sistema completo de validação com role-based access control
 """
 
 from functools import wraps
-from typing import List, Optional, Callable, Any
+from typing import Optional, Callable
 from flask import request, jsonify, g
 import logging
 

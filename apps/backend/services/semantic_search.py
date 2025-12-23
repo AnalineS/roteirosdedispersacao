@@ -8,7 +8,7 @@ import os
 import logging
 import hashlib
 import time
-from typing import List, Dict, Optional, Tuple, Any, Union
+from typing import List, Dict, Optional, Any
 from datetime import datetime
 from dataclasses import dataclass
 import numpy as np
@@ -33,7 +33,7 @@ except ImportError:
 
 # Import vector store
 try:
-    from services.vector_store import VectorDocument, get_vector_store, is_vector_store_available
+    from services.vector_store import VectorDocument, get_vector_store
     VECTOR_STORE_AVAILABLE = True
 except ImportError:
     VECTOR_STORE_AVAILABLE = False

@@ -3,7 +3,6 @@
 OpenAPI/Swagger Documentation System
 """
 
-from .spec import OpenAPISpec, swagger_ui_blueprint
-from .auth import swagger_auth_required
+from .spec import swagger_ui_blueprint
 
-__all__ = ['OpenAPISpec', 'swagger_ui_blueprint', 'swagger_auth_required']
+__all__ = ['swagger_ui_blueprint']

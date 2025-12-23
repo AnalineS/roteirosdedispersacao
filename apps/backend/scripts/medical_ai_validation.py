@@ -5,12 +5,10 @@ Medical AI Validation Script
 Comprehensive validation of medical AI functionality after security updates
 """
 
-import os
 import sys
 import json
 import time
 import logging
-import hashlib
 import traceback
 from pathlib import Path
 from typing import Dict, List, Optional, Any, Tuple

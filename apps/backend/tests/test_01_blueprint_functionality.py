@@ -5,9 +5,6 @@ Comprehensive tests for all backend blueprints
 """
 
 import pytest
-import json
-import base64
-from unittest.mock import patch, Mock
 
 from conftest import (
     assert_valid_json_response,

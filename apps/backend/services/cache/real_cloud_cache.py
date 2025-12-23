@@ -5,13 +5,11 @@ NO MOCKS - Only real Supabase + GCS + Memory cache
 Replaces ALL mock cache implementations
 """
 
-import os
 import json
 import hashlib
 import logging
-from typing import Dict, Any, Optional, List, Tuple
+from typing import Dict, Any, Optional, Tuple
 from datetime import datetime, timezone, timedelta
-from pathlib import Path
 import numpy as np
 
 # Import REAL cloud manager - NO MOCKS

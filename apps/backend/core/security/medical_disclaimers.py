@@ -20,14 +20,10 @@ Baseado: PCDT Hanseníase 2022, CFM Resolução 2.314/2022
 
 import logging
 from datetime import datetime, timedelta
-from typing import Dict, Any, Optional, List, Tuple
+from typing import Dict, Any, Optional, List
 from dataclasses import dataclass
 from enum import Enum
-from flask import request, jsonify, g
-import json
-
-# Import configurações
-from app_config import config, EnvironmentConfig
+from flask import request, g
 
 logger = logging.getLogger(__name__)
 

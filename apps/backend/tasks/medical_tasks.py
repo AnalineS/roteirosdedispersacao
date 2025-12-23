@@ -7,7 +7,7 @@ Análise de documentos, backup de dados e relatórios médicos
 from celery import current_task
 from celery_config import celery_app
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Dict, Any, List, Optional
 import json
 import sqlite3

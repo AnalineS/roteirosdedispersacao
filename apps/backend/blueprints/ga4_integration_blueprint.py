@@ -4,13 +4,11 @@ Conecta UX tracking backend com GA4 frontend para analytics consolidados
 """
 
 from flask import Blueprint, request, jsonify
-from datetime import datetime, timedelta
-import asyncio
-import json
-from typing import Dict, Any, List, Optional
+from datetime import datetime, timezone
+from typing import Dict, Any, Optional
 import hashlib
 
-from core.auth.jwt_validator import require_auth, optional_auth
+from core.auth.jwt_validator import optional_auth
 from core.security.enhanced_security import require_rate_limit
 from services.monitoring.ux_monitoring_manager import get_ux_monitoring_manager
 from core.logging.cloud_logger import cloud_logger

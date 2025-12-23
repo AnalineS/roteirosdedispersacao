@@ -7,7 +7,6 @@ Resolve problemas de encoding de emojis no Windows console
 
 import sys
 import logging
-from typing import Dict, Any
 
 # Mapeamento de emojis para texto no Windows
 EMOJI_MAP = {

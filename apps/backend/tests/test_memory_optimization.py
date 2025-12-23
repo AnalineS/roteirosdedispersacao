@@ -12,11 +12,8 @@ Target: Memory usage < 50%
 """
 
 import pytest
-import gc
-import sys
 import time
 import threading
-from datetime import datetime, timedelta
 from unittest.mock import Mock, patch
 
 # Import do sistema unificado de otimização

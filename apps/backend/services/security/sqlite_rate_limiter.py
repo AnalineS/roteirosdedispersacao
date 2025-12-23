@@ -6,10 +6,9 @@ Substitui Redis para rate limiting distribuído
 
 import sqlite3
 import time
-import hashlib
 import logging
 from datetime import datetime, timedelta
-from typing import Dict, Optional, Tuple, List
+from typing import Dict, Optional, Tuple
 from pathlib import Path
 from threading import Lock
 from contextlib import contextmanager

@@ -20,7 +20,6 @@ Priority: CRITICAL
 
 import gc
 import sys
-import os
 import psutil
 import threading
 import time

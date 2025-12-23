@@ -4,16 +4,13 @@ Flask Application Factory - Clean Architecture
 Separated from main.py to follow Single Responsibility Principle
 """
 
-import os
-import sys
 import logging
 from datetime import datetime
-from typing import Optional, Dict, Any
+from typing import Optional
 
 from flask import Flask, request, jsonify
 
 from app_config import config, EnvironmentConfig
-from core.logging import initialize_clean_logging
 from core.security.custom_cors import CustomCORSMiddleware
 from core.versioning import APIVersionManager
 from core.dependencies import dependency_injector

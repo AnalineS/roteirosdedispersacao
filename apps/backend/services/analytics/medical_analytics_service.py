@@ -6,13 +6,12 @@ Integrates with SQLite for local storage and Google Storage for aggregation
 """
 
 import sqlite3
-import json
 import hashlib
-from datetime import datetime, timedelta
-from typing import Dict, List, Any, Optional
+from datetime import datetime, timedelta, timezone
+from typing import Dict, Any, Optional
 from pathlib import Path
 import logging
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
 from google.cloud import storage
 import os
 

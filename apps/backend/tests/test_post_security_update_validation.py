@@ -8,19 +8,13 @@ Priority: 🔴 CRITICAL - Patient safety and medical accuracy cannot be compromi
 """
 
 import pytest
-import json
 import time
-import hashlib
 import re
 import os
-from datetime import datetime, timedelta
-from unittest.mock import patch, Mock, MagicMock
-from typing import Dict, List, Any, Optional
+from unittest.mock import patch
 
 # Test configuration and utilities
 from conftest import (
-    assert_valid_json_response,
-    assert_error_response,
     SECURITY_TEST_PAYLOADS
 )
 

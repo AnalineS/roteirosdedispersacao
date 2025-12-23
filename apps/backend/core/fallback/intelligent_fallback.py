@@ -6,10 +6,9 @@ Mantém a mesma estrutura de endpoints e respostas dos blueprints completos
 """
 
 import os
-import json
 import logging
 from datetime import datetime
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List
 from flask import Blueprint, request, jsonify
 
 # Configurar logger

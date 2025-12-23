@@ -4,13 +4,11 @@ Schema estruturado para sistema educacional de hanseníase
 """
 
 import os
-import sqlite3
 import hashlib
-import json
 import uuid
 from datetime import datetime, timedelta, timezone
-from typing import Dict, List, Any, Optional, Tuple
-from dataclasses import dataclass, asdict
+from typing import Dict, List, Any, Optional
+from dataclasses import dataclass
 from enum import Enum
 import logging
 

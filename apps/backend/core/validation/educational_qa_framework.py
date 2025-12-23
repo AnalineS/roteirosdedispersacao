@@ -11,15 +11,13 @@ Objetivo: Framework completo para validação de qualidade educacional
 com foco em consistência de personas, precisão médica e acessibilidade
 """
 
-import json
 import re
 import time
 import hashlib
-from typing import Dict, List, Tuple, Optional, Any
+from typing import Dict, List, Any
 from dataclasses import dataclass, asdict
 from enum import Enum
 import logging
-from pathlib import Path
 
 # Configuração de logging
 logging.basicConfig(level=logging.INFO)

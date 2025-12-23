@@ -13,7 +13,6 @@ import subprocess
 import sys
 import json
 import datetime
-import os
 import shutil
 from pathlib import Path
 

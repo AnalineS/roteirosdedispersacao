@@ -5,7 +5,7 @@ Combines: User management + Authentication + User profiles
 Centralized user experience and security
 """
 
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, jsonify
 from datetime import datetime
 import logging
 

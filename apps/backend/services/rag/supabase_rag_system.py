@@ -4,14 +4,11 @@ Supabase RAG System - Sistema RAG integrado com Supabase pgvector
 FASE 3 - Sistema RAG refatorado para usar PostgreSQL + embeddings
 """
 
-import os
-import json
 import logging
 import hashlib
 from typing import Dict, List, Optional, Tuple, Any
 from datetime import datetime, timezone, timedelta
 from dataclasses import dataclass
-import numpy as np
 
 # Import dependências necessárias
 # SearchResult será importado nas linhas seguintes
@@ -20,10 +17,10 @@ logger = logging.getLogger(__name__)
 
 # Imports com fallback seguro
 try:
-    from services.integrations.supabase_vector_store import SupabaseVectorStore, VectorDocument, get_vector_store
+    from services.integrations.supabase_vector_store import get_vector_store
     from services.rag.semantic_search import SemanticSearchEngine, SearchResult
     from services.cache.cloud_native_cache import get_cloud_cache
-    from services.rag.medical_chunking import MedicalChunk, ChunkPriority
+    from services.rag.medical_chunking import MedicalChunk
     DEPENDENCIES_AVAILABLE = True
 except ImportError as e:
     logger.warning(f"[WARNING] Dependências RAG não disponíveis: {e}")
@@ -34,7 +31,7 @@ INTERACTION_KEYWORD = 'interação'
 
 # Import OpenRouter para contexto adicional
 try:
-    from services.ai.openai_integration import get_openrouter_client, is_openrouter_available
+    from services.ai.openai_integration import get_openrouter_client
     OPENROUTER_AVAILABLE = True
 except ImportError:
     OPENROUTER_AVAILABLE = False

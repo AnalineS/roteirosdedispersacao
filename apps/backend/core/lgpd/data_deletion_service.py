@@ -9,7 +9,7 @@ import sqlite3
 import hashlib
 import logging
 from datetime import datetime, timezone
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Any
 from pathlib import Path
 from dataclasses import dataclass
 

@@ -8,9 +8,6 @@ Data: 2025-01-27
 Versão: 2.0
 """
 
-import json
-import re
-
 class GaEnhanced:
     """
     Sistema integrado que combina:

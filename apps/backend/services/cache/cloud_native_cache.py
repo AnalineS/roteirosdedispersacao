@@ -5,11 +5,10 @@ Integra Supabase + Cloud Storage + Firestore para cache distribuído
 FASE 3 - Cache otimizado para Cloud Run stateless
 """
 
-import os
 import json
 import hashlib
 import logging
-from typing import Dict, Any, Optional, List, Tuple
+from typing import Dict, Any, Optional, Tuple
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 import numpy as np

@@ -15,8 +15,8 @@ import jwt
 import uuid
 import hashlib
 import requests
-from datetime import datetime, timedelta
-from typing import Dict, Optional, Tuple, Any
+from datetime import datetime, timedelta, timezone
+from typing import Dict, Optional, Tuple
 from urllib.parse import urlencode
 import os
 import logging

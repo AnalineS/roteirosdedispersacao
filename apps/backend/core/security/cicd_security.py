@@ -28,17 +28,12 @@ import re
 import json
 import hashlib
 import logging
-import subprocess
-import threading
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any, Tuple, Set
+from datetime import datetime
+from typing import Dict, List, Optional, Any, Tuple
 from dataclasses import dataclass, asdict
 from enum import Enum
 from pathlib import Path
-import yaml
 import requests
-import tempfile
-import zipfile
 
 
 # Logger específico para CI/CD

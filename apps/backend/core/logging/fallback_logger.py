@@ -7,7 +7,7 @@ import json
 import logging
 from datetime import datetime, timedelta
 from typing import Dict, Any, Optional, Literal
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
 
 LogLevel = Literal['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']
 

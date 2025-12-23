@@ -7,7 +7,6 @@ from flask import Blueprint, request, jsonify, current_app
 import asyncio
 from datetime import datetime, timezone
 import hashlib
-import json
 
 from core.logging.cloud_logger import cloud_logger
 from core.alerts.notification_system import alert_manager

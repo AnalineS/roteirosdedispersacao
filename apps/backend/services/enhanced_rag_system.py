@@ -4,21 +4,19 @@ Enhanced RAG System - Real implementation with medical specialization
 Provides comprehensive RAG capabilities for medical content with advanced context retrieval
 """
 
-import os
 import logging
 import hashlib
 import time
-from typing import List, Dict, Optional, Tuple, Any, Union
-from datetime import datetime, timezone
+from typing import List, Dict, Optional, Any
+from datetime import datetime
 from dataclasses import dataclass
-import numpy as np
 
 logger = logging.getLogger(__name__)
 
 # Import vector store and semantic search
 try:
-    from services.vector_store import get_vector_store, VectorDocument, is_vector_store_available
-    from services.semantic_search import get_semantic_search, get_medical_context, is_semantic_search_available
+    from services.vector_store import get_vector_store
+    from services.semantic_search import get_semantic_search, get_medical_context
     VECTOR_SERVICES_AVAILABLE = True
 except ImportError:
     VECTOR_SERVICES_AVAILABLE = False

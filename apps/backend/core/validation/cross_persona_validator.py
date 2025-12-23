@@ -20,16 +20,13 @@ Baseado: Framework QA existente + PCDT Hanseníase 2022
 
 import logging
 import re
-import json
 from datetime import datetime
-from typing import Dict, Any, Optional, List, Tuple, Set
-from dataclasses import dataclass, asdict
+from typing import Dict, Any, Optional, List
+from dataclasses import dataclass
 from enum import Enum
 import difflib
-import math
 
 # Import configurações e sistema QA existente
-from app_config import config
 try:
     from core.validation.educational_qa_framework import EducationalQAFramework
     QA_FRAMEWORK_AVAILABLE = True

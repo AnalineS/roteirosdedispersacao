@@ -11,7 +11,7 @@ import logging
 from pathlib import Path
 from typing import Dict, Any, Optional, List, Tuple, Union
 from contextlib import contextmanager
-from datetime import datetime, timedelta
+from datetime import datetime, timezone
 import uuid
 
 from .models import DatabaseSchema, DataCategory, calculate_expiry_date

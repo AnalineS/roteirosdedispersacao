@@ -5,12 +5,10 @@ Garante que todos os sistemas avançados de IA e UX estejam funcionando corretam
 """
 
 import logging
-import time
 import threading
 from datetime import datetime
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional
 from dataclasses import dataclass
-import asyncio
 
 from app_config import config
 

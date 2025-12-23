@@ -5,7 +5,6 @@ NO MOCKS - Uses real Supabase pgvector + real GCS + real embeddings
 Replaces ALL mock RAG implementations
 """
 
-import os
 import json
 import logging
 import hashlib

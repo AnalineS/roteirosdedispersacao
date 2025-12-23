@@ -8,10 +8,10 @@ from flask import Blueprint, request, jsonify
 from datetime import datetime
 import logging
 import uuid
-from typing import Dict, List, Any, Optional
+from typing import Dict, Any, Optional
 
 # Import dependências
-from core.dependencies import get_cache, get_config
+from core.dependencies import get_cache
 
 # Configurar logger
 logger = logging.getLogger(__name__)

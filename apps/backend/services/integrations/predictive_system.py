@@ -6,16 +6,14 @@ Implementação de sugestões contextuais inteligentes
 Seguindo FASE 4.1 do PLANO Q2 2025 - IA e Machine Learning
 """
 
-import os
 import json
 import logging
 import hashlib
-from typing import Dict, List, Any, Optional, Tuple
+from typing import Dict, List, Any, Optional
 from datetime import datetime, timedelta
 from collections import defaultdict, Counter
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
 from pathlib import Path
-import re
 
 # Importações locais
 from app_config import config

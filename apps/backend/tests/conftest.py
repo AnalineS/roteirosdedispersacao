@@ -9,9 +9,7 @@ import sys
 import pytest
 import tempfile
 import sqlite3
-from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
-from typing import Generator, Dict, Any
+from unittest.mock import Mock, patch
 import json
 import time
 
@@ -21,7 +19,6 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # Import Flask app and dependencies
 # Always import from production entry point (main.py)
 from main import create_app
-from app_config import config, EnvironmentConfig
 
 class TestConfig:
     """Test-specific configuration"""

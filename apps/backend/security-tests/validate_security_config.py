@@ -14,8 +14,7 @@ import sys
 import os
 import json
 from datetime import datetime
-from typing import Dict, List, Tuple, Any
-import importlib.util
+from typing import Dict, Any
 
 # Adicionar o diretório backend ao path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -117,7 +116,7 @@ def validate_security_middleware() -> Dict[str, Any]:
     
     try:
         # Importar middleware
-        from core.security.middleware import SecurityMiddleware, AttackPatternDetector, IntelligentRateLimiter
+        from core.security.middleware import SecurityMiddleware, AttackPatternDetector
         
         results['middleware_found'] = True
         results['attack_detector_found'] = True

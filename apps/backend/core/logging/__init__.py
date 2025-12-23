@@ -5,24 +5,15 @@ Sistema integrado de logging com supressão inteligente de warnings
 """
 
 from .warning_suppressor import (
-    WarningSuppressionManager,
     configure_warning_suppression,
-    get_warning_manager,
-    suppress_known_warnings
+    get_warning_manager
 )
 
 from .environment_logger import (
-    EnvironmentLogger,
-    StartupLogger,
-    setup_environment_logging,
-    get_environment_logger,
-    get_startup_logger
+    setup_environment_logging
 )
 
 from .warning_config import (
-    WarningConfigManager,
-    DevelopmentWarningConfig,
-    ProductionWarningConfig,
     configure_warnings_for_environment,
     integrate_with_warning_suppressor
 )
@@ -53,16 +44,8 @@ def initialize_clean_logging(environment: str = None, enable_clean_startup: bool
 
 
 __all__ = [
-    'WarningSuppressionManager',
-    'EnvironmentLogger',
-    'StartupLogger',
-    'WarningConfigManager',
-    'DevelopmentWarningConfig',
-    'ProductionWarningConfig',
     'initialize_clean_logging',
     'configure_warning_suppression',
     'setup_environment_logging',
-    'get_warning_manager',
-    'get_environment_logger',
-    'get_startup_logger'
+    'get_warning_manager'
 ]

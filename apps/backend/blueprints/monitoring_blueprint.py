@@ -5,17 +5,17 @@ Migrado do main.py para modularização
 """
 
 from flask import Blueprint, jsonify, request
-from datetime import datetime, timedelta
+from datetime import datetime
 import logging
 import os
-from typing import Dict, List, Any, Optional
+from typing import Dict, Any, Optional
 
 # Import dependências
 from core.dependencies import get_cache, get_rag, get_qa, get_config
 
 # Import UX Monitoring Manager
 try:
-    from services.monitoring.ux_monitoring_manager import get_ux_monitoring_manager, get_ux_dashboard_data
+    from services.monitoring.ux_monitoring_manager import get_ux_monitoring_manager
     UX_MONITORING_AVAILABLE = True
 except ImportError:
     UX_MONITORING_AVAILABLE = False

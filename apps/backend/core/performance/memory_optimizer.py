@@ -22,7 +22,7 @@ import sys
 import weakref
 import threading
 import logging
-from typing import Dict, Any, Optional, List, Tuple
+from typing import Dict, Any, Optional
 from datetime import datetime, timedelta
 from collections import OrderedDict, deque
 from dataclasses import dataclass

@@ -12,12 +12,10 @@ import statistics
 import psutil
 import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from unittest.mock import patch
 
 from conftest import (
     assert_valid_json_response,
-    PERFORMANCE_THRESHOLDS,
-    RATE_LIMIT_TEST_REQUESTS
+    PERFORMANCE_THRESHOLDS
 )
 
 class TestResponseTimePerformance:

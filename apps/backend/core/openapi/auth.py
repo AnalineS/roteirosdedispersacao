@@ -4,9 +4,7 @@ Autenticação para Swagger/Documentação
 """
 
 from functools import wraps
-from flask import request, jsonify, current_app
-import hashlib
-import hmac
+from flask import request, jsonify
 import os
 
 def swagger_auth_required(f):

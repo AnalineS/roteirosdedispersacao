@@ -6,8 +6,7 @@ NO MOCKS - Only real cloud service connections
 
 import os
 import logging
-from typing import Dict, Any, Optional, Tuple
-from pathlib import Path
+from typing import Dict, Any, Optional
 
 logger = logging.getLogger(__name__)
 

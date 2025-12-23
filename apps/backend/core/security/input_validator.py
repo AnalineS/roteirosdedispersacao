@@ -7,7 +7,7 @@ Validação robusta de dados de entrada para segurança
 import re
 import html
 import bleach
-from typing import Dict, List, Any, Optional, Union
+from typing import Dict, List, Any, Union
 import logging
 
 logger = logging.getLogger(__name__)

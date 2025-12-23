@@ -19,14 +19,11 @@ import os
 import json
 import time
 import requests
-import threading
-from typing import Dict, List, Tuple, Any, Optional
+from typing import Dict, List, Any
 from dataclasses import dataclass, asdict
-from datetime import datetime, timedelta
+from datetime import datetime
 import logging
 from urllib.parse import urljoin
-import random
-import string
 
 # Configurar encoding UTF-8 no Windows
 if sys.platform == "win32":

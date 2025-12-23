@@ -8,12 +8,10 @@ import pytest
 import json
 import time
 import uuid
-from unittest.mock import patch, Mock
+from unittest.mock import patch
 
 from conftest import (
-    assert_valid_json_response,
-    assert_error_response,
-    PERFORMANCE_THRESHOLDS
+    assert_valid_json_response
 )
 
 class TestChatWorkflow:

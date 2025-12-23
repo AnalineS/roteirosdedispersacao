@@ -19,16 +19,13 @@ Substitui: redis_rate_limiter.py (FASE 5)
 """
 
 from datetime import datetime, timedelta
-from typing import Dict, Any, Tuple, Optional, Set
+from typing import Dict, Any, Tuple, Optional
 from collections import defaultdict, deque
 import logging
 import threading
-import time
-import json
 
 # Firestore imports (com fallback)
 try:
-    import firebase_admin
     from firebase_admin import firestore
     FIRESTORE_AVAILABLE = True
 except ImportError:

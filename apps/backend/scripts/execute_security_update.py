@@ -5,12 +5,10 @@ Execute Security Update Script
 Orchestrates the complete security update process with safety checks
 """
 
-import os
 import sys
 import subprocess
 import shutil
 import json
-import time
 import logging
 from pathlib import Path
 from datetime import datetime

@@ -35,12 +35,8 @@ from collections import defaultdict, deque
 import numpy as np
 from sklearn.ensemble import IsolationForest
 from sklearn.preprocessing import StandardScaler
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 import requests
 import queue
-import asyncio
 
 
 # Logger específico para monitoramento
@@ -562,14 +558,12 @@ class AlertManager:
         monitoring_logger.log(log_level, f"ALERT: {alert.title} - {alert.message}")
     
     def _send_to_email(self, alert: Alert):
-        """Envia alerta por email"""
+        """Envia alerta por email - Feature pendente, ver issue #293"""
         config = self.alert_channels.get(AlertChannel.EMAIL, {})
         if not config:
             return
-        
-        # Implementar envio de email
-        # Por ora, apenas log
-        monitoring_logger.info(f"EMAIL_ALERT: {alert.title}")
+
+        monitoring_logger.info(f"EMAIL_ALERT: {alert.title} (email sending not implemented)")
     
     def _send_to_webhook(self, alert: Alert):
         """Envia alerta via webhook"""
@@ -778,8 +772,8 @@ class SecurityMonitor:
         # Alertas ativos
         active_alerts = self.alert_manager.get_active_alerts()
         
-        # Anomalias recentes
-        recent_anomalies = []  # Implementar coleta de anomalias
+        # Anomalias recentes - Feature pendente, ver issue #294
+        recent_anomalies = []
         
         return {
             'timestamp': datetime.now().isoformat(),

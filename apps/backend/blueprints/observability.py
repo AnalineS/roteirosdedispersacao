@@ -5,10 +5,9 @@ Endpoints para receber logs e métricas do frontend e forward para GCP
 """
 
 from flask import Blueprint, request, jsonify
-from datetime import datetime
+from datetime import datetime, timezone
 import logging
 import os
-from typing import Dict, Any, List
 
 # Import GCP observability
 try:

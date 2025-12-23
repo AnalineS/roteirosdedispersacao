@@ -5,7 +5,7 @@ Implementa estratégia de versioning com headers e URL paths
 """
 
 from functools import wraps
-from flask import request, jsonify, current_app
+from flask import request, jsonify
 import logging
 
 logger = logging.getLogger(__name__)

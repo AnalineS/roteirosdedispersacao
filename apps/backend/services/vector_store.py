@@ -6,7 +6,6 @@ This is the main vector store service that provides a unified interface for vect
 
 import os
 import logging
-import hashlib
 from typing import List, Dict, Optional, Tuple, Any, Union
 from datetime import datetime
 from dataclasses import dataclass, asdict

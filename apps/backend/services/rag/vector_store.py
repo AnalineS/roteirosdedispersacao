@@ -4,10 +4,8 @@ Vector Store - Sistema de armazenamento de vetores com Supabase e fallback local
 Suporta busca semântica eficiente para RAG médico - migração completa do AstraDB
 """
 
-import os
 import json
 import logging
-import hashlib
 from typing import List, Dict, Optional, Tuple, Any
 from datetime import datetime
 from pathlib import Path

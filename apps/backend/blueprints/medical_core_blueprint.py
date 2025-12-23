@@ -5,7 +5,7 @@ Combines: Core medical chat + Medical validation + Health checks
 Strategic consolidation for medical platform optimization
 """
 
-from flask import Blueprint, request, jsonify, current_app
+from flask import Blueprint, request, jsonify
 from datetime import datetime
 import logging
 

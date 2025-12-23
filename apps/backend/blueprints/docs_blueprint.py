@@ -7,7 +7,6 @@ Inclui auto-discovery, guias e recursos educacionais
 from flask import Blueprint, jsonify, request, current_app
 from datetime import datetime
 import logging
-from typing import Dict, Any, List
 from core.openapi.auth import swagger_auth_required
 from core.versioning import get_version_info
 

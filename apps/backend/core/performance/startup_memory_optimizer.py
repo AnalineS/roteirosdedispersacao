@@ -136,7 +136,6 @@ class StartupMemoryOptimizer:
         try:
             # Configure NumPy thread pool (if imported)
             if 'numpy' in sys.modules:
-                import numpy as np
                 # Limit NumPy threads
                 os.environ['OMP_NUM_THREADS'] = '2'
                 os.environ['OPENBLAS_NUM_THREADS'] = '2'

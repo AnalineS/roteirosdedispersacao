@@ -7,12 +7,11 @@ Estratégias específicas para diferentes ambientes e tipos de warnings
 import os
 import logging
 import warnings
-from typing import Dict, List, Set, Any, Optional
+from typing import Dict, List, Set, Any
 from dataclasses import dataclass
 from enum import Enum
 
 from .warning_suppressor import WarningSuppressionManager
-from .environment_logger import EnvironmentLogger
 
 
 class WarningLevel(Enum):

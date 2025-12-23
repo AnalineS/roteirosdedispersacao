@@ -10,14 +10,12 @@ Critical for maintaining <50% memory usage in medical systems.
 """
 
 import gc
-import sys
 import time
 import logging
 import threading
-from typing import Dict, Any, Optional, Callable, Set, List
+from typing import Dict, Any, Optional, Callable, List
 from datetime import datetime
 from functools import wraps
-import weakref
 
 logger = logging.getLogger(__name__)
 

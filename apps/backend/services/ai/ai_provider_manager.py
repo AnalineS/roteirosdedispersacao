@@ -7,8 +7,7 @@ Configuração via GitHub Secrets/Environment Variables
 import os
 import time
 import logging
-import asyncio
-from typing import Dict, List, Optional, Union, Tuple
+from typing import Dict, List, Optional, Tuple
 from datetime import datetime, timedelta
 from dataclasses import dataclass
 from enum import Enum
