@@ -233,8 +233,8 @@ export default function ImageCropper({
       <div className="crop-container">
         <ReactCrop
           crop={crop}
-          onChange={(_, percentCrop) => setCrop(percentCrop)}
-          onComplete={(c) => setCompletedCrop(convertToPixelCrop(c, imgRef.current?.width || 0, imgRef.current?.height || 0))}
+          onChange={(_: Crop, percentCrop: Crop) => setCrop(percentCrop)}
+          onComplete={(c: Crop) => setCompletedCrop(convertToPixelCrop(c, imgRef.current?.width || 0, imgRef.current?.height || 0))}
           aspect={aspectRatio}
           minWidth={minWidth}
           minHeight={minHeight}

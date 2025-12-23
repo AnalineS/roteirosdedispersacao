@@ -5,12 +5,14 @@ Recebe logs do frontend e processa com compliance LGPD
 
 from flask import Blueprint, request, jsonify, current_app
 import asyncio
-from datetime import datetime
+from datetime import datetime, timezone
 import hashlib
 import json
 
 from core.logging.cloud_logger import cloud_logger
 from core.alerts.notification_system import alert_manager
+from utils.auth_utils import require_auth
+from core.lgpd import get_deletion_service
 
 logging_bp = Blueprint('logging', __name__, url_prefix='/api/logging')
 
@@ -72,7 +74,7 @@ def receive_frontend_log():
             ))
 
         # Gerar ID único para o log
-        log_id = f"frontend_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}_{hash(message) % 10000:04d}"
+        log_id = f"frontend_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}_{hash(message) % 10000:04d}"
 
         return jsonify({
             "success": True,
@@ -216,7 +218,7 @@ def logging_health_check():
         # Verificar componentes
         health_status = {
             "status": "healthy",
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "components": {
                 "cloud_logger": "healthy",
                 "alert_manager": "healthy"
@@ -246,7 +248,7 @@ def logging_health_check():
         return jsonify({
             "status": "unhealthy",
             "error": str(e),
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": datetime.now(timezone.utc).isoformat()
         }), 500
 
 @logging_bp.route('/lgpd/delete-user-data', methods=['POST'])
@@ -273,26 +275,23 @@ def delete_user_data():
             'ip_address': request.remote_addr
         })
 
-        # TODO: Implementar lógica real de deleção
-        # - Deletar dados do usuário no banco
-        # - Deletar logs pessoais do Cloud Logging
-        # - Notificar sistemas integrados
+        # PRODUCTION: Real data deletion using LGPD service
+        deletion_service = get_deletion_service()
+        result = deletion_service.delete_user_data(user_id, reason)
 
-        # Por enquanto, simular deleção
+        # Convert DeletionResult to dict for JSON response
         deletion_result = {
-            "deleted_records": {
-                "database": 0,  # Implementar
-                "cloud_logs": 0,  # Implementar
-                "local_storage": 0  # Não aplicável
-            },
-            "processing_time": "immediate",  # Ou agendar para processamento assíncrono
-            "status": "completed"
+            "deleted_records": result.deleted_records,
+            "processing_time": f"{result.processing_time:.2f}s",
+            "status": "completed" if result.success else "partial_failure",
+            "errors": result.errors if result.errors else []
         }
 
         # Log do resultado
         cloud_logger.lgpd_event('data_deletion_completed', user_id, {
             'deletion_result': deletion_result,
-            'request_id': request_id
+            'request_id': request_id,
+            'deletion_id': result.deletion_id
         })
 
         # Alertar sobre deleção
@@ -309,9 +308,9 @@ def delete_user_data():
         ))
 
         return jsonify({
-            "success": True,
-            "message": "Data deletion request processed",
-            "deletion_id": f"del_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}",
+            "success": result.success,
+            "message": "Data deletion completed" if result.success else "Data deletion partially completed with errors",
+            "deletion_id": result.deletion_id,
             "result": deletion_result
         })
 
@@ -326,17 +325,19 @@ def delete_user_data():
         return jsonify({"error": "Internal server error"}), 500
 
 @logging_bp.route('/lgpd/compliance-report', methods=['GET'])
+@require_auth
 def generate_compliance_report():
     """
     Gera relatório de compliance LGPD
+    Requer autenticação via JWT token
     """
     try:
-        # Verificar autorização (implementar autenticação)
-        # TODO: Verificar se usuário tem permissão de admin
+        # Autenticação verificada pelo decorator @require_auth
+        # Role de admin seria verificada aqui se implementado sistema de roles
 
         # Gerar relatório
         report = {
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "compliance_status": "compliant",
             "data_categories": {
                 "personal_data": {

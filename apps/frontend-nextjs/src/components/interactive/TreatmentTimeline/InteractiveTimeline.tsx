@@ -61,7 +61,6 @@ export default function InteractiveTimeline({
   const [activeTab, setActiveTab] = useState<'overview' | 'milestones' | 'adherence' | 'appointments'>('overview');
   const [selectedMilestone, setSelectedMilestone] = useState<string | null>(null);
   const [showReminderModal, setShowReminderModal] = useState(false);
-  const [newNote, setNewNote] = useState('');
 
   // Auto-save functionality
   useEffect(() => {

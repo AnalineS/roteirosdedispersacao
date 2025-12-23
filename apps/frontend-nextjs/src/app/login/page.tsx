@@ -13,7 +13,6 @@ import {
   Loader2
 } from 'lucide-react';
 import { useSafeAuth as useAuth } from '@/hooks/useSafeAuth';
-import { SocialAuthButtons } from '@/components/auth';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -51,15 +50,6 @@ export default function LoginPage() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleSocialSuccess = () => {
-    // Login social bem-sucedido - redirecionamento será feito pelo useEffect
-    router.push('/dashboard');
-  };
-
-  const handleSocialError = (error: string) => {
-    setError(error);
   };
 
   return (
@@ -173,14 +163,6 @@ export default function LoginPage() {
                 )}
               </button>
             </form>
-
-            {/* Login Social */}
-            <SocialAuthButtons 
-              mode="login"
-              onSuccess={handleSocialSuccess}
-              onError={handleSocialError}
-              showDivider={true}
-            />
 
             {/* Link para Cadastro */}
             <p className="signup-link">

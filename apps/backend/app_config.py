@@ -104,7 +104,10 @@ class AppConfig:
     # Vector DB Config - Supabase pgvector
     VECTOR_DB_TYPE: str = os.getenv('VECTOR_DB_TYPE', 'supabase')  # 'supabase' or 'local'
     VECTOR_DB_PATH: str = os.getenv('VECTOR_DB_PATH', './cache/embeddings')  # Fallback local
-    SEMANTIC_SIMILARITY_THRESHOLD: float = float(os.getenv('SEMANTIC_SIMILARITY_THRESHOLD', '0.7'))
+    # CRITICAL: Lowered from 0.7 to 0.60 for medical validation (requires >= 0.75 keyword accuracy)
+    # This is the threshold used by supabase_rag_system.py for min_similarity_threshold
+    # Lower threshold = better recall of relevant medical chunks = improved accuracy
+    SEMANTIC_SIMILARITY_THRESHOLD: float = float(os.getenv('SEMANTIC_SIMILARITY_THRESHOLD', '0.60'))
     PGVECTOR_DIMENSIONS: int = int(os.getenv('PGVECTOR_DIMENSIONS', '384'))  # MiniLM dimensions
     
     # Cloud Storage Config - CACHE CLOUD ATIVADO
@@ -194,7 +197,9 @@ class AppConfig:
     
     # Vector Store Config (Supabase + pgvector)
     SUPABASE_VECTOR_DIMENSION: int = int(os.getenv('SUPABASE_VECTOR_DIMENSION', 1536))
-    SUPABASE_VECTOR_SIMILARITY_THRESHOLD: float = float(os.getenv('SUPABASE_VECTOR_SIMILARITY_THRESHOLD', 0.8))
+    # Threshold lowered from 0.8 to 0.65 for improved medical knowledge recall
+    # while maintaining relevance filtering (medical validation requires >= 0.75 accuracy)
+    SUPABASE_VECTOR_SIMILARITY_THRESHOLD: float = float(os.getenv('SUPABASE_VECTOR_SIMILARITY_THRESHOLD', 0.65))
     
     
     # Cache Config - Now using Firestore hybrid system

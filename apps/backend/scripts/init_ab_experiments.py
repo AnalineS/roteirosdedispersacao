@@ -47,8 +47,8 @@ def create_sample_experiments():
                 }
             ],
             'metrics': ['dose_calculation_completed', 'time_to_complete', 'user_satisfaction'],
-            'start_date': datetime.utcnow(),
-            'end_date': datetime.utcnow() + timedelta(days=30)
+            'start_date': datetime.now(timezone.utc),
+            'end_date': datetime.now(timezone.utc) + timedelta(days=30)
         },
 
         {
@@ -76,8 +76,8 @@ def create_sample_experiments():
                 }
             ],
             'metrics': ['chat_engagement', 'persona_switches', 'session_duration'],
-            'start_date': datetime.utcnow(),
-            'end_date': datetime.utcnow() + timedelta(days=45)
+            'start_date': datetime.now(timezone.utc),
+            'end_date': datetime.now(timezone.utc) + timedelta(days=45)
         },
 
         {
@@ -115,8 +115,8 @@ def create_sample_experiments():
                 }
             ],
             'metrics': ['onboarding_completion', 'time_to_first_action', 'tutorial_engagement'],
-            'start_date': datetime.utcnow(),
-            'end_date': datetime.utcnow() + timedelta(days=60)
+            'start_date': datetime.now(timezone.utc),
+            'end_date': datetime.now(timezone.utc) + timedelta(days=60)
         },
 
         {
@@ -144,8 +144,8 @@ def create_sample_experiments():
                 }
             ],
             'metrics': ['page_navigation', 'feature_usage', 'task_completion_rate'],
-            'start_date': datetime.utcnow(),
-            'end_date': datetime.utcnow() + timedelta(days=35)
+            'start_date': datetime.now(timezone.utc),
+            'end_date': datetime.now(timezone.utc) + timedelta(days=35)
         }
     ]
 
@@ -153,7 +153,7 @@ def create_sample_experiments():
 
     for exp_data in experiments:
         experiment = Experiment(
-            id=f"exp_{exp_data['name'].lower().replace(' ', '_').replace('-', '_')}_{datetime.utcnow().strftime('%Y%m%d')}",
+            id=f"exp_{exp_data['name'].lower().replace(' ', '_').replace('-', '_')}_{datetime.now(timezone.utc).strftime('%Y%m%d')}",
             name=exp_data['name'],
             description=exp_data['description'],
             status=ExperimentStatus(exp_data['status']),
@@ -163,8 +163,8 @@ def create_sample_experiments():
             metrics=exp_data['metrics'],
             start_date=exp_data['start_date'],
             end_date=exp_data['end_date'],
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow(),
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc),
             created_by='system_init'
         )
 

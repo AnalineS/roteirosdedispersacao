@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import { CalculationResult } from '@/types/medication';
 import { modernChatTheme } from '@/config/modernTheme';
 import { useHapticFeedback } from '@/utils/hapticFeedback';
-import { ExportLoadingState } from '@/components/ui/LoadingStates';
 
 interface ExportOptionsProps {
   result: CalculationResult | null;

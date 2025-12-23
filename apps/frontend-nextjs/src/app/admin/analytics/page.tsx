@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import Analytics from "@/services/analytics";
 import { useServices, useAnalytics } from "@/providers/ServicesProvider";
 
 // Interface baseada no que o backend realmente retorna

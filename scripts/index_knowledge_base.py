@@ -100,10 +100,72 @@ class KnowledgeBaseIndexer:
                 logger.warning("This will NOT populate the production database")
             else:
                 logger.info("Connected to Supabase vector store")
+                # Setup RPC function for vector similarity search
+                self._setup_rpc_function()
 
         except Exception as e:
             logger.error(f"Failed to initialize components: {e}")
             raise
+
+    def _setup_rpc_function(self):
+        """
+        Setup RPC function for vector similarity search in Supabase
+
+        Note: This attempts to create the RPC function. If it fails, the function
+        should be created manually in Supabase Dashboard > SQL Editor using
+        scripts/setup_supabase_rpc.sql
+        """
+        try:
+            logger.info("Checking if RPC function exists...")
+
+            from supabase import create_client
+            supabase_url = os.getenv('SUPABASE_URL') or self.config.SUPABASE_URL
+            supabase_key = os.getenv('SUPABASE_SERVICE_KEY') or os.getenv('SUPABASE_KEY') or self.config.SUPABASE_KEY
+
+            if not supabase_url or not supabase_key:
+                logger.warning("⚠️  Supabase credentials not available - skipping RPC function setup")
+                return
+
+            client = create_client(supabase_url, supabase_key)
+
+            # Test if RPC function exists by trying to call it with test data
+            # This will fail if the function doesn't exist
+            try:
+                test_embedding = [0.0] * 384  # Test embedding with correct dimensions
+                result = client.rpc(
+                    'match_medical_embeddings',
+                    {
+                        'query_embedding': test_embedding,
+                        'match_threshold': 0.9,  # High threshold to return no results
+                        'match_count': 1
+                    }
+                ).execute()
+
+                logger.info("✅ RPC function 'match_medical_embeddings' already exists")
+                return
+
+            except Exception as rpc_error:
+                error_msg = str(rpc_error)
+
+                if 'function' in error_msg.lower() and 'does not exist' in error_msg.lower():
+                    logger.warning("⚠️  RPC function 'match_medical_embeddings' does not exist")
+                    logger.warning("📝 Please create it manually in Supabase Dashboard:")
+                    logger.warning("   1. Go to Supabase Dashboard > SQL Editor")
+                    logger.warning("   2. Execute the SQL in: scripts/setup_supabase_rpc.sql")
+                    logger.warning("   3. This is a one-time manual step required")
+                    logger.warning("")
+                    logger.warning("💡 Automated creation requires database URL with proper credentials")
+                    logger.warning("   which are not configured in GitHub Actions for security")
+                else:
+                    # Other error - function may exist but failed for different reason
+                    logger.debug(f"RPC test call failed: {error_msg}")
+                    logger.info("Assuming RPC function exists (test call failed for other reason)")
+
+        except Exception as e:
+            # Don't fail indexing if RPC check fails
+            logger.warning(f"RPC function check encountered issue: {e}")
+            logger.warning("This is non-critical - continuing with indexing")
+            logger.info("If searches fail later, create RPC function via: scripts/setup_supabase_rpc.sql")
 
     def validate_environment(self) -> bool:
         """Validate required environment variables and files"""

@@ -28,7 +28,7 @@ class GA4IntegrationManager:
     def sync_ux_to_ga4(self, ux_data: Dict[str, Any]) -> Dict[str, Any]:
         """Converte dados UX tracking para formato GA4"""
         ga4_event = {
-            'timestamp': datetime.utcnow().isoformat(),
+            'timestamp': datetime.now(timezone.utc).isoformat(),
             'event_name': self._map_ux_to_ga4_event(ux_data.get('event_type')),
             'parameters': {
                 'session_id': ux_data.get('session_id'),
@@ -82,7 +82,7 @@ class GA4IntegrationManager:
             'user_id': self._unhash_user_id(params.get('user_id_hash')),
             'session_id': params.get('session_id'),
             'page': params.get('page_location', '/unknown'),
-            'timestamp': datetime.utcnow(),
+            'timestamp': datetime.now(timezone.utc),
             'duration_ms': params.get('engagement_time_msec', 0),
             'action': self._map_ga4_to_ux_action(event_type),
             'metadata': custom_params
@@ -196,7 +196,7 @@ def sync_ux_to_ga4():
             'success': True,
             'ga4_events': ga4_events,
             'events_converted': len(ga4_events),
-            'timestamp': datetime.utcnow().isoformat()
+            'timestamp': datetime.now(timezone.utc).isoformat()
         }), 200
 
     except Exception as e:
@@ -235,7 +235,7 @@ def sync_ga4_to_ux():
             'success': True,
             'ux_events_created': len(ux_events),
             'processed_events': len(ga4_events),
-            'timestamp': datetime.utcnow().isoformat()
+            'timestamp': datetime.now(timezone.utc).isoformat()
         }), 200
 
     except Exception as e:
@@ -260,7 +260,7 @@ def get_consolidated_analytics():
 
         # Consolidar dados
         consolidated = {
-            'timestamp': datetime.utcnow().isoformat(),
+            'timestamp': datetime.now(timezone.utc).isoformat(),
             'data_sources': {
                 'ux_tracking': True,
                 'ga4_integration': True,
@@ -360,7 +360,7 @@ def batch_process_events():
                 'processed_ga4_events': processed_ga4,
                 'errors': errors
             },
-            'timestamp': datetime.utcnow().isoformat()
+            'timestamp': datetime.now(timezone.utc).isoformat()
         }), 200
 
     except Exception as e:
@@ -378,7 +378,7 @@ def ga4_integration_health():
         health_status = {
             'system': 'ga4_integration',
             'status': 'healthy',
-            'timestamp': datetime.utcnow().isoformat(),
+            'timestamp': datetime.now(timezone.utc).isoformat(),
             'components': {
                 'ux_manager': ga4_integration.ux_manager is not None,
                 'integration_buffer': len(ga4_integration.ga4_events_buffer),
@@ -409,7 +409,7 @@ def ga4_integration_health():
             'system': 'ga4_integration',
             'status': 'unhealthy',
             'error': str(e),
-            'timestamp': datetime.utcnow().isoformat()
+            'timestamp': datetime.now(timezone.utc).isoformat()
         }), 500
 
 @ga4_integration_bp.route('/config', methods=['GET'])

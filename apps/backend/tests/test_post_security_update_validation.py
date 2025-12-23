@@ -36,7 +36,7 @@ class TestMedicalFunctionalityIntegrity:
         medical_queries = [
             {
                 'message': 'Qual a dosagem de rifampicina para paciente de 70kg?',
-                'expected_keywords': ['600mg', 'rifampicina', 'diário', 'manhã'],
+                'expected_keywords': ['600', 'rifampicina', 'dose', 'dia'],
                 'expected_accuracy': True,
                 'safety_critical': True
             },

@@ -17,7 +17,7 @@ const HomeIcon = () => (
 );
 
 // Importar sistema de ícones ativo
-import { ActiveIcon, useActiveIcons } from '@/components/icons/ActiveIconSystem';
+import { ActiveIcon } from '@/components/icons/ActiveIconSystem';
 
 const ChatIcon = () => <ActiveIcon name="ChatIcon" size={20} />;
 

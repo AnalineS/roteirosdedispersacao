@@ -11,7 +11,6 @@ import {
   AlertTriangleIcon,
   ChevronUpIcon,
   ChevronDownIcon,
-  RefreshIcon,
   CalculatorIcon,
   ChartIcon,
   ZapIcon,

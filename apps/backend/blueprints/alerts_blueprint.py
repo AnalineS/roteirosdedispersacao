@@ -67,7 +67,7 @@ def send_alert():
                 'status': 'success',
                 'message': 'Alerta enviado com sucesso',
                 'results': results,
-                'timestamp': datetime.utcnow().isoformat()
+                'timestamp': datetime.now(timezone.utc).isoformat()
             }), 200
 
         except Exception as e:
@@ -113,7 +113,7 @@ def test_alerts():
                     'affected_records': 15,
                     'data_type': 'CPF e nomes de pacientes',
                     'source_ip': '192.168.1.100',
-                    'timestamp': datetime.utcnow().isoformat()
+                    'timestamp': datetime.now(timezone.utc).isoformat()
                 },
                 user_id='test_user_123'
             )
@@ -137,7 +137,7 @@ def test_alerts():
             'message': 'Testes de alerta concluídos',
             'test_results': test_results,
             'alert_statistics': stats,
-            'timestamp': datetime.utcnow().isoformat()
+            'timestamp': datetime.now(timezone.utc).isoformat()
         }), 200
 
     except Exception as e:
@@ -167,7 +167,7 @@ def get_alert_stats():
             'status': 'success',
             'statistics': stats,
             'channels': channel_status,
-            'timestamp': datetime.utcnow().isoformat()
+            'timestamp': datetime.now(timezone.utc).isoformat()
         }), 200
 
     except Exception as e:
@@ -209,7 +209,7 @@ def get_channel_status():
         return jsonify({
             'status': 'success',
             'channels': channels_info,
-            'timestamp': datetime.utcnow().isoformat()
+            'timestamp': datetime.now(timezone.utc).isoformat()
         }), 200
 
     except Exception as e:
@@ -245,7 +245,7 @@ def get_alert_history():
             'status': 'success',
             'history': history,
             'total_count': len(alert_manager.alert_history),
-            'timestamp': datetime.utcnow().isoformat()
+            'timestamp': datetime.now(timezone.utc).isoformat()
         }), 200
 
     except Exception as e:
@@ -262,7 +262,7 @@ def alert_system_health():
         health_status = {
             'system': 'alerts',
             'status': 'healthy',
-            'timestamp': datetime.utcnow().isoformat(),
+            'timestamp': datetime.now(timezone.utc).isoformat(),
             'channels': {},
             'manager': {
                 'initialized': bool(alert_manager),
@@ -286,7 +286,7 @@ def alert_system_health():
             'system': 'alerts',
             'status': 'unhealthy',
             'error': str(e),
-            'timestamp': datetime.utcnow().isoformat()
+            'timestamp': datetime.now(timezone.utc).isoformat()
         }), 500
 
 # Registrar blueprint

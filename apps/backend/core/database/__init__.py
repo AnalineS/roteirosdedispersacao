@@ -142,7 +142,7 @@ class DatabaseManager:
 
         # Auto-adicionar timestamps
         if 'created_at' not in data:
-            data['created_at'] = datetime.utcnow().isoformat()
+            data['created_at'] = datetime.now(timezone.utc).isoformat()
 
         columns = ', '.join(data.keys())
         placeholders = ', '.join(['?' for _ in data])
@@ -159,7 +159,7 @@ class DatabaseManager:
         Update com timestamp automático
         """
         # Auto-adicionar updated_at
-        data['updated_at'] = datetime.utcnow().isoformat()
+        data['updated_at'] = datetime.now(timezone.utc).isoformat()
 
         set_clause = ', '.join([f"{key} = ?" for key in data.keys()])
         values = list(data.values()) + list(where_params or ())
@@ -188,7 +188,7 @@ class DatabaseManager:
             'data_hash': self._hash_sensitive_data(json.dumps(data, sort_keys=True)),
             'ip_address': ip_address,
             'user_agent': user_agent or 'Unknown',
-            'timestamp': datetime.utcnow().isoformat(),
+            'timestamp': datetime.now(timezone.utc).isoformat(),
             'data_category': data_category.value,
             'expires_at': calculate_expiry_date(data_category).isoformat()
         }
@@ -204,7 +204,7 @@ class DatabaseManager:
             'user_id': user_id,
             'session_id': session_id,
             'properties': json.dumps(properties),
-            'timestamp': datetime.utcnow().isoformat(),
+            'timestamp': datetime.now(timezone.utc).isoformat(),
             'page_url': page_url,
             'referrer': referrer
         }
@@ -213,7 +213,7 @@ class DatabaseManager:
 
     def cleanup_expired_data(self) -> Dict[str, int]:
         """Limpeza automática de dados expirados (LGPD compliance)"""
-        current_time = datetime.utcnow().isoformat()
+        current_time = datetime.now(timezone.utc).isoformat()
         cleanup_results = {}
 
         tables_with_expiry = [

@@ -131,7 +131,7 @@ class StructuredJSONFormatter(logging.Formatter):
         """Formata log record para JSON estruturado"""
         # Dados básicos
         log_data = {
-            'timestamp': datetime.utcnow().isoformat() + 'Z',
+            'timestamp': datetime.now(timezone.utc).isoformat() + 'Z',
             'level': record.levelname,
             'logger': record.name,
             'service': self.service_name,
@@ -452,7 +452,7 @@ class AdvancedLoggingSystem:
         perf_data = {
             'operation': operation,
             'duration_ms': duration_ms,
-            'timestamp': datetime.utcnow().isoformat() + 'Z'
+            'timestamp': datetime.now(timezone.utc).isoformat() + 'Z'
         }
         perf_data.update(kwargs)
         
@@ -481,7 +481,7 @@ class AdvancedLoggingSystem:
             'event_type': event_type,
             'severity': severity,
             'details': details,
-            'timestamp': datetime.utcnow().isoformat() + 'Z'
+            'timestamp': datetime.now(timezone.utc).isoformat() + 'Z'
         }
         
         record = security_logger.makeRecord(
