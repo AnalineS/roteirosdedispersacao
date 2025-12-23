@@ -467,7 +467,36 @@ No momento, estou com acesso limitado à base de conhecimento específica. Para 
 
         return f"**{persona_name}**: Desculpe, estou com dificuldades técnicas no momento. Para informações sobre hanseníase, consulte um profissional de saúde qualificado."
     
-    def process_message(self, message: str, persona_id: str, user_session_id: str = None, ip_address: str = None) -> Dict:
+    def _detect_device_type(self, user_agent: str) -> str:
+        """
+        Detecta tipo de dispositivo baseado no User-Agent
+
+        Args:
+            user_agent: String User-Agent do navegador
+
+        Returns:
+            str: 'mobile', 'tablet', ou 'desktop'
+        """
+        if not user_agent:
+            return 'desktop'
+
+        user_agent_lower = user_agent.lower()
+
+        # Detectar mobile
+        mobile_keywords = ['mobile', 'android', 'iphone', 'ipod', 'blackberry', 'windows phone']
+        if any(keyword in user_agent_lower for keyword in mobile_keywords):
+            # Verificar se é tablet (tablets geralmente tem 'mobile' mas também 'tablet')
+            if 'tablet' in user_agent_lower or 'ipad' in user_agent_lower:
+                return 'tablet'
+            return 'mobile'
+
+        # Detectar tablet explicitamente
+        if 'tablet' in user_agent_lower or 'ipad' in user_agent_lower:
+            return 'tablet'
+
+        return 'desktop'
+
+    def process_message(self, message: str, persona_id: str, user_session_id: str = None, ip_address: str = None, user_agent: str = None) -> Dict:
         """
         Processa mensagem do usuário com persona específica
 
@@ -476,6 +505,7 @@ No momento, estou com acesso limitado à base de conhecimento específica. Para 
             persona_id: ID da persona a ser usada
             user_session_id: ID da sessão do usuário (para auditoria)
             ip_address: Endereço IP do usuário (para auditoria)
+            user_agent: User-Agent string do navegador (para analytics)
 
         Returns:
             Dict com resposta e metadados
@@ -629,7 +659,7 @@ Estilo de linguagem: {persona.get('language_style', 'profissional')}
                         'response_time': response_time,
                         'fallback_used': not api_used,
                         'urgency_level': urgency_level,
-                        'device_type': 'desktop',  # TODO: Detectar do user agent
+                        'device_type': self._detect_device_type(user_agent),
                         'ip_address': ip_address,
                         'is_anonymous': not ip_address  # Simplificado - melhorar depois
                     })
@@ -656,15 +686,102 @@ Estilo de linguagem: {persona.get('language_style', 'profissional')}
                 "timestamp": datetime.now().isoformat()
             }
     
-    def get_conversation_history(self, session_id: str) -> List[Dict]:
-        """Obtém histórico de conversação (placeholder para implementação futura)"""
-        # TODO: Implementar persistência de conversações
-        return []
-    
+    def _init_conversation_db(self):
+        """Initialize SQLite database for conversation persistence"""
+        import sqlite3
+        from pathlib import Path
+
+        db_path = Path("data/conversations/conversations.db")
+        db_path.parent.mkdir(parents=True, exist_ok=True)
+
+        with sqlite3.connect(str(db_path)) as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS conversations (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    session_id TEXT NOT NULL,
+                    message TEXT NOT NULL,
+                    response TEXT NOT NULL,
+                    persona_id TEXT,
+                    timestamp TEXT NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
+            cursor.execute('CREATE INDEX IF NOT EXISTS idx_session ON conversations(session_id)')
+            conn.commit()
+
+        return db_path
+
+    def get_conversation_history(self, session_id: str, limit: int = 50) -> List[Dict]:
+        """
+        Obtém histórico de conversação de uma sessão
+
+        Args:
+            session_id: ID da sessão
+            limit: Número máximo de mensagens a retornar
+
+        Returns:
+            List[Dict]: Lista de mensagens e respostas
+        """
+        import sqlite3
+
+        try:
+            db_path = self._init_conversation_db()
+
+            with sqlite3.connect(str(db_path)) as conn:
+                cursor = conn.cursor()
+                cursor.execute('''
+                    SELECT message, response, persona_id, timestamp
+                    FROM conversations
+                    WHERE session_id = ?
+                    ORDER BY timestamp DESC
+                    LIMIT ?
+                ''', (session_id, limit))
+
+                rows = cursor.fetchall()
+
+                return [
+                    {
+                        'message': row[0],
+                        'response': row[1],
+                        'persona_id': row[2],
+                        'timestamp': row[3]
+                    }
+                    for row in reversed(rows)  # Reverse to get chronological order
+                ]
+        except Exception as e:
+            logger.error(f"Failed to get conversation history: {e}")
+            return []
+
     def save_conversation(self, session_id: str, message: str, response: Dict):
-        """Salva conversação (placeholder para implementação futura)"""
-        # TODO: Implementar persistência de conversações
-        pass
+        """
+        Salva conversa no banco de dados
+
+        Args:
+            session_id: ID da sessão
+            message: Mensagem do usuário
+            response: Dict com resposta do chatbot
+        """
+        import sqlite3
+
+        try:
+            db_path = self._init_conversation_db()
+
+            with sqlite3.connect(str(db_path)) as conn:
+                cursor = conn.cursor()
+                cursor.execute('''
+                    INSERT INTO conversations (session_id, message, response, persona_id, timestamp)
+                    VALUES (?, ?, ?, ?, ?)
+                ''', (
+                    session_id,
+                    message,
+                    response.get('response', ''),
+                    response.get('persona_id', ''),
+                    response.get('timestamp', datetime.now().isoformat())
+                ))
+                conn.commit()
+        except Exception as e:
+            logger.error(f"Failed to save conversation: {e}")
 
 
 # Função auxiliar para uso direto

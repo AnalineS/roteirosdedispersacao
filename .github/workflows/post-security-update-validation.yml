@@ -77,6 +77,8 @@ jobs:
         uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38
         with:
           python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: apps/backend/requirements.txt
 
       - name: Install security audit tools
         run: |
@@ -157,12 +159,12 @@ jobs:
         with:
           python-version: '3.11'
           cache: 'pip'
+          cache-dependency-path: apps/backend/requirements.txt
 
       - name: Install Python dependencies
         run: |
           cd apps/backend
           pip install -r requirements.txt
-          pip install pytest pytest-cov pytest-mock pytest-timeout
 
       - name: Set up test environment
         run: |
@@ -186,11 +188,96 @@ jobs:
           print(f'✅ Configuration loaded: {len(config)} sections')
           "
 
+      - name: Validate RAG system credentials
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          echo "🔐 Validating RAG system credentials..."
+
+          # Check if credentials are present and non-empty
+          if [ -z "$OPENROUTER_API_KEY" ]; then
+            echo "❌ ERROR: OPENROUTER_API_KEY secret is not configured or is empty"
+            echo "⚠️  Please configure this secret in GitHub Settings > Secrets and variables > Actions"
+            echo "ℹ️  The medical accuracy test requires OpenRouter API access"
+            exit 1
+          fi
+
+          if [ -z "$SUPABASE_URL" ]; then
+            echo "❌ ERROR: SUPABASE_URL secret is not configured or is empty"
+            echo "⚠️  Please configure this secret in GitHub Settings > Secrets and variables > Actions"
+            echo "ℹ️  The RAG system requires Supabase PostgreSQL vector store"
+            exit 1
+          fi
+
+          if [ -z "$SUPABASE_SERVICE_KEY" ]; then
+            echo "❌ ERROR: SUPABASE_SERVICE_KEY secret is not configured or is empty"
+            echo "⚠️  Please configure this secret in GitHub Settings > Secrets and variables > Actions"
+            echo "ℹ️  The RAG system requires Supabase service key for vector operations"
+            exit 1
+          fi
+
+          echo "✅ All RAG system credentials are configured"
+          echo "🔍 Credentials validation:"
+          echo "   - OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:0:10}... (${#OPENROUTER_API_KEY} chars)"
+          echo "   - SUPABASE_URL: ${SUPABASE_URL:0:30}... (${#SUPABASE_URL} chars)"
+          echo "   - SUPABASE_SERVICE_KEY: ${SUPABASE_SERVICE_KEY:0:10}... (${#SUPABASE_SERVICE_KEY} chars)"
+
+      - name: Setup Supabase RPC function
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          echo "🔧 Checking Supabase RPC function..."
+          pip install supabase
+          python scripts/setup_supabase_function.py
+
+      - name: Index knowledge base to Supabase
+        env:
+          HUGGINGFACE_TOKEN: ${{ secrets.HUGGINGFACE_TOKEN }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          # SUPABASE_DB_URL removed - "Tenant or user not found" error, using URL+KEY method instead
+          SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: |
+          cd apps/backend
+          echo "📚 Indexing knowledge base to Supabase vector store..."
+
+          # Install dependencies for embedding generation and Supabase client
+          pip install sentence-transformers huggingface_hub supabase
+
+          # Run indexing script from project root
+          cd ../..
+          python scripts/index_knowledge_base.py
+
+          # Verify indexing succeeded by checking document count
+          python -c "
+          import os
+          from supabase import create_client
+
+          client = create_client(os.environ['SUPABASE_URL'], os.environ['SUPABASE_SERVICE_KEY'])
+          result = client.table('medical_embeddings').select('id', count='exact').execute()
+          doc_count = result.count if hasattr(result, 'count') else len(result.data)
+
+          if doc_count == 0:
+              raise Exception('❌ Knowledge base indexing failed - no embeddings found')
+
+          print(f'✅ Knowledge base indexed successfully: {doc_count} medical embeddings')
+          "
+
       - name: Run critical medical functionality tests
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          # SUPABASE_DB_URL removed - forcing Priority 2 connection method (URL+SERVICE_KEY)
+          HUGGINGFACE_API_KEY: ${{ secrets.HUGGINGFACE_API_KEY }}
+          SEMANTIC_SIMILARITY_THRESHOLD: ${{ vars.SEMANTIC_SIMILARITY_THRESHOLD }}
+          SUPABASE_VECTOR_SIMILARITY_THRESHOLD: ${{ vars.SUPABASE_VECTOR_SIMILARITY_THRESHOLD }}
         run: |
           cd apps/backend
           echo "🔴 CRITICAL: Running medical functionality validation..."
@@ -281,12 +368,12 @@ jobs:
         with:
           python-version: '3.11'
           cache: 'pip'
+          cache-dependency-path: apps/backend/requirements.txt
 
       - name: Install dependencies
         run: |
           cd apps/backend
           pip install -r requirements.txt
-          pip install pytest pytest-mock pytest-timeout
 
       - name: Run JWT authentication security tests
         run: |
@@ -404,12 +491,12 @@ jobs:
         with:
           python-version: '3.11'
           cache: 'pip'
+          cache-dependency-path: apps/backend/requirements.txt
 
       - name: Install dependencies
         run: |
           cd apps/backend
           pip install -r requirements.txt
-          pip install pytest
 
       - name: Run PCDT compliance tests
         run: |
@@ -469,12 +556,12 @@ jobs:
         with:
           python-version: '3.11'
           cache: 'pip'
+          cache-dependency-path: apps/backend/requirements.txt
 
       - name: Install dependencies
         run: |
           cd apps/backend
           pip install -r requirements.txt
-          pip install pytest
 
       - name: Run LGPD compliance tests
         run: |
@@ -562,12 +649,12 @@ jobs:
         with:
           python-version: '3.11'
           cache: 'pip'
+          cache-dependency-path: apps/backend/requirements.txt
 
       - name: Install dependencies
         run: |
           cd apps/backend
           pip install -r requirements.txt
-          pip install pytest pytest-cov pytest-html
 
       - name: Run comprehensive validation suite
         run: |

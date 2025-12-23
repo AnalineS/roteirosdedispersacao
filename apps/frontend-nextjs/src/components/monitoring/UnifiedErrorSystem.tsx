@@ -1,7 +1,7 @@
 'use client';
 
-import React, { Component, ErrorInfo, ReactNode, useEffect, useState, useCallback } from 'react';
-import { AlertCircle, AlertTriangle, XCircle, X, TrendingUp, Clock, RefreshCw } from 'lucide-react';
+import React, { Component, ErrorInfo, ReactNode, useCallback } from 'react';
+import { AlertCircle, AlertTriangle, XCircle, X, RefreshCw } from 'lucide-react';
 import { theme } from '@/config/theme';
 import { ErrorMonitorService } from './ErrorMonitor';
 
@@ -19,7 +19,7 @@ interface ErrorEntry {
   severity: ErrorSeverity;
   component?: string;
   userId?: string;
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
   count: number;
 }
 

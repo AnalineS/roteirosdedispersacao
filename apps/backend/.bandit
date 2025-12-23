@@ -33,29 +33,29 @@ format = txt
 
 # ===== TESTES ESPECÍFICOS PARA PLATAFORMA MÉDICA =====
 
-# Testes críticos para incluir sempre
-tests = 
-    B102,  # exec_used - CRÍTICO
-    B103,  # set_bad_file_permissions  
-    B104,  # hardcoded_bind_all_interfaces - CRÍTICO para produção
-    B105,  # hardcoded_password_string - CRÍTICO
-    B106,  # hardcoded_password_funcarg - CRÍTICO
-    B107,  # hardcoded_password_default - CRÍTICO
-    B108,  # hardcoded_tmp_directory
-    B110,  # try_except_pass - PODE MASCARAR ERROS MÉDICOS
-    B112,  # try_except_continue - PODE MASCARAR ERROS MÉDICOS
-    B201,  # flask_debug_true
-    B301,  # pickle_load
-    B311,  # random_not_secure
-    B323,  # unverified_context
-    B324,  # hashlib_not_secure
-    B501,  # request_with_no_cert_validation
-    B502,  # ssl_with_bad_version
-    B506,  # yaml_load
-    B602,  # subprocess_popen_with_shell_equals_true
-    B608,  # hardcoded_sql_expressions
-    B701,  # jinja2_autoescape_false
-    B702   # use_of_mako_templates
+# Testes críticos para incluir sempre:
+# B102: exec_used - CRÍTICO
+# B103: set_bad_file_permissions
+# B104: hardcoded_bind_all_interfaces - CRÍTICO para produção
+# B105: hardcoded_password_string - CRÍTICO
+# B106: hardcoded_password_funcarg - CRÍTICO
+# B107: hardcoded_password_default - CRÍTICO
+# B108: hardcoded_tmp_directory
+# B110: try_except_pass - PODE MASCARAR ERROS MÉDICOS
+# B112: try_except_continue - PODE MASCARAR ERROS MÉDICOS
+# B201: flask_debug_true
+# B301: pickle_load
+# B311: random_not_secure
+# B323: unverified_context
+# B324: hashlib_not_secure
+# B501: request_with_no_cert_validation
+# B502: ssl_with_bad_version
+# B506: yaml_load
+# B602: subprocess_popen_with_shell_equals_true
+# B608: hardcoded_sql_expressions
+# B701: jinja2_autoescape_false
+# B702: use_of_mako_templates
+tests = B102,B103,B104,B105,B106,B107,B108,B110,B112,B201,B301,B311,B323,B324,B501,B502,B506,B602,B608,B701,B702
 
 # ===== CONFIGURAÇÕES ESPECÍFICAS ===
 

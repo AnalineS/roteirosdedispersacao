@@ -29,6 +29,9 @@ except ImportError as e:
     logger.warning(f"[WARNING] Dependências RAG não disponíveis: {e}")
     DEPENDENCIES_AVAILABLE = False
 
+# SonarQube S1192: Constant for duplicated string literal
+INTERACTION_KEYWORD = 'interação'
+
 # Import OpenRouter para contexto adicional
 try:
     from services.ai.openai_integration import get_openrouter_client, is_openrouter_available
@@ -80,6 +83,12 @@ class SupabaseRAGSystem:
         # Configurações de qualidade
         self.min_similarity_threshold = getattr(config, 'SEMANTIC_SIMILARITY_THRESHOLD', 0.7) if config else 0.7
         self.max_context_chunks = getattr(config, 'MAX_CONTEXT_CHUNKS', 5) if config else 5
+
+        # Log threshold configuration for debugging (critical for medical accuracy)
+        logger.info(f"🎯 RAG System initialized with similarity threshold: {self.min_similarity_threshold:.2f}")
+        logger.info(f"📊 Config source: {'config object' if config else 'fallback default'}")
+        logger.info(f"📦 Max context chunks: {self.max_context_chunks}")
+
         self.scope_keywords = self._load_scope_keywords()
         
         # Cache de contextos gerados
@@ -111,7 +120,7 @@ class SupabaseRAGSystem:
             ],
             'farmacologia': [
                 'dose', 'dosagem', 'posologia', 'administração',
-                'efeito colateral', 'contraindicação', 'interação',
+                'efeito colateral', 'contraindicação', INTERACTION_KEYWORD,
                 'farmacocinética', 'farmacodinâmica'
             ],
             'dispensacao': [
@@ -346,19 +355,33 @@ class SupabaseRAGSystem:
         return formatted_context + metadata_info
     
     def _generate_base_answer(self, query: str, context: str, persona: str) -> str:
-        """Gera resposta base usando contexto (sem OpenRouter)"""
-        # Por enquanto, retorna contexto formatado
-        # TODO: Integrar com sistema de personas existente
-        
-        if persona == 'dr_gasnelio':
-            prefix = "**Dr. Gasnelio (Farmacêutico Clínico):**\n\n"
-            style = "Baseado na literatura científica e protocolos clínicos:\n\n"
-        else:  # ga_empathetic
-            prefix = "**Gá (Assistente Empático):**\n\n"
-            style = "Vou explicar de forma clara e acessível:\n\n"
-        
-        base_answer = f"{prefix}{style}{context}"
-        
+        """Gera resposta base usando contexto integrado com sistema de personas"""
+        # Integrar com sistema de personas existente
+        try:
+            from core.personas.persona_manager import get_personas
+            personas = get_personas()
+
+            if persona in personas:
+                persona_data = personas[persona]
+                prefix = f"**{persona_data['name']}:**\n\n"
+                # Usar descrição da persona para estilo de resposta
+                style_hint = f"({persona_data['description']})\n\n"
+            else:
+                # Fallback se persona não encontrada
+                prefix = "**Assistente:**\n\n"
+                style_hint = ""
+
+        except ImportError:
+            # Fallback caso módulo não disponível
+            if persona == 'dr_gasnelio':
+                prefix = "**Dr. Gasnelio (Farmacêutico Clínico):**\n\n"
+                style_hint = "Baseado na literatura científica e protocolos clínicos:\n\n"
+            else:  # ga_empathetic
+                prefix = "**Gá (Assistente Empático):**\n\n"
+                style_hint = "Vou explicar de forma clara e acessível:\n\n"
+
+        base_answer = f"{prefix}{style_hint}{context}"
+
         return base_answer
     
     def _enhance_with_openrouter(
@@ -422,11 +445,65 @@ INSTRUÇÃO: Responda usando sua expertise em hanseníase, baseando-se no contex
                         return enhanced
             
             return None
-            
+
         except Exception as e:
             logger.warning(f"Erro no enhancement OpenRouter: {e}")
             return None
-    
+
+    def _classify_query_type(self, query: str, category: str) -> str:
+        """
+        Classifica o tipo de consulta baseado em palavras-chave e categoria
+
+        Returns:
+            str: Tipo de consulta ('dosing_queries', 'safety_queries', 'interaction_queries', 'procedure_queries')
+        """
+        query_lower = query.lower()
+
+        # Keywords por tipo de consulta
+        dosing_keywords = ['dosagem', 'dose', 'mg', 'kg', 'quantidade', 'quanto', 'posologia',
+                          'administra', 'toma', 'peso', 'rifampicina', 'dapsona', 'clofazimina',
+                          'diário', 'mensal', 'supervisionado']
+
+        safety_keywords = ['efeito', 'adverso', 'colateral', 'segurança', 'contraindicação',
+                          'reação', 'toxicidade', 'risco', 'perigo', 'cuidado', 'gestante',
+                          'gravidez', 'hepatotoxicidade', 'hemólise', 'anemia']
+
+        interaction_keywords = [INTERACTION_KEYWORD, 'interações', 'combinação', 'junto', 'associa',
+                               'anticoncepcional', 'medicamento', 'fármaco', 'droga',
+                               'cefazolina', 'nevirapina', 'antirretroviral']
+
+        procedure_keywords = ['procedimento', 'dispensação', 'roteiro', 'como', 'etapa',
+                             'passo', 'protocolo', 'processo', 'fluxo', 'orientação']
+
+        # Contagem de keywords por categoria
+        dosing_score = sum(1 for keyword in dosing_keywords if keyword in query_lower)
+        safety_score = sum(1 for keyword in safety_keywords if keyword in query_lower)
+        interaction_score = sum(1 for keyword in interaction_keywords if keyword in query_lower)
+        procedure_score = sum(1 for keyword in procedure_keywords if keyword in query_lower)
+
+        # Determina categoria com maior score
+        scores = {
+            'dosing_queries': dosing_score,
+            'safety_queries': safety_score,
+            'interaction_queries': interaction_score,
+            'procedure_queries': procedure_score
+        }
+
+        # Retorna categoria com maior pontuação, ou dosing como padrão
+        max_score = max(scores.values())
+        if max_score > 0:
+            return max(scores.items(), key=lambda x: x[1])[0]
+
+        # Fallback baseado na categoria geral
+        if 'medicação' in category.lower() or 'tratamento' in category.lower():
+            return 'dosing_queries'
+        elif 'segurança' in category.lower() or 'farmácovigilância' in category.lower():
+            return 'safety_queries'
+        elif INTERACTION_KEYWORD in category.lower():
+            return 'interaction_queries'
+        else:
+            return 'procedure_queries'
+
     def _generate_out_of_scope_response(
         self, 
         query: str, 

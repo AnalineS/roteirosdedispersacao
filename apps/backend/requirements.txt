@@ -99,8 +99,10 @@ python-magic==0.4.27
 
 # === DATABASE & VECTOR STORE ===
 # Supabase integration - FASE 3 RAG
+# Main client library (includes auth, storage, functions, realtime)
 supabase==2.25.1
-psycopg2-binary==2.9.11  # PostgreSQL adapter with pgvector support
+# PostgreSQL adapter with pgvector support
+psycopg2-binary==2.9.11
 
 # Optional SQL support
 sqlalchemy>=2.0.0
@@ -128,6 +130,9 @@ python-decouple>=3.8
 pytest==7.4.4  # Updated for pytest 8.x migration (FASE 0 completion)
 pytest-cov==6.0.0  # Compatible with pytest 8.x
 pytest-mock==3.15.1
+pytest-asyncio==0.25.2  # Async test support for LGPD compliance tests
+pytest-timeout>=2.2.0  # Required for CI timeout enforcement (--timeout flag)
+pytest-html>=3.2.0  # HTML test reports for comprehensive validation
 
 # === SECURITY ANALYSIS & COMPLIANCE ===
 # Vulnerability scanning

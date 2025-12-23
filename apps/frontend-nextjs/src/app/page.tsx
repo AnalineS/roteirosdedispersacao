@@ -14,18 +14,14 @@ import { HierarchyHeading, HierarchyText } from '@/components/layout/VisualHiera
 // Components are now imported directly
 
 // Icons
-import { 
+import {
   ChatIcon,
   BookIcon,
   GovernmentIcon,
   HospitalIcon,
   UniversityIcon,
-  BulbIcon,
-  HeartIcon,
-  FamilyIcon,
   EmailIcon,
-  ClipboardIcon,
-  PillIcon
+  ClipboardIcon
 } from '@/components/icons/FlatOutlineIcons';
 
 export default function HomePage() {

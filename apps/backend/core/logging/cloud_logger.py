@@ -165,14 +165,14 @@ class CloudLogger:
 
         # Calcular retenção
         retention_days = self.retention_config.get(data_category, 7)
-        expires_at = datetime.utcnow() + timedelta(days=retention_days)
+        expires_at = datetime.now(timezone.utc) + timedelta(days=retention_days)
 
         # Mascarar contexto se necessário
         masked_context = self._mask_sensitive_data(context) if has_sensitive else context
 
         return LGPDLogEntry(
             log_id=str(uuid.uuid4()),
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(timezone.utc),
             level=level,
             message=message,
             context=masked_context,

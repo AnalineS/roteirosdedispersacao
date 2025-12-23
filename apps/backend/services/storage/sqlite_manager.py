@@ -288,7 +288,7 @@ class SQLiteCloudManager:
         """Definir cache com TTL"""
         with self._db_lock:
             try:
-                expires_at = datetime.utcnow() + timedelta(seconds=ttl_seconds)
+                expires_at = datetime.now(timezone.utc) + timedelta(seconds=ttl_seconds)
                 with self._get_connection() as conn:
                     conn.execute("""
                         INSERT OR REPLACE INTO cache (key, value, expires_at)
@@ -387,7 +387,7 @@ class SQLiteCloudManager:
         try:
             # Criar metadata
             metadata = {
-                'timestamp': datetime.utcnow().isoformat(),
+                'timestamp': datetime.now(timezone.utc).isoformat(),
                 'size': os.path.getsize(self.db_path),
                 'hash': self._get_file_hash(self.db_path)
             }
@@ -400,7 +400,7 @@ class SQLiteCloudManager:
             metadata_blob = self._bucket.blob(self._metadata_key)
             metadata_blob.upload_from_string(json.dumps(metadata))
 
-            self._last_backup = datetime.utcnow()
+            self._last_backup = datetime.now(timezone.utc)
             logger.info("Backup realizado com sucesso")
             return True
 

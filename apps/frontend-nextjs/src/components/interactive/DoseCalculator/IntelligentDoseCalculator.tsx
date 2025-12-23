@@ -5,7 +5,7 @@
 
 'use client';
 
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { PersonaRAGIntegration } from '@/services/personaRAGIntegration';
 import { logEvent } from '@/services/analytics';
 import { motion, AnimatePresence } from 'framer-motion';

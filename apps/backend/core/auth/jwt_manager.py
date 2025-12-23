@@ -143,7 +143,7 @@ class JWTManager:
             # Atualizar último login
             self.db.update(
                 'users',
-                {'last_login': datetime.utcnow().isoformat()},
+                {'last_login': datetime.now(timezone.utc).isoformat()},
                 'id = ?',
                 (user['id'],)
             )
@@ -180,7 +180,7 @@ class JWTManager:
         Gera par de tokens (access + refresh)
         """
         session_id = str(uuid.uuid4())
-        current_time = datetime.utcnow()
+        current_time = datetime.now(timezone.utc)
 
         # Claims do access token
         access_claims = {
@@ -251,7 +251,7 @@ class JWTManager:
 
             # Verificar expiração da sessão
             expires_at = datetime.fromisoformat(session['expires_at'])
-            if datetime.utcnow() > expires_at:
+            if datetime.now(timezone.utc) > expires_at:
                 logger.warning(f"Session expired: {payload['session_id']}")
                 return None
 
@@ -294,7 +294,7 @@ class JWTManager:
             return None
 
         # Gerar novo access token
-        current_time = datetime.utcnow()
+        current_time = datetime.now(timezone.utc)
         access_claims = {
             'user_id': claims.user_id,
             'email': user['email'],
@@ -388,7 +388,7 @@ class JWTManager:
         """
         Remove sessões expiradas
         """
-        current_time = datetime.utcnow().isoformat()
+        current_time = datetime.now(timezone.utc).isoformat()
         affected = self.db.delete(
             'sessions',
             'expires_at < ? OR is_active = 0',
@@ -433,7 +433,7 @@ class JWTManager:
         stats['active_users'] = unique_users['count'] if unique_users else 0
 
         # Sessões nas últimas 24h
-        yesterday = (datetime.utcnow() - timedelta(days=1)).isoformat()
+        yesterday = (datetime.now(timezone.utc) - timedelta(days=1)).isoformat()
         recent_sessions = self.db.fetch_one(
             "SELECT COUNT(*) as count FROM sessions WHERE created_at > ?",
             (yesterday,)

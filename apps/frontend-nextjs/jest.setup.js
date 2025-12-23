@@ -5,6 +5,10 @@
 
 require('@testing-library/jest-dom');
 
+// Configurar jest-fetch-mock para mocks robustos de fetch
+const fetchMock = require('jest-fetch-mock');
+fetchMock.enableMocks();
+
 // Mock Next.js router
 jest.mock('next/router', () => ({
   useRouter() {
@@ -94,9 +98,6 @@ global.ResizeObserver = class ResizeObserver {
     return null;
   }
 };
-
-// Mock do fetch para testes de API
-global.fetch = jest.fn();
 
 // Configurações de timeout para testes longos
 jest.setTimeout(10000);

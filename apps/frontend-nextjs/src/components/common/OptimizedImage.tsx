@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
+import styles from './OptimizedImage.module.css';
 
 interface OptimizedImageProps {
   src: string;
@@ -137,59 +138,19 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
     filter: 'blur(10px)'
   };
 
-  // Skeleton loader
-  const skeletonStyle: React.CSSProperties = {
-    width: '100%',
-    height: '100%',
-    background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
-    backgroundSize: '200% 100%',
-    animation: 'shimmer 2s infinite'
-  };
-
   return (
     <div className={className} style={containerStyle}>
-      {/* CSS para animação do skeleton */}
-      <style jsx>{`
-        @keyframes shimmer {
-          0% { background-position: -200% 0; }
-          100% { background-position: 200% 0; }
-        }
-      `}</style>
-
       {/* Placeholder/Skeleton */}
       {!isLoaded && placeholder === 'blur' && (
         <div style={placeholderStyle}>
-          {!blurDataURL && <div style={skeletonStyle} />}
+          {!blurDataURL && <div className={styles.skeleton} />}
         </div>
       )}
 
       {/* Loading spinner */}
       {!isLoaded && !hasError && isInView && (
-        <div
-          style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            zIndex: 1
-          }}
-        >
-          <div
-            style={{
-              width: '24px',
-              height: '24px',
-              border: '2px solid #e5e7eb',
-              borderTop: '2px solid #3b82f6',
-              borderRadius: '50%',
-              animation: 'spin 1s linear infinite'
-            }}
-          />
-          <style jsx>{`
-            @keyframes spin {
-              0% { transform: rotate(0deg); }
-              100% { transform: rotate(360deg); }
-            }
-          `}</style>
+        <div className={styles.spinnerContainer}>
+          <div className={styles.spinner} />
         </div>
       )}
 

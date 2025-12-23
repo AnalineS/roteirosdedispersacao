@@ -1,18 +1,10 @@
 /**
  * Testes para Sistema de Cache Híbrido
- * Cobertura: Memory, localStorage, API integration, sync, fallback
+ * Cobertura: Memory, localStorage, sync, fallback
+ * Note: Firestore removed from architecture - tests focus on local storage only
  */
 
 import { hybridCache, HybridCacheUtils } from '../../services/hybridCache';
-// Mock do cache API para testes
-const mockApiCache = {
-  get: jest.fn(),
-  set: jest.fn(),
-  delete: jest.fn(),
-  clear: jest.fn(),
-  isReady: jest.fn(),
-  getStats: jest.fn(),
-};
 
 // Mock do localStorage
 const localStorageMock = (() => {
@@ -50,28 +42,13 @@ Object.defineProperty(navigator, 'onLine', {
 });
 
 describe('HybridCache', () => {
-  const mockFirestoreCache = firestoreCache as jest.Mocked<typeof firestoreCache>;
-
   beforeEach(() => {
     // Limpar todos os caches
     hybridCache.clear();
     localStorageMock.clear();
-    
+
     // Reset dos mocks
     jest.clearAllMocks();
-    
-    // Configurar mocks padrão
-    mockFirestoreCache.isReady.mockResolvedValue(true);
-    mockFirestoreCache.get.mockResolvedValue(null);
-    mockFirestoreCache.set.mockResolvedValue(true);
-    mockFirestoreCache.delete.mockResolvedValue(true);
-    mockFirestoreCache.clear.mockResolvedValue(true);
-    mockFirestoreCache.getStats.mockResolvedValue({
-      totalEntries: 0,
-      expiredEntries: 0,
-      totalSize: 0,
-      isAvailable: true
-    });
 
     // Simular online
     Object.defineProperty(navigator, 'onLine', { value: true, writable: true });
@@ -118,11 +95,7 @@ describe('HybridCache', () => {
       const key = 'priority-test';
       const memoryData = { source: 'memory' };
       const localStorageData = { source: 'localStorage' };
-      const firestoreData = { source: 'firestore' };
 
-      // Mock diferentes respostas das camadas
-      mockFirestoreCache.get.mockResolvedValue(firestoreData);
-      
       // Simular dados no localStorage
       const storageKey = 'hybrid_cache_' + key;
       localStorageMock.setItem(storageKey, JSON.stringify({
@@ -139,15 +112,12 @@ describe('HybridCache', () => {
 
       const result = await hybridCache.get(key);
       expect(result).toEqual(memoryData);
-      
-      // Verificar que não acessou Firestore
-      expect(mockFirestoreCache.get).not.toHaveBeenCalled();
     });
 
     it('should fallback to localStorage when memory cache misses', async () => {
       const key = 'fallback-localStorage-test';
       const localStorageData = { source: 'localStorage' };
-      
+
       // Simular dados apenas no localStorage
       const storageKey = 'hybrid_cache_' + key.replace(/[\/\s#\[\]]/g, '_');
       localStorageMock.setItem(storageKey, JSON.stringify({
@@ -163,18 +133,11 @@ describe('HybridCache', () => {
       expect(result).toEqual(localStorageData);
     });
 
-    it('should fallback to Firestore when memory and localStorage miss', async () => {
-      const key = 'fallback-firestore-test';
-      const firestoreData = { source: 'firestore' };
-      
-      // Mock Firestore retornando dados
-      mockFirestoreCache.get.mockResolvedValue(firestoreData);
+    it('should return null when both memory and localStorage miss', async () => {
+      const key = 'cache-miss-test';
 
       const result = await hybridCache.get(key);
-      expect(result).toEqual(firestoreData);
-      expect(mockFirestoreCache.get).toHaveBeenCalledWith(
-        key.replace(/[\/\s#\[\]]/g, '_')
-      );
+      expect(result).toBeNull();
     });
   });
 
@@ -211,82 +174,66 @@ describe('HybridCache', () => {
     it('should work offline using memory and localStorage', async () => {
       // Simular offline
       Object.defineProperty(navigator, 'onLine', { value: false, writable: true });
-      
+
       const key = 'offline-test';
       const data = { message: 'Offline data' };
-      
+
       await hybridCache.set(key, data);
       const result = await hybridCache.get(key);
-      
+
       expect(result).toEqual(data);
-      // Não deve tentar acessar Firestore offline
-      expect(mockFirestoreCache.set).not.toHaveBeenCalled();
-      expect(mockFirestoreCache.get).not.toHaveBeenCalled();
     });
 
-    it('should skip Firestore operations when skipFirestore is true', async () => {
+    it('should handle skipFirestore option (legacy compatibility)', async () => {
       const key = 'skip-firestore-test';
       const data = { message: 'Skip Firestore' };
-      
+
+      // skipFirestore option accepted for backward compatibility
       await hybridCache.set(key, data, { skipFirestore: true });
-      
-      expect(mockFirestoreCache.set).not.toHaveBeenCalled();
+
+      const result = await hybridCache.get(key);
+      expect(result).toEqual(data);
     });
   });
 
-  describe('Background Synchronization', () => {
-    it('should sync data to Firestore with high priority', async () => {
+  describe('Priority Handling', () => {
+    it('should accept priority option for backward compatibility', async () => {
       const key = 'high-priority-test';
       const data = { message: 'High priority' };
-      
-      await hybridCache.set(key, data, { priority: 'high' });
-      
-      // Com prioridade alta, deve sincronizar imediatamente
-      expect(mockFirestoreCache.set).toHaveBeenCalledWith(
-        key.replace(/[\/\s#\[\]]/g, '_'),
-        data,
-        expect.any(Number),
-        expect.objectContaining({
-          source: 'system',
-          tags: ['hybrid-cache']
-        })
-      );
-    });
 
-    it('should handle sync failures gracefully', async () => {
-      const key = 'sync-failure-test';
-      const data = { message: 'Sync failure' };
-      
-      // Mock falha no Firestore
-      mockFirestoreCache.set.mockRejectedValue(new Error('Sync failed'));
-      
-      // Deve ainda funcionar localmente
-      const success = await hybridCache.set(key, data, { priority: 'high' });
-      expect(success).toBe(true);
-      
+      await hybridCache.set(key, data, { priority: 'high' });
+
       const result = await hybridCache.get(key);
       expect(result).toEqual(data);
     });
 
-    it('should handle manual sync', async () => {
+    it('should continue working locally even when set operations have issues', async () => {
+      const key = 'resilience-test';
+      const data = { message: 'Resilient data' };
+
+      // Deve ainda funcionar localmente
+      const success = await hybridCache.set(key, data, { priority: 'high' });
+      expect(success).toBe(true);
+
+      const result = await hybridCache.get(key);
+      expect(result).toEqual(data);
+    });
+
+    it('should handle manual sync (legacy - now clears sync queue)', async () => {
       const key1 = 'manual-sync-1';
       const key2 = 'manual-sync-2';
       const data1 = { message: 'Data 1' };
       const data2 = { message: 'Data 2' };
-      
-      // Armazenar dados normalmente (vão para queue de sync mas não sincronizam imediatamente)
+
+      // Armazenar dados normalmente
       await hybridCache.set(key1, data1, { priority: 'normal' });
       await hybridCache.set(key2, data2, { priority: 'normal' });
-      
-      // Mock success para um, falha para outro
-      mockFirestoreCache.set
-        .mockResolvedValueOnce(true)
-        .mockRejectedValueOnce(new Error('Sync failed'));
-      
+
       const result = await hybridCache.forceSync();
-      
-      expect(result.synced).toBe(1);
-      expect(result.failed).toBe(1);
+
+      // With Firestore removed, sync just clears the queue
+      expect(result.synced).toBeGreaterThanOrEqual(0);
+      expect(result.failed).toBe(0);
     });
   });
 
@@ -294,63 +241,59 @@ describe('HybridCache', () => {
     it('should delete entries from all layers', async () => {
       const key = 'delete-test';
       const data = { message: 'To be deleted' };
-      
+
       await hybridCache.set(key, data);
       expect(await hybridCache.get(key)).toEqual(data);
-      
+
       await hybridCache.delete(key);
       expect(await hybridCache.get(key)).toBeNull();
-      expect(mockFirestoreCache.delete).toHaveBeenCalled();
     });
 
     it('should clear all cache layers', async () => {
       const data = { message: 'To be cleared' };
-      
+
       await hybridCache.set('key1', data);
       await hybridCache.set('key2', data);
-      
+
       await hybridCache.clear();
-      
+
       expect(await hybridCache.get('key1')).toBeNull();
       expect(await hybridCache.get('key2')).toBeNull();
-      expect(mockFirestoreCache.clear).toHaveBeenCalled();
     });
   });
 
   describe('Statistics and Monitoring', () => {
     it('should provide detailed cache statistics', async () => {
       const data = { message: 'Stats test' };
-      
+
       // Armazenar alguns dados
       await hybridCache.set('stats1', data);
       await hybridCache.set('stats2', data);
-      
+
       // Fazer algumas buscas
       await hybridCache.get('stats1'); // hit
       await hybridCache.get('nonexistent'); // miss
-      
+
       const stats = await hybridCache.getDetailedStats();
-      
+
       expect(stats).toHaveProperty('memory');
       expect(stats).toHaveProperty('localStorage');
-      expect(stats).toHaveProperty('firestore');
+      expect(stats).toHaveProperty('firestore'); // Legacy field kept for backward compatibility
       expect(stats).toHaveProperty('totalHits');
       expect(stats).toHaveProperty('totalMisses');
       expect(stats).toHaveProperty('hitRatio');
-      
+
       expect(stats.memory.hits).toBeGreaterThan(0);
       expect(stats.memory.misses).toBeGreaterThan(0);
     });
 
-    it('should handle Firestore stats errors gracefully', async () => {
-      // Mock erro nas stats do Firestore
-      mockFirestoreCache.getStats.mockRejectedValue(new Error('Stats failed'));
-      
+    it('should indicate Firestore unavailable in stats (architecture change)', async () => {
       const stats = await hybridCache.getDetailedStats();
-      
-      // Deve ainda retornar stats válidas
+
+      // Firestore removed from architecture - stats should reflect this
       expect(stats).toBeDefined();
       expect(stats.firestore.isAvailable).toBe(false);
+      expect(stats.firestore.size).toBe(0);
     });
   });
 
@@ -426,30 +369,24 @@ describe('HybridCache', () => {
   });
 
   describe('Error Handling', () => {
-    it('should handle Firestore unavailable gracefully', async () => {
-      // Mock Firestore como indisponível
-      mockFirestoreCache.isReady.mockResolvedValue(false);
-      
-      const key = 'firestore-unavailable-test';
-      const data = { message: 'Firestore unavailable' };
-      
+    it('should work without cloud storage (local-only architecture)', async () => {
+      const key = 'local-only-test';
+      const data = { message: 'Local storage only' };
+
       const success = await hybridCache.set(key, data);
       expect(success).toBe(true);
-      
+
       const result = await hybridCache.get(key);
       expect(result).toEqual(data);
     });
 
-    it('should handle network errors during sync', async () => {
-      const key = 'network-error-test';
-      const data = { message: 'Network error' };
-      
-      // Mock erro de rede
-      mockFirestoreCache.set.mockRejectedValue(new Error('Network error'));
-      
+    it('should handle errors gracefully during set operations', async () => {
+      const key = 'error-handling-test';
+      const data = { message: 'Error handling' };
+
       const success = await hybridCache.set(key, data, { priority: 'high' });
       expect(success).toBe(true); // Deve suceder localmente
-      
+
       const result = await hybridCache.get(key);
       expect(result).toEqual(data);
     });

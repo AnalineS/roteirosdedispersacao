@@ -10,7 +10,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { TrendingUp, AlertTriangle, Users, Clock, Target, BarChart3, Eye, Heart } from 'lucide-react';
+import { AlertTriangle, Users, Clock, Target, Heart } from 'lucide-react';
 
 interface UXMetrics {
   avg_response_time_ms: number;
@@ -43,7 +43,7 @@ interface UXAlert {
   category: string;
   title: string;
   description: string;
-  metrics: Record<string, any>;
+  metrics: Record<string, unknown>;
   auto_resolved: boolean;
 }
 
@@ -61,7 +61,7 @@ interface DashboardData {
     error_count: number;
     request_count: number;
   }>;
-  realtime_stats: Record<string, any>;
+  realtime_stats: Record<string, unknown>;
   system_health: {
     score: number;
     status: string;
