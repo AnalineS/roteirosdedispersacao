@@ -9,6 +9,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback, useRef, ReactNode } from 'react';
 import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 import { jwtClient, User as JWTUser, AuthResponse, GoogleAuthResponse } from '@/lib/auth/jwt-client';
+import { generateSecureId } from '@/utils/secureRandom';
 
 interface AuthenticationError {
   code?: string;
@@ -193,7 +194,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   });
 
   const createAnonymousUser = (): AuthUser => ({
-    uid: `anon-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    uid: `anon-${Date.now()}-${generateSecureId(9)}`,
     email: null,
     displayName: null,
     emailVerified: false,

@@ -7,6 +7,7 @@ import { PersonaRAGIntegration, type PersonaResponse } from './personaRAGIntegra
 import { RAGIntegrationService } from './ragIntegrationService';
 import { logEvent } from './analytics';
 import { conversationCache } from './simpleCache';
+import { generateSecureId } from '@/utils/secureRandom';
 
 export interface ChatSession {
   id: string;
@@ -101,11 +102,11 @@ export class ChatService {
    * Inicia uma nova sessão de chat
    */
   async startSession(
-    userId?: string, 
+    userId?: string,
     persona: 'dr_gasnelio' | 'ga' = 'dr_gasnelio',
     preferences?: Partial<ChatPreferences>
   ): Promise<ChatSession> {
-    const sessionId = `chat_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const sessionId = `chat_${Date.now()}_${generateSecureId(9)}`;
     
     const session: ChatSession = {
       id: sessionId,
@@ -189,7 +190,7 @@ export class ChatService {
 
       // Criar mensagem de resposta
       const assistantMessage: ChatMessage = {
-        id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        id: `msg_${Date.now()}_${generateSecureId(9)}`,
         sessionId,
         role: 'assistant',
         content: response.response,

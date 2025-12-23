@@ -10,6 +10,7 @@ import React, {
 } from "react";
 import { useTrackingContext } from "@/components/tracking/IntegratedTrackingProvider";
 import { safeLocalStorage } from "@/hooks/useClientStorage";
+import { generateSecureId } from "@/utils/secureRandom";
 
 // ============================================
 // TIPOS DO CONTEXTO GLOBAL
@@ -586,7 +587,7 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({
           type: "ADD_CHAT_MESSAGE",
           payload: {
             ...message,
-            id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            id: `msg_${Date.now()}_${generateSecureId(9)}`,
             timestamp: Date.now(),
           },
         }),
@@ -607,7 +608,7 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({
           type: "ADD_ERROR",
           payload: {
             ...error,
-            id: `err_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            id: `err_${Date.now()}_${generateSecureId(9)}`,
             timestamp: Date.now(),
           },
         }),

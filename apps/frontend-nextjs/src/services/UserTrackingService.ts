@@ -1,6 +1,7 @@
 'use client';
 
 import { safeLocalStorage } from '@/hooks/useClientStorage';
+import { generateSecureId } from '@/utils/secureRandom';
 
 // ============================================
 // SISTEMA DE TRACKING DE USUÁRIO
@@ -128,7 +129,7 @@ class UserTrackingService {
   // ============================================
 
   startSession(userId?: string): string {
-    const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const sessionId = `session_${Date.now()}_${generateSecureId(9)}`;
     const actualUserId = userId || this.generateAnonymousUserId();
     
     const session: UserSession = {
@@ -318,8 +319,8 @@ class UserTrackingService {
   private generateAnonymousUserId(): string {
     const stored = safeLocalStorage()?.getItem('anonymous-user-id');
     if (stored) return stored;
-    
-    const newId = `anon_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+    const newId = `anon_${Date.now()}_${generateSecureId(9)}`;
     safeLocalStorage()?.setItem('anonymous-user-id', newId);
     return newId;
   }
