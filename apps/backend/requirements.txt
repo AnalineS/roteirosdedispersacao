@@ -7,23 +7,23 @@
 # === CORE FLASK ===
 # SECURITY: CRITICAL - Updated 2024-09-24 - Latest Flask security patches
 Flask==3.1.2
-Flask-CORS==6.0.1  # SECURITY UPDATE: CVE-2024-6221, CVE-2024-6839, CVE-2024-6844, CVE-2024-6866
-Werkzeug==3.1.3
+Flask-CORS==6.0.2  # SECURITY UPDATE: CVE-2024-6221, CVE-2024-6839, CVE-2024-6844, CVE-2024-6866
+Werkzeug==3.1.4
 gunicorn==23.0.0   # SECURITY: Updated 2024-09-24 - CVE-2024-6827 fixed
 
 # === AI & ML CORE ===
 # Updated to latest secure version
 openai>=1.50.0
-sentence-transformers==5.1.1
+sentence-transformers==5.2.0
 chromadb>=0.4.0
-numpy==2.0.2
-scikit-learn==1.6.1
+numpy==2.3.5
+scikit-learn==1.8.0
 
 # === AUTHENTICATION & JWT ===
 # CRITICAL SECURITY FIX: JWT vulnerability
-authlib==1.6.4     # SECURITY UPDATE: CVE-2025-59420 fix - JWT/JWS critical header vulnerability
+authlib==1.6.6     # SECURITY UPDATE: CVE-2025-59420 fix - JWT/JWS critical header vulnerability
 PyJWT==2.10.1      # SECURITY: Latest secure version
-cryptography==46.0.1  # SECURITY: CRITICAL - Updated 2024-09-24 - Latest security patches
+cryptography==46.0.3  # SECURITY: CRITICAL - Updated 2024-09-24 - Latest security patches
 passlib>=1.7.4     # Password hashing
 
 # === SECURITY FRAMEWORK ===
@@ -32,11 +32,11 @@ Flask-Limiter>=3.0.0
 limits>=3.6.0
 
 # Input validation and sanitization
-bleach==6.2.0      # SECURITY: Latest secure version  
+bleach==6.3.0      # SECURITY: Latest secure version  
 email-validator>=2.0.0
 validators>=0.22.0
 defusedxml==0.7.1
-markupsafe==3.0.2
+markupsafe==3.0.3
 
 # Secrets management
 pynacl>=1.5.0
@@ -46,14 +46,14 @@ user-agents>=2.2.0
 ipaddress>=1.0.23
 
 # === VALIDATION & DATA ===
-pydantic==2.11.9   # SECURITY: Updated 2024-09-24 - Performance improvements and security patches
+pydantic==2.12.5   # SECURITY: Updated 2024-09-24 - Performance improvements and security patches
 jsonschema>=4.23.0
 
 # === HTTP & NETWORKING ===
 requests==2.32.5   # SECURITY: Updated beyond CVE-2023-32681
 httpx>=0.24.0
 urllib3>=1.26.0
-certifi==2025.8.3
+certifi==2025.11.12
 
 # === CACHE & PERFORMANCE ===
 # Hybrid cache: cachetools (memory) + Google Cloud Storage + SQLite fallback
@@ -61,10 +61,10 @@ cachetools>=5.3.2
 
 # === MONITORING & OBSERVABILITY ===
 # System monitoring
-psutil==7.1.0
+psutil==5.9.8
 
 # Google Cloud Operations Suite
-google-cloud-monitoring==2.27.2
+google-cloud-monitoring==2.28.0
 # google-cloud-logging MANTIDO em 3.10.0 devido a conflito de dependências
 # PROBLEMA: Versões 3.11.x+ requerem opentelemetry-api>=1.9.0 que conflita com semgrep
 #   - semgrep>=1.113.0 requer opentelemetry-api~=1.25.0 (versão específica)
@@ -77,22 +77,22 @@ google-cloud-monitoring==2.27.2
 # SEGURANÇA: 3.10.0 sem vulnerabilidades conhecidas (verificado 2025-10-07)
 # REVISÃO: 2025-04 (verificar se conflito foi resolvido upstream)
 # ALTERNATIVAS: Ver apps/backend/python_version_analysis.py para opções de upgrade
-google-cloud-logging==3.10.0
+google-cloud-logging==3.12.1
 google-cloud-storage>=2.10.0
 
 # Structured logging
 python-json-logger>=2.0.7
 
 # === TEXT PROCESSING ===
-nltk==3.9.1
+nltk==3.9.2
 
 # === MULTIMODAL PROCESSING ===
 # Computer vision and OCR
-opencv-python==4.10.0.84
+opencv-python==4.12.0.88
 Pillow==10.4.0
 pytesseract==0.3.13
-easyocr==1.7.1  # NOTE: Contains torch@2.8.0 with known vulnerabilities pending upstream fix
-scipy==1.14.0
+easyocr==1.7.2  # NOTE: Contains torch@2.8.0 with known vulnerabilities pending upstream fix
+scipy==1.16.3
 
 # File handling and validation  
 python-magic==0.4.27
@@ -100,9 +100,9 @@ python-magic==0.4.27
 # === DATABASE & VECTOR STORE ===
 # Supabase integration - FASE 3 RAG
 # Main client library (includes auth, storage, functions, realtime)
-supabase>=2.10.0
+supabase==2.25.1
 # PostgreSQL adapter with pgvector support
-psycopg2-binary==2.9.10
+psycopg2-binary==2.9.11
 
 # Optional SQL support
 sqlalchemy>=2.0.0
@@ -117,7 +117,7 @@ faiss-cpu>=1.7.4
 # cassandra-driver>=3.29.1  # Removed - heavy dependency
 
 # === UTILITIES ===
-python-dotenv==1.1.1
+python-dotenv==1.2.1
 typing-extensions>=4.11.0
 setuptools==78.1.1
 python-dateutil>=2.8.2
@@ -127,7 +127,7 @@ pyyaml>=6.0.1
 python-decouple>=3.8
 
 # === TESTING & QUALITY ASSURANCE ===
-pytest==8.4.2  # Updated for pytest 8.x migration (FASE 0 completion)
+pytest==7.4.4  # Updated for pytest 8.x migration (FASE 0 completion)
 pytest-cov==6.0.0  # Compatible with pytest 8.x
 pytest-mock==3.15.1
 pytest-asyncio==0.25.2  # Async test support for LGPD compliance tests
@@ -162,7 +162,7 @@ websockets>=11.0.0
 # ESSENTIAL for async medical processing - DO NOT REMOVE
 # Used in: tasks/ (chat_tasks.py, medical_tasks.py, analytics_tasks.py)
 # Purpose: Async processing of medical consultations, chat responses, analytics
-celery==5.5.3  # SECURITY: Critical asyncio fix for Python 3.13, improved task management
+celery==5.6.0  # SECURITY: Critical asyncio fix for Python 3.13, improved task management
 
 # === PERFORMANCE MONITORING ===
 py-spy>=0.3.14
@@ -194,3 +194,5 @@ geoip2>=4.7.0
 #    - requirements_production.txt (production optimizations)  
 #    - core/security/requirements_security.txt (security packages)
 # ============================================================================
+starlette>=0.49.1 # not directly required, pinned by Snyk to avoid a vulnerability
+zipp>=3.19.1 # not directly required, pinned by Snyk to avoid a vulnerability
