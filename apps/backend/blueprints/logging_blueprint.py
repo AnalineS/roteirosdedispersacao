@@ -12,6 +12,7 @@ import json
 from core.logging.cloud_logger import cloud_logger
 from core.alerts.notification_system import alert_manager
 from utils.auth_utils import require_auth
+from core.lgpd import get_deletion_service
 
 logging_bp = Blueprint('logging', __name__, url_prefix='/api/logging')
 
@@ -274,26 +275,23 @@ def delete_user_data():
             'ip_address': request.remote_addr
         })
 
-        # DEVELOPMENT MODE: Mock deletion for testing
-        # Production implementation would:
-        # - Delete user data from database
-        # - Delete personal logs from Cloud Logging
-        # - Notify integrated systems
-        # - Queue async processing if needed
+        # PRODUCTION: Real data deletion using LGPD service
+        deletion_service = get_deletion_service()
+        result = deletion_service.delete_user_data(user_id, reason)
+
+        # Convert DeletionResult to dict for JSON response
         deletion_result = {
-            "deleted_records": {
-                "database": 0,  # Production: actual deletion count
-                "cloud_logs": 0,  # Production: logs deletion count
-                "local_storage": 0  # Not applicable
-            },
-            "processing_time": "immediate",
-            "status": "mock_completed"  # Indicates development mode
+            "deleted_records": result.deleted_records,
+            "processing_time": f"{result.processing_time:.2f}s",
+            "status": "completed" if result.success else "partial_failure",
+            "errors": result.errors if result.errors else []
         }
 
         # Log do resultado
         cloud_logger.lgpd_event('data_deletion_completed', user_id, {
             'deletion_result': deletion_result,
-            'request_id': request_id
+            'request_id': request_id,
+            'deletion_id': result.deletion_id
         })
 
         # Alertar sobre deleção
@@ -310,9 +308,9 @@ def delete_user_data():
         ))
 
         return jsonify({
-            "success": True,
-            "message": "Data deletion request processed",
-            "deletion_id": f"del_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}",
+            "success": result.success,
+            "message": "Data deletion completed" if result.success else "Data deletion partially completed with errors",
+            "deletion_id": result.deletion_id,
             "result": deletion_result
         })
 
