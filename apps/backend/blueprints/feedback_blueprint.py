@@ -147,10 +147,14 @@ def update_feedback_stats(rating: int, persona_id: Optional[str] = None):
         cache.set(f"feedback:stats:{persona_id}", persona_stats, ttl=86400 * 7)
 
 def check_rate_limit(endpoint_type: str = 'default'):
-    """Decorator simplificado para rate limiting"""
+    """
+    Decorator simplificado para rate limiting
+    Note: Global rate limiting is handled at application level via production_rate_limiter
+    This placeholder allows for future endpoint-specific rate limiting if needed
+    """
     def decorator(f):
         def wrapper(*args, **kwargs):
-            # TODO: Implementar rate limiting específico para feedback
+            # Rate limiting handled at app level - see core.security.production_rate_limiter
             return f(*args, **kwargs)
         wrapper.__name__ = f.__name__
         return wrapper
@@ -242,13 +246,14 @@ def submit_feedback():
             if not isinstance(rating, int) or rating < 1 or rating > 5:
                 rating = 5
 
+            # Security fix: Never echo user input back in response
+            # Store sanitized data but don't return it to prevent XSS/SQL injection
             response = {
                 "status": "received",
-                "feedback": sanitized_feedback,
+                "feedback_length": len(sanitized_feedback),
                 "rating": rating,
-                "user_id": sanitized_user_id,
-                "message_id": sanitized_message_id,
-                "timestamp": start_time.isoformat()
+                "timestamp": start_time.isoformat(),
+                "message": "Feedback received successfully"
             }
 
             logger.info(f"[{request_id}] Feedback simples sanitizado e processado")
