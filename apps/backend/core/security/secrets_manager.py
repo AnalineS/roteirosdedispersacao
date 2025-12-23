@@ -392,11 +392,11 @@ class SecretsManager:
                     del self.secrets_cache[name]
                 
                 self._log_access(name, 'DELETE', success=True)
-                security_logger.info(f"Secret '{name}' removido com sucesso")
+                security_logger.info(f"Secret '{self._mask_secret_name(name)}' removido com sucesso")
                 return True
                 
             except Exception as e:
-                security_logger.error(f"Erro ao remover secret '{name}': {e}")
+                security_logger.error(f"Erro ao remover secret '{self._mask_secret_name(name)}': Falha na operação")
                 self._log_access(name, 'DELETE', success=False, error=str(e))
                 return False
     
