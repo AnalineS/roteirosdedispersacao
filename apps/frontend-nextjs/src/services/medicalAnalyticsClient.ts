@@ -5,6 +5,7 @@
  */
 
 import { safeLocalStorage } from '@/hooks/useClientStorage';
+import { generateSecureId } from '@/utils/secureRandom';
 
 interface MedicalEvent {
   event_type: 'medical_interaction' | 'medical_error' | 'clinical_task' | 'educational_progress';
@@ -49,7 +50,7 @@ class MedicalAnalyticsClient {
   }
 
   private generateSessionId(): string {
-    return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    return `session_${Date.now()}_${generateSecureId(9)}`;
   }
 
   /**

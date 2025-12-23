@@ -14,6 +14,7 @@ import ShareProgress from '../achievements/ShareProgress';
 import { useHapticFeedback } from '@/utils/hapticFeedback';
 import { useSocialProfile, type ExtendedSocialProfile } from '@/hooks/useSocialProfile';
 import { useSafeAuth as useAuth } from '@/hooks/useSafeAuth';
+import { generateSecureId } from '@/utils/secureRandom';
 
 interface Achievement {
   id: string;
@@ -550,7 +551,7 @@ export default function SocialProfile({
           completedModules: profile.stats?.completedModules || 0,
           streak: profile.stats?.streak || profile.stats?.streakDays || 0,
           recent_achievements: (profile.achievements || []).slice(0, 3).map((achievement: string) => ({
-            id: `ach-${Math.random().toString(36).substr(2, 9)}`,
+            id: `ach-${generateSecureId(9)}`,
             name: achievement,
             description: 'Conquista desbloqueada',
             badge_url: '',

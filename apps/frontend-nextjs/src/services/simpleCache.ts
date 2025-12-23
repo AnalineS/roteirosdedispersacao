@@ -4,6 +4,7 @@
  */
 
 import LRUCache from '@/utils/apiCache';
+import { generateSecureId } from '@/utils/secureRandom';
 
 // Interfaces específicas para Analytics
 interface AnalyticsEvent {
@@ -116,12 +117,12 @@ export class FirestoreCache<T> {
 
   // Métodos específicos para Analytics
   async saveAnalyticsEvent(event: AnalyticsEvent): Promise<void> {
-    const eventId = event.id || `event_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const eventId = event.id || `event_${Date.now()}_${generateSecureId(9)}`;
     await this.set(eventId, event as T);
   }
 
   async startAnalyticsSession(sessionData: AnalyticsSession): Promise<void> {
-    const sessionId = sessionData.id || `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const sessionId = sessionData.id || `session_${Date.now()}_${generateSecureId(9)}`;
     await this.set(sessionId, sessionData as T);
   }
 
@@ -142,7 +143,7 @@ export class FirestoreCache<T> {
   }
 
   async trackMedicalMetric(metric: MedicalMetric): Promise<void> {
-    const metricId = `metric_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const metricId = `metric_${Date.now()}_${generateSecureId(9)}`;
     await this.set(metricId, metric as T);
   }
 

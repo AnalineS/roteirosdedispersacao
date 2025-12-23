@@ -4,6 +4,8 @@
  * Score atual: 74/100 → Meta: 90+/100
  */
 
+import { generateSecureId } from '@/utils/secureRandom';
+
 // Tipos para tracking UX
 export interface UXEvent {
   category: 'cognitive_load' | 'mobile_experience' | 'onboarding' | 'navigation' | 'engagement';
@@ -86,8 +88,8 @@ class UXAnalytics {
       return `ux_${Date.now()}_${array[0].toString(36)}${array[1].toString(36)}`;
     }
 
-    // Último fallback para compatibilidade extrema
-    return `ux_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    // Fallback seguro usando generateSecureId
+    return `ux_${Date.now()}_${generateSecureId(9)}`;
   }
 
   private initializeTracking() {

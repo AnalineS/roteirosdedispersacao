@@ -23,6 +23,7 @@
 'use client';
 
 import React, { useCallback, useContext, createContext, useRef } from 'react';
+import { generateSecureId } from '@/utils/secureRandom';
 
 export type ErrorSeverity = 'low' | 'medium' | 'high' | 'critical';
 
@@ -73,7 +74,7 @@ export const ErrorHandlerProvider: React.FC<{
   const errorCount = useRef(0);
 
   const generateErrorId = useCallback((): string => {
-    return `err_${Date.now().toString(36)}_${Math.random().toString(36).substr(2, 9)}`;
+    return `err_${Date.now().toString(36)}_${generateSecureId(9)}`;
   }, []);
 
   const calculateSeverity = useCallback((error: Error, customSeverity?: ErrorSeverity): ErrorSeverity => {

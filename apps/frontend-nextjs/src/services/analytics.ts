@@ -1,4 +1,5 @@
 import ReactGA from 'react-ga4';
+import { generateSecureId } from '@/utils/secureRandom';
 
 // Google Analytics Measurement ID - Configured via GitHub secrets
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || '';
@@ -284,7 +285,7 @@ let currentSessionId: string | null = null;
 
 const getCurrentSessionId = (): string => {
   if (!currentSessionId) {
-    currentSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    currentSessionId = `session_${Date.now()}_${generateSecureId(9)}`;
   }
   return currentSessionId;
 };
