@@ -191,3 +191,5 @@ geoip2>=4.7.0
 # ============================================================================
 starlette>=0.49.1 # not directly required, pinned by Snyk to avoid a vulnerability
 zipp>=3.19.1 # not directly required, pinned by Snyk to avoid a vulnerability
+marshmallow>=3.26.2 # not directly required, pinned by Snyk to avoid a vulnerability
+torch>=2.2.0 # not directly required, pinned by Snyk to avoid a vulnerability
