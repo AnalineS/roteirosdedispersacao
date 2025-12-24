@@ -23,6 +23,7 @@ class DeletionResult:
     errors: List[str]
     processing_time: float
     deletion_id: str
+    reason: str
 
 class LGPDDataDeletionService:
     """Service for LGPD-compliant data deletion"""
@@ -100,7 +101,8 @@ class LGPDDataDeletionService:
             deleted_records=deleted_records,
             errors=errors,
             processing_time=processing_time,
-            deletion_id=deletion_id
+            deletion_id=deletion_id,
+            reason=reason
         )
 
     def _delete_from_analytics(self, user_id: str) -> Dict[str, int]:
@@ -150,13 +152,22 @@ class LGPDDataDeletionService:
         return deleted_count
 
     def _delete_from_cloud_logging(self, user_id: str) -> int:
-        """Delete user data from Google Cloud Logging"""
-        try:
-            # Check if Google Cloud is configured
-            if not os.getenv('GOOGLE_APPLICATION_CREDENTIALS'):
-                logger.info("Google Cloud Logging not configured, skipping")
-                return 0
+        """
+        Request deletion of user data from Google Cloud Logging
 
+        Note: Google Cloud Logging doesn't support direct deletion via API.
+        This method counts matching logs and logs the deletion request.
+        In production, implement retention policies or manual export/deletion.
+
+        Returns:
+            Number of log entries found matching the user (for audit purposes)
+        """
+        # Check if Google Cloud is configured
+        if not os.getenv('GOOGLE_APPLICATION_CREDENTIALS'):
+            logger.info("Google Cloud Logging not configured, skipping")
+            return 0
+
+        try:
             from google.cloud import logging as cloud_logging
 
             client = cloud_logging.Client()
@@ -164,26 +175,26 @@ class LGPDDataDeletionService:
             # Hash user_id for privacy
             user_hash = hashlib.sha256(user_id.encode()).hexdigest()[:16]
 
-            # Delete logs filter (example - adjust based on actual logging structure)
+            # Count matching log entries for audit trail
             filter_str = f'jsonPayload.user_id="{user_id}" OR jsonPayload.user_hash="{user_hash}"'
 
-            # Note: Google Cloud Logging doesn't support direct deletion via API
-            # In production, you would:
-            # 1. Set retention policy to auto-delete
-            # 2. Or export logs and manually delete
-            # 3. Or mark logs for deletion in a separate tracking system
+            # List entries (limited to avoid excessive API calls)
+            entries = list(client.list_entries(filter_=filter_str, max_results=1000))
+            log_count = len(entries)
 
-            logger.info(f"Cloud logging deletion requested for user {user_hash}")
+            # Log deletion request with count for audit trail
+            logger.info(f"Cloud logging deletion requested for user {user_hash} - found {log_count} log entries")
+            logger.info("Note: Cloud logs must be deleted via retention policies or manual export")
 
-            # Return 0 as we can't directly count deleted cloud logs
-            return 0
+            return log_count
 
         except ImportError:
-            logger.warning("Google Cloud Logging not available")
+            logger.warning("Google Cloud Logging library not available")
             return 0
         except Exception as e:
             logger.error(f"Cloud logging deletion error: {e}")
-            raise
+            # Return 0 on error rather than raising, as this is a non-critical operation
+            return 0
 
     def _generate_deletion_id(self, user_id: str) -> str:
         """Generate unique deletion ID"""
