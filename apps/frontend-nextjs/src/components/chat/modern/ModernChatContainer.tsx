@@ -17,6 +17,7 @@ import SmartIndicators from './SmartIndicators';
 import AccessibleChatInput from '../accessibility/AccessibleChatInput';
 import AccessibleMessageBubble from '../accessibility/AccessibleMessageBubble';
 import { useChatAccessibility } from '../accessibility/ChatAccessibilityProvider';
+import Skeleton from '@/components/ui/Skeleton';
 // KnowledgeStats imported above
 
 interface ModernChatContainerProps {
@@ -104,7 +105,11 @@ const ModernChatContainer = memo(function ModernChatContainer({
   }, []);
 
   // Área de mensagens
-  const MessagesArea = () => (
+  const MessagesArea = () => {
+    // Initial loading state: no messages yet AND loading is true
+    const isInitialLoading = messages.length === 0 && isLoading;
+
+    return (
     <div
       className="messages-area"
       role="log"
@@ -114,7 +119,7 @@ const ModernChatContainer = memo(function ModernChatContainer({
       style={{
         flex: 1,
         overflowY: 'auto',
-        padding: isMobile ? 
+        padding: isMobile ?
           `${modernChatTheme.spacing.lg} ${modernChatTheme.spacing.md}` :
           `${modernChatTheme.spacing.xl} ${modernChatTheme.spacing.xl}`,
         scrollBehavior: 'smooth',
@@ -128,6 +133,24 @@ const ModernChatContainer = memo(function ModernChatContainer({
         e.currentTarget.style.boxShadow = 'none';
       }}
     >
+      {/* Issue #329: Skeleton loading states during initial load */}
+      {isInitialLoading && (
+        <div
+          role="status"
+          aria-live="polite"
+          aria-label="Carregando mensagens do chat"
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: modernChatTheme.spacing.md
+          }}
+        >
+          <Skeleton variant="list" height="60px" aria-label="Carregando primeira mensagem" />
+          <Skeleton variant="list" height="60px" aria-label="Carregando segunda mensagem" />
+          <Skeleton variant="list" height="60px" aria-label="Carregando terceira mensagem" />
+        </div>
+      )}
+
       {messages.map((message, index) => {
         // Encontrar a mensagem anterior (pergunta do usuário) para contexto de feedback
         const previousMessage = message.role === 'assistant' && index > 0 
@@ -174,7 +197,8 @@ const ModernChatContainer = memo(function ModernChatContainer({
       {/* Scroll anchor */}
       <div ref={messagesEndRef} />
     </div>
-  );
+    );
+  };
 
   return (
     <div

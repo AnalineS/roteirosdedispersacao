@@ -36,13 +36,21 @@ export function ChatAccessibilityProvider({ children }: ChatAccessibilityProvide
     }
   }, []);
 
-  // Announce new messages with appropriate context
+  // Announce new messages with appropriate context - Enhanced for Issue #329
   const announceNewMessage = useCallback((role: 'user' | 'assistant', content: string, persona?: string) => {
     const speaker = role === 'user' ? 'Você' : (persona || 'Assistente');
-    const announcement = role === 'user' 
-      ? `Você disse: ${content}`
-      : `${speaker} respondeu: ${content}`;
-    
+
+    // Truncate long messages for better screen reader experience (max 200 chars)
+    const truncatedContent = content.length > 200
+      ? `${content.substring(0, 200)}... (mensagem longa, ${content.length} caracteres)`
+      : content;
+
+    // Enhanced announcements with persona context
+    const announcement = role === 'user'
+      ? `Você disse: ${truncatedContent}`
+      : `Nova resposta de ${speaker}: ${truncatedContent}`;
+
+    // Use assertive for assistant messages to interrupt current announcements
     announceMessage(announcement, role === 'assistant' ? 'assertive' : 'polite');
   }, [announceMessage]);
 

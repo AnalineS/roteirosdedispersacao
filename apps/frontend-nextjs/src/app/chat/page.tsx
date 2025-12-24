@@ -306,11 +306,13 @@ export default function ChatPage() {
 
   return (
     <ChatAccessibilityProvider>
-      <EducationalLayout 
+      <EducationalLayout
         currentPersona={currentPersona?.name}
         showBreadcrumbs={false}
         footerVariant="simple"
       >
+      {/* Semantic H1 for WCAG 2.1 AA compliance - Issue #329 */}
+      <h1 className="sr-only">Chat com Assistentes Virtuais de Educação sobre Hanseníase</h1>
       {/* LGPD Compliance Modal */}
       {!lgpdLoading && !hasConsent && (
         <LGPDCompliance 
