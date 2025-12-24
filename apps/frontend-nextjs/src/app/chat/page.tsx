@@ -25,9 +25,11 @@ import { useIntelligentRouting } from '@/hooks/useIntelligentRouting';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useToast } from '@/hooks/useToast';
+import { useRegenerateTracking } from '@/hooks/useRegenerateTracking';
 import { theme } from '@/config/theme';
 import { SidebarLoader } from '@/components/LoadingSpinner';
 import ToastContainer from '@/components/ui/ToastContainer';
+import FavoritesModal from '@/components/chat/modern/FavoritesModal';
 import { type ChatMessage } from '@/types/api';
 import { type ValidPersonaId } from '@/types/personas';
 
@@ -43,9 +45,11 @@ export default function ChatPage() {
   // Chat feedback hook
   const { triggerSendFeedback, triggerReceiveFeedback, triggerErrorFeedback } = useChatFeedback();
 
-  // Issue #331: Favorites and toast hooks
-  const { isFavorite, toggleFavorite } = useFavorites();
+  // Issue #331: Favorites, toast, and regenerate tracking hooks
+  const { favorites, isFavorite, toggleFavorite, removeFavorite, exportFavorites } = useFavorites();
   const { toasts, dismissToast, success: showSuccess, error: showError } = useToast();
+  const { canRegenerate, trackRegenerate, getRegenerateCount, maxAttempts } = useRegenerateTracking();
+  const [showFavoritesModal, setShowFavoritesModal] = useState(false);
 
   // Marcar que o usuário visitou o chat
   useEffect(() => {
@@ -292,18 +296,34 @@ export default function ChatPage() {
     }
   }, [toggleFavorite, isFavorite, showSuccess]);
 
-  // Issue #331: Handler para regenerar resposta
+  // Issue #331: Handler para regenerar resposta (with limit tracking)
   const handleRegenerateMessage = useCallback(async (message: ChatMessage) => {
+    // Check regenerate limit
+    if (!canRegenerate(message.id)) {
+      showError(`Limite de ${maxAttempts} tentativas atingido para esta mensagem`);
+      return;
+    }
+
+    // Track regenerate attempt
+    trackRegenerate(message.id);
+
     // Find the previous user message
     const messageIndex = currentMessages.findIndex(m => m.id === message.id);
     if (messageIndex > 0) {
       const previousUserMessage = currentMessages.slice(0, messageIndex).reverse().find(m => m.role === 'user');
       if (previousUserMessage && selectedPersona) {
-        showSuccess('Gerando nova resposta...');
-        await sendMessageWithHistory(previousUserMessage.content, selectedPersona);
+        const count = getRegenerateCount(message.id) + 1;
+        showSuccess(`Gerando nova resposta (tentativa ${count}/${maxAttempts})...`);
+
+        // Modify prompt to request different explanation
+        const modifiedPrompt = count > 1
+          ? `${previousUserMessage.content}\n\n(Por favor, explique de forma diferente da resposta anterior)`
+          : previousUserMessage.content;
+
+        await sendMessageWithHistory(modifiedPrompt, selectedPersona);
       }
     }
-  }, [currentMessages, selectedPersona, sendMessageWithHistory, showSuccess]);
+  }, [currentMessages, selectedPersona, sendMessageWithHistory, showSuccess, showError, canRegenerate, trackRegenerate, getRegenerateCount, maxAttempts]);
   
   const handleNewConversation = (personaId: string) => {
     createConversation(personaId);
@@ -482,6 +502,16 @@ export default function ChatPage() {
 
         {/* Issue #331: Toast notifications */}
         <ToastContainer toasts={toasts} onDismiss={dismissToast} />
+
+        {/* Issue #331: Favorites modal */}
+        <FavoritesModal
+          isOpen={showFavoritesModal}
+          onClose={() => setShowFavoritesModal(false)}
+          favorites={favorites}
+          onRemoveFavorite={removeFavorite}
+          onExport={exportFavorites}
+          isMobile={isMobile}
+        />
       </div>
       </EducationalLayout>
     </ChatAccessibilityProvider>
