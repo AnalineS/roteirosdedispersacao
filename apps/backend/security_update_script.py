@@ -104,7 +104,7 @@ class SecurityUpdater:
 
         # Create pip freeze backup
         pip_freeze = self.run_command("pip freeze")
-        if pip_freeze:
+        if pip_freeze and isinstance(pip_freeze, str):
             with open(self.backup_dir / f"pip_freeze_backup_{datetime.datetime.now().strftime('%Y%m%d')}.txt", 'w') as f:
                 f.write(pip_freeze)
 
@@ -118,7 +118,7 @@ class SecurityUpdater:
         current_versions = {}
         for package in self.critical_updates.keys():
             version_output = self.run_command(f"pip show {package}")
-            if version_output:
+            if version_output and isinstance(version_output, str):
                 for line in version_output.split('\n'):
                     if line.startswith('Version:'):
                         current_versions[package] = line.split(':')[1].strip()
