@@ -166,11 +166,13 @@ class SecurityUpdater:
 try:
     import authlib.jose as jose
     from authlib.jose import jwt
+    import secrets
 
     # Test JWT creation and verification
     header = {"alg": "HS256"}
     payload = {"sub": "test", "exp": 9999999999}
-    secret = "test_secret_key_for_testing_only"
+    # Generate cryptographically secure random test secret (CWE-547 fix)
+    secret = secrets.token_hex(32)
 
     # Create token
     token = jwt.encode(header, payload, secret)
