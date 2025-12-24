@@ -96,7 +96,7 @@ export class UnifiedErrorSystem extends Component<UnifiedErrorSystemProps, Unifi
         severity: 'critical',
         context: {
           componentStack: errorInfo.componentStack,
-          digest: errorInfo.digest
+          digest: (errorInfo as ErrorInfo & { digest?: string }).digest
         }
       });
     }
