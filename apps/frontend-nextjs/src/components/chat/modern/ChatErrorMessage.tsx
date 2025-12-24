@@ -1,8 +1,9 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ClassifiedError, getErrorIcon } from '@/utils/errorClassification';
 import { modernChatTheme } from '@/config/modernTheme';
+import { useChatAccessibility } from '../accessibility/ChatAccessibilityProvider';
 
 interface ChatErrorMessageProps {
   error: ClassifiedError;
@@ -19,7 +20,35 @@ export default function ChatErrorMessage({
   maxRetries = 3,
   isRetrying = false
 }: ChatErrorMessageProps) {
+  const { announceSystemStatus } = useChatAccessibility();
   const canShowRetryButton = error.canRetry && onRetry && retryCount < maxRetries;
+
+  // Issue #330: Announce error via screen reader
+  useEffect(() => {
+    announceSystemStatus(`Erro: ${error.userMessage}`, 'error');
+  }, [error.userMessage, announceSystemStatus]);
+
+  // Issue #330: Announce retry status
+  useEffect(() => {
+    if (isRetrying) {
+      announceSystemStatus(`Tentando novamente (tentativa ${retryCount + 1} de ${maxRetries})`, 'info');
+    }
+  }, [isRetrying, retryCount, maxRetries, announceSystemStatus]);
+
+  // Issue #330: Keyboard shortcut Alt+R for retry
+  useEffect(() => {
+    if (!canShowRetryButton || isRetrying) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.altKey && e.key.toLowerCase() === 'r') {
+        e.preventDefault();
+        onRetry?.();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [canShowRetryButton, isRetrying, onRetry]);
 
   return (
     <div
@@ -81,7 +110,8 @@ export default function ChatErrorMessage({
         <button
           onClick={onRetry}
           disabled={isRetrying}
-          aria-label="Tentar novamente"
+          aria-label="Tentar novamente (Alt+R)"
+          title="Tentar novamente (Alt+R)"
           style={{
             alignSelf: 'flex-start',
             padding: `${modernChatTheme.spacing.sm} ${modernChatTheme.spacing.md}`,
