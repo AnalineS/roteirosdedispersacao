@@ -166,6 +166,9 @@ test-results/
 *.sqlite3
 *.db-journal
 
+# Test temporary files
+apps/backend/config/_Users_*/
+
 # Cache
 .cache/
 .parcel-cache/
