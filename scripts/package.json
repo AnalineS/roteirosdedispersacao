@@ -9,9 +9,9 @@
   },
   "dependencies": {
     "@octokit/rest": "^20.0.0",
-    "@google-cloud/monitoring": "^3.0.0"
+    "@google-cloud/monitoring": "^4.0.0"
   },
   "keywords": ["github", "automation", "medical", "documentation"],
-  "author": "Ana Lívia",
+  "author": "Ana",
   "license": "MIT"
 }
