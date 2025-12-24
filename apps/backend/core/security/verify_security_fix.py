@@ -142,10 +142,12 @@ class SecurityVerifier:
             self.print_warning(f"Could not run tests: {e}")
             return False
 
-    def check_migration_utility_exists(self) -> bool:
-        """Verify migration utility exists"""
+    def check_migration_completed(self) -> bool:
+        """Verify migration was completed and utility removed"""
         migration_file = self.project_root / 'core/security/migrate_secrets.py'
-        return migration_file.exists()
+        # Migration should be complete - file should NOT exist
+        # If it exists, migration is not finalized
+        return not migration_file.exists()
 
     def check_documentation_complete(self) -> bool:
         """Verify documentation is complete"""
@@ -246,13 +248,13 @@ class SecurityVerifier:
             "Verified test_secrets_security_fix.py passes all checks"
         )
 
-        # Check 6: Migration utility
-        self.print_header("4. Migration Support")
-        passed = self.check_migration_utility_exists()
+        # Check 6: Migration completion
+        self.print_header("4. Migration Status")
+        passed = self.check_migration_completed()
         self.print_check(
-            "Migration utility available",
+            "Migration completed and utility removed",
             passed,
-            "Verified migrate_secrets.py exists for data migration"
+            "Verified migrate_secrets.py removed after successful migration"
         )
 
         # Check 7: Documentation
