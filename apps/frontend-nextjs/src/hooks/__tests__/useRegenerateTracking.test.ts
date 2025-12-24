@@ -164,7 +164,7 @@ describe('useRegenerateTracking - Issue #331', () => {
       expect(result.current.getRegenerateCount('msg-2')).toBe(1);
 
       act(() => {
-        result.current.resetAllRegenerateCounts();
+        result.current.clearAllCounts();
       });
 
       expect(result.current.getRegenerateCount('msg-1')).toBe(0);

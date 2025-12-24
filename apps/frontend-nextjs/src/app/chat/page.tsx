@@ -492,6 +492,7 @@ export default function ChatPage() {
           onToggleFavorite={handleToggleFavorite}
           onRegenerateMessage={handleRegenerateMessage}
           isFavorite={isFavorite}
+          canRegenerate={canRegenerate}
           favoritesCount={favorites.length}
           onShowFavorites={() => setShowFavoritesModal(true)}
         />

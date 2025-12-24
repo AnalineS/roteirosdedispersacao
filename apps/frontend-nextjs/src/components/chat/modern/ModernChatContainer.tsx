@@ -73,6 +73,7 @@ interface ModernChatContainerProps {
   onToggleFavorite?: (message: ChatMessage) => void;
   onRegenerateMessage?: (message: ChatMessage) => void;
   isFavorite?: (messageId: string) => boolean;
+  canRegenerate?: (messageId: string) => boolean;
   favoritesCount?: number;
   onShowFavorites?: () => void;
 }
@@ -106,6 +107,7 @@ const ModernChatContainer = memo(function ModernChatContainer({
   onToggleFavorite,
   onRegenerateMessage,
   isFavorite,
+  canRegenerate,
   favoritesCount = 0,
   onShowFavorites
 }: ModernChatContainerProps) {
@@ -216,7 +218,7 @@ const ModernChatContainer = memo(function ModernChatContainer({
                 onToggleFavorite={() => onToggleFavorite(message)}
                 onCopy={() => onCopyMessage(message)}
                 onRegenerate={message.role === 'assistant' && onRegenerateMessage ? () => onRegenerateMessage(message) : undefined}
-                canRegenerate={message.role === 'assistant' && !!onRegenerateMessage}
+                canRegenerate={message.role === 'assistant' && !!onRegenerateMessage && (!canRegenerate || canRegenerate(message.id))}
               />
             )}
           </div>
