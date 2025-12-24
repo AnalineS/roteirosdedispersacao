@@ -336,25 +336,32 @@ class ResponseOptimizer:
         """Otimiza chamadas de API com timeout e retry"""
         max_retries = 2
         timeout = 5  # segundos
-        
+        last_result = None
+
         for attempt in range(max_retries):
             try:
                 start = time.time()
                 result = api_func(*args, timeout=timeout, **kwargs)
                 elapsed = time.time() - start
-                
+                last_result = result
+
                 if elapsed < 1.5:
                     return result
                 elif attempt < max_retries - 1:
                     logger.warning(f"API lenta ({elapsed:.2f}s), tentando novamente...")
                     timeout = 3  # Reduzir timeout na próxima tentativa
-                
+                # Last attempt with slow response - return it anyway
+                else:
+                    logger.warning(f"API concluída com sucesso mas lenta ({elapsed:.2f}s) na última tentativa")
+                    return result
+
             except Exception as e:
                 if attempt == max_retries - 1:
                     logger.error(f"API falhou após {max_retries} tentativas: {e}")
                     raise
-        
-        return result
+
+        # Fallback (should never reach here due to explicit returns/raises above)
+        return last_result
 
 # Performance decorators aprimorados
 def cache_response(ttl_seconds: int = 300):
