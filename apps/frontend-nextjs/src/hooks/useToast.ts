@@ -22,6 +22,11 @@ export interface Toast {
 export function useToast() {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
+  // Dismiss a specific toast
+  const dismissToast = useCallback((id: string) => {
+    setToasts(prev => prev.filter(toast => toast.id !== id));
+  }, []);
+
   // Show a new toast
   const showToast = useCallback((
     message: string,
@@ -47,12 +52,7 @@ export function useToast() {
     }
 
     return id;
-  }, []);
-
-  // Dismiss a specific toast
-  const dismissToast = useCallback((id: string) => {
-    setToasts(prev => prev.filter(toast => toast.id !== id));
-  }, []);
+  }, [dismissToast]);
 
   // Clear all toasts
   const clearToasts = useCallback(() => {
