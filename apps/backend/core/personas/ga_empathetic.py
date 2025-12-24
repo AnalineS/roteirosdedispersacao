@@ -279,8 +279,8 @@ Responda seguindo seu jeito carinhoso e acessível, sempre lembrando que você e
     
     def add_emotional_support(self, response_type="general"):
         """Adiciona frase de apoio emocional apropriada"""
+        import random
         if response_type in self.emotional_support:
-            import random
             return random.choice(self.emotional_support[response_type])
         return random.choice(self.emotional_support["encouragement"])
 
