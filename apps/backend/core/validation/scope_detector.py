@@ -10,8 +10,7 @@ Versão: 1.0
 
 import json
 import re
-from typing import Dict, List, Tuple, Optional
-from pathlib import Path
+from typing import Dict, Optional
 
 class ScopeDetectionSystem:
     """

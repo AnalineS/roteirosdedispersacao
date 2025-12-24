@@ -9,11 +9,10 @@ Fase: Ativação de Monitoramento UX
 """
 
 import time
-import json
 import logging
 import threading
-from datetime import datetime, timedelta, timezone
-from typing import Dict, Any, List, Optional, Callable
+from datetime import datetime, timedelta
+from typing import Dict, Any, List, Optional
 from collections import defaultdict, deque
 from dataclasses import dataclass, asdict
 

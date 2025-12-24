@@ -22,7 +22,7 @@ import weakref
 import threading
 import importlib
 import logging
-from typing import Dict, Any, Optional, Set, Callable
+from typing import Dict, Any, Optional, Callable
 from datetime import datetime, timedelta
 from collections import defaultdict
 import time

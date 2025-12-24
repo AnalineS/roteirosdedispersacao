@@ -7,11 +7,10 @@ Otimizações finais de segurança para produção
 import re
 import time
 import logging
-import hashlib
-from datetime import datetime, timedelta
-from typing import Dict, Any, List, Optional, Set
+from datetime import datetime
+from typing import Dict, Any, List
 from functools import wraps
-from flask import Flask, request, jsonify, g
+from flask import Flask, request, jsonify
 import threading
 from collections import defaultdict, deque
 

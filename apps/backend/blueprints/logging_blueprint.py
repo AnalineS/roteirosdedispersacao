@@ -7,9 +7,9 @@ from flask import Blueprint, request, jsonify, current_app
 import asyncio
 from datetime import datetime, timezone
 import hashlib
-import json
 
 from core.logging.cloud_logger import cloud_logger
+from core.logging.sanitizer import sanitize_error
 from core.alerts.notification_system import alert_manager
 from utils.auth_utils import require_auth
 from core.lgpd import get_deletion_service
@@ -83,7 +83,7 @@ def receive_frontend_log():
         })
 
     except Exception as e:
-        current_app.logger.error(f"Error processing frontend log: {e}")
+        current_app.logger.error("Error processing frontend log: %s", sanitize_error(e))
         return jsonify({"error": "Internal server error"}), 500
 
 @logging_bp.route('/lgpd-event', methods=['POST'])
@@ -132,7 +132,7 @@ def log_lgpd_event():
         })
 
     except Exception as e:
-        current_app.logger.error(f"Error logging LGPD event: {e}")
+        current_app.logger.error("Error logging LGPD event: %s", sanitize_error(e))
         return jsonify({"error": "Internal server error"}), 500
 
 @logging_bp.route('/medical-interaction', methods=['POST'])
@@ -167,7 +167,7 @@ def log_medical_interaction():
         })
 
     except Exception as e:
-        current_app.logger.error(f"Error logging medical interaction: {e}")
+        current_app.logger.error("Error logging medical interaction: %s", sanitize_error(e))
         return jsonify({"error": "Internal server error"}), 500
 
 @logging_bp.route('/analytics', methods=['POST'])
@@ -206,7 +206,7 @@ def log_analytics_event():
         })
 
     except Exception as e:
-        current_app.logger.error(f"Error logging analytics event: {e}")
+        current_app.logger.error("Error logging analytics event: %s", sanitize_error(e))
         return jsonify({"error": "Internal server error"}), 500
 
 @logging_bp.route('/health', methods=['GET'])
@@ -315,7 +315,7 @@ def delete_user_data():
         })
 
     except Exception as e:
-        current_app.logger.error(f"Error processing data deletion: {e}")
+        current_app.logger.error("Error processing data deletion: %s", sanitize_error(e))
 
         # Log do erro
         cloud_logger.error("Data deletion failed", e, {
@@ -370,7 +370,7 @@ def generate_compliance_report():
         return jsonify(report)
 
     except Exception as e:
-        current_app.logger.error(f"Error generating compliance report: {e}")
+        current_app.logger.error("Error generating compliance report: %s", sanitize_error(e))
         return jsonify({"error": "Internal server error"}), 500
 
 # Registrar blueprint em main.py

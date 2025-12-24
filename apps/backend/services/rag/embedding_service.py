@@ -6,12 +6,11 @@ Implementa lazy loading para evitar timeout em Cloud Run
 Compatível com sentence-transformers v5.1+ - novas funcionalidades de performance
 """
 
-import os
 import json
 import logging
 import hashlib
-from typing import List, Dict, Optional, Tuple, Any
-from datetime import datetime, timedelta
+from typing import List, Dict, Optional, Tuple, Any, Union
+from datetime import datetime
 from pathlib import Path
 import threading
 

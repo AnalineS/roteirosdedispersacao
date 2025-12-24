@@ -7,7 +7,6 @@ Configuração usando SQLite + Google Cloud Storage (Redis removido)
 
 from celery import Celery
 import os
-from app_config import config
 
 # Configuração Celery OTIMIZADA - SQLite + Cloud Storage
 # Redis completamente removido - usa apenas SQLite para persistência

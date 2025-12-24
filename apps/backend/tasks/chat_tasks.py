@@ -10,15 +10,15 @@ from celery_config import celery_app
 import logging
 import asyncio
 from datetime import datetime
-from typing import Dict, Any, Optional, Tuple
+from typing import Dict, Any, Optional
 import hashlib
+from core.logging.sanitizer import sanitize_log_input, sanitize_error, sanitize_request_id
 
 # Importar dependências do sistema existente
 try:
     from core.dependencies import get_cache, get_rag, get_config
     from services.ai.ai_provider_manager import generate_ai_response, get_ai_health_status
     from services.enhanced_rag_system import get_enhanced_context, cache_rag_response
-    from services.scope_detection_system import detect_question_scope, get_limitation_response
     from services.personas import get_persona_prompt
     DEPENDENCIES_AVAILABLE = True
 except ImportError as e:
@@ -141,9 +141,9 @@ def process_question_async(self, question: str, personality_id: str, request_id:
         if rag_service:
             try:
                 context = rag_service.get_context(question, max_chunks=3)
-                logger.info(f"[{request_id}] RAG context obtido em async: {len(context)} chars")
+                logger.info("[%s] RAG context obtido em async: %d chars", sanitize_request_id(request_id), len(context))
             except Exception as e:
-                logger.error(f"[{request_id}] Erro no RAG em async: {e}")
+                logger.error("[%s] Erro no RAG em async: %s", sanitize_request_id(request_id), sanitize_error(e))
         
         # Atualizar progresso - Prompt Building
         self.update_state(
@@ -171,7 +171,7 @@ Baseie suas respostas nas informações do contexto acima, sempre que relevante.
             else:
                 raise Exception("Prompt não encontrado")
         except Exception as e:
-            logger.warning(f"[{request_id}] Fallback para prompts hardcoded em async: {e}")
+            logger.warning("[%s] Fallback para prompts hardcoded em async: %s", sanitize_request_id(request_id), sanitize_error(e))
             # Fallback para prompts hardcoded
             if personality_id == 'dr_gasnelio':
                 system_prompt = f"""Você é Dr. Gasnelio, farmacêutico clínico especialista em hanseníase.
@@ -249,10 +249,10 @@ Responda de forma empática e didática."""
             if answer:
                 logger.info(f"[{request_id}] [OK] Resposta obtida via {ai_metadata.get('model_used', 'unknown')} em async")
             else:
-                logger.warning(f"[{request_id}] [WARNING] AI Provider retornou resposta vazia em async")
-                
+                logger.warning("[%s] [WARNING] AI Provider retornou resposta vazia em async", sanitize_request_id(request_id))
+
         except Exception as e:
-            logger.error(f"[{request_id}] [ERROR] Erro no AI Provider Manager em async: {e}")
+            logger.error("[%s] [ERROR] Erro no AI Provider Manager em async: %s", sanitize_request_id(request_id), sanitize_error(e))
         
         # Atualizar progresso - Fallback se necessário
         if not answer:
@@ -333,17 +333,17 @@ Para informações mais detalhadas, recomendo consultar um profissional de saúd
                         'cache_version': 'v2_async_optimized'
                     }
                     cache.set(cache_key, cache_data, ttl=ttl_cache)
-                    logger.info(f"[{request_id}] ⚡ Cached em async - TTL:{ttl_cache}s, Confidence:{confidence_final:.2f}")
+                    logger.info("[%s] ⚡ Cached em async - TTL:%ds, Confidence:%.2f", sanitize_request_id(request_id), ttl_cache, confidence_final)
                 except Exception as e:
-                    logger.debug(f"[{request_id}] Cache write error em async: {e}")
+                    logger.debug("[%s] Cache write error em async: %s", sanitize_request_id(request_id), sanitize_error(e))
             
             # Enhanced RAG cache
             if confidence_final >= 0.8:
                 try:
                     cache_rag_response(question, answer, confidence_final)
-                    logger.info(f"[{request_id}] [START] Cached to AstraDB Enhanced RAG em async - High confidence: {confidence_final:.2f}")
+                    logger.info("[%s] [START] Cached to AstraDB Enhanced RAG em async - High confidence: %.2f", sanitize_request_id(request_id), confidence_final)
                 except Exception as e:
-                    logger.debug(f"[{request_id}] Enhanced RAG cache error em async: {e}")
+                    logger.debug("[%s] Enhanced RAG cache error em async: %s", sanitize_request_id(request_id), sanitize_error(e))
         
         # Resultado final
         return {
@@ -353,9 +353,9 @@ Para informações mais detalhadas, recomendo consultar um profissional de saúd
             'request_id': request_id,
             'processing_mode': 'asynchronous'
         }
-        
+
     except Exception as e:
-        logger.error(f"[{request_id}] Erro crítico na task assíncrona: {e}")
+        logger.error("[%s] Erro crítico na task assíncrona: %s", sanitize_request_id(request_id), sanitize_error(e))
         
         # Atualizar state para erro
         self.update_state(

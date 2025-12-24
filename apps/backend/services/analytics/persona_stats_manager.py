@@ -7,10 +7,9 @@ Substitui dados mockados por persistência real no SQLite
 import sqlite3
 import logging
 from datetime import datetime, timedelta
-from typing import Dict, Optional, List, Tuple
+from typing import Dict, Optional
 from pathlib import Path
 from contextlib import contextmanager
-import json
 
 logger = logging.getLogger(__name__)
 

@@ -1,6 +1,7 @@
 {
     "recommendations": [
         "anthropic.claude-code",
-        "upstash.context7-mcp"
+        "upstash.context7-mcp",
+        "sonarsource.sonarlint-vscode"
     ]
 }

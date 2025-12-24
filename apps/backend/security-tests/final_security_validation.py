@@ -56,7 +56,7 @@ def validate_security_configuration():
     # 2. Testar SecurityMiddleware
     print("\n2. Testando SecurityMiddleware...")
     try:
-        from core.security.middleware import SecurityMiddleware, AttackPatternDetector
+        from core.security.middleware import AttackPatternDetector
         
         # Testar detector
         detector = AttackPatternDetector()

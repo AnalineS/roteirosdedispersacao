@@ -3,7 +3,7 @@ import os
 import json
 import logging
 import time
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 from datetime import datetime
 import requests
 from pathlib import Path
@@ -19,6 +19,9 @@ from core.security.medical_audit_logger import (
     ActionType,
     MedicalDataClassification
 )
+
+# Log injection prevention
+from core.logging.sanitizer import sanitize_log_input, sanitize_error
 
 # Analytics médico interno (SQLite + Google Storage)
 try:
@@ -79,7 +82,7 @@ class ChatbotService:
                             "content": content
                         })
                     except Exception as e:
-                        logger.error(f"Erro ao carregar {file_path}: {e}")
+                        logger.error("Erro ao carregar %s: %s", file_path, sanitize_error(e))
             
             # Vetorizar documentos se houver conteúdo
             if self.knowledge_documents:
@@ -88,17 +91,16 @@ class ChatbotService:
                 logger.info(f"Base de conhecimento carregada: {len(self.knowledge_documents)} documentos")
             
         except Exception as e:
-            logger.error(f"Erro ao carregar base de conhecimento: {e}")
+            logger.error("Erro ao carregar base de conhecimento: %s", sanitize_error(e))
     
     def _search_knowledge_base(self, query: str, top_k: int = 3) -> List[Dict]:
         """Busca documentos relevantes na base de conhecimento com cache otimizado"""
         if not self.knowledge_documents or self.document_vectors is None:
             return []
-        
+
         try:
             # OTIMIZAÇÃO CRÍTICA: Cache de vetorização com hash da query
             import hashlib
-            from functools import lru_cache
             
             query_normalized = query.lower().strip()
             # SHA-256 for cache keys (not sensitive data, but using secure hash for consistency)
@@ -109,7 +111,7 @@ class ChatbotService:
                 self._query_cache = {}
             
             if query_hash in self._query_cache:
-                logger.debug(f"Cache hit para query: {query[:50]}...")
+                logger.debug("Cache hit para query: %s...", sanitize_log_input(query[:50]))
                 return self._query_cache[query_hash]
             
             # Vetorizar query (única vez por query única)
@@ -142,12 +144,12 @@ class ChatbotService:
                     del self._query_cache[key]
             
             self._query_cache[query_hash] = relevant_docs
-            logger.debug(f"Cache miss - processado e armazenado: {query[:50]}...")
-            
+            logger.debug("Cache miss - processado e armazenado: %s...", sanitize_log_input(query[:50]))
+
             return relevant_docs
-        
+
         except Exception as e:
-            logger.error(f"Erro na busca: {e}")
+            logger.error("Erro na busca: %s", sanitize_error(e))
             return []
     
     def _call_openrouter_api(self, messages: List[Dict], temperature: float = 0.7) -> Optional[str]:
@@ -195,21 +197,21 @@ class ChatbotService:
                     return content
                     
                 else:
-                    logger.warning(f"Erro no modelo {model}: {response.status_code} - {response.text}")
+                    logger.warning("Erro no modelo %s: %s - %s", model, response.status_code, sanitize_log_input(response.text))
                     if attempt < len(self.models) - 1:
-                        logger.info(f"Tentando próximo modelo disponível...")
+                        logger.info("Tentando próximo modelo disponível...")
                         continue
                     
             except requests.exceptions.Timeout:
-                logger.warning(f"Timeout no modelo {model}")
+                logger.warning("Timeout no modelo %s", model)
                 if attempt < len(self.models) - 1:
-                    logger.info(f"Tentando próximo modelo disponível...")
+                    logger.info("Tentando próximo modelo disponível...")
                     continue
                     
             except Exception as e:
-                logger.warning(f"Erro no modelo {model}: {e}")
+                logger.warning("Erro no modelo %s: %s", model, sanitize_error(e))
                 if attempt < len(self.models) - 1:
-                    logger.info(f"Tentando próximo modelo disponível...")
+                    logger.info("Tentando próximo modelo disponível...")
                     continue
         
         logger.error("[ERROR] Todos os modelos falharam")
@@ -664,7 +666,7 @@ Estilo de linguagem: {persona.get('language_style', 'profissional')}
                         'is_anonymous': not ip_address  # Simplificado - melhorar depois
                     })
                 except Exception as e:
-                    logger.warning(f"Failed to track analytics: {e}")
+                    logger.warning("Failed to track analytics: %s", sanitize_error(e))
 
             return {
                 "response": response,
@@ -678,7 +680,7 @@ Estilo de linguagem: {persona.get('language_style', 'profissional')}
             }
             
         except Exception as e:
-            logger.error(f"Erro ao processar mensagem: {e}")
+            logger.error("Erro ao processar mensagem: %s", sanitize_error(e))
             return {
                 "response": "Desculpe, ocorreu um erro ao processar sua mensagem.",
                 "error": True,
@@ -750,7 +752,7 @@ Estilo de linguagem: {persona.get('language_style', 'profissional')}
                     for row in reversed(rows)  # Reverse to get chronological order
                 ]
         except Exception as e:
-            logger.error(f"Failed to get conversation history: {e}")
+            logger.error("Failed to get conversation history: %s", sanitize_error(e))
             return []
 
     def save_conversation(self, session_id: str, message: str, response: Dict):
@@ -781,7 +783,7 @@ Estilo de linguagem: {persona.get('language_style', 'profissional')}
                 ))
                 conn.commit()
         except Exception as e:
-            logger.error(f"Failed to save conversation: {e}")
+            logger.error("Failed to save conversation: %s", sanitize_error(e))
 
 
 # Função auxiliar para uso direto

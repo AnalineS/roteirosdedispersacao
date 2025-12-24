@@ -28,7 +28,7 @@ environment variables pelo GitHub Actions e Cloud Run.
 """
 
 import os
-from typing import Dict, Any, Optional
+from typing import Dict
 
 
 class BaseConfig:

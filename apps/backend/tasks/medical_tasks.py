@@ -7,11 +7,12 @@ Análise de documentos, backup de dados e relatórios médicos
 from celery import current_task
 from celery_config import celery_app
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Dict, Any, List, Optional
 import json
 import sqlite3
 from pathlib import Path
+from core.logging.sanitizer import sanitize_error, sanitize_path
 
 logger = logging.getLogger(__name__)
 
@@ -89,7 +90,7 @@ def process_medical_document_async(self, file_path: str, document_type: str, use
         return result
 
     except Exception as e:
-        logger.error(f"[MEDICAL_TASK] Erro ao processar documento: {e}")
+        logger.error("[MEDICAL_TASK] Erro ao processar documento: %s", sanitize_error(e))
         self.update_state(
             state='FAILURE',
             meta={
@@ -182,8 +183,8 @@ def backup_sqlite_database_async(self, backup_name: Optional[str] = None) -> Dic
                 cloud_path = _upload_backup_to_cloud(backup_path)
                 result['cloud_path'] = cloud_path
             except Exception as e:
-                logger.warning(f"Falha no upload para cloud: {e}")
-                result['cloud_upload'] = f"Falha: {e}"
+                logger.warning("Falha no upload para cloud: %s", sanitize_error(e))
+                result['cloud_upload'] = f"Falha: {sanitize_error(e)}"
 
         else:
             raise Exception(f"Banco de dados não encontrado: {db_path}")
@@ -191,7 +192,7 @@ def backup_sqlite_database_async(self, backup_name: Optional[str] = None) -> Dic
         return result
 
     except Exception as e:
-        logger.error(f"[BACKUP_TASK] Erro no backup: {e}")
+        logger.error("[BACKUP_TASK] Erro no backup: %s", sanitize_error(e))
         self.update_state(
             state='FAILURE',
             meta={
@@ -273,7 +274,7 @@ def generate_medical_analytics_async(self, date_range: int = 30) -> Dict[str, An
         return report
 
     except Exception as e:
-        logger.error(f"[ANALYTICS_TASK] Erro na geração de analytics: {e}")
+        logger.error("[ANALYTICS_TASK] Erro na geração de analytics: %s", sanitize_error(e))
         self.update_state(
             state='FAILURE',
             meta={
@@ -329,7 +330,7 @@ def _save_document_analysis(analysis: Dict[str, Any]) -> None:
         conn.close()
 
     except Exception as e:
-        logger.error(f"Erro ao salvar análise: {e}")
+        logger.error("Erro ao salvar análise: %s", sanitize_error(e))
 
 def _upload_backup_to_cloud(backup_path: Path) -> str:
     """Upload de backup para Google Cloud Storage - REAL"""
@@ -379,7 +380,7 @@ def _upload_backup_to_cloud(backup_path: Path) -> str:
         logger.warning("Google Cloud Storage não disponível - salvando localmente")
         return str(backup_path)
     except Exception as e:
-        logger.error(f"Erro ao fazer upload para GCS: {e}")
+        logger.error("Erro ao fazer upload para GCS: %s", sanitize_error(e))
         # Fallback: retornar caminho local
         return str(backup_path)
 
@@ -446,7 +447,7 @@ def _save_analytics_report(report: Dict[str, Any]) -> None:
         conn.close()
 
     except Exception as e:
-        logger.error(f"Erro ao salvar relatório: {e}")
+        logger.error("Erro ao salvar relatório: %s", sanitize_error(e))
 
 # Health check
 @celery_app.task(name='medical.health_check')

@@ -16,6 +16,7 @@ import logging
 
 from core.database import get_db_connection
 from core.database.models import UserRole
+from core.logging.sanitizer import sanitize_log_input, sanitize_error, sanitize_user_id
 
 logger = logging.getLogger(__name__)
 
@@ -115,7 +116,7 @@ class JWTManager:
             ip_address='system'
         )
 
-        logger.info(f"User created: {email}")
+        logger.info("User created: %s", sanitize_log_input(email))
         return user_id
 
     def authenticate_user(self, email: str, password: str, ip_address: str = None,
@@ -131,13 +132,13 @@ class JWTManager:
             )
 
             if not user or not user['is_active']:
-                logger.warning(f"Authentication failed for {email}: user not found or inactive")
+                logger.warning("Authentication failed for %s: user not found or inactive", sanitize_log_input(email))
                 return None
 
             # Verificar senha
             password_hash, salt = user['password_hash'].split(':')
             if not self._verify_password(password, password_hash, salt):
-                logger.warning(f"Authentication failed for {email}: invalid password")
+                logger.warning("Authentication failed for %s: invalid password", sanitize_log_input(email))
                 return None
 
             # Atualizar último login
@@ -167,11 +168,11 @@ class JWTManager:
                 user_agent=user_agent
             )
 
-            logger.info(f"User authenticated successfully: {email}")
+            logger.info("User authenticated successfully: %s", sanitize_log_input(email))
             return token_pair
 
         except Exception as e:
-            logger.error(f"Authentication error for {email}: {e}")
+            logger.error("Authentication error for %s: %s", sanitize_log_input(email), sanitize_error(e))
             return None
 
     def _generate_token_pair(self, user_id: str, email: str, roles: List[str],
@@ -236,7 +237,7 @@ class JWTManager:
 
             # Verificar tipo do token
             if payload.get('type') != token_type.value:
-                logger.warning(f"Invalid token type: expected {token_type.value}, got {payload.get('type')}")
+                logger.warning("Invalid token type: expected %s, got %s", token_type.value, sanitize_log_input(str(payload.get('type'))))
                 return None
 
             # Verificar se sessão ainda é válida
@@ -246,13 +247,13 @@ class JWTManager:
             )
 
             if not session or not session['is_active']:
-                logger.warning(f"Session not found or inactive: {payload['session_id']}")
+                logger.warning("Session not found or inactive: %s", sanitize_log_input(payload['session_id']))
                 return None
 
             # Verificar expiração da sessão
             expires_at = datetime.fromisoformat(session['expires_at'])
             if datetime.now(timezone.utc) > expires_at:
-                logger.warning(f"Session expired: {payload['session_id']}")
+                logger.warning("Session expired: %s", sanitize_log_input(payload['session_id']))
                 return None
 
             # Retornar claims do usuário
@@ -269,10 +270,10 @@ class JWTManager:
             logger.warning("Token expired")
             return None
         except jwt.InvalidTokenError as e:
-            logger.warning(f"Invalid token: {e}")
+            logger.warning("Invalid token: %s", sanitize_error(e))
             return None
         except Exception as e:
-            logger.error(f"Token verification error: {e}")
+            logger.error("Token verification error: %s", sanitize_error(e))
             return None
 
     def refresh_access_token(self, refresh_token: str) -> Optional[str]:
@@ -315,7 +316,7 @@ class JWTManager:
             (claims.session_id,)
         )
 
-        logger.info(f"Access token refreshed for user: {claims.user_id}")
+        logger.info("Access token refreshed for user: %s", sanitize_user_id(claims.user_id))
         return new_access_token
 
     def revoke_session(self, session_id: str, user_id: str = None) -> bool:
@@ -338,13 +339,13 @@ class JWTManager:
             )
 
             if affected > 0:
-                logger.info(f"Session revoked: {session_id}")
+                logger.info("Session revoked: %s", sanitize_log_input(session_id))
                 return True
 
             return False
 
         except Exception as e:
-            logger.error(f"Error revoking session: {e}")
+            logger.error("Error revoking session: %s", sanitize_error(e))
             return False
 
     def revoke_all_user_sessions(self, user_id: str) -> int:
@@ -359,11 +360,11 @@ class JWTManager:
                 (user_id,)
             )
 
-            logger.info(f"Revoked {affected} sessions for user: {user_id}")
+            logger.info("Revoked %d sessions for user: %s", affected, sanitize_user_id(user_id))
             return affected
 
         except Exception as e:
-            logger.error(f"Error revoking user sessions: {e}")
+            logger.error("Error revoking user sessions: %s", sanitize_error(e))
             return 0
 
     def has_role(self, user_claims: UserClaims, required_role: str) -> bool:
@@ -396,7 +397,7 @@ class JWTManager:
         )
 
         if affected > 0:
-            logger.info(f"Cleaned up {affected} expired sessions")
+            logger.info("Cleaned up %d expired sessions", affected)
 
         return affected
 

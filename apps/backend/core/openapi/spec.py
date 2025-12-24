@@ -4,18 +4,9 @@ OpenAPI/Swagger Specification
 Documentação completa da API de Roteiros de Dispensação Hanseníase
 """
 
-from flask import Blueprint, jsonify, render_template_string, request
+from flask import Blueprint, jsonify, render_template_string
 from .auth import swagger_auth_required
 import json
-
-# Import Flask-Swagger-UI com fallback
-try:
-    from flask_swagger_ui import get_swaggerui_blueprint
-    FLASK_SWAGGER_UI_AVAILABLE = True
-except ImportError:
-    FLASK_SWAGGER_UI_AVAILABLE = False
-    def get_swaggerui_blueprint(*args, **kwargs):
-        return None
 
 # Template HTML para Swagger UI customizado
 SWAGGER_TEMPLATE = '''

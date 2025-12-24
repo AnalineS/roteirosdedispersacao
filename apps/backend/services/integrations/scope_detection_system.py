@@ -3,8 +3,7 @@
 Sistema de Detecção de Escopo - Identifica se perguntas estão dentro do escopo da tese
 """
 
-import re
-from typing import Dict, List
+from typing import Dict
 
 
 def detect_question_scope(question: str) -> Dict:

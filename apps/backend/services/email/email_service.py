@@ -4,11 +4,10 @@ Implementa notificações por email para conquistas, progresso e funcionalidades
 """
 
 import os
-import json
 import logging
-from typing import Dict, List, Optional, Union, Any
-from dataclasses import dataclass, asdict
-from datetime import datetime, timezone
+from typing import Dict, List, Optional, Any
+from dataclasses import dataclass
+from datetime import datetime
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase

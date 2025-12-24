@@ -6,8 +6,8 @@ NO MOCKS - Only real cloud service connections
 
 import os
 import logging
-from typing import Dict, Any, Optional, Tuple
-from pathlib import Path
+from typing import Dict, Any, Optional
+from core.logging.sanitizer import sanitize_log_input, sanitize_error
 
 logger = logging.getLogger(__name__)
 
@@ -34,17 +34,17 @@ class RealCloudInitializer:
         try:
             self._initialize_real_supabase()
         except Exception as e:
-            logger.warning(f"Real Supabase failed: {e}")
+            logger.warning("Real Supabase failed: %s", sanitize_error(e))
 
         try:
             self._initialize_real_gcs()
         except Exception as e:
-            logger.warning(f"Real GCS failed: {e}")
+            logger.warning("Real GCS failed: %s", sanitize_error(e))
 
         try:
             self._initialize_real_firebase()
         except Exception as e:
-            logger.warning(f"Real Firebase failed: {e}")
+            logger.warning("Real Firebase failed: %s", sanitize_error(e))
 
         # Setup local development alternatives if in development and no cloud services available
         if self.environment == 'development':
@@ -88,7 +88,7 @@ class RealCloudInitializer:
             # Test connection with real health check
             health_status = client.health_check()
             if not health_status['overall_healthy']:
-                logger.warning(f"Supabase health check issues: {health_status}")
+                logger.warning("Supabase health check issues: %s", sanitize_log_input(str(health_status)))
                 # Don't fail completely - Supabase might still work for basic operations
                 logger.info("Continuing with Supabase despite health check warnings...")
 
@@ -99,11 +99,11 @@ class RealCloudInitializer:
         except Exception as e:
             self.services_status['supabase']['error'] = str(e)
             self.services_status['supabase']['available'] = False
-            logger.error(f"❌ Failed to initialize REAL Supabase: {e}")
+            logger.error("❌ Failed to initialize REAL Supabase: %s", sanitize_error(e))
 
             # In production, this should fail completely - no mocks allowed
             if self.environment == 'production':
-                raise RuntimeError(f"PRODUCTION: REAL Supabase initialization failed: {e}") from e
+                raise RuntimeError(f"PRODUCTION: REAL Supabase initialization failed: {sanitize_error(e)}") from e
             else:
                 logger.warning("DEVELOPMENT: Continuing without Supabase - fallback will be used")
 
@@ -138,7 +138,7 @@ class RealCloudInitializer:
             # Test connection with real health check
             health_status = client.health_check()
             if not health_status['overall_healthy']:
-                logger.warning(f"GCS health check issues: {health_status}")
+                logger.warning("GCS health check issues: %s", sanitize_log_input(str(health_status)))
                 # Don't fail completely - GCS might still work for basic operations
                 logger.info("Continuing with GCS despite health check warnings...")
 
@@ -149,11 +149,11 @@ class RealCloudInitializer:
         except Exception as e:
             self.services_status['gcs']['error'] = str(e)
             self.services_status['gcs']['available'] = False
-            logger.error(f"❌ Failed to initialize REAL GCS: {e}")
+            logger.error("❌ Failed to initialize REAL GCS: %s", sanitize_error(e))
 
             # In production, this should fail completely - no mocks allowed
             if self.environment == 'production':
-                raise RuntimeError(f"PRODUCTION: REAL GCS initialization failed: {e}") from e
+                raise RuntimeError(f"PRODUCTION: REAL GCS initialization failed: {sanitize_error(e)}") from e
             else:
                 logger.warning("DEVELOPMENT: Continuing without GCS - fallback will be used")
 
@@ -198,7 +198,7 @@ class RealCloudInitializer:
         except Exception as e:
             self.services_status['firebase']['error'] = str(e)
             self.services_status['firebase']['available'] = False
-            logger.info(f"🔄 Firebase initialization skipped: {e}")
+            logger.info("🔄 Firebase initialization skipped: %s", sanitize_error(e))
             # Firebase is optional, so we don't raise an error
 
     def _setup_local_development_fallback(self):
@@ -227,7 +227,7 @@ class RealCloudInitializer:
             logger.info("✅ Local development environment setup completed")
 
         except Exception as e:
-            logger.warning(f"⚠️ Local development setup failed: {e}")
+            logger.warning("⚠️ Local development setup failed: %s", sanitize_error(e))
             self.services_status['local_development'] = {
                 'available': False,
                 'client': None,
@@ -247,7 +247,7 @@ class RealCloudInitializer:
             # Log specific errors for failed services
             for service_name, status in self.services_status.items():
                 if status['error'] and not status['available']:
-                    logger.error(f"❌ {service_name.upper()} ERROR: {status['error']}")
+                    logger.error("❌ %s ERROR: %s", service_name.upper(), sanitize_log_input(status['error']))
 
         # Verify no mocks are used
         total_services = len(self.services_status)

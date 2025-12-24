@@ -5,17 +5,16 @@ NO MOCKS - Only real Supabase + GCS + Memory cache
 Replaces ALL mock cache implementations
 """
 
-import os
 import json
 import hashlib
 import logging
-from typing import Dict, Any, Optional, List, Tuple
+from typing import Dict, Any, Optional, Tuple
 from datetime import datetime, timezone, timedelta
-from pathlib import Path
 import numpy as np
 
 # Import REAL cloud manager - NO MOCKS
 from core.cloud.unified_real_cloud_manager import get_unified_cloud_manager
+from core.logging.sanitizer import sanitize_log_input, sanitize_error
 
 logger = logging.getLogger(__name__)
 
@@ -41,8 +40,8 @@ class RealCloudCache:
             self.real_supabase = self.cloud_manager.get_supabase_client()
             self.real_gcs = self.cloud_manager.get_gcs_client()
         except Exception as e:
-            logger.error(f"❌ CRITICAL: Real cloud cache cannot initialize without real services: {e}")
-            raise RuntimeError(f"Real cloud cache requires real cloud services: {e}")
+            logger.error("❌ CRITICAL: Real cloud cache cannot initialize without real services: %s", sanitize_error(e))
+            raise RuntimeError(f"Real cloud cache requires real cloud services: {sanitize_error(e)}")
 
         # Cache configuration - ALL REAL
         self.cache_layers = {
@@ -148,7 +147,7 @@ class RealCloudCache:
                     self.stats['evictions'] += 1
             return None
         except Exception as e:
-            logger.debug(f"Memory cache error: {e}")
+            logger.debug("Memory cache error: %s", sanitize_error(e))
             return None
 
     def _set_to_memory(self, cache_key: str, value: Any, ttl: Optional[timedelta] = None) -> bool:
@@ -162,7 +161,7 @@ class RealCloudCache:
             self.memory_cache[cache_key] = (value, expires_at)
             return True
         except Exception as e:
-            logger.debug(f"Memory cache set error: {e}")
+            logger.debug("Memory cache set error: %s", sanitize_error(e))
             return False
 
     def _evict_oldest_memory(self):
@@ -180,7 +179,7 @@ class RealCloudCache:
                 self.stats['evictions'] += 1
 
         except Exception as e:
-            logger.debug(f"Memory eviction error: {e}")
+            logger.debug("Memory eviction error: %s", sanitize_error(e))
 
     def _get_from_real_supabase(self, cache_key: str) -> Any:
         """Get from real Supabase cache table"""
@@ -214,7 +213,7 @@ class RealCloudCache:
             return None
 
         except Exception as e:
-            logger.debug(f"Real Supabase cache error: {e}")
+            logger.debug("Real Supabase cache error: %s", sanitize_error(e))
             return None
 
     def _set_to_real_supabase(self, cache_key: str, value: Any, ttl: Optional[timedelta] = None) -> bool:
@@ -255,7 +254,7 @@ class RealCloudCache:
             return False
 
         except Exception as e:
-            logger.debug(f"Real Supabase cache set error: {e}")
+            logger.debug("Real Supabase cache set error: %s", sanitize_error(e))
             return False
 
     def _get_from_real_gcs(self, cache_key: str) -> Any:
@@ -285,7 +284,7 @@ class RealCloudCache:
             return None
 
         except Exception as e:
-            logger.debug(f"Real GCS cache error: {e}")
+            logger.debug("Real GCS cache error: %s", sanitize_error(e))
             return None
 
     def _set_to_real_gcs(self, cache_key: str, value: Any, ttl: Optional[timedelta] = None) -> bool:
@@ -314,7 +313,7 @@ class RealCloudCache:
             return gcs_url is not None
 
         except Exception as e:
-            logger.debug(f"Real GCS cache set error: {e}")
+            logger.debug("Real GCS cache set error: %s", sanitize_error(e))
             return False
 
     def _ensure_cache_table_exists(self):
@@ -340,7 +339,7 @@ class RealCloudCache:
                 """)
 
         except Exception as e:
-            logger.debug(f"Cache table creation error: {e}")
+            logger.debug("Cache table creation error: %s", sanitize_error(e))
 
     def clear_expired(self) -> Dict[str, int]:
         """Clear expired items from all cache layers"""
@@ -365,7 +364,7 @@ class RealCloudCache:
             # Real GCS cleanup happens automatically when items are accessed
 
         except Exception as e:
-            logger.error(f"Cache cleanup error: {e}")
+            logger.error("Cache cleanup error: %s", sanitize_error(e))
 
         return cleared
 
@@ -440,11 +439,11 @@ class RealCloudCache:
             return health_status
 
         except Exception as e:
-            logger.error(f"Cache health check error: {e}")
+            logger.error("Cache health check error: %s", sanitize_error(e))
             return {
                 'timestamp': datetime.now().isoformat(),
                 'overall_healthy': False,
-                'error': str(e)
+                'error': str(sanitize_error(e))
             }
 
 # Global instance
@@ -459,8 +458,8 @@ def get_real_cloud_cache() -> Optional[RealCloudCache]:
             from app_config import config
             _real_cloud_cache = RealCloudCache(config)
         except Exception as e:
-            logger.error(f"❌ CRITICAL: Cannot initialize real cloud cache: {e}")
-            raise RuntimeError(f"Real cloud cache requires real cloud services: {e}")
+            logger.error("❌ CRITICAL: Cannot initialize real cloud cache: %s", sanitize_error(e))
+            raise RuntimeError(f"Real cloud cache requires real cloud services: {sanitize_error(e)}")
 
     return _real_cloud_cache
 

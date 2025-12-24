@@ -29,6 +29,8 @@ import threading
 from dataclasses import dataclass, asdict
 from pathlib import Path
 
+from core.logging.sanitizer import sanitize_log_input, sanitize_error
+
 
 # Logger específico para secrets
 security_logger = logging.getLogger('security.secrets')
@@ -132,7 +134,7 @@ class SecretEncryption:
             # Return base64 encoded
             return base64.urlsafe_b64encode(salt_and_encrypted).decode()
         except Exception as e:
-            security_logger.error(f"Erro ao criptografar dados: {e}")
+            security_logger.error("Erro ao criptografar dados: %s", sanitize_error(e))
             raise
 
     def decrypt(self, encrypted_data: str) -> str:
@@ -158,7 +160,7 @@ class SecretEncryption:
             decrypted = fernet.decrypt(encrypted_bytes)
             return decrypted.decode()
         except Exception as e:
-            security_logger.error(f"Erro ao descriptografar dados: {e}")
+            security_logger.error("Erro ao descriptografar dados: %s", sanitize_error(e))
             raise
 
 
@@ -208,9 +210,9 @@ class SecretsManager:
                     
                     self.metadata[name] = SecretMetadata(**meta_dict)
                 
-                security_logger.info(f"Metadados carregados para {len(self.metadata)} secrets")
+                security_logger.info("Metadados carregados para %s secrets", len(self.metadata))
         except Exception as e:
-            security_logger.error(f"Erro ao carregar metadados: {e}")
+            security_logger.error("Erro ao carregar metadados: %s", sanitize_error(e))
             self.metadata = {}
     
     def _save_metadata(self):
@@ -229,7 +231,7 @@ class SecretsManager:
                 json.dump(data, f, indent=2)
                 
         except Exception as e:
-            security_logger.error(f"Erro ao salvar metadados: {e}")
+            security_logger.error("Erro ao salvar metadados: %s", sanitize_error(e))
     
     def set_secret(self, 
                    name: str, 
@@ -392,11 +394,11 @@ class SecretsManager:
                     del self.secrets_cache[name]
                 
                 self._log_access(name, 'DELETE', success=True)
-                security_logger.info(f"Secret '{name}' removido com sucesso")
+                security_logger.info(f"Secret '{self._mask_secret_name(name)}' removido com sucesso")
                 return True
                 
             except Exception as e:
-                security_logger.error(f"Erro ao remover secret '{name}': {e}")
+                security_logger.error(f"Erro ao remover secret '{self._mask_secret_name(name)}': Falha na operação")
                 self._log_access(name, 'DELETE', success=False, error=str(e))
                 return False
     

@@ -5,14 +5,12 @@ Envia alertas por Email, Telegram e Webhook para violações e eventos críticos
 
 import os
 import smtplib
-import requests
 import json
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from datetime import datetime, timedelta
-from typing import Dict, Any, List, Optional, Literal
+from datetime import datetime, timedelta, timezone
+from typing import Dict, Any, Optional, Literal
 from dataclasses import dataclass
-import asyncio
 import aiohttp
 from jinja2 import Template
 import logging

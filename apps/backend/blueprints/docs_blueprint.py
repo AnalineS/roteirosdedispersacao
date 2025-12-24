@@ -7,9 +7,9 @@ Inclui auto-discovery, guias e recursos educacionais
 from flask import Blueprint, jsonify, request, current_app
 from datetime import datetime
 import logging
-from typing import Dict, Any, List
 from core.openapi.auth import swagger_auth_required
 from core.versioning import get_version_info
+from core.logging.sanitizer import sanitize_log_input, sanitize_error
 
 logger = logging.getLogger(__name__)
 
@@ -99,12 +99,12 @@ def api_info():
                     })
             api_info["discovered_endpoints"] = discovered_endpoints
         
-        logger.info(f"API info solicitada - Total endpoints: {len(api_info.get('discovered_endpoints', []))}")
+        logger.info("API info solicitada - Total endpoints: %s", len(api_info.get('discovered_endpoints', [])))
         
         return jsonify(api_info)
         
     except Exception as e:
-        logger.error(f"Erro ao gerar API info: {e}")
+        logger.error("Erro ao gerar API info: %s", sanitize_error(e))
         return jsonify({
             "error": "Erro ao gerar informações da API",
             "details": str(e)
@@ -239,7 +239,7 @@ def webhook_system():
         # Em produção, salvar no banco/cache
         webhook_id = f"webhook_{int(datetime.now().timestamp())}"
         
-        logger.info(f"Webhook registrado: {webhook_id} -> {callback_url}")
+        logger.info("Webhook registrado: %s -> %s", sanitize_log_input(webhook_id), sanitize_log_input(callback_url))
         
         return jsonify({
             "webhook_id": webhook_id,

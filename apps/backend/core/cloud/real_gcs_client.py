@@ -7,15 +7,13 @@ Real Google Cloud Storage Client - NO MOCKS
 import os
 import json
 import logging
-from typing import Dict, Any, Optional, List, BinaryIO, Union
+from typing import Dict, Any, Optional, List, Union
 from datetime import datetime, timedelta
 from pathlib import Path
-import tempfile
 from google.cloud import storage
-from google.cloud.storage import Bucket, Blob
 from google.oauth2 import service_account
 from google.auth import default
-import hashlib
+from core.logging.sanitizer import sanitize_log_input, sanitize_error
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +58,7 @@ class RealGCSClient:
                 logger.info("✅ Real GCS authenticated with application default credentials")
 
         except Exception as e:
-            logger.error(f"❌ Failed to authenticate with GCS: {e}")
+            logger.error("❌ Failed to authenticate with GCS: %s", sanitize_error(e))
             raise
 
     def _initialize_client(self):
@@ -75,7 +73,7 @@ class RealGCSClient:
             logger.info(f"✅ Real GCS client initialized for bucket: {self.bucket_name}")
 
         except Exception as e:
-            logger.error(f"❌ Failed to initialize GCS client: {e}")
+            logger.error("❌ Failed to initialize GCS client: %s", sanitize_error(e))
             raise
 
     def _validate_connection(self):
@@ -106,7 +104,7 @@ class RealGCSClient:
             test_blob.delete()
 
         except Exception as e:
-            logger.error(f"❌ Failed to validate GCS connection: {e}")
+            logger.error("❌ Failed to validate GCS connection: %s", sanitize_error(e))
             raise
 
     def upload_file(self, file_path: Union[str, Path], destination_path: str, content_type: str = None) -> str:

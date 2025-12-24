@@ -7,16 +7,17 @@ Testando se Render aceita cliente OpenAI e HTTPx
 import os
 import logging
 
+from core.logging.sanitizer import sanitize_error
+
 logger = logging.getLogger(__name__)
 
 try:
     import openai
-    import httpx
     OPENAI_AVAILABLE = True
     logger.info("[OK] OpenAI client importado com sucesso")
 except ImportError as e:
     OPENAI_AVAILABLE = False
-    logger.warning(f"[ERROR] OpenAI client indisponível: {e}")
+    logger.warning("[ERROR] OpenAI client indisponível: %s", sanitize_error(e))
 
 def test_openai_connection():
     """Testa conectividade com OpenAI (sem fazer chamadas pagas)"""
@@ -90,7 +91,7 @@ def get_openrouter_client(config=None):
         return client
 
     except Exception as e:
-        logger.warning(f"Erro ao criar cliente OpenRouter: {e}")
+        logger.warning("Erro ao criar cliente OpenRouter: %s", sanitize_error(e))
         return None
 
 def is_openrouter_available():

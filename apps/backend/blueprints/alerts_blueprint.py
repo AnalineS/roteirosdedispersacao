@@ -4,12 +4,10 @@ Endpoints para gerenciar e testar o sistema de notificações
 """
 
 from flask import Blueprint, request, jsonify
-from datetime import datetime
+from datetime import datetime, timezone
 import asyncio
-import json
-from typing import Dict, Any
 
-from core.alerts.notification_system import alert_manager, AlertType, AlertSeverity
+from core.alerts.notification_system import alert_manager
 from core.auth.jwt_validator import require_auth, require_admin
 from core.security.enhanced_security import require_rate_limit
 

@@ -5,10 +5,11 @@ Endpoints para receber logs e métricas do frontend e forward para GCP
 """
 
 from flask import Blueprint, request, jsonify
-from datetime import datetime
+from datetime import datetime, timezone
 import logging
 import os
-from typing import Dict, Any, List
+
+from core.logging.sanitizer import sanitize_error, sanitize_log_input
 
 # Import GCP observability
 try:
@@ -49,7 +50,7 @@ def receive_frontend_logs():
             try:
                 # Validar campos obrigatórios
                 if not all(key in log_entry for key in ['severity', 'message', 'timestamp', 'component']):
-                    logger.warning(f"Invalid log entry: {log_entry}")
+                    logger.warning("Invalid log entry: %s", sanitize_log_input(str(log_entry)))
                     continue
                 
                 # Forward para GCP se disponível
@@ -64,12 +65,12 @@ def receive_frontend_logs():
                     )
                 else:
                     # Fallback para log local
-                    logger.info(f"[{log_entry['severity']}] {log_entry['message']} - {log_entry.get('metadata', {})}")
+                    logger.info("[%s] %s - %s", sanitize_log_input(log_entry['severity']), sanitize_log_input(log_entry['message']), log_entry.get('metadata', {}))
                 
                 processed_count += 1
                 
             except Exception as e:
-                logger.error(f"Error processing log entry: {e}")
+                logger.error("Error processing log entry: %s", sanitize_error(e))
                 continue
         
         return jsonify({
@@ -80,7 +81,7 @@ def receive_frontend_logs():
         }), 200
         
     except Exception as e:
-        logger.error(f"Error processing frontend logs: {e}")
+        logger.error("Error processing frontend logs: %s", sanitize_error(e))
         return jsonify({
             "error": "Internal server error",
             "timestamp": datetime.now(timezone.utc).isoformat()
@@ -113,7 +114,7 @@ def receive_frontend_metrics():
             try:
                 # Validar campos obrigatórios
                 if not all(key in metric for key in ['name', 'value', 'labels', 'timestamp']):
-                    logger.warning(f"Invalid metric: {metric}")
+                    logger.warning("Invalid metric: %s", sanitize_log_input(str(metric)))
                     continue
                 
                 # Forward métricas específicas para GCP
@@ -159,12 +160,12 @@ def receive_frontend_metrics():
                         )
                 else:
                     # Fallback para log local
-                    logger.info(f"Metric: {metric_name}={metric_value} {labels}")
+                    logger.info("Metric: %s=%s %s", sanitize_log_input(metric_name), metric_value, labels)
                 
                 processed_count += 1
                 
             except Exception as e:
-                logger.error(f"Error processing metric: {e}")
+                logger.error("Error processing metric: %s", sanitize_error(e))
                 continue
         
         return jsonify({
@@ -175,7 +176,7 @@ def receive_frontend_metrics():
         }), 200
         
     except Exception as e:
-        logger.error(f"Error processing frontend metrics: {e}")
+        logger.error("Error processing frontend metrics: %s", sanitize_error(e))
         return jsonify({
             "error": "Internal server error",
             "timestamp": datetime.now(timezone.utc).isoformat()
@@ -241,7 +242,7 @@ def test_observability():
             }), 200
             
     except Exception as e:
-        logger.error(f"Error in observability test: {e}")
+        logger.error("Error in observability test: %s", sanitize_error(e))
         return jsonify({
             "status": "error",
             "error": str(e),

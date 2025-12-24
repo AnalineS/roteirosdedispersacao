@@ -5,9 +5,10 @@ Combines: User management + Authentication + User profiles
 Centralized user experience and security
 """
 
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, jsonify
 from datetime import datetime
 import logging
+from core.logging.sanitizer import sanitize_error
 
 user_management_bp = Blueprint('user_management', __name__, url_prefix='/api/v1/user')
 logger = logging.getLogger(__name__)
@@ -39,7 +40,7 @@ def get_user_profile():
         return jsonify(profile), 200
 
     except Exception as e:
-        logger.error(f"Profile error: {e}")
+        logger.error("Profile error: %s", sanitize_error(e))
         return jsonify({
             'error': 'Failed to get profile',
             'error_code': 'PROFILE_ERROR'
@@ -61,7 +62,7 @@ def login():
         return jsonify(auth_response), 200
 
     except Exception as e:
-        logger.error(f"Authentication error: {e}")
+        logger.error("Authentication error: %s", sanitize_error(e))
         return jsonify({
             'error': 'Authentication failed',
             'error_code': 'AUTH_ERROR'

@@ -4,14 +4,14 @@ Analytics Tasks - Tasks assíncronas para analytics e monitoramento
 Análise de performance, relatórios de uso e métricas do sistema
 """
 
-from celery import current_task
 from celery_config import celery_app
 import logging
-from datetime import datetime, timedelta
-from typing import Dict, Any, List, Optional
+from datetime import datetime
+from typing import Dict, Any, List
 import json
 import sqlite3
 from pathlib import Path
+from core.logging.sanitizer import sanitize_error
 
 logger = logging.getLogger(__name__)
 

@@ -15,13 +15,14 @@ import jwt
 import uuid
 import hashlib
 import requests
-from datetime import datetime, timedelta
-from typing import Dict, Optional, Tuple, Any
+from datetime import datetime, timedelta, timezone
+from typing import Dict, Optional, Tuple
 from urllib.parse import urlencode
 import os
 import logging
 
 from services.storage.sqlite_manager import get_db_manager
+from core.logging.sanitizer import sanitize_log_input, sanitize_error, sanitize_user_id
 
 logger = logging.getLogger(__name__)
 
@@ -147,7 +148,7 @@ class JWTAuthManager:
             expires_at=expires_at
         )
 
-        logger.info(f"Tokens gerados para usuário: {user_data.get('email')}")
+        logger.info("Tokens gerados para usuário: %s", sanitize_log_input(user_data.get('email', 'unknown')))
 
         return access_token, refresh_token, session_id
 
@@ -185,7 +186,7 @@ class JWTAuthManager:
             logger.debug("Token expirado")
             return None
         except jwt.InvalidTokenError as e:
-            logger.debug(f"Token inválido: {e}")
+            logger.debug("Token inválido: %s", sanitize_error(e))
             return None
 
     def refresh_access_token(self, refresh_token: str) -> Optional[str]:
@@ -220,7 +221,7 @@ class JWTAuthManager:
         }
 
         access_token = jwt.encode(access_payload, self.secret_key, algorithm=self.algorithm)
-        logger.debug(f"Access token renovado para: {user['email']}")
+        logger.debug("Access token renovado para: %s", sanitize_log_input(user['email']))
 
         return access_token
 
@@ -234,10 +235,10 @@ class JWTAuthManager:
             with self.db._get_connection() as conn:
                 conn.execute("DELETE FROM sessions WHERE user_id = ?", (user_id,))
                 conn.commit()
-                logger.info(f"Todas as sessões revogadas para usuário: {user_id}")
+                logger.info("Todas as sessões revogadas para usuário: %s", sanitize_user_id(user_id))
                 return True
         except Exception as e:
-            logger.error(f"Erro ao revogar sessões: {e}")
+            logger.error("Erro ao revogar sessões: %s", sanitize_error(e))
             return False
 
     # === GOOGLE OAUTH ===
@@ -313,7 +314,7 @@ class JWTAuthManager:
             # Gerar tokens JWT
             access_token, refresh_token, session_id = self.generate_tokens(user_id, user_data)
 
-            logger.info(f"Login Google bem-sucedido: {user_data['email']}")
+            logger.info("Login Google bem-sucedido: %s", sanitize_log_input(user_data['email']))
 
             return {
                 'user': user_data,
@@ -323,7 +324,7 @@ class JWTAuthManager:
             }
 
         except Exception as e:
-            logger.error(f"Erro no callback Google: {e}")
+            logger.error("Erro no callback Google: %s", sanitize_error(e))
             return None
 
     def _exchange_google_code(self, code: str) -> Optional[Dict]:
@@ -347,7 +348,7 @@ class JWTAuthManager:
             return response.json()
 
         except Exception as e:
-            logger.error(f"Erro ao trocar code Google: {e}")
+            logger.error("Erro ao trocar code Google: %s", sanitize_error(e))
             return None
 
     def _get_google_user_info(self, access_token: str) -> Optional[Dict]:
@@ -364,7 +365,7 @@ class JWTAuthManager:
             return response.json()
 
         except Exception as e:
-            logger.error(f"Erro ao obter user info Google: {e}")
+            logger.error("Erro ao obter user info Google: %s", sanitize_error(e))
             return None
 
     # === EMAIL/PASSWORD (OPCIONAL) ===
@@ -432,7 +433,7 @@ class JWTAuthManager:
             user_data = {'sub': user_id, 'email': email, 'name': name}
             access_token, refresh_token, session_id = self.generate_tokens(user_id, user_data)
 
-            logger.info(f"Usuário registrado: {email}")
+            logger.info("Usuário registrado: %s", sanitize_log_input(email))
 
             return {
                 'user': user_data,
@@ -442,7 +443,7 @@ class JWTAuthManager:
             }
 
         except Exception as e:
-            logger.error(f"Erro ao registrar usuário: {e}")
+            logger.error("Erro ao registrar usuário: %s", sanitize_error(e))
             self._add_rate_limit_attempt(email)
             return None
 
@@ -485,7 +486,7 @@ class JWTAuthManager:
             except (ValueError, AttributeError):
                 # BACKWARD COMPATIBILITY: Handle old format without salt
                 # This allows existing users to login while migrating to new format
-                logger.warning(f"User {email} using legacy password format without salt")
+                logger.warning("User %s using legacy password format without salt", sanitize_log_input(email))
                 salt = b'salt'  # Legacy fallback
                 expected_hash = stored_hash
 
@@ -502,7 +503,7 @@ class JWTAuthManager:
             user_data = {'sub': user['id'], 'email': email, 'name': user['name']}
             access_token, refresh_token, session_id = self.generate_tokens(user['id'], user_data)
 
-            logger.info(f"Login bem-sucedido: {email}")
+            logger.info("Login bem-sucedido: %s", sanitize_log_input(email))
 
             return {
                 'user': user_data,
@@ -512,7 +513,7 @@ class JWTAuthManager:
             }
 
         except Exception as e:
-            logger.error(f"Erro no login: {e}")
+            logger.error("Erro no login: %s", sanitize_error(e))
             self._add_rate_limit_attempt(email)
             return None
 
@@ -548,10 +549,10 @@ class JWTAuthManager:
                 """)
                 conn.commit()
                 count = cursor.rowcount
-                logger.debug(f"Sessões expiradas removidas: {count}")
+                logger.debug("Sessões expiradas removidas: %d", count)
                 return count
         except Exception as e:
-            logger.error(f"Erro ao limpar sessões: {e}")
+            logger.error("Erro ao limpar sessões: %s", sanitize_error(e))
             return 0
 
 # Instância global

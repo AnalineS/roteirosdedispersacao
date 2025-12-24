@@ -5,15 +5,13 @@ Security ML Update Script
 Systematic update of ML/AI dependencies with medical accuracy validation
 """
 
-import os
 import sys
 import subprocess
 import importlib
 import json
-import time
 import logging
 from pathlib import Path
-from typing import List, Dict, Any, Optional, Tuple
+from typing import List, Dict, Any
 from datetime import datetime
 
 # Add parent directory to path for imports

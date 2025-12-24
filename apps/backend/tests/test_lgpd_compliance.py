@@ -6,10 +6,8 @@ Validação completa do sistema de logging, retenção e alertas
 import pytest
 import asyncio
 import os
-import json
 from datetime import datetime, timedelta
-from unittest.mock import Mock, patch, AsyncMock
-import tempfile
+from unittest.mock import Mock, patch
 
 # Imports do sistema
 from core.logging.cloud_logger import CloudLogger, LGPDLogEntry

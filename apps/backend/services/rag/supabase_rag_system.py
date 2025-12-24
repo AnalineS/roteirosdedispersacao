@@ -4,29 +4,27 @@ Supabase RAG System - Sistema RAG integrado com Supabase pgvector
 FASE 3 - Sistema RAG refatorado para usar PostgreSQL + embeddings
 """
 
-import os
-import json
 import logging
 import hashlib
 from typing import Dict, List, Optional, Tuple, Any
 from datetime import datetime, timezone, timedelta
 from dataclasses import dataclass
-import numpy as np
 
 # Import dependências necessárias
 # SearchResult será importado nas linhas seguintes
+from core.logging.sanitizer import sanitize_log_input, sanitize_error
 
 logger = logging.getLogger(__name__)
 
 # Imports com fallback seguro
 try:
-    from services.integrations.supabase_vector_store import SupabaseVectorStore, VectorDocument, get_vector_store
+    from services.integrations.supabase_vector_store import get_vector_store
     from services.rag.semantic_search import SemanticSearchEngine, SearchResult
     from services.cache.cloud_native_cache import get_cloud_cache
-    from services.rag.medical_chunking import MedicalChunk, ChunkPriority
+    from services.rag.medical_chunking import MedicalChunk
     DEPENDENCIES_AVAILABLE = True
 except ImportError as e:
-    logger.warning(f"[WARNING] Dependências RAG não disponíveis: {e}")
+    logger.warning("[WARNING] Dependências RAG não disponíveis: %s", sanitize_error(e))
     DEPENDENCIES_AVAILABLE = False
 
 # SonarQube S1192: Constant for duplicated string literal
@@ -34,7 +32,7 @@ INTERACTION_KEYWORD = 'interação'
 
 # Import OpenRouter para contexto adicional
 try:
-    from services.ai.openai_integration import get_openrouter_client, is_openrouter_available
+    from services.ai.openai_integration import get_openrouter_client
     OPENROUTER_AVAILABLE = True
 except ImportError:
     OPENROUTER_AVAILABLE = False
@@ -447,7 +445,7 @@ INSTRUÇÃO: Responda usando sua expertise em hanseníase, baseando-se no contex
             return None
 
         except Exception as e:
-            logger.warning(f"Erro no enhancement OpenRouter: {e}")
+            logger.warning("Erro no enhancement OpenRouter: %s", sanitize_error(e))
             return None
 
     def _classify_query_type(self, query: str, category: str) -> str:
@@ -687,7 +685,7 @@ Se você tiver dúvidas sobre hanseníase, ficarei feliz em ajudar! 😊
                 self.vector_store.client.table('rag_context').insert(rag_data).execute()
                 
         except Exception as e:
-            logger.debug(f"Erro ao salvar contexto RAG: {e}")
+            logger.debug("Erro ao salvar contexto RAG: %s", sanitize_error(e))
     
     def get_stats(self) -> Dict[str, Any]:
         """Estatísticas do sistema RAG"""

@@ -7,7 +7,6 @@ Sistema educacional para dispensação PQT-U
 
 import sys
 import os
-import json
 from datetime import datetime, timedelta
 
 # Adicionar o diretório pai ao path para imports

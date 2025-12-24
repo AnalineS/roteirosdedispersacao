@@ -388,7 +388,8 @@ class HonestHealthChecker:
     def _check_fallback_availability(self) -> bool:
         """Verifica se sistemas de fallback estão disponíveis"""
         try:
-            from core.fallback.intelligent_fallback import fallback_system
+            # Import only when checking availability
+            __import__('core.fallback.intelligent_fallback')
             return True
         except ImportError:
             return False

@@ -23,8 +23,6 @@ except ImportError:
         # Fallback imports
         get_persona_prompt = None
         DrGasnelioTechnicalPrompt = None
-import json
-import re
 
 class DrGasnelioEnhanced:
     """

@@ -3,10 +3,9 @@
 Sistema RAG Avançado - Retrieval Augmented Generation com cache e feedback
 """
 
-from typing import Dict, List, Optional
+from typing import Dict, Optional
 from datetime import datetime
 from collections import defaultdict
-import json
 import re
 
 

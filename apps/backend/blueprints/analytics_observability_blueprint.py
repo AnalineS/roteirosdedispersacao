@@ -5,6 +5,8 @@ from datetime import datetime, timedelta
 from functools import wraps
 import logging
 
+from core.logging.sanitizer import sanitize_error
+
 logger = logging.getLogger(__name__)
 
 analytics_observability_bp = Blueprint('analytics_observability', __name__, url_prefix='/api/v1')
@@ -82,7 +84,7 @@ def track_event():
             return jsonify({'success': False, 'error': 'Failed to track event'}), 500
 
     except Exception as e:
-        logger.error(f"Analytics tracking error: {e}")
+        logger.error("Analytics tracking error: %s", sanitize_error(e))
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @analytics_observability_bp.route('/analytics/session/start', methods=['POST'])
@@ -109,7 +111,7 @@ def start_session():
             return jsonify({'success': False, 'error': 'Failed to start session'}), 500
 
     except Exception as e:
-        logger.error(f"Session start error: {e}")
+        logger.error("Session start error: %s", sanitize_error(e))
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @analytics_observability_bp.route('/analytics/session/end', methods=['POST'])
@@ -133,7 +135,7 @@ def end_session():
             return jsonify({'success': False, 'error': 'Failed to end session'}), 500
 
     except Exception as e:
-        logger.error(f"Session end error: {e}")
+        logger.error("Session end error: %s", sanitize_error(e))
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @analytics_observability_bp.route('/analytics/realtime', methods=['GET'])
@@ -147,7 +149,7 @@ def get_realtime_metrics():
         return jsonify({'success': True, 'data': metrics})
 
     except Exception as e:
-        logger.error(f"Realtime metrics error: {e}")
+        logger.error("Realtime metrics error: %s", sanitize_error(e))
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @analytics_observability_bp.route('/analytics/sessions', methods=['POST'])
@@ -205,7 +207,7 @@ def get_session_metrics():
         return jsonify({'success': True, 'data': formatted_metrics})
 
     except Exception as e:
-        logger.error(f"Session metrics error: {e}")
+        logger.error("Session metrics error: %s", sanitize_error(e))
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @analytics_observability_bp.route('/analytics/health', methods=['GET'])
@@ -230,7 +232,7 @@ def analytics_health():
         })
 
     except Exception as e:
-        logger.error(f"Analytics health check error: {e}")
+        logger.error("Analytics health check error: %s", sanitize_error(e))
         return jsonify({
             'success': False,
             'status': 'unhealthy',

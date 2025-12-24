@@ -5,17 +5,18 @@ Migrado do main.py para modularização
 """
 
 from flask import Blueprint, jsonify, request
-from datetime import datetime, timedelta
+from datetime import datetime
 import logging
 import os
-from typing import Dict, List, Any, Optional
+from typing import Dict, Any, Optional
 
 # Import dependências
 from core.dependencies import get_cache, get_rag, get_qa, get_config
+from core.logging.sanitizer import sanitize_error, sanitize_request_id
 
 # Import UX Monitoring Manager
 try:
-    from services.monitoring.ux_monitoring_manager import get_ux_monitoring_manager, get_ux_dashboard_data
+    from services.monitoring.ux_monitoring_manager import get_ux_monitoring_manager
     UX_MONITORING_AVAILABLE = True
 except ImportError:
     UX_MONITORING_AVAILABLE = False
@@ -115,7 +116,7 @@ def get_system_metrics() -> Dict[str, Any]:
     except ImportError:
         return {"error": "psutil não disponível"}
     except Exception as e:
-        logger.warning(f"Erro ao coletar métricas: {e}")
+        logger.warning("Erro ao coletar métricas: %s", sanitize_error(e))
         return {"error": str(e)}
 
 def get_application_metrics() -> Dict[str, Any]:
@@ -158,7 +159,7 @@ def get_system_stats():
     """Endpoint para estatísticas completas do sistema"""
     try:
         request_id = f"stats_{int(datetime.now().timestamp() * 1000)}"
-        logger.info(f"[{request_id}] Solicitação de estatísticas do sistema")
+        logger.info("[%s] Solicitação de estatísticas do sistema", sanitize_request_id(request_id))
         
         # Coletar todas as estatísticas
         cache_stats = get_cache_stats()
@@ -198,11 +199,11 @@ def get_system_stats():
             }
         }
         
-        logger.info(f"[{request_id}] Estatísticas retornadas com sucesso")
+        logger.info("[%s] Estatísticas retornadas com sucesso", sanitize_request_id(request_id))
         return jsonify(response), 200
         
     except Exception as e:
-        logger.error(f"[{request_id}] Erro ao obter estatísticas: {e}")
+        logger.error("[%s] Erro ao obter estatísticas: %s", sanitize_request_id(request_id), sanitize_error(e))
         return jsonify({
             "error": "Erro interno do servidor",
             "error_code": "STATS_ERROR",
@@ -215,7 +216,7 @@ def usability_monitoring():
     """Endpoint para monitoramento de usabilidade - INTEGRADO COM UX MONITORING"""
     try:
         request_id = f"usability_{int(datetime.now().timestamp() * 1000)}"
-        logger.info(f"[{request_id}] Relatório de usabilidade solicitado")
+        logger.info("[%s] Relatório de usabilidade solicitado", sanitize_request_id(request_id))
         
         # Usar UX Monitoring Manager se disponível
         if UX_MONITORING_AVAILABLE:
@@ -241,11 +242,11 @@ def usability_monitoring():
                     ]
                 }
         
-        logger.info(f"[{request_id}] Relatório de usabilidade gerado")
+        logger.info("[%s] Relatório de usabilidade gerado", sanitize_request_id(request_id))
         return jsonify(response), 200
         
     except Exception as e:
-        logger.error(f"[{request_id}] Erro no monitoramento de usabilidade: {e}")
+        logger.error("[%s] Erro no monitoramento de usabilidade: %s", sanitize_request_id(request_id), sanitize_error(e))
         return jsonify({
             "error": "Erro interno do servidor",
             "error_code": "USABILITY_ERROR",
@@ -290,7 +291,7 @@ def get_metrics():
         return jsonify(response), 200
         
     except Exception as e:
-        logger.error(f"[{request_id}] Erro ao obter métricas: {e}")
+        logger.error("[%s] Erro ao obter métricas: %s", sanitize_request_id(request_id), sanitize_error(e))
         return jsonify({
             "error": "Erro interno do servidor",
             "request_id": request_id
@@ -339,7 +340,7 @@ def debug_info():
         return jsonify(response), 200
         
     except Exception as e:
-        logger.error(f"Erro no endpoint de debug: {e}")
+        logger.error("Erro no endpoint de debug: %s", sanitize_error(e))
         return jsonify({
             "error": "Erro interno do servidor",
             "debug_error": str(e)

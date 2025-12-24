@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 from typing import Dict, Any, Optional, List, Literal
 import hashlib
 import uuid
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
 
 # Tentar importar Google Cloud, usar fallback se não disponível
 try:

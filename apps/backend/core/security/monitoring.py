@@ -35,12 +35,10 @@ from collections import defaultdict, deque
 import numpy as np
 from sklearn.ensemble import IsolationForest
 from sklearn.preprocessing import StandardScaler
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 import requests
 import queue
-import asyncio
+
+from core.logging.sanitizer import sanitize_log_input, sanitize_error
 
 
 # Logger específico para monitoramento
@@ -160,11 +158,11 @@ class AnomalyDetector:
             self.scalers[metric_type] = scaler
             self.model_trained[metric_type] = True
             
-            monitoring_logger.info(f"Modelo treinado para {metric_type.value} com {len(data)} amostras")
+            monitoring_logger.info("Modelo treinado para %s com %s amostras", sanitize_log_input(metric_type.value), len(data))
             return True
-            
+
         except Exception as e:
-            monitoring_logger.error(f"Erro ao treinar modelo para {metric_type.value}: {e}")
+            monitoring_logger.error("Erro ao treinar modelo para %s: %s", sanitize_log_input(metric_type.value), sanitize_error(e))
             return False
     
     def detect_anomaly(self, metric_type: MetricType, value: float, context: Dict[str, Any] = None) -> AnomalyDetection:
@@ -223,7 +221,7 @@ class AnomalyDetector:
             )
             
         except Exception as e:
-            monitoring_logger.error(f"Erro na detecção de anomalia para {metric_type.value}: {e}")
+            monitoring_logger.error("Erro na detecção de anomalia para %s: %s", sanitize_log_input(metric_type.value), sanitize_error(e))
             return AnomalyDetection(
                 is_anomaly=False,
                 anomaly_score=0.0,
@@ -369,7 +367,7 @@ class MetricsCollector:
                     time.sleep(3600)  # Limpeza a cada hora
                     self._cleanup_old_metrics()
                 except Exception as e:
-                    monitoring_logger.error(f"Erro na limpeza de métricas: {e}")
+                    monitoring_logger.error("Erro na limpeza de métricas: %s", sanitize_error(e))
         
         cleanup_thread = threading.Thread(target=cleanup_worker, daemon=True)
         cleanup_thread.start()
@@ -390,7 +388,7 @@ class MetricsCollector:
                 
                 removed_count = original_count - len(self.metrics[metric_type])
                 if removed_count > 0:
-                    monitoring_logger.info(f"Removidas {removed_count} métricas antigas de {metric_type.value}")
+                    monitoring_logger.info("Removidas %s métricas antigas de %s", removed_count, sanitize_log_input(metric_type.value))
 
 
 class AlertManager:
@@ -452,7 +450,7 @@ class AlertManager:
     def configure_alert_channel(self, channel: AlertChannel, config: Dict[str, Any]):
         """Configura canal de alerta"""
         self.alert_channels[channel] = config
-        monitoring_logger.info(f"Canal de alerta configurado: {channel.value}")
+        monitoring_logger.info("Canal de alerta configurado: %s", sanitize_log_input(channel.value))
     
     def create_alert(self, 
                     title: str, 
@@ -478,8 +476,8 @@ class AlertManager:
         with self.lock:
             self.alerts[alert_id] = alert
             self.alert_queue.put(alert)
-        
-        monitoring_logger.warning(f"Alerta criado: {alert_id} - {title}")
+
+        monitoring_logger.warning("Alerta criado: %s - %s", sanitize_log_input(alert_id), sanitize_log_input(title))
         return alert_id
     
     def check_metric_against_rules(self, metric_type: MetricType, value: float, metadata: Dict[str, Any] = None):
@@ -498,7 +496,7 @@ class AlertManager:
                             metadata={'rule': rule['name'], 'value': value, **(metadata or {})}
                         )
                 except Exception as e:
-                    monitoring_logger.error(f"Erro ao avaliar regra {rule['name']}: {e}")
+                    monitoring_logger.error("Erro ao avaliar regra %s: %s", sanitize_log_input(rule['name']), sanitize_error(e))
     
     def _start_alert_processor(self):
         """Inicia processador de alertas"""
@@ -510,7 +508,7 @@ class AlertManager:
                 except queue.Empty:
                     continue
                 except Exception as e:
-                    monitoring_logger.error(f"Erro no processamento de alerta: {e}")
+                    monitoring_logger.error("Erro no processamento de alerta: %s", sanitize_error(e))
         
         processor_thread = threading.Thread(target=process_alerts, daemon=True)
         processor_thread.start()
@@ -524,7 +522,7 @@ class AlertManager:
             try:
                 self._send_alert_to_channel(alert, channel)
             except Exception as e:
-                monitoring_logger.error(f"Erro ao enviar alerta para {channel.value}: {e}")
+                monitoring_logger.error("Erro ao enviar alerta para %s: %s", sanitize_log_input(channel.value), sanitize_error(e))
     
     def _get_channels_for_severity(self, severity: AlertSeverity) -> List[AlertChannel]:
         """Determina canais apropriados para severidade"""
@@ -558,18 +556,16 @@ class AlertManager:
             AlertSeverity.HIGH: logging.ERROR,
             AlertSeverity.CRITICAL: logging.CRITICAL
         }.get(alert.severity, logging.INFO)
-        
-        monitoring_logger.log(log_level, f"ALERT: {alert.title} - {alert.message}")
+
+        monitoring_logger.log(log_level, "ALERT: %s - %s", sanitize_log_input(alert.title), sanitize_log_input(alert.message))
     
     def _send_to_email(self, alert: Alert):
-        """Envia alerta por email"""
+        """Envia alerta por email - Feature pendente, ver issue #293"""
         config = self.alert_channels.get(AlertChannel.EMAIL, {})
         if not config:
             return
-        
-        # Implementar envio de email
-        # Por ora, apenas log
-        monitoring_logger.info(f"EMAIL_ALERT: {alert.title}")
+
+        monitoring_logger.info("EMAIL_ALERT: %s (email sending not implemented)", sanitize_log_input(alert.title))
     
     def _send_to_webhook(self, alert: Alert):
         """Envia alerta via webhook"""
@@ -594,9 +590,9 @@ class AlertManager:
                 headers=config.get('headers', {}),
                 timeout=10
             )
-            monitoring_logger.info(f"Webhook enviado: {response.status_code}")
+            monitoring_logger.info("Webhook enviado: %s", response.status_code)
         except Exception as e:
-            monitoring_logger.error(f"Erro ao enviar webhook: {e}")
+            monitoring_logger.error("Erro ao enviar webhook: %s", sanitize_error(e))
     
     def _send_to_slack(self, alert: Alert):
         """Envia alerta para Slack"""
@@ -627,9 +623,9 @@ class AlertManager:
         
         try:
             response = requests.post(config['webhook_url'], json=payload, timeout=10)
-            monitoring_logger.info(f"Slack enviado: {response.status_code}")
+            monitoring_logger.info("Slack enviado: %s", response.status_code)
         except Exception as e:
-            monitoring_logger.error(f"Erro ao enviar Slack: {e}")
+            monitoring_logger.error("Erro ao enviar Slack: %s", sanitize_error(e))
     
     def get_active_alerts(self, severity_filter: Optional[AlertSeverity] = None) -> List[Alert]:
         """Obtém alertas ativos"""
@@ -646,16 +642,16 @@ class AlertManager:
         with self.lock:
             if alert_id in self.alerts:
                 self.alerts[alert_id].acknowledged = True
-                monitoring_logger.info(f"Alerta reconhecido: {alert_id}")
+                monitoring_logger.info("Alerta reconhecido: %s", sanitize_log_input(alert_id))
                 return True
             return False
-    
+
     def resolve_alert(self, alert_id: str) -> bool:
         """Resolve um alerta"""
         with self.lock:
             if alert_id in self.alerts:
                 self.alerts[alert_id].resolved = True
-                monitoring_logger.info(f"Alerta resolvido: {alert_id}")
+                monitoring_logger.info("Alerta resolvido: %s", sanitize_log_input(alert_id))
                 return True
             return False
 
@@ -704,9 +700,9 @@ class SecurityMonitor:
                 
                 # Aguardar próximo ciclo
                 time.sleep(30)  # Monitoramento a cada 30 segundos
-                
+
             except Exception as e:
-                monitoring_logger.error(f"Erro no loop de monitoramento: {e}")
+                monitoring_logger.error("Erro no loop de monitoramento: %s", sanitize_error(e))
                 time.sleep(60)  # Aguardar mais em caso de erro
     
     def _collect_system_metrics(self):
@@ -721,9 +717,9 @@ class SecurityMonitor:
             
             # Registrar métricas
             self.record_metric(MetricType.REQUEST_RATE, cpu_percent)  # Placeholder
-            
+
         except Exception as e:
-            monitoring_logger.error(f"Erro ao coletar métricas do sistema: {e}")
+            monitoring_logger.error("Erro ao coletar métricas do sistema: %s", sanitize_error(e))
     
     def _detect_anomalies(self):
         """Executa detecção de anomalias"""
@@ -756,9 +752,9 @@ class SecurityMonitor:
                                 'recommendations': anomaly.recommendations
                             }
                         )
-                
+
             except Exception as e:
-                monitoring_logger.error(f"Erro na detecção de anomalia para {metric_type}: {e}")
+                monitoring_logger.error("Erro na detecção de anomalia para %s: %s", sanitize_log_input(str(metric_type)), sanitize_error(e))
     
     def record_metric(self, metric_type: MetricType, value: float, metadata: Dict[str, Any] = None):
         """Registra uma métrica e verifica regras"""
@@ -778,8 +774,8 @@ class SecurityMonitor:
         # Alertas ativos
         active_alerts = self.alert_manager.get_active_alerts()
         
-        # Anomalias recentes
-        recent_anomalies = []  # Implementar coleta de anomalias
+        # Anomalias recentes - Feature pendente, ver issue #294
+        recent_anomalies = []
         
         return {
             'timestamp': datetime.now().isoformat(),

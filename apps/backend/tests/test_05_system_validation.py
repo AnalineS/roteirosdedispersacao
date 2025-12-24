@@ -5,16 +5,12 @@ End-to-end system validation for production readiness
 """
 
 import pytest
-import json
 import time
-import os
 import sqlite3
-import tempfile
 from unittest.mock import patch, Mock
 
 from conftest import (
-    assert_valid_json_response,
-    assert_error_response
+    assert_valid_json_response
 )
 
 class TestSystemHealth:

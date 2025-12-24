@@ -21,7 +21,7 @@ from enum import Enum
 try:
     import cv2
     import numpy as np
-    from PIL import Image, ImageDraw, ImageFont
+    from PIL import Image
     import pytesseract
     import easyocr
     HAS_VISION_LIBS = True

@@ -18,6 +18,7 @@ import logging
 from typing import Dict, List, Set, Optional
 from datetime import datetime
 import atexit
+from core.logging.sanitizer import sanitize_error
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +70,7 @@ class StartupMemoryOptimizer:
             return is_primary
 
         except Exception as e:
-            logger.error(f"[STARTUP] Error checking primary process: {e}")
+            logger.error("[STARTUP] Error checking primary process: %s", sanitize_error(e))
             return True
 
     def _shutdown_secondary_process(self):
@@ -129,14 +130,13 @@ class StartupMemoryOptimizer:
             logger.info(f"[STARTUP] Thread optimization: {current_threads} active threads")
 
         except Exception as e:
-            logger.error(f"[STARTUP] Thread optimization failed: {e}")
+            logger.error("[STARTUP] Thread optimization failed: %s", sanitize_error(e))
 
     def _configure_thread_pools(self):
         """Configure thread pools for various libraries"""
         try:
             # Configure NumPy thread pool (if imported)
             if 'numpy' in sys.modules:
-                import numpy as np
                 # Limit NumPy threads
                 os.environ['OMP_NUM_THREADS'] = '2'
                 os.environ['OPENBLAS_NUM_THREADS'] = '2'
@@ -154,7 +154,7 @@ class StartupMemoryOptimizer:
                 torch.set_num_threads(2)
 
         except Exception as e:
-            logger.error(f"[STARTUP] Thread pool configuration failed: {e}")
+            logger.error("[STARTUP] Thread pool configuration failed: %s", sanitize_error(e))
 
     def aggressive_gc_startup(self):
         """Perform aggressive garbage collection at startup"""
@@ -172,7 +172,7 @@ class StartupMemoryOptimizer:
             logger.info(f"[STARTUP] Aggressive GC completed - collected {total_collected} objects")
 
         except Exception as e:
-            logger.error(f"[STARTUP] Aggressive GC failed: {e}")
+            logger.error("[STARTUP] Aggressive GC failed: %s", sanitize_error(e))
 
     def measure_startup_memory(self):
         """Measure and record startup memory usage"""
@@ -202,7 +202,7 @@ class StartupMemoryOptimizer:
                              f"Target is <{self.thread_limit} threads")
 
         except Exception as e:
-            logger.error(f"[STARTUP] Memory measurement failed: {e}")
+            logger.error("[STARTUP] Memory measurement failed: %s", sanitize_error(e))
 
     def optimize_flask_imports(self):
         """Optimize Flask-specific imports"""
@@ -231,7 +231,7 @@ class StartupMemoryOptimizer:
             logger.info(f"[STARTUP] Flask optimization: {deferred_count} extensions deferred")
 
         except Exception as e:
-            logger.error(f"[STARTUP] Flask import optimization failed: {e}")
+            logger.error("[STARTUP] Flask import optimization failed: %s", sanitize_error(e))
 
     def check_memory_leaks(self):
         """Check for potential memory leaks at startup"""
@@ -260,7 +260,7 @@ class StartupMemoryOptimizer:
                        f"{len(suspicious_types)} suspicious types")
 
         except Exception as e:
-            logger.error(f"[STARTUP] Memory leak check failed: {e}")
+            logger.error("[STARTUP] Memory leak check failed: %s", sanitize_error(e))
 
     def kill_duplicate_processes(self):
         """Kill duplicate Flask processes to prevent memory waste"""
@@ -299,7 +299,7 @@ class StartupMemoryOptimizer:
                 logger.info("[STARTUP] Process cleanup: no duplicates found")
 
         except Exception as e:
-            logger.error(f"[STARTUP] Process cleanup failed: {e}")
+            logger.error("[STARTUP] Process cleanup failed: %s", sanitize_error(e))
 
     def get_startup_report(self) -> Dict:
         """Get comprehensive startup optimization report"""
@@ -330,7 +330,7 @@ class StartupMemoryOptimizer:
             }
 
         except Exception as e:
-            logger.error(f"[STARTUP] Report generation failed: {e}")
+            logger.error("[STARTUP] Report generation failed: %s", sanitize_error(e))
             return {'error': str(e)}
 
     def _generate_startup_recommendations(self) -> List[str]:
@@ -369,7 +369,7 @@ class StartupMemoryOptimizer:
             logger.info("[STARTUP] Cleanup completed")
 
         except Exception as e:
-            logger.error(f"[STARTUP] Cleanup failed: {e}")
+            logger.error("[STARTUP] Cleanup failed: %s", sanitize_error(e))
 
 
 # Global startup optimizer instance

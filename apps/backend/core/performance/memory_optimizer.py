@@ -22,11 +22,12 @@ import sys
 import weakref
 import threading
 import logging
-from typing import Dict, Any, Optional, List, Tuple
+from typing import Dict, Any, Optional
 from datetime import datetime, timedelta
 from collections import OrderedDict, deque
 from dataclasses import dataclass
 import time
+from core.logging.sanitizer import sanitize_error
 
 logger = logging.getLogger(__name__)
 
@@ -93,7 +94,7 @@ class MemoryOptimizer:
             logger.info(f"[GC] Garbage collection configurado - {collected} objetos coletados")
 
         except Exception as e:
-            logger.warning(f"[GC] Erro ao configurar garbage collection: {e}")
+            logger.warning("[GC] Erro ao configurar garbage collection: %s", sanitize_error(e))
 
     def _start_monitoring(self):
         """Inicia thread de monitoramento de memória"""
@@ -128,7 +129,7 @@ class MemoryOptimizer:
                 self._shutdown_event.wait(10)  # Verificar a cada 10 segundos
 
             except Exception as e:
-                logger.error(f"[MEMORY] Erro no monitoramento: {e}")
+                logger.error("[MEMORY] Erro no monitoramento: %s", sanitize_error(e))
                 self._shutdown_event.wait(30)  # Aguardar mais tempo em caso de erro
 
     def _collect_memory_metrics(self) -> MemoryMetrics:
@@ -165,7 +166,7 @@ class MemoryOptimizer:
             )
 
         except Exception as e:
-            logger.error(f"[MEMORY] Erro ao coletar métricas: {e}")
+            logger.error("[MEMORY] Erro ao coletar métricas: %s", sanitize_error(e))
             # Retornar métricas padrão em caso de erro
             return MemoryMetrics(
                 total_mb=1024,
@@ -267,7 +268,7 @@ class MemoryOptimizer:
             logger.info(f"[CACHE] Limpeza: {initial_size} -> {len(self._cache)} itens")
 
         except Exception as e:
-            logger.error(f"[CACHE] Erro na limpeza: {e}")
+            logger.error("[CACHE] Erro na limpeza: %s", sanitize_error(e))
 
         return freed_mb
 
@@ -294,7 +295,7 @@ class MemoryOptimizer:
             return freed_mb
 
         except Exception as e:
-            logger.error(f"[GC] Erro na coleta: {e}")
+            logger.error("[GC] Erro na coleta: %s", sanitize_error(e))
             return 0.0
 
     def _cleanup_weak_references(self) -> float:
@@ -326,7 +327,7 @@ class MemoryOptimizer:
             return freed_mb
 
         except Exception as e:
-            logger.error(f"[WEAK_REF] Erro na limpeza: {e}")
+            logger.error("[WEAK_REF] Erro na limpeza: %s", sanitize_error(e))
             return 0.0
 
     def _optimize_data_structures(self) -> float:
@@ -358,7 +359,7 @@ class MemoryOptimizer:
             return freed_mb
 
         except Exception as e:
-            logger.error(f"[OPTIMIZE] Erro na otimização: {e}")
+            logger.error("[OPTIMIZE] Erro na otimização: %s", sanitize_error(e))
             return 0.0
 
     # Cache API otimizada
@@ -381,7 +382,7 @@ class MemoryOptimizer:
                 return None
 
         except Exception as e:
-            logger.error(f"[CACHE] Erro no get: {e}")
+            logger.error("[CACHE] Erro no get: %s", sanitize_error(e))
             return None
 
     def set(self, key: str, value: Any, ttl_minutes: int = 60):
@@ -413,7 +414,7 @@ class MemoryOptimizer:
                 return True
 
         except Exception as e:
-            logger.error(f"[CACHE] Erro no set: {e}")
+            logger.error("[CACHE] Erro no set: %s", sanitize_error(e))
             return False
 
     def get_memory_stats(self) -> Dict[str, Any]:
@@ -456,7 +457,7 @@ class MemoryOptimizer:
             }
 
         except Exception as e:
-            logger.error(f"[STATS] Erro ao coletar estatísticas: {e}")
+            logger.error("[STATS] Erro ao coletar estatísticas: %s", sanitize_error(e))
             return {"error": "Failed to collect memory stats"}
 
     def _get_memory_status(self, percent: float) -> str:

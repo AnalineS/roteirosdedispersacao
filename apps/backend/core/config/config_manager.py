@@ -6,10 +6,9 @@ Replaces complex app_config.py with better separation of concerns
 
 import os
 import logging
-from typing import Dict, List, Any, Optional, Union
+from typing import Dict, List, Any, Optional
 from dataclasses import dataclass, field
 from enum import Enum
-from abc import ABC, abstractmethod
 
 
 logger = logging.getLogger(__name__)

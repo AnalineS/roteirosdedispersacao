@@ -6,9 +6,8 @@ Ativa todos os sistemas de monitoramento, observabilidade e segurança enterpris
 
 import logging
 import threading
-import time
 from datetime import datetime
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional
 from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)

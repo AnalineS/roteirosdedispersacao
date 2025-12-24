@@ -11,8 +11,8 @@ import json
 import re
 import time
 import threading
-from datetime import datetime, timedelta
-from typing import Dict, Any, Optional, List
+from datetime import datetime
+from typing import Dict, Any, Optional
 from dataclasses import dataclass, asdict
 from pathlib import Path
 import gzip

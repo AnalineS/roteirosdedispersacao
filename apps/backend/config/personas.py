@@ -5,7 +5,7 @@ Provides compatibility layer for config imports
 """
 
 # Import from the main personas module
-from services.ai.personas import get_personas, get_persona_prompt
+from services.ai.personas import get_personas
 
 def get_persona_by_id(persona_id: str):
     """Get persona configuration by ID"""
@@ -13,4 +13,4 @@ def get_persona_by_id(persona_id: str):
     return personas.get(persona_id)
 
 # Export main functions
-__all__ = ['get_personas', 'get_persona_prompt', 'get_persona_by_id']
+__all__ = ['get_personas', 'get_persona_by_id']

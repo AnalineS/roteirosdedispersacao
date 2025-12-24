@@ -5,15 +5,11 @@ Provides functional local services that mirror cloud functionality
 NO MOCKS - Real local implementations
 """
 
-import os
-import json
 import logging
-import subprocess
 import time
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any
 from pathlib import Path
 import psycopg2
-from psycopg2.extras import RealDictCursor
 # Redis import removed - no longer using Redis
 import sqlite3
 

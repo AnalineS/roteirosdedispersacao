@@ -22,7 +22,7 @@ import gc
 import sys
 import threading
 import time
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional
 from datetime import datetime, timedelta
 from collections import OrderedDict
 import logging

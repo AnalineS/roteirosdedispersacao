@@ -10,7 +10,6 @@ from datetime import datetime
 from flask import Flask, jsonify, request
 from app_config import config, EnvironmentConfig
 from core.security.custom_cors import CustomCORSMiddleware
-from core.versioning import APIVersionManager
 from core.dependencies import dependency_injector
 
 logger = logging.getLogger(__name__)

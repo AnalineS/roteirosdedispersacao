@@ -7,6 +7,7 @@ from functools import wraps
 from typing import Optional, Dict, Any
 from flask import request, jsonify, g
 import logging
+from core.logging.sanitizer import sanitize_log_input, sanitize_error
 
 logger = logging.getLogger(__name__)
 
@@ -49,11 +50,11 @@ def require_auth(f):
                 'session_id': payload.get('session_id')
             }
 
-            logger.debug(f"Usuário autenticado: {payload.get('email')}")
+            logger.debug("Usuário autenticado: %s", sanitize_log_input(payload.get('email')))
             return f(*args, **kwargs)
 
         except Exception as e:
-            logger.error(f"Erro na autenticação: {e}")
+            logger.error("Erro na autenticação: %s", sanitize_error(e))
             return jsonify({
                 'error': 'Erro interno de autenticação',
                 'code': 'AUTH_ERROR'
@@ -80,7 +81,7 @@ def get_current_user() -> Optional[Dict[str, Any]]:
         return None
 
     except Exception as e:
-        logger.error(f"Erro ao obter usuário atual: {e}")
+        logger.error("Erro ao obter usuário atual: %s", sanitize_error(e))
         return None
 
 def verify_token(token: str) -> Optional[Dict[str, Any]]:
@@ -106,7 +107,7 @@ def verify_token(token: str) -> Optional[Dict[str, Any]]:
         }
 
     except Exception as e:
-        logger.error(f"Erro na verificação de token: {e}")
+        logger.error("Erro na verificação de token: %s", sanitize_error(e))
         return None
 
 def extract_user_from_request() -> Optional[Dict[str, Any]]:
@@ -124,7 +125,7 @@ def extract_user_from_request() -> Optional[Dict[str, Any]]:
         return verify_token(token)
 
     except Exception as e:
-        logger.error(f"Erro ao extrair usuário da requisição: {e}")
+        logger.error("Erro ao extrair usuário da requisição: %s", sanitize_error(e))
         return None
 
 def require_auth_optional(f):
@@ -138,7 +139,7 @@ def require_auth_optional(f):
             user = extract_user_from_request()
             if user:
                 g.current_user = user
-                logger.debug(f"Usuário opcional autenticado: {user.get('email')}")
+                logger.debug("Usuário opcional autenticado: %s", sanitize_log_input(user.get('email')))
             else:
                 g.current_user = None
                 logger.debug("Requisição sem autenticação (opcional)")
@@ -146,7 +147,7 @@ def require_auth_optional(f):
             return f(*args, **kwargs)
 
         except Exception as e:
-            logger.error(f"Erro na autenticação opcional: {e}")
+            logger.error("Erro na autenticação opcional: %s", sanitize_error(e))
             g.current_user = None
             return f(*args, **kwargs)
 

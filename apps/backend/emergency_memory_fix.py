@@ -13,7 +13,6 @@ CRITICAL for medical system reliability.
 import os
 import sys
 import gc
-import threading
 import logging
 from datetime import datetime
 
@@ -136,7 +135,7 @@ class EmergencyMemoryFix:
 
             # NumPy
             try:
-                import numpy as np
+                import numpy
                 # Note: This must be set before numpy import in real usage
                 thread_configs += 1
             except ImportError:
