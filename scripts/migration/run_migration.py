@@ -39,16 +39,54 @@ def get_github_secret(name):
         print(f"Erro ao obter secret {name}: {e}")
         return None
 
+def get_env_or_github_secret(env_name, secret_name=None):
+    """Obtém valor de variável de ambiente ou GitHub Secret"""
+    if secret_name is None:
+        secret_name = env_name
+
+    # Primeiro tenta variável de ambiente
+    value = os.getenv(env_name)
+    if value:
+        return value
+
+    # Tenta obter do GitHub usando gh CLI
+    try:
+        result = subprocess.run(
+            ['gh', 'variable', 'get', secret_name],
+            capture_output=True,
+            text=True,
+            timeout=5
+        )
+        if result.returncode == 0:
+            return result.stdout.strip()
+    except Exception:
+        pass
+
+    return None
+
 def main():
     print("[FIX] Executando migração com GitHub Secrets...")
-    
+
+    # Obter valores de secrets do GitHub ou variáveis de ambiente
+    supabase_url = get_env_or_github_secret('SUPABASE_PROJECT_URL')
+    supabase_key = get_env_or_github_secret('SUPABASE_PUBLISHABLE_KEY')
+    openrouter_key = get_env_or_github_secret('OPENROUTER_API_KEY')
+    secret_key = get_env_or_github_secret('SECRET_KEY')
+
+    if not supabase_url or not supabase_key:
+        print("[ERROR] SUPABASE_PROJECT_URL e SUPABASE_PUBLISHABLE_KEY são obrigatórias")
+        print("[INFO] Configure usando:")
+        print("  - Variáveis de ambiente localmente")
+        print("  - GitHub Secrets para CI/CD")
+        sys.exit(1)
+
     # Configurar variáveis de ambiente com nomes corretos do app_config
     env_vars = {
-        'SUPABASE_PROJECT_URL': 'https://skmyflckurikjprdleuz.supabase.co',
-        'SUPABASE_PUBLISHABLE_KEY': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNrbXlmbGNrdXJpa2pwcmRsZXV6Iiwicm9sZSI6InB1YmxpYyIsImlhdCI6MTcyNDk0NzI1MiwiZXhwIjoyMDQwNTIzMjUyfQ.h1-q8LQMO4PKqTbJQCv6PbhBr_Jqzs1V0mqgGRiXUa8',
+        'SUPABASE_PROJECT_URL': supabase_url,
+        'SUPABASE_PUBLISHABLE_KEY': supabase_key,
         'EMBEDDINGS_ENABLED': 'true',
-        'SECRET_KEY': 'development_key_for_migration',
-        'OPENROUTER_API_KEY': 'placeholder_key',
+        'SECRET_KEY': secret_key or 'development_key_for_migration',
+        'OPENROUTER_API_KEY': openrouter_key or 'placeholder_key',
         'CORS_ORIGINS': 'http://localhost:3000'
     }
     

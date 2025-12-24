@@ -257,9 +257,13 @@ class SMTPProvider(BaseEmailProvider):
                 for part in map(create_attachment, message.attachments):
                     msg.attach(part)
             
-            # Conectar e enviar
+            # Conectar e enviar com SSL seguro (TLS 1.2+)
             context = ssl.create_default_context()
-            
+            # Garantir uso apenas de protocolos TLS seguros (1.2+)
+            context.minimum_version = ssl.TLSVersion.TLSv1_2
+            context.check_hostname = True
+            context.verify_mode = ssl.CERT_REQUIRED
+
             with smtplib.SMTP(self.config.smtp_host, self.config.smtp_port) as server:
                 if self.config.smtp_use_tls:
                     server.starttls(context=context)
