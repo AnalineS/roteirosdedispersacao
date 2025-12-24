@@ -64,7 +64,11 @@ export default function ChatPage() {
     currentSentiment,
     knowledgeStats,
     isSearchingKnowledge,
-    fallbackState
+    fallbackState,
+    classifiedError,
+    currentRetryCount,
+    isManualRetrying,
+    manualRetry
   } = useChat({ 
     persistToLocalStorage: false, 
     enableSentimentAnalysis: true,
@@ -412,6 +416,16 @@ export default function ChatPage() {
           onHistoryToggle={() => setShowHistory(!showHistory)}
           showHistory={showHistory}
           onFileUpload={handleFileUpload}
+          classifiedError={classifiedError}
+          currentRetryCount={currentRetryCount}
+          isManualRetrying={isManualRetrying}
+          onManualRetry={() => {
+            // Issue #330: Manual retry with last message
+            const lastUserMessage = currentMessages.filter(m => m.role === 'user').pop();
+            if (lastUserMessage && selectedPersona) {
+              manualRetry(lastUserMessage.content, selectedPersona);
+            }
+          }}
         />
         
         {/* Chat Feedback Overlay */}

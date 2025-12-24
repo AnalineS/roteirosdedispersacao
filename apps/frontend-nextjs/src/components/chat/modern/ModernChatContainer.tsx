@@ -18,6 +18,8 @@ import AccessibleChatInput from '../accessibility/AccessibleChatInput';
 import AccessibleMessageBubble from '../accessibility/AccessibleMessageBubble';
 import { useChatAccessibility } from '../accessibility/ChatAccessibilityProvider';
 import Skeleton from '@/components/ui/Skeleton';
+import ChatErrorMessage from './ChatErrorMessage';
+import { type ClassifiedError } from '@/utils/errorClassification';
 // KnowledgeStats imported above
 
 interface ModernChatContainerProps {
@@ -60,6 +62,12 @@ interface ModernChatContainerProps {
 
   // Upload de arquivos
   onFileUpload?: (files: FileList) => void;
+
+  // Issue #330: Error handling
+  classifiedError?: ClassifiedError | null;
+  currentRetryCount?: number;
+  isManualRetrying?: boolean;
+  onManualRetry?: () => void;
 }
 
 // OTIMIZAÇÃO CRÍTICA: Componente principal simplificado usando subcomponentes especializados
@@ -82,7 +90,11 @@ const ModernChatContainer = memo(function ModernChatContainer({
   suggestions,
   showSuggestions,
   onSuggestionClick,
-  onFileUpload
+  onFileUpload,
+  classifiedError,
+  currentRetryCount = 0,
+  isManualRetrying = false,
+  onManualRetry
 }: ModernChatContainerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -149,6 +161,17 @@ const ModernChatContainer = memo(function ModernChatContainer({
           <Skeleton variant="list" height="60px" aria-label="Carregando segunda mensagem" />
           <Skeleton variant="list" height="60px" aria-label="Carregando terceira mensagem" />
         </div>
+      )}
+
+      {/* Issue #330: Display classified error with manual retry */}
+      {classifiedError && onManualRetry && (
+        <ChatErrorMessage
+          error={classifiedError}
+          onRetry={onManualRetry}
+          retryCount={currentRetryCount}
+          maxRetries={3}
+          isRetrying={isManualRetrying}
+        />
       )}
 
       {messages.map((message, index) => {
