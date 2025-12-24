@@ -3,7 +3,7 @@
  * Usa as personas do backend com prompts de IA
  */
 
-import { useCallback, useRef, useEffect, useMemo } from 'react';
+import { useCallback, useRef, useEffect, useMemo, useState } from 'react';
 import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 import { sendChatMessage, type ChatMessage, type ChatRequest, type ChatResponse } from '@/services/api';
 import { PersonaRAGIntegration, type PersonaResponse } from '@/services/personaRAGIntegration';
@@ -16,6 +16,7 @@ import { FallbackResult } from '@/services/fallbackSystem';
 import { useSafeAuth } from '@/hooks/useSafeAuth';
 import { generateTempUserId } from '@/utils/cryptoUtils';
 import { useIntelligentRouting } from '@/hooks/useIntelligentRouting';
+import { classifyError, type ClassifiedError } from '@/utils/errorClassification';
 
 // OTIMIZAÇÃO CRÍTICA: Hooks especializados para reduzir complexidade
 import { useChatMessages } from '@/hooks/useChatMessages';
@@ -33,8 +34,8 @@ interface UseChatOptions {
 
 export function useChat(options: UseChatOptions = {}) {
   const { captureError } = useErrorHandler();
-  const { 
-    persistToLocalStorage = true, 
+  const {
+    persistToLocalStorage = true,
     storageKey = 'chat-history',
     enableSentimentAnalysis = true,
     enableKnowledgeEnrichment = true,
@@ -42,6 +43,11 @@ export function useChat(options: UseChatOptions = {}) {
     availablePersonas = {},
     onMessageReceived
   } = options;
+
+  // Issue #330: Classified error state for better error messages
+  const [classifiedError, setClassifiedError] = useState<ClassifiedError | null>(null);
+  const [currentRetryCount, setCurrentRetryCount] = useState(0);
+  const [isManualRetrying, setIsManualRetrying] = useState(false);
 
   // Instância do PersonaRAGIntegration
   const personaRAG = useMemo(() => PersonaRAGIntegration.getInstance(), []);
@@ -294,13 +300,18 @@ export function useChat(options: UseChatOptions = {}) {
     } catch (err) {
       console.error(`Erro ao enviar mensagem (tentativa ${retryCount + 1}):`, err);
       captureError(err as string | Error, { severity: 'medium' });
-      
-      if (retryCount < maxRetries) {
+
+      // Issue #330: Classify error for better user feedback
+      const classified = classifyError(err);
+      setClassifiedError(classified);
+      setCurrentRetryCount(retryCount + 1);
+
+      if (retryCount < maxRetries && classified.canRetry) {
         // Retry with exponential backoff
         setTimeout(() => {
           sendMessage(message, personaId, retryCount + 1);
         }, retryDelay);
-        
+
         setError(`Tentando novamente... (${retryCount + 1}/${maxRetries})`);
       } else {
         // Final failure - usar fallback se disponível
@@ -390,6 +401,18 @@ export function useChat(options: UseChatOptions = {}) {
     safeLocalStorage()?.removeItem('session_migration');
   }, []);
 
+  // Issue #330: Manual retry function for user-initiated retry
+  const manualRetry = useCallback(async (message: string, personaId: string) => {
+    setIsManualRetrying(true);
+    setClassifiedError(null);
+    setCurrentRetryCount(0);
+    try {
+      await sendMessage(message, personaId, 0);
+    } finally {
+      setIsManualRetrying(false);
+    }
+  }, [sendMessage]);
+
   return {
     messages,
     loading,
@@ -420,6 +443,11 @@ export function useChat(options: UseChatOptions = {}) {
     // PersonaRAG Integration - Novos recursos
     personaRAGStats: () => personaRAG.getPersonaStats(),
     getPersonaRecommendation: (query: string) => personaRAG.recommendPersona(query),
-    configurePersona: (personaId: string, config: any) => personaRAG.configurePersona(personaId, config)
+    configurePersona: (personaId: string, config: any) => personaRAG.configurePersona(personaId, config),
+    // Issue #330: Enhanced error handling
+    classifiedError,
+    currentRetryCount,
+    isManualRetrying,
+    manualRetry
   };
 }
