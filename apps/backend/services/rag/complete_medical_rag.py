@@ -250,8 +250,8 @@ class MedicalDocumentProcessor:
         for line in lines[:3]:  # Check first 3 lines
             line = line.strip()
             if line.startswith('#') or line.isupper() or line.startswith('**'):
-                # Clean section name
-                section = re.sub(r'^#+\s*|\*\*|[^\w\s]', '', line).strip()
+                # Clean section name (remove markdown formatting and special chars)
+                section = re.sub(r'(^#+\s*|\*\*|[^\w\s])', '', line).strip()
                 return section[:50]  # Limit length
         return "content"
 
