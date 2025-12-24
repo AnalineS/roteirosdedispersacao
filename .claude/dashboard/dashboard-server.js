@@ -24,7 +24,7 @@ class MedicalDashboardServer {
         this.server = http.createServer(this.app);
         this.io = socketIo(this.server, {
             cors: {
-                origin: "*",
+                origin: process.env.DASHBOARD_ALLOWED_ORIGINS?.split(',') || ['http://localhost:3030', 'http://localhost:3000'],
                 methods: ["GET", "POST"]
             }
         });
