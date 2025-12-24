@@ -12,6 +12,7 @@ from dataclasses import dataclass
 
 # Import dependências necessárias
 # SearchResult será importado nas linhas seguintes
+from core.logging.sanitizer import sanitize_log_input, sanitize_error
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +24,7 @@ try:
     from services.rag.medical_chunking import MedicalChunk
     DEPENDENCIES_AVAILABLE = True
 except ImportError as e:
-    logger.warning(f"[WARNING] Dependências RAG não disponíveis: {e}")
+    logger.warning("[WARNING] Dependências RAG não disponíveis: %s", sanitize_error(e))
     DEPENDENCIES_AVAILABLE = False
 
 # SonarQube S1192: Constant for duplicated string literal
@@ -444,7 +445,7 @@ INSTRUÇÃO: Responda usando sua expertise em hanseníase, baseando-se no contex
             return None
 
         except Exception as e:
-            logger.warning(f"Erro no enhancement OpenRouter: {e}")
+            logger.warning("Erro no enhancement OpenRouter: %s", sanitize_error(e))
             return None
 
     def _classify_query_type(self, query: str, category: str) -> str:
@@ -684,7 +685,7 @@ Se você tiver dúvidas sobre hanseníase, ficarei feliz em ajudar! 😊
                 self.vector_store.client.table('rag_context').insert(rag_data).execute()
                 
         except Exception as e:
-            logger.debug(f"Erro ao salvar contexto RAG: {e}")
+            logger.debug("Erro ao salvar contexto RAG: %s", sanitize_error(e))
     
     def get_stats(self) -> Dict[str, Any]:
         """Estatísticas do sistema RAG"""

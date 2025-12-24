@@ -13,6 +13,8 @@ from dataclasses import dataclass
 from enum import Enum
 import httpx
 
+from core.logging.sanitizer import sanitize_error
+
 logger = logging.getLogger(__name__)
 
 class ProviderStatus(Enum):
@@ -174,17 +176,17 @@ class AIProviderManager:
     
     def _record_failure(self, provider: str, error: str):
         """Registra falha de chamada"""
-        
+
         # Circuit breaker
         if provider in self.circuit_breakers:
             breaker = self.circuit_breakers[provider]
             breaker.failure_count += 1
             breaker.last_failure_time = datetime.now()
-            
+
             if breaker.failure_count >= breaker.failure_threshold:
                 if breaker.state != CircuitBreakerState.OPEN:
                     breaker.state = CircuitBreakerState.OPEN
-                    logger.warning(f"[WARNING] Circuit breaker {provider}: -> OPEN")
+                    logger.warning("[WARNING] Circuit breaker %s: -> OPEN", provider)
                     
         # Métricas
         if provider not in self.performance_metrics:
@@ -209,8 +211,8 @@ class AIProviderManager:
             self.health_status[provider] = ProviderStatus.DEGRADED
         else:
             self.health_status[provider] = ProviderStatus.HEALTHY
-            
-        logger.warning(f"[ERROR] {provider} failure: {error}")
+
+        logger.warning("[ERROR] %s failure: %s", provider, error)
     
     async def generate_response(
         self, 

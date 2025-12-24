@@ -12,6 +12,8 @@ from pathlib import Path
 import numpy as np
 from dataclasses import dataclass, asdict
 
+from core.logging.sanitizer import sanitize_log_input, sanitize_error
+
 logger = logging.getLogger(__name__)
 
 # Import da nova SupabaseVectorStore - FASE 3 RAG
@@ -21,7 +23,7 @@ try:
     SUPABASE_VECTOR_AVAILABLE = True
     logger.info("[OK] SupabaseVectorStore disponível - FASE 3 RAG")
 except ImportError as e:
-    logger.warning(f"[WARNING] SupabaseVectorStore não disponível: {e}")
+    logger.warning("[WARNING] SupabaseVectorStore não disponível: %s", sanitize_error(e))
     SUPABASE_VECTOR_AVAILABLE = False
 
 # AstraDB - REMOVIDO - migração completa para Supabase
@@ -93,7 +95,7 @@ class LocalVectorStore:
             logger.info(f"LocalVectorStore carregado: {len(self.documents)} documentos")
             
         except Exception as e:
-            logger.warning(f"Erro ao carregar LocalVectorStore: {e}")
+            logger.warning("Erro ao carregar LocalVectorStore: %s", sanitize_error(e))
             self.documents = {}
             self.embeddings_matrix = None
             self.doc_ids = []
@@ -118,7 +120,7 @@ class LocalVectorStore:
                 json.dump(self.doc_ids, f, ensure_ascii=False, indent=2)
                 
         except Exception as e:
-            logger.error(f"Erro ao salvar LocalVectorStore: {e}")
+            logger.error("Erro ao salvar LocalVectorStore: %s", sanitize_error(e))
     
     def add_document(self, document: VectorDocument) -> bool:
         """Adiciona documento ao store"""
@@ -147,7 +149,7 @@ class LocalVectorStore:
             return True
             
         except Exception as e:
-            logger.error(f"Erro ao adicionar documento: {e}")
+            logger.error("Erro ao adicionar documento: %s", sanitize_error(e))
             return False
     
     def search_similar(
@@ -181,7 +183,7 @@ class LocalVectorStore:
             return results
             
         except Exception as e:
-            logger.error(f"Erro na busca: {e}")
+            logger.error("Erro na busca: %s", sanitize_error(e))
             return []
     
     def get_document(self, doc_id: str) -> Optional[VectorDocument]:
@@ -207,7 +209,7 @@ class LocalVectorStore:
             return True
             
         except Exception as e:
-            logger.error(f"Erro ao deletar documento: {e}")
+            logger.error("Erro ao deletar documento: %s", sanitize_error(e))
             return False
     
     def clear(self):
@@ -302,7 +304,7 @@ class AstraDBVectorStore:
             logger.info(f"[OK] Schema AstraDB configurado: {self.keyspace}.{self.table_name}")
             
         except Exception as e:
-            logger.error(f"Erro ao criar schema AstraDB: {e}")
+            logger.error("Erro ao criar schema AstraDB: %s", sanitize_error(e))
             self.use_local = True
     
     def add_document(self, document: VectorDocument) -> bool:
@@ -340,7 +342,7 @@ class AstraDBVectorStore:
             return True
             
         except Exception as e:
-            logger.error(f"Erro ao adicionar no AstraDB: {e}")
+            logger.error("Erro ao adicionar no AstraDB: %s", sanitize_error(e))
             # Fallback para local
             return self.local_store.add_document(document)
     
@@ -389,7 +391,7 @@ class AstraDBVectorStore:
             return results
             
         except Exception as e:
-            logger.error(f"Erro na busca AstraDB: {e}")
+            logger.error("Erro na busca AstraDB: %s", sanitize_error(e))
             # Fallback para local
             return self.local_store.search_similar(query_embedding, top_k, min_score)
     
@@ -421,7 +423,7 @@ class AstraDBVectorStore:
             return None
             
         except Exception as e:
-            logger.error(f"Erro ao buscar documento: {e}")
+            logger.error("Erro ao buscar documento: %s", sanitize_error(e))
             return self.local_store.get_document(doc_id)
     
     def delete_document(self, doc_id: str) -> bool:
@@ -439,7 +441,7 @@ class AstraDBVectorStore:
             return True
             
         except Exception as e:
-            logger.error(f"Erro ao deletar do AstraDB: {e}")
+            logger.error("Erro ao deletar do AstraDB: %s", sanitize_error(e))
             return False
     
     def clear(self):
@@ -508,7 +510,7 @@ def get_vector_store():
                 logger.info("📁 Usando LocalVectorStore como fallback")
                 
         except Exception as e:
-            logger.error(f"Erro ao inicializar vector store: {e}")
+            logger.error("Erro ao inicializar vector store: %s", sanitize_error(e))
             return None
     
     return _vector_store
@@ -526,6 +528,6 @@ def get_supabase_vector_store():
             from app_config import config
             return SupabaseVectorStore(config)
         except Exception as e:
-            logger.error(f"Erro ao inicializar SupabaseVectorStore: {e}")
+            logger.error("Erro ao inicializar SupabaseVectorStore: %s", sanitize_error(e))
             return None
     return None

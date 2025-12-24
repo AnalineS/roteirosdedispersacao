@@ -11,6 +11,7 @@ import sys
 import os
 import logging
 from pathlib import Path
+from core.logging.sanitizer import sanitize_error
 
 # Ensure UTF-8 encoding on Windows
 if sys.platform == "win32":
@@ -109,7 +110,7 @@ def create_app():
         logger.info("All blueprints registered successfully")
 
     except ImportError as e:
-        logger.error(f"Failed to import blueprints: {e}")
+        logger.error("Failed to import blueprints: %s", sanitize_error(e))
         # Continue without some blueprints if they're not available
 
     # Initialize JWT if available
@@ -122,7 +123,7 @@ def create_app():
     except ImportError:
         logger.info("JWT authentication not available")
     except Exception as e:
-        logger.warning(f"JWT authentication setup failed: {e}")
+        logger.warning("JWT authentication setup failed: %s", sanitize_error(e))
 
     # Initialize rate limiting if available
     try:
@@ -132,7 +133,7 @@ def create_app():
     except ImportError:
         logger.warning("Rate limiter not available")
     except Exception as e:
-        logger.error(f"Rate limiter initialization failed: {e}")
+        logger.error("Rate limiter initialization failed: %s", sanitize_error(e))
 
     # Health check endpoints - Cloud Run optimized - ultra fast
     @app.route('/health', methods=['GET'])
@@ -223,7 +224,7 @@ def run_application():
     except KeyboardInterrupt:
         logger.info("Server stopped by user")
     except Exception as e:
-        logger.error(f"Application startup failed: {e}")
+        logger.error("Application startup failed: %s", sanitize_error(e))
         sys.exit(1)
 
 # WSGI application instance for Gunicorn
@@ -233,7 +234,7 @@ try:
     app = create_app()
     logger.info("Flask app created successfully for WSGI")
 except Exception as e:
-    logger.error(f"Failed to create Flask app for WSGI: {e}")
+    logger.error("Failed to create Flask app for WSGI: %s", sanitize_error(e))
     # Create minimal app for error handling
     from flask import Flask
     app = Flask(__name__)

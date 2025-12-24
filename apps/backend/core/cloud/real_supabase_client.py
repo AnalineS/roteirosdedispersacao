@@ -12,6 +12,7 @@ from datetime import datetime
 from supabase import create_client, Client
 import psycopg2
 from psycopg2.extras import RealDictCursor
+from core.logging.sanitizer import sanitize_log_input, sanitize_error
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +36,7 @@ class RealSupabaseClient:
                 self.pg_conn.autocommit = True
                 logger.info("✅ Real PostgreSQL connection established for pgvector")
             except Exception as e:
-                logger.error(f"❌ Failed to connect to PostgreSQL: {e}")
+                logger.error("❌ Failed to connect to PostgreSQL: %s", sanitize_error(e))
                 raise
 
         # Validate connection
@@ -64,8 +65,8 @@ class RealSupabaseClient:
                 result = self.client.rpc('version').execute()
                 logger.info("✅ Real Supabase connection validated successfully")
             except Exception as e:
-                logger.error(f"❌ Failed to validate Supabase connection: {e}")
-                raise ConnectionError(f"Cannot connect to Supabase: {e}")
+                logger.error("❌ Failed to validate Supabase connection: %s", sanitize_error(e))
+                raise ConnectionError(f"Cannot connect to Supabase: {sanitize_error(e)}")
 
     def _setup_vector_tables(self):
         """Setup pgvector tables for real vector storage"""
@@ -129,7 +130,7 @@ class RealSupabaseClient:
                 logger.info("✅ Real pgvector tables created successfully")
 
         except Exception as e:
-            logger.error(f"❌ Failed to setup vector tables: {e}")
+            logger.error("❌ Failed to setup vector tables: %s", sanitize_error(e))
             raise
 
     def store_vector(self, content: str, embedding: List[float], metadata: Dict[str, Any] = None, source: str = None) -> int:
@@ -152,7 +153,7 @@ class RealSupabaseClient:
                 return vector_id
 
         except Exception as e:
-            logger.error(f"❌ Failed to store vector: {e}")
+            logger.error("❌ Failed to store vector: %s", sanitize_error(e))
             raise
 
     def search_vectors(self, query_embedding: List[float], limit: int = 5, similarity_threshold: float = 0.7) -> List[Dict[str, Any]]:
@@ -194,7 +195,7 @@ class RealSupabaseClient:
                 return vectors
 
         except Exception as e:
-            logger.error(f"❌ Failed to search vectors: {e}")
+            logger.error("❌ Failed to search vectors: %s", sanitize_error(e))
             raise
 
     def store_chat_message(self, session_id: str, user_message: str, assistant_response: str, persona: str, metadata: Dict[str, Any] = None) -> int:
@@ -214,7 +215,7 @@ class RealSupabaseClient:
             return chat_id
 
         except Exception as e:
-            logger.error(f"❌ Failed to store chat message: {e}")
+            logger.error("❌ Failed to store chat message: %s", sanitize_error(e))
             raise
 
     def store_feedback(self, session_id: str, rating: int, feedback_text: str = None, message_id: str = None, user_agent: str = None, ip_address: str = None) -> int:
@@ -235,7 +236,7 @@ class RealSupabaseClient:
             return feedback_id
 
         except Exception as e:
-            logger.error(f"❌ Failed to store feedback: {e}")
+            logger.error("❌ Failed to store feedback: %s", sanitize_error(e))
             raise
 
     def get_chat_history(self, session_id: str, limit: int = 50) -> List[Dict[str, Any]]:
@@ -248,7 +249,7 @@ class RealSupabaseClient:
             return history
 
         except Exception as e:
-            logger.error(f"❌ Failed to get chat history: {e}")
+            logger.error("❌ Failed to get chat history: %s", sanitize_error(e))
             raise
 
     def get_system_stats(self) -> Dict[str, Any]:
@@ -280,7 +281,7 @@ class RealSupabaseClient:
             return stats
 
         except Exception as e:
-            logger.error(f"❌ Failed to get system stats: {e}")
+            logger.error("❌ Failed to get system stats: %s", sanitize_error(e))
             return {'error': str(e)}
 
     def health_check(self) -> Dict[str, Any]:

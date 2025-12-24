@@ -8,6 +8,7 @@ from typing import Dict, Any
 from flask import request
 import time
 import logging
+from core.logging.sanitizer import sanitize_log_input, sanitize_ip
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +48,7 @@ def rate_limit(max_requests: int = 100, window_seconds: int = 3600):
             # Check rate limit
             requests = _rate_limit_store[key]['requests']
             if len(requests) >= max_requests:
-                logger.warning(f"Rate limit exceeded for {client_ip} on {endpoint}")
+                logger.warning("Rate limit exceeded for %s on %s", sanitize_ip(client_ip), sanitize_log_input(endpoint))
                 from flask import jsonify
                 return jsonify({
                     'error': 'Rate limit exceeded',

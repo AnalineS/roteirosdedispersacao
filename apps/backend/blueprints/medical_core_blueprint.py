@@ -9,6 +9,8 @@ from flask import Blueprint, request, jsonify
 from datetime import datetime
 import logging
 
+from core.logging.sanitizer import sanitize_error, sanitize_log_input
+
 # Create blueprint
 medical_core_bp = Blueprint('medical_core', __name__, url_prefix='/api/v1')
 
@@ -53,9 +55,9 @@ def chat():
             from services.rag.supabase_rag_system import query_rag_system
             rag_response = query_rag_system(message, persona=rag_persona, max_chunks=3)
             rag_used = rag_response is not None
-            logger.info(f"RAG query successful: {rag_used}, system: supabase_rag")
+            logger.info("RAG query successful: %s, system: supabase_rag", rag_used)
         except Exception as e:
-            logger.warning(f"RAG query failed: {e}")
+            logger.warning("RAG query failed: %s", sanitize_error(e))
 
         # Generate response based on persona and RAG context
         if rag_response:
@@ -113,7 +115,7 @@ Estou torcendo por você! ✨"""
         return jsonify(response), 200
 
     except Exception as e:
-        logger.error(f"Chat error: {e}")
+        logger.error("Chat error: %s", sanitize_error(e))
         return jsonify({
             'error': 'Internal server error',
             'error_code': 'CHAT_ERROR',
@@ -149,7 +151,7 @@ def health_check():
             rag_details = {'note': 'Use ?detailed=true for comprehensive RAG status'}
 
     except Exception as e:
-        logger.warning(f"RAG health check failed: {e}")
+        logger.warning("RAG health check failed: %s", sanitize_error(e))
         rag_status = 'ERROR'
         rag_details = {'error': str(e)} if detailed else {}
 
@@ -205,7 +207,7 @@ def validate_medical_response():
         return jsonify(validation_result), 200
 
     except Exception as e:
-        logger.error(f"Validation error: {e}")
+        logger.error("Validation error: %s", sanitize_error(e))
         return jsonify({
             'error': 'Validation failed',
             'error_code': 'VALIDATION_ERROR',
@@ -261,7 +263,7 @@ def embeddings_diagnostics():
         return jsonify(diagnostics), 200
 
     except Exception as e:
-        logger.error(f"Embeddings diagnostics error: {e}")
+        logger.error("Embeddings diagnostics error: %s", sanitize_error(e))
         return jsonify({
             'status': 'ERROR',
             'message': str(e),

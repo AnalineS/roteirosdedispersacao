@@ -12,6 +12,7 @@ from typing import Dict, Any, Optional
 
 # Import dependências
 from core.dependencies import get_cache
+from core.logging.sanitizer import sanitize_log_input, sanitize_ip, sanitize_request_id, sanitize_error
 
 # Configurar logger
 logger = logging.getLogger(__name__)
@@ -211,7 +212,7 @@ def submit_feedback():
     request_id = f"feedback_{int(start_time.timestamp() * 1000)}"
 
     try:
-        logger.info(f"[{request_id}] Nova submissão de feedback de {request.remote_addr}")
+        logger.info("[%s] Nova submissão de feedback de %s", sanitize_request_id(request_id), sanitize_ip(request.remote_addr))
 
         # Validação básica da requisição
         if not request.is_json:
@@ -256,14 +257,14 @@ def submit_feedback():
                 "message": "Feedback received successfully"
             }
 
-            logger.info(f"[{request_id}] Feedback simples sanitizado e processado")
+            logger.info("[%s] Feedback simples sanitizado e processado", sanitize_request_id(request_id))
             return jsonify(response), 200
 
         # Formato completo (original)
         # Validar dados de feedback
         is_valid, error_message = validate_feedback_data(data)
         if not is_valid:
-            logger.warning(f"[{request_id}] Dados de feedback inválidos: {error_message}")
+            logger.warning("[%s] Dados de feedback inválidos: %s", sanitize_request_id(request_id), sanitize_log_input(error_message))
             return jsonify({
                 "error": error_message,
                 "error_code": "INVALID_FEEDBACK_DATA",
@@ -292,13 +293,13 @@ def submit_feedback():
             }
         }
 
-        logger.info(f"[{request_id}] Feedback armazenado com sucesso: {feedback_id}")
+        logger.info("[%s] Feedback armazenado com sucesso: %s", sanitize_request_id(request_id), sanitize_request_id(feedback_id))
 
         return jsonify(response), 201
 
     except Exception as e:
         processing_time = int((datetime.now() - start_time).total_seconds() * 1000)
-        logger.error(f"[{request_id}] Erro ao processar feedback: {e}")
+        logger.error("[%s] Erro ao processar feedback: %s", sanitize_request_id(request_id), sanitize_error(e))
 
         return jsonify({
             "error": "Erro interno do servidor",
@@ -313,7 +314,7 @@ def get_feedback_stats():
     """Endpoint para obter estatísticas de feedback"""
     try:
         request_id = f"feedback_stats_{int(datetime.now().timestamp() * 1000)}"
-        logger.info(f"[{request_id}] Solicitação de estatísticas de feedback")
+        logger.info("[%s] Solicitação de estatísticas de feedback", sanitize_request_id(request_id))
         
         cache = get_cache()
         if not cache:
@@ -362,11 +363,11 @@ def get_feedback_stats():
             }
         }
         
-        logger.info(f"[{request_id}] Estatísticas de feedback retornadas")
+        logger.info("[%s] Estatísticas de feedback retornadas", sanitize_request_id(request_id))
         return jsonify(response), 200
         
     except Exception as e:
-        logger.error(f"[{request_id}] Erro ao obter estatísticas: {e}")
+        logger.error("[%s] Erro ao obter estatísticas: %s", sanitize_request_id(request_id), sanitize_error(e))
         return jsonify({
             "error": "Erro interno do servidor",
             "error_code": "INTERNAL_ERROR",
@@ -379,7 +380,7 @@ def get_feedback_details(feedback_id: str):
     """Endpoint para obter detalhes de um feedback específico"""
     try:
         request_id = f"feedback_detail_{int(datetime.now().timestamp() * 1000)}"
-        logger.info(f"[{request_id}] Detalhes solicitados para feedback: {feedback_id}")
+        logger.info("[%s] Detalhes solicitados para feedback: %s", sanitize_request_id(request_id), sanitize_request_id(feedback_id))
         
         cache = get_cache()
         if not cache:
@@ -414,11 +415,11 @@ def get_feedback_details(feedback_id: str):
             "timestamp": datetime.now().isoformat()
         }
         
-        logger.info(f"[{request_id}] Detalhes do feedback {feedback_id} retornados")
+        logger.info("[%s] Detalhes do feedback %s retornados", sanitize_request_id(request_id), sanitize_request_id(feedback_id))
         return jsonify(response), 200
         
     except Exception as e:
-        logger.error(f"[{request_id}] Erro ao obter detalhes do feedback: {e}")
+        logger.error("[%s] Erro ao obter detalhes do feedback: %s", sanitize_request_id(request_id), sanitize_error(e))
         return jsonify({
             "error": "Erro interno do servidor",
             "error_code": "INTERNAL_ERROR",

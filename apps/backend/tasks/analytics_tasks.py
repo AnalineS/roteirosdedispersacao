@@ -11,6 +11,7 @@ from typing import Dict, Any, List
 import json
 import sqlite3
 from pathlib import Path
+from core.logging.sanitizer import sanitize_error
 
 logger = logging.getLogger(__name__)
 

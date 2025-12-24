@@ -21,6 +21,8 @@ except ImportError:
     # Fallback para lista Python
     np = None
 
+from core.logging.sanitizer import sanitize_log_input, sanitize_error
+
 logger = logging.getLogger(__name__)
 
 # Import obrigatório para SearchResult

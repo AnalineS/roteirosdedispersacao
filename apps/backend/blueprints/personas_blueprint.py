@@ -11,6 +11,7 @@ from typing import Dict, List, Any
 
 # Import dependências
 from core.dependencies import get_cache, get_config
+from core.logging.sanitizer import sanitize_error, sanitize_log_input, sanitize_request_id
 
 # Import personas services (correct path: services.ai.personas)
 try:
@@ -146,7 +147,7 @@ def get_real_persona_stats(persona_id: str) -> Dict:
                 "last_updated": stats.get('last_updated', datetime.now().isoformat())
             }
         except Exception as e:
-            logger.error(f"Erro ao obter stats da persona {persona_id}: {e}")
+            logger.error("Erro ao obter stats da persona %s: %s", sanitize_log_input(persona_id), sanitize_error(e))
 
     # Fallback para dados padrão
     return {
@@ -178,7 +179,7 @@ def get_personas_api():
     """Endpoint para informações completas das personas"""
     try:
         request_id = f"personas_{int(datetime.now().timestamp() * 1000)}"
-        logger.info(f"[{request_id}] Solicitação de informações das personas")
+        logger.info("[%s] Solicitação de informações das personas", sanitize_request_id(request_id))
         
         config = get_config()
         cache = get_cache()
@@ -190,11 +191,11 @@ def get_personas_api():
             try:
                 cached_personas = cache.get(cache_key)
                 if cached_personas:
-                    logger.info(f"[{request_id}] Personas retornadas do cache")
+                    logger.info("[%s] Personas retornadas do cache", sanitize_request_id(request_id))
                     return jsonify(cached_personas), 200
             except TypeError:
                 # PerformanceCache - não usar para este caso
-                logger.debug(f"[{request_id}] PerformanceCache não compatível - gerando dados novos")
+                logger.debug("[%s] PerformanceCache não compatível - gerando dados novos", sanitize_request_id(request_id))
         
         # Obter dados base das personas
         if PERSONAS_SERVICE_AVAILABLE:
@@ -275,11 +276,11 @@ def get_personas_api():
                 # PerformanceCache - não compatível, pular cache
                 pass
         
-        logger.info(f"[{request_id}] Informações das personas retornadas com sucesso")
+        logger.info("[%s] Informações das personas retornadas com sucesso", sanitize_request_id(request_id))
         return jsonify(response), 200
         
     except Exception as e:
-        logger.error(f"[{request_id}] Erro ao obter personas: {e}")
+        logger.error("[%s] Erro ao obter personas: %s", sanitize_request_id(request_id), sanitize_error(e))
         return jsonify({
             "error": "Erro interno do servidor",
             "error_code": "INTERNAL_ERROR",
@@ -293,7 +294,7 @@ def get_persona_details(persona_id: str):
     """Endpoint para obter detalhes de uma persona específica"""
     try:
         request_id = f"persona_detail_{int(datetime.now().timestamp() * 1000)}"
-        logger.info(f"[{request_id}] Detalhes solicitados para persona: {persona_id}")
+        logger.info("[%s] Detalhes solicitados para persona: %s", sanitize_request_id(request_id), sanitize_log_input(persona_id))
         
         valid_personas = ['dr_gasnelio', 'ga']
         if persona_id not in valid_personas:
@@ -313,11 +314,11 @@ def get_persona_details(persona_id: str):
             try:
                 cached_detail = cache.get(cache_key)
                 if cached_detail:
-                    logger.info(f"[{request_id}] Detalhes da persona retornados do cache")
+                    logger.info("[%s] Detalhes da persona retornados do cache", sanitize_request_id(request_id))
                     return jsonify(cached_detail), 200
             except TypeError:
                 # PerformanceCache - não usar para este caso
-                logger.debug(f"[{request_id}] PerformanceCache não compatível - gerando dados novos")
+                logger.debug("[%s] PerformanceCache não compatível - gerando dados novos", sanitize_request_id(request_id))
         
         # Construir resposta detalhada
         persona_detail = {
@@ -353,11 +354,11 @@ def get_persona_details(persona_id: str):
                 # PerformanceCache - não compatível, pular cache
                 pass
         
-        logger.info(f"[{request_id}] Detalhes da persona {persona_id} retornados")
+        logger.info("[%s] Detalhes da persona %s retornados", sanitize_request_id(request_id), sanitize_log_input(persona_id))
         return jsonify(response), 200
-        
+
     except Exception as e:
-        logger.error(f"[{request_id}] Erro ao obter detalhes da persona: {e}")
+        logger.error("[%s] Erro ao obter detalhes da persona: %s", sanitize_request_id(request_id), sanitize_error(e))
         return jsonify({
             "error": "Erro interno do servidor",
             "error_code": "INTERNAL_ERROR", 

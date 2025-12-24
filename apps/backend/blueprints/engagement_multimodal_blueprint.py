@@ -5,6 +5,8 @@ from markupsafe import escape
 from datetime import datetime
 import logging
 
+from core.logging.sanitizer import sanitize_error, sanitize_log_input
+
 logger = logging.getLogger(__name__)
 engagement_multimodal_bp = Blueprint('engagement_multimodal', __name__, url_prefix='/api/v1')
 
@@ -61,14 +63,15 @@ def submit_feedback():
         }
 
         # Security: Log sanitized data to prevent log injection attacks
-        logger.info(f"Feedback received: rating={rating}, feedback_length={len(feedback_sanitized)}, "
-                   f"message_id={message_id_sanitized[:20] if message_id_sanitized else 'none'}, "
-                   f"user_id={user_id_sanitized[:20] if user_id_sanitized else 'none'}")
+        logger.info("Feedback received: rating=%s, feedback_length=%s, message_id=%s, user_id=%s",
+                   rating, len(feedback_sanitized),
+                   message_id_sanitized[:20] if message_id_sanitized else 'none',
+                   user_id_sanitized[:20] if user_id_sanitized else 'none')
 
         return jsonify(response_data), 200
 
     except Exception as e:
-        logger.error(f"Feedback submission error: {e}")
+        logger.error("Feedback submission error: %s", sanitize_error(e))
         return jsonify({
             'error': 'Internal server error',
             'error_code': 'FEEDBACK_ERROR',
@@ -111,7 +114,7 @@ def monitoring_stats():
         return jsonify(stats_data), 200
 
     except Exception as e:
-        logger.error(f"Monitoring stats error: {e}")
+        logger.error("Monitoring stats error: %s", sanitize_error(e))
         return jsonify({
             'error': 'Internal server error',
             'error_code': 'MONITORING_ERROR',

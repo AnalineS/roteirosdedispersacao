@@ -13,6 +13,8 @@ from datetime import datetime, timezone, timedelta
 from pathlib import Path
 import numpy as np
 
+from core.logging.sanitizer import sanitize_log_input, sanitize_error
+
 logger = logging.getLogger(__name__)
 
 # Imports com fallback seguro
@@ -102,7 +104,7 @@ class RealCloudNativeCache:
                         logger.info("⚠️ Supabase credentials not available - skipping")
                         self.cache_enabled['supabase'] = False
                 except Exception as e:
-                    logger.warning(f"⚠️ Failed to initialize REAL Supabase cache: {e}")
+                    logger.warning("⚠️ Failed to initialize REAL Supabase cache: %s", sanitize_error(e))
                     self.cache_enabled['supabase'] = False
 
             # Initialize REAL GCS client
@@ -115,7 +117,7 @@ class RealCloudNativeCache:
                         logger.info("⚠️ GCS bucket not configured - skipping")
                         self.cache_enabled['cloud_storage'] = False
                 except Exception as e:
-                    logger.warning(f"⚠️ Failed to initialize REAL GCS cache: {e}")
+                    logger.warning("⚠️ Failed to initialize REAL GCS cache: %s", sanitize_error(e))
                     self.cache_enabled['cloud_storage'] = False
 
             # Setup local fallback if no real cloud services available
@@ -124,7 +126,7 @@ class RealCloudNativeCache:
                 self._setup_local_storage_fallback()
 
         except Exception as e:
-            logger.error(f"❌ Real cloud cache initialization failed: {e}")
+            logger.error("❌ Real cloud cache initialization failed: %s", sanitize_error(e))
             # Don't raise error - fall back to local cache only
             self._setup_local_storage_fallback()
 
@@ -234,7 +236,7 @@ class RealCloudNativeCache:
                     self.stats['evictions'] += 1
             return None
         except Exception as e:
-            logger.debug(f"Erro no memory cache: {e}")
+            logger.debug("Erro no memory cache: %s", sanitize_error(e))
             return None
     
     def _set_to_memory(self, cache_key: str, value: Any, ttl: Optional[timedelta] = None) -> bool:
@@ -248,7 +250,7 @@ class RealCloudNativeCache:
             self.memory_cache[cache_key] = (value, expires_at)
             return True
         except Exception as e:
-            logger.debug(f"Erro ao salvar no memory cache: {e}")
+            logger.debug("Erro ao salvar no memory cache: %s", sanitize_error(e))
             return False
     
     def _evict_oldest_memory(self):
@@ -264,9 +266,9 @@ class RealCloudNativeCache:
             for key in oldest_keys:
                 del self.memory_cache[key]
                 self.stats['evictions'] += 1
-                
+
         except Exception as e:
-            logger.debug(f"Erro na eviction: {e}")
+            logger.debug("Erro na eviction: %s", sanitize_error(e))
     
     def _get_from_firestore(self, cache_key: str) -> Any:
         """Busca no Firestore"""
@@ -292,9 +294,9 @@ class RealCloudNativeCache:
                     doc_ref.delete()
             
             return None
-            
+
         except Exception as e:
-            logger.debug(f"Erro no Firestore cache: {e}")
+            logger.debug("Erro no Firestore cache: %s", sanitize_error(e))
             return None
     
     def _set_to_firestore(self, cache_key: str, value: Any, ttl: Optional[timedelta] = None) -> bool:
@@ -320,9 +322,9 @@ class RealCloudNativeCache:
             doc_ref.set(cache_data)
             
             return True
-            
+
         except Exception as e:
-            logger.debug(f"Erro ao salvar no Firestore: {e}")
+            logger.debug("Erro ao salvar no Firestore: %s", sanitize_error(e))
             return False
     
     def _get_from_supabase(self, cache_key: str) -> Any:
@@ -344,9 +346,9 @@ class RealCloudNativeCache:
                     self.real_supabase_client.delete_from_table('search_cache', {'query_hash': cache_key})
             
             return None
-            
+
         except Exception as e:
-            logger.debug(f"Erro no Supabase cache: {e}")
+            logger.debug("Erro no Supabase cache: %s", sanitize_error(e))
             return None
     
     def _set_to_supabase(self, cache_key: str, value: Any, ttl: Optional[timedelta] = None) -> bool:
@@ -368,9 +370,9 @@ class RealCloudNativeCache:
             
             self.real_supabase_client.upsert_to_table('search_cache', cache_data)
             return True
-            
+
         except Exception as e:
-            logger.debug(f"Erro ao salvar no Supabase cache: {e}")
+            logger.debug("Erro ao salvar no Supabase cache: %s", sanitize_error(e))
             return False
     
     def _get_from_cloud_storage(self, cache_key: str) -> Any:
