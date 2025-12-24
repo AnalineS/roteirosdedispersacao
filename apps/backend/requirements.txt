@@ -127,10 +127,10 @@ pyyaml>=6.0.1
 python-decouple>=3.8
 
 # === TESTING & QUALITY ASSURANCE ===
-pytest==7.4.4  # Updated for pytest 8.x migration (FASE 0 completion)
+pytest==8.3.5  # FASE 0 completion - pytest 8.x migration complete
 pytest-cov==6.0.0  # Compatible with pytest 8.x
 pytest-mock==3.15.1
-pytest-asyncio==0.25.2  # Async test support for LGPD compliance tests
+pytest-asyncio==0.25.2  # Async test support for LGPD compliance tests (requires pytest>=8.2)
 pytest-timeout>=2.2.0  # Required for CI timeout enforcement (--timeout flag)
 pytest-html>=3.2.0  # HTML test reports for comprehensive validation
 
