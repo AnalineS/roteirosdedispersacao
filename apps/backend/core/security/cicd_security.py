@@ -1056,7 +1056,9 @@ class CICDSecurityOrchestrator:
         for scan_type, scan_data in results.get('scans', {}).items():
             scans_html += f"<h3>{scan_type.title()} Scan</h3>"
             for finding in scan_data.get('findings', []):
-                severity_class = finding.get('severity', 'info').lower()
+                # Ensure severity is converted to string before calling .lower()
+                severity_value = finding.get('severity', 'info')
+                severity_class = str(severity_value).lower() if severity_value else 'info'
                 scans_html += f"""
                 <div class="finding {severity_class}">
                     <strong>{finding.get('title', 'Unknown')}</strong><br>
