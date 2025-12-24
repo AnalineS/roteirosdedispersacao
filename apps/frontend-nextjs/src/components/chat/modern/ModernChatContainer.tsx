@@ -19,6 +19,7 @@ import AccessibleMessageBubble from '../accessibility/AccessibleMessageBubble';
 import { useChatAccessibility } from '../accessibility/ChatAccessibilityProvider';
 import Skeleton from '@/components/ui/Skeleton';
 import ChatErrorMessage from './ChatErrorMessage';
+import MessageActions from './MessageActions';
 import { type ClassifiedError } from '@/utils/errorClassification';
 // KnowledgeStats imported above
 
@@ -68,6 +69,12 @@ interface ModernChatContainerProps {
   currentRetryCount?: number;
   isManualRetrying?: boolean;
   onManualRetry?: () => void;
+
+  // Issue #331: Quick actions
+  onCopyMessage?: (message: ChatMessage) => void;
+  onToggleFavorite?: (message: ChatMessage) => void;
+  onRegenerateMessage?: (message: ChatMessage) => void;
+  isFavorite?: (messageId: string) => boolean;
 }
 
 // OTIMIZAÇÃO CRÍTICA: Componente principal simplificado usando subcomponentes especializados
@@ -94,7 +101,11 @@ const ModernChatContainer = memo(function ModernChatContainer({
   classifiedError,
   currentRetryCount = 0,
   isManualRetrying = false,
-  onManualRetry
+  onManualRetry,
+  onCopyMessage,
+  onToggleFavorite,
+  onRegenerateMessage,
+  isFavorite
 }: ModernChatContainerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -176,24 +187,37 @@ const ModernChatContainer = memo(function ModernChatContainer({
 
       {messages.map((message, index) => {
         // Encontrar a mensagem anterior (pergunta do usuário) para contexto de feedback
-        const previousMessage = message.role === 'assistant' && index > 0 
-          ? messages[index - 1] 
+        const previousMessage = message.role === 'assistant' && index > 0
+          ? messages[index - 1]
           : undefined;
 
         return (
-          <AccessibleMessageBubble
-            key={`${message.role}-${message.timestamp}-${index}`}
-            message={message}
-            persona={message.role === 'assistant' ? (currentPersona || undefined) : undefined}
-            personaId={selectedPersona || 'gasnelio'}
-            isUser={message.role === 'user'}
-            isMobile={isMobile}
-            isLast={index === messages.length - 1}
-            previousMessage={previousMessage}
-            enableFeedback={true}
-            messageIndex={index}
-            totalMessages={messages.length}
-          />
+          <div key={`${message.role}-${message.timestamp}-${index}`} className="message-bubble">
+            <AccessibleMessageBubble
+              message={message}
+              persona={message.role === 'assistant' ? (currentPersona || undefined) : undefined}
+              personaId={selectedPersona || 'gasnelio'}
+              isUser={message.role === 'user'}
+              isMobile={isMobile}
+              isLast={index === messages.length - 1}
+              previousMessage={previousMessage}
+              enableFeedback={true}
+              messageIndex={index}
+              totalMessages={messages.length}
+            />
+
+            {/* Issue #331: Message actions for all messages */}
+            {onCopyMessage && onToggleFavorite && isFavorite && (
+              <MessageActions
+                message={message}
+                isFavorite={isFavorite(message.id)}
+                onToggleFavorite={() => onToggleFavorite(message)}
+                onCopy={() => onCopyMessage(message)}
+                onRegenerate={message.role === 'assistant' && onRegenerateMessage ? () => onRegenerateMessage(message) : undefined}
+                canRegenerate={message.role === 'assistant' && !!onRegenerateMessage}
+              />
+            )}
+          </div>
         );
       })}
       

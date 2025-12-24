@@ -23,8 +23,11 @@ import { useChat } from '@/hooks/useChat';
 import { useConversationHistory } from '@/hooks/useConversationHistory';
 import { useIntelligentRouting } from '@/hooks/useIntelligentRouting';
 import { useUserProfile } from '@/hooks/useUserProfile';
+import { useFavorites } from '@/hooks/useFavorites';
+import { useToast } from '@/hooks/useToast';
 import { theme } from '@/config/theme';
 import { SidebarLoader } from '@/components/LoadingSpinner';
+import ToastContainer from '@/components/ui/ToastContainer';
 import { type ChatMessage } from '@/types/api';
 import { type ValidPersonaId } from '@/types/personas';
 
@@ -39,7 +42,11 @@ export default function ChatPage() {
   
   // Chat feedback hook
   const { triggerSendFeedback, triggerReceiveFeedback, triggerErrorFeedback } = useChatFeedback();
-  
+
+  // Issue #331: Favorites and toast hooks
+  const { isFavorite, toggleFavorite } = useFavorites();
+  const { toasts, dismissToast, success: showSuccess, error: showError } = useToast();
+
   // Marcar que o usuário visitou o chat
   useEffect(() => {
     setPersonaSelectionViewed();
@@ -238,23 +245,23 @@ export default function ChatPage() {
   // Handler para upload de arquivos
   const handleFileUpload = useCallback((files: FileList) => {
     console.log('Files uploaded:', files);
-    
+
     // Trigger feedback de arquivo recebido
     triggerReceiveFeedback();
-    
+
     const fileNames = Array.from(files).map(f => f.name).join(', ');
     const fileCount = files.length;
-    
+
     // Notificar usuário sobre arquivos recebidos com aviso de privacidade
     const privacyMessage = `${fileCount} arquivo${fileCount > 1 ? 's' : ''} recebido${fileCount > 1 ? 's' : ''}: ${fileNames}\n\n🔒 AVISO DE PRIVACIDADE: Os arquivos anexados são processados temporariamente para análise e são automaticamente excluídos após o processamento. Nenhum arquivo é armazenado permanentemente em nossos servidores para garantir sua privacidade e segurança.`;
-    
+
     // Mostrar aviso ao usuário
     if (typeof window !== 'undefined') {
       alert(privacyMessage);
     }
-    
+
     console.log(privacyMessage);
-    
+
     // TODO: Implementar processamento de arquivos
     // - Upload temporário para backend
     // - OCR para PDFs/imagens
@@ -262,6 +269,41 @@ export default function ChatPage() {
     // - Adicionar ao contexto da conversa
     // - Exclusão automática após processamento
   }, [triggerReceiveFeedback]);
+
+  // Issue #331: Handler para copiar mensagem
+  const handleCopyMessage = useCallback(async (message: ChatMessage) => {
+    try {
+      await navigator.clipboard.writeText(message.content);
+      showSuccess('Mensagem copiada!');
+    } catch (error) {
+      console.error('Error copying message:', error);
+      showError('Erro ao copiar mensagem');
+    }
+  }, [showSuccess, showError]);
+
+  // Issue #331: Handler para favoritar mensagem
+  const handleToggleFavorite = useCallback((message: ChatMessage) => {
+    toggleFavorite(message);
+    const wasFavorite = isFavorite(message.id);
+    if (wasFavorite) {
+      showSuccess('Removido dos favoritos');
+    } else {
+      showSuccess('Adicionado aos favoritos');
+    }
+  }, [toggleFavorite, isFavorite, showSuccess]);
+
+  // Issue #331: Handler para regenerar resposta
+  const handleRegenerateMessage = useCallback(async (message: ChatMessage) => {
+    // Find the previous user message
+    const messageIndex = currentMessages.findIndex(m => m.id === message.id);
+    if (messageIndex > 0) {
+      const previousUserMessage = currentMessages.slice(0, messageIndex).reverse().find(m => m.role === 'user');
+      if (previousUserMessage && selectedPersona) {
+        showSuccess('Gerando nova resposta...');
+        await sendMessageWithHistory(previousUserMessage.content, selectedPersona);
+      }
+    }
+  }, [currentMessages, selectedPersona, sendMessageWithHistory, showSuccess]);
   
   const handleNewConversation = (personaId: string) => {
     createConversation(personaId);
@@ -426,13 +468,20 @@ export default function ChatPage() {
               manualRetry(lastUserMessage.content, selectedPersona);
             }
           }}
+          onCopyMessage={handleCopyMessage}
+          onToggleFavorite={handleToggleFavorite}
+          onRegenerateMessage={handleRegenerateMessage}
+          isFavorite={isFavorite}
         />
         
         {/* Chat Feedback Overlay */}
-        <ChatFeedback 
+        <ChatFeedback
           enableSound={true}
           enableVisualFeedback={true}
         />
+
+        {/* Issue #331: Toast notifications */}
+        <ToastContainer toasts={toasts} onDismiss={dismissToast} />
       </div>
       </EducationalLayout>
     </ChatAccessibilityProvider>
