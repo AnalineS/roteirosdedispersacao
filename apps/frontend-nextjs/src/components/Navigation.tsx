@@ -18,6 +18,7 @@ import {
   GraduationCapIcon,
   FlaskIcon
 } from '@/components/ui/EducationalIcons';
+import { sanitizeURL } from '@/utils/sanitization';
 
 interface NavigationProps {
   currentPersona?: string;
@@ -300,9 +301,12 @@ export default function Navigation({ currentPersona }: NavigationProps) {
         }}>
           <button
             onClick={async () => {
+              // Sanitize URL to prevent XSS (CWE-79)
+              const safeUrl = sanitizeURL(window.location.href);
+              if (!safeUrl) return;
+
               try {
-                const currentUrl = window.location.href;
-                await navigator.clipboard.writeText(currentUrl);
+                await navigator.clipboard.writeText(safeUrl);
                 // Feedback visual temporário
                 const button = document.activeElement as HTMLButtonElement;
                 const originalText = button.textContent;
@@ -313,7 +317,7 @@ export default function Navigation({ currentPersona }: NavigationProps) {
               } catch (_error) {
                 // Fallback para browsers sem suporte
                 const textArea = document.createElement('textarea');
-                textArea.value = window.location.href;
+                textArea.value = safeUrl;
                 document.body.appendChild(textArea);
                 textArea.select();
                 document.execCommand('copy');
