@@ -1,11 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import { type ChatMessage } from '@/types/api';
 import { modernChatTheme } from '@/config/modernTheme';
 
 interface MessageActionsProps {
-  message: ChatMessage;
   isFavorite: boolean;
   onToggleFavorite: () => void;
   onCopy: () => void;
@@ -14,7 +12,6 @@ interface MessageActionsProps {
 }
 
 export default function MessageActions({
-  message,
   isFavorite,
   onToggleFavorite,
   onCopy,
