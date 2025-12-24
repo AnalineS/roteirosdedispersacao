@@ -73,6 +73,8 @@ interface ModernChatContainerProps {
   onToggleFavorite?: (message: ChatMessage) => void;
   onRegenerateMessage?: (message: ChatMessage) => void;
   isFavorite?: (messageId: string) => boolean;
+  favoritesCount?: number;
+  onShowFavorites?: () => void;
 }
 
 // OTIMIZAÇÃO CRÍTICA: Componente principal simplificado usando subcomponentes especializados
@@ -103,7 +105,9 @@ const ModernChatContainer = memo(function ModernChatContainer({
   onCopyMessage,
   onToggleFavorite,
   onRegenerateMessage,
-  isFavorite
+  isFavorite,
+  favoritesCount = 0,
+  onShowFavorites
 }: ModernChatContainerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -270,6 +274,8 @@ const ModernChatContainer = memo(function ModernChatContainer({
         onExport={() => setShowExportModal(true)}
         showHistory={showHistory}
         hasMessages={messages.length > 0}
+        favoritesCount={favoritesCount}
+        onShowFavorites={onShowFavorites}
       />
 
       {/* OTIMIZAÇÃO CRÍTICA: Usar componentes especializados */}

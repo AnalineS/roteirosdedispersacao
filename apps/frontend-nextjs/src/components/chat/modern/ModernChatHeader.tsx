@@ -23,6 +23,8 @@ interface ModernChatHeaderProps {
   onExport?: () => void;
   showHistory?: boolean;
   hasMessages?: boolean;
+  favoritesCount?: number;
+  onShowFavorites?: () => void;
 }
 
 const BackButton = ({ isMobile }: { isMobile?: boolean }) => (
@@ -116,12 +118,12 @@ const HistoryToggle = ({
   </button>
 );
 
-const ExportButton = ({ 
-  onExport, 
+const ExportButton = ({
+  onExport,
   isMobile,
   disabled = false
-}: { 
-  onExport?: () => void; 
+}: {
+  onExport?: () => void;
   isMobile?: boolean;
   disabled?: boolean;
 }) => (
@@ -163,6 +165,76 @@ const ExportButton = ({
   >
     <ExportIcon size={16} />
     {!isMobile && <span>Exportar</span>}
+  </button>
+);
+
+const FavoritesButton = ({
+  onShowFavorites,
+  count = 0,
+  isMobile
+}: {
+  onShowFavorites?: () => void;
+  count?: number;
+  isMobile?: boolean;
+}) => (
+  <button
+    onClick={onShowFavorites}
+    style={{
+      display: 'flex',
+      alignItems: 'center',
+      gap: modernChatTheme.spacing.sm,
+      padding: `${modernChatTheme.spacing.sm} ${isMobile ? modernChatTheme.spacing.sm : modernChatTheme.spacing.md}`,
+      borderRadius: modernChatTheme.borderRadius.md,
+      background: count > 0 ? 'rgba(251, 191, 36, 0.2)' : 'rgba(255, 255, 255, 0.1)',
+      color: 'white',
+      border: `1px solid ${count > 0 ? 'rgba(251, 191, 36, 0.3)' : 'rgba(255, 255, 255, 0.1)'}`,
+      fontSize: modernChatTheme.typography.meta.fontSize,
+      fontWeight: '500',
+      cursor: 'pointer',
+      transition: modernChatTheme.transitions.normal,
+      backdropFilter: 'blur(10px)',
+      position: 'relative'
+    }}
+    onMouseEnter={(e) => {
+      if (!isMobile) {
+        e.currentTarget.style.background = count > 0 ? 'rgba(251, 191, 36, 0.3)' : 'rgba(255, 255, 255, 0.2)';
+        e.currentTarget.style.transform = 'translateY(-1px)';
+        e.currentTarget.style.borderColor = count > 0 ? 'rgba(251, 191, 36, 0.5)' : 'rgba(255, 255, 255, 0.3)';
+      }
+    }}
+    onMouseLeave={(e) => {
+      if (!isMobile) {
+        e.currentTarget.style.background = count > 0 ? 'rgba(251, 191, 36, 0.2)' : 'rgba(255, 255, 255, 0.1)';
+        e.currentTarget.style.transform = 'translateY(0)';
+        e.currentTarget.style.borderColor = count > 0 ? 'rgba(251, 191, 36, 0.3)' : 'rgba(255, 255, 255, 0.1)';
+      }
+    }}
+    title={count > 0 ? `Ver ${count} mensagens favoritas` : "Mensagens favoritas (vazio)"}
+    aria-label={count > 0 ? `Ver ${count} mensagens favoritas` : "Mensagens favoritas"}
+  >
+    <span style={{ fontSize: '16px' }}>⭐</span>
+    {!isMobile && <span>{count > 0 ? count : 'Favoritos'}</span>}
+    {isMobile && count > 0 && (
+      <span style={{
+        position: 'absolute',
+        top: '-4px',
+        right: '-4px',
+        backgroundColor: '#f59e0b',
+        color: 'white',
+        fontSize: '0.625rem',
+        fontWeight: '700',
+        borderRadius: '999px',
+        minWidth: '16px',
+        height: '16px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '0 4px',
+        border: '2px solid currentColor'
+      }}>
+        {count > 99 ? '99+' : count}
+      </span>
+    )}
   </button>
 );
 
@@ -225,7 +297,9 @@ export default function ModernChatHeader({
   onHistoryToggle,
   onExport,
   showHistory = false,
-  hasMessages = false
+  hasMessages = false,
+  favoritesCount = 0,
+  onShowFavorites
 }: ModernChatHeaderProps) {
   const currentPersona = selectedPersona ? personas[selectedPersona] : null;
   const colors = currentPersona ? getPersonaColors(selectedPersona || 'gasnelio') : null;
@@ -286,10 +360,17 @@ export default function ModernChatHeader({
             />
           </div>
           {onExport && (
-            <ExportButton 
-              onExport={onExport} 
-              isMobile={isMobile} 
+            <ExportButton
+              onExport={onExport}
+              isMobile={isMobile}
               disabled={!hasMessages}
+            />
+          )}
+          {onShowFavorites && (
+            <FavoritesButton
+              onShowFavorites={onShowFavorites}
+              count={favoritesCount}
+              isMobile={isMobile}
             />
           )}
         </div>
