@@ -51,9 +51,9 @@ function sanitizeHTMLServerSide(html: string): string {
     sanitized = sanitized.replace(/file:/gi, '');       // Proteção adicional contra file: URIs
     
     // Remover event handlers (CWE-20/CWE-80/CWE-116)
-    // Regex melhorada para capturar variações de event handlers
-    // Exemplos: onclick=, on click=, onclick =, on-click=, onerror=
-    sanitized = sanitized.replace(/\bon[\w\-]*\s*=/gi, '');
+    // Regex melhorada para capturar variações de event handlers e seus valores
+    // Exemplos: onclick="...", on click = '...', onclick = valor, on-error=valor
+    sanitized = sanitized.replace(/\bon[\w\-]*\s*=\s*(?:"[^"]*"|'[^']*'|[^\s"'<>]*)/gi, '');
 
     // Proteção adicional: remover atributos 'on' isolados que possam ter sido criados
     sanitized = sanitized.replace(/\bon\s*=/gi, '');
