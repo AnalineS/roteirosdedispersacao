@@ -39,6 +39,16 @@ def get_github_secret(name):
         print(f"Erro ao obter secret {name}: {e}")
         return None
 
+def mask_sensitive_value(value, show_chars=6):
+    """
+    Mascara valores sensíveis para logging seguro
+    Mostra apenas primeiros e últimos caracteres
+    """
+    if not value or len(value) <= show_chars * 2:
+        return "***"
+
+    return f"{value[:show_chars]}...{value[-show_chars:]}"
+
 def get_env_or_github_secret(env_name, secret_name=None):
     """Obtém valor de variável de ambiente ou GitHub Secret"""
     if secret_name is None:
@@ -95,7 +105,7 @@ def main():
     my_env.update(env_vars)
     
     print("[OK] Variáveis de ambiente configuradas")
-    print(f"   SUPABASE_PROJECT_URL: {env_vars['SUPABASE_PROJECT_URL']}")
+    print(f"   SUPABASE_PROJECT_URL: {mask_sensitive_value(env_vars['SUPABASE_PROJECT_URL'])}")
     print(f"   EMBEDDINGS_ENABLED: {env_vars['EMBEDDINGS_ENABLED']}")
     
     # Executar migração

@@ -223,7 +223,7 @@ def usability_monitoring():
             ux_manager = get_ux_monitoring_manager()
             if ux_manager:
                 dashboard_data = ux_manager.get_dashboard_data()
-                
+
                 response = {
                     "usability_report": dashboard_data,
                     "metadata": {
@@ -241,7 +241,33 @@ def usability_monitoring():
                         "Monitor cache hit rate for performance"
                     ]
                 }
-        
+            else:
+                # Fallback: UX manager não disponível
+                response = {
+                    "usability_report": {"status": "unavailable"},
+                    "metadata": {
+                        "request_id": request_id,
+                        "timestamp": datetime.now().isoformat(),
+                        "source": "fallback",
+                        "version": "1.0_fallback"
+                    },
+                    "report_version": "1.0",
+                    "message": "UX monitoring manager not available"
+                }
+        else:
+            # Fallback: UX monitoring não disponível
+            response = {
+                "usability_report": {"status": "unavailable"},
+                "metadata": {
+                    "request_id": request_id,
+                    "timestamp": datetime.now().isoformat(),
+                    "source": "fallback",
+                    "version": "1.0_fallback"
+                },
+                "report_version": "1.0",
+                "message": "UX monitoring system not available"
+            }
+
         logger.info("[%s] Relatório de usabilidade gerado", sanitize_request_id(request_id))
         return jsonify(response), 200
         
