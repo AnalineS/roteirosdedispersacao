@@ -21,6 +21,12 @@ export interface ClassifiedError {
   retryDelay: number;
 }
 
+interface HttpErrorResponse {
+  response?: {
+    status?: number;
+  };
+}
+
 /**
  * Classifies an error into a specific type with user-friendly message
  */
@@ -49,7 +55,7 @@ export function classifyError(error: unknown): ClassifiedError {
 
   // HTTP errors
   if (error instanceof Error && 'response' in error) {
-    const httpError = error as any;
+    const httpError = error as Error & HttpErrorResponse;
     const status = httpError.response?.status;
 
     switch (status) {

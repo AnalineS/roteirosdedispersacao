@@ -74,7 +74,7 @@ export function useFavorites() {
 
       // Check limit
       if (prev.length >= MAX_FAVORITES) {
-        console.warn(`Limite de ${MAX_FAVORITES} favoritos atingido`);
+        console.warn('Limite de favoritos atingido:', MAX_FAVORITES);
         return prev;
       }
 

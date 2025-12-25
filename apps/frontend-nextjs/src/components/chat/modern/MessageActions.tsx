@@ -1,11 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
-import { type ChatMessage } from '@/types/api';
+import React, { useState, useEffect, useRef } from 'react';
 import { modernChatTheme } from '@/config/modernTheme';
 
 interface MessageActionsProps {
-  message: ChatMessage;
   isFavorite: boolean;
   onToggleFavorite: () => void;
   onCopy: () => void;
@@ -14,7 +12,6 @@ interface MessageActionsProps {
 }
 
 export default function MessageActions({
-  message,
   isFavorite,
   onToggleFavorite,
   onCopy,
@@ -22,6 +19,8 @@ export default function MessageActions({
   canRegenerate = false
 }: MessageActionsProps) {
   const [showCopied, setShowCopied] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const handleCopy = async () => {
     onCopy();
@@ -29,11 +28,42 @@ export default function MessageActions({
     setTimeout(() => setShowCopied(false), 2000);
   };
 
+  // Issue #331: Keyboard shortcuts - only when message actions are focused/hovered
+  useEffect(() => {
+    if (!isFocused) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl+Shift+C - Copy
+      if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'c') {
+        e.preventDefault();
+        handleCopy();
+      }
+      // Ctrl+Shift+F - Toggle favorite
+      else if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'f') {
+        e.preventDefault();
+        onToggleFavorite();
+      }
+      // Ctrl+Shift+E - Regenerate (only if available)
+      else if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'e' && canRegenerate && onRegenerate) {
+        e.preventDefault();
+        onRegenerate();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isFocused, onToggleFavorite, canRegenerate, onRegenerate]);
+
   return (
     <div
+      ref={containerRef}
       className="message-actions"
       role="group"
       aria-label="Ações da mensagem"
+      onFocus={() => setIsFocused(true)}
+      onBlur={() => setIsFocused(false)}
+      onMouseEnter={() => setIsFocused(true)}
+      onMouseLeave={() => setIsFocused(false)}
       style={{
         display: 'flex',
         gap: modernChatTheme.spacing.xs,

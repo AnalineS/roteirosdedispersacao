@@ -10,9 +10,7 @@ import { modernChatTheme, getCSSVariables } from '@/config/modernTheme';
 import ModernChatHeader from './ModernChatHeader';
 import ChatEmptyState from './ChatEmptyState';
 import ChatMessagesArea from './ChatMessagesArea';
-import ModernChatInput from './ModernChatInput';
 import ExportChatModal from './ExportChatModal';
-import MessageBubble from './MessageBubble';
 import SmartIndicators from './SmartIndicators';
 import AccessibleChatInput from '../accessibility/AccessibleChatInput';
 import AccessibleMessageBubble from '../accessibility/AccessibleMessageBubble';
@@ -75,6 +73,9 @@ interface ModernChatContainerProps {
   onToggleFavorite?: (message: ChatMessage) => void;
   onRegenerateMessage?: (message: ChatMessage) => void;
   isFavorite?: (messageId: string) => boolean;
+  canRegenerate?: (messageId: string) => boolean;
+  favoritesCount?: number;
+  onShowFavorites?: () => void;
 }
 
 // OTIMIZAÇÃO CRÍTICA: Componente principal simplificado usando subcomponentes especializados
@@ -105,14 +106,18 @@ const ModernChatContainer = memo(function ModernChatContainer({
   onCopyMessage,
   onToggleFavorite,
   onRegenerateMessage,
-  isFavorite
+  isFavorite,
+  canRegenerate,
+  favoritesCount = 0,
+  onShowFavorites
 }: ModernChatContainerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [showExportModal, setShowExportModal] = useState(false);
   
   // Chat accessibility context
-  const { announceNewMessage, announceSystemStatus, focusLastMessage } = useChatAccessibility();
+  // Note: announceNewMessage, announceSystemStatus, focusLastMessage available from useChatAccessibility() for future use
+  useChatAccessibility();
   
   // Obter persona atual
   const currentPersona = selectedPersona ? personas[selectedPersona] : null;
@@ -209,12 +214,11 @@ const ModernChatContainer = memo(function ModernChatContainer({
             {/* Issue #331: Message actions for all messages */}
             {onCopyMessage && onToggleFavorite && isFavorite && (
               <MessageActions
-                message={message}
                 isFavorite={isFavorite(message.id)}
                 onToggleFavorite={() => onToggleFavorite(message)}
                 onCopy={() => onCopyMessage(message)}
                 onRegenerate={message.role === 'assistant' && onRegenerateMessage ? () => onRegenerateMessage(message) : undefined}
-                canRegenerate={message.role === 'assistant' && !!onRegenerateMessage}
+                canRegenerate={message.role === 'assistant' && !!onRegenerateMessage && (!canRegenerate || canRegenerate(message.id))}
               />
             )}
           </div>
@@ -272,6 +276,8 @@ const ModernChatContainer = memo(function ModernChatContainer({
         onExport={() => setShowExportModal(true)}
         showHistory={showHistory}
         hasMessages={messages.length > 0}
+        favoritesCount={favoritesCount}
+        onShowFavorites={onShowFavorites}
       />
 
       {/* OTIMIZAÇÃO CRÍTICA: Usar componentes especializados */}
