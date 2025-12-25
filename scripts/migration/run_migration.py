@@ -70,6 +70,8 @@ def get_env_or_github_secret(env_name, secret_name=None):
         if result.returncode == 0:
             return result.stdout.strip()
     except Exception:
+        # Silenciosamente falha se gh CLI não disponível ou variável não existe
+        # Isso é esperado em ambientes sem gh CLI configurado
         pass
 
     return None
