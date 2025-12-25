@@ -15,7 +15,7 @@ import gc
 import threading
 import psutil
 import logging
-from typing import Dict, List, Set, Optional
+from typing import Dict, List, Optional
 from datetime import datetime
 import atexit
 from core.logging.sanitizer import sanitize_error

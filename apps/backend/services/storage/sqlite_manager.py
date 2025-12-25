@@ -6,7 +6,6 @@ Sistema de persistência híbrida: SQLite local + backup Cloud Storage automáti
 
 import sqlite3
 import threading
-import time
 import os
 import json
 from datetime import datetime, timedelta, timezone

@@ -15,10 +15,9 @@ import gc
 import sys
 import os
 import threading
-import weakref
 import time
 import logging
-from typing import Dict, Any, Optional, List, Callable
+from typing import Dict, Any, Optional, Callable
 from datetime import datetime, timedelta
 from collections import defaultdict, OrderedDict
 from functools import wraps

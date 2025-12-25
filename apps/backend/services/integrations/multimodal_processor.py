@@ -20,7 +20,6 @@ from enum import Enum
 # Bibliotecas de processamento de imagem
 try:
     import cv2
-    import numpy as np
     from PIL import Image
     import pytesseract
     import easyocr
