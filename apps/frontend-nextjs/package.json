@@ -44,7 +44,7 @@
   },
   "dependencies": {
     "@next/third-parties": "^15.5.9",
-    "axios": "1.12.2",
+    "axios": "1.13.2",
     "dompurify": "^3.2.7",
     "framer-motion": "^12.23.26",
     "js-cookie": "3.0.5",
