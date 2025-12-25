@@ -27,7 +27,7 @@ get_rag_system = get_real_rag_system
 SupabaseRAGSystem = RealRAGSystem
 get_vector_store = get_real_vector_store
 SupabaseVectorStore = RealVectorStore
-get_cloud_cache = get_cloud_cache  # Use the correct cloud_native_cache function
+# get_cloud_cache already imported from cloud_native_cache module above
 CloudNativeCache = RealCloudNativeCache  # CORRECTED: Use RealCloudNativeCache
 
 __all__ = [

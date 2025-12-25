@@ -270,10 +270,11 @@ def track_medical_error():
         })
 
     except Exception as e:
-        logger.error(f"Medical error tracking error: {e}")
+        # Log full error server-side but return generic message to client (CWE-209 fix)
+        logger.error(f"Medical error tracking error: {e}", exc_info=True)
         return jsonify({
             'success': False,
-            'error': str(e)
+            'error': 'An internal error occurred'
         }), 500
 
 @analytics_bp.route('/export', methods=['POST'])

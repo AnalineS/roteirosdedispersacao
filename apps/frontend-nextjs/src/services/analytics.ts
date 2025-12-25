@@ -282,9 +282,22 @@ export const trackAdminAction = (
 // Session Management
 let currentSessionId: string | null = null;
 
+const generateSecureSessionId = (): string => {
+  // Use crypto.getRandomValues for cryptographically secure session IDs
+  if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+    const array = new Uint8Array(16);
+    crypto.getRandomValues(array);
+    const randomPart = Array.from(array, b => b.toString(36)).join('').substring(0, 16);
+    return `session_${Date.now()}_${randomPart}`;
+  }
+  // Fallback for environments without crypto (should not happen in browsers)
+  const timestamp = Date.now().toString(36);
+  return `session_${timestamp}_fallback`;
+};
+
 const getCurrentSessionId = (): string => {
   if (!currentSessionId) {
-    currentSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    currentSessionId = generateSecureSessionId();
   }
   return currentSessionId;
 };

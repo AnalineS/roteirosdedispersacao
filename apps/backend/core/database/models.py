@@ -266,8 +266,10 @@ def hash_sensitive_data(data: str) -> str:
     return hashlib.sha256(data.encode()).hexdigest()[:16]
 
 def generate_verification_code() -> str:
-    """Gera código de verificação único"""
-    return hashlib.md5(str(uuid.uuid4()).encode()).hexdigest()[:8].upper()
+    """Gera código de verificação único usando randomness criptograficamente segura (CWE-338 fix)"""
+    import secrets
+    # Use secrets.token_hex for cryptographically secure random bytes
+    return secrets.token_hex(4).upper()
 
 def calculate_expiry_date(data_category: DataCategory) -> datetime:
     """Calcula data de expiração baseada na categoria LGPD"""

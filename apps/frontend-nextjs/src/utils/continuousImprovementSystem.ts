@@ -885,11 +885,29 @@ export class ContinuousImprovementSystem {
   }
   
   private sanitizeString(input: string): string {
-    // Remover scripts maliciosos, limitar tamanho, etc.
-    return input
-      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-      .slice(0, 2000)
-      .trim();
+    // Iterative sanitization to prevent bypass attacks (CWE-20/80/116 fix)
+    let sanitized = input;
+    let previous = '';
+    let iterations = 0;
+    const maxIterations = 10;
+
+    do {
+      previous = sanitized;
+      // Remove script tags
+      sanitized = sanitized.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+      // Remove all HTML tags
+      sanitized = sanitized.replace(/<[^>]*>/g, '');
+      // Remove isolated < and > characters
+      sanitized = sanitized.replace(/<+|>+/g, '');
+      // Remove dangerous protocols
+      sanitized = sanitized.replace(/javascript:/gi, '');
+      sanitized = sanitized.replace(/vbscript:/gi, '');
+      // Remove event handlers
+      sanitized = sanitized.replace(/\bon[\w\-]*\s*=\s*(?:"[^"]*"|'[^']*'|[^\s"'<>]*)/gi, '');
+      iterations++;
+    } while (sanitized !== previous && iterations < maxIterations);
+
+    return sanitized.slice(0, 2000).trim();
   }
   
   private validateUsabilityRating(rating: UsabilityRating): UsabilityRating {

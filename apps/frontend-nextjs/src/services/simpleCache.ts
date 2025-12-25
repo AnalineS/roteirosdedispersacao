@@ -114,14 +114,25 @@ export class FirestoreCache<T> {
     }
   }
 
+  // Helper to generate secure random IDs (CWE-338 fix)
+  private generateSecureId(prefix: string): string {
+    if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+      const array = new Uint8Array(12);
+      crypto.getRandomValues(array);
+      const randomPart = Array.from(array, b => b.toString(36)).join('').substring(0, 12);
+      return `${prefix}_${Date.now()}_${randomPart}`;
+    }
+    return `${prefix}_${Date.now()}_${Date.now().toString(36)}`;
+  }
+
   // Métodos específicos para Analytics
   async saveAnalyticsEvent(event: AnalyticsEvent): Promise<void> {
-    const eventId = event.id || `event_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const eventId = event.id || this.generateSecureId('event');
     await this.set(eventId, event as T);
   }
 
   async startAnalyticsSession(sessionData: AnalyticsSession): Promise<void> {
-    const sessionId = sessionData.id || `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const sessionId = sessionData.id || this.generateSecureId('session');
     await this.set(sessionId, sessionData as T);
   }
 
@@ -142,7 +153,7 @@ export class FirestoreCache<T> {
   }
 
   async trackMedicalMetric(metric: MedicalMetric): Promise<void> {
-    const metricId = `metric_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const metricId = this.generateSecureId('metric');
     await this.set(metricId, metric as T);
   }
 

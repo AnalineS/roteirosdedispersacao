@@ -159,17 +159,35 @@ class MedicalValidator {
 
   /**
    * Sanitizar dados de entrada médica
+   * Uses iterative sanitization to prevent bypass attacks (CWE-20/80/116 fix)
    */
   static sanitizeMedicalInput(input: string): string {
     if (!input || typeof input !== 'string') return '';
 
-    // Remover caracteres perigosos mantendo acentos médicos
-    return input
-      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-      .replace(/javascript:/gi, '')
-      .replace(/on\w+\s*=/gi, '')
-      .trim()
-      .substring(0, 1000); // Limite de caracteres
+    let sanitized = input;
+    let previous = '';
+    let iterations = 0;
+    const maxIterations = 10;
+
+    // Iterative sanitization to prevent bypass with nested patterns
+    do {
+      previous = sanitized;
+      // Remove script tags
+      sanitized = sanitized.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+      // Remove all HTML tags
+      sanitized = sanitized.replace(/<[^>]*>/g, '');
+      // Remove isolated < and > characters
+      sanitized = sanitized.replace(/<+|>+/g, '');
+      // Remove dangerous protocols
+      sanitized = sanitized.replace(/javascript:/gi, '');
+      sanitized = sanitized.replace(/vbscript:/gi, '');
+      sanitized = sanitized.replace(/data:/gi, '');
+      // Remove event handlers
+      sanitized = sanitized.replace(/\bon[\w\-]*\s*=\s*(?:"[^"]*"|'[^']*'|[^\s"'<>]*)/gi, '');
+      iterations++;
+    } while (sanitized !== previous && iterations < maxIterations);
+
+    return sanitized.trim().substring(0, 1000); // Limite de caracteres
   }
 
   /**

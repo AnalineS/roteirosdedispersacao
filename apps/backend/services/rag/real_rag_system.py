@@ -160,6 +160,9 @@ class RealRAGSystem:
         start_time = datetime.now()
         max_chunks = max_chunks or self.max_context_chunks
 
+        # Initialize cache_key to avoid uninitialized variable (CodeQL py/uninitialized-local-variable fix)
+        cache_key = None
+
         # Check cache first
         if use_cache and self.real_cache:
             cache_key = f"rag_context:{hashlib.sha256(query.encode()).hexdigest()[:16]}"
@@ -228,8 +231,8 @@ class RealRAGSystem:
             }
         )
 
-        # Cache context
-        if use_cache and self.real_cache and context_chunks:
+        # Cache context (only if cache_key was set)
+        if use_cache and self.real_cache and context_chunks and cache_key:
             serialized = self._serialize_context(context)
             self.real_cache.set(cache_key, serialized, self.context_cache_ttl)
 

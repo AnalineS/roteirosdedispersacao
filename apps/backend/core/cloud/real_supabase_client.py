@@ -312,6 +312,8 @@ class RealSupabaseClient:
                 supabase_error = str(e)
 
         # Test PostgreSQL connection
+        # Initialize postgres_error to avoid uninitialized variable (CodeQL py/uninitialized-local-variable fix)
+        postgres_error = None
         if self.pg_conn:
             try:
                 with self.pg_conn.cursor() as cursor:

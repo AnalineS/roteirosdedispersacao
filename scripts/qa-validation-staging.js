@@ -188,7 +188,9 @@ if (errors.length > 0) {
         // Create GitHub issue using gh CLI
         try {
             const labels = 'bug,qa-validation,staging,medical-chat';
-            const createIssueCmd = `gh issue create --title "${issueTitle}" --body "${issueBody.replace(/"/g, '\\"')}" --label "${labels}"`;
+            // Properly escape backslashes first, then quotes (CWE-116 fix)
+            const escapedBody = issueBody.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+            const createIssueCmd = `gh issue create --title "${issueTitle}" --body "${escapedBody}" --label "${labels}"`;
 
             const issueUrl = execSync(createIssueCmd, { encoding: 'utf-8' }).trim();
             console.log(`   ✅ Issue created: ${issueUrl}`);

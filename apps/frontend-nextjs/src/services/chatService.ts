@@ -101,11 +101,18 @@ export class ChatService {
    * Inicia uma nova sessão de chat
    */
   async startSession(
-    userId?: string, 
+    userId?: string,
     persona: 'dr_gasnelio' | 'ga' = 'dr_gasnelio',
     preferences?: Partial<ChatPreferences>
   ): Promise<ChatSession> {
-    const sessionId = `chat_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    // Use crypto.getRandomValues for cryptographically secure session IDs (CWE-338 fix)
+    let randomPart = Date.now().toString(36);
+    if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+      const array = new Uint8Array(12);
+      crypto.getRandomValues(array);
+      randomPart = Array.from(array, b => b.toString(36)).join('').substring(0, 12);
+    }
+    const sessionId = `chat_${Date.now()}_${randomPart}`;
     
     const session: ChatSession = {
       id: sessionId,

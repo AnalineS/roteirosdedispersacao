@@ -182,6 +182,42 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // HELPER FUNCTIONS
   // ============================================
 
+  /**
+   * Constant-time string comparison to prevent timing attacks (CWE-208 fix)
+   * Used for OAuth state validation to prevent user-controlled bypass (CodeQL js/user-controlled-bypass)
+   */
+  const constantTimeEqual = (a: string | null, b: string | null): boolean => {
+    if (a === null || b === null) return false;
+    if (a.length !== b.length) return false;
+
+    let result = 0;
+    for (let i = 0; i < a.length; i++) {
+      result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+    }
+    return result === 0;
+  };
+
+  /**
+   * Validate OAuth state with additional security checks
+   * - Constant-time comparison to prevent timing attacks
+   * - Format validation to ensure state matches expected pattern
+   * - Backend also validates state for defense in depth
+   */
+  const validateOAuthState = (urlState: string | null, storedState: string | null): boolean => {
+    // Both must be present
+    if (!urlState || !storedState) return false;
+
+    // States should have minimum length (UUIDs are 36 chars, other formats vary)
+    if (urlState.length < 16 || storedState.length < 16) return false;
+
+    // States should match expected format (alphanumeric with dashes/underscores)
+    const stateFormat = /^[a-zA-Z0-9_-]+$/;
+    if (!stateFormat.test(urlState) || !stateFormat.test(storedState)) return false;
+
+    // Use constant-time comparison to prevent timing attacks
+    return constantTimeEqual(urlState, storedState);
+  };
+
   const convertJWTUserToAuthUser = (jwtUser: JWTUser): AuthUser => ({
     uid: jwtUser.id,
     email: jwtUser.email,
@@ -192,14 +228,23 @@ export function AuthProvider({ children }: AuthProviderProps) {
     provider: jwtUser.provider
   });
 
-  const createAnonymousUser = (): AuthUser => ({
-    uid: `anon-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-    email: null,
-    displayName: null,
-    emailVerified: false,
-    isAnonymous: true,
-    provider: 'anonymous'
-  });
+  const createAnonymousUser = (): AuthUser => {
+    // Use crypto.getRandomValues for cryptographically secure IDs (CWE-338 fix)
+    let randomPart = Date.now().toString(36);
+    if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+      const array = new Uint8Array(12);
+      crypto.getRandomValues(array);
+      randomPart = Array.from(array, b => b.toString(36)).join('').substring(0, 12);
+    }
+    return {
+      uid: `anon-${Date.now()}-${randomPart}`,
+      email: null,
+      displayName: null,
+      emailVerified: false,
+      isAnonymous: true,
+      provider: 'anonymous'
+    };
+  };
 
   // Stable function - no dependencies, takes currentUser as parameter
   const createDefaultProfile = useCallback((userId: string, currentUser: AuthUser | null): UserProfile => {
@@ -592,7 +637,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
         const state = urlParams.get('state');
         const storedState = sessionStorage.getItem('oauth_state');
 
-        if (code && state && state === storedState) {
+        // Use secure validation with constant-time comparison (CWE-208, CodeQL js/user-controlled-bypass fix)
+        // Backend also validates state for defense in depth
+        if (code && state && validateOAuthState(state, storedState)) {
           // Complete OAuth flow
           try {
             const response: AuthResponse = await jwtClient.completeGoogleAuth(code, state);

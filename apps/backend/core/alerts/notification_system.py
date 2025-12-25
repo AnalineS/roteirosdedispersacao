@@ -12,7 +12,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Dict, Any, Optional, Literal
 from dataclasses import dataclass
 import aiohttp
-from jinja2 import Template
+from jinja2 import Environment  # Use Environment with autoescape for security (CWE-79 fix)
 import logging
 
 # Configurar logging interno
@@ -106,7 +106,9 @@ class EmailNotificationChannel(NotificationChannel):
             'security_alert': '🛡️'
         }
 
-        template = Template("""
+        # Use Environment with autoescape for XSS protection (CWE-79 fix)
+        jinja_env = Environment(autoescape=True)
+        template = jinja_env.from_string("""
 <!DOCTYPE html>
 <html>
 <head>

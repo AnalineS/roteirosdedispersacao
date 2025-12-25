@@ -128,7 +128,14 @@ class UserTrackingService {
   // ============================================
 
   startSession(userId?: string): string {
-    const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    // Use crypto.getRandomValues for cryptographically secure session IDs (CWE-338 fix)
+    let randomPart = Date.now().toString(36);
+    if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+      const array = new Uint8Array(12);
+      crypto.getRandomValues(array);
+      randomPart = Array.from(array, b => b.toString(36)).join('').substring(0, 12);
+    }
+    const sessionId = `session_${Date.now()}_${randomPart}`;
     const actualUserId = userId || this.generateAnonymousUserId();
     
     const session: UserSession = {
@@ -318,8 +325,15 @@ class UserTrackingService {
   private generateAnonymousUserId(): string {
     const stored = safeLocalStorage()?.getItem('anonymous-user-id');
     if (stored) return stored;
-    
-    const newId = `anon_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+    // Use crypto.getRandomValues for cryptographically secure IDs (CWE-338 fix)
+    let randomPart = Date.now().toString(36);
+    if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+      const array = new Uint8Array(12);
+      crypto.getRandomValues(array);
+      randomPart = Array.from(array, b => b.toString(36)).join('').substring(0, 12);
+    }
+    const newId = `anon_${Date.now()}_${randomPart}`;
     safeLocalStorage()?.setItem('anonymous-user-id', newId);
     return newId;
   }

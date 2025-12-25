@@ -331,8 +331,8 @@ class EmailTemplateManager:
             
         template = self.templates[template_id]
         
-        # Renderizar subject
-        subject_template = Template(template.subject)
+        # Renderizar subject (use jinja_env.from_string for autoescape - CWE-79 fix)
+        subject_template = self.jinja_env.from_string(template.subject)
         subject = subject_template.render(**variables)
         
         # Renderizar HTML

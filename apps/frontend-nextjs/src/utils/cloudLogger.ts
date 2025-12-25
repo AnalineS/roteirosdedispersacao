@@ -32,7 +32,14 @@ class CloudLoggerClient {
   }
 
   private generateSessionId(): string {
-    return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    // Use crypto.getRandomValues for cryptographically secure session IDs (CWE-338 fix)
+    if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+      const array = new Uint8Array(12);
+      crypto.getRandomValues(array);
+      const randomPart = Array.from(array, b => b.toString(36)).join('').substring(0, 12);
+      return `session_${Date.now()}_${randomPart}`;
+    }
+    return `session_${Date.now()}_${Date.now().toString(36)}`;
   }
 
   private async sendToBackend(event: CloudLogEvent): Promise<LogResponse> {

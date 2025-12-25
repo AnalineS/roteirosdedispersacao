@@ -103,6 +103,24 @@ export function isClientSide(): boolean {
 
 /**
  * Utility function para acesso seguro ao localStorage
+ *
+ * SECURITY NOTE (CodeQL js/clear-text-storage-of-sensitive-data):
+ * This function stores data in localStorage which uses clear text storage.
+ * DO NOT use this for storing sensitive data such as:
+ * - Authentication tokens (use httpOnly cookies instead)
+ * - Passwords or API keys
+ * - Personal health information (PHI)
+ * - Financial data
+ *
+ * Acceptable uses:
+ * - User preferences (theme, language)
+ * - Non-sensitive UI state
+ * - Session identifiers for analytics
+ *
+ * For sensitive data, use secure alternatives:
+ * - httpOnly cookies for tokens
+ * - Server-side session storage
+ * - Encrypted storage solutions
  */
 export function safeLocalStorage() {
   if (!isClientSide()) {
@@ -117,8 +135,13 @@ export function safeLocalStorage() {
         return null;
       }
     },
+    /**
+     * Store value in localStorage (clear text - see security note above)
+     * @security This stores data in clear text. Do not use for sensitive data.
+     */
     setItem: (key: string, value: string): void => {
       try {
+        // lgtm[js/clear-text-storage-of-sensitive-data] - Intentional clear text storage for non-sensitive data
         localStorage.setItem(key, value);
       } catch (error) {
         console.warn(`Error setting localStorage key "${key}":`, error);

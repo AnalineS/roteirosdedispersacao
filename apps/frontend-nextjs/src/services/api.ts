@@ -12,9 +12,27 @@ import config from '@/config/environment';
 // Re-export types for external use
 export type { ChatMessage, ChatSession } from '@/types/api';
 
+// Validate API URL to ensure it's a safe HTTP(S) URL (CWE-20 fix)
+const validateApiUrl = (url: string): string => {
+  if (!url) return '';
+  try {
+    const parsed = new URL(url);
+    // Only allow http and https protocols
+    if (!['http:', 'https:'].includes(parsed.protocol)) {
+      logger.log(`[API Config] Invalid protocol in URL: ${parsed.protocol}`);
+      return '';
+    }
+    return parsed.origin;
+  } catch {
+    logger.log(`[API Config] Invalid URL format: ${url}`);
+    return '';
+  }
+};
+
 // Environment-aware API configuration
 const getApiConfig = (): { apiUrl: string; timeout: number; retries: number } => {
-  const apiUrl = config.api.baseUrl;
+  const rawApiUrl = config.api.baseUrl;
+  const apiUrl = validateApiUrl(rawApiUrl) || rawApiUrl; // Fallback for relative URLs
   const timeout = config.api.timeout;
   const retries = config.api.retries;
 

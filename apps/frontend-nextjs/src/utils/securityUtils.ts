@@ -79,17 +79,31 @@ export function sanitizeMedicalInput(input: string): {
     detectedPatterns.push('personal_keywords');
   }
 
-  // Sanitização adicional para XSS
-  sanitized = sanitized
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '[SCRIPT_REMOVIDO]')
-    .replace(/javascript:/gi, '[JS_REMOVIDO]')
-    .replace(/vbscript:/gi, '[VBS_REMOVIDO]')
-    .replace(/on\w+\s*=/gi, '[EVENT_REMOVIDO]')
-    .replace(/data:text\/html/gi, '[DATA_URL_REMOVIDO]')
-    // Manter quebras de linha mas remover HTML perigoso
-    .replace(/<(?!br\s*\/?>)[^>]+>/g, '')
-    // Limitar tamanho
-    .substring(0, 1000);
+  // Sanitização iterativa para XSS (CWE-20/80/116 fix)
+  // Apply multiple passes to prevent bypass with nested patterns
+  let previous = '';
+  let iterations = 0;
+  const maxIterations = 10;
+
+  do {
+    previous = sanitized;
+    // Remove script tags
+    sanitized = sanitized.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '[SCRIPT_REMOVIDO]');
+    // Remove dangerous protocols
+    sanitized = sanitized.replace(/javascript:/gi, '[JS_REMOVIDO]');
+    sanitized = sanitized.replace(/vbscript:/gi, '[VBS_REMOVIDO]');
+    sanitized = sanitized.replace(/data:text\/html/gi, '[DATA_URL_REMOVIDO]');
+    // Remove event handlers with proper pattern
+    sanitized = sanitized.replace(/\bon[\w\-]*\s*=\s*(?:"[^"]*"|'[^']*'|[^\s"'<>]*)/gi, '[EVENT_REMOVIDO]');
+    // Remove HTML tags except br
+    sanitized = sanitized.replace(/<(?!br\s*\/?>)[^>]+>/g, '');
+    // Remove isolated < and > to prevent tag reconstruction
+    sanitized = sanitized.replace(/<+(?![^<]*>)|(?<![<][^>]*)>+/g, '');
+    iterations++;
+  } while (sanitized !== previous && iterations < maxIterations);
+
+  // Limitar tamanho
+  sanitized = sanitized.substring(0, 1000);
 
   return {
     sanitized: sanitized.trim(),

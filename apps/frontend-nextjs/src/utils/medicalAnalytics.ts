@@ -473,7 +473,14 @@ export class MedicalAnalytics {
 
   private getCurrentSessionId(): string {
     if (!this.currentSessionId) {
-      this.currentSessionId = `medical_session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      // Use crypto.getRandomValues for cryptographically secure session IDs (CWE-338 fix)
+      let randomPart = Date.now().toString(36);
+      if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+        const array = new Uint8Array(12);
+        crypto.getRandomValues(array);
+        randomPart = Array.from(array, b => b.toString(36)).join('').substring(0, 12);
+      }
+      this.currentSessionId = `medical_session_${Date.now()}_${randomPart}`;
       // Iniciar sessão médica no Firestore
       AnalyticsFirestoreCache.startAnalyticsSession({
         id: this.currentSessionId,
