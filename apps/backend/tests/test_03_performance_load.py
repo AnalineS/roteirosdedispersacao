@@ -13,10 +13,7 @@ import psutil
 import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-from conftest import (
-    assert_valid_json_response,
-    PERFORMANCE_THRESHOLDS
-)
+from conftest import PERFORMANCE_THRESHOLDS
 
 class TestResponseTimePerformance:
     """Test response time performance for all endpoints"""

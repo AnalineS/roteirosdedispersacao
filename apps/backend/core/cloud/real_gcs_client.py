@@ -13,7 +13,7 @@ from pathlib import Path
 from google.cloud import storage
 from google.oauth2 import service_account
 from google.auth import default
-from core.logging.sanitizer import sanitize_log_input, sanitize_error
+from core.logging.sanitizer import sanitize_error
 
 logger = logging.getLogger(__name__)
 

@@ -9,10 +9,6 @@ import json
 import time
 import base64
 
-from conftest import (
-    SECURITY_TEST_PAYLOADS
-)
-
 class TestInputValidationSecurity:
     """Test input validation and sanitization"""
 

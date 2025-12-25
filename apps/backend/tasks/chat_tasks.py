@@ -12,7 +12,7 @@ import asyncio
 from datetime import datetime
 from typing import Dict, Any
 import hashlib
-from core.logging.sanitizer import sanitize_log_input, sanitize_error, sanitize_request_id
+from core.logging.sanitizer import sanitize_error, sanitize_request_id
 
 # Importar dependências do sistema existente
 try:

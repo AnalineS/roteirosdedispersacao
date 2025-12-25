@@ -14,7 +14,7 @@ import numpy as np
 
 # Import REAL cloud manager - NO MOCKS
 from core.cloud.unified_real_cloud_manager import get_unified_cloud_manager
-from core.logging.sanitizer import sanitize_log_input, sanitize_error
+from core.logging.sanitizer import sanitize_error
 
 logger = logging.getLogger(__name__)
 

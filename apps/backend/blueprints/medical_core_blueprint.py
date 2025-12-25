@@ -9,7 +9,7 @@ from flask import Blueprint, request, jsonify
 from datetime import datetime
 import logging
 
-from core.logging.sanitizer import sanitize_error, sanitize_log_input
+from core.logging.sanitizer import sanitize_error
 
 # Create blueprint
 medical_core_bp = Blueprint('medical_core', __name__, url_prefix='/api/v1')

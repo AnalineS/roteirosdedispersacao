@@ -12,7 +12,7 @@ from dataclasses import dataclass
 
 # Import dependências necessárias
 # SearchResult será importado nas linhas seguintes
-from core.logging.sanitizer import sanitize_log_input, sanitize_error
+from core.logging.sanitizer import sanitize_error
 
 logger = logging.getLogger(__name__)
 

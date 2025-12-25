@@ -12,7 +12,7 @@ from typing import Dict, Any, List, Optional
 import json
 import sqlite3
 from pathlib import Path
-from core.logging.sanitizer import sanitize_error, sanitize_path
+from core.logging.sanitizer import sanitize_error
 
 logger = logging.getLogger(__name__)
 

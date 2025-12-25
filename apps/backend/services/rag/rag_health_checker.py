@@ -8,7 +8,6 @@ import os
 import logging
 from typing import Dict, Any, List
 from datetime import datetime
-from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -255,8 +254,7 @@ class RAGHealthChecker:
                 kb_status['paths_found'].append(path)
 
                 # Count files
-                from pathlib import Path
-                path_obj = Path(path)
+                                path_obj = Path(path)
 
                 md_files = list(path_obj.rglob("*.md"))
                 json_files = list(path_obj.rglob("*.json"))

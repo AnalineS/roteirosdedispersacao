@@ -13,7 +13,7 @@ from datetime import datetime, timezone, timedelta
 from pathlib import Path
 import numpy as np
 
-from core.logging.sanitizer import sanitize_log_input, sanitize_error
+from core.logging.sanitizer import sanitize_error
 
 logger = logging.getLogger(__name__)
 

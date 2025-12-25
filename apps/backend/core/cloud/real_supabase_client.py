@@ -12,7 +12,7 @@ from datetime import datetime
 from supabase import create_client, Client
 import psycopg2
 from psycopg2.extras import RealDictCursor
-from core.logging.sanitizer import sanitize_log_input, sanitize_error
+from core.logging.sanitizer import sanitize_error
 
 logger = logging.getLogger(__name__)
 

@@ -11,12 +11,7 @@ import pytest
 import time
 import re
 import os
-from unittest.mock import patch
-
 # Test configuration and utilities
-from conftest import (
-    SECURITY_TEST_PAYLOADS
-)
 
 class TestMedicalFunctionalityIntegrity:
     """Validate core medical functionality after security updates"""

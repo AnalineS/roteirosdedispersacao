@@ -5,7 +5,7 @@ from markupsafe import escape
 from datetime import datetime
 import logging
 
-from core.logging.sanitizer import sanitize_error, sanitize_log_input
+from core.logging.sanitizer import sanitize_error
 
 logger = logging.getLogger(__name__)
 engagement_multimodal_bp = Blueprint('engagement_multimodal', __name__, url_prefix='/api/v1')

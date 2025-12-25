@@ -29,7 +29,7 @@ import threading
 from dataclasses import dataclass, asdict
 from pathlib import Path
 
-from core.logging.sanitizer import sanitize_log_input, sanitize_error
+from core.logging.sanitizer import sanitize_error
 
 
 # Logger específico para secrets
