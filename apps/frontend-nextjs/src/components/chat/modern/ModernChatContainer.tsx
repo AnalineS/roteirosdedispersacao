@@ -13,11 +13,8 @@ import ChatMessagesArea from './ChatMessagesArea';
 import ExportChatModal from './ExportChatModal';
 import SmartIndicators from './SmartIndicators';
 import AccessibleChatInput from '../accessibility/AccessibleChatInput';
-import AccessibleMessageBubble from '../accessibility/AccessibleMessageBubble';
-import { useChatAccessibility } from '../accessibility/ChatAccessibilityProvider';
-import Skeleton from '@/components/ui/Skeleton';
 import ChatErrorMessage from './ChatErrorMessage';
-import MessageActions from './MessageActions';
+import { useChatAccessibility } from '../accessibility/ChatAccessibilityProvider';
 import { type ClassifiedError } from '@/utils/errorClassification';
 // KnowledgeStats imported above
 
@@ -99,10 +96,12 @@ const ModernChatContainer = memo(function ModernChatContainer({
   showSuggestions,
   onSuggestionClick,
   onFileUpload,
+  // Issue #330: Error handling
   classifiedError,
   currentRetryCount = 0,
   isManualRetrying = false,
   onManualRetry,
+  // Issue #331: Quick actions
   onCopyMessage,
   onToggleFavorite,
   onRegenerateMessage,
@@ -114,10 +113,23 @@ const ModernChatContainer = memo(function ModernChatContainer({
   const containerRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [showExportModal, setShowExportModal] = useState(false);
-  
+
   // Chat accessibility context
-  // Note: announceNewMessage, announceSystemStatus, focusLastMessage available from useChatAccessibility() for future use
-  useChatAccessibility();
+  const { announceSystemStatus } = useChatAccessibility();
+
+  // Scroll to bottom when new messages arrive
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages.length]);
+
+  // Announce errors to screen readers
+  useEffect(() => {
+    if (classifiedError) {
+      announceSystemStatus(`Erro: ${classifiedError.userMessage}`, 'error');
+    }
+  }, [classifiedError, announceSystemStatus]);
   
   // Obter persona atual
   const currentPersona = selectedPersona ? personas[selectedPersona] : null;
@@ -161,6 +173,17 @@ const ModernChatContainer = memo(function ModernChatContainer({
         onShowFavorites={onShowFavorites}
       />
 
+      {/* Issue #330: Error Display */}
+      {classifiedError && (
+        <ChatErrorMessage
+          error={classifiedError}
+          onRetry={onManualRetry}
+          retryCount={currentRetryCount}
+          maxRetries={3}
+          isRetrying={isManualRetrying}
+        />
+      )}
+
       {/* OTIMIZAÇÃO CRÍTICA: Usar componentes especializados */}
       {!selectedPersona ? (
         <ChatEmptyState
@@ -184,6 +207,14 @@ const ModernChatContainer = memo(function ModernChatContainer({
           suggestions={suggestions}
           showSuggestions={showSuggestions}
           onSuggestionClick={onSuggestionClick}
+          // Issue #331: Quick actions
+          onCopyMessage={onCopyMessage}
+          onToggleFavorite={onToggleFavorite}
+          onRegenerateMessage={onRegenerateMessage}
+          isFavorite={isFavorite}
+          canRegenerate={canRegenerate}
+          // Scroll anchor ref
+          messagesEndRef={messagesEndRef}
         />
       )}
 

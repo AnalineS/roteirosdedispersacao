@@ -18,7 +18,7 @@ interface ChatMessagesAreaProps {
   selectedPersona: string | null;
   isLoading: boolean;
   isMobile: boolean;
-  
+
   // Indicadores IA
   currentSentiment?: {
     category: string;
@@ -36,6 +36,16 @@ interface ChatMessagesAreaProps {
   suggestions?: string[];
   showSuggestions?: boolean;
   onSuggestionClick?: (suggestion: string) => void;
+
+  // Issue #331: Quick actions
+  onCopyMessage?: (message: ChatMessage) => void;
+  onToggleFavorite?: (message: ChatMessage) => void;
+  onRegenerateMessage?: (message: ChatMessage) => void;
+  isFavorite?: (messageId: string) => boolean;
+  canRegenerate?: (messageId: string) => boolean;
+
+  // Scroll anchor ref from parent
+  messagesEndRef?: React.RefObject<HTMLDivElement | null>;
 }
 
 const ChatMessagesArea = memo(function ChatMessagesArea({
@@ -50,19 +60,28 @@ const ChatMessagesArea = memo(function ChatMessagesArea({
   fallbackState,
   suggestions = [],
   showSuggestions = false,
-  onSuggestionClick
+  onSuggestionClick,
+  // Issue #331: Quick actions
+  onCopyMessage,
+  onToggleFavorite,
+  onRegenerateMessage,
+  isFavorite,
+  canRegenerate,
+  // Scroll anchor ref from parent
+  messagesEndRef: externalMessagesEndRef
 }: ChatMessagesAreaProps) {
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const internalMessagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = externalMessagesEndRef || internalMessagesEndRef;
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const currentPersona = selectedPersona ? personas[selectedPersona] : null;
 
   // Auto-scroll para a última mensagem
   const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ 
+    messagesEndRef.current?.scrollIntoView({
       behavior: 'smooth',
       block: 'end'
     });
-  }, []);
+  }, [messagesEndRef]);
 
   useEffect(() => {
     const timeoutId = setTimeout(scrollToBottom, 100);
@@ -149,6 +168,12 @@ const ChatMessagesArea = memo(function ChatMessagesArea({
               isLast={index === messages.length - 1}
               previousMessage={index > 0 ? messages[index - 1] : undefined}
               enableFeedback={message.role === 'assistant'}
+              // Issue #331: Quick actions
+              onCopy={onCopyMessage ? () => onCopyMessage(message) : undefined}
+              onToggleFavorite={onToggleFavorite ? () => onToggleFavorite(message) : undefined}
+              onRegenerate={onRegenerateMessage ? () => onRegenerateMessage(message) : undefined}
+              isFavorite={isFavorite ? isFavorite(message.id || `${message.timestamp}`) : false}
+              canRegenerate={canRegenerate ? canRegenerate(message.id || `${message.timestamp}`) : false}
             />
           );
         })}

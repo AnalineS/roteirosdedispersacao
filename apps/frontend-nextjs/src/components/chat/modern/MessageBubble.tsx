@@ -18,6 +18,12 @@ interface MessageBubbleProps {
   isLast?: boolean;
   previousMessage?: ChatMessage; // Para obter a pergunta do usuário
   enableFeedback?: boolean;
+  // Issue #331: Quick actions
+  onCopy?: () => void;
+  onToggleFavorite?: () => void;
+  onRegenerate?: () => void;
+  isFavorite?: boolean;
+  canRegenerate?: boolean;
 }
 
 const MessageMeta = ({ timestamp }: { timestamp: number }) => {
@@ -107,17 +113,25 @@ const FallbackIndicator = ({ metadata }: { metadata: { isFallback?: boolean; fal
   );
 };
 
-export default function MessageBubble({ 
-  message, 
-  persona, 
+export default function MessageBubble({
+  message,
+  persona,
   personaId = 'gasnelio',
-  isUser = false, 
+  isUser = false,
   isMobile = false,
   isLast = false,
   previousMessage,
-  enableFeedback = true
+  enableFeedback = true,
+  // Issue #331: Quick actions
+  onCopy,
+  onToggleFavorite,
+  onRegenerate,
+  isFavorite = false,
+  canRegenerate = false
 }: MessageBubbleProps) {
   const [isVisible, setIsVisible] = useState(false);
+  const [showActions, setShowActions] = useState(false);
+  const [copySuccess, setCopySuccess] = useState(false);
   
   // Animation delay for entrance
   useState(() => {
@@ -128,7 +142,7 @@ export default function MessageBubble({
 
   // Feedback handling
   const { submitFeedback, isSubmitting } = useFeedback({
-    onSuccess: (response) => {
+    onSuccess: () => {
       if (typeof window !== 'undefined' && window.gtag) {
         window.gtag('event', 'message_bubble_feedback_success', {
           event_category: 'medical_chat_feedback',
@@ -267,12 +281,14 @@ export default function MessageBubble({
           if (!isUser) {
             e.currentTarget.style.boxShadow = modernChatTheme.shadows.moderate;
             e.currentTarget.style.transform = 'translateY(-1px)';
+            setShowActions(true);
           }
         }}
         onMouseLeave={(e) => {
           if (!isUser) {
             e.currentTarget.style.boxShadow = modernChatTheme.shadows.subtle;
             e.currentTarget.style.transform = 'translateY(0)';
+            setShowActions(false);
           }
         }}
       >
@@ -341,6 +357,101 @@ export default function MessageBubble({
             isVisible={!isSubmitting}
           />
         )}
+
+        {/* Issue #331: Quick Actions - Only for assistant messages */}
+        {!isUser && (showActions || isMobile) && (
+          <div
+            className="message-actions"
+            style={{
+              display: 'flex',
+              gap: modernChatTheme.spacing.xs,
+              marginTop: modernChatTheme.spacing.sm,
+              paddingTop: modernChatTheme.spacing.sm,
+              borderTop: `1px solid ${modernChatTheme.colors.neutral.border}`,
+              opacity: showActions ? 1 : 0.6,
+              transition: 'opacity 0.2s ease'
+            }}
+          >
+            {/* Copy Button */}
+            <button
+              onClick={() => {
+                if (onCopy) {
+                  onCopy();
+                } else {
+                  navigator.clipboard?.writeText(message.content);
+                }
+                setCopySuccess(true);
+                setTimeout(() => setCopySuccess(false), 2000);
+              }}
+              aria-label={copySuccess ? 'Copiado!' : 'Copiar mensagem'}
+              title={copySuccess ? 'Copiado!' : 'Copiar mensagem'}
+              style={{
+                background: copySuccess ? '#10B981' : 'transparent',
+                border: `1px solid ${copySuccess ? '#10B981' : modernChatTheme.colors.neutral.border}`,
+                borderRadius: modernChatTheme.borderRadius.sm,
+                padding: `${modernChatTheme.spacing.xs} ${modernChatTheme.spacing.sm}`,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: modernChatTheme.spacing.xs,
+                fontSize: '0.75rem',
+                color: copySuccess ? 'white' : modernChatTheme.colors.neutral.textMuted,
+                transition: 'all 0.2s ease'
+              }}
+            >
+              {copySuccess ? '✓' : '📋'} {copySuccess ? 'Copiado' : 'Copiar'}
+            </button>
+
+            {/* Favorite Button */}
+            {onToggleFavorite && (
+              <button
+                onClick={onToggleFavorite}
+                aria-label={isFavorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+                title={isFavorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+                style={{
+                  background: isFavorite ? '#FEF3C7' : 'transparent',
+                  border: `1px solid ${isFavorite ? '#F59E0B' : modernChatTheme.colors.neutral.border}`,
+                  borderRadius: modernChatTheme.borderRadius.sm,
+                  padding: `${modernChatTheme.spacing.xs} ${modernChatTheme.spacing.sm}`,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: modernChatTheme.spacing.xs,
+                  fontSize: '0.75rem',
+                  color: isFavorite ? '#D97706' : modernChatTheme.colors.neutral.textMuted,
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                {isFavorite ? '⭐' : '☆'} {isFavorite ? 'Favoritado' : 'Favoritar'}
+              </button>
+            )}
+
+            {/* Regenerate Button */}
+            {onRegenerate && canRegenerate && (
+              <button
+                onClick={onRegenerate}
+                aria-label="Regenerar resposta"
+                title="Regenerar resposta"
+                style={{
+                  background: 'transparent',
+                  border: `1px solid ${modernChatTheme.colors.neutral.border}`,
+                  borderRadius: modernChatTheme.borderRadius.sm,
+                  padding: `${modernChatTheme.spacing.xs} ${modernChatTheme.spacing.sm}`,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: modernChatTheme.spacing.xs,
+                  fontSize: '0.75rem',
+                  color: modernChatTheme.colors.neutral.textMuted,
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                🔄 Regenerar
+              </button>
+            )}
+          </div>
+        )}
+
         {/* Screen reader helper for user identification */}
         {isUser && (
           <span className="sr-only" id={`${messageId}-sender`}>Você disse:</span>
