@@ -1,18 +1,16 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { ChatAccessibilityProvider } from '@/components/chat/accessibility/ChatAccessibilityProvider';
-import type { AudienceType } from '@/components/search/AccessibleSearchWithSuggestions';
+import { PCDTSearchSystem } from '@/components/search';
 import { HeartIcon, PillIcon, BulbIcon } from '@/components/icons/FlatOutlineIcons';
 
 // Carregamento dinâmico para evitar problemas de SSR
 const EducationalLayout = dynamic(() => import('@/components/layout/EducationalLayout'), { ssr: false });
-const AccessibleSearchWithSuggestions = dynamic(() => import('@/components/search/AccessibleSearchWithSuggestions'), { ssr: false });
 
 export default function SearchPage() {
-  const [selectedAudience, setSelectedAudience] = useState<AudienceType>('general');
   const router = useRouter();
 
   return (
@@ -32,59 +30,16 @@ export default function SearchPage() {
             </p>
           </header>
 
-          {/* Audience Selector - Sistema de filtro por audiência ativo */}
-          <section className="audience-selector" aria-label="Selecionar audiência para busca personalizada">
-            <h2 className="audience-title">🎯 Personalizar busca por audiência</h2>
-            <div className="audience-options">
-              <button
-                onClick={() => setSelectedAudience('general')}
-                className={`audience-btn ${selectedAudience === 'general' ? 'active' : ''}`}
-                aria-pressed={selectedAudience === 'general'}
-              >
-                <span className="audience-icon">👥</span>
-                <span className="audience-label">Geral</span>
-                <span className="audience-desc">Para todos os usuários</span>
-              </button>
-              <button
-                onClick={() => setSelectedAudience('patient')}
-                className={`audience-btn ${selectedAudience === 'patient' ? 'active' : ''}`}
-                aria-pressed={selectedAudience === 'patient'}
-              >
-                <span className="audience-icon">🤲</span>
-                <span className="audience-label">Pacientes</span>
-                <span className="audience-desc">Linguagem simples e acessível</span>
-              </button>
-              <button
-                onClick={() => setSelectedAudience('professional')}
-                className={`audience-btn ${selectedAudience === 'professional' ? 'active' : ''}`}
-                aria-pressed={selectedAudience === 'professional'}
-              >
-                <span className="audience-icon">👨‍⚕️</span>
-                <span className="audience-label">Profissionais</span>
-                <span className="audience-desc">Termos técnicos e protocolos</span>
-              </button>
-              <button
-                onClick={() => setSelectedAudience('student')}
-                className={`audience-btn ${selectedAudience === 'student' ? 'active' : ''}`}
-                aria-pressed={selectedAudience === 'student'}
-              >
-                <span className="audience-icon">🎓</span>
-                <span className="audience-label">Estudantes</span>
-                <span className="audience-desc">Conteúdo educativo detalhado</span>
-              </button>
-            </div>
-          </section>
-
-          {/* Main Search Interface */}
+          {/* Main Search Interface - PCDT Search System */}
           <main className="search-main">
-            <section className="search-section" aria-label="Interface de busca principal">
-              <AccessibleSearchWithSuggestions
-                placeholder="Ex: Como tomar PQT-U? Efeitos colaterais? Posso parar o tratamento?"
-                showFilters={true}
-                defaultAudience={selectedAudience}
-                maxResults={12}
+            <section className="search-section" aria-label="Interface de busca principal PCDT">
+              <PCDTSearchSystem
+                variant="page"
+                enableFilterChips={true}
                 enableVoiceSearch={true}
-                showRecentSearches={true}
+                placeholder="Buscar dosagem, contraindicações, efeitos, interações..."
+                maxSuggestions={8}
+                maxResults={20}
                 className="main-search"
               />
             </section>

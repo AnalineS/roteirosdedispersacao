@@ -30,7 +30,7 @@ import { getUnbColors } from '@/config/modernTheme';
 import { getUniversityLogo } from '@/constants/avatars';
 import Tooltip from '@/components/common/Tooltip';
 import MobileNavigation from './MobileNavigation';
-import SearchBar from '@/components/search/SearchBar';
+import { PCDTSearchSystem } from '@/components/search';
 import { useSafeAuth } from '@/hooks/useSafeAuth';
 import { SkipToContent, HighContrastToggle } from '@/components/accessibility';
 import OfflineIndicator from './OfflineIndicator';
@@ -618,10 +618,15 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
             </div>
           </div>
 
-          {/* Barra de pesquisa - Linha secundária (não na home) */}
+          {/* Barra de pesquisa PCDT - Linha secundária (não na home) */}
           {!isMobile && pathname !== '/' && (
             <div className="px-4 sm:px-6 lg:px-8 pb-4">
-              <SearchBar placeholder="🔍 Buscar no site..." className="max-w-2xl mx-auto" />
+              <PCDTSearchSystem
+                variant="header"
+                enableFilterChips={false}
+                placeholder="Buscar termos PCDT, medicamentos, protocolos..."
+                className="max-w-2xl mx-auto"
+              />
             </div>
           )}
         </div>
