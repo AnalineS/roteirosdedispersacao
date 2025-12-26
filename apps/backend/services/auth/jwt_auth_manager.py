@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 JWT Authentication Manager
-Sistema de autenticação próprio para substituir Firebase Auth
+Sistema de autenticação JWT com suporte a Google OAuth
 
 Features:
 - JWT tokens com refresh
@@ -30,7 +30,7 @@ class JWTAuthManager:
     """
     Gerenciador de autenticação JWT com Google OAuth
 
-    Substituição completa do Firebase Auth:
+    Features:
     - Tokens JWT seguros
     - Refresh tokens
     - Google OAuth flow

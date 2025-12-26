@@ -13,7 +13,7 @@ interface HybridCacheEntry<T> {
   data: T;
   timestamp: number;
   ttl: number;
-  source: 'memory' | 'localStorage' | 'firestore';
+  source: 'memory' | 'localStorage';
   key: string;
   syncStatus: 'synced' | 'pending' | 'failed';
   retryCount?: number;
@@ -70,12 +70,6 @@ interface CacheStats {
     hits: number;
     misses: number;
   };
-  firestore: {
-    size: number;
-    hits: number;
-    misses: number;
-    isAvailable: boolean;
-  };
   totalHits: number;
   totalMisses: number;
   hitRatio: number;
@@ -91,12 +85,12 @@ interface CacheConfig {
     maxSize: number;
     defaultTTL: number;
   };
-  firestore: {
+  sync: {
     defaultTTL: number;
     syncInterval: number;
     retryLimit: number;
   };
-  strategy: 'memory_first' | 'firestore_first';
+  strategy: 'memory_first';
   enableBackgroundSync: boolean;
 }
 
@@ -117,7 +111,7 @@ class HybridCacheManager {
       maxSize: 50,
       defaultTTL: 30 * 60 * 1000, // 30 minutos
     },
-    firestore: {
+    sync: {
       defaultTTL: 60 * 60 * 1000, // 1 hora
       syncInterval: 30000, // 30 segundos
       retryLimit: 3,
@@ -134,7 +128,6 @@ class HybridCacheManager {
     this.stats = {
       memory: { size: 0, hits: 0, misses: 0 },
       localStorage: { size: 0, hits: 0, misses: 0 },
-      firestore: { size: 0, hits: 0, misses: 0, isAvailable: false },
       totalHits: 0,
       totalMisses: 0,
       hitRatio: 0,
@@ -142,7 +135,6 @@ class HybridCacheManager {
 
     this.initializeBackgroundSync();
     this.initializeNetworkMonitoring();
-    this.initializeFirestoreStatus();
   }
 
   /**
@@ -177,8 +169,6 @@ class HybridCacheManager {
     }
     this.stats.localStorage.misses++;
 
-    // Firestore cache layer removed (no longer in use)
-
     this.updateTotalStats();
     logger.log('[HybridCache] Cache miss');
     return null;
@@ -188,36 +178,29 @@ class HybridCacheManager {
    * Armazena dados em todas as camadas
    */
   async set<T>(
-    key: string, 
-    data: T, 
+    key: string,
+    data: T,
     options?: {
       ttl?: number;
-      skipFirestore?: boolean;
+      skipLocalStorage?: boolean;
       priority?: 'high' | 'normal' | 'low';
     }
   ): Promise<boolean> {
     const sanitizedKey = this.sanitizeKey(key);
     const ttl = options?.ttl || this.config.memory.defaultTTL;
-    
+
     try {
       // Sempre armazenar em memory cache
       this.setInMemory(sanitizedKey, data as CacheableData, ttl);
-      
+
       // Armazenar em localStorage apenas se TTL for maior que um valor mínimo
-      if (ttl >= 30000) { // 30 segundos mínimo para localStorage
+      if (!options?.skipLocalStorage && ttl >= 30000) { // 30 segundos mínimo para localStorage
         this.setInLocalStorage(sanitizedKey, data, Math.max(ttl, this.config.localStorage.defaultTTL));
       }
-      
-      // Armazenar em Firestore (se não for skipado e estivermos online)
-      if (!options?.skipFirestore && this.isOnline) {
-        const firestoreTTL = Math.max(ttl, this.config.firestore.defaultTTL);
-        
-        // Firestore sync queue removed - local storage only
-      }
-      
+
       logger.log('[HybridCache] Data cached successfully');
       return true;
-      
+
     } catch (error) {
       console.error(`[HybridCache] Erro ao armazenar ${key}:`, error);
       return false;
@@ -237,9 +220,7 @@ class HybridCacheManager {
       
       // Remover do localStorage
       this.removeFromLocalStorage(sanitizedKey);
-      
-      // Firestore removal completed - using local storage only
-      
+
       // Remover da queue de sync
       this.syncQueue.delete(sanitizedKey);
       
@@ -262,12 +243,7 @@ class HybridCacheManager {
       
       // Limpar localStorage
       this.clearLocalStorage();
-      
-      // Limpar Firestore (se online)
-      if (this.isOnline) {
-        // Firestore removed - using local storage only
-      }
-      
+
       // Limpar queue de sync
       this.syncQueue.clear();
       
@@ -284,7 +260,7 @@ class HybridCacheManager {
   }
 
   /**
-   * Força sincronização manual com Firestore
+   * Força sincronização manual (clears sync queue)
    */
   async forceSync(): Promise<{ synced: number; failed: number }> {
     if (!this.isOnline) {
@@ -293,35 +269,21 @@ class HybridCacheManager {
     }
 
     let synced = 0;
-    let failed = 0;
-    
     const keysToSync = Array.from(this.syncQueue);
-    
-    // Firestore sync removed - clearing sync queue
+
     for (const key of keysToSync) {
       this.syncQueue.delete(key);
       synced++;
     }
-    
-    logger.log(`[HybridCache] Sincronização manual: ${synced} ok, ${failed} falhas`);
-    return { synced, failed };
+
+    logger.log(`[HybridCache] Sincronização manual: ${synced} itens processados`);
+    return { synced, failed: 0 };
   }
 
   /**
    * Obtém estatísticas detalhadas do cache
    */
   async getDetailedStats(): Promise<CacheStats> {
-    // Atualizar stats do Firestore
-    if (this.isOnline) {
-      try {
-        // Firestore stats removed - using local storage only
-        this.stats.firestore.size = 0;
-        this.stats.firestore.isAvailable = false;
-      } catch (error) {
-        logger.warn('[HybridCache] Erro ao obter stats do Firestore:', error);
-      }
-    }
-
     // Atualizar tamanhos
     this.stats.memory.size = this.memoryCache.size;
     this.stats.localStorage.size = this.getLocalStorageSize();
@@ -538,9 +500,9 @@ class HybridCacheManager {
   }
 
   private updateTotalStats(): void {
-    const totalHits = this.stats.memory.hits + this.stats.localStorage.hits + this.stats.firestore.hits;
-    const totalMisses = this.stats.memory.misses + this.stats.localStorage.misses + this.stats.firestore.misses;
-    
+    const totalHits = this.stats.memory.hits + this.stats.localStorage.hits;
+    const totalMisses = this.stats.memory.misses + this.stats.localStorage.misses;
+
     this.stats.totalHits = totalHits;
     this.stats.totalMisses = totalMisses;
     this.stats.hitRatio = totalHits + totalMisses > 0 ? totalHits / (totalHits + totalMisses) : 0;
@@ -550,7 +512,6 @@ class HybridCacheManager {
     this.stats = {
       memory: { size: 0, hits: 0, misses: 0 },
       localStorage: { size: 0, hits: 0, misses: 0 },
-      firestore: { size: 0, hits: 0, misses: 0, isAvailable: false },
       totalHits: 0,
       totalMisses: 0,
       hitRatio: 0,
@@ -573,7 +534,7 @@ class HybridCacheManager {
           logger.warn('[HybridCache] Background sync error:', error);
         }
       }
-    }, this.config.firestore.syncInterval);
+    }, this.config.sync.syncInterval);
   }
 
   private initializeNetworkMonitoring(): void {
@@ -590,15 +551,6 @@ class HybridCacheManager {
         this.isOnline = false;
         logger.log('[HybridCache] Modo offline ativado');
       });
-    }
-  }
-
-  private async initializeFirestoreStatus(): Promise<void> {
-    try {
-      const isReady = true; // Local storage always ready
-      this.stats.firestore.isAvailable = isReady;
-    } catch (error) {
-      logger.warn('[HybridCache] Erro ao verificar status do Firestore:', error);
     }
   }
 
@@ -744,9 +696,8 @@ export const HybridCacheUtils = {
             timestamp: Date.now()
           };
           
-          await hybridCache.set(key, placeholderData, { 
-            ttl: 2 * 60 * 60 * 1000, // 2 hours for warmup
-            skipFirestore: true // Only local warmup
+          await hybridCache.set(key, placeholderData, {
+            ttl: 2 * 60 * 60 * 1000 // 2 hours for warmup
           });
         }
       });
@@ -755,7 +706,7 @@ export const HybridCacheUtils = {
       logger.log('✅ Hybrid cache warmup completed');
     },
 
-    // Get cache statistics that replace Redis stats
+    // Get cache statistics
     getStats: async (): Promise<{
       hits: number;
       misses: number;
@@ -764,20 +715,18 @@ export const HybridCacheUtils = {
       layers: {
         memory: number;
         localStorage: number;
-        firestore: number;
       };
     }> => {
       const stats = await hybridCache.getDetailedStats();
-      
+
       return {
         hits: stats.totalHits,
         misses: stats.totalMisses,
         hitRate: stats.hitRatio,
-        totalEntries: stats.memory.size + stats.localStorage.size + stats.firestore.size,
+        totalEntries: stats.memory.size + stats.localStorage.size,
         layers: {
           memory: stats.memory.size,
-          localStorage: stats.localStorage.size,
-          firestore: stats.firestore.size
+          localStorage: stats.localStorage.size
         }
       };
     },

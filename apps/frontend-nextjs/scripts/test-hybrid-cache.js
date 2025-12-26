@@ -187,7 +187,7 @@ console.log(chalk.red(`❌ Testes falhados: ${failedTests}`));
 console.log(chalk.blue.bold('\n===== MÉTRICAS DO CACHE =====\n'));
 const metrics = {
   'Cache Hit Rate (Local)': '85%',
-  'Cache Hit Rate (Firestore)': 'N/A (sem conexão)',
+  'Cache Hit Rate (Backend)': 'N/A (sem conexão)',
   'Memory Usage': '12MB / 50MB',
   'localStorage Usage': '245KB / 5MB',
   'Average Response Time': '45ms',
@@ -219,7 +219,7 @@ const testReport = {
   failed: failedTests,
   cacheHitRate: {
     local: 85,
-    firestore: 0
+    backend: 0
   },
   fallbackOffline: true,
   results: results,

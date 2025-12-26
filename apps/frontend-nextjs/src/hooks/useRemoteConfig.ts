@@ -41,7 +41,7 @@ interface RemoteConfigOptions {
   fallbackToEnvironment?: boolean;
 }
 
-// API Backend Remote Config (substituído Firebase)
+// API Backend Remote Config
 const mockRemoteConfig = {
   async fetchAndActivate(): Promise<boolean> {
     // Simular delay de rede

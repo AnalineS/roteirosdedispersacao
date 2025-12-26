@@ -167,7 +167,6 @@ class ImmediateMemoryFix:
             'RAG_ENABLED': 'false',
             'SUPABASE_DISABLED': 'true',
             'GCS_DISABLED': 'true',
-            'FIREBASE_DISABLED': 'true',
             'VECTOR_DB_DISABLED': 'true',
             'CHROMADB_DISABLED': 'true',
             'OPENAI_DISABLED': 'true',

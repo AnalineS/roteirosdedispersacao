@@ -166,7 +166,7 @@ export function ServicesProvider({ children }: ServicesProviderProps) {
     // Track no GA4
     Analytics.event("USER", event, JSON.stringify(properties));
 
-    // Track no Firestore via services hub
+    // Track via services hub
     services.analytics
       .track(event, {
         ...properties,

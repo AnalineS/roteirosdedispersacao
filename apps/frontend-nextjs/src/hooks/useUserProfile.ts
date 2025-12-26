@@ -17,9 +17,9 @@ import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 import { useSafeAuth as useAuth } from '@/hooks/useSafeAuth';
 import { BackendUserProfile } from '@/types/api';
 
-// Firebase features replaced with backend API
+// Backend API features
 const FEATURES = {
-  FIRESTORE_ENABLED: false,
+  CLOUD_SYNC_ENABLED: false,
   AUTH_ENABLED: true,
   REALTIME_ENABLED: false
 };
@@ -149,7 +149,7 @@ interface UserProfileHook {
   clearProfile: () => Promise<void>;
   getRecommendedPersona: () => string;
   hasProfile: boolean;
-  isUsingFirestore: boolean;
+  isUsingCloudSync: boolean;
   forceSync: () => Promise<void>;
 }
 
@@ -172,17 +172,17 @@ export function useUserProfile(): UserProfileHook {
   const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'error'>('idle');
   
   // Flags para controlar o tipo de persistência
-  const useFirestore = auth.isAuthenticated && FEATURES.FIRESTORE_ENABLED;
-  const useLocalStorage = !useFirestore || !FEATURES.AUTH_ENABLED;
+  const useCloudSync = auth.isAuthenticated && FEATURES.CLOUD_SYNC_ENABLED;
+  const useLocalStorage = !useCloudSync || !FEATURES.AUTH_ENABLED;
 
-  // Carregar perfil (localStorage ou Firestore)
+  // Carregar perfil (localStorage ou backend API)
   useEffect(() => {
     const loadProfile = async () => {
       try {
         setIsLoading(true);
 
-        if (useFirestore && auth.user) {
-          // Carregar do Backend
+        if (useCloudSync && auth.user) {
+          // Carregar do Backend API
           await loadFromBackend();
         } else if (useLocalStorage) {
           // Carregar do localStorage
@@ -191,8 +191,8 @@ export function useUserProfile(): UserProfileHook {
       } catch (error) {
         console.error('Erro ao carregar perfil:', error);
         
-        // Fallback para localStorage em caso de erro do Backend
-        if (useFirestore) {
+        // Fallback para localStorage em caso de erro do backend API
+        if (useCloudSync) {
           loadFromLocalStorage();
         }
       } finally {
@@ -202,7 +202,7 @@ export function useUserProfile(): UserProfileHook {
 
     loadProfile();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [auth.user, auth.isAuthenticated, useFirestore, useLocalStorage]);
+  }, [auth.user, auth.isAuthenticated, useCloudSync, useLocalStorage]);
 
   // ============================================
   // FUNÇÕES DE CARREGAMENTO
@@ -405,7 +405,7 @@ export function useUserProfile(): UserProfileHook {
       }
 
       // Salvar na API backend se disponível
-      if (useFirestore && auth.user) {
+      if (useCloudSync && auth.user) {
         const backendProfile = convertLocalToBackend(enrichedProfile);
         const result = await UserProfileRepository.saveProfile(backendProfile);
 
@@ -448,7 +448,7 @@ export function useUserProfile(): UserProfileHook {
       setSyncStatus('syncing');
 
       // Limpar da API backend se disponível
-      if (useFirestore && auth.user) {
+      if (useCloudSync && auth.user) {
         const result = await UserProfileRepository.deleteProfile(auth.user.uid);
         if (!result.success) {
           console.error('Erro ao deletar da API backend:', result.error);
@@ -500,7 +500,7 @@ export function useUserProfile(): UserProfileHook {
 
   // Função de sincronização manual
   const forceSync = async (): Promise<void> => {
-    if (useFirestore && auth.user) {
+    if (useCloudSync && auth.user) {
       await loadFromBackend();
     }
   };
@@ -514,7 +514,7 @@ export function useUserProfile(): UserProfileHook {
     clearProfile,
     getRecommendedPersona,
     hasProfile: profile !== null,
-    isUsingFirestore: useFirestore,
+    isUsingCloudSync: useCloudSync,
     forceSync
   };
 }

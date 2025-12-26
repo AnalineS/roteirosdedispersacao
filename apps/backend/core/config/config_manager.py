@@ -260,15 +260,14 @@ class EnvironmentConfigLoader:
         if environment == 'production':
             origins_str = os.getenv('CORS_ORIGINS_PROD', '')
             default_origins = [
-                'https://roteiros-de-dispensacao.web.app',
                 'https://roteirosdedispensacao.com',
-                'https://www.roteirosdedispensacao.com'
+                'https://www.roteirosdedispensacao.com',
+                'https://frontend-roteirosdedispensacao.run.app'
             ]
         elif environment in ['staging', 'homologacao', 'hml']:
             origins_str = os.getenv('CORS_ORIGINS_HML', '')
             default_origins = [
-                'https://hml-roteiros-de-dispensacao.web.app',
-                'https://hml-roteiros-de-dispensacao.firebaseapp.com',
+                'https://hml-roteirosdedispensacao.run.app',
                 'http://localhost:3000'
             ]
         else:  # development

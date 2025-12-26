@@ -1,6 +1,6 @@
 /**
  * Conversation Cache Service - Local Storage + API Sync
- * Substitui Firebase com armazenamento local e sincronização via API
+ * Armazenamento local com sincronização via backend API
  */
 
 import { apiClient } from '@/services/api';

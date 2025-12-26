@@ -425,7 +425,7 @@ class ConsolidatedMemoryOptimizer:
 
         # Disable cloud services
         cloud_vars = [
-            'DISABLE_SUPABASE', 'DISABLE_GCS', 'DISABLE_FIREBASE',
+            'DISABLE_SUPABASE', 'DISABLE_GCS',
             'DISABLE_VECTOR_DB', 'DISABLE_RAG', 'DISABLE_AI_INFERENCE'
         ]
 

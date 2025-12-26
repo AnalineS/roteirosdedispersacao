@@ -10,7 +10,7 @@ export type {
   AuthState,
   LoginCredentials,
   RegisterData,
-  UserProfile as FirestoreUserProfile,
+  UserProfile as BackendUserProfile,
   AuthUserProfile,
   AuthenticationState
 } from '@/types/auth';

@@ -1,6 +1,6 @@
 /**
  * JWT Client - Comunicação com Backend Auth API
- * Substitui Firebase Auth por sistema JWT próprio
+ * Sistema de autenticação JWT
  * Uses centralized environment configuration
  */
 

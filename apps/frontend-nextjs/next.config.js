@@ -10,7 +10,7 @@ const nextConfig = {
 
   // Standalone output para Cloud Run
   output: "standalone",
-  // Ensure trailingSlash is consistent with Firebase Hosting configuration
+  // Ensure trailingSlash is consistent with Cloud Run configuration
   trailingSlash: false,
 
   // INCREMENTAL BUILD OPTIMIZATIONS

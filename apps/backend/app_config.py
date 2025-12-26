@@ -202,8 +202,8 @@ class AppConfig:
     SUPABASE_VECTOR_SIMILARITY_THRESHOLD: float = float(os.getenv('SUPABASE_VECTOR_SIMILARITY_THRESHOLD', 0.65))
     
     
-    # Cache Config - Now using Firestore hybrid system
-    FIRESTORE_CACHE_ENABLED: bool = os.getenv('FIRESTORE_CACHE_ENABLED', 'true').lower() == 'true'
+    # Cache Config - Memory + Supabase + GCS cloud cache
+    CLOUD_CACHE_ENABLED: bool = os.getenv('CLOUD_CACHE_ENABLED', 'true').lower() == 'true'
     HYBRID_CACHE_STRATEGY: str = os.getenv('HYBRID_CACHE_STRATEGY', 'memory_first')
     
     # Email Config - GMAIL CONFIGURADO with defaults

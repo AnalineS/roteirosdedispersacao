@@ -1,6 +1,6 @@
 /**
  * Painel Admin para Gerenciamento de Feature Flags
- * Interface protegida para controlar flags via Firebase Remote Config
+ * Interface protegida para controlar flags via Backend API Config
  */
 
 'use client';

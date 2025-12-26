@@ -101,7 +101,7 @@ class DependencyManager:
     def _try_create_performance_cache(self) -> Optional[Any]:
         """Tenta criar performance cache"""
         try:
-            from services.advanced_cache import PerformanceCache
+            from core.performance.cache_manager import PerformanceCache
             cache = PerformanceCache(
                 max_size=self.service_config.max_cache_size,
                 ttl_minutes=self.service_config.cache_ttl_minutes

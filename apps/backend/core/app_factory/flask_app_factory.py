@@ -181,15 +181,14 @@ class FlaskAppFactory:
             ]
         elif environment in ['staging', 'homologacao', 'hml']:
             return [
-                "https://hml-roteiros-de-dispensacao.web.app",
-                "https://hml-roteiros-de-dispensacao.firebaseapp.com",
+                "https://hml-roteirosdedispensacao.run.app",
                 "http://localhost:3000"
             ]
         else:  # production
             return [
-                "https://roteiros-de-dispensacao.web.app",
                 "https://roteirosdedispensacao.com",
-                "https://www.roteirosdedispensacao.com"
+                "https://www.roteirosdedispensacao.com",
+                "https://frontend-roteirosdedispensacao.run.app"
             ]
 
     def _configure_versioning(self) -> None:

@@ -1,6 +1,6 @@
 /**
  * AI Service - Backend Integration
- * Backend AI integration service without Firebase dependencies
+ * Backend AI integration service with OpenRouter
  */
 
 'use client';

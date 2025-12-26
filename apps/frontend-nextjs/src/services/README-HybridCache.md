@@ -1,6 +1,6 @@
 # Sistema de Cache Híbrido
 
-Sistema completo de cache em 3 camadas (memory -> localStorage -> Firestore) com sincronização em background e fallback offline.
+Sistema completo de cache em 3 camadas (memory -> localStorage -> backend API) com sincronização em background e fallback offline.
 
 ## Componentes
 
@@ -10,10 +10,10 @@ Sistema completo de cache em 3 camadas (memory -> localStorage -> Firestore) com
 - **Fallback offline** usando memory e localStorage
 - **TTL configurável** por camada
 
-### 2. FirestoreCache (`src/lib/firebase/firestoreCache.ts`)
-- **Gerenciador específico** para operações no Firestore
+### 2. LocalCache (`src/services/simpleCache.ts`)
+- **Gerenciador específico** para operações locais
 - **TTL automático** com limpeza em background
-- **Fallback gracioso** quando Firestore não está disponível
+- **Fallback gracioso** quando backend não está disponível
 
 ### 3. APICache Atualizado (`src/utils/apiCache.ts`)
 - **Integração completa** com cache híbrido
@@ -79,7 +79,7 @@ HybridCacheUtils.Keys.user('userId', 'dados')
 const stats = await hybridCache.getDetailedStats();
 console.log('Hit ratio:', stats.hitRatio);
 console.log('Memory cache:', stats.memory);
-console.log('Firestore available:', stats.firestore.isAvailable);
+console.log('Backend available:', stats.backend.isAvailable);
 ```
 
 ## Estratégia de Cache
@@ -94,7 +94,7 @@ console.log('Firestore available:', stats.firestore.isAvailable);
    - Limitado por quota do browser
    - TTL mínimo: 30 segundos
 
-3. **Firestore** (terceira prioridade)
+3. **Backend API** (terceira prioridade)
    - Compartilhado entre dispositivos
    - Requer conexão de rede
    - TTL mínimo: definido pela configuração
@@ -110,10 +110,10 @@ await hybridCache.set('dados-urgentes', dados, { priority: 'high' });
 await hybridCache.set('dados-normais', dados, { priority: 'normal' });
 ```
 
-### Skip Firestore
+### Skip Backend
 ```typescript
 // Apenas memory e localStorage
-await hybridCache.set('dados-locais', dados, { skipFirestore: true });
+await hybridCache.set('dados-locais', dados, { skipBackend: true });
 ```
 
 ### Controle Manual
@@ -127,7 +127,7 @@ CacheConfig.setHybridCache(false); // desabilitar
 ## Tratamento de Erros
 
 O sistema é resiliente:
-- **Firestore offline**: Continua usando memory + localStorage
+- **Backend offline**: Continua usando memory + localStorage
 - **localStorage cheio**: Limpa entradas antigas automaticamente
 - **Dados corrompidos**: Remove e continua operando
 - **Erros de sync**: Mantém dados localmente, retenta em background
@@ -161,7 +161,6 @@ npm test -- --testPathPattern=hybridCache
 ## Compatibilidade
 
 - [OK] **Next.js 14+**
-- [OK] **Firebase 11+**
 - [OK] **TypeScript**
 - [OK] **SSR** (server-side rendering)
 - [OK] **PWA** (progressive web app)

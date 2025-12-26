@@ -22,8 +22,7 @@ class RealCloudInitializer:
         # REAL cloud service status - NO MOCKS
         self.services_status = {
             'supabase': {'available': False, 'client': None, 'error': None},
-            'gcs': {'available': False, 'client': None, 'error': None},
-            'firebase': {'available': False, 'client': None, 'error': None}
+            'gcs': {'available': False, 'client': None, 'error': None}
         }
 
     def initialize_all_services(self) -> Dict[str, Any]:
@@ -40,11 +39,6 @@ class RealCloudInitializer:
             self._initialize_real_gcs()
         except Exception as e:
             logger.warning("Real GCS failed: %s", sanitize_error(e))
-
-        try:
-            self._initialize_real_firebase()
-        except Exception as e:
-            logger.warning("Real Firebase failed: %s", sanitize_error(e))
 
         # Setup local development alternatives if in development and no cloud services available
         if self.environment == 'development':
@@ -156,50 +150,6 @@ class RealCloudInitializer:
                 raise RuntimeError(f"PRODUCTION: REAL GCS initialization failed: {sanitize_error(e)}") from e
             else:
                 logger.warning("DEVELOPMENT: Continuing without GCS - fallback will be used")
-
-    def _initialize_real_firebase(self):
-        """Initialize REAL Firebase - Optional service"""
-        try:
-            # Firebase is optional for this system
-            firebase_enabled = getattr(self.config, 'FIREBASE_ENABLED', False)
-            firebase_credentials = os.getenv('FIREBASE_SERVICE_ACCOUNT_KEY')
-
-            if not firebase_enabled:
-                logger.info("🔄 Firebase disabled by configuration - skipping")
-                return
-
-            if not firebase_credentials:
-                logger.info("🔄 Firebase credentials not provided - skipping")
-                return
-
-            # Initialize REAL Firebase
-            import firebase_admin
-            from firebase_admin import credentials, firestore
-            import json
-
-            cred_dict = json.loads(firebase_credentials)
-            cred = credentials.Certificate(cred_dict)
-
-            # Initialize app if not already initialized
-            if not firebase_admin._apps:
-                firebase_admin.initialize_app(cred)
-
-            # Create real Firestore client
-            firestore_client = firestore.client()
-
-            # Test connection
-            test_doc = firestore_client.collection('_health_check').document('test')
-            test_doc.set({'timestamp': firestore.SERVER_TIMESTAMP, 'status': 'healthy'})
-
-            self.services_status['firebase']['client'] = firestore_client
-            self.services_status['firebase']['available'] = True
-            logger.info("✅ REAL Firebase initialized successfully - NO MOCKS")
-
-        except Exception as e:
-            self.services_status['firebase']['error'] = str(e)
-            self.services_status['firebase']['available'] = False
-            logger.info("🔄 Firebase initialization skipped: %s", sanitize_error(e))
-            # Firebase is optional, so we don't raise an error
 
     def _setup_local_development_fallback(self):
         """Setup local development alternatives when cloud services are not available"""

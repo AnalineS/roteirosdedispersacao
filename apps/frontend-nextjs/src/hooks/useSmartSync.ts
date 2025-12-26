@@ -6,7 +6,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSafeAuth as useAuth } from '@/hooks/useSafeAuth';
-// Local sync implementation without Firebase
+// Local sync implementation
 
 // ============================================
 // TYPES

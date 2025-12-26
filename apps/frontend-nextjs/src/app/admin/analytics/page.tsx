@@ -468,7 +468,7 @@ export default function AnalyticsDashboard() {
               <h3 className="font-medium mb-2">Dados em Tempo Real</h3>
               <p className="text-sm text-gray-600 mb-4">
                 Os dados são atualizados automaticamente do GA4 e complementados
-                com métricas educacionais específicas armazenadas no Firestore.
+                com métricas educacionais específicas armazenadas no banco de dados.
               </p>
 
               <div className="bg-gray-50 rounded p-3">
@@ -488,7 +488,7 @@ export default function AnalyticsDashboard() {
                   </div>
                   <div className="flex justify-between">
                     <span>Fonte:</span>
-                    <span className="font-medium">GA4 + Firestore</span>
+                    <span className="font-medium">GA4 + Backend API</span>
                   </div>
                 </div>
               </div>

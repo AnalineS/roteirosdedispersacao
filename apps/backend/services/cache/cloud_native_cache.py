@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Cloud Native Cache - Sistema de cache para embeddings e RAG
-Integra Supabase + Cloud Storage + Firestore para cache distribuído
+Integra Supabase + Cloud Storage para cache distribuído
 FASE 3 - Cache otimizado para Cloud Run stateless
 """
 
@@ -16,17 +16,6 @@ import numpy as np
 from core.logging.sanitizer import sanitize_error
 
 logger = logging.getLogger(__name__)
-
-# Imports com fallback seguro
-FIREBASE_AVAILABLE = False
-try:
-    import firebase_admin
-    from firebase_admin import firestore, storage
-    FIREBASE_AVAILABLE = True
-    logger.info("[OK] Firebase disponível para cloud cache")
-except ImportError:
-    logger.debug("[INFO] Firebase não disponível - usando fallback")
-    FIREBASE_AVAILABLE = False
 
 # Real cloud integrations - NO MOCKS
 try:
@@ -68,8 +57,7 @@ class RealCloudNativeCache:
         self.cache_enabled = {
             'memory': True,
             'supabase': True,       # Real Supabase with pgvector
-            'cloud_storage': True,  # Real Google Cloud Storage
-            'firestore': False      # Firestore disabled for now
+            'cloud_storage': True   # Real Google Cloud Storage
         }
 
         self._init_real_cloud_clients()
@@ -79,7 +67,6 @@ class RealCloudNativeCache:
             'memory_hits': 0,
             'supabase_hits': 0,
             'cloud_storage_hits': 0,
-            'firestore_hits': 0,
             'misses': 0,
             'evictions': 0,
             'total_requests': 0
@@ -173,23 +160,8 @@ class RealCloudNativeCache:
             result = self._get_from_supabase(cache_key)
             if result is not None:
                 self.stats['supabase_hits'] += 1
-                # Promover para caches superiores
+                # Promover para memory cache
                 self._set_to_memory(cache_key, result)
-                if self.cache_enabled['firestore']:
-                    self._set_to_firestore(cache_key, result)
-                return result
-        
-        # Level 4: Cloud Storage (fallback final)
-        if self.cache_enabled['cloud_storage']:
-            result = self._get_from_cloud_storage(cache_key)
-            if result is not None:
-                self.stats['cloud_storage_hits'] += 1
-                # Promover para todos os caches
-                self._set_to_memory(cache_key, result)
-                if self.cache_enabled['firestore']:
-                    self._set_to_firestore(cache_key, result)
-                if self.cache_enabled['supabase']:
-                    self._set_to_supabase(cache_key, result)
                 return result
         
         # Miss completo
@@ -202,17 +174,12 @@ class RealCloudNativeCache:
         ttl = ttl or self.default_ttl
         
         success_count = 0
-        total_levels = sum(self.cache_enabled.values())
-        
+
         # Salvar em todos os levels simultaneamente
         if self.cache_enabled['memory']:
             if self._set_to_memory(cache_key, value, ttl):
                 success_count += 1
-        
-        if self.cache_enabled['firestore']:
-            if self._set_to_firestore(cache_key, value, ttl):
-                success_count += 1
-        
+
         if self.cache_enabled['supabase']:
             if self._set_to_supabase(cache_key, value, ttl):
                 success_count += 1
@@ -269,63 +236,6 @@ class RealCloudNativeCache:
 
         except Exception as e:
             logger.debug("Erro na eviction: %s", sanitize_error(e))
-    
-    def _get_from_firestore(self, cache_key: str) -> Any:
-        """Busca no Firestore"""
-        try:
-            if not FIREBASE_AVAILABLE or not hasattr(self, 'firestore_client') or not self.firestore_client:
-                return None
-            
-            doc_ref = self.firestore_client.collection('embeddings_cache').document(cache_key)
-            doc = doc_ref.get()
-            
-            if doc.exists:
-                data = doc.to_dict()
-                expires_at = data.get('expires_at')
-                
-                if expires_at and datetime.now(timezone.utc) < expires_at:
-                    # Deserializar numpy arrays se necessário
-                    value = data.get('value')
-                    if data.get('type') == 'numpy_array' and isinstance(value, list):
-                        return np.array(value)
-                    return value
-                else:
-                    # Expirado - remover async
-                    doc_ref.delete()
-            
-            return None
-
-        except Exception as e:
-            logger.debug("Erro no Firestore cache: %s", sanitize_error(e))
-            return None
-    
-    def _set_to_firestore(self, cache_key: str, value: Any, ttl: Optional[timedelta] = None) -> bool:
-        """Salva no Firestore"""
-        try:
-            if not FIREBASE_AVAILABLE or not hasattr(self, 'firestore_client') or not self.firestore_client:
-                return False
-            
-            # Preparar dados para serialização
-            cache_data = {
-                'value': value,
-                'type': 'standard',
-                'created_at': datetime.now(timezone.utc),
-                'expires_at': datetime.now(timezone.utc) + (ttl or self.default_ttl)
-            }
-            
-            # Serializar numpy arrays
-            if isinstance(value, np.ndarray):
-                cache_data['value'] = value.tolist()
-                cache_data['type'] = 'numpy_array'
-            
-            doc_ref = self.firestore_client.collection('embeddings_cache').document(cache_key)
-            doc_ref.set(cache_data)
-            
-            return True
-
-        except Exception as e:
-            logger.debug("Erro ao salvar no Firestore: %s", sanitize_error(e))
-            return False
     
     def _get_from_supabase(self, cache_key: str) -> Any:
         """Busca no Supabase cache table"""
@@ -458,7 +368,7 @@ class RealCloudNativeCache:
     
     def clear_expired(self) -> Dict[str, int]:
         """Limpa itens expirados de todos os caches"""
-        cleared = {'memory': 0, 'firestore': 0, 'supabase': 0, 'cloud_storage': 0}
+        cleared = {'memory': 0, 'supabase': 0, 'cloud_storage': 0}
         
         try:
             # Memory cache
@@ -487,7 +397,6 @@ class RealCloudNativeCache:
             'memory_limit': self.max_memory_items,
             'hit_rates': {
                 'memory': (self.stats['memory_hits'] / total_requests * 100) if total_requests > 0 else 0,
-                'firestore': (self.stats['firestore_hits'] / total_requests * 100) if total_requests > 0 else 0,
                 'supabase': (self.stats['supabase_hits'] / total_requests * 100) if total_requests > 0 else 0,
                 'cloud_storage': (self.stats['cloud_storage_hits'] / total_requests * 100) if total_requests > 0 else 0,
                 'total': ((total_requests - self.stats['misses']) / total_requests * 100) if total_requests > 0 else 0

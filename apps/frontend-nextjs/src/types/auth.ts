@@ -206,7 +206,7 @@ export interface RegistrationData extends RegisterData {
 // ALIASES PARA COMPATIBILIDADE
 // ============================================
 
-export type FirestoreUserProfile = UserProfile;
+export type BackendUserProfile = UserProfile;
 
 // ============================================
 // BENEFITS E PERMISSIONS

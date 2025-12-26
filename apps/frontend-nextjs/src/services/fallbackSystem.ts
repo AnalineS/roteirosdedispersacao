@@ -100,8 +100,6 @@ export class FallbackSystem {
     sentiment?: SentimentResult,
     options: FallbackOptions = {}
   ): Promise<FallbackResult> {
-    // TODO: Implementar fallback cache com firestoreCache
-    
     // Prioridade 1: Cache local
     const cachedResponse = this.searchLocalCache(query);
     if (cachedResponse) {
@@ -128,9 +126,7 @@ export class FallbackSystem {
     
     // Prioridade 3: Resposta de emergência
     const emergencyResponse = await this.getEmergencyResponse(query, 'network', sentiment);
-    
-    // TODO: Implementar fallback cache com firestoreCache
-    
+
     return emergencyResponse;
   }
   

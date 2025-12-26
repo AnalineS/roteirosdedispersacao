@@ -1,7 +1,7 @@
 /**
  * Testes para Sistema de Cache Híbrido
  * Cobertura: Memory, localStorage, sync, fallback
- * Note: Firestore removed from architecture - tests focus on local storage only
+ * Note: Architecture uses memory + localStorage only for local caching
  */
 
 import { hybridCache, HybridCacheUtils } from '../../services/hybridCache';
@@ -147,7 +147,7 @@ describe('HybridCache', () => {
       const data = { message: 'Should expire' };
       
       // Armazenar com TTL muito curto
-      await hybridCache.set(key, data, { ttl: 10, skipFirestore: true }); // 10ms, skip Firestore
+      await hybridCache.set(key, data, { ttl: 10, skipBackend: true }); // 10ms, skip backend
       
       // Imediatamente deve estar disponível
       expect(await hybridCache.get(key)).toEqual(data);
@@ -184,12 +184,12 @@ describe('HybridCache', () => {
       expect(result).toEqual(data);
     });
 
-    it('should handle skipFirestore option (legacy compatibility)', async () => {
-      const key = 'skip-firestore-test';
-      const data = { message: 'Skip Firestore' };
+    it('should handle skipBackend option', async () => {
+      const key = 'skip-backend-test';
+      const data = { message: 'Skip Backend' };
 
-      // skipFirestore option accepted for backward compatibility
-      await hybridCache.set(key, data, { skipFirestore: true });
+      // skipBackend option for local-only storage
+      await hybridCache.set(key, data, { skipBackend: true });
 
       const result = await hybridCache.get(key);
       expect(result).toEqual(data);
@@ -231,7 +231,7 @@ describe('HybridCache', () => {
 
       const result = await hybridCache.forceSync();
 
-      // With Firestore removed, sync just clears the queue
+      // Sync just clears the queue for local-only architecture
       expect(result.synced).toBeGreaterThanOrEqual(0);
       expect(result.failed).toBe(0);
     });
@@ -278,7 +278,7 @@ describe('HybridCache', () => {
 
       expect(stats).toHaveProperty('memory');
       expect(stats).toHaveProperty('localStorage');
-      expect(stats).toHaveProperty('firestore'); // Legacy field kept for backward compatibility
+      expect(stats).toHaveProperty('backend'); // Backend API field for future cloud sync
       expect(stats).toHaveProperty('totalHits');
       expect(stats).toHaveProperty('totalMisses');
       expect(stats).toHaveProperty('hitRatio');
@@ -287,13 +287,12 @@ describe('HybridCache', () => {
       expect(stats.memory.misses).toBeGreaterThan(0);
     });
 
-    it('should indicate Firestore unavailable in stats (architecture change)', async () => {
+    it('should indicate backend status in stats', async () => {
       const stats = await hybridCache.getDetailedStats();
 
-      // Firestore removed from architecture - stats should reflect this
+      // Backend API availability tracked in stats
       expect(stats).toBeDefined();
-      expect(stats.firestore.isAvailable).toBe(false);
-      expect(stats.firestore.size).toBe(0);
+      expect(stats.backend).toBeDefined();
     });
   });
 

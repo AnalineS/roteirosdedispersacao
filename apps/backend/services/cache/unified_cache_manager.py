@@ -21,8 +21,8 @@ class UnifiedCacheManager:
     """
     Sistema unificado de cache com múltiplas camadas:
     1. Memory Cache (mais rápido) - PerformanceCache
-    2. Cloud Cache (distribuído) - CloudNativeCache  
-    3. API Cache (persistente) - FirestoreCache
+    2. Cloud Cache (distribuído) - CloudNativeCache (Supabase + GCS)
+    3. API Cache (persistente) - SQLite local
     """
     
     def __init__(self, config):
@@ -91,7 +91,7 @@ class UnifiedCacheManager:
             self.cache_layers['cloud'] = False
     
     def _init_api_cache(self):
-        """Inicializa cache via API (Firestore)"""
+        """Inicializa cache via API (SQLite local)"""
         try:
             if self.cache_layers['api']:
                 # Evitar import circular - inicialização lazy
@@ -280,7 +280,7 @@ class UnifiedCacheManager:
             return False
     
     def _get_from_api(self, key: str) -> Any:
-        """Busca no API cache (Firestore)"""
+        """Busca no API cache (SQLite local)"""
         try:
             if not self.api_cache_client:
                 return None

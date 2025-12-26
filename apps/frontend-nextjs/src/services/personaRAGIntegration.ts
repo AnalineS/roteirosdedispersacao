@@ -6,7 +6,7 @@
 
 import { ragIntegrationService, IntegratedRAGResponse } from './ragIntegrationService';
 import { ragPerformanceOptimizer } from './ragPerformanceOptimizer';
-// Removido: AnalyticsFirestoreCache (usando localStorage apenas)
+// Analytics cache usando localStorage apenas
 import { conversationCache } from './simpleCache';
 
 interface ConversationMessage {

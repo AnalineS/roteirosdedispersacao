@@ -100,14 +100,6 @@ except ImportError:
     USER_MANAGEMENT_AVAILABLE = False
     user_management_bp = None
 
-# Cache blueprint
-try:
-    from .cache_blueprint import cache_blueprint
-    CACHE_BP_AVAILABLE = True
-except ImportError:
-    CACHE_BP_AVAILABLE = False
-    cache_blueprint = None
-
 # Swagger UI blueprint
 try:
     from core.openapi.spec import swagger_ui_blueprint
@@ -160,9 +152,6 @@ if LOGGING_AVAILABLE and logging_bp:
 if USER_MANAGEMENT_AVAILABLE and user_management_bp:
     ALL_BLUEPRINTS.append(user_management_bp)
 
-if CACHE_BP_AVAILABLE and cache_blueprint:
-    ALL_BLUEPRINTS.append(cache_blueprint)
-
 if SWAGGER_AVAILABLE and swagger_ui_blueprint:
     ALL_BLUEPRINTS.append(swagger_ui_blueprint)
 
@@ -183,7 +172,6 @@ __all__ = [
     'infrastructure_bp',
     'logging_bp',
     'user_management_bp',
-    'cache_blueprint',
     'swagger_ui_blueprint',
     'ALL_BLUEPRINTS'
 ]

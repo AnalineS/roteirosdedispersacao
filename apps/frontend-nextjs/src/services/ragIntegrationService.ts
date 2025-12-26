@@ -7,7 +7,7 @@ import { supabaseRAGClient, RAGResponse, RAGQuery } from './supabaseRAGClient';
 import { medicalKnowledgeBase, SearchResult } from './medicalKnowledgeBase';
 import { embeddingService } from './embeddingService';
 import { ragCache } from './simpleCache';
-import { AnalyticsFirestoreCache } from './analyticsFirestoreCache';
+import { AnalyticsLocalCache } from './analyticsLocalCache';
 
 // Helper para mapear categorias
 function mapCategoryToMedical(category: string): 'dosage' | 'protocol' | 'contraindication' | 'side_effect' | 'interaction' | 'general' {
@@ -705,7 +705,7 @@ export class RAGIntegrationService {
       }
 
       // Track analytics
-      await AnalyticsFirestoreCache.saveAnalyticsEvent({
+      await AnalyticsLocalCache.saveAnalyticsEvent({
         id: `rag_query_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         sessionId: 'rag_session',
         timestamp: new Date().toISOString(),

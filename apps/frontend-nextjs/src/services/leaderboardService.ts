@@ -1,6 +1,6 @@
 /**
  * Leaderboard Service - API-based Ranking System
- * Substitui Firebase com sistema de ranking via API
+ * Sistema de ranking via backend API
  */
 
 import { apiClient } from '@/services/api';

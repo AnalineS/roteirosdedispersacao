@@ -138,7 +138,7 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-      // TODO: Implementar registro com Firebase
+      // TODO: Implementar registro com backend API
       console.log('Registro:', formData);
       
       // Simulação de registro

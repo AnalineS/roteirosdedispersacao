@@ -187,8 +187,7 @@ def secure_cors_headers(response):
     allowed_origins = [
         'https://roteirosdedispensacao.com',
         'https://www.roteirosdedispensacao.com',
-        'https://roteiros-de-dispensacao.web.app',
-        'https://roteiros-de-dispensacao.firebaseapp.com'
+        'https://frontend-roteirosdedispensacao.run.app'
     ]
     
     origin = request.headers.get('Origin')

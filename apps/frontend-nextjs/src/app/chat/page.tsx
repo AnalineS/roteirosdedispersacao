@@ -54,8 +54,6 @@ export default function ChatPage() {
   // Marcar que o usuário visitou o chat
   useEffect(() => {
     setPersonaSelectionViewed();
-    // Cache warmup já implementado com firestoreCache
-    console.log('🔥 Cache warmup disponível via firestoreCache.warmupCache()');
   }, [setPersonaSelectionViewed]);
   
   const {

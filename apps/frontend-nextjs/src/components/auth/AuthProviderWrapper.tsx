@@ -299,7 +299,7 @@ function AuthStatusIndicator() {
 export function useAuthAvailability() {
   return {
     isAuthEnabled: FEATURES.AUTH_ENABLED,
-    isFirestoreEnabled: false, // Disabled since we use local storage
+    isCloudSyncEnabled: false, // Local storage only
     isOfflineMode: false,
     hasFullFeatures: FEATURES.AUTH_ENABLED
   };
@@ -329,7 +329,7 @@ export function FeatureStatus({ className = '' }: FeatureStatusProps) {
             {!availability.isAuthEnabled && (
               <li>• Autenticação: Desabilitada (perfis locais)</li>
             )}
-            {!availability.isFirestoreEnabled && (
+            {!availability.isCloudSyncEnabled && (
               <li>• Sincronização: Local apenas</li>
             )}
             {availability.isOfflineMode && (

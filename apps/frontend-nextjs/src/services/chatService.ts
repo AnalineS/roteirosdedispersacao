@@ -318,7 +318,7 @@ export class ChatService {
       }
 
       // Se não estiver em cache, retorna vazio
-      // Em produção, aqui buscaria do Firestore
+      // Em produção, aqui buscaria do backend API
       return [];
     } catch (error) {
       // Medical history retrieval error - explicit stderr + tracking

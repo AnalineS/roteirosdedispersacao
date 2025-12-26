@@ -13,13 +13,13 @@ import { backendLeaderboard } from '@/services/backendLeaderboard';
 import { generateSecureId } from '@/utils/cryptoUtils';
 import type { LearningProgress } from '@/types/gamification';
 import type { UserLevel } from '@/types/disclosure';
-import type { FirestoreUserProfile } from '@/types/auth';
+import type { BackendUserProfile } from '@/types/auth';
 
 // ============================================
 // TYPES
 // ============================================
 
-interface FirestoreConversation {
+interface BackendConversation {
   userId: string;
   personaId: string;
   title: string;
@@ -168,7 +168,7 @@ export function useBackendSync(options: Partial<SyncOptions> = {}) {
           migrationData.push({
             type: 'profile',
             id: 'user_profile',
-            data: transformLocalProfileToFirestore(profileData.profile, auth.user.uid)
+            data: transformLocalProfileToBackend(profileData.profile, auth.user.uid)
           });
           totalItems++;
         } catch (error) {
@@ -190,7 +190,7 @@ export function useBackendSync(options: Partial<SyncOptions> = {}) {
               migrationData.push({
                 type: 'conversation',
                 id: `conversation_${index}`,
-                data: transformLocalConversationToFirestore(conv, auth.user!.uid)
+                data: transformLocalConversationToBackend(conv, auth.user!.uid)
               });
               totalItems++;
             });
@@ -570,7 +570,7 @@ export function useBackendSync(options: Partial<SyncOptions> = {}) {
 // HELPER FUNCTIONS
 // ============================================
 
-function transformLocalProfileToFirestore(localProfile: any, userId: string): Partial<FirestoreUserProfile> {
+function transformLocalProfileToBackend(localProfile: any, userId: string): Partial<BackendUserProfile> {
   return {
     uid: userId,
     type: localProfile.type || 'patient',
@@ -598,7 +598,7 @@ function transformLocalProfileToFirestore(localProfile: any, userId: string): Pa
   };
 }
 
-function transformLocalConversationToFirestore(localConv: any, userId: string): Partial<FirestoreConversation> {
+function transformLocalConversationToBackend(localConv: any, userId: string): Partial<BackendConversation> {
   return {
     userId,
     personaId: localConv.personaId || 'ga',

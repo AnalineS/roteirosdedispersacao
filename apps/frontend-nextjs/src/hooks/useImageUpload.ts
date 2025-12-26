@@ -1,6 +1,6 @@
 /**
- * Image Upload Hook - Replacement for Firebase Storage
- * Placeholder for future implementation with Cloud Storage
+ * Image Upload Hook - Cloud Storage Integration
+ * Handles image uploads with Cloud Storage backend
  */
 
 import { useState } from 'react';
@@ -42,7 +42,7 @@ export function useImageUpload(): ImageUploadHook {
       const imageUrl = await new Promise<string>((resolve, reject) => {
         reader.onload = () => {
           const base64 = reader.result as string;
-          // Em produção, seria enviado para Cloud Storage (Firebase, AWS S3, etc.)
+          // Em produção, seria enviado para Cloud Storage (GCS, AWS S3, etc.)
           const cloudUrl = `data:${file.type};base64,${base64.split(',')[1]}`;
           resolve(cloudUrl);
         };

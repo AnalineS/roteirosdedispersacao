@@ -8,7 +8,7 @@
 
 import { ClinicalCase, CaseSession, StepResult } from '@/types/clinicalCases';
 import { CalculationResult } from '@/types/medication';
-import { AnalyticsFirestoreCache } from '@/services/analyticsFirestoreCache';
+import { AnalyticsLocalCache } from '@/services/analyticsLocalCache';
 
 // ===== INTERFACES DE ANALYTICS =====
 
@@ -259,8 +259,8 @@ export class EducationalMonitoringSystem {
     // Verificar se merece certificação
     this.evaluateCertificationEligibility(caseSession);
 
-    // Salvar no Firestore para persistência
-    AnalyticsFirestoreCache.saveAnalyticsEvent({
+    // Salvar no cache local para persistência
+    AnalyticsLocalCache.saveAnalyticsEvent({
       id: `case_completion_${caseSession.id}_${Date.now()}`,
       sessionId: caseSession.id,
       timestamp: new Date().toISOString(),
@@ -275,11 +275,11 @@ export class EducationalMonitoringSystem {
         successRate: caseSession.totalScore
       }
     }).catch(error => {
-      console.warn('Failed to save case completion to Firestore:', error);
+      console.warn('Failed to save case completion to cache:', error);
     });
 
     // Track como métrica médica
-    AnalyticsFirestoreCache.trackMedicalMetric({
+    AnalyticsLocalCache.trackMedicalMetric({
       type: 'task_completion',
       value: caseSession.totalScore,
       context: {

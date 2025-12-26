@@ -67,15 +67,13 @@ def setup_cors(app: Flask) -> None:
             "http://localhost:8080", "http://127.0.0.1:8080"
         ],
         'homologacao': [
-            "https://hml-roteiros-de-dispensacao.web.app",
-            "https://hml-roteiros-de-dispensacao.firebaseapp.com",
+            "https://hml-roteirosdedispensacao.run.app",
             "http://localhost:3000", "http://127.0.0.1:3000"
         ],
         'production': [
-            "https://roteiros-de-dispensacao.web.app",
-            "https://roteiros-de-dispensacao.firebaseapp.com",
             "https://roteirosdedispensacao.com",
-            "https://www.roteirosdedispensacao.com"
+            "https://www.roteirosdedispensacao.com",
+            "https://frontend-roteirosdedispensacao.run.app"
         ]
     }.get(environment, ["*" if environment == 'development' else "https://roteirosdedispensacao.com"])
 

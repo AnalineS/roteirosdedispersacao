@@ -1,6 +1,6 @@
 /**
  * Social Profile Hook - Perfil Social Baseado em API
- * Substitui Firebase com funcionalidades sociais via API
+ * Funcionalidades sociais via backend API
  */
 
 import { useState, useEffect, useCallback } from 'react';

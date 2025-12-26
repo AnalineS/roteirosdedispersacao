@@ -1,6 +1,6 @@
 /**
  * Social Service - API-based Social Features
- * Substitui Firebase com funcionalidades sociais via API
+ * Funcionalidades sociais via backend API
  */
 
 import { safeLocalStorage } from '@/hooks/useClientStorage';

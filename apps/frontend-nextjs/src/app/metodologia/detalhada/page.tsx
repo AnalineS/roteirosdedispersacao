@@ -55,7 +55,7 @@ export default function MetodologiaDetalhadaPage() {
       descricao: "Desenvolvimento do sistema usando tecnologias modernas e escaláveis",
       metodos: [
         "Arquitetura: Next.js 15 + TypeScript para frontend",
-        "Backend: Node.js + Firebase para dados e autenticação",
+        "Backend: Python Flask + PostgreSQL para dados e autenticação",
         "IA Conversacional: OpenAI GPT-4 para assistentes virtuais",
         "Metodologia ágil com sprints de 2 semanas"
       ],

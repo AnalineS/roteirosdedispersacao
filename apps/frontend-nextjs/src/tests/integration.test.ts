@@ -25,12 +25,12 @@ describe('Integration Tests', () => {
   test('should validate auth integration', () => {
     // Placeholder para testes de integração de autenticação
     const authConfig = {
-      provider: 'firebase',
+      provider: 'jwt',
       oauthEnabled: true,
       levels: ['visitor', 'registered', 'admin']
     };
 
-    expect(authConfig.provider).toBe('firebase');
+    expect(authConfig.provider).toBe('jwt');
     expect(authConfig.levels).toHaveLength(3);
   });
 

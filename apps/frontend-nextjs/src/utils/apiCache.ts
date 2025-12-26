@@ -1,6 +1,6 @@
 /**
  * API Cache Utility - LRU Cache with TTL Support
- * Substitui o sistema Firebase Cache
+ * Sistema de cache em memória com LRU eviction
  */
 
 interface CacheEntry<T> {

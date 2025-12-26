@@ -3,7 +3,7 @@
  * Tracking específico para UX médico e segurança farmacêutica
  */
 
-import { AnalyticsFirestoreCache } from '@/services/analyticsFirestoreCache';
+import { AnalyticsLocalCache } from '@/services/analyticsLocalCache';
 import { safeLocalStorage } from '@/hooks/useClientStorage';
 
 interface MedicalAnalyticsEvent {
@@ -152,9 +152,9 @@ export class MedicalAnalytics {
         ...enrichedEvent.custom_dimensions
       });
 
-      // Também salvar no Firestore para analytics médico avançado
+      // Também salvar no cache local para analytics médico avançado
       const sessionId = this.getCurrentSessionId();
-      AnalyticsFirestoreCache.saveAnalyticsEvent({
+      AnalyticsLocalCache.saveAnalyticsEvent({
         id: `medical_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         sessionId,
         timestamp: new Date().toISOString(),
@@ -170,7 +170,7 @@ export class MedicalAnalytics {
           userRole: enrichedEvent.custom_dimensions?.user_role
         }
       }).catch(error => {
-        console.warn('Failed to save medical event to Firestore:', error);
+        console.warn('Failed to save medical event to cache:', error);
       });
       
       // Log em desenvolvimento
@@ -230,9 +230,9 @@ export class MedicalAnalytics {
       }
     });
 
-    // Track como ação crítica no Firestore
+    // Track como ação crítica no cache local
     const sessionId = this.getCurrentSessionId();
-    AnalyticsFirestoreCache.trackMedicalMetric({
+    AnalyticsLocalCache.trackMedicalMetric({
       type: 'critical_action',
       value: action.timeToComplete,
       context: {
@@ -481,8 +481,8 @@ export class MedicalAnalytics {
         randomPart = Array.from(array, b => b.toString(36)).join('').substring(0, 12);
       }
       this.currentSessionId = `medical_session_${Date.now()}_${randomPart}`;
-      // Iniciar sessão médica no Firestore
-      AnalyticsFirestoreCache.startAnalyticsSession({
+      // Iniciar sessão médica no cache local
+      AnalyticsLocalCache.startAnalyticsSession({
         id: this.currentSessionId,
         startTime: new Date().toISOString(),
         status: 'active' as const,

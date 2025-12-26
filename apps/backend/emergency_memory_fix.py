@@ -75,14 +75,13 @@ class EmergencyMemoryFix:
             # Set environment variables to disable cloud services
             os.environ['DISABLE_SUPABASE'] = 'true'
             os.environ['DISABLE_GCS'] = 'true'
-            os.environ['DISABLE_FIREBASE'] = 'true'
             os.environ['DISABLE_CLOUD_SERVICES'] = 'true'
             os.environ['RAG_ENABLED'] = 'false'
             os.environ['ADVANCED_CACHE'] = 'false'
 
             # Unload cloud modules if already imported
             cloud_modules = [
-                'supabase', 'google.cloud', 'firebase_admin',
+                'supabase', 'google.cloud',
                 'chromadb', 'openai', 'transformers'
             ]
 

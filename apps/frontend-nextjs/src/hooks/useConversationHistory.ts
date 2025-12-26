@@ -8,7 +8,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 import { ChatMessage, BackendConversation, BackendMessage } from '@/types/api';
 import { useSafeAuth as useAuth } from '@/hooks/useSafeAuth';
-// Firebase features replaced with backend API
+// Backend API features configuration
 const FEATURES = {
   BACKEND_API_ENABLED: true, // Backend API enabled
   AUTH_ENABLED: true,        // Backend authentication enabled

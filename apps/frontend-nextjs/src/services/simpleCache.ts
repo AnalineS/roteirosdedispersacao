@@ -1,6 +1,6 @@
 /**
  * Simple Cache - Sistema de cache local baseado em localStorage
- * Substitui completamente Firebase/Firestore (removido da arquitetura)
+ * Cache local com TTL e LRU eviction
  */
 
 import LRUCache from '@/utils/apiCache';
@@ -56,8 +56,8 @@ interface RealtimeAnalytics {
   timestamp: string;
 }
 
-// Cache simples para substituir Firestore Cache
-export class FirestoreCache<T> {
+// Cache local com TTL e LRU eviction
+export class LocalCache<T> {
   private cache: LRUCache;
   private collection: string;
 
@@ -82,7 +82,7 @@ export class FirestoreCache<T> {
     }
   }
 
-  // Métodos compatíveis com o Firebase Cache anterior
+  // Métodos de compatibilidade
   async getCached(docId: string): Promise<T | null> {
     return this.get(docId);
   }
@@ -186,12 +186,12 @@ export class FirestoreCache<T> {
 }
 
 // Instâncias específicas
-export const conversationCache = new FirestoreCache('conversations', 15 * 60 * 1000);
-export const analyticsCache = new FirestoreCache('analytics', 5 * 60 * 1000);
-export const ragCache = new FirestoreCache('rag', 10 * 60 * 1000);
-export const knowledgeCache = new FirestoreCache('knowledge', 30 * 60 * 1000);
+export const conversationCache = new LocalCache('conversations', 15 * 60 * 1000);
+export const analyticsCache = new LocalCache('analytics', 5 * 60 * 1000);
+export const ragCache = new LocalCache('rag', 10 * 60 * 1000);
+export const knowledgeCache = new LocalCache('knowledge', 30 * 60 * 1000);
 
 // Export principal para analytics
 export const analyticsSimpleCache = analyticsCache;
 
-export default FirestoreCache;
+export default LocalCache;

@@ -1,6 +1,6 @@
 /**
  * AuthContext - JWT Authentication System
- * Substituição completa do Firebase Auth por sistema JWT próprio
+ * Sistema de autenticação JWT próprio
  * Mantém compatibilidade com interfaces existentes
  */
 
@@ -20,7 +20,7 @@ interface AuthenticationError {
 // TYPES
 // ============================================
 
-// Interface compatível com Firebase User
+// Interface de usuário autenticado
 export interface AuthUser {
   uid: string;
   email: string | null;
@@ -31,7 +31,7 @@ export interface AuthUser {
   provider: 'google' | 'email' | 'anonymous';
 }
 
-// Interface de perfil local (substituindo Firestore)
+// Interface de perfil local
 export interface UserProfile {
   uid: string;
   email?: string;
