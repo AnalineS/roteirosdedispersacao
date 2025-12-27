@@ -1253,19 +1253,567 @@ export class ContinuousImprovementSystem {
 
     return insights;
   }
-  private extractCommonThemes(textFeedback: string[]): ThemeAnalysis[] { return []; }
-  private analyzeSentiment(textFeedback: string[]): SentimentAnalysis { return { overall: 0.2, byComponent: new Map(), byUserType: new Map(), keyPositives: [], keyNegatives: [] }; }
-  private identifyPriorityIssues(feedback: ImprovementFeedbackData[]): PriorityIssue[] { return []; }
-  private analyzeUserJourneys(feedback: ImprovementFeedbackData[]): UserJourneyInsight[] { return []; }
-  private calculateImpactMetrics(feedback: ImprovementFeedbackData[]): ImpactMetrics { return { userSatisfactionTrend: [], performanceImprovements: [], learningOutcomeImprovements: [], adoptionRates: [] }; }
-  private identifyCommonIssues(feedback: ImprovementFeedbackData[]): IssueList[] { return []; }
-  private identifyImprovementOpportunities(feedback: ImprovementFeedbackData[]): OpportunityList[] { return []; }
-  private prioritizeRecommendations(recommendations: ImprovementRecommendation[]): ImprovementRecommendation[] { return recommendations; }
-  private createIssueRecommendations(issues: IssueList[]): ImprovementRecommendation[] { return []; }
-  private createOpportunityRecommendations(opportunities: OpportunityList[]): ImprovementRecommendation[] { return []; }
-  private triggerCriticalIssueAlert(issues: TechnicalIssue[], feedback: ImprovementFeedbackData): void {}
-  private flagNegativeFeedback(feedback: ImprovementFeedbackData): void {}
-  private triggerIncrementalAnalysis(): void {}
+
+  // ===== MÉTODOS DE ANÁLISE QUALITATIVA (PR 3) =====
+
+  /**
+   * Extrai temas comuns do feedback textual usando análise de palavras-chave
+   */
+  private extractCommonThemes(textFeedback: string[]): ThemeAnalysis[] {
+    if (textFeedback.length === 0) {
+      return [];
+    }
+
+    // Palavras-chave por tema (contexto médico/educacional)
+    const themeKeywords: Record<string, { keywords: string[]; sentiment: 'positive' | 'negative' | 'neutral' }> = {
+      'usabilidade': { keywords: ['fácil', 'difícil', 'confuso', 'intuitivo', 'navegação', 'menu', 'botão'], sentiment: 'neutral' },
+      'conteudo_medico': { keywords: ['dosagem', 'medicamento', 'pqt-u', 'hanseníase', 'tratamento', 'clofazimina', 'rifampicina', 'dapsona'], sentiment: 'neutral' },
+      'aprendizado': { keywords: ['aprendi', 'entendi', 'compreendi', 'claro', 'explicação', 'dúvida', 'confuso'], sentiment: 'neutral' },
+      'performance': { keywords: ['lento', 'rápido', 'travou', 'carregando', 'demora', 'velocidade'], sentiment: 'neutral' },
+      'acessibilidade': { keywords: ['fonte', 'tamanho', 'contraste', 'cor', 'legível', 'acessível'], sentiment: 'neutral' },
+      'satisfacao_positiva': { keywords: ['excelente', 'ótimo', 'muito bom', 'adorei', 'parabéns', 'útil', 'ajudou'], sentiment: 'positive' },
+      'satisfacao_negativa': { keywords: ['ruim', 'péssimo', 'horrível', 'não funciona', 'erro', 'problema', 'bug'], sentiment: 'negative' },
+      'sugestao': { keywords: ['sugiro', 'poderia', 'seria bom', 'falta', 'gostaria', 'melhorar'], sentiment: 'neutral' }
+    };
+
+    const themes: ThemeAnalysis[] = [];
+    const allText = textFeedback.join(' ').toLowerCase();
+
+    Object.entries(themeKeywords).forEach(([theme, config]) => {
+      const matchingKeywords = config.keywords.filter(kw => allText.includes(kw.toLowerCase()));
+      const frequency = matchingKeywords.length;
+
+      if (frequency > 0) {
+        // Encontrar exemplos de texto que contêm as palavras-chave
+        const examples = textFeedback
+          .filter(text => matchingKeywords.some(kw => text.toLowerCase().includes(kw.toLowerCase())))
+          .slice(0, 3);
+
+        themes.push({
+          theme,
+          frequency,
+          sentiment: config.sentiment,
+          examples,
+          relatedComponents: this.inferComponentsFromTheme(theme)
+        });
+      }
+    });
+
+    return themes.sort((a, b) => b.frequency - a.frequency);
+  }
+
+  private inferComponentsFromTheme(theme: string): string[] {
+    const themeComponentMap: Record<string, string[]> = {
+      'usabilidade': ['navigation', 'clinical_case', 'dose_calculator'],
+      'conteudo_medico': ['clinical_case', 'dose_calculator', 'timeline'],
+      'aprendizado': ['clinical_case', 'certification', 'timeline'],
+      'performance': ['clinical_case', 'dose_calculator'],
+      'acessibilidade': ['navigation', 'clinical_case', 'checklist'],
+      'satisfacao_positiva': [],
+      'satisfacao_negativa': [],
+      'sugestao': []
+    };
+    return themeComponentMap[theme] || [];
+  }
+
+  /**
+   * Analisa sentimento do feedback textual usando palavras-chave
+   */
+  private analyzeSentiment(textFeedback: string[]): SentimentAnalysis {
+    if (textFeedback.length === 0) {
+      return {
+        overall: 0,
+        byComponent: new Map(),
+        byUserType: new Map(),
+        keyPositives: [],
+        keyNegatives: []
+      };
+    }
+
+    const positiveWords = ['excelente', 'ótimo', 'bom', 'útil', 'ajudou', 'claro', 'fácil', 'adorei', 'parabéns', 'funciona', 'entendi', 'aprendi'];
+    const negativeWords = ['ruim', 'péssimo', 'difícil', 'confuso', 'erro', 'bug', 'lento', 'travou', 'problema', 'não funciona', 'horrível'];
+
+    let positiveCount = 0;
+    let negativeCount = 0;
+    const keyPositives: string[] = [];
+    const keyNegatives: string[] = [];
+
+    textFeedback.forEach(text => {
+      const lowerText = text.toLowerCase();
+      const hasPositive = positiveWords.some(w => lowerText.includes(w));
+      const hasNegative = negativeWords.some(w => lowerText.includes(w));
+
+      if (hasPositive && !hasNegative) {
+        positiveCount++;
+        if (keyPositives.length < 5) keyPositives.push(text.slice(0, 100));
+      } else if (hasNegative && !hasPositive) {
+        negativeCount++;
+        if (keyNegatives.length < 5) keyNegatives.push(text.slice(0, 100));
+      }
+    });
+
+    const total = textFeedback.length;
+    const overall = total > 0 ? (positiveCount - negativeCount) / total : 0;
+
+    return {
+      overall: Math.max(-1, Math.min(1, overall)),
+      byComponent: new Map(), // Seria populado com dados contextuais
+      byUserType: new Map(),
+      keyPositives,
+      keyNegatives
+    };
+  }
+
+  /**
+   * Identifica issues prioritários baseado em severidade e frequência
+   */
+  private identifyPriorityIssues(feedback: ImprovementFeedbackData[]): PriorityIssue[] {
+    if (feedback.length === 0) {
+      return [];
+    }
+
+    const issueMap = new Map<string, {
+      count: number;
+      severity: 'low' | 'medium' | 'high' | 'critical';
+      reports: string[];
+      components: Set<string>;
+    }>();
+
+    // Coletar todas as issues técnicas
+    feedback.forEach(f => {
+      f.feedback.technicalIssues.forEach(issue => {
+        const key = `${issue.type}_${issue.description.slice(0, 50)}`;
+        const existing = issueMap.get(key);
+
+        if (existing) {
+          existing.count++;
+          existing.reports.push(issue.description);
+          existing.components.add(f.context.componentType);
+          // Atualizar severidade se encontrar uma mais alta
+          if (this.severityRank(issue.severity) > this.severityRank(existing.severity)) {
+            existing.severity = issue.severity;
+          }
+        } else {
+          issueMap.set(key, {
+            count: 1,
+            severity: issue.severity,
+            reports: [issue.description],
+            components: new Set([f.context.componentType])
+          });
+        }
+      });
+    });
+
+    // Converter para PriorityIssue
+    const issues: PriorityIssue[] = [];
+    let issueId = 1;
+
+    issueMap.forEach((data, key) => {
+      const [type] = key.split('_');
+
+      issues.push({
+        id: `issue_${issueId++}`,
+        title: data.reports[0].slice(0, 80),
+        category: this.mapIssueToPriorityCategory(type as TechnicalIssue['type']),
+        severity: data.severity,
+        impact: {
+          usersSffected: data.count,
+          functionalityImpact: data.severity === 'critical' ? 'high' : data.severity === 'high' ? 'medium' : 'low',
+          learningImpact: data.components.has('clinical_case') || data.components.has('certification') ? 'high' : 'medium',
+          businessImpact: data.severity === 'critical' ? 'high' : 'medium'
+        },
+        evidence: {
+          feedbackCount: data.count,
+          reproductionRate: data.count / feedback.length,
+          userReports: data.reports.slice(0, 5),
+          analyticsData: { sessionDuration: 0, clickCount: 0, scrollDepth: 0, errorRate: data.count / feedback.length, conversionRate: 0 }
+        },
+        suggestedSolution: this.suggestSolution(type as TechnicalIssue['type'], data.severity),
+        estimatedEffort: data.severity === 'critical' ? 'large' : data.severity === 'high' ? 'medium' : 'small',
+        expectedBenefit: `Redução de ${data.count} reports de ${type}`
+      });
+    });
+
+    // Ordenar por severidade e frequência
+    return issues.sort((a, b) => {
+      const severityDiff = this.severityRank(b.severity) - this.severityRank(a.severity);
+      return severityDiff !== 0 ? severityDiff : b.impact.usersSffected - a.impact.usersSffected;
+    });
+  }
+
+  private severityRank(severity: 'low' | 'medium' | 'high' | 'critical'): number {
+    return { low: 1, medium: 2, high: 3, critical: 4 }[severity];
+  }
+
+  private mapIssueToPriorityCategory(type: TechnicalIssue['type']): PriorityIssue['category'] {
+    const map: Record<TechnicalIssue['type'], PriorityIssue['category']> = {
+      'performance': 'performance_issue',
+      'bug': 'critical_bug',
+      'compatibility': 'usability_issue',
+      'accessibility': 'usability_issue'
+    };
+    return map[type] || 'usability_issue';
+  }
+
+  private suggestSolution(type: TechnicalIssue['type'], severity: 'low' | 'medium' | 'high' | 'critical'): string {
+    const solutions: Record<string, string> = {
+      'performance_critical': 'Otimização urgente de performance com profiling e lazy loading',
+      'performance_high': 'Implementar cache e otimizar queries',
+      'bug_critical': 'Hotfix imediato com rollback se necessário',
+      'bug_high': 'Correção prioritária no próximo sprint',
+      'compatibility_high': 'Adicionar polyfills e testes cross-browser',
+      'accessibility_high': 'Auditoria WCAG e correção de barreiras'
+    };
+    return solutions[`${type}_${severity}`] || 'Investigar e documentar para correção futura';
+  }
+
+  /**
+   * Analisa jornadas de usuário por estágio
+   */
+  private analyzeUserJourneys(feedback: ImprovementFeedbackData[]): UserJourneyInsight[] {
+    if (feedback.length === 0) {
+      return [];
+    }
+
+    const insights: UserJourneyInsight[] = [];
+    const stages: UserJourneyInsight['journeyStage'][] = ['onboarding', 'exploration', 'engagement', 'mastery', 'certification'];
+
+    // Inferir estágio baseado em comportamento e componentes
+    const stageGroups = this.groupBy(feedback, f => this.inferJourneyStage(f));
+
+    stages.forEach(stage => {
+      const stageFeedback = stageGroups[stage] || [];
+      if (stageFeedback.length === 0) return;
+
+      const avgRating = this.calculateOverallAverage(stageFeedback);
+      const avgCompletion = stageFeedback.reduce((sum, f) => sum + f.behavioralData.completionRate, 0) / stageFeedback.length;
+      const helpRequests = stageFeedback.reduce((sum, f) => sum + f.behavioralData.helpRequestCount, 0);
+
+      let insight = '';
+      let impactOnLearning: 'positive' | 'negative' | 'neutral' = 'neutral';
+      const recommendedActions: string[] = [];
+
+      if (avgRating >= 4.0 && avgCompletion >= 0.8) {
+        insight = `Estágio ${stage}: alta satisfação e conclusão`;
+        impactOnLearning = 'positive';
+        recommendedActions.push('Manter abordagem atual', 'Considerar como referência para outros estágios');
+      } else if (avgRating < 3.0 || avgCompletion < 0.5) {
+        insight = `Estágio ${stage}: necessita atenção imediata`;
+        impactOnLearning = 'negative';
+        recommendedActions.push('Revisar conteúdo e UX', 'Adicionar mais orientação', 'Simplificar fluxo');
+      } else {
+        insight = `Estágio ${stage}: performance moderada`;
+        recommendedActions.push('Monitorar métricas', 'Coletar feedback específico');
+      }
+
+      if (helpRequests > stageFeedback.length * 2) {
+        recommendedActions.push('Melhorar documentação e dicas contextuais');
+      }
+
+      insights.push({
+        journeyStage: stage,
+        insight,
+        dataPoints: [
+          `Rating médio: ${avgRating.toFixed(1)}`,
+          `Taxa de conclusão: ${(avgCompletion * 100).toFixed(0)}%`,
+          `Pedidos de ajuda: ${helpRequests}`
+        ],
+        impactOnLearning,
+        recommendedActions
+      });
+    });
+
+    return insights;
+  }
+
+  private inferJourneyStage(feedback: ImprovementFeedbackData): UserJourneyInsight['journeyStage'] {
+    const { componentType } = feedback.context;
+    const { completionRate, interactionCount } = feedback.behavioralData;
+
+    if (componentType === 'certification') return 'certification';
+    if (componentType === 'checklist' && completionRate > 0.8) return 'mastery';
+    if (interactionCount > 20 && completionRate > 0.6) return 'engagement';
+    if (interactionCount > 5) return 'exploration';
+    return 'onboarding';
+  }
+
+  /**
+   * Calcula métricas de impacto
+   */
+  private calculateImpactMetrics(feedback: ImprovementFeedbackData[]): ImpactMetrics {
+    if (feedback.length === 0) {
+      return {
+        userSatisfactionTrend: [],
+        performanceImprovements: [],
+        learningOutcomeImprovements: [],
+        adoptionRates: []
+      };
+    }
+
+    // Calcular tendência de satisfação (últimos 7 períodos)
+    const sorted = [...feedback].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+    const periodSize = Math.ceil(sorted.length / 7);
+    const userSatisfactionTrend: number[] = [];
+
+    for (let i = 0; i < 7 && i * periodSize < sorted.length; i++) {
+      const periodFeedback = sorted.slice(i * periodSize, (i + 1) * periodSize);
+      if (periodFeedback.length > 0) {
+        userSatisfactionTrend.push(this.calculateOverallAverage(periodFeedback));
+      }
+    }
+
+    // Calcular taxas de adoção por feature
+    const componentGroups = this.groupBy(feedback, f => f.context.componentType);
+    const adoptionRates: AdoptionMetric[] = Object.entries(componentGroups).map(([feature, items]) => ({
+      feature,
+      adoptionRate: items.length / feedback.length,
+      retentionRate: items.filter(f => f.behavioralData.completionRate > 0.5).length / items.length,
+      satisfactionScore: this.calculateOverallAverage(items)
+    }));
+
+    return {
+      userSatisfactionTrend,
+      performanceImprovements: [],
+      learningOutcomeImprovements: [],
+      adoptionRates
+    };
+  }
+
+  /**
+   * Identifica issues comuns agrupados por tipo
+   */
+  private identifyCommonIssues(feedback: ImprovementFeedbackData[]): IssueList[] {
+    const issueGroups = new Map<string, { count: number; severity: 'low' | 'medium' | 'high' | 'critical' }>();
+
+    feedback.forEach(f => {
+      f.feedback.technicalIssues.forEach(issue => {
+        const key = issue.type;
+        const existing = issueGroups.get(key);
+        if (existing) {
+          existing.count++;
+          if (this.severityRank(issue.severity) > this.severityRank(existing.severity)) {
+            existing.severity = issue.severity;
+          }
+        } else {
+          issueGroups.set(key, { count: 1, severity: issue.severity });
+        }
+      });
+    });
+
+    return Array.from(issueGroups.entries()).map(([type, data], index) => ({
+      id: `issue_${index + 1}`,
+      severity: data.severity,
+      description: `${data.count} ocorrências de ${type}`,
+      frequency: data.count
+    }));
+  }
+
+  /**
+   * Identifica oportunidades de melhoria baseado em ratings baixos
+   */
+  private identifyImprovementOpportunities(feedback: ImprovementFeedbackData[]): OpportunityList[] {
+    const opportunities: OpportunityList[] = [];
+    const avgRatings = this.calculateAverageRatings(feedback);
+
+    // Verificar métricas de usabilidade
+    if (avgRatings.usability.easeOfUse < 3.5) {
+      opportunities.push({
+        id: 'opp_ease_of_use',
+        impact: avgRatings.usability.easeOfUse < 2.5 ? 'high' : 'medium',
+        description: 'Melhorar facilidade de uso da interface',
+        effort: 'medium'
+      });
+    }
+
+    if (avgRatings.usability.accessibility < 3.5) {
+      opportunities.push({
+        id: 'opp_accessibility',
+        impact: 'high',
+        description: 'Aprimorar acessibilidade (WCAG compliance)',
+        effort: 'medium'
+      });
+    }
+
+    // Verificar métricas de conteúdo
+    if (avgRatings.contentQuality.clarity < 3.5) {
+      opportunities.push({
+        id: 'opp_content_clarity',
+        impact: 'high',
+        description: 'Melhorar clareza do conteúdo educacional',
+        effort: 'medium'
+      });
+    }
+
+    // Verificar métricas de aprendizado
+    if (avgRatings.learningEffectiveness.engagementLevel < 3.5) {
+      opportunities.push({
+        id: 'opp_engagement',
+        impact: 'medium',
+        description: 'Aumentar engajamento com elementos interativos',
+        effort: 'large'
+      });
+    }
+
+    return opportunities;
+  }
+
+  /**
+   * Prioriza recomendações por impacto/esforço
+   */
+  private prioritizeRecommendations(recommendations: ImprovementRecommendation[]): ImprovementRecommendation[] {
+    const priorityScore = (r: ImprovementRecommendation): number => {
+      const priorityWeight = { urgent: 4, high: 3, medium: 2, low: 1 }[r.priority];
+      const complexityPenalty = { simple: 0, moderate: 1, complex: 2 }[r.implementation.complexity];
+      const impactBonus = r.expectedOutcomes.userSatisfactionImprovement / 10;
+      return priorityWeight + impactBonus - complexityPenalty;
+    };
+
+    return [...recommendations].sort((a, b) => priorityScore(b) - priorityScore(a));
+  }
+
+  /**
+   * Cria recomendações a partir de issues
+   */
+  private createIssueRecommendations(issues: IssueList[]): ImprovementRecommendation[] {
+    return issues.slice(0, 5).map((issue, index) => ({
+      id: `rec_issue_${index + 1}`,
+      category: 'usability' as const,
+      priority: issue.severity === 'critical' ? 'urgent' as const : issue.severity === 'high' ? 'high' as const : 'medium' as const,
+      title: `Resolver ${issue.description}`,
+      description: `Correção necessária para ${issue.frequency} ocorrências reportadas`,
+      rationale: `Issue com severidade ${issue.severity} afetando usuários`,
+      implementation: {
+        complexity: issue.severity === 'critical' ? 'complex' as const : 'moderate' as const,
+        estimatedEffort: issue.severity === 'critical' ? '2-3 semanas' : '1-2 semanas',
+        requiredSkills: ['frontend', 'debugging'],
+        dependencies: [],
+        risks: ['Pode requerer refatoração significativa']
+      },
+      expectedOutcomes: {
+        userSatisfactionImprovement: issue.severity === 'critical' ? 20 : 10,
+        performanceImpact: 'Redução de erros',
+        learningEffectivenessImpact: 'Melhoria na experiência',
+        maintenanceImpact: 'Redução de tickets de suporte'
+      },
+      successMetrics: [`Reduzir ocorrências de ${issue.description} em 80%`],
+      timeline: issue.severity === 'critical' ? 'Imediato' : 'Próximo sprint'
+    }));
+  }
+
+  /**
+   * Cria recomendações a partir de oportunidades
+   */
+  private createOpportunityRecommendations(opportunities: OpportunityList[]): ImprovementRecommendation[] {
+    return opportunities.slice(0, 5).map((opp, index) => ({
+      id: `rec_opp_${index + 1}`,
+      category: 'usability' as const,
+      priority: opp.impact === 'high' ? 'high' as const : 'medium' as const,
+      title: opp.description,
+      description: `Oportunidade de melhoria identificada através de análise de feedback`,
+      rationale: `Impacto ${opp.impact} com esforço ${opp.effort}`,
+      implementation: {
+        complexity: opp.effort === 'large' ? 'complex' as const : opp.effort === 'medium' ? 'moderate' as const : 'simple' as const,
+        estimatedEffort: opp.effort === 'large' ? '3-4 semanas' : opp.effort === 'medium' ? '1-2 semanas' : '3-5 dias',
+        requiredSkills: ['frontend', 'ux'],
+        dependencies: [],
+        risks: []
+      },
+      expectedOutcomes: {
+        userSatisfactionImprovement: opp.impact === 'high' ? 15 : 8,
+        performanceImpact: 'Melhoria na usabilidade',
+        learningEffectivenessImpact: 'Aumento no engajamento',
+        maintenanceImpact: 'Neutro'
+      },
+      successMetrics: ['Aumento de 10% na satisfação do usuário'],
+      timeline: opp.effort === 'large' ? '2-3 sprints' : 'Próximo sprint'
+    }));
+  }
+
+  /**
+   * Dispara alerta para issues críticos via GA4
+   */
+  private triggerCriticalIssueAlert(issues: TechnicalIssue[], feedback: ImprovementFeedbackData): void {
+    if (issues.length === 0) return;
+
+    if (typeof window !== 'undefined' && window.gtag) {
+      const gtag = window.gtag;
+      issues.forEach(issue => {
+        gtag('event', 'critical_issue_alert', {
+          event_category: 'medical_improvement',
+          event_label: issue.type,
+          custom_parameters: {
+            medical_context: 'critical_feedback',
+            severity: issue.severity,
+            component: feedback.context.componentType,
+            user_type: feedback.context.userType,
+            description: issue.description.slice(0, 100)
+          }
+        });
+      });
+    }
+
+    // Log para desenvolvimento
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('[CIS] Critical issues detected:', issues.map(i => `${i.severity}: ${i.description}`));
+    }
+  }
+
+  /**
+   * Marca feedback negativo para análise posterior
+   */
+  private flagNegativeFeedback(feedback: ImprovementFeedbackData): void {
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'negative_feedback_flagged', {
+        event_category: 'medical_improvement',
+        event_label: feedback.context.componentType,
+        custom_parameters: {
+          medical_context: 'negative_feedback',
+          component: feedback.context.componentType,
+          user_type: feedback.context.userType,
+          persona: feedback.context.persona,
+          device: feedback.context.device
+        }
+      });
+    }
+
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('[CIS] Negative feedback flagged:', {
+        component: feedback.context.componentType,
+        rating: this.calculateAverageRating(feedback.feedback)
+      });
+    }
+  }
+
+  /**
+   * Dispara análise incremental (throttled)
+   */
+  private triggerIncrementalAnalysis(): void {
+    // Throttle: só executar a cada 10 feedbacks ou 5 minutos
+    const now = Date.now();
+    const lastAnalysis = (this as unknown as { _lastIncrementalAnalysis?: number })._lastIncrementalAnalysis || 0;
+    const feedbackCount = this.feedbackData.length;
+
+    if (now - lastAnalysis < 300000 && feedbackCount % 10 !== 0) {
+      return;
+    }
+
+    (this as unknown as { _lastIncrementalAnalysis: number })._lastIncrementalAnalysis = now;
+
+    // Executar análise leve em background
+    if (typeof window !== 'undefined' && window.gtag) {
+      const summary = this.getFeedbackSummary();
+      window.gtag('event', 'incremental_analysis', {
+        event_category: 'medical_improvement',
+        event_label: 'background_analysis',
+        custom_parameters: {
+          medical_context: 'incremental_analysis',
+          total_feedbacks: summary.totalFeedbacks,
+          avg_rating: summary.averageRating.toFixed(2),
+          critical_issues: summary.criticalIssues
+        }
+      });
+    }
+  }
 
   /**
    * Calcula taxa real de conclusão baseada em interações
