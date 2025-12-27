@@ -15,6 +15,15 @@ GCP_SERVICE_ACCOUNT_KEY      # JSON da service account
 GCP_PROJECT_ID              # ID do projeto GCP
 GCP_REGION                  # Região (us-central1)
 
+# Supabase (Vector Database)
+SUPABASE_PROJECT_URL        # URL do projeto Supabase
+SUPABASE_PUBLISHABLE_KEY    # Chave pública Supabase
+SUPABASE_SERVICE_KEY        # Chave de serviço (backend)
+
+# AI/ML Services
+OPENROUTER_API_KEY          # Chave API OpenRouter (Llama 3.2)
+HUGGINGFACE_API_KEY         # Chave para embeddings
+
 # Context7 MCP
 CONTEXT7_API_KEY            # Chave API do Context7
 
@@ -26,23 +35,17 @@ TELEGRAM_CHAT_ID            # ID do chat para notificações
 SNYK_TOKEN                  # Token para scanning de segurança
 
 # Analytics (Opcional)
-GOOGLE_ANALYTICS_ID         # ID do Google Analytics
-GA4_API_SECRET              # Secret do GA4
+NEXT_PUBLIC_GA_MEASUREMENT_ID  # ID do Google Analytics 4
 ```
 
 ### **GitHub Variables** (Dados Públicos)
 ```bash
-# Firebase Configuration
-NEXT_PUBLIC_FIREBASE_API_KEY           # Chave API Firebase (pública)
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN       # Domínio de auth
-NEXT_PUBLIC_FIREBASE_PROJECT_ID        # ID do projeto
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET    # Bucket de storage
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID # ID do sender
-NEXT_PUBLIC_FIREBASE_APP_ID            # ID da aplicação
-
 # URLs da API por Ambiente
 NEXT_PUBLIC_API_URL_STAGING            # URL da API de staging
 NEXT_PUBLIC_API_URL_PRODUCTION         # URL da API de produção
+
+# Configurações de Ambiente
+NEXT_PUBLIC_ENVIRONMENT                # development | staging | production
 ```
 
 ## 🚀 Configuração Inicial
@@ -104,17 +107,12 @@ gh secret set GA4_API_SECRET --body "your_ga4_secret"
 
 #### **Configurar Variables**
 ```bash
-# Firebase Configuration
-gh variable set NEXT_PUBLIC_FIREBASE_API_KEY --body "your_firebase_api_key"
-gh variable set NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN --body "your_project.firebaseapp.com"
-gh variable set NEXT_PUBLIC_FIREBASE_PROJECT_ID --body "your_firebase_project_id"
-gh variable set NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET --body "your_project.appspot.com"
-gh variable set NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID --body "your_sender_id"
-gh variable set NEXT_PUBLIC_FIREBASE_APP_ID --body "your_app_id"
-
 # API URLs
 gh variable set NEXT_PUBLIC_API_URL_STAGING --body "https://hml-roteiro-dispensacao-api-4f2gjf6cua-uc.a.run.app"
 gh variable set NEXT_PUBLIC_API_URL_PRODUCTION --body "https://roteiro-dispensacao-api-4f2gjf6cua-uc.a.run.app"
+
+# Environment Configuration
+gh variable set NEXT_PUBLIC_ENVIRONMENT --body "production"
 ```
 
 ## 💻 Desenvolvimento Local
@@ -135,13 +133,13 @@ python main.py
 
 ### **Configuração Manual Local**
 ```bash
-# Firebase Configuration (mesmo das GitHub Variables)
-export NEXT_PUBLIC_FIREBASE_API_KEY="your_firebase_api_key"
-export NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN="your_project.firebaseapp.com"
-export NEXT_PUBLIC_FIREBASE_PROJECT_ID="your_firebase_project_id"
-export NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET="your_project.appspot.com"
-export NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID="your_sender_id"
-export NEXT_PUBLIC_FIREBASE_APP_ID="your_app_id"
+# Supabase (para desenvolvimento local)
+export SUPABASE_PROJECT_URL="your_supabase_url"
+export SUPABASE_PUBLISHABLE_KEY="your_supabase_anon_key"
+
+# AI/ML Services (para desenvolvimento local)
+export OPENROUTER_API_KEY="your_openrouter_key"
+export HUGGINGFACE_API_KEY="your_huggingface_key"
 
 # Local Development
 export NEXT_PUBLIC_API_URL="http://localhost:5000"
@@ -150,9 +148,7 @@ export NEXT_PUBLIC_DEBUG="true"
 
 # Features
 export NEXT_PUBLIC_AUTH_ENABLED="true"
-export NEXT_PUBLIC_FIRESTORE_ENABLED="true"
 export NEXT_PUBLIC_OFFLINE_MODE="true"
-export NEXT_PUBLIC_FIRESTORE_CACHE_ENABLED="true"
 ```
 
 ## 🔍 Validação da Configuração
@@ -181,14 +177,14 @@ gh workflow run "production-deploy.yml"
 #### **Staging (HML)**
 - **URL**: `https://hml-roteiros-de-dispensacao.web.app`
 - **API**: `https://hml-roteiro-dispensacao-api-4f2gjf6cua-uc.a.run.app`
-- **Firebase**: Projeto de homologação
+- **Database**: Supabase PostgreSQL + pgvector
 - **Monitoramento**: Google Cloud Monitoring integrado
 - **MCP**: Context7 + Test Master AI configurados
 
 #### **Production**
 - **URL**: `https://roteirosdispensacao.com.br`
 - **API**: `https://roteiro-dispensacao-api-4f2gjf6cua-uc.a.run.app`
-- **Firebase**: Projeto de produção
+- **Database**: Supabase PostgreSQL + pgvector (produção)
 - **Monitoramento**: Google Cloud Monitoring + alertas críticos
 - **MCP**: Context7 + Test Master AI com validação estrita
 
@@ -205,25 +201,25 @@ gh workflow run "production-deploy.yml"
 ### **Erro: "Variable not found"**
 ```bash
 # Verificar se a variable está configurada
-gh variable list | grep NEXT_PUBLIC_FIREBASE_API_KEY
+gh variable list | grep NEXT_PUBLIC_API_URL
 
 # Configurar se ausente
-gh variable set NEXT_PUBLIC_FIREBASE_API_KEY --body "your_value"
+gh variable set NEXT_PUBLIC_API_URL_PRODUCTION --body "https://roteiro-dispensacao-api-4f2gjf6cua-uc.a.run.app"
 ```
 
 ### **Erro: "Secret not found"**
 ```bash
 # Verificar se o secret está configurado
-gh secret list | grep GCP_SERVICE_ACCOUNT_KEY
+gh secret list | grep SUPABASE_PROJECT_URL
 
 # Configurar se ausente
-gh secret set GCP_SERVICE_ACCOUNT_KEY --body-file path/to/service-account.json
+gh secret set SUPABASE_PROJECT_URL --body "your_supabase_url"
 ```
 
-### **Erro: "Firebase not initialized"**
-1. Verificar se todas as variáveis `NEXT_PUBLIC_FIREBASE_*` estão configuradas
-2. Validar se o projeto Firebase existe e está ativo
-3. Confirmar permissões da service account GCP
+### **Erro: "Supabase connection failed"**
+1. Verificar se `SUPABASE_PROJECT_URL` e `SUPABASE_SERVICE_KEY` estão configurados
+2. Validar se o projeto Supabase está ativo e acessível
+3. Confirmar se a extensão pgvector está habilitada no banco
 
 ### **Erro: "Context7 authentication failed"**
 1. Verificar se `CONTEXT7_API_KEY` está configurado como secret

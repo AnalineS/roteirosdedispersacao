@@ -31,7 +31,7 @@ Este guia foi projetado para integrar novos desenvolvedores ao projeto de plataf
 - [ ] Executar verificação LGPD: `node .claude/automation/lgpd-compliance-checker.js`
 - [ ] Configurar hooks do Git (ver seção específica)
 - [ ] Executar suite de testes: `npm test`
-- [ ] Revisar documentação de arquitetura: `ARQUITETURA_SISTEMA.md`
+- [ ] Revisar documentação de arquitetura: `docs/ARQUITETURA_ATUAL_2025.md`
 
 #### Fase 2: Compreensão do Domínio Médico (Dia 2)
 - [ ] Estudar características da hanseníase (PB/MB)
