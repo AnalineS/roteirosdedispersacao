@@ -3,6 +3,7 @@ import ErrorBoundary from '@/components/ErrorBoundary'
 import ErrorToast from '@/components/errors/ErrorToast'
 import OfflineIndicator from '@/components/OfflineIndicator'
 import GoogleAnalytics from '@/components/GoogleAnalytics'
+import MicrosoftClarity from '@/components/analytics/MicrosoftClarity'
 import { AnalyticsProvider } from '@/components/analytics/AnalyticsProvider'
 import { GlobalTrackingProvider } from '@/components/analytics/GlobalTrackingProvider'
 import PWAManager from '@/components/pwa/PWAManager'
@@ -71,8 +72,9 @@ export default function RootLayout({
       </head>
       <body>
         {/* No JavaScript fallback */}
-        {/* Google Analytics */}
+        {/* Analytics: Google Analytics + Microsoft Clarity */}
         <GoogleAnalytics GA_MEASUREMENT_ID={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID} />
+        <MicrosoftClarity />
         
         <noscript>
           <div style={{
