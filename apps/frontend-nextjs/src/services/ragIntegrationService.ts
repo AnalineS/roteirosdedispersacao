@@ -181,7 +181,7 @@ export class RAGIntegrationService {
         });
       }
       this.updateStats(Date.now() - startTime, false);
-      
+
       return this.generateErrorResponse(query, persona, error, processingSteps);
     }
   }
@@ -234,7 +234,7 @@ export class RAGIntegrationService {
         useChunks: useEmbeddings
       });
 
-    } catch (error) {
+    } catch {
       // Error tracking for RAG search failure
       if (typeof window !== 'undefined' && window.gtag) {
         window.gtag('event', 'rag_search_error', {
@@ -328,7 +328,7 @@ export class RAGIntegrationService {
 
       return { status, components, recommendations };
 
-    } catch (error) {
+    } catch {
       return {
         status: 'unhealthy',
         components,

@@ -130,7 +130,7 @@ export const useAutoCleanup = () => {
       cleanupFnsRef.current.forEach(fn => {
         try {
           fn();
-        } catch (error) {
+        } catch {
           if (typeof window !== 'undefined' && window.gtag) {
           window.gtag('event', 'effect_cleanup_error', {
             event_category: 'medical_hooks',
