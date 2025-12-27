@@ -953,11 +953,306 @@ export class ContinuousImprovementSystem {
     return allRatings.reduce((sum: number, rating: number) => sum + rating, 0) / allRatings.length;
   }
   
-  // Implementações simplificadas para métodos complexos
-  private getRelevantFeedback(timeframe?: TimeframeFilter): ImprovementFeedbackData[] { return this.feedbackData; }
-  private calculateAverageRatings(feedback: ImprovementFeedbackData[]): AverageRatings { return {} as AverageRatings; }
-  private analyzeTrends(feedback: ImprovementFeedbackData[]): TrendAnalysis[] { return []; }
-  private analyzeSegments(feedback: ImprovementFeedbackData[]): SegmentAnalysis[] { return []; }
+  // ===== MÉTODOS DE ANÁLISE CORE (PR 2) =====
+
+  /**
+   * Filtra feedback por timeframe (start/end dates ou duration em ms)
+   */
+  private getRelevantFeedback(timeframe?: TimeframeFilter): ImprovementFeedbackData[] {
+    if (!timeframe) {
+      return this.feedbackData;
+    }
+
+    const now = Date.now();
+    let startTime: number;
+    let endTime: number;
+
+    if (timeframe.start && timeframe.end) {
+      startTime = timeframe.start.getTime();
+      endTime = timeframe.end.getTime();
+    } else if (timeframe.duration) {
+      startTime = now - timeframe.duration;
+      endTime = now;
+    } else {
+      return this.feedbackData;
+    }
+
+    return this.feedbackData.filter(feedback => {
+      const feedbackTime = feedback.timestamp.getTime();
+      return feedbackTime >= startTime && feedbackTime <= endTime;
+    });
+  }
+
+  /**
+   * Calcula médias reais para cada categoria de rating
+   */
+  private calculateAverageRatings(feedback: ImprovementFeedbackData[]): AverageRatings {
+    if (feedback.length === 0) {
+      return {
+        usability: this.getDefaultUsabilityRating(),
+        contentQuality: this.getDefaultContentRating(),
+        learningEffectiveness: this.getDefaultLearningRating()
+      };
+    }
+
+    // Acumular todos os ratings
+    const usabilityAccum = { easeOfUse: 0, navigationClarity: 0, visualDesign: 0, responsiveness: 0, accessibility: 0, overallSatisfaction: 0 };
+    const contentAccum = { accuracy: 0, relevance: 0, clarity: 0, completeness: 0, upToDateness: 0, practicalValue: 0 };
+    const learningAccum = { objectiveAlignment: 0, engagementLevel: 0, difficultyAppropriate: 0, feedbackQuality: 0, knowledgeRetention: 0, skillApplication: 0 };
+
+    feedback.forEach(f => {
+      // Usability
+      usabilityAccum.easeOfUse += f.feedback.usabilityRating.easeOfUse;
+      usabilityAccum.navigationClarity += f.feedback.usabilityRating.navigationClarity;
+      usabilityAccum.visualDesign += f.feedback.usabilityRating.visualDesign;
+      usabilityAccum.responsiveness += f.feedback.usabilityRating.responsiveness;
+      usabilityAccum.accessibility += f.feedback.usabilityRating.accessibility;
+      usabilityAccum.overallSatisfaction += f.feedback.usabilityRating.overallSatisfaction;
+
+      // Content Quality
+      contentAccum.accuracy += f.feedback.contentQuality.accuracy;
+      contentAccum.relevance += f.feedback.contentQuality.relevance;
+      contentAccum.clarity += f.feedback.contentQuality.clarity;
+      contentAccum.completeness += f.feedback.contentQuality.completeness;
+      contentAccum.upToDateness += f.feedback.contentQuality.upToDateness;
+      contentAccum.practicalValue += f.feedback.contentQuality.practicalValue;
+
+      // Learning Effectiveness
+      learningAccum.objectiveAlignment += f.feedback.learningEffectiveness.objectiveAlignment;
+      learningAccum.engagementLevel += f.feedback.learningEffectiveness.engagementLevel;
+      learningAccum.difficultyAppropriate += f.feedback.learningEffectiveness.difficultyAppropriate;
+      learningAccum.feedbackQuality += f.feedback.learningEffectiveness.feedbackQuality;
+      learningAccum.knowledgeRetention += f.feedback.learningEffectiveness.knowledgeRetention;
+      learningAccum.skillApplication += f.feedback.learningEffectiveness.skillApplication;
+    });
+
+    const count = feedback.length;
+
+    return {
+      usability: {
+        easeOfUse: usabilityAccum.easeOfUse / count,
+        navigationClarity: usabilityAccum.navigationClarity / count,
+        visualDesign: usabilityAccum.visualDesign / count,
+        responsiveness: usabilityAccum.responsiveness / count,
+        accessibility: usabilityAccum.accessibility / count,
+        overallSatisfaction: usabilityAccum.overallSatisfaction / count
+      },
+      contentQuality: {
+        accuracy: contentAccum.accuracy / count,
+        relevance: contentAccum.relevance / count,
+        clarity: contentAccum.clarity / count,
+        completeness: contentAccum.completeness / count,
+        upToDateness: contentAccum.upToDateness / count,
+        practicalValue: contentAccum.practicalValue / count
+      },
+      learningEffectiveness: {
+        objectiveAlignment: learningAccum.objectiveAlignment / count,
+        engagementLevel: learningAccum.engagementLevel / count,
+        difficultyAppropriate: learningAccum.difficultyAppropriate / count,
+        feedbackQuality: learningAccum.feedbackQuality / count,
+        knowledgeRetention: learningAccum.knowledgeRetention / count,
+        skillApplication: learningAccum.skillApplication / count
+      }
+    };
+  }
+
+  private getDefaultUsabilityRating(): UsabilityRating {
+    return { easeOfUse: 0, navigationClarity: 0, visualDesign: 0, responsiveness: 0, accessibility: 0, overallSatisfaction: 0 };
+  }
+
+  private getDefaultLearningRating(): LearningEffectivenessRating {
+    return { objectiveAlignment: 0, engagementLevel: 0, difficultyAppropriate: 0, feedbackQuality: 0, knowledgeRetention: 0, skillApplication: 0 };
+  }
+
+  /**
+   * Analisa tendências temporais comparando períodos
+   */
+  private analyzeTrends(feedback: ImprovementFeedbackData[]): TrendAnalysis[] {
+    if (feedback.length < 2) {
+      return [];
+    }
+
+    const trends: TrendAnalysis[] = [];
+
+    // Ordenar por timestamp
+    const sorted = [...feedback].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+
+    // Dividir em duas metades para comparação
+    const midpoint = Math.floor(sorted.length / 2);
+    const firstHalf = sorted.slice(0, midpoint);
+    const secondHalf = sorted.slice(midpoint);
+
+    if (firstHalf.length === 0 || secondHalf.length === 0) {
+      return [];
+    }
+
+    // Calcular médias para cada período
+    const firstRatings = this.calculateAverageRatings(firstHalf);
+    const secondRatings = this.calculateAverageRatings(secondHalf);
+
+    // Analisar tendências por componente/métrica
+    const components = new Set(feedback.map(f => f.context.componentType));
+
+    components.forEach(component => {
+      const componentFeedback = feedback.filter(f => f.context.componentType === component);
+      const compMid = Math.floor(componentFeedback.length / 2);
+      const compFirst = componentFeedback.slice(0, compMid);
+      const compSecond = componentFeedback.slice(compMid);
+
+      if (compFirst.length > 0 && compSecond.length > 0) {
+        const firstAvg = this.calculateOverallAverage(compFirst);
+        const secondAvg = this.calculateOverallAverage(compSecond);
+        const changeRate = firstAvg > 0 ? ((secondAvg - firstAvg) / firstAvg) * 100 : 0;
+
+        trends.push({
+          component,
+          metric: 'overall_satisfaction',
+          trend: changeRate > 5 ? 'improving' : changeRate < -5 ? 'declining' : 'stable',
+          changeRate: Math.round(changeRate * 100) / 100,
+          significance: Math.abs(changeRate) > 10 ? 0.95 : Math.abs(changeRate) > 5 ? 0.8 : 0.5
+        });
+      }
+    });
+
+    // Tendência geral de usabilidade
+    const usabilityChange = this.calculateMetricChange(
+      firstRatings.usability.overallSatisfaction,
+      secondRatings.usability.overallSatisfaction
+    );
+
+    trends.push({
+      component: 'global',
+      metric: 'usability',
+      trend: usabilityChange > 5 ? 'improving' : usabilityChange < -5 ? 'declining' : 'stable',
+      changeRate: usabilityChange,
+      significance: Math.abs(usabilityChange) > 10 ? 0.95 : 0.7
+    });
+
+    // Tendência de qualidade de conteúdo
+    const contentChange = this.calculateMetricChange(
+      (firstRatings.contentQuality.accuracy + firstRatings.contentQuality.clarity) / 2,
+      (secondRatings.contentQuality.accuracy + secondRatings.contentQuality.clarity) / 2
+    );
+
+    trends.push({
+      component: 'global',
+      metric: 'content_quality',
+      trend: contentChange > 5 ? 'improving' : contentChange < -5 ? 'declining' : 'stable',
+      changeRate: contentChange,
+      significance: Math.abs(contentChange) > 10 ? 0.95 : 0.7
+    });
+
+    return trends;
+  }
+
+  private calculateOverallAverage(feedback: ImprovementFeedbackData[]): number {
+    if (feedback.length === 0) return 0;
+    return feedback.reduce((sum, f) => sum + this.calculateAverageRating(f.feedback), 0) / feedback.length;
+  }
+
+  private calculateMetricChange(before: number, after: number): number {
+    if (before === 0) return 0;
+    return Math.round(((after - before) / before) * 100 * 100) / 100;
+  }
+
+  /**
+   * Segmenta feedback por device, userType e persona
+   */
+  private analyzeSegments(feedback: ImprovementFeedbackData[]): SegmentAnalysis[] {
+    if (feedback.length === 0) {
+      return [];
+    }
+
+    const segments: SegmentAnalysis[] = [];
+
+    // Segmentar por device
+    const deviceGroups = this.groupBy(feedback, f => f.context.device);
+    Object.entries(deviceGroups).forEach(([device, items]) => {
+      const avgRating = this.calculateOverallAverage(items);
+      segments.push({
+        segment: `device_${device}`,
+        sampleSize: items.length,
+        averageRating: Math.round(avgRating * 100) / 100,
+        keyInsights: this.generateSegmentInsights(items, device, 'device')
+      });
+    });
+
+    // Segmentar por userType
+    const userTypeGroups = this.groupBy(feedback, f => f.context.userType);
+    Object.entries(userTypeGroups).forEach(([userType, items]) => {
+      const avgRating = this.calculateOverallAverage(items);
+      segments.push({
+        segment: `userType_${userType}`,
+        sampleSize: items.length,
+        averageRating: Math.round(avgRating * 100) / 100,
+        keyInsights: this.generateSegmentInsights(items, userType, 'userType')
+      });
+    });
+
+    // Segmentar por persona
+    const personaGroups = this.groupBy(feedback, f => f.context.persona);
+    Object.entries(personaGroups).forEach(([persona, items]) => {
+      const avgRating = this.calculateOverallAverage(items);
+      segments.push({
+        segment: `persona_${persona}`,
+        sampleSize: items.length,
+        averageRating: Math.round(avgRating * 100) / 100,
+        keyInsights: this.generateSegmentInsights(items, persona, 'persona')
+      });
+    });
+
+    // Segmentar por componentType
+    const componentGroups = this.groupBy(feedback, f => f.context.componentType);
+    Object.entries(componentGroups).forEach(([component, items]) => {
+      const avgRating = this.calculateOverallAverage(items);
+      segments.push({
+        segment: `component_${component}`,
+        sampleSize: items.length,
+        averageRating: Math.round(avgRating * 100) / 100,
+        keyInsights: this.generateSegmentInsights(items, component, 'component')
+      });
+    });
+
+    return segments.sort((a, b) => b.sampleSize - a.sampleSize);
+  }
+
+  private groupBy<T>(array: T[], keyFn: (item: T) => string): Record<string, T[]> {
+    return array.reduce((groups, item) => {
+      const key = keyFn(item);
+      if (!groups[key]) {
+        groups[key] = [];
+      }
+      groups[key].push(item);
+      return groups;
+    }, {} as Record<string, T[]>);
+  }
+
+  private generateSegmentInsights(items: ImprovementFeedbackData[], segmentValue: string, segmentType: string): string[] {
+    const insights: string[] = [];
+    const avgRating = this.calculateOverallAverage(items);
+
+    if (avgRating >= 4.0) {
+      insights.push(`${segmentType} ${segmentValue}: alta satisfação (${avgRating.toFixed(1)})`);
+    } else if (avgRating < 3.0) {
+      insights.push(`${segmentType} ${segmentValue}: necessita atenção (${avgRating.toFixed(1)})`);
+    }
+
+    // Verificar issues técnicos
+    const issueCount = items.reduce((count, f) => count + f.feedback.technicalIssues.length, 0);
+    if (issueCount > 0) {
+      insights.push(`${issueCount} issues técnicos reportados`);
+    }
+
+    // Verificar taxa de completion
+    const avgCompletion = items.reduce((sum, f) => sum + f.behavioralData.completionRate, 0) / items.length;
+    if (avgCompletion < 0.5) {
+      insights.push(`Baixa taxa de conclusão: ${(avgCompletion * 100).toFixed(0)}%`);
+    } else if (avgCompletion > 0.9) {
+      insights.push(`Alta taxa de conclusão: ${(avgCompletion * 100).toFixed(0)}%`);
+    }
+
+    return insights;
+  }
   private extractCommonThemes(textFeedback: string[]): ThemeAnalysis[] { return []; }
   private analyzeSentiment(textFeedback: string[]): SentimentAnalysis { return { overall: 0.2, byComponent: new Map(), byUserType: new Map(), keyPositives: [], keyNegatives: [] }; }
   private identifyPriorityIssues(feedback: ImprovementFeedbackData[]): PriorityIssue[] { return []; }
@@ -971,7 +1266,53 @@ export class ContinuousImprovementSystem {
   private triggerCriticalIssueAlert(issues: TechnicalIssue[], feedback: ImprovementFeedbackData): void {}
   private flagNegativeFeedback(feedback: ImprovementFeedbackData): void {}
   private triggerIncrementalAnalysis(): void {}
-  private calculateCompletionRate(interactions: InteractionEvent[]): number { return 0.85; }
+
+  /**
+   * Calcula taxa real de conclusão baseada em interações
+   * Considera: completions, errors, help_requests para determinar sucesso
+   */
+  private calculateCompletionRate(interactions: InteractionEvent[]): number {
+    if (interactions.length === 0) {
+      return 0;
+    }
+
+    // Contar tipos de interações
+    const completions = interactions.filter(i => i.type === 'completion').length;
+    const errors = interactions.filter(i => i.type === 'error').length;
+    const helpRequests = interactions.filter(i => i.type === 'help_request').length;
+    const navigations = interactions.filter(i => i.type === 'navigation').length;
+    const clicks = interactions.filter(i => i.type === 'click').length;
+
+    // Se não há completions registradas, estimar baseado em comportamento
+    if (completions === 0) {
+      // Calcular score baseado em engajamento sem erros críticos
+      const totalInteractions = interactions.length;
+      const negativeWeight = (errors * 0.3) + (helpRequests * 0.1);
+      const positiveWeight = (clicks * 0.1) + (navigations * 0.05);
+
+      // Base estimada de 50%, ajustada por comportamento
+      const estimatedRate = Math.max(0, Math.min(1,
+        0.5 + (positiveWeight / totalInteractions) - (negativeWeight / totalInteractions)
+      ));
+
+      return Math.round(estimatedRate * 100) / 100;
+    }
+
+    // Se há completions, calcular taxa real
+    // Considerar que múltiplas tentativas (errors) reduzem a taxa efetiva
+    const attemptPenalty = Math.min(0.3, errors * 0.05); // Max 30% penalty
+    const helpPenalty = Math.min(0.1, helpRequests * 0.02); // Max 10% penalty
+
+    // Taxa base: completions sobre total de sessões únicas estimadas
+    // Assumindo que cada completion representa uma sessão bem-sucedida
+    const uniqueSessions = Math.max(completions, Math.ceil(interactions.length / 10));
+    const baseRate = completions / uniqueSessions;
+
+    // Aplicar penalidades
+    const adjustedRate = Math.max(0, baseRate - attemptPenalty - helpPenalty);
+
+    return Math.round(adjustedRate * 100) / 100;
+  }
   
   // A/B Testing methods (simplified)
   private validateABTestConfig(config: ABTestConfiguration): void {}
