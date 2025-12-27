@@ -611,7 +611,7 @@ const OptimizedForm: React.FC<FormProps> = ({
 
     try {
       await onSubmit(formData);
-    } catch (error) {
+    } catch {
       // Form submission failed
     } finally {
       setIsSubmitting(false);

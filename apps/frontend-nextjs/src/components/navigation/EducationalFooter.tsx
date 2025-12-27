@@ -106,9 +106,8 @@ export default function EducationalFooter({
           title: 'Institucional',
           icon: <HospitalIcon size={16} />,
           links: [
-            { label: 'Sobre o Sistema', href: '/sobre', description: 'Informações sobre a plataforma educacional' },
-            { label: 'Sobre a Tese', href: '/sobre-a-tese', description: 'Pesquisa de doutorado em Ciências Farmacêuticas' },
-            { label: 'Metodologia', href: '/metodologia', description: 'Métodos científicos e fundamentação teórica' }
+            { label: 'Sobre o Sistema', href: '/sobre', description: 'Tese, metodologia e referencias' },
+            { label: 'Conheca a Equipe', href: '/equipe', description: 'Equipe do projeto de pesquisa' }
           ]
         }
       }
@@ -164,7 +163,7 @@ export default function EducationalFooter({
             { label: 'Diagnóstico Hanseníase', href: '/modules/diagnostico', description: 'Sinais clínicos e classificação' },
             { label: 'Tratamento PQT-U', href: '/modules/tratamento', description: 'Esquemas terapêuticos padronizados' },
             { label: 'Vida com Hanseníase', href: '/vida-com-hanseniase', description: 'Qualidade de vida e direitos (público)' },
-            { label: 'Sobre a Tese', href: '/sobre-a-tese', description: 'Pesquisa de doutorado' }
+            { label: 'Sobre o Sistema', href: '/sobre', description: 'Tese e metodologia' }
           ]
         },
         tools_resources: {

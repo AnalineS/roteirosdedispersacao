@@ -103,7 +103,7 @@ const AccessibleMessageBubble: React.FC<AccessibleMessageBubbleProps> = ({
     try {
       await navigator.clipboard.writeText(message.content);
       announceMessage('Mensagem copiada para área de transferência');
-    } catch (error) {
+    } catch {
       // Fallback for older browsers
       const textArea = document.createElement('textarea');
       textArea.value = message.content;

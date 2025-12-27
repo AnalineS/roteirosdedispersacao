@@ -32,7 +32,7 @@ export function generateSecureId(prefix: string = '', length: number = 16): stri
       const randomString = randomBytes.toString('hex').substring(0, length);
       const timestamp = Date.now().toString(36);
       return `${prefix}${timestamp}_${randomString}`;
-    } catch (error) {
+    } catch {
       console.warn('Crypto module not available, using fallback');
     }
   }
@@ -144,7 +144,7 @@ export function generateNonce(length: number = 16): string {
     try {
       const crypto = require('crypto');
       return crypto.randomBytes(length).toString('base64');
-    } catch (error) {
+    } catch {
       console.warn('Crypto module not available for nonce generation');
     }
   }

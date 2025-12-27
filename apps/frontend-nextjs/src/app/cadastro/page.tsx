@@ -146,7 +146,7 @@ export default function RegisterPage() {
       
       // Redirecionar após registro bem-sucedido
       router.push('/login?registered=true');
-    } catch (_err) {
+    } catch {
       setError('Erro ao criar conta. Tente novamente.');
     } finally {
       setIsLoading(false);
@@ -162,7 +162,7 @@ export default function RegisterPage() {
       console.log('Registro com Google');
       await new Promise(resolve => setTimeout(resolve, 1500));
       router.push('/dashboard');
-    } catch (_err) {
+    } catch {
       setError('Erro ao criar conta com Google. Tente novamente.');
     } finally {
       setIsLoading(false);

@@ -271,7 +271,7 @@ export default function RoutingIndicator({
 
       {/* Botão de fechar */}
       <button
-        onClick={() => setIsVisible(false)}
+        onClick={handleReject}
         style={{
           position: 'absolute',
           top: '8px',

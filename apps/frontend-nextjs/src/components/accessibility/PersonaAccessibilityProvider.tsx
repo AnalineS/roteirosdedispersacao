@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
-import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
+import { safeLocalStorage } from '@/hooks/useClientStorage';
 import { useCurrentPersona, usePersonaAnalytics } from '@/contexts/PersonaContext';
 import type { ValidPersonaId } from '@/types/personas';
 import { secureLogger } from '@/utils/secureLogger';
@@ -129,7 +129,7 @@ export function PersonaAccessibilityProvider({
       utterance.text = personaId === 'dr_gasnelio' ? 'Dr.' : 'Gá';
 
       window.speechSynthesis.speak(utterance);
-    } catch (error) {
+    } catch {
       if (typeof window !== 'undefined' && window.gtag) {
         window.gtag('event', 'persona_sound_feedback_error', {
           event_category: 'accessibility',
@@ -212,7 +212,7 @@ export function PersonaAccessibilityProvider({
         const parsed = JSON.parse(savedConfig);
         setConfig(prev => ({ ...prev, ...parsed }));
       }
-    } catch (error) {
+    } catch {
       if (typeof window !== 'undefined' && window.gtag) {
         window.gtag('event', 'accessibility_config_load_error', {
           event_category: 'accessibility',
@@ -230,7 +230,7 @@ export function PersonaAccessibilityProvider({
     if (typeof window !== 'undefined') {
       try {
         safeLocalStorage()?.setItem('personaAccessibilityConfig', JSON.stringify(updatedConfig));
-      } catch (error) {
+      } catch {
         if (typeof window !== 'undefined' && window.gtag) {
           window.gtag('event', 'accessibility_config_save_error', {
             event_category: 'accessibility',

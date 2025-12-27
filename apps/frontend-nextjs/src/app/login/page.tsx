@@ -16,7 +16,7 @@ import { useSafeAuth as useAuth } from '@/hooks/useSafeAuth';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, isAuthenticated, loading: _authLoading } = useAuth();
+  const { login, isAuthenticated, loading: authLoading } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -45,7 +45,7 @@ export default function LoginPage() {
       } else {
         setError(result.error || 'Erro durante o login. Tente novamente.');
       }
-    } catch (_err) {
+    } catch {
       setError('Erro inesperado. Tente novamente.');
     } finally {
       setIsLoading(false);
@@ -147,13 +147,13 @@ export default function LoginPage() {
 
               <button
                 type="submit"
-                disabled={isLoading || _authLoading}
+                disabled={isLoading || authLoading}
                 className="submit-button"
               >
-                {(isLoading || _authLoading) ? (
+                {(isLoading || authLoading) ? (
                   <>
                     <Loader2 className="spinner" size={20} />
-                    {_authLoading ? 'Autenticando...' : 'Entrando...'}
+                    {authLoading ? 'Autenticando...' : 'Entrando...'}
                   </>
                 ) : (
                   <>

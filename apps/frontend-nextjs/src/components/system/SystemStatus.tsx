@@ -39,7 +39,7 @@ export default function SystemStatus({ showDetails = false, className = '' }: Sy
         fallbackActive: result.fallbackActive,
         errorMessage: result.error
       });
-    } catch (error) {
+    } catch {
       setStatus({
         backendStatus: 'offline',
         lastCheck: new Date(),
@@ -208,7 +208,7 @@ export function useSystemStatus() {
       });
 
       return result;
-    } catch (error) {
+    } catch {
       const errorStatus = {
         backendStatus: 'offline' as const,
         lastCheck: new Date(),

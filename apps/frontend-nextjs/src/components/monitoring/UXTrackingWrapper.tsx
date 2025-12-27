@@ -144,7 +144,7 @@ const UXTrackingWrapper: React.FC<UXTrackingWrapperProps> = ({
           });
         }
       }
-    } catch (error) { // eslint-disable-line @typescript-eslint/no-unused-vars
+    } catch { // eslint-disable-line @typescript-eslint/no-unused-vars
       // Analytics tracking via gtag, error details intentionally not logged
       // to protect patient privacy and medical data
       if (typeof window !== 'undefined' && window.gtag) {
@@ -186,7 +186,7 @@ const UXTrackingWrapper: React.FC<UXTrackingWrapperProps> = ({
             },
           }),
         });
-      } catch (error) {
+      } catch {
         if (typeof window !== 'undefined' && window.gtag) {
           window.gtag('event', 'interaction_tracking_error', {
             event_category: 'ux_monitoring_error',

@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Calendar, Users, BookOpen, Activity, Download, BarChart3, TrendingUp, AlertCircle, CheckCircle, RefreshCw } from 'lucide-react';
+import { Users, BookOpen, Activity, Download, TrendingUp, CheckCircle, RefreshCw } from 'lucide-react';
 import { useTracking } from './GlobalTrackingProvider';
-import { fetchDailyMetrics, getGA4Status, type GA4Metrics } from '@/lib/analytics/ga4DataFetcher';
+import { fetchDailyMetrics, type GA4Metrics } from '@/lib/analytics/ga4DataFetcher';
 
 // Interfaces para componentes de abas
 interface TabsProps {
@@ -126,7 +126,7 @@ export default function MasterDashboard() {
         timestamp: new Date().toISOString()
       });
       
-    } catch (error) {
+    } catch {
       if (typeof window !== 'undefined' && window.gtag) {
         window.gtag('event', 'dashboard_metrics_load_error', {
           event_category: 'analytics',

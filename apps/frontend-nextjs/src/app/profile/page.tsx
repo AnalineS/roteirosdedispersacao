@@ -102,7 +102,7 @@ export default function ProfilePage() {
       } else {
         setMessage({ type: 'error', text: result.error || 'Erro ao atualizar perfil' });
       }
-    } catch (_error) {
+    } catch {
       setMessage({ type: 'error', text: 'Erro inesperado ao atualizar perfil' });
     } finally {
       setIsLoading(false);
@@ -140,7 +140,7 @@ export default function ProfilePage() {
       } else {
         setMessage({ type: 'error', text: result.error || 'Erro ao excluir conta' });
       }
-    } catch (_error) {
+    } catch {
       setMessage({ type: 'error', text: 'Erro inesperado ao excluir conta' });
     } finally {
       setIsLoading(false);

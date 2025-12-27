@@ -294,7 +294,7 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
       }
       
       return isEnabled;
-    } catch (error) {
+    } catch {
       if (typeof window !== 'undefined' && (window as any).gtag) {
         (window as any).gtag('event', 'notification_permission_error', {
           event_category: 'gamification_error',
@@ -342,7 +342,7 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
           window.location.href = '/gamification-demo';
         }
       };
-    } catch (error) {
+    } catch {
       if (typeof window !== 'undefined' && (window as any).gtag) {
         (window as any).gtag('event', 'notification_display_error', {
           event_category: 'gamification_error',

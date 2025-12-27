@@ -395,7 +395,7 @@ export function useLGPDConsent(context: 'chat' | 'registration' | 'data-collecti
       try {
         const consentData = JSON.parse(existingConsent);
         setHasConsent(consentData.accepted === true);
-      } catch (error) {
+      } catch {
         setHasConsent(false);
       }
     }

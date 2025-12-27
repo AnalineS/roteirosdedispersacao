@@ -107,7 +107,7 @@ export function usePersonalization() {
           }
         }));
         
-      } catch (error) {
+      } catch {
         // Erro silencioso para não quebrar o carregamento
       } finally {
         setIsLoading(false);
@@ -132,7 +132,7 @@ export function usePersonalization() {
           clinical_context: newPersonalization.fastAccessPriority === 'emergency' ? 'emergency' : 'routine'
         }
       });
-    } catch (error) {
+    } catch {
       // Erro silencioso para não quebrar o salvamento
     }
   }, [context]);
@@ -327,7 +327,7 @@ export function usePersonalization() {
         return true;
       }
       return false;
-    } catch (error) {
+    } catch {
       return false;
     }
   }, [updatePersonalization]);

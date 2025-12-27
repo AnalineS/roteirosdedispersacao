@@ -42,7 +42,7 @@ export default function ChatFeedback({
       try {
         const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
         audioContextRef.current = new AudioContextClass();
-      } catch (error) {
+      } catch {
         // AudioContext not available - continue without sound
       }
     }

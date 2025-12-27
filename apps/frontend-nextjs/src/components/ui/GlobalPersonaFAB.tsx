@@ -75,7 +75,7 @@ export default function GlobalPersonaFAB({ className, style }: GlobalPersonaFABP
 
       // Default to Dr. Gasnelio for medical/technical users
       return 'dr_gasnelio';
-    } catch (error) {
+    } catch {
       // Default fallback
       return 'dr_gasnelio';
     }

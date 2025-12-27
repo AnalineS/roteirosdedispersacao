@@ -5,6 +5,7 @@ import Link from 'next/link';
 import EducationalLayout from '@/components/layout/EducationalLayout';
 import ModernChatContainer from '@/components/chat/modern/ModernChatContainer';
 import PersonaSwitch from '@/components/chat/modern/PersonaSwitch';
+import RoutingIndicator from '@/components/chat/RoutingIndicator';
 import { ChatAccessibilityProvider } from '@/components/chat/accessibility/ChatAccessibilityProvider';
 import SystemStatus from '@/components/system/SystemStatus';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
@@ -140,7 +141,10 @@ export default function ChatPage() {
     analyzeQuestion,
     acceptRecommendation,
     rejectRecommendation,
-    clearAnalysis
+    clearAnalysis,
+    currentAnalysis,
+    shouldShowRouting,
+    getRecommendedPersona
   } = useIntelligentRouting(personas, {
     enabled: true,
     debounceMs: 1000,
@@ -243,6 +247,23 @@ export default function ChatPage() {
       console.error('Erro ao alterar persona:', error);
     }
   }, [setPersona, createConversation, clearAnalysis, pendingQuestion]);
+
+  // Handler para aceitar recomendação de routing
+  const handleAcceptRouting = useCallback((personaId: string) => {
+    acceptRecommendation();
+    handlePersonaChange(personaId);
+  }, [acceptRecommendation, handlePersonaChange]);
+
+  // Handler para rejeitar recomendação de routing
+  const handleRejectRouting = useCallback(() => {
+    rejectRecommendation(selectedPersona || 'ga');
+  }, [rejectRecommendation, selectedPersona]);
+
+  // Handler para mostrar explicação de routing
+  const handleShowRoutingExplanation = useCallback(() => {
+    // Analytics tracking para visualização de explicação
+    console.log('Routing explanation viewed');
+  }, []);
 
   // Handler para upload de arquivos
   const handleFileUpload = useCallback((files: FileList) => {
@@ -454,6 +475,26 @@ export default function ChatPage() {
               personas={personas}
               selected={selectedPersona}
               onChange={handlePersonaChange}
+              isMobile={isMobile}
+            />
+          </div>
+        )}
+
+        {/* Routing Indicator - Sugere persona quando usuario digita sem selecionar */}
+        {hasConsent && shouldShowRouting() && currentAnalysis && getRecommendedPersona() && (
+          <div style={{
+            maxWidth: '800px',
+            margin: '0 auto 1rem',
+            padding: '0 1rem'
+          }}>
+            <RoutingIndicator
+              analysis={currentAnalysis}
+              recommendedPersona={getRecommendedPersona()!}
+              currentPersonaId={selectedPersona}
+              personas={personas}
+              onAcceptRouting={handleAcceptRouting}
+              onRejectRouting={handleRejectRouting}
+              onShowExplanation={handleShowRoutingExplanation}
               isMobile={isMobile}
             />
           </div>

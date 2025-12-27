@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useCallback } from 'react';
-import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
+import { safeLocalStorage } from '@/hooks/useClientStorage';
 
 interface AdditionalMetricData {
   pageType?: string;

@@ -366,7 +366,7 @@ export async function decryptSensitiveData(encryptedData: string): Promise<Recor
   try {
     const jsonString = atob(encryptedData);
     return JSON.parse(jsonString);
-  } catch (error) {
+  } catch {
     throw new Error('Falha na descriptografia dos dados');
   }
 }

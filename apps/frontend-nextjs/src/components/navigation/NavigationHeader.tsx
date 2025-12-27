@@ -232,29 +232,21 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
             }
           ]
         },
-        // Itens do "Conheça o Projeto" movidos para Educacional
+        // Itens institucionais consolidados (Issue #13)
         {
-          id: 'sobre-a-tese',
-          label: 'Sobre a Tese',
-          href: '/sobre-a-tese',
+          id: 'sobre',
+          label: 'Sobre o Sistema',
+          href: '/sobre',
           icon: '📚',
-          description: 'Metodologia e objetivos da pesquisa',
+          description: 'Tese, metodologia e referencias',
           category: 'institutional'
         },
         {
-          id: 'sobre-equipe',
-          label: 'Conheça a Equipe',
-          href: '/sobre',
+          id: 'equipe',
+          label: 'Conheca a Equipe',
+          href: '/equipe',
           icon: '👥',
           description: 'Equipe do projeto',
-          category: 'institutional'
-        },
-        {
-          id: 'metodologia',
-          label: 'Metodologia',
-          href: '/metodologia',
-          icon: '🔬',
-          description: 'Métodos científicos',
           category: 'institutional'
         }
       ]

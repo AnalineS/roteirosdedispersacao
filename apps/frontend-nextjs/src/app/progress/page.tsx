@@ -153,7 +153,7 @@ export default function ProgressPage() {
     }
   }, [personas]);
 
-  const _currentPersona = selectedPersona ? personas[selectedPersona] : null;
+  // persona used by EducationalLayout via selectedPersona prop
 
   const formatTime = (minutes: number): string => {
     const hours = Math.floor(minutes / 60);

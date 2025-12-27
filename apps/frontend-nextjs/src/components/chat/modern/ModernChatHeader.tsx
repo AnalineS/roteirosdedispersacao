@@ -5,13 +5,11 @@ import Image from 'next/image';
 import { Persona } from '@/services/api';
 import { modernChatTheme, getPersonaColors } from '@/config/modernTheme';
 import PersonaSwitch from './PersonaSwitch';
-import { 
-  ArrowLeftIcon, 
-  HistoryIcon, 
-  ExportIcon, 
-  MenuIcon, 
-  CloseIcon,
-  InfoIcon 
+import {
+  ArrowLeftIcon,
+  HistoryIcon,
+  ExportIcon,
+  CloseIcon
 } from '@/components/icons';
 
 interface ModernChatHeaderProps {
