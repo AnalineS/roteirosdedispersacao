@@ -304,7 +304,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setProfile(defaultProfile);
         safeLocalStorage()?.setItem(`user-profile-${userId}`, JSON.stringify(defaultProfile));
       }
-    } catch (error) {
+    } catch {
       if (typeof window !== 'undefined' && window.gtag) {
         window.gtag('event', 'user_profile_load_error', {
           event_category: 'auth',
@@ -584,7 +584,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           await loadUserProfile(authUser.uid, authUser);
         }
       }
-    } catch (error) {
+    } catch {
       if (typeof window !== 'undefined' && window.gtag) {
         window.gtag('event', 'auth_refresh_error', {
           event_category: 'auth',
@@ -697,7 +697,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           isInitialized.current = true;
         }
 
-      } catch (error) {
+      } catch {
         if (typeof window !== 'undefined' && window.gtag) {
           window.gtag('event', 'auth_initialization_error', {
             event_category: 'auth',

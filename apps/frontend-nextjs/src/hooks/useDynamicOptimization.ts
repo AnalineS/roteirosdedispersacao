@@ -95,7 +95,7 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
       const valueToStore = value instanceof Function ? value(storedValue) : value;
       setStoredValue(valueToStore);
       safeLocalStorage()?.setItem(key, JSON.stringify(valueToStore));
-    } catch (error) {
+    } catch {
       if (typeof window !== 'undefined' && window.gtag) {
         window.gtag('event', 'optimization_storage_error', {
           event_category: 'optimization',

@@ -1,12 +1,12 @@
 'use client';
 
 import React, { useState, useCallback, useMemo } from 'react';
-import { useOptimizedEffect, useSmartInterval } from '@/hooks/useEffectOptimizer';
+import { useOptimizedEffect } from '@/hooks/useEffectOptimizer';
 import { modernChatTheme } from '@/config/modernTheme';
 import { validateFeedbackData, feedbackRateLimiter, generateSessionId } from '@/utils/securityUtils';
 import { useGoogleAnalyticsUX } from '@/components/analytics/GoogleAnalyticsSetup';
 import { useGoogleAnalytics } from '@/components/GoogleAnalytics';
-import type { FeedbackData, FeedbackValidation } from '@/types/feedback';
+import type { FeedbackData } from '@/types/feedback';
 
 interface FeedbackWidgetProps {
   messageId: string;
@@ -92,9 +92,15 @@ export default function FeedbackWidget({
   const [validationWarnings, setValidationWarnings] = useState<string[]>([]);
   const [personaData, setPersonaData] = useState<PersonaData | null>(null);
   
-  const { trackCognitiveLoad, trackMobileIssue, trackOnboardingEvent, trackCustomUXEvent } = useGoogleAnalyticsUX();
+  const { trackCognitiveLoad, trackMobileIssue, trackOnboardingEvent } = useGoogleAnalyticsUX();
   const { trackError, trackUserInteraction, trackFeedback } = useGoogleAnalytics();
   const sessionId = useMemo(() => generateSessionId(), []);
+
+  // Detectar mobile para tracking de issues
+  const isMobile = useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    return window.innerWidth < 768;
+  }, []);
 
   // Load persona data on component mount - otimizado
   useOptimizedEffect(() => {
@@ -237,9 +243,25 @@ export default function FeedbackWidget({
     }
   }, [feedbackState, sessionId, messageId, personaId, question, response, onFeedbackSubmit, trackFeedback, trackUserInteraction, trackError, personaData]);
 
-  const handleDetailedFeedback = () => {
+  const handleDetailedFeedback = useCallback(() => {
     setShowComments(true);
-  };
+
+    // Track cognitive load - usuário optou por feedback detalhado (maior complexidade)
+    trackCognitiveLoad(0.7, `feedback_detailed_opened:${personaId}:${isMobile ? 'mobile' : 'desktop'}`);
+
+    // Track mobile issues se o widget detalhado for aberto em mobile
+    if (isMobile) {
+      trackMobileIssue('feedback_detailed_on_mobile', 5); // severity 5 = médio
+    }
+
+    // Track first-time feedback as onboarding event
+    if (!hasSubmittedFeedback) {
+      trackOnboardingEvent('first_detailed_feedback_attempt', 1, {
+        persona_id: personaId,
+        persona_name: personaData?.name || 'unknown'
+      });
+    }
+  }, [trackCognitiveLoad, trackMobileIssue, trackOnboardingEvent, personaId, isMobile, hasSubmittedFeedback, personaData]);
 
   const submitDetailedFeedback = useCallback(async () => {
     if (!selectedRating || feedbackState === 'submitting') return;

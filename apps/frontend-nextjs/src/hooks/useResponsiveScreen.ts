@@ -204,7 +204,7 @@ export const useFABVisibility = () => {
       try {
         const data = JSON.parse(fabClosed);
         isClosed = data.closed;
-      } catch (error) {
+      } catch {
         sessionStorage.removeItem('fab_closed');
       }
     }

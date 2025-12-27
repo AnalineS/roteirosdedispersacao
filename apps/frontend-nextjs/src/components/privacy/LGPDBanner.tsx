@@ -267,7 +267,7 @@ export function useGeneralConsent() {
       try {
         const consentData = JSON.parse(generalConsent);
         setHasConsent(consentData.accepted === true);
-      } catch (error) {
+      } catch {
         setHasConsent(false);
       }
     }

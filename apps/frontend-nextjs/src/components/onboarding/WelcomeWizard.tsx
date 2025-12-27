@@ -570,7 +570,7 @@ export function WelcomeWizard({ onComplete }: {
           // Cache expirado, remover
           safeLocalStorage()?.removeItem(cacheKey);
         }
-      } catch (error) {
+      } catch {
         // Cache corrompido, remover
         safeLocalStorage()?.removeItem(cacheKey);
       }

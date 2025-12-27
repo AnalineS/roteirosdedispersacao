@@ -11,7 +11,7 @@
 
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 
 // Interfaces para testes de screen reader
 interface ScreenReaderTest {

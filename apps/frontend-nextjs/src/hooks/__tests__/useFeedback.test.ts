@@ -88,7 +88,7 @@ describe('useFeedback', () => {
     await act(async () => {
       try {
         await result.current.submitFeedback(invalidFeedback);
-      } catch (error) {
+      } catch {
         // Expected to throw
       }
     });
@@ -111,7 +111,7 @@ describe('useFeedback', () => {
     await act(async () => {
       try {
         await result.current.submitFeedback(invalidRatingFeedback);
-      } catch (error) {
+      } catch {
         // Expected to throw
       }
     });

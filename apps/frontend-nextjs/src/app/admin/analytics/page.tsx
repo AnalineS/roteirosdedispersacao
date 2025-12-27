@@ -87,7 +87,7 @@ export default function AnalyticsDashboard() {
         fallbackRate: data?.fallbackRate || 0,
         topPages: data?.topPages || [],
       });
-    } catch (_error) {
+    } catch {
       // Analytics loading error handled silently with fallback data
       // Error logged for monitoring without sensitive data exposure
       // Usar dados mock se falhar

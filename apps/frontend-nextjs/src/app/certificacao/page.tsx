@@ -160,7 +160,7 @@ Conclusão realizada em {issueDate}, com {casesCompleted} casos clínicos resolv
     }
   };
 
-  const handleEmail = (_email: string) => {
+  const handleEmail = () => {
     // Track certificate email sending
     if (typeof window !== 'undefined' && window.gtag) {
       window.gtag('event', 'certificate_email_sent', {

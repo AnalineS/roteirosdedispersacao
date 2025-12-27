@@ -1,15 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useUserProfile } from '@/hooks/useUserProfile';
-import ProgressIndicator from '@/components/navigation/Progress/ProgressIndicator';
-import { ProgressData } from '@/components/navigation/Progress';
 import Link from 'next/link';
 import GamificationWidget from '@/components/gamification/GamificationWidget';
-import ProgressDashboard from '@/components/gamification/ProgressDashboard';
 import EducationalQuizComponent from '@/components/gamification/EducationalQuiz';
-import type { LearningProgress, Achievement as GamificationAchievement, GamificationNotification, QuizAttempt, EducationalQuiz } from '@/types/gamification';
-import { UserLevel } from '@/types/disclosure';
+import type { QuizAttempt } from '@/types/gamification';
 import { EDUCATIONAL_QUIZZES, getQuizById } from '@/data/educationalQuizzes';
 
 interface Achievement {

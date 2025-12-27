@@ -3,8 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { Persona } from '@/services/api';
-import { modernChatTheme, getPersonaColors } from '@/config/modernTheme';
-import { ToggleIcon } from '@/components/icons';
+import { modernChatTheme } from '@/config/modernTheme';
 
 interface PersonaSwitchProps {
   personas: Record<string, Persona>;
@@ -23,7 +22,6 @@ export default function PersonaSwitch({
   
   // Garantir que sempre haja uma persona selecionada
   const actualSelected = selected || 'ga';
-  const personaIds = Object.keys(personas);
   const isDrGasnelio = actualSelected === 'dr_gasnelio';
 
   const handleToggle = () => {

@@ -962,7 +962,7 @@ export class ReferenceConsistencyValidator {
           lastValidated: new Date(),
           reliability
         });
-      } catch (error) {
+      } catch {
         if (typeof window !== 'undefined' && window.gtag) {
           window.gtag('event', 'reference_validation_failed', {
             event_category: 'medical_consistency',

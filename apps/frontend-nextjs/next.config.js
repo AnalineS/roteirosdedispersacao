@@ -269,8 +269,31 @@ const nextConfig = {
     return `medical-build-${new Date().getTime()}`;
   },
 
-  // Redirecionamentos - desabilitado para export estático
-  // async redirects() - não funciona com output: 'export'
+  // Redirecionamentos 301 para páginas consolidadas (Issue #13)
+  async redirects() {
+    return [
+      {
+        source: '/sobre-a-tese',
+        destination: '/sobre#tese',
+        permanent: true,
+      },
+      {
+        source: '/metodologia',
+        destination: '/sobre#metodologia',
+        permanent: true,
+      },
+      {
+        source: '/metodologia/detalhada',
+        destination: '/sobre#metodologia',
+        permanent: true,
+      },
+      {
+        source: '/referencias',
+        destination: '/sobre#referencias',
+        permanent: true,
+      },
+    ];
+  },
 };
 
 module.exports = withBundleAnalyzer(nextConfig);

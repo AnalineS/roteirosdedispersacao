@@ -49,7 +49,7 @@ export function SmartNavigationProvider({ children }: { children: React.ReactNod
       context = 'interaction';
     } else if (pathname?.startsWith('/resources') || pathname?.includes('calculator') || pathname?.includes('checklist')) {
       context = 'tools';
-    } else if (pathname?.startsWith('/sobre') || pathname?.startsWith('/metodologia')) {
+    } else if (pathname?.startsWith('/sobre') || pathname?.startsWith('/equipe')) {
       context = 'institutional';
     }
 

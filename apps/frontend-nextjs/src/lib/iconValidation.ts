@@ -34,7 +34,7 @@ export function validateIconProps(props: Partial<ValidatedIconProps> & Record<st
       decorative: props.decorative || false,
       ...props
     };
-  } catch (error) {
+  } catch {
     console.warn('⚠️ Icon props validation failed:', props);
     return {
       size: 24,

@@ -133,7 +133,7 @@ export default function SmartAssessmentForm({
 
         setRagSuggestions(suggestions);
       }
-    } catch (error) { // eslint-disable-line @typescript-eslint/no-unused-vars
+    } catch { // eslint-disable-line @typescript-eslint/no-unused-vars
       // Security: Do not log medical query details to protect patient data
       // Error handled silently to prevent PHI exposure
     }
@@ -225,7 +225,7 @@ export default function SmartAssessmentForm({
       }));
 
       onAssessmentComplete(completeData, rec);
-    } catch (error) { // eslint-disable-line @typescript-eslint/no-unused-vars
+    } catch { // eslint-disable-line @typescript-eslint/no-unused-vars
       // Security: Medical assessment errors not logged to prevent data exposure
       // Error handled silently to protect patient data
     } finally {

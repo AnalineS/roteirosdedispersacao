@@ -1,12 +1,11 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
+import { safeLocalStorage } from '@/hooks/useClientStorage';
 import { useServices, useAnalytics } from '@/providers/ServicesProvider';
 import HighContrastToggle from './HighContrastToggle';
 import SkipToContent from './SkipToContent';
 import FocusIndicator from './FocusIndicator';
-import MedicalGlossary from './MedicalGlossary';
 
 // ============================================
 // ACCESSIBILITY PANEL COMPONENT

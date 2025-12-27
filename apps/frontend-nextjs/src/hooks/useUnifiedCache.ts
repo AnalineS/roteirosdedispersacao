@@ -148,7 +148,7 @@ export const useUnifiedCache = <T = any>(config: UnifiedCacheConfig = {}) => {
         safeLocalStorage()?.setItem(cacheKey, JSON.stringify(entry));
         stats.current.localStorageHits++;
         return entry.data;
-      } catch (error) {
+      } catch {
         return null;
       }
     },
@@ -177,7 +177,7 @@ export const useUnifiedCache = <T = any>(config: UnifiedCacheConfig = {}) => {
 
         // Atualizar estatísticas
         stats.current.localStorageSize = localStorage.length;
-      } catch (error) {
+      } catch {
         // Silent fail for localStorage
       }
     },
@@ -212,7 +212,7 @@ export const useUnifiedCache = <T = any>(config: UnifiedCacheConfig = {}) => {
         }
 
         return null;
-      } catch (error) {
+      } catch {
         return null;
       }
     },
@@ -242,7 +242,7 @@ export const useUnifiedCache = <T = any>(config: UnifiedCacheConfig = {}) => {
             ttl: Math.floor(ttl / 1000), // API espera segundos
           }),
         });
-      } catch (error) {
+      } catch {
         // Silent fail for API cache
       }
     },
@@ -339,7 +339,7 @@ export const useUnifiedCache = <T = any>(config: UnifiedCacheConfig = {}) => {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ key: cacheKey }),
           });
-        } catch (error) {
+        } catch {
           // Silent fail for API cache delete
         }
       }
@@ -377,7 +377,7 @@ export const useUnifiedCache = <T = any>(config: UnifiedCacheConfig = {}) => {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ namespace: "frontend" }),
         });
-      } catch (error) {
+      } catch {
         // Silent fail for API cache clear
       }
     }

@@ -314,7 +314,7 @@ export default function Navigation({ currentPersona }: NavigationProps) {
                 setTimeout(() => {
                   if (button) button.textContent = originalText;
                 }, 2000);
-              } catch (_error) {
+              } catch {
                 // Fallback para browsers sem suporte
                 const textArea = document.createElement('textarea');
                 textArea.value = safeUrl;

@@ -56,7 +56,7 @@ export default function GamificationWidget({
       if (progressData?.data) setProgress(progressData.data);
       if (achievementsData?.data) setAchievements(achievementsData.data);
       if (notificationsData?.data) setNotifications(notificationsData.data);
-    } catch (error) {
+    } catch {
       // Se APIs não estão disponíveis, não mostrar o widget
       setProgress(null);
       setAchievements([]);

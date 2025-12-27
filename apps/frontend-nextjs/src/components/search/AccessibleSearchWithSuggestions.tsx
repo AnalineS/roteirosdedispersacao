@@ -14,7 +14,7 @@ const sanitizeHtml = (html: string): string => {
   try {
     const DOMPurify = require('dompurify');
     return DOMPurify.sanitize(html);
-  } catch (error) {
+  } catch {
     return html; // Fallback to unsanitized if DOMPurify fails
   }
 };

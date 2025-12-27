@@ -61,11 +61,10 @@ const SITE_HIERARCHY: Record<string, HierarchyPage> = {
   '/cadastro': { level: 1, parent: '/', label: 'Cadastro', icon: '📝', category: 'tools' },
   '/esqueci-senha': { level: 1, parent: '/', label: 'Recuperar Senha', icon: '🔑', category: 'tools' },
   
-  // Páginas Institucionais
-  '/sobre': { level: 1, parent: '/', label: 'Sobre o Sistema', icon: '💻', category: 'learning' },
-  '/sobre-a-tese': { level: 1, parent: '/', label: 'Sobre a Tese', icon: '🎓', category: 'learning' },
-  '/metodologia': { level: 1, parent: '/', label: 'Metodologia', icon: '🔬', category: 'learning' },
-  '/vida-com-hanseniase': { level: 1, parent: '/', label: 'Vida com Hanseníase', icon: '💚', category: 'learning' },
+  // Paginas Institucionais (Issue #13 - consolidadas)
+  '/sobre': { level: 1, parent: '/', label: 'Sobre o Sistema', icon: '📚', category: 'learning' },
+  '/equipe': { level: 1, parent: '/', label: 'Conheca a Equipe', icon: '👥', category: 'learning' },
+  '/vida-com-hanseniase': { level: 1, parent: '/', label: 'Vida com Hanseniase', icon: '💚', category: 'learning' },
   
   // Ferramentas Individuais
   '/glossario': { level: 1, parent: '/', label: 'Glossário Médico', icon: '📖', category: 'tools' },

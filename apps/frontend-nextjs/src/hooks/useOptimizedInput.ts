@@ -74,7 +74,7 @@ export function useOptimizedInput<T = string>({
       lastValidationResult.current = result;
       setValidation(result);
       return result;
-    } catch (err) {
+    } catch {
       const errorResult = { isValid: false, error: 'Erro de validação' };
       setValidation(errorResult);
       

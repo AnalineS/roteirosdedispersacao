@@ -10,7 +10,7 @@ import React, { ReactNode, useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { AuthProvider } from '@/contexts/AuthContext';
-import { isPublicRoute, isProtectedRoute } from '@/config/routes';
+import { isProtectedRoute } from '@/config/routes';
 
 // Features configuration - environment specific
 const FEATURES = {

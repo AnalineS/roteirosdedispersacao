@@ -163,7 +163,7 @@ export default function ImageCropper({
 
       success();
       onCropComplete(blob);
-    } catch (err) {
+    } catch {
       if (typeof window !== 'undefined' && window.gtag) {
         window.gtag('event', 'image_crop_processing_error', {
           event_category: 'image',

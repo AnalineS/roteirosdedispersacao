@@ -41,7 +41,7 @@ export default function LastUpdated({
         month: '2-digit',
         year: 'numeric'
       });
-    } catch (error) {
+    } catch {
       return dateString;
     }
   };
@@ -62,7 +62,7 @@ export default function LastUpdated({
         const years = Math.floor(diffDays / 365);
         return `Atualizado há ${years} ${years === 1 ? 'ano' : 'anos'}`;
       }
-    } catch (error) {
+    } catch {
       return 'Data de atualização indisponível';
     }
   };
@@ -76,7 +76,7 @@ export default function LastUpdated({
       
       // Considerar "fresco" se atualizado nos últimos 6 meses para conteúdo médico
       return diffDays <= 180;
-    } catch (error) {
+    } catch {
       return false;
     }
   };
@@ -365,7 +365,7 @@ function calculateNextReviewDate(lastReviewDate: string): string {
       month: '2-digit',
       year: 'numeric'
     });
-  } catch (error) {
+  } catch {
     return 'A definir';
   }
 }

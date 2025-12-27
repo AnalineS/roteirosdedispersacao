@@ -38,7 +38,7 @@ export default function AccessibilityAuditPanel({
       await new Promise(resolve => setTimeout(resolve, 500));
       const result = auditHeadingHierarchy(document);
       setAuditResult(result);
-    } catch (_error) {
+    } catch {
       // Log falha de auditoria de acessibilidade via analytics
       if (typeof window !== 'undefined' && window.gtag) {
         window.gtag('event', 'accessibility_audit_failed', {
