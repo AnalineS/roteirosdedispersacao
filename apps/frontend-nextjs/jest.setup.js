@@ -5,6 +5,10 @@
 
 require('@testing-library/jest-dom');
 
+
+// Configurar jest-axe para testes de acessibilidade
+const { toHaveNoViolations } = require('jest-axe');
+expect.extend(toHaveNoViolations);
 // Configurar jest-fetch-mock para mocks robustos de fetch
 const fetchMock = require('jest-fetch-mock');
 fetchMock.enableMocks();
