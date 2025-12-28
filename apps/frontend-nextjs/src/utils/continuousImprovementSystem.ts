@@ -1150,6 +1150,15 @@ export class ContinuousImprovementSystem {
     return feedback.reduce((sum, f) => sum + this.calculateAverageRating(f.feedback), 0) / feedback.length;
   }
 
+  /**
+   * Calcula média de um objeto de rating (UsabilityRating, ContentQualityRating, etc.)
+   */
+  private calculateRatingAverage(rating: UsabilityRating | ContentQualityRating | LearningEffectivenessRating): number {
+    const values = Object.values(rating).filter(v => typeof v === 'number');
+    if (values.length === 0) return 0;
+    return values.reduce((sum, v) => sum + v, 0) / values.length;
+  }
+
   private calculateMetricChange(before: number, after: number): number {
     if (before === 0) return 0;
     return Math.round(((after - before) / before) * 100 * 100) / 100;
@@ -1862,25 +1871,709 @@ export class ContinuousImprovementSystem {
     return Math.round(adjustedRate * 100) / 100;
   }
   
-  // A/B Testing methods (simplified)
-  private validateABTestConfig(config: ABTestConfiguration): void {}
-  private getABTestFeedback(testId: string): ABTestFeedback[] { return []; }
-  private performStatisticalAnalysis(feedback: ABTestFeedback[], variants: ABTestVariant[]): StatisticalAnalysis { return { totalSessions: 0, conversionRates: new Map(), confidenceLevel: 0, pValue: 0, statisticalSignificance: false }; }
-  private analyzeVariantPerformance(feedback: ABTestFeedback[], variants: ABTestVariant[]): VariantResult[] {
-    return [];
+  // ===== A/B TESTING METHODS =====
+
+  /**
+   * Valida configuração de teste A/B
+   * Verifica: variantes, alocação de tráfego, duração, métricas
+   */
+  private validateABTestConfig(config: ABTestConfiguration): void {
+    const errors: string[] = [];
+
+    // Validar variantes
+    if (!config.variants || config.variants.length < 2) {
+      errors.push('Teste A/B requer pelo menos 2 variantes');
+    }
+
+    // Validar alocação de tráfego (deve somar 100%)
+    if (config.trafficAllocation) {
+      let totalAllocation = 0;
+      config.trafficAllocation.forEach((value) => {
+        totalAllocation += value;
+      });
+      if (Math.abs(totalAllocation - 100) > 0.01) {
+        errors.push(`Alocação de tráfego deve somar 100% (atual: ${totalAllocation}%)`);
+      }
+    }
+
+    // Validar duração
+    if (config.duration) {
+      if (config.duration.start > config.duration.end) {
+        errors.push('Data de início deve ser anterior à data de fim');
+      }
+      if (config.duration.minSampleSize < 30) {
+        errors.push('Tamanho mínimo de amostra deve ser >= 30 para significância estatística');
+      }
+    }
+
+    // Validar métricas de sucesso
+    if (!config.successMetrics || config.successMetrics.length === 0) {
+      errors.push('Teste A/B requer pelo menos uma métrica de sucesso');
+    }
+
+    // Logar erros em desenvolvimento
+    if (errors.length > 0 && process.env.NODE_ENV === 'development') {
+      console.error('[CIS] Validação A/B Test falhou:', errors);
+    }
+
+    // Enviar evento de validação para GA4
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'ab_test_validation', {
+        event_category: 'medical_improvement',
+        event_label: config.id,
+        custom_parameters: {
+          medical_context: 'ab_test_config',
+          test_name: config.name,
+          variant_count: config.variants?.length || 0,
+          validation_passed: errors.length === 0,
+          errors: errors.join('; ').substring(0, 100)
+        }
+      });
+    }
   }
-  private determineWinner(variantResults: VariantResult[]): TestWinner { return { variantId: '', confidenceLevel: 0, improvementPercentage: 0, significantMetrics: [] }; }
-  private generateABTestInsights(feedback: ABTestFeedback[], results: VariantResult[]): TestInsights { return { keyFindings: [], unexpectedResults: [], segmentDifferences: [], recommendations: [] }; }
-  
-  // Implementation methods (simplified)
-  private createImplementationPlan(recommendation: ImprovementRecommendation): ImplementationPlan { return { phases: [], timeline: '', resources: [], risks: [], successCriteria: [] }; }
-  private setupImpactMonitoring(recommendation: ImprovementRecommendation): void {}
-  private getBaselineMetrics(recommendation: ImprovementRecommendation, timeframe: TimeframeFilter): BaselineMetrics { return {}; }
-  private getCurrentMetrics(recommendation: ImprovementRecommendation, timeframe: TimeframeFilter): BaselineMetrics { return {}; }
+
+  /**
+   * Obtém feedback específico de um teste A/B
+   * Filtra feedbacks que participaram do teste
+   */
+  private getABTestFeedback(testId: string): ABTestFeedback[] {
+    const test = this.abTests.get(testId);
+    if (!test) {
+      return [];
+    }
+
+    // Filtrar feedbacks no período do teste e nos segmentos alvo
+    const testFeedback: ABTestFeedback[] = [];
+
+    this.feedbackData.forEach((feedback) => {
+      // Verificar se feedback está no período do teste
+      if (test.duration.start <= feedback.timestamp && feedback.timestamp <= test.duration.end) {
+        // Verificar se está nos segmentos alvo
+        const userSegment = `${feedback.context.userType}_${feedback.context.device}`;
+        const inTargetSegment = test.targetSegments.length === 0 ||
+                                test.targetSegments.some(seg => userSegment.includes(seg));
+
+        // Verificar exclusões
+        const excluded = test.exclusionCriteria.some(criteria =>
+          feedback.context.componentType.includes(criteria) ||
+          feedback.context.userType.includes(criteria)
+        );
+
+        if (inTargetSegment && !excluded) {
+          // Determinar variante do usuário (baseado em hash do sessionId)
+          const variantIndex = this.hashToVariant(feedback.sessionId, test.variants.length);
+          const variant = test.variants[variantIndex];
+
+          testFeedback.push({
+            testId,
+            variantId: variant.id,
+            userId: feedback.userId || 'anonymous',
+            timestamp: feedback.timestamp,
+            metrics: this.extractMetricsFromFeedback(feedback),
+            outcome: this.determineOutcome(feedback)
+          });
+        }
+      }
+    });
+
+    return testFeedback;
+  }
+
+  /**
+   * Hash string para índice de variante (distribuição uniforme)
+   */
+  private hashToVariant(sessionId: string, variantCount: number): number {
+    let hash = 0;
+    for (let i = 0; i < sessionId.length; i++) {
+      const char = sessionId.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32bit integer
+    }
+    return Math.abs(hash) % variantCount;
+  }
+
+  /**
+   * Extrai métricas de um feedback para A/B testing
+   */
+  private extractMetricsFromFeedback(feedback: ImprovementFeedbackData): Record<string, number> {
+    return {
+      usability_score: this.calculateRatingAverage(feedback.feedback.usabilityRating),
+      content_score: this.calculateRatingAverage(feedback.feedback.contentQuality),
+      learning_score: this.calculateRatingAverage(feedback.feedback.learningEffectiveness),
+      time_spent: feedback.behavioralData.timeSpent,
+      completion_rate: feedback.behavioralData.completionRate,
+      error_count: feedback.behavioralData.errorCount,
+      help_requests: feedback.behavioralData.helpRequestCount
+    };
+  }
+
+  /**
+   * Determina outcome (conversão) de um feedback
+   */
+  private determineOutcome(feedback: ImprovementFeedbackData): boolean {
+    // Outcome positivo: alta satisfação + alta completion + poucos erros
+    const avgRating = this.calculateAverageRating(feedback.feedback);
+    const completionRate = feedback.behavioralData.completionRate;
+    const errorRate = feedback.behavioralData.errorCount / Math.max(1, feedback.behavioralData.interactionCount);
+
+    return avgRating >= 4 && completionRate >= 0.7 && errorRate < 0.1;
+  }
+
+  /**
+   * Análise estatística de teste A/B
+   * Calcula: taxa de conversão, intervalo de confiança, p-value
+   */
+  private performStatisticalAnalysis(feedback: ABTestFeedback[], variants: ABTestVariant[]): StatisticalAnalysis {
+    const totalSessions = feedback.length;
+    const conversionRates = new Map<string, number>();
+
+    // Calcular taxa de conversão por variante
+    variants.forEach(variant => {
+      const variantFeedback = feedback.filter(f => f.variantId === variant.id);
+      const conversions = variantFeedback.filter(f => f.outcome).length;
+      const rate = variantFeedback.length > 0 ? conversions / variantFeedback.length : 0;
+      conversionRates.set(variant.id, rate);
+    });
+
+    // Calcular significância estatística (teste Z simplificado)
+    const rates = Array.from(conversionRates.values());
+    let pValue = 1;
+    let statisticalSignificance = false;
+
+    if (rates.length >= 2 && totalSessions >= 30) {
+      // Variante de controle vs melhor variante
+      const control = rates[0];
+      const treatment = Math.max(...rates.slice(1));
+
+      // Pooled standard error simplificado
+      const pooledRate = (control + treatment) / 2;
+      const n1 = Math.max(1, feedback.filter(f => f.variantId === variants[0].id).length);
+      const n2 = Math.max(1, totalSessions - n1);
+
+      const standardError = Math.sqrt(pooledRate * (1 - pooledRate) * (1/n1 + 1/n2));
+
+      if (standardError > 0) {
+        const zScore = Math.abs(treatment - control) / standardError;
+        // Aproximação de p-value para teste bilateral
+        pValue = Math.exp(-0.5 * zScore * zScore) * Math.sqrt(2 / Math.PI);
+        pValue = Math.min(1, pValue * 2); // two-tailed
+        statisticalSignificance = pValue < 0.05;
+      }
+    }
+
+    // Nível de confiança baseado em tamanho da amostra
+    const confidenceLevel = Math.min(0.99, 0.5 + (totalSessions / 1000) * 0.49);
+
+    return {
+      totalSessions,
+      conversionRates,
+      confidenceLevel,
+      pValue,
+      statisticalSignificance
+    };
+  }
+
+  /**
+   * Analisa performance de cada variante
+   */
+  private analyzeVariantPerformance(feedback: ABTestFeedback[], variants: ABTestVariant[]): VariantResult[] {
+    const controlFeedback = feedback.filter(f => f.variantId === variants[0]?.id);
+    const controlMetrics = this.aggregateMetrics(controlFeedback);
+
+    return variants.map(variant => {
+      const variantFeedback = feedback.filter(f => f.variantId === variant.id);
+      const sessions = variantFeedback.length;
+      const conversions = variantFeedback.filter(f => f.outcome).length;
+      const conversionRate = sessions > 0 ? conversions / sessions : 0;
+
+      // Calcular métricas agregadas
+      const aggregatedMetrics = this.aggregateMetrics(variantFeedback);
+
+      // Comparar com controle e determinar significância
+      const metrics: Record<string, { value: number; improvement: number; significance: boolean }> = {};
+
+      Object.keys(aggregatedMetrics).forEach(metricName => {
+        const value = aggregatedMetrics[metricName];
+        const controlValue = controlMetrics[metricName] || value;
+        const improvement = controlValue !== 0 ? ((value - controlValue) / controlValue) * 100 : 0;
+
+        // Significância simplificada: >10% de diferença com amostra adequada
+        const significance = Math.abs(improvement) > 10 && sessions >= 30;
+
+        metrics[metricName] = { value, improvement, significance };
+      });
+
+      // Feedback qualitativo
+      const avgRating = variantFeedback.length > 0
+        ? variantFeedback.reduce((sum, f) => sum + (f.metrics.usability_score || 3), 0) / variantFeedback.length
+        : 3;
+
+      const sentimentScore = variantFeedback.length > 0
+        ? (variantFeedback.filter(f => f.outcome).length / variantFeedback.length) * 2 - 1
+        : 0;
+
+      return {
+        variantId: variant.id,
+        sessions,
+        conversions,
+        conversionRate,
+        metrics,
+        userFeedback: {
+          averageRating: Math.round(avgRating * 10) / 10,
+          sentimentScore: Math.round(sentimentScore * 100) / 100,
+          commonComments: this.extractCommonPhrases(variantFeedback)
+        }
+      };
+    });
+  }
+
+  /**
+   * Agrega métricas de um conjunto de feedbacks
+   */
+  private aggregateMetrics(feedback: ABTestFeedback[]): Record<string, number> {
+    if (feedback.length === 0) {
+      return {};
+    }
+
+    const aggregated: Record<string, number[]> = {};
+
+    feedback.forEach(f => {
+      Object.entries(f.metrics).forEach(([key, value]) => {
+        if (!aggregated[key]) {
+          aggregated[key] = [];
+        }
+        aggregated[key].push(value);
+      });
+    });
+
+    const result: Record<string, number> = {};
+    Object.entries(aggregated).forEach(([key, values]) => {
+      result[key] = values.reduce((sum, v) => sum + v, 0) / values.length;
+    });
+
+    return result;
+  }
+
+  /**
+   * Extrai frases comuns dos feedbacks de uma variante
+   */
+  private extractCommonPhrases(feedback: ABTestFeedback[]): string[] {
+    // Simplificado: retorna descrições genéricas baseadas em métricas
+    const avgCompletion = feedback.length > 0
+      ? feedback.reduce((sum, f) => sum + (f.metrics.completion_rate || 0), 0) / feedback.length
+      : 0;
+
+    const phrases: string[] = [];
+
+    if (avgCompletion > 0.8) {
+      phrases.push('Alta taxa de conclusão');
+    } else if (avgCompletion < 0.5) {
+      phrases.push('Dificuldade de conclusão observada');
+    }
+
+    const avgErrors = feedback.length > 0
+      ? feedback.reduce((sum, f) => sum + (f.metrics.error_count || 0), 0) / feedback.length
+      : 0;
+
+    if (avgErrors > 2) {
+      phrases.push('Múltiplos erros reportados');
+    } else if (avgErrors === 0) {
+      phrases.push('Experiência sem erros');
+    }
+
+    return phrases;
+  }
+
+  /**
+   * Determina vencedor do teste A/B
+   */
+  private determineWinner(variantResults: VariantResult[]): TestWinner {
+    if (variantResults.length === 0) {
+      return { variantId: '', confidenceLevel: 0, improvementPercentage: 0, significantMetrics: [] };
+    }
+
+    // Encontrar variante com maior taxa de conversão
+    let winner = variantResults[0];
+    let controlRate = variantResults[0]?.conversionRate || 0;
+
+    variantResults.forEach((result, index) => {
+      if (index > 0 && result.conversionRate > winner.conversionRate) {
+        winner = result;
+      }
+    });
+
+    // Calcular melhoria sobre controle
+    const improvement = controlRate > 0
+      ? ((winner.conversionRate - controlRate) / controlRate) * 100
+      : 0;
+
+    // Identificar métricas com melhoria significativa
+    const significantMetrics: string[] = [];
+    Object.entries(winner.metrics).forEach(([metricName, data]) => {
+      if (data.significance && data.improvement > 0) {
+        significantMetrics.push(metricName);
+      }
+    });
+
+    // Confiança baseada em amostra e consistência
+    const sampleFactor = Math.min(1, winner.sessions / 100);
+    const consistencyFactor = significantMetrics.length / Math.max(1, Object.keys(winner.metrics).length);
+    const confidenceLevel = Math.round((sampleFactor * 0.6 + consistencyFactor * 0.4) * 100) / 100;
+
+    return {
+      variantId: winner.variantId,
+      confidenceLevel,
+      improvementPercentage: Math.round(improvement * 10) / 10,
+      significantMetrics
+    };
+  }
+
+  /**
+   * Gera insights do teste A/B
+   */
+  private generateABTestInsights(feedback: ABTestFeedback[], results: VariantResult[]): TestInsights {
+    const keyFindings: string[] = [];
+    const unexpectedResults: string[] = [];
+    const segmentDifferences: string[] = [];
+    const recommendations: string[] = [];
+
+    // Key findings baseados em resultados
+    if (results.length > 0) {
+      const bestResult = results.reduce((best, r) =>
+        r.conversionRate > best.conversionRate ? r : best, results[0]);
+
+      if (bestResult.conversionRate > 0.7) {
+        keyFindings.push(`Variante ${bestResult.variantId} alcançou taxa de conversão de ${(bestResult.conversionRate * 100).toFixed(1)}%`);
+      }
+
+      // Comparar variantes
+      const control = results[0];
+      results.slice(1).forEach(variant => {
+        const diff = ((variant.conversionRate - control.conversionRate) / Math.max(0.01, control.conversionRate)) * 100;
+        if (Math.abs(diff) > 10) {
+          keyFindings.push(`${variant.variantId} ${diff > 0 ? 'supera' : 'abaixo de'} controle em ${Math.abs(diff).toFixed(1)}%`);
+        }
+      });
+    }
+
+    // Resultados inesperados
+    results.forEach(result => {
+      // Métricas que pioraram apesar de melhoria geral
+      Object.entries(result.metrics).forEach(([metric, data]) => {
+        if (result.conversionRate > 0.5 && data.improvement < -20) {
+          unexpectedResults.push(`${metric} caiu ${Math.abs(data.improvement).toFixed(1)}% em ${result.variantId} apesar de conversão alta`);
+        }
+      });
+    });
+
+    // Diferenças por segmento (simplificado)
+    const mobileFeeback = feedback.filter(f => f.metrics.time_spent && f.metrics.time_spent > 300);
+    if (mobileFeeback.length > feedback.length * 0.3) {
+      segmentDifferences.push('Segmento com maior tempo gasto representa >30% da amostra');
+    }
+
+    // Recomendações
+    if (results.length > 1) {
+      const winner = results.reduce((best, r) =>
+        r.conversionRate > best.conversionRate ? r : best, results[0]);
+
+      if (winner.variantId !== results[0].variantId && winner.sessions >= 30) {
+        recommendations.push(`Considerar implementar variante ${winner.variantId} em produção`);
+      }
+
+      results.forEach(result => {
+        if (result.userFeedback.averageRating < 3) {
+          recommendations.push(`Investigar baixa satisfação em ${result.variantId}`);
+        }
+      });
+    }
+
+    if (feedback.length < 50) {
+      recommendations.push('Continuar teste para alcançar amostra estatisticamente significativa (min 50)');
+    }
+
+    return {
+      keyFindings,
+      unexpectedResults,
+      segmentDifferences,
+      recommendations
+    };
+  }
+
+  // ===== IMPLEMENTATION METHODS =====
+
+  /**
+   * Cria plano de implementação para uma recomendação
+   */
+  private createImplementationPlan(recommendation: ImprovementRecommendation): ImplementationPlan {
+    const phases: string[] = [];
+    const resources: string[] = [];
+    const risks: string[] = [];
+    const successCriteria: string[] = [];
+
+    // Definir fases baseadas na complexidade
+    switch (recommendation.implementation.complexity) {
+      case 'simple':
+        phases.push('1. Análise e preparação (1 dia)');
+        phases.push('2. Implementação (2-3 dias)');
+        phases.push('3. Testes e validação (1 dia)');
+        phases.push('4. Deploy e monitoramento (1 dia)');
+        break;
+      case 'moderate':
+        phases.push('1. Análise detalhada e design (3-5 dias)');
+        phases.push('2. Desenvolvimento iterativo (1-2 semanas)');
+        phases.push('3. QA e testes de regressão (3-5 dias)');
+        phases.push('4. Rollout gradual (3 dias)');
+        phases.push('5. Monitoramento pós-deploy (1 semana)');
+        break;
+      case 'complex':
+        phases.push('1. Descoberta e planejamento (1-2 semanas)');
+        phases.push('2. Prototipação e validação (1 semana)');
+        phases.push('3. Desenvolvimento em sprints (3-4 semanas)');
+        phases.push('4. Testes extensivos (2 semanas)');
+        phases.push('5. Beta testing (1 semana)');
+        phases.push('6. Rollout e estabilização (1 semana)');
+        break;
+    }
+
+    // Recursos necessários
+    resources.push(...recommendation.implementation.requiredSkills);
+    if (recommendation.category === 'performance') {
+      resources.push('Ferramentas de profiling');
+    }
+    if (recommendation.category === 'accessibility') {
+      resources.push('Especialista em acessibilidade');
+    }
+
+    // Riscos
+    risks.push(...recommendation.implementation.risks);
+    if (recommendation.priority === 'urgent') {
+      risks.push('Pressão de tempo pode afetar qualidade');
+    }
+
+    // Critérios de sucesso
+    successCriteria.push(...recommendation.successMetrics);
+    successCriteria.push(`Melhoria de ${recommendation.expectedOutcomes.userSatisfactionImprovement}% em satisfação`);
+
+    return {
+      phases,
+      timeline: recommendation.timeline,
+      resources,
+      risks,
+      successCriteria
+    };
+  }
+
+  /**
+   * Configura monitoramento de impacto para uma recomendação
+   */
+  private setupImpactMonitoring(recommendation: ImprovementRecommendation): void {
+    if (typeof window !== 'undefined' && window.gtag) {
+      // Registrar início do monitoramento
+      window.gtag('event', 'impact_monitoring_started', {
+        event_category: 'medical_improvement',
+        event_label: recommendation.id,
+        custom_parameters: {
+          medical_context: 'impact_monitoring',
+          recommendation_id: recommendation.id,
+          category: recommendation.category,
+          priority: recommendation.priority,
+          success_metrics: recommendation.successMetrics.join(', ').substring(0, 100)
+        }
+      });
+
+      // Configurar dimensões customizadas para tracking
+      window.gtag('set', {
+        'custom_map': {
+          'dimension1': 'recommendation_id',
+          'dimension2': 'implementation_phase',
+          'metric1': 'user_satisfaction_delta'
+        }
+      });
+    }
+
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[CIS] Impact monitoring configured for:', recommendation.id);
+    }
+  }
+
+  /**
+   * Obtém métricas baseline para período anterior
+   */
+  private getBaselineMetrics(recommendation: ImprovementRecommendation, timeframe: TimeframeFilter): BaselineMetrics {
+    // Filtrar feedbacks do período baseline (antes do timeframe)
+    const baselineEnd = timeframe.start || new Date();
+    const baselineDuration = timeframe.duration || 30 * 24 * 60 * 60 * 1000; // 30 dias default
+    const baselineStart = new Date(baselineEnd.getTime() - baselineDuration);
+
+    const baselineFeedback = this.feedbackData.filter(f =>
+      f.timestamp >= baselineStart && f.timestamp < baselineEnd
+    );
+
+    if (baselineFeedback.length === 0) {
+      return {};
+    }
+
+    // Calcular métricas relevantes para a categoria
+    const metrics: BaselineMetrics = {};
+
+    // Métricas gerais
+    metrics.avg_usability = baselineFeedback.reduce((sum, f) =>
+      sum + this.calculateRatingAverage(f.feedback.usabilityRating), 0) / baselineFeedback.length;
+
+    metrics.avg_content = baselineFeedback.reduce((sum, f) =>
+      sum + this.calculateRatingAverage(f.feedback.contentQuality), 0) / baselineFeedback.length;
+
+    metrics.avg_learning = baselineFeedback.reduce((sum, f) =>
+      sum + this.calculateRatingAverage(f.feedback.learningEffectiveness), 0) / baselineFeedback.length;
+
+    metrics.avg_completion = baselineFeedback.reduce((sum, f) =>
+      sum + f.behavioralData.completionRate, 0) / baselineFeedback.length;
+
+    metrics.avg_errors = baselineFeedback.reduce((sum, f) =>
+      sum + f.behavioralData.errorCount, 0) / baselineFeedback.length;
+
+    // Métricas específicas por categoria
+    switch (recommendation.category) {
+      case 'usability':
+        metrics.ease_of_use = baselineFeedback.reduce((sum, f) =>
+          sum + f.feedback.usabilityRating.easeOfUse, 0) / baselineFeedback.length;
+        metrics.navigation_clarity = baselineFeedback.reduce((sum, f) =>
+          sum + f.feedback.usabilityRating.navigationClarity, 0) / baselineFeedback.length;
+        break;
+      case 'performance':
+        metrics.avg_time_spent = baselineFeedback.reduce((sum, f) =>
+          sum + f.behavioralData.timeSpent, 0) / baselineFeedback.length;
+        metrics.responsiveness = baselineFeedback.reduce((sum, f) =>
+          sum + f.feedback.usabilityRating.responsiveness, 0) / baselineFeedback.length;
+        break;
+      case 'accessibility':
+        metrics.accessibility_score = baselineFeedback.reduce((sum, f) =>
+          sum + f.feedback.usabilityRating.accessibility, 0) / baselineFeedback.length;
+        break;
+      case 'content':
+        metrics.accuracy = baselineFeedback.reduce((sum, f) =>
+          sum + f.feedback.contentQuality.accuracy, 0) / baselineFeedback.length;
+        metrics.clarity = baselineFeedback.reduce((sum, f) =>
+          sum + f.feedback.contentQuality.clarity, 0) / baselineFeedback.length;
+        break;
+      case 'engagement':
+        metrics.engagement_level = baselineFeedback.reduce((sum, f) =>
+          sum + f.feedback.learningEffectiveness.engagementLevel, 0) / baselineFeedback.length;
+        metrics.retention = baselineFeedback.reduce((sum, f) =>
+          sum + f.feedback.learningEffectiveness.knowledgeRetention, 0) / baselineFeedback.length;
+        break;
+    }
+
+    return metrics;
+  }
+
+  /**
+   * Obtém métricas atuais para período de medição
+   */
+  private getCurrentMetrics(recommendation: ImprovementRecommendation, timeframe: TimeframeFilter): BaselineMetrics {
+    // Filtrar feedbacks do período atual
+    const currentStart = timeframe.start || new Date(Date.now() - 7 * 24 * 60 * 60 * 1000); // 7 dias atrás
+    const currentEnd = timeframe.end || new Date();
+
+    const currentFeedback = this.feedbackData.filter(f =>
+      f.timestamp >= currentStart && f.timestamp <= currentEnd
+    );
+
+    if (currentFeedback.length === 0) {
+      return {};
+    }
+
+    // Usar mesma lógica de baseline para consistência
+    const metrics: BaselineMetrics = {};
+
+    // Métricas gerais
+    metrics.avg_usability = currentFeedback.reduce((sum, f) =>
+      sum + this.calculateRatingAverage(f.feedback.usabilityRating), 0) / currentFeedback.length;
+
+    metrics.avg_content = currentFeedback.reduce((sum, f) =>
+      sum + this.calculateRatingAverage(f.feedback.contentQuality), 0) / currentFeedback.length;
+
+    metrics.avg_learning = currentFeedback.reduce((sum, f) =>
+      sum + this.calculateRatingAverage(f.feedback.learningEffectiveness), 0) / currentFeedback.length;
+
+    metrics.avg_completion = currentFeedback.reduce((sum, f) =>
+      sum + f.behavioralData.completionRate, 0) / currentFeedback.length;
+
+    metrics.avg_errors = currentFeedback.reduce((sum, f) =>
+      sum + f.behavioralData.errorCount, 0) / currentFeedback.length;
+
+    // Métricas específicas por categoria (mesmo padrão do baseline)
+    switch (recommendation.category) {
+      case 'usability':
+        metrics.ease_of_use = currentFeedback.reduce((sum, f) =>
+          sum + f.feedback.usabilityRating.easeOfUse, 0) / currentFeedback.length;
+        metrics.navigation_clarity = currentFeedback.reduce((sum, f) =>
+          sum + f.feedback.usabilityRating.navigationClarity, 0) / currentFeedback.length;
+        break;
+      case 'performance':
+        metrics.avg_time_spent = currentFeedback.reduce((sum, f) =>
+          sum + f.behavioralData.timeSpent, 0) / currentFeedback.length;
+        metrics.responsiveness = currentFeedback.reduce((sum, f) =>
+          sum + f.feedback.usabilityRating.responsiveness, 0) / currentFeedback.length;
+        break;
+      case 'accessibility':
+        metrics.accessibility_score = currentFeedback.reduce((sum, f) =>
+          sum + f.feedback.usabilityRating.accessibility, 0) / currentFeedback.length;
+        break;
+      case 'content':
+        metrics.accuracy = currentFeedback.reduce((sum, f) =>
+          sum + f.feedback.contentQuality.accuracy, 0) / currentFeedback.length;
+        metrics.clarity = currentFeedback.reduce((sum, f) =>
+          sum + f.feedback.contentQuality.clarity, 0) / currentFeedback.length;
+        break;
+      case 'engagement':
+        metrics.engagement_level = currentFeedback.reduce((sum, f) =>
+          sum + f.feedback.learningEffectiveness.engagementLevel, 0) / currentFeedback.length;
+        metrics.retention = currentFeedback.reduce((sum, f) =>
+          sum + f.feedback.learningEffectiveness.knowledgeRetention, 0) / currentFeedback.length;
+        break;
+    }
+
+    return metrics;
+  }
   private calculateImprovement(baseline: number, current: number): number { 
     return baseline ? ((current - baseline) / baseline) * 100 : 0; 
   }
-  private getTargetValue(metric: string, recommendation: ImprovementRecommendation): number { return 0; }
+  /**
+   * Obtém valor alvo para uma métrica baseado na recomendação
+   */
+  private getTargetValue(metric: string, recommendation: ImprovementRecommendation): number {
+    // Calcular target baseado na melhoria esperada
+    const expectedImprovement = recommendation.expectedOutcomes.userSatisfactionImprovement / 100;
+
+    // Valores base por métrica
+    const baseValues: Record<string, number> = {
+      'avg_usability': 4.0,
+      'avg_content': 4.0,
+      'avg_learning': 4.0,
+      'avg_completion': 0.85,
+      'avg_errors': 0.5,
+      'ease_of_use': 4.2,
+      'navigation_clarity': 4.2,
+      'responsiveness': 4.5,
+      'accessibility_score': 4.0,
+      'accuracy': 4.5,
+      'clarity': 4.3,
+      'engagement_level': 4.0,
+      'retention': 4.0
+    };
+
+    const baseValue = baseValues[metric] || 4.0;
+
+    // Para métricas de erro, target é menor
+    if (metric.includes('error')) {
+      return Math.max(0, baseValue * (1 - expectedImprovement));
+    }
+
+    // Para outras métricas, target é maior
+    return Math.min(5, baseValue * (1 + expectedImprovement));
+  }
   
   // ===== API PÚBLICA =====
   
