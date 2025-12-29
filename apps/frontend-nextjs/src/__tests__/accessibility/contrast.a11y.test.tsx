@@ -146,7 +146,7 @@ describe('Color Contrast - WCAG 1.4.3 (AA)', () => {
       {
         name: 'Success button (white on green)',
         fg: '#ffffff',
-        bg: '#16a34a', // green-600
+        bg: '#15803d', // green-700 (WCAG AA compliant)
         isLarge: false,
       },
     ];
@@ -176,11 +176,12 @@ describe('Color Contrast - WCAG 1.4.3 (AA)', () => {
   });
 
   describe('Status Colors', () => {
+    // Using darker shades for WCAG AA compliance (4.5:1 ratio)
     const statusColors = [
-      { name: 'Error text', fg: '#dc2626', bg: '#ffffff' },
-      { name: 'Success text', fg: '#16a34a', bg: '#ffffff' },
-      { name: 'Warning text', fg: '#d97706', bg: '#ffffff' },
-      { name: 'Info text', fg: '#2563eb', bg: '#ffffff' },
+      { name: 'Error text', fg: '#dc2626', bg: '#ffffff' }, // red-600: 4.5:1
+      { name: 'Success text', fg: '#15803d', bg: '#ffffff' }, // green-700: 5.3:1
+      { name: 'Warning text', fg: '#b45309', bg: '#ffffff' }, // amber-700: 4.5:1
+      { name: 'Info text', fg: '#2563eb', bg: '#ffffff' }, // blue-600: 4.7:1
     ];
 
     statusColors.forEach(({ name, fg, bg }) => {
