@@ -684,6 +684,7 @@ export default function ModernChatInput({
             placeholder={getPlaceholder()}
             disabled={isDisabled}
             maxLength={1000}
+            aria-label={persona ? `Digite sua mensagem para ${persona.name}` : 'Campo de mensagem - selecione uma persona primeiro'}
             style={{
               flex: 1,
               border: 'none',

@@ -86,7 +86,7 @@ export default function PersonaSelector() {
       </div>
       
       {/* Cards dos Assistentes - Layout Flex Horizontal */}
-      <div id="assistentes" className="assistants-container" role="main" aria-label="Seleção de assistentes virtuais" style={{
+      <div id="assistentes" className="assistants-container" role="group" aria-label="Escolha seu assistente virtual" style={{
         display: 'flex',
         gap: '2rem',
         marginTop: '2rem',
