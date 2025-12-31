@@ -19,7 +19,7 @@ import type {
 } from '@/components/search/PCDTSearchTypes';
 
 // Import structured data at build time
-import clinicalTaxonomyData from '../../../../data/structured/clinical_taxonomy.json';
+import clinicalTaxonomyData from '@/data/structured/clinical_taxonomy.json';
 
 // Type assertion for imported data
 const taxonomyData = clinicalTaxonomyData as ClinicalTaxonomyData;
