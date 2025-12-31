@@ -1,0 +1,228 @@
+name: Deploy to Cloud Run
+
+on:
+  push:
+    branches: [main, hml]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy'
+        required: true
+        default: 'hml'
+        type: choice
+        options:
+          - hml
+          - production
+      service:
+        description: 'Service to deploy'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - frontend
+          - backend
+
+env:
+  PROJECT_ID: red-truck-468923-s4
+  REGION: us-central1
+  REGISTRY: us-central1-docker.pkg.dev
+
+jobs:
+  # Determine what to deploy based on changed files
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      frontend: ${{ steps.filter.outputs.frontend }}
+      backend: ${{ steps.filter.outputs.backend }}
+      environment: ${{ steps.env.outputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            frontend:
+              - 'apps/frontend-nextjs/**'
+              - '.github/workflows/deploy.yml'
+            backend:
+              - 'apps/backend/**'
+              - '.github/workflows/deploy.yml'
+
+      - name: Determine environment
+        id: env
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "environment=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
+          elif [ "${{ github.ref }}" == "refs/heads/main" ]; then
+            echo "environment=production" >> $GITHUB_OUTPUT
+          else
+            echo "environment=hml" >> $GITHUB_OUTPUT
+          fi
+
+  # Deploy Frontend
+  deploy-frontend:
+    needs: changes
+    if: |
+      needs.changes.outputs.frontend == 'true' ||
+      github.event.inputs.service == 'all' ||
+      github.event.inputs.service == 'frontend'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Google Auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+
+      - name: Configure Docker
+        run: gcloud auth configure-docker ${{ env.REGISTRY }} --quiet
+
+      - name: Set environment variables
+        id: vars
+        run: |
+          ENV="${{ needs.changes.outputs.environment }}"
+          if [ "$ENV" == "production" ]; then
+            echo "SERVICE_NAME=roteiro-dispensacao-frontend" >> $GITHUB_OUTPUT
+            echo "API_URL=https://api.roteirosdispensacao.com.br" >> $GITHUB_OUTPUT
+            echo "DOMAIN=roteirosdispensacao.com.br" >> $GITHUB_OUTPUT
+            echo "BASE_URL=https://roteirosdispensacao.com.br" >> $GITHUB_OUTPUT
+          else
+            echo "SERVICE_NAME=hml-frontend" >> $GITHUB_OUTPUT
+            echo "API_URL=https://hml-api.roteirosdispensacao.com.br" >> $GITHUB_OUTPUT
+            echo "DOMAIN=hml.roteirosdispensacao.com.br" >> $GITHUB_OUTPUT
+            echo "BASE_URL=https://hml.roteirosdispensacao.com.br" >> $GITHUB_OUTPUT
+          fi
+          echo "ENV=$ENV" >> $GITHUB_OUTPUT
+
+      - name: Build Frontend
+        working-directory: apps/frontend-nextjs
+        run: |
+          IMAGE="${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/cloud-run-source-deploy/${{ steps.vars.outputs.SERVICE_NAME }}:${{ github.sha }}"
+
+          docker build \
+            --build-arg NEXT_PUBLIC_ENVIRONMENT=${{ steps.vars.outputs.ENV }} \
+            --build-arg NEXT_PUBLIC_API_URL_PRODUCTION=${{ steps.vars.outputs.API_URL }} \
+            --build-arg NEXT_PUBLIC_API_URL_STAGING=${{ steps.vars.outputs.API_URL }} \
+            --build-arg NEXT_PUBLIC_PRODUCTION_DOMAIN=${{ steps.vars.outputs.DOMAIN }} \
+            --build-arg NEXT_PUBLIC_STAGING_DOMAIN=${{ steps.vars.outputs.DOMAIN }} \
+            --build-arg NEXT_PUBLIC_BASE_URL_PRODUCTION=${{ steps.vars.outputs.BASE_URL }} \
+            --build-arg NEXT_PUBLIC_BASE_URL_STAGING=${{ steps.vars.outputs.BASE_URL }} \
+            --build-arg NEXT_PUBLIC_BACKEND_URL=${{ steps.vars.outputs.API_URL }} \
+            --build-arg NEXT_PUBLIC_GOOGLE_CLIENT_ID=${{ secrets.NEXT_PUBLIC_GOOGLE_CLIENT_ID }} \
+            -t $IMAGE .
+
+          docker push $IMAGE
+          echo "IMAGE=$IMAGE" >> $GITHUB_ENV
+
+      - name: Deploy Frontend to Cloud Run
+        run: |
+          gcloud run deploy ${{ steps.vars.outputs.SERVICE_NAME }} \
+            --image ${{ env.IMAGE }} \
+            --region ${{ env.REGION }} \
+            --platform managed \
+            --allow-unauthenticated \
+            --port 3000 \
+            --memory 512Mi \
+            --cpu 1 \
+            --min-instances 0 \
+            --max-instances 10 \
+            --set-env-vars="NODE_ENV=production,NEXT_PUBLIC_ENVIRONMENT=${{ steps.vars.outputs.ENV }}"
+
+      - name: Frontend Deploy Summary
+        run: |
+          echo "## Frontend Deployed" >> $GITHUB_STEP_SUMMARY
+          echo "- **Environment**: ${{ steps.vars.outputs.ENV }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Service**: ${{ steps.vars.outputs.SERVICE_NAME }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **URL**: https://${{ steps.vars.outputs.DOMAIN }}" >> $GITHUB_STEP_SUMMARY
+
+  # Deploy Backend
+  deploy-backend:
+    needs: changes
+    if: |
+      needs.changes.outputs.backend == 'true' ||
+      github.event.inputs.service == 'all' ||
+      github.event.inputs.service == 'backend'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Google Auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+
+      - name: Configure Docker
+        run: gcloud auth configure-docker ${{ env.REGISTRY }} --quiet
+
+      - name: Set environment variables
+        id: vars
+        run: |
+          ENV="${{ needs.changes.outputs.environment }}"
+          if [ "$ENV" == "production" ]; then
+            echo "SERVICE_NAME=roteiro-dispensacao-api" >> $GITHUB_OUTPUT
+            echo "FRONTEND_URL=https://roteirosdispensacao.com.br" >> $GITHUB_OUTPUT
+          else
+            echo "SERVICE_NAME=hml-api" >> $GITHUB_OUTPUT
+            echo "FRONTEND_URL=https://hml.roteirosdispensacao.com.br" >> $GITHUB_OUTPUT
+          fi
+          echo "ENV=$ENV" >> $GITHUB_OUTPUT
+
+      - name: Build Backend
+        working-directory: apps/backend
+        run: |
+          IMAGE="${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/cloud-run-source-deploy/${{ steps.vars.outputs.SERVICE_NAME }}:${{ github.sha }}"
+
+          docker build -t $IMAGE .
+
+          docker push $IMAGE
+          echo "IMAGE=$IMAGE" >> $GITHUB_ENV
+
+      - name: Deploy Backend to Cloud Run
+        run: |
+          gcloud run deploy ${{ steps.vars.outputs.SERVICE_NAME }} \
+            --image ${{ env.IMAGE }} \
+            --region ${{ env.REGION }} \
+            --platform managed \
+            --allow-unauthenticated \
+            --port 8080 \
+            --memory 1Gi \
+            --cpu 1 \
+            --min-instances 0 \
+            --max-instances 10 \
+            --timeout 300 \
+            --set-env-vars="ENVIRONMENT=${{ steps.vars.outputs.ENV }}" \
+            --set-env-vars="FRONTEND_URL=${{ steps.vars.outputs.FRONTEND_URL }}" \
+            --set-secrets="OPENROUTER_API_KEY=OPENROUTER_API_KEY:latest" \
+            --set-secrets="SECRET_KEY=JWT_SECRET_KEY:latest" \
+            --set-secrets="GCS_BUCKET_NAME=GCS_BUCKET_NAME:latest"
+
+      - name: Backend Deploy Summary
+        run: |
+          echo "## Backend Deployed" >> $GITHUB_STEP_SUMMARY
+          echo "- **Environment**: ${{ steps.vars.outputs.ENV }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Service**: ${{ steps.vars.outputs.SERVICE_NAME }}" >> $GITHUB_STEP_SUMMARY
+          URL=$(gcloud run services describe ${{ steps.vars.outputs.SERVICE_NAME }} --region ${{ env.REGION }} --format 'value(status.url)')
+          echo "- **URL**: $URL" >> $GITHUB_STEP_SUMMARY
