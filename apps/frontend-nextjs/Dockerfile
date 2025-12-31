@@ -5,9 +5,9 @@ FROM base AS deps
 RUN apk add --no-cache libc6-compat dumb-init
 WORKDIR /app
 
-# Install dependencies based on the preferred package manager
+# Install ALL dependencies (including devDependencies needed for build)
 COPY package.json package-lock.json* ./
-RUN npm ci --only=production
+RUN npm ci
 
 # Rebuild the source code only when needed
 FROM base AS builder
