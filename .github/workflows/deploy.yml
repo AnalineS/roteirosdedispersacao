@@ -221,7 +221,11 @@ jobs:
             --min-instances 0 \
             --max-instances 10 \
             --timeout 300 \
+            --cpu-boost \
+            --startup-cpu-boost \
             --set-env-vars="ENVIRONMENT=${{ steps.vars.outputs.ENV }}" \
+            --set-env-vars="RAG_ENABLED=false" \
+            --set-env-vars="EMBEDDINGS_ENABLED=false" \
             --set-env-vars="FRONTEND_URL=${{ steps.vars.outputs.FRONTEND_URL }}" \
             --set-secrets="OPENROUTER_API_KEY=OPENROUTER_API_KEY:latest" \
             --set-secrets="SECRET_KEY=JWT_SECRET_KEY:latest" \
