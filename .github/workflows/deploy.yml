@@ -226,9 +226,9 @@ jobs:
             --set-env-vars="RAG_ENABLED=false" \
             --set-env-vars="EMBEDDINGS_ENABLED=false" \
             --set-env-vars="FRONTEND_URL=${{ steps.vars.outputs.FRONTEND_URL }}" \
-            --set-secrets="OPENROUTER_API_KEY=OPENROUTER_API_KEY:latest" \
-            --set-secrets="SECRET_KEY=JWT_SECRET_KEY:latest" \
-            --set-secrets="GCS_BUCKET_NAME=GCS_BUCKET_NAME:latest"
+            --set-env-vars="OPENROUTER_API_KEY=${{ secrets.OPENROUTER_API_KEY }}" \
+            --set-env-vars="SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}" \
+            --set-env-vars="GCS_BUCKET_NAME=${{ secrets.GCS_BUCKET_NAME }}"
 
       - name: Backend Deploy Summary
         run: |
