@@ -22,7 +22,7 @@
     "chokidar": "^3.6.0",
     "cors": "^2.8.5",
     "express": "^4.19.2",
-    "fs-extra": "^11.2.0",
+    "fs-extra": "^11.3.2",
     "glob": "^10.5.0",
     "playwright": "^1.55.1"
   },
