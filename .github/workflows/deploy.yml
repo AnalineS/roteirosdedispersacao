@@ -222,6 +222,7 @@ jobs:
             --max-instances 10 \
             --timeout 300 \
             --cpu-boost \
+            --clear-secrets \
             --set-env-vars="ENVIRONMENT=${{ steps.vars.outputs.ENV }}" \
             --set-env-vars="RAG_ENABLED=false" \
             --set-env-vars="EMBEDDINGS_ENABLED=false" \
