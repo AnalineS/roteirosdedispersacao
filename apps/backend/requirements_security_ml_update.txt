@@ -8,7 +8,7 @@
 # SECURITY: CRITICAL - Updated 2024-09-24 - Latest Flask security patches
 Flask==3.1.2
 Flask-CORS==6.0.2  # SECURITY UPDATE: CVE-2024-6221, CVE-2024-6839, CVE-2024-6844, CVE-2024-6866
-Werkzeug==3.1.4
+Werkzeug==3.1.5
 gunicorn==23.0.0   # SECURITY: Updated 2024-09-24 - CVE-2024-6827 fixed
 
 # === AI & ML CORE - SECURITY UPDATES ===
@@ -80,7 +80,7 @@ psutil==5.9.8
 
 # Google Cloud Operations Suite
 google-cloud-monitoring==2.28.0
-google-cloud-logging==3.12.1
+google-cloud-logging==3.13.0
 google-cloud-storage>=2.10.0
 
 # Structured logging
@@ -107,7 +107,7 @@ python-magic==0.4.27
 
 # === DATABASE & VECTOR STORE ===
 # Supabase integration - FASE 3 RAG
-supabase==2.25.1
+supabase==2.27.1
 psycopg2-binary==2.9.11  # PostgreSQL adapter with pgvector support
 
 # Optional SQL support
@@ -157,7 +157,7 @@ asyncio>=3.4.3
 websockets>=11.0.0
 
 # === BACKGROUND TASKS ===
-celery==5.6.0  # Base celery without Redis dependency
+celery==5.6.2  # Base celery without Redis dependency
 
 # === PERFORMANCE MONITORING ===
 py-spy>=0.3.14
