@@ -8,7 +8,7 @@
 # SECURITY: CRITICAL - Updated 2024-09-24 - Latest Flask security patches
 Flask==3.1.2
 Flask-CORS==6.0.2  # SECURITY UPDATE: CVE-2024-6221, CVE-2024-6839, CVE-2024-6844, CVE-2024-6866
-Werkzeug==3.1.4
+Werkzeug==3.1.5
 gunicorn==23.0.0   # SECURITY: Updated 2024-09-24 - CVE-2024-6827 fixed
 
 # === AI & ML CORE - SECURITY UPDATES ===
@@ -68,7 +68,7 @@ jsonschema>=4.23.0
 # === HTTP & NETWORKING ===
 requests==2.32.5   # SECURITY: CRITICAL - Updated 2024-09-24 - Latest security patches
 httpx>=0.24.0
-urllib3>=2.5.0    # SECURITY: CRITICAL - Updated 2024-09-24 - Resolves CVE-2025-50181 (High severity)
+urllib3>=2.6.3    # SECURITY: CRITICAL - Updated 2024-09-24 - Resolves CVE-2025-50181 (High severity)
 certifi==2025.11.12  # SECURITY: Updated 2024-09-24 - Latest certificate bundle
 
 # === CACHE & PERFORMANCE ===
@@ -219,3 +219,5 @@ geoip2>=4.7.0
 # Use staged deployment with comprehensive medical AI validation
 # Do not deploy to production until all validation tests pass
 # ============================================================================
+aiohttp>=3.13.3 # not directly required, pinned by Snyk to avoid a vulnerability
+filelock>=3.20.3 # not directly required, pinned by Snyk to avoid a vulnerability
