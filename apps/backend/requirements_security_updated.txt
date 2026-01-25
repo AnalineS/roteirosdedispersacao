@@ -18,7 +18,7 @@ sentence-transformers==5.2.0
 chromadb>=0.4.0
 numpy==2.3.5      # SECURITY UPDATE: Latest stable version (breaking changes - test thoroughly)
 # FALLBACK if numpy 2.x breaks compatibility: numpy==1.26.4
-torch==2.9.1      # SECURITY UPDATE: CVE-2025-3730 fix - torch.nn.functional.ctc_loss DoS
+torch==2.10.0      # SECURITY UPDATE: CVE-2025-3730 fix - torch.nn.functional.ctc_loss DoS
 scikit-learn==1.8.0
 
 # === AUTHENTICATION & JWT ===
@@ -196,3 +196,5 @@ geoip2>=4.7.0
 # 4. Monitor for 24 hours post-deployment
 # 5. Rollback immediately if critical issues detected
 # ============================================================================
+pyasn1>=0.6.2 # not directly required, pinned by Snyk to avoid a vulnerability
+wheel>=0.46.2 # not directly required, pinned by Snyk to avoid a vulnerability
