@@ -14,7 +14,7 @@ gunicorn==23.0.0   # SECURITY: Updated 2024-09-24 - CVE-2024-6827 fixed
 # === AI & ML CORE - SECURITY UPDATES ===
 # CRITICAL SECURITY FIX: PyTorch vulnerability CVE-2025-3730 (DoS in ctc_loss)
 # CRITICAL SECURITY FIX: PyTorch vulnerability CVE-2025-32434 (RCE in torch.load)
-torch==2.9.1        # SECURITY: CVE-2025-3730 and CVE-2025-32434 fixes
+torch==2.10.0        # SECURITY: CVE-2025-3730 and CVE-2025-32434 fixes
 torchvision==0.24.1 # Updated for torch 2.8.0 compatibility
 
 # OpenAI API - maintained current version
@@ -219,3 +219,4 @@ geoip2>=4.7.0
 # Use staged deployment with comprehensive medical AI validation
 # Do not deploy to production until all validation tests pass
 # ============================================================================
+wheel>=0.46.2 # not directly required, pinned by Snyk to avoid a vulnerability
