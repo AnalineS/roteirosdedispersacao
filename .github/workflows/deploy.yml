@@ -227,6 +227,14 @@ jobs:
           docker push $IMAGE
           echo "IMAGE=$IMAGE" >> $GITHUB_ENV
 
+      - name: Clear existing secrets from Cloud Run service
+        run: |
+          gcloud run services update ${{ steps.vars.outputs.SERVICE_NAME }} \
+            --region ${{ env.REGION }} \
+            --clear-secrets \
+            --clear-env-vars \
+            --quiet || true
+
       - name: Deploy Backend to Cloud Run
         run: |
           gcloud run deploy ${{ steps.vars.outputs.SERVICE_NAME }} \
@@ -241,14 +249,7 @@ jobs:
             --max-instances 10 \
             --timeout 300 \
             --cpu-boost \
-            --clear-secrets \
-            --set-env-vars="ENVIRONMENT=${{ steps.vars.outputs.ENV }}" \
-            --set-env-vars="RAG_ENABLED=false" \
-            --set-env-vars="EMBEDDINGS_ENABLED=false" \
-            --set-env-vars="FRONTEND_URL=${{ steps.vars.outputs.FRONTEND_URL }}" \
-            --set-env-vars="OPENROUTER_API_KEY=${{ secrets.OPENROUTER_API_KEY }}" \
-            --set-env-vars="SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}" \
-            --set-env-vars="GCS_BUCKET_NAME=${{ secrets.GCS_BUCKET_NAME }}"
+            --set-env-vars="ENVIRONMENT=${{ steps.vars.outputs.ENV }},RAG_ENABLED=false,EMBEDDINGS_ENABLED=false,FRONTEND_URL=${{ steps.vars.outputs.FRONTEND_URL }},OPENROUTER_API_KEY=${{ secrets.OPENROUTER_API_KEY }},SECRET_KEY=${{ secrets.JWT_SECRET_KEY }},GCS_BUCKET_NAME=${{ secrets.GCS_BUCKET_NAME }}"
 
       - name: Backend Deploy Summary
         run: |
