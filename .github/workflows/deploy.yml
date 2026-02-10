@@ -24,9 +24,9 @@ on:
           - backend
 
 env:
-  PROJECT_ID: red-truck-468923-s4
-  REGION: us-central1
-  REGISTRY: us-central1-docker.pkg.dev
+  PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+  REGION: ${{ vars.GCP_REGION }}
+  REGISTRY: ${{ vars.GCP_REGION }}-docker.pkg.dev
 
 jobs:
   # Determine what to deploy based on changed files
@@ -95,22 +95,22 @@ jobs:
         run: |
           ENV="${{ needs.changes.outputs.environment }}"
           if [ "$ENV" == "production" ]; then
-            echo "SERVICE_NAME=roteiro-dispensacao-frontend" >> $GITHUB_OUTPUT
-            echo "API_URL=https://api.roteirosdispensacao.com.br" >> $GITHUB_OUTPUT
-            echo "DOMAIN=roteirosdispensacao.com.br" >> $GITHUB_OUTPUT
-            echo "BASE_URL=https://roteirosdispensacao.com.br" >> $GITHUB_OUTPUT
+            echo "SERVICE_NAME=${{ vars.PRODUCTION_FRONTEND_SERVICE }}" >> $GITHUB_OUTPUT
+            echo "API_URL=${{ vars.NEXT_PUBLIC_API_URL_PRODUCTION }}" >> $GITHUB_OUTPUT
+            echo "DOMAIN=${{ vars.NEXT_PUBLIC_PRODUCTION_DOMAIN }}" >> $GITHUB_OUTPUT
+            echo "BASE_URL=${{ vars.NEXT_PUBLIC_BASE_URL_PRODUCTION }}" >> $GITHUB_OUTPUT
           else
-            echo "SERVICE_NAME=hml-frontend" >> $GITHUB_OUTPUT
-            echo "API_URL=https://hml-api.roteirosdispensacao.com.br" >> $GITHUB_OUTPUT
-            echo "DOMAIN=hml.roteirosdispensacao.com.br" >> $GITHUB_OUTPUT
-            echo "BASE_URL=https://hml.roteirosdispensacao.com.br" >> $GITHUB_OUTPUT
+            echo "SERVICE_NAME=${{ vars.HML_FRONTEND_SERVICE }}" >> $GITHUB_OUTPUT
+            echo "API_URL=${{ vars.NEXT_PUBLIC_API_URL_STAGING }}" >> $GITHUB_OUTPUT
+            echo "DOMAIN=${{ vars.NEXT_PUBLIC_STAGING_DOMAIN }}" >> $GITHUB_OUTPUT
+            echo "BASE_URL=${{ vars.NEXT_PUBLIC_BASE_URL_STAGING }}" >> $GITHUB_OUTPUT
           fi
           echo "ENV=$ENV" >> $GITHUB_OUTPUT
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '${{ vars.NODE_VERSION }}'
           cache: 'npm'
           cache-dependency-path: apps/frontend-nextjs/package-lock.json
 
@@ -153,11 +153,11 @@ jobs:
             --region ${{ env.REGION }} \
             --platform managed \
             --allow-unauthenticated \
-            --port 3000 \
-            --memory 512Mi \
-            --cpu 1 \
+            --port ${{ vars.FRONTEND_PORT }} \
+            --memory ${{ vars.FRONTEND_MEMORY }} \
+            --cpu ${{ vars.FRONTEND_CPU }} \
             --min-instances 0 \
-            --max-instances 10 \
+            --max-instances ${{ vars.FRONTEND_MAX_INSTANCES }} \
             --set-env-vars="NODE_ENV=production,NEXT_PUBLIC_ENVIRONMENT=${{ steps.vars.outputs.ENV }}"
 
       - name: Frontend Deploy Summary
@@ -209,11 +209,11 @@ jobs:
         run: |
           ENV="${{ needs.changes.outputs.environment }}"
           if [ "$ENV" == "production" ]; then
-            echo "SERVICE_NAME=roteiro-dispensacao-api" >> $GITHUB_OUTPUT
-            echo "FRONTEND_URL=https://roteirosdispensacao.com.br" >> $GITHUB_OUTPUT
+            echo "SERVICE_NAME=${{ vars.PRODUCTION_BACKEND_SERVICE }}" >> $GITHUB_OUTPUT
+            echo "FRONTEND_URL=${{ vars.NEXT_PUBLIC_BASE_URL_PRODUCTION }}" >> $GITHUB_OUTPUT
           else
-            echo "SERVICE_NAME=hml-api" >> $GITHUB_OUTPUT
-            echo "FRONTEND_URL=https://hml.roteirosdispensacao.com.br" >> $GITHUB_OUTPUT
+            echo "SERVICE_NAME=${{ vars.HML_BACKEND_SERVICE }}" >> $GITHUB_OUTPUT
+            echo "FRONTEND_URL=${{ vars.NEXT_PUBLIC_BASE_URL_STAGING }}" >> $GITHUB_OUTPUT
           fi
           echo "ENV=$ENV" >> $GITHUB_OUTPUT
 
@@ -242,14 +242,14 @@ jobs:
             --region ${{ env.REGION }} \
             --platform managed \
             --allow-unauthenticated \
-            --port 8080 \
-            --memory 1Gi \
-            --cpu 1 \
+            --port ${{ vars.BACKEND_PORT }} \
+            --memory ${{ vars.BACKEND_MEMORY }} \
+            --cpu ${{ vars.BACKEND_CPU }} \
             --min-instances 0 \
-            --max-instances 10 \
-            --timeout 300 \
+            --max-instances ${{ vars.BACKEND_MAX_INSTANCES }} \
+            --timeout ${{ vars.BACKEND_TIMEOUT }} \
             --cpu-boost \
-            --set-env-vars="ENVIRONMENT=${{ steps.vars.outputs.ENV }},RAG_ENABLED=false,EMBEDDINGS_ENABLED=false,FRONTEND_URL=${{ steps.vars.outputs.FRONTEND_URL }},OPENROUTER_API_KEY=${{ secrets.OPENROUTER_API_KEY }},SECRET_KEY=${{ secrets.JWT_SECRET_KEY }},GCS_BUCKET_NAME=${{ secrets.GCS_BUCKET_NAME }}"
+            --set-env-vars="ENVIRONMENT=${{ steps.vars.outputs.ENV }},RAG_ENABLED=${{ vars.RAG_ENABLED }},EMBEDDINGS_ENABLED=${{ vars.EMBEDDINGS_ENABLED }},FRONTEND_URL=${{ steps.vars.outputs.FRONTEND_URL }},OPENROUTER_API_KEY=${{ secrets.OPENROUTER_API_KEY }},SECRET_KEY=${{ secrets.JWT_SECRET_KEY }},GCS_BUCKET_NAME=${{ secrets.GCS_BUCKET_NAME }}"
 
       - name: Backend Deploy Summary
         run: |
