@@ -59,7 +59,7 @@ const searchDatabase: SearchResult[] = [
     id: 'interacoes-medicamentosas',
     title: 'Interações Medicamentosas da PQT-U',
     snippet: 'Rifampicina pode reduzir eficácia de contraceptivos orais, anticoagulantes e antirretrovirais.',
-    url: '/resources/interactions',
+    url: '/resources',
     type: 'tool',
     audience: ['professional'],
     complexity: 'advanced',

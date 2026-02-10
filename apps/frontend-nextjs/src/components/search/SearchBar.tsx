@@ -33,7 +33,7 @@ const INDEXED_PAGES = [
   { href: '/resources/checklist', title: 'Checklist', description: 'Lista de verificação', category: 'Recursos' },
   { href: '/glossario', title: 'Glossário', description: 'Terminologia técnica', category: 'Recursos' },
   { href: '/downloads', title: 'Downloads', description: 'Materiais complementares', category: 'Recursos' },
-  { href: '/sobre-a-tese', title: 'Sobre a Tese', description: 'Pesquisa e metodologia', category: 'Projeto' },
+  { href: '/sobre', title: 'Sobre a Tese', description: 'Pesquisa e metodologia', category: 'Projeto' },
   { href: '/sobre', title: 'Conheça a Equipe', description: 'Equipe responsável', category: 'Projeto' },
   { href: '/metodologia', title: 'Metodologia', description: 'Métodos científicos', category: 'Projeto' },
   { href: '/chat', title: 'Chat', description: 'Conversar com assistentes', category: 'Interação' },

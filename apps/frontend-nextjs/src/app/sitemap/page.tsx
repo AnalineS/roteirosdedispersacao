@@ -180,7 +180,7 @@ export default function SiteMapPage() {
       pages: [
         {
           title: 'Sobre a Tese',
-          href: '/sobre-a-tese',
+          href: '/sobre',
           description: 'Pesquisa de doutorado em Ciências Farmacêuticas'
         },
         {
@@ -289,12 +289,10 @@ export default function SiteMapPage() {
     '/simulador': '🩺',
     '/resources': '🛠️',
     '/resources/calculator': '🧮',
-    '/resources/interactions': '⚠️',
-    '/resources/emergency': '🚨',
     '/certificacao': '🎓',
     '/profile': '👤',
     '/progress': '📊',
-    '/sobre-a-tese': '📖',
+    '/sobre': '📖',
     '/glossario': '📝',
     '/sitemap': '🗺️',
     '/admin': '⚙️'

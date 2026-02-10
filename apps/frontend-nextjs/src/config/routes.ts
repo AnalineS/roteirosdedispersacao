@@ -7,8 +7,7 @@
 export const PUBLIC_ROUTES = [
   '/',                      // Home page
   '/chat',                  // Educational assistants (Dr. Gasnelio & Gá)
-  '/sobre',                 // About page
-  '/sobre-a-tese',          // About the thesis
+  '/sobre',                 // About page and thesis
   '/metodologia',           // Methodology
   '/metodologia/detalhada', // Detailed methodology
   '/resources',             // Resources

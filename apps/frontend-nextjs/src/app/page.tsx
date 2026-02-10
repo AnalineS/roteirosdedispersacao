@@ -199,7 +199,7 @@ export default function HomePage() {
                 cursor: 'pointer',
                 transition: 'all 0.2s'
               }}
-              onMouseEnter={(e) => e.currentTarget.style.background = '#1e3a8a'}
+              onMouseEnter={(e) => e.currentTarget.style.background = '#001f42'}
               onMouseLeave={(e) => e.currentTarget.style.background = '#003366'}
             >
               Conversar com Dr. Gasnelio
@@ -707,35 +707,6 @@ export default function HomePage() {
           ⚠️ <strong>IMPORTANTE:</strong> Esta plataforma é educacional. Em caso de emergência médica, procure atendimento presencial imediatamente.
         </p>
       </section>
-
-      {/* Footer */}
-      <footer style={{
-        padding: '2rem 1.5rem',
-        background: 'white',
-        textAlign: 'center',
-        borderTop: '1px solid #e5e7eb'
-      }}>
-        <div style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          gap: '2rem',
-          marginBottom: '1rem',
-          flexWrap: 'wrap'
-        }}>
-          <span style={{ fontSize: '2rem' }}>🎓</span>
-          <span style={{
-            fontWeight: '700',
-            color: '#003366',
-            fontSize: '1.1rem'
-          }}>
-            PPGCF <span style={{ color: '#059669' }}>UnB</span>
-          </span>
-        </div>
-        <p style={{ color: '#9ca3af', fontSize: '0.85rem', margin: 0 }}>
-          Pesquisa de doutorado • 2026 © Sistema Educacional Roteiros de Dispensação
-        </p>
-      </footer>
 
       {/* Toast Container */}
       <Suspense fallback={null}>

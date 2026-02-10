@@ -410,53 +410,78 @@ export default function NavigationHeader({ currentPersona, className = '' }: Nav
                             border: `1px solid ${unbColors.alpha.primary}`
                           }}
                         >
-                          {category.items.map((item) => {
-                            const ItemIcon = getIconByEmoji(item.icon);
-                            return (
-                              <div key={item.id}>
-                                <Link
-                                  href={item.href}
-                                  onClick={closeAllDropdowns}
-                                  role="menuitem"
-                                  className="flex items-center gap-3 p-3 no-underline transition-all duration-200 hover:bg-slate-50"
-                                  style={{
-                                    color: unbColors.neutral,
-                                    background: isActive(item.href) ? unbColors.alpha.primary : 'transparent'
-                                  }}
-                                >
-                                  <ItemIcon size={20} variant="unb" />
-                                  <div className="flex-1">
-                                    <div className={`${isActive(item.href) ? 'font-bold' : 'font-medium'} text-sm`}>
-                                      {item.label}
+                          {/* Grouped dropdown with subcategory headers */}
+                          {(() => {
+                            const learningItems = category.items.filter(i => i.category === 'learning');
+                            const institutionalItems = category.items.filter(i => i.category === 'institutional');
+                            const renderItem = (item: NavigationItem) => {
+                              const ItemIcon = getIconByEmoji(item.icon);
+                              return (
+                                <div key={item.id}>
+                                  <Link
+                                    href={item.href}
+                                    onClick={closeAllDropdowns}
+                                    role="menuitem"
+                                    className="flex items-center gap-3 p-3 no-underline transition-all duration-200 hover:bg-slate-50"
+                                    style={{
+                                      color: unbColors.neutral,
+                                      background: isActive(item.href) ? unbColors.alpha.primary : 'transparent'
+                                    }}
+                                  >
+                                    <ItemIcon size={20} variant="unb" />
+                                    <div className="flex-1">
+                                      <div className={`${isActive(item.href) ? 'font-bold' : 'font-medium'} text-sm`}>
+                                        {item.label}
+                                      </div>
+                                      <div className="text-xs opacity-70 mt-0.5">
+                                        {item.description}
+                                      </div>
                                     </div>
-                                    <div className="text-xs opacity-70 mt-0.5">
-                                      {item.description}
-                                    </div>
-                                  </div>
-                                </Link>
+                                  </Link>
+                                  {item.subItems?.map((subItem) => {
+                                    const SubIcon = getIconByEmoji(subItem.icon);
+                                    return (
+                                      <Link
+                                        key={subItem.id}
+                                        href={subItem.href}
+                                        onClick={closeAllDropdowns}
+                                        className="flex items-center gap-2 py-2 px-4 pl-10 no-underline text-sm transition-all duration-200 hover:bg-slate-50"
+                                        style={{
+                                          color: unbColors.neutral,
+                                          background: isActive(subItem.href) ? unbColors.alpha.accent : 'transparent'
+                                        }}
+                                      >
+                                        <SubIcon size={16} variant="unb" />
+                                        <span>{subItem.label}</span>
+                                      </Link>
+                                    );
+                                  })}
+                                </div>
+                              );
+                            };
 
-                                {/* Sub Items */}
-                                {item.subItems?.map((subItem) => {
-                                  const SubIcon = getIconByEmoji(subItem.icon);
-                                  return (
-                                    <Link
-                                      key={subItem.id}
-                                      href={subItem.href}
-                                      onClick={closeAllDropdowns}
-                                      className="flex items-center gap-2 py-2 px-4 pl-10 no-underline text-sm transition-all duration-200 hover:bg-slate-50"
-                                      style={{
-                                        color: unbColors.neutral,
-                                        background: isActive(subItem.href) ? unbColors.alpha.accent : 'transparent'
-                                      }}
-                                    >
-                                      <SubIcon size={16} variant="unb" />
-                                      <span>{subItem.label}</span>
-                                    </Link>
-                                  );
-                                })}
+                            return (
+                              <div style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+                                {learningItems.length > 0 && (
+                                  <>
+                                    <div className="px-3 pt-3 pb-1 text-xs font-semibold uppercase tracking-wider" style={{ color: unbColors.primary, opacity: 0.7 }}>
+                                      Aprendizagem
+                                    </div>
+                                    {learningItems.map(renderItem)}
+                                  </>
+                                )}
+                                {institutionalItems.length > 0 && (
+                                  <>
+                                    <div className="border-t mx-3 my-1" style={{ borderColor: unbColors.alpha.primary }} />
+                                    <div className="px-3 pt-2 pb-1 text-xs font-semibold uppercase tracking-wider" style={{ color: unbColors.primary, opacity: 0.7 }}>
+                                      Institucional
+                                    </div>
+                                    {institutionalItems.map(renderItem)}
+                                  </>
+                                )}
                               </div>
                             );
-                          })}
+                          })()}
                         </div>
                       )}
                     </div>

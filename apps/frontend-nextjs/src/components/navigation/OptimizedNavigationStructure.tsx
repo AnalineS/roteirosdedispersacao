@@ -190,7 +190,7 @@ export const OPTIMIZED_HEADER_NAVIGATION: NavigationCategory[] = [
       {
         id: 'about-thesis',
         label: 'Sobre a Tese',
-        href: '/sobre-a-tese',
+        href: '/sobre',
         icon: '📚',
         description: 'Metodologia e fundamentação (acesso público)',
         category: 'institutional',
@@ -220,7 +220,7 @@ export const OPTIMIZED_HEADER_NAVIGATION: NavigationCategory[] = [
       {
         id: 'contact',
         label: 'Sobre a Pesquisa',
-        href: '/sobre-a-tese',
+        href: '/sobre',
         icon: '📧',
         description: 'Informações sobre a pesquisa e contato',
         category: 'institutional',

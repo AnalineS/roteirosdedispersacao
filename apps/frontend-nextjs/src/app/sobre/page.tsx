@@ -5,21 +5,21 @@ import Link from 'next/link';
 import EducationalLayout from '@/components/layout/EducationalLayout';
 
 /**
- * Pagina Sobre - Consolidada
- * Unifica: Visao Geral, Tese, Metodologia, Referencias, Codigo Fonte
+ * Página Sobre - Consolidada
+ * Unifica: Visão Geral, Tese, Metodologia, Referências, Código Fonte
  * Rota: /sobre
  */
 
-// Dados das referencias
+// Dados das referências
 const referencias = [
   {
     categoria: "Diretrizes e Protocolos Oficiais",
     items: [
       {
-        autores: "Ministerio da Saude",
+        autores: "Ministério da Saúde",
         ano: "2022",
-        titulo: "Protocolo Clinico e Diretrizes Terapeuticas para Hanseniase",
-        fonte: "Brasilia: Ministerio da Saude",
+        titulo: "Protocolo Clínico e Diretrizes Terapêuticas para Hanseníase",
+        fonte: "Brasília: Ministério da Saúde",
         link: "https://www.gov.br/saude/pt-br/assuntos/protocolos-clinicos-e-diretrizes-terapeuticas-pcdt"
       },
       {
@@ -30,16 +30,16 @@ const referencias = [
         link: "https://www.who.int/publications/i/item/9789290228509"
       },
       {
-        autores: "Ministerio da Saude",
+        autores: "Ministério da Saúde",
         ano: "2020",
-        titulo: "Estrategia Nacional para o Enfrentamento da Hanseniase 2019-2022",
-        fonte: "Brasilia: Secretaria de Vigilancia em Saude",
+        titulo: "Estratégia Nacional para o Enfrentamento da Hanseníase 2019-2022",
+        fonte: "Brasília: Secretaria de Vigilância em Saúde",
         link: null
       }
     ]
   },
   {
-    categoria: "Artigos Cientificos sobre PQT-U",
+    categoria: "Artigos Científicos sobre PQT-U",
     items: [
       {
         autores: "Penna GO, Buhrer-Sekula S, Kerr LRS, et al.",
@@ -58,7 +58,7 @@ const referencias = [
     ]
   },
   {
-    categoria: "Farmacologia e Dispensacao",
+    categoria: "Farmacologia e Dispensação",
     items: [
       {
         autores: "Rang HP, Dale MM, Ritter JM, Flower RJ, Henderson G",
@@ -68,16 +68,16 @@ const referencias = [
         link: null
       },
       {
-        autores: "Conselho Federal de Farmacia",
+        autores: "Conselho Federal de Farmácia",
         ano: "2019",
-        titulo: "Servicos farmaceuticos diretamente destinados ao paciente",
-        fonte: "Brasilia: CFF",
+        titulo: "Serviços farmacêuticos diretamente destinados ao paciente",
+        fonte: "Brasília: CFF",
         link: "https://www.cff.org.br/userfiles/file/Profar_Arcabouco_TELA_FINAL.pdf"
       }
     ]
   },
   {
-    categoria: "Educacao em Saude e Tecnologia",
+    categoria: "Educação em Saúde e Tecnologia",
     items: [
       {
         autores: "Freire P",
@@ -96,13 +96,13 @@ const referencias = [
     ]
   },
   {
-    categoria: "Teses e Dissertacoes",
+    categoria: "Teses e Dissertações",
     items: [
       {
         autores: "Moura Junior, N.G.",
         ano: "2024",
-        titulo: "Sistema Educacional para Orientacao na Dispensacao de Medicamentos PQT-U em Hanseniase",
-        fonte: "Tese (Doutorado em Ciencias Farmaceuticas) - Universidade de Brasilia",
+        titulo: "Sistema Educacional para Orientação na Dispensação de Medicamentos PQT-U em Hanseníase",
+        fonte: "Tese (Doutorado em Ciências Farmacêuticas) - Universidade de Brasília",
         link: null
       }
     ]
@@ -112,81 +112,81 @@ const referencias = [
 // Dados da metodologia
 const metodologias = [
   {
-    etapa: "1. Revisao Sistematica da Literatura",
-    descricao: "Mapeamento do estado da arte sobre hanseniase, PQT-U e educacao farmaceutica",
+    etapa: "1. Revisão Sistemática da Literatura",
+    descricao: "Mapeamento do estado da arte sobre hanseníase, PQT-U e educação farmacêutica",
     metodos: [
       "Busca em bases de dados: PubMed, Scielo, LILACS, Cochrane Library",
-      "Periodo de analise: 2010-2024",
-      "Criterios de inclusao: estudos sobre poliquimioterapia unica"
+      "Período de análise: 2010-2024",
+      "Critérios de inclusão: estudos sobre poliquimioterapia única"
     ],
-    resultados: "156 estudos relevantes, 45 incluidos na sintese final"
+    resultados: "156 estudos relevantes, 45 incluídos na síntese final"
   },
   {
-    etapa: "2. Pesquisa Exploratoria com Profissionais",
-    descricao: "Levantamento das necessidades na dispensacao de medicamentos PQT-U",
+    etapa: "2. Pesquisa Exploratória com Profissionais",
+    descricao: "Levantamento das necessidades na dispensação de medicamentos PQT-U",
     metodos: [
-      "Entrevistas semiestruturadas com 30 farmaceuticos",
-      "Questionarios online aplicados a 120 profissionais",
-      "Observacao participante em 15 farmacias publicas"
+      "Entrevistas semiestruturadas com 30 farmacêuticos",
+      "Questionários online aplicados a 120 profissionais",
+      "Observação participante em 15 farmácias públicas"
     ],
     resultados: "8 categorias de dificuldades e 12 necessidades educacionais"
   },
   {
-    etapa: "3. Desenvolvimento do Framework Pedagogico",
-    descricao: "Criacao da base teorica e metodologica do sistema educacional",
+    etapa: "3. Desenvolvimento do Framework Pedagógico",
+    descricao: "Criação da base teórica e metodológica do sistema educacional",
     metodos: [
-      "Analise de teorias de aprendizagem (Constructivismo, Andragogia)",
-      "Aplicacao de principios de Design Instrucional (ADDIE)",
+      "Análise de teorias de aprendizagem (Constructivismo, Andragogia)",
+      "Aplicação de princípios de Design Instrucional (ADDIE)",
       "Desenvolvimento de personas educacionais"
     ],
-    resultados: "Framework adaptativo com 3 niveis e 2 personas especializadas"
+    resultados: "Framework adaptativo com 3 níveis e 2 personas especializadas"
   },
   {
     etapa: "4. Prototipagem e Design de Interface",
     descricao: "Desenvolvimento da arquitetura e interface do sistema",
     metodos: [
-      "Metodologia de Design Centrado no Usuario (DCU)",
-      "Testes de usabilidade com 25 usuarios",
-      "Aplicacao de principios de acessibilidade WCAG 2.1"
+      "Metodologia de Design Centrado no Usuário (DCU)",
+      "Testes de usabilidade com 25 usuários",
+      "Aplicação de princípios de acessibilidade WCAG 2.1"
     ],
-    resultados: "Sistema responsivo com 98% de aprovacao em testes"
+    resultados: "Sistema responsivo com 98% de aprovação em testes"
   },
   {
-    etapa: "5. Implementacao Tecnologica",
-    descricao: "Desenvolvimento usando tecnologias modernas e escalaveis",
+    etapa: "5. Implementação Tecnológica",
+    descricao: "Desenvolvimento usando tecnologias modernas e escaláveis",
     metodos: [
       "Frontend: Next.js 15 + TypeScript",
       "Backend: Python Flask + PostgreSQL",
       "IA Conversacional: OpenRouter (Llama 3.2, Kimie K2)"
     ],
-    resultados: "Sistema completo com 35+ paginas e 2 assistentes IA"
+    resultados: "Sistema completo com 35+ páginas e 2 assistentes IA"
   },
   {
-    etapa: "6. Validacao e Avaliacao",
-    descricao: "Teste e validacao do sistema com usuarios reais",
+    etapa: "6. Validação e Avaliação",
+    descricao: "Teste e validação do sistema com usuários reais",
     metodos: [
-      "Estudo piloto com 50 profissionais de farmacia",
-      "Avaliacao pre e pos-uso com instrumentos validados",
+      "Estudo piloto com 50 profissionais de farmácia",
+      "Avaliação pré e pós-uso com instrumentos validados",
       "Coleta de feedback qualitativo"
     ],
-    resultados: "Melhoria de 85% no conhecimento e 92% de satisfacao"
+    resultados: "Melhoria de 85% no conhecimento e 92% de satisfação"
   }
 ];
 
-// Secoes do sumario
+// Seções do sumário
 const sections = [
-  { id: 'visao-geral', label: 'Visao Geral', icon: '🎯' },
+  { id: 'visao-geral', label: 'Visão Geral', icon: '🎯' },
   { id: 'tese', label: 'Sobre a Tese', icon: '📚' },
   { id: 'metodologia', label: 'Metodologia', icon: '🔬' },
-  { id: 'referencias', label: 'Referencias', icon: '📖' },
-  { id: 'codigo-fonte', label: 'Codigo Fonte', icon: '💻' }
+  { id: 'referencias', label: 'Referências', icon: '📖' },
+  { id: 'codigo-fonte', label: 'Código Fonte', icon: '💻' }
 ];
 
 export default function SobrePage() {
   const [activeSection, setActiveSection] = useState('visao-geral');
   const [activeTab, setActiveTab] = useState('apresentacao');
 
-  // Scroll spy para destacar secao ativa
+  // Scroll spy para destacar seção ativa
   useEffect(() => {
     const handleScroll = () => {
       const sectionElements = sections.map(s => document.getElementById(s.id));
@@ -244,7 +244,7 @@ export default function SobrePage() {
             margin: '0 auto',
             lineHeight: '1.6'
           }}>
-            Roteiros de Dispensacao - Hanseniase (PQT-U)
+            Roteiros de Dispensação - Hanseníase (PQT-U)
           </p>
         </div>
 
@@ -258,7 +258,7 @@ export default function SobrePage() {
           padding: '0.75rem 1rem',
           boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
         }}
-        aria-label="Navegacao da pagina"
+        aria-label="Navegação da página"
         >
           <div style={{
             maxWidth: '1200px',
@@ -298,7 +298,7 @@ export default function SobrePage() {
           margin: '0 auto',
           padding: '2rem clamp(1rem, 3vw, 2rem)'
         }}>
-          {/* Secao: Visao Geral */}
+          {/* Seção: Visão Geral */}
           <section id="visao-geral" style={{ marginBottom: '4rem', scrollMarginTop: '120px' }}>
             <h2 style={{
               fontSize: '1.8rem',
@@ -308,7 +308,7 @@ export default function SobrePage() {
               alignItems: 'center',
               gap: '0.5rem'
             }}>
-              🎯 Visao Geral
+              🎯 Visão Geral
             </h2>
 
             <div style={{
@@ -325,9 +325,9 @@ export default function SobrePage() {
                 marginBottom: '1.5rem'
               }}>
                 Este sistema educacional foi desenvolvido como parte de uma pesquisa de doutorado
-                no Programa de Pos-graduacao em Ciencias Farmaceuticas da Universidade de Brasilia (UnB).
-                O objetivo e fornecer orientacao especializada para profissionais de saude
-                na dispensacao de medicamentos do esquema PQT-U para tratamento de hanseniase.
+                no Programa de Pós-graduação em Ciências Farmacêuticas da Universidade de Brasília (UnB).
+                O objetivo é fornecer orientação especializada para profissionais de saúde
+                na dispensação de medicamentos do esquema PQT-U para tratamento de hanseníase.
               </p>
 
               <div style={{
@@ -354,7 +354,7 @@ export default function SobrePage() {
                 }}>
                   <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🤖</div>
                   <div style={{ fontWeight: '600', color: '#003366' }}>2 Assistentes IA</div>
-                  <div style={{ fontSize: '0.9rem', color: '#6b7280' }}>Dr. Gasnelio e Ga</div>
+                  <div style={{ fontSize: '0.9rem', color: '#6b7280' }}>Dr. Gasnelio e Gá</div>
                 </div>
                 <div style={{
                   padding: '1rem',
@@ -389,13 +389,13 @@ export default function SobrePage() {
                     gap: '0.5rem'
                   }}
                 >
-                  👥 Conheca a Equipe Completa
+                  👥 Conheça a Equipe Completa
                 </Link>
               </div>
             </div>
           </section>
 
-          {/* Secao: Sobre a Tese */}
+          {/* Seção: Sobre a Tese */}
           <section id="tese" style={{ marginBottom: '4rem', scrollMarginTop: '120px' }}>
             <h2 style={{
               fontSize: '1.8rem',
@@ -414,17 +414,17 @@ export default function SobrePage() {
               overflow: 'hidden',
               boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
             }}>
-              {/* Tabs de navegacao */}
+              {/* Tabs de navegação */}
               <div style={{
                 display: 'flex',
                 borderBottom: '1px solid #e2e8f0',
                 overflowX: 'auto'
               }}>
                 {[
-                  { id: 'apresentacao', label: 'Apresentacoes' },
-                  { id: 'avaliacao', label: 'Avaliacao' },
-                  { id: 'orientacoes', label: 'Orientacoes' },
-                  { id: 'seguranca', label: 'Seguranca' }
+                  { id: 'apresentacao', label: 'Apresentações' },
+                  { id: 'avaliacao', label: 'Avaliação' },
+                  { id: 'orientacoes', label: 'Orientações' },
+                  { id: 'seguranca', label: 'Segurança' }
                 ].map(tab => (
                   <button
                     key={tab.id}
@@ -446,11 +446,11 @@ export default function SobrePage() {
               </div>
 
               <div style={{ padding: '2rem' }}>
-                {/* Tab Apresentacoes */}
+                {/* Tab Apresentações */}
                 {activeTab === 'apresentacao' && (
                   <div>
                     <h3 style={{ fontSize: '1.3rem', marginBottom: '1.5rem', color: '#003366' }}>
-                      Apresentacoes Disponiveis no SUS
+                      Apresentações Disponíveis no SUS
                     </h3>
 
                     <div style={{ marginBottom: '2rem' }}>
@@ -473,7 +473,7 @@ export default function SobrePage() {
                         padding: '1rem',
                         borderRadius: '8px'
                       }}>
-                        <p style={{ fontWeight: '600', marginBottom: '0.5rem' }}>Dose Diaria Autoadministrada:</p>
+                        <p style={{ fontWeight: '600', marginBottom: '0.5rem' }}>Dose Diária Autoadministrada:</p>
                         <ul style={{ paddingLeft: '1.5rem' }}>
                           <li>Clofazimina 50mg - 1x ao dia</li>
                           <li>Dapsona 100mg - 1x ao dia</li>
@@ -499,11 +499,11 @@ export default function SobrePage() {
                   </div>
                 )}
 
-                {/* Tab Avaliacao */}
+                {/* Tab Avaliação */}
                 {activeTab === 'avaliacao' && (
                   <div>
                     <h3 style={{ fontSize: '1.3rem', marginBottom: '1.5rem', color: '#003366' }}>
-                      Avaliacao Inicial
+                      Avaliação Inicial
                     </h3>
 
                     <div style={{
@@ -520,8 +520,8 @@ export default function SobrePage() {
                         <h4 style={{ color: '#3b82f6', marginBottom: '1rem' }}>Disponibilidade</h4>
                         <ul style={{ paddingLeft: '1.5rem', lineHeight: '1.8', fontSize: '0.95rem' }}>
                           <li>Medicamento importado via OPAS</li>
-                          <li>Disponivel exclusivamente pelo SUS</li>
-                          <li>Nao possui similares ou genericos</li>
+                          <li>Disponível exclusivamente pelo SUS</li>
+                          <li>Não possui similares ou genéricos</li>
                         </ul>
                       </div>
 
@@ -531,11 +531,11 @@ export default function SobrePage() {
                         borderRadius: '8px',
                         border: '1px solid #86efac'
                       }}>
-                        <h4 style={{ color: '#15803d', marginBottom: '1rem' }}>Duracao do Tratamento</h4>
+                        <h4 style={{ color: '#15803d', marginBottom: '1rem' }}>Duração do Tratamento</h4>
                         <ul style={{ paddingLeft: '1.5rem', lineHeight: '1.8', fontSize: '0.95rem' }}>
                           <li><strong>Paucibacilar:</strong> 6 meses</li>
                           <li><strong>Multibacilar:</strong> 12 meses</li>
-                          <li>Dispensacao mensal obrigatoria</li>
+                          <li>Dispensação mensal obrigatória</li>
                         </ul>
                       </div>
 
@@ -545,22 +545,22 @@ export default function SobrePage() {
                         borderRadius: '8px',
                         border: '1px solid #fcd34d'
                       }}>
-                        <h4 style={{ color: '#92400e', marginBottom: '1rem' }}>Prescricao</h4>
+                        <h4 style={{ color: '#92400e', marginBottom: '1rem' }}>Prescrição</h4>
                         <ul style={{ paddingLeft: '1.5rem', lineHeight: '1.8', fontSize: '0.95rem' }}>
-                          <li>Medico e enfermeiro podem prescrever</li>
-                          <li>Pacientes menor 30kg: apenas medicos</li>
-                          <li>Prescricao em duas vias</li>
+                          <li>Médico e enfermeiro podem prescrever</li>
+                          <li>Pacientes menor 30kg: apenas médicos</li>
+                          <li>Prescrição em duas vias</li>
                         </ul>
                       </div>
                     </div>
                   </div>
                 )}
 
-                {/* Tab Orientacoes */}
+                {/* Tab Orientações */}
                 {activeTab === 'orientacoes' && (
                   <div>
                     <h3 style={{ fontSize: '1.3rem', marginBottom: '1.5rem', color: '#003366' }}>
-                      Orientacoes Gerais
+                      Orientações Gerais
                     </h3>
 
                     <div style={{
@@ -570,11 +570,11 @@ export default function SobrePage() {
                       marginBottom: '1.5rem'
                     }}>
                       <ul style={{ paddingLeft: '1.5rem', lineHeight: '2', fontSize: '1rem' }}>
-                        <li>Clofazimina e dapsona devem ser tomadas junto das refeicoes</li>
-                        <li>NAO ingerir com suco de laranja (diminui absorcao)</li>
-                        <li>Evitar bebidas alcoolicas durante o tratamento</li>
+                        <li>Clofazimina e dapsona devem ser tomadas junto das refeições</li>
+                        <li>NÃO ingerir com suco de laranja (diminui absorção)</li>
+                        <li>Evitar bebidas alcoólicas durante o tratamento</li>
                         <li>Checar status vacinal/BCG</li>
-                        <li>Nao tomar dose autoadministrada no dia da supervisionada</li>
+                        <li>Não tomar dose autoadministrada no dia da supervisionada</li>
                         <li>Agendar consulta a cada 28 dias para nova dose supervisionada</li>
                       </ul>
                     </div>
@@ -585,16 +585,16 @@ export default function SobrePage() {
                       borderRadius: '8px',
                       border: '1px solid #fca5a5'
                     }}>
-                      <strong>Doses Maximas:</strong> Rifampicina 600mg/dia | Clofazimina 300mg/dia | Dapsona 100mg/dia
+                      <strong>Doses Máximas:</strong> Rifampicina 600mg/dia | Clofazimina 300mg/dia | Dapsona 100mg/dia
                     </div>
                   </div>
                 )}
 
-                {/* Tab Seguranca */}
+                {/* Tab Segurança */}
                 {activeTab === 'seguranca' && (
                   <div>
                     <h3 style={{ fontSize: '1.3rem', marginBottom: '1.5rem', color: '#dc2626' }}>
-                      Contraindicacoes e Seguranca
+                      Contraindicações e Segurança
                     </h3>
 
                     <div style={{
@@ -604,15 +604,15 @@ export default function SobrePage() {
                       marginBottom: '1.5rem',
                       border: '1px solid #fca5a5'
                     }}>
-                      <h4 style={{ marginBottom: '1rem', color: '#dc2626' }}>Contraindicacoes</h4>
+                      <h4 style={{ marginBottom: '1rem', color: '#dc2626' }}>Contraindicações</h4>
                       <ul style={{ paddingLeft: '1.5rem', lineHeight: '1.8' }}>
-                        <li>Reacoes alergicas a rifampicina, sulfa, dapsona ou clofazimina</li>
-                        <li>Pacientes menor 30kg (avaliacao medica obrigatoria)</li>
-                        <li>Suspeita de gravidez (informar o medico)</li>
+                        <li>Reações alérgicas a rifampicina, sulfa, dapsona ou clofazimina</li>
+                        <li>Pacientes menor 30kg (avaliação médica obrigatória)</li>
+                        <li>Suspeita de gravidez (informar o médico)</li>
                       </ul>
                     </div>
 
-                    <h4 style={{ marginBottom: '1rem', color: '#ea580c' }}>Reacoes Adversas Comuns</h4>
+                    <h4 style={{ marginBottom: '1rem', color: '#ea580c' }}>Reações Adversas Comuns</h4>
                     <div style={{
                       display: 'grid',
                       gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
@@ -621,19 +621,19 @@ export default function SobrePage() {
                       <div style={{ padding: '1rem', background: '#fff7ed', borderRadius: '8px' }}>
                         <strong style={{ color: '#dc2626' }}>Rifampicina</strong>
                         <p style={{ fontSize: '0.9rem', marginTop: '0.5rem' }}>
-                          Nausea, vomito, ictericia, disfuncao hepatica
+                          Náusea, vômito, icterícia, disfunção hepática
                         </p>
                       </div>
                       <div style={{ padding: '1rem', background: '#eff6ff', borderRadius: '8px' }}>
                         <strong style={{ color: '#3b82f6' }}>Dapsona</strong>
                         <p style={{ fontSize: '0.9rem', marginTop: '0.5rem' }}>
-                          Dermatose bolhosa, hepatite toxica, anemia hemolitica
+                          Dermatose bolhosa, hepatite tóxica, anemia hemolítica
                         </p>
                       </div>
                       <div style={{ padding: '1rem', background: '#f0fdf4', borderRadius: '8px' }}>
                         <strong style={{ color: '#059669' }}>Clofazimina</strong>
                         <p style={{ fontSize: '0.9rem', marginTop: '0.5rem' }}>
-                          Descoloracao da pele, ictiose, urina rosada
+                          Descoloração da pele, ictiose, urina rosada
                         </p>
                       </div>
                     </div>
@@ -643,7 +643,7 @@ export default function SobrePage() {
             </div>
           </section>
 
-          {/* Secao: Metodologia */}
+          {/* Seção: Metodologia */}
           <section id="metodologia" style={{ marginBottom: '4rem', scrollMarginTop: '120px' }}>
             <h2 style={{
               fontSize: '1.8rem',
@@ -676,10 +676,10 @@ export default function SobrePage() {
                 </div>
                 <div style={{ padding: '1rem', background: 'white', borderRadius: '8px', textAlign: 'center' }}>
                   <div style={{ fontWeight: '600', color: '#003366' }}>Abordagem</div>
-                  <div style={{ fontSize: '0.9rem', color: '#6b7280' }}>Metodos Mistos</div>
+                  <div style={{ fontSize: '0.9rem', color: '#6b7280' }}>Métodos Mistos</div>
                 </div>
                 <div style={{ padding: '1rem', background: 'white', borderRadius: '8px', textAlign: 'center' }}>
-                  <div style={{ fontWeight: '600', color: '#003366' }}>Duracao</div>
+                  <div style={{ fontWeight: '600', color: '#003366' }}>Duração</div>
                   <div style={{ fontSize: '0.9rem', color: '#6b7280' }}>24 meses</div>
                 </div>
                 <div style={{ padding: '1rem', background: 'white', borderRadius: '8px', textAlign: 'center' }}>
@@ -741,7 +741,7 @@ export default function SobrePage() {
                   }}>
                     <div>
                       <h5 style={{ fontSize: '0.9rem', color: '#003366', marginBottom: '0.5rem' }}>
-                        Metodos
+                        Métodos
                       </h5>
                       <ul style={{
                         paddingLeft: '1.2rem',
@@ -772,7 +772,7 @@ export default function SobrePage() {
               ))}
             </div>
 
-            {/* Aspectos eticos */}
+            {/* Aspectos éticos */}
             <div style={{
               marginTop: '2rem',
               padding: '1.5rem',
@@ -781,16 +781,16 @@ export default function SobrePage() {
               border: '1px solid #f59e0b'
             }}>
               <h4 style={{ color: '#d97706', marginBottom: '0.75rem' }}>
-                Aspectos Eticos
+                Aspectos Éticos
               </h4>
               <p style={{ fontSize: '0.95rem', color: '#92400e', lineHeight: '1.6' }}>
-                Pesquisa conduzida seguindo as diretrizes eticas da Resolucao CNS 466/2012.
-                Aprovada pelo Comite de Etica em Pesquisa (CEP-UnB).
+                Pesquisa conduzida seguindo as diretrizes éticas da Resolução CNS 466/2012.
+                Aprovada pelo Comitê de Ética em Pesquisa (CEP-UnB).
               </p>
             </div>
           </section>
 
-          {/* Secao: Referencias */}
+          {/* Seção: Referências */}
           <section id="referencias" style={{ marginBottom: '4rem', scrollMarginTop: '120px' }}>
             <h2 style={{
               fontSize: '1.8rem',
@@ -800,7 +800,7 @@ export default function SobrePage() {
               alignItems: 'center',
               gap: '0.5rem'
             }}>
-              📖 Referencias
+              📖 Referências
             </h2>
 
             {referencias.map((categoria, catIndex) => (
@@ -879,15 +879,15 @@ export default function SobrePage() {
                 color: '#374151',
                 lineHeight: '1.6'
               }}>
-                MOURA JUNIOR, N.G. <strong>Sistema de Roteiros de Dispensacao PQT-U</strong>.
-                Plataforma educacional para orientacao farmaceutica em hanseniase.
-                Brasilia: Universidade de Brasilia, 2024.
-                Disponivel em: https://roteirosdedispensacao.com
+                MOURA JUNIOR, N.G. <strong>Sistema de Roteiros de Dispensação PQT-U</strong>.
+                Plataforma educacional para orientação farmacêutica em hanseníase.
+                Brasília: Universidade de Brasília, 2024.
+                Disponível em: https://roteirosdedispensacao.com
               </div>
             </div>
           </section>
 
-          {/* Secao: Codigo Fonte */}
+          {/* Seção: Código Fonte */}
           <section id="codigo-fonte" style={{ marginBottom: '4rem', scrollMarginTop: '120px' }}>
             <h2 style={{
               fontSize: '1.8rem',
@@ -897,7 +897,7 @@ export default function SobrePage() {
               alignItems: 'center',
               gap: '0.5rem'
             }}>
-              💻 Codigo Fonte
+              💻 Código Fonte
             </h2>
 
             <div style={{
@@ -912,8 +912,8 @@ export default function SobrePage() {
                 lineHeight: '1.8',
                 marginBottom: '1.5rem'
               }}>
-                Este projeto e open-source e esta disponivel no GitHub para contribuicoes,
-                sugestoes e melhorias da comunidade.
+                Este projeto é open-source e está disponível no GitHub para contribuições,
+                sugestões e melhorias da comunidade.
               </p>
 
               <div style={{
@@ -949,7 +949,7 @@ export default function SobrePage() {
                 color: '#003366',
                 marginBottom: '1rem'
               }}>
-                Stack Tecnologico
+                Stack Tecnológico
               </h3>
 
               <div style={{
@@ -1020,7 +1020,7 @@ export default function SobrePage() {
                 textAlign: 'center'
               }}>
                 <p style={{ fontSize: '0.95rem', color: '#15803d' }}>
-                  <strong>Licenca:</strong> MIT License - Uso livre para fins educacionais e de pesquisa
+                  <strong>Licença:</strong> MIT License - Uso livre para fins educacionais e de pesquisa
                 </p>
               </div>
             </div>

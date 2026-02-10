@@ -27,8 +27,8 @@ export default function StaticEducationalLayout({ children }: StaticEducationalL
               id="main-content"
               role="main"
               style={{
-                minHeight: 'calc(100vh - 160px)', // Ajustado para Fast Access Bar
-                paddingTop: '160px', // 40px FastAccessBar + 120px header
+                minHeight: 'calc(100vh - 120px)',
+                paddingTop: '120px', // 40px FastAccessBar + 80px header
                 width: '100%'
               }}
             >

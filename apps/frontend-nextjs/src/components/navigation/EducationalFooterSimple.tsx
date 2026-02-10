@@ -181,7 +181,7 @@ export default function EducationalFooterSimple({
                 fontSize: '0.7rem',
                 color: '#94a3b8'
               }}>
-                Pesquisa de doutorado • {currentYear} © {currentYear} Sistema Educacional Roteiros de Dispensação
+                © {currentYear} Sistema Educacional Roteiros de Dispensação • Pesquisa de doutorado
               </div>
             </div>
           </div>

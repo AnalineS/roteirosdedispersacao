@@ -151,10 +151,8 @@ export function AuthProviderWrapper({ children }: AuthProviderWrapperProps) {
             throw new Error('Não foi possível conectar ao servidor');
           }
         } else if (!FEATURES.AUTH_ENABLED) {
-          // Auth disabled - check if required environment variables are missing
-          if (process.env.NODE_ENV === 'production' && !process.env.NEXT_PUBLIC_AUTH_ENABLED) {
-            throw new Error('Configuração ausente');
-          }
+          // Auth disabled - proceed normally without authentication
+          // Public pages work without backend auth
         }
 
         // Initialization successful

@@ -473,7 +473,8 @@ export default function LoginPage() {
           font-size: var(--font-size-lg);
           line-height: var(--line-height-relaxed);
           margin-bottom: var(--spacing-2xl);
-          opacity: 0.95;
+          opacity: 1;
+          text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
         }
 
         .illustration-features {

@@ -171,7 +171,7 @@ export default function EducationalFooter({
           icon: <SettingsIcon size={16} />,
           links: [
             { label: 'Calculadora PQT-U', href: '/resources/calculator', description: 'Cálculo de doses medicamentosas' },
-            { label: 'Verificador de Interações', href: '/resources/interactions', description: 'Análise de incompatibilidades' },
+            { label: 'Verificador de Interações', href: '/resources', description: 'Análise de incompatibilidades' },
             { label: 'Checklist de Dispensação', href: '/resources/checklist', description: 'Lista de verificação procedural' },
             { label: 'Glossário Médico', href: '/glossario', description: 'Terminologia técnica explicada' },
             { label: 'Downloads', href: '/downloads', description: 'Materiais complementares' }

@@ -213,7 +213,7 @@ export default function FastAccessBar({
     >
       <div style={{
         background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
-        padding: '8px 16px',
+        padding: '4px 16px',
         maxWidth: '100vw',
         overflow: 'hidden'
       }}>
@@ -240,7 +240,7 @@ export default function FastAccessBar({
                   display: 'flex',
                   alignItems: 'center',
                   gap: '6px',
-                  padding: '8px 12px',
+                  padding: '4px 10px',
                   backgroundColor: colors.background,
                   border: `1px solid ${colors.border}`,
                   borderRadius: '20px',

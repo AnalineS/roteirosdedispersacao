@@ -79,7 +79,7 @@ export default function SearchPage() {
                       <span className="link-icon">🏥</span>
                       <span className="link-text">Protocolos PQT-U</span>
                     </a>
-                    <a href="/resources/interactions" className="quick-link">
+                    <a href="/resources" className="quick-link">
                       <span className="link-icon">⚠️</span>
                       <span className="link-text">Interações Medicamentosas</span>
                     </a>

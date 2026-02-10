@@ -233,7 +233,18 @@ export default function LGPDCompliance({
   return (
     <>
       {/* Overlay */}
-      <div style={{
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="lgpd-modal-title"
+        onKeyDown={(e) => {
+          if (e.key === 'Escape') {
+            handleDecline();
+          }
+        }}
+        tabIndex={-1}
+        ref={(el) => el?.focus()}
+        style={{
         position: 'fixed',
         top: 0,
         left: 0,
@@ -256,7 +267,7 @@ export default function LGPDCompliance({
           overflowY: 'auto',
           boxShadow: '0 20px 40px rgba(0, 0, 0, 0.2)'
         }}>
-          <h2 style={{
+          <h2 id="lgpd-modal-title" style={{
             color: unbColors.primary,
             fontSize: '1.3rem',
             marginBottom: '1rem',

@@ -10,7 +10,7 @@ export const CRITICAL_MEDICAL_SHORTCUTS: EmergencyShortcut[] = [
   {
     id: 'drug_interactions',
     label: 'Interações',
-    href: '/resources/interactions',
+    href: '/resources',
     icon: '⚠️',
     urgency: 'critical',
     category: 'interactions',
@@ -27,7 +27,7 @@ export const CRITICAL_MEDICAL_SHORTCUTS: EmergencyShortcut[] = [
   {
     id: 'contraindications',
     label: 'Contraindicações',
-    href: '/resources/contraindications',
+    href: '/modules/tratamento',
     icon: '🚫',
     urgency: 'critical',
     category: 'contraindications',
@@ -44,7 +44,7 @@ export const CRITICAL_MEDICAL_SHORTCUTS: EmergencyShortcut[] = [
   {
     id: 'emergency_dosing',
     label: 'Doses Críticas',
-    href: '/resources/emergency-dosing',
+    href: '/resources/calculator',
     icon: '💊',
     urgency: 'critical',
     category: 'dosing',
@@ -61,7 +61,7 @@ export const CRITICAL_MEDICAL_SHORTCUTS: EmergencyShortcut[] = [
   {
     id: 'clinical_protocols',
     label: 'Protocolos',
-    href: '/modules/protocolos-clinicos',
+    href: '/modules/tratamento',
     icon: '📋',
     urgency: 'important',
     category: 'protocols',
@@ -78,7 +78,7 @@ export const CRITICAL_MEDICAL_SHORTCUTS: EmergencyShortcut[] = [
   {
     id: 'pharmacist_contact',
     label: 'Farmacêutico',
-    href: '/sobre-a-tese',
+    href: '/sobre',
     icon: '📞',
     urgency: 'important',
     category: 'contact',

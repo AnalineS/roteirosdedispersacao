@@ -44,7 +44,7 @@ const SITE_HIERARCHY: Record<string, HierarchyPage> = {
   '/resources': { level: 1, parent: '/', label: 'Recursos Práticos', icon: '🛠️', category: 'tools' },
   '/resources/calculator': { level: 2, parent: '/resources', label: 'Calculadora de Doses', icon: '🧮', category: 'tools' },
   '/resources/checklist': { level: 2, parent: '/resources', label: 'Checklist Dispensação', icon: '✅', category: 'tools' },
-  '/resources/interactions': { level: 2, parent: '/resources', label: 'Verificador de Interações', icon: '⚠️', category: 'tools' },
+  // '/resources/interactions' removed - consolidated into /resources
   
   // Interação
   '/chat': { level: 1, parent: '/', label: 'Assistentes Virtuais', icon: '💬', category: 'interaction' },

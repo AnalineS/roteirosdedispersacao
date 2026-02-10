@@ -296,7 +296,7 @@ export function usePersonalization() {
     if (personalization.medicalRole === 'pharmacy') {
       baseNavigation.push(
         { label: 'Calculadora', href: '/resources/calculator', priority: 1.5 },
-        { label: 'Interações', href: '/resources/interactions', priority: 1.8 }
+        { label: 'Interações', href: '/resources', priority: 1.8 }
       );
     }
 

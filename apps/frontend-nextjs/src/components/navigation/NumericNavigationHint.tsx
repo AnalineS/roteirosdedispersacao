@@ -20,18 +20,17 @@ export default function NumericNavigationHint({
   autoHideDelay = 5000
 }: NumericNavigationHintProps): React.JSX.Element | null {
   
-  const [isVisible, setIsVisible] = useState(!autoHide);
-  const [isMinimized, setIsMinimized] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(true);
   const { availableRoutes } = useNumericNavigation({ enabled: false });
 
-  // Auto-hide functionality
+  // Auto-hide functionality (only hides after being shown by user interaction)
   useEffect(() => {
-    if (autoHide && visible) {
-      setIsVisible(true);
+    if (autoHide && visible && isVisible) {
       const timer = setTimeout(() => setIsVisible(false), autoHideDelay);
       return () => clearTimeout(timer);
     }
-  }, [autoHide, autoHideDelay, visible]);
+  }, [autoHide, autoHideDelay, visible, isVisible]);
 
   // Show on key activity
   useEffect(() => {
