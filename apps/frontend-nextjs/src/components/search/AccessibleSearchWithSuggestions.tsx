@@ -1,23 +1,12 @@
 'use client';
 
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
+import { safeLocalStorage } from '@/hooks/useClientStorage';
 import { useOptimizedEffect, useAutoCleanup } from '@/hooks/useEffectOptimizer';
 import { useRouter } from 'next/navigation';
 import { getUnbColors } from '@/config/modernTheme';
 import { useChatAccessibility } from '@/components/chat/accessibility/ChatAccessibilityProvider';
-
-// SSR-safe DOMPurify wrapper
-const sanitizeHtml = (html: string): string => {
-  if (!isClientSide()) return html; // No sanitization on server, Next.js will handle it
-
-  try {
-    const DOMPurify = require('dompurify');
-    return DOMPurify.sanitize(html);
-  } catch {
-    return html; // Fallback to unsanitized if DOMPurify fails
-  }
-};
+import { sanitizeHtml } from '@/utils/sanitize';
 
 // Speech Recognition API type definitions
 interface SpeechRecognitionEvent extends Event {

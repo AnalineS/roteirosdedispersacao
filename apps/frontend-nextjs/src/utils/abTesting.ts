@@ -63,9 +63,9 @@ export interface ABVariant {
   // Configuração do variant
   config: {
     componentName?: string;
-    props?: Record<string, any>;
-    styles?: Record<string, any>;
-    content?: Record<string, any>;
+    props?: Record<string, unknown>;
+    styles?: Record<string, unknown>;
+    content?: Record<string, unknown>;
   };
   
   // Resultados
@@ -120,21 +120,29 @@ export interface ABUserAssignment {
   };
 }
 
+export interface ABEventData {
+  score?: number;
+  timeOnPage?: number;
+  componentId?: string;
+  metadata?: Record<string, unknown>;
+  [key: string]: unknown;
+}
+
 export interface ABEvent {
   eventId: string;
   experimentId: string;
   variantId: string;
   userId: string;
   sessionId: string;
-  
+
   eventType: 'impression' | 'conversion' | 'interaction' | 'completion';
-  eventData: any;
+  eventData: ABEventData;
   timestamp: Date;
-  
+
   // Contexto do evento
   pageUrl?: string;
   componentId?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 // ================== SISTEMA PRINCIPAL A/B TESTING ==================
@@ -377,7 +385,7 @@ export class ABTestingFramework {
     variantId: string,
     userId: string,
     sessionId: string,
-    eventData: any = {}
+    eventData: ABEventData = {}
   ): void {
     const event: ABEvent = {
       eventId: `event_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -407,7 +415,7 @@ export class ABTestingFramework {
       riskLevel: 'low',
       data: {
         input: { experimentId, variantId, eventType },
-        output: this.sanitizeEventData(eventData),
+        output: { sanitizedData: this.sanitizeEventData(eventData) },
         validation: undefined,
         errors: []
       },
@@ -415,7 +423,7 @@ export class ABTestingFramework {
     });
   }
 
-  private updateVariantMetrics(experimentId: string, variantId: string, eventType: ABEvent['eventType'], eventData: any): void {
+  private updateVariantMetrics(experimentId: string, variantId: string, eventType: ABEvent['eventType'], eventData: ABEventData): void {
     const experiment = this.experiments.get(experimentId);
     if (!experiment) return;
     
@@ -586,8 +594,8 @@ export class ABTestingFramework {
 
   public useExperiment(experimentId: string, userId?: string, sessionId?: string): {
     variant: string | null;
-    trackConversion: (data?: any) => void;
-    trackInteraction: (data?: any) => void;
+    trackConversion: (data?: ABEventData) => void;
+    trackInteraction: (data?: ABEventData) => void;
   } {
     const defaultUserId = userId || this.generateUserId();
     const defaultSessionId = sessionId || this.generateSessionId();
@@ -716,9 +724,9 @@ export class ABTestingFramework {
     }
   }
 
-  private sanitizeEventData(eventData: any): any {
+  private sanitizeEventData(eventData: ABEventData): Record<string, unknown> {
     // Remover dados sensíveis para logging
-    const sanitized = { ...eventData };
+    const sanitized: Record<string, unknown> = { ...eventData };
     delete sanitized.personalInfo;
     delete sanitized.email;
     return sanitized;

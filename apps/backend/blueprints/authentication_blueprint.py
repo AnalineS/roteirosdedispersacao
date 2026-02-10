@@ -13,9 +13,10 @@ Endpoints:
 - POST /google/callback - Google OAuth callback
 - POST /verify - Token verification
 """
-from flask import Blueprint, jsonify, request, g
-from datetime import datetime
+from flask import Blueprint, jsonify, request, g, make_response
+from datetime import datetime, timedelta
 import logging
+import os
 from functools import wraps
 
 from services.auth.jwt_auth_manager import get_auth_manager
@@ -28,7 +29,55 @@ ERR_REQUEST_BODY_REQUIRED = 'Request body required'
 ERR_INVALID_CREDENTIALS = 'Invalid credentials'
 ERR_MISSING_AUTH_HEADER = 'Missing or invalid authorization header'
 
-authentication_bp = Blueprint('authentication', __name__, url_prefix='/api/v1/auth')
+# Cookie configuration
+AUTH_PREFIX = '/api/v1/auth'
+COOKIE_SECURE = os.getenv('SESSION_COOKIE_SECURE', 'true').lower() == 'true'
+COOKIE_SAMESITE = 'Strict'
+ACCESS_TOKEN_MAX_AGE = 3600  # 1 hour
+REFRESH_TOKEN_MAX_AGE = 604800  # 7 days
+
+authentication_bp = Blueprint('authentication', __name__, url_prefix=AUTH_PREFIX)
+
+
+def _set_auth_cookies(response, access_token, refresh_token):
+    """Set httpOnly secure cookies for JWT tokens"""
+    response.set_cookie(
+        'auth_token',
+        value=access_token,
+        httponly=True,
+        secure=COOKIE_SECURE,
+        samesite=COOKIE_SAMESITE,
+        max_age=ACCESS_TOKEN_MAX_AGE,
+        path='/'
+    )
+    response.set_cookie(
+        'refresh_token',
+        value=refresh_token,
+        httponly=True,
+        secure=COOKIE_SECURE,
+        samesite=COOKIE_SAMESITE,
+        max_age=REFRESH_TOKEN_MAX_AGE,
+        path=AUTH_PREFIX
+    )
+    # Non-sensitive indicator for frontend to know user is logged in
+    response.set_cookie(
+        'is_authenticated',
+        value='true',
+        httponly=False,
+        secure=COOKIE_SECURE,
+        samesite=COOKIE_SAMESITE,
+        max_age=ACCESS_TOKEN_MAX_AGE,
+        path='/'
+    )
+    return response
+
+
+def _clear_auth_cookies(response):
+    """Clear all auth cookies on logout"""
+    response.delete_cookie('auth_token', path='/')
+    response.delete_cookie('refresh_token', path=AUTH_PREFIX)
+    response.delete_cookie('is_authenticated', path='/')
+    return response
 
 
 def require_auth(f):
@@ -102,7 +151,7 @@ def register():
 
         logger.info("User registered: %s", sanitize_log_input(email))
 
-        return jsonify({
+        resp = make_response(jsonify({
             'success': True,
             'user': {
                 'id': result['user']['sub'],
@@ -112,7 +161,9 @@ def register():
             'access_token': result['access_token'],
             'refresh_token': result['refresh_token'],
             'session_id': result['session_id']
-        }), 201
+        }), 201)
+        _set_auth_cookies(resp, result['access_token'], result['refresh_token'])
+        return resp
 
     except Exception as e:
         logger.error("Registration error: %s", sanitize_error(e))
@@ -142,7 +193,7 @@ def login():
 
         logger.info("User logged in: %s", sanitize_log_input(email))
 
-        return jsonify({
+        resp = make_response(jsonify({
             'success': True,
             'user': {
                 'id': result['user']['sub'],
@@ -152,7 +203,9 @@ def login():
             'access_token': result['access_token'],
             'refresh_token': result['refresh_token'],
             'session_id': result['session_id']
-        }), 200
+        }), 200)
+        _set_auth_cookies(resp, result['access_token'], result['refresh_token'])
+        return resp
 
     except Exception as e:
         logger.error("Login error: %s", sanitize_error(e))
@@ -204,7 +257,9 @@ def logout():
 
         if success:
             logger.info("User logged out: %s", sanitize_log_input(g.current_user.get('email', 'unknown')))
-            return jsonify({'success': True, 'message': 'Logged out successfully'}), 200
+            resp = make_response(jsonify({'success': True, 'message': 'Logged out successfully'}), 200)
+            _clear_auth_cookies(resp)
+            return resp
 
         return jsonify({'error': 'Logout failed'}), 500
 
@@ -329,7 +384,7 @@ def google_callback():
 
             logger.info("Google login successful: %s", sanitize_log_input(result['user'].get('email', 'unknown')))
 
-            return jsonify({
+            resp = make_response(jsonify({
                 'success': True,
                 'user': {
                     'id': result['user'].get('sub'),
@@ -340,7 +395,9 @@ def google_callback():
                 'access_token': result['access_token'],
                 'refresh_token': result['refresh_token'],
                 'session_id': result['session_id']
-            }), 200
+            }), 200)
+            _set_auth_cookies(resp, result['access_token'], result['refresh_token'])
+            return resp
 
         except ValueError as e:
             return jsonify({'error': str(e)}), 400
@@ -348,6 +405,28 @@ def google_callback():
     except Exception as e:
         logger.error("Google OAuth callback error: %s", sanitize_error(e))
         return jsonify({'error': 'Google authentication failed'}), 500
+
+
+@authentication_bp.route('/role', methods=['GET'])
+@require_auth
+def get_user_role():
+    """Get current user role based on server-side admin list"""
+    try:
+        email = g.current_user.get('email', '').lower()
+
+        admin_emails_raw = os.getenv('ADMIN_EMAILS', '')
+        admin_emails = [e.strip().lower() for e in admin_emails_raw.split(',') if e.strip()]
+
+        role = 'admin' if email in admin_emails else 'user'
+
+        return jsonify({
+            'role': role,
+            'email': email
+        }), 200
+
+    except Exception as e:
+        logger.error("Get user role error: %s", sanitize_error(e))
+        return jsonify({'error': 'Failed to get user role'}), 500
 
 
 __all__ = ['authentication_bp']

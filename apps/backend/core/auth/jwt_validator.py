@@ -12,20 +12,25 @@ logger = logging.getLogger(__name__)
 
 def extract_token_from_request() -> Optional[str]:
     """
-    Extrai token JWT do header Authorization
+    Extrai token JWT do header Authorization ou de cookie httpOnly
+    Prioridade: Authorization header > cookie auth_token
     """
+    # Try Authorization header first
     auth_header = request.headers.get('Authorization')
-    if not auth_header:
-        return None
+    if auth_header:
+        try:
+            scheme, token = auth_header.split(' ', 1)
+            if scheme.lower() == 'bearer' and token:
+                return token
+        except ValueError:
+            pass
 
-    # Formato: "Bearer <token>"
-    try:
-        scheme, token = auth_header.split(' ', 1)
-        if scheme.lower() != 'bearer':
-            return None
+    # Fallback to httpOnly cookie
+    token = request.cookies.get('auth_token')
+    if token:
         return token
-    except ValueError:
-        return None
+
+    return None
 
 def require_auth(f: Callable) -> Callable:
     """

@@ -157,7 +157,10 @@ export function useBackendSync(options: Partial<SyncOptions> = {}) {
     }));
 
     try {
-      const migrationData: any[] = [];
+      const migrationData: Array<
+        | { type: 'profile'; id: string; data: Partial<BackendUserProfile> }
+        | { type: 'conversation'; id: string; data: Partial<BackendConversation> }
+      > = [];
       let totalItems = 0;
 
       // Migrar perfil do usuário
@@ -321,11 +324,11 @@ export function useBackendSync(options: Partial<SyncOptions> = {}) {
           safeLocalStorage()?.removeItem('feedbackHistory');
         }
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Erro na migração:', error);
       setMigrationState(prev => ({
         ...prev,
-        errors: [...prev.errors, error.message || 'Erro geral na migração']
+        errors: [...prev.errors, error instanceof Error ? error.message : 'Erro geral na migração']
       }));
     } finally {
       setMigrationState(prev => ({
@@ -350,8 +353,8 @@ export function useBackendSync(options: Partial<SyncOptions> = {}) {
         // Atualizar contexto com dados de progresso
         console.log('Progresso do usuário sincronizado:', userProgress.data);
       }
-    } catch (error: any) {
-      addSyncError(`Erro ao sincronizar perfil: ${error.message}`);
+    } catch (error) {
+      addSyncError(`Erro ao sincronizar perfil: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [auth]);
@@ -376,8 +379,8 @@ export function useBackendSync(options: Partial<SyncOptions> = {}) {
       }
 
       console.log('Sincronização de conversas realizada');
-    } catch (error: any) {
-      addSyncError(`Erro ao sincronizar conversas: ${error.message}`);
+    } catch (error) {
+      addSyncError(`Erro ao sincronizar conversas: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [auth]);
@@ -418,12 +421,12 @@ export function useBackendSync(options: Partial<SyncOptions> = {}) {
       });
 
       console.log('Sincronização completa realizada com sucesso');
-    } catch (error: any) {
+    } catch (error) {
       console.error('Erro na sincronização completa:', error);
-      addSyncError(`Erro na sincronização: ${error.message}`);
+      addSyncError(`Erro na sincronização: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
     } finally {
       syncInProgressRef.current = false;
-      updateSyncState({ 
+      updateSyncState({
         isSyncing: false,
         progress: 0
       });
@@ -464,8 +467,8 @@ export function useBackendSync(options: Partial<SyncOptions> = {}) {
     try {
       await performFullSync();
       return { success: true };
-    } catch (error: any) {
-      return { success: false, error: error.message };
+    } catch (error) {
+      return { success: false, error: error instanceof Error ? error.message : 'Erro desconhecido' };
     }
   }, [performFullSync]);
 
@@ -473,8 +476,8 @@ export function useBackendSync(options: Partial<SyncOptions> = {}) {
     try {
       await migrateLocalStorageData();
       return { success: true };
-    } catch (error: any) {
-      return { success: false, error: error.message };
+    } catch (error) {
+      return { success: false, error: error instanceof Error ? error.message : 'Erro desconhecido' };
     }
   }, [migrateLocalStorageData]);
 

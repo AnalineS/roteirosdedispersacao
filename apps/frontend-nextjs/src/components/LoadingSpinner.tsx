@@ -51,11 +51,11 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
         }
       `}</style>
       
-      <div style={containerStyle}>
-        <div style={spinnerStyle} />
+      <div style={containerStyle} role="status" aria-label={message || 'Carregando'}>
+        <div style={spinnerStyle} aria-hidden="true" />
         {message && (
-          <span style={{ 
-            fontSize: '0.9rem', 
+          <span style={{
+            fontSize: '0.9rem',
             color: theme.colors.neutral[600],
             fontWeight: 500
           }}>

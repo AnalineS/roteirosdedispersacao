@@ -273,6 +273,7 @@ jobs:
           ENV_VARS+=";EMAIL_FROM=${{ vars.EMAIL_FROM }}"
           ENV_VARS+=";EMAIL_PASSWORD=${{ secrets.EMAIL_PASSWORD }}"
           ENV_VARS+=";SESSION_COOKIE_SECURE=${{ vars.SESSION_COOKIE_SECURE }}"
+          ENV_VARS+=";ADMIN_EMAILS=${{ secrets.ADMIN_EMAILS }}"
 
           gcloud run deploy ${{ steps.vars.outputs.SERVICE_NAME }} \
             --image ${{ env.IMAGE }} \

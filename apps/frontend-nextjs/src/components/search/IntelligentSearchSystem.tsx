@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { getUnbColors } from '@/config/modernTheme';
+import { sanitizeHtml } from '@/utils/sanitize';
 
 // Tipos de público-alvo
 export type AudienceType = 'professional' | 'patient' | 'student' | 'general';
@@ -430,8 +431,8 @@ export default function IntelligentSearchSystem({
                       fontSize: '1rem',
                       fontWeight: '600',
                       color: unbColors.primary
-                    }} dangerouslySetInnerHTML={{ 
-                      __html: result.highlightedText?.split(' | ')[0] || result.title 
+                    }} dangerouslySetInnerHTML={{
+                      __html: sanitizeHtml(result.highlightedText?.split(' | ')[0] || result.title)
                     }} />
                     
                     <span style={{
@@ -453,8 +454,8 @@ export default function IntelligentSearchSystem({
                     fontSize: '0.9rem',
                     color: '#6b7280',
                     lineHeight: '1.4'
-                  }} dangerouslySetInnerHTML={{ 
-                    __html: result.highlightedText?.split(' | ')[1] || result.snippet 
+                  }} dangerouslySetInnerHTML={{
+                    __html: sanitizeHtml(result.highlightedText?.split(' | ')[1] || result.snippet)
                   }} />
                   
                   <div style={{

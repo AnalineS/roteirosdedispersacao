@@ -594,17 +594,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
-  // Admin check
-  const ADMIN_EMAILS = [
-    'neeliogomes@hotmail.com',
-    'sousa.analine@gmail.com',
-    'roteirosdedispensacaounb@gmail.com',
-    'neliogmoura@gmail.com',
-  ];
+  // Admin role state - determined by backend, never by client
+  const [userRole, setUserRole] = useState<'user' | 'admin'>('user');
+
+  const fetchUserRole = useCallback(async (): Promise<void> => {
+    if (!user || user.isAnonymous) {
+      setUserRole('user');
+      return;
+    }
+    try {
+      const role = await jwtClient.getUserRole();
+      setUserRole(role);
+    } catch {
+      setUserRole('user');
+    }
+  }, [user]);
 
   const isAdmin = (): boolean => {
-    if (!user?.email) return false;
-    return ADMIN_EMAILS.includes(user.email.toLowerCase());
+    return userRole === 'admin';
   };
 
   const clearError = (): void => {
@@ -713,6 +720,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
     initAuth();
     // Empty dependency array - run only once on mount
   }, []);
+
+  // Fetch user role from backend when user changes
+  useEffect(() => {
+    fetchUserRole();
+  }, [fetchUserRole]);
 
   // ============================================
   // CONTEXT VALUE

@@ -32,7 +32,7 @@ const validateApiUrl = (url: string): string => {
 // Environment-aware API configuration
 const getApiConfig = (): { apiUrl: string; timeout: number; retries: number } => {
   const rawApiUrl = config.api.baseUrl;
-  const apiUrl = validateApiUrl(rawApiUrl) || rawApiUrl; // Fallback for relative URLs
+  const apiUrl = validateApiUrl(rawApiUrl) || ''; // Empty string = relative URLs, never bypass validation
   const timeout = config.api.timeout;
   const retries = config.api.retries;
 
@@ -85,7 +85,8 @@ export async function getPersonas(): Promise<PersonasResponse> {
       const response = await fetch(`${API_BASE_URL}/api/v1/personas`, {
         method: 'GET',
         headers: { 'Accept': 'application/json' },
-        signal: controller.signal
+        signal: controller.signal,
+        credentials: 'include'
       });
 
       clearTimeout(timeoutId);
@@ -210,7 +211,8 @@ export async function sendChatMessage(request: ChatRequest): Promise<ChatRespons
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(request),
-        signal: controller.signal
+        signal: controller.signal,
+        credentials: 'include'
       });
 
       clearTimeout(timeoutId);
@@ -328,7 +330,8 @@ export async function checkAPIHealth(): Promise<{
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: 'GET',
         headers: { 'Accept': 'application/json' },
-        signal: controller.signal
+        signal: controller.signal,
+        credentials: 'include'
       });
 
       clearTimeout(timeoutId);
@@ -388,7 +391,8 @@ export async function detectQuestionScope(question: string): Promise<{ scope: st
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ question }),
-        signal: controller.signal
+        signal: controller.signal,
+        credentials: 'include'
       });
 
       clearTimeout(timeoutId);

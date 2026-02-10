@@ -50,6 +50,7 @@ class JWTClient {
     this.api = axios.create({
       baseURL: `${this.baseURL}/api/v1`,
       timeout: config.api.timeout,
+      withCredentials: true, // Send httpOnly cookies automatically
       headers: {
         'Content-Type': 'application/json',
       },
@@ -269,9 +270,30 @@ class JWTClient {
   }
 
   /**
+   * Get current user role from backend (admin check server-side)
+   */
+  async getUserRole(): Promise<'admin' | 'user'> {
+    if (!this.accessToken) {
+      return 'user';
+    }
+    try {
+      const response: AxiosResponse<{ role: 'admin' | 'user' }> = await this.api.get('/auth/role');
+      return response.data.role;
+    } catch {
+      return 'user';
+    }
+  }
+
+  /**
    * Verificar se usuário está autenticado
+   * Uses non-httpOnly indicator cookie set by backend alongside httpOnly auth cookies
    */
   isAuthenticated(): boolean {
+    // Check backend-set indicator cookie first, fallback to in-memory token
+    if (typeof window !== 'undefined') {
+      const indicator = Cookies.get('is_authenticated');
+      if (indicator === 'true') return true;
+    }
     return !!this.accessToken;
   }
 

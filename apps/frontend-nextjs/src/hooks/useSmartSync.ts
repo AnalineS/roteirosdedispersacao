@@ -55,12 +55,28 @@ interface LocalSyncManager {
   getState(): SmartSyncState;
   getMetrics(): LocalSyncMetrics;
   getQueueStatus(): LocalQueueStatus;
-  queueForUpload(id: string, type: string, data: any, priority: string): void;
-  getPendingConflicts(): any[];
+  queueForUpload(id: string, type: string, data: Record<string, unknown>, priority: string): void;
+  getPendingConflicts(): RawConflict[];
   resolveConflict(conflictId: string, resolution: 'local' | 'remote'): Promise<void>;
-  resolveConflictManually(conflictId: string, resolution: 'local' | 'remote' | 'custom', customData?: any): Promise<void>;
+  resolveConflictManually(conflictId: string, resolution: 'local' | 'remote' | 'custom', customData?: Record<string, unknown>): Promise<void>;
   isInitialized(): boolean;
   destroy(): void;
+}
+
+interface ConflictResolution {
+  explanation?: string;
+  strategy?: string;
+}
+
+interface RawConflict {
+  id: string;
+  type: string;
+  data: {
+    local: Record<string, unknown>;
+    remote: Record<string, unknown>;
+    resolution?: ConflictResolution;
+  };
+  lastModified: Date;
 }
 
 interface ConflictItem {
@@ -70,7 +86,7 @@ interface ConflictItem {
   description: string;
   local: Record<string, unknown>;
   remote: Record<string, unknown>;
-  resolution?: any;
+  resolution?: ConflictResolution;
   timestamp: Date;
 }
 
@@ -82,12 +98,12 @@ interface SmartSyncControls {
   resumeSync: () => void;
   
   // Queue management
-  queueItem: (type: 'conversation' | 'profile', id: string, data: any, priority?: 'low' | 'medium' | 'high') => void;
+  queueItem: (type: 'conversation' | 'profile', id: string, data: Record<string, unknown>, priority?: 'low' | 'medium' | 'high') => void;
   clearQueue: () => void;
   
   // Conflict resolution
   getConflicts: () => ConflictItem[];
-  resolveConflict: (conflictId: string, resolution: 'local' | 'remote' | 'custom', customData?: any) => Promise<void>;
+  resolveConflict: (conflictId: string, resolution: 'local' | 'remote' | 'custom', customData?: Record<string, unknown>) => Promise<void>;
   autoResolveConflicts: () => Promise<void>;
   
   // Utilities
@@ -189,17 +205,17 @@ export function useSmartSync(): SmartSyncState & SmartSyncControls {
               conflicts: 0
             };
           },
-          queueForUpload(id: string, type: string, data: any, priority: string): void {
+          queueForUpload(id: string, type: string, data: Record<string, unknown>, priority: string): void {
             // Queue item for upload
           },
-          getPendingConflicts(): any[] {
+          getPendingConflicts(): RawConflict[] {
             return [];
           },
           async resolveConflict(conflictId: string, resolution: 'local' | 'remote') {
             // Local conflict resolution
             return Promise.resolve();
           },
-          async resolveConflictManually(conflictId: string, resolution: 'local' | 'remote' | 'custom', customData?: any) {
+          async resolveConflictManually(conflictId: string, resolution: 'local' | 'remote' | 'custom', customData?: Record<string, unknown>) {
             // Manual conflict resolution
             return Promise.resolve();
           },
@@ -306,8 +322,8 @@ export function useSmartSync(): SmartSyncState & SmartSyncControls {
       setSyncState(prev => ({ ...prev, isSyncing: true, error: null }));
       await syncManagerRef.current.sync();
       updateSyncState();
-    } catch (error: any) {
-      const errorMessage = error.message || 'Erro na sincronização';
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro na sincronização';
       setSyncState(prev => ({ ...prev, error: errorMessage }));
       throw error;
     } finally {
@@ -324,8 +340,8 @@ export function useSmartSync(): SmartSyncState & SmartSyncControls {
       setSyncState(prev => ({ ...prev, isSyncing: true, error: null }));
       await syncManagerRef.current.performFullSync();
       updateSyncState();
-    } catch (error: any) {
-      const errorMessage = error.message || 'Erro na sincronização forçada';
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro na sincronização forçada';
       setSyncState(prev => ({ ...prev, error: errorMessage }));
       throw error;
     } finally {
@@ -352,9 +368,9 @@ export function useSmartSync(): SmartSyncState & SmartSyncControls {
   // ============================================
 
   const queueItem = useCallback((
-    type: 'conversation' | 'profile', 
-    id: string, 
-    data: any, 
+    type: 'conversation' | 'profile',
+    id: string,
+    data: Record<string, unknown>,
     priority: 'low' | 'medium' | 'high' = 'medium'
   ) => {
     if (!syncManagerRef.current) return;
@@ -377,7 +393,7 @@ export function useSmartSync(): SmartSyncState & SmartSyncControls {
 
     const rawConflicts = syncManagerRef.current.getPendingConflicts();
     
-    return rawConflicts.map((conflict: any) => ({
+    return rawConflicts.map((conflict: RawConflict) => ({
       id: conflict.id,
       type: conflict.type as 'conversation' | 'profile',
       title: generateConflictTitle(conflict),
@@ -390,9 +406,9 @@ export function useSmartSync(): SmartSyncState & SmartSyncControls {
   }, []);
 
   const resolveConflict = useCallback(async (
-    conflictId: string, 
-    resolution: 'local' | 'remote' | 'custom', 
-    customData?: any
+    conflictId: string,
+    resolution: 'local' | 'remote' | 'custom',
+    customData?: Record<string, unknown>
   ): Promise<void> => {
     if (!syncManagerRef.current) {
       throw new Error('Sync manager não inicializado');
@@ -401,8 +417,8 @@ export function useSmartSync(): SmartSyncState & SmartSyncControls {
     try {
       await syncManagerRef.current.resolveConflictManually(conflictId, resolution, customData);
       updateSyncState();
-    } catch (error: any) {
-      const errorMessage = error.message || 'Erro ao resolver conflito';
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao resolver conflito';
       setSyncState(prev => ({ ...prev, error: errorMessage }));
       throw error;
     }
@@ -487,10 +503,10 @@ export function useSmartSync(): SmartSyncState & SmartSyncControls {
 // HELPER FUNCTIONS
 // ============================================
 
-function generateConflictTitle(conflict: any): string {
+function generateConflictTitle(conflict: RawConflict): string {
   switch (conflict.type) {
     case 'conversation':
-      return `Conversa: ${conflict.data.local?.title || conflict.data.remote?.title || 'Sem título'}`;
+      return `Conversa: ${(conflict.data.local as { title?: string })?.title || (conflict.data.remote as { title?: string })?.title || 'Sem título'}`;
     case 'profile':
       return 'Perfil do Usuário';
     default:
@@ -498,7 +514,7 @@ function generateConflictTitle(conflict: any): string {
   }
 }
 
-function generateConflictDescription(conflict: any): string {
+function generateConflictDescription(conflict: RawConflict): string {
   const resolution = conflict.data.resolution;
   if (resolution?.explanation) {
     return resolution.explanation;
@@ -514,26 +530,28 @@ function generateConflictDescription(conflict: any): string {
   }
 }
 
-function determineAutoResolution(conflict: ConflictItem): { strategy: 'local' | 'remote'; data?: any } {
+function determineAutoResolution(conflict: ConflictItem): { strategy: 'local' | 'remote'; data?: Record<string, unknown> } {
   // Heurísticas simples para resolução automática
-  
+
   if (conflict.type === 'conversation') {
     // Para conversas, preferir a versão com mais mensagens
-    const localMessages = (conflict.local as any)?.messages?.length || 0;
-    const remoteMessages = (conflict.remote as any)?.messages?.length || 0;
-    
+    const localData = conflict.local as { messages?: unknown[] };
+    const remoteData = conflict.remote as { messages?: unknown[] };
+    const localMessages = localData.messages?.length || 0;
+    const remoteMessages = remoteData.messages?.length || 0;
+
     return {
       strategy: localMessages >= remoteMessages ? 'local' : 'remote'
     };
   }
-  
+
   if (conflict.type === 'profile') {
     // Para perfis, preferir versão remota por segurança
     return {
       strategy: 'remote'
     };
   }
-  
+
   // Default: preferir remoto
   return {
     strategy: 'remote'

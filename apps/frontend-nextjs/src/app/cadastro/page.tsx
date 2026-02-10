@@ -205,8 +205,8 @@ export default function RegisterPage() {
 
             {/* Erro */}
             {error && (
-              <div className="error-message">
-                <AlertCircle size={20} />
+              <div className="error-message" role="alert" aria-live="assertive">
+                <AlertCircle size={20} aria-hidden="true" />
                 <span>{error}</span>
               </div>
             )}
@@ -229,6 +229,7 @@ export default function RegisterPage() {
                         placeholder="Seu nome completo"
                         className="form-input"
                         required
+                        aria-required="true"
                         disabled={isLoading}
                       />
                     </div>
@@ -248,6 +249,7 @@ export default function RegisterPage() {
                         placeholder="seu@email.com"
                         className="form-input"
                         required
+                        aria-required="true"
                         disabled={isLoading}
                       />
                     </div>
@@ -267,6 +269,7 @@ export default function RegisterPage() {
                         placeholder="••••••••"
                         className="form-input"
                         required
+                        aria-required="true"
                         disabled={isLoading}
                       />
                       <button
@@ -294,6 +297,7 @@ export default function RegisterPage() {
                         placeholder="••••••••"
                         className="form-input"
                         required
+                        aria-required="true"
                         disabled={isLoading}
                       />
                       <button

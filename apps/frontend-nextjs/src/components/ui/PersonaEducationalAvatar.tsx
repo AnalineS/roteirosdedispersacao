@@ -3,6 +3,7 @@
 import React from 'react';
 import Image from 'next/image';
 import { modernChatTheme } from '@/config/modernTheme';
+import { sanitizeHtml } from '@/utils/sanitize';
 
 /**
  * Sistema de Avatares Educativos para Personas
@@ -241,7 +242,7 @@ export const PersonaEducationalMessage: React.FC<PersonaEducationalMessageProps>
             lineHeight: modernChatTheme.typography.persona.lineHeight,
             color: modernChatTheme.colors.neutral.text
           }}
-          dangerouslySetInnerHTML={{ __html: message }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(message) }}
         />
       </div>
     </div>

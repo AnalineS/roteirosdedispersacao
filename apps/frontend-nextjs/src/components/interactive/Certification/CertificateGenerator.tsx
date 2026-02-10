@@ -16,8 +16,7 @@ import {
   ClockIcon,
   RefreshIcon
 } from '@/components/icons/EducationalIcons';
-// TODO: Import PersonaEducationalAvatar when available
-// import { PersonaEducationalAvatar } from '@/components/educational/PersonaEducationalAvatar';
+import PersonaEducationalAvatar from '@/components/ui/PersonaEducationalAvatar';
 
 interface CertificateGeneratorProps {
   certificate: Certificate;
@@ -111,22 +110,21 @@ export default function CertificateGenerator({
             gap: modernChatTheme.spacing.lg,
             marginBottom: modernChatTheme.spacing.md
           }}>
-            {/* TODO: Adicionar PersonaEducationalAvatar do Dr. Gasnelio */}
+            <PersonaEducationalAvatar personaId="dr-gasnelio" size="lg" context="celebration" />
             <div style={{ textAlign: 'center' }}>
               <TrophyIcon size={48} color={'#10B981'} />
-              <div style={{ 
-                display: 'flex', 
-                justifyContent: 'center', 
+              <div style={{
+                display: 'flex',
+                justifyContent: 'center',
                 gap: modernChatTheme.spacing.xs,
                 marginTop: modernChatTheme.spacing.xs
               }}>
-                {/* Estrelas de celebração */}
                 <TargetIcon size={20} color={'#F59E0B'} />
                 <TargetIcon size={24} color={'#F59E0B'} />
                 <TargetIcon size={20} color={'#F59E0B'} />
               </div>
             </div>
-            {/* TODO: Adicionar PersonaEducationalAvatar da Gá */}
+            <PersonaEducationalAvatar personaId="ga" size="lg" context="celebration" />
           </div>
           <h1 style={{
             fontSize: '24px',

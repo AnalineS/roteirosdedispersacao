@@ -5,7 +5,8 @@
       "Bash(npm run type-check:*)",
       "Bash(find:*)",
       "Bash(python index_knowledge_base.py --force)",
-      "Bash(gh run view:*)"
+      "Bash(gh run view:*)",
+      "Bash(git push:*)"
     ],
     "defaultMode": "acceptEdits"
   },

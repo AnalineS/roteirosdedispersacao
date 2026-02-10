@@ -93,17 +93,15 @@ class CustomCORSMiddleware:
         """Adiciona todos os headers CORS necessários"""
         origin = request.headers.get('Origin')
         
-        # Access-Control-Allow-Origin - SEMPRE adicionar o header
+        # Access-Control-Allow-Origin
+        # When Allow-Credentials is true, Origin cannot be '*'
         if origin and self.is_origin_allowed(origin):
             response.headers['Access-Control-Allow-Origin'] = origin
-        elif '*' in self.origins:
-            response.headers['Access-Control-Allow-Origin'] = '*'
-        else:
-            # Fallback: sempre adicionar um header CORS válido
-            if self.origins and self.origins[0] != '*':
-                response.headers['Access-Control-Allow-Origin'] = self.origins[0]
-            else:
-                response.headers['Access-Control-Allow-Origin'] = '*'
+        elif '*' in self.origins and origin:
+            # Echo the specific origin instead of '*' to support credentials
+            response.headers['Access-Control-Allow-Origin'] = origin
+        elif self.origins and self.origins[0] != '*':
+            response.headers['Access-Control-Allow-Origin'] = self.origins[0]
         
         # Outros headers CORS
         response.headers['Access-Control-Allow-Methods'] = ', '.join(self.methods)
@@ -113,7 +111,10 @@ class CustomCORSMiddleware:
             response.headers['Access-Control-Expose-Headers'] = ', '.join(self.expose_headers)
         
         response.headers['Access-Control-Max-Age'] = str(self.max_age)
-        
+
+        # Allow credentials for httpOnly cookie authentication
+        response.headers['Access-Control-Allow-Credentials'] = 'true'
+
         # Vary header para cache adequado
         vary_header = response.headers.get('Vary', '')
         if 'Origin' not in vary_header:

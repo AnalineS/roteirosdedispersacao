@@ -96,7 +96,7 @@ type SnakeCase<S extends string> = S extends `${infer P1}${infer P2}`
 /**
  * Wrapper padrão para todas as respostas da API
  */
-export interface APIResponse<T = any> {
+export interface APIResponse<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;
@@ -307,7 +307,7 @@ export const MessageMetadataSchema = z.object({
   sources: z.array(z.string()).optional(),
   processingTime: z.number().min(0).optional(),
   qaScore: z.number().min(0).max(100).optional(),
-}).and(z.record(z.string(), z.any())); // Allow additional properties
+}).and(z.record(z.string(), z.unknown())); // Allow additional properties
 
 export type MessageMetadataDTO = z.infer<typeof MessageMetadataSchema>;
 
@@ -506,7 +506,7 @@ export const ProgressDataSchema = z.object({
   certificatesEarned: z.number().int().min(0),
   streakDays: z.number().int().min(0),
   achievements: z.array(AchievementSchema),
-  recentActivity: z.array(z.any()),
+  recentActivity: z.array(z.unknown()),
 });
 
 export type ProgressDataDTO = z.infer<typeof ProgressDataSchema>;
@@ -562,14 +562,14 @@ export type SyncStatusDTO = z.infer<typeof SyncStatusSchema>;
 /**
  * Type guard para verificar se é uma resposta de API válida
  */
-export function isAPIResponse(obj: any): obj is APIResponse {
-  return obj && typeof obj === 'object' && typeof obj.success === 'boolean';
+export function isAPIResponse(obj: unknown): obj is APIResponse {
+  return !!obj && typeof obj === 'object' && 'success' in obj && typeof obj.success === 'boolean';
 }
 
 /**
  * Type guard para verificar se é um usuário autenticado
  */
-export function isAuthUser(user: any): user is AuthUserDTO {
+export function isAuthUser(user: unknown): user is AuthUserDTO {
   try {
     AuthUserSchema.parse(user);
     return true;
@@ -581,7 +581,7 @@ export function isAuthUser(user: any): user is AuthUserDTO {
 /**
  * Type guard para verificar se é uma mensagem de chat
  */
-export function isChatMessage(message: any): message is ChatMessageDTO {
+export function isChatMessage(message: unknown): message is ChatMessageDTO {
   try {
     ChatMessageSchema.parse(message);
     return true;
@@ -593,7 +593,7 @@ export function isChatMessage(message: any): message is ChatMessageDTO {
 /**
  * Type guard para verificar se é um perfil de usuário
  */
-export function isUserProfile(profile: any): profile is UserProfileDTO {
+export function isUserProfile(profile: unknown): profile is UserProfileDTO {
   try {
     UserProfileSchema.parse(profile);
     return true;
@@ -605,7 +605,7 @@ export function isUserProfile(profile: any): profile is UserProfileDTO {
 /**
  * Type guard para verificar se é uma conversa
  */
-export function isConversation(conv: any): conv is ConversationDTO {
+export function isConversation(conv: unknown): conv is ConversationDTO {
   try {
     ConversationSchema.parse(conv);
     return true;
@@ -695,13 +695,13 @@ export async function makeValidatedRequest<T extends z.ZodType>(
 /**
  * Converte dados do backend (snake_case) para frontend (camelCase)
  */
-export function transformBackendResponse<T>(data: any): T {
+export function transformBackendResponse<T>(data: Record<string, unknown>): T {
   return convertToCamelCase(data) as T;
 }
 
 /**
  * Converte dados do frontend (camelCase) para backend (snake_case)
  */
-export function transformFrontendRequest<T>(data: T): any {
-  return convertToSnakeCase(data as any);
+export function transformFrontendRequest<T extends Record<string, unknown>>(data: T): SnakeCaseKeys<T> {
+  return convertToSnakeCase(data);
 }

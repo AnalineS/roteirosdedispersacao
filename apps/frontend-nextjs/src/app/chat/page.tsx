@@ -365,7 +365,7 @@ export default function ChatPage() {
 
   if (personasLoading) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+      <div style={{ minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }} aria-busy="true">
         <div style={{ textAlign: 'center' }}>
           <LoadingSpinner size="large" message="Carregando chat..." />
         </div>

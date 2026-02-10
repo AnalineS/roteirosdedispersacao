@@ -12,6 +12,7 @@
 'use client';
 
 import React from 'react';
+import { sanitizeHtml } from '@/utils/sanitize';
 import {
   Pill,
   AlertTriangle,
@@ -211,7 +212,7 @@ export const PCDTResultItem: React.FC<PCDTResultItemProps> = ({
           <div className="flex items-center gap-2 flex-wrap mb-1">
             <h3
               className="font-semibold text-gray-900 dark:text-gray-100"
-              dangerouslySetInnerHTML={{ __html: result.highlightedTitle }}
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(result.highlightedTitle) }}
             />
 
             {/* Category badge */}
@@ -231,7 +232,7 @@ export const PCDTResultItem: React.FC<PCDTResultItemProps> = ({
           {/* Snippet */}
           <p
             className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2"
-            dangerouslySetInnerHTML={{ __html: result.highlightedSnippet }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(result.highlightedSnippet) }}
           />
         </div>
 

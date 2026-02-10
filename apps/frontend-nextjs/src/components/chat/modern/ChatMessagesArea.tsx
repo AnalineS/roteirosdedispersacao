@@ -93,12 +93,12 @@ const ChatMessagesArea = memo(function ChatMessagesArea({
     if (!isLoading) return null;
 
     return (
-      <div className="loading-message">
-        <div className="message-avatar">
+      <div className="loading-message" role="status" aria-label={`${currentPersona?.name || 'Assistente'} está pensando`}>
+        <div className="message-avatar" aria-hidden="true">
           {currentPersona?.avatar || '🤖'}
         </div>
         <div className="message-content">
-          <div className="typing-indicator">
+          <div className="typing-indicator" aria-hidden="true">
             <span></span>
             <span></span>
             <span></span>
