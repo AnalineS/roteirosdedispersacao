@@ -8,7 +8,7 @@
 # SECURITY: CRITICAL - Updated 2024-09-24 - Latest Flask security patches
 Flask==3.1.2
 Flask-CORS==6.0.2  # SECURITY UPDATE: CVE-2024-6221, CVE-2024-6839, CVE-2024-6844, CVE-2024-6866
-Werkzeug==3.1.4
+Werkzeug==3.1.5
 gunicorn==23.0.0   # SECURITY: Updated 2024-09-24 - CVE-2024-6827 fixed
 
 # === AI & ML CORE ===
@@ -52,7 +52,7 @@ jsonschema>=4.23.0
 # === HTTP & NETWORKING ===
 requests==2.32.5   # SECURITY: Updated beyond CVE-2023-32681
 httpx>=0.24.0
-urllib3>=1.26.0
+urllib3>=2.6.3
 certifi==2025.11.12
 
 # === CACHE & PERFORMANCE ===
