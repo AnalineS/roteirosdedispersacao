@@ -10,7 +10,6 @@ __version__ = "3.2.2-rag-threshold-fix"
 import sys
 import os
 import logging
-import traceback
 from pathlib import Path
 from core.logging.sanitizer import sanitize_error
 
@@ -235,7 +234,7 @@ try:
     app = create_app()
     logger.info("Flask app created successfully for WSGI")
 except Exception as e:
-    logger.error("Failed to create Flask app for WSGI: %s\n%s", e, traceback.format_exc())
+    logger.error("Failed to create Flask app for WSGI: %s", sanitize_error(e))
     # Create minimal app for error handling
     from flask import Flask
     app = Flask(__name__)

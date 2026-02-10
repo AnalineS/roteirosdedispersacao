@@ -270,6 +270,9 @@ jobs:
           ENV_VARS+=";EMBEDDING_MODEL=${{ vars.EMBEDDING_MODEL }}"
           ENV_VARS+=";SEMANTIC_SIMILARITY_THRESHOLD=${{ vars.SEMANTIC_SIMILARITY_THRESHOLD }}"
           ENV_VARS+=";SUPABASE_VECTOR_SIMILARITY_THRESHOLD=${{ vars.SUPABASE_VECTOR_SIMILARITY_THRESHOLD }}"
+          ENV_VARS+=";EMAIL_FROM=${{ vars.EMAIL_FROM }}"
+          ENV_VARS+=";EMAIL_PASSWORD=${{ secrets.EMAIL_PASSWORD }}"
+          ENV_VARS+=";SESSION_COOKIE_SECURE=${{ vars.SESSION_COOKIE_SECURE }}"
 
           gcloud run deploy ${{ steps.vars.outputs.SERVICE_NAME }} \
             --image ${{ env.IMAGE }} \
