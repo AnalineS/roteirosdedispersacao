@@ -80,32 +80,14 @@ const nextConfig = {
   // SECURITY ENHANCEMENTS - Medical Application Grade (Score: 9.7/10)
 
   // Security headers configuration (Context7 recommended patterns)
+  // CSP is managed exclusively by middleware.ts (single source of truth).
+  // Static assets (/_next/static/, /_next/image/) bypass middleware,
+  // so non-CSP security headers are still set here for them.
   async headers() {
-    const isDev = process.env.NODE_ENV === 'development';
-
-    // CSP policy - stricter for production
-    const cspHeader = `
-      default-src 'self';
-      script-src 'self' ${isDev ? "'unsafe-eval'" : ''};
-      style-src 'self' 'unsafe-inline';
-      img-src 'self' blob: data: https:;
-      font-src 'self';
-      object-src 'none';
-      base-uri 'self';
-      form-action 'self';
-      frame-ancestors 'none';
-      upgrade-insecure-requests;
-    `.replace(/\s{2,}/g, ' ').trim();
-
     return [
       {
         source: '/:path*',
         headers: [
-          // Content Security Policy
-          {
-            key: 'Content-Security-Policy',
-            value: cspHeader,
-          },
           // Prevent MIME sniffing
           {
             key: 'X-Content-Type-Options',

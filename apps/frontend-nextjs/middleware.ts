@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { buildCspDirectives } from '@/lib/csp/cspConfig';
 
 // Environment detection for middleware (Edge Runtime compatible)
 function detectEnvironment(request: NextRequest): 'development' | 'staging' | 'production' {
@@ -120,30 +121,19 @@ export function middleware(request: NextRequest) {
   // Extract domain from API URL for CSP
   const apiDomain = new URL(apiUrl).origin;
 
-  // Environment-aware Content Security Policy (CSP)
-  const cspPolicies = [
-    "default-src 'self'",
-    environment === 'development'
-      ? "script-src 'self' 'unsafe-inline' 'unsafe-eval'" // Development needs eval for HMR
-      : "script-src 'self' 'unsafe-inline'", // Production removes eval
-    "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' data: blob:",
-    "font-src 'self' data:",
-    `connect-src 'self' ${apiDomain}` + (environment !== 'production' ? ' ws: wss:' : ''), // WebSocket for dev
-    "frame-src 'none'",
-    "object-src 'none'",
-    "base-uri 'self'",
-    "form-action 'self'"
-  ];
-
-  // Add upgrade-insecure-requests only for production/staging
-  if (environment !== 'development') {
-    cspPolicies.push("upgrade-insecure-requests");
-  }
-
-  const csp = cspPolicies.join('; ');
+  // CSP from shared module (single source of truth)
+  const reportUri = environment !== 'development' ? '/api/csp-report' : undefined;
+  const csp = buildCspDirectives({ environment, apiDomain, reportUri });
 
   response.headers.set('Content-Security-Policy', csp);
+
+  // Reporting Endpoints header (Chrome 96+)
+  if (reportUri) {
+    response.headers.set(
+      'Reporting-Endpoints',
+      `csp-endpoint="${reportUri}"`
+    );
+  }
 
   // === ENVIRONMENT-AWARE SECURITY HEADERS ===
 

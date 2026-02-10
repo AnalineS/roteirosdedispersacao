@@ -46,12 +46,10 @@ export interface SecurityConfig {
 
   // Security headers
   headers: {
-    enableCSP: boolean;
     enableHSTS: boolean;
     enableXSSProtection: boolean;
     enableFrameOptions: boolean;
     enableContentTypeOptions: boolean;
-    cspReportingEnabled: boolean;
   };
 
   // Rate limiting
@@ -116,12 +114,10 @@ function createSecurityConfig(): SecurityConfig {
     },
 
     headers: {
-      enableCSP: config.security.csp,
       enableHSTS: productionLevel,
       enableXSSProtection: productionLevel,
       enableFrameOptions: true, // Always enabled
       enableContentTypeOptions: true, // Always enabled
-      cspReportingEnabled: productionLevel,
     },
 
     rateLimit: {

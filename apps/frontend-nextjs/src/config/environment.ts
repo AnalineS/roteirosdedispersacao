@@ -43,7 +43,6 @@ interface EnvironmentConfig {
   security: {
     level: SecurityLevel
     cors: boolean
-    csp: boolean
     headers: boolean
   }
 
@@ -242,7 +241,6 @@ function createEnvironmentConfig(): EnvironmentConfig {
     security: {
       level: (isDevelopment ? 'development' : isStaging ? 'staging' : 'production') as SecurityLevel,
       cors: getEnvBool('NEXT_PUBLIC_CORS_ENABLED', isDevelopment),
-      csp: getEnvBool('NEXT_PUBLIC_CSP_ENABLED', !isDevelopment),
       headers: getEnvBool('NEXT_PUBLIC_SECURITY_HEADERS', !isDevelopment)
     },
 

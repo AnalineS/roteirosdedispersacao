@@ -129,38 +129,12 @@ export function isValidSecureId(id: string): boolean {
   return validPattern.test(id);
 }
 
-/**
- * Gera nonce criptograficamente seguro para CSP
- */
-export function generateNonce(length: number = 16): string {
-  if (typeof window !== 'undefined' && window.crypto && window.crypto.getRandomValues) {
-    const array = new Uint8Array(length);
-    window.crypto.getRandomValues(array);
-    return btoa(String.fromCharCode.apply(null, Array.from(array)));
-  }
-  
-  // Fallback para Node.js
-  if (typeof require !== 'undefined') {
-    try {
-      const crypto = require('crypto');
-      return crypto.randomBytes(length).toString('base64');
-    } catch {
-      console.warn('Crypto module not available for nonce generation');
-    }
-  }
-  
-  // Fallback menos seguro
-  const timestamp = Date.now().toString();
-  return btoa(timestamp).substring(0, length);
-}
-
 const CryptoUtils = {
   generateSecureId,
   generateSecureSessionToken,
   generateTempUserId,
   generateCacheKey,
   isValidSecureId,
-  generateNonce
 };
 
 export default CryptoUtils;
