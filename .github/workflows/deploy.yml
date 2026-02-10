@@ -211,9 +211,19 @@ jobs:
           if [ "$ENV" == "production" ]; then
             echo "SERVICE_NAME=${{ vars.PRODUCTION_BACKEND_SERVICE }}" >> $GITHUB_OUTPUT
             echo "FRONTEND_URL=${{ vars.NEXT_PUBLIC_BASE_URL_PRODUCTION }}" >> $GITHUB_OUTPUT
+            CORS_RAW="${{ vars.CORS_ORIGINS_PROD_SAFE }}"
+            echo "CORS_ORIGINS=${CORS_RAW//;/,}" >> $GITHUB_OUTPUT
+            echo "LOG_LEVEL=${{ vars.LOG_LEVEL_PROD }}" >> $GITHUB_OUTPUT
+            echo "FLASK_ENV=${{ vars.FLASK_ENV_PROD }}" >> $GITHUB_OUTPUT
+            echo "DEBUG=${{ vars.DEBUG_MODE_PROD }}" >> $GITHUB_OUTPUT
           else
             echo "SERVICE_NAME=${{ vars.HML_BACKEND_SERVICE }}" >> $GITHUB_OUTPUT
             echo "FRONTEND_URL=${{ vars.NEXT_PUBLIC_BASE_URL_STAGING }}" >> $GITHUB_OUTPUT
+            CORS_RAW="${{ vars.CORS_ORIGINS_HML_SAFE }}"
+            echo "CORS_ORIGINS=${CORS_RAW//;/,}" >> $GITHUB_OUTPUT
+            echo "LOG_LEVEL=${{ vars.LOG_LEVEL_HML }}" >> $GITHUB_OUTPUT
+            echo "FLASK_ENV=${{ vars.FLASK_ENV_HML }}" >> $GITHUB_OUTPUT
+            echo "DEBUG=${{ vars.DEBUG_MODE_HML }}" >> $GITHUB_OUTPUT
           fi
           echo "ENV=$ENV" >> $GITHUB_OUTPUT
 
@@ -227,16 +237,40 @@ jobs:
           docker push $IMAGE
           echo "IMAGE=$IMAGE" >> $GITHUB_ENV
 
-      - name: Clear existing secrets from Cloud Run service
+      - name: Clear existing secret mounts from Cloud Run service
         run: |
           gcloud run services update ${{ steps.vars.outputs.SERVICE_NAME }} \
             --region ${{ env.REGION }} \
             --clear-secrets \
-            --clear-env-vars \
             --quiet || true
 
       - name: Deploy Backend to Cloud Run
         run: |
+          ENV_VARS="^;^"
+          ENV_VARS+="ENVIRONMENT=${{ steps.vars.outputs.ENV }}"
+          ENV_VARS+=";FLASK_ENV=${{ steps.vars.outputs.FLASK_ENV }}"
+          ENV_VARS+=";DEBUG=${{ steps.vars.outputs.DEBUG }}"
+          ENV_VARS+=";LOG_LEVEL=${{ steps.vars.outputs.LOG_LEVEL }}"
+          ENV_VARS+=";CORS_ORIGINS=${{ steps.vars.outputs.CORS_ORIGINS }}"
+          ENV_VARS+=";FRONTEND_URL=${{ steps.vars.outputs.FRONTEND_URL }}"
+          ENV_VARS+=";RAG_ENABLED=${{ vars.RAG_ENABLED }}"
+          ENV_VARS+=";EMBEDDINGS_ENABLED=${{ vars.EMBEDDINGS_ENABLED }}"
+          ENV_VARS+=";OPENROUTER_API_KEY=${{ secrets.OPENROUTER_API_KEY }}"
+          ENV_VARS+=";SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}"
+          ENV_VARS+=";PASSWORD_SALT=${{ secrets.PASSWORD_SALT }}"
+          ENV_VARS+=";GCS_BUCKET_NAME=${{ secrets.GCS_BUCKET_NAME }}"
+          ENV_VARS+=";SUPABASE_URL=${{ secrets.SUPABASE_URL }}"
+          ENV_VARS+=";SUPABASE_SERVICE_KEY=${{ secrets.SUPABASE_SERVICE_KEY }}"
+          ENV_VARS+=";SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}"
+          ENV_VARS+=";SUPABASE_DB_URL=${{ secrets.SUPABASE_DB_URL }}"
+          ENV_VARS+=";SUPABASE_JWT_SIGNING_KEY=${{ secrets.SUPABASE_JWT_SIGNING_KEY }}"
+          ENV_VARS+=";HUGGINGFACE_API_KEY=${{ secrets.HUGGINGFACE_API_KEY }}"
+          ENV_VARS+=";GCP_PROJECT_ID=${{ vars.GCP_PROJECT_ID }}"
+          ENV_VARS+=";GCP_REGION=${{ vars.GCP_REGION }}"
+          ENV_VARS+=";EMBEDDING_MODEL=${{ vars.EMBEDDING_MODEL }}"
+          ENV_VARS+=";SEMANTIC_SIMILARITY_THRESHOLD=${{ vars.SEMANTIC_SIMILARITY_THRESHOLD }}"
+          ENV_VARS+=";SUPABASE_VECTOR_SIMILARITY_THRESHOLD=${{ vars.SUPABASE_VECTOR_SIMILARITY_THRESHOLD }}"
+
           gcloud run deploy ${{ steps.vars.outputs.SERVICE_NAME }} \
             --image ${{ env.IMAGE }} \
             --region ${{ env.REGION }} \
@@ -249,7 +283,7 @@ jobs:
             --max-instances ${{ vars.BACKEND_MAX_INSTANCES }} \
             --timeout ${{ vars.BACKEND_TIMEOUT }} \
             --cpu-boost \
-            --set-env-vars="ENVIRONMENT=${{ steps.vars.outputs.ENV }},RAG_ENABLED=${{ vars.RAG_ENABLED }},EMBEDDINGS_ENABLED=${{ vars.EMBEDDINGS_ENABLED }},FRONTEND_URL=${{ steps.vars.outputs.FRONTEND_URL }},OPENROUTER_API_KEY=${{ secrets.OPENROUTER_API_KEY }},SECRET_KEY=${{ secrets.JWT_SECRET_KEY }},GCS_BUCKET_NAME=${{ secrets.GCS_BUCKET_NAME }}"
+            --set-env-vars="$ENV_VARS"
 
       - name: Backend Deploy Summary
         run: |
