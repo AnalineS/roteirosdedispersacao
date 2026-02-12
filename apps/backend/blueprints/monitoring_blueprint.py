@@ -31,28 +31,34 @@ class UsabilityMonitor:
     """Monitor de usabilidade temporário (será substituído por sistema real)"""
     
     def get_comprehensive_report(self) -> Dict[str, Any]:
-        """Retorna relatório básico de usabilidade"""
-        cache = get_cache()
-        
-        # Obter estatísticas de feedback se disponível
+        """Retorna relatório de usabilidade com dados reais quando disponíveis"""
+        # Get real feedback stats from SQLite
         feedback_stats = None
-        if cache:
-            feedback_stats = cache.get("feedback:stats")
-        
+        try:
+            from services.storage.feedback_repository import get_feedback_repository
+            repo = get_feedback_repository()
+            feedback_stats = repo.get_feedback_stats()
+        except Exception:
+            pass
+
+        # Get real cache stats
+        cache = get_cache()
+        cache_hit_rate = "N/A"
+        if cache and hasattr(cache, 'get_stats'):
+            c_stats = cache.get_stats()
+            hit_rate = c_stats.get('hit_rate', 0)
+            cache_hit_rate = f"{hit_rate:.0%}" if isinstance(hit_rate, (int, float)) else "N/A"
+
         return {
             "status": "operational",
-            "response_time_avg": "500ms",  # Será calculado dinamicamente
             "user_satisfaction": self._calculate_satisfaction(feedback_stats),
             "system_health": "good",
             "performance_metrics": {
-                "api_latency": "450ms",
-                "cache_hit_rate": "75%",
-                "error_rate": "2%"
+                "cache_hit_rate": cache_hit_rate,
             },
-            "user_engagement": {
-                "active_sessions": 0,  # Será implementado
-                "questions_per_session": 3.2,
-                "bounce_rate": "15%"
+            "feedback_summary": {
+                "total_feedbacks": feedback_stats.get('total_count', 0) if feedback_stats else 0,
+                "average_rating": feedback_stats.get('average_rating', 0.0) if feedback_stats else 0.0,
             }
         }
     
@@ -120,38 +126,34 @@ def get_system_metrics() -> Dict[str, Any]:
         return {"error": str(e)}
 
 def get_application_metrics() -> Dict[str, Any]:
-    """Métricas específicas da aplicação"""
-    cache = get_cache()
+    """Métricas específicas da aplicação com dados reais do SQLite"""
     config = get_config()
-    
-    # Estatísticas de feedback
-    feedback_stats = cache.get("feedback:stats") if cache else None
-    
-    # Métricas simuladas (serão reais com persistence layer)
+
+    # Get real feedback stats from SQLite
+    feedback_stats = None
+    try:
+        from services.storage.feedback_repository import get_feedback_repository
+        repo = get_feedback_repository()
+        feedback_stats = repo.get_feedback_stats()
+    except Exception:
+        pass
+
     metrics = {
         "requests": {
-            "total_today": 0,  # Será implementado
-            "chat_requests": 0,
-            "persona_requests": 0,
             "feedback_submissions": feedback_stats.get('total_count', 0) if feedback_stats else 0
         },
         "performance": {
-            "average_response_time_ms": 450,  # Será calculado
-            "p95_response_time_ms": 800,
-            "error_rate_percent": 2.1
+            "data_source": "not_yet_tracked"
         },
         "usage": {
-            "most_used_persona": "dr_gasnelio",  # Será calculado
-            "peak_hour": "14:00-15:00",
-            "average_question_length": 85
+            "data_source": "not_yet_tracked"
         },
         "quality": {
-            "average_qa_score": 0.92 if config and config.QA_ENABLED else None,
-            "questions_retried_percent": 5.2,
-            "fallback_responses_percent": 8.1
+            "average_feedback_rating": feedback_stats.get('average_rating', 0.0) if feedback_stats else None,
+            "qa_enabled": config.QA_ENABLED if config else False
         }
     }
-    
+
     return metrics
 
 @monitoring_bp.route('/stats', methods=['GET'])

@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { authService } from '@/services/auth';
 import { 
   Mail, 
   Lock, 
@@ -138,35 +139,27 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-      // TODO: Implementar registro com backend API
-      console.log('Registro:', formData);
-      
-      // Simulação de registro
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Redirecionar após registro bem-sucedido
-      router.push('/login?registered=true');
-    } catch {
-      setError('Erro ao criar conta. Tente novamente.');
+      await authService.registerWithEmail({
+        email: formData.email,
+        password: formData.password,
+        displayName: formData.name,
+        institution: formData.institution || undefined,
+        specialization: formData.profile || undefined,
+        acceptTerms,
+        acceptPrivacy: acceptTerms,
+      });
+
+      router.push('/dashboard');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Erro ao criar conta. Tente novamente.';
+      setError(message);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleGoogleRegister = async () => {
-    setError('');
-    setIsLoading(true);
-    
-    try {
-      // TODO: Implementar registro com Google
-      console.log('Registro com Google');
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      router.push('/dashboard');
-    } catch {
-      setError('Erro ao criar conta com Google. Tente novamente.');
-    } finally {
-      setIsLoading(false);
-    }
+  const handleGoogleRegister = () => {
+    setError('Registro com Google ainda nao esta disponivel. Por favor, registre-se com email.');
   };
 
   return (

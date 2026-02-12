@@ -6,6 +6,7 @@ import CertificateGenerator from '@/components/interactive/Certification/Certifi
 import { Certificate, CertificationProgress, DEFAULT_CERTIFICATION_CONFIG } from '@/types/certification';
 import { getUnbColors } from '@/config/modernTheme';
 import { urls } from '@/utils/environmentUrls';
+import { useSafeAuth as useAuth } from '@/hooks/useSafeAuth';
 import {
   GraduationIcon,
   TrophyIcon,
@@ -19,22 +20,31 @@ import {
 
 export default function CertificacaoPage() {
   const unbColors = getUnbColors();
+  const { user } = useAuth();
   const [progress, setProgress] = useState<CertificationProgress | null>(null);
   const [certificate, setCertificate] = useState<Certificate | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showCertificate, setShowCertificate] = useState(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadCertificationData = async () => {
       setIsLoading(true);
+      setFetchError(null);
 
       // Conectar com backend real de gamificação/certificação
       try {
+        const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json',
+        };
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+
         const response = await fetch('/api/v1/gamification/certification-progress', {
           method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers,
         });
 
         if (!response.ok) {
@@ -120,14 +130,14 @@ Conclusão realizada em {issueDate}, com {casesCompleted} casos clínicos resolv
         }
       } catch (error) {
         console.error('Erro ao buscar progresso de certificação:', error);
-        // Backend indisponível - usar dados vazios ao invés de mock
+        setFetchError('Servico de certificacao indisponivel. Tente novamente mais tarde.');
       }
 
       // Fallback para dados vazios se backend indisponível
       const emptyProgress: CertificationProgress = {
-        userId: 'unknown',
-        userName: 'Usuário',
-        email: '',
+        userId: user?.uid || 'unknown',
+        userName: user?.displayName || 'Usuario',
+        email: user?.email || '',
         startDate: new Date(),
         lastActivity: new Date(),
         casesCompleted: [],
@@ -145,7 +155,7 @@ Conclusão realizada em {issueDate}, com {casesCompleted} casos clínicos resolv
     };
 
     loadCertificationData();
-  }, [unbColors.primary]);
+  }, [user]);
 
   const criteria = DEFAULT_CERTIFICATION_CONFIG.criteria;
 
@@ -260,6 +270,21 @@ Conclusão realizada em {issueDate}, com {casesCompleted} casos clínicos resolv
             {DEFAULT_CERTIFICATION_CONFIG.programInfo.title}
           </p>
         </header>
+
+        {/* Error Banner */}
+        {fetchError && (
+          <div style={{
+            padding: '1rem 1.5rem',
+            background: '#fef3c7',
+            border: '1px solid #f59e0b',
+            borderRadius: '12px',
+            marginBottom: '1.5rem',
+            color: '#92400e',
+            fontSize: '0.9rem',
+          }}>
+            {fetchError}
+          </div>
+        )}
 
         {/* Progress Overview */}
         {progress && (

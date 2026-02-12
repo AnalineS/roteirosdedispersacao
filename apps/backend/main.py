@@ -88,7 +88,6 @@ def create_app():
     try:
         from blueprints.medical_core_blueprint import medical_core_bp
         from blueprints.personas_blueprint import personas_bp
-        from blueprints.user_management_blueprint import user_management_bp
         from blueprints.communication_blueprint import communication_bp
         from blueprints.engagement_multimodal_blueprint import engagement_multimodal_bp
         from blueprints.analytics_observability_blueprint import analytics_observability_bp
@@ -99,7 +98,6 @@ def create_app():
         # Register all blueprints without additional prefix since they already define /api/v1
         app.register_blueprint(medical_core_bp)
         app.register_blueprint(personas_bp)  # Comprehensive personas management with proper rate limiting
-        app.register_blueprint(user_management_bp)
         app.register_blueprint(communication_bp)
         app.register_blueprint(engagement_multimodal_bp)
         app.register_blueprint(analytics_observability_bp)
@@ -107,11 +105,31 @@ def create_app():
         app.register_blueprint(authentication_bp)
         app.register_blueprint(api_documentation_bp)
 
-        logger.info("All blueprints registered successfully")
+        logger.info("Core blueprints registered successfully")
 
     except ImportError as e:
-        logger.error("Failed to import blueprints: %s", sanitize_error(e))
-        # Continue without some blueprints if they're not available
+        logger.error("Failed to import core blueprints: %s", sanitize_error(e))
+
+    # Register additional blueprints individually (each with its own fallback)
+    _optional_blueprints = [
+        ('blueprints.monitoring_blueprint', 'monitoring_bp'),
+        ('blueprints.observability', 'observability_bp'),
+        ('blueprints.ga4_integration_blueprint', 'ga4_integration_bp'),
+        ('blueprints.feedback_blueprint', 'feedback_bp'),
+        ('blueprints.docs_blueprint', 'docs_bp'),
+        ('blueprints.alerts_blueprint', 'alerts_bp'),
+        ('blueprints.logging_blueprint', 'logging_bp'),
+        ('blueprints.gamification_blueprint', 'gamification_bp'),
+    ]
+    for module_path, bp_name in _optional_blueprints:
+        try:
+            import importlib
+            mod = importlib.import_module(module_path)
+            bp = getattr(mod, bp_name)
+            app.register_blueprint(bp)
+            logger.info("Registered %s", bp_name)
+        except Exception as e:
+            logger.warning("%s not available: %s", bp_name, sanitize_error(e))
 
     # Initialize JWT if available
     try:

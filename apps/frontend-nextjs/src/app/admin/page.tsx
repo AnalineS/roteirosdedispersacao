@@ -6,13 +6,7 @@ import Link from 'next/link';
 import { useSafeAuth as useAuth } from '@/hooks/useSafeAuth';
 import { Shield, Users, BarChart3, Settings, Database, Activity, Lock, AlertCircle } from 'lucide-react';
 
-// Emails de administradores autorizados
-const ADMIN_EMAILS = [
-  'neeliogomes@hotmail.com',
-  'sousa.analine@gmail.com',
-  'roteirosdedispensacaounb@gmail.com',
-  'neliogmoura@gmail.com',
-];
+// Admin authorization checked via backend /api/v1/auth/role
 
 interface AdminStats {
   totalUsers: number;
@@ -23,10 +17,19 @@ interface AdminStats {
   lastUpdate: Date;
 }
 
+interface RecentActivity {
+  userId: string;
+  userName: string;
+  action: string;
+  timestamp: string;
+}
+
 export default function AdminDashboard() {
   const router = useRouter();
   const { user, loading } = useAuth();
   const [isAuthorized, setIsAuthorized] = useState(false);
+  const [statsError, setStatsError] = useState<string | null>(null);
+  const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
   const [stats, setStats] = useState<AdminStats>({
     totalUsers: 0,
     activeToday: 0,
@@ -37,22 +40,51 @@ export default function AdminDashboard() {
   });
 
   const loadAdminStats = async () => {
-    // Simular carregamento de estatísticas
-    // Em produção, isso viria de uma API
-    setStats({
-      totalUsers: 3247,
-      activeToday: 156,
-      totalConversations: 15892,
-      avgResponseTime: 1.2,
-      systemHealth: 'operational',
-      lastUpdate: new Date(),
-    });
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+      if (!token) return;
+
+      const res = await fetch('/api/v1/analytics/admin/stats', {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setStatsError(null);
+        setStats({
+          totalUsers: data.totalUsers || 0,
+          activeToday: data.activeToday || 0,
+          totalConversations: data.totalConversations || 0,
+          avgResponseTime: data.avgResponseTime || 0,
+          systemHealth: data.systemHealth || 'operational',
+          lastUpdate: new Date(),
+        });
+      } else {
+        setStatsError('Servico de estatisticas indisponivel. Os dados exibidos podem estar desatualizados.');
+      }
+
+      // Load recent activity from real endpoint
+      try {
+        const activityRes = await fetch('/api/v1/analytics/admin/recent-activity', {
+          headers: { 'Authorization': `Bearer ${token}` },
+        });
+        if (activityRes.ok) {
+          const activityData = await activityRes.json();
+          if (activityData.success && Array.isArray(activityData.data)) {
+            setRecentActivity(activityData.data);
+          }
+        }
+      } catch {
+        // Recent activity is non-critical - keep empty array
+      }
+    } catch {
+      setStatsError('Nao foi possivel conectar ao servidor de estatisticas.');
+    }
   };
 
   useEffect(() => {
     if (!loading) {
-      // Verificar se o usuário está autenticado e é admin
-      if (!user || !user.email || !ADMIN_EMAILS.includes(user.email.toLowerCase())) {
+      if (!user || !user.roles?.includes('admin')) {
         router.push('/');
         return;
       }
@@ -134,6 +166,12 @@ export default function AdminDashboard() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {statsError && (
+          <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg flex items-center gap-3">
+            <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0" />
+            <p className="text-sm text-yellow-800">{statsError}</p>
+          </div>
+        )}
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow p-6">
@@ -147,7 +185,7 @@ export default function AdminDashboard() {
               <Users className="w-12 h-12 text-blue-500 opacity-30" />
             </div>
             <p className="text-xs text-gray-500 mt-4">
-              +12% em relação ao mês anterior
+              Usuarios registrados
             </p>
           </div>
 
@@ -177,7 +215,7 @@ export default function AdminDashboard() {
               <Database className="w-12 h-12 text-purple-500 opacity-30" />
             </div>
             <p className="text-xs text-gray-500 mt-4">
-              Média de 5.2 conversas/usuário
+              Total de feedbacks registrados
             </p>
           </div>
 
@@ -311,22 +349,28 @@ export default function AdminDashboard() {
           </div>
           <div className="p-6">
             <div className="space-y-4">
-              {[
-                { user: 'João Silva', action: 'Completou módulo', time: '5 min atrás' },
-                { user: 'Maria Santos', action: 'Iniciou conversa com Dr. Gasnelio', time: '12 min atrás' },
-                { user: 'Pedro Oliveira', action: 'Baixou material PDF', time: '18 min atrás' },
-                { user: 'Ana Costa', action: 'Criou nova conta', time: '25 min atrás' },
-                { user: 'Carlos Souza', action: 'Utilizou calculadora PQT-U', time: '32 min atrás' },
-              ].map((activity, index) => (
-                <div key={index} className="flex items-center justify-between py-2">
+              {recentActivity.length === 0 && (
+                <p className="text-sm text-gray-500 text-center py-4">
+                  Nenhuma atividade recente registrada.
+                </p>
+              )}
+              {recentActivity.map((activity, index) => (
+                <div key={`${activity.userId}-${index}`} className="flex items-center justify-between py-2">
                   <div className="flex items-center space-x-3">
                     <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
                     <div>
-                      <p className="text-sm font-medium text-gray-900">{activity.user}</p>
+                      <p className="text-sm font-medium text-gray-900">{activity.userName}</p>
                       <p className="text-xs text-gray-500">{activity.action}</p>
                     </div>
                   </div>
-                  <span className="text-xs text-gray-400">{activity.time}</span>
+                  <span className="text-xs text-gray-400">
+                    {activity.timestamp ? new Date(activity.timestamp).toLocaleString('pt-BR', {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      day: '2-digit',
+                      month: '2-digit',
+                    }) : ''}
+                  </span>
                 </div>
               ))}
             </div>

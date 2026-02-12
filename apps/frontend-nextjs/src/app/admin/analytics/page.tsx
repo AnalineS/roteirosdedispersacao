@@ -33,6 +33,7 @@ export default function AnalyticsDashboard() {
 
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [analyticsError, setAnalyticsError] = useState<string | null>(null);
   const [metrics, setMetrics] = useState({
     totalSessions: 0,
     avgSessionDuration: 0,
@@ -74,10 +75,29 @@ export default function AnalyticsDashboard() {
       // Processar dados reais do sistema interno de analytics médicos
       const data = analyticsData.data;
 
+      // Fetch realtime users from admin endpoint
+      let realTimeCount = 0;
+      try {
+        const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+        if (token) {
+          const rtRes = await fetch('/api/v1/analytics/admin/realtime-users', {
+            headers: { 'Authorization': `Bearer ${token}` },
+          });
+          if (rtRes.ok) {
+            const rtData = await rtRes.json();
+            if (rtData.success && rtData.data) {
+              realTimeCount = rtData.data.count || 0;
+            }
+          }
+        }
+      } catch {
+        // Non-critical - keep 0
+      }
+
       setMetrics({
         totalSessions: data?.sessions || 0,
         avgSessionDuration: data?.avgDuration || 0,
-        realTimeUsers: 0, // TODO: Implementar com GA4 Realtime API
+        realTimeUsers: realTimeCount,
         bounceRate: data?.bounceRate || 0,
         conversionRate: data?.conversionRate || 0,
         topQuestions: data?.topQuestions || [],
@@ -87,18 +107,9 @@ export default function AnalyticsDashboard() {
         fallbackRate: data?.fallbackRate || 0,
         topPages: data?.topPages || [],
       });
+      setAnalyticsError(null);
     } catch {
-      // Analytics loading error handled silently with fallback data
-      // Error logged for monitoring without sensitive data exposure
-      // Usar dados mock se falhar
-      setMetrics((prev) => ({
-        ...prev,
-        totalSessions: 1247,
-        avgSessionDuration: 185,
-        realTimeUsers: 23,
-        bounceRate: 0.32,
-        conversionRate: 0.087,
-      }));
+      setAnalyticsError('Servico de analytics indisponivel. Os dados exibidos podem nao refletir o estado atual.');
     } finally {
       setIsLoading(false);
     }
@@ -106,7 +117,32 @@ export default function AnalyticsDashboard() {
 
   useEffect(() => {
     // Verificar se usuário é admin (integrado com sistema de auth)
-    setIsAdmin(true); // TODO: Integrar com sistema real de auth
+    // Verificar admin via backend auth role
+    const checkAdmin = async () => {
+      try {
+        const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+        if (!token) {
+          router.push('/login');
+          return;
+        }
+        const res = await fetch('/api/v1/auth/role', {
+          headers: { 'Authorization': `Bearer ${token}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.role === 'admin') {
+            setIsAdmin(true);
+          } else {
+            router.push('/');
+          }
+        } else {
+          router.push('/login');
+        }
+      } catch {
+        router.push('/');
+      }
+    };
+    checkAdmin();
 
     // Carregar dados iniciais
     loadAnalyticsData();
@@ -192,6 +228,12 @@ export default function AnalyticsDashboard() {
             </button>
           </div>
         </div>
+
+        {analyticsError && (
+          <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <p className="text-sm text-yellow-800">{analyticsError}</p>
+          </div>
+        )}
 
         {/* Métricas Principais */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">

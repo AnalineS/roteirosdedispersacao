@@ -153,6 +153,13 @@ export interface PersonasResponse {
 
 // ChatMessage interface moved to @/types/api
 
+export interface ChatAttachmentPayload {
+  fileName: string;
+  mimeType: string;
+  base64Data: string;
+  sizeBytes: number;
+}
+
 export interface ChatRequest {
   question: string;
   personality_id: string;
@@ -167,6 +174,7 @@ export interface ChatRequest {
     confidence: number;
     sources: string[];
   };
+  attachment?: ChatAttachmentPayload;
 }
 
 export interface ChatResponse {

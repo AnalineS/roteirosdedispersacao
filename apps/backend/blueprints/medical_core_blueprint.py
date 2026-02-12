@@ -17,6 +17,44 @@ medical_core_bp = Blueprint('medical_core', __name__, url_prefix='/api/v1')
 # Logging
 logger = logging.getLogger(__name__)
 
+# === CHAT HELPERS ===
+
+_ALLOWED_ATTACHMENT_MIME = frozenset(['image/png', 'image/jpeg', 'image/webp', 'application/pdf'])
+_MAX_BASE64_LEN = 7_000_000  # ~5 MB encoded
+
+
+def _extract_attachment_context(attachment: dict) -> str:
+    """Extract text from a base64-encoded attachment via multimodal OCR.
+
+    Returns context string to append to the user message, or empty string.
+    """
+    file_name = str(attachment.get('fileName', ''))[:255]
+    mime_type = str(attachment.get('mimeType', ''))
+
+    if mime_type not in _ALLOWED_ATTACHMENT_MIME:
+        return ''
+
+    base64_data = str(attachment.get('base64Data', ''))
+    if not base64_data or len(base64_data) > _MAX_BASE64_LEN:
+        return ''
+
+    try:
+        from services.integrations.multimodal_processor import get_multimodal_processor
+        processor = get_multimodal_processor()
+        result = processor.process_base64(base64_data, mime_type)
+        if result and result.get('text'):
+            extracted = str(result['text'])[:2000]
+            logger.info("Attachment OCR ok: %s, text_len=%d", file_name, len(extracted))
+            return f"\n\n[Conteudo extraido do arquivo '{file_name}':\n{extracted}]"
+    except Exception as e:
+        logger.warning("Attachment OCR failed: %s", sanitize_error(e))
+
+    return (
+        f"\n\n[Arquivo '{file_name}' anexado, mas nao foi possivel "
+        f"extrair texto. Processamento multimodal indisponivel.]"
+    )
+
+
 # === CHAT ENDPOINTS ===
 
 @medical_core_bp.route('/chat', methods=['POST'])
@@ -44,6 +82,15 @@ def chat():
                 'timestamp': datetime.now().isoformat()
             }), 400
 
+        # Process optional attachment (base64 image/PDF for OCR)
+        attachment = data.get('attachment')
+        attachment_context = ''
+        if attachment and isinstance(attachment, dict):
+            attachment_context = _extract_attachment_context(attachment)
+
+        # Combine user message + attachment context
+        full_message = message + attachment_context if attachment_context else message
+
         # Map persona names for RAG system
         rag_persona = 'dr_gasnelio' if persona in ['gasnelio', 'dr_gasnelio'] else 'ga_empathetic'
 
@@ -53,7 +100,7 @@ def chat():
 
         try:
             from services.rag.supabase_rag_system import query_rag_system
-            rag_response = query_rag_system(message, persona=rag_persona, max_chunks=3)
+            rag_response = query_rag_system(full_message, persona=rag_persona, max_chunks=3)
             rag_used = rag_response is not None
             logger.info("RAG query successful: %s, system: supabase_rag", rag_used)
         except Exception as e:
@@ -192,19 +239,25 @@ def readiness_probe():
 
 @medical_core_bp.route('/validate/medical', methods=['POST'])
 def validate_medical_response():
-    """Validate medical response quality"""
+    """Validate medical response quality using rule-based validation"""
     try:
         data = request.get_json() or {}
-        validation_result = {
-            'medical_accuracy': 0.92,
-            'citation_quality': 0.88,
-            'safety_score': 0.95,
-            'compliance_level': 'high',
-            'recommendations': ['Consider adding dosage specifics'],
-            'validated': True,
-            'timestamp': datetime.now().isoformat()
-        }
-        return jsonify(validation_result), 200
+        response_text = data.get('response_text', '')
+        sources = data.get('sources', [])
+
+        if not response_text:
+            return jsonify({
+                'error': 'response_text is required',
+                'error_code': 'MISSING_RESPONSE_TEXT',
+                'timestamp': datetime.now().isoformat()
+            }), 400
+
+        from services.validation.medical_validator import MedicalResponseValidator
+        validator = MedicalResponseValidator()
+        result = validator.validate_response(response_text, sources)
+        result['timestamp'] = datetime.now().isoformat()
+
+        return jsonify(result), 200
 
     except Exception as e:
         logger.error("Validation error: %s", sanitize_error(e))

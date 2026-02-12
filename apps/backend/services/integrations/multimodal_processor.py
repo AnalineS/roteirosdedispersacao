@@ -406,6 +406,54 @@ class MultimodalProcessor:
             logger.error(f"Erro no OCR: {e}")
             return None
     
+    def process_base64(self, base64_data: str, mime_type: str) -> Optional[Dict[str, Any]]:
+        """Decode base64 data, run OCR, return extracted text.
+
+        This is a convenience method for the chat attachment flow.
+        The temp file is deleted immediately after processing.
+
+        Returns dict with 'text' and 'confidence' keys, or None on failure.
+        """
+        import base64
+        import tempfile
+
+        ext_map = {
+            'image/png': '.png',
+            'image/jpeg': '.jpg',
+            'image/webp': '.webp',
+            'application/pdf': '.pdf',
+        }
+        ext = ext_map.get(mime_type, '.bin')
+
+        try:
+            raw_bytes = base64.b64decode(base64_data)
+        except Exception:
+            logger.warning("process_base64: invalid base64 data")
+            return None
+
+        tmp_path = None
+        try:
+            with tempfile.NamedTemporaryFile(suffix=ext, delete=False) as tmp:
+                tmp.write(raw_bytes)
+                tmp_path = Path(tmp.name)
+
+            ocr_result = self._perform_ocr(tmp_path)
+            if ocr_result and ocr_result.text:
+                return {
+                    'text': ocr_result.text,
+                    'confidence': ocr_result.confidence,
+                }
+            return None
+        except Exception as e:
+            logger.warning("process_base64 error: %s", e)
+            return None
+        finally:
+            if tmp_path and tmp_path.exists():
+                try:
+                    tmp_path.unlink()
+                except OSError:
+                    pass
+
     def _detect_medical_content(self, text: str) -> List[str]:
         """Detectar conteúdo médico no texto"""
         indicators = []

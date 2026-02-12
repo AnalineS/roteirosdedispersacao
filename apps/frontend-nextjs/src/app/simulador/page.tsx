@@ -6,10 +6,10 @@ import SimulatorIntroduction from '@/components/interactive/ClinicalSimulator/Si
 import CaseSelector from '@/components/interactive/ClinicalSimulator/CaseSelector';
 import CaseExecution from '@/components/interactive/ClinicalSimulator/CaseExecution';
 import { CLINICAL_CASES } from '@/data/clinicalCases';
-import { ClinicalCase, CaseSession, StepResult } from '@/types/clinicalCases';
+import { ClinicalCase, CaseSession } from '@/types/clinicalCases';
 import { getUnbColors } from '@/config/modernTheme';
 import { CompletedCase, Achievement } from '@/types/gamification';
-import { LearningProgress, DEFAULT_ACHIEVEMENTS, XP_RATES } from '@/types/gamification';
+import { LearningProgress, DEFAULT_ACHIEVEMENTS } from '@/types/gamification';
 import { UserLevel } from '@/types/disclosure';
 import Link from 'next/link';
 import {
@@ -22,8 +22,7 @@ import {
 
 type SimulatorState = 'introduction' | 'case_selection' | 'case_execution' | 'case_results' | 'session_history';
 
-// Mock data for completed cases
-const mockCompletedCases = ['caso_001_pediatrico_basico'];
+// Completed cases loaded from localStorage
 
 export default function SimuladorPage() {
   const unbColors = getUnbColors();
@@ -40,46 +39,93 @@ export default function SimuladorPage() {
   const [currentSession, setCurrentSession] = useState<CaseSession | null>(null);
   const [sessionHistory, setSessionHistory] = useState<CaseSession[]>([]);
 
+  // Persistir sessionHistory no localStorage sempre que mudar
+  const SESSION_HISTORY_KEY = 'simulador_session_history';
+  const MAX_STORED_SESSIONS = 50;
+
+  useEffect(() => {
+    // Skip persisting on initial empty state (loaded separately below)
+    if (sessionHistory.length === 0) return;
+    try {
+      const toStore = sessionHistory.slice(-MAX_STORED_SESSIONS);
+      localStorage.setItem(SESSION_HISTORY_KEY, JSON.stringify(toStore));
+    } catch { /* localStorage full or unavailable */ }
+  }, [sessionHistory]);
+
   // Inicializar sistema de gamificação e carregar progresso do usuário
   useEffect(() => {
     const loadUserProgress = async () => {
       setIsLoading(true);
 
-      // Simular delay de API
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Carregar session history do localStorage
+      try {
+        const storedHistory = localStorage.getItem(SESSION_HISTORY_KEY);
+        if (storedHistory) {
+          const parsed: CaseSession[] = JSON.parse(storedHistory);
+          // Reconstituir objetos Date que foram serializados como string
+          const hydrated = parsed.map(s => ({
+            ...s,
+            startTime: new Date(s.startTime),
+            endTime: s.endTime ? new Date(s.endTime) : undefined,
+          }));
+          setSessionHistory(hydrated);
+        }
+      } catch { /* localStorage indisponivel */ }
 
-      // Sistema de gamificação completo - DEFAULT_ACHIEVEMENTS ativado
+      // Carregar progresso real do localStorage
+      let savedCaseIds: string[] = [];
+      let savedCaseObjects: CompletedCase[] = [];
+      let savedXP = 0;
+      let savedUnlocked: string[] = [];
+      try {
+        const stored = localStorage.getItem('gamification_progress');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          const rawCases = parsed.completedCases || [];
+          // Suportar tanto string[] quanto CompletedCase[]
+          if (rawCases.length > 0 && typeof rawCases[0] === 'string') {
+            savedCaseIds = rawCases;
+          } else {
+            savedCaseObjects = rawCases;
+            savedCaseIds = rawCases.map((c: CompletedCase) => c.caseId);
+          }
+          savedXP = parsed.totalXP || 0;
+          savedUnlocked = parsed.unlockedAchievements || [];
+        }
+      } catch {
+        // localStorage indisponivel - iniciar do zero
+      }
+
       const availableAchievements = DEFAULT_ACHIEVEMENTS.filter(achievement =>
         achievement.category === 'knowledge_master' || achievement.category === 'clinical_simulator'
       );
 
-      const unlockedIds = ['first_case_completed', 'first_chat_message'];
-      const unlockedAchievements = availableAchievements.filter(achievement =>
-        unlockedIds.includes(achievement.id)
+      const unlockedAchievementObjects = availableAchievements.filter(achievement =>
+        savedUnlocked.includes(achievement.id)
       );
 
       const initialProgress: LearningProgress = {
         userId: 'user-1',
         currentLevel: 'estudante' as UserLevel,
         experiencePoints: {
-          total: 150,
+          total: savedXP,
           byCategory: {
             chat_interactions: 0,
             quiz_completion: 0,
             module_completion: 0,
-            case_completion: 150,
+            case_completion: savedXP,
             streak_bonus: 0,
             achievement_bonus: 0
           },
-          level: 1,
+          level: Math.max(1, Math.floor(savedXP / 1000) + 1),
           nextLevelXP: 1000
         },
-        achievements: unlockedAchievements,
+        achievements: unlockedAchievementObjects,
         streakData: {
-          currentStreak: 1,
-          longestStreak: 1,
+          currentStreak: 0,
+          longestStreak: 0,
           lastActivityDate: new Date().toISOString(),
-          isActiveToday: true,
+          isActiveToday: false,
           streakBreakGrace: 1
         },
         moduleProgress: [],
@@ -97,9 +143,9 @@ export default function SimuladorPage() {
         },
         caseStats: {
           totalCases: 0,
-          completedCases: 0,
+          completedCases: savedCaseIds.length,
           averageScore: 0,
-          totalXPFromCases: 0,
+          totalXPFromCases: savedXP,
           casesPassedFirstAttempt: 0,
           bestDiagnosticStreak: 0,
           currentDiagnosticStreak: 0,
@@ -128,20 +174,18 @@ export default function SimuladorPage() {
         totalTimeSpent: 0,
         preferredPersona: 'ga',
         // Compatibility properties
-        totalXP: 150,
-        completedCases: [],
-        unlockedAchievements: unlockedAchievements,
-        streakDays: 1,
-        progressPercentage: 15,
+        totalXP: savedXP,
+        completedCases: savedCaseObjects,
+        unlockedAchievements: unlockedAchievementObjects,
+        streakDays: 0,
+        progressPercentage: savedCaseIds.length > 0 ? Math.round((savedCaseIds.length / CLINICAL_CASES.length) * 100) : 0,
         nextLevelXP: 1000
       };
 
       setGamificationProgress(initialProgress);
-      setEarnedXP(150);
-      setUnlockedAchievements(['first_case_completed']);
-
-      // Mock: casos completados pelo usuário
-      setCompletedCases(mockCompletedCases);
+      setEarnedXP(savedXP);
+      setUnlockedAchievements(savedUnlocked);
+      setCompletedCases(savedCaseIds);
 
       setIsLoading(false);
     };
@@ -207,106 +251,57 @@ export default function SimuladorPage() {
     setCurrentState('case_selection');
   };
 
-  // Simulate case completion with XP and achievement tracking
-  const handleCaseCompletion = (caseData: ClinicalCase) => {
-    // Calculate XP based on case difficulty
-    let xpReward = 0;
-    switch (caseData.difficulty) {
-      case 'básico':
-        xpReward = XP_RATES.CASE_COMPLETION_BASIC;
-        break;
-      case 'intermediário':
-        xpReward = XP_RATES.CASE_COMPLETION_INTERMEDIATE;
-        break;
-      case 'avançado':
-        xpReward = XP_RATES.CASE_COMPLETION_ADVANCED;
-        break;
-      case 'complexo':
-        xpReward = XP_RATES.CASE_COMPLETION_COMPLEX;
-        break;
-    }
-
-    // Add bonus for first completion
-    const isFirstCompletion = !completedCases.includes(caseData.id);
-    if (isFirstCompletion) {
-      xpReward += XP_RATES.CASE_ACCURACY_BONUS;
-    }
-
-    // Update completed cases
-    setCompletedCases(prev => {
-      if (!prev.includes(caseData.id)) {
-        return [...prev, caseData.id];
-      }
-      return prev;
-    });
-
-    // Award XP
-    setEarnedXP(prev => prev + xpReward);
-
-    // Check for achievement unlocking
-    const newCompletedCount = completedCases.length + (isFirstCompletion ? 1 : 0);
-    const newAchievements: string[] = [];
-
-    // First case achievement
-    if (newCompletedCount === 1 && !unlockedAchievements.includes('first_case_completed')) {
-      newAchievements.push('first_case_completed');
-    }
-
-    // Pediatric specialist achievement
-    if (caseData.category === 'pediatrico' && newCompletedCount >= 3 && !unlockedAchievements.includes('pediatric_specialist')) {
-      newAchievements.push('pediatric_specialist');
-    }
-
-    // Speed clinician achievement (simulated)
-    if (newCompletedCount >= 3 && !unlockedAchievements.includes('speed_clinician')) {
-      newAchievements.push('speed_clinician');
-    }
-
-    setUnlockedAchievements(prev => [...prev, ...newAchievements]);
-
-    // Show completion notification
-    alert(`🎉 Caso completado!\n\n+${xpReward} XP\n${newAchievements.length > 0 ? `\n🏆 Conquistas desbloqueadas: ${newAchievements.length}` : ''}\n\nProgresso salvo para certificação!`);
-  };
-
   // Handle completion from CaseExecution component
   const handleInteractiveCaseCompletion = (result: CompletedCase) => {
-    // Encontrar o caso completo para cálculo de XP e conquistas
     const completedCase = CLINICAL_CASES.find(c => c.id === result.caseId);
-    if (completedCase) {
-      // Usar a lógica completa de handleCaseCompletion
-      handleCaseCompletion(completedCase);
+
+    // Atualizar lista de casos completados
+    const isFirstCompletion = !completedCases.includes(result.caseId);
+    if (isFirstCompletion) {
+      setCompletedCases(prev => [...prev, result.caseId]);
     }
 
-    // Finalizar CaseSession com dados médicos completos
-    if (currentSession) {
-      const timeSpent = (new Date().getTime() - currentSession.startTime.getTime()) / (1000 * 60); // minutos
+    // Calcular XP usando dados reais do resultado
+    const xpReward = result.xpEarned;
+    setEarnedXP(prev => prev + xpReward);
 
-      // Gerar StepResults baseado nos passos do caso completado
-      const stepResults: StepResult[] = completedCase?.steps?.map((step, index) => ({
-        stepId: step.id,
-        response: index === 0 ? "Hanseníase virchowiana" :
-                 index === 1 ? "PQT-Adulto" :
-                 index === 2 ? "Dapsona + Rifampicina + Clofazimina" :
-                 "Monitoramento mensal",
-        isCorrect: Math.random() > 0.3, // 70% de acerto simulado
-        pointsEarned: Math.floor(80 + Math.random() * 20), // Points entre 80-100
-        timeSpent: Math.floor(30 + Math.random() * 60), // 30-90 segundos por passo
-        attemptNumber: 1, // Primeira tentativa
-        feedback: "Resposta adequada para o caso clínico"
-      })) || [];
+    // Verificar conquistas reais baseadas no progresso acumulado
+    const newCompletedCount = completedCases.length + (isFirstCompletion ? 1 : 0);
+    const newAchievementIds: string[] = [];
+
+    if (newCompletedCount === 1 && !unlockedAchievements.includes('first_case_completed')) {
+      newAchievementIds.push('first_case_completed');
+    }
+    if (completedCase?.category === 'pediatrico' && newCompletedCount >= 3 && !unlockedAchievements.includes('pediatric_specialist')) {
+      newAchievementIds.push('pediatric_specialist');
+    }
+    if (newCompletedCount >= 5 && !unlockedAchievements.includes('speed_clinician')) {
+      newAchievementIds.push('speed_clinician');
+    }
+
+    const updatedUnlockedIds = [...unlockedAchievements, ...newAchievementIds];
+    setUnlockedAchievements(updatedUnlockedIds);
+
+    // Finalizar CaseSession com dados reais do resultado
+    if (currentSession) {
+      const timeSpentMinutes = (new Date().getTime() - currentSession.startTime.getTime()) / (1000 * 60);
 
       const completedSession: CaseSession = {
         ...currentSession,
         endTime: new Date(),
         status: 'completed',
-        stepResults: stepResults,
-        totalScore: result.score || 85,
-        timeSpent: timeSpent,
-        strengths: result.diagnosticAccuracy > 80 ? ['Diagnóstico preciso', 'Conhecimento farmacológico'] : ['Dedicação ao aprendizado'],
-        improvementAreas: result.diagnosticAccuracy < 70 ? ['Diagnóstico diferencial', 'Farmacoterapia'] : [],
+        stepResults: [], // CaseExecution retorna resumo agregado, sem detalhes individuais por passo
+        totalScore: result.score,
+        timeSpent: timeSpentMinutes,
+        strengths: result.diagnosticAccuracy > 80
+          ? ['Diagnostico preciso', 'Conhecimento farmacologico']
+          : ['Dedicacao ao aprendizado'],
+        improvementAreas: result.diagnosticAccuracy < 70
+          ? ['Diagnostico diferencial', 'Farmacoterapia']
+          : [],
         recommendations: [
           'Continue praticando casos similares',
-          'Revise protocolos de hanseníase',
+          'Revise protocolos de hanseniase',
           'Aprofunde conhecimento em PQT-U'
         ]
       };
@@ -315,18 +310,26 @@ export default function SimuladorPage() {
       setCurrentSession(null);
     }
 
-    // Atualizar progresso de gamificação
-    const newXP = earnedXP + result.xpEarned;
-    const newLevel = Math.floor(newXP / 1000) + 1; // 1000 XP por nível
+    // Atualizar progresso de gamificacao com dados reais
+    const newXP = earnedXP + xpReward;
+    const newLevel = Math.floor(newXP / 1000) + 1;
 
-    // Redefinir achievements disponíveis no escopo local
-    const localAvailableAchievements = DEFAULT_ACHIEVEMENTS.filter(achievement =>
-      achievement.category === 'knowledge_master' || achievement.category === 'clinical_simulator'
-    );
+    // Calcular streak real baseado na ultima atividade salva
+    let currentStreak = 1;
+    try {
+      const stored = localStorage.getItem('gamification_progress');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        const lastActivity = parsed.lastActivity ? new Date(parsed.lastActivity) : null;
+        if (lastActivity) {
+          const daysDiff = Math.floor((Date.now() - lastActivity.getTime()) / (1000 * 60 * 60 * 24));
+          currentStreak = daysDiff <= 1 ? (parsed.streakDays || 0) + (daysDiff === 1 ? 1 : 0) : 1;
+        }
+      }
+    } catch { /* localStorage indisponivel */ }
 
-    const unlockedIds = ['first_case_completed', 'first_chat_message'];
-    const newUnlockedAchievements = localAvailableAchievements.filter(achievement =>
-      unlockedIds.includes(achievement.id)
+    const realUnlockedAchievements = DEFAULT_ACHIEVEMENTS.filter(a =>
+      updatedUnlockedIds.includes(a.id)
     );
 
     setGamificationProgress(prev => prev ? ({
@@ -334,23 +337,25 @@ export default function SimuladorPage() {
       totalXP: newXP,
       currentLevel: newLevel < 2 ? 'estudante' : newLevel < 3 ? 'profissional' : 'especialista' as UserLevel,
       completedCases: [...prev.completedCases, result],
-      unlockedAchievements: newUnlockedAchievements,
-      streakDays: 1, // Simular streak
-      totalTimeSpent: 0,
+      unlockedAchievements: realUnlockedAchievements,
+      streakDays: currentStreak,
+      totalTimeSpent: prev.totalTimeSpent + result.timeSpent,
       nextLevelXP: (newLevel * 1000),
       progressPercentage: ((newXP % 1000) / 1000) * 100
     }) : null);
 
-    // Voltar para seleção de casos após completar
-    setTimeout(() => {
-      setCurrentState('case_selection');
-      setSelectedCase(null);
-    }, 2000);
+    // Persistir progresso no localStorage
+    try {
+      localStorage.setItem('gamification_progress', JSON.stringify({
+        completedCases: [...completedCases, ...(isFirstCompletion ? [result.caseId] : [])],
+        totalXP: newXP,
+        unlockedAchievements: updatedUnlockedIds,
+        streakDays: currentStreak,
+        lastActivity: new Date().toISOString()
+      }));
+    } catch { /* localStorage indisponivel */ }
 
-    // Show success notification
-    alert(`🎉 Caso "${result.title}" completado com sucesso!\n\n📊 Precisão diagnóstica: ${result.diagnosticAccuracy.toFixed(1)}%\n⚡ XP ganho: ${result.xpEarned}\n⏱️ Tempo: ${result.timeSpent.toFixed(1)} minutos\n\n✅ Progresso salvo para certificação!`);
-
-    // Return to case selection
+    // Voltar para selecao de casos
     setCurrentState('case_selection');
     setSelectedCase(null);
   };

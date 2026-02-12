@@ -517,6 +517,119 @@ class JWTAuthManager:
             self._add_rate_limit_attempt(email)
             return None
 
+    # === PASSWORD RESET ===
+
+    def generate_password_reset_token(self, email: str) -> Optional[Dict]:
+        """
+        Generate a password reset token for the given email.
+        Returns dict with token, user_name, email or None if user not found.
+        """
+        import secrets
+
+        try:
+            user = self.db.get_user_by_email(email)
+            if not user:
+                return None
+
+            token = secrets.token_urlsafe(32)
+            expires_at = datetime.now(timezone.utc) + timedelta(hours=1)
+
+            # Store token in database
+            with self.db._get_connection() as conn:
+                conn.execute('''
+                    CREATE TABLE IF NOT EXISTS password_reset_tokens (
+                        token TEXT PRIMARY KEY,
+                        user_id TEXT NOT NULL,
+                        email TEXT NOT NULL,
+                        expires_at TIMESTAMP NOT NULL,
+                        used INTEGER DEFAULT 0
+                    )
+                ''')
+                # Delete any existing tokens for this user
+                conn.execute(
+                    'DELETE FROM password_reset_tokens WHERE user_id = ?',
+                    (user['id'],)
+                )
+                conn.execute(
+                    'INSERT INTO password_reset_tokens (token, user_id, email, expires_at) VALUES (?, ?, ?, ?)',
+                    (token, user['id'], email, expires_at.isoformat())
+                )
+                conn.commit()
+
+            logger.info("Password reset token generated for: %s", sanitize_log_input(email))
+
+            return {
+                'token': token,
+                'user_name': user.get('name', ''),
+                'email': email
+            }
+
+        except Exception as e:
+            logger.error("Error generating reset token: %s", sanitize_error(e))
+            return None
+
+    def reset_password(self, token: str, new_password: str) -> bool:
+        """
+        Reset password using a valid reset token.
+        Returns True on success, False on failure.
+        """
+        try:
+            with self.db._get_connection() as conn:
+                # Find valid token
+                row = conn.execute(
+                    'SELECT * FROM password_reset_tokens WHERE token = ? AND used = 0',
+                    (token,)
+                ).fetchone()
+
+                if not row:
+                    return False
+
+                # Check expiration
+                expires_at = datetime.fromisoformat(row[3])  # expires_at column
+                if datetime.now(timezone.utc) > expires_at.replace(tzinfo=timezone.utc) if expires_at.tzinfo is None else expires_at:
+                    return False
+
+                user_id = row[1]  # user_id column
+
+                # Hash new password with unique salt
+                salt = os.urandom(16)
+                password_hash = hashlib.pbkdf2_hmac(
+                    'sha256', new_password.encode(), salt, 100000
+                ).hex()
+                stored_credential = f"{salt.hex()}:{password_hash}"
+
+                # Update user's password
+                user = self.db.get_user(user_id)
+                if not user:
+                    return False
+
+                profile_data = user.get('profile_data', {})
+                profile_data['password_hash'] = stored_credential
+
+                self.db.insert_user(
+                    user_id=user_id,
+                    email=user['email'],
+                    name=user['name'],
+                    profile_data=profile_data
+                )
+
+                # Mark token as used
+                conn.execute(
+                    'UPDATE password_reset_tokens SET used = 1 WHERE token = ?',
+                    (token,)
+                )
+                conn.commit()
+
+            # Revoke all sessions for security
+            self.revoke_all_sessions(user_id)
+
+            logger.info("Password reset successful for user: %s", sanitize_user_id(user_id))
+            return True
+
+        except Exception as e:
+            logger.error("Error resetting password: %s", sanitize_error(e))
+            return False
+
     # === UTILITIES ===
 
     def get_user_profile(self, user_id: str) -> Optional[Dict]:

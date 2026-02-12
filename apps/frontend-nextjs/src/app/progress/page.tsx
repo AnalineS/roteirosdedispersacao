@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { safeLocalStorage } from '@/hooks/useClientStorage';
 import EducationalLayout from '@/components/layout/EducationalLayout';
 import ProgressSystem, { useProgressData } from '@/components/navigation/Progress';
 import { usePersonas } from '@/hooks/usePersonas';
 import { useSafeAuth as useAuth } from '@/hooks/useSafeAuth';
 import { ShareProgress } from '@/components/achievements';
+import { gamificationAPI } from '@/services/gamificationAPI';
 
 interface PageProgressData {
   totalTime: number;
@@ -14,12 +15,12 @@ interface PageProgressData {
   modulesCompleted: number;
   chatSessions: number;
   questionsAsked: number;
-  achievements: Achievement[];
+  achievements: PageAchievement[];
   weeklyProgress: WeeklyProgress[];
   learningPath: LearningPathItem[];
 }
 
-interface Achievement {
+interface PageAchievement {
   id: string;
   title: string;
   description: string;
@@ -44,107 +45,110 @@ interface LearningPathItem {
   prerequisite?: string;
 }
 
+/** Static learning path modules - progress overlay comes from API */
+const LEARNING_PATH_MODULES: Omit<LearningPathItem, 'status' | 'progress'>[] = [
+  { id: 'hanseniase-intro', title: 'Introducao a Hanseniase', estimatedTime: '15 min' },
+  { id: 'microbiologia', title: 'Microbiologia da Hanseniase', estimatedTime: '20 min', prerequisite: 'hanseniase-intro' },
+  { id: 'diagnostico-clinico', title: 'Diagnostico Clinico', estimatedTime: '30 min', prerequisite: 'microbiologia' },
+  { id: 'formas-clinicas', title: 'Formas Clinicas', estimatedTime: '25 min', prerequisite: 'diagnostico-clinico' },
+  { id: 'pqt-fundamentos', title: 'Fundamentos da PQT-U', estimatedTime: '35 min', prerequisite: 'diagnostico-clinico' },
+  { id: 'farmacologia', title: 'Farmacologia da PQT-U', estimatedTime: '40 min', prerequisite: 'pqt-fundamentos' },
+];
+
+const EMPTY_PROGRESS: PageProgressData = {
+  totalTime: 0,
+  modulesStarted: 0,
+  modulesCompleted: 0,
+  chatSessions: 0,
+  questionsAsked: 0,
+  achievements: [],
+  weeklyProgress: [],
+  learningPath: LEARNING_PATH_MODULES.map(m => ({ ...m, status: 'locked' as const, progress: 0 })),
+};
+
 export default function ProgressPage() {
   const { user } = useAuth();
   const { personas, loading: personasLoading } = usePersonas();
   const [selectedPersona, setSelectedPersona] = useState<string | null>(null);
   const userProgressData = useProgressData();
-  const [progressData] = useState<PageProgressData>({
-    totalTime: 185, // minutos
-    modulesStarted: 6,
-    modulesCompleted: 3,
-    chatSessions: 8,
-    questionsAsked: 24,
-    achievements: [
-      {
-        id: 'first-chat',
-        title: 'Primeira Conversa',
-        description: 'Iniciou sua primeira conversa com um assistente virtual',
-        icon: '💬',
-        unlockedAt: '2025-08-01',
-        category: 'Interação'
-      },
-      {
-        id: 'explorer',
-        title: 'Explorador',
-        description: 'Explorou 3 módulos diferentes',
-        icon: '🗺️',
-        unlockedAt: '2025-08-02',
-        category: 'Aprendizado'
-      },
-      {
-        id: 'student',
-        title: 'Estudioso',
-        description: 'Completou seu primeiro módulo educacional',
-        icon: '📚',
-        unlockedAt: '2025-08-02',
-        category: 'Conquista'
-      },
-      {
-        id: 'dedicated',
-        title: 'Dedicado',
-        description: 'Passou mais de 3 horas estudando',
-        icon: '⏰',
-        unlockedAt: '2025-08-03',
-        category: 'Tempo'
+  const [progressData, setProgressData] = useState<PageProgressData>(EMPTY_PROGRESS);
+  const [dataLoading, setDataLoading] = useState(true);
+
+  const loadProgressData = useCallback(async (userId: string) => {
+    try {
+      setDataLoading(true);
+      const result = await gamificationAPI.getProgress(userId);
+
+      if (result.success && result.data) {
+        const data = result.data;
+        const completedCaseIds: string[] = Array.isArray(data.completedCases)
+          ? data.completedCases.map(c => c.caseId)
+          : [];
+        const totalTime = typeof data.totalTimeSpent === 'number' ? data.totalTimeSpent : 0;
+
+        // Map unlocked achievements to page format
+        const achievements: PageAchievement[] = Array.isArray(data.achievements)
+          ? data.achievements
+              .filter(a => a.isUnlocked)
+              .map(a => ({
+                id: a.id,
+                title: a.title,
+                description: a.description,
+                icon: a.icon || '',
+                unlockedAt: a.unlockedAt || '',
+                category: a.category || 'general',
+              }))
+          : [];
+
+        // Compute module progress from completed cases
+        const completedSet = new Set(completedCaseIds);
+        const learningPath: LearningPathItem[] = LEARNING_PATH_MODULES.map(mod => {
+          const isCompleted = completedSet.has(mod.id);
+          // Simple heuristic: if module id is in completed list → 100%
+          // If prerequisite is completed → in-progress at 0%
+          // Otherwise → locked
+          const prereqCompleted = !mod.prerequisite || completedSet.has(mod.prerequisite);
+          let status: LearningPathItem['status'] = 'locked';
+          let progress = 0;
+          if (isCompleted) {
+            status = 'completed';
+            progress = 100;
+          } else if (prereqCompleted) {
+            status = 'in-progress';
+            progress = 0;
+          }
+          return { ...mod, status, progress };
+        });
+
+        const modulesCompleted = learningPath.filter(m => m.status === 'completed').length;
+        const modulesStarted = learningPath.filter(m => m.status !== 'locked').length;
+
+        setProgressData({
+          totalTime,
+          modulesStarted,
+          modulesCompleted,
+          chatSessions: 0,
+          questionsAsked: 0,
+          achievements,
+          weeklyProgress: [],
+          learningPath,
+        });
       }
-    ],
-    weeklyProgress: [
-      { week: 'Sem 1', modulesCompleted: 1, timeSpent: 45, chatInteractions: 3 },
-      { week: 'Sem 2', modulesCompleted: 2, timeSpent: 68, chatInteractions: 5 },
-      { week: 'Sem 3', modulesCompleted: 0, timeSpent: 32, chatInteractions: 2 },
-      { week: 'Sem 4', modulesCompleted: 0, timeSpent: 40, chatInteractions: 3 }
-    ],
-    learningPath: [
-      {
-        id: 'hanseniase-intro',
-        title: 'Introdução à Hanseníase',
-        status: 'completed',
-        progress: 100,
-        estimatedTime: '15 min'
-      },
-      {
-        id: 'microbiologia',
-        title: 'Microbiologia da Hanseníase',
-        status: 'completed',
-        progress: 100,
-        estimatedTime: '20 min',
-        prerequisite: 'hanseniase-intro'
-      },
-      {
-        id: 'diagnostico-clinico',
-        title: 'Diagnóstico Clínico',
-        status: 'completed',
-        progress: 100,
-        estimatedTime: '30 min',
-        prerequisite: 'microbiologia'
-      },
-      {
-        id: 'formas-clinicas',
-        title: 'Formas Clínicas',
-        status: 'in-progress',
-        progress: 40,
-        estimatedTime: '25 min',
-        prerequisite: 'diagnostico-clinico'
-      },
-      {
-        id: 'pqt-fundamentos',
-        title: 'Fundamentos da PQT-U',
-        status: 'in-progress',
-        progress: 60,
-        estimatedTime: '35 min',
-        prerequisite: 'diagnostico-clinico'
-      },
-      {
-        id: 'farmacologia',
-        title: 'Farmacologia da PQT-U',
-        status: 'locked',
-        progress: 0,
-        estimatedTime: '40 min',
-        prerequisite: 'pqt-fundamentos'
-      }
-    ]
-  });
+      // If API fails, EMPTY_PROGRESS remains (honest zeros)
+    } catch {
+      // Keep EMPTY_PROGRESS on error - honest display
+    } finally {
+      setDataLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (user?.uid) {
+      loadProgressData(user.uid);
+    } else {
+      setDataLoading(false);
+    }
+  }, [user?.uid, loadProgressData]);
 
   useEffect(() => {
     const stored = safeLocalStorage()?.getItem('selectedPersona');
@@ -192,13 +196,13 @@ export default function ProgressPage() {
     return colors[category] || '#666';
   };
 
-  if (personasLoading) {
+  if (personasLoading || dataLoading) {
     return (
-      <div style={{ 
-        minHeight: '100vh', 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center' 
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center'
       }}>
         <div>Carregando progresso...</div>
       </div>
@@ -429,6 +433,17 @@ export default function ProgressPage() {
             gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
             gap: '20px'
           }}>
+            {progressData.achievements.length === 0 && (
+              <div style={{
+                gridColumn: '1 / -1',
+                textAlign: 'center',
+                padding: '40px 20px',
+                color: '#888'
+              }}>
+                <div style={{ fontSize: '3rem', marginBottom: '10px' }}>🏆</div>
+                <p>Nenhuma conquista desbloqueada ainda. Continue estudando para desbloquear!</p>
+              </div>
+            )}
             {progressData.achievements.map((achievement) => (
               <div
                 key={achievement.id}
@@ -513,42 +528,31 @@ export default function ProgressPage() {
           </div>
         </div>
 
-        {/* Share Progress Button - PR #175 */}
-        <div style={{ 
-          textAlign: 'center', 
-          marginBottom: '40px' 
+        {/* Share Progress Button */}
+        <div style={{
+          textAlign: 'center',
+          marginBottom: '40px'
         }}>
-          <ShareProgress 
+          <ShareProgress
             isOpen={false}
             onClose={() => {}}
             progressData={{
-              totalPoints: 250,
-              achievements_count: 3,
-              completedModules: 2,
-              streak: 5,
-              recent_achievements: [
-                {
-                  id: 'first-lesson',
-                  name: 'Primeira lição concluída',
-                  description: 'Completou a primeira lição sobre hanseníase',
-                  badge_url: '',
-                  earned_date: new Date().toISOString(),
-                  xp_gained: 50,
-                  category: 'learning'
-                },
-                {
-                  id: 'study-streak',
-                  name: 'Sequência de estudos',
-                  description: 'Manteve sequência de 5 dias de estudo',
-                  badge_url: '',
-                  earned_date: new Date().toISOString(),
-                  xp_gained: 100,
-                  category: 'consistency'
-                }
-              ]
+              totalPoints: 0,
+              achievements_count: progressData.achievements.length,
+              completedModules: progressData.modulesCompleted,
+              streak: 0,
+              recent_achievements: progressData.achievements.slice(0, 3).map(a => ({
+                id: a.id,
+                name: a.title,
+                description: a.description,
+                badge_url: '',
+                earned_date: a.unlockedAt || new Date().toISOString(),
+                xp_gained: 0,
+                category: a.category,
+              })),
             }}
             userProfile={{
-              name: user?.displayName || 'Usuário',
+              name: user?.displayName || 'Usuario',
               avatar_url: user?.photoURL || '',
               uid: user?.uid || ''
             }}
@@ -556,81 +560,83 @@ export default function ProgressPage() {
         </div>
 
         {/* Weekly Progress Chart */}
-        <div>
-          <h2 style={{ 
-            fontSize: '2rem', 
-            marginBottom: '25px', 
-            color: '#333' 
-          }}>
-            Progresso Semanal
-          </h2>
-          
-          <div style={{
-            background: 'white',
-            borderRadius: '16px',
-            padding: '30px',
-            boxShadow: '0 8px 24px rgba(0,0,0,0.1)'
-          }}>
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-              gap: '20px'
+        {progressData.weeklyProgress.length > 0 && (
+          <div>
+            <h2 style={{
+              fontSize: '2rem',
+              marginBottom: '25px',
+              color: '#333'
             }}>
-              {progressData.weeklyProgress.map((week) => (
-                <div
-                  key={week.week}
-                  style={{
-                    background: '#f8f9fa',
-                    borderRadius: '12px',
-                    padding: '20px',
-                    textAlign: 'center'
-                  }}
-                >
-                  <h4 style={{
-                    fontSize: '1.2rem',
-                    marginBottom: '15px',
-                    color: '#1976d2'
-                  }}>
-                    {week.week}
-                  </h4>
-                  
-                  <div style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '10px'
-                  }}>
-                    <div>
-                      <div style={{ fontSize: '1.5rem', color: '#4caf50' }}>
-                        {week.modulesCompleted}
+              Progresso Semanal
+            </h2>
+
+            <div style={{
+              background: 'white',
+              borderRadius: '16px',
+              padding: '30px',
+              boxShadow: '0 8px 24px rgba(0,0,0,0.1)'
+            }}>
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                gap: '20px'
+              }}>
+                {progressData.weeklyProgress.map((week) => (
+                  <div
+                    key={week.week}
+                    style={{
+                      background: '#f8f9fa',
+                      borderRadius: '12px',
+                      padding: '20px',
+                      textAlign: 'center'
+                    }}
+                  >
+                    <h4 style={{
+                      fontSize: '1.2rem',
+                      marginBottom: '15px',
+                      color: '#1976d2'
+                    }}>
+                      {week.week}
+                    </h4>
+
+                    <div style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '10px'
+                    }}>
+                      <div>
+                        <div style={{ fontSize: '1.5rem', color: '#4caf50' }}>
+                          {week.modulesCompleted}
+                        </div>
+                        <div style={{ fontSize: '0.8rem', color: '#666' }}>
+                          Modulos completados
+                        </div>
                       </div>
-                      <div style={{ fontSize: '0.8rem', color: '#666' }}>
-                        Módulos completados
+
+                      <div>
+                        <div style={{ fontSize: '1.5rem', color: '#ff9800' }}>
+                          {formatTime(week.timeSpent)}
+                        </div>
+                        <div style={{ fontSize: '0.8rem', color: '#666' }}>
+                          Tempo de estudo
+                        </div>
                       </div>
-                    </div>
-                    
-                    <div>
-                      <div style={{ fontSize: '1.5rem', color: '#ff9800' }}>
-                        {formatTime(week.timeSpent)}
-                      </div>
-                      <div style={{ fontSize: '0.8rem', color: '#666' }}>
-                        Tempo de estudo
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <div style={{ fontSize: '1.5rem', color: '#2196f3' }}>
-                        {week.chatInteractions}
-                      </div>
-                      <div style={{ fontSize: '0.8rem', color: '#666' }}>
-                        Interações chat
+
+                      <div>
+                        <div style={{ fontSize: '1.5rem', color: '#2196f3' }}>
+                          {week.chatInteractions}
+                        </div>
+                        <div style={{ fontSize: '0.8rem', color: '#666' }}>
+                          Interacoes chat
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </EducationalLayout>
   );

@@ -4,11 +4,13 @@ import { useState, useEffect } from 'react';
 import EducationalLayout from '@/components/layout/EducationalLayout';
 import { safeLocalStorage } from '@/hooks/useClientStorage';
 import { usePersonas } from '@/hooks/usePersonas';
+import { useSafeAuth as useAuth } from '@/hooks/useSafeAuth';
 import EducationalDashboard from '@/components/educational/EducationalDashboard';
 import ProgressDashboard from '@/components/gamification/ProgressDashboard';
 import GamificationWidget from '@/components/gamification/GamificationWidget';
 
 export default function DashboardPage() {
+  const { user } = useAuth();
   const { personas, loading: personasLoading } = usePersonas();
   const [selectedPersona, setSelectedPersona] = useState<string | null>(null);
 
@@ -49,7 +51,7 @@ export default function DashboardPage() {
       {/* Progress Dashboard */}
       <div style={{ marginBottom: '2rem' }}>
         <ProgressDashboard
-          userId="user-session-id" // ID único do usuário real, não da persona IA
+          userId={user?.uid || ''}
           showAchievements={true}
           showLeaderboard={true}
         />

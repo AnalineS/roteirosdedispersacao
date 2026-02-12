@@ -75,77 +75,19 @@ def sanitize_feedback_data(data: Dict[str, Any]) -> Dict[str, Any]:
     
     return sanitized
 
+def _get_repo():
+    """Get feedback repository instance."""
+    from services.storage.feedback_repository import get_feedback_repository
+    return get_feedback_repository()
+
+
 def store_feedback(feedback_data: Dict[str, Any]) -> str:
     """
-    Armazena feedback (em cache por enquanto, depois no AstraDB)
-    Retorna feedback_id
+    Armazena feedback no SQLite persistente.
+    Retorna feedback_id.
     """
-    cache = get_cache()
-    feedback_id = str(uuid.uuid4())
-    
-    # Preparar dados para armazenamento
-    stored_data = {
-        **feedback_data,
-        'feedback_id': feedback_id,
-        'created_at': datetime.now().isoformat(),
-        'processed': False
-    }
-    
-    if cache:
-        # Armazenar feedback individual
-        cache.set(f"feedback:{feedback_id}", stored_data, ttl=86400 * 30)  # 30 dias
-        
-        # Adicionar à lista de feedbacks
-        feedback_list = cache.get("feedback:list") or []
-        feedback_list.append({
-            'feedback_id': feedback_id,
-            'rating': feedback_data['rating'],
-            'persona_id': feedback_data.get('persona_id'),
-            'created_at': stored_data['created_at']
-        })
-        cache.set("feedback:list", feedback_list, ttl=86400 * 30)
-        
-        # Atualizar estatísticas
-        update_feedback_stats(feedback_data['rating'], feedback_data.get('persona_id'))
-    
-    return feedback_id
-
-def update_feedback_stats(rating: int, persona_id: Optional[str] = None):
-    """Atualiza estatísticas de feedback"""
-    cache = get_cache()
-    if not cache:
-        return
-    
-    # Estatísticas gerais
-    stats = cache.get("feedback:stats") or {
-        'total_count': 0,
-        'total_rating': 0,
-        'rating_distribution': {1: 0, 2: 0, 3: 0, 4: 0, 5: 0},
-        'average_rating': 0.0
-    }
-    
-    stats['total_count'] += 1
-    stats['total_rating'] += rating
-    stats['rating_distribution'][rating] += 1
-    stats['average_rating'] = stats['total_rating'] / stats['total_count']
-    
-    cache.set("feedback:stats", stats, ttl=86400 * 7)  # 7 dias
-    
-    # Estatísticas por persona
-    if persona_id:
-        persona_stats = cache.get(f"feedback:stats:{persona_id}") or {
-            'total_count': 0,
-            'total_rating': 0,
-            'rating_distribution': {1: 0, 2: 0, 3: 0, 4: 0, 5: 0},
-            'average_rating': 0.0
-        }
-        
-        persona_stats['total_count'] += 1
-        persona_stats['total_rating'] += rating
-        persona_stats['rating_distribution'][rating] += 1
-        persona_stats['average_rating'] = persona_stats['total_rating'] / persona_stats['total_count']
-        
-        cache.set(f"feedback:stats:{persona_id}", persona_stats, ttl=86400 * 7)
+    repo = _get_repo()
+    return repo.save_feedback(feedback_data)
 
 def check_rate_limit(endpoint_type: str = 'default'):
     """
@@ -311,44 +253,17 @@ def submit_feedback():
 @feedback_bp.route('/feedback/stats', methods=['GET'])
 @check_rate_limit('general')
 def get_feedback_stats():
-    """Endpoint para obter estatísticas de feedback"""
+    """Endpoint para obter estatísticas de feedback via SQLite"""
+    request_id = f"feedback_stats_{int(datetime.now().timestamp() * 1000)}"
     try:
-        request_id = f"feedback_stats_{int(datetime.now().timestamp() * 1000)}"
         logger.info("[%s] Solicitação de estatísticas de feedback", sanitize_request_id(request_id))
-        
-        cache = get_cache()
-        if not cache:
-            return jsonify({
-                "error": "Serviço de estatísticas não disponível",
-                "error_code": "SERVICE_UNAVAILABLE",
-                "request_id": request_id
-            }), 503
-        
-        # Obter estatísticas gerais
-        general_stats = cache.get("feedback:stats") or {
-            'total_count': 0,
-            'total_rating': 0,
-            'rating_distribution': {1: 0, 2: 0, 3: 0, 4: 0, 5: 0},
-            'average_rating': 0.0
-        }
-        
-        # Obter estatísticas por persona
-        dr_gasnelio_stats = cache.get("feedback:stats:dr_gasnelio") or {
-            'total_count': 0,
-            'average_rating': 0.0,
-            'rating_distribution': {1: 0, 2: 0, 3: 0, 4: 0, 5: 0}
-        }
-        
-        ga_stats = cache.get("feedback:stats:ga") or {
-            'total_count': 0,
-            'average_rating': 0.0,
-            'rating_distribution': {1: 0, 2: 0, 3: 0, 4: 0, 5: 0}
-        }
-        
-        # Feedbacks recentes
-        feedback_list = cache.get("feedback:list") or []
-        recent_feedbacks = sorted(feedback_list, key=lambda x: x['created_at'], reverse=True)[:10]
-        
+
+        repo = _get_repo()
+        general_stats = repo.get_feedback_stats()
+        dr_gasnelio_stats = repo.get_persona_stats('dr_gasnelio')
+        ga_stats = repo.get_persona_stats('ga')
+        recent_feedbacks = repo.get_recent_feedbacks(10)
+
         response = {
             "general": general_stats,
             "by_persona": {
@@ -359,13 +274,13 @@ def get_feedback_stats():
             "metadata": {
                 "request_id": request_id,
                 "timestamp": datetime.now().isoformat(),
-                "data_retention_days": 30
+                "storage": "sqlite_persistent"
             }
         }
-        
+
         logger.info("[%s] Estatísticas de feedback retornadas", sanitize_request_id(request_id))
         return jsonify(response), 200
-        
+
     except Exception as e:
         logger.error("[%s] Erro ao obter estatísticas: %s", sanitize_request_id(request_id), sanitize_error(e))
         return jsonify({
@@ -378,46 +293,38 @@ def get_feedback_stats():
 @check_rate_limit('general')
 def get_feedback_details(feedback_id: str):
     """Endpoint para obter detalhes de um feedback específico"""
+    request_id = f"feedback_detail_{int(datetime.now().timestamp() * 1000)}"
     try:
-        request_id = f"feedback_detail_{int(datetime.now().timestamp() * 1000)}"
         logger.info("[%s] Detalhes solicitados para feedback: %s", sanitize_request_id(request_id), sanitize_request_id(feedback_id))
-        
-        cache = get_cache()
-        if not cache:
-            return jsonify({
-                "error": "Serviço não disponível",
-                "error_code": "SERVICE_UNAVAILABLE",
-                "request_id": request_id
-            }), 503
-        
-        # Obter dados do feedback
-        feedback_data = cache.get(f"feedback:{feedback_id}")
+
+        repo = _get_repo()
+        feedback_data = repo.get_feedback_by_id(feedback_id)
+
         if not feedback_data:
             return jsonify({
                 "error": "Feedback não encontrado",
                 "error_code": "FEEDBACK_NOT_FOUND",
                 "request_id": request_id
             }), 404
-        
-        # Remover dados sensíveis para retorno público
+
         public_data = {
-            "feedback_id": feedback_data['feedback_id'],
+            "feedback_id": feedback_data['id'],
             "rating": feedback_data['rating'],
-            "has_comments": bool(feedback_data.get('comments', '').strip()),
+            "has_comments": bool((feedback_data.get('comments') or '').strip()),
             "persona_id": feedback_data.get('persona_id'),
             "created_at": feedback_data['created_at'],
-            "processed": feedback_data.get('processed', False)
+            "processed": bool(feedback_data.get('processed', 0))
         }
-        
+
         response = {
             "feedback": public_data,
             "request_id": request_id,
             "timestamp": datetime.now().isoformat()
         }
-        
+
         logger.info("[%s] Detalhes do feedback %s retornados", sanitize_request_id(request_id), sanitize_request_id(feedback_id))
         return jsonify(response), 200
-        
+
     except Exception as e:
         logger.error("[%s] Erro ao obter detalhes do feedback: %s", sanitize_request_id(request_id), sanitize_error(e))
         return jsonify({
@@ -429,25 +336,31 @@ def get_feedback_details(feedback_id: str):
 @feedback_bp.route('/feedback/health', methods=['GET'])
 def feedback_health():
     """Health check específico do serviço de feedback"""
-    cache = get_cache()
-    
-    # Obter estatísticas básicas para health check
-    stats = None
-    if cache:
-        stats = cache.get("feedback:stats")
-    
-    status = {
-        "service": "feedback",
-        "status": "healthy",
-        "timestamp": datetime.now().isoformat(),
-        "components": {
-            "cache": "available" if cache else "unavailable",
-            "storage": "cache_based"  # Futuramente será AstraDB
-        },
-        "stats": {
-            "total_feedbacks": stats.get('total_count', 0) if stats else 0,
-            "average_rating": stats.get('average_rating', 0.0) if stats else 0.0
+    try:
+        repo = _get_repo()
+        stats = repo.get_feedback_stats()
+
+        status = {
+            "service": "feedback",
+            "status": "healthy",
+            "timestamp": datetime.now().isoformat(),
+            "components": {
+                "storage": "sqlite_persistent"
+            },
+            "stats": {
+                "total_feedbacks": stats.get('total_count', 0),
+                "average_rating": stats.get('average_rating', 0.0)
+            }
         }
-    }
-    
+    except Exception:
+        status = {
+            "service": "feedback",
+            "status": "degraded",
+            "timestamp": datetime.now().isoformat(),
+            "components": {
+                "storage": "unavailable"
+            },
+            "stats": {"total_feedbacks": 0, "average_rating": 0.0}
+        }
+
     return jsonify(status), 200

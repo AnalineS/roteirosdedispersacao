@@ -96,66 +96,54 @@ export default function ProgressSystem({
   }
 }
 
-// Hook para gerenciar dados de progresso
+/** Default empty progress - honest zeros instead of fake data */
+const EMPTY_USER_PROGRESS: UserProgressData = {
+  totalModules: 6,
+  completedModules: 0,
+  overallCompletionRate: 0,
+  currentStreak: 0,
+  totalTimeSpent: '0min',
+  achievements: [],
+  modules: [
+    { moduleId: 'hanseniase-intro', moduleName: 'Introducao a Hanseniase', totalSteps: 4, completedSteps: 0, estimatedTime: '10 min', completionRate: 0, status: 'not-started', category: 'learning' },
+    { moduleId: 'diagnostico', moduleName: 'Diagnostico', totalSteps: 5, completedSteps: 0, estimatedTime: '15 min', completionRate: 0, status: 'not-started', category: 'learning' },
+    { moduleId: 'tratamento', moduleName: 'Tratamento PQT-U', totalSteps: 6, completedSteps: 0, estimatedTime: '20 min', completionRate: 0, status: 'not-started', category: 'learning' },
+  ],
+};
+
+/**
+ * Hook para gerenciar dados de progresso.
+ * Lê do localStorage (cache do gamificationAPI) para manter sincronia.
+ */
 export function useProgressData(): UserProgressData {
-  // Dados mockados - em produção, viria de uma API/localStorage
-  return {
-    totalModules: 10,
-    completedModules: 4,
-    overallCompletionRate: 40,
-    currentStreak: 3,
-    totalTimeSpent: '2h 30min',
-    achievements: [
-      {
-        id: 'first-module',
-        name: 'Primeiro Passo',
-        description: 'Complete seu primeiro módulo',
-        icon: '🎯',
-        unlockedAt: new Date('2025-08-01'),
-        category: 'learning'
-      },
-      {
-        id: 'streak-3',
-        name: 'Consistente',
-        description: '3 dias consecutivos estudando',
-        icon: '🔥',
-        unlockedAt: new Date('2025-08-03'),
-        category: 'engagement'
-      }
-    ],
-    modules: [
-      {
-        moduleId: 'hanseniase-intro',
-        moduleName: 'Introdução à Hanseníase',
-        totalSteps: 4,
-        completedSteps: 4,
-        estimatedTime: '10 min',
-        completionRate: 100,
-        status: 'completed',
-        category: 'learning'
-      },
-      {
-        moduleId: 'diagnostico',
-        moduleName: 'Diagnóstico',
-        totalSteps: 5,
-        completedSteps: 3,
-        currentStep: 4,
-        estimatedTime: '15 min',
-        completionRate: 60,
-        status: 'in-progress',
-        category: 'learning'
-      },
-      {
-        moduleId: 'tratamento',
-        moduleName: 'Tratamento PQT-U',
-        totalSteps: 6,
-        completedSteps: 0,
-        estimatedTime: '20 min',
-        completionRate: 0,
-        status: 'not-started',
-        category: 'learning'
-      }
-    ]
-  };
+  if (typeof window === 'undefined') {
+    return EMPTY_USER_PROGRESS;
+  }
+
+  try {
+    const cached = localStorage.getItem('gamification_progress');
+    if (!cached) return EMPTY_USER_PROGRESS;
+
+    const parsed = JSON.parse(cached);
+    const totalTime = typeof parsed.totalTimeSpent === 'number' ? parsed.totalTimeSpent : 0;
+    const hours = Math.floor(totalTime / 60);
+    const mins = totalTime % 60;
+    const timeStr = hours > 0 ? `${hours}h ${mins}min` : `${mins}min`;
+
+    const completedCount = Array.isArray(parsed.completedCases) ? parsed.completedCases.length : 0;
+    const rate = EMPTY_USER_PROGRESS.totalModules > 0
+      ? Math.round((completedCount / EMPTY_USER_PROGRESS.totalModules) * 100)
+      : 0;
+
+    return {
+      ...EMPTY_USER_PROGRESS,
+      completedModules: completedCount,
+      overallCompletionRate: rate,
+      currentStreak: parsed.streakDays ?? 0,
+      totalTimeSpent: timeStr,
+    };
+  } catch {
+    return EMPTY_USER_PROGRESS;
+  }
 }
 

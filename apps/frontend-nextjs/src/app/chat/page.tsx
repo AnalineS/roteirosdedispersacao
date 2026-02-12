@@ -32,6 +32,7 @@ import { SidebarLoader } from '@/components/LoadingSpinner';
 import ToastContainer from '@/components/ui/ToastContainer';
 import FavoritesModal from '@/components/chat/modern/FavoritesModal';
 import { type ChatMessage } from '@/types/api';
+import { type ChatAttachmentPayload } from '@/services/api';
 import { type ValidPersonaId } from '@/types/personas';
 
 export default function ChatPage() {
@@ -98,6 +99,7 @@ export default function ChatPage() {
   const [showHistory, setShowHistory] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [pendingQuestion, setPendingQuestion] = useState<string>('');
+  const [pendingAttachment, setPendingAttachment] = useState<ChatAttachmentPayload | null>(null);
   
   // LGPD Compliance para coleta de dados sensíveis de saúde
   const { hasConsent, isLoading: lgpdLoading } = useLGPDConsent('chat');
@@ -173,33 +175,41 @@ export default function ChatPage() {
 
   // Função wrapper para enviar mensagens e adicionar ao histórico
   const sendMessageWithHistory = useCallback(async (messageText: string, personaId: string) => {
+    // If there is a pending attachment, prepend context to the message
+    let finalMessage = messageText;
+    if (pendingAttachment) {
+      finalMessage = `[Arquivo anexado: ${pendingAttachment.fileName} (${(pendingAttachment.sizeBytes / 1024).toFixed(0)}KB, ${pendingAttachment.mimeType})]\n\n${messageText}`;
+      // Clear attachment after capturing
+      setPendingAttachment(null);
+    }
+
     const userMessage = {
       id: `user-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       role: 'user' as const,
-      content: messageText,
+      content: finalMessage,
       timestamp: new Date().toISOString(),
       persona: personaId
     };
-    
+
     // Trigger feedback de envio imediatamente
     triggerSendFeedback();
-    
+
     // Adicionar mensagem do usuário ao histórico imediatamente
     addMessageToConversation(userMessage);
-    
+
     try {
       // Usar o sendMessage original que retornará a resposta
-      await sendMessage(messageText, personaId);
-      
+      await sendMessage(finalMessage, personaId);
+
       // A resposta será automaticamente adicionada pelo useChat hooks
       // O feedback de recebimento será disparado no onMessageReceived
-      
+
     } catch (error) {
       console.error('Erro ao enviar mensagem:', error);
       // Trigger feedback de erro
       triggerErrorFeedback('Erro ao enviar mensagem. Tente novamente.');
     }
-  }, [sendMessage, addMessageToConversation, triggerSendFeedback, triggerErrorFeedback]);
+  }, [sendMessage, addMessageToConversation, triggerSendFeedback, triggerErrorFeedback, pendingAttachment]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -267,31 +277,52 @@ export default function ChatPage() {
 
   // Handler para upload de arquivos
   const handleFileUpload = useCallback((files: FileList) => {
-    console.log('Files uploaded:', files);
+    const ALLOWED_TYPES = [
+      'image/png', 'image/jpeg', 'image/webp',
+      'application/pdf',
+    ];
+    const MAX_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
 
-    // Trigger feedback de arquivo recebido
-    triggerReceiveFeedback();
+    const file = files[0]; // Process first file only
+    if (!file) return;
 
-    const fileNames = Array.from(files).map(f => f.name).join(', ');
-    const fileCount = files.length;
-
-    // Notificar usuário sobre arquivos recebidos com aviso de privacidade
-    const privacyMessage = `${fileCount} arquivo${fileCount > 1 ? 's' : ''} recebido${fileCount > 1 ? 's' : ''}: ${fileNames}\n\n🔒 AVISO DE PRIVACIDADE: Os arquivos anexados são processados temporariamente para análise e são automaticamente excluídos após o processamento. Nenhum arquivo é armazenado permanentemente em nossos servidores para garantir sua privacidade e segurança.`;
-
-    // Mostrar aviso ao usuário
-    if (typeof window !== 'undefined') {
-      alert(privacyMessage);
+    // Validate type
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      showError('Formato nao suportado. Use: PNG, JPG, WEBP ou PDF (max 5MB).');
+      return;
     }
 
-    console.log(privacyMessage);
+    // Validate size
+    if (file.size > MAX_SIZE_BYTES) {
+      showError(`Arquivo muito grande (${(file.size / (1024 * 1024)).toFixed(1)}MB). Limite: 5MB.`);
+      return;
+    }
 
-    // TODO: Implementar processamento de arquivos
-    // - Upload temporário para backend
-    // - OCR para PDFs/imagens
-    // - Extração de texto
-    // - Adicionar ao contexto da conversa
-    // - Exclusão automática após processamento
-  }, [triggerReceiveFeedback]);
+    // Read as base64
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64Full = reader.result as string;
+      // Strip the data:...;base64, prefix
+      const base64Data = base64Full.split(',')[1] || '';
+
+      const attachment: ChatAttachmentPayload = {
+        fileName: file.name,
+        mimeType: file.type,
+        base64Data,
+        sizeBytes: file.size,
+      };
+
+      setPendingAttachment(attachment);
+      triggerReceiveFeedback();
+      showSuccess(`Arquivo "${file.name}" anexado. Envie uma mensagem para incluir o arquivo.`);
+    };
+
+    reader.onerror = () => {
+      showError('Erro ao ler arquivo. Tente novamente.');
+    };
+
+    reader.readAsDataURL(file);
+  }, [triggerReceiveFeedback, showSuccess, showError]);
 
   // Issue #331: Handler para copiar mensagem
   const handleCopyMessage = useCallback(async (message: ChatMessage) => {

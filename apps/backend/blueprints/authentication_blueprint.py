@@ -429,4 +429,72 @@ def get_user_role():
         return jsonify({'error': 'Failed to get user role'}), 500
 
 
+@authentication_bp.route('/forgot-password', methods=['POST'])
+def forgot_password():
+    """Initiate password reset flow"""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': ERR_REQUEST_BODY_REQUIRED}), 400
+
+        email = data.get('email', '').strip().lower()
+        if not email:
+            return jsonify({'error': 'Email is required'}), 400
+
+        auth_manager = get_auth_manager()
+        result = auth_manager.generate_password_reset_token(email)
+
+        if result:
+            try:
+                import asyncio
+                from services.email.email_service import email_service as _email_svc
+                asyncio.run(_email_svc.send_password_reset(
+                    result['email'],
+                    result['user_name'],
+                    result['token']
+                ))
+            except Exception as e:
+                logger.error("Failed to send reset email: %s", sanitize_error(e))
+
+        # Always return success to prevent email enumeration
+        return jsonify({
+            'success': True,
+            'message': 'If an account with that email exists, a password reset link has been sent.'
+        }), 200
+
+    except Exception as e:
+        logger.error("Forgot password error: %s", sanitize_error(e))
+        return jsonify({'error': 'Password reset request failed'}), 500
+
+
+@authentication_bp.route('/reset-password', methods=['POST'])
+def reset_password():
+    """Reset password with valid token"""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': ERR_REQUEST_BODY_REQUIRED}), 400
+
+        token = data.get('token', '')
+        new_password = data.get('new_password', '')
+
+        if not token or not new_password:
+            return jsonify({'error': 'Token and new_password are required'}), 400
+
+        if len(new_password) < 8:
+            return jsonify({'error': 'Password must be at least 8 characters'}), 400
+
+        auth_manager = get_auth_manager()
+        success = auth_manager.reset_password(token, new_password)
+
+        if success:
+            return jsonify({'success': True, 'message': 'Password reset successfully'}), 200
+
+        return jsonify({'error': 'Invalid or expired reset token'}), 400
+
+    except Exception as e:
+        logger.error("Reset password error: %s", sanitize_error(e))
+        return jsonify({'error': 'Password reset failed'}), 500
+
+
 __all__ = ['authentication_bp']

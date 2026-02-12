@@ -5,6 +5,7 @@ Recebe logs do frontend e processa com compliance LGPD
 
 from flask import Blueprint, request, jsonify, current_app
 import asyncio
+import threading
 from datetime import datetime, timezone
 import hashlib
 
@@ -15,6 +16,24 @@ from utils.auth_utils import require_auth
 from core.lgpd import get_deletion_service
 
 logging_bp = Blueprint('logging', __name__, url_prefix='/api/logging')
+
+
+def _run_async_background(coro: object) -> None:
+    """Execute an async coroutine in a background thread (Flask-compatible).
+
+    Flask runs synchronously, so asyncio.create_task() has no event loop.
+    This spawns a daemon thread with its own event loop to run the coroutine.
+    """
+    def _run() -> None:
+        loop = asyncio.new_event_loop()
+        try:
+            loop.run_until_complete(coro)
+        except Exception as exc:
+            current_app.logger.error("Background async task failed: %s", sanitize_error(exc))
+        finally:
+            loop.close()
+
+    threading.Thread(target=_run, daemon=True).start()
 
 @logging_bp.route('/cloud', methods=['POST'])
 def receive_frontend_log():
@@ -64,7 +83,7 @@ def receive_frontend_log():
             cloud_logger.critical(message, frontend_context, user_id)
 
             # Alertar para logs críticos
-            asyncio.create_task(alert_manager.send_alert(
+            _run_async_background(alert_manager.send_alert(
                 alert_type='system_error',
                 severity='high',
                 title='Critical Frontend Error',
@@ -108,7 +127,7 @@ def log_lgpd_event():
             **details,
             'source': 'frontend',
             'ip_address': request.remote_addr,
-            'user_agent': request.headers.get('User-Agent', '').substring(0, 100)
+            'user_agent': request.headers.get('User-Agent', '')[:100]
         })
 
         # Verificar se é violação
@@ -120,7 +139,7 @@ def log_lgpd_event():
         ]
 
         if action in violation_actions:
-            asyncio.create_task(alert_manager.lgpd_violation(
+            _run_async_background(alert_manager.lgpd_violation(
                 action,
                 details,
                 user_id
