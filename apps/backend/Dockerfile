@@ -33,14 +33,20 @@ WORKDIR /build
 # Copy requirements and install Python dependencies
 COPY requirements.txt .
 
-# Install Python packages with optimized order for better Docker layer caching
+# Install PyTorch CPU-only FIRST to prevent easyocr from pulling CUDA version (~2.5GB)
+# Cloud Run is CPU-only, CUDA is unnecessary
 RUN pip install --upgrade pip setuptools wheel && \
-    # Install all dependencies in one step for better efficiency
+    pip install --no-cache-dir \
+        torch==2.8.0+cpu torchvision==0.23.0+cpu \
+        --index-url https://download.pytorch.org/whl/cpu && \
+    # Install remaining dependencies (torch already satisfied, skips CUDA download)
     pip install --no-cache-dir -r requirements.txt && \
     # Clean up to reduce image size
     pip cache purge && \
     find /usr/local/lib/python*/site-packages -name "*.pyc" -delete && \
-    find /usr/local/lib/python*/site-packages -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
+    find /usr/local/lib/python*/site-packages -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true && \
+    find /usr/local/lib/python*/site-packages/torch/lib -name "*.so.debug" -delete 2>/dev/null || true && \
+    find /usr/local/lib/python*/site-packages -name "tests" -type d -exec rm -rf {} + 2>/dev/null || true
 
 # ============================================================================
 # STAGE 2: PRODUCTION RUNTIME

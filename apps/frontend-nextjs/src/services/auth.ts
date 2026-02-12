@@ -14,6 +14,7 @@ import {
   LoginCredentials,
   SocialAuthCredentials,
 } from '@/types/auth';
+import { logger } from '@/utils/logger';
 import Analytics from './analytics';
 import { apiClient } from './api';
 import { safeLocalStorage } from '@/hooks/useClientStorage';
@@ -91,7 +92,7 @@ export class AuthService {
         });
       }
     } catch (error) {
-      console.error('[Auth] Error checking stored auth:', error);
+      logger.error('[Auth] Error checking stored auth:', error);
       this.clearAuthStorage();
       this.notifyAuthStateChange({
         user: null,
@@ -149,7 +150,7 @@ export class AuthService {
         lastLoginAt: new Date().toISOString(),
       };
     } catch (error) {
-      console.error('[Auth] Error loading user profile:', error);
+      logger.error('[Auth] Error loading user profile:', error);
       return authData;
     }
   }
@@ -175,7 +176,22 @@ export class AuthService {
 
     try {
       // Salvar no backend
-      await apiClient.post('/api/auth/profile', userProfile as unknown as Record<string, unknown>);
+      const userProfileData: Record<string, unknown> = {
+        uid: userProfile.uid,
+        email: userProfile.email,
+        displayName: userProfile.displayName,
+        emailVerified: userProfile.emailVerified,
+        isAnonymous: userProfile.isAnonymous,
+        photoURL: userProfile.photoURL,
+        provider: userProfile.provider,
+        role: userProfile.role,
+        type: userProfile.type,
+        preferences: userProfile.preferences,
+        permissions: userProfile.permissions,
+        usage: userProfile.usage,
+        lastLoginAt: userProfile.lastLoginAt,
+      };
+      await apiClient.post('/api/auth/profile', userProfileData);
 
       // Track analytics
       Analytics.event('USER', 'signup', userData.provider || 'email');
@@ -186,7 +202,7 @@ export class AuthService {
 
       return userProfile;
     } catch (error) {
-      console.error('[Auth] Error creating user profile:', error);
+      logger.error('[Auth] Error creating user profile:', error);
       throw new Error('Erro ao criar perfil do usuário');
     }
   }
@@ -382,10 +398,10 @@ export class AuthService {
         await apiClient.post('/api/auth/logout', {});
       } catch (error) {
         // Falha no logout do backend não deve impedir o logout local
-        console.warn('[Auth] Backend logout failed:', error);
+        logger.warn('[Auth] Backend logout failed:', error);
       }
     } catch (error) {
-      console.error('[Auth] Logout error:', error);
+      logger.error('[Auth] Logout error:', error);
       throw new Error('Erro ao fazer logout');
     }
   }
@@ -422,7 +438,7 @@ export class AuthService {
 
       Analytics.event('USER', 'profile_update');
     } catch (error) {
-      console.error('[Auth] Error updating user profile:', error);
+      logger.error('[Auth] Error updating user profile:', error);
       throw new Error('Erro ao atualizar perfil');
     }
   }
@@ -460,7 +476,7 @@ export class AuthService {
 
       Analytics.event('USER', 'role_upgrade', newRole);
     } catch (error) {
-      console.error('[Auth] Error upgrading user role:', error);
+      logger.error('[Auth] Error upgrading user role:', error);
       throw new Error('Erro ao atualizar role do usuário');
     }
   }

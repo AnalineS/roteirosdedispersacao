@@ -382,7 +382,9 @@ export const generateCertificateId = (): string => {
   
   // Fallback for Node.js or environments without crypto
   const timestamp = Date.now().toString(36);
-  const counter = (generateCertificateId as any).counter = ((generateCertificateId as any).counter || 0) + 1;
+  const fnWithCounter = generateCertificateId as { counter?: number };
+  fnWithCounter.counter = (fnWithCounter.counter || 0) + 1;
+  const counter = fnWithCounter.counter;
   const randomPart = counter.toString(36).padStart(9, '0');
   return `CERT-${timestamp}-${randomPart}`.toUpperCase();
 };
@@ -403,8 +405,9 @@ export const generateVerificationCode = (): string => {
   } else {
     // Fallback for environments without crypto
     const timestamp = Date.now().toString();
-    const counter = (generateVerificationCode as any).counter = ((generateVerificationCode as any).counter || 0) + 1;
-    const seed = timestamp + counter.toString();
+    const fnWithCounter = generateVerificationCode as { counter?: number };
+    fnWithCounter.counter = (fnWithCounter.counter || 0) + 1;
+    const seed = timestamp + fnWithCounter.counter.toString();
     
     for (let i = 0; i < 12; i++) {
       const charIndex = (seed.charCodeAt(i % seed.length) + i) % chars.length;

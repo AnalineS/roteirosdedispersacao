@@ -228,12 +228,10 @@ const AdminAnalyticsDashboard: React.FC<AdminDashboardProps> = ({
           downloadJSON(reportData, filename);
           break;
         case 'excel':
-          // Para implementação real, usar bibliotecas como XLSX
-          alert('Export Excel será implementado com biblioteca XLSX');
+          downloadCSV(reportData, filename);
           break;
         case 'pdf':
-          // Para implementação real, usar bibliotecas como jsPDF
-          alert('Export PDF será implementado com biblioteca jsPDF');
+          await downloadPDF(reportData, filename);
           break;
       }
       
@@ -265,7 +263,11 @@ const AdminAnalyticsDashboard: React.FC<AdminDashboardProps> = ({
           }
         });
       }
-      alert('Erro ao exportar relatório');
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('show-error-toast', {
+          detail: { errorId: `export_${Date.now()}`, severity: 'high', message: 'Erro ao exportar relatorio. Tente novamente.' }
+        }));
+      }
     } finally {
       setIsExporting(false);
     }
@@ -281,6 +283,124 @@ const AdminAnalyticsDashboard: React.FC<AdminDashboardProps> = ({
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
+  };
+
+  const downloadCSV = (data: Record<string, unknown>, filename: string) => {
+    const rows: string[] = ['Metrica,Valor'];
+    const flattenObj = (obj: Record<string, unknown>, prefix = '') => {
+      for (const [key, val] of Object.entries(obj)) {
+        const label = prefix ? `${prefix}.${key}` : key;
+        if (val !== null && typeof val === 'object' && !Array.isArray(val)) {
+          flattenObj(val as Record<string, unknown>, label);
+        } else {
+          rows.push(`"${label}","${String(val)}"`);
+        }
+      }
+    };
+    flattenObj(data);
+    const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${filename}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const downloadPDF = async (data: Record<string, unknown>, filename: string) => {
+    const { jsPDF } = await import('jspdf');
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const pw = doc.internal.pageSize.getWidth();
+    const m = 15;
+    let y = m;
+
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(0, 102, 51);
+    doc.text('RELATORIO ADMINISTRATIVO', pw / 2, y, { align: 'center' });
+    y += 8;
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(100, 100, 100);
+    doc.text(`Periodo: ${timeframe} | Gerado em: ${new Date().toLocaleString('pt-BR')}`, pw / 2, y, { align: 'center' });
+    y += 10;
+    doc.setDrawColor(0, 102, 51);
+    doc.line(m, y, pw - m, y);
+    y += 8;
+
+    const printSection = (title: string, entries: [string, string | number][]) => {
+      if (y > 260) { doc.addPage(); y = 15; }
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(51, 51, 51);
+      doc.text(title, m, y);
+      y += 7;
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      entries.forEach(([label, value]) => {
+        if (y > 275) { doc.addPage(); y = 15; }
+        doc.text(`${label}: ${value}`, m + 3, y);
+        y += 5;
+      });
+      y += 4;
+    };
+
+    if (kpis) {
+      printSection('USUARIOS', [
+        ['Usuarios ativos', kpis.users.totalActive],
+        ['Novos usuarios', kpis.users.newUsers],
+        ['Taxa de crescimento', `${kpis.users.userGrowthRate.toFixed(1)}%`],
+        ['Duracao media sessao', `${kpis.users.averageSessionDuration.toFixed(0)} min`],
+      ]);
+      printSection('EDUCACAO', [
+        ['Certificacoes', kpis.education.totalCertifications],
+        ['Taxa de conclusao', `${kpis.education.completionRate.toFixed(1)}%`],
+        ['Score medio', `${kpis.education.averageScore.toFixed(1)}%`],
+        ['Retencao de conhecimento', `${kpis.education.knowledgeRetentionRate.toFixed(1)}%`],
+      ]);
+      printSection('PERFORMANCE', [
+        ['Disponibilidade', `${kpis.performance.systemAvailability.toFixed(2)}%`],
+        ['Tempo de carga', `${kpis.performance.averageLoadTime.toFixed(0)}ms`],
+        ['Taxa de erro', `${kpis.performance.errorRate.toFixed(2)}%`],
+        ['Score seguranca', `${kpis.performance.securityScore}/100`],
+      ]);
+      printSection('NEGOCIO', [
+        ['Custo por usuario', `R$ ${kpis.business.costPerUser.toFixed(2)}`],
+        ['ROI', `${kpis.business.roi}%`],
+        ['NPS', kpis.business.feedbackScore.toFixed(1)],
+        ['Retencao', `${kpis.business.retentionRate.toFixed(1)}%`],
+      ]);
+    }
+
+    const summaryData = data as Record<string, unknown>;
+    if (summaryData.summary && typeof summaryData.summary === 'object') {
+      const summary = summaryData.summary as Record<string, unknown>;
+      if (summary.healthScore) {
+        doc.setFontSize(11);
+        doc.setFont('helvetica', 'bold');
+        doc.text(`Health Score: ${Number(summary.healthScore).toFixed(1)}/100`, m, y);
+        y += 7;
+      }
+      if (Array.isArray(summary.recommendations) && summary.recommendations.length > 0) {
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.text('RECOMENDACOES:', m, y); y += 6;
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9);
+        (summary.recommendations as string[]).forEach(rec => {
+          if (y > 275) { doc.addPage(); y = 15; }
+          doc.text(`- ${rec}`, m + 3, y); y += 5;
+        });
+      }
+    }
+
+    doc.setFontSize(8);
+    doc.setTextColor(150, 150, 150);
+    const fY = doc.internal.pageSize.getHeight() - 10;
+    doc.text('Relatorio gerado automaticamente - Plataforma Educacional Hanseniase', pw / 2, fY, { align: 'center' });
+    doc.save(`${filename}.pdf`);
   };
 
   // ===== CALCULATED VALUES =====

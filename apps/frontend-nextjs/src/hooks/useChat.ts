@@ -4,9 +4,10 @@
  */
 
 import { useCallback, useRef, useEffect, useMemo, useState } from 'react';
+import { logger } from '@/utils/logger';
 import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
-import { sendChatMessage, type ChatMessage, type ChatRequest, type ChatResponse } from '@/services/api';
-import { PersonaRAGIntegration, type PersonaResponse } from '@/services/personaRAGIntegration';
+import { sendChatMessage, type ChatMessage, type ChatRequest, type ChatResponse, type Persona } from '@/services/api';
+import { PersonaRAGIntegration, type PersonaResponse, type PersonaConfig as RAGPersonaConfig } from '@/services/personaRAGIntegration';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { useSentimentAnalysis } from '@/hooks/useSentimentAnalysis';
 import { shouldSuggestPersonaSwitch, adjustResponseTone, SentimentResult } from '@/services/sentimentAnalysis';
@@ -28,7 +29,7 @@ interface UseChatOptions {
   enableSentimentAnalysis?: boolean;
   enableKnowledgeEnrichment?: boolean;
   enableIntelligentRouting?: boolean;
-  availablePersonas?: Record<string, any>;
+  availablePersonas?: Record<string, Persona>;
   onMessageReceived?: (message: ChatMessage) => void;
 }
 
@@ -90,7 +91,7 @@ export function useChat(options: UseChatOptions = {}) {
         // Remover sessionId temporário
         safeLocalStorage()?.removeItem('temp_session_id');
         
-        console.log('🔄 Migração de sessão:', tempSessionId, '→', user.uid);
+        logger.log('🔄 Migração de sessão:', tempSessionId, '→', user.uid);
       }
     }
   }, [isAuthenticated, user?.uid]);
@@ -209,7 +210,7 @@ export function useChat(options: UseChatOptions = {}) {
       try {
         await intelligentRouting.analyzeQuestion(message);
       } catch (error) {
-        console.warn('Erro na análise de roteamento:', error);
+        logger.warn('Erro na análise de roteamento:', error);
         // Continua normalmente mesmo se a análise falhar
       }
     }
@@ -223,7 +224,7 @@ export function useChat(options: UseChatOptions = {}) {
       try {
         sentiment = await analyzeSentiment(message);
       } catch (error) {
-        console.error('Erro na análise de sentimento:', error);
+        logger.error('Erro na análise de sentimento:', error);
       }
     }
     
@@ -238,11 +239,11 @@ export function useChat(options: UseChatOptions = {}) {
           knowledgeContext = {
             context: contextResult.combined_context,
             confidence: contextResult.confidence,
-            sources: contextResult.chunks.map((chunk: any) => chunk.section)
+            sources: contextResult.chunks.map((chunk: { section: string }) => chunk.section)
           };
         }
       } catch (error) {
-        console.error('Erro ao buscar contexto:', error);
+        logger.error('Erro ao buscar contexto:', error);
       }
     }
     
@@ -298,7 +299,7 @@ export function useChat(options: UseChatOptions = {}) {
       setLoading(false);
 
     } catch (err) {
-      console.error(`Erro ao enviar mensagem (tentativa ${retryCount + 1}):`, err);
+      logger.error(`Erro ao enviar mensagem (tentativa ${retryCount + 1}):`, err);
       captureError(err as string | Error, { severity: 'medium' });
 
       // Issue #330: Classify error for better user feedback
@@ -350,7 +351,7 @@ export function useChat(options: UseChatOptions = {}) {
             return;
           }
         } catch (fallbackErr) {
-          console.error('Fallback também falhou:', fallbackErr);
+          logger.error('Fallback também falhou:', fallbackErr);
         }
         
         const errorMessage = err instanceof Error ? err.message : 'Erro ao enviar mensagem';
@@ -443,7 +444,7 @@ export function useChat(options: UseChatOptions = {}) {
     // PersonaRAG Integration - Novos recursos
     personaRAGStats: () => personaRAG.getPersonaStats(),
     getPersonaRecommendation: (query: string) => personaRAG.recommendPersona(query),
-    configurePersona: (personaId: string, config: any) => personaRAG.configurePersona(personaId, config),
+    configurePersona: (personaId: string, config: Partial<RAGPersonaConfig>) => personaRAG.configurePersona(personaId, config),
     // Issue #330: Enhanced error handling
     classifiedError,
     currentRetryCount,

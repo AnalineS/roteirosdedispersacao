@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef } from 'react';
+import { logger } from '@/utils/logger';
 import { fallbackSystem, executeSmartFallback, FallbackResult } from '@/services/fallbackSystem';
 import { SentimentResult } from '@/services/sentimentAnalysis';
 
@@ -74,7 +75,7 @@ export function useFallback(options: UseFallbackOptions = {}) {
 
       return result;
     } catch (fallbackError) {
-      console.error('Fallback também falhou:', fallbackError);
+      logger.error('Fallback também falhou:', fallbackError);
       
       const emergencyResult: FallbackResult = {
         success: false,
@@ -117,7 +118,7 @@ export function useFallback(options: UseFallbackOptions = {}) {
       
       return result;
     } catch (error) {
-      console.warn('Operação falhou, executando fallback:', error);
+      logger.warn('Operação falhou, executando fallback:', error);
       return await executeFallback(query, error as Error, sentiment);
     }
   }, [executeFallback, state.attempts, autoReset]);

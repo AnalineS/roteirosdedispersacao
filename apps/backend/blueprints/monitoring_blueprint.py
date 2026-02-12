@@ -397,3 +397,46 @@ def monitoring_health():
     }
     
     return jsonify(status), 200
+
+@monitoring_bp.route('/monitoring/client-error', methods=['POST'])
+def receive_client_error():
+    """Receive client-side error reports from frontend ErrorBoundary"""
+    try:
+        data = request.get_json(silent=True)
+        if not data:
+            return jsonify({
+                "error": "JSON body required",
+                "error_code": "EMPTY_PAYLOAD",
+                "timestamp": datetime.now().isoformat()
+            }), 400
+
+        error_id = data.get('error_id', 'unknown')
+        message = data.get('message', 'No message')
+        severity = data.get('severity', 'medium')
+        component = data.get('component', 'unknown')
+        url = data.get('url', '')
+        error_count = data.get('error_count', 1)
+
+        logger.warning(
+            "Client error [%s] severity=%s component=%s count=%d url=%s: %s",
+            error_id, severity, component, error_count, url, message
+        )
+
+        # Store stack trace at debug level to avoid log noise
+        stack = data.get('stack', '')
+        if stack:
+            logger.debug("Client error stack [%s]: %s", error_id, stack[:2000])
+
+        return jsonify({
+            "received": True,
+            "error_id": error_id,
+            "timestamp": datetime.now().isoformat()
+        }), 200
+
+    except Exception as e:
+        logger.error("Failed to process client error report: %s", sanitize_error(e))
+        return jsonify({
+            "error": "Failed to process error report",
+            "error_code": "CLIENT_ERROR_PROCESSING_FAILED",
+            "timestamp": datetime.now().isoformat()
+        }), 500

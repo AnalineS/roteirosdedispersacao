@@ -37,13 +37,11 @@ def analyze_imported_modules():
             if hasattr(module, '__dict__'):
                 size += sys.getsizeof(module.__dict__)
                 for attr_name, attr_value in module.__dict__.items():
-                    try:
-                        size += sys.getsizeof(attr_value)
-                    except:
+                    except (TypeError, ValueError, RecursionError):
                         pass
 
             module_sizes.append((name, size / (1024 * 1024)))  # Convert to MB
-        except:
+        except (TypeError, ValueError, AttributeError):
             continue
 
     # Sort by size
@@ -62,7 +60,7 @@ def analyze_object_memory():
             size = sys.getsizeof(obj)
             type_stats[f"{obj_module}.{obj_type}"]['count'] += 1
             type_stats[f"{obj_module}.{obj_type}"]['total_size'] += size
-        except:
+        except (TypeError, ValueError):
             pass
 
     # Convert to list and sort by total size
@@ -156,7 +154,7 @@ def analyze_cache_systems():
                             'items': len(attr_value)
                         })
                         cache_analysis['total_cache_size_mb'] += cache_size / (1024 * 1024)
-                    except:
+                    except (TypeError, ValueError, RuntimeError):
                         pass
 
     return cache_analysis

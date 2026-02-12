@@ -38,30 +38,157 @@ export default function CertificateGenerator({
   const [showEmailModal, setShowEmailModal] = useState(false);
   const certificateRef = useRef<HTMLDivElement>(null);
 
+  const buildCertificatePDF = async () => {
+    const { jsPDF } = await import('jspdf');
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const config = DEFAULT_CERTIFICATION_CONFIG;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const margin = 20;
+    const contentWidth = pageWidth - 2 * margin;
+    let y = margin;
+
+    // Decorative border
+    doc.setDrawColor(0, 102, 51);
+    doc.setLineWidth(1);
+    doc.rect(10, 10, pageWidth - 20, doc.internal.pageSize.getHeight() - 20);
+    doc.setLineWidth(0.3);
+    doc.rect(13, 13, pageWidth - 26, doc.internal.pageSize.getHeight() - 26);
+
+    // Header
+    y = 30;
+    doc.setFontSize(24);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(0, 102, 51);
+    doc.text('CERTIFICADO DE CONCLUSAO', pageWidth / 2, y, { align: 'center' });
+
+    y += 12;
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(100, 100, 100);
+    doc.text(config.institution.name, pageWidth / 2, y, { align: 'center' });
+    y += 6;
+    doc.text(config.institution.department, pageWidth / 2, y, { align: 'center' });
+
+    // Separator
+    y += 10;
+    doc.setDrawColor(0, 102, 51);
+    doc.setLineWidth(0.5);
+    doc.line(margin + 20, y, pageWidth - margin - 20, y);
+
+    // Body
+    y += 15;
+    doc.setFontSize(13);
+    doc.setTextColor(51, 51, 51);
+    doc.text('Certificamos que', pageWidth / 2, y, { align: 'center' });
+
+    y += 12;
+    doc.setFontSize(20);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(0, 102, 51);
+    doc.text(certificate.recipientName.toUpperCase(), pageWidth / 2, y, { align: 'center' });
+
+    // Underline name
+    y += 3;
+    const nameWidth = doc.getTextWidth(certificate.recipientName.toUpperCase());
+    doc.line((pageWidth - nameWidth) / 2, y, (pageWidth + nameWidth) / 2, y);
+
+    y += 12;
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(51, 51, 51);
+    const bodyText = `concluiu com aproveitamento o programa de capacitacao "${certificate.programTitle}", com carga horaria de ${certificate.totalHours} horas, desenvolvido com base na tese de doutorado de ${config.supervision.supervisorName}.`;
+    const bodyLines = doc.splitTextToSize(bodyText, contentWidth - 20);
+    doc.text(bodyLines, pageWidth / 2, y, { align: 'center' });
+    y += bodyLines.length * 6 + 10;
+
+    // Performance boxes
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('DESEMPENHO', pageWidth / 2, y, { align: 'center' });
+    y += 10;
+    const boxWidth = (contentWidth - 20) / 3;
+    [
+      { label: 'Aproveitamento', value: `${certificate.overallScore}%` },
+      { label: 'Carga Horaria', value: `${certificate.totalHours}h` },
+      { label: 'Casos Concluidos', value: `${certificate.casesCompleted}` },
+    ].forEach((item, i) => {
+      const boxX = margin + 10 + i * boxWidth;
+      doc.setFontSize(16);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(0, 102, 51);
+      doc.text(item.value, boxX + boxWidth / 2, y, { align: 'center' });
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(100, 100, 100);
+      doc.text(item.label, boxX + boxWidth / 2, y + 6, { align: 'center' });
+    });
+    y += 20;
+
+    // Competencies
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(51, 51, 51);
+    doc.text('COMPETENCIAS DESENVOLVIDAS:', margin, y);
+    y += 7;
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    certificate.competenciesAchieved.forEach(comp => {
+      if (y > 240) return;
+      doc.text(`  - ${comp}`, margin + 5, y);
+      y += 5;
+    });
+
+    // Footer - signature
+    y = 255;
+    doc.setDrawColor(0, 102, 51);
+    doc.setLineWidth(0.3);
+    doc.line(margin + 10, y, margin + 80, y);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(51, 51, 51);
+    doc.text(config.supervision.supervisorName, margin + 45, y + 5, { align: 'center' });
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(100, 100, 100);
+    doc.text(config.supervision.supervisorTitle, margin + 45, y + 9, { align: 'center' });
+
+    // Verification
+    y = 270;
+    doc.setFontSize(8);
+    doc.text(`Certificado emitido em ${certificate.issueDate.toLocaleDateString('pt-BR')}`, pageWidth / 2, y, { align: 'center' });
+    y += 4;
+    doc.text(`Codigo de verificacao: ${certificate.verificationCode} | ID: ${certificate.id}`, pageWidth / 2, y, { align: 'center' });
+    y += 4;
+    doc.text(`${config.verification.baseUrl}/${certificate.verificationCode}`, pageWidth / 2, y, { align: 'center' });
+
+    return doc;
+  };
+
+  const dispatchToast = (message: string, severity: 'low' | 'medium' | 'high' = 'medium') => {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('show-error-toast', {
+        detail: { errorId: `cert_${Date.now()}`, severity, message }
+      }));
+    }
+  };
+
   const handleDownload = async (format: 'pdf' | 'png') => {
     setIsGenerating(true);
     try {
-      // Simular geração do certificado
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
+      const doc = await buildCertificatePDF();
+
       if (format === 'pdf') {
-        // TODO: Implementar geração real de PDF
-        // Por enquanto, simular download
-        const element = document.createElement('a');
-        element.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(generatePlainTextCertificate(certificate));
-        element.download = `certificado-${certificate.id}.txt`;
-        document.body.appendChild(element);
-        element.click();
-        document.body.removeChild(element);
+        doc.save(`certificado-${certificate.id}.pdf`);
       } else {
-        // TODO: Implementar captura de imagem
-        alert('Funcionalidade de PNG será implementada em breve!');
+        // PNG requires html2canvas which is not available; fall back to PDF
+        doc.save(`certificado-${certificate.id}.pdf`);
+        dispatchToast('Formato PNG indisponivel. Certificado baixado em PDF.', 'low');
       }
-      
+
       onDownload?.(format);
     } catch (error) {
       console.error('Erro ao gerar certificado:', error);
-      alert('Erro ao gerar certificado. Tente novamente.');
+      dispatchToast('Erro ao gerar certificado. Tente novamente.', 'high');
     } finally {
       setIsGenerating(false);
     }
@@ -69,18 +196,27 @@ export default function CertificateGenerator({
 
   const handleEmailSend = async () => {
     if (!emailAddress) return;
-    
+
     setIsGenerating(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      // TODO: Implementar envio real via EmailJS
-      console.log('Enviando certificado para:', emailAddress);
-      alert(`Certificado enviado para ${emailAddress} com sucesso!`);
+      const doc = await buildCertificatePDF();
+      const pdfBase64 = doc.output('datauristring').split(',')[1];
+
+      const { apiClient } = await import('@/services/api');
+      await apiClient.post('/api/v1/email/send-document', {
+        to: emailAddress,
+        subject: `Certificado - ${certificate.programTitle}`,
+        body: generatePlainTextCertificate(certificate),
+        attachment_base64: pdfBase64,
+        attachment_filename: `certificado-${certificate.id}.pdf`,
+      });
+
+      dispatchToast(`Certificado enviado para ${emailAddress}.`, 'low');
       setShowEmailModal(false);
       onEmail?.(emailAddress);
     } catch (error) {
       console.error('Erro ao enviar certificado:', error);
-      alert('Erro ao enviar certificado. Tente novamente.');
+      dispatchToast('Erro ao enviar certificado. Verifique o email e tente novamente.', 'high');
     } finally {
       setIsGenerating(false);
     }
@@ -329,7 +465,7 @@ export default function CertificateGenerator({
                 } else {
                   const text = `Certificação concluída: ${certificate.programTitle}\nPontuação: ${certificate.overallScore}%\nVerificação: ${DEFAULT_CERTIFICATION_CONFIG.verification.baseUrl}/${certificate.verificationCode}`;
                   navigator.clipboard.writeText(text);
-                  alert('Link copiado para área de transferência!');
+                  dispatchToast('Link copiado para a area de transferencia.', 'low');
                 }
                 onShare?.();
               }}
@@ -395,7 +531,7 @@ export default function CertificateGenerator({
             <button
               onClick={() => {
                 navigator.clipboard.writeText(certificate.verificationCode);
-                alert('Código copiado!');
+                dispatchToast('Codigo de verificacao copiado.', 'low');
               }}
               style={{
                 width: '100%',

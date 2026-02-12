@@ -47,7 +47,11 @@ export default function BasicCalculator({ onCalculationComplete }: BasicCalculat
   const handleCalculate = useCallback(async () => {
     if (profile.weight <= 0 || profile.age <= 0) {
       error(); // Haptic feedback para erro
-      alert('Por favor, preencha peso e idade válidos.');
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('show-error-toast', {
+          detail: { errorId: `toast_${Date.now()}`, severity: 'medium', message: 'Por favor, preencha peso e idade válidos.' }
+        }));
+      }
       return;
     }
 
@@ -62,7 +66,11 @@ export default function BasicCalculator({ onCalculationComplete }: BasicCalculat
       const validation = validateCalculation(profile);
       if (!validation.isValid) {
         error(); // Haptic feedback para erro de validação
-        alert(`Erro na validação: ${validation.errors.join(', ')}`);
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('show-error-toast', {
+            detail: { errorId: `toast_${Date.now()}`, severity: 'medium', message: `Erro na validação: ${validation.errors.join(', ')}` }
+          }));
+        }
         setIsCalculating(false);
         return;
       }
@@ -75,7 +83,11 @@ export default function BasicCalculator({ onCalculationComplete }: BasicCalculat
       onCalculationComplete?.(calculationResult);
     } catch (err) {
       error(); // Haptic feedback para erro de cálculo
-      alert('Erro durante o cálculo. Tente novamente.');
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('show-error-toast', {
+          detail: { errorId: `toast_${Date.now()}`, severity: 'high', message: 'Erro durante o cálculo. Tente novamente.' }
+        }));
+      }
       console.error('Calculation error:', err);
     } finally {
       setIsCalculating(false);

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { logger } from '@/utils/logger';
 
 interface OfflineState {
   isOnline: boolean;
@@ -52,7 +53,7 @@ export function useOfflineDetection() {
           }
         } catch (error) {
           // Still offline
-          console.log('Still offline:', error);
+          logger.log('Still offline:', error);
         }
       }, 30000);
     }

@@ -255,15 +255,19 @@ class FlaskAppFactory:
         logger.warning("Emergency blueprint created - limited functionality")
 
     def _configure_error_handlers(self) -> None:
-        """Configure global error handlers"""
+        """Configure global error handlers with standardized format"""
+
+        def _req_id() -> str:
+            return f"err_{int(datetime.now().timestamp() * 1000)}"
 
         @self.app.errorhandler(404)
         def not_found(error):
             return jsonify({
                 "error": "Endpoint not found",
                 "error_code": "NOT_FOUND",
-                "available_endpoints": self._get_available_endpoints(),
-                "timestamp": datetime.now().isoformat()
+                "request_id": _req_id(),
+                "timestamp": datetime.now().isoformat(),
+                "details": {"available_endpoints": self._get_available_endpoints()},
             }), 404
 
         @self.app.errorhandler(405)
@@ -271,8 +275,9 @@ class FlaskAppFactory:
             return jsonify({
                 "error": "HTTP method not allowed",
                 "error_code": "METHOD_NOT_ALLOWED",
-                "allowed_methods": ["GET", "POST", "OPTIONS"],
-                "timestamp": datetime.now().isoformat()
+                "request_id": _req_id(),
+                "timestamp": datetime.now().isoformat(),
+                "details": {"allowed_methods": ["GET", "POST", "OPTIONS"]},
             }), 405
 
         @self.app.errorhandler(500)
@@ -283,8 +288,8 @@ class FlaskAppFactory:
             return jsonify({
                 "error": "Internal server error",
                 "error_code": "INTERNAL_ERROR",
-                "message": "Please try again later",
-                "timestamp": datetime.now().isoformat()
+                "request_id": _req_id(),
+                "timestamp": datetime.now().isoformat(),
             }), 500
 
         @self.app.errorhandler(413)
@@ -292,8 +297,9 @@ class FlaskAppFactory:
             return jsonify({
                 "error": "Payload too large",
                 "error_code": "PAYLOAD_TOO_LARGE",
-                "max_size": "16MB",
-                "timestamp": datetime.now().isoformat()
+                "request_id": _req_id(),
+                "timestamp": datetime.now().isoformat(),
+                "details": {"max_size": "16MB"},
             }), 413
 
     def _get_available_endpoints(self) -> list:

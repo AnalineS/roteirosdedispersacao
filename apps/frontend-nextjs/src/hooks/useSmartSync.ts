@@ -5,6 +5,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { logger } from '@/utils/logger';
 import { useSafeAuth as useAuth } from '@/hooks/useSafeAuth';
 // Local sync implementation
 
@@ -250,7 +251,7 @@ export function useSmartSync(): SmartSyncState & SmartSyncControls {
           }
         };
       } catch (error) {
-        console.error('Erro ao inicializar SmartSyncManager:', error);
+        logger.error('Erro ao inicializar SmartSyncManager:', error);
         setSyncState(prev => ({ 
           ...prev, 
           error: 'Erro na inicialização do sync',
@@ -287,7 +288,7 @@ export function useSmartSync(): SmartSyncState & SmartSyncControls {
         error: null
       }));
     } catch (error) {
-      console.error('Erro ao atualizar estado do sync:', error);
+      logger.error('Erro ao atualizar estado do sync:', error);
       setSyncState(prev => ({ 
         ...prev, 
         error: 'Erro ao obter status do sync' 
@@ -381,7 +382,7 @@ export function useSmartSync(): SmartSyncState & SmartSyncControls {
 
   const clearQueue = useCallback(() => {
     // Esta funcionalidade seria implementada no SmartSyncManager
-    console.log('Limpeza de fila não implementada');
+    logger.log('Limpeza de fila não implementada');
   }, []);
 
   // ============================================
@@ -433,7 +434,7 @@ export function useSmartSync(): SmartSyncState & SmartSyncControls {
         const autoResolution = determineAutoResolution(conflict);
         await resolveConflict(conflict.id, autoResolution.strategy, autoResolution.data);
       } catch (error) {
-        console.error(`Erro ao resolver conflito ${conflict.id}:`, error);
+        logger.error(`Erro ao resolver conflito ${conflict.id}:`, error);
       }
     }
   }, [getConflicts, resolveConflict]);

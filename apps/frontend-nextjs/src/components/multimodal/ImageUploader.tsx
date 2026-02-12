@@ -53,7 +53,11 @@ export default function ImageUploader({
   const handleFileSelect = useCallback((file: File) => {
     const validation = validateFile(file);
     if (!validation.valid) {
-      alert(validation.error);
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('show-error-toast', {
+          detail: { errorId: `toast_${Date.now()}`, severity: 'medium', message: validation.error || 'Erro na validação do arquivo' }
+        }));
+      }
       return;
     }
 

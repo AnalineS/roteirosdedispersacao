@@ -225,7 +225,13 @@ export const ActiveToolbar: React.FC<{
     {
       name: 'InfoIcon' as const,
       label: 'Informações',
-      onClick: () => alert('Sistema de Roteiros de Dispensação PQT-U\nVersão: 1.0\nDesenvolvido pela UnB'),
+      onClick: () => {
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('show-error-toast', {
+            detail: { errorId: `toast_${Date.now()}`, severity: 'low', message: 'Sistema de Roteiros de Dispensação PQT-U - Versão: 1.0 - Desenvolvido pela UnB' }
+          }));
+        }
+      },
       color: '#7c3aed'
     }
   ];

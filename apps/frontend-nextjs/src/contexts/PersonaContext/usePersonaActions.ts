@@ -19,6 +19,18 @@ import {
 } from './analytics';
 import { calculateSessionDuration } from './utils';
 
+interface UserProfileInfo {
+  type?: string;
+  focus?: string;
+}
+
+interface PersonaHistoryItem {
+  personaId: ValidPersonaId;
+  source: PersonaSource;
+  timestamp: Date;
+  sessionId: string;
+}
+
 interface UsePersonaActionsProps {
   currentPersona: ValidPersonaId | null;
   isPersonaAvailable: (personaId: ValidPersonaId) => boolean;
@@ -26,11 +38,11 @@ interface UsePersonaActionsProps {
   enableLocalStorage: boolean;
   enableURLSync: boolean;
   sessionStartTime: number;
-  trackEvent: ((event: string, data: any) => Promise<void>) | null;
+  trackEvent: ((event: string, data: Record<string, unknown>) => Promise<void>) | null;
   getPersonaConfig: (personaId: ValidPersonaId) => PersonaConfig | null;
-  profile: any;
-  personas: Record<string, any>;
-  personaHistory: any[];
+  profile: UserProfileInfo | null;
+  personas: Record<string, PersonaConfig>;
+  personaHistory: PersonaHistoryItem[];
   getProfileRecommendation: () => ValidPersonaId | null;
   updatePersonaInURL: (personaId: ValidPersonaId) => void;
   setExplicitPersona: (personaId: ValidPersonaId | null) => void;

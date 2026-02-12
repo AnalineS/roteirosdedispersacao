@@ -27,54 +27,54 @@ export function toSnakeCase(str: string): string {
 /**
  * Converte objeto de snake_case para camelCase recursivamente
  */
-export function convertToCamelCase<T extends Record<string, any>>(obj: T): CamelCaseKeys<T> {
+export function convertToCamelCase<T extends Record<string, unknown>>(obj: T): CamelCaseKeys<T> {
   if (Array.isArray(obj)) {
-    return obj.map(convertToCamelCase) as any;
+    return obj.map(convertToCamelCase) as unknown as CamelCaseKeys<T>;
   }
 
   if (obj && typeof obj === 'object' && obj.constructor === Object) {
-    const converted: any = {};
+    const converted: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(obj)) {
       const camelKey = toCamelCase(key);
-      converted[camelKey] = convertToCamelCase(value);
+      converted[camelKey] = convertToCamelCase(value as Record<string, unknown>);
     }
-    return converted;
+    return converted as CamelCaseKeys<T>;
   }
 
-  return obj as any;
+  return obj as unknown as CamelCaseKeys<T>;
 }
 
 /**
  * Converte objeto de camelCase para snake_case recursivamente
  */
-export function convertToSnakeCase<T extends Record<string, any>>(obj: T): SnakeCaseKeys<T> {
+export function convertToSnakeCase<T extends Record<string, unknown>>(obj: T): SnakeCaseKeys<T> {
   if (Array.isArray(obj)) {
-    return obj.map(convertToSnakeCase) as any;
+    return obj.map(convertToSnakeCase) as unknown as SnakeCaseKeys<T>;
   }
 
   if (obj && typeof obj === 'object' && obj.constructor === Object) {
-    const converted: any = {};
+    const converted: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(obj)) {
       const snakeKey = toSnakeCase(key);
-      converted[snakeKey] = convertToSnakeCase(value);
+      converted[snakeKey] = convertToSnakeCase(value as Record<string, unknown>);
     }
-    return converted;
+    return converted as SnakeCaseKeys<T>;
   }
 
-  return obj as any;
+  return obj as unknown as SnakeCaseKeys<T>;
 }
 
 /**
  * Utility types para conversão de keys
  */
 type CamelCaseKeys<T> = {
-  [K in keyof T as K extends string ? CamelCase<K> : K]: T[K] extends Record<string, any>
+  [K in keyof T as K extends string ? CamelCase<K> : K]: T[K] extends Record<string, unknown>
     ? CamelCaseKeys<T[K]>
     : T[K];
 };
 
 type SnakeCaseKeys<T> = {
-  [K in keyof T as K extends string ? SnakeCase<K> : K]: T[K] extends Record<string, any>
+  [K in keyof T as K extends string ? SnakeCase<K> : K]: T[K] extends Record<string, unknown>
     ? SnakeCaseKeys<T[K]>
     : T[K];
 };

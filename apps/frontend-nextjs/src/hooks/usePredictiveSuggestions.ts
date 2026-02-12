@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { logger } from '@/utils/logger';
 import { useChat } from './useChat';
 
 export interface PredictiveSuggestion {
@@ -139,7 +140,7 @@ export function usePredictiveSuggestions(): PredictiveSuggestionsHook {
       }));
 
     } catch (error) {
-      console.error('Erro ao obter sugestões:', error);
+      logger.error('Erro ao obter sugestões:', error);
       setState(prev => ({
         ...prev,
         suggestions: [],
@@ -185,10 +186,10 @@ export function usePredictiveSuggestions(): PredictiveSuggestionsHook {
       });
 
       if (!response.ok) {
-        console.warn('Falha ao registrar interação:', response.statusText);
+        logger.warn('Falha ao registrar interação:', response.statusText);
       }
     } catch (error) {
-      console.error('Erro ao registrar interação:', error);
+      logger.error('Erro ao registrar interação:', error);
     }
   }, [sessionId, state.lastQuery, state.suggestions, currentPersona]);
 
@@ -207,7 +208,7 @@ export function usePredictiveSuggestions(): PredictiveSuggestionsHook {
         }));
       }
     } catch (error) {
-      console.error('Erro ao obter contexto do usuário:', error);
+      logger.error('Erro ao obter contexto do usuário:', error);
     }
   }, [sessionId]);
 
@@ -272,7 +273,7 @@ export function usePredictiveAnalytics() {
       const data = await response.json();
       setAnalytics(data);
     } catch (error) {
-      console.error('Erro ao obter analytics:', error);
+      logger.error('Erro ao obter analytics:', error);
       setError(error instanceof Error ? error.message : 'Erro desconhecido');
     } finally {
       setLoading(false);

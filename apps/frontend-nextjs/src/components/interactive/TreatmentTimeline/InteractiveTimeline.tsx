@@ -394,11 +394,89 @@ export default function InteractiveTimeline({
               </button>
 
               <button
-                onClick={() => {/* TODO: Implement export */}}
+                onClick={async () => {
+                  try {
+                    const { jsPDF } = await import('jspdf');
+                    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+                    const pw = doc.internal.pageSize.getWidth();
+                    const m = 15;
+                    let y = m;
+
+                    doc.setFontSize(16);
+                    doc.setFont('helvetica', 'bold');
+                    doc.setTextColor(0, 102, 51);
+                    doc.text('RELATORIO DO TRATAMENTO - PQT-U', pw / 2, y, { align: 'center' });
+                    y += 8;
+                    doc.setFontSize(10);
+                    doc.setFont('helvetica', 'normal');
+                    doc.setTextColor(100, 100, 100);
+                    doc.text(`Gerado em: ${new Date().toLocaleString('pt-BR')}`, pw / 2, y, { align: 'center' });
+                    y += 10;
+
+                    doc.setDrawColor(0, 102, 51);
+                    doc.line(m, y, pw - m, y);
+                    y += 8;
+
+                    doc.setFontSize(11);
+                    doc.setTextColor(51, 51, 51);
+                    doc.setFont('helvetica', 'bold');
+                    doc.text('DADOS DO PACIENTE', m, y); y += 6;
+                    doc.setFont('helvetica', 'normal');
+                    doc.setFontSize(10);
+                    if (timeline.patientName) { doc.text(`Nome: ${timeline.patientName}`, m + 3, y); y += 5; }
+                    doc.text(`Protocolo: ${timeline.protocol}`, m + 3, y); y += 5;
+                    doc.text(`Status: ${timeline.status}`, m + 3, y); y += 5;
+                    doc.text(`Inicio: ${timeline.startDate.toLocaleDateString('pt-BR')}`, m + 3, y); y += 5;
+                    doc.text(`Dose atual: ${timeline.currentDose}/${timeline.totalDoses}`, m + 3, y); y += 5;
+                    doc.text(`Progresso: ${progress}%`, m + 3, y); y += 5;
+                    if (config.allowAdherenceTracking) {
+                      doc.text(`Taxa de adesao: ${adherenceRate}%`, m + 3, y); y += 5;
+                    }
+                    y += 5;
+
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(11);
+                    doc.text('MARCOS DO TRATAMENTO', m, y); y += 6;
+                    doc.setFont('helvetica', 'normal');
+                    doc.setFontSize(9);
+                    timeline.milestones.forEach(ms => {
+                      if (y > 265) { doc.addPage(); y = 15; }
+                      const status = ms.completed ? '[CONCLUIDO]' : '[PENDENTE]';
+                      doc.text(`${status} ${ms.title} - ${ms.scheduledDate.toLocaleDateString('pt-BR')}`, m + 3, y);
+                      y += 5;
+                      if (ms.notes) { doc.text(`  Notas: ${ms.notes}`, m + 6, y); y += 5; }
+                    });
+                    y += 5;
+
+                    if (timeline.adverseEvents.length > 0) {
+                      doc.setFont('helvetica', 'bold');
+                      doc.setFontSize(11);
+                      doc.setTextColor(200, 50, 50);
+                      doc.text('EVENTOS ADVERSOS', m, y); y += 6;
+                      doc.setFont('helvetica', 'normal');
+                      doc.setFontSize(9);
+                      doc.setTextColor(51, 51, 51);
+                      timeline.adverseEvents.forEach(ae => {
+                        if (y > 265) { doc.addPage(); y = 15; }
+                        doc.text(`- ${ae.description} (${ae.severity}) - ${ae.date.toLocaleDateString('pt-BR')}`, m + 3, y);
+                        y += 5;
+                      });
+                    }
+
+                    doc.setFontSize(8);
+                    doc.setTextColor(150, 150, 150);
+                    const fY = doc.internal.pageSize.getHeight() - 10;
+                    doc.text('Ferramenta educacional - Nao substitui acompanhamento medico', pw / 2, fY, { align: 'center' });
+
+                    doc.save(`relatorio-tratamento-${new Date().toISOString().split('T')[0]}.pdf`);
+                  } catch (err) {
+                    console.error('Erro ao exportar relatorio:', err);
+                  }
+                }}
                 disabled={!config.allowExport}
                 style={{
                   padding: `${modernChatTheme.spacing.xs} ${modernChatTheme.spacing.sm}`,
-                  background: config.allowExport 
+                  background: config.allowExport
                     ? modernChatTheme.colors.personas.gasnelio.primary
                     : modernChatTheme.colors.neutral.textMuted,
                   color: 'white',

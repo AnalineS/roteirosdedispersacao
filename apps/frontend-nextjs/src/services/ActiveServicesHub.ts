@@ -490,7 +490,7 @@ export const useActiveServices = () => {
       servicesHub.registerIntegration({
         name: 'external-api',
         type: 'rest',
-        url: process.env.NEXT_PUBLIC_EXTERNAL_API_URL || 'https://api.example.com',
+        url: process.env.NEXT_PUBLIC_EXTERNAL_API_URL || '',
         headers: {
           'User-Agent': 'PQT-U Educational Platform'
         }

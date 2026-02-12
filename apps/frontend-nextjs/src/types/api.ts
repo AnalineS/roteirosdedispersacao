@@ -183,7 +183,7 @@ export interface UserProgress {
   lastActivity: string;
 }
 
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;
@@ -195,7 +195,7 @@ export interface ApiError {
   message: string;
   status?: number;
   timestamp?: number;
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
 }
 
 // ============================================
@@ -221,7 +221,7 @@ export interface ApiError {
 // ============================================
 
 export interface QueryFilters {
-  [key: string]: any;
+  [key: string]: string | number | boolean | null | undefined;
 }
 
 // ============================================

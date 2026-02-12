@@ -55,11 +55,11 @@ import { STATIC_PERSONAS } from '@/data/personas';
 export async function getPersonaConfigs(): Promise<PersonasResponse> {
   try {
     const personas = await getPersonas();
-    console.log('[getPersonaConfigs] Received personas:', Object.keys(personas || {}).length);
+    logger.log('[getPersonaConfigs] Received personas:', Object.keys(personas || {}).length);
     // Garantir que nunca retorna null/undefined
     return personas || STATIC_PERSONAS;
   } catch (error) {
-    console.error('[getPersonaConfigs] Exception caught, returning static personas:', error);
+    logger.error('[getPersonaConfigs] Exception caught, returning static personas:', error);
     return STATIC_PERSONAS;
   }
 }
@@ -110,7 +110,7 @@ export async function getPersonas(): Promise<PersonasResponse> {
     }
   }
 
-  console.error('[Personas] Todas as tentativas falharam, usando dados estáticos:', lastError);
+  logger.error('[Personas] Todas as tentativas falharam, usando dados estáticos:', lastError);
 
   // Capturar erro no sistema centralizado
   if (typeof window !== 'undefined') {
@@ -201,7 +201,7 @@ export interface ChatResponse {
 export async function sendChatMessage(request: ChatRequest): Promise<ChatResponse> {
   // Se backend indisponível, usar resposta offline
   if (!API_BASE_URL) {
-    console.warn('[Chat] Backend indisponível, gerando resposta offline');
+    logger.warn('[Chat] Backend indisponível, gerando resposta offline');
     return generateOfflineResponse(request);
   }
 
@@ -244,7 +244,7 @@ export async function sendChatMessage(request: ChatRequest): Promise<ChatRespons
     }
   }
 
-  console.error('[Chat] Todas as tentativas falharam, usando resposta offline:', lastError);
+  logger.error('[Chat] Todas as tentativas falharam, usando resposta offline:', lastError);
   return generateOfflineResponse(request);
 }
 
@@ -313,7 +313,7 @@ export async function checkAPIHealth(): Promise<{
 }> {
   // Se URL é null, backend está indisponível
   if (!API_BASE_URL) {
-    console.warn('[API Health] Backend temporariamente indisponível');
+    logger.warn('[API Health] Backend temporariamente indisponível');
     return {
       available: false,
       url: null,
@@ -359,7 +359,7 @@ export async function checkAPIHealth(): Promise<{
   }
 
   // Se chegou aqui, nenhum endpoint funcionou
-  console.error('[API Health] Todos os endpoints falharam, usando modo offline');
+  logger.error('[API Health] Todos os endpoints falharam, usando modo offline');
   return {
     available: false,
     url: API_BASE_URL,
@@ -423,7 +423,7 @@ export async function detectQuestionScope(question: string): Promise<{ scope: st
     }
   }
 
-  console.error('Erro ao detectar escopo após todas as tentativas:', lastError);
+  logger.error('Erro ao detectar escopo após todas as tentativas:', lastError);
   // Fallback para escopo offline
   return {
     scope: 'medical_general',
@@ -483,7 +483,7 @@ export const apiClient = {
       }
     }
 
-    console.error(`Erro na requisição POST para ${endpoint} após todas as tentativas:`, lastError);
+    logger.error(`Erro na requisição POST para ${endpoint} após todas as tentativas:`, lastError);
     throw lastError;
   },
 
@@ -530,7 +530,7 @@ export const apiClient = {
       }
     }
 
-    console.error(`Erro na requisição GET para ${endpoint} após todas as tentativas:`, lastError);
+    logger.error(`Erro na requisição GET para ${endpoint} após todas as tentativas:`, lastError);
     throw lastError;
   },
 };

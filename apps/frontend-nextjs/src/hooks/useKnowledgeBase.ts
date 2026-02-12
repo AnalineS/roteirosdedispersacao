@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect, useRef } from 'react';
+import { logger } from '@/utils/logger';
 import { knowledgeSearch, EnhancedMessage } from '@/services/knowledgeSearch';
 // Removed astraClient import as it was deleted
 import { SentimentResult } from '@/services/sentimentAnalysis';
@@ -57,7 +58,7 @@ export function useKnowledgeBase(options: UseKnowledgeBaseOptions = {}): UseKnow
   useEffect(() => {
     if (prefetchCommon) {
       knowledgeSearch.prefetchCommonTopics()
-        .catch(err => console.error('Erro no prefetch:', err));
+        .catch(err => logger.error('Erro no prefetch:', err));
     }
     
     // Buscar estatísticas iniciais
@@ -109,7 +110,7 @@ export function useKnowledgeBase(options: UseKnowledgeBaseOptions = {}): UseKnow
       setLastSearchResult(ragResult);
       
       // Log para analytics
-      console.log('Knowledge search completed:', {
+      logger.log('Knowledge search completed:', {
         question: question.substring(0, 50) + '...',
         confidence: ragResult.confidence,
         chunks: ragResult.chunks.length,
@@ -121,7 +122,7 @@ export function useKnowledgeBase(options: UseKnowledgeBaseOptions = {}): UseKnow
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro ao buscar conhecimento';
       setError(errorMessage);
-      console.error('Erro na busca de conhecimento:', err);
+      logger.error('Erro na busca de conhecimento:', err);
       
       // Retornar resultado vazio em caso de erro
       const emptyResult: RAGResponse = {
@@ -168,7 +169,7 @@ export function useKnowledgeBase(options: UseKnowledgeBaseOptions = {}): UseKnow
       return enriched;
       
     } catch (err) {
-      console.error('Erro ao enriquecer mensagem:', err);
+      logger.error('Erro ao enriquecer mensagem:', err);
       
       return {
         original: message,
@@ -190,13 +191,13 @@ export function useKnowledgeBase(options: UseKnowledgeBaseOptions = {}): UseKnow
   ): Promise<void> => {
     try {
       // TODO: Implement feedback system with new RAG infrastructure
-      console.log('Feedback recorded:', { query, response, rating, comments });
+      logger.log('Feedback recorded:', { query, response, rating, comments });
       
       // Atualizar estatísticas após feedback
       setTimeout(() => refreshStats(), 1000);
       
     } catch (err) {
-      console.error('Erro ao enviar avaliação:', err);
+      logger.error('Erro ao enviar avaliação:', err);
       setError('Erro ao enviar avaliação');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -215,7 +216,7 @@ export function useKnowledgeBase(options: UseKnowledgeBaseOptions = {}): UseKnow
       };
       setStats(initialStats);
     } catch (err) {
-      console.error('Erro ao buscar estatísticas:', err);
+      logger.error('Erro ao buscar estatísticas:', err);
     }
   }, []);
   
@@ -225,7 +226,7 @@ export function useKnowledgeBase(options: UseKnowledgeBaseOptions = {}): UseKnow
   const clearCache = useCallback(() => {
     // TODO: Implement cache clearing with new RAG infrastructure
     setLastSearchResult(null);
-    console.log('Cache de conhecimento limpo');
+    logger.log('Cache de conhecimento limpo');
   }, []);
   
   // Limpar timeout ao desmontar
@@ -291,7 +292,7 @@ export function useRealtimeKnowledge(
         const searchResult = await searchKnowledge(query, sentiment, persona);
         setResult(searchResult);
       } catch (error) {
-        console.error('Erro na busca em tempo real:', error);
+        logger.error('Erro na busca em tempo real:', error);
         setResult(null);
       }
     }, debounceMs);

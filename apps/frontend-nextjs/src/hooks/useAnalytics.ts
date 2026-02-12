@@ -1,4 +1,5 @@
 import { useCallback, useRef, useEffect } from 'react';
+import { logger } from '@/utils/logger';
 import Analytics from '@/services/analytics';
 
 // Hook principal de analytics
@@ -7,7 +8,7 @@ export const useAnalytics = () => {
     try {
       Analytics.event('USER', eventName, data);
     } catch (error) {
-      console.warn('Analytics error:', error);
+      logger.warn('Analytics error:', error);
     }
   }, []);
 
@@ -15,7 +16,7 @@ export const useAnalytics = () => {
     try {
       Analytics.pageView(page);
     } catch (error) {
-      console.warn('Analytics page view error:', error);
+      logger.warn('Analytics page view error:', error);
     }
   }, []);
 

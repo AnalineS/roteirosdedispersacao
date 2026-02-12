@@ -5,6 +5,7 @@
  */
 
 import { useState, useCallback, useRef, useEffect } from 'react';
+import { logger } from '@/utils/logger';
 import { useChat } from './useChat';
 
 export interface ImageUploadResult {
@@ -353,7 +354,7 @@ export function useMultimodal(): MultimodalHook {
       return null;
 
     } catch (error) {
-      console.error('Erro ao obter resultado:', error);
+      logger.error('Erro ao obter resultado:', error);
       return null;
     }
   }, []);
@@ -367,7 +368,7 @@ export function useMultimodal(): MultimodalHook {
       setState(prev => ({ ...prev, capabilities }));
 
     } catch (error) {
-      console.error('Erro ao carregar capacidades:', error);
+      logger.error('Erro ao carregar capacidades:', error);
     }
   }, []);
 
@@ -383,7 +384,7 @@ export function useMultimodal(): MultimodalHook {
       }));
 
     } catch (error) {
-      console.error('Erro ao carregar tipos de imagem:', error);
+      logger.error('Erro ao carregar tipos de imagem:', error);
     }
   }, []);
 
@@ -446,7 +447,7 @@ export function useMultimodal(): MultimodalHook {
         }
 
       } catch (error) {
-        console.error('Erro no polling:', error);
+        logger.error('Erro no polling:', error);
         if (statusPollingRef.current) {
           clearInterval(statusPollingRef.current);
         }

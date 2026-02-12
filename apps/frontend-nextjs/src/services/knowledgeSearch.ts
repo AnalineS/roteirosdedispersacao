@@ -15,6 +15,7 @@
 
 
 
+import { logger } from '@/utils/logger';
 import { SentimentResult, SentimentCategory } from './sentimentAnalysis';
 import { personaRAGIntegration, PersonaResponse } from './personaRAGIntegration';
 import { ragIntegrationService, IntegratedRAGResponse } from './ragIntegrationService';
@@ -117,7 +118,7 @@ export class KnowledgeSearchService {
       return this.getFallbackResponse(question, persona);
 
     } catch (error) {
-      console.error('Error in knowledge search:', error);
+      logger.error('Error in knowledge search:', error);
       return this.getFallbackResponse(question, persona);
     }
   }
@@ -158,7 +159,7 @@ export class KnowledgeSearchService {
       };
       
     } catch (error) {
-      console.error('Erro ao enriquecer mensagem:', error);
+      logger.error('Erro ao enriquecer mensagem:', error);
       return {
         original: message,
         enriched: message,
@@ -414,7 +415,7 @@ export class KnowledgeSearchService {
     await Promise.all(
       commonQuestions.map(q => 
         this.searchKnowledge(q, undefined, undefined, { maxChunks: 2 })
-          .catch(err => console.error('Erro no prefetch:', err))
+          .catch(err => logger.error('Erro no prefetch:', err))
       )
     );
   }

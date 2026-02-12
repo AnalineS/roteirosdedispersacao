@@ -3,8 +3,10 @@ Serviço de Email para Sistema PQT-U - PR #175
 Implementa notificações por email para conquistas, progresso e funcionalidades sociais
 """
 
+import json
 import os
 import logging
+from abc import ABC, abstractmethod
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
 from datetime import datetime
@@ -91,19 +93,21 @@ class EmailServiceConfig:
         self.rate_limit_per_minute = int(os.getenv('EMAIL_RATE_LIMIT', '100'))
         self.rate_limit_per_hour = int(os.getenv('EMAIL_RATE_LIMIT_HOUR', '1000'))
 
-class BaseEmailProvider:
+class BaseEmailProvider(ABC):
     """Classe base para provedores de email"""
-    
+
     def __init__(self, config: EmailServiceConfig):
         self.config = config
-        
+
+    @abstractmethod
     async def send(self, message: EmailMessage) -> Dict[str, Any]:
         """Envia email - deve ser implementado por cada provider"""
-        raise NotImplementedError
-        
+        ...
+
+    @abstractmethod
     def validate_config(self) -> bool:
         """Valida configuração do provider"""
-        raise NotImplementedError
+        ...
 
 class SendGridProvider(BaseEmailProvider):
     """Provider para SendGrid"""

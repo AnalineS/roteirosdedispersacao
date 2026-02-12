@@ -3,6 +3,7 @@
  * Analisa perguntas e determina qual persona deve responder
  */
 
+import { logger } from '@/utils/logger';
 import { detectQuestionScope } from './api';
 import type { Persona } from './api';
 
@@ -136,7 +137,7 @@ export async function analyzeQuestionRouting(
     try {
       backendAnalysis = await detectQuestionScope(question);
     } catch (error) {
-      console.warn('Backend scope detection failed, using local analysis:', error);
+      logger.warn('Backend scope detection failed, using local analysis:', error);
     }
 
     // Combinar análises local e backend
@@ -147,7 +148,7 @@ export async function analyzeQuestionRouting(
     
     return combinedAnalysis;
   } catch (error) {
-    console.error('Erro na análise de roteamento:', error);
+    logger.error('Erro na análise de roteamento:', error);
     
     // Fallback para análise local
     return analyzeLocalKeywords(question, availablePersonas);

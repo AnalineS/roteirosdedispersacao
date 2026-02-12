@@ -300,7 +300,7 @@ export function usePersonaActions() {
     getPersonaConfig: context.getPersonaConfig,
     profile: null,
     personas: {},
-    personaHistory: context.history,
+    personaHistory: context.history.map(entry => ({ ...entry, sessionId: entry.sessionId || '' })),
     getProfileRecommendation: context.getRecommendedPersona,
     updatePersonaInURL: () => {},
     setExplicitPersona: setExplicitPersonaWrapper

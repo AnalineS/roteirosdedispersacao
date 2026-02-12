@@ -630,7 +630,11 @@ function AddMedicationModal({
 
   const handleSubmit = () => {
     if (!formData.medicationName || !formData.dosage || !formData.time) {
-      alert('Por favor, preencha todos os campos');
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('show-error-toast', {
+          detail: { errorId: `toast_${Date.now()}`, severity: 'medium', message: 'Por favor, preencha todos os campos' }
+        }));
+      }
       return;
     }
 
@@ -839,7 +843,11 @@ function AddAppointmentModal({
 
   const handleSubmit = () => {
     if (!formData.title || !formData.date || !formData.time) {
-      alert('Por favor, preencha os campos obrigatórios');
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('show-error-toast', {
+          detail: { errorId: `toast_${Date.now()}`, severity: 'medium', message: 'Por favor, preencha os campos obrigatórios' }
+        }));
+      }
       return;
     }
 

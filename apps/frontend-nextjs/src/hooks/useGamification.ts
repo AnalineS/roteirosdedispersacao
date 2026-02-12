@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { logger } from '@/utils/logger';
 import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 import { useSafeAuth } from '@/hooks/useSafeAuth';
 import type { GamificationNotification, LeaderboardEntry, ModuleProgress } from '@/types/gamification';
@@ -272,7 +273,7 @@ export function useGamification(options: UseGamificationOptions = {}) {
       const stored = safeLocalStorage()?.getItem(storageKeyFull);
       return stored ? JSON.parse(stored) : null;
     } catch (error) {
-      console.error('Erro ao carregar gamificação do storage:', error);
+      logger.error('Erro ao carregar gamificação do storage:', error);
       return null;
     }
   }, [persistToLocalStorage, storageKey, user?.uid]);
@@ -285,7 +286,7 @@ export function useGamification(options: UseGamificationOptions = {}) {
       const storageKeyFull = `${storageKey}_${user?.uid || 'anonymous'}`;
       safeLocalStorage()?.setItem(storageKeyFull, JSON.stringify(state));
     } catch (error) {
-      console.error('Erro ao salvar gamificação no storage:', error);
+      logger.error('Erro ao salvar gamificação no storage:', error);
     }
   }, [persistToLocalStorage, autoSave, storageKey, user?.uid]);
 
@@ -409,7 +410,7 @@ export function useGamification(options: UseGamificationOptions = {}) {
   }, [gamificationState, addPersonaXP, saveToStorage]);
 
   // Registrar interação com persona
-  const recordPersonaInteraction = useCallback((personaId: PersonaId, interactionType: 'question' | 'perfect_answer' | 'first_time', metadata?: any) => {
+  const recordPersonaInteraction = useCallback((personaId: PersonaId, interactionType: 'question' | 'perfect_answer' | 'first_time', _metadata?: Record<string, unknown>) => {
     let xpAmount = 10;
     let source: PersonaXPGain['source'] = 'interaction';
     let description = 'Interação com persona';
@@ -455,13 +456,13 @@ export function useGamification(options: UseGamificationOptions = {}) {
   }, [addPersonaXP]);
 
   // Desbloquear conquista (API compatível)
-  const unlockAchievementCompat = (achievementData: any) => {
-    const personaId = achievementData.category === 'technical' ? 'dr_gasnelio' : 'ga';
+  const unlockAchievementCompat = (achievementData: Omit<PersonaAchievement, 'id' | 'earnedAt'>) => {
+    const personaId: PersonaId = achievementData.category === 'technical' ? 'dr_gasnelio' : 'ga';
     unlockAchievement(personaId, achievementData);
   };
 
   // Registrar quiz (API compatível)
-  const recordQuizAttempt = async (attempt: any) => {
+  const recordQuizAttempt = async (attempt: { category: string; score: number; quizId?: string }) => {
     const personaId: PersonaId = attempt.category === 'technical' ? 'dr_gasnelio' : 'ga';
     const xpAmount = attempt.score >= 80 ? 50 : 25;
 
@@ -696,7 +697,7 @@ export function useGamification(options: UseGamificationOptions = {}) {
       });
     },
     forceSync: () => {
-      console.log('Sync forçado - sistema de personas usa localStorage');
+      logger.log('Sync forçado - sistema de personas usa localStorage');
     },
     getUserRank: () => {
       const totalLevel = Math.max(
@@ -709,17 +710,17 @@ export function useGamification(options: UseGamificationOptions = {}) {
       return Math.floor(Math.random() * 500) + 101;
     },
     subscribeToRealTimeLeaderboard: () => {
-      console.log('Real-time leaderboard migrado para sistema de personas');
+      logger.log('Real-time leaderboard migrado para sistema de personas');
       return () => {};
     },
     syncStatus: 'idle' as 'idle' | 'syncing' | 'error',
     notifications: [] as GamificationNotification[],
     leaderboard: [] as LeaderboardEntry[],
     clearAllNotifications: () => {
-      console.log('Notificações limpas - sistema de personas não utiliza notificações');
+      logger.log('Notificações limpas - sistema de personas não utiliza notificações');
     },
     markNotificationRead: (notificationId: string) => {
-      console.log(`Notificação ${notificationId} marcada como lida - sistema de personas não utiliza notificações`);
+      logger.log(`Notificação ${notificationId} marcada como lida - sistema de personas não utiliza notificações`);
     },
 
     // === NOVAS FUNCIONALIDADES DE PERSONAS ===

@@ -269,7 +269,11 @@ export default function ModernChatInput({
     // Validar tamanho dos arquivos
     for (const file of Array.from(files)) {
       if (file.size > maxFileSize) {
-        alert(`Arquivo "${file.name}" é muito grande. Limite: ${maxFileSize / (1024 * 1024)}MB`);
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('show-error-toast', {
+            detail: { errorId: `toast_${Date.now()}`, severity: 'medium', message: `Arquivo "${file.name}" é muito grande. Limite: ${maxFileSize / (1024 * 1024)}MB` }
+          }));
+        }
         return;
       }
     }

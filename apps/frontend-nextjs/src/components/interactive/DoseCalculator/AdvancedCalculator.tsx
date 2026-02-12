@@ -323,7 +323,11 @@ function EnhancedBasicCalculator({
             <button
               onClick={() => {
                 // TODO: Implementar envio por email
-                alert('Funcionalidade de email será implementada em breve!');
+                if (typeof window !== 'undefined') {
+                  window.dispatchEvent(new CustomEvent('show-error-toast', {
+                    detail: { errorId: `toast_${Date.now()}`, severity: 'low', message: 'Funcionalidade de email será implementada em breve!' }
+                  }));
+                }
               }}
               style={{
                 padding: `${modernChatTheme.spacing.sm} ${modernChatTheme.spacing.md}`,
@@ -353,7 +357,11 @@ function EnhancedBasicCalculator({
                   // Fallback para cópia
                   const text = `Cálculo PQT-U - Peso: ${profile.weight}kg, Idade: ${profile.age} anos\nDoses: Rifampicina ${result.monthlyDoses.rifampicina}mg mensal`;
                   navigator.clipboard.writeText(text);
-                  alert('Resultado copiado para área de transferência!');
+                  if (typeof window !== 'undefined') {
+                    window.dispatchEvent(new CustomEvent('show-error-toast', {
+                      detail: { errorId: `toast_${Date.now()}`, severity: 'low', message: 'Resultado copiado para área de transferência!' }
+                    }));
+                  }
                 }
               }}
               style={{

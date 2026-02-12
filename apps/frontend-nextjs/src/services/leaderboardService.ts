@@ -3,6 +3,7 @@
  * Sistema de ranking via backend API
  */
 
+import { logger } from '@/utils/logger';
 import { apiClient } from '@/services/api';
 
 export interface LeaderboardEntry {
@@ -78,7 +79,7 @@ class LeaderboardService {
 
       return response;
     } catch (error) {
-      console.error('Erro ao carregar leaderboard:', error);
+      logger.error('Erro ao carregar leaderboard:', error);
       return this.getFallbackLeaderboard();
     }
   }
@@ -95,7 +96,7 @@ class LeaderboardService {
       const response = await apiClient.get<UserRankResponse>(`/leaderboard/user/${uid}/rank?category=${category}`);
       return response;
     } catch (error) {
-      console.error('Erro ao carregar rank do usuário:', error);
+      logger.error('Erro ao carregar rank do usuário:', error);
       return null;
     }
   }
@@ -108,7 +109,7 @@ class LeaderboardService {
       const response = await apiClient.get<LeaderboardCategory[]>('/leaderboard/categories');
       return response;
     } catch (error) {
-      console.error('Erro ao carregar categorias:', error);
+      logger.error('Erro ao carregar categorias:', error);
       return this.getDefaultCategories();
     }
   }
@@ -133,7 +134,7 @@ class LeaderboardService {
 
       return true;
     } catch (error) {
-      console.error('Erro ao atualizar pontuação:', error);
+      logger.error('Erro ao atualizar pontuação:', error);
       return false;
     }
   }
@@ -146,7 +147,7 @@ class LeaderboardService {
       const response = await apiClient.get<LeaderboardEntry>(`/leaderboard/user/${uid}/stats`);
       return response;
     } catch (error) {
-      console.error('Erro ao carregar estatísticas do usuário:', error);
+      logger.error('Erro ao carregar estatísticas do usuário:', error);
       return null;
     }
   }
@@ -163,7 +164,7 @@ class LeaderboardService {
       await apiClient.post(`/leaderboard/user/${uid}/achievement`, achievement);
       return true;
     } catch (error) {
-      console.error('Erro ao registrar conquista:', error);
+      logger.error('Erro ao registrar conquista:', error);
       return false;
     }
   }

@@ -202,7 +202,7 @@ class HybridCacheManager {
       return true;
 
     } catch (error) {
-      console.error(`[HybridCache] Erro ao armazenar ${key}:`, error);
+      logger.error(`[HybridCache] Erro ao armazenar ${key}:`, error);
       return false;
     }
   }
@@ -228,7 +228,7 @@ class HybridCacheManager {
       return success;
       
     } catch (error) {
-      console.error(`[HybridCache] Erro ao deletar ${key}:`, error);
+      logger.error(`[HybridCache] Erro ao deletar ${key}:`, error);
       return false;
     }
   }
@@ -254,7 +254,7 @@ class HybridCacheManager {
       return true;
       
     } catch (error) {
-      console.error('[HybridCache] Erro ao limpar cache:', error);
+      logger.error('[HybridCache] Erro ao limpar cache:', error);
       return false;
     }
   }
@@ -742,7 +742,7 @@ export const HybridCacheUtils = {
           });
           if (success) successful++;
         } catch (error) {
-          console.warn(`[HybridCache] Batch set failed for ${entry.key}:`, error);
+          logger.warn(`[HybridCache] Batch set failed for ${entry.key}:`, error);
         }
       });
       

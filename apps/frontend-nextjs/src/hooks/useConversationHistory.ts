@@ -5,6 +5,7 @@
  */
 
 import { useState, useCallback, useEffect, useRef } from 'react';
+import { logger } from '@/utils/logger';
 import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 import { ChatMessage, BackendConversation, BackendMessage } from '@/types/api';
 import { useSafeAuth as useAuth } from '@/hooks/useSafeAuth';
@@ -74,7 +75,7 @@ export function useConversationHistory() {
           loadFromLocalStorage();
         }
       } catch (error) {
-        console.error('Erro ao carregar conversas:', error);
+        logger.error('Erro ao carregar conversas:', error);
         setError('Erro ao carregar histórico de conversas');
         
         // Fallback para localStorage em caso de erro do Backend API
@@ -115,7 +116,7 @@ export function useConversationHistory() {
         }
       }
     } catch (error) {
-      console.error('Erro ao carregar do localStorage:', error);
+      logger.error('Erro ao carregar do localStorage:', error);
       throw error;
     }
   }, []);
@@ -143,12 +144,31 @@ export function useConversationHistory() {
 
       if (data.success && data.conversations) {
         // Modern conversations already match the Conversation interface
-        const conversations: Conversation[] = data.conversations.map((conv: any) => ({
+        interface BackendConvResponse {
+          id: string;
+          userId?: string;
+          personaId: string;
+          title: string;
+          messages: Array<{
+            id: string;
+            content: string;
+            role: string;
+            timestamp: string;
+            persona?: string;
+            metadata?: Record<string, unknown>;
+          }>;
+          lastActivity: number;
+          createdAt: number;
+          isArchived?: boolean;
+          tags?: string[];
+        }
+
+        const conversations: Conversation[] = data.conversations.map((conv: BackendConvResponse) => ({
           id: conv.id,
           userId: conv.userId || auth.user?.uid || '',
           personaId: conv.personaId,
           title: conv.title,
-          messages: conv.messages.map((msg: any) => ({
+          messages: conv.messages.map((msg) => ({
             id: msg.id,
             content: msg.content,
             role: msg.role as 'user' | 'assistant',
@@ -174,7 +194,7 @@ export function useConversationHistory() {
         throw new Error(data.error || 'Failed to load conversations from backend');
       }
     } catch (error) {
-      console.error('Error loading conversations from backend:', error);
+      logger.error('Error loading conversations from backend:', error);
       setSyncStatus('error');
 
       // Fallback to localStorage if backend fails
@@ -182,7 +202,7 @@ export function useConversationHistory() {
         try {
           loadFromLocalStorage();
         } catch (storageError) {
-          console.error('Fallback to localStorage also failed:', storageError);
+          logger.error('Fallback to localStorage also failed:', storageError);
         }
       }
     }
@@ -214,7 +234,7 @@ export function useConversationHistory() {
         safeLocalStorage()?.setItem(STORAGE_KEY, dataString);
       }
     } catch (error) {
-      console.error('Erro ao salvar no localStorage:', error);
+      logger.error('Erro ao salvar no localStorage:', error);
     }
   }, [auth.user?.uid]);
 
@@ -259,11 +279,11 @@ export function useConversationHistory() {
         setSyncStatus('idle');
       } else {
         setSyncStatus('error');
-        console.error('Erro ao salvar no Backend API:', result.error);
+        logger.error('Erro ao salvar no Backend API:', result.error);
       }
     } catch (error) {
       setSyncStatus('error');
-      console.error('Erro ao salvar no Backend API:', error);
+      logger.error('Erro ao salvar no Backend API:', error);
     }
   }, [auth.user, useBackendAPI]);
 
@@ -288,7 +308,7 @@ export function useConversationHistory() {
         }
         setError(null);
       } catch (error) {
-        console.error('Erro ao salvar histórico de conversas:', error);
+        logger.error('Erro ao salvar histórico de conversas:', error);
         setError('Erro ao salvar histórico de conversas');
       }
     }, DEBOUNCE_DELAY);
@@ -359,7 +379,7 @@ export function useConversationHistory() {
       
       return title;
     } catch (error) {
-      console.error('Erro ao gerar título da conversa:', error);
+      logger.error('Erro ao gerar título da conversa:', error);
       return 'Nova conversa';
     }
   }, []);
@@ -391,7 +411,7 @@ export function useConversationHistory() {
       
       return conversationId;
     } catch (error) {
-      console.error('Erro ao criar conversa:', error);
+      logger.error('Erro ao criar conversa:', error);
       setError('Erro ao criar nova conversa');
       return '';
     }
@@ -435,7 +455,7 @@ export function useConversationHistory() {
       await saveConversationWithSync(updatedConv);
       setError(null);
     } catch (error) {
-      console.error('Erro ao adicionar mensagem:', error);
+      logger.error('Erro ao adicionar mensagem:', error);
       setError('Erro ao adicionar mensagem à conversa');
     }
   }, [currentConversationId, conversations, saveConversationWithSync, generateConversationTitle]);
@@ -484,7 +504,7 @@ export function useConversationHistory() {
 
         if (!response.ok) {
           const result = await response.json();
-          console.error('Erro ao deletar do Backend API:', result.error);
+          logger.error('Erro ao deletar do Backend API:', result.error);
         }
         setSyncStatus('idle');
       }
@@ -505,7 +525,7 @@ export function useConversationHistory() {
       
       setError(null);
     } catch (error) {
-      console.error('Erro ao deletar conversa:', error);
+      logger.error('Erro ao deletar conversa:', error);
       setError('Erro ao deletar conversa');
     }
   }, [conversations, currentConversationId, saveToStorage, useBackendAPI, useLocalStorage]);
@@ -528,7 +548,7 @@ export function useConversationHistory() {
       await saveConversationWithSync(updatedConv);
       setError(null);
     } catch (error) {
-      console.error('Erro ao renomear conversa:', error);
+      logger.error('Erro ao renomear conversa:', error);
       setError('Erro ao renomear conversa');
     }
   }, [conversations, saveConversationWithSync]);

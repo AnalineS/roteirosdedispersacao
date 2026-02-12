@@ -22,42 +22,157 @@ export default function ExportOptions({ result, isAvailable }: ExportOptionsProp
 
   const handlePDFExport = async (): Promise<void> => {
     if (!result) return;
-    
-    // Haptic feedback para início da exportação
+
     info();
     setIsExporting(true);
     setCurrentFormat('pdf');
     setExportProgress(0);
-    
+
     try {
-      // Simular progresso de geração
-      for (let i = 0; i <= 100; i += 20) {
-        setExportProgress(i);
-        await new Promise(resolve => setTimeout(resolve, 300));
+      setExportProgress(20);
+      const { jsPDF } = await import('jspdf');
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const margin = 15;
+      const contentWidth = pageWidth - 2 * margin;
+      let y = margin;
+
+      setExportProgress(40);
+
+      // Header
+      doc.setFontSize(16);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(0, 102, 51);
+      doc.text('ROTEIRO DE DISPENSACAO - HANSENIASE PQT-U', pageWidth / 2, y, { align: 'center' });
+      y += 8;
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(100, 100, 100);
+      doc.text('Calculo de Doses - Ferramenta Educacional', pageWidth / 2, y, { align: 'center' });
+      y += 5;
+      doc.text(`Data: ${new Date().toLocaleString('pt-BR')}`, pageWidth / 2, y, { align: 'center' });
+      y += 5;
+      doc.text('Baseado na tese: "Roteiro de Dispensacao para Hanseniase PQT-U"', pageWidth / 2, y, { align: 'center' });
+      y += 5;
+      doc.text('Autor: Prof. Me. Nelio Gomes de Moura Junior', pageWidth / 2, y, { align: 'center' });
+
+      // Separator
+      y += 8;
+      doc.setDrawColor(0, 102, 51);
+      doc.setLineWidth(0.5);
+      doc.line(margin, y, pageWidth - margin, y);
+      y += 10;
+
+      setExportProgress(60);
+
+      // Protocol info
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(51, 51, 51);
+      doc.text(`PROTOCOLO: ${result.protocol.population.toUpperCase()}`, margin, y);
+      y += 6;
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Duracao do tratamento: ${result.treatmentSchedule.totalDoses} meses`, margin, y);
+      y += 10;
+
+      // Monthly doses
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.text('DOSES MENSAIS SUPERVISIONADAS:', margin, y);
+      y += 6;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      doc.text(`  Rifampicina: ${result.monthlyDoses.rifampicina}mg`, margin, y); y += 5;
+      doc.text(`  Clofazimina: ${result.monthlyDoses.clofazimina_mensal}mg`, margin, y); y += 5;
+      doc.text(`  Dapsona: ${result.monthlyDoses.dapsona_mensal}mg`, margin, y); y += 10;
+
+      // Daily doses
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.text('DOSES DIARIAS AUTOADMINISTRADAS:', margin, y);
+      y += 6;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      doc.text(`  Clofazimina: ${result.dailyDoses.clofazimina_diaria}mg/dia`, margin, y); y += 5;
+      doc.text(`  Dapsona: ${result.dailyDoses.dapsona_diaria}mg/dia`, margin, y); y += 10;
+
+      // Safety alerts
+      if (result.safetyAlerts.length > 0) {
+        doc.setDrawColor(200, 50, 50);
+        doc.setLineWidth(0.3);
+        doc.line(margin, y, pageWidth - margin, y);
+        y += 6;
+        doc.setFontSize(11);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(200, 50, 50);
+        doc.text('ALERTAS DE SEGURANCA:', margin, y);
+        y += 6;
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9);
+        doc.setTextColor(51, 51, 51);
+        result.safetyAlerts.forEach(a => {
+          if (y > 260) return;
+          const alertLines = doc.splitTextToSize(`[${a.severity.toUpperCase()}] ${a.message} - ${a.recommendation}`, contentWidth - 5);
+          doc.text(alertLines, margin + 3, y);
+          y += alertLines.length * 4 + 3;
+        });
+        y += 4;
       }
-      
-      // TODO: Implementar geração real de PDF
-      const pdfContent = generatePDFContent(result, includeEducational, additionalNotes);
-      
-      // Por enquanto, fazer download de um arquivo de texto
-      const blob = new Blob([pdfContent], { type: 'text/plain' });
-      const url = URL.createObjectURL(blob);
-      
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `PQT-U_Calculo_${new Date().toISOString().split('T')[0]}.txt`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-      
-      // Success haptic feedback
+
+      setExportProgress(80);
+
+      // Educational notes
+      if (includeEducational && result.educationalNotes.length > 0) {
+        doc.setDrawColor(0, 102, 51);
+        doc.setLineWidth(0.3);
+        doc.line(margin, y, pageWidth - margin, y);
+        y += 6;
+        doc.setFontSize(11);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(0, 102, 51);
+        doc.text('NOTAS EDUCACIONAIS:', margin, y);
+        y += 6;
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9);
+        doc.setTextColor(51, 51, 51);
+        result.educationalNotes.forEach(note => {
+          if (y > 270) return;
+          const noteLines = doc.splitTextToSize(`- ${note}`, contentWidth - 5);
+          doc.text(noteLines, margin + 3, y);
+          y += noteLines.length * 4 + 2;
+        });
+        y += 4;
+      }
+
+      // Additional notes
+      if (additionalNotes.trim()) {
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.text('OBSERVACOES ADICIONAIS:', margin, y);
+        y += 5;
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9);
+        const noteLines = doc.splitTextToSize(additionalNotes, contentWidth);
+        doc.text(noteLines, margin, y);
+        y += noteLines.length * 4 + 6;
+      }
+
+      // Footer disclaimer
+      doc.setFontSize(8);
+      doc.setTextColor(150, 150, 150);
+      const footerY = doc.internal.pageSize.getHeight() - 15;
+      doc.text('IMPORTANTE: Ferramenta educacional. Consulte medico antes de iniciar ou alterar tratamento.', pageWidth / 2, footerY, { align: 'center' });
+      doc.text(`Gerado em: ${new Date().toLocaleString('pt-BR')}`, pageWidth / 2, footerY + 4, { align: 'center' });
+
+      setExportProgress(100);
+      doc.save(`PQT-U_Calculo_${new Date().toISOString().split('T')[0]}.pdf`);
+
       success();
       setExportStatus('success');
       setTimeout(() => setExportStatus('idle'), 3000);
     } catch (exportError) {
       console.error('Erro ao exportar PDF:', exportError);
-      // Error haptic feedback
       error();
       setExportStatus('error');
       setTimeout(() => setExportStatus('idle'), 3000);
@@ -70,37 +185,42 @@ export default function ExportOptions({ result, isAvailable }: ExportOptionsProp
 
   const handleEmailSend = async (): Promise<void> => {
     if (!result || !emailAddress) return;
-    
-    // Haptic feedback para início do envio
+
     info();
     setIsExporting(true);
     setCurrentFormat('email');
     setExportProgress(0);
-    
+
     try {
-      // Simular progresso do envio
-      const stages = ['Preparando conteúdo...', 'Conectando servidor...', 'Enviando email...'];
-      
-      for (let i = 0; i < stages.length; i++) {
-        setExportProgress((i + 1) * 33);
-        await new Promise(resolve => setTimeout(resolve, 500));
-      }
-      
+      setExportProgress(25);
+      const textContent = generatePDFContent(result, includeEducational, additionalNotes);
+
+      // Generate PDF attachment
+      setExportProgress(50);
+      const { jsPDF } = await import('jspdf');
+      const doc = new jsPDF();
+      const lines = doc.splitTextToSize(textContent, 170);
+      doc.setFontSize(10);
+      doc.text(lines, 20, 20);
+      const pdfBase64 = doc.output('datauristring').split(',')[1];
+
+      setExportProgress(75);
+      const { apiClient } = await import('@/services/api');
+      await apiClient.post('/api/v1/email/send-document', {
+        to: emailAddress,
+        subject: 'Calculo PQT-U - Roteiro de Dispensacao',
+        body: textContent,
+        attachment_base64: pdfBase64,
+        attachment_filename: `PQT-U_Calculo_${new Date().toISOString().split('T')[0]}.pdf`,
+      });
+
       setExportProgress(100);
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      // TODO: Implementar EmailJS
-      console.log('Enviando email para:', emailAddress);
-      console.log('Conteúdo:', generatePDFContent(result, includeEducational, additionalNotes));
-      
-      // Success haptic feedback
       success();
       setExportStatus('success');
       setTimeout(() => setExportStatus('idle'), 3000);
       setEmailAddress('');
     } catch (emailError) {
       console.error('Erro ao enviar email:', emailError);
-      // Error haptic feedback
       error();
       setExportStatus('error');
       setTimeout(() => setExportStatus('idle'), 3000);

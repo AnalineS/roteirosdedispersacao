@@ -7,6 +7,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { logger } from '@/utils/logger';
 import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 import { useSafeAuth as useAuth } from '@/hooks/useSafeAuth';
 import { backendLeaderboard } from '@/services/backendLeaderboard';
@@ -175,7 +176,7 @@ export function useBackendSync(options: Partial<SyncOptions> = {}) {
           });
           totalItems++;
         } catch (error) {
-          console.error('Erro ao migrar perfil:', error);
+          logger.error('Erro ao migrar perfil:', error);
           setMigrationState(prev => ({
             ...prev,
             errors: [...prev.errors, 'Erro ao migrar perfil do usuário']
@@ -199,7 +200,7 @@ export function useBackendSync(options: Partial<SyncOptions> = {}) {
             });
           }
         } catch (error) {
-          console.error('Erro ao migrar conversas:', error);
+          logger.error('Erro ao migrar conversas:', error);
           setMigrationState(prev => ({
             ...prev,
             errors: [...prev.errors, 'Erro ao migrar conversas']
@@ -306,7 +307,7 @@ export function useBackendSync(options: Partial<SyncOptions> = {}) {
               progress: Math.round((successful / totalItems) * 100)
             }));
           } catch (error) {
-            console.error('Erro ao migrar item:', error);
+            logger.error('Erro ao migrar item:', error);
           }
         }
 
@@ -325,7 +326,7 @@ export function useBackendSync(options: Partial<SyncOptions> = {}) {
         }
       }
     } catch (error) {
-      console.error('Erro na migração:', error);
+      logger.error('Erro na migração:', error);
       setMigrationState(prev => ({
         ...prev,
         errors: [...prev.errors, error instanceof Error ? error.message : 'Erro geral na migração']
@@ -351,7 +352,7 @@ export function useBackendSync(options: Partial<SyncOptions> = {}) {
 
       if (userProgress.success && userProgress.data) {
         // Atualizar contexto com dados de progresso
-        console.log('Progresso do usuário sincronizado:', userProgress.data);
+        logger.log('Progresso do usuário sincronizado:', userProgress.data);
       }
     } catch (error) {
       addSyncError(`Erro ao sincronizar perfil: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
@@ -378,7 +379,7 @@ export function useBackendSync(options: Partial<SyncOptions> = {}) {
         }
       }
 
-      console.log('Sincronização de conversas realizada');
+      logger.log('Sincronização de conversas realizada');
     } catch (error) {
       addSyncError(`Erro ao sincronizar conversas: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
     }
@@ -387,7 +388,7 @@ export function useBackendSync(options: Partial<SyncOptions> = {}) {
 
   const performFullSync = useCallback(async (): Promise<void> => {
     if (syncInProgressRef.current) {
-      console.log('Sync já em progresso, pulando...');
+      logger.log('Sync já em progresso, pulando...');
       return;
     }
 
@@ -420,9 +421,9 @@ export function useBackendSync(options: Partial<SyncOptions> = {}) {
         pendingDownloads: 0
       });
 
-      console.log('Sincronização completa realizada com sucesso');
+      logger.log('Sincronização completa realizada com sucesso');
     } catch (error) {
-      console.error('Erro na sincronização completa:', error);
+      logger.error('Erro na sincronização completa:', error);
       addSyncError(`Erro na sincronização: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
     } finally {
       syncInProgressRef.current = false;
@@ -447,7 +448,7 @@ export function useBackendSync(options: Partial<SyncOptions> = {}) {
         performFullSync();
       }, syncOptionsRef.current.syncInterval);
 
-      console.log('Auto-sync iniciado:', syncOptionsRef.current.syncInterval + 'ms');
+      logger.log('Auto-sync iniciado:', syncOptionsRef.current.syncInterval + 'ms');
     }
   }, [auth.isAuthenticated, performFullSync]);
 
@@ -455,7 +456,7 @@ export function useBackendSync(options: Partial<SyncOptions> = {}) {
     if (syncIntervalRef.current) {
       clearInterval(syncIntervalRef.current);
       syncIntervalRef.current = null;
-      console.log('Auto-sync parado');
+      logger.log('Auto-sync parado');
     }
   }, []);
 
@@ -573,22 +574,50 @@ export function useBackendSync(options: Partial<SyncOptions> = {}) {
 // HELPER FUNCTIONS
 // ============================================
 
-function transformLocalProfileToBackend(localProfile: any, userId: string): Partial<BackendUserProfile> {
+interface LocalProfileData {
+  type?: string;
+  focus?: string;
+  confidence?: number;
+  explanation?: string;
+  selectedPersona?: 'dr_gasnelio' | 'ga';
+  preferences?: {
+    language?: string;
+    notifications?: boolean;
+    theme?: string;
+    emailUpdates?: boolean;
+    dataCollection?: boolean;
+    lgpdConsent?: boolean;
+  };
+  history?: {
+    lastPersona?: string;
+    conversationCount?: number;
+    lastAccess?: string;
+    preferredTopics?: string[];
+    totalSessions?: number;
+    totalTimeSpent?: number;
+    completedModules?: string[];
+    achievements?: string[];
+  };
+}
+
+function transformLocalProfileToBackend(localProfile: LocalProfileData, userId: string): Partial<BackendUserProfile> {
   return {
     uid: userId,
-    type: localProfile.type || 'patient',
-    focus: localProfile.focus || 'general',
+    type: (localProfile.type as BackendUserProfile['type']) || 'patient',
+    focus: (localProfile.focus as BackendUserProfile['focus']) || 'general',
     confidence: localProfile.confidence || 0.5,
     explanation: localProfile.explanation || 'Perfil migrado do localStorage',
     selectedPersona: localProfile.selectedPersona,
     preferences: {
-      language: localProfile.preferences?.language || 'simple',
+      language: (['simple', 'technical'].includes(localProfile.preferences?.language ?? '') ? localProfile.preferences!.language : 'simple') as 'simple' | 'technical',
       notifications: localProfile.preferences?.notifications ?? true,
-      theme: localProfile.preferences?.theme || 'auto',
-      ...localProfile.preferences
+      theme: (['auto', 'light', 'dark'].includes(localProfile.preferences?.theme ?? '') ? localProfile.preferences!.theme : 'auto') as 'auto' | 'light' | 'dark',
+      emailUpdates: localProfile.preferences?.emailUpdates ?? false,
+      dataCollection: localProfile.preferences?.dataCollection ?? false,
+      lgpdConsent: localProfile.preferences?.lgpdConsent ?? false,
     },
     history: {
-      lastPersona: localProfile.history?.lastPersona || 'ga',
+      lastPersona: (localProfile.history?.lastPersona as 'dr_gasnelio' | 'ga') || 'ga',
       conversationCount: localProfile.history?.conversationCount || 0,
       lastAccess: localProfile.history?.lastAccess || new Date().toISOString(),
       preferredTopics: localProfile.history?.preferredTopics || [],
@@ -601,16 +630,28 @@ function transformLocalProfileToBackend(localProfile: any, userId: string): Part
   };
 }
 
-function transformLocalConversationToBackend(localConv: any, userId: string): Partial<BackendConversation> {
+interface LocalConversationData {
+  personaId?: string;
+  title?: string;
+  messages?: Array<{
+    id?: string;
+    content: string;
+    role: string;
+    timestamp?: string | number;
+    persona?: string;
+  }>;
+}
+
+function transformLocalConversationToBackend(localConv: LocalConversationData, userId: string): Partial<BackendConversation> {
   return {
     userId,
     personaId: localConv.personaId || 'ga',
     title: localConv.title || 'Conversa migrada',
-    messages: (localConv.messages || []).map((msg: any) => ({
+    messages: (localConv.messages || []).map((msg) => ({
       id: msg.id || generateSecureId('msg_', 12),
       content: msg.content,
       role: msg.role,
-      timestamp: msg.timestamp ? new Date(msg.timestamp) : new Date(),
+      timestamp: msg.timestamp ? new Date(msg.timestamp).toISOString() : new Date().toISOString(),
       persona: msg.persona
     })),
     messageCount: localConv.messages?.length || 0

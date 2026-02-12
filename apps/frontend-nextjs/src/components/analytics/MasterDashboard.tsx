@@ -152,14 +152,69 @@ export default function MasterDashboard() {
     return () => clearInterval(interval);
   }, [loadMetrics]);
 
-  const handleExportReport = () => {
+  const handleExportReport = async () => {
     tracking?.trackCustomEvent('dashboard_export', 'analytics', 1, {
       format: 'pdf',
       timestamp: new Date().toISOString()
     });
-    
-    // TODO: Implementar export real
-    alert('Relatório será enviado por email em até 5 minutos');
+
+    try {
+      const { jsPDF } = await import('jspdf');
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const pw = doc.internal.pageSize.getWidth();
+      const m = 15;
+      let y = m;
+
+      doc.setFontSize(16);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(0, 102, 51);
+      doc.text('RELATORIO ANALYTICS - PLATAFORMA EDUCACIONAL', pw / 2, y, { align: 'center' });
+      y += 8;
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(100, 100, 100);
+      doc.text(`Gerado em: ${new Date().toLocaleString('pt-BR')}`, pw / 2, y, { align: 'center' });
+      y += 10;
+
+      doc.setDrawColor(0, 102, 51);
+      doc.line(m, y, pw - m, y);
+      y += 8;
+
+      if (ga4Data) {
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(51, 51, 51);
+        doc.text('METRICAS GA4', m, y); y += 7;
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Usuarios totais: ${ga4Data.users.totalUsers}`, m + 3, y); y += 5;
+        doc.text(`Usuarios ativos (24h): ${ga4Data.users.activeUsers24h}`, m + 3, y); y += 5;
+        doc.text(`Novos usuarios: ${ga4Data.users.newUsers}`, m + 3, y); y += 5;
+        doc.text(`Sessoes totais: ${ga4Data.sessions.totalSessions}`, m + 3, y); y += 5;
+        doc.text(`Duracao media da sessao: ${formatDuration(ga4Data.sessions.avgSessionDuration)}`, m + 3, y); y += 5;
+        doc.text(`Taxa de rejeicao: ${(ga4Data.sessions.bounceRate * 100).toFixed(1)}%`, m + 3, y); y += 5;
+        doc.text(`Visualizacoes de pagina: ${ga4Data.pages.pageViews}`, m + 3, y); y += 5;
+        doc.text(`Taxa de retorno: ${(ga4Data.engagement.returnVisitorRate * 100).toFixed(1)}%`, m + 3, y); y += 10;
+
+        // Educational metrics
+        doc.setFont('helvetica', 'bold');
+        doc.text('METRICAS EDUCACIONAIS:', m, y); y += 6;
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Modulos concluidos: ${ga4Data.educational.moduleCompletions}`, m + 3, y); y += 5;
+        doc.text(`Certificados gerados: ${ga4Data.educational.certificatesGenerated}`, m + 3, y); y += 5;
+        doc.text(`Score medio: ${ga4Data.educational.averageScore.toFixed(1)}%`, m + 3, y); y += 5;
+        doc.text(`Taxa de conclusao: ${(ga4Data.educational.completionRate * 100).toFixed(1)}%`, m + 3, y); y += 5;
+      }
+
+      doc.setFontSize(8);
+      doc.setTextColor(150, 150, 150);
+      const fY = doc.internal.pageSize.getHeight() - 10;
+      doc.text('Relatorio gerado automaticamente pela plataforma educacional', pw / 2, fY, { align: 'center' });
+
+      doc.save(`analytics-report-${new Date().toISOString().split('T')[0]}.pdf`);
+    } catch (err) {
+      console.error('Erro ao exportar relatorio:', err);
+    }
   };
 
   if (loading || !ga4Data) {

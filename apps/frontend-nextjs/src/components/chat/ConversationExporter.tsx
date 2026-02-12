@@ -178,7 +178,11 @@ Para mais informações, visite nosso sistema educacional.
           }
         });
       }
-      alert('Erro ao exportar PDF. Tente novamente.');
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('show-error-toast', {
+          detail: { errorId: `toast_${Date.now()}`, severity: 'high', message: 'Erro ao exportar PDF. Tente novamente.' }
+        }));
+      }
     } finally {
       setIsExporting(false);
       setIsOpen(false);
@@ -218,7 +222,11 @@ Para mais informações, visite nosso sistema educacional.
     try {
       const conversationText = generateConversationText();
       await navigator.clipboard.writeText(conversationText);
-      alert('Conversa copiada para a área de transferência!');
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('show-error-toast', {
+          detail: { errorId: `toast_${Date.now()}`, severity: 'low', message: 'Conversa copiada para a área de transferência!' }
+        }));
+      }
       setIsOpen(false);
     } catch (error) {
       if (typeof window !== 'undefined' && window.gtag) {
@@ -235,7 +243,11 @@ Para mais informações, visite nosso sistema educacional.
           }
         });
       }
-      alert('Erro ao copiar texto. Tente novamente.');
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('show-error-toast', {
+          detail: { errorId: `toast_${Date.now()}`, severity: 'high', message: 'Erro ao copiar texto. Tente novamente.' }
+        }));
+      }
     }
   };
 

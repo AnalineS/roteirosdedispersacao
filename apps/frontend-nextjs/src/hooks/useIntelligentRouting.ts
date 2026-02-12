@@ -4,6 +4,7 @@
  */
 
 import { useState, useCallback, useRef, useEffect } from 'react';
+import { logger } from '@/utils/logger';
 import { analyzeQuestionRouting, isAmbiguousQuestion, getRoutingExplanation } from '@/services/intelligentRouting';
 import type { RoutingAnalysis } from '@/services/intelligentRouting';
 import type { Persona } from '@/services/api';
@@ -126,7 +127,7 @@ export function useIntelligentRouting(
           }));
         }
       } catch (error) {
-        console.error('Erro na análise de roteamento:', error);
+        logger.error('Erro na análise de roteamento:', error);
         setState(prev => ({
           ...prev,
           currentAnalysis: null,
@@ -146,7 +147,7 @@ export function useIntelligentRouting(
       analyticsRef.current.acceptedRecommendations++;
       
       // Log para métricas (pode ser enviado para analytics)
-      console.log('Routing recommendation accepted:', {
+      logger.log('Routing recommendation accepted:', {
         personaId: state.currentAnalysis.recommendedPersonaId,
         confidence: state.currentAnalysis.confidence,
         scope: state.currentAnalysis.scope
@@ -162,7 +163,7 @@ export function useIntelligentRouting(
       analyticsRef.current.rejectedRecommendations++;
       
       // Log para métricas e melhoria do algoritmo
-      console.log('Routing recommendation rejected:', {
+      logger.log('Routing recommendation rejected:', {
         recommended: state.currentAnalysis.recommendedPersonaId,
         selected: selectedPersonaId,
         confidence: state.currentAnalysis.confidence,

@@ -4,6 +4,7 @@
  * Sistema 100% funcional para conhecimento médico de hanseníase
  */
 
+import { logger } from '@/utils/logger';
 import { embeddingService } from './embeddingService';
 import { medicalKnowledgeBase, SearchResult, MedicalDocument } from './medicalKnowledgeBase';
 import { ragCache } from './simpleCache';
@@ -188,7 +189,7 @@ export class SemanticSearchEngine {
       return rankedResults;
 
     } catch (error) {
-      console.error('Error in semantic search:', error);
+      logger.error('Error in semantic search:', error);
       
       // Fallback para busca simples
       try {
@@ -199,7 +200,7 @@ export class SemanticSearchEngine {
 
         return this.convertToEnhancedResults(fallbackResults, query);
       } catch (fallbackError) {
-        console.error('Fallback search also failed:', fallbackError);
+        logger.error('Fallback search also failed:', fallbackError);
         return [];
       }
     }
@@ -283,7 +284,7 @@ export class SemanticSearchEngine {
       });
 
     } catch (error) {
-      console.error('Error finding similar content:', error);
+      logger.error('Error finding similar content:', error);
       return [];
     }
   }
@@ -327,7 +328,7 @@ export class SemanticSearchEngine {
       await this.cache.clear('search_*');
       return true;
     } catch (error) {
-      console.error('Error clearing search cache:', error);
+      logger.error('Error clearing search cache:', error);
       return false;
     }
   }
@@ -335,7 +336,7 @@ export class SemanticSearchEngine {
   // MÉTODOS PRIVADOS
 
   private async initializeSearchEngine(): Promise<void> {
-    console.log('🔍 Initializing Semantic Search Engine...');
+    logger.log('🔍 Initializing Semantic Search Engine...');
     
     // Carregar estatísticas do cache se disponível
     try {
@@ -344,7 +345,7 @@ export class SemanticSearchEngine {
         this.stats = { ...this.stats, ...savedStats };
       }
     } catch (error) {
-      console.warn('Could not load search stats from cache:', error);
+      logger.warn('Could not load search stats from cache:', error);
     }
   }
 
@@ -434,7 +435,7 @@ export class SemanticSearchEngine {
       return uniqueResults;
 
     } catch (error) {
-      console.error('Error in multi-source search:', error);
+      logger.error('Error in multi-source search:', error);
       return allResults; // Retornar resultados parciais
     }
   }

@@ -3,6 +3,7 @@
  * Integra múltiplas fontes de dados para insights médicos educacionais
  */
 
+import { logger } from '@/utils/logger';
 import { logEvent } from './analytics';
 import { PersonaRAGIntegration } from './personaRAGIntegration';
 import { ChatService } from './chatService';
@@ -155,7 +156,7 @@ export class AdvancedAnalyticsService {
 
       return profile;
     } catch (error) {
-      console.error('Erro ao gerar perfil de aprendizado:', error);
+      logger.error('Erro ao gerar perfil de aprendizado:', error);
       
       // Retorna perfil padrão em caso de erro
       return {
@@ -219,7 +220,7 @@ export class AdvancedAnalyticsService {
 
       return metrics;
     } catch (error) {
-      console.error('Erro ao obter métricas de aprendizado:', error);
+      logger.error('Erro ao obter métricas de aprendizado:', error);
       
       return {
         totalUsers: 0,
@@ -271,7 +272,7 @@ export class AdvancedAnalyticsService {
 
       return [drGasnelioEffectiveness, gaEffectiveness];
     } catch (error) {
-      console.error('Erro ao analisar efetividade das personas:', error);
+      logger.error('Erro ao analisar efetividade das personas:', error);
       return [];
     }
   }
@@ -315,7 +316,7 @@ export class AdvancedAnalyticsService {
         }
       };
     } catch (error) {
-      console.error('Erro ao obter métricas de saúde:', error);
+      logger.error('Erro ao obter métricas de saúde:', error);
       
       return {
         ragPerformance: { avgResponseTime: 0, successRate: 0, knowledgeBaseSize: 0, embeddingAccuracy: 0 },
@@ -343,7 +344,7 @@ export class AdvancedAnalyticsService {
         contentRecommendations: await this.generateContentRecommendations()
       };
     } catch (error) {
-      console.error('Erro ao gerar insights educacionais:', error);
+      logger.error('Erro ao gerar insights educacionais:', error);
       
       return {
         effectiveContent: [],
@@ -390,9 +391,9 @@ export class AdvancedAnalyticsService {
       
       await this.cache.set(userEventsKey, userEvents, 30 * 24 * 60 * 60 * 1000); // 30 dias
 
-      console.log(`📊 Evento de aprendizado registrado: ${event.type} para usuário ${userId}`);
+      logger.log(`📊 Evento de aprendizado registrado: ${event.type} para usuário ${userId}`);
     } catch (error) {
-      console.error('Erro ao registrar evento de aprendizado:', error);
+      logger.error('Erro ao registrar evento de aprendizado:', error);
     }
   }
 

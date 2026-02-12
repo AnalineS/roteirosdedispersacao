@@ -253,7 +253,11 @@ export default function ChecklistPage() {
     const printWindow = window.open('', '_blank', 'width=800,height=600');
 
     if (!printWindow) {
-      alert('Por favor, permita pop-ups para imprimir o checklist');
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('show-error-toast', {
+          detail: { errorId: `toast_${Date.now()}`, severity: 'medium', message: 'Por favor, permita pop-ups para imprimir o checklist' }
+        }));
+      }
       return;
     }
 

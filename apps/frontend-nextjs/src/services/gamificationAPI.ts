@@ -12,6 +12,7 @@ import type {
   LeaderboardEntry,
   ModuleProgress
 } from '../types/gamification';
+import { logger } from '@/utils/logger';
 import { safeLocalStorage } from '@/hooks/useClientStorage';
 
 interface ActivityMetadata {
@@ -80,7 +81,7 @@ class GamificationAPI {
   async getProgress(userId: string): Promise<APIResponse<LearningProgress>> {
     // Se backend indisponível, retornar erro para usar fallback
     if (!this.baseURL || this.baseURL.trim() === '') {
-      console.info('[Gamification] Backend offline - usando localStorage');
+      logger.info('[Gamification] Backend offline - usando localStorage');
       return {
         success: false,
         error: 'Backend temporariamente indisponível - modo offline ativo'
@@ -112,7 +113,7 @@ class GamificationAPI {
   async saveProgress(userId: string, progress: LearningProgress): Promise<APIResponse<LearningProgress>> {
     // Se backend indisponível, simular sucesso para usar localStorage
     if (!this.baseURL || this.baseURL.trim() === '') {
-      console.info('[Gamification] Salvando apenas no localStorage - backend offline');
+      logger.info('[Gamification] Salvando apenas no localStorage - backend offline');
       return {
         success: true,
         data: progress,
@@ -535,7 +536,7 @@ class GamificationAPI {
   async healthCheck(): Promise<boolean> {
     // Se baseURL vazia, backend está desabilitado
     if (!this.baseURL || this.baseURL.trim() === '') {
-      console.warn('[Gamification] Backend desabilitado - modo offline ativo');
+      logger.warn('[Gamification] Backend desabilitado - modo offline ativo');
       return false;
     }
 
@@ -550,7 +551,7 @@ class GamificationAPI {
 
       return response.ok;
     } catch (error) {
-      console.warn('[Gamification] Backend indisponível:', error);
+      logger.warn('[Gamification] Backend indisponível:', error);
       return false;
     }
   }

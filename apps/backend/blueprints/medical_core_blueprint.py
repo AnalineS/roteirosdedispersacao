@@ -62,7 +62,7 @@ def chat():
     """Main chat endpoint with AI personas and RAG integration"""
     try:
         data = request.get_json() or {}
-        message = data.get('message', '').strip()
+        message = (data.get('message') or data.get('question', '')).strip()
         if not message:
             return jsonify({
                 'error': 'Message is required',
@@ -70,7 +70,7 @@ def chat():
                 'timestamp': datetime.now().isoformat()
             }), 400
 
-        persona = data.get('persona', 'gasnelio')
+        persona = data.get('persona') or data.get('personality_id', 'gasnelio')
 
         # Validate persona
         valid_personas = ['gasnelio', 'dr_gasnelio', 'ga', 'ga_empathetic']
@@ -149,7 +149,7 @@ Estou torcendo por você! ✨"""
             system_used = "fallback"
 
         response = {
-            'response': response_text,
+            'answer': response_text,
             'persona': persona,
             'confidence': confidence,
             'rag_used': rag_used,
@@ -267,6 +267,45 @@ def validate_medical_response():
             'timestamp': datetime.now().isoformat()
         }), 500
 
+# === SCOPE DETECTION ENDPOINTS ===
+
+@medical_core_bp.route('/scope', methods=['POST'])
+def detect_scope():
+    """Detect question scope - whether it falls within the system's knowledge domain"""
+    try:
+        data = request.get_json() or {}
+        question = (data.get('question') or data.get('message', '')).strip()
+        if not question:
+            return jsonify({
+                'error': 'question is required',
+                'error_code': 'MISSING_QUESTION',
+                'timestamp': datetime.now().isoformat()
+            }), 400
+
+        from core.validation.scope_detector import detect_question_scope
+        analysis = detect_question_scope(question)
+
+        confidence_map = {'high': 1.0, 'medium': 0.7, 'low': 0.4}
+
+        return jsonify({
+            'scope': analysis.get('category', 'general_hanseniase'),
+            'confidence': confidence_map.get(analysis.get('confidence_level', 'low'), 0.4),
+            'details': analysis.get('reasoning', ''),
+            'category': analysis.get('category', 'hanseniase'),
+            'is_medical': analysis.get('is_in_scope', True),
+            'is_in_scope': analysis.get('is_in_scope', True),
+            'redirect_suggestion': analysis.get('redirect_suggestion'),
+            'timestamp': datetime.now().isoformat()
+        }), 200
+
+    except Exception as e:
+        logger.error("Scope detection error: %s", sanitize_error(e))
+        return jsonify({
+            'error': 'Scope detection failed',
+            'error_code': 'SCOPE_ERROR',
+            'timestamp': datetime.now().isoformat()
+        }), 500
+
 # === DIAGNOSTIC ENDPOINTS ===
 
 @medical_core_bp.route('/diagnostics/embeddings', methods=['GET'])
@@ -321,6 +360,93 @@ def embeddings_diagnostics():
             'status': 'ERROR',
             'message': str(e),
             'available': False,
+            'timestamp': datetime.now().isoformat()
+        }), 500
+
+# === EMAIL ENDPOINTS ===
+
+@medical_core_bp.route('/email/send-document', methods=['POST'])
+def send_document_email():
+    """Send a document (PDF certificate, calculation, etc.) via email"""
+    try:
+        data = request.get_json() or {}
+        to_email = (data.get('to') or '').strip()
+        subject = (data.get('subject') or '').strip()
+        body = (data.get('body') or '').strip()
+        attachment_base64 = data.get('attachment_base64', '')
+        attachment_filename = data.get('attachment_filename', 'document.pdf')
+
+        if not to_email or '@' not in to_email:
+            return jsonify({
+                'error': 'Valid email address is required',
+                'error_code': 'INVALID_EMAIL',
+                'timestamp': datetime.now().isoformat()
+            }), 400
+
+        if not subject:
+            return jsonify({
+                'error': 'Subject is required',
+                'error_code': 'MISSING_SUBJECT',
+                'timestamp': datetime.now().isoformat()
+            }), 400
+
+        try:
+            import asyncio
+            import base64
+            from services.email.email_service import (
+                EmailService, EmailMessage, EmailAddress, EmailAttachment
+            )
+
+            service = EmailService()
+            message = EmailMessage(
+                to=[EmailAddress(email=to_email)],
+                subject=subject,
+                text_content=body,
+            )
+
+            # Attach PDF if provided
+            if attachment_base64:
+                pdf_bytes = base64.b64decode(attachment_base64)
+                message.attachments = [EmailAttachment(
+                    filename=attachment_filename,
+                    content=pdf_bytes,
+                    content_type='application/pdf'
+                )]
+
+            # Run async send in sync context
+            loop = asyncio.new_event_loop()
+            try:
+                result = loop.run_until_complete(service.send_email(message))
+            finally:
+                loop.close()
+
+            if result.get('success'):
+                logger.info("Document email sent to: %s", to_email[:3] + '***')
+                return jsonify({
+                    'success': True,
+                    'message': 'Email sent successfully',
+                    'timestamp': datetime.now().isoformat()
+                }), 200
+            else:
+                return jsonify({
+                    'error': result.get('error', 'Email sending failed'),
+                    'error_code': 'EMAIL_SEND_FAILED',
+                    'timestamp': datetime.now().isoformat()
+                }), 502
+
+        except ImportError:
+            logger.warning("Email service not available")
+            return jsonify({
+                'error': 'Email service not configured',
+                'error_code': 'EMAIL_SERVICE_UNAVAILABLE',
+                'timestamp': datetime.now().isoformat()
+            }), 503
+
+    except Exception as e:
+        logger.error("Email send error: %s", sanitize_error(e))
+        return jsonify({
+            'error': 'Email sending failed',
+            'error_code': 'EMAIL_ERROR',
             'timestamp': datetime.now().isoformat()
         }), 500
 

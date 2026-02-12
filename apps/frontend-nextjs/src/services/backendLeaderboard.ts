@@ -147,7 +147,7 @@ export const backendLeaderboard = {
     const displayName = entry.userId || 'Anonymous User';
 
     // Determine activity type based on entry content
-    let activityData: any = { type: 'general_update' };
+    let activityData: Record<string, unknown> = { type: 'general_update' };
 
     if (entry.experiencePoints?.total) {
       activityData = {
@@ -241,7 +241,7 @@ export const backendLeaderboard = {
   },
 
   // Additional utility functions
-  recordActivity: async (userId: string, displayName: string, activityType: string, data: any = {}): Promise<APIResponse<UserProgress>> => {
+  recordActivity: async (userId: string, displayName: string, activityType: string, data: Record<string, unknown> = {}): Promise<APIResponse<UserProgress>> => {
     const result = await apiCall<ProgressResponse>('/api/v1/gamification/progress', {
       method: 'POST',
       body: JSON.stringify({

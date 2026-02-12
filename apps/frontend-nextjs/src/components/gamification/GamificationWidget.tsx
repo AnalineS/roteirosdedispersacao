@@ -93,8 +93,7 @@ export default function GamificationWidget({
 
   const handleStartTutorial = () => {
     analytics.trackUserAction("gamification_tutorial_start", "education");
-    // TODO: Implementar tutorial
-    alert("Tutorial de gamificação em desenvolvimento!");
+    window.location.href = "/educational?tab=tutorial&source=gamification";
   };
 
   // ============================================

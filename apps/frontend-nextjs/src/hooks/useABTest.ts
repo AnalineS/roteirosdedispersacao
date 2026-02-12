@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { logger } from '@/utils/logger';
 
 export interface ABTestVariant {
   name: string;
@@ -124,7 +125,7 @@ export function useABTest(experimentId: string) {
 
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-      console.warn(`[A/B Test] Failed to initialize experiment ${experimentId}:`, errorMessage);
+      logger.warn(`[A/B Test] Failed to initialize experiment ${experimentId}:`, errorMessage);
       setError(errorMessage);
 
       // Fallback para control em caso de erro
@@ -143,7 +144,7 @@ export function useABTest(experimentId: string) {
     properties?: Record<string, unknown>
   ) => {
     if (!result.experimentId || !result.isActive) {
-      console.warn('[A/B Test] Cannot track conversion: experiment not active');
+      logger.warn('[A/B Test] Cannot track conversion: experiment not active');
       return false;
     }
 
@@ -174,7 +175,7 @@ export function useABTest(experimentId: string) {
       return false;
 
     } catch (err) {
-      console.error('[A/B Test] Failed to track conversion:', err);
+      logger.error('[A/B Test] Failed to track conversion:', err);
       return false;
     }
   }, [result.experimentId, result.variant, result.isActive]);
@@ -306,7 +307,7 @@ export const ABTestUtils = {
         });
       }
     } catch (err) {
-      console.error('[A/B Test] Failed to track event:', err);
+      logger.error('[A/B Test] Failed to track event:', err);
     }
   },
 
@@ -330,7 +331,7 @@ export const ABTestUtils = {
         });
       }
     } catch (err) {
-      console.error('[A/B Test] Failed to track goal:', err);
+      logger.error('[A/B Test] Failed to track goal:', err);
     }
   }
 };

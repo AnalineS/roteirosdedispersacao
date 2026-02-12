@@ -183,22 +183,40 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   }
 
   private logErrorToService = (errorData: ErrorLogData): void => {
-    // Simulação de envio para serviço de logging
-    // TODO: Integrar com Sentry, LogRocket, etc.
-    if (process.env.NODE_ENV === 'production') {
-      // fetch('/api/errors', { method: 'POST', body: JSON.stringify(errorData) })
-      if (typeof window !== 'undefined' && window.gtag) {
-        window.gtag('event', 'error_logged_to_service', {
-          event_category: 'medical_error_tracking',
-          event_label: 'error_sent_to_logging_service',
-          custom_parameters: {
-            medical_context: 'error_logging_system',
-            error_id: errorData.errorId,
-            severity: errorData.severity || 'unknown',
-            component_level: errorData.level
-          }
-        });
-      }
+    if (process.env.NODE_ENV !== 'production') return;
+
+    const payload = {
+      error_id: errorData.errorId,
+      message: errorData.error?.message || 'Unknown error',
+      stack: errorData.error?.stack?.slice(0, 2000),
+      component: errorData.component || errorData.level,
+      severity: errorData.severity || 'medium',
+      url: errorData.url,
+      user_agent: errorData.userAgent,
+      timestamp: new Date(errorData.timestamp).toISOString(),
+      error_count: errorData.errorCount,
+    };
+
+    const apiBase = process.env.NEXT_PUBLIC_API_URL || '';
+    if (apiBase) {
+      fetch(`${apiBase}/api/v1/monitoring/client-error`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      }).catch(() => { /* silent fail - don't cause error loop */ });
+    }
+
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'error_logged_to_service', {
+        event_category: 'medical_error_tracking',
+        event_label: 'error_sent_to_logging_service',
+        custom_parameters: {
+          medical_context: 'error_logging_system',
+          error_id: errorData.errorId,
+          severity: payload.severity,
+          component_level: errorData.level
+        }
+      });
     }
   };
 

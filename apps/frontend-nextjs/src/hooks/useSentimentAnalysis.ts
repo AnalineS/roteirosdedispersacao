@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef, useEffect } from 'react';
+import { logger } from '@/utils/logger';
 import { sentimentAnalyzer, SentimentResult, SentimentCategory } from '@/services/sentimentAnalysis';
 
 interface SentimentHistory {
@@ -87,7 +88,7 @@ export function useSentimentAnalysis(
       
       return result;
     } catch (error) {
-      console.error('Erro ao analisar sentimento:', error);
+      logger.error('Erro ao analisar sentimento:', error);
       
       // Retornar resultado neutro em caso de erro
       const errorResult: SentimentResult = {

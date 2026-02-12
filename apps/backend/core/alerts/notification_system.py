@@ -9,6 +9,7 @@ import json
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime, timedelta, timezone
+from abc import ABC, abstractmethod
 from typing import Dict, Any, Optional, Literal
 from dataclasses import dataclass
 import aiohttp
@@ -34,14 +35,14 @@ class AlertData:
     user_id: Optional[str] = None
     requires_immediate_action: bool = False
 
-class NotificationChannel:
+class NotificationChannel(ABC):
     """Classe base para canais de notificação"""
 
     def __init__(self, name: str):
         self.name = name
         self.enabled = True
-        self.rate_limit = 5  # max 5 alertas por hora
-        self.last_alerts = []
+        self.rate_limit = int(os.getenv('ALERT_RATE_LIMIT_PER_HOUR', '5'))
+        self.last_alerts: list[datetime] = []
 
     def is_rate_limited(self) -> bool:
         """Verifica se está no limite de rate"""
@@ -57,9 +58,10 @@ class NotificationChannel:
         """Registra um alerta enviado"""
         self.last_alerts.append(datetime.now(timezone.utc))
 
+    @abstractmethod
     async def send(self, alert: AlertData) -> bool:
-        """Método abstrato para envio"""
-        raise NotImplementedError
+        """Método abstrato para envio - deve ser implementado por cada canal"""
+        ...
 
 class EmailNotificationChannel(NotificationChannel):
     """Canal de notificação por email"""
@@ -237,8 +239,9 @@ class EmailNotificationChannel(NotificationChannel):
 
         # Modo demo - simular envio
         if self.demo_mode:
+            demo_recipient = os.getenv('ALERT_EMAIL_TO', 'demo@localhost')
             logger.info(f"[EMAIL DEMO] Alerta enviado: [{alert.severity.upper()}] {alert.title}")
-            logger.info(f"[EMAIL DEMO] Destinatário: admin@roteiros.com (demo)")
+            logger.info(f"[EMAIL DEMO] Destinatário: {demo_recipient} (demo)")
             logger.info(f"[EMAIL DEMO] Conteúdo: {alert.message[:100]}...")
             self.last_alerts.append(datetime.now(timezone.utc))
             return True
@@ -352,8 +355,9 @@ class TelegramNotificationChannel(NotificationChannel):
         # Modo demo - simular envio
         if self.demo_mode:
             message = self._get_telegram_message(alert)
+            demo_chat_id = os.getenv('TELEGRAM_CHAT_ID', 'demo_chat')
             logger.info(f"[TELEGRAM DEMO] Alerta enviado: [{alert.severity.upper()}] {alert.title}")
-            logger.info(f"[TELEGRAM DEMO] Chat ID: @roteiros_bot (demo)")
+            logger.info(f"[TELEGRAM DEMO] Chat ID: {demo_chat_id} (demo)")
             logger.info(f"[TELEGRAM DEMO] Mensagem: {message[:200]}...")
             self.last_alerts.append(datetime.now(timezone.utc))
             return True

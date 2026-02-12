@@ -237,7 +237,13 @@ export default function SimulatorIntroduction({
 
           {userType === 'anonymous' && (
             <button
-              onClick={() => alert('Faça login para acessar todos os recursos!')}
+              onClick={() => {
+                if (typeof window !== 'undefined') {
+                  window.dispatchEvent(new CustomEvent('show-error-toast', {
+                    detail: { errorId: `toast_${Date.now()}`, severity: 'low', message: 'Faça login para acessar todos os recursos!' }
+                  }));
+                }
+              }}
               style={{
                 padding: `${modernChatTheme.spacing.md} ${modernChatTheme.spacing.xl}`,
                 background: 'transparent',

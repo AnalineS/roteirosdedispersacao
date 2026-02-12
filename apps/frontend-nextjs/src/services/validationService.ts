@@ -143,6 +143,8 @@ interface ValidationAlert {
   };
 }
 
+import { logger } from '@/utils/logger';
+
 class ValidationService {
   private baseUrl: string;
 
@@ -186,7 +188,7 @@ class ValidationService {
 
       return await response.json();
     } catch (error) {
-      console.error("Erro ao validar resposta:", error);
+      logger.error("Erro ao validar resposta:", error);
       throw error;
     }
   }
@@ -219,7 +221,7 @@ class ValidationService {
 
       return await response.json();
     } catch (error) {
-      console.error("Erro ao obter métricas:", error);
+      logger.error("Erro ao obter métricas:", error);
       throw error;
     }
   }
@@ -250,7 +252,7 @@ class ValidationService {
 
       return await response.json();
     } catch (error) {
-      console.error("Erro na validação em lote:", error);
+      logger.error("Erro na validação em lote:", error);
       throw error;
     }
   }
@@ -289,7 +291,7 @@ class ValidationService {
 
       return data;
     } catch (error) {
-      console.error("Erro ao obter dados do dashboard:", error);
+      logger.error("Erro ao obter dados do dashboard:", error);
       throw error;
     }
   }
@@ -335,7 +337,7 @@ class ValidationService {
 
       return data;
     } catch (error) {
-      console.error("Erro ao obter alertas:", error);
+      logger.error("Erro ao obter alertas:", error);
       throw error;
     }
   }
@@ -378,7 +380,7 @@ class ValidationService {
         latency,
       };
     } catch (error) {
-      console.error("Erro ao verificar status de saúde:", error);
+      logger.error("Erro ao verificar status de saúde:", error);
       return { available: false };
     }
   }

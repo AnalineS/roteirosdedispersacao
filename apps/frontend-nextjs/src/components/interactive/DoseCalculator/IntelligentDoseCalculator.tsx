@@ -279,7 +279,11 @@ export default function IntelligentDoseCalculator({
   // Processar cálculo completo
   const handleCalculate = useCallback(async () => {
     if (!patientData.weight || !patientData.age) {
-      alert('Por favor, preencha peso e idade do paciente');
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('show-error-toast', {
+          detail: { errorId: `toast_${Date.now()}`, severity: 'medium', message: 'Por favor, preencha peso e idade do paciente' }
+        }));
+      }
       return;
     }
 
@@ -320,7 +324,11 @@ export default function IntelligentDoseCalculator({
         hasPatientData: !!patientData,
         hasLesionData: !!lesionData
       });
-      alert('Erro ao calcular doses. Tente novamente.');
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('show-error-toast', {
+          detail: { errorId: `toast_${Date.now()}`, severity: 'high', message: 'Erro ao calcular doses. Tente novamente.' }
+        }));
+      }
     } finally {
       setLoading(false);
     }

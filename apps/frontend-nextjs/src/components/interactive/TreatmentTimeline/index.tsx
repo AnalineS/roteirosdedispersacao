@@ -200,7 +200,11 @@ export default function TreatmentTimelineContainer({
             <button
               onClick={() => {
                 // For demo, we'll just show a tooltip
-                alert('Para alternar protocolos, faça login na plataforma completa!');
+                if (typeof window !== 'undefined') {
+                  window.dispatchEvent(new CustomEvent('show-error-toast', {
+                    detail: { errorId: `toast_${Date.now()}`, severity: 'low', message: 'Para alternar protocolos, faça login na plataforma completa!' }
+                  }));
+                }
               }}
               style={{
                 padding: `${modernChatTheme.spacing.sm} ${modernChatTheme.spacing.lg}`,

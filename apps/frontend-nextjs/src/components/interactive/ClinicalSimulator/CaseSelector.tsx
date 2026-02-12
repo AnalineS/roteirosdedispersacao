@@ -505,7 +505,15 @@ export default function CaseSelector({
                   gap: modernChatTheme.spacing.sm
                 }}>
                   <button
-                    onClick={() => available ? onSelectCase(case_) : alert('Faça login para acessar este caso!')}
+                    onClick={() => {
+                      if (available) {
+                        onSelectCase(case_);
+                      } else if (typeof window !== 'undefined') {
+                        window.dispatchEvent(new CustomEvent('show-error-toast', {
+                          detail: { errorId: `toast_${Date.now()}`, severity: 'low', message: 'Faça login para acessar este caso!' }
+                        }));
+                      }
+                    }}
                     disabled={!available}
                     style={{
                       flex: 1,

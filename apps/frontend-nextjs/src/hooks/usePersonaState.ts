@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { logger } from '@/utils/logger';
 import { useSafePersonaFromURL, type ValidPersonaId, isValidPersonaId } from './useSafePersonaFromURL';
 import { usePersonasEnhanced } from './usePersonasEnhanced';
 import { useUserProfile } from './useUserProfile';
@@ -192,7 +193,7 @@ export function usePersonaState(options: UsePersonaStateOptions = {}): UsePerson
     try {
       localStorage.setItem(STORAGE_KEY, currentPersona);
     } catch (error) {
-      console.warn('Erro ao salvar persona no localStorage:', error);
+      logger.warn('Erro ao salvar persona no localStorage:', error);
     }
   }, [currentPersona, persistToLocalStorage]);
 
@@ -235,7 +236,7 @@ export function usePersonaState(options: UsePersonaStateOptions = {}): UsePerson
       try {
         localStorage.removeItem(STORAGE_KEY);
       } catch (error) {
-        console.warn('Erro ao limpar persona do localStorage:', error);
+        logger.warn('Erro ao limpar persona do localStorage:', error);
       }
     }
   }, [persistToLocalStorage]);

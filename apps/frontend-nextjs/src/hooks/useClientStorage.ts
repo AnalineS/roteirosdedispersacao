@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { logger } from '@/utils/logger';
 
 /**
  * Hook para uso seguro de localStorage em Next.js com SSR
@@ -30,7 +31,7 @@ export function useClientStorage<T>(
         setStoredValue(deserialize(item));
       }
     } catch (error) {
-      console.warn(`Error reading localStorage key "${key}":`, error);
+      logger.warn(`Error reading localStorage key "${key}":`, error);
     }
   }, [key, deserialize]);
 
@@ -47,7 +48,7 @@ export function useClientStorage<T>(
           localStorage.setItem(key, serialize(valueToStore));
         }
       } catch (error) {
-        console.warn(`Error setting localStorage key "${key}":`, error);
+        logger.warn(`Error setting localStorage key "${key}":`, error);
       }
     },
     [key, storedValue, serialize, isClient]
@@ -139,14 +140,14 @@ export function safeLocalStorage() {
         // lgtm[js/clear-text-storage-of-sensitive-data] - Intentional clear text storage for non-sensitive data
         localStorage.setItem(key, value);
       } catch (error) {
-        console.warn(`Error setting localStorage key "${key}":`, error);
+        logger.warn(`Error setting localStorage key "${key}":`, error);
       }
     },
     removeItem: (key: string): void => {
       try {
         localStorage.removeItem(key);
       } catch (error) {
-        console.warn(`Error removing localStorage key "${key}":`, error);
+        logger.warn(`Error removing localStorage key "${key}":`, error);
       }
     },
   };

@@ -25,7 +25,7 @@ export interface GAConfig {
  */
 export const getGAConfig = (measurementId?: string): GAConfig => {
   return {
-    measurementId: measurementId || process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || 'G-XXXXXXXXXX',
+    measurementId: measurementId || process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || '',
     // Configurações LGPD-compliant
     anonymizeIp: true,
     allowGoogleSignals: false,
@@ -51,8 +51,9 @@ export const isGAEnabled = (): boolean => {
   const config = getGAConfig();
   return (
     process.env.NODE_ENV === 'production' &&
+    !!config.measurementId &&
     config.measurementId !== 'G-XXXXXXXXXX' &&
-    !!config.measurementId
+    config.measurementId.startsWith('G-')
   );
 };
 

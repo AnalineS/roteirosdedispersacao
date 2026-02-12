@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { logger } from '@/utils/logger';
 
 interface ServiceWorkerState {
   isSupported: boolean;
@@ -39,7 +40,7 @@ export function useServiceWorker() {
           scope: '/'
         });
 
-        console.log('[SW] Service Worker registered:', registration);
+        logger.log('[SW] Service Worker registered:', registration);
 
         setState(prev => ({
           ...prev,
@@ -57,11 +58,11 @@ export function useServiceWorker() {
         registration.addEventListener('updatefound', () => {
           const newWorker = registration?.installing;
           if (newWorker) {
-            console.log('[SW] New service worker installing');
+            logger.log('[SW] New service worker installing');
             setState(prev => ({ ...prev, isInstalling: true }));
 
             newWorker.addEventListener('statechange', () => {
-              console.log('[SW] State changed:', newWorker.state);
+              logger.log('[SW] State changed:', newWorker.state);
               
               switch (newWorker.state) {
                 case 'installed':
@@ -87,7 +88,7 @@ export function useServiceWorker() {
         });
 
       } catch (error) {
-        console.error('[SW] Registration failed:', error);
+        logger.error('[SW] Registration failed:', error);
         setState(prev => ({
           ...prev,
           isInstalling: false,
@@ -101,7 +102,7 @@ export function useServiceWorker() {
 
     // Ouvir mudanças no controller
     navigator.serviceWorker.addEventListener('controllerchange', () => {
-      console.log('[SW] Controller changed');
+      logger.log('[SW] Controller changed');
       setState(prev => ({ ...prev, isControlling: true }));
     });
 
@@ -129,7 +130,7 @@ export function useServiceWorker() {
         await registration.update();
       }
     } catch (error) {
-      console.error('[SW] Update failed:', error);
+      logger.error('[SW] Update failed:', error);
     }
   };
 
@@ -149,10 +150,10 @@ export function useServiceWorker() {
           isControlling: false,
           updateAvailable: false
         }));
-        console.log('[SW] Service Worker unregistered');
+        logger.log('[SW] Service Worker unregistered');
       }
     } catch (error) {
-      console.error('[SW] Unregister failed:', error);
+      logger.error('[SW] Unregister failed:', error);
     }
   };
 

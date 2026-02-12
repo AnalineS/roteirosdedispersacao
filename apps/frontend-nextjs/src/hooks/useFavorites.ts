@@ -9,6 +9,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { logger } from '@/utils/logger';
 import { type ChatMessage } from '@/types/api';
 import { safeLocalStorage } from '@/hooks/useClientStorage';
 
@@ -39,7 +40,7 @@ export function useFavorites() {
         setFavorites(parsed);
       }
     } catch (error) {
-      console.error('Error loading favorites:', error);
+      logger.error('Error loading favorites:', error);
     } finally {
       setIsLoading(false);
     }
@@ -55,7 +56,7 @@ export function useFavorites() {
     try {
       storage.setItem(STORAGE_KEY, JSON.stringify(favorites));
     } catch (error) {
-      console.error('Error saving favorites:', error);
+      logger.error('Error saving favorites:', error);
     }
   }, [favorites, isLoading]);
 
@@ -74,7 +75,7 @@ export function useFavorites() {
 
       // Check limit
       if (prev.length >= MAX_FAVORITES) {
-        console.warn('Limite de favoritos atingido:', MAX_FAVORITES);
+        logger.warn('Limite de favoritos atingido:', MAX_FAVORITES);
         return prev;
       }
 
@@ -111,8 +112,16 @@ export function useFavorites() {
 
   // Export favorites to JSON file
   const exportFavorites = useCallback(() => {
+    const dispatchToast = (message: string, severity: 'low' | 'medium' | 'high' = 'medium') => {
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('show-error-toast', {
+          detail: { errorId: `toast_${Date.now()}`, severity, message }
+        }));
+      }
+    };
+
     if (favorites.length === 0) {
-      alert('Nenhum favorito para exportar');
+      dispatchToast('Nenhum favorito para exportar', 'medium');
       return;
     }
 
@@ -130,8 +139,8 @@ export function useFavorites() {
 
       URL.revokeObjectURL(url);
     } catch (error) {
-      console.error('Error exporting favorites:', error);
-      alert('Erro ao exportar favoritos');
+      logger.error('Error exporting favorites:', error);
+      dispatchToast('Erro ao exportar favoritos', 'high');
     }
   }, [favorites]);
 

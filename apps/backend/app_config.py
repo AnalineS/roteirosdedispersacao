@@ -104,10 +104,9 @@ class AppConfig:
     # Vector DB Config - Supabase pgvector
     VECTOR_DB_TYPE: str = os.getenv('VECTOR_DB_TYPE', 'supabase')  # 'supabase' or 'local'
     VECTOR_DB_PATH: str = os.getenv('VECTOR_DB_PATH', './cache/embeddings')  # Fallback local
-    # CRITICAL: Lowered from 0.7 to 0.60 for medical validation (requires >= 0.75 keyword accuracy)
-    # This is the threshold used by supabase_rag_system.py for min_similarity_threshold
-    # Lower threshold = better recall of relevant medical chunks = improved accuracy
-    SEMANTIC_SIMILARITY_THRESHOLD: float = float(os.getenv('SEMANTIC_SIMILARITY_THRESHOLD', '0.60'))
+    # Threshold for RAG similarity search - balances recall vs precision for medical content
+    # Configurable via GitHub Secrets: SEMANTIC_SIMILARITY_THRESHOLD
+    SEMANTIC_SIMILARITY_THRESHOLD: float = float(os.getenv('SEMANTIC_SIMILARITY_THRESHOLD', '0.65'))
     PGVECTOR_DIMENSIONS: int = int(os.getenv('PGVECTOR_DIMENSIONS', '384'))  # MiniLM dimensions
     
     # Cloud Storage Config - CACHE CLOUD ATIVADO
@@ -247,21 +246,23 @@ class AppConfig:
     def validate(self) -> bool:
         """Valida configurações críticas"""
         errors = []
-        
+
         # Validações críticas para produção
         if os.getenv('ENVIRONMENT') == 'production':
-            if not self.SECRET_KEY:
-                errors.append("SECRET_KEY não configurada para produção")
+            if not self.SECRET_KEY or self.SECRET_KEY.startswith('dev-'):
+                errors.append("SECRET_KEY deve ser configurada via GitHub Secrets (não usar valor default)")
+            if len(self.SECRET_KEY) < 32:
+                errors.append("SECRET_KEY deve ter no mínimo 32 caracteres em produção")
             if not self.OPENROUTER_API_KEY and not self.HUGGINGFACE_API_KEY:
-                errors.append("Nenhuma API key de IA configurada")
+                errors.append("Nenhuma API key de IA configurada (OPENROUTER_API_KEY ou HUGGINGFACE_API_KEY)")
             if not self.SESSION_COOKIE_SECURE:
                 errors.append("SESSION_COOKIE_SECURE deve ser True em produção")
-        
+
         if errors:
             for error in errors:
-                logging.error(f"Config Error: {error}")
+                logging.error("Config Error: %s", error)
             return False
-        
+
         return True
 
     def get_required_env_vars(self) -> list:

@@ -347,8 +347,12 @@ export default function ChatNavigation({
             title="Ajuda - Como usar o chat"
             aria-label="Ajuda - Como usar o chat"
             onClick={() => {
-              // Mostrar dicas de uso ou modal de ajuda
-              alert('💡 Dicas:\n\n• Use o botão "Voltar" para sair do chat\n• O progresso mostra seu avanço na conversa\n• "Nova Conversa" limpa o histórico atual\n• Você pode alternar entre assistentes a qualquer momento');
+              // Mostrar dicas de uso via toast
+              if (typeof window !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('show-error-toast', {
+                  detail: { errorId: `toast_${Date.now()}`, severity: 'low', message: 'Dicas: Use "Voltar" para sair do chat. O progresso mostra seu avanço. "Nova Conversa" limpa o histórico. Alterne entre assistentes a qualquer momento.' }
+                }));
+              }
             }}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

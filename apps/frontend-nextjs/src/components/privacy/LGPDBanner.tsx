@@ -37,7 +37,11 @@ export default function LGPDBanner({ onAccept, onDecline }: LGPDBannerProps) {
 
   const handleDecline = () => {
     // Redirecionar para página externa ou mostrar informações limitadas
-    alert('Para usar esta plataforma educacional, é necessário aceitar a política de privacidade. Você será redirecionado para uma versão com informações básicas.');
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('show-error-toast', {
+        detail: { errorId: `toast_${Date.now()}`, severity: 'medium', message: 'Para usar esta plataforma educacional, é necessário aceitar a política de privacidade. Você será redirecionado para uma versão com informações básicas.' }
+      }));
+    }
 
     if (onDecline) {
       onDecline();

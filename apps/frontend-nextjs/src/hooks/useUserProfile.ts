@@ -13,6 +13,7 @@
 
 
 import { useState, useEffect, useCallback } from 'react';
+import { logger } from '@/utils/logger';
 import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
 import { useSafeAuth as useAuth } from '@/hooks/useSafeAuth';
 import { BackendUserProfile } from '@/types/api';
@@ -49,7 +50,7 @@ const UserProfileRepository = {
       const result = await response.json();
       return result;
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      logger.error('Error fetching profile:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to fetch profile',
@@ -74,7 +75,7 @@ const UserProfileRepository = {
       const result = await response.json();
       return result;
     } catch (error) {
-      console.error('Error saving profile:', error);
+      logger.error('Error saving profile:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to save profile'
@@ -97,7 +98,7 @@ const UserProfileRepository = {
       const result = await response.json();
       return result;
     } catch (error) {
-      console.error('Error deleting profile:', error);
+      logger.error('Error deleting profile:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to delete profile'
@@ -189,7 +190,7 @@ export function useUserProfile(): UserProfileHook {
           loadFromLocalStorage();
         }
       } catch (error) {
-        console.error('Erro ao carregar perfil:', error);
+        logger.error('Erro ao carregar perfil:', error);
         
         // Fallback para localStorage em caso de erro do backend API
         if (useCloudSync) {
@@ -218,12 +219,12 @@ export function useUserProfile(): UserProfileHook {
           setProfile(data.profile);
         } else {
           // Migração de versão se necessário
-          console.log('Migrando perfil para nova versão');
+          logger.log('Migrando perfil para nova versão');
           safeLocalStorage()?.removeItem(STORAGE_KEY);
         }
       }
     } catch (error) {
-      console.error('Erro ao carregar do localStorage:', error);
+      logger.error('Erro ao carregar do localStorage:', error);
       safeLocalStorage()?.removeItem(STORAGE_KEY);
       throw error;
     }
@@ -264,7 +265,7 @@ export function useUserProfile(): UserProfileHook {
       }
     } catch (error) {
       setSyncStatus('error');
-      console.error('Erro ao carregar do backend:', error);
+      logger.error('Erro ao carregar do backend:', error);
       throw error;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -376,7 +377,7 @@ export function useUserProfile(): UserProfileHook {
 
       safeLocalStorage()?.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
     } catch (error) {
-      console.error('Erro ao salvar no localStorage:', error);
+      logger.error('Erro ao salvar no localStorage:', error);
       throw error;
     }
   }, [profile]);
@@ -410,7 +411,7 @@ export function useUserProfile(): UserProfileHook {
         const result = await UserProfileRepository.saveProfile(backendProfile);
 
         if (!result.success) {
-          console.error('Erro ao salvar na API backend:', result.error);
+          logger.error('Erro ao salvar na API backend:', result.error);
           setSyncStatus('error');
           return;
         }
@@ -418,7 +419,7 @@ export function useUserProfile(): UserProfileHook {
 
       setSyncStatus('idle');
     } catch (error) {
-      console.error('Erro ao salvar perfil do usuário:', error);
+      logger.error('Erro ao salvar perfil do usuário:', error);
       setSyncStatus('error');
       throw error;
     }
@@ -451,7 +452,7 @@ export function useUserProfile(): UserProfileHook {
       if (useCloudSync && auth.user) {
         const result = await UserProfileRepository.deleteProfile(auth.user.uid);
         if (!result.success) {
-          console.error('Erro ao deletar da API backend:', result.error);
+          logger.error('Erro ao deletar da API backend:', result.error);
         }
       }
 
@@ -463,7 +464,7 @@ export function useUserProfile(): UserProfileHook {
       setProfile(null);
       setSyncStatus('idle');
     } catch (error) {
-      console.error('Erro ao limpar perfil do usuário:', error);
+      logger.error('Erro ao limpar perfil do usuário:', error);
       setSyncStatus('error');
       throw error;
     }

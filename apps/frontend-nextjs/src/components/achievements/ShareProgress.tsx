@@ -195,7 +195,11 @@ export default function ShareProgress({
   const copyToClipboard = async (url: string) => {
     try {
       await navigator.clipboard.writeText(url);
-      alert('Link copiado para a área de transferência!');
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('show-error-toast', {
+          detail: { errorId: `toast_${Date.now()}`, severity: 'low', message: 'Link copiado para a área de transferência!' }
+        }));
+      }
     } catch (error) {
       if (typeof window !== 'undefined' && window.gtag) {
         window.gtag('event', 'share_clipboard_error', {

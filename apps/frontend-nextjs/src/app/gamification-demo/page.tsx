@@ -107,7 +107,7 @@ export default function GamificationDemoPage() {
   // ============================================================================
 
   const handleQuizComplete = async (attempt: QuizAttempt) => {
-    await gamification.recordQuizAttempt(attempt);
+    await gamification.recordQuizAttempt({ category: attempt.quizId || 'general', score: attempt.score, quizId: attempt.quizId });
     setSelectedQuiz(null);
     setActiveView('dashboard');
     

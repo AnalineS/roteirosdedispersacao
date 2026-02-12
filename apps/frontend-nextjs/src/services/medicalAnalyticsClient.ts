@@ -4,6 +4,7 @@
  * Sends data to internal SQLite/Google Storage backend
  */
 
+import { logger } from '@/utils/logger';
 import { safeLocalStorage } from '@/hooks/useClientStorage';
 
 interface MedicalEvent {
@@ -125,7 +126,7 @@ class MedicalAnalyticsClient {
         }
       }
     } catch (error) {
-      console.warn('Failed to start analytics session:', error);
+      logger.warn('Failed to start analytics session:', error);
     }
   }
 
@@ -145,7 +146,7 @@ class MedicalAnalyticsClient {
       // Clear session from localStorage
       safeLocalStorage()?.removeItem('medical_session_id');
     } catch (error) {
-      console.warn('Failed to end analytics session:', error);
+      logger.warn('Failed to end analytics session:', error);
     }
   }
 
@@ -234,7 +235,7 @@ class MedicalAnalyticsClient {
         body: JSON.stringify(event),
       });
     } catch (error) {
-      console.warn('Failed to track medical event:', error);
+      logger.warn('Failed to track medical event:', error);
     }
   }
 
@@ -253,7 +254,7 @@ class MedicalAnalyticsClient {
         return data.data;
       }
     } catch (error) {
-      console.warn('Failed to get realtime metrics:', error);
+      logger.warn('Failed to get realtime metrics:', error);
     }
     return null;
   }
@@ -277,7 +278,7 @@ class MedicalAnalyticsClient {
         return data.data;
       }
     } catch (error) {
-      console.warn('Failed to get aggregated metrics:', error);
+      logger.warn('Failed to get aggregated metrics:', error);
     }
     return null;
   }
