@@ -3,6 +3,7 @@
 import EducationalLayout from "@/components/layout/EducationalLayout";
 import Link from "next/link";
 import { IndexIndicator } from "@/components/ui/IndexIndicator";
+import renderMarkdownContent from "@/utils/renderMarkdownContent";
 
 // Force dynamic rendering for Cloud Run SSR
 export const dynamic = "force-dynamic";
@@ -728,10 +729,9 @@ export default function RoteiroDispensacaoModulePage() {
                 lineHeight: "1.6",
                 color: "#444",
                 marginBottom: "20px",
-                whiteSpace: "pre-line",
               }}
             >
-              {section.content}
+              {renderMarkdownContent(section.content)}
             </div>
 
             {/* Clinical Cases */}
@@ -752,10 +752,9 @@ export default function RoteiroDispensacaoModulePage() {
                   style={{
                     fontSize: "0.95rem",
                     lineHeight: "1.6",
-                    whiteSpace: "pre-line",
                   }}
                 >
-                  {section.clinicalCases}
+                  {renderMarkdownContent(section.clinicalCases)}
                 </div>
               </div>
             )}

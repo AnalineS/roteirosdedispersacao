@@ -30,14 +30,7 @@ export default function DoseCalculator({
   userType = 'anonymous',
   onCalculationComplete 
 }: DoseCalculatorProps): React.JSX.Element {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  useEffect(() => {
-    // Verificar se usuário está logado
-    // Por enquanto, usar localStorage ou props
-    const authStatus = userType === 'authenticated';
-    setIsAuthenticated(authStatus);
-  }, [userType]);
+  const isAuthenticated = userType === 'authenticated';
 
   if (isAuthenticated) {
     return (

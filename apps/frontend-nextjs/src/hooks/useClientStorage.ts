@@ -20,14 +20,9 @@ export function useClientStorage<T>(
   const [storedValue, setStoredValue] = useState<T>(defaultValue);
   const [isClient, setIsClient] = useState(false);
 
-  // Marcar como client-side após mount
+  // Carregar valor do localStorage apenas no cliente (após mount)
   useEffect(() => {
     setIsClient(true);
-  }, []);
-
-  // Carregar valor do localStorage apenas no cliente
-  useEffect(() => {
-    if (!isClient || typeof window === 'undefined') return;
 
     try {
       const item = localStorage.getItem(key);
@@ -37,7 +32,7 @@ export function useClientStorage<T>(
     } catch (error) {
       console.warn(`Error reading localStorage key "${key}":`, error);
     }
-  }, [key, isClient, deserialize]);
+  }, [key, deserialize]);
 
   // Função para atualizar valor
   const setValue = useCallback(

@@ -161,7 +161,7 @@ export default function ChatPage() {
   // Sincronizar persona do contexto com estado local
   useEffect(() => {
     if (contextPersona && contextPersona !== selectedPersona) {
-      setSelectedPersona(contextPersona);
+      queueMicrotask(() => setSelectedPersona(contextPersona));
       
       // Criar conversa se não houver uma ativa
       if (!currentConversationId) {

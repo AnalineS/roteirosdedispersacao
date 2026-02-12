@@ -68,29 +68,25 @@ const PERSONA_REQUIRED_PAGES = [
 
 export function GlobalNavigationProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const [navigationState, setNavigationState] = useState<NavigationState>({
-    isNavigationRequired: false,
-    canBypassPersonaSelection: true,
-    hasSeenPersonaSelection: false,
-    navigationHistory: []
-  });
-
-  // Carregar estado do localStorage
-  useEffect(() => {
+  const [navigationState, setNavigationState] = useState<NavigationState>(() => {
+    const defaultState: NavigationState = {
+      isNavigationRequired: false,
+      canBypassPersonaSelection: true,
+      hasSeenPersonaSelection: false,
+      navigationHistory: []
+    };
+    if (typeof window === 'undefined') return defaultState;
     const savedState = safeLocalStorage()?.getItem('navigation_state');
     if (savedState) {
       try {
         const parsed = JSON.parse(savedState);
-        setNavigationState(prev => ({
-          ...prev,
-          ...parsed,
-          navigationHistory: prev.navigationHistory
-        }));
+        return { ...defaultState, ...parsed, navigationHistory: [] };
       } catch (error) {
         console.warn('Erro ao carregar estado de navegação:', error);
       }
     }
-  }, []);
+    return defaultState;
+  });
 
   // Salvar estado no localStorage
   useEffect(() => {

@@ -73,24 +73,28 @@ export default function QuickStartGuide({
   autoShow = true
 }: QuickStartGuideProps) {
   const [isVisible, setIsVisible] = useState(false);
-  const [completedSteps, setCompletedSteps] = useState<Set<string>>(new Set());
-  const [hasSeenGuide, setHasSeenGuide] = useState(false);
+  const [completedSteps, setCompletedSteps] = useState<Set<string>>(() => {
+    if (typeof window === 'undefined') return new Set();
+    try {
+      const stored = safeLocalStorage()?.getItem('quick-start-completed-steps');
+      if (stored) return new Set(JSON.parse(stored));
+    } catch {
+      // ignore parse errors
+    }
+    return new Set();
+  });
+  const [hasSeenGuide, setHasSeenGuide] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return !!safeLocalStorage()?.getItem('quick-start-guide-seen');
+  });
 
   useEffect(() => {
-    const guideSeen = safeLocalStorage()?.getItem('quick-start-guide-seen');
-    const completedStepsStored = safeLocalStorage()?.getItem('quick-start-completed-steps');
-    
-    if (completedStepsStored) {
-      setCompletedSteps(new Set(JSON.parse(completedStepsStored)));
-    }
-
-    if (!guideSeen && autoShow) {
+    if (!hasSeenGuide && autoShow) {
       // Show guide after a brief delay for better UX
-      setTimeout(() => setIsVisible(true), 2000);
-    } else {
-      setHasSeenGuide(true);
+      const timer = setTimeout(() => setIsVisible(true), 2000);
+      return () => clearTimeout(timer);
     }
-  }, [autoShow]);
+  }, [autoShow, hasSeenGuide]);
 
   const handleStepComplete = (stepId: string) => {
     const newCompleted = new Set(completedSteps);

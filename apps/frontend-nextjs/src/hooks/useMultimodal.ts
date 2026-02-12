@@ -529,8 +529,8 @@ export function useMultimodalHealth() {
   }, []);
 
   useEffect(() => {
-    checkHealth();
-    
+    queueMicrotask(() => checkHealth());
+
     // Verificar a cada 5 minutos
     const interval = setInterval(checkHealth, 300000);
     return () => clearInterval(interval);

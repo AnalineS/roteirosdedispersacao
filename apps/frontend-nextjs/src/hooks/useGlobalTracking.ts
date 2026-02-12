@@ -152,10 +152,14 @@ export function useGlobalTracking(config: TrackingConfig = DEFAULT_CONFIG) {
   const medicalAnalytics = useRef(MedicalAnalytics.getInstance());
   const uxAnalytics = useRef(new UXAnalytics());
   const previousPathname = useRef(pathname);
-  const pageLoadTime = useRef(Date.now());
+  const pageLoadTime = useRef(0);
   const interactionCount = useRef(0);
   const scrollDepth = useRef(0);
   const errorCount = useRef(0);
+
+  useEffect(() => {
+    pageLoadTime.current = Date.now();
+  }, []);
 
   // Track page views e navegação
   useEffect(() => {

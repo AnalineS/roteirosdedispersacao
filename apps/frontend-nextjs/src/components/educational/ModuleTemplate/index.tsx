@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import renderMarkdownContent from '@/utils/renderMarkdownContent';
 
 export interface ModuleSection {
   id: string;
@@ -72,38 +73,7 @@ export default function ModuleTemplate({
   const progressPercentage = (completedSections.size / moduleData.sections.length) * 100;
 
   const renderContent = (content: string) => {
-    return content.split('\n').map((paragraph, index) => {
-      if (paragraph.trim() === '') return null;
-      
-      // Títulos com **
-      if (paragraph.includes('**') && paragraph.includes(':**')) {
-        const title = paragraph.replace(/\*\*/g, '').replace(':', '');
-        return (
-          <h4 key={index} className="font-bold text-lg mb-3 mt-4" style={{ color: 'var(--color-primary)' }}>
-            {title}
-          </h4>
-        );
-      }
-      
-      // Lista com bullets •
-      if (paragraph.trim().startsWith('•')) {
-        return (
-          <li key={index} className="ml-4 mb-1" style={{ color: 'var(--color-text-secondary)' }}>
-            {paragraph.trim().substring(1).trim()}
-          </li>
-        );
-      }
-      
-      // Parágrafo normal
-      return (
-        <p key={index} className="mb-3" style={{ 
-          color: 'var(--color-text-secondary)',
-          lineHeight: '1.7'
-        }}>
-          {paragraph.trim()}
-        </p>
-      );
-    });
+    return renderMarkdownContent(content);
   };
 
   return (

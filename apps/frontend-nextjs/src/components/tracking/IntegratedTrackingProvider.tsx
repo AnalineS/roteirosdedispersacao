@@ -88,7 +88,7 @@ export const IntegratedTrackingProvider: React.FC<
   // Atualizar userId quando mudado externamente
   useEffect(() => {
     if (userId && userId !== contextUserId) {
-      setContextUserId(userId);
+      queueMicrotask(() => setContextUserId(userId));
     }
   }, [userId, contextUserId]);
 

@@ -158,17 +158,17 @@ export function Typography({
     ...style
   };
 
-  // Criar componente dinamicamente
-  const Component = getDefaultTag();
+  // Criar elemento dinamicamente
+  const tag = getDefaultTag();
 
-  return (
-    <Component
-      className={`typography-${level} typography-${context} ${className}`}
-      style={typographyStyles}
-      {...props}
-    >
-      {children}
-    </Component>
+  return React.createElement(
+    tag,
+    {
+      className: `typography-${level} typography-${context} ${className}`,
+      style: typographyStyles,
+      ...props
+    },
+    children
   );
 }
 

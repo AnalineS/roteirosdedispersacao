@@ -15,37 +15,26 @@ interface AccessibilityContextType {
 const AccessibilityContext = createContext<AccessibilityContextType | undefined>(undefined);
 
 export function AccessibilityProvider({ children }: { children: React.ReactNode }) {
-  const [highContrast, setHighContrast] = useState(false);
-  const [fontSize, setFontSize] = useState<'normal' | 'large' | 'larger'>('normal');
-  const [reducedMotion, setReducedMotion] = useState(false);
-
-  // Load saved preferences
-  useEffect(() => {
-    const savedHighContrast = safeLocalStorage()?.getItem('accessibility-high-contrast');
-    const savedFontSize = safeLocalStorage()?.getItem('accessibility-font-size') as 'normal' | 'large' | 'larger';
-    const savedReducedMotion = safeLocalStorage()?.getItem('accessibility-reduced-motion');
-    
-    if (savedHighContrast === 'true') {
-      setHighContrast(true);
-    }
-    
-    if (savedFontSize && ['normal', 'large', 'larger'].includes(savedFontSize)) {
-      setFontSize(savedFontSize);
-    }
-    
-    if (savedReducedMotion === 'true') {
-      setReducedMotion(true);
-    }
-    
-    // Check system preferences
-    if (window.matchMedia && window.matchMedia('(prefers-contrast: high)').matches) {
-      setHighContrast(true);
-    }
-    
-    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      setReducedMotion(true);
-    }
-  }, []);
+  const [highContrast, setHighContrast] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const saved = safeLocalStorage()?.getItem('accessibility-high-contrast');
+    if (saved === 'true') return true;
+    if (window.matchMedia && window.matchMedia('(prefers-contrast: high)').matches) return true;
+    return false;
+  });
+  const [fontSize, setFontSize] = useState<'normal' | 'large' | 'larger'>(() => {
+    if (typeof window === 'undefined') return 'normal';
+    const saved = safeLocalStorage()?.getItem('accessibility-font-size') as 'normal' | 'large' | 'larger';
+    if (saved && ['normal', 'large', 'larger'].includes(saved)) return saved;
+    return 'normal';
+  });
+  const [reducedMotion, setReducedMotion] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const saved = safeLocalStorage()?.getItem('accessibility-reduced-motion');
+    if (saved === 'true') return true;
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return true;
+    return false;
+  });
 
   // Apply high contrast
   useEffect(() => {

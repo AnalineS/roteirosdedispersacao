@@ -33,15 +33,37 @@ export function useProgressiveDisclosure(options: UseProgressiveDisclosureOption
   } = options;
 
   const router = useRouter();
-  const [currentPath, setCurrentPath] = useState('');
+  const [currentPath, setCurrentPath] = useState(() => {
+    if (typeof window === 'undefined') return '';
+    return window.location.pathname;
+  });
 
-  // Estado principal
-  const [state, setState] = useState<DisclosureState>({
-    currentLevel: defaultLevel,
-    expandedSections: [],
-    preferredTerminology: 'simple',
-    showAllContent: false,
-    resetOnPageChange
+  // Estado principal - load from localStorage in lazy initializer
+  const [state, setState] = useState<DisclosureState>(() => {
+    const defaults: DisclosureState = {
+      currentLevel: defaultLevel,
+      expandedSections: [],
+      preferredTerminology: 'simple',
+      showAllContent: false,
+      resetOnPageChange
+    };
+    if (!persistState || typeof window === 'undefined') return defaults;
+    try {
+      const stored = safeLocalStorage()?.getItem('progressive-disclosure-state');
+      if (stored) {
+        const parsedState = JSON.parse(stored);
+        return {
+          ...defaults,
+          ...parsedState,
+          expandedSections: USER_LEVELS[(parsedState.currentLevel as UserLevel) || defaultLevel].defaultExpanded
+        };
+      }
+    } catch (error) {
+      if (typeof process !== 'undefined' && process.stderr) {
+        process.stderr.write(`ERRO - Falha ao carregar estado do progressive disclosure: ${error}\n`);
+      }
+    }
+    return defaults;
   });
 
   // Detectar mudança de página e resetar se necessário
@@ -58,39 +80,6 @@ export function useProgressiveDisclosure(options: UseProgressiveDisclosureOption
       setCurrentPath(newPath);
     }
   }, [resetOnPageChange, currentPath]);
-
-  // Carregar estado do localStorage
-  useEffect(() => {
-    if (!persistState || typeof window === 'undefined') return;
-
-    try {
-      const stored = safeLocalStorage()?.getItem('progressive-disclosure-state');
-      if (stored) {
-        const parsedState = JSON.parse(stored);
-        setState(prev => ({
-          ...prev,
-          ...parsedState,
-          // Sempre usar defaultExpanded na primeira carga
-          expandedSections: USER_LEVELS[(parsedState.currentLevel as UserLevel) || defaultLevel].defaultExpanded
-        }));
-      }
-    } catch (error) {
-      // Erro ao carregar estado do progressive disclosure
-      if (typeof process !== 'undefined' && process.stderr) {
-        process.stderr.write(`❌ ERRO - Falha ao carregar estado do progressive disclosure: ${error}\n`);
-      }
-      if (typeof window !== 'undefined' && window.gtag) {
-        window.gtag('event', 'progressive_disclosure_load_error', {
-          event_category: 'medical_disclosure_error',
-          event_label: 'disclosure_state_load_failed',
-          custom_parameters: {
-            error_context: 'progressive_disclosure_loading',
-            error_message: String(error)
-          }
-        });
-      }
-    }
-  }, [persistState, defaultLevel]);
 
   // Salvar estado no localStorage
   const saveState = useCallback((newState: Partial<DisclosureState>) => {

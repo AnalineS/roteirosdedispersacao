@@ -84,7 +84,7 @@ export function PersonaProvider({ children, config = {} }: PersonaProviderProps)
   const [personaHistory, setPersonaHistory] = useState<PersonaHistoryEntryInternal[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [explicitPersona, setExplicitPersona] = useState<ValidPersonaIdType | null>(null);
-  const [sessionStartTime] = useState(Date.now());
+  const [sessionStartTime] = useState(() => Date.now());
 
   // ✅ Ref para prevenir loop infinito - mantém valor atual sem causar re-render
   const currentPersonaRef = useRef<ValidPersonaIdType | null>(null);

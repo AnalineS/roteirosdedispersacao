@@ -168,6 +168,8 @@ export const useSmartInterval = (
   const savedCallback = useRef(callback);
   const intervalRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const isPausedRef = useRef(false);
+  const [isActive, setIsActive] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
 
   // Update callback ref
   useLayoutEffect(() => {
@@ -176,16 +178,17 @@ export const useSmartInterval = (
 
   const startInterval = useCallback(() => {
     if (delay === null || isPausedRef.current) return;
-    
+
     if (immediate) {
       savedCallback.current();
     }
-    
+
     intervalRef.current = setInterval(() => {
       if (!isPausedRef.current) {
         savedCallback.current();
       }
     }, delay);
+    setIsActive(true);
   }, [delay, immediate]);
 
   const stopInterval = useCallback(() => {
@@ -193,14 +196,17 @@ export const useSmartInterval = (
       clearInterval(intervalRef.current);
       intervalRef.current = undefined;
     }
+    setIsActive(false);
   }, []);
 
   const pauseInterval = useCallback(() => {
     isPausedRef.current = true;
+    setIsPaused(true);
   }, []);
 
   const resumeInterval = useCallback(() => {
     isPausedRef.current = false;
+    setIsPaused(false);
   }, []);
 
   // Setup interval
@@ -250,8 +256,8 @@ export const useSmartInterval = (
     stop: stopInterval,
     pause: pauseInterval,
     resume: resumeInterval,
-    isActive: intervalRef.current !== undefined,
-    isPaused: isPausedRef.current
+    isActive,
+    isPaused
   };
 };
 
@@ -314,12 +320,13 @@ export const useAsyncEffect = (
 // ============================================
 
 export const useEffectQueue = () => {
-  const queueRef = useRef<Array<{ 
-    effect: () => void | (() => void); 
+  const queueRef = useRef<Array<{
+    effect: () => void | (() => void);
     deps: React.DependencyList;
     priority: number;
   }>>([]);
   const isProcessingRef = useRef(false);
+  const [queueLength, setQueueLength] = useState(0);
 
   const addEffect = useCallback((
     effect: () => void | (() => void),
@@ -328,6 +335,7 @@ export const useEffectQueue = () => {
   ) => {
     queueRef.current.push({ effect, deps, priority });
     queueRef.current.sort((a, b) => b.priority - a.priority);
+    setQueueLength(queueRef.current.length);
   }, []);
 
   const processQueue = useCallback(() => {
@@ -358,6 +366,7 @@ export const useEffectQueue = () => {
 
     queueRef.current = [];
     isProcessingRef.current = false;
+    setQueueLength(0);
 
     return () => {
       cleanupFunctions.forEach(cleanup => {
@@ -382,13 +391,14 @@ export const useEffectQueue = () => {
   const clearQueue = useCallback(() => {
     queueRef.current = [];
     isProcessingRef.current = false;
+    setQueueLength(0);
   }, []);
 
   return {
     addEffect,
     processQueue,
     clearQueue,
-    queueLength: queueRef.current.length
+    queueLength
   };
 };
 

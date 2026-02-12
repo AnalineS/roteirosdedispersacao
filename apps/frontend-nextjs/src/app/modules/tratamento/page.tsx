@@ -7,6 +7,7 @@ import { IndexIndicator } from '@/components/ui/IndexIndicator';
 import { ContentSegment, AudienceSelector, useAudiencePreference } from '@/components/content/ContentSegmentation';
 import { GlossaryWrapper } from '@/components/glossary/AutoGlossary';
 import LastUpdated from '@/components/content/LastUpdated';
+import renderMarkdownContent from '@/utils/renderMarkdownContent';
 
 export default function TratamentoModulePage() {
   const { selectedAudience, updateAudience } = useAudiencePreference();
@@ -720,10 +721,9 @@ export default function TratamentoModulePage() {
                   fontSize: '1rem',
                   lineHeight: '1.6',
                   color: '#444',
-                  marginBottom: '20px',
-                  whiteSpace: 'pre-line'
+                  marginBottom: '20px'
                 }}>
-                  {section.content}
+                  {renderMarkdownContent(section.content)}
                 </div>
               </GlossaryWrapper>
             
@@ -737,8 +737,8 @@ export default function TratamentoModulePage() {
                 borderLeft: '4px solid #0ea5e9'
               }}>
                 <h4 style={{ margin: '0 0 10px', color: '#0ea5e9' }}>📋 Casos Clínicos:</h4>
-                <div style={{ fontSize: '0.95rem', lineHeight: '1.6', whiteSpace: 'pre-line' }}>
-                  {section.clinicalCases}
+                <div style={{ fontSize: '0.95rem', lineHeight: '1.6' }}>
+                  {renderMarkdownContent(section.clinicalCases)}
                 </div>
               </div>
             )}

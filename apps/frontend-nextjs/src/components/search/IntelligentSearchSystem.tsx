@@ -247,19 +247,21 @@ export default function IntelligentSearchSystem({
   useEffect(() => {
     if (query.length >= 2) {
       performSearch(query, filters);
-      setIsOpen(true);
+      queueMicrotask(() => setIsOpen(true));
     } else {
-      setResults([]);
-      setIsLoading(false);
+      queueMicrotask(() => {
+        setResults([]);
+        setIsLoading(false);
+      });
     }
   }, [query, filters, performSearch]);
 
   // Atualizar filtros quando audiência muda
   useEffect(() => {
-    setFilters(prev => ({
+    queueMicrotask(() => setFilters(prev => ({
       ...prev,
       audience: [selectedAudience]
-    }));
+    })));
   }, [selectedAudience]);
 
   const handleResultClick = (result: SearchResult) => {

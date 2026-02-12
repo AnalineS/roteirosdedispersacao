@@ -89,7 +89,7 @@ export function PersonaProvider({ children, config = {} }: PersonaProviderProps)
   const [personaHistory, setPersonaHistory] = useState<PersonaHistoryEntryInternal[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [explicitPersona, setExplicitPersona] = useState<ValidPersonaIdType | null>(null);
-  const [sessionStartTime] = useState(Date.now());
+  const [sessionStartTime] = useState(() => Date.now());
 
   // Hook de resolução de persona
   const { resolvePersona } = usePersonaResolution({
@@ -277,6 +277,7 @@ export function useCurrentPersona() {
 
 export function usePersonaActions() {
   const context = usePersonaContext();
+  const [sessionStartTime] = useState(() => Date.now());
 
   // Create a wrapper to handle null values for setExplicitPersona
   const setExplicitPersonaWrapper = (personaId: ValidPersonaIdType | null) => {
@@ -294,7 +295,7 @@ export function usePersonaActions() {
     enableAnalytics: true,
     enableLocalStorage: true,
     enableURLSync: false,
-    sessionStartTime: Date.now(),
+    sessionStartTime,
     trackEvent: null,
     getPersonaConfig: context.getPersonaConfig,
     profile: null,

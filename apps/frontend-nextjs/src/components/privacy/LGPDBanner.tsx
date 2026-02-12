@@ -10,18 +10,13 @@ interface LGPDBannerProps {
 }
 
 export default function LGPDBanner({ onAccept, onDecline }: LGPDBannerProps) {
-  const [isVisible, setIsVisible] = useState(false);
+  const [isVisible, setIsVisible] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const generalConsent = safeLocalStorage()?.getItem('lgpd-general-consent');
+    return !generalConsent;
+  });
   const [isMinimized, setIsMinimized] = useState(false);
   const unbColors = getUnbColors();
-
-  useEffect(() => {
-    // Verificar se usuário já deu consentimento geral
-    const generalConsent = safeLocalStorage()?.getItem('lgpd-general-consent');
-
-    if (!generalConsent) {
-      setIsVisible(true);
-    }
-  }, []);
 
   const handleAccept = () => {
     const consentData = {
@@ -257,23 +252,20 @@ export default function LGPDBanner({ onAccept, onDecline }: LGPDBannerProps) {
 
 // Hook para verificar se o usuário deu consentimento geral
 export function useGeneralConsent() {
-  const [hasConsent, setHasConsent] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const generalConsent = safeLocalStorage()?.getItem('lgpd-general-consent');
-
-    if (generalConsent) {
-      try {
+  const [hasConsent, setHasConsent] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    try {
+      const generalConsent = safeLocalStorage()?.getItem('lgpd-general-consent');
+      if (generalConsent) {
         const consentData = JSON.parse(generalConsent);
-        setHasConsent(consentData.accepted === true);
-      } catch {
-        setHasConsent(false);
+        return consentData.accepted === true;
       }
+    } catch {
+      // ignore parse errors
     }
-
-    setIsLoading(false);
-  }, []);
+    return false;
+  });
+  const [isLoading] = useState(false);
 
   return {
     hasConsent,

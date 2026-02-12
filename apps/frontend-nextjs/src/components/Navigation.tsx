@@ -315,13 +315,13 @@ export default function Navigation({ currentPersona }: NavigationProps) {
                   if (button) button.textContent = originalText;
                 }, 2000);
               } catch {
-                // Fallback para browsers sem suporte
-                const textArea = document.createElement('textarea');
-                textArea.value = safeUrl;
-                document.body.appendChild(textArea);
-                textArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textArea);
+                // Clipboard API unavailable - show manual copy hint
+                const button = document.activeElement as HTMLButtonElement;
+                const originalText = button.textContent;
+                button.textContent = 'Use Ctrl+C';
+                setTimeout(() => {
+                  if (button) button.textContent = originalText;
+                }, 3000);
               }
             }}
             style={{

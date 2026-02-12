@@ -7,7 +7,7 @@
 
 'use client';
 
-import { useEffect, useCallback, useRef } from 'react';
+import { useEffect, useCallback, useMemo, useRef } from 'react';
 import { throttle } from '@/lib/optimizations';
 
 interface ScrollInfo {
@@ -108,9 +108,9 @@ export function useOptimizedScroll({
   }, [element, onScroll, onScrollStart, handleScrollEnd, detectScrollEnd, scrollEndDelay]);
 
   // Throttled scroll handler
-  const throttledScrollHandler = useCallback(
-    throttle(handleScroll, throttleMs, { leading: true, trailing: true }),
-    [throttle, handleScroll, throttleMs]
+  const throttledScrollHandler = useMemo(
+    () => throttle(handleScroll, throttleMs, { leading: true, trailing: true }),
+    [handleScroll, throttleMs]
   );
 
   useEffect(() => {

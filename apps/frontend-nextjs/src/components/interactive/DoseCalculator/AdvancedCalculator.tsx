@@ -27,7 +27,8 @@ export default function AdvancedCalculator({ onCalculationComplete }: AdvancedCa
     const savedHistory = safeLocalStorage()?.getItem('pqtu_calculation_history');
     if (savedHistory) {
       try {
-        setHistory(JSON.parse(savedHistory));
+        const parsed = JSON.parse(savedHistory);
+        queueMicrotask(() => setHistory(parsed));
       } catch (error) {
         captureError(error as Error, { severity: 'low' });
       }

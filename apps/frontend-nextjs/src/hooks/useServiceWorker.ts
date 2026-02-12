@@ -13,24 +13,21 @@ interface ServiceWorkerState {
 }
 
 export function useServiceWorker() {
-  const [state, setState] = useState<ServiceWorkerState>({
-    isSupported: false,
+  const [state, setState] = useState<ServiceWorkerState>(() => ({
+    isSupported: typeof window !== 'undefined' && 'serviceWorker' in navigator,
     isRegistered: false,
     isInstalling: false,
     isWaiting: false,
     isControlling: false,
     updateAvailable: false,
     error: null
-  });
+  }));
 
   useEffect(() => {
     // Verificar se Service Worker é suportado
     if (typeof window === 'undefined' || !('serviceWorker' in navigator)) {
-      setState(prev => ({ ...prev, isSupported: false }));
       return;
     }
-
-    setState(prev => ({ ...prev, isSupported: true }));
 
     let registration: ServiceWorkerRegistration | null = null;
 
@@ -177,12 +174,13 @@ export function useServiceWorker() {
  * Hook simples para detecção offline/online
  */
 export function useNetworkStatus() {
-  const [isOnline, setIsOnline] = useState(true);
+  const [isOnline, setIsOnline] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    return navigator.onLine;
+  });
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-
-    setIsOnline(navigator.onLine);
 
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);

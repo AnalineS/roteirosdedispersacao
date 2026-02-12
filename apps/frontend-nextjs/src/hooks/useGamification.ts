@@ -170,8 +170,17 @@ export function useGamification(options: UseGamificationOptions = {}) {
   const { persistToLocalStorage = true, storageKey = 'gamification-state', autoSave = true } = options;
   const { user, isAuthenticated } = useSafeAuth();
 
-  const [gamificationState, setGamificationState] = useState<PersonaGamificationState | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [gamificationState, setGamificationState] = useState<PersonaGamificationState | null>(() => {
+    if (!persistToLocalStorage) return null;
+    try {
+      const storageKeyFull = `${storageKey}_${user?.uid || 'anonymous'}`;
+      const stored = safeLocalStorage()?.getItem(storageKeyFull);
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  });
+  const [isLoading, setIsLoading] = useState(() => gamificationState === null);
   const [recentXPGains, setRecentXPGains] = useState<PersonaXPGain[]>([]);
   const [recentLevelUps, setRecentLevelUps] = useState<PersonaLevelUp[]>([]);
 
@@ -446,13 +455,13 @@ export function useGamification(options: UseGamificationOptions = {}) {
   }, [addPersonaXP]);
 
   // Desbloquear conquista (API compatível)
-  const unlockAchievementCompat = useCallback((achievementData: any) => {
+  const unlockAchievementCompat = (achievementData: any) => {
     const personaId = achievementData.category === 'technical' ? 'dr_gasnelio' : 'ga';
     unlockAchievement(personaId, achievementData);
-  }, [unlockAchievement]);
+  };
 
   // Registrar quiz (API compatível)
-  const recordQuizAttempt = useCallback(async (attempt: any) => {
+  const recordQuizAttempt = async (attempt: any) => {
     const personaId: PersonaId = attempt.category === 'technical' ? 'dr_gasnelio' : 'ga';
     const xpAmount = attempt.score >= 80 ? 50 : 25;
 
@@ -465,22 +474,19 @@ export function useGamification(options: UseGamificationOptions = {}) {
     if (attempt.score === 100) {
       recordPersonaInteraction(personaId, 'perfect_answer');
     }
-  }, [addPersonaXP, recordPersonaInteraction]);
+  };
 
-  // Inicializar ao carregar
+  // Inicializar estado se não foi carregado do localStorage
   useEffect(() => {
-    const stored = loadFromStorage();
-
-    if (stored) {
-      setGamificationState(stored);
-    } else {
-      const initialState = initializeGamificationState();
-      setGamificationState(initialState);
-      saveToStorage(initialState);
+    if (gamificationState !== null) {
+      setIsLoading(false);
+      return;
     }
-
+    const initialState = initializeGamificationState();
+    setGamificationState(initialState);
+    saveToStorage(initialState);
     setIsLoading(false);
-  }, [loadFromStorage, initializeGamificationState, saveToStorage]);
+  }, [gamificationState, initializeGamificationState, saveToStorage]);
 
   // Valores derivados para compatibilidade
   const totalXP = useMemo(() =>

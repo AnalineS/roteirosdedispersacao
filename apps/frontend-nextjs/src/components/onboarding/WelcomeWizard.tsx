@@ -564,7 +564,7 @@ export function WelcomeWizard({ onComplete }: {
         
         if (now - timestamp < fiveDaysInMs) {
           // Cache ainda válido, não mostrar o wizard
-          setIsVisible(false);
+          queueMicrotask(() => setIsVisible(false));
           return;
         } else {
           // Cache expirado, remover

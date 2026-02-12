@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, useCallback, useMemo } from 'react';
+import React, { useEffect, useRef, useCallback, useMemo, useState } from 'react';
 import {
   useDynamicOptimization,
   useIntersectionObserver,
@@ -63,6 +63,9 @@ export const useActiveHooksSystem = (config: ActiveHooksConfig = {}) => {
   const renderCountRef = useRef(0);
   const interactionCountRef = useRef(0);
   const errorCountRef = useRef(0);
+  const [renderCount, setRenderCount] = useState(0);
+  const [interactionCount, setInteractionCount] = useState(0);
+  const [errorCount, setErrorCount] = useState(0);
 
   // ============================================
   // HOOKS DINÂMICOS ATIVADOS
@@ -181,8 +184,9 @@ export const useActiveHooksSystem = (config: ActiveHooksConfig = {}) => {
     [autoActivate, componentName, enableTracking, tracking, setComponentPrefs, componentPrefs.lastUsed],
     (error) => {
       errorCountRef.current += 1;
+      setErrorCount(errorCountRef.current);
       optimization.handleError(error);
-      
+
       if (enableTracking) {
         tracking.trackError('initialization_error', error.message, componentName);
       }
@@ -206,6 +210,7 @@ export const useActiveHooksSystem = (config: ActiveHooksConfig = {}) => {
         if (intersectionRatio > 0.5) {
           // Component is significantly visible
           renderCountRef.current += 1;
+          setRenderCount(renderCountRef.current);
         }
       } else {
         pauseMetrics();
@@ -269,7 +274,8 @@ export const useActiveHooksSystem = (config: ActiveHooksConfig = {}) => {
     [enableOptimization],
     (error, attempt) => {
       errorCountRef.current += 1;
-      
+      setErrorCount(errorCountRef.current);
+
       if (enableTracking) {
         tracking.trackError('optimization_retry', `${error.message} (attempt ${attempt})`, componentName);
       }
@@ -284,6 +290,7 @@ export const useActiveHooksSystem = (config: ActiveHooksConfig = {}) => {
     optimization.createThrottledFunction(
       (event: React.SyntheticEvent, interactionType: string) => {
         interactionCountRef.current += 1;
+        setInteractionCount(interactionCountRef.current);
 
         if (enableAccessibility) {
           optimization.announceToScreenReader(
@@ -332,18 +339,18 @@ export const useActiveHooksSystem = (config: ActiveHooksConfig = {}) => {
   const componentStatus = useMemo(() => ({
     isVisible: isIntersecting,
     isOptimized: optimization.isOptimized,
-    hasErrors: errorCountRef.current > 0,
+    hasErrors: errorCount > 0,
     isRetrying,
     metrics: {
-      renders: renderCountRef.current,
-      interactions: interactionCountRef.current,
-      errors: errorCountRef.current,
+      renders: renderCount,
+      interactions: interactionCount,
+      errors: errorCount,
       retries: retryCount,
       visibility: intersectionRatio,
       dimensionsWidth: dimensions.width,
       dimensionsHeight: dimensions.height
     }
-  }), [isIntersecting, optimization.isOptimized, isRetrying, retryCount, intersectionRatio, dimensions]);
+  }), [isIntersecting, optimization.isOptimized, isRetrying, retryCount, intersectionRatio, dimensions, renderCount, interactionCount, errorCount]);
 
   const accessibility = useMemo(() => ({
     announceRef: optimization.announceRef,

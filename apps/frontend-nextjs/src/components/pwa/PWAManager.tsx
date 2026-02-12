@@ -74,13 +74,6 @@ export default function PWAManager({ enableServiceWorker = false }: PWAManagerPr
     };
   }, []);
 
-  useEffect(() => {
-    // Registrar Service Worker apenas se habilitado
-    if (enableServiceWorker && 'serviceWorker' in navigator) {
-      registerServiceWorker();
-    }
-  }, [enableServiceWorker]);
-
   const registerServiceWorker = async () => {
     try {
       const registration = await navigator.serviceWorker.register('/sw.js', {
@@ -151,6 +144,13 @@ export default function PWAManager({ enableServiceWorker = false }: PWAManagerPr
       }
     }
   };
+
+  useEffect(() => {
+    // Registrar Service Worker apenas se habilitado
+    if (enableServiceWorker && 'serviceWorker' in navigator) {
+      registerServiceWorker();
+    }
+  }, [enableServiceWorker]);
 
   const handleInstallApp = async () => {
     if (deferredPrompt) {
@@ -280,7 +280,7 @@ export function usePWA() {
     const handleAppInstalled = () => setIsInstallable(false);
 
     // Status de conectividade
-    setIsOnline(navigator.onLine);
+    queueMicrotask(() => setIsOnline(navigator.onLine));
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
 

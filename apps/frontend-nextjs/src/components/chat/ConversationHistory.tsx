@@ -58,7 +58,7 @@ export default function ConversationHistory({
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  const formatLastActivity = (timestamp: number): string => {
+  const formatLastActivity = useCallback((timestamp: number): string => {
     const now = Date.now();
     const diff = now - timestamp;
     
@@ -71,11 +71,11 @@ export default function ConversationHistory({
     if (hours < 24) return `${hours}h`;
     if (days < 30) return `${days}d`;
     
-    return new Date(timestamp).toLocaleDateString('pt-BR', { 
-      day: '2-digit', 
-      month: '2-digit' 
+    return new Date(timestamp).toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit'
     });
-  };
+  }, []);
 
   const startEditing = (conversation: ConversationSummary) => {
     setEditingId(conversation.id);

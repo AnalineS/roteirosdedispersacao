@@ -27,17 +27,22 @@ interface FloatingElementsCoordinatorProps {
 
 export function FloatingElementsCoordinator({ children }: FloatingElementsCoordinatorProps) {
   const [elements, setElements] = useState<Map<string, FloatingElement>>(new Map());
-  const [screenSize, setScreenSize] = useState({ width: 0, height: 0 });
-  const [isMobile, setIsMobile] = useState(false);
+  const [screenSize, setScreenSize] = useState(() => {
+    if (typeof window === 'undefined') return { width: 0, height: 0 };
+    return { width: window.innerWidth, height: window.innerHeight };
+  });
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return window.innerWidth < 768;
+  });
 
-  // Detectar tamanho da tela
+  // Detectar tamanho da tela on resize
   useEffect(() => {
     const updateScreenSize = () => {
       setScreenSize({ width: window.innerWidth, height: window.innerHeight });
       setIsMobile(window.innerWidth < 768);
     };
 
-    updateScreenSize();
     window.addEventListener('resize', updateScreenSize);
     return () => window.removeEventListener('resize', updateScreenSize);
   }, []);

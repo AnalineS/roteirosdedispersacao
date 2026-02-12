@@ -109,6 +109,27 @@ export default function FastAccessBar({
     setShortcuts(selectedShortcuts.slice(0, maxShortcuts));
   }, [userProfile, maxShortcuts]);
 
+  // Função para throttle do scroll
+  function throttle<T extends (...args: unknown[]) => unknown>(func: T, delay: number): T {
+    let timeoutId: NodeJS.Timeout | null = null;
+    let lastExecTime = 0;
+
+    return ((...args: Parameters<T>) => {
+      const currentTime = Date.now();
+
+      if (currentTime - lastExecTime > delay) {
+        func(...args);
+        lastExecTime = currentTime;
+      } else {
+        if (timeoutId) clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => {
+          func(...args);
+          lastExecTime = Date.now();
+        }, delay - (currentTime - lastExecTime));
+      }
+    }) as T;
+  }
+
   useEffect(() => {
     if (behavior === 'smart-hide') {
       const throttledScroll = throttle(handleScroll, 100);
@@ -123,13 +144,13 @@ export default function FastAccessBar({
       // Alt + tecla de acesso
       if (event.altKey && !event.ctrlKey && !event.shiftKey) {
         const pressedKey = event.key.toLowerCase();
-        const shortcut = shortcuts.find(s => 
+        const shortcut = shortcuts.find(s =>
           ACCESS_KEYS[s.id as keyof typeof ACCESS_KEYS] === pressedKey
         );
-        
+
         if (shortcut) {
           event.preventDefault();
-          
+
           // Analytics para acesso por teclado
           if (typeof window !== 'undefined' && window.gtag) {
             window.gtag('event', 'keyboard_shortcut_used', {
@@ -142,7 +163,7 @@ export default function FastAccessBar({
               }
             });
           }
-          
+
           handleShortcutClick(shortcut);
         }
       }
@@ -156,28 +177,6 @@ export default function FastAccessBar({
   if (pathname === '/chat' || !shouldShowFastAccessBar()) {
     return null;
   }
-
-  // Função para throttle do scroll
-  function throttle<T extends (...args: unknown[]) => unknown>(func: T, delay: number): T {
-    let timeoutId: NodeJS.Timeout | null = null;
-    let lastExecTime = 0;
-    
-    return ((...args: Parameters<T>) => {
-      const currentTime = Date.now();
-      
-      if (currentTime - lastExecTime > delay) {
-        func(...args);
-        lastExecTime = currentTime;
-      } else {
-        if (timeoutId) clearTimeout(timeoutId);
-        timeoutId = setTimeout(() => {
-          func(...args);
-          lastExecTime = Date.now();
-        }, delay - (currentTime - lastExecTime));
-      }
-    }) as T;
-  }
-
 
   // Obter cor baseada na urgência
   const getUrgencyColor = (urgency: UrgencyLevel) => {

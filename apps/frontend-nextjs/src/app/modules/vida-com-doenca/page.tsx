@@ -3,6 +3,7 @@
 import EducationalLayout from '@/components/layout/EducationalLayout';
 import Link from 'next/link';
 import { IndexIndicator } from '@/components/ui/IndexIndicator';
+import renderMarkdownContent from '@/utils/renderMarkdownContent';
 
 export default function VidaComDoencaModulePage() {
   const moduleContent = {
@@ -902,10 +903,9 @@ export default function VidaComDoencaModulePage() {
               fontSize: '1rem',
               lineHeight: '1.6',
               color: '#444',
-              marginBottom: '20px',
-              whiteSpace: 'pre-line'
+              marginBottom: '20px'
             }}>
-              {section.content}
+              {renderMarkdownContent(section.content)}
             </div>
             
             {/* Clinical Cases / Life Stories */}
@@ -924,8 +924,8 @@ export default function VidaComDoencaModulePage() {
                    section.id === 'reintegracao-social' ? '🤝 Histórias de Superação:' :
                    '📋 Casos Práticos:'}
                 </h4>
-                <div style={{ fontSize: '0.95rem', lineHeight: '1.6', whiteSpace: 'pre-line' }}>
-                  {section.clinicalCases}
+                <div style={{ fontSize: '0.95rem', lineHeight: '1.6' }}>
+                  {renderMarkdownContent(section.clinicalCases)}
                 </div>
               </div>
             )}

@@ -199,7 +199,7 @@ export function PersonaAccessibilityProvider({
     // Determinar se é mudança inicial ou troca
     const isInitial = history.length <= 1;
     
-    announcePersonaChange(currentPersona, isInitial);
+    queueMicrotask(() => announcePersonaChange(currentPersona, isInitial));
   }, [currentPersona, announcePersonaChange, history.length]);
 
   // Carregar configuração do localStorage
@@ -210,7 +210,7 @@ export function PersonaAccessibilityProvider({
       const savedConfig = safeLocalStorage()?.getItem('personaAccessibilityConfig');
       if (savedConfig) {
         const parsed = JSON.parse(savedConfig);
-        setConfig(prev => ({ ...prev, ...parsed }));
+        queueMicrotask(() => setConfig(prev => ({ ...prev, ...parsed })));
       }
     } catch {
       if (typeof window !== 'undefined' && window.gtag) {

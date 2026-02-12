@@ -72,12 +72,12 @@ export default function ChatNavigation({
     };
 
     const flowInfo = analyzeConversationFlow();
-    setNavigationState(prev => ({
+    queueMicrotask(() => setNavigationState(prev => ({
       ...prev,
       ...flowInfo,
       canGoBack: true,
       canGoForward: false
-    }));
+    })));
   }, [conversationLength]);
 
   const handleGoBack = () => {
@@ -408,10 +408,10 @@ export function useChatNavigation(conversationMessages: import('@/types/api').Ch
   });
 
   useEffect(() => {
-    setNavigationState(prev => ({
+    queueMicrotask(() => setNavigationState(prev => ({
       ...prev,
       conversationLength: conversationMessages.length
-    }));
+    })));
   }, [conversationMessages]);
 
   const updateFlowType = (newType: typeof navigationState.flowType) => {

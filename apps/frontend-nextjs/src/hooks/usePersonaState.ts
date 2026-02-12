@@ -101,7 +101,7 @@ export function usePersonaState(options: UsePersonaStateOptions = {}): UsePerson
   }, []);
 
   // Resolver persona baseado na ordem de prioridade
-  const resolvePersona = useCallback((): PersonaSource | null => {
+  const resolvePersona = (): PersonaSource | null => {
     const now = Date.now();
     const sources: PersonaSource[] = [];
 
@@ -158,15 +158,7 @@ export function usePersonaState(options: UsePersonaStateOptions = {}): UsePerson
 
     // Retornar fonte com maior prioridade
     return sources.sort((a, b) => a.priority - b.priority)[0] || null;
-  }, [
-    hasValidURLPersona,
-    personaFromURL,
-    explicitPersona,
-    profile?.selectedPersona,
-    getLocalStoragePersona,
-    defaultPersona,
-    isPersonaAvailable
-  ]);
+  };
 
   // Efeito principal de resolução
   useEffect(() => {
@@ -175,20 +167,22 @@ export function usePersonaState(options: UsePersonaStateOptions = {}): UsePerson
     const resolved = resolvePersona();
     
     if (resolved) {
-      setCurrentPersona(resolved.persona);
-      setCurrentSource(resolved);
-      
-      // Adicionar ao histórico se for diferente da atual
-      setPersonaHistory(prev => {
-        const latest = prev[prev.length - 1];
-        if (!latest || latest.persona !== resolved.persona || latest.source !== resolved.source) {
-          return [...prev, resolved].slice(-10); // Manter últimas 10 mudanças
-        }
-        return prev;
+      queueMicrotask(() => {
+        setCurrentPersona(resolved.persona);
+        setCurrentSource(resolved);
+
+        // Adicionar ao histórico se for diferente da atual
+        setPersonaHistory(prev => {
+          const latest = prev[prev.length - 1];
+          if (!latest || latest.persona !== resolved.persona || latest.source !== resolved.source) {
+            return [...prev, resolved].slice(-10); // Manter últimas 10 mudanças
+          }
+          return prev;
+        });
       });
     }
 
-    setIsLoading(false);
+    queueMicrotask(() => setIsLoading(false));
   }, [resolvePersona, personasLoading]);
 
   // Persistir mudanças

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
   User, Settings, Trophy, TrendingUp, Calendar,
   Mail, Shield, Globe, Eye, EyeOff, 
@@ -47,6 +47,20 @@ export default function SocialProfile({
   });
 
   const { success, info, error: hapticError } = useHapticFeedback();
+
+  // Pre-compute recent achievements to avoid impure calls during render
+  const recentAchievements = useMemo(() => {
+    if (!profile?.achievements) return [];
+    return profile.achievements.slice(0, 3).map((achievement: string, index: number) => ({
+      id: `ach-${index}-${achievement.replace(/\s+/g, '-').toLowerCase()}`,
+      name: achievement,
+      description: 'Conquista desbloqueada',
+      badge_url: '',
+      earned_date: new Date().toISOString(),
+      xp_gained: 100,
+      category: 'learning'
+    }));
+  }, [profile?.achievements]);
 
   // Sincronizar form com dados do perfil
   useEffect(() => {
@@ -549,15 +563,7 @@ export default function SocialProfile({
           achievements_count: profile.achievements?.length || 0,
           completedModules: profile.stats?.completedModules || 0,
           streak: profile.stats?.streak || profile.stats?.streakDays || 0,
-          recent_achievements: (profile.achievements || []).slice(0, 3).map((achievement: string) => ({
-            id: `ach-${Math.random().toString(36).substr(2, 9)}`,
-            name: achievement,
-            description: 'Conquista desbloqueada',
-            badge_url: '',
-            earned_date: new Date().toISOString(),
-            xp_gained: 100,
-            category: 'learning'
-          }))
+          recent_achievements: recentAchievements
         }}
         userProfile={{
           name: profile.displayName || '',

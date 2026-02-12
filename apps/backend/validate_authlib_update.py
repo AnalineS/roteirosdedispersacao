@@ -87,10 +87,11 @@ class AuthlibUpdateValidator:
         """Test that PyJWT (primary JWT lib) still works"""
         try:
             import jwt as pyjwt
+            import secrets as _secrets
 
             # Test PyJWT functionality (main authentication system)
-            secret = 'test-secret-key'
-            payload = {'user_id': 'medical_user', 'persona': 'dr_gasnelio'}
+            secret = _secrets.token_hex(32)
+            payload = {'user_id': _secrets.token_urlsafe(8), 'persona': 'dr_gasnelio'}
 
             # Create token
             token = pyjwt.encode(payload, secret, algorithm='HS256')

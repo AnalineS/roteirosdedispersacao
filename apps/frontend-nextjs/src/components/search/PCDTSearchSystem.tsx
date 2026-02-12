@@ -244,17 +244,18 @@ export const PCDTSearchSystem: React.FC<PCDTSearchSystemProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // State mirror for ref-based active descendant
+  const [activeDescendant, setActiveDescendant] = useState<string | undefined>(undefined);
+
   /**
-   * Focus item when active index changes
+   * Focus item when active index changes and update activeDescendant state
    */
   useEffect(() => {
     if (activeIndex >= 0) {
       suggestionsRef.current?.focusItem(activeIndex);
     }
+    setActiveDescendant(suggestionsRef.current?.getActiveDescendantId());
   }, [activeIndex]);
-
-  // Get aria-activedescendant value
-  const activeDescendant = suggestionsRef.current?.getActiveDescendantId();
 
   // Variant-specific classes
   const variantClasses = {

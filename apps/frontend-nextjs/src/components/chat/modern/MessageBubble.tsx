@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { type ChatMessage } from '@/types/api';
 import { type Persona } from '@/services/api';
 import PersonaAvatar from '../PersonaAvatar';
@@ -132,11 +132,19 @@ export default function MessageBubble({
   const [isVisible, setIsVisible] = useState(false);
   const [showActions, setShowActions] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
-  
+  const fallbackIdRef = useRef<string>('');
+
   // Animation delay for entrance
-  useState(() => {
+  useEffect(() => {
     setTimeout(() => setIsVisible(true), 50);
-  });
+  }, []);
+
+  // Generate stable fallback ID
+  useEffect(() => {
+    if (!message.timestamp) {
+      fallbackIdRef.current = `msg_${Date.now()}`;
+    }
+  }, [message.timestamp]);
 
   const colors = persona ? getPersonaColors(personaId) : null;
 
@@ -202,7 +210,7 @@ export default function MessageBubble({
   const shouldShowFeedback = !isUser && enableFeedback && persona && previousMessage;
   
   // Gerar ID único para a mensagem se não existir
-  const messageId = message.timestamp ? `msg_${message.timestamp}` : `msg_${Date.now()}`;
+  const messageId = message.timestamp ? `msg_${message.timestamp}` : fallbackIdRef.current || 'msg_0';
 
   return (
     <div

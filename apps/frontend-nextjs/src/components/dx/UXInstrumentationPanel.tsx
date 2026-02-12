@@ -13,21 +13,6 @@ export default function UXInstrumentationPanel({ isOpen, onClose }: UXInstrument
   const [selectedTab, setSelectedTab] = useState<'summary' | 'events' | 'metrics' | 'violations' | 'export'>('summary');
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Initialize instrumentation and load data
-  useEffect(() => {
-    if (isOpen) {
-      let instrumentation = getUXInstrumentation();
-      if (!instrumentation) {
-        instrumentation = initializeUXInstrumentation({
-          enableConsoleLogging: process.env.NODE_ENV === 'development',
-          sampleRate: 1.0
-        });
-        setIsInitialized(true);
-      }
-      loadData();
-    }
-  }, [isOpen]);
-
   const loadData = () => {
     const instrumentation = getUXInstrumentation();
     if (instrumentation) {
@@ -44,6 +29,21 @@ export default function UXInstrumentationPanel({ isOpen, onClose }: UXInstrument
       });
     }
   };
+
+  // Initialize instrumentation and load data
+  useEffect(() => {
+    if (isOpen) {
+      let instrumentation = getUXInstrumentation();
+      if (!instrumentation) {
+        instrumentation = initializeUXInstrumentation({
+          enableConsoleLogging: process.env.NODE_ENV === 'development',
+          sampleRate: 1.0
+        });
+        setIsInitialized(true);
+      }
+      loadData();
+    }
+  }, [isOpen]);
 
   const handleClearData = () => {
     const instrumentation = getUXInstrumentation();

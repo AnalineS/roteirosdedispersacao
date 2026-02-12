@@ -18,21 +18,19 @@ export default function LGPDCompliance({
   onDecline, 
   className = '' 
 }: LGPDNoticeProps) {
-  const [isVisible, setIsVisible] = useState(false);
-  const [hasConsented, setHasConsented] = useState(false);
-  const unbColors = getUnbColors();
-
-  useEffect(() => {
-    // Verificar se usuário já deu consentimento para este contexto
+  const [isVisible, setIsVisible] = useState(() => {
+    if (typeof window === 'undefined') return false;
     const consentKey = `lgpd-consent-${context}`;
     const existingConsent = safeLocalStorage()?.getItem(consentKey);
-    
-    if (!existingConsent && context !== 'general') {
-      setIsVisible(true);
-    } else if (existingConsent) {
-      setHasConsented(true);
-    }
-  }, [context]);
+    return !existingConsent && context !== 'general';
+  });
+  const [hasConsented, setHasConsented] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const consentKey = `lgpd-consent-${context}`;
+    const existingConsent = safeLocalStorage()?.getItem(consentKey);
+    return !!existingConsent;
+  });
+  const unbColors = getUnbColors();
 
   const handleAccept = () => {
     const consentKey = `lgpd-consent-${context}`;
@@ -395,24 +393,21 @@ export default function LGPDCompliance({
 
 // Hook para verificar consentimento
 export function useLGPDConsent(context: 'chat' | 'registration' | 'data-collection') {
-  const [hasConsent, setHasConsent] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const consentKey = `lgpd-consent-${context}`;
-    const existingConsent = safeLocalStorage()?.getItem(consentKey);
-    
-    if (existingConsent) {
-      try {
+  const [hasConsent, setHasConsent] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    try {
+      const consentKey = `lgpd-consent-${context}`;
+      const existingConsent = safeLocalStorage()?.getItem(consentKey);
+      if (existingConsent) {
         const consentData = JSON.parse(existingConsent);
-        setHasConsent(consentData.accepted === true);
-      } catch {
-        setHasConsent(false);
+        return consentData.accepted === true;
       }
+    } catch {
+      // ignore parse errors
     }
-    
-    setIsLoading(false);
-  }, [context]);
+    return false;
+  });
+  const [isLoading] = useState(false);
 
   const giveConsent = () => {
     const consentKey = `lgpd-consent-${context}`;

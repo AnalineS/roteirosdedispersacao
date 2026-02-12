@@ -50,7 +50,7 @@ export function MedicalTermPopup({ term, children, className = '' }: MedicalTerm
         left = 16;
       }
 
-      setPosition({ top, left });
+      queueMicrotask(() => setPosition({ top, left }));
     }
   }, [isActive]);
 

@@ -452,15 +452,17 @@ export default function AccessibleSearchWithSuggestions({
   // Update suggestions and results when query changes
   useEffect(() => {
     const newSuggestions = generateSuggestions(query, selectedAudience);
-    setSuggestions(newSuggestions);
+    queueMicrotask(() => setSuggestions(newSuggestions));
 
     if (query.length >= 2) {
       performSearch(query, selectedAudience);
-      setShowSuggestions(false);
+      queueMicrotask(() => setShowSuggestions(false));
     } else {
-      setResults([]);
-      setShowSuggestions(true);
-      setIsLoading(false);
+      queueMicrotask(() => {
+        setResults([]);
+        setShowSuggestions(true);
+        setIsLoading(false);
+      });
     }
   }, [query, selectedAudience, performSearch, generateSuggestions]);
 

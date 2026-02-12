@@ -58,7 +58,7 @@ export function PersonaProvider({ children }: { children: React.ReactNode }) {
   const [explicitPersona, setExplicitPersona] = useState<ValidPersonaId | null>(null);
 
   // Lógica de prioridade
-  const resolvePersona = useCallback((): ValidPersonaId | null => {
+  const resolvePersona = (): ValidPersonaId | null => {
     // 1. URL (prioridade mais alta)
     if (hasValidURLPersona && personaFromURL && isPersonaAvailable(personaFromURL)) {
       return personaFromURL;
@@ -88,7 +88,7 @@ export function PersonaProvider({ children }: { children: React.ReactNode }) {
 
     // 5. Padrão
     return isPersonaAvailable('ga') ? 'ga' : (isPersonaAvailable('dr_gasnelio') ? 'dr_gasnelio' : null);
-  }, [hasValidURLPersona, personaFromURL, explicitPersona, profile?.selectedPersona, isPersonaAvailable]);
+  };
 
   // Resolver persona quando dados mudarem
   useEffect(() => {

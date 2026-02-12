@@ -46,8 +46,8 @@ const AccessibleMessageBubble: React.FC<AccessibleMessageBubbleProps> = ({
   // Detect high contrast preference
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-contrast: high)');
-    setIsHighContrast(mediaQuery.matches);
-    
+    queueMicrotask(() => setIsHighContrast(mediaQuery.matches));
+
     const handleChange = (e: MediaQueryListEvent) => setIsHighContrast(e.matches);
     mediaQuery.addEventListener('change', handleChange);
     return () => mediaQuery.removeEventListener('change', handleChange);

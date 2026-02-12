@@ -101,25 +101,25 @@ export default function MedicalTermPopup({
   // Buscar definição do termo
   useEffect(() => {
     if (customDefinition) {
-      setTermData(customDefinition);
+      queueMicrotask(() => setTermData(customDefinition));
       return;
     }
 
     const searchTerm = term.toLowerCase().trim();
     const found = medicalTermsDatabase[searchTerm];
-    
+
     if (found) {
-      setTermData(found);
+      queueMicrotask(() => setTermData(found));
     } else {
       // Fallback para termo não encontrado
-      setTermData({
+      queueMicrotask(() => setTermData({
         id: searchTerm,
         term: term,
         definition: 'Termo médico relacionado ao contexto de hanseníase e PQT-U. Consulte literatura especializada para definição completa.',
         category: 'general',
         clinicalNote: 'Definição não disponível na base de dados local',
         source: 'Sistema Local'
-      });
+      }));
     }
   }, [term, customDefinition]);
 
@@ -127,10 +127,10 @@ export default function MedicalTermPopup({
   useEffect(() => {
     if (isVisible && position === 'auto') {
       // Em uma implementação real, calcularíamos baseado na posição do elemento trigger
-      setPopupPosition({
+      queueMicrotask(() => setPopupPosition({
         top: 100,
         left: 100
-      });
+      }));
     }
   }, [isVisible, position]);
 

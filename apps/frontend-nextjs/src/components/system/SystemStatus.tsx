@@ -50,11 +50,11 @@ export default function SystemStatus({ showDetails = false, className = '' }: Sy
   };
 
   useEffect(() => {
-    checkStatus();
-    
+    queueMicrotask(() => checkStatus());
+
     // Verificar status a cada 5 minutos
     const interval = setInterval(checkStatus, 5 * 60 * 1000);
-    
+
     return () => clearInterval(interval);
   }, []);
 
@@ -222,7 +222,7 @@ export function useSystemStatus() {
   };
 
   useEffect(() => {
-    checkStatus();
+    queueMicrotask(() => checkStatus());
   }, []);
 
   return { status, checkStatus };

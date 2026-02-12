@@ -276,7 +276,7 @@ export function useRealtimeKnowledge(
   
   useEffect(() => {
     if (!enabled || !query || query.trim().length < 5) {
-      setResult(null);
+      queueMicrotask(() => setResult(null));
       return;
     }
     

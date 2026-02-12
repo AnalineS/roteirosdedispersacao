@@ -1,26 +1,18 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import NotificationSystem, { NotificationPreferences, MedicationReminder, AppointmentReminder } from '@/services/notifications/NotificationSystem';
 import { getUnbColors } from '@/config/modernTheme';
 import { BellIcon, CheckCircleIcon, XCircleIcon, ClockIcon, AlertCircleIcon } from '@/components/icons/EducationalIcons';
 
 export default function NotificationSettings() {
   const unbColors = getUnbColors();
-  const [permission, setPermission] = useState<NotificationPermission>('default');
-  const [preferences, setPreferences] = useState<NotificationPreferences>(NotificationSystem.getPreferences());
-  const [medicationReminders, setMedicationReminders] = useState<MedicationReminder[]>([]);
-  const [appointmentReminders, setAppointmentReminders] = useState<AppointmentReminder[]>([]);
+  const [permission, setPermission] = useState<NotificationPermission>(() => NotificationSystem.getPermissionStatus());
+  const [preferences, setPreferences] = useState<NotificationPreferences>(() => NotificationSystem.getPreferences());
+  const [medicationReminders, setMedicationReminders] = useState<MedicationReminder[]>(() => NotificationSystem.getMedicationReminders());
+  const [appointmentReminders, setAppointmentReminders] = useState<AppointmentReminder[]>(() => NotificationSystem.getAppointmentReminders());
   const [showAddMedication, setShowAddMedication] = useState(false);
   const [showAddAppointment, setShowAddAppointment] = useState(false);
-
-  useEffect(() => {
-    // Load current status
-    setPermission(NotificationSystem.getPermissionStatus());
-    setPreferences(NotificationSystem.getPreferences());
-    setMedicationReminders(NotificationSystem.getMedicationReminders());
-    setAppointmentReminders(NotificationSystem.getAppointmentReminders());
-  }, []);
 
   const handleRequestPermission = async () => {
     const newPermission = await NotificationSystem.requestPermission();

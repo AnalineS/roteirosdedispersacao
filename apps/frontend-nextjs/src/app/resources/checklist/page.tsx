@@ -218,14 +218,14 @@ export default function ChecklistPage() {
     const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
     const readyToDispense = mandatoryCompleted === mandatory;
 
-    setSummary({
+    queueMicrotask(() => setSummary({
       total,
       completed,
       mandatory,
       mandatoryCompleted,
       percentage,
       readyToDispense
-    });
+    }));
   }, [checklistItems]);
 
   const toggleItem = (id: string) => {

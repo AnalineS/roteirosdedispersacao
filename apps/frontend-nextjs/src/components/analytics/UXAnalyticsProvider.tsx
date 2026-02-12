@@ -29,13 +29,10 @@ export function UXAnalyticsProvider({
   children, 
   enableTracking = true 
 }: UXAnalyticsProviderProps) {
-  const [isInitialized, setIsInitialized] = useState(false);
+  const [isInitialized] = useState(() => enableTracking && typeof window !== 'undefined');
 
   useEffect(() => {
     if (!enableTracking) return;
-
-    // Initialize UX tracking
-    setIsInitialized(true);
 
     // Track initial page load
     uxAnalytics.trackEvent({

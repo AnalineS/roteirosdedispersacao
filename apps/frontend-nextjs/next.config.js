@@ -125,7 +125,7 @@ const nextConfig = {
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 80, 96, 120, 128, 160, 256, 384], // Adicionado tamanhos para avatares
     // Domínios permitidos para imagens (segurança)
-    domains: [],
+    remotePatterns: [],
     // Proteção contra hotlinking
     dangerouslyAllowSVG: false,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
@@ -136,23 +136,19 @@ const nextConfig = {
   // Force standalone generation in current project directory, not monorepo root
   outputFileTracingRoot: __dirname,
 
+  // React Compiler configuration (promoted from experimental in v16)
+  reactCompiler: {
+    compilationMode: "annotation",
+  },
+
   // Configurações experimentais para otimização e segurança
   experimental: {
     optimizePackageImports: ["react-icons", "jspdf", "lucide-react"],
-    // Melhor tree-shaking para ícones SVG
-    // React Compiler configuration
-    reactCompiler: {
-      compilationMode: "annotation",
-    }
   },
 
   // Server external packages - ensure compatibility with standalone build
   serverExternalPackages: [],
-  // ESLint configuração para build
-  eslint: {
-    // IMPORTANTE: Só ignorar warnings em build, não em desenvolvimento
-    ignoreDuringBuilds: process.env.NODE_ENV === "production",
-  },
+  // ESLint: eslint config removed in Next.js 16 (use eslint CLI directly)
 
   // BUILD CACHE OPTIMIZATION
 

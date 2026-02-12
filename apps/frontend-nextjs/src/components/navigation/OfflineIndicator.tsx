@@ -15,7 +15,7 @@
  * - Progressive disclosure
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 interface OfflineIndicatorProps {
   /** Posição do indicador */
@@ -61,17 +61,7 @@ export default function OfflineIndicator({
     };
   }, []);
 
-  // Não renderizar se estiver online
-  if (isOnline) return null;
-
-  const positionStyles = {
-    'top-right': { top: '16px', right: '16px' },
-    'top-left': { top: '16px', left: '16px' },
-    'bottom-right': { bottom: '16px', right: '16px' },
-    'bottom-left': { bottom: '16px', left: '16px' }
-  };
-
-  const getTimeSinceOnline = () => {
+  const getTimeSinceOnline = useCallback(() => {
     if (!lastOnline) return 'Desconhecido';
     const diff = Date.now() - lastOnline.getTime();
     const minutes = Math.floor(diff / 60000);
@@ -81,6 +71,16 @@ export default function OfflineIndicator({
     const hours = Math.floor(minutes / 60);
     if (hours === 1) return 'Há 1 hora';
     return `Há ${hours} horas`;
+  }, [lastOnline]);
+
+  // Não renderizar se estiver online
+  if (isOnline) return null;
+
+  const positionStyles = {
+    'top-right': { top: '16px', right: '16px' },
+    'top-left': { top: '16px', left: '16px' },
+    'bottom-right': { bottom: '16px', right: '16px' },
+    'bottom-left': { bottom: '16px', left: '16px' }
   };
 
   return (

@@ -19,7 +19,11 @@ interface OnboardingStep {
 }
 
 export default function ExperienceBanner({ onComplete }: ExperienceBannerProps) {
-  const [isVisible, setIsVisible] = useState(false);
+  const [isVisible, setIsVisible] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const hasCompletedOnboarding = safeLocalStorage()?.getItem('personalization_onboarding_completed');
+    return !hasCompletedOnboarding;
+  });
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState({
     medicalRole: 'unknown' as MedicalRole,
@@ -28,16 +32,6 @@ export default function ExperienceBanner({ onComplete }: ExperienceBannerProps) 
   });
   const router = useRouter();
   const { updatePersonalization } = usePersonalization();
-
-  // Show banner immediately, check localStorage after
-  useEffect(() => {
-    const hasCompletedOnboarding = safeLocalStorage()?.getItem('personalization_onboarding_completed');
-    
-    // Show if user hasn't completed full onboarding
-    if (!hasCompletedOnboarding) {
-      setIsVisible(true);
-    }
-  }, []);
 
   const onboardingSteps: OnboardingStep[] = [
     {

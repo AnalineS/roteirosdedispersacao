@@ -48,8 +48,10 @@ export default function RoutingSuggestionModal({
   // Animar entrada do modal
   useEffect(() => {
     if (isVisible) {
-      setIsAnimating(false);
-      setShowExplanation(false);
+      queueMicrotask(() => {
+        setIsAnimating(false);
+        setShowExplanation(false);
+      });
     }
   }, [isVisible]);
 

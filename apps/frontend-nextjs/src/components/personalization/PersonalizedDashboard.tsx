@@ -12,64 +12,57 @@ import { useRemoteConfig } from '@/hooks/useRemoteConfig';
 import { getUnbColors } from '@/config/modernTheme';
 import { ContentRecommendation } from '@/types/personalization';
 
-interface PersonalizedDashboardProps {
-  className?: string;
+// Helper functions at module scope
+const getRoleIcon = (role: string) => {
+  const icons = {
+    pharmacy: '💊',
+    medicine: '🩺',
+    nursing: '👩‍⚕️',
+    student: '🎓',
+    researcher: '🔬',
+    unknown: '👤'
+  };
+  return icons[role as keyof typeof icons] || '👤';
+};
+
+const getUrgencyColor = (urgency: string) => {
+  const colors = {
+    critical: '#ef4444',
+    high: '#f97316',
+    medium: '#eab308',
+    low: '#22c55e'
+  };
+  return colors[urgency as keyof typeof colors] || '#6b7280';
+};
+
+// Types for extracted widget props
+type UnbColors = ReturnType<typeof getUnbColors>;
+type PersonalizationData = ReturnType<typeof usePersonalization>['personalization'];
+
+interface ProfileWidgetProps {
+  personalization: PersonalizationData;
+  unbColors: UnbColors;
 }
 
-export default function PersonalizedDashboard({ className }: PersonalizedDashboardProps) {
-  const { 
-    personalization, 
-    recommendations, 
-    getPersonalizedNavigation,
-    trackUserBehavior,
-    shouldShowAdvancedContent,
-    complexitySettings
-  } = usePersonalization();
-  
-  const { flags } = useRemoteConfig();
-  const unbColors = getUnbColors();
+interface QuickActionsWidgetProps {
+  personalizedNavigation: Array<{ href: string; label: string }>;
+  trackUserBehavior: (event: string, data: Record<string, unknown>) => void;
+  unbColors: UnbColors;
+}
 
-  // ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL RETURNS
-  const personalizedNavigation = useMemo(() => getPersonalizedNavigation(), [getPersonalizedNavigation]);
+interface RecommendationsWidgetProps {
+  recommendations: ContentRecommendation[];
+  unbColors: UnbColors;
+  onRecommendationClick: (recommendation: ContentRecommendation) => void;
+}
 
-  // Renderizar apenas se a personalização estiver habilitada
-  const isPersonalized = personalization.medicalRole !== 'unknown';
-  if (!flags?.personalization_system || !isPersonalized) {
-    return null;
-  }
+interface ProgressWidgetProps {
+  personalization: PersonalizationData;
+  unbColors: UnbColors;
+}
 
-  const getRoleIcon = (role: string) => {
-    const icons = {
-      pharmacy: '💊',
-      medicine: '🩺', 
-      nursing: '👩‍⚕️',
-      student: '🎓',
-      researcher: '🔬',
-      unknown: '👤'
-    };
-    return icons[role as keyof typeof icons] || '👤';
-  };
-
-  const getUrgencyColor = (urgency: string) => {
-    const colors = {
-      critical: '#ef4444',
-      high: '#f97316',
-      medium: '#eab308',
-      low: '#22c55e'
-    };
-    return colors[urgency as keyof typeof colors] || '#6b7280';
-  };
-
-  const handleRecommendationClick = (recommendation: ContentRecommendation) => {
-    trackUserBehavior('recommendation_clicked', {
-      recommendationId: recommendation.id,
-      urgency: recommendation.urgency,
-      type: recommendation.type
-    });
-  };
-
-  // Widget de perfil resumido
-  const ProfileWidget = () => (
+// Extracted widget components at module scope
+const ProfileWidget = ({ personalization, unbColors }: ProfileWidgetProps) => (
     <div style={{
       background: `linear-gradient(135deg, ${unbColors.primary} 0%, ${unbColors.secondary} 100%)`,
       borderRadius: '16px',
@@ -126,259 +119,291 @@ export default function PersonalizedDashboard({ className }: PersonalizedDashboa
     </div>
   );
 
-  // Widget de ações rápidas personalizadas
-  const QuickActionsWidget = () => (
-    <div style={{
-      background: 'white',
-      borderRadius: '16px',
-      padding: '1.5rem',
-      border: '1px solid #e2e8f0',
-      marginBottom: '1.5rem'
+const QuickActionsWidget = ({ personalizedNavigation, trackUserBehavior, unbColors }: QuickActionsWidgetProps) => (
+  <div style={{
+    background: 'white',
+    borderRadius: '16px',
+    padding: '1.5rem',
+    border: '1px solid #e2e8f0',
+    marginBottom: '1.5rem'
+  }}>
+    <h3 style={{
+      margin: '0 0 1rem',
+      color: unbColors.primary,
+      fontSize: '1.1rem',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '0.5rem'
     }}>
-      <h3 style={{
-        margin: '0 0 1rem',
-        color: unbColors.primary,
-        fontSize: '1.1rem',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '0.5rem'
-      }}>
-        ⚡ Acesso Rápido Personalizado
-      </h3>
-      
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-        gap: '1rem'
-      }}>
-        {personalizedNavigation.slice(0, 6).map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            onClick={() => trackUserBehavior('quick_action_used', { action: item.label })}
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              padding: '1rem',
-              background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
-              borderRadius: '12px',
-              border: '1px solid #e2e8f0',
-              textDecoration: 'none',
-              color: unbColors.primary,
-              transition: 'all 0.2s',
-              fontSize: '0.9rem',
-              fontWeight: '500'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = 'none';
-            }}
-          >
-            <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>
-              {item.label === 'Início' ? '🏠' :
-               item.label === 'Chat IA' ? '🤖' :
-               item.label === 'Módulos' ? '📚' :
-               item.label === 'Ferramentas' ? '🛠️' :
-               item.label === 'Calculadora' ? '🧮' :
-               item.label === 'Interações' ? '⚠️' :
-               item.label === '🚨 Emergência' ? '🚨' : '📋'}
-            </div>
-            {item.label}
-          </Link>
-        ))}
-      </div>
-    </div>
-  );
+      ⚡ Acesso Rápido Personalizado
+    </h3>
 
-  // Widget de recomendações
-  const RecommendationsWidget = () => (
     <div style={{
-      background: 'white',
-      borderRadius: '16px',
-      padding: '1.5rem',
-      border: '1px solid #e2e8f0',
-      marginBottom: '1.5rem'
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+      gap: '1rem'
     }}>
-      <h3 style={{
-        margin: '0 0 1rem',
-        color: unbColors.primary,
-        fontSize: '1.1rem',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '0.5rem'
-      }}>
-        🎯 Recomendado para você
-      </h3>
-      
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-        {recommendations.slice(0, 4).map((rec) => (
-          <Link
-            key={rec.id}
-            href={`/resources/${rec.id}`}
-            onClick={() => handleRecommendationClick(rec)}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '1rem',
-              padding: '1rem',
-              background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
-              borderRadius: '12px',
-              border: '1px solid #e2e8f0',
-              textDecoration: 'none',
-              transition: 'all 0.2s'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateX(4px)';
-              e.currentTarget.style.background = unbColors.alpha.primary;
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateX(0)';
-              e.currentTarget.style.background = 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)';
-            }}
-          >
-            <div style={{
-              width: '8px',
-              height: '40px',
-              background: getUrgencyColor(rec.urgency),
-              borderRadius: '4px',
-              flexShrink: 0
-            }} />
-            
-            <div style={{ flex: 1 }}>
-              <h4 style={{
-                margin: '0 0 0.25rem',
-                fontSize: '0.95rem',
-                color: unbColors.primary,
-                fontWeight: 'bold'
-              }}>
-                {rec.title}
-              </h4>
-              <p style={{
-                margin: 0,
-                fontSize: '0.8rem',
-                color: unbColors.neutral,
-                lineHeight: '1.4'
-              }}>
-                {rec.description}
-              </p>
-              <div style={{
-                display: 'flex',
-                gap: '1rem',
-                marginTop: '0.5rem',
-                fontSize: '0.75rem',
-                color: unbColors.neutral
-              }}>
-                <span>⏱️ {rec.estimatedTime}min</span>
-                <span style={{ color: getUrgencyColor(rec.urgency) }}>
-                  ● {rec.urgency.toUpperCase()}
-                </span>
-              </div>
-            </div>
-            
-            <div style={{
-              fontSize: '1.2rem',
-              color: unbColors.primary,
-              opacity: 0.6
-            }}>
-              →
-            </div>
-          </Link>
-        ))}
-      </div>
-    </div>
-  );
-
-  // Widget de progresso de aprendizagem
-  const ProgressWidget = () => {
-    const totalModules = personalization.learningPath.length || 10;
-    const completedCount = personalization.completedModules.length;
-    const progressPercentage = totalModules > 0 ? (completedCount / totalModules) * 100 : 0;
-
-    return (
-      <div style={{
-        background: 'white',
-        borderRadius: '16px',
-        padding: '1.5rem',
-        border: '1px solid #e2e8f0'
-      }}>
-        <h3 style={{
-          margin: '0 0 1rem',
-          color: unbColors.primary,
-          fontSize: '1.1rem',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.5rem'
-        }}>
-          📈 Seu Progresso
-        </h3>
-        
-        <div style={{ marginBottom: '1rem' }}>
-          <div style={{
+      {personalizedNavigation.slice(0, 6).map((item) => (
+        <Link
+          key={item.href}
+          href={item.href}
+          onClick={() => trackUserBehavior('quick_action_used', { action: item.label })}
+          style={{
             display: 'flex',
-            justifyContent: 'space-between',
+            flexDirection: 'column',
             alignItems: 'center',
-            marginBottom: '0.5rem'
-          }}>
-            <span style={{ fontSize: '0.9rem', color: unbColors.neutral }}>
-              Módulos concluídos
-            </span>
-            <span style={{ fontSize: '0.9rem', fontWeight: 'bold', color: unbColors.primary }}>
-              {completedCount}/{totalModules}
-            </span>
+            padding: '1rem',
+            background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
+            borderRadius: '12px',
+            border: '1px solid #e2e8f0',
+            textDecoration: 'none',
+            color: unbColors.primary,
+            transition: 'all 0.2s',
+            fontSize: '0.9rem',
+            fontWeight: '500'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-2px)';
+            e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = 'none';
+          }}
+        >
+          <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>
+            {item.label === 'Início' ? '🏠' :
+             item.label === 'Chat IA' ? '🤖' :
+             item.label === 'Módulos' ? '📚' :
+             item.label === 'Ferramentas' ? '🛠️' :
+             item.label === 'Calculadora' ? '🧮' :
+             item.label === 'Interações' ? '⚠️' :
+             item.label === '🚨 Emergência' ? '🚨' : '📋'}
           </div>
-          
+          {item.label}
+        </Link>
+      ))}
+    </div>
+  </div>
+);
+
+const RecommendationsWidget = ({ recommendations, unbColors, onRecommendationClick }: RecommendationsWidgetProps) => (
+  <div style={{
+    background: 'white',
+    borderRadius: '16px',
+    padding: '1.5rem',
+    border: '1px solid #e2e8f0',
+    marginBottom: '1.5rem'
+  }}>
+    <h3 style={{
+      margin: '0 0 1rem',
+      color: unbColors.primary,
+      fontSize: '1.1rem',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '0.5rem'
+    }}>
+      🎯 Recomendado para você
+    </h3>
+
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+      {recommendations.slice(0, 4).map((rec) => (
+        <Link
+          key={rec.id}
+          href={`/resources/${rec.id}`}
+          onClick={() => onRecommendationClick(rec)}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '1rem',
+            padding: '1rem',
+            background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
+            borderRadius: '12px',
+            border: '1px solid #e2e8f0',
+            textDecoration: 'none',
+            transition: 'all 0.2s'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateX(4px)';
+            e.currentTarget.style.background = unbColors.alpha.primary;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateX(0)';
+            e.currentTarget.style.background = 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)';
+          }}
+        >
           <div style={{
-            width: '100%',
-            height: '8px',
-            background: '#f1f5f9',
+            width: '8px',
+            height: '40px',
+            background: getUrgencyColor(rec.urgency),
             borderRadius: '4px',
-            overflow: 'hidden'
-          }}>
+            flexShrink: 0
+          }} />
+
+          <div style={{ flex: 1 }}>
+            <h4 style={{
+              margin: '0 0 0.25rem',
+              fontSize: '0.95rem',
+              color: unbColors.primary,
+              fontWeight: 'bold'
+            }}>
+              {rec.title}
+            </h4>
+            <p style={{
+              margin: 0,
+              fontSize: '0.8rem',
+              color: unbColors.neutral,
+              lineHeight: '1.4'
+            }}>
+              {rec.description}
+            </p>
             <div style={{
-              width: `${progressPercentage}%`,
-              height: '100%',
-              background: `linear-gradient(90deg, ${unbColors.primary} 0%, ${unbColors.secondary} 100%)`,
-              borderRadius: '4px',
-              transition: 'width 0.3s ease'
-            }} />
+              display: 'flex',
+              gap: '1rem',
+              marginTop: '0.5rem',
+              fontSize: '0.75rem',
+              color: unbColors.neutral
+            }}>
+              <span>⏱️ {rec.estimatedTime}min</span>
+              <span style={{ color: getUrgencyColor(rec.urgency) }}>
+                ● {rec.urgency.toUpperCase()}
+              </span>
+            </div>
+          </div>
+
+          <div style={{
+            fontSize: '1.2rem',
+            color: unbColors.primary,
+            opacity: 0.6
+          }}>
+            →
+          </div>
+        </Link>
+      ))}
+    </div>
+  </div>
+);
+
+const ProgressWidget = ({ personalization, unbColors }: ProgressWidgetProps) => {
+  const totalModules = personalization.learningPath.length || 10;
+  const completedCount = personalization.completedModules.length;
+  const progressPercentage = totalModules > 0 ? (completedCount / totalModules) * 100 : 0;
+
+  return (
+    <div style={{
+      background: 'white',
+      borderRadius: '16px',
+      padding: '1.5rem',
+      border: '1px solid #e2e8f0'
+    }}>
+      <h3 style={{
+        margin: '0 0 1rem',
+        color: unbColors.primary,
+        fontSize: '1.1rem',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.5rem'
+      }}>
+        📈 Seu Progresso
+      </h3>
+
+      <div style={{ marginBottom: '1rem' }}>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '0.5rem'
+        }}>
+          <span style={{ fontSize: '0.9rem', color: unbColors.neutral }}>
+            Módulos concluídos
+          </span>
+          <span style={{ fontSize: '0.9rem', fontWeight: 'bold', color: unbColors.primary }}>
+            {completedCount}/{totalModules}
+          </span>
+        </div>
+
+        <div style={{
+          width: '100%',
+          height: '8px',
+          background: '#f1f5f9',
+          borderRadius: '4px',
+          overflow: 'hidden'
+        }}>
+          <div style={{
+            width: `${progressPercentage}%`,
+            height: '100%',
+            background: `linear-gradient(90deg, ${unbColors.primary} 0%, ${unbColors.secondary} 100%)`,
+            borderRadius: '4px',
+            transition: 'width 0.3s ease'
+          }} />
+        </div>
+      </div>
+
+      {personalization.recentlyAccessed.length > 0 && (
+        <div>
+          <h4 style={{
+            margin: '0 0 0.75rem',
+            fontSize: '0.95rem',
+            color: unbColors.primary
+          }}>
+            📚 Acessados recentemente
+          </h4>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            {personalization.recentlyAccessed.slice(0, 3).map((item, index) => (
+              <div
+                key={index}
+                style={{
+                  padding: '0.5rem',
+                  background: '#f8fafc',
+                  borderRadius: '8px',
+                  fontSize: '0.85rem',
+                  color: unbColors.neutral,
+                  borderLeft: `3px solid ${unbColors.primary}`
+                }}
+              >
+                {item}
+              </div>
+            ))}
           </div>
         </div>
-        
-        {personalization.recentlyAccessed.length > 0 && (
-          <div>
-            <h4 style={{
-              margin: '0 0 0.75rem',
-              fontSize: '0.95rem',
-              color: unbColors.primary
-            }}>
-              📚 Acessados recentemente
-            </h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              {personalization.recentlyAccessed.slice(0, 3).map((item, index) => (
-                <div
-                  key={index}
-                  style={{
-                    padding: '0.5rem',
-                    background: '#f8fafc',
-                    borderRadius: '8px',
-                    fontSize: '0.85rem',
-                    color: unbColors.neutral,
-                    borderLeft: `3px solid ${unbColors.primary}`
-                  }}
-                >
-                  {item}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-    );
+      )}
+    </div>
+  );
+};
+
+// Main component
+interface PersonalizedDashboardProps {
+  className?: string;
+}
+
+export default function PersonalizedDashboard({ className }: PersonalizedDashboardProps) {
+  const {
+    personalization,
+    recommendations,
+    getPersonalizedNavigation,
+    trackUserBehavior,
+    shouldShowAdvancedContent,
+    complexitySettings
+  } = usePersonalization();
+
+  const { flags } = useRemoteConfig();
+  const unbColors = getUnbColors();
+
+  // ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL RETURNS
+  const personalizedNavigation = useMemo(() => getPersonalizedNavigation(), [getPersonalizedNavigation]);
+
+  // Renderizar apenas se a personalização estiver habilitada
+  const isPersonalized = personalization.medicalRole !== 'unknown';
+  if (!flags?.personalization_system || !isPersonalized) {
+    return null;
+  }
+
+  const handleRecommendationClick = (recommendation: ContentRecommendation) => {
+    trackUserBehavior('recommendation_clicked', {
+      recommendationId: recommendation.id,
+      urgency: recommendation.urgency,
+      type: recommendation.type
+    });
   };
 
   return (
@@ -396,14 +421,22 @@ export default function PersonalizedDashboard({ className }: PersonalizedDashboa
       }}>
         {/* Coluna principal */}
         <div style={{ gridColumn: 'span 2', minWidth: '0' }}>
-          <ProfileWidget />
-          <QuickActionsWidget />
-          <RecommendationsWidget />
+          <ProfileWidget personalization={personalization} unbColors={unbColors} />
+          <QuickActionsWidget
+            personalizedNavigation={personalizedNavigation}
+            trackUserBehavior={trackUserBehavior}
+            unbColors={unbColors}
+          />
+          <RecommendationsWidget
+            recommendations={recommendations}
+            unbColors={unbColors}
+            onRecommendationClick={handleRecommendationClick}
+          />
         </div>
-        
+
         {/* Sidebar */}
         <div>
-          <ProgressWidget />
+          <ProgressWidget personalization={personalization} unbColors={unbColors} />
         </div>
       </div>
 

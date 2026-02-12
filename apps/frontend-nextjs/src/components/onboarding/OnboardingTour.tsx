@@ -59,16 +59,16 @@ interface OnboardingTourProps {
 export default function OnboardingTour({ onComplete }: OnboardingTourProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
-  const [hasSeenTour, setHasSeenTour] = useState(false);
+  const [hasSeenTour, setHasSeenTour] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return !!safeLocalStorage()?.getItem('onboarding-tour-completed');
+  });
 
   useEffect(() => {
-    const tourSeen = safeLocalStorage()?.getItem('onboarding-tour-completed');
-    if (!tourSeen) {
-      setTimeout(() => setIsVisible(true), 1000);
-    } else {
-      setHasSeenTour(true);
-    }
-  }, []);
+    if (hasSeenTour) return;
+    const timer = setTimeout(() => setIsVisible(true), 1000);
+    return () => clearTimeout(timer);
+  }, [hasSeenTour]);
 
   const handleNext = () => {
     if (currentStep < tourSteps.length - 1) {

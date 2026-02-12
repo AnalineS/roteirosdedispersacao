@@ -27,6 +27,32 @@ export default function TreatmentTimelineContainer({
   const [timeline, setTimeline] = useState<TreatmentTimeline | null>(null);
   const [demoMode, setDemoMode] = useState(userType === 'anonymous');
 
+  // Create demo adherence data for authenticated users
+  const createDemoAdherenceData = (startDate: Date) => {
+    const adherenceData = [];
+    const today = new Date();
+    
+    // Create records for the past 7 days
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date(today.getTime() - (i * 24 * 60 * 60 * 1000));
+      if (date >= startDate) {
+        adherenceData.push({
+          id: `adh_${date.getTime()}`,
+          date,
+          doseType: 'self_administered' as const,
+          medication: 'combination' as const,
+          taken: Math.random() > 0.1, // 90% adherence rate
+          takenAt: Math.random() > 0.1 ? new Date(date.getTime() + (20 * 60 * 60 * 1000)) : undefined,
+          patientReported: true,
+          verificationMethod: 'patient_report' as const,
+          adherenceScore: Math.random() > 0.1 ? 100 : 0
+        });
+      }
+    }
+    
+    return adherenceData;
+  };
+
   useEffect(() => {
     // Create timeline based on template
     const createTimeline = () => {
@@ -79,32 +105,6 @@ export default function TreatmentTimelineContainer({
     setTimeline(createTimeline());
     setIsLoading(false);
   }, [protocol, patientName, patientId, userType]);
-
-  // Create demo adherence data for authenticated users
-  const createDemoAdherenceData = (startDate: Date) => {
-    const adherenceData = [];
-    const today = new Date();
-    
-    // Create records for the past 7 days
-    for (let i = 6; i >= 0; i--) {
-      const date = new Date(today.getTime() - (i * 24 * 60 * 60 * 1000));
-      if (date >= startDate) {
-        adherenceData.push({
-          id: `adh_${date.getTime()}`,
-          date,
-          doseType: 'self_administered' as const,
-          medication: 'combination' as const,
-          taken: Math.random() > 0.1, // 90% adherence rate
-          takenAt: Math.random() > 0.1 ? new Date(date.getTime() + (20 * 60 * 60 * 1000)) : undefined,
-          patientReported: true,
-          verificationMethod: 'patient_report' as const,
-          adherenceScore: Math.random() > 0.1 ? 100 : 0
-        });
-      }
-    }
-    
-    return adherenceData;
-  };
 
   const timelineConfig: TimelineConfig = {
     userType,

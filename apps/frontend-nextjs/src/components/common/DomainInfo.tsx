@@ -19,11 +19,11 @@ export default function DomainInfo({ showDebug = false }: DomainInfoProps) {
     const baseUrl = SITE_CONFIG.getBaseUrl();
     const isValid = SITE_CONFIG.isValidDomain(domain);
 
-    setDomainInfo({
+    queueMicrotask(() => setDomainInfo({
       domain,
       baseUrl,
       isValid
-    });
+    }));
   }, []);
 
   if (!showDebug || !domainInfo) {

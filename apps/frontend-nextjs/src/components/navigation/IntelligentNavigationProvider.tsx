@@ -75,7 +75,7 @@ export default function IntelligentNavigationProvider({
     preferredPersona: undefined
   });
 
-  const [pageStartTime, setPageStartTime] = useState(Date.now());
+  const [pageStartTime, setPageStartTime] = useState(() => Date.now());
 
   // Intelligent routing para sugestões de persona
   const intelligentRouting = useIntelligentRouting(personas, {

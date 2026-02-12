@@ -16,7 +16,7 @@ export default function DashboardPage() {
   useEffect(() => {
     const stored = safeLocalStorage()?.getItem('selectedPersona');
     if (stored && personas[stored]) {
-      setSelectedPersona(stored);
+      queueMicrotask(() => setSelectedPersona(stored));
     }
   }, [personas]);
 

@@ -11,7 +11,7 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { getUnbColors } from '@/config/modernTheme';
 import { useHapticFeedback } from '@/utils/hapticFeedback';
 
@@ -787,6 +787,12 @@ export const ChatInterfaceSkeleton: React.FC<{
   messagesCount?: number;
   showTypingIndicator?: boolean;
 }> = ({ messagesCount = 5, showTypingIndicator = true }) => {
+  // Pre-compute random widths to avoid impure Math.random() calls during render
+  const skeletonWidths = useMemo(() =>
+    Array.from({ length: messagesCount }, (_, i) => `${((i * 17 + 43) % 40) + 40}%`),
+    [messagesCount]
+  );
+
   return (
     <div style={{
       display: 'flex',
@@ -838,7 +844,7 @@ export const ChatInterfaceSkeleton: React.FC<{
               }}>
                 <Skeleton width="100%" height="1rem" />
                 <div style={{ marginTop: '4px' }}>
-                  <Skeleton width={`${Math.random() * 40 + 40}%`} height="1rem" />
+                  <Skeleton width={skeletonWidths[i]} height="1rem" />
                 </div>
               </div>
             </div>

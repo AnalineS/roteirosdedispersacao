@@ -320,7 +320,7 @@ export function usePCDTFilters(
   useEffect(() => {
     if (syncWithUrl) {
       const urlState = getInitialState();
-      setFilters(urlState);
+      queueMicrotask(() => setFilters(urlState));
     }
   }, [syncWithUrl, searchParams, getInitialState]);
 

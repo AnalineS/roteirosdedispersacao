@@ -149,7 +149,7 @@ export default function MedicalTermTooltip({ term, children, className = '' }: M
         top = triggerRect.top - tooltipRect.height - 8;
       }
 
-      setPosition({ top, left });
+      queueMicrotask(() => setPosition({ top, left }));
     }
   }, [isVisible]);
 

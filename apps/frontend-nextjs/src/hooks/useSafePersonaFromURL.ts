@@ -74,9 +74,11 @@ export function useSafePersonaFromURL(options: UsePersonaFromURLOptions = {}): U
 
   // Processar parâmetro da URL no client-side
   useEffect(() => {
-    setIsClient(true);
-    setIsLoading(true);
-    
+    queueMicrotask(() => {
+      setIsClient(true);
+      setIsLoading(true);
+    });
+
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search);
       const urlPersonaParam = urlParams.get('persona');
@@ -84,16 +86,19 @@ export function useSafePersonaFromURL(options: UsePersonaFromURLOptions = {}): U
 
       if (urlPersonaParam) {
         const normalized = normalizePersonaId(urlPersonaParam);
-        
+
         if (normalized && isPersonaAvailable(normalized)) {
           validPersonaId = normalized;
         }
       }
 
-      setCurrentPersonaParam(validPersonaId);
+      queueMicrotask(() => {
+        setCurrentPersonaParam(validPersonaId);
+        setIsLoading(false);
+      });
+    } else {
+      queueMicrotask(() => setIsLoading(false));
     }
-    
-    setIsLoading(false);
   }, [isPersonaAvailable]);
 
   // Função para atualizar persona na URL

@@ -110,17 +110,19 @@ export function useChatState() {
 
   // Computed properties memoizadas
   const canRetry = state.retryCount < 3;
-  const timeSinceLastCall = state.lastApiCallTime 
-    ? Date.now() - state.lastApiCallTime 
-    : null;
-  
-  const computedState = useMemo(() => ({
-    canRetry,
-    shouldShowError: state.error !== null && !state.loading,
-    shouldShowRetry: state.error !== null && canRetry,
-    timeSinceLastCall,
-    isRateLimited: timeSinceLastCall !== null && timeSinceLastCall < 1000
-  }), [state, canRetry, timeSinceLastCall]);
+
+  const computedState = useMemo(() => {
+    const timeSinceLastCall = state.lastApiCallTime
+      ? Date.now() - state.lastApiCallTime
+      : null;
+    return {
+      canRetry,
+      shouldShowError: state.error !== null && !state.loading,
+      shouldShowRetry: state.error !== null && canRetry,
+      timeSinceLastCall,
+      isRateLimited: timeSinceLastCall !== null && timeSinceLastCall < 1000
+    };
+  }, [state, canRetry]);
 
   return {
     // State

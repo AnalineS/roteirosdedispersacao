@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { CalculationHistory } from '@/types/medication';
 import { modernChatTheme } from '@/config/modernTheme';
 
@@ -103,7 +103,8 @@ function HistoryItem({
   index: number; 
   onSelect: () => void; 
 }): React.JSX.Element {
-  const isRecent = (Date.now() - item.timestamp.getTime()) < (24 * 60 * 60 * 1000); // Últimas 24h
+  const [now] = useState(() => Date.now());
+  const isRecent = (now - item.timestamp.getTime()) < (24 * 60 * 60 * 1000); // Últimas 24h
   
   return (
     <div

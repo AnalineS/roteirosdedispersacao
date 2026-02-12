@@ -51,32 +51,30 @@ export function useOnboarding() {
 
   // Initialize onboarding state
   useEffect(() => {
+    let loadedState: OnboardingState = DEFAULT_STATE;
     try {
       const stored = safeLocalStorage()?.getItem(STORAGE_KEY);
-      
+
       if (stored) {
         const parsed: OnboardingState = JSON.parse(stored);
-        
+
         // Check if data is still valid (within retention period)
         const daysSinceLastVisit = (Date.now() - parsed.lastVisit) / (1000 * 60 * 60 * 24);
-        
+
         if (daysSinceLastVisit > RETENTION_DAYS) {
           // Reset if data is too old
-          setState(DEFAULT_STATE);
           safeLocalStorage()?.removeItem(STORAGE_KEY);
           trackUserInteraction('onboarding_data_expired', '', String(daysSinceLastVisit));
         } else {
-          setState({
+          loadedState = {
             ...parsed,
             lastVisit: Date.now()
-          });
+          };
         }
       } else {
         // First time visitor
         trackUserInteraction('onboarding_first_visit', '', String(Date.now()));
       }
-      
-      setIsLoaded(true);
     } catch (error) {
       if (typeof window !== 'undefined' && window.gtag) {
         window.gtag('event', 'onboarding_load_error', {
@@ -89,25 +87,22 @@ export function useOnboarding() {
           }
         });
       }
-      setState(DEFAULT_STATE);
-      setIsLoaded(true);
     }
-  }, [trackUserInteraction]);
 
-  // Determine if wizard should be shown
-  useEffect(() => {
-    if (!isLoaded) return;
+    setState(loadedState);
 
-    const shouldShow = state.isFirstVisit && 
-                      !state.hasCompletedOnboarding && 
-                      state.skipCount < MAX_SKIP_COUNT;
-
+    // Determine if wizard should be shown
+    const shouldShow = loadedState.isFirstVisit &&
+                      !loadedState.hasCompletedOnboarding &&
+                      loadedState.skipCount < MAX_SKIP_COUNT;
     setShowWizard(shouldShow);
 
     if (shouldShow) {
-      trackUserInteraction('onboarding_wizard_shown', '', String(state.skipCount));
+      trackUserInteraction('onboarding_wizard_shown', '', String(loadedState.skipCount));
     }
-  }, [isLoaded, state, trackUserInteraction]);
+
+    setIsLoaded(true);
+  }, [trackUserInteraction]);
 
   // Save state to localStorage
   const saveState = useCallback((newState: Partial<OnboardingState>) => {

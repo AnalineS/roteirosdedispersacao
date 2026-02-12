@@ -36,18 +36,6 @@ export default function AdminDashboard() {
     lastUpdate: new Date(),
   });
 
-  useEffect(() => {
-    if (!loading) {
-      // Verificar se o usuário está autenticado e é admin
-      if (!user || !user.email || !ADMIN_EMAILS.includes(user.email.toLowerCase())) {
-        router.push('/');
-        return;
-      }
-      setIsAuthorized(true);
-      loadAdminStats();
-    }
-  }, [user, loading, router]);
-
   const loadAdminStats = async () => {
     // Simular carregamento de estatísticas
     // Em produção, isso viria de uma API
@@ -60,6 +48,18 @@ export default function AdminDashboard() {
       lastUpdate: new Date(),
     });
   };
+
+  useEffect(() => {
+    if (!loading) {
+      // Verificar se o usuário está autenticado e é admin
+      if (!user || !user.email || !ADMIN_EMAILS.includes(user.email.toLowerCase())) {
+        router.push('/');
+        return;
+      }
+      setIsAuthorized(true);
+      loadAdminStats();
+    }
+  }, [user, loading, router]);
 
   if (loading) {
     return (

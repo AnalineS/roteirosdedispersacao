@@ -109,7 +109,7 @@ export default function SearchBar({
   // Executar busca quando query mudar
   useEffect(() => {
     if (debouncedQuery && debouncedQuery.length >= 2) {
-      setIsSearching(true);
+      queueMicrotask(() => setIsSearching(true));
       
       // Simular delay de busca para mostrar loading state
       const searchTimeout = setTimeout(() => {

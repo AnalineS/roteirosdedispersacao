@@ -70,13 +70,15 @@ export function useResizeObserver(elementRef: React.RefObject<Element>) {
 
 // Hook para rastrear valor anterior
 export function usePrevious<T>(value: T): T | undefined {
+  const [previous, setPrevious] = useState<T | undefined>(undefined);
   const ref = useRef<T | undefined>(undefined);
 
   useEffect(() => {
+    setPrevious(ref.current);
     ref.current = value;
-  });
+  }, [value]);
 
-  return ref.current;
+  return previous;
 }
 
 // Hook para localStorage
@@ -160,8 +162,12 @@ export const useDynamicOptimization = (config: OptimizationConfig = {}) => {
   // Refs para tracking de performance
   const renderCountRef = useRef(0);
   const renderTimesRef = useRef<number[]>([]);
-  const lastRenderRef = useRef(Date.now());
+  const lastRenderRef = useRef(0);
   const componentMountedRef = useRef(false);
+
+  useEffect(() => {
+    lastRenderRef.current = Date.now();
+  }, []);
   const lifecycleRef = useRef<ComponentLifecycle>({
     mounted: false,
     updated: 0,
@@ -338,11 +344,13 @@ export const useDynamicOptimization = (config: OptimizationConfig = {}) => {
   // ============================================
 
   const errorBoundaryRef = useRef<Error | null>(null);
-  
+  const [lastError, setLastError] = useState<Error | null>(null);
+
   const handleError = useCallback((error: Error, errorInfo?: ErrorInfo) => {
     if (!enableErrorBoundary) return;
 
     errorBoundaryRef.current = error;
+    setLastError(error);
     lifecycleRef.current.errors += 1;
     
     if (typeof window !== 'undefined' && window.gtag) {
@@ -417,7 +425,7 @@ export const useDynamicOptimization = (config: OptimizationConfig = {}) => {
     
     // Error handling
     handleError,
-    lastError: errorBoundaryRef.current,
+    lastError,
 
     // Utility functions
     createExternalStoreSync,

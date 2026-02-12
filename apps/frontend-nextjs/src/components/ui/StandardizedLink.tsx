@@ -20,6 +20,63 @@ interface StandardizedLinkProps {
   onClick?: (e: React.MouseEvent<HTMLAnchorElement>) => void;
 }
 
+interface LinkContentProps {
+  children: React.ReactNode;
+  icon?: React.ReactNode;
+  iconPosition: 'left' | 'right';
+  isHovered: boolean;
+  external: boolean;
+}
+
+const LinkContent = ({ children, icon, iconPosition, isHovered, external }: LinkContentProps) => (
+  <>
+    {/* Icon Left */}
+    {icon && iconPosition === 'left' && (
+      <span style={{
+        display: 'flex',
+        alignItems: 'center',
+        transition: 'transform 0.2s ease',
+        transform: isHovered ? 'translateX(-1px)' : 'translateX(0)'
+      }}>
+        {icon}
+      </span>
+    )}
+
+    {/* Content */}
+    <span>{children}</span>
+
+    {/* Icon Right */}
+    {icon && iconPosition === 'right' && (
+      <span style={{
+        display: 'flex',
+        alignItems: 'center',
+        transition: 'transform 0.2s ease',
+        transform: isHovered ? 'translateX(1px)' : 'translateX(0)'
+      }}>
+        {icon}
+      </span>
+    )}
+
+    {/* External Link Icon */}
+    {external && !icon && (
+      <span style={{
+        display: 'flex',
+        alignItems: 'center',
+        fontSize: '0.7em',
+        opacity: 0.7,
+        transition: 'transform 0.2s ease',
+        transform: isHovered ? 'translateX(1px) translateY(-1px)' : 'translateX(0)'
+      }}>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+          <polyline points="15,3 21,3 21,9"/>
+          <line x1="10" y1="14" x2="21" y2="3"/>
+        </svg>
+      </span>
+    )}
+  </>
+);
+
 export default function StandardizedLink({
   href,
   children,
@@ -97,55 +154,6 @@ export default function StandardizedLink({
 
   const linkStyles = getVariantStyles();
 
-  const LinkContent = () => (
-    <>
-      {/* Icon Left */}
-      {icon && iconPosition === 'left' && (
-        <span style={{ 
-          display: 'flex', 
-          alignItems: 'center',
-          transition: 'transform 0.2s ease',
-          transform: isHovered ? 'translateX(-1px)' : 'translateX(0)'
-        }}>
-          {icon}
-        </span>
-      )}
-
-      {/* Content */}
-      <span>{children}</span>
-
-      {/* Icon Right */}
-      {icon && iconPosition === 'right' && (
-        <span style={{ 
-          display: 'flex', 
-          alignItems: 'center',
-          transition: 'transform 0.2s ease',
-          transform: isHovered ? 'translateX(1px)' : 'translateX(0)'
-        }}>
-          {icon}
-        </span>
-      )}
-
-      {/* External Link Icon */}
-      {external && !icon && (
-        <span style={{ 
-          display: 'flex', 
-          alignItems: 'center',
-          fontSize: '0.7em',
-          opacity: 0.7,
-          transition: 'transform 0.2s ease',
-          transform: isHovered ? 'translateX(1px) translateY(-1px)' : 'translateX(0)'
-        }}>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-            <polyline points="15,3 21,3 21,9"/>
-            <line x1="10" y1="14" x2="21" y2="3"/>
-          </svg>
-        </span>
-      )}
-    </>
-  );
-
   const commonProps = {
     className: `standardized-link ${className}`,
     style: { ...linkStyles, ...style },
@@ -166,7 +174,7 @@ export default function StandardizedLink({
         rel="noopener noreferrer"
         {...commonProps}
       >
-        <LinkContent />
+        <LinkContent icon={icon} iconPosition={iconPosition} isHovered={isHovered} external={external}>{children}</LinkContent>
         
         {/* CSS para focus visible */}
         <style jsx>{`
@@ -182,7 +190,7 @@ export default function StandardizedLink({
 
   return (
     <Link href={href} {...commonProps}>
-      <LinkContent />
+      <LinkContent icon={icon} iconPosition={iconPosition} isHovered={isHovered} external={external}>{children}</LinkContent>
       
       {/* CSS para focus visible */}
       <style jsx>{`

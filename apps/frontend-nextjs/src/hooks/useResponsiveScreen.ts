@@ -124,11 +124,9 @@ export const getFABConfig = (screenSize: ScreenSize): ResponsiveFABConfig => {
 
 export const useResponsiveScreen = () => {
   const [screenSize, setScreenSize] = useState<ScreenSize>(getScreenSize);
-  const [isClient, setIsClient] = useState(false);
+  const [isClient] = useState(() => typeof window !== 'undefined');
 
   useEffect(() => {
-    setIsClient(true);
-    
     const updateScreenSize = () => {
       setScreenSize(getScreenSize());
     };
@@ -142,7 +140,7 @@ export const useResponsiveScreen = () => {
 
     window.addEventListener('resize', debouncedResize);
     window.addEventListener('orientationchange', updateScreenSize);
-    
+
     // Update inicial para garantir valores corretos
     updateScreenSize();
 
@@ -179,20 +177,12 @@ export const useResponsiveScreen = () => {
 export const useFABVisibility = () => {
   const { fabConfig, screenSize, isClient } = useResponsiveScreen();
   const [isVisible, setIsVisible] = useState(false);
-  const [isPageExcluded, setIsPageExcluded] = useState(false);
-
-  useEffect(() => {
-    if (!isClient) return;
-
-    // Detectar página atual
+  const [isPageExcluded] = useState(() => {
+    if (typeof window === 'undefined') return false;
     const pathname = window.location.pathname;
-    
-    // Páginas onde o FAB não deve aparecer
     const excludedPaths = ['/chat', '/chat/'];
-    const shouldHide = excludedPaths.some(path => pathname.startsWith(path));
-    
-    setIsPageExcluded(shouldHide);
-  }, [isClient]);
+    return excludedPaths.some(path => pathname.startsWith(path));
+  });
 
   useEffect(() => {
     if (!isClient || isPageExcluded) return;

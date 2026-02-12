@@ -218,7 +218,7 @@ export default function LazyComponent<T extends Record<string, unknown>>(
       componentName={String(componentName)}
     >
       <Suspense fallback={fallback || defaultFallback}>
-        <LazyLoadedComponent {...(componentProps || ({} as T))} />
+        {React.createElement(LazyLoadedComponent, componentProps || ({} as T))}
       </Suspense>
     </ErrorBoundary>
   );

@@ -582,7 +582,7 @@ export function usePersonaFAB() {
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    setIsClient(true);
+    queueMicrotask(() => setIsClient(true));
   }, []);
 
   return { isClient };

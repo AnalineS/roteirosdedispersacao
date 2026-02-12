@@ -3,6 +3,7 @@
 import EducationalLayout from '@/components/layout/EducationalLayout';
 import Link from 'next/link';
 import { HanseníaseModuleStructuredData } from '@/components/seo/MedicalStructuredData';
+import renderMarkdownContent from '@/utils/renderMarkdownContent';
 
 export default function HanseníaseModulePage() {
   const moduleContent = {
@@ -229,10 +230,9 @@ export default function HanseníaseModulePage() {
               fontSize: '1rem',
               lineHeight: '1.6',
               color: '#444',
-              marginBottom: '20px',
-              whiteSpace: 'pre-line'
+              marginBottom: '20px'
             }}>
-              {section.content}
+              {renderMarkdownContent(section.content)}
             </div>
             
             {/* Key Points */}

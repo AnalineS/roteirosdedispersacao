@@ -46,7 +46,7 @@ export function ContentSegment({
 
     const savedAudience = safeLocalStorage()?.getItem('preferred-audience') as ContentAudience;
     if (savedAudience) {
-      setSelectedAudience(savedAudience);
+      queueMicrotask(() => setSelectedAudience(savedAudience));
     }
   }, []);
 
@@ -441,7 +441,7 @@ export function useAudiencePreference() {
 
     const saved = safeLocalStorage()?.getItem('preferred-audience') as ContentAudience;
     if (saved) {
-      setSelectedAudience(saved);
+      queueMicrotask(() => setSelectedAudience(saved));
     }
   }, []);
 

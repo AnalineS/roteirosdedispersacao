@@ -99,11 +99,12 @@ const UXTrackingWrapper: React.FC<UXTrackingWrapperProps> = ({
   const pathname = usePathname();
   const sessionId = useRef<string>("");
   const userId = useRef<string>("");
-  const pageLoadTime = useRef<number>(Date.now());
+  const pageLoadTime = useRef<number>(0);
   const interactionCount = useRef<number>(0);
 
-  // Initialize IDs
+  // Initialize IDs and page load time
   useEffect(() => {
+    pageLoadTime.current = Date.now();
     sessionId.current = getSessionId();
     userId.current = getUserId(providedUserId);
   }, [providedUserId]);

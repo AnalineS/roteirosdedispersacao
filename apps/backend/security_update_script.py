@@ -167,11 +167,14 @@ try:
     import authlib.jose as jose
     from authlib.jose import jwt
     import secrets
+    import time
 
     # Test JWT creation and verification
     header = {"alg": "HS256"}
-    payload = {"sub": "test", "exp": 9999999999}
-    # Generate cryptographically secure random test secret (CWE-547 fix)
+    # Generate all test values dynamically (CWE-798 fix)
+    test_subject = secrets.token_urlsafe(8)
+    test_exp = int(time.time()) + 3600
+    payload = {"sub": test_subject, "exp": test_exp}
     secret = secrets.token_hex(32)
 
     # Create token
@@ -185,7 +188,8 @@ try:
     # Test critical header handling (the vulnerability we're fixing)
     try:
         # This should now properly reject unknown critical headers
-        malicious_header = {"alg": "HS256", "crit": ["unknown_param"], "unknown_param": "malicious"}
+        crit_param = secrets.token_urlsafe(8)
+        malicious_header = {"alg": "HS256", "crit": [crit_param], crit_param: secrets.token_urlsafe(4)}
         malicious_token = jwt.encode(malicious_header, payload, secret)
         # If this doesn't throw an error, the vulnerability might still exist
         result = jwt.decode(malicious_token, secret)

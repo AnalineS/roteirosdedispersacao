@@ -31,18 +31,34 @@ const SmartNavigationContext = createContext<SmartNavigationContextType | null>(
 
 export function SmartNavigationProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const [navigationState, setNavigationState] = useState<NavigationState>({
-    currentContext: 'home',
-    userLevel: 'intermediate', // Default
-    deviceType: 'desktop',
-    showFullNavigation: false,
-    prioritizedFeatures: []
+  const [navigationState, setNavigationState] = useState<NavigationState>(() => {
+    const defaults: NavigationState = {
+      currentContext: 'home',
+      userLevel: 'intermediate',
+      deviceType: 'desktop',
+      showFullNavigation: false,
+      prioritizedFeatures: []
+    };
+    if (typeof window === 'undefined') return defaults;
+    // Load user preferences from localStorage
+    const savedLevel = safeLocalStorage()?.getItem('userNavigationLevel') as NavigationState['userLevel'];
+    const showFull = safeLocalStorage()?.getItem('showFullNavigation') === 'true';
+    // Detect device type
+    const width = window.innerWidth;
+    let deviceType: NavigationState['deviceType'] = 'desktop';
+    if (width < 768) deviceType = 'mobile';
+    else if (width < 1024) deviceType = 'tablet';
+    return {
+      ...defaults,
+      deviceType,
+      ...(savedLevel ? { userLevel: savedLevel, showFullNavigation: showFull } : {})
+    };
   });
 
   // Detectar contexto atual baseado na URL
   useEffect(() => {
     let context: NavigationState['currentContext'] = 'home';
-    
+
     if (pathname?.startsWith('/modules') || pathname?.startsWith('/dashboard')) {
       context = 'learning';
     } else if (pathname?.startsWith('/chat')) {
@@ -56,12 +72,12 @@ export function SmartNavigationProvider({ children }: { children: React.ReactNod
     setNavigationState(prev => ({ ...prev, currentContext: context }));
   }, [pathname]);
 
-  // Detectar tipo de dispositivo
+  // Detectar tipo de dispositivo on resize
   useEffect(() => {
     const detectDevice = () => {
       const width = window.innerWidth;
       let deviceType: NavigationState['deviceType'] = 'desktop';
-      
+
       if (width < 768) {
         deviceType = 'mobile';
       } else if (width < 1024) {
@@ -71,23 +87,8 @@ export function SmartNavigationProvider({ children }: { children: React.ReactNod
       setNavigationState(prev => ({ ...prev, deviceType }));
     };
 
-    detectDevice();
     window.addEventListener('resize', detectDevice);
     return () => window.removeEventListener('resize', detectDevice);
-  }, []);
-
-  // Carregar preferências do usuário
-  useEffect(() => {
-    const savedLevel = safeLocalStorage()?.getItem('userNavigationLevel') as NavigationState['userLevel'];
-    const showFull = safeLocalStorage()?.getItem('showFullNavigation') === 'true';
-    
-    if (savedLevel) {
-      setNavigationState(prev => ({ 
-        ...prev, 
-        userLevel: savedLevel,
-        showFullNavigation: showFull
-      }));
-    }
   }, []);
 
   const updateUserLevel = (level: NavigationState['userLevel']) => {
@@ -103,7 +104,7 @@ export function SmartNavigationProvider({ children }: { children: React.ReactNod
     });
   };
 
-  const getRecommendedNavigation = useCallback((): NavigationRecommendation => {
+  const getRecommendedNavigation = (): NavigationRecommendation => {
     const { deviceType, userLevel, currentContext, showFullNavigation } = navigationState;
 
     // Usuário experiente ou modo completo ativado
@@ -133,9 +134,9 @@ export function SmartNavigationProvider({ children }: { children: React.ReactNod
       showQuickAccess: true,
       maxVisibleItems: deviceType === 'mobile' ? 4 : 8
     };
-  }, [navigationState.deviceType, navigationState.userLevel, navigationState.currentContext, navigationState.showFullNavigation]);
+  };
 
-  const shouldShowElement = useCallback((elementId: string): boolean => {
+  const shouldShowElement = (elementId: string): boolean => {
     const recommendation = getRecommendedNavigation();
     const { currentContext, deviceType } = navigationState;
 
@@ -167,7 +168,7 @@ export function SmartNavigationProvider({ children }: { children: React.ReactNod
     };
 
     return elementRules[elementId] ?? true;
-  }, [getRecommendedNavigation, navigationState.currentContext, navigationState.deviceType, navigationState.userLevel]);
+  };
 
   const contextValue: SmartNavigationContextType = useMemo(() => ({
     navigationState,

@@ -107,7 +107,7 @@ export function ServicesProvider({ children }: ServicesProviderProps) {
   useEffect(() => {
     if (services.isInitialized) {
       // Health check inicial
-      checkServicesHealth();
+      queueMicrotask(() => checkServicesHealth());
 
       // Health check periódico (5 minutos)
       const interval = setInterval(checkServicesHealth, 5 * 60 * 1000);

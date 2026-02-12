@@ -15,21 +15,8 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [themeMode, setThemeMode] = useState<ThemeMode>('light');
-  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>('light');
-
-  // Carregar preferência salva - forçar sempre light
-  useEffect(() => {
-    // Sempre usar tema light (UnB cores claras)
-    setThemeMode('light');
-    safeLocalStorage()?.setItem('theme-mode', 'light');
-  }, []);
-
-  // Resolver tema baseado no modo - sempre light
-  useEffect(() => {
-    // Forçar sempre tema light (UnB padrão)
-    setResolvedTheme('light');
-  }, [themeMode]);
+  const [themeMode] = useState<ThemeMode>('light');
+  const [resolvedTheme] = useState<ResolvedTheme>('light');
 
   // Aplicar classe no documento - sempre light
   useEffect(() => {
@@ -60,9 +47,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }
   }, [resolvedTheme]);
 
-  const handleSetThemeMode = (mode: ThemeMode) => {
+  const handleSetThemeMode = (_mode: ThemeMode) => {
     // Sempre forçar light mode (UnB tema oficial)
-    setThemeMode('light');
     safeLocalStorage()?.setItem('theme-mode', 'light');
   };
 

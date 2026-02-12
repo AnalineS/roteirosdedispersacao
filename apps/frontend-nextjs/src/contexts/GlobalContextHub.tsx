@@ -688,7 +688,7 @@ export const useGlobalContext = (): GlobalContextType => {
           currentModule: "",
           totalTimeSpent: 0,
           streakDays: 0,
-          lastAccess: Date.now(),
+          lastAccess: 0,
           achievements: [],
           learningPath: [],
         },

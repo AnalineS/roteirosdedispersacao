@@ -261,7 +261,7 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
   useEffect(() => {
     // Verificar se notificações já foram concedidas
     if ('Notification' in window) {
-      setIsNotificationEnabled(Notification.permission === 'granted');
+      queueMicrotask(() => setIsNotificationEnabled(Notification.permission === 'granted'));
     }
   }, []);
 

@@ -180,10 +180,10 @@ export default function KeyboardNavigationTutorial({
   // Iniciar listening quando tutorial abre
   useEffect(() => {
     if (isOpen) {
-      setIsListening(true);
+      queueMicrotask(() => setIsListening(true));
       secureLogger.info('Keyboard navigation tutorial started');
     } else {
-      setIsListening(false);
+      queueMicrotask(() => setIsListening(false));
     }
   }, [isOpen]);
 

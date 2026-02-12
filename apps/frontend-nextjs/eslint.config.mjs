@@ -1,27 +1,26 @@
 // ESLint Configuration for Medical Educational Platform
-// Modern ESLint flat config format (ESLint 9+)
-// Replaces deprecated `next lint` command with explicit configuration
+// Native ESLint 9 flat config with eslint-config-next@16
 
-import { FlatCompat } from '@eslint/eslintrc';
-import js from '@eslint/js';
-import typescriptEslint from '@typescript-eslint/eslint-plugin';
-import typescriptParser from '@typescript-eslint/parser';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-  recommendedConfig: js.configs.recommended,
-});
+import nextCoreWebVitals from 'eslint-config-next/core-web-vitals';
 
 export default [
-  // Next.js core web vitals configuration (includes React, TypeScript, etc.)
-  ...compat.extends('next/core-web-vitals'),
-  
-  
+  // Next.js core web vitals (includes React, TypeScript, a11y, import plugins)
+  ...nextCoreWebVitals,
+
+  // React Compiler rules - downgrade to warnings since compilationMode is "annotation" (opt-in)
+  {
+    files: ['src/**/*.{ts,tsx,js,jsx}'],
+    rules: {
+      'react-hooks/set-state-in-effect': 'warn',
+      'react-hooks/purity': 'warn',
+      'react-hooks/refs': 'warn',
+      'react-hooks/immutability': 'warn',
+      'react-hooks/static-components': 'warn',
+      'react-hooks/preserve-manual-memoization': 'warn',
+      'react-hooks/use-memo': 'warn',
+    },
+  },
+
   // Jest environment for test files
   {
     files: [
@@ -50,7 +49,7 @@ export default [
       'no-unused-vars': 'off',
     },
   },
-  
+
   // Service Worker files
   {
     files: ['public/sw.js', '**/sw.js'],
@@ -66,7 +65,7 @@ export default [
       'no-unused-vars': 'off',
     },
   },
-  
+
   // Security rules for JavaScript files
   {
     files: ['src/**/*.{js,jsx}'],
@@ -75,12 +74,12 @@ export default [
       'no-eval': 'error',
       'no-implied-eval': 'error',
       'no-new-func': 'error',
-      
+
       // === VALIDAÇÃO DE ENTRADA ===
       'eqeqeq': ['error', 'always'],
       'use-isnan': 'error',
       'valid-typeof': 'error',
-      
+
       // === REGRAS CUSTOMIZADAS PARA DADOS MÉDICOS ===
       'no-restricted-syntax': [
         'warn',
@@ -89,36 +88,33 @@ export default [
           message: 'Avoid logging template literals that might contain sensitive medical data',
         },
       ],
-      
+
       // === ERROR HANDLING FOR MEDICAL CONTEXT ===
       'no-empty': ['error', { allowEmptyCatch: false }],
       'no-unreachable': 'error',
       'no-fallthrough': 'error',
-      
+
       // Reasonable defaults
       'no-unused-vars': 'warn',
       'react/no-unescaped-entities': 'off',
       'no-undef': 'warn',
     },
   },
-  
+
   // Security rules for TypeScript files
   {
     files: ['src/**/*.{ts,tsx}'],
-    plugins: {
-      '@typescript-eslint': typescriptEslint,
-    },
     rules: {
       // === PREVENÇÃO DE INJECTION ===
       'no-eval': 'error',
       'no-implied-eval': 'error',
       'no-new-func': 'error',
-      
+
       // === VALIDAÇÃO DE ENTRADA ===
       'eqeqeq': ['error', 'always'],
       'use-isnan': 'error',
       'valid-typeof': 'error',
-      
+
       // === REGRAS CUSTOMIZADAS PARA DADOS MÉDICOS ===
       'no-restricted-syntax': [
         'warn',
@@ -127,12 +123,12 @@ export default [
           message: 'Avoid logging template literals that might contain sensitive medical data',
         },
       ],
-      
+
       // === ERROR HANDLING FOR MEDICAL CONTEXT ===
       'no-empty': ['error', { allowEmptyCatch: false }],
       'no-unreachable': 'error',
       'no-fallthrough': 'error',
-      
+
       // TypeScript specific rules
       '@typescript-eslint/no-explicit-any': 'warn',
       'no-unused-vars': 'off',
@@ -141,7 +137,7 @@ export default [
       'no-undef': 'off', // TypeScript handles this
     },
   },
-  
+
   // Stricter rules for medical calculation components
   {
     files: [
@@ -150,16 +146,13 @@ export default [
       '**/services/api.ts',
       '**/utils/doseCalculations.ts',
     ],
-    plugins: {
-      '@typescript-eslint': typescriptEslint,
-    },
     rules: {
       '@typescript-eslint/explicit-function-return-type': 'error',
       '@typescript-eslint/no-explicit-any': 'error',
       'no-param-reassign': 'error',
     },
   },
-  
+
   // Ignore patterns (migrated from .eslintignore)
   {
     ignores: [

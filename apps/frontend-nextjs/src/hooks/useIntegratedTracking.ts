@@ -70,6 +70,28 @@ export const useIntegratedTracking = (config: IntegratedTrackingConfig = {}) => 
   }, [userId, isInitialized, currentUserId, enableGoogleAnalytics, googleAnalytics, sessionId, syncWithGA, trackingService]);
 
   // ============================================
+  // UTILITÁRIOS
+  // ============================================
+
+  const getGACategoryFromType = (type: InteractionType): string => {
+    const categoryMap: Record<InteractionType, string> = {
+      'click': 'ui_interaction',
+      'scroll': 'ui_interaction',
+      'hover': 'ui_interaction',
+      'focus': 'ui_interaction',
+      'form_submit': 'form_interaction',
+      'navigation': 'navigation',
+      'search': 'search',
+      'download': 'content',
+      'chat_interaction': 'communication',
+      'module_start': 'learning',
+      'module_complete': 'learning'
+    };
+
+    return categoryMap[type] || 'general';
+  };
+
+  // ============================================
   // TRACKING DE INTERAÇÕES
   // ============================================
 
@@ -314,28 +336,6 @@ export const useIntegratedTracking = (config: IntegratedTrackingConfig = {}) => 
     if (!enableLocalTracking) return {};
     return trackingService.getHeatmapData();
   }, [enableLocalTracking, trackingService]);
-
-  // ============================================
-  // UTILITÁRIOS
-  // ============================================
-
-  const getGACategoryFromType = (type: InteractionType): string => {
-    const categoryMap: Record<InteractionType, string> = {
-      'click': 'ui_interaction',
-      'scroll': 'ui_interaction', 
-      'hover': 'ui_interaction',
-      'focus': 'ui_interaction',
-      'form_submit': 'form_interaction',
-      'navigation': 'navigation',
-      'search': 'search',
-      'download': 'content',
-      'chat_interaction': 'communication',
-      'module_start': 'learning',
-      'module_complete': 'learning'
-    };
-    
-    return categoryMap[type] || 'general';
-  };
 
   // ============================================
   // RETORNO DO HOOK

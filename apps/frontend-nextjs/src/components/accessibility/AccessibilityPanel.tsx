@@ -26,33 +26,38 @@ export default function AccessibilityPanel({
   const analytics = useAnalytics();
   
   const [isExpanded, setIsExpanded] = useState(false);
-  const [fontSize, setFontSize] = useState(16);
-  const [reducedMotion, setReducedMotion] = useState(false);
-  const [screenReaderMode, setScreenReaderMode] = useState(false);
+  const [fontSize, setFontSize] = useState(() => {
+    if (typeof window === 'undefined') return 16;
+    const savedPrefs = safeLocalStorage()?.getItem('accessibility_preferences');
+    if (savedPrefs) {
+      try { return JSON.parse(savedPrefs).fontSize || 16; } catch { return 16; }
+    }
+    return 16;
+  });
+  const [reducedMotion, setReducedMotion] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const savedPrefs = safeLocalStorage()?.getItem('accessibility_preferences');
+    if (savedPrefs) {
+      try { if (JSON.parse(savedPrefs).reducedMotion) return true; } catch { /* ignore */ }
+    }
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return true;
+    return false;
+  });
+  const [screenReaderMode, setScreenReaderMode] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const savedPrefs = safeLocalStorage()?.getItem('accessibility_preferences');
+    if (savedPrefs) {
+      try { return JSON.parse(savedPrefs).screenReaderMode || false; } catch { return false; }
+    }
+    return false;
+  });
 
   // ============================================
-  // INITIALIZATION
+  // INITIALIZATION - Track accessibility panel usage
   // ============================================
 
   useEffect(() => {
-    // Check if we're in the browser
     if (typeof window === 'undefined') return;
-
-    // Load accessibility preferences from localStorage
-    const savedPrefs = safeLocalStorage()?.getItem('accessibility_preferences');
-    if (savedPrefs) {
-      const prefs = JSON.parse(savedPrefs);
-      setFontSize(prefs.fontSize || 16);
-      setReducedMotion(prefs.reducedMotion || false);
-      setScreenReaderMode(prefs.screenReaderMode || false);
-    }
-
-    // Detect system preferences
-    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      setReducedMotion(true);
-    }
-
-    // Track accessibility panel usage
     analytics.trackUserAction('accessibility_panel_loaded', 'accessibility');
   }, [analytics]);
 

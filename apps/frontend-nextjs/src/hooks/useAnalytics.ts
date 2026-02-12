@@ -24,10 +24,14 @@ export const useAnalytics = () => {
 
 // Hook for tracking chat interactions
 export const useChatAnalytics = (persona: 'dr_gasnelio' | 'ga') => {
-  const sessionStartRef = useRef<number>(Date.now());
+  const sessionStartRef = useRef<number>(0);
   const messageCountRef = useRef<number>(0);
   const lastQuestionRef = useRef<string>('');
   const questionStartRef = useRef<number>(0);
+
+  useEffect(() => {
+    sessionStartRef.current = Date.now();
+  }, []);
 
   const trackMessage = useCallback((message: string, isUser: boolean) => {
     if (isUser) {
