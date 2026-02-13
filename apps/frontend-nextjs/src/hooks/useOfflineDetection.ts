@@ -17,7 +17,7 @@ async function checkBackendHealth(): Promise<boolean> {
     if (!apiBase) return true; // No backend configured = assume online
 
     const resp = await fetch(`${apiBase}/api/v1/health`, {
-      method: 'HEAD',
+      method: 'GET',
       cache: 'no-cache',
       signal: AbortSignal.timeout(5000)
     });

@@ -43,7 +43,11 @@ const getApiConfig = (): { apiUrl: string; timeout: number; retries: number } =>
   return { apiUrl, timeout, retries };
 };
 
-const { apiUrl: API_BASE_URL, timeout: API_TIMEOUT, retries: API_RETRIES } = getApiConfig();
+// Dynamic getter - re-evaluates on each call to handle SSR→client transitions
+function getApiBaseUrl(): string {
+  return validateApiUrl(config.api.baseUrl) || '';
+}
+const { timeout: API_TIMEOUT, retries: API_RETRIES } = getApiConfig();
 
 // Import dados estáticos para fallback
 import { STATIC_PERSONAS } from '@/data/personas';
@@ -68,8 +72,9 @@ export async function getPersonaConfigs(): Promise<PersonasResponse> {
  * Busca personas do backend ou retorna dados estáticos em modo offline
  */
 export async function getPersonas(): Promise<PersonasResponse> {
+  const baseUrl = getApiBaseUrl();
   // Se backend está em modo offline, usar dados estáticos
-  if (!API_BASE_URL) {
+  if (!baseUrl) {
     logger.log('[Personas] Modo offline ativo, usando dados estáticos');
     return STATIC_PERSONAS;
   }
@@ -82,11 +87,10 @@ export async function getPersonas(): Promise<PersonasResponse> {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
 
-      const response = await fetch(`${API_BASE_URL}/api/v1/personas`, {
+      const response = await fetch(`${baseUrl}/api/v1/personas`, {
         method: 'GET',
         headers: { 'Accept': 'application/json' },
-        signal: controller.signal,
-        credentials: 'include'
+        signal: controller.signal
       });
 
       clearTimeout(timeoutId);
@@ -199,8 +203,9 @@ export interface ChatResponse {
  * Envia mensagem para o chat com fallback offline
  */
 export async function sendChatMessage(request: ChatRequest): Promise<ChatResponse> {
+  const baseUrl = getApiBaseUrl();
   // Se backend indisponível, usar resposta offline
-  if (!API_BASE_URL) {
+  if (!baseUrl) {
     logger.warn('[Chat] Backend indisponível, gerando resposta offline');
     return generateOfflineResponse(request);
   }
@@ -213,14 +218,13 @@ export async function sendChatMessage(request: ChatRequest): Promise<ChatRespons
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
 
-      const response = await fetch(`${API_BASE_URL}/api/v1/chat`, {
+      const response = await fetch(`${baseUrl}/api/v1/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(request),
-        signal: controller.signal,
-        credentials: 'include'
+        signal: controller.signal
       });
 
       clearTimeout(timeoutId);
@@ -311,8 +315,9 @@ export async function checkAPIHealth(): Promise<{
   error?: string;
   fallbackActive: boolean;
 }> {
+  const baseUrl = getApiBaseUrl();
   // Se URL é null, backend está indisponível
-  if (!API_BASE_URL) {
+  if (!baseUrl) {
     logger.warn('[API Health] Backend temporariamente indisponível');
     return {
       available: false,
@@ -335,11 +340,10 @@ export async function checkAPIHealth(): Promise<{
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), Math.min(API_TIMEOUT, 5000));
 
-      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      const response = await fetch(`${baseUrl}${endpoint}`, {
         method: 'GET',
         headers: { 'Accept': 'application/json' },
-        signal: controller.signal,
-        credentials: 'include'
+        signal: controller.signal
       });
 
       clearTimeout(timeoutId);
@@ -348,7 +352,7 @@ export async function checkAPIHealth(): Promise<{
         logger.log(`[API Health] Conectado com sucesso no ambiente ${config.environment}`);
         return {
           available: true,
-          url: API_BASE_URL,
+          url: baseUrl,
           fallbackActive: false
         };
       }
@@ -362,7 +366,7 @@ export async function checkAPIHealth(): Promise<{
   logger.error('[API Health] Todos os endpoints falharam, usando modo offline');
   return {
     available: false,
-    url: API_BASE_URL,
+    url: baseUrl,
     error: 'Backend indisponível - usando funcionalidades básicas',
     fallbackActive: true
   };
@@ -372,8 +376,9 @@ export async function checkAPIHealth(): Promise<{
  * Detecta escopo da pergunta
  */
 export async function detectQuestionScope(question: string): Promise<{ scope: string; confidence: number; details: string; category?: string; is_medical?: boolean; offline_mode?: boolean; offline_fallback?: boolean }> {
+  const baseUrl = getApiBaseUrl();
   // Se backend está em modo offline, retornar escopo padrão
-  if (!API_BASE_URL) {
+  if (!baseUrl) {
     logger.log('[Scope] Modo offline ativo, retornando escopo padrão');
     return {
       scope: 'medical_general',
@@ -393,14 +398,13 @@ export async function detectQuestionScope(question: string): Promise<{ scope: st
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
 
-      const response = await fetch(`${API_BASE_URL}/api/v1/scope`, {
+      const response = await fetch(`${baseUrl}/api/v1/scope`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ question }),
-        signal: controller.signal,
-        credentials: 'include'
+        signal: controller.signal
       });
 
       clearTimeout(timeoutId);
@@ -441,7 +445,7 @@ export async function detectQuestionScope(question: string): Promise<{ scope: st
 export const apiClient = {
   async post<T>(endpoint: string, data: Record<string, unknown>): Promise<T> {
     // Verificar se backend está em modo offline
-    if (!API_BASE_URL) {
+    if (!getApiBaseUrl()) {
       logger.log('[ApiClient] POST - Modo offline ativo');
       throw new Error('Backend em modo offline');
     }
@@ -454,7 +458,7 @@ export const apiClient = {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
 
-        const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        const response = await fetch(`${getApiBaseUrl()}${endpoint}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -489,7 +493,7 @@ export const apiClient = {
 
   async get<T>(endpoint: string): Promise<T> {
     // Verificar se backend está em modo offline
-    if (!API_BASE_URL) {
+    if (!getApiBaseUrl()) {
       logger.log('[ApiClient] GET - Modo offline ativo');
       throw new Error('Backend em modo offline');
     }
@@ -502,7 +506,7 @@ export const apiClient = {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
 
-        const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        const response = await fetch(`${getApiBaseUrl()}${endpoint}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
