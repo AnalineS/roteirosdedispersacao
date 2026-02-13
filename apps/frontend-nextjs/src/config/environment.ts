@@ -183,7 +183,7 @@ function getApiUrl(environment: Environment): string {
       if (!productionUrl) {
         // During build: allow fallback to prevent build-time errors
         // At runtime: this will be caught by app initialization
-        const fallback = 'https://api.roteirosdispensacao.com.br'
+        const fallback = 'https://roteiro-dispensacao-api-4f2gjf6cua-uc.a.run.app'
         if (typeof window !== 'undefined') {
           console.warn(`⚠️ NEXT_PUBLIC_API_URL_PRODUCTION not set, using fallback: ${fallback}`)
         }
