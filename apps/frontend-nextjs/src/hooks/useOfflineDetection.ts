@@ -36,6 +36,7 @@ export function useOfflineDetection() {
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const failCountRef = useRef(0);
 
   const updateState = useCallback((online: boolean) => {
     setState(prev => ({
@@ -47,12 +48,22 @@ export function useOfflineDetection() {
 
   const performHealthCheck = useCallback(async () => {
     if (!navigator.onLine) {
+      failCountRef.current = 2;
       updateState(false);
       return;
     }
 
     const backendOk = await checkBackendHealth();
-    updateState(backendOk);
+    if (backendOk) {
+      failCountRef.current = 0;
+      updateState(true);
+    } else {
+      failCountRef.current += 1;
+      // Only mark offline after 2 consecutive failures to avoid flicker
+      if (failCountRef.current >= 2) {
+        updateState(false);
+      }
+    }
   }, [updateState]);
 
   useEffect(() => {

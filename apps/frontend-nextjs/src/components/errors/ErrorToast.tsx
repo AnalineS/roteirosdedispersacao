@@ -59,8 +59,14 @@ export const ErrorToast: React.FC<ErrorToastProps> = ({
     };
 
     setToasts(prevToasts => {
+      // Deduplicate: skip if same message exists within last 10s
+      const isDuplicate = prevToasts.some(
+        t => t.message === detail.message && (Date.now() - t.timestamp) < 10000
+      );
+      if (isDuplicate) return prevToasts;
+
       const updated = [newToast, ...prevToasts];
-      return updated.slice(0, maxToasts); // Limitar número de toasts
+      return updated.slice(0, maxToasts);
     });
 
     // Auto-dismiss

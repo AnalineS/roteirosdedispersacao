@@ -103,14 +103,16 @@ def chat():
         # Combine user message + attachment context
         full_message = message + attachment_context if attachment_context else message
 
-        # Scope detection - filter out-of-scope questions before RAG
+        # Scope detection - filter clearly out-of-scope questions before RAG
         try:
-            from core.validation.scope_detector import detect_question_scope
+            from core.validation.scope_detector import detect_question_scope, get_limitation_response
             scope_result = detect_question_scope(message)
             if scope_result and not scope_result.get('is_in_scope', True):
+                limitation = get_limitation_response(persona, message)
                 redirect = scope_result.get('redirect_suggestion', '')
+                fallback = f"Essa pergunta esta fora do meu escopo de conhecimento sobre hanseniase. {redirect}".strip()
                 return jsonify({
-                    'answer': f"Essa pergunta esta fora do meu escopo de conhecimento sobre hanseniase. {redirect}".strip(),
+                    'answer': limitation or fallback,
                     'persona': persona,
                     'confidence': 0.1,
                     'rag_used': False,

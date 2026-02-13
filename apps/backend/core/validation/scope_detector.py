@@ -162,30 +162,36 @@ class ScopeDetectionSystem:
             "emergency_situation": any(emergency in question for emergency in ["urgente", "emergencia", "grave", "hospital"]),
             "medication_specific": any(med in question for med in ["rifampicina", "clofazimina", "dapsona"]),
             "hanseniase_specific": any(hans in question for hans in ["hanseniase", "hansen", "pqt"]),
-            "asks_comparison": "ou" in question and ("melhor" in question or "diferenca" in question)
+            "asks_comparison": "ou" in question and ("melhor" in question or "diferenca" in question),
+            "is_greeting": any(g in question for g in [
+                "oi", "ola", "bom dia", "boa tarde", "boa noite",
+                "pode ajudar", "voce faz", "como funciona", "o que voce",
+                "quem e voce", "me ajuda", "obrigad", "tudo bem"
+            ])
         }
         
         return patterns
     
     def _consolidate_analysis(self, scope_analysis: Dict, context_analysis: Dict, pattern_analysis: Dict) -> Dict:
         """Consolida todas as análises em decisão final"""
-        
+
         # Calcular score de escopo
         scope_score = 0
-        
+
         # Pontuação por palavras-chave
         scope_score += scope_analysis["keyword_balance"] * 2
         scope_score += scope_analysis["in_scope_density"] * 10
         scope_score -= scope_analysis["out_scope_density"] * 15
-        
+
         # Pontuação por contexto
         if context_analysis["medication_query"]: scope_score += 5
         if context_analysis["dosing_query"]: scope_score += 5
         if context_analysis["safety_query"]: scope_score += 4
         if context_analysis["procedure_query"]: scope_score += 5
+        if context_analysis["treatment_query"]: scope_score += 4
         if context_analysis["diagnosis_query"]: scope_score -= 8
         if context_analysis["administrative_query"]: scope_score -= 10
-        
+
         # Pontuação por padrões
         if pattern_analysis["medication_specific"]: scope_score += 8
         if pattern_analysis["hanseniase_specific"]: scope_score += 6
@@ -193,9 +199,13 @@ class ScopeDetectionSystem:
         if pattern_analysis["asks_for_other_diseases"]: scope_score -= 12
         if pattern_analysis["asks_for_legal_advice"]: scope_score -= 15
         if pattern_analysis["emergency_situation"]: scope_score -= 5  # Precisa atenção médica
-        
-        # Determinar se está no escopo
-        is_in_scope = scope_score > 0
+
+        # Greetings and conversational questions - let personas handle these
+        if pattern_analysis.get("is_greeting"):
+            scope_score += 3
+
+        # Determinar se está no escopo (>= 0: ambiguous questions pass to RAG/AI)
+        is_in_scope = scope_score >= 0
         
         # Determinar nível de confiança
         confidence_level = "high" if scope_score > 8 else "medium" if scope_score > 3 else "low"
