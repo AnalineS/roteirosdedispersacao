@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { logger } from '@/utils/logger';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import config from '@/config/environment';
 
 interface OfflineState {
   isOnline: boolean;
@@ -9,61 +9,84 @@ interface OfflineState {
   lastOnline: Date | null;
 }
 
+const DEBOUNCE_MS = 2000;
+
+async function checkBackendHealth(): Promise<boolean> {
+  try {
+    const apiBase = config.api.baseUrl;
+    if (!apiBase) return true; // No backend configured = assume online
+
+    const resp = await fetch(`${apiBase}/api/v1/health/live`, {
+      method: 'HEAD',
+      cache: 'no-cache',
+      signal: AbortSignal.timeout(5000)
+    });
+    return resp.ok;
+  } catch {
+    return false;
+  }
+}
+
 export function useOfflineDetection() {
   const [state, setState] = useState<OfflineState>({
-    isOnline: typeof navigator !== 'undefined' ? navigator.onLine : true,
-    isOffline: typeof navigator !== 'undefined' ? !navigator.onLine : false,
+    isOnline: true,
+    isOffline: false,
     lastOnline: null
   });
+
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const updateState = useCallback((online: boolean) => {
+    setState(prev => ({
+      isOnline: online,
+      isOffline: !online,
+      lastOnline: online ? new Date() : prev.lastOnline
+    }));
+  }, []);
+
+  const performHealthCheck = useCallback(async () => {
+    if (!navigator.onLine) {
+      updateState(false);
+      return;
+    }
+
+    const backendOk = await checkBackendHealth();
+    updateState(backendOk);
+  }, [updateState]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    const updateOnlineStatus = () => {
-      const isOnline = navigator.onLine;
-      setState(prev => ({
-        isOnline,
-        isOffline: !isOnline,
-        lastOnline: isOnline ? new Date() : prev.lastOnline || new Date()
-      }));
+    // Initial health check (deferred to avoid setState in effect body)
+    const initialCheck = setTimeout(performHealthCheck, 0);
+
+    const handleOnline = () => {
+      // Browser says online - verify with backend after debounce
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      debounceRef.current = setTimeout(performHealthCheck, DEBOUNCE_MS);
     };
 
-    // Initial state
-    updateOnlineStatus();
+    const handleOffline = () => {
+      // Browser says offline - verify with backend after debounce
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      debounceRef.current = setTimeout(performHealthCheck, DEBOUNCE_MS);
+    };
 
-    // Listen for online/offline events
-    window.addEventListener('online', updateOnlineStatus);
-    window.addEventListener('offline', updateOnlineStatus);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
 
-    // Periodic connectivity check (every 30 seconds when offline)
-    let intervalId: NodeJS.Timeout;
-    
-    if (!navigator.onLine) {
-      intervalId = setInterval(async () => {
-        try {
-          // Try to fetch a small resource to check connectivity
-          const response = await fetch('/favicon.ico', { 
-            method: 'HEAD',
-            cache: 'no-cache'
-          });
-          
-          if (response.ok && !navigator.onLine) {
-            // Browser thinks we're offline but we can actually reach the server
-            updateOnlineStatus();
-          }
-        } catch (error) {
-          // Still offline
-          logger.log('Still offline:', error);
-        }
-      }, 30000);
-    }
+    // Periodic heartbeat - check every 30s regardless of state
+    intervalRef.current = setInterval(performHealthCheck, 30000);
 
     return () => {
-      window.removeEventListener('online', updateOnlineStatus);
-      window.removeEventListener('offline', updateOnlineStatus);
-      if (intervalId) clearInterval(intervalId);
+      clearTimeout(initialCheck);
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, []);
+  }, [performHealthCheck]);
 
   return state;
 }

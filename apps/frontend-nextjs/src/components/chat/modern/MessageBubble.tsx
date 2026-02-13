@@ -321,7 +321,7 @@ export default function MessageBubble({
             >
               {persona.name}
             </span>
-            <MessageMeta timestamp={typeof message.timestamp === 'string' ? parseInt(message.timestamp) : message.timestamp} />
+            <MessageMeta timestamp={typeof message.timestamp === 'string' ? new Date(message.timestamp).getTime() : message.timestamp} />
           </div>
         )}
         
@@ -350,7 +350,7 @@ export default function MessageBubble({
               opacity: 0.8
             }}
           >
-            <MessageMeta timestamp={typeof message.timestamp === 'string' ? parseInt(message.timestamp) : message.timestamp} />
+            <MessageMeta timestamp={typeof message.timestamp === 'string' ? new Date(message.timestamp).getTime() : message.timestamp} />
           </div>
         )}
 

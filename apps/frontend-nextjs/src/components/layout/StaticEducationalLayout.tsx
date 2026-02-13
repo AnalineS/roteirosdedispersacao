@@ -25,7 +25,6 @@ export default function StaticEducationalLayout({ children }: StaticEducationalL
             {/* Main Content */}
             <main
               id="main-content"
-              role="main"
               style={{
                 minHeight: 'calc(100vh - 120px)',
                 paddingTop: '120px', // 40px FastAccessBar + 80px header

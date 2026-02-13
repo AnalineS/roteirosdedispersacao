@@ -251,7 +251,7 @@ export default function InteractiveChecklist({
   }, [session, expandedStage, handleSave, handlePauseSession, handleResumeSession, announceChange]);
 
   return (
-    <section role="main" aria-label="Sistema interativo de checklist para dispensação PQT-U">
+    <section role="region" aria-label="Sistema interativo de checklist para dispensação PQT-U">
       {/* Região de anúncios ARIA para leitores de tela */}
       <div 
         ref={announcementRef}

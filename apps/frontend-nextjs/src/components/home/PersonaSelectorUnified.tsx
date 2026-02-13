@@ -439,7 +439,7 @@ export default function PersonaSelectorUnified({
       <div 
         id="assistentes" 
         className="assistants-container" 
-        role="main" 
+        role="region"
         aria-label="Seleção de assistentes virtuais"
         style={{
           display: 'flex',

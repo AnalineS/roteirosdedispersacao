@@ -295,15 +295,14 @@ export function useChat(options: UseChatOptions = {}) {
         assistantContent = backendResponse.answer;
         assistantConfidence = backendResponse.confidence ?? 0.7;
       } else {
-        // Usar PersonaRAGIntegration para processamento inteligente
-        const personaResponse: PersonaResponse = await personaRAG.queryWithPersona(
-          message.trim(),
-          personaId as 'dr_gasnelio' | 'ga',
-          sessionId,
-          currentMessages.slice(-10)
-        );
-        assistantContent = personaResponse.response;
-        assistantConfidence = personaResponse.confidence;
+        // Chamar backend API com RAG real (Supabase pgvector)
+        const backendResponse = await sendChatMessage({
+          question: message.trim(),
+          personality_id: personaId,
+          conversation_history: currentMessages.slice(-10)
+        });
+        assistantContent = backendResponse.answer;
+        assistantConfidence = backendResponse.confidence ?? 0.7;
       }
 
       // Criar mensagem do assistente baseada na resposta
@@ -393,7 +392,7 @@ export function useChat(options: UseChatOptions = {}) {
     if (retryCount >= maxRetries) {
       setLoading(false);
     }
-  }, [personaRAG, sessionId, messagesRef, addMessage, onMessageReceived, setError, setLastApiCall, setLoading, withFallback, captureError, analyzeSentiment, enableSentimentAnalysis]);
+  }, [sessionId, messagesRef, addMessage, onMessageReceived, setError, setLastApiCall, setLoading, withFallback, captureError, analyzeSentiment, enableSentimentAnalysis]);
 
   const handleClearMessages = useCallback(() => {
     clearMessages();

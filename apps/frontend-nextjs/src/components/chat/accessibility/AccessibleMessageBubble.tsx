@@ -76,7 +76,7 @@ const AccessibleMessageBubble: React.FC<AccessibleMessageBubbleProps> = ({
     const parts = [
       `Mensagem ${messageIndex + 1} de ${totalMessages}`,
       `de ${speakerName}`,
-      `enviada ${formatTimestamp(typeof message.timestamp === 'string' ? parseInt(message.timestamp) : message.timestamp)}`
+      `enviada ${formatTimestamp(typeof message.timestamp === 'string' ? new Date(message.timestamp).getTime() : message.timestamp)}`
     ];
     
     if (message.metadata?.confidence) {
@@ -231,7 +231,7 @@ const AccessibleMessageBubble: React.FC<AccessibleMessageBubbleProps> = ({
             <time 
               className="timestamp"
               dateTime={new Date(message.timestamp).toISOString()}
-              aria-label={`Enviada ${formatTimestamp(typeof message.timestamp === 'string' ? parseInt(message.timestamp) : message.timestamp)}`}
+              aria-label={`Enviada ${formatTimestamp(typeof message.timestamp === 'string' ? new Date(message.timestamp).getTime() : message.timestamp)}`}
             >
               {new Date(message.timestamp).toLocaleTimeString('pt-BR', { 
                 hour: '2-digit', 
@@ -243,7 +243,7 @@ const AccessibleMessageBubble: React.FC<AccessibleMessageBubbleProps> = ({
           {/* Message content */}
           <div 
             className="message-content"
-            role="main"
+            role="article"
             aria-live={isLast && !isUser ? 'polite' : 'off'}
           >
             {displayContent}

@@ -62,7 +62,7 @@ export default function EducationalLayout({
       </div>
       
       {/* Main Content Area */}
-      <div className="main-content" role="main">
+      <div className="main-content">
         {/* Breadcrumbs Header */}
         {showBreadcrumbs && (
           <header className="content-header" role="navigation" aria-label="Breadcrumb navigation">

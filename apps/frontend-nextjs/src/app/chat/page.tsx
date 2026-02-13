@@ -58,6 +58,14 @@ export default function ChatPage() {
   useEffect(() => {
     setPersonaSelectionViewed();
   }, [setPersonaSelectionViewed]);
+
+  // Auto-criar conversa nova se a atual esta obsoleta (> 30 min)
+  useEffect(() => {
+    if (currentConversationId && isConversationStale(currentConversationId)) {
+      createConversation(contextPersona || 'dr_gasnelio');
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Apenas no mount
   
   const {
     createConversation,
@@ -67,11 +75,13 @@ export default function ChatPage() {
     addMessageToConversation,
     getCurrentMessages,
     getConversationsForPersona,
+    isConversationStale,
     currentConversationId
   } = useConversationHistory();
   useUserProfile(); // Keep hook active for future features
   const {
     loading: chatLoading,
+    messages: chatMessages,
     sendMessage,
     currentSentiment,
     knowledgeStats,
@@ -133,8 +143,9 @@ export default function ChatPage() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
   
-  // Usar mensagens da conversa atual em vez do hook useChat
-  const currentMessages = getCurrentMessages();
+  // Usar mensagens do useChat (state React) como fonte de verdade para renderizacao
+  // getCurrentMessages() do conversationHistory e usado apenas para persistencia em localStorage
+  const currentMessages = chatMessages;
   
   // Chat Navigation state (hook must be called for future features)
   useChatNavigation(currentMessages);
@@ -201,9 +212,9 @@ export default function ChatPage() {
     addMessageToConversation(userMessage);
 
     try {
-      // skipUserMessageAdd=true: page.tsx already added the user message above
-      // Pass attachment object so useChat can forward base64 to backend OCR
-      await sendMessage(messageText, personaId, 0, true, currentAttachment);
+      // useChat gerencia user messages no React state (renderizacao)
+      // addMessageToConversation acima persiste no localStorage (historico)
+      await sendMessage(messageText, personaId, 0, false, currentAttachment);
     } catch (error) {
       logger.error('Erro ao enviar mensagem:', error);
       triggerErrorFeedback('Erro ao enviar mensagem. Tente novamente.');

@@ -466,6 +466,14 @@ export function useConversationHistory() {
     return currentConv?.messages || [];
   }, [getCurrentConversation]);
 
+  // Verificar se conversa esta obsoleta (> 30 min sem atividade)
+  const isConversationStale = useCallback((conversationId: string): boolean => {
+    const conv = conversations.find(c => c.id === conversationId);
+    if (!conv) return true;
+    const STALE_THRESHOLD = 30 * 60 * 1000; // 30 minutos
+    return (Date.now() - conv.lastActivity) > STALE_THRESHOLD;
+  }, [conversations]);
+
   // Obter conversas de uma persona específica
   const getConversationsForPersona = useCallback((personaId: string): ConversationSummary[] => {
     return conversations
@@ -605,6 +613,7 @@ export function useConversationHistory() {
     // Conversa atual
     getCurrentConversation,
     getCurrentMessages,
+    isConversationStale,
     
     // Gerenciamento de conversas
     createConversation,

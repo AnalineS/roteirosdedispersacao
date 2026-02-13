@@ -152,9 +152,8 @@ const ModernChatContainer = memo(function ModernChatContainer({
     <div
       ref={containerRef}
       className="modern-chat-container"
-      role="main"
+      role="region"
       aria-label="Interface de chat com assistentes educacionais"
-      id="main-content"
       style={{
         height: '100dvh', // Dynamic viewport height para mobile
         display: 'flex',

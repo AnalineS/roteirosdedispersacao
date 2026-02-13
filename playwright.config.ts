@@ -81,11 +81,11 @@ export default defineConfig({
     },
   ],
 
-  // Local development server
-  webServer: process.env.CI ? undefined : {
+  // Local development server (disabled when testing remote via BASE_URL or CI)
+  webServer: (process.env.CI || process.env.BASE_URL) ? undefined : {
     command: 'npm run dev',
     port: 3000,
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: true,
     cwd: './apps/frontend-nextjs',
     timeout: 120000,
   },
