@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react';
-import { Persona } from '@/services/api';
+import { Persona, type ChatAttachmentPayload } from '@/services/api';
 import { modernChatTheme, getPersonaColors } from '@/config/modernTheme';
 import { useChatAccessibility, useAccessibleFocus } from './ChatAccessibilityProvider';
 
@@ -40,6 +40,8 @@ interface AccessibleChatInputProps {
   onFileUpload?: (files: FileList) => void;
   acceptedFileTypes?: string;
   maxFileSize?: number;
+  pendingAttachment?: ChatAttachmentPayload | null;
+  onRemoveAttachment?: () => void;
 }
 
 const AccessibleChatInput: React.FC<AccessibleChatInputProps> = ({
@@ -58,7 +60,9 @@ const AccessibleChatInput: React.FC<AccessibleChatInputProps> = ({
   maxLength = 2000,
   onFileUpload,
   acceptedFileTypes = ".jpg,.jpeg,.png,.pdf,.txt,.doc,.docx",
-  maxFileSize = 10 * 1024 * 1024 // 10MB
+  maxFileSize = 10 * 1024 * 1024, // 10MB
+  pendingAttachment,
+  onRemoveAttachment
 }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
@@ -355,7 +359,52 @@ const AccessibleChatInput: React.FC<AccessibleChatInputProps> = ({
               <UploadIcon />
             </button>
           )}
-          
+
+          {/* Attachment preview chip */}
+          {pendingAttachment && (
+            <div
+              className="attachment-chip"
+              role="status"
+              aria-label={`Arquivo anexado: ${pendingAttachment.fileName}`}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '4px 10px',
+                borderRadius: '16px',
+                backgroundColor: colors.background,
+                border: `1px solid ${colors.alpha}`,
+                fontSize: '12px',
+                color: colors.primary,
+                maxWidth: '200px',
+                flexShrink: 0
+              }}
+            >
+              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {pendingAttachment.fileName} ({(pendingAttachment.sizeBytes / 1024).toFixed(0)}KB)
+              </span>
+              {onRemoveAttachment && (
+                <button
+                  type="button"
+                  onClick={onRemoveAttachment}
+                  aria-label="Remover anexo"
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: '0 2px',
+                    fontSize: '14px',
+                    lineHeight: 1,
+                    color: colors.primary,
+                    flexShrink: 0
+                  }}
+                >
+                  &times;
+                </button>
+              )}
+            </div>
+          )}
+
           <textarea
             ref={textareaRef}
             value={value}

@@ -6,6 +6,8 @@ import { modernChatTheme } from '@/config/modernTheme';
 import { validateFeedbackData, feedbackRateLimiter, generateSessionId } from '@/utils/securityUtils';
 import { useGoogleAnalyticsUX } from '@/components/analytics/GoogleAnalyticsSetup';
 import { useGoogleAnalytics } from '@/components/GoogleAnalytics';
+import { getPersonas } from '@/services/api';
+import { logger } from '@/utils/logger';
 import type { FeedbackData } from '@/types/feedback';
 
 interface FeedbackWidgetProps {
@@ -106,12 +108,12 @@ export default function FeedbackWidget({
   useOptimizedEffect(() => {
     const loadPersonaData = async () => {
       try {
-        const response = await fetch('/api/personas');
-        const personas = await response.json();
-        const persona = personas.find((p: PersonaData) => p.id === personaId);
-        setPersonaData(persona || null);
+        const personas = await getPersonas();
+        const persona = personas[personaId];
+        setPersonaData(persona ? { id: personaId, ...persona } as unknown as PersonaData : null);
         setFeedbackState('idle');
       } catch (error) {
+        logger.error('FeedbackWidget: persona load failed', error);
         if (typeof window !== 'undefined' && window.gtag) {
           window.gtag('event', 'feedback_widget_persona_load_error', {
             event_category: 'medical_chat_feedback',
@@ -202,9 +204,26 @@ export default function FeedbackWidget({
         sanitization_applied: validation.sanitizedData.metadata?.sanitizationApplied || false
       });
       
-      // Simular API call (integração real com backend pendente)
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
+      // Submit feedback to backend
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+      if (apiUrl) {
+        const res = await fetch(`${apiUrl}/api/v1/feedback`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            rating: validation.sanitizedData.rating,
+            message_id: messageId,
+            persona_id: personaId,
+            feedback_type: 'quick',
+            session_id: sessionId
+          }),
+          credentials: 'include'
+        });
+        if (!res.ok) {
+          logger.warn('Feedback API returned', res.status);
+        }
+      }
+
       onFeedbackSubmit?.(validation.sanitizedData);
       trackFeedback('quick', validation.sanitizedData.rating, personaId, false, {
         persona_name: personaData?.name || 'unknown'
@@ -323,9 +342,28 @@ export default function FeedbackWidget({
         sanitization_applied: validation.sanitizedData.metadata?.sanitizationApplied || false
       });
       
-      // Simular API call (integração real com backend pendente)
-      await new Promise(resolve => setTimeout(resolve, 1200));
-      
+      // Submit detailed feedback to backend
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+      if (apiUrl) {
+        const res = await fetch(`${apiUrl}/api/v1/feedback`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            rating: validation.sanitizedData.rating,
+            feedback: validation.sanitizedData.comments || '',
+            message_id: messageId,
+            persona_id: personaId,
+            question: question,
+            feedback_type: 'detailed',
+            session_id: sessionId
+          }),
+          credentials: 'include'
+        });
+        if (!res.ok) {
+          logger.warn('Feedback API returned', res.status);
+        }
+      }
+
       onFeedbackSubmit?.(validation.sanitizedData);
       trackFeedback('detailed', validation.sanitizedData.rating, personaId, !!validation.sanitizedData.comments, {
         persona_name: personaData?.name || 'unknown'

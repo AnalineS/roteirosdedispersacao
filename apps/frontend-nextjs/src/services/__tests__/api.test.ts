@@ -1,427 +1,221 @@
 import {
-  fetchPersonas,
-  sendMessage,
-  sendFeedback,
-  verifyScope,
-  fetchHealth,
-  fetchStats
+  getPersonas,
+  sendChatMessage,
+  checkAPIHealth,
+  detectQuestionScope
 } from '../api';
-import type { ChatMessage, Feedback, ScopeRequest } from '@/types/api';
+import type { ChatRequest, ChatResponse, PersonasResponse } from '../api';
+
+// Mock fetch globally
+const mockFetch = jest.fn();
+globalThis.fetch = mockFetch;
 
 describe('API Service', () => {
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
-
   beforeEach(() => {
-    fetch.resetMocks();
+    mockFetch.mockClear();
   });
 
-  describe('fetchPersonas', () => {
+  describe('getPersonas', () => {
     it('should fetch personas successfully', async () => {
-      const mockPersonas = {
-        personas: [
-          {
-            id: 'gasnelio',
-            name: 'Dr. Gasnelio',
-            description: 'Farmacêutico técnico especializado',
-            avatar: '/avatars/gasnelio.png',
-            tone: 'professional'
-          },
-          {
-            id: 'ga',
-            name: 'Gá',
-            description: 'Assistente empática e educacional',
-            avatar: '/avatars/ga.png',
-            tone: 'empathetic'
-          }
-        ]
-      };
-
-      fetch.mockResponseOnce(JSON.stringify(mockPersonas));
-
-      const result = await fetchPersonas();
-
-      expect(result).toEqual(mockPersonas);
-      expect(fetch).toHaveBeenCalledTimes(1);
-      expect(fetch).toHaveBeenCalledWith(
-        `${API_BASE_URL}/api/personas`,
-        expect.objectContaining({
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          }
-        })
-      );
-    });
-
-    it('should handle fetch errors', async () => {
-      fetch.mockRejectOnce(new Error('Network error'));
-
-      await expect(fetchPersonas()).rejects.toThrow('Network error');
-      expect(fetch).toHaveBeenCalledTimes(1);
-    });
-
-    it('should handle HTTP errors', async () => {
-      fetch.mockResponseOnce(
-        JSON.stringify({ error: 'Server error' }),
-        { status: 500 }
-      );
-
-      await expect(fetchPersonas()).rejects.toThrow();
-      expect(fetch).toHaveBeenCalledTimes(1);
-    });
-
-    it('should support request cancellation', async () => {
-      const controller = new AbortController();
-
-      fetch.mockResponseOnce(JSON.stringify({ personas: [] }));
-
-      const promise = fetchPersonas(controller.signal);
-      controller.abort();
-
-      await expect(promise).rejects.toThrow();
-
-      const callArgs = fetch.mock.calls[0];
-      expect(callArgs[1]).toHaveProperty('signal');
-      expect(callArgs[1]?.signal).toBe(controller.signal);
-    });
-  });
-
-  describe('sendMessage', () => {
-    it('should send chat message successfully', async () => {
-      const mockMessage: ChatMessage = {
-        message: 'Qual a dose de rifampicina?',
-        persona_id: 'gasnelio',
-        session_id: 'test-session-123'
-      };
-
-      const mockResponse = {
-        response: 'A dose padrão de rifampicina é...',
-        persona_id: 'gasnelio',
-        confidence: 0.95,
-        sources: ['Roteiro de Dispensação - Hanseníase']
-      };
-
-      fetch.mockResponseOnce(JSON.stringify(mockResponse));
-
-      const result = await sendMessage(mockMessage);
-
-      expect(result).toEqual(mockResponse);
-      expect(fetch).toHaveBeenCalledTimes(1);
-      expect(fetch).toHaveBeenCalledWith(
-        `${API_BASE_URL}/api/chat`,
-        expect.objectContaining({
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(mockMessage)
-        })
-      );
-    });
-
-    it('should handle chat errors', async () => {
-      const mockMessage: ChatMessage = {
-        message: 'Test message',
-        persona_id: 'gasnelio'
-      };
-
-      fetch.mockRejectOnce(new Error('Chat service unavailable'));
-
-      await expect(sendMessage(mockMessage)).rejects.toThrow('Chat service unavailable');
-      expect(fetch).toHaveBeenCalledTimes(1);
-    });
-
-    it('should handle invalid persona errors', async () => {
-      const mockMessage: ChatMessage = {
-        message: 'Test message',
-        persona_id: 'invalid_persona'
-      };
-
-      fetch.mockResponseOnce(
-        JSON.stringify({ error: 'Invalid persona' }),
-        { status: 400 }
-      );
-
-      await expect(sendMessage(mockMessage)).rejects.toThrow();
-      expect(fetch).toHaveBeenCalledTimes(1);
-    });
-
-    it('should support request cancellation', async () => {
-      const controller = new AbortController();
-      const mockMessage: ChatMessage = {
-        message: 'Test',
-        persona_id: 'gasnelio'
-      };
-
-      fetch.mockResponseOnce(JSON.stringify({ response: 'Test response' }));
-
-      const promise = sendMessage(mockMessage, controller.signal);
-      controller.abort();
-
-      await expect(promise).rejects.toThrow();
-
-      const callArgs = fetch.mock.calls[0];
-      expect(callArgs[1]).toHaveProperty('signal');
-      expect(callArgs[1]?.signal).toBe(controller.signal);
-    });
-  });
-
-  describe('sendFeedback', () => {
-    it('should send feedback successfully', async () => {
-      const mockFeedback: Feedback = {
-        message_id: 'msg-123',
-        rating: 5,
-        comment: 'Resposta muito útil',
-        persona_id: 'gasnelio'
-      };
-
-      const mockResponse = {
-        success: true,
-        message: 'Feedback received'
-      };
-
-      fetch.mockResponseOnce(JSON.stringify(mockResponse));
-
-      const result = await sendFeedback(mockFeedback);
-
-      expect(result).toEqual(mockResponse);
-      expect(fetch).toHaveBeenCalledTimes(1);
-      expect(fetch).toHaveBeenCalledWith(
-        `${API_BASE_URL}/api/feedback`,
-        expect.objectContaining({
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(mockFeedback)
-        })
-      );
-    });
-
-    it('should handle feedback submission errors', async () => {
-      const mockFeedback: Feedback = {
-        message_id: 'msg-123',
-        rating: 5,
-        persona_id: 'gasnelio'
-      };
-
-      fetch.mockRejectOnce(new Error('Feedback service error'));
-
-      await expect(sendFeedback(mockFeedback)).rejects.toThrow('Feedback service error');
-      expect(fetch).toHaveBeenCalledTimes(1);
-    });
-
-    it('should support request cancellation', async () => {
-      const controller = new AbortController();
-      const mockFeedback: Feedback = {
-        message_id: 'msg-123',
-        rating: 5,
-        persona_id: 'gasnelio'
-      };
-
-      fetch.mockResponseOnce(JSON.stringify({ success: true }));
-
-      const promise = sendFeedback(mockFeedback, controller.signal);
-      controller.abort();
-
-      await expect(promise).rejects.toThrow();
-
-      const callArgs = fetch.mock.calls[0];
-      expect(callArgs[1]).toHaveProperty('signal');
-      expect(callArgs[1]?.signal).toBe(controller.signal);
-    });
-  });
-
-  describe('verifyScope', () => {
-    it('should verify question scope successfully', async () => {
-      const mockRequest: ScopeRequest = {
-        question: 'Qual a dose de rifampicina para adultos?'
-      };
-
-      const mockResponse = {
-        in_scope: true,
-        confidence: 0.92,
-        reason: 'Pergunta sobre dosagem de medicamento para hanseníase'
-      };
-
-      fetch.mockResponseOnce(JSON.stringify(mockResponse));
-
-      const result = await verifyScope(mockRequest);
-
-      expect(result).toEqual(mockResponse);
-      expect(fetch).toHaveBeenCalledTimes(1);
-      expect(fetch).toHaveBeenCalledWith(
-        `${API_BASE_URL}/api/scope`,
-        expect.objectContaining({
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(mockRequest)
-        })
-      );
-    });
-
-    it('should detect out-of-scope questions', async () => {
-      const mockRequest: ScopeRequest = {
-        question: 'Como fazer bolo de chocolate?'
-      };
-
-      const mockResponse = {
-        in_scope: false,
-        confidence: 0.98,
-        reason: 'Pergunta não relacionada a hanseníase ou medicamentos'
-      };
-
-      fetch.mockResponseOnce(JSON.stringify(mockResponse));
-
-      const result = await verifyScope(mockRequest);
-
-      expect(result).toEqual(mockResponse);
-      expect(result.in_scope).toBe(false);
-      expect(fetch).toHaveBeenCalledTimes(1);
-    });
-
-    it('should handle scope verification errors', async () => {
-      const mockRequest: ScopeRequest = {
-        question: 'Test question'
-      };
-
-      fetch.mockRejectOnce(new Error('Scope service error'));
-
-      await expect(verifyScope(mockRequest)).rejects.toThrow('Scope service error');
-      expect(fetch).toHaveBeenCalledTimes(1);
-    });
-
-    it('should support request cancellation', async () => {
-      const controller = new AbortController();
-      const mockRequest: ScopeRequest = {
-        question: 'Test question'
-      };
-
-      fetch.mockResponseOnce(JSON.stringify({ in_scope: true }));
-
-      const promise = verifyScope(mockRequest, controller.signal);
-      controller.abort();
-
-      await expect(promise).rejects.toThrow();
-
-      const callArgs = fetch.mock.calls[0];
-      expect(callArgs[1]).toHaveProperty('signal');
-      expect(callArgs[1]?.signal).toBe(controller.signal);
-    });
-  });
-
-  describe('fetchHealth', () => {
-    it('should fetch health status successfully', async () => {
-      const mockHealth = {
-        status: 'healthy',
-        version: '1.0.0',
-        timestamp: '2025-01-09T12:00:00Z',
-        services: {
-          database: 'up',
-          rag_system: 'up',
-          openrouter: 'up'
+      const mockPersonas: PersonasResponse = {
+        dr_gasnelio: {
+          name: 'Dr. Gasnelio',
+          description: 'Farmacêutico clínico especializado',
+          avatar: '/avatars/gasnelio.png',
+          personality: 'professional',
+          response_style: 'technical',
+          target_audience: 'healthcare_professionals'
+        },
+        ga: {
+          name: 'Gá',
+          description: 'Assistente empática e educacional',
+          avatar: '/avatars/ga.png',
+          personality: 'empathetic',
+          response_style: 'simple',
+          target_audience: 'patients'
         }
       };
 
-      fetch.mockResponseOnce(JSON.stringify(mockHealth));
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockPersonas
+      });
 
-      const result = await fetchHealth();
+      const result = await getPersonas();
 
-      expect(result).toEqual(mockHealth);
-      expect(fetch).toHaveBeenCalledTimes(1);
-      expect(fetch).toHaveBeenCalledWith(
-        `${API_BASE_URL}/api/health`,
-        expect.objectContaining({
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          }
-        })
-      );
+      expect(result).toEqual(mockPersonas);
+      expect(result.dr_gasnelio).toBeDefined();
+      expect(result.ga).toBeDefined();
     });
 
-    it('should handle health check errors', async () => {
-      fetch.mockRejectOnce(new Error('Health check failed'));
+    it('should fallback to static personas on network error', async () => {
+      mockFetch.mockRejectedValueOnce(new Error('Network error'));
 
-      await expect(fetchHealth()).rejects.toThrow('Health check failed');
-      expect(fetch).toHaveBeenCalledTimes(1);
-    });
+      const result = await getPersonas();
 
-    it('should support request cancellation', async () => {
-      const controller = new AbortController();
-
-      fetch.mockResponseOnce(JSON.stringify({ status: 'healthy' }));
-
-      const promise = fetchHealth(controller.signal);
-      controller.abort();
-
-      await expect(promise).rejects.toThrow();
-
-      const callArgs = fetch.mock.calls[0];
-      expect(callArgs[1]).toHaveProperty('signal');
-      expect(callArgs[1]?.signal).toBe(controller.signal);
+      // Should return static fallback, not throw
+      expect(result).toBeDefined();
+      expect(typeof result).toBe('object');
     });
   });
 
-  describe('fetchStats', () => {
-    it('should fetch system statistics successfully', async () => {
-      const mockStats = {
-        total_queries: 1523,
-        avg_response_time: 1.2,
-        user_satisfaction: 4.7,
-        active_sessions: 42,
-        cache_hit_rate: 0.85
+  describe('sendChatMessage', () => {
+    it('should send chat message successfully', async () => {
+      const request: ChatRequest = {
+        question: 'Qual a dose de rifampicina para adultos?',
+        personality_id: 'dr_gasnelio'
       };
 
-      fetch.mockResponseOnce(JSON.stringify(mockStats));
+      const mockResponse: ChatResponse = {
+        answer: 'A dose padrão de rifampicina é 600mg mensal...',
+        persona: 'dr_gasnelio',
+        request_id: 'req_123',
+        confidence: 0.95
+      };
 
-      const result = await fetchStats();
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockResponse
+      });
 
-      expect(result).toEqual(mockStats);
-      expect(fetch).toHaveBeenCalledTimes(1);
-      expect(fetch).toHaveBeenCalledWith(
-        `${API_BASE_URL}/api/stats`,
+      const result = await sendChatMessage(request);
+
+      expect(result.answer).toBeDefined();
+      expect(result.persona).toBe('dr_gasnelio');
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/v1/chat'),
         expect.objectContaining({
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          }
+          method: 'POST',
+          headers: expect.objectContaining({
+            'Content-Type': 'application/json'
+          })
         })
       );
     });
 
-    it('should handle stats fetch errors', async () => {
-      fetch.mockRejectOnce(new Error('Stats service error'));
+    it('should include attachment when provided', async () => {
+      const request: ChatRequest = {
+        question: 'O que mostra esta receita?',
+        personality_id: 'ga',
+        attachment: {
+          fileName: 'receita.pdf',
+          mimeType: 'application/pdf',
+          base64Data: 'JVBERi0xLjQ=',
+          sizeBytes: 1024
+        }
+      };
 
-      await expect(fetchStats()).rejects.toThrow('Stats service error');
-      expect(fetch).toHaveBeenCalledTimes(1);
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          answer: 'Analisando o documento...',
+          persona: 'ga',
+          request_id: 'req_456'
+        })
+      });
+
+      await sendChatMessage(request);
+
+      const callBody = JSON.parse(mockFetch.mock.calls[0][1].body);
+      expect(callBody.attachment).toBeDefined();
+      expect(callBody.attachment.fileName).toBe('receita.pdf');
     });
 
-    it('should handle HTTP errors from stats endpoint', async () => {
-      fetch.mockResponseOnce(
-        JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401 }
+    it('should handle HTTP errors', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 500
+      });
+
+      const request: ChatRequest = {
+        question: 'Test',
+        personality_id: 'ga'
+      };
+
+      await expect(sendChatMessage(request)).rejects.toThrow();
+    });
+  });
+
+  describe('checkAPIHealth', () => {
+    it('should return health status', async () => {
+      const mockHealth = {
+        status: 'healthy',
+        medical_system: 'operational',
+        rag: 'OK',
+        timestamp: '2026-02-12T12:00:00Z'
+      };
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockHealth
+      });
+
+      const result = await checkAPIHealth();
+
+      expect(result.status).toBe('healthy');
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/v1/health'),
+        expect.any(Object)
       );
-
-      await expect(fetchStats()).rejects.toThrow();
-      expect(fetch).toHaveBeenCalledTimes(1);
     });
 
-    it('should support request cancellation', async () => {
-      const controller = new AbortController();
+    it('should handle health check failures', async () => {
+      mockFetch.mockRejectedValueOnce(new Error('Service unavailable'));
 
-      fetch.mockResponseOnce(JSON.stringify({ total_queries: 100 }));
+      const result = await checkAPIHealth();
 
-      const promise = fetchStats(controller.signal);
-      controller.abort();
+      // checkAPIHealth returns offline status instead of throwing
+      expect(result).toBeDefined();
+    });
+  });
 
-      await expect(promise).rejects.toThrow();
+  describe('detectQuestionScope', () => {
+    it('should detect in-scope medical questions', async () => {
+      const mockScope = {
+        scope: 'hanseniase',
+        confidence: 0.92,
+        details: 'Pergunta sobre dosagem de medicamento para hanseníase',
+        category: 'dosage',
+        is_medical: true
+      };
 
-      const callArgs = fetch.mock.calls[0];
-      expect(callArgs[1]).toHaveProperty('signal');
-      expect(callArgs[1]?.signal).toBe(controller.signal);
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockScope
+      });
+
+      const result = await detectQuestionScope('Qual a dose de dapsona?');
+
+      expect(result.is_medical).toBe(true);
+      expect(result.confidence).toBeGreaterThan(0.5);
+    });
+
+    it('should detect out-of-scope questions', async () => {
+      const mockScope = {
+        scope: 'out_of_scope',
+        confidence: 0.98,
+        details: 'Pergunta não relacionada a hanseníase',
+        is_medical: false
+      };
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockScope
+      });
+
+      const result = await detectQuestionScope('Como fazer bolo?');
+
+      expect(result.is_medical).toBe(false);
+    });
+
+    it('should handle scope detection errors gracefully', async () => {
+      mockFetch.mockRejectedValueOnce(new Error('Scope service error'));
+
+      const result = await detectQuestionScope('Test question');
+
+      // detectQuestionScope has offline fallback
+      expect(result).toBeDefined();
+      expect(result.scope).toBeDefined();
     });
   });
 });

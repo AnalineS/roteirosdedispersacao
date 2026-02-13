@@ -10,6 +10,9 @@ from datetime import datetime
 import logging
 
 from core.logging.sanitizer import sanitize_error
+from core.security.production_rate_limiter import medical_chat_limit
+from core.security.input_validator import get_input_validator
+from utils.api_errors import api_error
 
 # Create blueprint
 medical_core_bp = Blueprint('medical_core', __name__, url_prefix='/api/v1')
@@ -58,17 +61,26 @@ def _extract_attachment_context(attachment: dict) -> str:
 # === CHAT ENDPOINTS ===
 
 @medical_core_bp.route('/chat', methods=['POST'])
+@medical_chat_limit
 def chat():
     """Main chat endpoint with AI personas and RAG integration"""
     try:
         data = request.get_json() or {}
-        message = (data.get('message') or data.get('question', '')).strip()
+
+        # Hard length limit before any processing
+        raw_message = (data.get('message') or data.get('question', ''))
+        if len(raw_message) > 5000:
+            return api_error('Message too long', 'MESSAGE_TOO_LONG', 400)
+
+        message = raw_message.strip()
         if not message:
-            return jsonify({
-                'error': 'Message is required',
-                'error_code': 'MISSING_MESSAGE',
-                'timestamp': datetime.now().isoformat()
-            }), 400
+            return api_error('Message is required', 'MISSING_MESSAGE', 400)
+
+        # Sanitize input against HTML injection and control characters
+        validator = get_input_validator()
+        message = validator.sanitize_string(message, max_length=2000)
+        if not message:
+            return api_error('Invalid message content', 'INVALID_MESSAGE', 400)
 
         persona = data.get('persona') or data.get('personality_id', 'gasnelio')
 
@@ -90,6 +102,25 @@ def chat():
 
         # Combine user message + attachment context
         full_message = message + attachment_context if attachment_context else message
+
+        # Scope detection - filter out-of-scope questions before RAG
+        try:
+            from core.validation.scope_detector import detect_question_scope
+            scope_result = detect_question_scope(message)
+            if scope_result and not scope_result.get('is_in_scope', True):
+                redirect = scope_result.get('redirect_suggestion', '')
+                return jsonify({
+                    'answer': f"Essa pergunta esta fora do meu escopo de conhecimento sobre hanseniase. {redirect}".strip(),
+                    'persona': persona,
+                    'confidence': 0.1,
+                    'rag_used': False,
+                    'rag_system': 'scope_filtered',
+                    'sources': [],
+                    'medical_validation': 'not_performed',
+                    'timestamp': datetime.now().isoformat()
+                }), 200
+        except Exception as e:
+            logger.warning("Scope detection failed (non-blocking): %s", sanitize_error(e))
 
         # Map persona names for RAG system
         rag_persona = 'dr_gasnelio' if persona in ['gasnelio', 'dr_gasnelio'] else 'ga_empathetic'
@@ -155,7 +186,7 @@ Estou torcendo por você! ✨"""
             'rag_used': rag_used,
             'rag_system': system_used,
             'sources': sources,
-            'medical_validation': 'completed',
+            'medical_validation': 'not_performed',
             'timestamp': datetime.now().isoformat()
         }
 

@@ -17,6 +17,22 @@ interface ChatEmptyStateProps {
   onSuggestionClick?: (suggestion: string) => void;
 }
 
+// Sample questions per persona for quick start
+const SAMPLE_QUESTIONS: Record<string, string[]> = {
+  dr_gasnelio: [
+    'Qual a dose de rifampicina para adultos com hanseníase MB?',
+    'Quais as contraindicações da dapsona?',
+    'Como monitorar efeitos adversos da PQT?',
+    'Qual a conduta em caso de reação hansênica tipo 1?'
+  ],
+  ga: [
+    'O que é hanseníase?',
+    'Como funciona o tratamento da hanseníase?',
+    'O tratamento tem efeitos colaterais?',
+    'Quanto tempo dura o tratamento?'
+  ]
+};
+
 const ChatEmptyState = memo(function ChatEmptyState({
   personas,
   selectedPersona,
@@ -25,6 +41,10 @@ const ChatEmptyState = memo(function ChatEmptyState({
   onSuggestionClick
 }: ChatEmptyStateProps) {
   const currentPersona = selectedPersona ? personas[selectedPersona] : null;
+  // Use provided suggestions or fall back to per-persona defaults
+  const activeSuggestions = suggestions.length > 0
+    ? suggestions
+    : (selectedPersona ? SAMPLE_QUESTIONS[selectedPersona] || [] : []);
 
   return (
     <div className="chat-empty-state">
@@ -66,11 +86,11 @@ const ChatEmptyState = memo(function ChatEmptyState({
         </div>
 
         {/* Sugestões de início */}
-        {selectedPersona && suggestions.length > 0 && (
+        {selectedPersona && activeSuggestions.length > 0 && (
           <div className="welcome-suggestions">
             <h3>Sugestões para começar:</h3>
             <div className="suggestions-grid">
-              {suggestions.slice(0, 4).map((suggestion, index) => (
+              {activeSuggestions.slice(0, 4).map((suggestion, index) => (
                 <button
                   key={index}
                   className="suggestion-card"

@@ -2,7 +2,7 @@
 
 import React, { memo, useRef, useState, useEffect } from 'react';
 import { type ChatMessage } from '@/types/api';
-import { type Persona } from '@/services/api';
+import { type Persona, type ChatAttachmentPayload } from '@/services/api';
 import { RAGStats, UIKnowledgeStats as KnowledgeStats } from '@/types/rag-knowledge';
 import { modernChatTheme, getCSSVariables } from '@/config/modernTheme';
 
@@ -58,6 +58,8 @@ interface ModernChatContainerProps {
 
   // Upload de arquivos
   onFileUpload?: (files: FileList) => void;
+  pendingAttachment?: ChatAttachmentPayload | null;
+  onRemoveAttachment?: () => void;
 
   // Issue #330: Error handling
   classifiedError?: ClassifiedError | null;
@@ -96,6 +98,8 @@ const ModernChatContainer = memo(function ModernChatContainer({
   showSuggestions,
   onSuggestionClick,
   onFileUpload,
+  pendingAttachment,
+  onRemoveAttachment,
   // Issue #330: Error handling
   classifiedError,
   currentRetryCount = 0,
@@ -243,6 +247,8 @@ const ModernChatContainer = memo(function ModernChatContainer({
           showSuggestions={showSuggestions}
           onSuggestionClick={onSuggestionClick}
           onFileUpload={onFileUpload}
+          pendingAttachment={pendingAttachment}
+          onRemoveAttachment={onRemoveAttachment}
           placeholder={currentPersona ? `Digite sua mensagem para ${currentPersona.name}...` : 'Digite sua mensagem...'}
         />
       </div>

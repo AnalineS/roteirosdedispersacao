@@ -6,7 +6,7 @@
 import { useCallback, useRef, useEffect, useMemo, useState } from 'react';
 import { logger } from '@/utils/logger';
 import { safeLocalStorage, isClientSide } from '@/hooks/useClientStorage';
-import { sendChatMessage, type ChatMessage, type ChatRequest, type ChatResponse, type Persona } from '@/services/api';
+import { sendChatMessage, type ChatMessage, type ChatRequest, type ChatResponse, type Persona, type ChatAttachmentPayload } from '@/services/api';
 import { PersonaRAGIntegration, type PersonaResponse, type PersonaConfig as RAGPersonaConfig } from '@/services/personaRAGIntegration';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { useSentimentAnalysis } from '@/hooks/useSentimentAnalysis';
@@ -202,7 +202,13 @@ export function useChat(options: UseChatOptions = {}) {
     }
   }, [currentSentiment, enableSentimentAnalysis, setPersonaSuggestion]);
   
-  const sendMessage = useCallback(async (message: string, personaId: string, retryCount = 0) => {
+  const sendMessage = useCallback(async (
+    message: string,
+    personaId: string,
+    retryCount = 0,
+    skipUserMessageAdd = false,
+    attachment?: ChatAttachmentPayload | null
+  ) => {
     if (!message.trim()) return;
 
     // Análise de Roteamento Inteligente (primeira mensagem ou nova pergunta)
@@ -258,7 +264,8 @@ export function useChat(options: UseChatOptions = {}) {
     };
 
     // OTIMIZAÇÃO: Usar hook especializado para adicionar mensagem
-    if (retryCount === 0) {
+    // skipUserMessageAdd=true quando page.tsx já adicionou ao conversation history
+    if (retryCount === 0 && !skipUserMessageAdd) {
       addMessage(userMessage);
     }
 
@@ -268,34 +275,56 @@ export function useChat(options: UseChatOptions = {}) {
 
     try {
       const currentMessages = retryCount === 0 ? [...messagesRef.current, userMessage] : messagesRef.current;
-      
-      // Usar PersonaRAGIntegration para processamento inteligente
-      const personaResponse: PersonaResponse = await personaRAG.queryWithPersona(
-        message.trim(),
-        personaId as 'dr_gasnelio' | 'ga',
-        sessionId,
-        currentMessages.slice(-10) // Contexto das últimas 10 mensagens
-      );
 
-      // Criar mensagem do assistente baseada na resposta personalizada
+      let assistantContent: string;
+      let assistantConfidence: number;
+
+      // When attachment is present, call backend directly (PersonaRAG doesn't forward files)
+      if (attachment?.base64Data) {
+        const backendResponse = await sendChatMessage({
+          question: message.trim(),
+          personality_id: personaId,
+          conversation_history: currentMessages.slice(-10),
+          attachment: {
+            fileName: attachment.fileName,
+            mimeType: attachment.mimeType,
+            base64Data: attachment.base64Data,
+            sizeBytes: attachment.sizeBytes
+          }
+        });
+        assistantContent = backendResponse.answer;
+        assistantConfidence = backendResponse.confidence ?? 0.7;
+      } else {
+        // Usar PersonaRAGIntegration para processamento inteligente
+        const personaResponse: PersonaResponse = await personaRAG.queryWithPersona(
+          message.trim(),
+          personaId as 'dr_gasnelio' | 'ga',
+          sessionId,
+          currentMessages.slice(-10)
+        );
+        assistantContent = personaResponse.response;
+        assistantConfidence = personaResponse.confidence;
+      }
+
+      // Criar mensagem do assistente baseada na resposta
       const assistantMessage: ChatMessage = {
         id: crypto.randomUUID(),
         role: 'assistant',
-        content: personaResponse.response,
+        content: assistantContent,
         timestamp: new Date().toISOString(),
         persona: personaId,
         metadata: {
-          confidence: personaResponse.confidence
+          confidence: assistantConfidence
         }
       };
 
       addMessage(assistantMessage);
-      
+
       // Chamar callback se fornecido
       if (onMessageReceived) {
         onMessageReceived(assistantMessage);
       }
-      
+
       setLoading(false);
 
     } catch (err) {

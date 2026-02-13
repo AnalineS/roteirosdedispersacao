@@ -220,7 +220,7 @@ export default function ModernChatInput({
   onSendMessage,
   onImageAnalysis
 }: ModernChatInputProps) {
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isFocused, setIsFocused] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -677,17 +677,31 @@ export default function ModernChatInput({
             </button>
           )}
           
-          <input
+          <textarea
             ref={inputRef}
             id="chat-input"
-            type="text"
             value={value}
-            onChange={(e) => onChange(e.target.value)}
+            onChange={(e) => {
+              onChange(e.target.value);
+              // Auto-resize
+              e.target.style.height = 'auto';
+              e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`;
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                if (value.trim() && !isDisabled) {
+                  const form = e.currentTarget.closest('form');
+                  if (form) form.requestSubmit();
+                }
+              }
+            }}
             onFocus={handleFocus}
             onBlur={handleBlur}
             placeholder={getPlaceholder()}
             disabled={isDisabled}
-            maxLength={1000}
+            maxLength={2000}
+            rows={1}
             aria-label={persona ? `Digite sua mensagem para ${persona.name}` : 'Campo de mensagem - selecione uma persona primeiro'}
             style={{
               flex: 1,
@@ -698,8 +712,10 @@ export default function ModernChatInput({
               lineHeight: modernChatTheme.typography.message.lineHeight,
               outline: 'none',
               minHeight: isMobile ? '48px' : '52px',
+              maxHeight: '120px',
               color: modernChatTheme.colors.neutral.text,
-              resize: 'none'
+              resize: 'none',
+              overflow: 'auto'
             }}
             autoComplete="off"
             autoCapitalize="sentences"
@@ -747,18 +763,18 @@ export default function ModernChatInput({
         </div>
 
         {/* Character count indicator */}
-        {value.length > 800 && (
+        {value.length > 1600 && (
           <div
             style={{
               textAlign: 'right',
               marginTop: modernChatTheme.spacing.xs,
               fontSize: modernChatTheme.typography.meta.fontSize,
-              color: value.length > 950 ? 
-                '#F59E0B' : 
+              color: value.length > 1900 ?
+                '#F59E0B' :
                 modernChatTheme.colors.neutral.textMuted
             }}
           >
-            {value.length}/1000
+            {value.length}/2000
           </div>
         )}
       </form>

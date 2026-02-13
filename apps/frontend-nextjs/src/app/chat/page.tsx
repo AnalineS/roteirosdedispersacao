@@ -34,6 +34,7 @@ import FavoritesModal from '@/components/chat/modern/FavoritesModal';
 import { type ChatMessage } from '@/types/api';
 import { type ChatAttachmentPayload } from '@/services/api';
 import { type ValidPersonaId } from '@/types/personas';
+import { logger } from '@/utils/logger';
 
 export default function ChatPage() {
   const { setPersonaSelectionViewed } = useGlobalNavigation();
@@ -116,7 +117,7 @@ export default function ChatPage() {
         return getConversationsForPersona(personaId);
       });
     } catch (error) {
-      console.error('Erro ao obter conversas:', error);
+      logger.error('Erro ao obter conversas:', error);
       return [];
     }
   }, [personas, getConversationsForPersona]);
@@ -175,18 +176,20 @@ export default function ChatPage() {
 
   // Função wrapper para enviar mensagens e adicionar ao histórico
   const sendMessageWithHistory = useCallback(async (messageText: string, personaId: string) => {
-    // If there is a pending attachment, prepend context to the message
-    let finalMessage = messageText;
-    if (pendingAttachment) {
-      finalMessage = `[Arquivo anexado: ${pendingAttachment.fileName} (${(pendingAttachment.sizeBytes / 1024).toFixed(0)}KB, ${pendingAttachment.mimeType})]\n\n${messageText}`;
-      // Clear attachment after capturing
+    // Capture attachment before clearing state
+    const currentAttachment = pendingAttachment;
+
+    // Build display message (includes attachment label for UI)
+    let displayMessage = messageText;
+    if (currentAttachment) {
+      displayMessage = `[Arquivo anexado: ${currentAttachment.fileName} (${(currentAttachment.sizeBytes / 1024).toFixed(0)}KB, ${currentAttachment.mimeType})]\n\n${messageText}`;
       setPendingAttachment(null);
     }
 
     const userMessage = {
       id: `user-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       role: 'user' as const,
-      content: finalMessage,
+      content: displayMessage,
       timestamp: new Date().toISOString(),
       persona: personaId
     };
@@ -198,15 +201,11 @@ export default function ChatPage() {
     addMessageToConversation(userMessage);
 
     try {
-      // Usar o sendMessage original que retornará a resposta
-      await sendMessage(finalMessage, personaId);
-
-      // A resposta será automaticamente adicionada pelo useChat hooks
-      // O feedback de recebimento será disparado no onMessageReceived
-
+      // skipUserMessageAdd=true: page.tsx already added the user message above
+      // Pass attachment object so useChat can forward base64 to backend OCR
+      await sendMessage(messageText, personaId, 0, true, currentAttachment);
     } catch (error) {
-      console.error('Erro ao enviar mensagem:', error);
-      // Trigger feedback de erro
+      logger.error('Erro ao enviar mensagem:', error);
       triggerErrorFeedback('Erro ao enviar mensagem. Tente novamente.');
     }
   }, [sendMessage, addMessageToConversation, triggerSendFeedback, triggerErrorFeedback, pendingAttachment]);
@@ -231,7 +230,7 @@ export default function ChatPage() {
       try {
         await sendMessageWithHistory(messageText, selectedPersona);
       } catch (error) {
-        console.error('Erro ao enviar mensagem:', error);
+        logger.error('Erro ao enviar mensagem:', error);
       }
     }
   };
@@ -254,7 +253,7 @@ export default function ChatPage() {
         setPendingQuestion('');
       }
     } catch (error) {
-      console.error('Erro ao alterar persona:', error);
+      logger.error('Erro ao alterar persona:', error);
     }
   }, [setPersona, createConversation, clearAnalysis, pendingQuestion]);
 
@@ -272,7 +271,7 @@ export default function ChatPage() {
   // Handler para mostrar explicação de routing
   const handleShowRoutingExplanation = useCallback(() => {
     // Analytics tracking para visualização de explicação
-    console.log('Routing explanation viewed');
+    logger.debug('Routing explanation viewed');
   }, []);
 
   // Handler para upload de arquivos
@@ -330,7 +329,7 @@ export default function ChatPage() {
       await navigator.clipboard.writeText(message.content);
       showSuccess('Mensagem copiada!');
     } catch (error) {
-      console.error('Error copying message:', error);
+      logger.error('Error copying message:', error);
       showError('Erro ao copiar mensagem');
     }
   }, [showSuccess, showError]);
@@ -548,6 +547,8 @@ export default function ChatPage() {
           onHistoryToggle={() => setShowHistory(!showHistory)}
           showHistory={showHistory}
           onFileUpload={handleFileUpload}
+          pendingAttachment={pendingAttachment}
+          onRemoveAttachment={() => setPendingAttachment(null)}
           classifiedError={classifiedError}
           currentRetryCount={currentRetryCount}
           isManualRetrying={isManualRetrying}
