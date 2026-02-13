@@ -84,31 +84,29 @@ def create_app():
         CORS(app, origins=config.CORS_ORIGINS)
         logger.info("Standard CORS initialized")
 
-    # Register blueprints
-    try:
-        from blueprints.medical_core_blueprint import medical_core_bp
-        from blueprints.personas_blueprint import personas_bp
-        from blueprints.communication_blueprint import communication_bp
-        from blueprints.engagement_multimodal_blueprint import engagement_multimodal_bp
-        from blueprints.analytics_observability_blueprint import analytics_observability_bp
-        from blueprints.infrastructure_blueprint import infrastructure_bp
-        from blueprints.authentication_blueprint import authentication_bp
-        from blueprints.api_documentation_blueprint import api_documentation_bp
-
-        # Register all blueprints without additional prefix since they already define /api/v1
-        app.register_blueprint(medical_core_bp)
-        app.register_blueprint(personas_bp)  # Comprehensive personas management with proper rate limiting
-        app.register_blueprint(communication_bp)
-        app.register_blueprint(engagement_multimodal_bp)
-        app.register_blueprint(analytics_observability_bp)
-        app.register_blueprint(infrastructure_bp)
-        app.register_blueprint(authentication_bp)
-        app.register_blueprint(api_documentation_bp)
-
-        logger.info("Core blueprints registered successfully")
-
-    except ImportError as e:
-        logger.error("Failed to import core blueprints: %s", sanitize_error(e))
+    # Register core blueprints individually so one failure doesn't kill all
+    import importlib
+    _core_blueprints = [
+        ('blueprints.medical_core_blueprint', 'medical_core_bp'),
+        ('blueprints.personas_blueprint', 'personas_bp'),
+        ('blueprints.communication_blueprint', 'communication_bp'),
+        ('blueprints.engagement_multimodal_blueprint', 'engagement_multimodal_bp'),
+        ('blueprints.analytics_observability_blueprint', 'analytics_observability_bp'),
+        ('blueprints.infrastructure_blueprint', 'infrastructure_bp'),
+        ('blueprints.authentication_blueprint', 'authentication_bp'),
+        ('blueprints.api_documentation_blueprint', 'api_documentation_bp'),
+    ]
+    _registered_core = 0
+    for module_path, bp_name in _core_blueprints:
+        try:
+            mod = importlib.import_module(module_path)
+            bp = getattr(mod, bp_name)
+            app.register_blueprint(bp)
+            _registered_core += 1
+            logger.info("Registered core blueprint: %s", bp_name)
+        except Exception as e:
+            logger.error("Failed to register %s: %s", bp_name, sanitize_error(e))
+    logger.info("Core blueprints registered: %d/%d", _registered_core, len(_core_blueprints))
 
     # Register additional blueprints individually (each with its own fallback)
     _optional_blueprints = [

@@ -46,7 +46,7 @@ RUN pip install --upgrade pip setuptools wheel && \
     find /usr/local/lib/python*/site-packages -name "*.pyc" -delete && \
     find /usr/local/lib/python*/site-packages -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true && \
     find /usr/local/lib/python*/site-packages/torch/lib -name "*.so.debug" -delete 2>/dev/null || true && \
-    find /usr/local/lib/python*/site-packages -name "tests" -type d -exec rm -rf {} + 2>/dev/null || true
+    find /usr/local/lib/python*/site-packages -name "tests" -not -path "*/numpy/*" -type d -exec rm -rf {} + 2>/dev/null || true
 
 # ============================================================================
 # STAGE 2: PRODUCTION RUNTIME
