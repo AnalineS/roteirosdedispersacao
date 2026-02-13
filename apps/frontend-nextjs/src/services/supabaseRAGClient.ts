@@ -6,6 +6,7 @@
 import { ragCache } from './simpleCache';
 import { secureLogger } from '@/utils/secureLogger';
 import { CompleteRAGStats as RAGStats } from '@/types/rag-knowledge';
+import config from '@/config/environment';
 
 export interface RAGQuery {
   query: string;
@@ -70,7 +71,7 @@ export class SupabaseRAGClient {
 
   private constructor() {
     // Configurar baseUrl baseado no ambiente
-    this.baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+    this.baseUrl = config.api.baseUrl;
     this.apiKey = process.env.NEXT_PUBLIC_RAG_API_KEY || null;
   }
 

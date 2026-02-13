@@ -6,6 +6,7 @@
 
 import { logger } from '@/utils/logger';
 import { safeLocalStorage } from '@/hooks/useClientStorage';
+import config from '@/config/environment';
 
 interface MedicalEvent {
   event_type: 'medical_interaction' | 'medical_error' | 'clinical_task' | 'educational_progress';
@@ -38,7 +39,7 @@ class MedicalAnalyticsClient {
 
   private constructor() {
     this.sessionId = this.generateSessionId();
-    this.apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+    this.apiBaseUrl = config.api.baseUrl ? `${config.api.baseUrl}/api` : '/api';
     this.initializeSession();
   }
 

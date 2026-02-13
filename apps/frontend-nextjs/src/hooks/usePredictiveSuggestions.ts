@@ -6,6 +6,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { logger } from '@/utils/logger';
 import { useChat } from './useChat';
+import config from '@/config/environment';
 
 export interface PredictiveSuggestion {
   id: string;
@@ -53,7 +54,7 @@ interface PredictiveSuggestionsHook extends PredictiveSuggestionsState {
   refreshUserContext: () => Promise<void>;
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+const API_BASE = config.api.baseUrl;
 
 export function usePredictiveSuggestions(): PredictiveSuggestionsHook {
   const { sessionId, currentPersona } = useChat();

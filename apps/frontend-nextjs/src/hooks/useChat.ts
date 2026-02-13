@@ -156,7 +156,7 @@ export function useChat(options: UseChatOptions = {}) {
     lastSearchResult,
     stats: knowledgeStats
   } = useKnowledgeBase({
-    prefetchCommon: true,
+    prefetchCommon: false,
     autoEnrich: enableKnowledgeEnrichment
   });
   

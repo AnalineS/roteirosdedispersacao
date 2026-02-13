@@ -144,23 +144,13 @@ interface ValidationAlert {
 }
 
 import { logger } from '@/utils/logger';
+import config from '@/config/environment';
 
 class ValidationService {
   private baseUrl: string;
 
   constructor() {
-    // Detectar ambiente
-    if (typeof window !== "undefined") {
-      // Cliente browser
-      this.baseUrl =
-        process.env.NEXT_PUBLIC_API_URL ||
-        (window.location.hostname === "localhost"
-          ? "http://localhost:5000"
-          : "https://your-backend-url.com");
-    } else {
-      // Servidor Next.js
-      this.baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-    }
+    this.baseUrl = config.api.baseUrl;
   }
 
   /**

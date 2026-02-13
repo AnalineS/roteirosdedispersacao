@@ -1,9 +1,10 @@
 // Backend API Leaderboard Service - Fully Functional Implementation
 
 import type { LearningProgress } from '@/types/gamification';
+import config from '@/config/environment';
 
 // API configuration
-const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+const API_BASE_URL = config.api.baseUrl;
 
 // Types for API responses
 interface APIResponse<T> {

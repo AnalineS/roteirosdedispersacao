@@ -7,6 +7,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { logger } from '@/utils/logger';
 import { useChat } from './useChat';
+import config from '@/config/environment';
 
 export interface ImageUploadResult {
   success: boolean;
@@ -124,7 +125,7 @@ interface MultimodalHook extends MultimodalState {
   validateFile: (file: File) => { valid: boolean; error?: string };
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+const API_BASE = config.api.baseUrl;
 
 export function useMultimodal(): MultimodalHook {
   const { sessionId } = useChat();
