@@ -59,14 +59,6 @@ export default function ChatPage() {
     setPersonaSelectionViewed();
   }, [setPersonaSelectionViewed]);
 
-  // Auto-criar conversa nova se a atual esta obsoleta (> 30 min)
-  useEffect(() => {
-    if (currentConversationId && isConversationStale(currentConversationId)) {
-      createConversation(contextPersona || 'dr_gasnelio');
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Apenas no mount
-  
   const {
     createConversation,
     switchToConversation,
@@ -106,12 +98,26 @@ export default function ChatPage() {
   });
   
   const [inputValue, setInputValue] = useState('');
-  const [selectedPersona, setSelectedPersona] = useState<string | null>(contextPersona); // Usar persona do contexto
+  const [selectedPersona, setSelectedPersona] = useState<string | null>(() => {
+    // Use context if available, otherwise check localStorage for prior selection
+    if (contextPersona) return contextPersona;
+    if (typeof window !== 'undefined') {
+      return safeLocalStorage()?.getItem('selectedPersona') || null;
+    }
+    return null;
+  });
   const [showHistory, setShowHistory] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [pendingQuestion, setPendingQuestion] = useState<string>('');
   const [pendingAttachment, setPendingAttachment] = useState<ChatAttachmentPayload | null>(null);
-  
+
+  // Auto-criar conversa nova se a atual esta obsoleta (> 30 min)
+  useEffect(() => {
+    if (selectedPersona && currentConversationId && isConversationStale(currentConversationId)) {
+      createConversation(selectedPersona);
+    }
+  }, [selectedPersona, currentConversationId, isConversationStale, createConversation]);
+
   // LGPD Compliance para coleta de dados sensíveis de saúde
   const { hasConsent, isLoading: lgpdLoading } = useLGPDConsent('chat');
   
@@ -175,14 +181,15 @@ export default function ChatPage() {
   // Sincronizar persona do contexto com estado local
   useEffect(() => {
     if (contextPersona && contextPersona !== selectedPersona) {
-      queueMicrotask(() => setSelectedPersona(contextPersona));
-      
+      setSelectedPersona(contextPersona);
+
       // Criar conversa se não houver uma ativa
       if (!currentConversationId) {
         createConversation(contextPersona);
       }
     }
-  }, [contextPersona, selectedPersona, currentConversationId, createConversation]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [contextPersona]); // Only re-run when context persona changes
 
 
   // Função wrapper para enviar mensagens e adicionar ao histórico
@@ -247,26 +254,33 @@ export default function ChatPage() {
   };
 
   const handlePersonaChange = useCallback(async (personaId: string) => {
-    try {
-      // Usar o contexto unificado para mudar persona
-      await setPersona(personaId as ValidPersonaId, 'explicit');
-      setSelectedPersona(personaId);
-      
-      // Criar nova conversa para a persona selecionada
-      createConversation(personaId);
-      
-      // Limpar análise de roteamento
-      clearAnalysis();
-      
-      // Se há uma pergunta pendente, enviá-la agora
-      if (pendingQuestion) {
-        setInputValue(pendingQuestion);
-        setPendingQuestion('');
-      }
-    } catch (error) {
-      logger.error('Erro ao alterar persona:', error);
+    // Set local state FIRST for immediate UI response
+    setSelectedPersona(personaId);
+    createConversation(personaId);
+    clearAnalysis();
+
+    // Auto-send pending question if user typed before selecting persona
+    const questionToSend = pendingQuestion;
+    if (questionToSend) {
+      setPendingQuestion('');
+      setInputValue('');
+      queueMicrotask(async () => {
+        try {
+          await sendMessageWithHistory(questionToSend, personaId);
+        } catch (error) {
+          logger.error('Erro ao enviar mensagem pendente:', error);
+          setInputValue(questionToSend);
+        }
+      });
     }
-  }, [setPersona, createConversation, clearAnalysis, pendingQuestion]);
+
+    // Propagate to context (non-blocking for UI)
+    try {
+      await setPersona(personaId as ValidPersonaId, 'explicit');
+    } catch (error) {
+      logger.error('Erro ao propagar persona para contexto:', error);
+    }
+  }, [setPersona, createConversation, clearAnalysis, pendingQuestion, sendMessageWithHistory]);
 
   // Handler para aceitar recomendação de routing
   const handleAcceptRouting = useCallback((personaId: string) => {

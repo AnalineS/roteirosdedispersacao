@@ -20,18 +20,19 @@ export default function PersonaSwitch({
 }: PersonaSwitchProps) {
   const [isTransitioning, setIsTransitioning] = useState(false);
   
-  // Garantir que sempre haja uma persona selecionada
-  const actualSelected = selected || 'ga';
+  // Show actual state - null means no selection yet
+  const actualSelected = selected || null;
   const isDrGasnelio = actualSelected === 'dr_gasnelio';
+  const hasSelection = actualSelected !== null;
 
   const handleToggle = () => {
     if (isTransitioning) return;
-    
+
     setIsTransitioning(true);
-    
-    // Alternar entre as duas personas
-    const newPersona = isDrGasnelio ? 'ga' : 'dr_gasnelio';
-    
+
+    // First click selects 'ga', subsequent clicks toggle
+    const newPersona = !hasSelection ? 'ga' : (isDrGasnelio ? 'ga' : 'dr_gasnelio');
+
     setTimeout(() => {
       onChange(newPersona);
       setIsTransitioning(false);
@@ -63,8 +64,8 @@ export default function PersonaSwitch({
         style={{
           padding: `0 ${modernChatTheme.spacing.sm}`,
           fontSize: modernChatTheme.typography.meta.fontSize,
-          fontWeight: isDrGasnelio ? '600' : '400',
-          color: isDrGasnelio ? modernChatTheme.colors.personas.gasnelio.primary : modernChatTheme.colors.neutral.textMuted,
+          fontWeight: hasSelection && isDrGasnelio ? '600' : '400',
+          color: hasSelection && isDrGasnelio ? modernChatTheme.colors.personas.gasnelio.primary : modernChatTheme.colors.neutral.textMuted,
           transition: 'all 0.3s ease',
           whiteSpace: 'nowrap',
           display: isMobile ? 'none' : 'block'
@@ -81,16 +82,18 @@ export default function PersonaSwitch({
         data-testid={`persona-option-${actualSelected}`}
         role="radio"
         aria-checked={true}
-        aria-label={`${isDrGasnelio ? 'Dr. Gasnelio' : 'Gá'} - Assistente ${isDrGasnelio ? 'Técnico' : 'Empático'}`}
+        aria-label={!hasSelection ? 'Selecionar assistente' : `${isDrGasnelio ? 'Dr. Gasnelio' : 'Gá'} - Assistente ${isDrGasnelio ? 'Técnico' : 'Empático'}`}
         style={{
           position: 'relative',
           width: '60px',
           height: '32px',
           borderRadius: '50px',
           border: 'none',
-          background: isDrGasnelio
-            ? modernChatTheme.colors.personas.gasnelio.primary
-            : modernChatTheme.colors.personas.ga.primary,
+          background: !hasSelection
+            ? modernChatTheme.colors.neutral.border
+            : isDrGasnelio
+              ? modernChatTheme.colors.personas.gasnelio.primary
+              : modernChatTheme.colors.personas.ga.primary,
           cursor: isTransitioning ? 'wait' : 'pointer',
           transition: 'background 0.3s ease',
           padding: 0,
@@ -104,7 +107,7 @@ export default function PersonaSwitch({
           style={{
             position: 'absolute',
             top: '3px',
-            left: isDrGasnelio ? '3px' : '31px',
+            left: !hasSelection ? '17px' : isDrGasnelio ? '3px' : '31px',
             width: '26px',
             height: '26px',
             borderRadius: '50%',
@@ -129,6 +132,8 @@ export default function PersonaSwitch({
                 animation: 'spin 0.6s linear infinite'
               }}
             />
+          ) : !hasSelection ? (
+            <span style={{ fontSize: '14px', color: modernChatTheme.colors.neutral.textMuted }}>?</span>
           ) : (
             <Image
               src={isDrGasnelio ? '/images/avatars/dr-gasnelio.png' : '/images/avatars/ga.png'}
@@ -150,8 +155,8 @@ export default function PersonaSwitch({
         style={{
           padding: `0 ${modernChatTheme.spacing.sm}`,
           fontSize: modernChatTheme.typography.meta.fontSize,
-          fontWeight: !isDrGasnelio ? '600' : '400',
-          color: !isDrGasnelio ? modernChatTheme.colors.personas.ga.primary : modernChatTheme.colors.neutral.textMuted,
+          fontWeight: hasSelection && !isDrGasnelio ? '600' : '400',
+          color: hasSelection && !isDrGasnelio ? modernChatTheme.colors.personas.ga.primary : modernChatTheme.colors.neutral.textMuted,
           transition: 'all 0.3s ease',
           whiteSpace: 'nowrap',
           display: isMobile ? 'none' : 'block'
@@ -204,9 +209,11 @@ export default function PersonaSwitch({
         }
 
         .toggle-switch:focus-visible {
-          outline: 2px solid ${isDrGasnelio
-            ? modernChatTheme.colors.personas.gasnelio.primary
-            : modernChatTheme.colors.personas.ga.primary};
+          outline: 2px solid ${!hasSelection
+            ? modernChatTheme.colors.neutral.textMuted
+            : isDrGasnelio
+              ? modernChatTheme.colors.personas.gasnelio.primary
+              : modernChatTheme.colors.personas.ga.primary};
           outline-offset: 3px;
         }
 

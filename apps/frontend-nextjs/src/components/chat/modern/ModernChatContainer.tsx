@@ -187,8 +187,8 @@ const ModernChatContainer = memo(function ModernChatContainer({
         />
       )}
 
-      {/* OTIMIZAÇÃO CRÍTICA: Usar componentes especializados */}
-      {!selectedPersona ? (
+      {/* Show empty state when no persona selected OR persona selected but no messages */}
+      {(!selectedPersona || messages.length === 0) ? (
         <ChatEmptyState
           personas={personas}
           selectedPersona={selectedPersona}
@@ -239,7 +239,7 @@ const ModernChatContainer = memo(function ModernChatContainer({
           onChange={onInputChange}
           onSubmit={onSendMessage}
           persona={currentPersona}
-          personaId={selectedPersona || 'gasnelio'}
+          personaId={selectedPersona || 'dr_gasnelio'}
           isLoading={isLoading}
           isMobile={isMobile}
           suggestions={suggestions}
@@ -248,7 +248,7 @@ const ModernChatContainer = memo(function ModernChatContainer({
           onFileUpload={onFileUpload}
           pendingAttachment={pendingAttachment}
           onRemoveAttachment={onRemoveAttachment}
-          placeholder={currentPersona ? `Digite sua mensagem para ${currentPersona.name}...` : 'Digite sua mensagem...'}
+          placeholder={currentPersona ? `Digite sua mensagem para ${currentPersona.name}...` : 'Selecione um assistente acima para comecar...'}
         />
       </div>
 
