@@ -59,11 +59,13 @@ def _set_auth_cookies(response, access_token, refresh_token):
         max_age=REFRESH_TOKEN_MAX_AGE,
         path=AUTH_PREFIX
     )
-    # Non-sensitive indicator for frontend to know user is logged in
+    # Non-sensitive boolean indicator read by frontend JS (jwt-client.ts:294).
+    # httponly=False is intentional: frontend uses Cookies.get('is_authenticated')
+    # to determine login state. Actual auth tokens above are httponly=True.
     response.set_cookie(
         'is_authenticated',
         value='true',
-        httponly=False,
+        httponly=False,  # nosec - intentional: non-sensitive UI flag, see comment above
         secure=COOKIE_SECURE,
         samesite=COOKIE_SAMESITE,
         max_age=ACCESS_TOKEN_MAX_AGE,

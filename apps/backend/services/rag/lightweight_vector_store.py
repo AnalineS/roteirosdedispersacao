@@ -263,7 +263,7 @@ class LightweightVectorStore:
     def _generate_vector_id(self, text: str) -> str:
         """Generate compact vector ID"""
         # Use shorter hash for memory efficiency
-        return hashlib.md5(text.encode()).hexdigest()[:12]
+        return hashlib.sha256(text.encode()).hexdigest()[:12]
 
     def _get_vector_file_path(self, vector_id: str) -> str:
         """Get file path for vector storage"""

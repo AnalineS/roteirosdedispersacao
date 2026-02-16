@@ -817,16 +817,57 @@ class ContinuousMonitoringSystem extends EventEmitter {
     }
     
     /**
+     * Escapa caracteres HTML para prevenir XSS
+     */
+    escapeHtml(str) {
+        const htmlEscapes = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;',
+        };
+        return String(str).replace(/[&<>"']/g, (ch) => htmlEscapes[ch]);
+    }
+
+    /**
+     * Carrega opções TLS para HTTPS se certificados estiverem configurados
+     */
+    getTLSOptions() {
+        const certPath = process.env.TLS_CERT_PATH;
+        const keyPath = process.env.TLS_KEY_PATH;
+        if (certPath && keyPath) {
+            try {
+                const fsSyncModule = require('fs');
+                return {
+                    cert: fsSyncModule.readFileSync(certPath),
+                    key: fsSyncModule.readFileSync(keyPath),
+                };
+            } catch (err) {
+                console.warn(`⚠️ Falha ao carregar certificados TLS: ${err.message}`);
+            }
+        }
+        return null;
+    }
+
+    /**
      * Inicia dashboard em tempo real
      */
     async startRealTimeDashboard() {
-        console.log('📊 Dashboard em tempo real disponível em: http://localhost:3030');
-        
-        const server = http.createServer((req, res) => {
+        const tlsOptions = this.getTLSOptions();
+        let server;
+
+        const requestHandler = (req, res) => {
+            const securityHeaders = {
+                'X-Content-Type-Options': 'nosniff',
+                'X-Frame-Options': 'DENY',
+                'X-XSS-Protection': '1; mode=block',
+            };
+
             if (req.url === '/metrics') {
-                res.writeHead(200, { 
+                res.writeHead(200, {
                     'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': '*'
+                    ...securityHeaders,
                 });
                 res.end(JSON.stringify({
                     metrics: this.metrics,
@@ -835,15 +876,27 @@ class ContinuousMonitoringSystem extends EventEmitter {
                     timestamp: new Date().toISOString()
                 }));
             } else if (req.url === '/') {
-                res.writeHead(200, { 'Content-Type': 'text/html' });
+                res.writeHead(200, {
+                    'Content-Type': 'text/html',
+                    ...securityHeaders,
+                });
                 res.end(this.generateDashboardHTML());
             } else {
-                res.writeHead(404);
+                res.writeHead(404, securityHeaders);
                 res.end('Not Found');
             }
-        });
-        
-        server.listen(3030);
+        };
+
+        if (tlsOptions) {
+            server = https.createServer(tlsOptions, requestHandler);
+            console.log('📊 Dashboard em tempo real disponível em: https://localhost:3030');
+        } else {
+            console.warn('⚠️ TLS certificates not configured (set TLS_CERT_PATH and TLS_KEY_PATH). Falling back to HTTP on localhost only.');
+            server = http.createServer(requestHandler);
+            console.log('📊 Dashboard em tempo real disponível em: http://localhost:3030');
+        }
+
+        server.listen(3030, '127.0.0.1');
     }
     
     /**
@@ -919,9 +972,9 @@ class ContinuousMonitoringSystem extends EventEmitter {
             <h2>🚨 Alertas Ativos</h2>
             <div id="alerts">
                 ${this.state.alerts.filter(a => !a.resolved).map(alert => `
-                    <div class="alert ${alert.level}">
-                        <strong>${alert.type}</strong>: ${alert.message}
-                        <small style="float: right;">${new Date(alert.timestamp).toLocaleString()}</small>
+                    <div class="alert ${this.escapeHtml(alert.level)}">
+                        <strong>${this.escapeHtml(alert.type)}</strong>: ${this.escapeHtml(alert.message)}
+                        <small style="float: right;">${this.escapeHtml(new Date(alert.timestamp).toLocaleString())}</small>
                     </div>
                 `).join('')}
             </div>

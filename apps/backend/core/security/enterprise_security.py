@@ -371,7 +371,7 @@ class EnterpriseSecurityFramework:
     def _create_incident(self, ip: str, attack_type: AttackType,
                         threat_level: ThreatLevel, details: Dict[str, Any]) -> SecurityIncident:
         """Cria incidente de segurança"""
-        incident_id = hashlib.md5(f"{ip}{attack_type.value}{time.time()}".encode()).hexdigest()[:8]
+        incident_id = hashlib.sha256(f"{ip}{attack_type.value}{time.time()}".encode()).hexdigest()[:8]
 
         return SecurityIncident(
             incident_id=incident_id,
@@ -415,7 +415,7 @@ class EnterpriseSecurityFramework:
 
     def _generate_request_id(self) -> str:
         """Gera ID único para request (tracking)"""
-        return hashlib.md5(f"{time.time()}{request.remote_addr}".encode()).hexdigest()[:8]
+        return hashlib.sha256(f"{time.time()}{request.remote_addr}".encode()).hexdigest()[:8]
 
     # Métodos públicos para estatísticas e monitoramento
 

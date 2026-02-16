@@ -494,11 +494,11 @@ class MedicalAnalyticsService:
 
     def _generate_event_id(self) -> str:
         """Generate unique event ID"""
-        return f"evt_{datetime.now(timezone.utc).timestamp()}_{hashlib.md5(os.urandom(16)).hexdigest()[:8]}"
+        return f"evt_{datetime.now(timezone.utc).timestamp()}_{hashlib.sha256(os.urandom(16)).hexdigest()[:8]}"
 
     def _generate_session_id(self) -> str:
         """Generate unique session ID"""
-        return f"ses_{datetime.now(timezone.utc).timestamp()}_{hashlib.md5(os.urandom(16)).hexdigest()[:8]}"
+        return f"ses_{datetime.now(timezone.utc).timestamp()}_{hashlib.sha256(os.urandom(16)).hexdigest()[:8]}"
 
     def _hash_ip(self, ip_address: Optional[str]) -> Optional[str]:
         """Hash IP address for privacy compliance (LGPD)"""

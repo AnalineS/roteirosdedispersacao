@@ -4,15 +4,14 @@ import { useState, useEffect, useCallback, Suspense, lazy } from 'react';
 import Link from 'next/link';
 import EducationalLayout from '@/components/layout/EducationalLayout';
 import ModernChatContainer from '@/components/chat/modern/ModernChatContainer';
-import PersonaSwitch from '@/components/chat/modern/PersonaSwitch';
+// PersonaSwitch lives inside ModernChatContainer via ModernChatHeader
 import RoutingIndicator from '@/components/chat/RoutingIndicator';
 import { ChatAccessibilityProvider } from '@/components/chat/accessibility/ChatAccessibilityProvider';
 import SystemStatus from '@/components/system/SystemStatus';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { useGlobalNavigation } from '@/components/navigation/GlobalNavigationProvider';
 import LGPDCompliance, { useLGPDConsent } from '@/components/privacy/LGPDCompliance';
-import ChatNavigation, { useChatNavigation } from '@/components/navigation/ChatNavigation';
-import ConversationProgress from '@/components/progress/ConversationProgress';
+import { useChatNavigation } from '@/components/navigation/ChatNavigation';
 import ChatFeedback, { useChatFeedback } from '@/components/ui/ChatFeedback';
 
 // Lazy load dos componentes complementares
@@ -467,12 +466,7 @@ export default function ChatPage() {
         />
       )}
       
-      {/* Chat Navigation */}
-      <ChatNavigation 
-        currentPersona={currentPersona?.name}
-        conversationLength={currentMessages.length}
-        showProgress={true}
-      />
+      {/* ChatNavigation removed - ModernChatHeader provides all navigation controls */}
       
       {/* Conversation History Sidebar */}
       <Suspense fallback={<SidebarLoader />}>
@@ -489,51 +483,23 @@ export default function ChatPage() {
         />
       </Suspense>
       
-      {/* Container com sidebar offset - corrigido para não sobrepor */}
+      {/* Container com sidebar offset e altura controlada para evitar scroll duplo */}
       <div style={{
         marginLeft: showHistory && !isMobile ? '320px' : '0',
         transition: 'margin-left 0.3s ease',
         position: 'relative',
-        zIndex: 1
+        zIndex: 1,
+        height: 'calc(100vh - 64px)',
+        overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column' as const
       }}>
         {/* System Status */}
         <div className="fixed top-4 right-4 z-50">
           <SystemStatus showDetails={false} />
         </div>
         
-        {/* Conversation Progress Indicator */}
-        {hasConsent && currentMessages.length > 0 && (
-          <div style={{
-            maxWidth: '800px',
-            margin: '0 auto 1rem',
-            padding: '0 1rem'
-          }}>
-            <ConversationProgress
-              messages={currentMessages}
-              currentPersona={currentPersona?.name}
-              variant="detailed"
-            />
-          </div>
-        )}
-
-        {/* Persona Switcher - Issue #221 */}
-        {/* Show PersonaSwitch after LGPD consent, regardless of selection */}
-        {hasConsent && Object.keys(personas).length > 0 && (
-          <div style={{
-            maxWidth: '800px',
-            margin: '0 auto 1rem',
-            padding: '0 1rem',
-            display: 'flex',
-            justifyContent: 'flex-end'
-          }}>
-            <PersonaSwitch
-              personas={personas}
-              selected={selectedPersona}
-              onChange={handlePersonaChange}
-              isMobile={isMobile}
-            />
-          </div>
-        )}
+        {/* ConversationProgress and PersonaSwitch removed - both live inside ModernChatContainer */}
 
         {/* Routing Indicator - Sugere persona quando usuario digita sem selecionar */}
         {hasConsent && shouldShowRouting() && currentAnalysis && getRecommendedPersona() && (
@@ -555,44 +521,46 @@ export default function ChatPage() {
           </div>
         )}
 
-        <ModernChatContainer
-          personas={personas}
-          selectedPersona={selectedPersona}
-          onPersonaChange={handlePersonaChange}
-          messages={currentMessages}
-          inputValue={inputValue}
-          onInputChange={setInputValue}
-          onSendMessage={handleSendMessage}
-          isLoading={chatLoading}
-          isMobile={isMobile}
-          currentSentiment={currentSentiment}
-          knowledgeStats={knowledgeStats as unknown as Record<string, unknown>}
-          isSearchingKnowledge={isSearchingKnowledge}
-          fallbackState={fallbackState}
-          onHistoryToggle={() => setShowHistory(!showHistory)}
-          showHistory={showHistory}
-          onFileUpload={handleFileUpload}
-          pendingAttachment={pendingAttachment}
-          onRemoveAttachment={() => setPendingAttachment(null)}
-          classifiedError={classifiedError}
-          currentRetryCount={currentRetryCount}
-          isManualRetrying={isManualRetrying}
-          onManualRetry={() => {
-            // Issue #330: Manual retry with last message
-            const lastUserMessage = currentMessages.filter(m => m.role === 'user').pop();
-            if (lastUserMessage && selectedPersona) {
-              manualRetry(lastUserMessage.content, selectedPersona);
-            }
-          }}
-          onCopyMessage={handleCopyMessage}
-          onToggleFavorite={handleToggleFavorite}
-          onRegenerateMessage={handleRegenerateMessage}
-          isFavorite={isFavorite}
-          canRegenerate={canRegenerate}
-          favoritesCount={favorites.length}
-          onShowFavorites={() => setShowFavoritesModal(true)}
-        />
-        
+        <div style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
+          <ModernChatContainer
+            personas={personas}
+            selectedPersona={selectedPersona}
+            onPersonaChange={handlePersonaChange}
+            messages={currentMessages}
+            inputValue={inputValue}
+            onInputChange={setInputValue}
+            onSendMessage={handleSendMessage}
+            isLoading={chatLoading}
+            isMobile={isMobile}
+            currentSentiment={currentSentiment}
+            knowledgeStats={knowledgeStats as unknown as Record<string, unknown>}
+            isSearchingKnowledge={isSearchingKnowledge}
+            fallbackState={fallbackState}
+            onHistoryToggle={() => setShowHistory(!showHistory)}
+            showHistory={showHistory}
+            onFileUpload={handleFileUpload}
+            pendingAttachment={pendingAttachment}
+            onRemoveAttachment={() => setPendingAttachment(null)}
+            classifiedError={classifiedError}
+            currentRetryCount={currentRetryCount}
+            isManualRetrying={isManualRetrying}
+            onManualRetry={() => {
+              // Issue #330: Manual retry with last message
+              const lastUserMessage = currentMessages.filter(m => m.role === 'user').pop();
+              if (lastUserMessage && selectedPersona) {
+                manualRetry(lastUserMessage.content, selectedPersona);
+              }
+            }}
+            onCopyMessage={handleCopyMessage}
+            onToggleFavorite={handleToggleFavorite}
+            onRegenerateMessage={handleRegenerateMessage}
+            isFavorite={isFavorite}
+            canRegenerate={canRegenerate}
+            favoritesCount={favorites.length}
+            onShowFavorites={() => setShowFavoritesModal(true)}
+          />
+        </div>
+
         {/* Chat Feedback Overlay */}
         <ChatFeedback
           enableSound={true}

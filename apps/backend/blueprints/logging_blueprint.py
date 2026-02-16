@@ -209,8 +209,8 @@ def log_analytics_event():
         analytics_properties = {
             **properties,
             'source': 'frontend',
-            'ip_hash': hashlib.md5(request.remote_addr.encode()).hexdigest()[:8],
-            'user_agent_hash': hashlib.md5(
+            'ip_hash': hashlib.sha256(request.remote_addr.encode()).hexdigest()[:8],
+            'user_agent_hash': hashlib.sha256(
                 request.headers.get('User-Agent', '').encode()
             ).hexdigest()[:8],
             'referrer': request.referrer

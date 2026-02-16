@@ -749,6 +749,19 @@ def main():
 
     args = parser.parse_args()
 
+    # Path traversal protection: validate --output stays within project
+    allowed_base = os.path.realpath(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+    if args.output:
+        resolved_output = os.path.realpath(os.path.abspath(args.output))
+        if not resolved_output.startswith(allowed_base + os.sep) and resolved_output != allowed_base:
+            print(f"Error: --output path must be within {allowed_base}")
+            sys.exit(1)
+    if args.config:
+        resolved_config = os.path.realpath(os.path.abspath(args.config))
+        if not resolved_config.startswith(allowed_base + os.sep) and resolved_config != allowed_base:
+            print(f"Error: --config path must be within {allowed_base}")
+            sys.exit(1)
+
     validator = MedicalAIValidator(config_path=args.config)
 
     # Run validation

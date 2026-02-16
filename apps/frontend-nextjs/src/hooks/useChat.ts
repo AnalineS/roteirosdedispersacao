@@ -338,7 +338,13 @@ export function useChat(options: UseChatOptions = {}) {
       if (retryCount < maxRetries && classified.canRetry) {
         // Retry with exponential backoff
         setTimeout(() => {
-          sendMessage(message, personaId, retryCount + 1);
+          try {
+            sendMessage(message, personaId, retryCount + 1);
+          } catch (retryErr) {
+            logger.error('Retry failed:', retryErr);
+            setError('Falha ao tentar novamente.');
+            setLoading(false);
+          }
         }, retryDelay);
 
         setError(`Tentando novamente... (${retryCount + 1}/${maxRetries})`);

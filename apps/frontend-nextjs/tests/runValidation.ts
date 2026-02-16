@@ -112,10 +112,17 @@ async function executeCompleteValidation(): Promise<void> {
     if (typeof window === 'undefined') {
       const fs = require('fs');
       const path = require('path');
-      
-      const reportPath = path.join(process.cwd(), 'validation-report.json');
-      fs.writeFileSync(reportPath, JSON.stringify(results, null, 2));
-      console.log(colorize(`📄 Relatório salvo em: ${reportPath}`, 'blue'));
+
+      const baseDir = path.resolve(process.cwd());
+      const reportPath = path.resolve(baseDir, 'validation-report.json');
+
+      // Prevent path traversal: ensure reportPath stays within baseDir
+      if (!reportPath.startsWith(baseDir + path.sep) && reportPath !== baseDir) {
+        console.error(colorize('❌ Path traversal detected, aborting report write.', 'red'));
+      } else {
+        fs.writeFileSync(reportPath, JSON.stringify(results, null, 2));
+        console.log(colorize(`📄 Relatório salvo em: ${reportPath}`, 'blue'));
+      }
     }
     
     process.exit(results.overallPassed ? 0 : 1);

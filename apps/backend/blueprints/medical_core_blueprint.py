@@ -106,7 +106,7 @@ def chat():
         # Scope detection - filter clearly out-of-scope questions before RAG
         try:
             from core.validation.scope_detector import detect_question_scope, get_limitation_response
-            scope_result = detect_question_scope(message)
+            scope_result = detect_question_scope(full_message)
             if scope_result and not scope_result.get('is_in_scope', True):
                 limitation = get_limitation_response(persona, message)
                 redirect = scope_result.get('redirect_suggestion', '')

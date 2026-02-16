@@ -8,6 +8,25 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import { useHapticFeedback } from '@/utils/hapticFeedback';
+import { sanitizeURL } from '@/utils/sanitization';
+
+const ALLOWED_OAUTH_HOSTS = [
+  'accounts.google.com',
+  'www.googleapis.com',
+];
+
+function isAllowedRedirectUrl(url: string): boolean {
+  const sanitized = sanitizeURL(url);
+  if (!sanitized) return false;
+  try {
+    const parsed = new URL(sanitized);
+    return ALLOWED_OAUTH_HOSTS.some(
+      host => parsed.hostname === host || parsed.hostname.endsWith('.' + host)
+    );
+  } catch {
+    return false;
+  }
+}
 
 interface ConnectedAccount {
   provider: 'google.com';
@@ -95,8 +114,12 @@ export default function ConnectedAccounts({
 
       if (data.success) {
         if (data.authUrl) {
-          // Redirecionar para OAuth
-          window.location.href = data.authUrl;
+          if (isAllowedRedirectUrl(data.authUrl)) {
+            window.location.href = data.authUrl;
+          } else {
+            setError('URL de autenticacao invalida');
+            hapticError();
+          }
         } else {
           // Conta já conectada
           success();

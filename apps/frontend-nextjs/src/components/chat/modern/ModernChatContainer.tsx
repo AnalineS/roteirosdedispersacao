@@ -134,6 +134,13 @@ const ModernChatContainer = memo(function ModernChatContainer({
       announceSystemStatus(`Erro: ${classifiedError.userMessage}`, 'error');
     }
   }, [classifiedError, announceSystemStatus]);
+
+  // Announce persona changes to screen readers
+  useEffect(() => {
+    if (selectedPersona && personas[selectedPersona]) {
+      announceSystemStatus(`Assistente alterado para ${personas[selectedPersona].name}`);
+    }
+  }, [selectedPersona, personas, announceSystemStatus]);
   
   // Obter persona atual
   const currentPersona = selectedPersona ? personas[selectedPersona] : null;
@@ -155,7 +162,7 @@ const ModernChatContainer = memo(function ModernChatContainer({
       role="region"
       aria-label="Interface de chat com assistentes educacionais"
       style={{
-        height: '100dvh', // Dynamic viewport height para mobile
+        height: '100%',
         display: 'flex',
         flexDirection: 'column',
         background: `linear-gradient(135deg, ${modernChatTheme.colors.background.primary} 0%, ${modernChatTheme.colors.background.secondary} 100%)`,

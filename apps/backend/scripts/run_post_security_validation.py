@@ -690,6 +690,14 @@ Examples:
 
     args = parser.parse_args()
 
+    # Path traversal protection: validate --config stays within project
+    if args.config:
+        allowed_base = os.path.realpath(os.path.abspath(str(project_root)))
+        resolved_config = os.path.realpath(os.path.abspath(args.config))
+        if not resolved_config.startswith(allowed_base + os.sep) and resolved_config != allowed_base:
+            print(f"Error: --config path must be within {allowed_base}")
+            sys.exit(1)
+
     # Load custom config if provided
     config = None
     if args.config and os.path.exists(args.config):

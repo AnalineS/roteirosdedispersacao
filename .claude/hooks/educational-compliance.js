@@ -619,7 +619,15 @@ class EducationalComplianceHook {
 
 // Executar se chamado diretamente
 if (require.main === module) {
-    const filePath = process.argv[2];
+    let filePath = process.argv[2];
+    if (filePath) {
+        const resolved = path.resolve(filePath);
+        if (!resolved.startsWith(process.cwd() + path.sep) && resolved !== process.cwd()) {
+            console.error('Error: file path must be within the workspace');
+            process.exit(1);
+        }
+        filePath = resolved;
+    }
     const compliance = new EducationalComplianceHook();
 
     compliance.runComplianceChecks(filePath)

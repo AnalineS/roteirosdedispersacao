@@ -283,7 +283,7 @@ class CloudLogger:
         context = {
             "persona": persona,
             "query_length": len(query),
-            "query_hash": hashlib.md5(query.encode()).hexdigest()[:8],
+            "query_hash": hashlib.sha256(query.encode()).hexdigest()[:8],
             "response_time_ms": response_time,
             "medical_context": True
         }

@@ -280,7 +280,7 @@ export default function SmartIndicators({
         alignItems: 'flex-end',
         gap: modernChatTheme.spacing.xs,
         zIndex: modernChatTheme.zIndex.dropdown,
-        pointerEvents: 'none' // Allow clicks to pass through
+        pointerEvents: (hasActiveIndicators || isTyping) ? 'auto' : 'none'
       }}
     >
       {/* Typing Indicator - Always on top */}

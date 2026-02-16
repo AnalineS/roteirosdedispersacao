@@ -366,6 +366,13 @@ def main():
 
     args = parser.parse_args()
 
+    # Path traversal protection: validate --root-path stays within project
+    script_dir = os.path.realpath(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+    resolved_root = os.path.realpath(os.path.abspath(args.root_path))
+    if not resolved_root.startswith(script_dir + os.sep) and resolved_root != script_dir:
+        print(f"Error: --root-path must be within {script_dir}")
+        sys.exit(1)
+
     # Initialize migrator
     migrator = BlueprintMigrator(
         root_path=args.root_path,

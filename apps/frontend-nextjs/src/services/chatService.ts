@@ -68,6 +68,8 @@ export class ChatService {
   private cache = conversationCache;
   private activeSessions = new Map<string, ChatSession>();
   private analytics: ChatAnalytics;
+  private successfulRequests = 0;
+  private failedRequests = 0;
 
   private constructor() {
     this.personaRAG = PersonaRAGIntegration.getInstance();
@@ -253,6 +255,7 @@ export class ChatService {
       return assistantMessage;
 
     } catch (error) {
+      this.failedRequests++;
       // Critical medical error tracking + explicit stderr logging
       const errorMessage = error instanceof Error ? error.message : String(error);
 
@@ -615,6 +618,7 @@ export class ChatService {
 
   private updateAnalytics(persona: 'dr_gasnelio' | 'ga', processingTime: number, confidence: number): void {
     this.analytics.totalMessages++;
+    this.successfulRequests++;
     this.analytics.personaUsage[persona]++;
     
     // Média móvel simples para tempo de resposta
@@ -629,13 +633,13 @@ export class ChatService {
   }
 
   private calculateResponseRate(): number {
-    // Implementação simplificada
-    return this.analytics.totalMessages > 0 ? 0.95 : 1.0;
+    const total = this.successfulRequests + this.failedRequests;
+    return total === 0 ? 1.0 : this.successfulRequests / total;
   }
 
   private calculateErrorRate(): number {
-    // Implementação simplificada
-    return 0.05;
+    const total = this.successfulRequests + this.failedRequests;
+    return total === 0 ? 0 : this.failedRequests / total;
   }
 
   private async checkCacheHealth(): Promise<boolean> {

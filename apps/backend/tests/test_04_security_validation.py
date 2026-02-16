@@ -246,9 +246,10 @@ class TestAuthenticationSecurity:
         """Test password handling security (if applicable)"""
 
         # Test password in requests are not logged/returned
+        TEST_PASSWORD = 'test-fixture-password-not-real'  # nosec B105 - test fixture only
         password_data = {
             'username': 'testuser',
-            'password': 'secret123',
+            'password': TEST_PASSWORD,
             'email': 'test@example.com'
         }
 

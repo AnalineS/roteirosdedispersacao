@@ -105,6 +105,9 @@
       "prettier --write"
     ]
   },
+  "overrides": {
+    "ajv@6": "6.12.6"
+  },
   "engines": {
     "node": ">=20.9.0",
     "npm": ">=8.0.0"

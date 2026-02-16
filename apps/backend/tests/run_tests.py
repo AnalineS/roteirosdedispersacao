@@ -84,7 +84,7 @@ class TestRunner:
         test_env = {
             'TESTING': 'true',
             'ENVIRONMENT': 'testing',
-            'SECRET_KEY': 'test-secret-key-for-testing-only',
+            'SECRET_KEY': os.getenv('TEST_SECRET_KEY', 'test-secret-key-for-testing-only'),  # nosec B105
             'RATE_LIMIT_ENABLED': 'false',
             'CACHE_ENABLED': 'false',
             'EMBEDDINGS_ENABLED': 'false',
@@ -92,8 +92,8 @@ class TestRunner:
             'QA_ENABLED': 'false',
             'EMAIL_ENABLED': 'false',
             'METRICS_ENABLED': 'false',
-            'OPENROUTER_API_KEY': 'test-key',
-            'HUGGINGFACE_API_KEY': 'test-key',
+            'OPENROUTER_API_KEY': os.getenv('TEST_OPENROUTER_KEY', 'test-key'),  # nosec B105
+            'HUGGINGFACE_API_KEY': os.getenv('TEST_HF_KEY', 'test-key'),  # nosec B105
             'SQLITE_DB_PATH': ':memory:'
         }
 

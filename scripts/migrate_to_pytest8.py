@@ -11,6 +11,7 @@ Usage:
     python scripts/migrate_to_pytest8.py --file tests/services/test_ai_provider_manager.py  # Single file
 """
 
+import os
 import re
 import sys
 import argparse
@@ -227,6 +228,18 @@ def main():
     # Get script directory to find project root
     script_dir = Path(__file__).parent
     project_root = script_dir.parent
+
+    # Path traversal protection: validate user-provided paths stay within project
+    if args.file:
+        resolved_file = Path(os.path.realpath(os.path.abspath(project_root / args.file)))
+        if not str(resolved_file).startswith(str(project_root) + os.sep):
+            print(f"Error: --file path must be within {project_root}")
+            sys.exit(1)
+    if hasattr(args, 'tests_dir') and args.tests_dir:
+        resolved_tests = Path(os.path.realpath(os.path.abspath(project_root / args.tests_dir)))
+        if not str(resolved_tests).startswith(str(project_root) + os.sep):
+            print(f"Error: --tests-dir path must be within {project_root}")
+            sys.exit(1)
 
     migrator = NoseToFixtureMigrator(dry_run=args.dry_run)
 

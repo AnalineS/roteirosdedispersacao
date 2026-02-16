@@ -97,9 +97,6 @@ export function useConversationHistory() {
 
   const loadFromLocalStorage = useCallback(async () => {
     try {
-      // TODO: Implementar cache de conversas com Backend API Cache Service futuramente
-      
-      // Carregar do localStorage
       const stored = safeLocalStorage()?.getItem(STORAGE_KEY);
       if (stored) {
         const parsedConversations = JSON.parse(stored);
@@ -108,11 +105,6 @@ export function useConversationHistory() {
             .filter(conv => conv && typeof conv === 'object' && conv.id && conv.personaId)
             .slice(0, MAX_CONVERSATIONS);
           setConversations(validConversations);
-          
-          // Salvar no Redis para próxima vez (com tratamento de erro)
-          if (validConversations.length > 0) {
-            // TODO: Integrar com backendCache para cache de conversas
-          }
         }
       }
     } catch (error) {
@@ -224,9 +216,7 @@ export function useConversationHistory() {
         }));
         
       const dataString = JSON.stringify(limitedConversations);
-      
-      // TODO: Integrar com backendCache
-      
+
       if (dataString.length > 4.5 * 1024 * 1024) {
         const reducedConversations = limitedConversations.slice(0, Math.floor(MAX_CONVERSATIONS / 2));
         safeLocalStorage()?.setItem(STORAGE_KEY, JSON.stringify(reducedConversations));
@@ -287,13 +277,10 @@ export function useConversationHistory() {
     }
   }, [auth.user, useBackendAPI]);
 
-  // Salvar conversas (Redis + localStorage + Backend API se disponível)
+  // Salvar conversas (localStorage + Backend API se disponível)
   const saveToStorage = useCallback((newConversations: Conversation[]) => {
     if (typeof window === 'undefined') return;
-    
-    // Salvar no Redis imediatamente (com tratamento de erro robusto)
-    // TODO: Integrar com backendCache para conversas
-    
+
     // Limpar timeout anterior
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current);

@@ -31,7 +31,7 @@ class TestCloudLogger:
 
     def test_hash_user_id(self, logger):
         """Testa mascaramento de user_id"""
-        user_id = "user123"
+        user_id = "user123"  # nosec B105 - deterministic test fixture, not a real credential
         hashed = logger._hash_user_id(user_id)
 
         assert hashed is not None

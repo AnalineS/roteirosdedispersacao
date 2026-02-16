@@ -429,12 +429,12 @@ class SQLiteCloudManager:
             return False
 
     def _get_file_hash(self, filepath: str) -> str:
-        """Calcular hash MD5 do arquivo"""
-        hash_md5 = hashlib.md5()
+        """Calcular hash SHA-256 do arquivo"""
+        file_hash = hashlib.sha256()
         with open(filepath, "rb") as f:
             for chunk in iter(lambda: f.read(4096), b""):
-                hash_md5.update(chunk)
-        return hash_md5.hexdigest()
+                file_hash.update(chunk)
+        return file_hash.hexdigest()
 
     def _start_background_sync(self):
         """Iniciar thread de sync automático"""

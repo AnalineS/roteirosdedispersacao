@@ -578,7 +578,7 @@ class WorkflowPerformanceOptimizer extends EventEmitter {
     
     generateCacheKey(data) {
         return require('crypto')
-            .createHash('md5')
+            .createHash('sha256')
             .update(JSON.stringify(data))
             .digest('hex');
     }

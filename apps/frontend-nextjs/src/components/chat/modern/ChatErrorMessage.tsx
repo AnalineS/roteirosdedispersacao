@@ -164,16 +164,33 @@ export default function ChatErrorMessage({
       )}
 
       {!canShowRetryButton && retryCount >= maxRetries && (
-        <p
-          style={{
-            margin: 0,
-            fontSize: '0.875rem',
-            color: 'var(--color-gray-600, #666)',
-            fontStyle: 'italic'
-          }}
-        >
-          Falha após {maxRetries} tentativas. Verifique sua conexão e recarregue a página.
-        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <p
+            style={{
+              margin: 0,
+              fontSize: '0.875rem',
+              color: 'var(--color-gray-600, #666)',
+              fontStyle: 'italic'
+            }}
+          >
+            Falha após {maxRetries} tentativas. Verifique sua conexão e recarregue a página.
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            aria-label="Recarregar página"
+            style={{
+              padding: '0.5rem 1rem',
+              fontSize: '0.875rem',
+              background: 'var(--color-gray-100, #f3f4f6)',
+              border: '1px solid var(--color-gray-300, #d1d5db)',
+              borderRadius: '0.375rem',
+              cursor: 'pointer',
+              alignSelf: 'flex-start'
+            }}
+          >
+            Recarregar página
+          </button>
+        </div>
       )}
 
       <style jsx>{`

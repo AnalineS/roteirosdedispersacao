@@ -234,6 +234,9 @@ export async function sendChatMessage(request: ChatRequest): Promise<ChatRespons
       }
 
       const data = await response.json();
+      if (!data || typeof data !== 'object' || (!data.answer && !data.response)) {
+        throw new Error('Invalid API response structure');
+      }
       logger.log(`[Chat] Resposta recebida com sucesso (tentativa ${attempt})`);
       return data;
     } catch (error) {
@@ -259,14 +262,16 @@ function generateOfflineResponse(request: ChatRequest): ChatResponse {
   const isGa = request.personality_id === 'ga';
   const persona = isGa ? 'Gá' : 'Dr. Gasnelio';
   const emoji = isGa ? '🤗' : '👨‍⚕️';
-  
-  // Resposta básica informando sobre indisponibilidade
-  const offlineMessage = isGa 
-    ? `${emoji} Oi! Sou o Gá e estou aqui para te ajudar com informações sobre hanseníase. 
 
-No momento, estou funcionando em modo offline, então minhas respostas podem ser mais limitadas. 
+  // Sanitize user input before interpolating into response to prevent XSS via markdown
+  const safeQuestion = (request.question || '').replace(/[`*_~\[\]#>]/g, '\\$&').slice(0, 200);
 
-Para sua pergunta sobre: "${request.question}"
+  const offlineMessage = isGa
+    ? `${emoji} Oi! Sou o Gá e estou aqui para te ajudar com informações sobre hanseníase.
+
+No momento, estou funcionando em modo offline, então minhas respostas podem ser mais limitadas.
+
+Para sua pergunta sobre: "${safeQuestion}"
 
 📚 Recomendo que consulte:
 • O material educativo disponível nesta plataforma
@@ -274,10 +279,10 @@ Para sua pergunta sobre: "${request.question}"
 • A cartilha oficial do Ministério da Saúde sobre hanseníase
 
 Lembre-se: é muito importante seguir corretamente o tratamento PQT-U e não interromper os medicamentos. O tratamento da hanseníase tem cura quando feito adequadamente! 💚`
-    
+
     : `${emoji} Dr. Gasnelio aqui. Atualmente funcionando em modo offline.
 
-Sua consulta: "${request.question}"
+Sua consulta: "${safeQuestion}"
 
 📋 **Informações gerais sobre PQT-U:**
 • Duração: 6 meses para hanseníase paucibacilar

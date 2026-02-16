@@ -416,8 +416,8 @@ class UnifiedCacheManager:
     def cache_persona_response(self, persona_id: str, query: str, response: Any, confidence: float = 0.85) -> bool:
         """Cache específico para respostas de personas"""
         try:
-            cache_key = f"persona:{persona_id}:{hashlib.md5(query.lower().encode()).hexdigest()[:16]}"
-            
+            cache_key = f"persona:{persona_id}:{hashlib.sha256(query.lower().encode()).hexdigest()[:16]}"
+
             cache_data = {
                 'response': response,
                 'confidence': confidence,
@@ -438,8 +438,8 @@ class UnifiedCacheManager:
     def get_cached_persona_response(self, persona_id: str, query: str) -> Optional[Dict[str, Any]]:
         """Busca resposta cacheada de persona"""
         try:
-            cache_key = f"persona:{persona_id}:{hashlib.md5(query.lower().encode()).hexdigest()[:16]}"
-            
+            cache_key = f"persona:{persona_id}:{hashlib.sha256(query.lower().encode()).hexdigest()[:16]}"
+
             result = self.get(cache_key)
             if result and isinstance(result, dict):
                 return result

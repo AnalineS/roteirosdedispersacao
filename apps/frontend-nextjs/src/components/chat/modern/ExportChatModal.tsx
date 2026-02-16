@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { type ChatMessage } from '@/types/api';
 import { type Persona } from '@/services/api';
 import { modernChatTheme } from '@/config/modernTheme';
@@ -32,7 +32,8 @@ const formatMessagesForExport = (messages: ChatMessage[], persona?: Persona | nu
       minute: '2-digit'
     });
     
-    let content = `${sender} _(${timestamp})_:\n${msg.content}\n`;
+    const safeContent = msg.content.replace(/([`#>])/g, '\\$1');
+    let content = `${sender} _(${timestamp})_:\n${safeContent}\n`;
     
     // Adicionar informações de fallback se existirem
     if (msg.metadata?.isFallback) {
@@ -129,10 +130,21 @@ export default function ExportChatModal({
   const [isExporting, setIsExporting] = useState<string | null>(null);
   const [exportSuccess, setExportSuccess] = useState<string | null>(null);
 
+  const handleEscape = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'Escape') onClose();
+  }, [onClose]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [isOpen, handleEscape]);
+
   if (!isOpen) return null;
 
   const conversationText = formatMessagesForExport(messages, currentPersona);
-  const filename = `conversa-${currentPersona?.name || 'chat'}-${new Date().toISOString().split('T')[0]}.pdf`;
+  const safeName = (currentPersona?.name || 'chat').replace(/[^a-zA-Z0-9\s-]/g, '_');
+  const filename = `conversa-${safeName}-${new Date().toISOString().split('T')[0]}.pdf`;
   const emailSubject = `Conversa Educacional - ${currentPersona?.name || 'Assistente'} - ${new Date().toLocaleDateString('pt-BR')}`;
 
   const handleExport = async (type: 'copy' | 'pdf' | 'email') => {
@@ -195,6 +207,9 @@ export default function ExportChatModal({
       >
         {/* Modal */}
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="export-modal-title"
           style={{
             background: 'white',
             borderRadius: modernChatTheme.borderRadius.lg,
@@ -219,6 +234,7 @@ export default function ExportChatModal({
             }}
           >
             <h2
+              id="export-modal-title"
               style={{
                 margin: 0,
                 fontSize: '1.25rem',

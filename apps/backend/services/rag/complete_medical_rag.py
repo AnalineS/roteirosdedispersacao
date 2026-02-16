@@ -204,7 +204,7 @@ class MedicalDocumentProcessor:
                 doc_type, priority = self.detect_document_type(current_chunk)
                 section = self._extract_section(current_chunk)
 
-                chunk_id = hashlib.md5(f"{source_file}:{current_chunk[:100]}".encode()).hexdigest()
+                chunk_id = hashlib.sha256(f"{source_file}:{current_chunk[:100]}".encode()).hexdigest()
 
                 chunks.append(MedicalDocument(
                     id=chunk_id,
@@ -227,7 +227,7 @@ class MedicalDocumentProcessor:
             doc_type, priority = self.detect_document_type(current_chunk)
             section = self._extract_section(current_chunk)
 
-            chunk_id = hashlib.md5(f"{source_file}:{current_chunk[:100]}".encode()).hexdigest()
+            chunk_id = hashlib.sha256(f"{source_file}:{current_chunk[:100]}".encode()).hexdigest()
 
             chunks.append(MedicalDocument(
                 id=chunk_id,
@@ -556,7 +556,7 @@ class CompleteMedicalRAG:
         start_time = datetime.now()
 
         # Check cache
-        cache_key = hashlib.md5(f"{query}:{max_results}".encode()).hexdigest()
+        cache_key = hashlib.sha256(f"{query}:{max_results}".encode()).hexdigest()
         if cache_key in self.query_cache:
             self.stats['cache_hits'] += 1
             cached_result = self.query_cache[cache_key]

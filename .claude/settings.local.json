@@ -6,7 +6,8 @@
       "Bash(find:*)",
       "Bash(python index_knowledge_base.py --force)",
       "Bash(gh run view:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(BASE_URL=https://roteirosdispensacao.com.br npx playwright test:*)"
     ],
     "defaultMode": "acceptEdits"
   },

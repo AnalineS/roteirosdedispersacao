@@ -21,7 +21,19 @@ const cors = require('cors');
 class MedicalDashboardServer {
     constructor() {
         this.app = express();
-        this.server = http.createServer(this.app);
+        this.app.disable('x-powered-by');
+
+        const tlsOptions = this.getTLSOptions();
+        if (tlsOptions) {
+            const https = require('https');
+            this.server = https.createServer(tlsOptions, this.app);
+            this.protocol = 'https';
+        } else {
+            console.warn('⚠️ TLS certificates not configured (set TLS_CERT_PATH and TLS_KEY_PATH). Falling back to HTTP on localhost only.');
+            this.server = http.createServer(this.app);
+            this.protocol = 'http';
+        }
+
         this.io = socketIo(this.server, {
             cors: {
                 origin: process.env.DASHBOARD_ALLOWED_ORIGINS?.split(',') || ['http://localhost:3030', 'http://localhost:3000'],
@@ -97,20 +109,48 @@ class MedicalDashboardServer {
         this.startMonitoring();
     }
     
+    /**
+     * Simple in-memory rate limiter per IP.
+     * @param {number} windowMs - Time window in milliseconds
+     * @param {number} maxRequests - Max requests per window
+     */
+    createRateLimiter(windowMs = 60000, maxRequests = 30) {
+        const hits = new Map();
+        return (req, res, next) => {
+            const ip = req.ip || req.socket.remoteAddress;
+            const now = Date.now();
+            const record = hits.get(ip);
+            if (!record || now - record.start > windowMs) {
+                hits.set(ip, { start: now, count: 1 });
+                return next();
+            }
+            record.count++;
+            if (record.count > maxRequests) {
+                res.status(429).json({ error: 'Too many requests. Try again later.' });
+                return;
+            }
+            next();
+        };
+    }
+
     setupMiddleware() {
         this.app.use(cors());
         this.app.use(express.json());
         this.app.use(express.static(path.join(__dirname)));
-        
+
         // Security headers
         this.app.use((req, res, next) => {
             res.setHeader('X-Content-Type-Options', 'nosniff');
             res.setHeader('X-Frame-Options', 'DENY');
             res.setHeader('X-XSS-Protection', '1; mode=block');
             res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+            res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
             next();
         });
-        
+
+        // Global rate limiting (general endpoints)
+        this.app.use(this.createRateLimiter(60000, 60));
+
         // Request logging
         this.app.use((req, res, next) => {
             console.log(`📊 [${new Date().toISOString()}] ${req.method} ${req.path} - ${req.ip}`);
@@ -119,24 +159,28 @@ class MedicalDashboardServer {
     }
     
     setupRoutes() {
-        // Main dashboard
-        this.app.get('/', (req, res) => {
+        // Stricter rate limiter for file system and command-execution routes
+        const fsRateLimiter = this.createRateLimiter(60000, 10);
+        const cmdRateLimiter = this.createRateLimiter(60000, 15);
+
+        // Main dashboard (file system operation)
+        this.app.get('/', fsRateLimiter, (req, res) => {
             res.sendFile(path.join(__dirname, 'medical-dashboard.html'));
         });
-        
-        // API Routes
-        this.app.get('/api/status', this.getSystemStatus.bind(this));
-        this.app.get('/api/metrics/medical', this.getMedicalMetrics.bind(this));
-        this.app.get('/api/metrics/lgpd', this.getLGPDMetrics.bind(this));
-        this.app.get('/api/metrics/accessibility', this.getAccessibilityMetrics.bind(this));
-        this.app.get('/api/metrics/performance', this.getPerformanceMetrics.bind(this));
-        this.app.get('/api/metrics/scientific', this.getScientificMetrics.bind(this));
-        this.app.get('/api/logs', this.getSystemLogs.bind(this));
-        this.app.get('/api/alerts', this.getActiveAlerts.bind(this));
-        
+
+        // API Routes that trigger system commands get stricter limits
+        this.app.get('/api/status', cmdRateLimiter, this.getSystemStatus.bind(this));
+        this.app.get('/api/metrics/medical', cmdRateLimiter, this.getMedicalMetrics.bind(this));
+        this.app.get('/api/metrics/lgpd', cmdRateLimiter, this.getLGPDMetrics.bind(this));
+        this.app.get('/api/metrics/accessibility', cmdRateLimiter, this.getAccessibilityMetrics.bind(this));
+        this.app.get('/api/metrics/performance', cmdRateLimiter, this.getPerformanceMetrics.bind(this));
+        this.app.get('/api/metrics/scientific', cmdRateLimiter, this.getScientificMetrics.bind(this));
+        this.app.get('/api/logs', cmdRateLimiter, this.getSystemLogs.bind(this));
+        this.app.get('/api/alerts', cmdRateLimiter, this.getActiveAlerts.bind(this));
+
         // Export endpoints
-        this.app.get('/api/export/metrics', this.exportMetrics.bind(this));
-        this.app.get('/api/export/report', this.exportReport.bind(this));
+        this.app.get('/api/export/metrics', cmdRateLimiter, this.exportMetrics.bind(this));
+        this.app.get('/api/export/report', cmdRateLimiter, this.exportReport.bind(this));
         
         // Health check
         this.app.get('/health', (req, res) => {
@@ -959,13 +1003,37 @@ class MedicalDashboardServer {
         }
     }
     
+    /**
+     * Loads TLS certificate and key from environment variables.
+     * Set TLS_CERT_PATH and TLS_KEY_PATH to enable HTTPS.
+     */
+    getTLSOptions() {
+        const certPath = process.env.TLS_CERT_PATH;
+        const keyPath = process.env.TLS_KEY_PATH;
+        if (certPath && keyPath) {
+            try {
+                const fsSyncModule = require('fs');
+                return {
+                    cert: fsSyncModule.readFileSync(certPath),
+                    key: fsSyncModule.readFileSync(keyPath),
+                };
+            } catch (err) {
+                console.warn(`⚠️ Failed to load TLS certificates: ${err.message}`);
+            }
+        }
+        return null;
+    }
+
     start() {
-        this.server.listen(this.port, () => {
+        const bindHost = this.protocol === 'https' ? '0.0.0.0' : '127.0.0.1';
+        const wsProto = this.protocol === 'https' ? 'wss' : 'ws';
+
+        this.server.listen(this.port, bindHost, () => {
             this.isRunning = true;
             console.log('🚀 Dashboard Médico iniciado!');
-            console.log(`📊 Dashboard: http://localhost:${this.port}`);
-            console.log(`🔗 WebSocket: ws://localhost:${this.port}`);
-            console.log(`💡 API: http://localhost:${this.port}/api/status`);
+            console.log(`📊 Dashboard: ${this.protocol}://localhost:${this.port}`);
+            console.log(`🔗 WebSocket: ${wsProto}://localhost:${this.port}`);
+            console.log(`💡 API: ${this.protocol}://localhost:${this.port}/api/status`);
             console.log('');
             console.log('📋 Endpoints disponíveis:');
             console.log('   • GET / - Dashboard principal');
