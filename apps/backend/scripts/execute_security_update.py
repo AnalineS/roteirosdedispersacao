@@ -281,13 +281,13 @@ class SecurityUpdateExecutor:
         self.log_step("Applying security requirements", "IN_PROGRESS")
 
         try:
-            security_requirements = self.backend_root / "requirements_security_ml_update.txt"
+            main_requirements = self.backend_root / "requirements.txt"
 
-            if not security_requirements.exists():
+            if not main_requirements.exists():
                 self.log_step(
-                    "Security requirements file check",
+                    "Requirements file check",
                     "FAILURE",
-                    f"File not found: {security_requirements}"
+                    f"File not found: {main_requirements}"
                 )
                 return False
 
@@ -295,11 +295,7 @@ class SecurityUpdateExecutor:
                 self.log_step("Apply security requirements", "SUCCESS", "DRY RUN - Requirements would be applied")
                 return True
 
-            # Copy security requirements to main requirements file
-            main_requirements = self.backend_root / "requirements.txt"
-            shutil.copy2(security_requirements, main_requirements)
-
-            # Install from updated requirements
+            # Install from requirements
             result = subprocess.run(
                 [sys.executable, "-m", "pip", "install", "-r", str(main_requirements), "--upgrade"],
                 capture_output=True,
