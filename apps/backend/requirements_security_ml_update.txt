@@ -39,7 +39,7 @@ transformers>=4.53.2
 # CRITICAL SECURITY FIX: JWT vulnerability
 authlib==1.6.6     # SECURITY UPDATE: CVE-2025-59420 fix - JWT/JWS critical header vulnerability
 PyJWT==2.10.1      # SECURITY: Latest secure version
-cryptography==46.0.3  # SECURITY: CRITICAL - Updated 2024-09-24 - Latest security patches
+cryptography==46.0.5  # SECURITY: CRITICAL - Updated 2024-09-24 - Latest security patches
 passlib>=1.7.4     # Password hashing
 
 # === SECURITY FRAMEWORK ===
