@@ -92,7 +92,7 @@ nltk==3.9.2
 # === MULTIMODAL PROCESSING - COMPATIBILITY UPDATES ===
 # Computer vision and OCR - Updated for torch 2.8.0 compatibility
 opencv-python==4.12.0.88
-Pillow==10.4.0
+Pillow==12.1.1
 pytesseract==0.3.13
 
 # EasyOCR - CONDITIONAL: May require compatibility check with torch 2.8.0
