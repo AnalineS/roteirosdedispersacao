@@ -77,7 +77,7 @@ google-cloud-monitoring==2.29.1
 # SEGURANÇA: 3.10.0 sem vulnerabilidades conhecidas (verificado 2025-10-07)
 # REVISÃO: 2025-04 (verificar se conflito foi resolvido upstream)
 # ALTERNATIVAS: Ver apps/backend/python_version_analysis.py para opções de upgrade
-google-cloud-logging==3.12.1
+google-cloud-logging==3.13.0
 google-cloud-storage>=2.10.0
 
 # Structured logging
