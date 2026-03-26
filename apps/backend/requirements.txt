@@ -50,7 +50,7 @@ pydantic==2.12.5   # SECURITY: Updated 2024-09-24 - Performance improvements and
 jsonschema>=4.23.0
 
 # === HTTP & NETWORKING ===
-requests==2.32.5   # SECURITY: Updated beyond CVE-2023-32681
+requests==2.33.0   # SECURITY: Updated beyond CVE-2023-32681
 httpx>=0.24.0
 urllib3>=2.6.3
 certifi==2025.11.12
