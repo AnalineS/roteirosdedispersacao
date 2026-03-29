@@ -23,7 +23,7 @@ scikit-learn==1.8.0
 # CRITICAL SECURITY FIX: JWT vulnerability
 authlib==1.6.8     # SECURITY UPDATE: CVE-2025-59420 fix - JWT/JWS critical header vulnerability
 PyJWT==2.11.0      # SECURITY: Latest secure version
-cryptography==46.0.5  # SECURITY: CRITICAL - Updated 2024-09-24 - Latest security patches
+cryptography==46.0.6  # SECURITY: CRITICAL - Updated 2024-09-24 - Latest security patches
 passlib>=1.7.4     # Password hashing
 
 # === SECURITY FRAMEWORK ===
