@@ -6,24 +6,24 @@
 
 # === CORE FLASK ===
 # SECURITY: CRITICAL - Updated 2024-09-24 - Latest Flask security patches
-Flask==3.1.2
+Flask==3.1.3
 Flask-CORS==6.0.2  # SECURITY UPDATE: CVE-2024-6221, CVE-2024-6839, CVE-2024-6844, CVE-2024-6866
-Werkzeug==3.1.5
+Werkzeug==3.1.7
 gunicorn==23.0.0   # SECURITY: Updated 2024-09-24 - CVE-2024-6827 fixed
 
 # === AI & ML CORE ===
 # Updated to latest secure version
 openai>=1.50.0
-sentence-transformers==5.2.3
+sentence-transformers==5.3.0
 chromadb>=0.4.0
 numpy>=2.0.0,<2.3.0  # Compatible with opencv-python 4.12.0.88
 scikit-learn==1.8.0
 
 # === AUTHENTICATION & JWT ===
 # CRITICAL SECURITY FIX: JWT vulnerability
-authlib==1.6.8     # SECURITY UPDATE: CVE-2025-59420 fix - JWT/JWS critical header vulnerability
-PyJWT==2.11.0      # SECURITY: Latest secure version
-cryptography==46.0.5  # SECURITY: CRITICAL - Updated 2024-09-24 - Latest security patches
+authlib==1.6.9     # SECURITY UPDATE: CVE-2025-59420 fix - JWT/JWS critical header vulnerability
+PyJWT==2.12.1      # SECURITY: Latest secure version
+cryptography==46.0.6  # SECURITY: CRITICAL - Updated 2024-09-24 - Latest security patches
 passlib>=1.7.4     # Password hashing
 
 # === SECURITY FRAMEWORK ===
@@ -50,7 +50,7 @@ pydantic==2.12.5   # SECURITY: Updated 2024-09-24 - Performance improvements and
 jsonschema>=4.23.0
 
 # === HTTP & NETWORKING ===
-requests==2.32.5   # SECURITY: Updated beyond CVE-2023-32681
+requests==2.33.0   # SECURITY: Updated beyond CVE-2023-32681
 httpx>=0.24.0
 urllib3>=2.6.3
 certifi==2025.11.12
@@ -64,7 +64,7 @@ cachetools>=5.3.2
 psutil==5.9.8
 
 # Google Cloud Operations Suite
-google-cloud-monitoring==2.29.1
+google-cloud-monitoring==2.30.0
 # google-cloud-logging MANTIDO em 3.10.0 devido a conflito de dependências
 # PROBLEMA: Versões 3.11.x+ requerem opentelemetry-api>=1.9.0 que conflita com semgrep
 #   - semgrep>=1.113.0 requer opentelemetry-api~=1.25.0 (versão específica)
@@ -77,14 +77,14 @@ google-cloud-monitoring==2.29.1
 # SEGURANÇA: 3.10.0 sem vulnerabilidades conhecidas (verificado 2025-10-07)
 # REVISÃO: 2025-04 (verificar se conflito foi resolvido upstream)
 # ALTERNATIVAS: Ver apps/backend/python_version_analysis.py para opções de upgrade
-google-cloud-logging==3.12.1
+google-cloud-logging==3.15.0
 google-cloud-storage>=2.10.0
 
 # Structured logging
 python-json-logger>=2.0.7
 
 # === TEXT PROCESSING ===
-nltk==3.9.2
+nltk==3.9.4
 
 # === MULTIMODAL PROCESSING ===
 # Computer vision and OCR
@@ -92,7 +92,7 @@ opencv-python==4.13.0.92
 Pillow==12.1.1
 pytesseract==0.3.13
 easyocr==1.7.2  # NOTE: Contains torch@2.8.0 with known vulnerabilities pending upstream fix
-scipy==1.17.0
+scipy==1.17.1
 
 # File handling and validation  
 python-magic==0.4.27
@@ -100,7 +100,7 @@ python-magic==0.4.27
 # === DATABASE & VECTOR STORE ===
 # Supabase integration - FASE 3 RAG
 # Main client library (includes auth, storage, functions, realtime)
-supabase==2.28.0
+supabase==2.28.3
 # PostgreSQL adapter with pgvector support
 psycopg2-binary==2.9.11
 
@@ -117,7 +117,7 @@ faiss-cpu>=1.7.4
 # cassandra-driver>=3.29.1  # Removed - heavy dependency
 
 # === UTILITIES ===
-python-dotenv==1.2.1
+python-dotenv==1.2.2
 typing-extensions>=4.11.0
 setuptools==78.1.1
 python-dateutil>=2.8.2
@@ -162,7 +162,7 @@ websockets>=11.0.0
 # ESSENTIAL for async medical processing - DO NOT REMOVE
 # Used in: tasks/ (chat_tasks.py, medical_tasks.py, analytics_tasks.py)
 # Purpose: Async processing of medical consultations, chat responses, analytics
-celery==5.6.2  # SECURITY: Critical asyncio fix for Python 3.13, improved task management
+celery==5.6.3  # SECURITY: Critical asyncio fix for Python 3.13, improved task management
 
 # === PERFORMANCE MONITORING ===
 py-spy>=0.3.14
