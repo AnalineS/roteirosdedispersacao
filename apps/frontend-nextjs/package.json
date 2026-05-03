@@ -47,7 +47,7 @@
   "dependencies": {
     "@next/third-parties": "^16.1.6",
     "axios": "1.13.5",
-    "dompurify": "^3.2.7",
+    "dompurify": "^3.4.2",
     "framer-motion": "^12.23.26",
     "js-cookie": "3.0.5",
     "jspdf": "4.1.0",
